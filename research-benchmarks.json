@@ -1,0 +1,25 @@
+{
+  "classifier_auc": [
+    {"model":"ANFIS","sensitivity":0.98,"precision":0.95,"recall":0.98,"f_measure":0.96,"auc":0.970},
+    {"model":"Logistic Regression","sensitivity":0.88,"precision":0.89,"recall":0.88,"f_measure":0.87,"auc":0.883},
+    {"model":"Multilayer Perceptron","sensitivity":0.92,"precision":0.90,"recall":0.92,"f_measure":0.91,"auc":0.922},
+    {"model":"Simple Logistic","sensitivity":0.87,"precision":0.88,"recall":0.87,"f_measure":0.86,"auc":0.880}
+  ],
+  "ensemble_anfis": {"r2":0.9891,"mse":11.1202,"rmse":3.3347,"mean_error":0.2305,"error_std":0.5954},
+  "stress_test": [
+    {"days_ahead":20,"accuracy":0.95,"precision":0.96,"recall":0.94,"f1":0.95},
+    {"days_ahead":61,"accuracy":0.92,"precision":0.93,"recall":0.90,"f1":0.91},
+    {"days_ahead":122,"accuracy":0.88,"precision":0.89,"recall":0.85,"f1":0.87},
+    {"days_ahead":245,"accuracy":0.83,"precision":0.84,"recall":0.80,"f1":0.82}
+  ],
+  "regimes": [
+    {"period":"2008-2010","strategy":"T+3 MACD","profit_factor":1.05,"cumulative_return":31.76,"annual_holding_return":10.59,"sharpe":0.55,"average_loss_rate":-10.45,"win_rate":56.98,"max_drawdown":19.80,"trades":33,"annualized_return":10.50},
+    {"period":"2016-2019","strategy":"T+2 EMA","profit_factor":1.25,"cumulative_return":92.57,"annual_holding_return":30.86,"sharpe":0.85,"average_loss_rate":-8.30,"win_rate":77.15,"max_drawdown":14.50,"trades":71,"annualized_return":22.14},
+    {"period":"2020-2023","strategy":"T+2.5 Stochastic","profit_factor":1.03,"cumulative_return":41.83,"annual_holding_return":13.94,"sharpe":0.65,"average_loss_rate":-11.90,"win_rate":60.27,"max_drawdown":21.40,"trades":42,"annualized_return":13.70}
+  ],
+  "notes": [
+    "Thesis reports 81 VNIndex crash signals over 31 distinct weeks from 2007-2023.",
+    "Thesis reports 44 sector crash events over 29 crash weeks.",
+    "The thesis narrative also states VND 500m became VND 833.63m in 2008-2010; this conflicts with the 31.76% cumulative return in its performance table."
+  ]
+}

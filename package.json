@@ -1,0 +1,8 @@
+{
+  "name":"vmews-vietnam-market-early-warning-system",
+  "version":"1.0.0",
+  "private":true,
+  "description":"Research-to-production market risk portfolio: Vietnam Market Early Warning System.",
+  "scripts":{"check":"node --check app.js && node --check api/market.js"},
+  "engines":{"node":">=20"}
+}

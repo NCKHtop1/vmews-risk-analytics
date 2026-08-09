@@ -1,0 +1,11 @@
+{
+  "research": {
+    "description":"The thesis states that closing prices from TradingView were used for 251 HOSE stocks across ten sectors, 2007-2023, totaling 745,452 observations.",
+    "availability":"The raw thesis dataset and trained model files were not embedded in the supplied PDF."
+  },
+  "live": {
+    "primary":"Yahoo Finance public chart endpoint for ^VNINDEX.VN (best-effort, no API key).",
+    "fallback":"Embedded public snapshot verified from market-history reporting.",
+    "production_note":"For regulated or production use, replace the public adapter with a licensed/official market-data feed."
+  }
+}

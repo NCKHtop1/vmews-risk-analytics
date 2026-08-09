@@ -1,0 +1,22 @@
+{
+  "source":"Verified public fallback snapshot",
+  "symbol":"VNINDEX",
+  "asOf":"2026-07-28",
+  "isFallback":true,
+  "note":"Used only when the live upstream market adapter is unavailable. Values are a small verified snapshot, not a complete historical dataset.",
+  "rows":[
+    {"date":"2026-06-29","open":1871.91,"high":1871.91,"low":1849.70,"close":1854.97,"volume":444790000},
+    {"date":"2026-06-30","open":1854.97,"high":1863.14,"low":1844.66,"close":1860.01,"volume":505120000},
+    {"date":"2026-07-01","open":1860.01,"high":1871.68,"low":1859.68,"close":1867.21,"volume":491320000},
+    {"date":"2026-07-02","open":1867.21,"high":1873.87,"low":1862.01,"close":1866.35,"volume":452760000},
+    {"date":"2026-07-03","open":1866.35,"high":1872.98,"low":1857.28,"close":1862.08,"volume":538080000},
+    {"date":"2026-07-06","open":1862.08,"high":1891.34,"low":1829.05,"close":1843.50,"volume":712580000},
+    {"date":"2026-07-07","open":1843.50,"high":1848.57,"low":1825.79,"close":1848.25,"volume":463000000},
+    {"date":"2026-07-08","open":1848.25,"high":1855.74,"low":1842.19,"close":1853.70,"volume":550620000},
+    {"date":"2026-07-09","open":1853.70,"high":1853.70,"low":1838.24,"close":1840.70,"volume":459420000},
+    {"date":"2026-07-23","open":1668.53,"high":1703.48,"low":1648.30,"close":1699.38,"volume":767200000},
+    {"date":"2026-07-24","open":1699.38,"high":1702.82,"low":1674.64,"close":1686.11,"volume":497800000},
+    {"date":"2026-07-27","open":1686.11,"high":1700.69,"low":1662.85,"close":1669.01,"volume":542730000},
+    {"date":"2026-07-28","open":1669.01,"high":1684.54,"low":1639.66,"close":1680.62,"volume":634240000}
+  ]
+}

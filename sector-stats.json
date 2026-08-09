@@ -1,0 +1,12 @@
+[
+  {"sector":"Banking","mean":0.000949,"stdev":0.044039,"skewness":-0.246833,"kurtosis":4.818826},
+  {"sector":"Real Estate","mean":-0.000282,"stdev":0.041610,"skewness":-0.632678,"kurtosis":3.643684},
+  {"sector":"Information Technology","mean":0.001628,"stdev":0.063230,"skewness":8.538121,"kurtosis":164.132519},
+  {"sector":"Oil and Gas","mean":0.001113,"stdev":0.038877,"skewness":1.249546,"kurtosis":16.852582},
+  {"sector":"Financial Services","mean":-0.000553,"stdev":0.0460779,"skewness":-0.036501,"kurtosis":5.967910},
+  {"sector":"Industrial Services","mean":0.000696,"stdev":0.039215,"skewness":-0.479662,"kurtosis":6.532597},
+  {"sector":"Chemicals","mean":-0.000763,"stdev":0.043455,"skewness":-1.091906,"kurtosis":8.372545},
+  {"sector":"Minerals","mean":0.001188,"stdev":0.047219,"skewness":-0.183827,"kurtosis":4.457997},
+  {"sector":"Food and Beverage","mean":0.001389,"stdev":0.037246,"skewness":-0.095582,"kurtosis":8.892829},
+  {"sector":"Building Materials","mean":0.000924,"stdev":0.043128,"skewness":-0.279964,"kurtosis":5.046292}
+]
