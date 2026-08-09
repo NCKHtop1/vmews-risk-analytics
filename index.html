@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Vietnam Market Early Warning System — portfolio demo based on an ANFIS + VAE stock-crash early-warning research framework." />
+  <meta name="theme-color" content="#07111f" />
+  <title>VMEWS — Vietnam Market Early Warning System</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="VMEWS home">
+      <span class="brand-mark">V</span>
+      <span>
+        <strong>VMEWS</strong>
+        <small>Vietnam Market Early Warning System</small>
+      </span>
+    </a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#overview">Overview</a>
+      <a href="#monitor">Live Monitor</a>
+      <a href="#model">Model</a>
+      <a href="#backtest">Backtest</a>
+      <a href="#sectors">Sectors</a>
+      <a href="#method">Method</a>
+    </nav>
+    <a class="ghost-button" href="./README.md" target="_blank" rel="noreferrer">Project Notes ↗</a>
+  </header>
+
+  <main>
+    <section id="overview" class="hero section-shell">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse-dot"></span> MARKET RISK ANALYTICS · VIETNAM</div>
+        <h1>See market stress<br><span>before it becomes a crash.</span></h1>
+        <p class="hero-text">
+          A research-to-production portfolio project that turns an ANFIS + VAE early-warning framework into a live risk dashboard for the VN-Index.
+        </p>
+        <div class="hero-actions">
+          <a class="primary-button" href="#monitor">Open live monitor</a>
+          <a class="text-button" href="#method">Read methodology →</a>
+        </div>
+        <div class="trust-strip">
+          <div><b>Research base</b><span>UEB thesis, 2007–2023</span></div>
+          <div><b>Live layer</b><span>Daily VN-Index market feed</span></div>
+          <div><b>Controls</b><span>Freshness, fallback, audit notes</span></div>
+        </div>
+      </div>
+
+      <aside class="hero-terminal glass-card">
+        <div class="terminal-head">
+          <span>RISK TERMINAL / VNINDEX</span>
+          <span id="feedBadge" class="status-badge neutral">CONNECTING</span>
+        </div>
+        <div class="terminal-price-row">
+          <div>
+            <small>LAST CLOSE</small>
+            <strong id="heroPrice">—</strong>
+          </div>
+          <span id="heroChange" class="delta neutral-text">—</span>
+        </div>
+        <div class="terminal-grid">
+          <div><small>Risk score</small><b id="heroRisk">—</b></div>
+          <div><small>20D vol.</small><b id="heroVol">—</b></div>
+          <div><small>60D drawdown</small><b id="heroDD">—</b></div>
+          <div><small>Last session</small><b id="heroDate">—</b></div>
+        </div>
+        <div class="mini-chart-wrap"><canvas id="miniChart"></canvas></div>
+        <p class="tiny-note" id="feedNote">Loading the latest available market session…</p>
+      </aside>
+    </section>
+
+    <section id="monitor" class="section-shell section-block">
+      <div class="section-heading split-heading">
+        <div>
+          <div class="eyebrow">01 · LIVE MONITOR</div>
+          <h2>Current market state</h2>
+          <p>Live indicators are computed from the latest available VN-Index daily series. The score is a transparent operational proxy, not a claim that the original thesis weights were recovered.</p>
+        </div>
+        <div class="range-control" role="group" aria-label="Chart range">
+          <button class="range-btn" data-range="1y">1Y</button>
+          <button class="range-btn active" data-range="5y">5Y</button>
+          <button class="range-btn" data-range="max">MAX</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-label">VN-Index</div>
+          <div class="kpi-main"><strong id="kpiPrice">—</strong><span id="kpiChange" class="chip neutral">—</span></div>
+          <div class="kpi-foot">Latest available close</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Live proxy risk</div>
+          <div class="kpi-main"><strong id="kpiRisk">—</strong><span id="kpiRiskState" class="chip neutral">—</span></div>
+          <div class="kpi-foot">0 = calm · 100 = severe</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">20-day volatility</div>
+          <div class="kpi-main"><strong id="kpiVol">—</strong></div>
+          <div class="kpi-foot">Annualised from daily log returns</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Return anomaly</div>
+          <div class="kpi-main"><strong id="kpiAnomaly">—</strong></div>
+          <div class="kpi-foot">Absolute z-score vs. recent returns</div>
+        </article>
+      </div>
+
+      <div class="monitor-grid">
+        <article class="chart-card glass-card large-panel">
+          <div class="card-head">
+            <div><span class="card-kicker">PRICE & SIGNAL</span><h3>VN-Index market history</h3></div>
+            <div class="legend-inline"><span><i class="legend-line"></i> Close</span><span><i class="legend-dot amber"></i> High stress</span></div>
+          </div>
+          <div class="chart-area"><canvas id="marketChart"></canvas></div>
+        </article>
+
+        <article class="risk-card glass-card">
+          <div class="card-head"><div><span class="card-kicker">EARLY WARNING</span><h3>Risk state</h3></div></div>
+          <div id="riskGauge" class="risk-gauge"><div><strong id="gaugeValue">—</strong><span>/100</span></div></div>
+          <div class="risk-state-line"><span id="riskLight" class="risk-light neutral"></span><b id="riskState">Waiting for data</b></div>
+          <div class="driver-list" id="driverList">
+            <div><span>Volatility pressure</span><b>—</b></div>
+            <div><span>Drawdown pressure</span><b>—</b></div>
+            <div><span>Negative momentum</span><b>—</b></div>
+            <div><span>Return anomaly</span><b>—</b></div>
+          </div>
+          <p class="tiny-note">Operational proxy = 35% volatility + 25% drawdown + 20% negative momentum + 20% anomaly. The original trained model weights are not contained in the thesis PDF.</p>
+        </article>
+      </div>
+
+      <div class="alert-table-wrap glass-card">
+        <div class="card-head">
+          <div><span class="card-kicker">CONTROL VIEW</span><h3>Latest risk observations</h3></div>
+          <button id="refreshBtn" class="small-button">Refresh data</button>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Date</th><th>Close</th><th>Daily return</th><th>Risk score</th><th>State</th><th>Reason</th></tr></thead>
+            <tbody id="alertRows"><tr><td colspan="6" class="loading-cell">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="model" class="section-shell section-block">
+      <div class="section-heading">
+        <div class="eyebrow">02 · MODEL LAB</div>
+        <h2>Research model, clearly separated from the live demo layer</h2>
+        <p>The thesis combines ANFIS for nonlinear early-warning prediction with VAE/LSTM-style anomaly detection. This portfolio preserves that architecture and reports the thesis benchmarks exactly as written.</p>
+      </div>
+
+      <div class="architecture-grid">
+        <article class="architecture-card source-card">
+          <span class="node-tag">DATA</span>
+          <h3>Market input</h3>
+          <p>Daily close data, weekly sector returns and volume-weighted sector prices.</p>
+          <ul><li>251 HOSE stocks</li><li>745,452 observations</li><li>10 sectors</li><li>2007–2023 research window</li></ul>
+        </article>
+        <div class="flow-arrow">→</div>
+        <article class="architecture-card">
+          <span class="node-tag cyan">ANFIS</span>
+          <h3>Predictive layer</h3>
+          <p>First-order Sugeno fuzzy rules with adaptive parameters and neural-network learning.</p>
+          <div class="formula">IF x is A AND y is B → z = ax + by + c</div>
+        </article>
+        <div class="flow-plus">+</div>
+        <article class="architecture-card">
+          <span class="node-tag violet">VAE</span>
+          <h3>Anomaly layer</h3>
+          <p>Encoder-decoder reconstruction error highlights observations that deviate from learned normal behaviour.</p>
+          <div class="formula">Loss = Reconstruction + β · KL</div>
+        </article>
+        <div class="flow-arrow">→</div>
+        <article class="architecture-card output-card">
+          <span class="node-tag amber">EWM</span>
+          <h3>Early warning</h3>
+          <p>Combine predictive and anomaly evidence, then generate risk warnings and trading signals.</p>
+          <ul><li>Backtest</li><li>Stress test</li><li>Live test</li></ul>
+        </article>
+      </div>
+
+      <div class="benchmark-grid">
+        <article class="glass-card benchmark-card">
+          <div class="card-head"><div><span class="card-kicker">CLASSIFIER BENCHMARK</span><h3>ROC AUC</h3></div></div>
+          <div class="bar-list" id="aucBars"></div>
+        </article>
+        <article class="glass-card benchmark-card">
+          <div class="card-head"><div><span class="card-kicker">ENSEMBLE ANFIS</span><h3>Reported fit metrics</h3></div></div>
+          <div class="metric-matrix">
+            <div><span>R²</span><strong>0.9891</strong></div>
+            <div><span>RMSE</span><strong>3.3347</strong></div>
+            <div><span>MSE</span><strong>11.1202</strong></div>
+            <div><span>Mean error</span><strong>0.2305</strong></div>
+          </div>
+          <p class="tiny-note">Values are thesis-reported benchmarks, not recomputed by this web page.</p>
+        </article>
+      </div>
+
+      <div class="disclosure-card">
+        <div class="disclosure-icon">!</div>
+        <div><b>Reproducibility disclosure</b><p>The PDF provides the model equations, architecture and reported results, but not the original 745,452-row raw dataset, trained weight files, complete MATLAB project, or every tuned hyperparameter. Therefore an exact byte-for-byte reproduction of the original trained model is not possible from the PDF alone. The repository includes a faithful, runnable reference implementation and labels any live proxy output clearly.</p></div>
+      </div>
+    </section>
+
+    <section id="backtest" class="section-shell section-block">
+      <div class="section-heading">
+        <div class="eyebrow">03 · BACKTEST & STRESS TEST</div>
+        <h2>What the thesis reports</h2>
+        <p>Three market regimes were tested with a hypothetical starting capital of VND 500 million, using MACD, EMA and Stochastic strategies alongside the early-warning framework.</p>
+      </div>
+
+      <div class="regime-grid">
+        <article class="regime-card down">
+          <div class="regime-top"><span>2008–2010</span><b>DOWN TREND</b></div>
+          <h3>T+3 · MACD</h3>
+          <div class="regime-stat"><span>Cumulative return</span><strong>31.76%</strong></div>
+          <div class="regime-stat"><span>Win rate</span><strong>56.98%</strong></div>
+          <div class="regime-stat"><span>Max drawdown</span><strong>19.80%</strong></div>
+          <div class="regime-stat"><span>Annualised return</span><strong>10.50%</strong></div>
+        </article>
+        <article class="regime-card up">
+          <div class="regime-top"><span>2016–2019</span><b>UP TREND</b></div>
+          <h3>T+2 · EMA</h3>
+          <div class="regime-stat"><span>Cumulative return</span><strong>92.57%</strong></div>
+          <div class="regime-stat"><span>Win rate</span><strong>77.15%</strong></div>
+          <div class="regime-stat"><span>Max drawdown</span><strong>14.50%</strong></div>
+          <div class="regime-stat"><span>Annualised return</span><strong>22.14%</strong></div>
+        </article>
+        <article class="regime-card side">
+          <div class="regime-top"><span>2020–2023</span><b>SIDEWAYS</b></div>
+          <h3>T+2.5 · Stochastic</h3>
+          <div class="regime-stat"><span>Cumulative return</span><strong>41.83%</strong></div>
+          <div class="regime-stat"><span>Win rate</span><strong>60.27%</strong></div>
+          <div class="regime-stat"><span>Max drawdown</span><strong>21.40%</strong></div>
+          <div class="regime-stat"><span>Annualised return</span><strong>13.70%</strong></div>
+        </article>
+      </div>
+
+      <div class="stress-layout">
+        <article class="glass-card stress-chart-card">
+          <div class="card-head"><div><span class="card-kicker">FORECAST HORIZON</span><h3>Stress-test accuracy</h3></div></div>
+          <div class="chart-area short"><canvas id="stressChart"></canvas></div>
+        </article>
+        <article class="glass-card live-test-card">
+          <span class="card-kicker">2024 LIVE TEST · THESIS</span>
+          <h3>Actionable signal example</h3>
+          <div class="timeline">
+            <div><span class="timeline-dot buy"></span><small>03 Jan 2024</small><b>BUY · VN-Index 1,144</b><p>Thesis reports a buying opportunity before the index reached 1,188 on 02 Feb.</p></div>
+            <div><span class="timeline-dot sell"></span><small>01 Apr 2024</small><b>SELL · VN-Index 1,287</b><p>Thesis reports a sell signal before the market declined materially in mid-April.</p></div>
+            <div><span class="timeline-dot neutral-dot"></span><small>19 Apr 2024</small><b>VN-Index 1,179</b><p>End point stated for the live-test period.</p></div>
+          </div>
+        </article>
+      </div>
+      <p class="method-warning"><b>Source consistency note:</b> the thesis table reports a 31.76% cumulative return for 2008–2010, while a later narrative paragraph states that VND 500 million became VND 833.63 million. These two figures are not arithmetically equivalent. This demo keeps the table metrics as the primary benchmark and records the narrative figure in the project notes instead of silently reconciling it.</p>
+    </section>
+
+    <section id="sectors" class="section-shell section-block">
+      <div class="section-heading split-heading">
+        <div>
+          <div class="eyebrow">04 · SECTOR RISK</div>
+          <h2>Historical sector volatility</h2>
+          <p>Standard deviations below are copied from the thesis descriptive statistics for the 2007–2023 research sample. Information Technology is the most volatile by this measure; Food & Beverage is the least.</p>
+        </div>
+        <div class="sector-callout"><small>Research finding</small><b>Minerals often reacted first to bad market information.</b></div>
+      </div>
+      <div class="sector-layout">
+        <article class="glass-card sector-chart-card"><div class="chart-area tall"><canvas id="sectorChart"></canvas></div></article>
+        <article class="glass-card sector-table-card">
+          <div class="table-scroll"><table><thead><tr><th>Sector</th><th>Mean</th><th>Std. dev.</th><th>Skewness</th></tr></thead><tbody id="sectorRows"></tbody></table></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="method" class="section-shell section-block">
+      <div class="section-heading">
+        <div class="eyebrow">05 · DATA & METHODOLOGY</div>
+        <h2>Built for scrutiny, not just screenshots</h2>
+        <p>The portfolio separates research claims, current market data, implementation assumptions and operational controls so a reviewer can see exactly what is original, what is reproduced and what is newly engineered.</p>
+      </div>
+
+      <div class="method-grid">
+        <article class="method-card"><span>01</span><h3>Crash definition</h3><p>Weekly specific return is transformed as <code>Rw = ln(1 + ew)</code>. A crash is flagged when <code>Rw &lt; μR − 3.09σR</code>, following the thesis COUNT/CRASH approach.</p></article>
+        <article class="method-card"><span>02</span><h3>Research split</h3><p>The thesis states 80% train, 10% validation and 10% test, with walk-forward retraining. The PDF contains an ambiguous date sentence for validation/test; the repository preserves the text and does not invent a corrected date.</p></article>
+        <article class="method-card"><span>03</span><h3>Live data</h3><p>The deployed API requests the latest VN-Index daily OHLC series. If the upstream feed is unavailable, the UI falls back to an embedded verified snapshot and visibly marks the data as fallback.</p></article>
+        <article class="method-card"><span>04</span><h3>Data controls</h3><p>Nulls, duplicate timestamps, non-positive prices, ordering, freshness and source mode are checked before risk metrics are calculated.</p></article>
+        <article class="method-card"><span>05</span><h3>Model governance</h3><p>Research benchmark metrics are immutable reference values. Live proxy logic is versioned separately so it cannot be mistaken for the original trained ANFIS/VAE output.</p></article>
+        <article class="method-card"><span>06</span><h3>Deployment</h3><p>Static frontend + serverless market-data endpoint. No client-side secrets. Cache headers reduce upstream requests while keeping daily market data fresh.</p></article>
+      </div>
+
+      <div class="source-panel glass-card">
+        <div>
+          <span class="card-kicker">DATA LINEAGE</span>
+          <h3>Source → Validation → Feature layer → Risk view</h3>
+        </div>
+        <div class="lineage">
+          <div><b>Research</b><span>TradingView data described in thesis</span></div><i>→</i>
+          <div><b>Live feed</b><span>VN-Index market API adapter</span></div><i>→</i>
+          <div><b>Controls</b><span>Schema · freshness · duplicates</span></div><i>→</i>
+          <div><b>Features</b><span>Return · vol · drawdown · momentum</span></div><i>→</i>
+          <div><b>Output</b><span>Risk score · observations · charts</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell cv-section">
+      <div>
+        <div class="eyebrow">PORTFOLIO SUMMARY</div>
+        <h2>One project. Three signals to a recruiter.</h2>
+      </div>
+      <div class="cv-points">
+        <div><span>01</span><p><b>Finance:</b> crash risk, market regimes, backtesting and stress testing.</p></div>
+        <div><span>02</span><p><b>Data:</b> API ingestion, validation, feature engineering and visual analytics.</p></div>
+        <div><span>03</span><p><b>Risk technology:</b> model governance, auditability, fallback logic and deployment.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer section-shell">
+    <div><b>VMEWS</b><span>Research-to-production market risk portfolio demo</span></div>
+    <div class="footer-meta"><span id="footerFreshness">Data freshness: —</span><span>Not investment advice</span></div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
