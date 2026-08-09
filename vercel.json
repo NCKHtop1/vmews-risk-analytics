@@ -1,7 +1,25 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
+    }
+  },
   "headers": [
-    {"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"}]},
-    {"source":"/data/(.*)","headers":[{"key":"Cache-Control","value":"public, max-age=3600"}]}
+    {
+      "source": "/(.*)",
+      "headers": [
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
+      ]
+    },
+    {
+      "source": "/api",
+      "headers": [
+        {"key": "Cache-Control", "value": "s-maxage=300, stale-while-revalidate=900"}
+      ]
+    }
   ]
 }
