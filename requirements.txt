@@ -1,5 +1,3 @@
-numpy>=2.0
-pandas>=2.2
-requests>=2.32
-scikit-learn>=1.5
-torch>=2.4
+# Research model dependencies
+# This file is kept for local model experiments only.
+# Vercel deployment uses static frontend + Node serverless API.
