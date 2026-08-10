@@ -42,8 +42,6 @@ function startQuoteRefresh(){clearInterval(quoteTimer);quoteTimer=setInterval(re
 function renderQuote(){
   const rows=model.rows||[], last=rows.at(-1)||{}, prev=rows.at(-2)||last, q=model.quote||{};
   const live=Number.isFinite(Number(q.last))?Number(q.last):Number(last.close);
-  // Always derive the displayed move against the previous completed session. Vnstock
-  // providers can expose percentage fields in different scales, while prices are stable.
   const reference=Number(last.close)||Number(prev.close); const ch=reference?((live/reference)-1)*100:0;
   setText('livePrice',fmt.format(live));setText('liveChange',`${ch>=0?'+':''}${ch.toFixed(2)}%`);$('liveChange').className=`change ${ch>=0?'pos':'neg'}`;
   setText('quoteTime',q.time?String(q.time).replace('T',' ').slice(0,19):`EOD ${last.date||'—'}`);
@@ -85,3 +83,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   ['shockInput','volMultInput','volumeStressInput'].forEach(id=>$(id).addEventListener('input',stressScore));$('refreshBtn').addEventListener('click',loadModel);$('retryBtn').addEventListener('click',loadModel);
   let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderChart,120)});loadModel();
 });
+
+(()=>{if(!document.querySelector('script[src="./stock-radar-loader.js"]')){const s=document.createElement('script');s.src='./stock-radar-loader.js';document.head.appendChild(s)}})();
