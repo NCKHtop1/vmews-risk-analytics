@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "ignoreCommand": "[ \"$VERCEL_PROJECT_PRODUCTION_URL\" != \"vmews-risk-analytics-sojd.vercel.app\" ]",
   "regions": ["sin1"],
   "functions": {
     "api/ews.py": {
