@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#06111d"/>
+<meta name="description" content="VMEWS — live Vietnam Market Early Warning System using Vnstock market data, transparent risk analytics, historical analogs, model diagnostics and stress testing."/>
+<title>VMEWS 2.0 — Vietnam Market Early Warning System</title>
+<link rel="stylesheet" href="/ews-v2.css"/>
+<script src="/ews-v2.js" defer></script>
+</head>
+<body>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <a class="brand" href="#top"><span class="brand-mark">V</span><span><b>VMEWS 2.0</b><small>Vietnam Market Early Warning System</small></span></a>
+  <nav><a href="#warning">Warning</a><a href="#signals">Signals</a><a href="#model">Model</a><a href="#stress">Stress Lab</a><a href="#research">Research</a></nav>
+  <div class="top-actions"><span id="liveDot" class="live-dot"></span><span id="liveText">Connecting</span><button id="refreshBtn" class="btn secondary">Refresh</button></div>
+</header>
+<main id="top">
+<section class="hero shell">
+  <div>
+    <div class="eyebrow">LIVE MARKET RISK · VNINDEX · VNSTOCK</div>
+    <h1>Early warning that explains <span>what is changing</span>, how unusual it is, and what to review next.</h1>
+    <p class="lead">VMEWS combines live VN-Index data with an 8-year rolling historical training window, thesis-aligned crash diagnostics, historical analogs, chronological holdout validation and transparent risk drivers. It is a risk-monitoring system, not a price forecast.</p>
+    <div class="hero-actions"><a class="btn primary" href="#warning">Open warning console</a><button id="exportBtn" class="btn secondary">Export risk snapshot</button></div>
+    <div class="meta-row"><span><b id="coverageText">—</b> data coverage</span><span><b id="rowsText">—</b> daily observations</span><span><b id="modelAsOf">—</b> model as-of</span></div>
+  </div>
+  <aside class="hero-card card">
+    <div class="card-head"><span>LIVE TERMINAL</span><button class="info-btn" data-info="liveQuote" aria-label="Information">i</button></div>
+    <div class="quote-line"><div><small>VN-INDEX</small><strong id="livePrice">—</strong></div><span id="liveChange" class="delta">—</span></div>
+    <div class="quote-grid"><div><small>Model risk</small><b id="heroRisk">—</b></div><div><small>State</small><b id="heroState">—</b></div><div><small>Last close</small><b id="lastClose">—</b></div><div><small>Auto refresh</small><b>60 sec</b></div></div>
+    <canvas id="sparkChart" height="120"></canvas>
+    <p id="sourceLine" class="muted tiny">Loading Vnstock…</p>
+  </aside>
+</section>
+
+<section id="warning" class="shell block">
+  <div class="section-title"><div><span class="eyebrow">01 · EARLY WARNING CONSOLE</span><h2>Current risk state</h2><p>The headline score is a transparent operational EWS. The research ANFIS/VAE results are shown separately so live output is not presented as the original thesis model.</p></div><div class="model-pill"><span id="modelVersion">EWS-2.0</span><b id="dataQualityBadge">Checking data</b></div></div>
+  <div class="warning-grid">
+    <article class="score-card card">
+      <div class="card-head"><span>COMPOSITE EWS SCORE</span><button class="info-btn" data-info="riskScore">i</button></div>
+      <div id="riskRing" class="risk-ring"><div><strong id="riskScore">—</strong><span>/100</span></div></div>
+      <div class="state-row"><span id="stateLight" class="state-light"></span><strong id="riskState">Waiting for history</strong></div>
+      <p id="riskNarrative" class="risk-narrative">The model will explain the dominant risk drivers after the historical window is loaded.</p>
+      <div class="thresholds"><span>LOW</span><span>WATCH</span><span>HIGH</span><span>CRITICAL</span></div>
+    </article>
+    <article class="card horizon-card">
+      <div class="card-head"><span>FORWARD WARNING HORIZONS</span><button class="info-btn" data-info="horizons">i</button></div>
+      <div id="horizonGrid" class="horizon-grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      <p class="muted tiny">The analog stress rate is the share of the closest historical market states followed by a tail drawdown over that horizon. It is an empirical diagnostic, not a guaranteed probability.</p>
+    </article>
+    <article class="card crash-card">
+      <div class="card-head"><span>THESIS-ALIGNED CRASH TRIGGER</span><button class="info-btn" data-info="crashTrigger">i</button></div>
+      <div class="crash-metric"><small>Current 5-session log return</small><b id="weeklyReturn">—</b></div>
+      <div class="crash-metric"><small>3.09σ threshold</small><b id="crashThreshold">—</b></div>
+      <div class="crash-metric"><small>Distance from mean</small><b id="sigmaDistance">—</b></div>
+      <div id="crashTriggerStatus" class="status-box">Waiting for data</div>
+      <p class="muted tiny">This is a realized statistical trigger inspired by the thesis CRASH definition. It does not by itself forecast a future crash.</p>
+    </article>
+  </div>
+
+  <div class="alerts-playbook">
+    <article class="card">
+      <div class="card-head"><span>ACTIVE ALERTS</span><button class="info-btn" data-info="alerts">i</button></div>
+      <div id="alertsList" class="alerts-list"><div class="empty">Loading risk checks…</div></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span>RISK PLAYBOOK</span><button class="info-btn" data-info="playbook">i</button></div>
+      <div id="playbook" class="playbook"><div class="empty">Waiting for risk state…</div></div>
+    </article>
+  </div>
+</section>
+
+<section id="signals" class="shell block">
+  <div class="section-title"><div><span class="eyebrow">02 · SIGNAL DIAGNOSTICS</span><h2>Why is the system warning?</h2><p>Each driver is normalized against recent history. This makes the alert interpretable and lets the reviewer see whether risk comes from volatility, drawdown, momentum, trend break, shock intensity or stressed volume.</p></div></div>
+  <div id="driverGrid" class="driver-grid"></div>
+  <div class="chart-layout">
+    <article class="card chart-card"><div class="card-head"><span>VN-INDEX · FULL AVAILABLE HISTORY</span><button class="info-btn" data-info="historyChart">i</button></div><canvas id="priceChart" height="360"></canvas></article>
+    <article class="card chart-card"><div class="card-head"><span>EWS SCORE HISTORY</span><button class="info-btn" data-info="scoreHistory">i</button></div><canvas id="scoreChart" height="360"></canvas></article>
+  </div>
+  <div class="analogs-layout">
+    <article class="card"><div class="card-head"><span>CLOSEST HISTORICAL ANALOGS</span><button class="info-btn" data-info="analogs">i</button></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Similarity</th><th>20D return</th><th>20D max DD</th><th>Outcome</th></tr></thead><tbody id="analogRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div></article>
+    <article class="card"><div class="card-head"><span>DATA QUALITY</span><button class="info-btn" data-info="dataQuality">i</button></div><div id="qualityGrid" class="quality-grid"></div></article>
+  </div>
+</section>
+
+<section id="model" class="shell block">
+  <div class="section-title"><div><span class="eyebrow">03 · MODEL RELIABILITY</span><h2>Trust is earned with validation, lineage and limitations.</h2><p>The live operational engine uses chronological holdout testing to avoid training/test overlap. Research metrics from the thesis remain reference evidence and are never mixed into the live model score.</p></div></div>
+  <div class="metric-grid" id="backtestMetrics"></div>
+  <div class="model-layout">
+    <article class="card"><div class="card-head"><span>CHRONOLOGICAL HOLDOUT</span><button class="info-btn" data-info="holdout">i</button></div><div id="holdoutDetails" class="definition-list"></div></article>
+    <article class="card"><div class="card-head"><span>MODEL CARD</span><button class="info-btn" data-info="modelCard">i</button></div><div class="definition-list"><div><span>Version</span><b>EWS-2.0 transparent ensemble</b></div><div><span>Training window</span><b id="trainWindow">—</b></div><div><span>Features</span><b>Volatility · drawdown · momentum · MA trend · negative shock · volume stress</b></div><div><span>Target</span><b>Forward tail drawdown calibrated from historical 5th percentile</b></div><div><span>Validation</span><b>70% chronological calibration / 30% out-of-sample evaluation</b></div><div><span>Retraining</span><b>Recomputed from latest available daily history on refresh</b></div></div></article>
+  </div>
+  <article class="card calibration-card"><div class="card-head"><span>RISK BUCKET CALIBRATION</span><button class="info-btn" data-info="calibration">i</button></div><div id="calibrationBars" class="calibration-bars"></div></article>
+</section>
+
+<section id="stress" class="shell block">
+  <div class="section-title"><div><span class="eyebrow">04 · WHAT-IF STRESS LAB</span><h2>Translate market shocks into a reviewable risk impact.</h2><p>Stress Lab does not predict the shock. It lets a risk user test how current warning conditions would change under a hypothetical one-day move, volatility shock and liquidity/volume stress.</p></div></div>
+  <div class="stress-layout">
+    <article class="card controls-card">
+      <label>Hypothetical one-day return <b id="shockReturnLabel">-3.0%</b><input id="shockReturn" type="range" min="-12" max="4" step="0.5" value="-3"/></label>
+      <label>Volatility multiplier <b id="volMultiplierLabel">1.25×</b><input id="volMultiplier" type="range" min="0.75" max="3" step="0.05" value="1.25"/></label>
+      <label>Volume stress z-score <b id="volumeShockLabel">1.0σ</b><input id="volumeShock" type="range" min="-1" max="4" step="0.25" value="1"/></label>
+      <button id="resetStress" class="btn secondary">Reset scenario</button>
+    </article>
+    <article class="card stress-result"><div class="card-head"><span>PROJECTED EWS RESPONSE</span><button class="info-btn" data-info="stressLab">i</button></div><div class="stress-big"><strong id="stressScore">—</strong><span id="stressState">—</span></div><div id="stressDelta" class="stress-delta">—</div><div id="stressExplanation" class="stress-explain"></div></article>
+  </div>
+</section>
+
+<section id="research" class="shell block">
+  <div class="section-title"><div><span class="eyebrow">05 · RESEARCH BASIS</span><h2>What comes from the thesis — and what does not.</h2><p>The thesis developed an ANFIS + VAE EWM on Vietnam market data from 2007–2023, used a 3.09σ crash criterion, walk-forward retraining and reported strong classifier and stress-test results. Those figures are retained as research benchmarks only.</p></div></div>
+  <div class="research-grid">
+    <article class="card benchmark"><small>ANFIS ROC AUC</small><strong>0.970</strong><span>Thesis benchmark</span></article>
+    <article class="card benchmark"><small>Crash signals</small><strong>81</strong><span>Across 31 weeks, 2007–2023</span></article>
+    <article class="card benchmark"><small>20-day stress accuracy</small><strong>0.95</strong><span>Thesis-reported stress test</span></article>
+    <article class="card benchmark"><small>Research sample</small><strong>251</strong><span>HOSE stocks · 10 sectors</span></article>
+  </div>
+  <article class="card disclosure"><b>Operational-model disclosure</b><p>The original trained ANFIS/VAE weights, full raw research dataset and exact production hyperparameters are not contained in the thesis PDF. VMEWS therefore does not claim that its live score is the original ANFIS/VAE output. The live engine is an independently implemented, thesis-aligned and fully explainable risk system with its own out-of-sample diagnostics.</p></article>
+</section>
+</main>
+<footer class="shell footer"><span>VMEWS 2.0 · Vietnam Market Early Warning System</span><span id="footerStatus">Data status: —</span><span>Risk analytics only · not investment advice</span></footer>
+
+<div id="infoModal" class="modal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" data-close-modal>×</button><span class="eyebrow">INFORMATION</span><h3 id="modalTitle">About this metric</h3><div id="modalBody"></div></div></div>
+<div id="toast" class="toast"></div>
+</body>
+</html>
