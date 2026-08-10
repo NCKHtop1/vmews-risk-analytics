@@ -3,17 +3,13 @@ import pathlib
 import importlib.util
 import json
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, quote
 from urllib.request import Request, urlopen
 
-# ---------------------------------------------------------------------------
-# Vercel runtime bootstrap
-# ---------------------------------------------------------------------------
-# The deployed function filesystem is read-only except /tmp. Vnstock and some
-# transitive dependencies create cache/config files during import or requests,
-# so redirect every user/cache path BEFORE Vnstock is imported.
+# Vercel deployment files are read-only; /tmp is writable. Bootstrap all common
+# user/cache locations before importing Vnstock or any transitive dependency.
 os.environ["HOME"] = "/tmp"
 os.environ["USERPROFILE"] = "/tmp"
 os.environ["XDG_CACHE_HOME"] = "/tmp/.cache"
@@ -24,32 +20,28 @@ os.environ["PYTHONPYCACHEPREFIX"] = "/tmp/pycache"
 os.environ["JOBLIB_TEMP_FOLDER"] = "/tmp/joblib"
 
 for directory in (
-    "/tmp/.cache",
-    "/tmp/.config",
-    "/tmp/.local/share",
-    "/tmp/matplotlib",
-    "/tmp/pycache",
-    "/tmp/joblib",
+    "/tmp/.cache", "/tmp/.config", "/tmp/.local/share",
+    "/tmp/matplotlib", "/tmp/pycache", "/tmp/joblib",
 ):
     try:
         os.makedirs(directory, exist_ok=True)
     except Exception:
         pass
 
-# Some packages resolve the home folder via pathlib instead of $HOME.
+# Some libraries use pathlib.Path.home() rather than the HOME environment value.
 pathlib.Path.home = classmethod(lambda cls: cls("/tmp"))
 
-# Load the EWS core only after writable runtime paths are established.
+# Import the EWS core only after the writable runtime bootstrap is complete.
 core_path = pathlib.Path(__file__).with_name("ews.py")
 spec = importlib.util.spec_from_file_location("vmews_ews_core", core_path)
 core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
 
-WRAPPER_VERSION = "EWS-2.1.2"
+WRAPPER_VERSION = "EWS-2.1.3"
 YAHOO_SYMBOL = "^VNINDEX.VN"
 
 
-def _yahoo_json(range_value="8y"):
+def _yahoo_json(range_value="10y"):
     hosts = ("query1.finance.yahoo.com", "query2.finance.yahoo.com")
     last_error = None
     for host in hosts:
@@ -67,28 +59,28 @@ def _yahoo_json(range_value="8y"):
             result = payload.get("chart", {}).get("result", [None])[0]
             if result:
                 return result, host
-            err = payload.get("chart", {}).get("error")
-            last_error = RuntimeError(str(err or "Yahoo chart returned no result"))
+            last_error = RuntimeError(str(payload.get("chart", {}).get("error") or "No chart result"))
         except Exception as exc:
             last_error = exc
     raise RuntimeError(f"Yahoo fallback unavailable: {last_error}")
 
 
 def _yahoo_rows():
-    result, host = _yahoo_json("8y")
+    # Yahoo supports 10y natively; using it avoids a non-standard 8y range and
+    # supplies a longer resilience window if Vnstock is temporarily unavailable.
+    result, host = _yahoo_json("10y")
     timestamps = result.get("timestamp") or []
     indicators = result.get("indicators") or {}
-    quote_data = ((indicators.get("quote") or [{}])[0])
+    qd = (indicators.get("quote") or [{}])[0]
     rows = []
     for i, ts in enumerate(timestamps):
         try:
-            close = float((quote_data.get("close") or [])[i])
+            close = float((qd.get("close") or [])[i])
             if close <= 0:
                 continue
             def number(name, default):
                 try:
-                    value = (quote_data.get(name) or [])[i]
-                    value = float(value)
+                    value = float((qd.get(name) or [])[i])
                     return value if value == value else default
                 except Exception:
                     return default
@@ -106,6 +98,7 @@ def _yahoo_rows():
     rows, intraday_removed = core.strip_incomplete_session(rows)
     if len(rows) < 300:
         raise RuntimeError(f"Yahoo fallback returned only {len(rows)} valid daily rows")
+
     meta = result.get("meta") or {}
     quote_payload = None
     try:
@@ -127,7 +120,7 @@ def _yahoo_rows():
 def _payload_from_rows(rows, quote_payload, provider, primary_error):
     feats = core.build_features(rows)
     if not feats:
-        raise RuntimeError("No operational features could be built from fallback data")
+        raise RuntimeError("No operational features could be built from secondary data")
     current = feats[-1]
     horizons, nearest = core.analogs(rows, feats, current)
     bt = core.backtest(rows, feats)
@@ -137,14 +130,12 @@ def _payload_from_rows(rows, quote_payload, provider, primary_error):
         "invalidRemoved": 0,
         "intradayBarExcluded": False,
         "strategy": "secondary provider after Vnstock failure",
-        "requests": [{
-            "type": "secondary-provider",
-            "ok": True,
-            "rows": len(rows),
-            "provider": provider,
-        }],
+        "requests": [{"type": "secondary-provider", "ok": True, "rows": len(rows), "provider": provider}],
     }
     dq = core.data_quality(rows, meta)
+    # A secondary provider may be fresh and internally valid, but it is still a
+    # failover condition. Mark REVIEW so the frontend cannot label it VNSTOCK LIVE.
+    dq["status"] = "REVIEW"
     return {
         "version": WRAPPER_VERSION,
         "symbol": "VNINDEX",
@@ -191,12 +182,7 @@ def _full_payload():
         return payload
     except Exception as primary_error:
         rows, q, host, intraday_removed = _yahoo_rows()
-        payload = _payload_from_rows(
-            rows,
-            q,
-            f"Yahoo Finance ({host}) · {YAHOO_SYMBOL}",
-            primary_error,
-        )
+        payload = _payload_from_rows(rows, q, f"Yahoo Finance ({host}) · {YAHOO_SYMBOL}", primary_error)
         payload["dataQuality"]["intradayBarExcluded"] = intraday_removed
         return payload
 
@@ -233,9 +219,7 @@ def _quote_payload():
 
 class handler(BaseHTTPRequestHandler):
     def _json(self, code, payload, cache):
-        raw = json.dumps(
-            payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False
-        ).encode("utf-8")
+        raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -252,8 +236,6 @@ class handler(BaseHTTPRequestHandler):
             else:
                 self._json(200, _full_payload(), "s-maxage=180, stale-while-revalidate=300")
         except Exception as exc:
-            # Both primary and secondary sources failed. Return a structured error,
-            # never an opaque runtime stack trace or filesystem error.
             self._json(503, {
                 "error": "VMEWS_ALL_PROVIDERS_UNAVAILABLE",
                 "message": str(exc),
