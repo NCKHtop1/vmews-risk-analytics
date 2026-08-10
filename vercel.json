@@ -10,23 +10,18 @@
     "api/stocks.py": {
       "maxDuration": 30,
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
+    },
+    "api/stocks2.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
     }
   },
   "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {"key": "X-Content-Type-Options", "value": "nosniff"},
-        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
-      ]
-    },
-    {
-      "source": "/api/ews",
-      "headers": [{"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}]
-    },
-    {
-      "source": "/api/stocks",
-      "headers": [{"key": "Cache-Control", "value": "s-maxage=120, stale-while-revalidate=240"}]
-    }
+    {"source": "/(.*)", "headers": [
+      {"key": "X-Content-Type-Options", "value": "nosniff"},
+      {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
+    ]},
+    {"source": "/api/ews", "headers": [{"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}]},
+    {"source": "/api/stocks2", "headers": [{"key": "Cache-Control", "value": "s-maxage=90, stale-while-revalidate=180"}]}
   ]
 }
