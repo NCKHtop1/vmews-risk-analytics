@@ -1,0 +1,200 @@
+(()=>{
+const API='/api/stocks2', VALIDATE_API='/api/validate';
+const $=id=>document.getElementById(id);
+const F=new Intl.NumberFormat('en-US',{maximumFractionDigits:2});
+const pct=(x,d=1)=>Number.isFinite(Number(x))?`${(Number(x)*100).toFixed(d)}%`:'—';
+const num=(x,d=0)=>Number.isFinite(Number(x))?Number(x).toFixed(d):'—';
+let scan=null, detail=null, validation=null;
+const modLabels={technical:'Technical deterioration',analog:'Historical analog stress',market:'VNINDEX regime',macro:'Macro / cross-asset',sentiment:'News sentiment',fundamental:'Financial fragility'};
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function api(url,timeout=58000){
+  const ctrl=new AbortController(), timer=setTimeout(()=>ctrl.abort(),timeout);
+  try{
+    const r=await fetch(url,{cache:'no-store',signal:ctrl.signal}),t=await r.text();
+    let p;try{p=JSON.parse(t)}catch{throw Error(`Invalid API response (${r.status})`)}
+    if(!r.ok)throw Error(p.message||p.error||`HTTP ${r.status}`);
+    return p;
+  }catch(e){
+    if(e.name==='AbortError')throw Error('Request timed out. Retry once; if it repeats, reduce the watchlist or date range.');
+    throw e;
+  }finally{clearTimeout(timer)}
+}
+function setStatus(msg,kind=''){const e=$('radarStatus');if(e){e.textContent=msg;e.className=`radar-status ${kind}`}}
+function colorChip(x){
+  const c=String(x.color||'GREEN').toLowerCase(),score=Math.round(x.effectiveScore??x.score??0);
+  const label=c==='red'?'RED · ESCALATE':c==='yellow'?'YELLOW · WATCH':c==='gray'?'ACTIVE DRAWDOWN':'GREEN · NORMAL';
+  return `<span class="radar-state ${c}">${label} · ${score}</span>`;
+}
+function listChips(id,items){
+  const e=$(id);if(!e)return;
+  e.innerHTML=items?.length?items.map(x=>`<button class="watch-chip ${String(x.color||'').toLowerCase()}" data-symbol="${esc(x.symbol)}"><b>${esc(x.symbol)}</b><span>${Math.round(x.effectiveScore??x.score??0)}</span></button>`).join(''):'<span class="radar-empty">None</span>';
+}
+function moduleScore(item,k){const m=item.modules?.[k];return m?.available===false?'N/A':Math.round(m?.score??0)}
+function moduleLevel(m){if(!m||m.available===false)return 'Not available';const s=Number(m.score||0);return s>=70?'High risk evidence':s>=55?'Elevated evidence':s>=40?'Moderate evidence':'Low evidence'}
+function marketBand(score){score=Number(score||0);return score>=70?['HIGH','red']:score>=55?['ELEVATED','yellow']:['NORMAL','green']}
+
+function renderMarket(){
+  const m=scan?.market||{},score=Number(m.score||0),[band,cls]=marketBand(score);
+  $('marketRiskScore').textContent=Math.round(score);$('marketRiskState').textContent=band;$('marketRiskState').className=cls;
+  $('marketRiskDetail').textContent=`VNINDEX technical ${Math.round(m.technical||0)}/100 · 20D analog tail-event rate ${m.analog20?.rate==null?'N/A':pct(m.analog20.rate)}. Market regime is a context amplifier, not a single-name trading signal.`;
+  $('marketRiskMeta').innerHTML=`<span>Model date <b>${esc(m.date||'—')}</b></span><span>Analog matches <b>${m.analog20?.matches??'—'}</b></span>`;
+}
+function renderPriority(){
+  const r=scan?.redList?.length||0,y=scan?.yellowList?.length||0,g=scan?.greenList?.length||0,d=scan?.activeDrawdown?.length||0;
+  let h='No escalation signal in current watchlist',t='Maintain normal monitoring and review again when new completed market data arrive.';
+  if(r){h=`${r} name${r>1?'s':''} require escalation`;t='Review concentration, new-risk approval and downside stress for RED names first.'}
+  else if(y){h=`${y} name${y>1?'s':''} on enhanced watch`;t='Increase monitoring and review whether limits, liquidity and concentration remain appropriate.'}
+  else if(d){h=`${d} name${d>1?'s':''} already in active drawdown`;t='Use loss-containment controls. This is not a pre-crash early-warning state.'}
+  $('priorityHeadline').textContent=h;$('priorityText').textContent=t;
+  $('priorityCounts').innerHTML=`<span class="red">RED <b>${r}</b></span><span class="yellow">YELLOW <b>${y}</b></span><span class="green">GREEN <b>${g}</b></span><span>DRAW <b>${d}</b></span>`;
+}
+function renderScan(){
+  if(!scan)return;renderMarket();renderPriority();
+  $('radarAsOf').textContent=`${scan.scanned}/${scan.requestedSymbols?.length||0} names · ${new Date(scan.asOf).toLocaleString()}`;
+  listChips('redList',scan.redList||[]);listChips('yellowList',scan.yellowList||[]);listChips('greenList',scan.greenList||[]);listChips('activeDrawdown',scan.activeDrawdown||[]);
+  const body=$('radarRows');body.innerHTML='';
+  for(const x of scan.ranking||[]){
+    const live=x.quote?.last,display=Number.isFinite(Number(live))?`${F.format(x.close)} → ${F.format(live)}`:F.format(x.close);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><button class="symbol-btn" data-symbol="${esc(x.symbol)}"><b>${esc(x.symbol)}</b><small>${esc(x.name)}</small></button></td><td>${colorChip(x)}</td><td><b>${Math.round(x.effectiveScore??x.score)}</b></td><td>${display}</td><td class="${x.ret5<0?'neg':'pos'}">${pct(x.ret5)}</td><td>${moduleScore(x,'technical')}</td><td>${moduleScore(x,'analog')}</td><td>${moduleScore(x,'market')}</td><td>${Math.round((x.confidence||0)*100)}%</td><td class="radar-reason">${esc((x.reasons||[]).join(' · ')||'Price/market pre-screen')}</td>`;
+    body.appendChild(tr);
+  }
+  if(!body.children.length)body.innerHTML='<tr><td colspan="10">No usable securities returned for this request.</td></tr>';
+  const m=scan.macro?.factors||{};$('macroTape').innerHTML=Object.entries(m).map(([k,v])=>`<div><span>${esc(k)}</span><b>${F.format(v.last)}</b><small>20D ${pct(v.ret20)}</small></div>`).join('');
+}
+async function loadScan(){
+  const btn=$('radarRefresh'),symbols=($('scanSymbols')?.value||'').split(',').map(x=>x.trim().toUpperCase()).filter(Boolean).slice(0,8).join(',');
+  setStatus('Requesting current risk states from Vnstock…','loading');if(btn)btn.disabled=true;
+  try{scan=await api(`${API}?mode=scan&symbols=${encodeURIComponent(symbols)}&t=${Date.now()}`);renderScan();setStatus(`Risk radar ready · ${scan.version}`,'ok')}
+  catch(e){setStatus(e.message,'error');if($('radarRows'))$('radarRows').innerHTML=`<tr><td colspan="10">${esc(e.message)}</td></tr>`}
+  finally{if(btn)btn.disabled=false}
+}
+
+function renderModules(){
+  const root=$('detailModules');root.innerHTML='';
+  for(const k of ['technical','analog','market','macro','sentiment','fundamental']){
+    const m=detail.modules?.[k]||{},score=m.available===false?null:Number(m.score);
+    root.insertAdjacentHTML('beforeend',`<article class="module-card ${score!=null&&score>=70?'hot':score!=null&&score>=55?'warm':''}"><div><span>${modLabels[k]}</span><button class="radar-info" data-radar-info="${k}">i</button></div><strong>${score==null?'N/A':Math.round(score)}</strong><small>${score==null?esc(m.reason||m.note||'Unavailable / excluded from weighted score'):moduleLevel(m)}</small></article>`);
+  }
+}
+function renderDetailChart(){
+  const c=$('stockDetailChart');if(!c||!detail)return;const rows=detail.history||[],scores=new Map((detail.scoreHistory||[]).map(x=>[x.date,x.technical]));
+  const r=c.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1),w=Math.max(500,Math.floor(r.width||760)),h=330;c.width=w*d;c.height=h*d;
+  const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);if(rows.length<2)return;
+  const p={l:12,r:52,t:15,b:28},vals=rows.map(x=>x.close),mi=Math.min(...vals),ma=Math.max(...vals),rg=ma-mi||1;
+  const X=i=>p.l+(w-p.l-p.r)*i/(rows.length-1),Y=v=>p.t+(h-p.t-p.b)*(1-(v-mi)/rg),YS=s=>p.t+(h-p.t-p.b)*(1-s/100);
+  ctx.strokeStyle='#163149';ctx.fillStyle='#70869b';ctx.font='10px monospace';
+  for(let j=0;j<=4;j++){let y=p.t+(h-p.t-p.b)*j/4;ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(w-p.r,y);ctx.stroke();ctx.fillText(Math.round(ma-rg*j/4),w-p.r+5,y+3)}
+  ctx.beginPath();rows.forEach((x,i)=>i?ctx.lineTo(X(i),Y(x.close)):ctx.moveTo(X(i),Y(x.close)));ctx.strokeStyle='#48d9ff';ctx.lineWidth=1.7;ctx.stroke();
+  ctx.beginPath();let st=false;rows.forEach((x,i)=>{const s=scores.get(x.date);if(!Number.isFinite(s))return;st?ctx.lineTo(X(i),YS(s)):ctx.moveTo(X(i),YS(s));st=true});ctx.strokeStyle='#ffc95d';ctx.lineWidth=1.4;ctx.stroke();
+}
+function horizonBand(x){if(!x||x.available===false||x.rate==null)return ['N/A','neutral'];const s=Number(x.score||0);return s>=70?['HIGH','red']:s>=50?['ELEVATED','yellow']:['NORMAL','green']}
+function renderHorizons(){
+  const hz=$('stockHorizons');hz.innerHTML='';
+  for(const k of ['5','20','60']){
+    const x=detail.horizons?.[k]||{},[band,cls]=horizonBand(x);
+    hz.insertAdjacentHTML('beforeend',`<article class="qtrr-horizon ${cls}"><div><span>${k} TRADING DAYS</span><b>${band}</b></div><strong>${x.rate==null?'N/A':pct(x.rate)}</strong><small>Historical tail-event rate among ${x.matches||0} matched states</small><p>Tail threshold ${x.threshold==null?'—':pct(x.threshold)} · analog score ${x.available===false?'N/A':Math.round(x.score||0)}/100</p></article>`);
+  }
+}
+function renderReplay(){
+  const root=$('crashReplay');root.innerHTML='';const ev=detail.crashReplay||[];
+  if(!ev.length){root.innerHTML='<div class="radar-empty">No qualifying historical ≥12% 20-session drawdown episode is fully observable inside the point-in-time replay history.</div>';return}
+  for(const e of ev.slice(0,5))root.insertAdjacentHTML('beforeend',`<article class="replay-card"><header><div><b>${e.signalDate}</b><span>Realized next-20-session drawdown ${pct(e.forwardDrawdown20)}</span></div><button class="replay-use" data-asof="${e.signalDate}">Freeze model here</button></header><div class="replay-steps">${(e.preSignals||[]).map(s=>`<div><small>T-${s.lead}</small><b>${s.date}</b><span>Technical risk ${Math.round(s.technical)}</span><em>${F.format(s.close)}</em></div>`).join('')}</div></article>`);
+}
+function renderReplaySummary(){
+  const ev=detail.crashReplay||[],root=$('validationSummary');
+  if(!ev.length){$('validationHeadline').textContent='No completed replay episodes';root.innerHTML='<p>Extend the history before using descriptive pre-drawdown replay.</p>';return}
+  const leads=[20,10,5,0].map(lead=>{const vals=ev.flatMap(e=>(e.preSignals||[]).filter(s=>s.lead===lead).map(s=>Number(s.technical))).filter(Number.isFinite);return {lead,avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null,n:vals.length}});
+  $('validationHeadline').textContent=`${ev.length} completed drawdown episode${ev.length>1?'s':''} in replay`;
+  root.innerHTML=`<p>Descriptive replay only. Predictive performance is measured separately in the chronological holdout below.</p><div class="validation-metrics">${leads.map(x=>`<div><span>T-${x.lead}</span><b>${x.avg==null?'—':Math.round(x.avg)}</b><small>avg technical risk · n=${x.n}</small></div>`).join('')}</div>`;
+}
+function metricCell(label,v,asPct=true){return `<div><span>${label}</span><b>${v==null?'—':asPct?pct(v):num(v,2)}</b></div>`}
+function renderHoldout(){
+  const root=$('holdoutValidation');if(!root)return;
+  if(!validation){root.innerHTML='<div class="radar-empty">Run holdout validation to measure out-of-sample screening performance for this security.</div>';return}
+  if(validation.status!=='OK'){root.innerHTML=`<article class="holdout-result limited"><h4>INSUFFICIENT VALIDATION</h4><p>${esc(validation.reason||'Not enough point-in-time samples.')}</p></article>`;return}
+  const h=validation.holdout||{},m=h.metrics||{},c=validation.calibration||{},cls=String(validation.verdict||'').toLowerCase();
+  root.innerHTML=`<article class="holdout-result ${cls}"><div class="holdout-top"><div><small>STRUCTURAL EWS · CHRONOLOGICAL HOLDOUT</small><h4>${esc(validation.verdict)}</h4><p>${esc(validation.note)}</p></div><div><span>Calibrated threshold</span><b>${m.threshold??'—'}/100</b></div></div>
+    <div class="holdout-dates"><span>Calibration <b>${esc(c.from||'—')} → ${esc(c.to||'—')}</b></span><span>Holdout <b>${esc(h.from||'—')} → ${esc(h.to||'—')}</b></span><span>Event <b>${esc(validation.eventDefinition)}</b></span></div>
+    <div class="holdout-metrics">${metricCell('Precision',m.precision)}${metricCell('Recall / capture',m.recall)}${metricCell('F1',m.f1)}${metricCell('False-alarm rate',m.falsePositiveRate)}${metricCell('AUC',m.auc,false)}${metricCell('Holdout prevalence',h.prevalence)}</div>
+    <div class="holdout-confusion"><span>TP <b>${m.tp??'—'}</b></span><span>FP <b>${m.fp??'—'}</b></span><span>FN <b>${m.fn??'—'}</b></span><span>TN <b>${m.tn??'—'}</b></span><span>Warnings <b>${m.warnings??'—'}</b></span><span>Events <b>${m.events??'—'}</b></span></div>
+    <p class="holdout-note"><b>Scope:</b> ${esc(validation.scoreDefinition)}. Full six-module historical validation is not claimed because dated news/fundamental vintages are not consistently available point-in-time. This test is for model-risk evidence and escalation calibration, not an automatic trade rule.</p></article>`;
+}
+async function loadHoldout(){
+  const btn=$('runValidationBtn'),symbol=($('symbolInput')?.value||detail?.symbol||'FPT').toUpperCase().trim();
+  const limit=$('asOfDate')?.value||$('toDate')?.value||'';
+  if(btn){btn.disabled=true;btn.textContent='Running holdout…'}
+  const root=$('holdoutValidation');if(root)root.innerHTML='<div class="radar-empty">Building point-in-time samples and testing the chronological holdout…</div>';
+  try{
+    let u=`${VALIDATE_API}?symbol=${encodeURIComponent(symbol)}&t=${Date.now()}`;if(limit)u+=`&to=${encodeURIComponent(limit)}`;
+    validation=await api(u,58000);renderHoldout();
+  }catch(e){if(root)root.innerHTML=`<article class="holdout-result weak"><h4>VALIDATION FAILED</h4><p>${esc(e.message)}</p></article>`}
+  finally{if(btn){btn.disabled=false;btn.textContent='Run holdout validation'}}
+}
+function renderNews(){const root=$('stockNews');root.innerHTML='';const news=detail.news||[];if(!news.length){root.innerHTML='<div class="radar-empty">No usable headlines returned in the selected sentiment window.</div>';return}for(const x of news)root.insertAdjacentHTML('beforeend',`<a class="news-row" href="${esc(x.link)}" target="_blank" rel="noopener"><span class="sent-dot ${x.sentiment<0?'neg-bg':x.sentiment>0?'pos-bg':''}"></span><div><b>${esc(x.title)}</b><small>${esc(x.published)}</small></div></a>`)}
+function renderFund(){const v=detail.fundamentals||{},root=$('fundMetrics');root.innerHTML=Object.entries(v).map(([k,x])=>`<div><span>${esc(k)}</span><b>${x==null?'—':num(x,2)}</b></div>`).join('')||'<div class="radar-empty">Point-in-time fundamental fields unavailable.</div>'}
+function renderAudit(){
+  const root=$('detailAudit'),q=detail.dataQuality||{},req=detail.request||{},src=detail.source||{};
+  root.innerHTML=`<div><b>Request</b><span>${req.from} → ${req.to}${req.asOf?' · as-of '+req.asOf:''}</span></div><div><b>Model date</b><span>${detail.modelAsOf||'—'}</span></div><div><b>Vnstock rows</b><span>${q.rows||0} · coverage ${(Number(q.coverageRatio||0)*100).toFixed(1)}% · ${q.status}</span></div><div><b>Price</b><span>${esc(src.price||'—')}</span></div><div><b>Market</b><span>${esc(src.market||'—')}</span></div><div><b>Fundamental</b><span>${esc(src.fundamental||'—')}</span></div><div><b>News</b><span>${esc(src.sentiment||'—')}</span></div><div><b>Macro</b><span>${esc(src.macro||'—')}</span></div>`;
+}
+function actionPolicy(){
+  const c=String(detail.color||'GREEN'),phase=String(detail.phase||'');
+  if(phase==='ACTIVE_DRAWDOWN'||c==='GRAY')return {level:'LOSS CONTAINMENT',class:'gray',stance:'The security is already in a deep drawdown; manage remaining downside and liquidity rather than calling this an early-warning success.',freq:'Intraday / daily until loss dynamics stabilize',checks:['Freeze automatic risk increases until review','Reassess liquidity and exit capacity under stress','Review single-name and sector concentration','Re-run downside stress and loss-limit consumption','Escalate material limit breaches under the institution’s policy']};
+  if(c==='RED')return {level:'ESCALATE',class:'red',stance:'Risk deterioration is broad enough to require a formal exposure review.',freq:'Daily; intraday after material price/news shocks',checks:['No increase in exposure without explicit risk review','Review concentration and available loss capacity','Run -10% / -15% single-name stress against portfolio limits','Check whether market, technical and event risk reinforce each other','Document escalation owner, decision and next review date']};
+  if(c==='YELLOW')return {level:'ENHANCED WATCH',class:'yellow',stance:'Deterioration is visible but evidence is not strong enough for RED escalation.',freq:'Daily',checks:['Avoid passive risk accumulation before review','Check concentration, liquidity and correlation to other watch names','Re-run 5/20/60D evidence after new completed data','Review material news and fundamental changes','Define the condition that would move the name to RED']};
+  return {level:'NORMAL MONITORING',class:'green',stance:'No escalation threshold is currently met.',freq:'Normal daily monitoring',checks:['Maintain approved limits','Continue market and event monitoring','Reassess if volatility, trend or analog stress deteriorates','Do not infer low risk from GREEN when module/data coverage is weak']};
+}
+function renderActions(){
+  const p=actionPolicy(),root=$('riskActionPanel');root.className=`card qtrr-action-panel ${p.class}`;
+  root.innerHTML=`<div class="qtrr-action-top"><div><small>QTRR RESPONSE LEVEL</small><h3>${p.level}</h3><p>${p.stance}</p></div><div><span>Composite risk</span><b>${Math.round(detail.effectiveScore||detail.score||0)}/100</b><span>Module coverage</span><b>${Math.round((detail.confidence||0)*100)}%</b></div></div><div class="qtrr-action-grid"><div><span>Monitoring cadence</span><b>${p.freq}</b></div><div><span>Decision rule</span><b>Risk review, not an automatic trade</b></div></div><h4>Controls to review</h4><ul>${p.checks.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+}
+function renderDetail(){
+  $('detailPanel').hidden=false;
+  $('detailTitle').textContent=`${detail.symbol} · ${detail.name}`;
+  $('detailMeta').textContent=`Request ${detail.request.from} → ${detail.request.to}${detail.request.asOf?' · frozen as-of '+detail.request.asOf:''} · model ${detail.modelAsOf} · module coverage ${Math.round(detail.confidence*100)}%`;
+  $('detailState').innerHTML=colorChip(detail);$('detailReasons').textContent=(detail.reasons||[]).join(' · ');
+  const c=detail.current||{},o=detail.liveOverlay||{};
+  $('detailSnapshot').innerHTML=`<div><span>Composite risk</span><b>${Math.round(detail.effectiveScore??detail.score)}/100</b></div><div><span>EOD close</span><b>${F.format(c.close)}</b></div><div><span>Live overlay</span><b>${o.available?F.format(o.last):'—'}</b></div><div><span>20D momentum</span><b class="${c.mom20<0?'neg':'pos'}">${pct(c.mom20)}</b></div><div><span>60D drawdown</span><b class="${c.dd60<0?'neg':'pos'}">${pct(c.dd60)}</b></div><div><span>RSI 14</span><b>${num(c.rsi14,1)}</b></div>`;
+  validation=null;renderModules();renderHorizons();renderReplaySummary();renderReplay();renderHoldout();renderActions();renderNews();renderFund();renderAudit();
+  requestAnimationFrame(renderDetailChart);$('detailPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function loadDetail(symbol,asof=null){
+  symbol=(symbol||$('symbolInput').value||'FPT').toUpperCase().trim();$('symbolInput').value=symbol;
+  const start=$('fromDate').value,end=$('toDate').value,a=asof||$('asOfDate').value;
+  setStatus(`Running point-in-time risk analysis for ${symbol}…`,'loading');
+  let u=`${API}?mode=detail&symbol=${encodeURIComponent(symbol)}`;if(a)u+=`&asof=${a}`;if(start)u+=`&from=${start}`;if(end)u+=`&to=${end}`;u+=`&t=${Date.now()}`;
+  try{detail=await api(u);renderDetail();setStatus(`${symbol} · ${detail.color} · risk ${Math.round(detail.effectiveScore)}/100`,'ok')}catch(e){setStatus(e.message,'error')}
+}
+const info={
+ request:'Each request fetches Vnstock data for the selected security and window plus warm-up history required for MA200 and analog matching. Historical as-of runs cannot use observations after the frozen date.',
+ technical:'Price/volume deterioration: drawdown, momentum, MA50/MA200 gaps, volatility regime, RSI, MACD and volume-confirmed selling.',
+ analog:'Nearest historical states using technical-state distance. Tail-event rate is the observed fraction of matched past states followed by a severe drawdown; it is not a calibrated forecast probability.',
+ market:'VNINDEX regime combines broad-market technical stress and historical analog evidence. It changes the context in which a single-name warning is interpreted.',
+ macro:'Cross-asset background stress from VIX, USD/VND, DXY, US 10Y and Brent. These factors are context, not proof of causality.',
+ sentiment:'Headline-based news sentiment inside the request window. Missing headlines are excluded rather than converted into artificial neutral evidence.',
+ fundamental:'Current Vnstock financial ratios when available. Historical fundamentals are excluded when reliable publication-date vintages are unavailable, preventing look-ahead bias.'
+};
+function showInfo(k){$('radarInfoTitle').textContent=modLabels[k]||'Request-driven risk model';$('radarInfoBody').textContent=info[k]||info.request;$('radarInfoDialog').showModal()}
+function setDefaultDates(){
+  const today=new Date(),to=today.toISOString().slice(0,10),from=new Date(today);from.setFullYear(from.getFullYear()-3);
+  if(!$('toDate').value)$('toDate').value=to;if(!$('fromDate').value)$('fromDate').value=from.toISOString().slice(0,10);
+}
+function init(){
+  if(window.__VMEWS_QTRR_INIT__)return;window.__VMEWS_QTRR_INIT__=true;
+  setDefaultDates();
+  $('radarRefresh')?.addEventListener('click',loadScan);
+  $('runStockBtn')?.addEventListener('click',()=>loadDetail());
+  $('runValidationBtn')?.addEventListener('click',loadHoldout);
+  $('fptReplay')?.addEventListener('click',()=>loadDetail('FPT'));
+  $('pnjReplay')?.addEventListener('click',()=>loadDetail('PNJ'));
+  document.addEventListener('click',e=>{
+    const s=e.target.closest('[data-symbol]');if(s)loadDetail(s.dataset.symbol);
+    const r=e.target.closest('[data-asof]');if(r)loadDetail(detail?.symbol,r.dataset.asof);
+    const i=e.target.closest('[data-radar-info]');if(i)showInfo(i.dataset.radarInfo);
+  });
+  window.addEventListener('resize',()=>detail&&renderDetailChart());
+  loadScan();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
