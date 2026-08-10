@@ -3,13 +3,9 @@
   "cleanUrls": true,
   "regions": ["sin1"],
   "rewrites": [
-    {"source": "/api/ews", "destination": "/api/final"}
+    {"source": "/api/ews", "destination": "/api/live"}
   ],
   "functions": {
-    "api/final.py": {
-      "maxDuration": 30,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    },
     "api/live.py": {
       "maxDuration": 30,
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
