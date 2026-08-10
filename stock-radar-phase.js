@@ -1,0 +1,9 @@
+(()=>{
+const original=window.fetch.bind(window);
+const phaseLabel=p=>({PRE_CRASH_RED:'PRE-CRASH RED',PRE_CRASH_GOLD:'PRE-CRASH GOLD',ACTIVE_DRAWDOWN:'ACTIVE DRAWDOWN',RECOVERY:'RECOVERY',NORMAL:'NORMAL'}[p]||p||'NORMAL');
+const phaseClass=p=>p==='PRE_CRASH_RED'?'red':p==='PRE_CRASH_GOLD'?'gold':p==='ACTIVE_DRAWDOWN'?'drawdown':p==='RECOVERY'?'recovery':'clear';
+function chips(id,items){const e=document.getElementById(id);if(!e)return;e.innerHTML=(items||[]).length?(items||[]).map(x=>`<button class="watch-chip ${phaseClass(x.phase)}" data-symbol="${x.symbol}"><b>${x.symbol}</b><span>${Math.round(x.score||0)}</span></button>`).join(''):'<span class="radar-empty">None detected in the current enriched coverage set.</span>'}
+function applyScan(p){setTimeout(()=>{chips('redList',p.redList);chips('goldList',p.goldList);chips('activeDrawdown',p.activeDrawdown);for(const x of p.ranking||[]){const tr=document.querySelector(`#radarRows tr[data-symbol="${x.symbol}"]`);if(!tr||!tr.cells[1])continue;tr.cells[1].innerHTML=`<span class="radar-state ${phaseClass(x.phase)}">${phaseLabel(x.phase)} · ${Math.round(x.score||0)}</span>`}},60)}
+function applyDetail(p){setTimeout(()=>{const e=document.getElementById('detailState');if(e)e.innerHTML=`<span class="radar-state ${phaseClass(p.phase)}">${phaseLabel(p.phase)} · ${Math.round(p.score||0)}</span>`;const m=document.getElementById('detailMeta');if(m)m.textContent=`Model as-of ${p.modelAsOf} · phase ${phaseLabel(p.phase)} · evidence coverage ${Math.round((p.confidence||0)*100)}% · ${p.version}`},60)}
+window.fetch=async(...args)=>{let u=String(args[0]||'');if(u.includes('/api/stocks?')){u=u.replace('/api/stocks?','/api/stocks2?');args[0]=u}const r=await original(...args);try{if(u.includes('/api/stocks2')){r.clone().json().then(p=>{if(p&&Array.isArray(p.ranking))applyScan(p);else if(p&&p.symbol&&p.current)applyDetail(p)}).catch(()=>{})}}catch{}return r};
+})();
