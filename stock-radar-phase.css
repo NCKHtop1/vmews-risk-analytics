@@ -1,0 +1,5 @@
+.watch-summary-three{grid-template-columns:repeat(3,1fr)}
+.watch-chip.drawdown,.radar-state.drawdown{border-color:#8b3341;background:#35151c;color:#ff96a4}
+.watch-chip.recovery,.radar-state.recovery{border-color:#286451;background:#0d2922;color:#70e5b4}
+.radar-state.gold{color:#ffd67e;border-color:#725b2a;background:#2c2312}.radar-state.red{color:#ff8d9d;border-color:#76323f;background:#2d141a}
+@media(max-width:1000px){.watch-summary-three{grid-template-columns:1fr 1fr}}@media(max-width:640px){.watch-summary-three{grid-template-columns:1fr}}
