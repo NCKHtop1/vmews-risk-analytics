@@ -6,6 +6,10 @@
     "api/ews.py": {
       "maxDuration": 30,
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
+    },
+    "api/stocks.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
     }
   },
   "headers": [
@@ -18,9 +22,11 @@
     },
     {
       "source": "/api/ews",
-      "headers": [
-        {"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}
-      ]
+      "headers": [{"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}]
+    },
+    {
+      "source": "/api/stocks",
+      "headers": [{"key": "Cache-Control", "value": "s-maxage=120, stale-while-revalidate=240"}]
     }
   ]
 }
