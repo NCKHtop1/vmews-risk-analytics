@@ -2,9 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "regions": ["sin1"],
-  "rewrites": [
-    {"source": "/", "destination": "/dashboard.html"}
-  ],
   "functions": {
     "api/ews.py": {
       "maxDuration": 30,
@@ -26,7 +23,7 @@
     {
       "source": "/api/(.*)",
       "headers": [
-        {"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=300"}
+        {"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}
       ]
     }
   ]
