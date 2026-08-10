@@ -13,7 +13,7 @@
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
     },
     "api/stocks2.py": {
-      "maxDuration": 30,
+      "maxDuration": 60,
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
     }
   },
