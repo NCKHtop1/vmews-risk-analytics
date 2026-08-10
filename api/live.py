@@ -8,8 +8,13 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, quote
 from urllib.request import Request, urlopen
 
-# Vercel deployment files are read-only; /tmp is writable. Bootstrap all common
-# user/cache locations before importing Vnstock or any transitive dependency.
+# ---------------------------------------------------------------------------
+# Vercel + Vnstock writable-runtime bootstrap
+# ---------------------------------------------------------------------------
+# Official Vnstock source prioritizes VNSTOCK_DATA_DIR. Vercel Functions expose
+# /tmp as writable storage while the deployed filesystem and user home are
+# read-only, so configure this before importing the Vnstock model core.
+os.environ["VNSTOCK_DATA_DIR"] = "/tmp/.vnstock"
 os.environ["HOME"] = "/tmp"
 os.environ["USERPROFILE"] = "/tmp"
 os.environ["XDG_CACHE_HOME"] = "/tmp/.cache"
@@ -20,6 +25,7 @@ os.environ["PYTHONPYCACHEPREFIX"] = "/tmp/pycache"
 os.environ["JOBLIB_TEMP_FOLDER"] = "/tmp/joblib"
 
 for directory in (
+    "/tmp/.vnstock", "/tmp/.vnstock/id",
     "/tmp/.cache", "/tmp/.config", "/tmp/.local/share",
     "/tmp/matplotlib", "/tmp/pycache", "/tmp/joblib",
 ):
@@ -28,16 +34,16 @@ for directory in (
     except Exception:
         pass
 
-# Some libraries use pathlib.Path.home() rather than the HOME environment value.
+# Defensive compatibility for dependencies that still call Path.home().
 pathlib.Path.home = classmethod(lambda cls: cls("/tmp"))
 
-# Import the EWS core only after the writable runtime bootstrap is complete.
+# Load the EWS core only after writable Vnstock paths are established.
 core_path = pathlib.Path(__file__).with_name("ews.py")
 spec = importlib.util.spec_from_file_location("vmews_ews_core", core_path)
 core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
 
-WRAPPER_VERSION = "EWS-2.1.3"
+WRAPPER_VERSION = "EWS-2.1.4"
 YAHOO_SYMBOL = "^VNINDEX.VN"
 
 
@@ -66,8 +72,6 @@ def _yahoo_json(range_value="10y"):
 
 
 def _yahoo_rows():
-    # Yahoo supports 10y natively; using it avoids a non-standard 8y range and
-    # supplies a longer resilience window if Vnstock is temporarily unavailable.
     result, host = _yahoo_json("10y")
     timestamps = result.get("timestamp") or []
     indicators = result.get("indicators") or {}
@@ -133,8 +137,7 @@ def _payload_from_rows(rows, quote_payload, provider, primary_error):
         "requests": [{"type": "secondary-provider", "ok": True, "rows": len(rows), "provider": provider}],
     }
     dq = core.data_quality(rows, meta)
-    # A secondary provider may be fresh and internally valid, but it is still a
-    # failover condition. Mark REVIEW so the frontend cannot label it VNSTOCK LIVE.
+    # Never label secondary data as VNSTOCK LIVE, even when fresh and valid.
     dq["status"] = "REVIEW"
     return {
         "version": WRAPPER_VERSION,
