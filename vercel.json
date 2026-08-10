@@ -2,17 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "regions": ["sin1"],
-  "env": {
-    "HOME": "/tmp",
-    "USERPROFILE": "/tmp",
-    "XDG_CACHE_HOME": "/tmp/.cache",
-    "XDG_CONFIG_HOME": "/tmp/.config",
-    "XDG_DATA_HOME": "/tmp/.local/share",
-    "MPLCONFIGDIR": "/tmp/matplotlib",
-    "PYTHONPYCACHEPREFIX": "/tmp/pycache",
-    "JOBLIB_TEMP_FOLDER": "/tmp/joblib"
-  },
+  "rewrites": [
+    {"source": "/api/ews", "destination": "/api/live"}
+  ],
   "functions": {
+    "api/live.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
+    },
     "api/ews.py": {
       "maxDuration": 30,
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
