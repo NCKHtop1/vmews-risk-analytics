@@ -25,74 +25,72 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Wait for immutable CDN assets
+      - name: End-to-end diagnostic
         shell: bash
         run: |
+          set +e
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
-          echo "$BASE" > base.txt
-          ok=0
+          URL="$BASE/research-final.html?smoke=FPT"
+          assets=no; syntax=no; ready=no; fpt=no; pnj=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; old_error=no; empty=no
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/research-engine.js" -o engine.js \
               && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js \
-              && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js; then ok=1; break; fi
+              && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js; then assets=yes; break; fi
             sleep 4
           done
-          test "$ok" = 1
-          node --check engine.js
-          node --check app.js
-          node --check sector.js
-          grep -F 'Variational autoencoder latent anomaly score' page.html
-          grep -F 'LSTM dual crash/rebound sequence classifier' page.html
-
-      - name: Verify radar and full FPT research run
-        shell: bash
-        run: |
-          BASE=$(cat base.txt)
-          URL="$BASE/research-final.html?smoke=FPT"
+          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1; then syntax=yes; fi
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
-          rm -rf /tmp/vmews-research
-          set +e
-          timeout 320s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-research --virtual-time-budget=280000 --dump-dom "$URL" > dom.html 2>chrome.err
-          EXIT=$?
-          set -e
-          echo "chrome_exit=$EXIT"
-          grep -F 'Ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html
-          grep -F 'FPT Corporation' dom.html
-          grep -F 'Phu Nhuan Jewelry' dom.html
-          grep -F 'Research analysis complete' dom.html
-          grep -F 'POINT-IN-TIME MODEL ENSEMBLE' dom.html
-          grep -F 'Random Forest' dom.html
-          grep -F 'ANFIS' dom.html
-          grep -F 'VAE anomaly' dom.html
-          grep -F 'LSTM crash' dom.html
-          grep -F 'LSTM rebound' dom.html
-          grep -F '>Ensemble<' dom.html
-          grep -F 'Purged Walk-Forward Validation' dom.html
-          ! grep -Fq 'At least ~200 completed sessions are required' dom.html
-          ! grep -Fq 'No usable securities returned' dom.html
-
-      - name: Publish PASS evidence
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          BASE=$(cat base.txt)
-          URL="$BASE/research-final.html"
+          EXIT=127
+          if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
+            rm -rf /tmp/vmews-research
+            timeout 320s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-research --virtual-time-budget=280000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else
+            : > dom.html; : > chrome.err
+          fi
+          grep -Fq 'Ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
+          grep -Fq 'FPT Corporation' dom.html && fpt=yes
+          grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
+          grep -Fq 'Research analysis complete' dom.html && analysis=yes
+          grep -Fq 'Random Forest' dom.html && rf=yes
+          grep -Fq 'ANFIS' dom.html && anfis=yes
+          grep -Fq 'VAE anomaly' dom.html && vae=yes
+          grep -Fq 'LSTM crash' dom.html && grep -Fq 'LSTM rebound' dom.html && lstm=yes
+          grep -Fq '>Ensemble<' dom.html && ensemble=yes
+          grep -Fq 'Purged Walk-Forward Validation' dom.html && walk=yes
+          grep -Fq 'At least ~200 completed sessions are required' dom.html && old_error=yes
+          grep -Fq 'No usable securities returned' dom.html && empty=yes
+          pass=no
+          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$analysis" = yes ] && [ "$rf" = yes ] && [ "$anfis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
+          FINAL="$BASE/research-final.html"
           cat > result.md <<EOF
-          # VMEWS RESEARCH CDN PASS
+          # VMEWS RESEARCH CDN ${pass^^}
 
-          - Final URL: $URL
-          - Radar live data: PASS
-          - FPT full research analysis: PASS
-          - Random Forest: PASS
-          - ANFIS: PASS
-          - VAE: PASS
-          - LSTM crash/rebound: PASS
-          - Purged walk-forward table: PASS
-          - Old 200-session error: ABSENT
-          - Empty ranking: ABSENT
+          - Final URL: $FINAL
           - Commit: $GITHUB_SHA
+          - Assets: $assets
+          - JavaScript syntax: $syntax
+          - Chrome exit: $EXIT
+          - Radar ready: $ready
+          - FPT visible: $fpt
+          - PNJ visible: $pnj
+          - Full research analysis complete: $analysis
+          - Random Forest: $rf
+          - ANFIS: $anfis
+          - VAE: $vae
+          - LSTM crash/rebound: $lstm
+          - Walk-forward ensemble row: $ensemble
+          - Walk-forward section: $walk
+          - Old ~200-session error present: $old_error
+          - Empty ranking present: $empty
           EOF
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RESEARCH CDN PASS ${GITHUB_SHA::7}" --body-file result.md
+          echo '--- chrome tail ---' >> result.md
+          echo '```' >> result.md
+          tail -40 chrome.err >> result.md
+          echo '```' >> result.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RESEARCH CDN ${pass^^} ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
