@@ -104,3 +104,28 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS PAGES FINAL PASS ${GITHUB_SHA::7}" --body-file pages-pass.md
+
+  report:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [build, deploy, verify]
+    steps:
+      - name: Publish Pages workflow status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          VERIFY_RESULT: ${{ needs.verify.result }}
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        shell: bash
+        run: |
+          cat > pages-status.md <<EOF
+          # VMEWS Pages workflow status
+
+          - Build: \`$BUILD_RESULT\`
+          - Deploy: \`$DEPLOY_RESULT\`
+          - Verify: \`$VERIFY_RESULT\`
+          - Page URL: $PAGE_URL
+          - Commit: \`$GITHUB_SHA\`
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS PAGES STATUS ${GITHUB_SHA::7}" --body-file pages-status.md
