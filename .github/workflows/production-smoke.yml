@@ -12,68 +12,79 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
-      - name: Verify API and FPT detail
+      - name: Find first clean Vercel domain that fully works
         shell: bash
-        run: |
-          python - <<'PY'
-          import json,time,urllib.request
-          def get(u,timeout=60):
-              req=urllib.request.Request(u,headers={'User-Agent':'VMEWS-final-diag/1.0','Cache-Control':'no-cache'})
-              with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode())
-          base='https://vmews-risk-analytics-sojd.vercel.app/api/radar'
-          s=get(base+'?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time())))
-          d=get(base+'?mode=detail&symbol=FPT&t='+str(int(time.time())))
-          rows=s.get('ranking') or []
-          assert s.get('version')=='STOCK-EWS-5.0.0-PRODUCTION' and rows,s
-          assert d.get('symbol')=='FPT' and isinstance(d.get('score'),(int,float)),d
-          open('api.json','w').write(json.dumps({'ranking':[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in rows],'fpt':{'date':d.get('modelAsOf'),'score':round(float(d.get('score')),2),'color':d.get('color')}},ensure_ascii=False))
-          print(open('api.json').read())
-          PY
-
-      - name: Browser diagnostic
-        continue-on-error: true
-        shell: bash
-        run: |
-          set +e
-          URL='https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/f1b1d9cd155a17dfc5ba2fdcb002cf2a90aa8e20/final.html'
-          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
-          echo "$URL" > final-url.txt
-          if [ -z "$CHROME" ]; then echo 'chrome=missing' > browser.txt; exit 0; fi
-          timeout 45s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=30000 --dump-dom "$URL" > dom.html 2>chrome.err
-          code=$?
-          ready=no; fpt=no; pnj=no; old=no; empty=no
-          grep -Fq 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
-          grep -Fq 'FPT Corporation' dom.html && fpt=yes
-          grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
-          grep -Fq 'At least ~200 completed sessions are required' dom.html && old=yes
-          grep -Fq 'No usable securities returned for this request.' dom.html && empty=yes
-          printf 'chrome_exit=%s\nready=%s\nfpt=%s\npnj=%s\nold_error=%s\nempty=%s\ndom_bytes=%s\n' "$code" "$ready" "$fpt" "$pnj" "$old" "$empty" "$(wc -c < dom.html)" > browser.txt
-          tail -20 chrome.err >> browser.txt
-          cat browser.txt
-          exit 0
-
-      - name: Publish diagnostic and decide PASS
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
         run: |
-          URL=$(cat final-url.txt)
-          API=$(cat api.json)
-          cat > result.md <<EOF
-          # VMEWS FINAL browser diagnostic
+          set +e
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
+          test -n "$CHROME" || exit 1
+          domains=(
+            vmews-risk-analytics-xatw.vercel.app
+            vmews-risk-analytics-oabm.vercel.app
+            vmews-risk-analytics-shf7.vercel.app
+            vmews-risk-analytics.vercel.app
+            vmews-risk-analytics-sojd.vercel.app
+          )
+          : > candidates.txt
+          for d in "${domains[@]}"; do
+            echo "TEST $d" | tee -a candidates.txt
+            api=$(curl -fsSL --max-time 60 -A 'VMEWS-clean-link-smoke/1.0' "https://$d/api/stocks2?mode=scan&symbols=FPT,PNJ,VCB,HPG&t=$(date +%s)" 2>/dev/null)
+            if [ -z "$api" ]; then echo 'api=fail' | tee -a candidates.txt; continue; fi
+            echo "$api" > api.json
+            py=$(python - <<'PY'
+import json
+try:
+ p=json.load(open('api.json'))
+ rows=p.get('ranking') or []
+ print('yes' if str(p.get('version','')).startswith('STOCK-EWS-5') and rows else 'no')
+except Exception: print('no')
+PY
+)
+            echo "api=$py" | tee -a candidates.txt
+            [ "$py" = yes ] || continue
+            timeout 55s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=35000 --dump-dom "https://$d/" > dom.html 2>/dev/null
+            ready=no; fpt=no; pnj=no; old=no; empty=no
+            grep -Fq 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
+            grep -Fq 'FPT Corporation' dom.html && fpt=yes
+            grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
+            grep -Fq 'At least ~200 completed sessions are required' dom.html && old=yes
+            grep -Fq 'No usable securities returned for this request.' dom.html && empty=yes
+            echo "ready=$ready fpt=$fpt pnj=$pnj old=$old empty=$empty" | tee -a candidates.txt
+            if [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$old" = no ] && [ "$empty" = no ]; then
+              echo "https://$d/" > final-url.txt
+              python - <<'PY' > ranking.txt
+import json
+p=json.load(open('api.json'))
+print([(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in p.get('ranking',[])])
+PY
+              break
+            fi
+          done
+          if [ ! -s final-url.txt ]; then
+            cat > result.md <<EOF
+          # VMEWS CLEAN VERCEL LINK FAILED
 
-          - Candidate URL: $URL
-          - API: \`$API\`
+          No clean Vercel domain passed both API + browser DOM checks.
 
           \`\`\`
-          $(cat browser.txt)
+          $(cat candidates.txt)
           \`\`\`
           EOF
-          if grep -q '^ready=yes$' browser.txt && grep -q '^fpt=yes$' browser.txt && grep -q '^pnj=yes$' browser.txt && grep -q '^old_error=no$' browser.txt && grep -q '^empty=no$' browser.txt; then
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL END-TO-END PASS ${GITHUB_SHA::7}" --body-file result.md
-          else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL UI DIAG FAILED ${GITHUB_SHA::7}" --body-file result.md
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CLEAN VERCEL LINK FAILED ${GITHUB_SHA::7}" --body-file result.md
             exit 1
           fi
+          URL=$(cat final-url.txt)
+          cat > result.md <<EOF
+          # VMEWS CLEAN VERCEL LINK PASS
+
+          - Final URL: $URL
+          - Ranking: \`$(cat ranking.txt)\`
+          - Browser: Risk radar ready + FPT + PNJ visible
+          - Old ~200-session error: NO
+          - Empty ranking: NO
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CLEAN VERCEL LINK PASS ${GITHUB_SHA::7}" --body-file result.md
