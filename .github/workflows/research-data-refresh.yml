@@ -39,25 +39,27 @@ jobs:
       - name: Validate snapshots and build report
         run: |
           python - <<'PY'
-          import json,collections
+          import json, collections
           m=json.load(open('data/market-context.json',encoding='utf-8'))
           n=json.load(open('data/research-news.json',encoding='utf-8'))
           assert m.get('market',{}).get('available') and m['market'].get('rows',0)>=240
           assert len(n.get('symbols',{}))>=30
           assert set(n.get('symbols',{}))==set(n.get('coverage',{}))
-          cov=n['coverage']; grades=collections.Counter(x['coverageGrade'] for x in cov.values())
-          dxg=cov.get('DXG',{});fpt=cov.get('FPT',{});pnj=cov.get('PNJ',{})
-          body=f'''# VMEWS RESEARCH DATA PASS
-
-- Generated: {n.get('generatedAt')}
-- Universe symbols: {len(n['symbols'])}
-- VNINDEX context rows: {m['market']['rows']}
-- VNINDEX ticker used: {m['market']['ticker']}
-- Coverage grades: {dict(grades)}
-- DXG: {dxg}
-- FPT: {fpt}
-- PNJ: {pnj}
-'''
+          cov=n['coverage']
+          grades=collections.Counter(x['coverageGrade'] for x in cov.values())
+          rows=[
+              '# VMEWS RESEARCH DATA PASS',
+              '',
+              f"Generated: {n.get('generatedAt')}",
+              f"Universe symbols: {len(n['symbols'])}",
+              f"VNINDEX context rows: {m['market']['rows']}",
+              f"VNINDEX ticker used: {m['market']['ticker']}",
+              f"Coverage grades: {dict(grades)}",
+              f"DXG: {cov.get('DXG',{})}",
+              f"FPT: {cov.get('FPT',{})}",
+              f"PNJ: {cov.get('PNJ',{})}",
+          ]
+          body='\n'.join(rows)+'\n'
           open('data-report.md','w',encoding='utf-8').write(body)
           print(body)
           PY
