@@ -11,11 +11,18 @@ function ema(a,n){const k=2/(n+1);let e=null;return a.map(v=>e=e==null?v:k*v+(1-
 function rsi(a,i,n=14){if(i<n)return 50;let g=0,l=0;for(let j=i-n+1;j<=i;j++){const d=a[j]-a[j-1];g+=Math.max(0,d);l+=Math.max(0,-d)}g/=n;l/=n;return l<EPS?100:100-100/(1+g/l)}
 function safeRows(rows){
   const x=(rows||[]).filter(r=>Number.isFinite(+r.close)&&+r.close>0).map(r=>({...r,close:+r.close,volume:Number.isFinite(+r.volume)?+r.volume:0})).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-  const suspect=[];for(let i=1;i<x.length;i++){const lr=Math.log(x[i].close/x[i-1].close);if(Math.abs(lr)>.22)suspect.push({date:x[i].date,logReturn:lr})}
+  const suspect=[];
+  if(x.length)x[0].modelClose=x[0].close;
+  for(let i=1;i<x.length;i++){
+    const lr=Math.log(x[i].close/x[i-1].close),abnormal=Math.abs(lr)>.22;
+    if(abnormal)suspect.push({date:x[i].date,logReturn:lr});
+    const modelLr=abnormal?0:lr;
+    x[i].modelClose=x[i-1].modelClose*Math.exp(modelLr);
+  }
   return {rows:x,suspect};
 }
 function buildFeatures(raw){
-  const {rows,suspect}=safeRows(raw),c=rows.map(r=>r.close),v=rows.map(r=>r.volume),ret=[0];
+  const {rows,suspect}=safeRows(raw),c=rows.map(r=>r.modelClose??r.close),v=rows.map(r=>r.volume),ret=[0];
   for(let i=1;i<c.length;i++){let z=Math.log(c[i]/c[i-1]);if(Math.abs(z)>.22)z=0;ret.push(z)}
   const e12=ema(c,12),e26=ema(c,26),macd=e12.map((x,i)=>x-e26[i]),sig=ema(macd,9),out=[];
   for(let i=200;i<rows.length;i++){
@@ -29,7 +36,7 @@ function buildFeatures(raw){
   }
   return {rows,features:out,suspect};
 }
-function futurePath(rows,i,h=20){if(i+h>=rows.length)return null;const b=rows[i].close;let mn=0,mx=0;for(let j=i+1;j<=i+h;j++){const r=rows[j].close/b-1;mn=Math.min(mn,r);mx=Math.max(mx,r)}return {drawdown:mn,rebound:mx}}
+function futurePath(rows,i,h=20){if(i+h>=rows.length)return null;const b=rows[i].modelClose??rows[i].close;let mn=0,mx=0;for(let j=i+1;j<=i+h;j++){const r=(rows[j].modelClose??rows[j].close)/b-1;mn=Math.min(mn,r);mx=Math.max(mx,r)}return {drawdown:mn,rebound:mx}}
 function makeSamples(raw,step=5){const b=buildFeatures(raw),fs=b.features,rows=b.rows,s=[];for(let k=0;k<fs.length;k+=step){const f=fs[k],p=futurePath(rows,f.i,20);if(!p)continue;s.push({...f,crash:p.drawdown<=-.12,rebound:p.rebound>=.12,forwardDrawdown:p.drawdown,forwardRebound:p.rebound})}return {...b,samples:s}}
 function standardizer(X){const d=X[0]?.length||0,mu=[],sg=[];for(let j=0;j<d;j++){const a=X.map(x=>x[j]);mu[j]=mean(a);sg[j]=sd(a)||1}return {transform:x=>x.map((v,j)=>(v-mu[j])/sg[j]),mu,sg}}
 function kmeans(X,k=4,iters=30){if(X.length<k)return null;const st=standardizer(X),Z=X.map(st.transform),cent=[];for(let j=0;j<k;j++)cent.push([...Z[Math.floor(j*(Z.length-1)/(k-1))]]);let lab=new Array(Z.length).fill(0);for(let it=0;it<iters;it++){let ch=0;for(let i=0;i<Z.length;i++){let bi=0,bd=Infinity;for(let q=0;q<k;q++){const d=Z[i].reduce((s,v,j)=>s+(v-cent[q][j])**2,0);if(d<bd){bd=d;bi=q}}if(lab[i]!==bi){lab[i]=bi;ch++}}for(let q=0;q<k;q++){const pts=Z.filter((_,i)=>lab[i]===q);if(pts.length)cent[q]=cent[q].map((_,j)=>mean(pts.map(x=>x[j])))}if(!ch)break}return {labels:lab,centroids:cent,standardizer:st,predict:x=>{const z=st.transform(x);let bi=0,bd=Infinity;for(let q=0;q<k;q++){const d=z.reduce((s,v,j)=>s+(v-cent[q][j])**2,0);if(d<bd){bd=d;bi=q}}return bi}}}
@@ -44,7 +51,7 @@ function auc(y,p){const pos=[],neg=[];for(let i=0;i<y.length;i++)(y[i]?pos:neg).
 function metrics(y,p,thr=.5){let tp=0,fp=0,tn=0,fn=0;for(let i=0;i<y.length;i++){const h=p[i]>=thr;if(h&&y[i])tp++;else if(h)fp++;else if(y[i])fn++;else tn++}const precision=tp+fp?tp/(tp+fp):null,recall=tp+fn?tp/(tp+fn):null,fpr=fp+tn?fp/(fp+tn):null,f1=precision!=null&&recall!=null&&precision+recall?2*precision*recall/(precision+recall):null;return {tp,fp,tn,fn,precision,recall,fpr,f1,auc:auc(y,p)}}
 async function vaeTrain(X,epochs=10,latent=3){if(!window.tf||X.length<80)return null;const tf=window.tf,st=standardizer(X),Z=X.map(st.transform),d=Z[0].length,h=10;const vars={We:tf.variable(tf.randomNormal([d,h],0,.12)),be:tf.variable(tf.zeros([h])),Wm:tf.variable(tf.randomNormal([h,latent],0,.12)),bm:tf.variable(tf.zeros([latent])),Wv:tf.variable(tf.randomNormal([h,latent],0,.05)),bv:tf.variable(tf.fill([latent],-1)),Wd:tf.variable(tf.randomNormal([latent,d],0,.12)),bd:tf.variable(tf.zeros([d]))};const opt=tf.train.adam(.015),xt=tf.tensor2d(Z);for(let ep=0;ep<epochs;ep++){opt.minimize(()=>tf.tidy(()=>{const hh=xt.matMul(vars.We).add(vars.be).tanh(),mu=hh.matMul(vars.Wm).add(vars.bm),lv=hh.matMul(vars.Wv).add(vars.bv).clipByValue(-4,3),eps=tf.randomNormal(mu.shape),z=mu.add(lv.mul(.5).exp().mul(eps)),rec=z.matMul(vars.Wd).add(vars.bd),mse=rec.sub(xt).square().mean(),kl=tf.scalar(-.5).mul(tf.scalar(1).add(lv).sub(mu.square()).sub(lv.exp())).mean();return mse.add(kl.mul(.03))}),true,Object.values(vars));await tf.nextFrame()}const score=x=>tf.tidy(()=>{const q=tf.tensor2d([st.transform(x)]),hh=q.matMul(vars.We).add(vars.be).tanh(),mu=hh.matMul(vars.Wm).add(vars.bm),rec=mu.matMul(vars.Wd).add(vars.bd),e=rec.sub(q).square().mean();return e.dataSync()[0]});const trainErr=Z.map((_,i)=>score(X[i])),m=mean(trainErr),s=sd(trainErr)||1;return {score:x=>clamp((score(x)-m)/(3*s)+.33),raw:score,dispose:()=>{xt.dispose();Object.values(vars).forEach(v=>v.dispose())}}}
 async function lstmTrain(samples,epochs=7,seq=12){if(!window.tf||samples.length<100)return null;const tf=window.tf,X=[],Y=[];for(let i=seq;i<samples.length;i++){X.push(samples.slice(i-seq,i).map(s=>s.vector));Y.push([samples[i].crash?1:0,samples[i].rebound?1:0])}if(X.length<80)return null;const flat=X.flat(),st=standardizer(flat),XZ=X.map(q=>q.map(st.transform));const xs=tf.tensor3d(XZ),ys=tf.tensor2d(Y);const model=tf.sequential();model.add(tf.layers.lstm({units:10,inputShape:[seq,XZ[0][0].length],dropout:.05,recurrentDropout:0}));model.add(tf.layers.dense({units:2,activation:'sigmoid'}));model.compile({optimizer:tf.train.adam(.01),loss:'binaryCrossentropy'});await model.fit(xs,ys,{epochs,batchSize:24,shuffle:false,verbose:0});xs.dispose();ys.dispose();return {predict:seqRows=>tf.tidy(()=>{const z=seqRows.map(s=>st.transform(s.vector)),t=tf.tensor3d([z]),o=model.predict(t).dataSync();return {crash:o[0],rebound:o[1]}}),dispose:()=>model.dispose()}}
-function structuralProb(s){return clamp(sigmoid((s.technical-48)/11 + Math.max(0,-s.mom20)*4 + Math.max(0,-s.trend50)*3))}
+function structuralProb(s){return clamp(sigmoid((s.technical-48)/11+Math.max(0,-s.mom20)*4+Math.max(0,-s.trend50)*3))}
 async function trainBundle(train){const X=train.map(s=>s.vector),y=train.map(s=>s.crash?1:0),rf=rfTrain(X,y),anf=anfisTrain(train),reg=regimeModel(train),vae=await vaeTrain(X,8),lstm=await lstmTrain(train,5);return {rf,anf,reg,vae,lstm}}
 function predictBundle(bundle,history,currentIdx){const s=history[currentIdx],regime=bundle.reg?bundle.reg.predict(s.vector):null,regRisk=regime==null?.5:(bundle.reg.meta[regime]?.crashRate||0),rf=bundle.rf.predict(s.vector),anf=bundle.anf.predict(s),vae=bundle.vae?bundle.vae.score(s.vector):null;let dl=null;if(bundle.lstm&&currentIdx>=12)dl=bundle.lstm.predict(history.slice(currentIdx-12,currentIdx));const lstmCrash=dl?dl.crash:null,lstmRebound=dl?dl.rebound:null;const parts=[[structuralProb(s),.25],[rf,.20],[anf,.15],[regRisk,.10]];if(vae!=null)parts.push([vae,.10]);if(lstmCrash!=null)parts.push([lstmCrash,.20]);const w=parts.reduce((a,b)=>a+b[1],0),ensemble=parts.reduce((a,b)=>a+b[0]*b[1],0)/(w||1);return {structural:structuralProb(s),randomForest:rf,anfis:anf,regime:regRisk,regimeId:regime,vae,lstmCrash,lstmRebound,ensemble}}
 function disposeBundle(b){try{b.vae?.dispose()}catch{}try{b.lstm?.dispose()}catch{}}
