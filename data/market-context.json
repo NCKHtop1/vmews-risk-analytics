@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-08-11T16:25:56.184999+00:00",
+  "market": {
+    "score": 8.990332055403995,
+    "available": true,
+    "technical": 13.831280085236914,
+    "analog20": {
+      "score": 0.0,
+      "rate": 0.0,
+      "threshold": -0.1362580072497624,
+      "matches": 40,
+      "available": true,
+      "examples": [
+        {
+          "date": "2023-11-15",
+          "similarity": 0.7643012709908888,
+          "forwardDrawdown": -0.030681462277282856,
+          "event": false
+        },
+        {
+          "date": "2024-05-13",
+          "similarity": 0.7576228625667971,
+          "forwardDrawdown": 0.0024996173552878087,
+          "event": false
+        },
+        {
+          "date": "2023-11-09",
+          "similarity": 0.7511788800525047,
+          "forwardDrawdown": -0.02318896454318231,
+          "event": false
+        },
+        {
+          "date": "2024-05-10",
+          "similarity": 0.7464555878509131,
+          "forwardDrawdown": -0.0036313148857136657,
+          "event": false
+        },
+        {
+          "date": "2023-11-20",
+          "similarity": 0.7446509619067994,
+          "forwardDrawdown": -0.01413476532882918,
+          "event": false
+        }
+      ]
+    },
+    "date": "2026-08-10",
+    "ticker": "0P0000HY8X.VN",
+    "rows": 1492,
+    "source": "Yahoo Finance",
+    "provider": "query1.finance.yahoo.com",
+    "audit": [
+      {
+        "source": "Yahoo Finance",
+        "provider": "query1.finance.yahoo.com",
+        "symbol": "0P0000HY8X.VN",
+        "rows": 1492,
+        "ok": true
+      }
+    ]
+  },
+  "candidates": [
+    "^VNINDEX.VN",
+    "0P0000HY8X.VN",
+    "VNINDEX.VN"
+  ],
+  "errors": [
+    {
+      "ticker": "^VNINDEX.VN",
+      "error": "^VNINDEX.VN: ^VNINDEX.VN: only 1 rows"
+    }
+  ],
+  "method": "Independent VNINDEX EOD context snapshot; Yahoo primary with alternate Yahoo benchmark fallback; same technical/analog methodology as VMEWS core."
+}
