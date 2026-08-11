@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / 'data' / 'market-scan.json'
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = 'VMEWS-MARKET-SCAN-3.0.0'
+VERSION = 'VMEWS-MARKET-SCAN-3.1.0'
 MIN_AVG_TURNOVER_30D = 500_000_000.0
 RED_THRESHOLD = 78.0
 YELLOW_THRESHOLD = 65.0
@@ -32,6 +32,18 @@ def norm_symbol(v):
 def norm_exchange(v):
     x = str(v or '').upper().strip()
     return {'HSX': 'HOSE', 'HOCHIMINH': 'HOSE', 'HANOI': 'HNX', 'UPCOM': 'UPCOM'}.get(x, x)
+
+
+def row_date(v, fallback=None):
+    x = num(v)
+    if x is None:
+        return fallback
+    if x > 1e12:
+        x /= 1000.0
+    try:
+        return datetime.fromtimestamp(x, timezone.utc).astimezone(VN_TZ).date().isoformat()
+    except Exception:
+        return fallback
 
 
 def load_previous():
@@ -76,30 +88,38 @@ def fallback_market_context():
     try:
         p = json.loads((ROOT / 'data' / 'market-context.json').read_text(encoding='utf-8'))
         m = p.get('market') or {}
-        return {'date': m.get('date'), 'momentum20': 0.0, 'available': bool(m.get('available')), 'source': 'VMEWS VNINDEX snapshot fallback'}
+        return {'date': m.get('date'), 'momentum20': None, 'available': False, 'source': 'VMEWS VNINDEX date fallback only'}
     except Exception:
-        return {'date': None, 'momentum20': 0.0, 'available': False, 'source': 'Unavailable'}
+        return {'date': None, 'momentum20': None, 'available': False, 'source': 'Unavailable'}
 
 
 def tradingview_market_context():
     fallback = fallback_market_context()
     try:
         from tradingview_screener import Query
-        _, df = (Query().set_markets('vietnam').set_tickers('HOSE:VNINDEX')
-                 .select('name', 'close', 'Perf.1M', 'update_mode', 'update_time').limit(5).get_scanner_data())
-        if df is None or len(df) == 0:
-            return fallback
-        row = df.iloc[0]
-        perf = num(row.get('Perf.1M'))
-        return {
-            'date': row_date(row.get('update_time'), fallback.get('date')),
-            'momentum20': (perf or 0.0) / 100.0,
-            'available': perf is not None,
-            'source': 'TradingView HOSE:VNINDEX',
-            'updateMode': str(row.get('update_mode') or 'unknown'),
-        }
+        for ticker, label in [('HOSE:VNINDEX', 'VNINDEX'), ('HOSE:VN30', 'VN30 proxy')]:
+            try:
+                _, df = (Query().set_tickers(ticker)
+                         .select('name', 'close', 'Perf.1M', 'update_mode', 'update_time').limit(5).get_scanner_data())
+                if df is None or len(df) == 0:
+                    continue
+                row = df.iloc[0]
+                perf = num(row.get('Perf.1M'))
+                if perf is None:
+                    continue
+                return {
+                    'date': row_date(row.get('update_time'), fallback.get('date')),
+                    'momentum20': perf / 100.0,
+                    'available': True,
+                    'source': f'TradingView {label}',
+                    'benchmarkTicker': ticker,
+                    'updateMode': str(row.get('update_mode') or 'unknown'),
+                }
+            except Exception:
+                continue
     except Exception:
-        return fallback
+        pass
+    return fallback
 
 
 def tradingview_snapshot():
@@ -114,18 +134,6 @@ def tradingview_snapshot():
     if df is None or len(df) < 500:
         raise RuntimeError(f'TradingView Vietnam screener returned only {0 if df is None else len(df)} rows')
     return int(total), df
-
-
-def row_date(v, fallback=None):
-    x = num(v)
-    if x is None:
-        return fallback
-    if x > 1e12:
-        x /= 1000.0
-    try:
-        return datetime.fromtimestamp(x, timezone.utc).astimezone(VN_TZ).date().isoformat()
-    except Exception:
-        return fallback
 
 
 def transition(prev_status, current_status):
@@ -168,7 +176,8 @@ def score_row(row, market_mom20):
     dd52 = close / high52 - 1 if high52 and high52 > 0 else None
     macd_norm = (macd - signal) / close if macd is not None and signal is not None else 0.0
     avg_turnover30 = close * avgvol30
-    relative20 = mom20 - market_mom20
+    market_available = market_mom20 is not None and math.isfinite(float(market_mom20))
+    relative20 = mom20 - float(market_mom20) if market_available else None
 
     p_dd = clamp(abs(min(dd3m, 0.0)) / .22)
     p_mom = clamp(abs(min(mom20, 0.0)) / .14)
@@ -178,11 +187,13 @@ def score_row(row, market_mom20):
     p_rsi = clamp((45.0 - rsi) / 20.0)
     p_macd = clamp(max(0.0, -macd_norm) / .025)
     p_sellvol = clamp(max(0.0, (relvol or 0.0) - 1.0) / 2.0) * clamp(max(0.0, -ret1) / .05)
-    p_relative = clamp(max(0.0, -relative20) / .15)
-    technical = 100.0 * (
-        .18*p_dd + .16*p_mom + .14*p_t50 + .10*p_t200 + .12*p_vol +
-        .10*p_rsi + .08*p_macd + .06*p_sellvol + .06*p_relative
-    )
+    p_relative = clamp(max(0.0, -relative20) / .15) if market_available else 0.0
+    raw_score = .18*p_dd + .16*p_mom + .14*p_t50 + .10*p_t200 + .12*p_vol + .10*p_rsi + .08*p_macd + .06*p_sellvol
+    weight_sum = .94
+    if market_available:
+        raw_score += .06*p_relative
+        weight_sum += .06
+    technical = 100.0 * raw_score / weight_sum
     score = technical
     weak = mom20 < 0 or trend50 < 0
 
@@ -195,7 +206,7 @@ def score_row(row, market_mom20):
         'macd': macd_norm <= -.008,
         'volatility': (vol_d or 0.0) >= 4.0,
         'selloffVolume': ret1 <= -.04 and (relvol or 0.0) >= 1.5,
-        'relativeWeakness': relative20 <= -.12,
+        'relativeWeakness': market_available and relative20 <= -.12,
     }
     stress_count = sum(bool(v) for v in stress_flags.values())
     liquid = avg_turnover30 >= MIN_AVG_TURNOVER_30D
@@ -209,8 +220,9 @@ def score_row(row, market_mom20):
         (.10*p_rsi, f'RSI14 {rsi:.0f}'),
         (.08*p_macd, 'negative MACD impulse'),
         (.06*p_sellvol, f'selloff relative volume {(relvol or 0):.1f}x'),
-        (.06*p_relative, f'1M vs VNINDEX {relative20*100:.1f}%'),
     ]
+    if market_available:
+        contrib.append((.06*p_relative, f'1M vs benchmark {relative20*100:.1f}%'))
     drivers = [label for w, label in sorted(contrib, reverse=True) if w >= .012][:4]
 
     if not liquid:
@@ -229,10 +241,11 @@ def score_row(row, market_mom20):
         'dd60': dd3m, 'drawdown52w': dd52, 'trend50': trend50, 'trend200': trend200,
         'rsi14': rsi, 'volatilityDailyPct': vol_d, 'relativeVolume10d': relvol,
         'volume': volume, 'averageVolume30d': avgvol30, 'medianTurnover20': avg_turnover30,
-        'marketRelative20': relative20, 'technicalScore': technical, 'score': score,
-        'status': status, 'phase': phase, 'liquidEligible': liquid, 'drivers': drivers,
-        'independentStressSignals': stress_count, 'stressFlags': stress_flags,
-        'historyReady': True, 'priceBasis': 'TradingView EOD/delayed technical fields; SMA200 required for alert eligibility',
+        'marketRelative20': relative20, 'marketRelativeEvidenceAvailable': market_available,
+        'technicalScore': technical, 'score': score, 'status': status, 'phase': phase,
+        'liquidEligible': liquid, 'drivers': drivers, 'independentStressSignals': stress_count,
+        'stressFlags': stress_flags, 'historyReady': True,
+        'priceBasis': 'TradingView EOD/delayed technical fields; SMA200 required for alert eligibility',
     }
 
 
@@ -265,7 +278,7 @@ def main():
     low_liquidity = 0
     date_fallback = market.get('date')
     for sym, row in matched.items():
-        f = score_row(row, market.get('momentum20', 0.0))
+        f = score_row(row, market.get('momentum20'))
         if f is None:
             insufficient += 1
             continue
@@ -287,7 +300,7 @@ def main():
     dated = [x['date'] for x in provisional if x.get('date')]
     model_date = Counter(dated).most_common(1)[0][0] if dated else date_fallback
     if not model_date:
-        raise RuntimeError('Unable to establish model date from screener or VNINDEX context')
+        raise RuntimeError('Unable to establish model date from screener or market context')
 
     stale = 0
     for x in provisional:
@@ -312,7 +325,7 @@ def main():
         'version': VERSION,
         'generatedAt': now.isoformat(), 'reviewDate': now.date().isoformat(), 'modelDate': model_date,
         'scope': 'VCI reference universe of listed common stocks on HOSE, HNX and UPCOM, cross-matched to TradingView Vietnam stock screener.',
-        'method': 'Cross-sectional T-day early-warning screen using daily trend, momentum, 3M drawdown, volatility, RSI, MACD, selloff relative volume, VNINDEX-relative weakness, multi-signal confirmation and liquidity gating.',
+        'method': 'Cross-sectional T-day early-warning screen using daily trend, momentum, 3M drawdown, volatility, RSI, MACD, selloff relative volume, optional market-relative weakness, multi-signal confirmation and liquidity gating.',
         'thresholds': {'red': RED_THRESHOLD, 'yellow': YELLOW_THRESHOLD, 'watch': WATCH_THRESHOLD, 'redMinIndependentSignals': 3, 'yellowMinIndependentSignals': 2, 'minAverageTurnover30dVnd': MIN_AVG_TURNOVER_30D, 'historyGate': 'SMA200 must be available'},
         'coverage': {
             'listedUniverse': len(reference), 'tradingViewUniverseRows': len(df), 'tradingViewReportedTotal': tv_total,
@@ -322,12 +335,13 @@ def main():
             'duplicateScreenerRowsIgnored': duplicates, 'coverageRatio': coverage_ratio, 'currentFeatureCoverageRatio': current_ratio,
         },
         'breadth': {'red': len(red), 'yellow': len(yellow), 'watch': len(watch), 'newEscalations': len(escalations), 'redShareEligible': len(red)/len(eligible) if eligible else 0.0, 'yellowShareEligible': len(yellow)/len(eligible) if eligible else 0.0},
-        'marketContext': {'vnindexMomentum20d': market.get('momentum20', 0.0), 'vnindexModelDate': market.get('date'), 'source': market.get('source'), 'updateMode': market.get('updateMode')},
+        'marketContext': {'available': market.get('available', False), 'vnindexMomentum20d': market.get('momentum20'), 'vnindexModelDate': market.get('date'), 'source': market.get('source'), 'benchmarkTicker': market.get('benchmarkTicker'), 'updateMode': market.get('updateMode')},
         'topAttention': attention, 'redList': red, 'yellowList': yellow, 'newEscalations': escalations, 'ranking': eligible,
         'sources': {'referenceUniverse': 'VCI via vnstock Listing.symbols_by_exchange()', 'crossSection': 'TradingView Vietnam stock screener via tradingview-screener', 'marketContext': market.get('source'), 'deepResearch': 'Second-stage VMEWS single-name engine; not part of the broad scan score'},
         'governance': [
             'RED/YELLOW are screening states, not buy/sell recommendations or calibrated crash probabilities.',
             'RED requires at least three independent stress conditions; YELLOW requires at least two. A drawdown alone cannot force a RED state.',
+            'Unavailable benchmark-relative evidence is excluded and remaining broad-scan weights are renormalized; it is never replaced with a neutral zero-return assumption.',
             'Only securities cross-matched to the reference universe with current data, SMA200 history and minimum 30-day average turnover can enter RED/YELLOW.',
             'Stale, insufficient-history and illiquid securities are disclosed in coverage and excluded from the morning alert list.',
             'Unauthenticated TradingView data may be delayed; this is suitable for scheduled pre-session/post-close risk triage, not intraday execution.',
@@ -336,7 +350,7 @@ def main():
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({'modelDate': model_date, 'listed': len(reference), 'tvRows': len(df), 'matched': len(matched), 'coverage': round(coverage_ratio,4), 'eligible': len(eligible), 'red': len(red), 'yellow': len(yellow), 'watch': len(watch), 'escalations': len(escalations), 'stale': stale, 'insufficient': insufficient, 'lowLiquidity': low_liquidity, 'vnindexMomentum20': market.get('momentum20')}, ensure_ascii=False))
+    print(json.dumps({'modelDate': model_date, 'listed': len(reference), 'tvRows': len(df), 'matched': len(matched), 'coverage': round(coverage_ratio,4), 'eligible': len(eligible), 'red': len(red), 'yellow': len(yellow), 'watch': len(watch), 'escalations': len(escalations), 'stale': stale, 'insufficient': insufficient, 'lowLiquidity': low_liquidity, 'marketAvailable': market.get('available'), 'benchmark': market.get('benchmarkTicker'), 'benchmarkMomentum20': market.get('momentum20')}, ensure_ascii=False))
 
 
 if __name__ == '__main__':
