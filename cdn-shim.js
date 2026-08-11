@@ -1,4 +1,9 @@
 (()=>{
+  const isCdnHost=location.hostname==='cdn.githubraw.com';
+  if(!isCdnHost){
+    window.__VMEWS_BACKEND__=location.origin;
+    return;
+  }
   const backend='https://vmews-risk-analytics-sojd.vercel.app';
   const nativeFetch=window.fetch.bind(window);
   window.fetch=(input,init)=>{
