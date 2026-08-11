@@ -1,0 +1,82 @@
+name: Market-wide T-day scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 23 * * 0-4'
+    - cron: '45 9 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_market_scan.py'
+      - '.github/workflows/market-wide-scan.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: vmews-market-wide-scan
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install market data dependency
+        run: pip install --disable-pip-version-check -q -r requirements.txt
+      - name: Build full-market T-day snapshot
+        run: python scripts/update_market_scan.py
+      - name: Validate market-wide coverage
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('data/market-scan.json',encoding='utf-8'))
+          c=p.get('coverage',{});b=p.get('breadth',{})
+          assert p.get('modelDate')
+          assert c.get('listedUniverse',0)>=500, c
+          assert c.get('priceCovered',0)>=300, c
+          assert c.get('eligibleLiquidCurrent',0)>=150, c
+          assert c.get('coverageRatio',0)>=0.45, c
+          assert isinstance(p.get('redList'),list) and isinstance(p.get('yellowList'),list)
+          assert all(x.get('status')=='RED' and x.get('date')==p['modelDate'] for x in p['redList'])
+          assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] for x in p['yellowList'])
+          rows=[
+            '# VMEWS MARKET-WIDE T-DAY SCAN PASS','',
+            f"Generated: {p.get('generatedAt')}",
+            f"Model date: {p.get('modelDate')}",
+            f"Listed universe: {c.get('listedUniverse')}",
+            f"Price covered: {c.get('priceCovered')} ({c.get('coverageRatio',0):.1%})",
+            f"Eligible liquid/current: {c.get('eligibleLiquidCurrent')}",
+            f"RED: {b.get('red')}",
+            f"YELLOW: {b.get('yellow')}",
+            f"WATCH: {b.get('watch')}",
+            f"New escalations: {b.get('newEscalations')}",
+            '', 'Top morning attention:',
+          ]
+          for x in p.get('topAttention',[])[:12]:
+            rows.append(f"- {x['symbol']} [{x['exchange']}] {x['status']} {x['score']:.1f}/100 · {x.get('transition')} · {'; '.join(x.get('drivers',[])[:2])}")
+          body='\n'.join(rows)+'\n'
+          open('market-scan-report.md','w',encoding='utf-8').write(body)
+          print(body)
+          PY
+      - name: Publish market scan diagnostic
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS MARKET SCAN PASS ${GITHUB_SHA::7}" --body-file market-scan-report.md
+      - name: Commit refreshed market snapshot
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/market-scan.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh VMEWS market-wide T-day scan [data-only]'
+          git pull --rebase origin main
+          git push origin HEAD:main
