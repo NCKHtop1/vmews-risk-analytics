@@ -43,8 +43,8 @@ jobs:
           python - <<'PY'
           import json
           p=json.load(open('data/market-scan.json',encoding='utf-8'))
-          c=p.get('coverage',{});b=p.get('breadth',{})
-          assert p.get('version')=='VMEWS-MARKET-SCAN-3.0.0', p.get('version')
+          c=p.get('coverage',{});b=p.get('breadth',{});m=p.get('marketContext',{})
+          assert p.get('version')=='VMEWS-MARKET-SCAN-3.1.0', p.get('version')
           assert p.get('modelDate')
           assert c.get('listedUniverse',0)>=500, c
           assert c.get('tradingViewUniverseRows',0)>=500, c
@@ -57,6 +57,8 @@ jobs:
           assert isinstance(p.get('redList'),list) and isinstance(p.get('yellowList'),list)
           assert all(x.get('status')=='RED' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=3 for x in p['redList'])
           assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=2 for x in p['yellowList'])
+          if not m.get('available'):
+              assert all(x.get('marketRelativeEvidenceAvailable') is False for x in p.get('ranking',[])), m
           rows=[
             '# VMEWS MARKET-WIDE T-DAY SCAN PASS','',
             f"Generated: {p.get('generatedAt')}",
@@ -71,7 +73,9 @@ jobs:
             f"YELLOW: {b.get('yellow')} ({b.get('yellowShareEligible',0):.1%} of eligible)",
             f"WATCH: {b.get('watch')}",
             f"New escalations: {b.get('newEscalations')}",
-            f"VNINDEX 1M: {p.get('marketContext',{}).get('vnindexMomentum20d',0):.1%}",
+            f"Market-relative evidence: {'available' if m.get('available') else 'excluded / unavailable'}",
+            f"Benchmark: {m.get('benchmarkTicker') or m.get('source')}",
+            f"Benchmark 1M: {m.get('vnindexMomentum20d') if m.get('vnindexMomentum20d') is not None else 'N/A'}",
             '', 'Top morning attention:',
           ]
           for x in p.get('topAttention',[])[:15]:
