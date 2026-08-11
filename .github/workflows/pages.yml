@@ -24,7 +24,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          rsync -a --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
+          rsync -a --exclude='_site' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
           python - <<'PY'
           from pathlib import Path
           p=Path('_site/qtrr-final.js')
