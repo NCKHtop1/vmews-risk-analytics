@@ -27,16 +27,25 @@ function trainNLP(extra=[]){
   for(let ep=0;ep<90;ep++)for(const[x,y]of data){let z=w[256];for(let j=0;j<256;j++)z+=w[j]*x[j];const e=sig(z)-y,lr=.16/(1+ep*.015);for(let j=0;j<256;j++)w[j]-=lr*(e*x[j]+.001*w[j]);w[256]-=lr*e}
   return text=>{const x=vec(text);let z=w[256];for(let j=0;j<256;j++)z+=w[j]*x[j];return sig(z)};
 }
+function ageDays(x){
+  if(Number.isFinite(+x.ageDays))return +x.ageDays;
+  const t=Date.parse(x.published||'');return Number.isFinite(t)?Math.max(0,(Date.now()-t)/86400000):30;
+}
 function enhanceNews(news){
   const items=(news?.items||[]).map(x=>({...x})),predict=trainNLP(items);let num=0,den=0;
-  for(const x of items){const p=predict(x.title),age=Number.isFinite(+x.ageDays)?+x.ageDays:10,decay=Math.exp(-age/21),base=Number.isFinite(+x.risk)?clamp(+x.risk/Math.max(decay,.05)):0.5;x.nlpRisk=p;x.lexicalEventRisk=base;x.risk=(.70*p+.30*base)*decay;num+=x.risk;den+=decay}
-  return{...news,items:items.sort((a,b)=>b.risk-a.risk),score:items.length?100*clamp(num/(den||1)):null,nlpModel:'hashed unigram/bigram logistic regression; labeled financial seed set + high-confidence distant supervision'};
+  for(const x of items){
+    const p=predict(x.title),age=ageDays(x),decay=Math.exp(-age/35),sq=clamp(Number.isFinite(+x.sourceQuality)?+x.sourceQuality:.65,.3,1),rel=clamp(Number.isFinite(+x.relevance)?+x.relevance:.75,.4,1),mat=clamp(Number.isFinite(+x.materiality)?+x.materiality:.5,.25,1),base=Number.isFinite(+x.risk)?clamp(+x.risk/Math.max(decay,.05)):0.5;
+    const intrinsic=.72*p+.28*base,weight=decay*sq*rel*(.6+.4*mat);
+    x.nlpRisk=p;x.lexicalEventRisk=base;x.ageDays=age;x.evidenceWeight=weight;x.risk=intrinsic*decay;x.sourceQuality=sq;x.relevance=rel;x.materiality=mat;num+=intrinsic*weight;den+=weight;
+  }
+  const pubs=new Set(items.map(x=>x.publisher).filter(Boolean));
+  return{...news,items:items.sort((a,b)=>(b.risk*b.evidenceWeight)-(a.risk*a.evidenceWeight)),score:items.length?100*clamp(num/(den||1)):null,articleCount:items.length,sourceCount:pubs.size||news?.sourceCount||0,nlpModel:'hashed unigram/bigram logistic regression; source-quality, relevance, materiality and recency weighted'};
 }
 function syncUI(f,nlp){
   setTimeout(()=>{
     const cards=document.querySelectorAll('#moduleGrid .metric'),card=cards[5];
     if(card&&f){const b=card.querySelector('b'),s=card.querySelector('small');if(b)b.textContent=f.available===false?'UNAVAILABLE':`${Math.round(f.score)}/100`;if(s)s.textContent=f.note||`${f.sector||'Sector'} current fundamental context`}
-    const nm=document.getElementById('newsMeta');if(nm&&nlp&&!nm.textContent.includes('statistical NLP'))nm.textContent+=` · statistical NLP baseline`;
+    const nm=document.getElementById('newsMeta');if(nm&&nlp&&!nm.textContent.includes('weighted NLP'))nm.textContent+=` · weighted NLP baseline`;
   },0);
 }
 function patch(){
