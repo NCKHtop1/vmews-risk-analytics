@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: vmews-research-data-refresh
@@ -22,6 +23,8 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,22 +34,39 @@ jobs:
         run: |
           python scripts/update_market_context.py
           python scripts/update_research_news.py
-      - name: Validate snapshots
+      - name: Validate snapshots and build report
         run: |
           python - <<'PY'
-          import json
+          import json,collections
           m=json.load(open('data/market-context.json',encoding='utf-8'))
           n=json.load(open('data/research-news.json',encoding='utf-8'))
           assert m.get('market',{}).get('available') and m['market'].get('rows',0)>=240
           assert len(n.get('symbols',{}))>=30
           assert set(n.get('symbols',{}))==set(n.get('coverage',{}))
-          print('market rows',m['market']['rows'],'symbols',len(n['symbols']))
+          cov=n['coverage']; grades=collections.Counter(x['coverageGrade'] for x in cov.values())
+          dxg=cov.get('DXG',{});fpt=cov.get('FPT',{});pnj=cov.get('PNJ',{})
+          body=f'''# VMEWS RESEARCH DATA PASS
+
+- Generated: {n.get('generatedAt')}
+- Universe symbols: {len(n['symbols'])}
+- VNINDEX context rows: {m['market']['rows']}
+- VNINDEX ticker used: {m['market']['ticker']}
+- Coverage grades: {dict(grades)}
+- DXG: {dxg}
+- FPT: {fpt}
+- PNJ: {pnj}
+'''
+          open('data-report.md','w',encoding='utf-8').write(body)
+          print(body)
           PY
       - name: Commit refreshed data
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/market-context.json data/research-news.json
-          git diff --cached --quiet && exit 0
-          git commit -m 'Refresh VMEWS research snapshots [data-only]'
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh VMEWS research snapshots [data-only]'
+            git push
+          fi
+      - name: Publish diagnostic
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RESEARCH DATA PASS ${GITHUB_SHA::7}" --body-file data-report.md
