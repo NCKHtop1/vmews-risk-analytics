@@ -1,6 +1,5 @@
 import os, pathlib, importlib.util, json, math, re
 from datetime import datetime, date, timedelta, timezone
-from zoneinfo import ZoneInfo
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -16,23 +15,31 @@ for p in ['/tmp/.vnstock','/tmp/.vnstock/id','/tmp/.cache','/tmp/.config','/tmp/
     except Exception: pass
 pathlib.Path.home=classmethod(lambda cls: cls('/tmp'))
 
-from vnstock import Market, Fundamental
 try:
     key=os.environ.get('VNSTOCK_API_KEY','').strip()
     if key:
         from vnstock import register_user
         register_user(api_key=key)
-except Exception: pass
+except Exception:
+    pass
 
 core_path=pathlib.Path(__file__).with_name('stocks.py')
 spec=importlib.util.spec_from_file_location('stock_core',core_path)
-core=importlib.util.module_from_spec(spec);spec.loader.exec_module(core)
+core=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(core)
 
-VERSION='STOCK-EWS-4.0.0'
-VN_TZ=ZoneInfo('Asia/Ho_Chi_Minh')
+VERSION='STOCK-EWS-4.0.1-SERVERLESS'
+VN_TZ=timezone(timedelta(hours=7))
 MAX_HISTORY_DAYS=8*366
 SCAN_MAX=8
 DEFAULT_SCAN=['FPT','PNJ','VCB','HPG','MWG','VHM','SSI','DGC']
+
+def market_client():
+    try:
+        from vnstock.ui import Market
+    except Exception:
+        from vnstock import Market
+    return Market()
 
 def clean_symbol(s): return re.sub('[^A-Z0-9]','',str(s or '').upper())[:8]
 def parse_date(x,default=None):
@@ -107,7 +114,7 @@ def quality(rows,start,end,audit,intraday=False):
     return {'status':'PASS' if ratio>=.72 and len(rows)>=220 and gaps<=3 else 'REVIEW','rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'coverageRatio':min(1,ratio),'largeGaps':gaps,'intradayBarExcluded':intraday,'requestAudit':audit}
 
 def fetch_history(symbol,start,end,segmented=True,index=False):
-    obj=Market().index('VNINDEX') if index else Market().equity(clean_symbol(symbol));audit=[];allrows=[]
+    m=market_client();obj=m.index('VNINDEX') if index else m.equity(clean_symbol(symbol));audit=[];allrows=[]
     if not segmented or (end-start).days<=430:windows=[(start,end)]
     else:
         windows=[];cur=start
@@ -116,15 +123,17 @@ def fetch_history(symbol,start,end,segmented=True,index=False):
     for a,b in windows:
         try:
             rows=normalize_ohlcv(obj.ohlcv(start=a.isoformat(),end=(b+timedelta(days=1)).isoformat(),interval='1D'));allrows+=rows;audit.append({'source':'Vnstock','provider':'KBS','type':'index.ohlcv' if index else 'equity.ohlcv','symbol':'VNINDEX' if index else clean_symbol(symbol),'start':a.isoformat(),'end':b.isoformat(),'rows':len(rows),'ok':True})
-        except Exception as e:audit.append({'source':'Vnstock','provider':'KBS','type':'ohlcv','symbol':'VNINDEX' if index else clean_symbol(symbol),'start':a.isoformat(),'end':b.isoformat(),'rows':0,'ok':False,'error':str(e)[:160]})
+        except Exception as e:audit.append({'source':'Vnstock','provider':'KBS','type':'ohlcv','symbol':'VNINDEX' if index else clean_symbol(symbol),'start':a.isoformat(),'end':b.isoformat(),'rows':0,'ok':False,'error':str(e)[:200]})
     ded={r['date']:r for r in allrows};rows=[ded[k] for k in sorted(ded)];rows,intraday=strip_intraday(rows)
-    if len(rows)<80:raise RuntimeError(f'Vnstock returned only {len(rows)} usable rows for {"VNINDEX" if index else symbol}')
+    if len(rows)<80:
+        errors=' | '.join(x.get('error','') for x in audit if not x.get('ok'))
+        raise RuntimeError(f'Vnstock returned only {len(rows)} usable rows for {"VNINDEX" if index else symbol}. {errors}'[:500])
     return rows,audit,intraday
 
 def quote_now(symbol=None,index=False):
     try:
-        obj=Market().index('VNINDEX') if index else Market().equity(clean_symbol(symbol));q=normalize_quote(obj.quote());return q,{'source':'Vnstock','provider':'KBS','type':'index.quote' if index else 'equity.quote','symbol':'VNINDEX' if index else clean_symbol(symbol),'ok':bool(q)}
-    except Exception as e:return None,{'source':'Vnstock','provider':'KBS','type':'quote','symbol':'VNINDEX' if index else clean_symbol(symbol),'ok':False,'error':str(e)[:160]}
+        m=market_client();obj=m.index('VNINDEX') if index else m.equity(clean_symbol(symbol));q=normalize_quote(obj.quote());return q,{'source':'Vnstock','provider':'KBS','type':'index.quote' if index else 'equity.quote','symbol':'VNINDEX' if index else clean_symbol(symbol),'ok':bool(q)}
+    except Exception as e:return None,{'source':'Vnstock','provider':'KBS','type':'quote','symbol':'VNINDEX' if index else clean_symbol(symbol),'ok':False,'error':str(e)[:200]}
 
 def analog_pt(rows,fs,current,h):
     cutoff=current['i'];cand=[f for f in fs if f['i']+max(60,h)<=cutoff and f['i']<cutoff-60]
@@ -166,6 +175,7 @@ def macro_asof(asof=None):
 
 def fund_quick(symbol):
     try:
+        from vnstock import Fundamental
         eq=Fundamental().equity(clean_symbol(symbol))
         try:df=eq.ratio(orient='time_series')
         except Exception:df=eq.ratio()
@@ -192,7 +202,7 @@ def fund_quick(symbol):
         if vals['netMargin'] is not None:
             v=vals['netMargin']/100 if abs(vals['netMargin'])>2 else vals['netMargin'];ps.append(core.clamp((.08-v)/.15))
         return {'score':100*core.mean(ps) if ps else 50,'available':len(ps)>=2,'metrics':vals,'rows':len(fr),'source':'Vnstock Fundamental.ratio'}
-    except Exception as e:return {'score':50,'available':False,'metrics':{},'error':str(e)[:160]}
+    except Exception as e:return {'score':50,'available':False,'metrics':{},'error':str(e)[:200]}
 
 def market_module(start,end,asof=None):
     rows,audit,intraday=fetch_history('VNINDEX',start,end,segmented=False,index=True);cur,hz,_=state_from_rows(rows,asof);a=hz['20'];score=.65*cur['technical']+.35*(a['score'] if a.get('available') else 50);return {'score':score,'available':True,'technical':cur['technical'],'analog20':a,'date':cur['date'],'audit':audit,'intradayBarExcluded':intraday}
@@ -268,13 +278,13 @@ def scan(q):
         fut={ex.submit(scan_one,s,start,today,market,macro):s for s in symbols}
         for f in as_completed(fut):
             try:items.append(f.result())
-            except Exception as e:errors.append({'symbol':fut[f],'error':str(e)[:160]})
+            except Exception as e:errors.append({'symbol':fut[f],'error':str(e)[:200]})
     items.sort(key=lambda x:x['score'],reverse=True);by={x['symbol']:x for x in items};targets=[x['symbol'] for x in items[:2]]
     with ThreadPoolExecutor(max_workers=2) as ex:
         fut={ex.submit(enrich,by[s]):s for s in targets}
         for f in as_completed(fut):
             try:by[fut[f]]=f.result()
-            except Exception as e:errors.append({'symbol':fut[f],'stage':'enrich','error':str(e)[:160]})
+            except Exception as e:errors.append({'symbol':fut[f],'stage':'enrich','error':str(e)[:200]})
     ranking=sorted(by.values(),key=lambda x:x.get('effectiveScore',x['score']),reverse=True)
     for x in ranking:
         if 'reasons' not in x:x['reasons']=reasons(x['modules'])
@@ -287,6 +297,12 @@ class handler(BaseHTTPRequestHandler):
         q=parse_qs(urlparse(self.path).query);mode=q.get('mode',['scan'])[0]
         try:
             if mode=='detail':self.sendj(200,detail(q.get('symbol',['FPT'])[0],q))
-            elif mode=='health':self.sendj(200,{'ok':True,'version':VERSION,'time':datetime.now(VN_TZ).isoformat(),'priceSource':'Vnstock v4/KBS','maxScanSymbols':SCAN_MAX})
+            elif mode=='health':
+                v='unknown'
+                try:
+                    import vnstock
+                    v=getattr(vnstock,'__version__','installed')
+                except Exception as e:v=f'import-error: {e}'
+                self.sendj(200,{'ok':True,'version':VERSION,'time':datetime.now(VN_TZ).isoformat(),'priceSource':'Vnstock v4/KBS','maxScanSymbols':SCAN_MAX,'vnstock':v})
             else:self.sendj(200,scan(q))
-        except Exception as e:self.sendj(503,{'error':'STOCK_EWS_REQUEST_FAILED','message':str(e),'version':VERSION,'priceSource':'Vnstock v4/KBS','retryable':True})
+        except Exception as e:self.sendj(503,{'error':'STOCK_EWS_REQUEST_FAILED','message':str(e),'type':type(e).__name__,'version':VERSION,'priceSource':'Vnstock v4/KBS','retryable':True})
