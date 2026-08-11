@@ -9,6 +9,7 @@ on:
       - 'research-engine-v2.js'
       - 'research-app.js'
       - 'sector-context.js'
+      - 'research-quality.js'
       - 'research-runtime.js'
       - '.github/workflows/research-cdn-smoke.yml'
       - '.research-smoke-trigger'
@@ -35,16 +36,17 @@ jobs:
           set +e
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
           URL="$BASE/research-final.html?smoke=FPT"
-          assets=no; syntax=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; old_error=no; empty=no
+          assets=no; syntax=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; nlp=no; old_error=no; empty=no
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/research-engine-v2.js" -o engine.js \
               && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js \
               && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js \
+              && curl -fsSL --max-time 20 "$BASE/research-quality.js" -o quality.js \
               && curl -fsSL --max-time 20 "$BASE/research-runtime.js" -o runtime.js; then assets=yes; break; fi
             sleep 4
           done
-          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1 && node --check runtime.js >/dev/null 2>&1; then syntax=yes; fi
+          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1 && node --check quality.js >/dev/null 2>&1 && node --check runtime.js >/dev/null 2>&1; then syntax=yes; fi
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           EXIT=127
           if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
@@ -65,6 +67,7 @@ jobs:
           grep -Fq 'LSTM crash' dom.html && grep -Fq 'LSTM rebound' dom.html && lstm=yes
           grep -Fq '>Ensemble<' dom.html && ensemble=yes
           grep -Fq 'Purged Walk-Forward Validation' dom.html && walk=yes
+          grep -Fq 'statistical NLP baseline' dom.html && nlp=yes
           grep -Fq 'At least ~200 completed sessions are required' dom.html && old_error=yes
           grep -Fq 'No usable securities returned' dom.html && empty=yes
           STATUS=$(python - <<'PY'
@@ -75,7 +78,7 @@ jobs:
           PY
           )
           pass=no
-          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
+          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$nlp" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
           FINAL="$BASE/research-final.html"
           cat > result.md <<EOF
           # VMEWS RESEARCH CDN ${pass^^}
@@ -97,6 +100,7 @@ jobs:
           - LSTM crash/rebound result: $lstm
           - Walk-forward ensemble row: $ensemble
           - Walk-forward section: $walk
+          - Statistical NLP layer: $nlp
           - Old ~200-session error present: $old_error
           - Empty ranking present: $empty
           EOF
