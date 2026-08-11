@@ -1,0 +1,1 @@
+(()=>{try{if(!localStorage.getItem('vmews-lang')&&(navigator.language||'').toLowerCase().startsWith('vi'))localStorage.setItem('vmews-lang','vi')}catch(_){}})();
