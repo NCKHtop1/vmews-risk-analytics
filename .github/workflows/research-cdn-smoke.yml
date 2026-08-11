@@ -11,6 +11,9 @@ on:
       - 'sector-context.js'
       - 'research-quality.js'
       - 'research-runtime.js'
+      - 'market-fallback.js'
+      - 'research-conclusion.js'
+      - 'data/market-context.json'
       - '.github/workflows/research-cdn-smoke.yml'
       - '.research-smoke-trigger'
   workflow_dispatch:
@@ -36,17 +39,29 @@ jobs:
           set +e
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
           URL="$BASE/research-final.html?smoke=FPT"
-          assets=no; syntax=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; nlp=no; old_error=no; empty=no
+          assets=no; syntax=no; market_snapshot=no; market_live=no; conclusion=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; nlp=no; old_error=no; empty=no
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/research-engine-v2.js" -o engine.js \
               && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js \
               && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js \
               && curl -fsSL --max-time 20 "$BASE/research-quality.js" -o quality.js \
-              && curl -fsSL --max-time 20 "$BASE/research-runtime.js" -o runtime.js; then assets=yes; break; fi
+              && curl -fsSL --max-time 20 "$BASE/research-runtime.js" -o runtime.js \
+              && curl -fsSL --max-time 20 "$BASE/market-fallback.js" -o market.js \
+              && curl -fsSL --max-time 20 "$BASE/research-conclusion.js" -o conclusion.js; then assets=yes; break; fi
             sleep 4
           done
-          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1 && node --check quality.js >/dev/null 2>&1 && node --check runtime.js >/dev/null 2>&1; then syntax=yes; fi
+          if curl -fsSL --max-time 20 "https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/main/data/market-context.json" -o market-context.json; then
+            python - <<'PY' && market_snapshot=yes
+          import json
+          p=json.load(open('market-context.json'))
+          m=p.get('market') or {}
+          assert m.get('available') is True
+          assert int(m.get('rows',0)) >= 240
+          assert m.get('date')
+          PY
+          fi
+          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1 && node --check quality.js >/dev/null 2>&1 && node --check runtime.js >/dev/null 2>&1 && node --check market.js >/dev/null 2>&1 && node --check conclusion.js >/dev/null 2>&1; then syntax=yes; fi
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           EXIT=127
           if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
@@ -68,6 +83,8 @@ jobs:
           grep -Fq '>Ensemble<' dom.html && ensemble=yes
           grep -Fq 'Purged Walk-Forward Validation' dom.html && walk=yes
           grep -Fq 'statistical NLP baseline' dom.html && nlp=yes
+          grep -Fq 'RESEARCH CONCLUSION' dom.html && grep -Fq 'Validation quality' dom.html && conclusion=yes
+          if grep -Fq 'VNINDEX regime' dom.html && ! grep -Fq 'VNINDEX data are unavailable' dom.html && ! grep -Fq '>UNAVAILABLE</b><p>VNINDEX' dom.html; then market_live=yes; fi
           grep -Fq 'At least ~200 completed sessions are required' dom.html && old_error=yes
           grep -Fq 'No usable securities returned' dom.html && empty=yes
           STATUS=$(python - <<'PY'
@@ -78,7 +95,7 @@ jobs:
           PY
           )
           pass=no
-          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$nlp" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
+          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$market_snapshot" = yes ] && [ "$market_live" = yes ] && [ "$conclusion" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$nlp" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
           FINAL="$BASE/research-final.html"
           cat > result.md <<EOF
           # VMEWS RESEARCH CDN ${pass^^}
@@ -87,6 +104,9 @@ jobs:
           - Commit: $GITHUB_SHA
           - Assets: $assets
           - JavaScript syntax: $syntax
+          - VNINDEX snapshot valid: $market_snapshot
+          - VNINDEX rendered available: $market_live
+          - Research conclusion rendered: $conclusion
           - Chrome exit: $EXIT
           - Radar ready: $ready
           - FPT visible: $fpt
