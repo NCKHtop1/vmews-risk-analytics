@@ -14,77 +14,72 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Find first clean Vercel domain that fully works
+      - name: Verify bilingual CDN in Chrome
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}/final-bilingual.html"
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
-          test -n "$CHROME" || exit 1
-          domains=(
-            vmews-risk-analytics-xatw.vercel.app
-            vmews-risk-analytics-oabm.vercel.app
-            vmews-risk-analytics-shf7.vercel.app
-            vmews-risk-analytics.vercel.app
-            vmews-risk-analytics-sojd.vercel.app
-          )
-          : > candidates.txt
-          for d in "${domains[@]}"; do
-            echo "TEST $d" | tee -a candidates.txt
-            api=$(curl -fsSL --max-time 60 -A 'VMEWS-clean-link-smoke/1.0' "https://$d/api/stocks2?mode=scan&symbols=FPT,PNJ,VCB,HPG&t=$(date +%s)" 2>/dev/null)
-            if [ -z "$api" ]; then echo 'api=fail' | tee -a candidates.txt; continue; fi
-            echo "$api" > api.json
-            py=$(python - <<'PY'
-import json
-try:
- p=json.load(open('api.json'))
- rows=p.get('ranking') or []
- print('yes' if str(p.get('version','')).startswith('STOCK-EWS-5') and rows else 'no')
-except Exception: print('no')
-PY
-)
-            echo "api=$py" | tee -a candidates.txt
-            [ "$py" = yes ] || continue
-            timeout 55s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=35000 --dump-dom "https://$d/" > dom.html 2>/dev/null
-            ready=no; fpt=no; pnj=no; old=no; empty=no
-            grep -Fq 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
-            grep -Fq 'FPT Corporation' dom.html && fpt=yes
-            grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
-            grep -Fq 'At least ~200 completed sessions are required' dom.html && old=yes
-            grep -Fq 'No usable securities returned for this request.' dom.html && empty=yes
-            echo "ready=$ready fpt=$fpt pnj=$pnj old=$old empty=$empty" | tee -a candidates.txt
-            if [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$old" = no ] && [ "$empty" = no ]; then
-              echo "https://$d/" > final-url.txt
-              python - <<'PY' > ranking.txt
-import json
-p=json.load(open('api.json'))
-print([(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in p.get('ranking',[])])
-PY
-              break
-            fi
+          : > result.txt
+          echo "url=$BASE" >> result.txt
+          if [ -z "$CHROME" ]; then echo 'chrome=missing' >> result.txt; exit 1; fi
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -fsSL --max-time 20 -A 'VMEWS-bilingual-final/1.0' "$BASE" -o page.html && grep -q 'Vietnam Market Early Warning System' page.html; then ok=1; break; fi
+            sleep 4
           done
-          if [ ! -s final-url.txt ]; then
-            cat > result.md <<EOF
-          # VMEWS CLEAN VERCEL LINK FAILED
+          if [ "$ok" != 1 ]; then echo 'cdn=unreachable' >> result.txt; exit 1; fi
 
-          No clean Vercel domain passed both API + browser DOM checks.
+          rm -rf /tmp/vmews-en /tmp/vmews-vi
+          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=50000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
+          en_ready=no; en_copy=no; en_fpt=no; en_pnj=no; en_old=no; en_empty=no
+          grep -Fq 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html && en_ready=yes
+          grep -Fq 'Spot rising risk.' en.html && en_copy=yes
+          grep -Fq 'FPT Corporation' en.html && en_fpt=yes
+          grep -Fq 'Phu Nhuan Jewelry' en.html && en_pnj=yes
+          grep -Fq 'At least ~200 completed sessions are required' en.html && en_old=yes
+          grep -Fq 'No usable securities returned for this request.' en.html && en_empty=yes
+          echo "en_ready=$en_ready en_copy=$en_copy en_fpt=$en_fpt en_pnj=$en_pnj en_old=$en_old en_empty=$en_empty" >> result.txt
 
-          \`\`\`
-          $(cat candidates.txt)
-          \`\`\`
+          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=50000 --dump-dom "$BASE?lang=vi" > vi.html 2>/dev/null
+          vi_ready=no; vi_copy=no; vi_console=no; vi_fpt=no; vi_pnj=no; vi_old=no; vi_empty=no
+          grep -Fq 'Radar sẵn sàng · STOCK-EWS-5.0.0-PRODUCTION' vi.html && vi_ready=yes
+          grep -Fq 'Phát hiện rủi ro tăng.' vi.html && vi_copy=yes
+          grep -Fq 'BẢNG THEO DÕI RỦI RO' vi.html && vi_console=yes
+          grep -Fq 'FPT Corporation' vi.html && vi_fpt=yes
+          grep -Fq 'Phu Nhuan Jewelry' vi.html && vi_pnj=yes
+          grep -Fq 'At least ~200 completed sessions are required' vi.html && vi_old=yes
+          grep -Fq 'No usable securities returned for this request.' vi.html && vi_empty=yes
+          echo "vi_ready=$vi_ready vi_copy=$vi_copy vi_console=$vi_console vi_fpt=$vi_fpt vi_pnj=$vi_pnj vi_old=$vi_old vi_empty=$vi_empty" >> result.txt
+
+          cat result.txt
+          PASS=yes
+          for x in "$en_ready" "$en_copy" "$en_fpt" "$en_pnj" "$vi_ready" "$vi_copy" "$vi_console" "$vi_fpt" "$vi_pnj"; do [ "$x" = yes ] || PASS=no; done
+          [ "$en_old" = no ] || PASS=no
+          [ "$en_empty" = no ] || PASS=no
+          [ "$vi_old" = no ] || PASS=no
+          [ "$vi_empty" = no ] || PASS=no
+
+          cat > result.md <<EOF
+          # VMEWS BILINGUAL CDN FINAL
+
+          - Final URL: $BASE
+          - English ready: $en_ready
+          - English simple copy: $en_copy
+          - English FPT / PNJ: $en_fpt / $en_pnj
+          - Vietnamese ready: $vi_ready
+          - Vietnamese simple copy: $vi_copy
+          - Vietnamese console translated: $vi_console
+          - Vietnamese FPT / PNJ: $vi_fpt / $vi_pnj
+          - Old ~200-session error: EN=$en_old, VI=$vi_old
+          - Empty ranking: EN=$en_empty, VI=$vi_empty
           EOF
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CLEAN VERCEL LINK FAILED ${GITHUB_SHA::7}" --body-file result.md
+
+          if [ "$PASS" = yes ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL PASS ${GITHUB_SHA::7}" --body-file result.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL FAILED ${GITHUB_SHA::7}" --body-file result.md
             exit 1
           fi
-          URL=$(cat final-url.txt)
-          cat > result.md <<EOF
-          # VMEWS CLEAN VERCEL LINK PASS
-
-          - Final URL: $URL
-          - Ranking: \`$(cat ranking.txt)\`
-          - Browser: Risk radar ready + FPT + PNJ visible
-          - Old ~200-session error: NO
-          - Empty ranking: NO
-          EOF
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CLEAN VERCEL LINK PASS ${GITHUB_SHA::7}" --body-file result.md
