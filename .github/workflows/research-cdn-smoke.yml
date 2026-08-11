@@ -9,6 +9,7 @@ on:
       - 'research-engine.js'
       - 'research-app.js'
       - 'sector-context.js'
+      - 'research-runtime.js'
       - '.github/workflows/research-cdn-smoke.yml'
       - '.research-smoke-trigger'
   workflow_dispatch:
@@ -34,15 +35,16 @@ jobs:
           set +e
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
           URL="$BASE/research-final.html?smoke=FPT"
-          assets=no; syntax=no; ready=no; fpt=no; pnj=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; old_error=no; empty=no
+          assets=no; syntax=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; old_error=no; empty=no
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/research-engine.js" -o engine.js \
               && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js \
-              && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js; then assets=yes; break; fi
+              && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js \
+              && curl -fsSL --max-time 20 "$BASE/research-runtime.js" -o runtime.js; then assets=yes; break; fi
             sleep 4
           done
-          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1; then syntax=yes; fi
+          if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1 && node --check runtime.js >/dev/null 2>&1; then syntax=yes; fi
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           EXIT=127
           if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
@@ -55,6 +57,7 @@ jobs:
           grep -Fq 'Ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
           grep -Fq 'FPT Corporation' dom.html && fpt=yes
           grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
+          grep -Fq 'CURRENT STRUCTURAL ASSESSMENT' dom.html && detail_loaded=yes
           grep -Fq 'Research analysis complete' dom.html && analysis=yes
           grep -Fq 'Random Forest' dom.html && rf=yes
           grep -Fq 'ANFIS' dom.html && anfis=yes
@@ -64,8 +67,15 @@ jobs:
           grep -Fq 'Purged Walk-Forward Validation' dom.html && walk=yes
           grep -Fq 'At least ~200 completed sessions are required' dom.html && old_error=yes
           grep -Fq 'No usable securities returned' dom.html && empty=yes
+          STATUS=$(python - <<'PY'
+          import re,html
+          s=open('dom.html',encoding='utf-8',errors='ignore').read()
+          m=re.search(r'id="analysisStatus"[^>]*>(.*?)</span>',s,re.S)
+          print(html.unescape(re.sub('<[^>]+>',' ',m.group(1))).strip() if m else 'NOT_FOUND')
+          PY
+          )
           pass=no
-          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$analysis" = yes ] && [ "$rf" = yes ] && [ "$anfis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
+          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
           FINAL="$BASE/research-final.html"
           cat > result.md <<EOF
           # VMEWS RESEARCH CDN ${pass^^}
@@ -78,11 +88,13 @@ jobs:
           - Radar ready: $ready
           - FPT visible: $fpt
           - PNJ visible: $pnj
+          - Detail loaded: $detail_loaded
+          - Analysis status: $STATUS
           - Full research analysis complete: $analysis
-          - Random Forest: $rf
-          - ANFIS: $anfis
-          - VAE: $vae
-          - LSTM crash/rebound: $lstm
+          - Random Forest text: $rf
+          - ANFIS text: $anfis
+          - VAE result: $vae
+          - LSTM crash/rebound result: $lstm
           - Walk-forward ensemble row: $ensemble
           - Walk-forward section: $walk
           - Old ~200-session error present: $old_error
