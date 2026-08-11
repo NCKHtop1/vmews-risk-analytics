@@ -26,7 +26,10 @@
     <a class="brand" href="#overview"><span class="brand-mark">V</span><span><b>VMEWS</b><small>Vietnam Market Early Warning System</small></span></a>
     <nav><a href="#stock-radar">Risk Radar</a><a href="#analyze">Analyze</a><a href="#validate">Validate</a><a href="#governance">Governance</a></nav>
     <div class="top-status">
-      <div class="lang-switch" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="vi" aria-pressed="false">VI</button></div>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true" onclick="localStorage.setItem('vmews-lang','en');location.search='?lang=en';return false;">EN</button>
+        <button type="button" data-lang="vi" aria-pressed="false" onclick="localStorage.setItem('vmews-lang','vi');location.search='?lang=vi';return false;">VI</button>
+      </div>
       <span class="badge live">RISK MANAGER</span><span id="topClock">—</span>
     </div>
   </header>
