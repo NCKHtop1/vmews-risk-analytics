@@ -8,7 +8,7 @@ spec = importlib.util.spec_from_file_location('stock_ews_base', base_path)
 base = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(base)
 
-VERSION = 'STOCK-EWS-4.0.2-SEGMENTED'
+VERSION = 'STOCK-EWS-4.0.3-RESILIENT'
 
 
 def _two_year_start(start, end):
@@ -18,19 +18,31 @@ def _two_year_start(start, end):
 
 def market_module(start, end, asof=None):
     fetch_start = _two_year_start(start, end)
-    rows, audit, intraday = base.fetch_history('VNINDEX', fetch_start, end, segmented=True, index=True)
-    cur, hz, _ = base.state_from_rows(rows, asof)
-    a = hz['20']
-    score = .65 * cur['technical'] + .35 * (a['score'] if a.get('available') else 50)
-    return {
-        'score': score,
-        'available': True,
-        'technical': cur['technical'],
-        'analog20': a,
-        'date': cur['date'],
-        'audit': audit,
-        'intradayBarExcluded': intraday,
-    }
+    try:
+        rows, audit, intraday = base.fetch_history('VNINDEX', fetch_start, end, segmented=True, index=True)
+        cur, hz, _ = base.state_from_rows(rows, asof)
+        a = hz['20']
+        score = .65 * cur['technical'] + .35 * (a['score'] if a.get('available') else 50)
+        return {
+            'score': score,
+            'available': True,
+            'technical': cur['technical'],
+            'analog20': a,
+            'date': cur['date'],
+            'audit': audit,
+            'intradayBarExcluded': intraday,
+        }
+    except Exception as e:
+        return {
+            'score': 50,
+            'available': False,
+            'technical': None,
+            'analog20': {'score': 50, 'rate': None, 'matches': 0, 'available': False},
+            'date': None,
+            'audit': [],
+            'intradayBarExcluded': False,
+            'reason': str(e)[:240],
+        }
 
 
 def scan_one(symbol, start, end, market, macro):
@@ -67,8 +79,6 @@ def scan_one(symbol, start, end, market, macro):
     }
 
 
-# Patch the original module so detail() and scan() keep the existing model logic
-# while using production-safe segmented price retrieval.
 base.market_module = market_module
 base.scan_one = scan_one
 base.VERSION = VERSION
