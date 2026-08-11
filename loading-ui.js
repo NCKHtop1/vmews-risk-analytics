@@ -12,14 +12,14 @@ const busy=document.createElement('div');busy.id='vmewsBusy';busy.setAttribute('
 let active=0,hideTimer=null;
 function start(msg,btn){
   active++;clearTimeout(hideTimer);busy.classList.add('show');document.getElementById('vmewsBusyText').textContent=msg||'Loading market data and risk modules…';
-  if(btn){btn.dataset.vmewsLabel=btn.textContent;btn.classList.add('vmews-running');btn.disabled=true;btn.textContent='Running…'}
+  if(btn&&!btn.classList.contains('vmews-running')){btn.dataset.vmewsLabel=btn.textContent;btn.classList.add('vmews-running');btn.disabled=true;btn.textContent='Running…'}
 }
 function stop(btn){
   active=Math.max(0,active-1);if(btn){btn.classList.remove('vmews-running');btn.disabled=false;if(btn.dataset.vmewsLabel)btn.textContent=btn.dataset.vmewsLabel}
   if(!active)hideTimer=setTimeout(()=>busy.classList.remove('show'),350);
 }
 function bindButton(id,msg){
-  document.addEventListener('click',e=>{const btn=e.target.closest('#'+id);if(!btn)return;start(msg,btn);setTimeout(()=>stop(btn),59000)},true);
+  document.addEventListener('click',e=>{const btn=e.target.closest('#'+id);if(!btn)return;setTimeout(()=>{start(msg,btn);setTimeout(()=>stop(btn),59000)},0)},true);
 }
 bindButton('radarRefresh','Fetching Vnstock history and ranking the watchlist…');
 bindButton('runStockBtn','Loading the selected stock, evidence modules and risk state…');
