@@ -21,7 +21,7 @@ jobs:
           import json, time, urllib.request
           base='https://vmews-risk-analytics-sojd.vercel.app'
           def get(path, timeout=55):
-              req=urllib.request.Request(base+path, headers={'User-Agent':'VMEWS-direct-smoke/1.0','Cache-Control':'no-cache'})
+              req=urllib.request.Request(base+path, headers={'User-Agent':'VMEWS-final-smoke/1.0','Cache-Control':'no-cache'})
               with urllib.request.urlopen(req, timeout=timeout) as r:
                   return r.status, json.loads(r.read().decode('utf-8'))
           last=None
@@ -33,13 +33,13 @@ jobs:
                   if hs==200 and ss==200 and h.get('ok') and str(h.get('version','')).startswith('STOCK-EWS-5') and ranking:
                       rows=[(x.get('symbol'), round(float(x.get('effectiveScore',x.get('score',0))),2), x.get('color')) for x in ranking]
                       with open('smoke-result.md','w',encoding='utf-8') as f:
-                          f.write('# VMEWS direct radar production PASS\n\n')
+                          f.write('# VMEWS FINAL END-TO-END PASS\n\n')
                           f.write(f'- Health version: `{h.get("version")}`\n')
                           f.write(f'- Scan version: `{s.get("version")}`\n')
                           f.write(f'- Scanned: `{s.get("scanned")}`\n')
                           f.write(f'- Ranking: `{rows}`\n')
                           f.write(f'- Scan errors: `{s.get("errors")}`\n')
-                      print('PASS', rows)
+                      print('API PASS', rows)
                       break
                   last=f'health={h}; scan_version={s.get("version")}; ranking={len(ranking)}; errors={s.get("errors")}'
               except Exception as e:
@@ -56,7 +56,7 @@ jobs:
           python - <<'PY'
           import json, urllib.request, time
           u='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=detail&symbol=FPT&t='+str(int(time.time()))
-          req=urllib.request.Request(u, headers={'User-Agent':'VMEWS-direct-smoke/1.0','Cache-Control':'no-cache'})
+          req=urllib.request.Request(u, headers={'User-Agent':'VMEWS-final-smoke/1.0','Cache-Control':'no-cache'})
           with urllib.request.urlopen(req, timeout=60) as r:
               p=json.loads(r.read().decode())
           assert p.get('symbol')=='FPT', p
@@ -67,10 +67,41 @@ jobs:
               f.write(f'- FPT risk score: `{round(float(p.get("score")),2)}`\n')
               f.write(f'- FPT state: `{p.get("color")}`\n')
               f.write(f'- FPT reasons: `{p.get("reasons")}`\n')
-          print('FPT',p.get('modelAsOf'),p.get('score'),p.get('color'))
+          print('FPT PASS',p.get('modelAsOf'),p.get('score'),p.get('color'))
           PY
 
-      - name: Publish PASS evidence
+      - name: Verify browser-visible final UI
+        shell: bash
+        run: |
+          URL='https://htmlpreview.github.io/?https://github.com/NCKHtop1/vmews-risk-analytics/blob/f1b1d9cd155a17dfc5ba2fdcb002cf2a90aa8e20/final.html'
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$CHROME" ]; then echo 'Chrome/Chromium not found'; exit 1; fi
+          timeout 100s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=70000 --dump-dom "$URL" > dom.html
+          grep -F 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html
+          grep -F 'FPT Corporation' dom.html
+          grep -F 'Phu Nhuan Jewelry' dom.html
+          if grep -F 'At least ~200 completed sessions are required' dom.html; then echo 'Old runtime error visible'; exit 1; fi
+          if grep -F 'No usable securities returned for this request.' dom.html; then echo 'No model rows visible'; exit 1; fi
+          {
+            echo "- Final URL: $URL"
+            echo '- Browser DOM: `Risk radar ready` + FPT + PNJ verified'
+            echo '- Old ~200-session error visible: `NO`'
+          } >> smoke-result.md
+          echo 'BROWSER PASS'
+
+      - name: Publish FINAL PASS evidence
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS direct radar PASS ${GITHUB_SHA::7}" --body-file smoke-result.md
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL END-TO-END PASS ${GITHUB_SHA::7}" --body-file smoke-result.md
+
+  report:
+    if: always()
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish failure marker
+        if: needs.smoke.result != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.smoke.result }}
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL VERIFY FAILED ${GITHUB_SHA::7}" --body "End-to-end verification result: $RESULT. Do not send a final link for this run."
