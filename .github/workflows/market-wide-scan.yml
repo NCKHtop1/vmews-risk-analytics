@@ -38,13 +38,13 @@ jobs:
           pip install --disable-pip-version-check -q tradingview-screener==3.2.1
       - name: Build full-market T-day snapshot
         run: python scripts/update_market_scan.py
-      - name: Validate market-wide coverage
+      - name: Validate market-wide coverage and alert breadth
         run: |
           python - <<'PY'
           import json
           p=json.load(open('data/market-scan.json',encoding='utf-8'))
           c=p.get('coverage',{});b=p.get('breadth',{})
-          assert p.get('version')=='VMEWS-MARKET-SCAN-2.0.0', p.get('version')
+          assert p.get('version')=='VMEWS-MARKET-SCAN-3.0.0', p.get('version')
           assert p.get('modelDate')
           assert c.get('listedUniverse',0)>=500, c
           assert c.get('tradingViewUniverseRows',0)>=500, c
@@ -52,9 +52,11 @@ jobs:
           assert c.get('coverageRatio',0)>=0.55, c
           assert c.get('featureReady',0)>=500, c
           assert c.get('eligibleLiquidCurrent',0)>=200, c
+          assert b.get('redShareEligible',0)<=0.12, b
+          assert b.get('redShareEligible',0)+b.get('yellowShareEligible',0)<=0.30, b
           assert isinstance(p.get('redList'),list) and isinstance(p.get('yellowList'),list)
-          assert all(x.get('status')=='RED' and x.get('date')==p['modelDate'] and x.get('liquidEligible') for x in p['redList'])
-          assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] and x.get('liquidEligible') for x in p['yellowList'])
+          assert all(x.get('status')=='RED' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=3 for x in p['redList'])
+          assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=2 for x in p['yellowList'])
           rows=[
             '# VMEWS MARKET-WIDE T-DAY SCAN PASS','',
             f"Generated: {p.get('generatedAt')}",
@@ -65,14 +67,15 @@ jobs:
             f"Cross-matched coverage: {c.get('priceCovered')} ({c.get('coverageRatio',0):.1%})",
             f"Feature-ready: {c.get('featureReady')}",
             f"Eligible liquid/current: {c.get('eligibleLiquidCurrent')}",
-            f"RED: {b.get('red')}",
-            f"YELLOW: {b.get('yellow')}",
+            f"RED: {b.get('red')} ({b.get('redShareEligible',0):.1%} of eligible)",
+            f"YELLOW: {b.get('yellow')} ({b.get('yellowShareEligible',0):.1%} of eligible)",
             f"WATCH: {b.get('watch')}",
             f"New escalations: {b.get('newEscalations')}",
+            f"VNINDEX 1M: {p.get('marketContext',{}).get('vnindexMomentum20d',0):.1%}",
             '', 'Top morning attention:',
           ]
           for x in p.get('topAttention',[])[:15]:
-            rows.append(f"- {x['symbol']} [{x['exchange']}] {x['status']} {x['score']:.1f}/100 · {x.get('transition')} · {'; '.join(x.get('drivers',[])[:2])}")
+            rows.append(f"- {x['symbol']} [{x['exchange']}] {x['status']} {x['score']:.1f}/100 · signals={x.get('independentStressSignals')} · {x.get('transition')} · {'; '.join(x.get('drivers',[])[:2])}")
           body='\n'.join(rows)+'\n'
           open('market-scan-report.md','w',encoding='utf-8').write(body)
           print(body)
