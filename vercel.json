@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "ignoreCommand": "git log -1 --pretty=%B | grep -q '\\[data-only\\]'",
   "regions": ["sin1"],
   "rewrites": [
     {"source": "/", "destination": "/research-final.html"},
@@ -8,30 +9,12 @@
     {"source": "/api/validate", "destination": "/api/validate2"}
   ],
   "functions": {
-    "api/ews.py": {
-      "maxDuration": 30,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    },
-    "api/stocks.py": {
-      "maxDuration": 30,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    },
-    "api/stocks2.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    },
-    "api/radar.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    },
-    "api/validate.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    },
-    "api/validate2.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
-    }
+    "api/ews.py": {"maxDuration": 30,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
+    "api/stocks.py": {"maxDuration": 30,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
+    "api/stocks2.py": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
+    "api/radar.py": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
+    "api/validate.py": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
+    "api/validate2.py": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"}
   },
   "headers": [
     {"source": "/(.*)", "headers": [
