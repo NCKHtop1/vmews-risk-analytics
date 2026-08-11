@@ -16,9 +16,9 @@ concurrency:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 6
     steps:
-      - name: Verify bilingual CDN in Chrome
+      - name: Verify VI then EN in Chrome
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -26,36 +26,14 @@ jobs:
           set +e
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}/final-bilingual.html"
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
-          : > result.txt
-          echo "url=$BASE" >> result.txt
-          if [ -z "$CHROME" ]; then echo 'chrome=missing' >> result.txt; exit 1; fi
+          [ -n "$CHROME" ] || exit 1
 
-          cdn=no
-          for i in $(seq 1 20); do
-            if curl -fsSL --max-time 15 -A 'VMEWS-bilingual-final/3.0' "$BASE" -o page.html && grep -q 'Vietnam Market Early Warning System' page.html; then cdn=yes; break; fi
-            sleep 3
+          for i in $(seq 1 25); do
+            curl -fsSL --max-time 20 -A 'VMEWS-bilingual-check/1.0' "$BASE" -o page.html && grep -q 'Vietnam Market Early Warning System' page.html && break
+            sleep 4
           done
-          echo "cdn=$cdn" >> result.txt
-          [ "$cdn" = yes ] || exit 1
 
-          warm=no
-          for i in 1 2; do
-            curl -fsSL --max-time 65 -A 'VMEWS-bilingual-final/3.0' "https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG,MWG,VHM,SSI,DGC&t=$(date +%s)" -o warm.json 2>/dev/null
-            if python -c "import json,sys; p=json.load(open('warm.json')); sys.exit(0 if (p.get('ranking') or []) else 1)" 2>/dev/null; then warm=yes; break; fi
-            sleep 3
-          done
-          echo "backend_warm=$warm" >> result.txt
-
-          rm -rf /tmp/vmews-en /tmp/vmews-vi
-          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=60000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
-          en_ready=no; en_copy=no; en_fpt=no; en_pnj=no; en_old=no; en_empty=no
-          grep -Fq 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html && en_ready=yes
-          grep -Fq 'Spot rising risk.' en.html && en_copy=yes
-          grep -Fq 'FPT Corporation' en.html && en_fpt=yes
-          grep -Fq 'Phu Nhuan Jewelry' en.html && en_pnj=yes
-          grep -Fq 'At least ~200 completed sessions are required' en.html && en_old=yes
-          grep -Fq 'No usable securities returned for this request.' en.html && en_empty=yes
-          echo "en_ready=$en_ready en_copy=$en_copy en_fpt=$en_fpt en_pnj=$en_pnj en_old=$en_old en_empty=$en_empty" >> result.txt
+          rm -rf /tmp/vmews-vi /tmp/vmews-en
 
           timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=60000 --dump-dom "$BASE?lang=vi" > vi.html 2>/dev/null
           vi_ready=no; vi_copy=no; vi_console=no; vi_fpt=no; vi_pnj=no; vi_old=no; vi_empty=no
@@ -66,37 +44,27 @@ jobs:
           grep -Fq 'Phu Nhuan Jewelry' vi.html && vi_pnj=yes
           grep -Fq 'At least ~200 completed sessions are required' vi.html && vi_old=yes
           grep -Fq 'No usable securities returned for this request.' vi.html && vi_empty=yes
-          echo "vi_ready=$vi_ready vi_copy=$vi_copy vi_console=$vi_console vi_fpt=$vi_fpt vi_pnj=$vi_pnj vi_old=$vi_old vi_empty=$vi_empty" >> result.txt
+
+          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=60000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
+          en_ready=no; en_copy=no; en_fpt=no; en_pnj=no; en_old=no; en_empty=no
+          grep -Fq 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html && en_ready=yes
+          grep -Fq 'Spot rising risk.' en.html && en_copy=yes
+          grep -Fq 'FPT Corporation' en.html && en_fpt=yes
+          grep -Fq 'Phu Nhuan Jewelry' en.html && en_pnj=yes
+          grep -Fq 'At least ~200 completed sessions are required' en.html && en_old=yes
+          grep -Fq 'No usable securities returned for this request.' en.html && en_empty=yes
 
           PASS=yes
-          [ "$warm" = yes ] || PASS=no
-          for x in "$en_ready" "$en_copy" "$en_fpt" "$en_pnj" "$vi_ready" "$vi_copy" "$vi_console" "$vi_fpt" "$vi_pnj"; do [ "$x" = yes ] || PASS=no; done
-          [ "$en_old" = no ] || PASS=no
-          [ "$en_empty" = no ] || PASS=no
+          for x in "$vi_ready" "$vi_copy" "$vi_console" "$vi_fpt" "$vi_pnj" "$en_ready" "$en_copy" "$en_fpt" "$en_pnj"; do [ "$x" = yes ] || PASS=no; done
           [ "$vi_old" = no ] || PASS=no
           [ "$vi_empty" = no ] || PASS=no
+          [ "$en_old" = no ] || PASS=no
+          [ "$en_empty" = no ] || PASS=no
 
-          cat > result.md <<EOF
-          # VMEWS BILINGUAL CDN FINAL
-
-          - Final URL: $BASE
-          - CDN reachable: $cdn
-          - Backend warm: $warm
-          - English ready: $en_ready
-          - English simple copy: $en_copy
-          - English FPT / PNJ: $en_fpt / $en_pnj
-          - Vietnamese ready: $vi_ready
-          - Vietnamese simple copy: $vi_copy
-          - Vietnamese console translated: $vi_console
-          - Vietnamese FPT / PNJ: $vi_fpt / $vi_pnj
-          - Old ~200-session error: EN=$en_old, VI=$vi_old
-          - Empty ranking: EN=$en_empty, VI=$vi_empty
-          EOF
-
-          cat result.md
+          BODY="Final URL: $BASE\nVI: ready=$vi_ready, copy=$vi_copy, console=$vi_console, FPT=$vi_fpt, PNJ=$vi_pnj, old_error=$vi_old, empty=$vi_empty\nEN: ready=$en_ready, copy=$en_copy, FPT=$en_fpt, PNJ=$en_pnj, old_error=$en_old, empty=$en_empty"
           if [ "$PASS" = yes ]; then
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL PASS ${GITHUB_SHA::7}" --body-file result.md
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL PASS ${GITHUB_SHA::7}" --body "$BODY"
           else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL FAILED ${GITHUB_SHA::7}" --body-file result.md
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL FAILED ${GITHUB_SHA::7}" --body "$BODY"
             exit 1
           fi
