@@ -1,0 +1,84 @@
+name: Verify bilingual CDN final
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for immutable CDN page
+        shell: bash
+        run: |
+          URL="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}/final-bilingual.html"
+          echo "$URL" > final-url.txt
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -fsSL --max-time 20 -A 'VMEWS-bilingual-smoke/1.0' "$URL" -o page.html \
+              && grep -q 'Vietnam Market Early Warning System' page.html \
+              && curl -fsSL --max-time 20 "https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}/i18n-final.js" -o i18n.js; then
+              ok=1; break
+            fi
+            sleep 4
+          done
+          test "$ok" = 1
+
+      - name: Verify English UI and live ranking
+        shell: bash
+        run: |
+          URL=$(cat final-url.txt)
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf /tmp/vmews-en
+          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --lang=en-US --user-data-dir=/tmp/vmews-en --virtual-time-budget=50000 --dump-dom "$URL" > en.html 2>/dev/null
+          grep -F 'Spot rising risk.' en.html
+          grep -F 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html
+          grep -F 'FPT Corporation' en.html
+          grep -F 'Phu Nhuan Jewelry' en.html
+          grep -F 'What needs attention now?' en.html
+          grep -F '>EN<' en.html
+          grep -F '>VI<' en.html
+          ! grep -Fq 'At least ~200 completed sessions are required' en.html
+          ! grep -Fq 'No usable securities returned for this request.' en.html
+
+      - name: Verify Vietnamese UI and live ranking
+        shell: bash
+        run: |
+          URL=$(cat final-url.txt)
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf /tmp/vmews-vi
+          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --lang=vi-VN --user-data-dir=/tmp/vmews-vi --virtual-time-budget=50000 --dump-dom "$URL" > vi.html 2>/dev/null
+          grep -F 'Phát hiện rủi ro tăng.' vi.html
+          grep -F 'BẢNG THEO DÕI RỦI RO' vi.html
+          grep -F 'Radar sẵn sàng · STOCK-EWS-5.0.0-PRODUCTION' vi.html
+          grep -F 'FPT Corporation' vi.html
+          grep -F 'Phu Nhuan Jewelry' vi.html
+          grep -F 'Hiện tại cần chú ý gì?' vi.html
+          grep -F 'XẾP HẠNG RỦI RO HIỆN TẠI' vi.html
+          ! grep -Fq 'At least ~200 completed sessions are required' vi.html
+          ! grep -Fq 'No usable securities returned for this request.' vi.html
+
+      - name: Publish PASS evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          URL=$(cat final-url.txt)
+          cat > result.md <<EOF
+          # VMEWS BILINGUAL CDN FINAL PASS
+
+          - Final URL: $URL
+          - English: simple copy + live ranking verified in Chrome
+          - Vietnamese: simple copy + live ranking verified in Chrome
+          - Language switch: EN / VI present
+          - FPT + PNJ visible: YES
+          - Old ~200-session error: NO
+          - Empty ranking: NO
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL PASS ${GITHUB_SHA::7}" --body-file result.md
