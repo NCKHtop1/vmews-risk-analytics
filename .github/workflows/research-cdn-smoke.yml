@@ -14,6 +14,7 @@ on:
       - 'research-evidence.js'
       - 'market-fallback.js'
       - 'research-conclusion.js'
+      - 'scripts/update_market_scan.py'
       - 'data/market-context.json'
       - 'data/research-news.json'
       - '.github/workflows/research-cdn-smoke.yml'
@@ -41,7 +42,7 @@ jobs:
           set +e
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
           URL="$BASE/research-final.html?smoke=FPT"
-          assets=no; syntax=no; market_snapshot=no; news_universe=no; market_live=no; conclusion=no; evidence=no; news_audit=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; nlp=no; old_error=no; empty=no
+          assets=no; syntax=no; market_snapshot=no; news_universe=no; market_wide_snapshot=no; market_wide_ui=no; market_alerts=no; market_live=no; conclusion=no; evidence=no; news_audit=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; nlp=no; old_error=no; empty=no
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/research-engine-v2.js" -o engine.js \
@@ -69,6 +70,23 @@ jobs:
           assert 'DXG' in c and c['DXG'].get('used',0)>=8
           PY
           fi
+          if curl -fsSL --max-time 30 "https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/main/data/market-scan.json" -o market-scan.json; then
+            python - <<'PY' && market_wide_snapshot=yes
+          import json
+          p=json.load(open('market-scan.json'));c=p.get('coverage',{});b=p.get('breadth',{});m=p.get('marketContext',{})
+          assert p.get('version')=='VMEWS-MARKET-SCAN-3.1.0'
+          assert p.get('modelDate')
+          assert c.get('listedUniverse',0)>=500
+          assert c.get('priceCovered',0)>=700 and c.get('coverageRatio',0)>=.55
+          assert c.get('featureReady',0)>=500 and c.get('eligibleLiquidCurrent',0)>=200
+          assert b.get('redShareEligible',0)<=.12
+          assert b.get('redShareEligible',0)+b.get('yellowShareEligible',0)<=.30
+          assert len(p.get('redList',[]))+len(p.get('yellowList',[]))>0
+          assert all(x.get('date')==p['modelDate'] and x.get('liquidEligible') for x in p.get('redList',[])+p.get('yellowList',[]))
+          if not m.get('available'):
+              assert all(x.get('marketRelativeEvidenceAvailable') is False for x in p.get('ranking',[]))
+          PY
+          fi
           if [ "$assets" = yes ] && node --check engine.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1 && node --check sector.js >/dev/null 2>&1 && node --check quality.js >/dev/null 2>&1 && node --check runtime.js >/dev/null 2>&1 && node --check evidence.js >/dev/null 2>&1 && node --check market.js >/dev/null 2>&1 && node --check conclusion.js >/dev/null 2>&1; then syntax=yes; fi
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           EXIT=127
@@ -79,6 +97,8 @@ jobs:
           else
             : > dom.html; : > chrome.err
           fi
+          grep -Fq 'Ready · VMEWS-MARKET-SCAN-3.1.0' dom.html && grep -Fq 'T-Day Market-Wide Scan' dom.html && market_wide_ui=yes
+          if grep -Fq 'id="marketScanRows"' dom.html && ! grep -Fq 'Loading whole-market scan' dom.html && (grep -Fq '>RED<' dom.html || grep -Fq '>YELLOW<' dom.html); then market_alerts=yes; fi
           grep -Fq 'Ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
           grep -Fq 'FPT Corporation' dom.html && fpt=yes
           grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
@@ -104,10 +124,10 @@ jobs:
           PY
           )
           pass=no
-          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$market_snapshot" = yes ] && [ "$news_universe" = yes ] && [ "$market_live" = yes ] && [ "$conclusion" = yes ] && [ "$evidence" = yes ] && [ "$news_audit" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$nlp" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
+          if [ "$assets" = yes ] && [ "$syntax" = yes ] && [ "$market_snapshot" = yes ] && [ "$news_universe" = yes ] && [ "$market_wide_snapshot" = yes ] && [ "$market_wide_ui" = yes ] && [ "$market_alerts" = yes ] && [ "$market_live" = yes ] && [ "$conclusion" = yes ] && [ "$evidence" = yes ] && [ "$news_audit" = yes ] && [ "$ready" = yes ] && [ "$fpt" = yes ] && [ "$pnj" = yes ] && [ "$detail_loaded" = yes ] && [ "$analysis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$ensemble" = yes ] && [ "$walk" = yes ] && [ "$nlp" = yes ] && [ "$old_error" = no ] && [ "$empty" = no ]; then pass=yes; fi
           FINAL="$BASE/research-final.html"
           cat > result.md <<EOF
-          # VMEWS RESEARCH CDN ${pass^^}
+          # VMEWS RESEARCH + MARKET-WIDE CDN ${pass^^}
 
           - Final URL: $FINAL
           - Commit: $GITHUB_SHA
@@ -115,6 +135,9 @@ jobs:
           - JavaScript syntax: $syntax
           - VNINDEX snapshot valid: $market_snapshot
           - Full-universe news snapshot valid: $news_universe
+          - Market-wide T-day snapshot valid: $market_wide_snapshot
+          - Market-wide T-day UI rendered: $market_wide_ui
+          - RED/YELLOW alert table rendered: $market_alerts
           - VNINDEX rendered available: $market_live
           - Research conclusion rendered: $conclusion
           - Evidence sufficiency rendered: $evidence
@@ -140,5 +163,5 @@ jobs:
           echo '```' >> result.md
           tail -40 chrome.err >> result.md
           echo '```' >> result.md
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RESEARCH CDN ${pass^^} ${GITHUB_SHA::7}" --body-file result.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RESEARCH MARKET CDN ${pass^^} ${GITHUB_SHA::7}" --body-file result.md
           test "$pass" = yes
