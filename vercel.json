@@ -4,7 +4,8 @@
   "ignoreCommand": "[ \"$VERCEL_PROJECT_PRODUCTION_URL\" != \"vmews-risk-analytics-sojd.vercel.app\" ]",
   "regions": ["sin1"],
   "rewrites": [
-    {"source": "/api/stocks2", "destination": "/api/radar"}
+    {"source": "/api/stocks2", "destination": "/api/radar"},
+    {"source": "/api/validate", "destination": "/api/validate2"}
   ],
   "functions": {
     "api/ews.py": {
@@ -26,6 +27,10 @@
     "api/validate.py": {
       "maxDuration": 60,
       "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
+    },
+    "api/validate2.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"
     }
   },
   "headers": [
@@ -36,6 +41,7 @@
     {"source": "/api/ews", "headers": [{"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}]},
     {"source": "/api/stocks2", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
     {"source": "/api/radar", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
-    {"source": "/api/validate", "headers": [{"key": "Cache-Control", "value": "no-store"}]}
+    {"source": "/api/validate", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
+    {"source": "/api/validate2", "headers": [{"key": "Cache-Control", "value": "no-store"}]}
   ]
 }
