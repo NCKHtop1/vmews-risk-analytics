@@ -1,0 +1,58 @@
+name: Production smoke test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wait for Vercel production and verify real radar data
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, time, urllib.request, urllib.parse
+          base='https://vmews-risk-analytics-sojd.vercel.app'
+          def get(path, timeout=45):
+              req=urllib.request.Request(base+path, headers={'User-Agent':'VMEWS-production-smoke/1.0','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req, timeout=timeout) as r:
+                  raw=r.read().decode('utf-8')
+                  return r.status, json.loads(raw)
+          last=None
+          for attempt in range(1, 37):
+              try:
+                  hs,h=get('/api/stocks2?mode=health&t='+str(int(time.time())))
+                  ss,s=get('/api/stocks2?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time())), timeout=55)
+                  ranking=s.get('ranking') or []
+                  if hs==200 and ss==200 and h.get('ok') and str(h.get('version','')).startswith('STOCK-EWS-5') and len(ranking)>=1:
+                      print('HEALTH', json.dumps(h, ensure_ascii=False))
+                      print('SCAN_VERSION', s.get('version'))
+                      print('SCANNED', s.get('scanned'))
+                      print('RANKING', [(x.get('symbol'), round(float(x.get('effectiveScore',x.get('score',0))),2), x.get('color')) for x in ranking])
+                      print('ERRORS', s.get('errors'))
+                      break
+                  last=f'unexpected payload health={h} scan_version={s.get("version")} ranking={len(ranking)} errors={s.get("errors")}'
+              except Exception as e:
+                  last=repr(e)
+              print(f'attempt {attempt}: {last}')
+              time.sleep(10)
+          else:
+              raise SystemExit('Production smoke failed: '+str(last))
+          PY
+      - name: Verify FPT detail returns model output
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.request, time
+          u='https://vmews-risk-analytics-sojd.vercel.app/api/stocks2?mode=detail&symbol=FPT&t='+str(int(time.time()))
+          req=urllib.request.Request(u, headers={'User-Agent':'VMEWS-production-smoke/1.0','Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req, timeout=60) as r:
+              p=json.loads(r.read().decode())
+          assert p.get('symbol')=='FPT', p
+          assert isinstance(p.get('score'), (int,float)), p
+          assert p.get('current',{}).get('date'), p
+          print('FPT', p.get('modelAsOf'), p.get('score'), p.get('color'), p.get('reasons'))
+          PY
