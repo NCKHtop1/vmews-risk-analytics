@@ -33,12 +33,11 @@ jobs:
           PY
 
       - name: Browser diagnostic
-        id: browser
         continue-on-error: true
         shell: bash
         run: |
           set +e
-          URL='https://htmlpreview.github.io/?https://github.com/NCKHtop1/vmews-risk-analytics/blob/f1b1d9cd155a17dfc5ba2fdcb002cf2a90aa8e20/final.html'
+          URL='https://rawcdn.githack.com/NCKHtop1/vmews-risk-analytics/f1b1d9cd155a17dfc5ba2fdcb002cf2a90aa8e20/final.html'
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
           echo "$URL" > final-url.txt
           if [ -z "$CHROME" ]; then echo 'chrome=missing' > browser.txt; exit 0; fi
