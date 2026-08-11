@@ -47,7 +47,7 @@ def relevance(sym,name,title):
 def noisy(title):
     low=title.lower().strip();return not low or low.startswith('untitled') or low.startswith('cw.') or 'chứng quyền' in low or 'covered warrant' in low
 def fetch(sym,name,group,limit=MAX_PER_QUERY):
-    q=(f'"{sym}" cổ phiếu "{name}" {group}').strip();url='https://news.google.com/rss/search?q='+quote_plus(q)+'&hl=vi&gl=VN&ceid=VN:vi';req=Request(url,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research-News/5.0'})
+    q=(f'"{sym}" cổ phiếu {group}').strip();url='https://news.google.com/rss/search?q='+quote_plus(q)+'&hl=vi&gl=VN&ceid=VN:vi';req=Request(url,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research-News/5.1'})
     with urlopen(req,timeout=8) as r:root=ET.fromstring(r.read())
     out=[]
     for it in root.findall('.//item')[:limit]:
@@ -65,7 +65,7 @@ def coverage_grade(used,pubs,r180):
     if used>=6 and pubs>=3:return 'LIMITED'
     return 'THIN'
 def main():
-    now=datetime.now(timezone.utc);cutoff=(now-timedelta(days=WINDOW_DAYS)).timestamp();c90=(now-timedelta(days=90)).timestamp();c180=(now-timedelta(days=180)).timestamp();payload={'generatedAt':now.isoformat(),'windowDays':WINDOW_DAYS,'method':'full-universe Google News RSS; grouped publisher and official-source queries; recency, relevance, source-quality, event taxonomy and fuzzy deduplication','symbols':{s:[] for s in SYMBOLS},'coverage':{}};raw={s:[] for s in SYMBOLS};jobs=[]
+    now=datetime.now(timezone.utc);cutoff=(now-timedelta(days=WINDOW_DAYS)).timestamp();c90=(now-timedelta(days=90)).timestamp();c180=(now-timedelta(days=180)).timestamp();payload={'generatedAt':now.isoformat(),'windowDays':WINDOW_DAYS,'method':'full-universe Google News RSS; ticker-first grouped publisher and official-source queries; recency, relevance, source-quality, event taxonomy and fuzzy deduplication','symbols':{s:[] for s in SYMBOLS},'coverage':{}};raw={s:[] for s in SYMBOLS};jobs=[]
     with ThreadPoolExecutor(max_workers=24) as ex:
         for sym,name in SYMBOLS.items():
             for group in QUERY_GROUPS:jobs.append(ex.submit(fetch,sym,name,group))
