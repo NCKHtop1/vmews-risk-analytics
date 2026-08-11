@@ -1,0 +1,93 @@
+name: Verify VMEWS CDN Final
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wait for commit-pinned CDN page
+        shell: bash
+        run: |
+          URL="https://cdn.jsdelivr.net/gh/NCKHtop1/vmews-risk-analytics@${GITHUB_SHA}/final.html"
+          echo "$URL" > final-url.txt
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -fsSL --max-time 20 -A 'VMEWS-CDN-smoke/1.0' "$URL" -o final.html && grep -q 'Vietnam Market Early Warning System' final.html; then ok=1; break; fi
+            sleep 5
+          done
+          test "$ok" = 1
+          echo "CDN page reachable: $URL"
+
+      - name: Verify backend scan directly
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,time,urllib.request
+          u='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time()))
+          req=urllib.request.Request(u,headers={'User-Agent':'VMEWS-CDN-smoke/1.0','Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req,timeout=60) as r:p=json.loads(r.read().decode())
+          rows=p.get('ranking') or []
+          assert p.get('version')=='STOCK-EWS-5.0.0-PRODUCTION',p
+          assert len(rows)>=1,p
+          print('BACKEND_RANKING',[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in rows])
+          PY
+
+      - name: Render final page in Chrome and require visible model rows
+        shell: bash
+        run: |
+          URL=$(cat final-url.txt)
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$CHROME" ]; then
+            echo 'Chrome/Chromium not found'; exit 1
+          fi
+          "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=60000 --dump-dom "$URL" > dom.html
+          grep -F 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html
+          grep -F 'FPT Corporation' dom.html
+          grep -F 'Phu Nhuan Jewelry' dom.html
+          if grep -F 'At least ~200 completed sessions are required' dom.html; then
+            echo 'Old runtime error still visible'; exit 1
+          fi
+          echo 'VISIBLE DOM VERIFIED'
+
+      - name: Capture verified evidence
+        shell: bash
+        run: |
+          URL=$(cat final-url.txt)
+          python - <<'PY'
+          import json,time,urllib.request,os,re
+          u='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time()))
+          req=urllib.request.Request(u,headers={'User-Agent':'VMEWS-CDN-smoke/1.0','Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req,timeout=60) as r:p=json.loads(r.read().decode())
+          rows=[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in p.get('ranking',[])]
+          url=open('final-url.txt').read().strip()
+          body=f'''# VMEWS CDN FINAL PASS\n\n- Final URL: {url}\n- API version: `{p.get('version')}`\n- Scanned: `{p.get('scanned')}`\n- Ranking: `{rows}`\n- Errors: `{p.get('errors')}`\n- Browser DOM: `Risk radar ready` + FPT + PNJ verified\n- Old ~200-session error visible: `NO`\n'''
+          open('cdn-pass.md','w',encoding='utf-8').write(body)
+          print(body)
+          PY
+
+      - name: Publish final PASS evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CDN FINAL PASS ${GITHUB_SHA::7}" --body-file cdn-pass.md
+
+  report:
+    if: always()
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report failure if verification did not pass
+        if: needs.verify.result != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.verify.result }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CDN VERIFY FAILED ${GITHUB_SHA::7}" --body "CDN end-to-end verification result: $RESULT. Do not use this commit as final."
