@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="VMEWS — Vietnam market risk monitor for simple, evidence-based risk review." />
+  <meta name="theme-color" content="#06111c" />
+  <title>VMEWS — Vietnam Market Risk Monitor</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .lang-switch{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid rgba(135,167,194,.22);border-radius:8px;background:rgba(6,17,28,.72)}
+    .lang-switch button{border:0;background:transparent;color:#8fa5b8;font:700 11px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;padding:6px 8px;border-radius:6px;cursor:pointer;letter-spacing:.04em}
+    .lang-switch button.active{background:#17324a;color:#eaf6ff}
+    .lang-switch button:focus-visible{outline:2px solid #48d9ff;outline-offset:2px}
+    @media(max-width:820px){.top-status{gap:6px}.lang-switch button{padding:5px 7px}.top-status .badge{display:none}}
+  </style>
+  <script src="./cdn-shim.js"></script>
+  <script src="./stock-radar-loader.js?v=20260811-bilingual-final" defer></script>
+  <script src="./loading-ui.js?v=20260811-bilingual-final" defer></script>
+  <script src="./i18n-final.js?v=20260811-bilingual-final" defer></script>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <header class="topbar">
+    <a class="brand" href="#overview"><span class="brand-mark">V</span><span><b>VMEWS</b><small>Vietnam Market Early Warning System</small></span></a>
+    <nav><a href="#stock-radar">Risk Radar</a><a href="#analyze">Analyze</a><a href="#validate">Validate</a><a href="#governance">Governance</a></nav>
+    <div class="top-status">
+      <div class="lang-switch" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="vi" aria-pressed="false">VI</button></div>
+      <span class="badge live">RISK MANAGER</span><span id="topClock">—</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="overview" class="hero shell qtrr-hero">
+      <div class="hero-copy">
+        <div class="eyebrow">VIETNAM EQUITY RISK · EARLY WARNING</div>
+        <h1>Detect deterioration.<br><span>Act before losses accelerate.</span></h1>
+        <p>VMEWS is a risk-monitoring system for Vietnamese equities. It does not predict a target price and it does not issue buy/sell calls. It identifies deteriorating risk states, explains the evidence, checks whether similar states historically preceded deep drawdowns, and translates the result into risk-control actions.</p>
+        <div class="qtrr-flow-mini">
+          <div><b>1 · DETECT</b><span>Which names require attention?</span></div>
+          <div><b>2 · EXPLAIN</b><span>What is driving the warning?</span></div>
+          <div><b>3 · VALIDATE</b><span>Did similar states precede drawdowns?</span></div>
+          <div><b>4 · ACT</b><span>What should risk management review?</span></div>
+        </div>
+        <div class="source-strip qtrr-source-strip">
+          <div><small>PRICE SOURCE</small><b>Yahoo Finance EOD · verified production feed</b></div>
+          <div><small>FUNDAMENTALS</small><b>Vnstock · when available</b></div>
+          <div><small>MODEL DESIGN</small><b>Point-in-time · No look-ahead</b></div>
+          <div><small>OUTPUT</small><b>Risk controls · Not trading signals</b></div>
+        </div>
+      </div>
+      <aside class="card qtrr-mandate">
+        <small>RISK MANDATE</small>
+        <h3>What this system is designed to answer</h3>
+        <ol>
+          <li>Is market or single-name risk deteriorating?</li>
+          <li>Is the warning supported by multiple independent evidence modules?</li>
+          <li>What happened after comparable historical states?</li>
+          <li>Should exposure, concentration, monitoring or escalation controls be reviewed?</li>
+        </ol>
+        <p>Composite scores are risk indices, not probabilities. Historical analog event rates are empirical evidence from matched past states, not guaranteed forecasts.</p>
+      </aside>
+    </section>
+
+    <div id="radarMount"></div>
+  </main>
+
+  <footer class="footer shell"><div><b>VMEWS</b><span>Vietnam Market Early Warning System · Risk-management research portfolio</span></div><div><span>Point-in-time evidence · Explainable risk controls</span><span>Not investment advice</span></div></footer>
+  <script>setInterval(()=>{const e=document.getElementById('topClock');if(e)e.textContent=new Date().toLocaleString()},1000)</script>
+</body>
+</html>
