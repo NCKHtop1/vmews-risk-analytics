@@ -33,10 +33,10 @@ jobs:
       - name: Verify English UI and live ranking
         shell: bash
         run: |
-          URL=$(cat final-url.txt)
+          URL="$(cat final-url.txt)?lang=en"
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           rm -rf /tmp/vmews-en
-          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --lang=en-US --user-data-dir=/tmp/vmews-en --virtual-time-budget=50000 --dump-dom "$URL" > en.html 2>/dev/null
+          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=50000 --dump-dom "$URL" > en.html 2>/dev/null
           grep -F 'Spot rising risk.' en.html
           grep -F 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html
           grep -F 'FPT Corporation' en.html
@@ -50,10 +50,10 @@ jobs:
       - name: Verify Vietnamese UI and live ranking
         shell: bash
         run: |
-          URL=$(cat final-url.txt)
+          URL="$(cat final-url.txt)?lang=vi"
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           rm -rf /tmp/vmews-vi
-          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --lang=vi-VN --user-data-dir=/tmp/vmews-vi --virtual-time-budget=50000 --dump-dom "$URL" > vi.html 2>/dev/null
+          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=50000 --dump-dom "$URL" > vi.html 2>/dev/null
           grep -F 'Phát hiện rủi ro tăng.' vi.html
           grep -F 'BẢNG THEO DÕI RỦI RO' vi.html
           grep -F 'Radar sẵn sàng · STOCK-EWS-5.0.0-PRODUCTION' vi.html
@@ -82,3 +82,15 @@ jobs:
           - Empty ranking: NO
           EOF
           gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN FINAL PASS ${GITHUB_SHA::7}" --body-file result.md
+
+  report:
+    if: always()
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish failure marker
+        if: needs.verify.result != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.verify.result }}
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN VERIFY FAILED ${GITHUB_SHA::7}" --body "Bilingual CDN verification result: $RESULT. Do not use this commit as final."
