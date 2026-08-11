@@ -12,7 +12,7 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - name: Verify bilingual CDN in Chrome
         shell: bash
@@ -25,6 +25,7 @@ jobs:
           : > result.txt
           echo "url=$BASE" >> result.txt
           if [ -z "$CHROME" ]; then echo 'chrome=missing' >> result.txt; exit 1; fi
+
           ok=0
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 -A 'VMEWS-bilingual-final/1.0' "$BASE" -o page.html && grep -q 'Vietnam Market Early Warning System' page.html; then ok=1; break; fi
@@ -32,8 +33,25 @@ jobs:
           done
           if [ "$ok" != 1 ]; then echo 'cdn=unreachable' >> result.txt; exit 1; fi
 
+          # Warm the exact production backend used by the CDN page.
+          warm=no
+          for i in 1 2 3; do
+            curl -fsSL --max-time 80 -A 'VMEWS-bilingual-final/1.0' "https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG,MWG,VHM,SSI,DGC&t=$(date +%s)" -o warm.json 2>/dev/null
+            python - <<'PY' >/tmp/warm-ok 2>/dev/null
+import json
+try:
+    p=json.load(open('warm.json'))
+    print('yes' if (p.get('ranking') or []) else 'no')
+except Exception:
+    print('no')
+PY
+            if [ "$(cat /tmp/warm-ok)" = yes ]; then warm=yes; break; fi
+            sleep 5
+          done
+          echo "backend_warm=$warm" >> result.txt
+
           rm -rf /tmp/vmews-en /tmp/vmews-vi
-          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=50000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
+          timeout 90s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=70000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
           en_ready=no; en_copy=no; en_fpt=no; en_pnj=no; en_old=no; en_empty=no
           grep -Fq 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html && en_ready=yes
           grep -Fq 'Spot rising risk.' en.html && en_copy=yes
@@ -43,7 +61,7 @@ jobs:
           grep -Fq 'No usable securities returned for this request.' en.html && en_empty=yes
           echo "en_ready=$en_ready en_copy=$en_copy en_fpt=$en_fpt en_pnj=$en_pnj en_old=$en_old en_empty=$en_empty" >> result.txt
 
-          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=50000 --dump-dom "$BASE?lang=vi" > vi.html 2>/dev/null
+          timeout 90s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=70000 --dump-dom "$BASE?lang=vi" > vi.html 2>/dev/null
           vi_ready=no; vi_copy=no; vi_console=no; vi_fpt=no; vi_pnj=no; vi_old=no; vi_empty=no
           grep -Fq 'Radar sẵn sàng · STOCK-EWS-5.0.0-PRODUCTION' vi.html && vi_ready=yes
           grep -Fq 'Phát hiện rủi ro tăng.' vi.html && vi_copy=yes
@@ -56,6 +74,7 @@ jobs:
 
           cat result.txt
           PASS=yes
+          [ "$warm" = yes ] || PASS=no
           for x in "$en_ready" "$en_copy" "$en_fpt" "$en_pnj" "$vi_ready" "$vi_copy" "$vi_console" "$vi_fpt" "$vi_pnj"; do [ "$x" = yes ] || PASS=no; done
           [ "$en_old" = no ] || PASS=no
           [ "$en_empty" = no ] || PASS=no
@@ -66,6 +85,7 @@ jobs:
           # VMEWS BILINGUAL CDN FINAL
 
           - Final URL: $BASE
+          - Backend warm: $warm
           - English ready: $en_ready
           - English simple copy: $en_copy
           - English FPT / PNJ: $en_fpt / $en_pnj
