@@ -12,7 +12,7 @@ core_path=ROOT/'api'/'stocks.py'
 spec=importlib.util.spec_from_file_location('vmews_news_core',core_path)
 core=importlib.util.module_from_spec(spec);spec.loader.exec_module(core)
 SYMBOLS={s:core.NAMES.get(s,s) for s in core.UNIVERSE}
-DOMAINS=['','site:cafef.vn','site:vietstock.vn','site:vnexpress.net','site:vneconomy.vn','site:nguoiquansat.vn']
+DOMAINS=['','site:cafef.vn','site:vietstock.vn','site:vnexpress.net','site:vneconomy.vn','site:nguoiquansat.vn','(site:hsx.vn OR site:hnx.vn OR site:ssc.gov.vn)']
 RECENT_DAYS=365
 MAX_PER_QUERY=30
 MAX_USED=100
@@ -72,7 +72,7 @@ def noisy(title):
 def fetch(sym,name,domain,limit=MAX_PER_QUERY):
     q=(f'"{sym}" cổ phiếu "{name}" {domain}').strip()
     url='https://news.google.com/rss/search?q='+quote_plus(q)+'&hl=vi&gl=VN&ceid=VN:vi'
-    req=Request(url,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research-News/4.0'})
+    req=Request(url,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research-News/4.1'})
     with urlopen(req,timeout=12) as r:root=ET.fromstring(r.read())
     out=[]
     for it in root.findall('.//item')[:limit]:
@@ -83,16 +83,15 @@ def fetch(sym,name,domain,limit=MAX_PER_QUERY):
 def near_dup(key,seen_keys):
     toks=set(key.split())
     for old in seen_keys[-80:]:
-        ot=set(old.split())
-        jac=len(toks&ot)/max(1,len(toks|ot))
+        ot=set(old.split());jac=len(toks&ot)/max(1,len(toks|ot))
         if jac>=.82 or SequenceMatcher(None,key,old).ratio()>=.9:return True
     return False
 
 def main():
     now=datetime.now(timezone.utc);cutoff=(now-timedelta(days=RECENT_DAYS)).timestamp()
-    payload={'generatedAt':now.isoformat(),'windowDays':RECENT_DAYS,'method':'full-universe publisher-diverse Google News RSS; recency, relevance, source-quality, event taxonomy and fuzzy deduplication','symbols':{s:[] for s in SYMBOLS},'coverage':{}}
+    payload={'generatedAt':now.isoformat(),'windowDays':RECENT_DAYS,'method':'full-universe publisher-diverse and official-source Google News RSS; recency, relevance, source-quality, event taxonomy and fuzzy deduplication','symbols':{s:[] for s in SYMBOLS},'coverage':{}}
     raw={s:[] for s in SYMBOLS};jobs=[]
-    with ThreadPoolExecutor(max_workers=18) as ex:
+    with ThreadPoolExecutor(max_workers=20) as ex:
         for sym,name in SYMBOLS.items():
             for domain in DOMAINS:jobs.append(ex.submit(fetch,sym,name,domain))
         for fut in as_completed(jobs):
@@ -100,18 +99,15 @@ def main():
                 for row in fut.result():raw[row['symbol']].append(row)
             except Exception:pass
     for sym,rows in raw.items():
-        collected=len(rows);recent=[x for x in rows if (not x.get('publishedTs')) or x['publishedTs']>=cutoff]
-        recent=[x for x in recent if not noisy(x.get('title',''))]
-        relevant=[x for x in recent if x.get('relevance',0)>=.70]
-        relevant.sort(key=lambda z:z.get('publishedTs',0),reverse=True)
+        collected=len(rows);recent=[x for x in rows if (not x.get('publishedTs')) or x['publishedTs']>=cutoff];recent=[x for x in recent if not noisy(x.get('title',''))];relevant=[x for x in recent if x.get('relevance',0)>=.70];relevant.sort(key=lambda z:z.get('publishedTs',0),reverse=True)
         seen=[];uniq=[]
         for x in relevant:
             key=norm(x['title'])
             if not key or near_dup(key,seen):continue
             seen.append(key);x.pop('symbol',None);x.pop('publishedTs',None);uniq.append(x)
-        used=uniq[:MAX_USED];material=sum(1 for x in used if x.get('materiality',0)>=.65 or x.get('event')!='General');pubs=len(set(x.get('publisher','Unknown') for x in used))
+        used=uniq[:MAX_USED];material=sum(1 for x in used if x.get('materiality',0)>=.65 or x.get('event')!='General');pubs=len(set(x.get('publisher','Unknown') for x in used));official=sum(1 for x in used if x.get('sourceQuality')==1.0)
         payload['symbols'][sym]=used
-        payload['coverage'][sym]={'collected':collected,'recent':len(recent),'relevant':len(relevant),'unique':len(uniq),'used':len(used),'material':material,'publishers':pubs,'coverageGrade':'STRONG' if len(used)>=40 and pubs>=8 else 'MODERATE' if len(used)>=20 and pubs>=5 else 'LIMITED' if len(used)>=8 else 'THIN'}
+        payload['coverage'][sym]={'collected':collected,'recent':len(recent),'relevant':len(relevant),'unique':len(uniq),'used':len(used),'material':material,'publishers':pubs,'official':official,'coverageGrade':'STRONG' if len(used)>=40 and pubs>=8 else 'MODERATE' if len(used)>=20 and pubs>=5 else 'LIMITED' if len(used)>=8 else 'THIN'}
     p=ROOT/'data'/'research-news.json';p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
 
 if __name__=='__main__':main()
