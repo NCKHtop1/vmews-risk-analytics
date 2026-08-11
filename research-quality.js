@@ -32,17 +32,24 @@ function enhanceNews(news){
   for(const x of items){const p=predict(x.title),age=Number.isFinite(+x.ageDays)?+x.ageDays:10,decay=Math.exp(-age/21),base=Number.isFinite(+x.risk)?clamp(+x.risk/Math.max(decay,.05)):0.5;x.nlpRisk=p;x.lexicalEventRisk=base;x.risk=(.70*p+.30*base)*decay;num+=x.risk;den+=decay}
   return{...news,items:items.sort((a,b)=>b.risk-a.risk),score:items.length?100*clamp(num/(den||1)):null,nlpModel:'hashed unigram/bigram logistic regression; labeled financial seed set + high-confidence distant supervision'};
 }
+function syncUI(f,nlp){
+  setTimeout(()=>{
+    const cards=document.querySelectorAll('#moduleGrid .metric'),card=cards[5];
+    if(card&&f){const b=card.querySelector('b'),s=card.querySelector('small');if(b)b.textContent=f.available===false?'UNAVAILABLE':`${Math.round(f.score)}/100`;if(s)s.textContent=f.note||`${f.sector||'Sector'} current fundamental context`}
+    const nm=document.getElementById('newsMeta');if(nm&&nlp&&!nm.textContent.includes('statistical NLP'))nm.textContent+=` · statistical NLP baseline`;
+  },0);
+}
 function patch(){
   const R=window.VMEWSResearch;if(!R||R.__qualityPatched)return false;const base=R.run.bind(R);
   R.run=async(detail,onProgress)=>{
     const g=corporateGuard(detail.history||[],.10),copy={...detail,history:g.rows};
     const out=await base(copy,onProgress);out.news=enhanceNews(out.news);out.data=out.data||{};out.data.corporateActionSuspects=g.suspects;
-    const m=detail.modules||{},ctx=[];
+    const m=copy.modules||{},ctx=[];
     if(m.market?.available!==false&&Number.isFinite(+m.market?.score))ctx.push([+m.market.score/100,.30]);
     if(m.macro?.available!==false&&Number.isFinite(+m.macro?.score))ctx.push([+m.macro.score/100,.20]);
     if(out.news.score!=null)ctx.push([out.news.score/100,.25]);
     if(m.fundamental?.available!==false&&Number.isFinite(+m.fundamental?.score))ctx.push([+m.fundamental.score/100,.25]);
-    const wt=ctx.reduce((a,b)=>a+b[1],0);out.context=ctx.length?ctx.reduce((a,b)=>a+b[0]*b[1],0)/wt:null;out.currentRisk=out.context==null?out.current.ensemble:.8*out.current.ensemble+.2*out.context;out.quality={corporateActionThreshold:0.10,nlpModel:out.news.nlpModel};return out;
+    const wt=ctx.reduce((a,b)=>a+b[1],0);out.context=ctx.length?ctx.reduce((a,b)=>a+b[0]*b[1],0)/wt:null;out.currentRisk=out.context==null?out.current.ensemble:.8*out.current.ensemble+.2*out.context;out.quality={corporateActionThreshold:0.10,nlpModel:out.news.nlpModel};syncUI(m.fundamental,out.news.nlpModel);return out;
   };
   R.__qualityPatched=true;return true;
 }
