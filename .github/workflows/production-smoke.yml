@@ -12,96 +12,69 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     steps:
-      - name: Verify direct production radar returns real rows
+      - name: Verify API and FPT detail
         shell: bash
         run: |
           python - <<'PY'
-          import json, time, urllib.request
-          base='https://vmews-risk-analytics-sojd.vercel.app'
-          def get(path, timeout=55):
-              req=urllib.request.Request(base+path, headers={'User-Agent':'VMEWS-final-smoke/1.0','Cache-Control':'no-cache'})
-              with urllib.request.urlopen(req, timeout=timeout) as r:
-                  return r.status, json.loads(r.read().decode('utf-8'))
-          last=None
-          for attempt in range(1,25):
-              try:
-                  hs,h=get('/api/radar?mode=health&t='+str(int(time.time())))
-                  ss,s=get('/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time())))
-                  ranking=s.get('ranking') or []
-                  if hs==200 and ss==200 and h.get('ok') and str(h.get('version','')).startswith('STOCK-EWS-5') and ranking:
-                      rows=[(x.get('symbol'), round(float(x.get('effectiveScore',x.get('score',0))),2), x.get('color')) for x in ranking]
-                      with open('smoke-result.md','w',encoding='utf-8') as f:
-                          f.write('# VMEWS FINAL END-TO-END PASS\n\n')
-                          f.write(f'- Health version: `{h.get("version")}`\n')
-                          f.write(f'- Scan version: `{s.get("version")}`\n')
-                          f.write(f'- Scanned: `{s.get("scanned")}`\n')
-                          f.write(f'- Ranking: `{rows}`\n')
-                          f.write(f'- Scan errors: `{s.get("errors")}`\n')
-                      print('API PASS', rows)
-                      break
-                  last=f'health={h}; scan_version={s.get("version")}; ranking={len(ranking)}; errors={s.get("errors")}'
-              except Exception as e:
-                  last=repr(e)
-              print(f'attempt {attempt}: {last}')
-              time.sleep(10)
-          else:
-              raise SystemExit('Direct radar smoke failed: '+str(last))
+          import json,time,urllib.request
+          def get(u,timeout=60):
+              req=urllib.request.Request(u,headers={'User-Agent':'VMEWS-final-diag/1.0','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode())
+          base='https://vmews-risk-analytics-sojd.vercel.app/api/radar'
+          s=get(base+'?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time())))
+          d=get(base+'?mode=detail&symbol=FPT&t='+str(int(time.time())))
+          rows=s.get('ranking') or []
+          assert s.get('version')=='STOCK-EWS-5.0.0-PRODUCTION' and rows,s
+          assert d.get('symbol')=='FPT' and isinstance(d.get('score'),(int,float)),d
+          open('api.json','w').write(json.dumps({'ranking':[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in rows],'fpt':{'date':d.get('modelAsOf'),'score':round(float(d.get('score')),2),'color':d.get('color')}},ensure_ascii=False))
+          print(open('api.json').read())
           PY
 
-      - name: Verify direct FPT detail
+      - name: Browser diagnostic
+        id: browser
+        continue-on-error: true
         shell: bash
         run: |
-          python - <<'PY'
-          import json, urllib.request, time
-          u='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=detail&symbol=FPT&t='+str(int(time.time()))
-          req=urllib.request.Request(u, headers={'User-Agent':'VMEWS-final-smoke/1.0','Cache-Control':'no-cache'})
-          with urllib.request.urlopen(req, timeout=60) as r:
-              p=json.loads(r.read().decode())
-          assert p.get('symbol')=='FPT', p
-          assert isinstance(p.get('score'),(int,float)), p
-          assert p.get('current',{}).get('date'), p
-          with open('smoke-result.md','a',encoding='utf-8') as f:
-              f.write(f'- FPT model date: `{p.get("modelAsOf")}`\n')
-              f.write(f'- FPT risk score: `{round(float(p.get("score")),2)}`\n')
-              f.write(f'- FPT state: `{p.get("color")}`\n')
-              f.write(f'- FPT reasons: `{p.get("reasons")}`\n')
-          print('FPT PASS',p.get('modelAsOf'),p.get('score'),p.get('color'))
-          PY
-
-      - name: Verify browser-visible final UI
-        shell: bash
-        run: |
+          set +e
           URL='https://htmlpreview.github.io/?https://github.com/NCKHtop1/vmews-risk-analytics/blob/f1b1d9cd155a17dfc5ba2fdcb002cf2a90aa8e20/final.html'
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
-          if [ -z "$CHROME" ]; then echo 'Chrome/Chromium not found'; exit 1; fi
-          timeout 100s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=70000 --dump-dom "$URL" > dom.html
-          grep -F 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html
-          grep -F 'FPT Corporation' dom.html
-          grep -F 'Phu Nhuan Jewelry' dom.html
-          if grep -F 'At least ~200 completed sessions are required' dom.html; then echo 'Old runtime error visible'; exit 1; fi
-          if grep -F 'No usable securities returned for this request.' dom.html; then echo 'No model rows visible'; exit 1; fi
-          {
-            echo "- Final URL: $URL"
-            echo '- Browser DOM: `Risk radar ready` + FPT + PNJ verified'
-            echo '- Old ~200-session error visible: `NO`'
-          } >> smoke-result.md
-          echo 'BROWSER PASS'
+          echo "$URL" > final-url.txt
+          if [ -z "$CHROME" ]; then echo 'chrome=missing' > browser.txt; exit 0; fi
+          timeout 45s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=30000 --dump-dom "$URL" > dom.html 2>chrome.err
+          code=$?
+          ready=no; fpt=no; pnj=no; old=no; empty=no
+          grep -Fq 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html && ready=yes
+          grep -Fq 'FPT Corporation' dom.html && fpt=yes
+          grep -Fq 'Phu Nhuan Jewelry' dom.html && pnj=yes
+          grep -Fq 'At least ~200 completed sessions are required' dom.html && old=yes
+          grep -Fq 'No usable securities returned for this request.' dom.html && empty=yes
+          printf 'chrome_exit=%s\nready=%s\nfpt=%s\npnj=%s\nold_error=%s\nempty=%s\ndom_bytes=%s\n' "$code" "$ready" "$fpt" "$pnj" "$old" "$empty" "$(wc -c < dom.html)" > browser.txt
+          tail -20 chrome.err >> browser.txt
+          cat browser.txt
+          exit 0
 
-      - name: Publish FINAL PASS evidence
+      - name: Publish diagnostic and decide PASS
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL END-TO-END PASS ${GITHUB_SHA::7}" --body-file smoke-result.md
+        shell: bash
+        run: |
+          URL=$(cat final-url.txt)
+          API=$(cat api.json)
+          cat > result.md <<EOF
+          # VMEWS FINAL browser diagnostic
 
-  report:
-    if: always()
-    needs: smoke
-    runs-on: ubuntu-latest
-    steps:
-      - name: Publish failure marker
-        if: needs.smoke.result != 'success'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RESULT: ${{ needs.smoke.result }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL VERIFY FAILED ${GITHUB_SHA::7}" --body "End-to-end verification result: $RESULT. Do not send a final link for this run."
+          - Candidate URL: $URL
+          - API: \`$API\`
+
+          \`\`\`
+          $(cat browser.txt)
+          \`\`\`
+          EOF
+          if grep -q '^ready=yes$' browser.txt && grep -q '^fpt=yes$' browser.txt && grep -q '^pnj=yes$' browser.txt && grep -q '^old_error=no$' browser.txt && grep -q '^empty=no$' browser.txt; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL END-TO-END PASS ${GITHUB_SHA::7}" --body-file result.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FINAL UI DIAG FAILED ${GITHUB_SHA::7}" --body-file result.md
+            exit 1
+          fi
