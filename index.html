@@ -7,8 +7,29 @@
   <meta name="theme-color" content="#06111c" />
   <title>VMEWS — Vietnam Market Early Warning System</title>
   <link rel="stylesheet" href="./styles.css" />
-  <script src="./stock-radar-loader.js?v=20260811-final" defer></script>
-  <script src="./loading-ui.js?v=20260811-1" defer></script>
+  <script>
+    (()=>{
+      const nativeFetch=window.fetch.bind(window);
+      window.fetch=(input,init)=>{
+        const rewrite=(raw)=>{
+          const u=new URL(String(raw),location.href);
+          if(u.origin===location.origin){
+            if(u.pathname==='/api/stocks2')u.pathname='/api/radar';
+            else if(u.pathname==='/api/validate')u.pathname='/api/validate2';
+          }
+          return u.toString();
+        };
+        if(input instanceof Request){
+          const next=rewrite(input.url);
+          return nativeFetch(new Request(next,input),init);
+        }
+        return nativeFetch(rewrite(input),init);
+      };
+      window.__VMEWS_API_ROUTE__='RADAR_V5_DIRECT';
+    })();
+  </script>
+  <script src="./stock-radar-loader.js?v=20260811-vercel-final" defer></script>
+  <script src="./loading-ui.js?v=20260811-vercel-final" defer></script>
 </head>
 <body>
   <div class="bg-grid"></div>
@@ -31,7 +52,7 @@
           <div><b>4 · ACT</b><span>What should risk management review?</span></div>
         </div>
         <div class="source-strip qtrr-source-strip">
-          <div><small>PRICE SOURCE</small><b>Vnstock/KBS · resilient fallback</b></div>
+          <div><small>PRICE SOURCE</small><b>Yahoo Finance EOD · Vnstock fundamentals</b></div>
           <div><small>MODEL DESIGN</small><b>Point-in-time · No look-ahead</b></div>
           <div><small>OUTPUT</small><b>Risk controls · Not trading signals</b></div>
         </div>
