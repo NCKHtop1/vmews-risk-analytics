@@ -32,7 +32,7 @@ jobs:
 
           cdn=no
           for i in $(seq 1 20); do
-            if curl -fsSL --max-time 15 -A 'VMEWS-bilingual-final/2.0' "$BASE" -o page.html && grep -q 'Vietnam Market Early Warning System' page.html; then cdn=yes; break; fi
+            if curl -fsSL --max-time 15 -A 'VMEWS-bilingual-final/3.0' "$BASE" -o page.html && grep -q 'Vietnam Market Early Warning System' page.html; then cdn=yes; break; fi
             sleep 3
           done
           echo "cdn=$cdn" >> result.txt
@@ -40,15 +40,8 @@ jobs:
 
           warm=no
           for i in 1 2; do
-            curl -fsSL --max-time 65 -A 'VMEWS-bilingual-final/2.0' "https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG,MWG,VHM,SSI,DGC&t=$(date +%s)" -o warm.json 2>/dev/null
-            python - <<'PY' >/tmp/warm-ok 2>/dev/null
-import json
-try:
- p=json.load(open('warm.json'))
- print('yes' if (p.get('ranking') or []) else 'no')
-except Exception: print('no')
-PY
-            if [ "$(cat /tmp/warm-ok)" = yes ]; then warm=yes; break; fi
+            curl -fsSL --max-time 65 -A 'VMEWS-bilingual-final/3.0' "https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG,MWG,VHM,SSI,DGC&t=$(date +%s)" -o warm.json 2>/dev/null
+            if python -c "import json,sys; p=json.load(open('warm.json')); sys.exit(0 if (p.get('ranking') or []) else 1)" 2>/dev/null; then warm=yes; break; fi
             sleep 3
           done
           echo "backend_warm=$warm" >> result.txt
