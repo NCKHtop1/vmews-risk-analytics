@@ -6,7 +6,7 @@ on:
     paths:
       - 'research-final.html'
       - 'research-final.css'
-      - 'research-engine.js'
+      - 'research-engine-v2.js'
       - 'research-app.js'
       - 'sector-context.js'
       - 'research-runtime.js'
@@ -38,7 +38,7 @@ jobs:
           assets=no; syntax=no; ready=no; fpt=no; pnj=no; detail_loaded=no; analysis=no; rf=no; anfis=no; vae=no; lstm=no; ensemble=no; walk=no; old_error=no; empty=no
           for i in $(seq 1 30); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
-              && curl -fsSL --max-time 20 "$BASE/research-engine.js" -o engine.js \
+              && curl -fsSL --max-time 20 "$BASE/research-engine-v2.js" -o engine.js \
               && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js \
               && curl -fsSL --max-time 20 "$BASE/sector-context.js" -o sector.js \
               && curl -fsSL --max-time 20 "$BASE/research-runtime.js" -o runtime.js; then assets=yes; break; fi
