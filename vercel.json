@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
-  "ignoreCommand": "[ \"$VERCEL_PROJECT_PRODUCTION_URL\" != \"vmews-risk-analytics-sojd.vercel.app\" ]",
   "regions": ["sin1"],
   "rewrites": [
+    {"source": "/", "destination": "/research-final.html"},
     {"source": "/api/stocks2", "destination": "/api/radar"},
     {"source": "/api/validate", "destination": "/api/validate2"}
   ],
