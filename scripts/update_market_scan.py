@@ -5,10 +5,11 @@ from datetime import datetime, timezone, timedelta
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / 'data' / 'market-scan.json'
 VN_TZ = timezone(timedelta(hours=7))
+VERSION = 'VMEWS-MARKET-SCAN-3.0.0'
 MIN_AVG_TURNOVER_30D = 500_000_000.0
-RED_THRESHOLD = 70.0
-YELLOW_THRESHOLD = 55.0
-WATCH_THRESHOLD = 45.0
+RED_THRESHOLD = 78.0
+YELLOW_THRESHOLD = 65.0
+WATCH_THRESHOLD = 50.0
 
 
 def clamp(x, a=0.0, b=1.0):
@@ -36,6 +37,8 @@ def norm_exchange(v):
 def load_previous():
     try:
         p = json.loads(OUT.read_text(encoding='utf-8'))
+        if p.get('version') != VERSION:
+            return {}
         return {x['symbol']: x for x in p.get('ranking', []) if x.get('symbol')}
     except Exception:
         return {}
@@ -69,18 +72,34 @@ def reference_universe():
     return out
 
 
-def market_context():
+def fallback_market_context():
     try:
         p = json.loads((ROOT / 'data' / 'market-context.json').read_text(encoding='utf-8'))
         m = p.get('market') or {}
-        rows = m.get('history') or []
-        mom = 0.0
-        if len(rows) >= 21:
-            closes = [float(x['close']) for x in rows]
-            mom = closes[-1] / closes[-21] - 1
-        return {'date': m.get('date'), 'momentum20': mom, 'available': bool(m.get('available'))}
+        return {'date': m.get('date'), 'momentum20': 0.0, 'available': bool(m.get('available')), 'source': 'VMEWS VNINDEX snapshot fallback'}
     except Exception:
-        return {'date': None, 'momentum20': 0.0, 'available': False}
+        return {'date': None, 'momentum20': 0.0, 'available': False, 'source': 'Unavailable'}
+
+
+def tradingview_market_context():
+    fallback = fallback_market_context()
+    try:
+        from tradingview_screener import Query
+        _, df = (Query().set_markets('vietnam').set_tickers('HOSE:VNINDEX')
+                 .select('name', 'close', 'Perf.1M', 'update_mode', 'update_time').limit(5).get_scanner_data())
+        if df is None or len(df) == 0:
+            return fallback
+        row = df.iloc[0]
+        perf = num(row.get('Perf.1M'))
+        return {
+            'date': row_date(row.get('update_time'), fallback.get('date')),
+            'momentum20': (perf or 0.0) / 100.0,
+            'available': perf is not None,
+            'source': 'TradingView HOSE:VNINDEX',
+            'updateMode': str(row.get('update_mode') or 'unknown'),
+        }
+    except Exception:
+        return fallback
 
 
 def tradingview_snapshot():
@@ -112,7 +131,7 @@ def row_date(v, fallback=None):
 def transition(prev_status, current_status):
     rank = {'GREEN': 0, 'WATCH': 1, 'YELLOW': 2, 'RED': 3}
     if not prev_status:
-        return 'NEW', False
+        return 'BASELINE', False
     if prev_status == current_status:
         return 'UNCHANGED', False
     esc = prev_status in rank and current_status in rank and rank[current_status] > rank[prev_status] and current_status in {'YELLOW', 'RED'}
@@ -166,6 +185,19 @@ def score_row(row, market_mom20):
     )
     score = technical
     weak = mom20 < 0 or trend50 < 0
+
+    stress_flags = {
+        'drawdown': dd3m <= -.18,
+        'momentum': mom20 <= -.10,
+        'ma50': trend50 <= -.10,
+        'ma200': trend200 <= -.15,
+        'rsi': rsi <= 35,
+        'macd': macd_norm <= -.008,
+        'volatility': (vol_d or 0.0) >= 4.0,
+        'selloffVolume': ret1 <= -.04 and (relvol or 0.0) >= 1.5,
+        'relativeWeakness': relative20 <= -.12,
+    }
+    stress_count = sum(bool(v) for v in stress_flags.values())
     liquid = avg_turnover30 >= MIN_AVG_TURNOVER_30D
 
     contrib = [
@@ -183,13 +215,11 @@ def score_row(row, market_mom20):
 
     if not liquid:
         status, phase = 'ILLIQUID', 'EXCLUDED_LOW_LIQUIDITY'
-    elif dd3m <= -.15 and score >= YELLOW_THRESHOLD:
-        status, phase = 'RED', 'ACTIVE_DRAWDOWN'
-    elif score >= RED_THRESHOLD and weak:
-        status, phase = 'RED', 'PRE_CRASH_RED'
-    elif score >= YELLOW_THRESHOLD and weak:
-        status, phase = 'YELLOW', 'PRE_CRASH_YELLOW'
-    elif score >= WATCH_THRESHOLD and weak:
+    elif score >= RED_THRESHOLD and weak and stress_count >= 3:
+        status, phase = 'RED', 'MULTI_SIGNAL_RED'
+    elif score >= YELLOW_THRESHOLD and weak and stress_count >= 2:
+        status, phase = 'YELLOW', 'MULTI_SIGNAL_YELLOW'
+    elif score >= WATCH_THRESHOLD and weak and stress_count >= 1:
         status, phase = 'WATCH', 'WATCH'
     else:
         status, phase = 'GREEN', 'NORMAL'
@@ -201,6 +231,7 @@ def score_row(row, market_mom20):
         'volume': volume, 'averageVolume30d': avgvol30, 'medianTurnover20': avg_turnover30,
         'marketRelative20': relative20, 'technicalScore': technical, 'score': score,
         'status': status, 'phase': phase, 'liquidEligible': liquid, 'drivers': drivers,
+        'independentStressSignals': stress_count, 'stressFlags': stress_flags,
         'historyReady': True, 'priceBasis': 'TradingView EOD/delayed technical fields; SMA200 required for alert eligibility',
     }
 
@@ -209,7 +240,7 @@ def main():
     now = datetime.now(VN_TZ)
     previous = load_previous()
     reference = reference_universe()
-    market = market_context()
+    market = tradingview_market_context()
     tv_total, df = tradingview_snapshot()
     matched, duplicates = {}, 0
 
@@ -278,11 +309,11 @@ def main():
     current_ratio = (len(provisional) - stale) / len(reference) if reference else 0.0
 
     payload = {
-        'version': 'VMEWS-MARKET-SCAN-2.0.0',
+        'version': VERSION,
         'generatedAt': now.isoformat(), 'reviewDate': now.date().isoformat(), 'modelDate': model_date,
         'scope': 'VCI reference universe of listed common stocks on HOSE, HNX and UPCOM, cross-matched to TradingView Vietnam stock screener.',
-        'method': 'Cross-sectional T-day early-warning screen using current/delayed daily technical fields, trend breaks, momentum, 3M drawdown, volatility, RSI, MACD, selloff relative volume, VNINDEX-relative weakness and liquidity gating.',
-        'thresholds': {'red': RED_THRESHOLD, 'yellow': YELLOW_THRESHOLD, 'watch': WATCH_THRESHOLD, 'minAverageTurnover30dVnd': MIN_AVG_TURNOVER_30D, 'historyGate': 'SMA200 must be available'},
+        'method': 'Cross-sectional T-day early-warning screen using daily trend, momentum, 3M drawdown, volatility, RSI, MACD, selloff relative volume, VNINDEX-relative weakness, multi-signal confirmation and liquidity gating.',
+        'thresholds': {'red': RED_THRESHOLD, 'yellow': YELLOW_THRESHOLD, 'watch': WATCH_THRESHOLD, 'redMinIndependentSignals': 3, 'yellowMinIndependentSignals': 2, 'minAverageTurnover30dVnd': MIN_AVG_TURNOVER_30D, 'historyGate': 'SMA200 must be available'},
         'coverage': {
             'listedUniverse': len(reference), 'tradingViewUniverseRows': len(df), 'tradingViewReportedTotal': tv_total,
             'priceCovered': len(matched), 'featureReady': len(provisional), 'eligibleLiquidCurrent': len(eligible),
@@ -291,20 +322,21 @@ def main():
             'duplicateScreenerRowsIgnored': duplicates, 'coverageRatio': coverage_ratio, 'currentFeatureCoverageRatio': current_ratio,
         },
         'breadth': {'red': len(red), 'yellow': len(yellow), 'watch': len(watch), 'newEscalations': len(escalations), 'redShareEligible': len(red)/len(eligible) if eligible else 0.0, 'yellowShareEligible': len(yellow)/len(eligible) if eligible else 0.0},
-        'marketContext': {'vnindexMomentum20d': market.get('momentum20', 0.0), 'vnindexModelDate': market.get('date')},
+        'marketContext': {'vnindexMomentum20d': market.get('momentum20', 0.0), 'vnindexModelDate': market.get('date'), 'source': market.get('source'), 'updateMode': market.get('updateMode')},
         'topAttention': attention, 'redList': red, 'yellowList': yellow, 'newEscalations': escalations, 'ranking': eligible,
-        'sources': {'referenceUniverse': 'VCI via vnstock Listing.symbols_by_exchange()', 'crossSection': 'TradingView Vietnam stock screener via tradingview-screener', 'marketContext': 'VMEWS VNINDEX EOD snapshot', 'deepResearch': 'Second-stage VMEWS single-name engine; not part of the broad scan score'},
+        'sources': {'referenceUniverse': 'VCI via vnstock Listing.symbols_by_exchange()', 'crossSection': 'TradingView Vietnam stock screener via tradingview-screener', 'marketContext': market.get('source'), 'deepResearch': 'Second-stage VMEWS single-name engine; not part of the broad scan score'},
         'governance': [
             'RED/YELLOW are screening states, not buy/sell recommendations or calibrated crash probabilities.',
+            'RED requires at least three independent stress conditions; YELLOW requires at least two. A drawdown alone cannot force a RED state.',
             'Only securities cross-matched to the reference universe with current data, SMA200 history and minimum 30-day average turnover can enter RED/YELLOW.',
             'Stale, insufficient-history and illiquid securities are disclosed in coverage and excluded from the morning alert list.',
-            'Unauthenticated TradingView data may be delayed; this is acceptable for scheduled pre-session/post-close EOD risk triage, not intraday execution.',
+            'Unauthenticated TradingView data may be delayed; this is suitable for scheduled pre-session/post-close risk triage, not intraday execution.',
             'A full deep-model review remains a second-stage action for flagged names.'
         ],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({'modelDate': model_date, 'listed': len(reference), 'tvRows': len(df), 'matched': len(matched), 'coverage': round(coverage_ratio,4), 'eligible': len(eligible), 'red': len(red), 'yellow': len(yellow), 'watch': len(watch), 'escalations': len(escalations), 'stale': stale, 'insufficient': insufficient, 'lowLiquidity': low_liquidity}, ensure_ascii=False))
+    print(json.dumps({'modelDate': model_date, 'listed': len(reference), 'tvRows': len(df), 'matched': len(matched), 'coverage': round(coverage_ratio,4), 'eligible': len(eligible), 'red': len(red), 'yellow': len(yellow), 'watch': len(watch), 'escalations': len(escalations), 'stale': stale, 'insufficient': insufficient, 'lowLiquidity': low_liquidity, 'vnindexMomentum20': market.get('momentum20')}, ensure_ascii=False))
 
 
 if __name__ == '__main__':
