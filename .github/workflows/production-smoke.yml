@@ -14,27 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Wait for Vercel production and verify real radar data
+      - name: Verify direct production radar returns real rows
         shell: bash
         run: |
           python - <<'PY'
           import json, time, urllib.request
           base='https://vmews-risk-analytics-sojd.vercel.app'
-          def get(path, timeout=45):
-              req=urllib.request.Request(base+path, headers={'User-Agent':'VMEWS-production-smoke/2.0','Cache-Control':'no-cache'})
+          def get(path, timeout=55):
+              req=urllib.request.Request(base+path, headers={'User-Agent':'VMEWS-direct-smoke/1.0','Cache-Control':'no-cache'})
               with urllib.request.urlopen(req, timeout=timeout) as r:
                   return r.status, json.loads(r.read().decode('utf-8'))
           last=None
-          for attempt in range(1, 37):
+          for attempt in range(1,25):
               try:
-                  hs,h=get('/api/stocks2?mode=health&t='+str(int(time.time())))
-                  ss,s=get('/api/stocks2?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time())), timeout=55)
+                  hs,h=get('/api/radar?mode=health&t='+str(int(time.time())))
+                  ss,s=get('/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time())))
                   ranking=s.get('ranking') or []
-                  ok=(hs==200 and ss==200 and h.get('ok') and str(h.get('version','')).startswith('STOCK-EWS-5') and len(ranking)>=1)
-                  if ok:
+                  if hs==200 and ss==200 and h.get('ok') and str(h.get('version','')).startswith('STOCK-EWS-5') and ranking:
                       rows=[(x.get('symbol'), round(float(x.get('effectiveScore',x.get('score',0))),2), x.get('color')) for x in ranking]
                       with open('smoke-result.md','w',encoding='utf-8') as f:
-                          f.write('# VMEWS production smoke PASS\n\n')
+                          f.write('# VMEWS direct radar production PASS\n\n')
                           f.write(f'- Health version: `{h.get("version")}`\n')
                           f.write(f'- Scan version: `{s.get("version")}`\n')
                           f.write(f'- Scanned: `{s.get("scanned")}`\n')
@@ -42,38 +41,36 @@ jobs:
                           f.write(f'- Scan errors: `{s.get("errors")}`\n')
                       print('PASS', rows)
                       break
-                  last=f'unexpected payload health={h} scan_version={s.get("version")} ranking={len(ranking)} errors={s.get("errors")}'
+                  last=f'health={h}; scan_version={s.get("version")}; ranking={len(ranking)}; errors={s.get("errors")}'
               except Exception as e:
                   last=repr(e)
               print(f'attempt {attempt}: {last}')
               time.sleep(10)
           else:
-              raise SystemExit('Production smoke failed: '+str(last))
+              raise SystemExit('Direct radar smoke failed: '+str(last))
           PY
 
-      - name: Verify FPT detail returns model output
+      - name: Verify direct FPT detail
         shell: bash
         run: |
           python - <<'PY'
           import json, urllib.request, time
-          u='https://vmews-risk-analytics-sojd.vercel.app/api/stocks2?mode=detail&symbol=FPT&t='+str(int(time.time()))
-          req=urllib.request.Request(u, headers={'User-Agent':'VMEWS-production-smoke/2.0','Cache-Control':'no-cache'})
+          u='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=detail&symbol=FPT&t='+str(int(time.time()))
+          req=urllib.request.Request(u, headers={'User-Agent':'VMEWS-direct-smoke/1.0','Cache-Control':'no-cache'})
           with urllib.request.urlopen(req, timeout=60) as r:
               p=json.loads(r.read().decode())
           assert p.get('symbol')=='FPT', p
-          assert isinstance(p.get('score'), (int,float)), p
+          assert isinstance(p.get('score'),(int,float)), p
           assert p.get('current',{}).get('date'), p
           with open('smoke-result.md','a',encoding='utf-8') as f:
               f.write(f'- FPT model date: `{p.get("modelAsOf")}`\n')
               f.write(f'- FPT risk score: `{round(float(p.get("score")),2)}`\n')
               f.write(f'- FPT state: `{p.get("color")}`\n')
               f.write(f'- FPT reasons: `{p.get("reasons")}`\n')
-          print('FPT', p.get('modelAsOf'), p.get('score'), p.get('color'), p.get('reasons'))
+          print('FPT',p.get('modelAsOf'),p.get('score'),p.get('color'))
           PY
 
-      - name: Publish PASS evidence as GitHub issue
+      - name: Publish PASS evidence
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS production smoke PASS ${GITHUB_SHA::7}" --body-file smoke-result.md
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS direct radar PASS ${GITHUB_SHA::7}" --body-file smoke-result.md
