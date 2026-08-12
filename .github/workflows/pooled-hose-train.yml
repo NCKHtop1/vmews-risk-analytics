@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/train_pooled_hose_model.py'
+      - 'scripts/train_pooled_hose_model_v2.py'
       - '.github/workflows/pooled-hose-train.yml'
       - 'api/stocks.py'
       - 'api/price_history.py'
@@ -40,7 +41,7 @@ jobs:
       - name: Train pooled panel challengers and run sealed promotion gate
         id: pooled
         continue-on-error: true
-        run: python scripts/train_pooled_hose_model.py 2>&1 | tee pooled-train.log
+        run: python scripts/train_pooled_hose_model_v2.py 2>&1 | tee pooled-train.log
       - name: Build pooled validation report
         if: always()
         run: |
@@ -56,35 +57,32 @@ jobs:
           ci=s.get('prAucCI95') or {}
           lines=[
               '# VMEWS POOLED HOSE SEALED VALIDATION', '',
-              f"Version: {q['version']}",
-              f"Champion: {q['champion']}",
+              f"Version: {q['version']}", f"Champion: {q['champion']}",
               f"Promotion: {'PASS' if g['passed'] else 'FAIL'}", '',
               '## Panel',
               f"- history coverage: {u['historyCovered']}/{u['reference']} ({u['historyCoverageRatio']:.1%})",
               f"- panel symbols: {u['panelSymbols']}",
               f"- labelled PIT states: {d['states']:,}",
               f"- positive states: {d['positiveStates']:,} ({d['baseRate']:.1%})",
-              f"- unique dates: {d['uniqueDates']} · {d['start']} → {d['end']}", '',
+              f"- sampled panel dates: {d['uniquePanelDates']} · {d['start']} → {d['end']}",
+              f"- sample step: {q['timeAxis']['sampleStepTradingSessions']} trading sessions",
+              f"- purge: {q['timeAxis']['purgeTradingSessionsEquivalent']} trading sessions equivalent", '',
               '## Sealed test',
               f"- period: {q['sealedSplit']['sealedFrom']} → {q['sealedSplit']['sealedTo']}",
               f"- states: {s['n']:,} · symbols: {s['symbols']} · positive states: {s['events']:,}",
               f"- unique crash episodes: {s['eventEpisodes']}",
               f"- PR-AUC: {s['prAuc']:.4f} vs base rate {s['baseRate']:.4f}",
               f"- PR-AUC 95% date-block bootstrap: {ci.get('low','N/A')} → {ci.get('high','N/A')}",
-              f"- ROC-AUC: {s['rocAuc']:.4f}",
-              f"- Brier skill: {s['brierSkill']:.4f}",
+              f"- ROC-AUC: {s['rocAuc']:.4f}", f"- Brier skill: {s['brierSkill']:.4f}",
               f"- precision: {s['precision']:.1%} · recall: {s['recall']:.1%} · episode recall: {s['episodeRecall']:.1%}",
               f"- precision enrichment: {s['precisionEnrichment']:.2f}x base rate", '',
               '## Structural baseline on the same sealed test',
-              f"- PR-AUC: {b['prAuc']:.4f}",
-              f"- ROC-AUC: {b['rocAuc']:.4f}",
+              f"- PR-AUC: {b['prAuc']:.4f}", f"- ROC-AUC: {b['rocAuc']:.4f}",
               f"- Brier skill: {b['brierSkill']:.4f}",
               f"- delta pooled PR-AUC: {q['incremental']['deltaPrAucVsStructural']:+.4f}", '',
-              '## Gate',
-              f"- passed: {g['passed']}",
+              '## Gate', f"- passed: {g['passed']}",
               *[f"- {x}" for x in (g.get('reasons') or ['all promotion conditions satisfied'])], '',
-              '## Governance',
-              *[f"- {x}" for x in q.get('limitations',[])],
+              '## Governance', *[f"- {x}" for x in q.get('limitations',[])],
           ]
           pathlib.Path('pooled-report.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
           print('\n'.join(lines))
@@ -103,9 +101,11 @@ jobs:
           import json, pathlib
           v=json.load(open('data/pooled-hose/validation.json',encoding='utf-8'))
           c=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
-          assert v['version']=='VMEWS-POOLED-HOSE-1.0.0',v['version']
+          assert v['version']=='VMEWS-POOLED-HOSE-1.1.0',v['version']
           assert v['promotionGate']['passed'],v['promotionGate']
           assert v['dataset']['states']>=30000,v['dataset']
+          assert v['dataset']['uniquePanelDates']>=420,v['dataset']
+          assert v['timeAxis']['purgeTradingSessionsEquivalent']>=20,v['timeAxis']
           assert v['universe']['panelSymbols']>=150,v['universe']
           assert v['sealedTest']['eventEpisodes']>=100,v['sealedTest']
           assert v['sealedTest']['prAuc']>v['sealedTest']['baseRate']+.02,v['sealedTest']
