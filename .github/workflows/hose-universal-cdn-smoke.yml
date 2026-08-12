@@ -1,0 +1,98 @@
+name: HOSE universal CDN smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/hose-fallbacks/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-hose-universal-cdn-smoke
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select a non-alert HOSE fallback
+        id: pick
+        run: |
+          SYMBOL=$(python - <<'PY'
+          import json
+          h=json.load(open('data/hose-fallbacks/manifest.json',encoding='utf-8'))
+          try:a=json.load(open('data/deep-alerts/manifest.json',encoding='utf-8'))
+          except Exception:a={}
+          alerts=set((a.get('symbols') or {}).keys())
+          deep=[]
+          for s,r in (h.get('routes') or {}).items():
+              if r.get('route')=='CDN_VNSTOCK_DEEP' and s not in alerts:
+                  deep.append((r.get('rows',0),s))
+          if not deep:
+              for s,r in (h.get('routes') or {}).items():
+                  if r.get('route')=='CDN_VNSTOCK_DEEP': deep.append((r.get('rows',0),s))
+          if not deep: raise SystemExit('No deep Vnstock HOSE fallback available for smoke test')
+          print(sorted(deep,reverse=True)[0][1])
+          PY
+          )
+          echo "symbol=$SYMBOL" >> "$GITHUB_OUTPUT"
+          echo "Selected $SYMBOL"
+      - name: Browser universal resolver smoke
+        run: |
+          set +e
+          SYMBOL='${{ steps.pick.outputs.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          assets=no; detail=no; chart=no; vnsource=no; analysis=no; rf=no; vae=no; lstm=no; old404=no
+          for i in $(seq 1 35); do
+            if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
+              && curl -fsSL --max-time 20 "$BASE/deep-alert-fallback.js" -o fallback.js \
+              && curl -fsSL --max-time 20 "$BASE/investor-chart.js" -o chart.js; then assets=yes; break; fi
+            sleep 4
+          done
+          node --check fallback.js >/dev/null 2>&1 || assets=no
+          node --check chart.js >/dev/null 2>&1 || assets=no
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          EXIT=127
+          if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
+            rm -rf /tmp/vmews-hose-universal
+            timeout 330s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-hose-universal --virtual-time-budget=300000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else : > dom.html; : > chrome.err; fi
+          grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && grep -Fq '<svg' dom.html && chart=yes
+          grep -Fq 'Vnstock' dom.html && vnsource=yes
+          grep -Fq 'Research analysis complete' dom.html && analysis=yes
+          grep -Fq 'Random Forest' dom.html && rf=yes
+          grep -Fq 'VAE anomaly' dom.html && vae=yes
+          grep -Fq 'LSTM crash' dom.html && grep -Fq 'LSTM rebound' dom.html && lstm=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          pass=no
+          if [ "$assets" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$vnsource" = yes ] && [ "$analysis" = yes ] && [ "$rf" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$old404" = no ]; then pass=yes; fi
+          cat > result.md <<EOF
+          # VMEWS HOSE UNIVERSAL CDN ${pass^^}
+
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Non-alert/fallback symbol: $SYMBOL
+          - Assets: $assets
+          - Chrome exit: $EXIT
+          - Detail rendered: $detail
+          - Investor chart rendered: $chart
+          - Vnstock source visible: $vnsource
+          - Research complete: $analysis
+          - Random Forest: $rf
+          - VAE: $vae
+          - LSTM crash/rebound: $lstm
+          - Old Yahoo 404 present: $old404
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS HOSE UNIVERSAL CDN ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
