@@ -1,0 +1,112 @@
+name: RED alert CDN deep smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'deep-alert-fallback.js'
+      - 'research-short-history.js'
+      - 'research-engine-v2.js'
+      - 'research-runtime.js'
+      - 'research-app.js'
+      - 'data/deep-alerts/**'
+      - '.github/workflows/red-alert-cdn-smoke.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-red-alert-cdn-smoke
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: [BNA, BOT, AAH]
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Browser deep-research smoke
+        shell: bash
+        run: |
+          set +e
+          SYMBOL='${{ matrix.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          assets=no; cache=no; analysis=no; detail=no; rf=no; anfis=no; vae=no; lstm=no; walk=no; old404=no; oldsample=no
+          for i in $(seq 1 35); do
+            if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
+              && curl -fsSL --max-time 20 "$BASE/deep-alert-fallback.js" -o fallback.js \
+              && curl -fsSL --max-time 20 "$BASE/research-short-history.js" -o short.js \
+              && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js; then assets=yes; break; fi
+            sleep 4
+          done
+          if curl -fsSL --max-time 25 "https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/main/data/deep-alerts/$SYMBOL.json" -o deep.json; then
+            python - "$SYMBOL" <<'PY' && cache=yes
+          import json,sys
+          s=sys.argv[1];p=json.load(open('deep.json'))
+          assert p.get('symbol')==s and len(p.get('history',[]))>=240
+          PY
+          fi
+          syntax=no
+          if [ "$assets" = yes ] && node --check fallback.js >/dev/null 2>&1 && node --check short.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1; then syntax=yes; fi
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          EXIT=127
+          if [ "$assets" = yes ] && [ "$cache" = yes ] && [ "$syntax" = yes ] && [ -n "$CHROME" ]; then
+            rm -rf "/tmp/vmews-$SYMBOL"
+            timeout 330s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-$SYMBOL" --virtual-time-budget=300000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else
+            : > dom.html; : > chrome.err
+          fi
+          grep -Fq 'CURRENT STRUCTURAL ASSESSMENT' dom.html && grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'Research analysis complete' dom.html && analysis=yes
+          grep -Fq 'Random Forest' dom.html && rf=yes
+          grep -Fq 'ANFIS' dom.html && anfis=yes
+          grep -Fq 'VAE anomaly' dom.html && vae=yes
+          grep -Fq 'LSTM crash' dom.html && grep -Fq 'LSTM rebound' dom.html && lstm=yes
+          grep -Fq 'Purged Walk-Forward Validation' dom.html && grep -Fq '>Ensemble<' dom.html && walk=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          grep -Fq 'Research models need at least 120 point-in-time samples' dom.html && oldsample=yes
+          STATUS=$(python - <<'PY'
+          import re,html
+          s=open('dom.html',encoding='utf-8',errors='ignore').read();m=re.search(r'id="analysisStatus"[^>]*>(.*?)</span>',s,re.S)
+          print(html.unescape(re.sub('<[^>]+>',' ',m.group(1))).strip() if m else 'NOT_FOUND')
+          PY
+          )
+          pass=no
+          if [ "$assets" = yes ] && [ "$cache" = yes ] && [ "$syntax" = yes ] && [ "$detail" = yes ] && [ "$analysis" = yes ] && [ "$rf" = yes ] && [ "$anfis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$walk" = yes ] && [ "$old404" = no ] && [ "$oldsample" = no ]; then pass=yes; fi
+          cat > result.md <<EOF
+          # VMEWS RED ALERT CDN ${pass^^} · $SYMBOL
+
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Symbol: $SYMBOL
+          - Static deep cache: $cache
+          - Assets: $assets
+          - JavaScript syntax: $syntax
+          - Chrome exit: $EXIT
+          - Detail rendered: $detail
+          - Analysis status: $STATUS
+          - Research complete: $analysis
+          - Random Forest: $rf
+          - ANFIS: $anfis
+          - VAE: $vae
+          - LSTM crash/rebound: $lstm
+          - Walk-forward ensemble: $walk
+          - Old Yahoo 404 present: $old404
+          - Old 120-sample error present: $oldsample
+          EOF
+          echo '--- chrome tail ---' >> result.md
+          echo '```' >> result.md
+          tail -25 chrome.err >> result.md
+          echo '```' >> result.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RED ALERT CDN ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
