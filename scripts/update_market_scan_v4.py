@@ -1,8 +1,12 @@
 import json
 import pathlib
 import importlib.util
+import subprocess
+from datetime import datetime, timezone, timedelta, time as dtime
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+OUT = ROOT / 'data' / 'market-scan.json'
+VN_TZ = timezone(timedelta(hours=7))
 POLICY = json.loads((ROOT / 'data' / 'alert-policy.json').read_text(encoding='utf-8'))
 
 spec = importlib.util.spec_from_file_location('vmews_market_scan_legacy', ROOT / 'scripts' / 'update_market_scan.py')
@@ -12,22 +16,47 @@ spec.loader.exec_module(scan)
 bands = POLICY['riskIndexBands']
 elig = POLICY['eligibility']
 confirm = POLICY['marketConfirmation']
-scan.VERSION = 'VMEWS-MARKET-SCAN-4.0.0'
+scan.VERSION = 'VMEWS-MARKET-SCAN-4.1.0'
 scan.RED_THRESHOLD = float(bands['red'])
 scan.YELLOW_THRESHOLD = float(bands['yellow'])
 scan.WATCH_THRESHOLD = float(bands['watch'])
 scan.MIN_AVG_TURNOVER_30D = float(elig['minAverageTurnover30dVnd'])
 
-# Preserve transition continuity when moving from scanner v3.x to v4.
+
+def upgrade_payload(payload, note=None):
+    payload['version'] = scan.VERSION
+    payload['policyVersion'] = POLICY['version']
+    payload.setdefault('thresholds', {}).update({
+        'red': scan.RED_THRESHOLD,
+        'yellow': scan.YELLOW_THRESHOLD,
+        'watch': scan.WATCH_THRESHOLD,
+        'redMinIndependentSignals': confirm['redMinIndependentStressSignals'],
+        'yellowMinIndependentSignals': confirm['yellowMinIndependentStressSignals'],
+        'watchMinIndependentSignals': confirm['watchMinIndependentStressSignals'],
+        'minAverageTurnover30dVnd': scan.MIN_AVG_TURNOVER_30D,
+        'canonicalPolicy': POLICY['version'],
+    })
+    g = payload.setdefault('governance', [])
+    canonical = f"Canonical alert policy: {POLICY['version']}; the same WATCH/YELLOW/RED risk-index bands are used by market scan, deep research and investor chart."
+    if canonical not in g:
+        g.insert(0, canonical)
+    guard = 'Intraday overwrite guard: market-wide snapshots are published only from completed EOD/pre-session states; code pushes during the Vietnam cash session preserve the latest prior completed snapshot.'
+    if guard not in g:
+        g.insert(1, guard)
+    if note:
+        payload['snapshotGuardNote'] = note
+    return payload
+
+
 def load_previous_any_version():
     try:
-        p = json.loads(scan.OUT.read_text(encoding='utf-8'))
+        p = json.loads(OUT.read_text(encoding='utf-8'))
         return {x['symbol']: x for x in p.get('ranking', []) if x.get('symbol')}
     except Exception:
         return {}
 scan.load_previous = load_previous_any_version
 
-# Bind confirmation counts to the canonical policy without duplicating scanner logic.
+
 _orig_score_row = scan.score_row
 def score_row_policy(row, market_mom20):
     out = _orig_score_row(row, market_mom20)
@@ -47,16 +76,60 @@ def score_row_policy(row, market_mom20):
     return out
 scan.score_row = score_row_policy
 
+
+def in_vietnam_cash_session(now):
+    return now.weekday() < 5 and dtime(8, 45) <= now.time() < dtime(15, 20)
+
+
+def find_prior_completed_snapshot(today):
+    """Find the newest committed market snapshot whose modelDate is before today."""
+    try:
+        commits = subprocess.check_output(
+            ['git', 'log', '--format=%H', '--', 'data/market-scan.json'],
+            cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+        ).splitlines()
+    except Exception:
+        return None
+    for sha in commits[:80]:
+        try:
+            raw = subprocess.check_output(
+                ['git', 'show', f'{sha}:data/market-scan.json'],
+                cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+            )
+            p = json.loads(raw)
+            if p.get('modelDate') and p['modelDate'] < today:
+                return p
+        except Exception:
+            continue
+    return None
+
+
+def guard_intraday():
+    now = datetime.now(VN_TZ)
+    if not in_vietnam_cash_session(now):
+        return False
+    today = now.date().isoformat()
+    try:
+        current = json.loads(OUT.read_text(encoding='utf-8'))
+    except Exception:
+        current = None
+    if current and current.get('modelDate') and current['modelDate'] < today:
+        OUT.write_text(json.dumps(upgrade_payload(current, f'Intraday run at {now.isoformat()} skipped; retained completed EOD {current["modelDate"]}.'), ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps({'skippedIntraday': True, 'retainedModelDate': current['modelDate'], 'policyVersion': POLICY['version']}, ensure_ascii=False))
+        return True
+    prior = find_prior_completed_snapshot(today)
+    if prior:
+        prior['reviewDate'] = today
+        prior['generatedAt'] = now.isoformat()
+        OUT.write_text(json.dumps(upgrade_payload(prior, f'Intraday run at {now.isoformat()} restored prior completed EOD {prior.get("modelDate")} from repository history.'), ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps({'skippedIntraday': True, 'restoredModelDate': prior.get('modelDate'), 'policyVersion': POLICY['version']}, ensure_ascii=False))
+        return True
+    raise RuntimeError('Intraday market-wide refresh refused and no prior completed EOD snapshot could be recovered.')
+
+
 if __name__ == '__main__':
-    scan.main()
-    payload = json.loads(scan.OUT.read_text(encoding='utf-8'))
-    payload['policyVersion'] = POLICY['version']
-    payload['thresholds'].update({
-        'redMinIndependentSignals': confirm['redMinIndependentStressSignals'],
-        'yellowMinIndependentSignals': confirm['yellowMinIndependentStressSignals'],
-        'watchMinIndependentSignals': confirm['watchMinIndependentStressSignals'],
-        'canonicalPolicy': POLICY['version'],
-    })
-    payload['governance'].insert(0, f"Canonical alert policy: {POLICY['version']}; the same RED/YELLOW/WATCH risk-index bands are used by market scan, deep research and investor chart.")
-    scan.OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({'policyVersion': POLICY['version'], 'scannerVersion': payload['version']}, ensure_ascii=False))
+    if not guard_intraday():
+        scan.main()
+        payload = json.loads(OUT.read_text(encoding='utf-8'))
+        OUT.write_text(json.dumps(upgrade_payload(payload), ensure_ascii=False, indent=2), encoding='utf-8')
+        print(json.dumps({'policyVersion': POLICY['version'], 'scannerVersion': scan.VERSION, 'modelDate': payload.get('modelDate')}, ensure_ascii=False))
