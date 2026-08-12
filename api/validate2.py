@@ -7,7 +7,11 @@ core_path=pathlib.Path(__file__).with_name('stocks.py')
 spec=importlib.util.spec_from_file_location('vmews_validation_core_final',core_path)
 core=importlib.util.module_from_spec(spec); spec.loader.exec_module(core)
 
-VERSION='QTRR-VALIDATION-2.0.0-PRODUCTION'
+price_path=pathlib.Path(__file__).with_name('price_history.py')
+pspec=importlib.util.spec_from_file_location('vmews_validation_price_history',price_path)
+price_history=importlib.util.module_from_spec(pspec); pspec.loader.exec_module(price_history)
+
+VERSION='QTRR-VALIDATION-2.1.0-PRODUCTION'
 VN_TZ=timezone(timedelta(hours=7))
 SAMPLE_STEP=5; MIN_SAMPLES=120; EVENT_HORIZON=20; PURGE_SESSIONS=20; EVENT_THRESHOLD=-0.12
 
@@ -15,10 +19,25 @@ def clean_symbol(s):return re.sub('[^A-Z0-9]','',str(s or '').upper())[:8]
 def safe_div(a,b):return a/b if b else None
 
 def fetch_history(symbol,end=None):
-    rows,_,host=core.yahoo_chart(symbol,'10y',12)
-    if end:rows=[r for r in rows if r['date']<=end]
-    if len(rows)<350:raise RuntimeError(f'Only {len(rows)} completed sessions available; validation needs at least 350')
-    return rows,[{'source':'Yahoo Finance','provider':host,'type':'validation.ohlcv','symbol':symbol,'rows':len(rows),'ok':True}]
+    errors=[]
+    try:
+        rows,_,host=core.yahoo_chart(symbol,'10y',12)
+        if end:rows=[r for r in rows if r['date']<=end]
+        if len(rows)>=350:
+            return rows,[{'source':'Yahoo Finance','provider':host,'type':'validation.ohlcv','symbol':symbol,'rows':len(rows),'ok':True}]
+        errors.append(f'Yahoo only {len(rows)} rows')
+    except Exception as e:
+        errors.append(f'Yahoo: {e}')
+    try:
+        rows,audit=price_history.vnstock_equity_history(symbol,11)
+        if end:rows=[r for r in rows if r['date']<=end]
+        audit={**audit,'type':'validation.ohlcv','rows':len(rows)}
+        if len(rows)>=350:
+            return rows,[audit]
+        errors.append(f'Vnstock only {len(rows)} rows')
+    except Exception as e:
+        errors.append(f'Vnstock: {e}')
+    raise RuntimeError(f'{symbol}: validation needs >=350 completed sessions; ' + ' | '.join(errors))
 
 def analog_pt(rows,fs,current,h=20):
     cutoff=current['i']; cand=[f for f in fs if f['i']+max(60,h)<=cutoff and f['i']<cutoff-60]
@@ -105,7 +124,7 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         q=parse_qs(urlparse(self.path).query)
         try:
-            if q.get('mode',[''])[0]=='health':out={'ok':True,'version':VERSION,'time':datetime.now(VN_TZ).isoformat(),'priceSource':'Yahoo Finance price history'}
+            if q.get('mode',[''])[0]=='health':out={'ok':True,'version':VERSION,'time':datetime.now(VN_TZ).isoformat(),'priceSource':'Yahoo Finance with Vnstock Unified Market fallback'}
             else:out=validation(q.get('symbol',['FPT'])[0],q)
             self.sendj(200,out)
         except Exception as e:self.sendj(503,{'error':'VALIDATION_FAILED','message':str(e),'type':type(e).__name__,'version':VERSION,'retryable':True})
