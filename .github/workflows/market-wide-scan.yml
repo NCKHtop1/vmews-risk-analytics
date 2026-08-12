@@ -89,15 +89,18 @@ jobs:
           PY
       - name: Build deep-alert CDN cache
         run: python scripts/update_alert_deep_cache.py
-      - name: Validate RED deep cache
+      - name: Validate RED and YELLOW deep cache
         run: |
           python - <<'PY'
           import json
           p=json.load(open('data/deep-alerts/manifest.json',encoding='utf-8'))
-          assert p.get('version')=='VMEWS-DEEP-ALERT-CACHE-1.0.0',p
+          assert p.get('version')=='VMEWS-DEEP-ALERT-CACHE-1.1.0',p
           assert not p.get('missingRed'),p
-          assert p.get('cached',0)>=len(p.get('redSymbols',[])),p
-          for s in p.get('redSymbols',[]):
+          assert not p.get('missingAlerts'),p
+          alerts=(p.get('redSymbols') or [])+(p.get('yellowSymbols') or [])
+          assert p.get('cached',0)==len(alerts)==p.get('requested',0),p
+          assert p.get('alertCoverageRatio')==1.0,p
+          for s in alerts:
               x=json.load(open(f'data/deep-alerts/{s}.json',encoding='utf-8'))
               assert len(x.get('history',[]))>=240,(s,len(x.get('history',[])))
           print(json.dumps(p,ensure_ascii=False,indent=2))
@@ -111,7 +114,9 @@ jobs:
           p=json.load(open('data/deep-alerts/manifest.json',encoding='utf-8'))
           print(f"- cached: {p.get('cached')}/{p.get('requested')}")
           print(f"- RED guaranteed: {p.get('redSymbols')}")
-          print(f"- missing RED: {p.get('missingRed')}")
+          print(f"- YELLOW guaranteed: {len(p.get('yellowSymbols') or [])}")
+          print(f"- missing alerts: {p.get('missingAlerts')}")
+          print(f"- alert deep-history coverage: {p.get('alertCoverageRatio',0):.1%}")
           PY
           gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS MARKET SCAN PASS ${GITHUB_SHA::7}" --body-file market-scan-report.md
       - name: Commit refreshed market snapshot
@@ -120,6 +125,6 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/market-scan.json data/deep-alerts
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh VMEWS market-wide T-day scan and deep cache [data-only]'
+          git commit -m 'Refresh VMEWS market-wide T-day scan and full alert deep cache [data-only]'
           git pull --rebase origin main
           git push origin HEAD:main
