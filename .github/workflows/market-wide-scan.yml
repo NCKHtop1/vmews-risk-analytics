@@ -9,7 +9,9 @@ on:
     branches: [main]
     paths:
       - 'scripts/update_market_scan.py'
+      - 'scripts/update_market_scan_v4.py'
       - 'scripts/update_alert_deep_cache.py'
+      - 'data/alert-policy.json'
       - 'api/price_history.py'
       - 'api/radar.py'
       - '.github/workflows/market-wide-scan.yml'
@@ -39,15 +41,21 @@ jobs:
         run: |
           pip install --disable-pip-version-check -q -r requirements.txt
           pip install --disable-pip-version-check -q tradingview-screener==3.2.1
-      - name: Build full-market T-day snapshot
-        run: python scripts/update_market_scan.py
+      - name: Build full-market T-day snapshot under canonical policy
+        run: python scripts/update_market_scan_v4.py
       - name: Validate market-wide coverage and alert breadth
         run: |
           python - <<'PY'
           import json
           p=json.load(open('data/market-scan.json',encoding='utf-8'))
-          c=p.get('coverage',{});b=p.get('breadth',{});m=p.get('marketContext',{})
-          assert p.get('version')=='VMEWS-MARKET-SCAN-3.1.0', p.get('version')
+          policy=json.load(open('data/alert-policy.json',encoding='utf-8'))
+          c=p.get('coverage',{});b=p.get('breadth',{});m=p.get('marketContext',{});t=p.get('thresholds',{})
+          bands=policy['riskIndexBands'];confirm=policy['marketConfirmation']
+          assert p.get('version')=='VMEWS-MARKET-SCAN-4.0.0', p.get('version')
+          assert p.get('policyVersion')==policy.get('version'),(p.get('policyVersion'),policy.get('version'))
+          assert t.get('red')==bands['red'] and t.get('yellow')==bands['yellow'] and t.get('watch')==bands['watch'],t
+          assert t.get('redMinIndependentSignals')==confirm['redMinIndependentStressSignals'],t
+          assert t.get('yellowMinIndependentSignals')==confirm['yellowMinIndependentStressSignals'],t
           assert p.get('modelDate')
           assert c.get('listedUniverse',0)>=500, c
           assert c.get('tradingViewUniverseRows',0)>=500, c
@@ -58,12 +66,13 @@ jobs:
           assert b.get('redShareEligible',0)<=0.12, b
           assert b.get('redShareEligible',0)+b.get('yellowShareEligible',0)<=0.30, b
           assert isinstance(p.get('redList'),list) and isinstance(p.get('yellowList'),list)
-          assert all(x.get('status')=='RED' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=3 for x in p['redList'])
-          assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=2 for x in p['yellowList'])
+          assert all(x.get('status')=='RED' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=confirm['redMinIndependentStressSignals'] for x in p['redList'])
+          assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=confirm['yellowMinIndependentStressSignals'] for x in p['yellowList'])
           if not m.get('available'):
               assert all(x.get('marketRelativeEvidenceAvailable') is False for x in p.get('ranking',[])), m
           rows=[
             '# VMEWS MARKET-WIDE T-DAY SCAN PASS','',
+            f"Policy: {p.get('policyVersion')}",
             f"Generated: {p.get('generatedAt')}",
             f"Review date: {p.get('reviewDate')}",
             f"Model date: {p.get('modelDate')}",
@@ -78,7 +87,6 @@ jobs:
             f"New escalations: {b.get('newEscalations')}",
             f"Market-relative evidence: {'available' if m.get('available') else 'excluded / unavailable'}",
             f"Benchmark: {m.get('benchmarkTicker') or m.get('source')}",
-            f"Benchmark 1M: {m.get('vnindexMomentum20d') if m.get('vnindexMomentum20d') is not None else 'N/A'}",
             '', 'Top morning attention:',
           ]
           for x in p.get('topAttention',[])[:15]:
@@ -118,13 +126,13 @@ jobs:
           print(f"- missing alerts: {p.get('missingAlerts')}")
           print(f"- alert deep-history coverage: {p.get('alertCoverageRatio',0):.1%}")
           PY
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS MARKET SCAN PASS ${GITHUB_SHA::7}" --body-file market-scan-report.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS MARKET SCAN V4 PASS ${GITHUB_SHA::7}" --body-file market-scan-report.md
       - name: Commit refreshed market snapshot
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/market-scan.json data/deep-alerts
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh VMEWS market-wide T-day scan and full alert deep cache [data-only]'
+          git commit -m 'Refresh VMEWS market-wide T-day scan under canonical policy [data-only]'
           git pull --rebase origin main
           git push origin HEAD:main
