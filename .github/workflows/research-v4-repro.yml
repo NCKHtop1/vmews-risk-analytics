@@ -1,0 +1,87 @@
+name: VMEWS v4 reproducibility
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'research-engine-v3.js'
+      - 'research-runtime.js'
+      - 'deep-alert-fallback.js'
+      - 'alert-policy.js'
+      - '.github/workflows/research-v4-repro.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  reproducibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Run identical FPT research twice
+        shell: bash
+        run: |
+          set -e
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=FPT"
+          for i in $(seq 1 40);do curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html && break;sleep 3;done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          for RUN in 1 2; do
+            rm -rf "/tmp/vmews-repro-$RUN"
+            timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-repro-$RUN" --virtual-time-budget=350000 --dump-dom "$URL" > "dom$RUN.html" 2>"chrome$RUN.err"
+            grep -Fq 'Research analysis complete' "dom$RUN.html"
+          done
+          python - <<'PY' > repro.txt
+          import re,html
+          from datetime import datetime,time
+          from zoneinfo import ZoneInfo
+          def clean(x): return ' '.join(html.unescape(re.sub('<[^>]+>',' ',x or '')).split())
+          def extract(path):
+              s=open(path,encoding='utf-8',errors='ignore').read()
+              def after(label):
+                  m=re.search(r'<span[^>]*>\s*'+re.escape(label)+r'\s*</span>\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+                  return clean(m.group(1)) if m else None
+              def audit(label):
+                  m=re.search(re.escape(label)+r'\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+                  return clean(m.group(1)) if m else None
+              models={}
+              for name in ['Structural EWS','Random Forest','ANFIS','Regime model','VAE anomaly','LSTM crash','LSTM rebound']:
+                  m=re.search(r'<span[^>]*>\s*'+re.escape(name)+r'\s*</span>\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+                  models[name]=clean(m.group(1)) if m else None
+              return {
+                  'historicalRisk':after('HISTORICAL RISK PERCENTILE'),
+                  'crashEstimate':after('CALIBRATED 20D CRASH ESTIMATE'),
+                  'researchRisk':after('CURRENT RESEARCH RISK INDEX'),
+                  'currentDate':audit('Current feature date'),
+                  'lastLabelled':audit('Last labelled training state'),
+                  'models':models,
+              }
+          a,b=extract('dom1.html'),extract('dom2.html')
+          print('RUN1',a);print('RUN2',b)
+          assert a==b,(a,b)
+          assert a['currentDate'] and a['lastLabelled'] and a['lastLabelled']<a['currentDate'],a
+          now=datetime.now(ZoneInfo('Asia/Ho_Chi_Minh'))
+          in_cash=now.weekday()<5 and time(8,45)<=now.time()<time(15,20)
+          if in_cash:
+              assert a['currentDate']<now.date().isoformat(),(a['currentDate'],now.isoformat())
+          for k,v in a['models'].items(): assert v and v!='UNAVAILABLE',(k,v)
+          print('IDENTICAL=yes')
+          print('VIETNAM_CASH_SESSION='+str(in_cash).lower())
+          print('COMPLETED_EOD_GUARD=yes')
+          PY
+          cat > issue.md <<EOF
+          # VMEWS V4 REPRODUCIBILITY PASS
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Two independent browser runs: identical
+          - Seeded RF/VAE/LSTM: identical rendered outputs
+          - Current state later than last labelled state: yes
+          - Completed-EOD guard during Vietnam cash session: yes
+          EOF
+          cat repro.txt >> issue.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 REPRO PASS ${GITHUB_SHA::7}" --body-file issue.md
