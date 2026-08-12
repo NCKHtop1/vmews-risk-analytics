@@ -43,9 +43,11 @@ window.fetch=async(input,init)=>{
 window.__VMEWS_DEEP_ALERT_FALLBACK__=true;
 if(!window.__VMEWS_INVESTOR_CHART_LOADER__){
   window.__VMEWS_INVESTOR_CHART_LOADER__=true;
-  const s=document.createElement('script');
-  s.src=new URL('./investor-chart.js',location.href).href;
-  s.async=false;
-  document.head.appendChild(s);
+  for(const file of ['./investor-chart.js','./tday-chart-marker.js']){
+    const s=document.createElement('script');
+    s.src=new URL(file,location.href).href;
+    s.async=false;
+    document.head.appendChild(s);
+  }
 }
 })();
