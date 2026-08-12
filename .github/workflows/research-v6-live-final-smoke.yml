@@ -70,6 +70,7 @@ jobs:
     needs: static
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         symbol: [FPT, GEE, PNJ]
     runs-on: ubuntu-latest
