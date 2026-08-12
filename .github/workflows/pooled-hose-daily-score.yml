@@ -56,6 +56,9 @@ jobs:
           assert p.get('currentScored',0)>=100,p.get('currentScored')
           assert p.get('historyCoverage',0)>=.90,p.get('historyCoverage')
           assert p.get('governance','').startswith('Daily frozen pooled ranking inference'),p.get('governance')
+          top=(r.get('riskBuckets') or [])[-1]
+          assert top.get('eventRate',0)>r['sealedReconstruction']['baseRate'],top
+          assert top.get('liftVsBase',0)>=1.5,top
           prob_ok=bool(r['absoluteProbabilityGate']['passed'])
           assert p.get('absoluteProbabilityUsable') is prob_ok,(p.get('absoluteProbabilityUsable'),prob_ok)
           for x in p.get('scores',{}).values():
@@ -75,6 +78,7 @@ jobs:
             f"Ranking evidence: {p.get('rankEvidenceGrade')}\n"
             f"Absolute probability: {p.get('absoluteProbabilityStatus')}\n"
             f"Standalone alert approved: {p.get('standaloneAlertApproved')}\n"
+            f"Top sealed risk decile: {top.get('eventRate',0):.1%} event rate · {top.get('liftVsBase',0):.2f}x base\n"
             f"Scored: {p.get('currentScored')} HOSE names\n"
             f"History coverage: {p.get('historyCoverage',0):.1%}\n"
             'Retraining: no — frozen champion ranking inference only.\n'
