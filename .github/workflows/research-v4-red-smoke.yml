@@ -1,0 +1,82 @@
+name: VMEWS v4 RED alert smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'research-engine-v3.js'
+      - 'research-runtime.js'
+      - 'deep-alert-fallback.js'
+      - 'investor-chart-v2.js'
+      - 'alert-policy.js'
+      - 'data/alert-policy.json'
+      - '.github/workflows/research-v4-red-smoke.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-v4-red-smoke
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: [BNA, BOT, AAH]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Browser current-RED calibrated research smoke
+        shell: bash
+        run: |
+          set +e
+          SYMBOL='${{ matrix.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          assets=no;detail=no;chart=no;riskpane=no;tday=no;complete=no;cal=no;pra=no;brier=no;models=no;old404=no
+          for i in $(seq 1 40); do
+            if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
+              && curl -fsSL --max-time 20 "$BASE/investor-chart-v2.js" -o chart.js \
+              && curl -fsSL --max-time 20 "$BASE/research-engine-v3.js" -o engine.js; then assets=yes;break;fi
+            sleep 4
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          EXIT=127
+          if [ "$assets" = yes ] && [ -n "$CHROME" ];then
+            rm -rf "/tmp/vmews-v4-red-$SYMBOL"
+            timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-v4-red-$SYMBOL" --virtual-time-budget=350000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else : >dom.html;: >chrome.err;fi
+          grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && grep -Fq 'Price, volume &amp; risk history' dom.html && chart=yes
+          grep -Fq 'STRUCTURAL TECHNICAL RISK INDEX' dom.html && riskpane=yes
+          grep -Fq '>T RED<' dom.html && tday=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'CALIBRATED 20D CRASH ESTIMATE' dom.html && cal=yes
+          grep -Fq 'PR-AUC' dom.html && pra=yes
+          grep -Fq 'Brier skill' dom.html && brier=yes
+          grep -Fq 'Random Forest' dom.html && grep -Fq 'ANFIS' dom.html && grep -Fq 'VAE anomaly' dom.html && grep -Fq 'LSTM crash' dom.html && models=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          pass=no
+          if [ "$assets" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$riskpane" = yes ] && [ "$tday" = yes ] && [ "$complete" = yes ] && [ "$cal" = yes ] && [ "$pra" = yes ] && [ "$brier" = yes ] && [ "$models" = yes ] && [ "$old404" = no ];then pass=yes;fi
+          cat > result.md <<EOF
+          # VMEWS V4 RED ${pass^^} · $SYMBOL
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Chrome exit: $EXIT
+          - Detail/chart/risk pane: $detail/$chart/$riskpane
+          - Current T-Day RED marker: $tday
+          - Calibrated research complete: $complete/$cal
+          - PR-AUC/Brier: $pra/$brier
+          - RF/ANFIS/VAE/LSTM: $models
+          - Old Yahoo 404: $old404
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 RED ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
