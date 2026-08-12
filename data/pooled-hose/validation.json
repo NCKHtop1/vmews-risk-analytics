@@ -1,0 +1,428 @@
+{
+  "version": "VMEWS-POOLED-HOSE-1.2.0",
+  "featureVersion": "PANEL-PIT-PRICE-LIQUIDITY-1.0",
+  "generatedAt": "2026-08-12T05:21:17.166893+00:00",
+  "researchDesign": "Current-HOSE pooled panel; one PIT state per 5 sessions; fixed two-model development comparison; 20-session-equivalent purge; final last-15% sampled-date sealed test; separate chronological Platt calibration.",
+  "governanceChangeFromV1_1": "No predictive model change. The original composite gate mixed continuous model quality with one binary operating threshold. V1.2 preserves the original low-recall result as standaloneAlertGate=FAIL while allowing continuous predictive evidence only when discrimination, calibration, bootstrap and incremental-value conditions pass.",
+  "eventDefinition": {
+    "horizonSessions": 20,
+    "forwardDrawdownThreshold": -0.12
+  },
+  "timeAxis": {
+    "sampleStepTradingSessions": 5,
+    "purgePanelDates": 4,
+    "purgeTradingSessionsEquivalent": 20,
+    "calibrationPanelDates": 26,
+    "calibrationTradingSessionsEquivalent": 130
+  },
+  "universe": {
+    "reference": 404,
+    "historyCovered": 396,
+    "historyCoverageRatio": 0.9801980198019802,
+    "panelSymbols": 311,
+    "currentScored": 220,
+    "currentModelDate": "2026-08-11"
+  },
+  "dataset": {
+    "states": 64145,
+    "positiveStates": 11319,
+    "baseRate": 0.17645958375555382,
+    "uniquePanelDates": 482,
+    "start": "2017-06-02",
+    "end": "2026-07-08",
+    "sampleStepTradingSessions": 5,
+    "minTurnoverVnd": 500000000.0,
+    "corporateActionSuspectsNeutralized": 93
+  },
+  "candidateDevelopment": {
+    "logistic_l2": {
+      "folds": [
+        {
+          "n": 8130,
+          "symbols": 225,
+          "events": 2928,
+          "eventEpisodes": 518,
+          "baseRate": 0.36014760147601477,
+          "prAuc": 0.5083436588941661,
+          "rocAuc": 0.654833457812569,
+          "brier": 0.2647566677992602,
+          "baseRateBrier": 0.2304413066270884,
+          "brierSkill": -0.14891150234494477,
+          "threshold": 0.2431,
+          "precision": 0.6566265060240963,
+          "recall": 0.03722677595628415,
+          "falsePositiveRate": 0.010957324106113034,
+          "alertRate": 0.02041820418204182,
+          "missRate": 0.9627732240437158,
+          "episodeRecall": 0.08108108108108109,
+          "precisionEnrichment": 1.8232149911119888,
+          "calibrationN": 6372,
+          "calibrationEvents": 983,
+          "prAucCI95": {
+            "low": 0.3625344770309431,
+            "high": 0.6007189528935759,
+            "reps": 120,
+            "unit": "date-block bootstrap"
+          },
+          "trainTo": "2020-11-05",
+          "calFrom": "2020-12-10",
+          "calTo": "2021-10-21",
+          "testFrom": "2021-11-25",
+          "testTo": "2022-09-29",
+          "purgeTradingSessionsEquivalent": 20
+        },
+        {
+          "n": 6979,
+          "symbols": 197,
+          "events": 802,
+          "eventEpisodes": 339,
+          "baseRate": 0.11491617710273679,
+          "prAuc": 0.15470958842268148,
+          "rocAuc": 0.5733809801221408,
+          "brier": 0.147458134099156,
+          "baseRateBrier": 0.10171044934282922,
+          "brierSkill": -0.44978352816167244,
+          "threshold": 0.3164,
+          "precision": 0.13601938806422295,
+          "recall": 0.559850374064838,
+          "falsePositiveRate": 0.4617128055690465,
+          "alertRate": 0.4729903997707408,
+          "missRate": 0.4401496259351621,
+          "episodeRecall": 0.6224188790560472,
+          "precisionEnrichment": 1.1836400365339301,
+          "calibrationN": 8130,
+          "calibrationEvents": 2928,
+          "prAucCI95": {
+            "low": 0.11866685477400314,
+            "high": 0.2050682209373216,
+            "reps": 120,
+            "unit": "date-block bootstrap"
+          },
+          "trainTo": "2021-10-21",
+          "calFrom": "2021-11-25",
+          "calTo": "2022-09-29",
+          "testFrom": "2022-11-03",
+          "testTo": "2023-09-07",
+          "purgeTradingSessionsEquivalent": 20
+        },
+        {
+          "n": 8036,
+          "symbols": 224,
+          "events": 809,
+          "eventEpisodes": 322,
+          "baseRate": 0.10067197610751617,
+          "prAuc": 0.16940832274053969,
+          "rocAuc": 0.6532098847150408,
+          "brier": 0.08942588058574605,
+          "baseRateBrier": 0.09053712933412386,
+          "brierSkill": 0.01227395607250581,
+          "threshold": 0.576,
+          "precision": 0.3333333333333333,
+          "recall": 0.0012360939431396785,
+          "falsePositiveRate": 0.0002767400027674,
+          "alertRate": 0.00037332005973120957,
+          "missRate": 0.9987639060568603,
+          "episodeRecall": 0.003105590062111801,
+          "precisionEnrichment": 3.3110836423568193,
+          "calibrationN": 6979,
+          "calibrationEvents": 802,
+          "prAucCI95": {
+            "low": 0.11544541537138348,
+            "high": 0.23496557883030372,
+            "reps": 120,
+            "unit": "date-block bootstrap"
+          },
+          "trainTo": "2022-09-29",
+          "calFrom": "2022-11-03",
+          "calTo": "2023-09-07",
+          "testFrom": "2023-10-12",
+          "testTo": "2024-12-16",
+          "purgeTradingSessionsEquivalent": 20
+        }
+      ],
+      "meanPrAuc": 0.2774871900191291,
+      "meanBaseRate": 0.1919119182287559,
+      "meanPrSkill": 0.10589844562835427,
+      "meanBrierSkill": -0.19547369147803714,
+      "selectionScore": 0.10589844562835427
+    },
+    "hist_gbdt": {
+      "folds": [
+        {
+          "n": 8130,
+          "symbols": 225,
+          "events": 2928,
+          "eventEpisodes": 518,
+          "baseRate": 0.36014760147601477,
+          "prAuc": 0.5143350883685069,
+          "rocAuc": 0.6528047614095462,
+          "brier": 0.27091940649117746,
+          "baseRateBrier": 0.2304413066270884,
+          "brierSkill": -0.17565470555846452,
+          "threshold": 0.1712,
+          "precision": 0.868421052631579,
+          "recall": 0.011270491803278689,
+          "falsePositiveRate": 0.0009611687812379854,
+          "alertRate": 0.004674046740467405,
+          "missRate": 0.9887295081967213,
+          "episodeRecall": 0.05019305019305019,
+          "precisionEnrichment": 2.4112920621225196,
+          "calibrationN": 6372,
+          "calibrationEvents": 983,
+          "prAucCI95": {
+            "low": 0.3803488648009624,
+            "high": 0.6289400960988264,
+            "reps": 120,
+            "unit": "date-block bootstrap"
+          },
+          "trainTo": "2020-11-05",
+          "calFrom": "2020-12-10",
+          "calTo": "2021-10-21",
+          "testFrom": "2021-11-25",
+          "testTo": "2022-09-29",
+          "purgeTradingSessionsEquivalent": 20
+        },
+        {
+          "n": 6979,
+          "symbols": 197,
+          "events": 802,
+          "eventEpisodes": 339,
+          "baseRate": 0.11491617710273679,
+          "prAuc": 0.13770028262557546,
+          "rocAuc": 0.5305856695480015,
+          "brier": 0.15142653878802093,
+          "baseRateBrier": 0.10171044934282922,
+          "brierSkill": -0.4888002143970156,
+          "threshold": 0.3817,
+          "precision": 0.14803625377643503,
+          "recall": 0.36658354114713215,
+          "falsePositiveRate": 0.27391937833899954,
+          "alertRate": 0.28456798968333574,
+          "missRate": 0.6334164588528678,
+          "episodeRecall": 0.5693215339233039,
+          "precisionEnrichment": 1.2882107420271074,
+          "calibrationN": 8130,
+          "calibrationEvents": 2928,
+          "prAucCI95": {
+            "low": 0.08297264428749841,
+            "high": 0.24056713189493031,
+            "reps": 120,
+            "unit": "date-block bootstrap"
+          },
+          "trainTo": "2021-10-21",
+          "calFrom": "2021-11-25",
+          "calTo": "2022-09-29",
+          "testFrom": "2022-11-03",
+          "testTo": "2023-09-07",
+          "purgeTradingSessionsEquivalent": 20
+        },
+        {
+          "n": 8036,
+          "symbols": 224,
+          "events": 809,
+          "eventEpisodes": 322,
+          "baseRate": 0.10067197610751617,
+          "prAuc": 0.1516010713167702,
+          "rocAuc": 0.66173657259388,
+          "brier": 0.08902062930628139,
+          "baseRateBrier": 0.09053712933412386,
+          "brierSkill": 0.016750034367070343,
+          "threshold": 0.2207,
+          "precision": 0.17005545286506468,
+          "recall": 0.11372064276885044,
+          "falsePositiveRate": 0.06212813062128131,
+          "alertRate": 0.06732205077152813,
+          "missRate": 0.8862793572311496,
+          "episodeRecall": 0.18633540372670807,
+          "precisionEnrichment": 1.6892034848252904,
+          "calibrationN": 6979,
+          "calibrationEvents": 802,
+          "prAucCI95": {
+            "low": 0.10584808583944406,
+            "high": 0.22166954988963453,
+            "reps": 120,
+            "unit": "date-block bootstrap"
+          },
+          "trainTo": "2022-09-29",
+          "calFrom": "2022-11-03",
+          "calTo": "2023-09-07",
+          "testFrom": "2023-10-12",
+          "testTo": "2024-12-16",
+          "purgeTradingSessionsEquivalent": 20
+        }
+      ],
+      "meanPrAuc": 0.2678788141036175,
+      "meanBaseRate": 0.1919119182287559,
+      "meanPrSkill": 0.09400818745940441,
+      "meanBrierSkill": -0.21590162852946992,
+      "selectionScore": 0.09400818745940441
+    }
+  },
+  "champion": "logistic_l2",
+  "sealedSplit": {
+    "trainTo": "2024-08-15",
+    "calFrom": "2024-09-23",
+    "calTo": "2025-03-18",
+    "sealedFrom": "2025-04-23",
+    "sealedTo": "2026-07-08",
+    "sampleStepTradingSessions": 5,
+    "purgePanelDates": 4,
+    "purgeTradingSessionsEquivalent": 20,
+    "calibrationPanelDates": 26,
+    "calibrationTradingSessionsEquivalent": 130
+  },
+  "sealedTest": {
+    "n": 7427,
+    "symbols": 242,
+    "events": 769,
+    "eventEpisodes": 295,
+    "baseRate": 0.10354113370135991,
+    "prAuc": 0.18343143719756966,
+    "rocAuc": 0.6302454569353684,
+    "brier": 0.09214312189071666,
+    "baseRateBrier": 0.09282036733319703,
+    "brierSkill": 0.007296302114914721,
+    "threshold": 0.2612,
+    "precision": 0.27007299270072993,
+    "recall": 0.09622886866059818,
+    "falsePositiveRate": 0.030039050765995796,
+    "alertRate": 0.03689241955028948,
+    "missRate": 0.9037711313394018,
+    "episodeRecall": 0.0847457627118644,
+    "precisionEnrichment": 2.6083642611031483,
+    "calibrationN": 2463,
+    "calibrationEvents": 302,
+    "prAucCI95": {
+      "low": 0.16106659473957338,
+      "high": 0.2216485366871179,
+      "reps": 120,
+      "unit": "date-block bootstrap"
+    }
+  },
+  "structuralBaselineSealed": {
+    "n": 7427,
+    "symbols": 242,
+    "events": 769,
+    "eventEpisodes": 295,
+    "baseRate": 0.10354113370135991,
+    "prAuc": 0.09486311551280069,
+    "rocAuc": 0.4646436661548179,
+    "brier": 0.0932237695321885,
+    "baseRateBrier": 0.09282036733319703,
+    "brierSkill": -0.004346052602263173,
+    "threshold": 0.1449,
+    "precision": 0.0,
+    "recall": 0.0,
+    "falsePositiveRate": 0.0,
+    "alertRate": 0.0,
+    "missRate": 1.0,
+    "episodeRecall": 0.0,
+    "precisionEnrichment": 0.0,
+    "prAucCI95": {
+      "low": 0.0768311197488473,
+      "high": 0.12398153322094042,
+      "reps": 120,
+      "unit": "date-block bootstrap"
+    }
+  },
+  "incremental": {
+    "deltaPrAucVsStructural": 0.08856832168476897,
+    "deltaBrierSkillVsStructural": 0.011642354717177894
+  },
+  "promotionGate": {
+    "type": "continuous predictive evidence / calibrated probability",
+    "passed": true,
+    "evidenceGrade": "MODERATE",
+    "reasons": [],
+    "rule": ">=100 sealed crash episodes; PR-AUC > base+0.02; PR-AUC >= structural+0.005; positive Brier skill; ROC-AUC >=0.58; date-block bootstrap PR-AUC lower bound > base rate."
+  },
+  "standaloneAlertGate": {
+    "passed": false,
+    "reasons": [
+      "sealed event-episode recall < 35% at the pre-specified cost-based binary threshold"
+    ],
+    "operatingThreshold": 0.2612,
+    "episodeRecall": 0.0847457627118644,
+    "rule": "Predictive gate plus >=35% sealed crash-episode recall at the pre-specified cost-based threshold.",
+    "effect": "If false, pooled probability/rank may be shown as research evidence but may NOT create RED/YELLOW or an autonomous action."
+  },
+  "production": {
+    "trainTo": "2025-12-10",
+    "calibrationFrom": "2026-01-14",
+    "calibrationTo": "2026-07-08",
+    "calibrationN": 2502,
+    "calibrationEvents": 425,
+    "decisionThreshold": 0.297,
+    "standaloneAlertApproved": false
+  },
+  "features": [
+    "ret1",
+    "ret5",
+    "mom20",
+    "dd60",
+    "trend50",
+    "trend200",
+    "rsi14",
+    "logTurnover20",
+    "technical",
+    "riskRankMom20",
+    "riskRankDd60",
+    "riskRankTrend50",
+    "riskRankTrend200",
+    "riskRankRsi",
+    "liquidityRank",
+    "technicalRank",
+    "marketNegMomFrac",
+    "marketBelow50Frac",
+    "marketMedianMom20",
+    "marketMedianDd60",
+    "marketMomDisp",
+    "marketTechnicalMean"
+  ],
+  "sources": {
+    "listingReference": "VCI via vnstock",
+    "priceHistory": "Yahoo Finance primary; existing Vnstock/CDN fallback for Yahoo gaps"
+  },
+  "limitations": [
+    "Historical panel uses the current HOSE reference universe. Delisted historical constituents are not reconstructed, so survivorship bias remains explicit.",
+    "Corporate actions use a 22% one-day discontinuity research guard; authoritative adjusted-price/corporate-action data remain preferable.",
+    "Brier skill is positive but modest; calibrated probability is predictive evidence, not a guaranteed event probability.",
+    "The standalone binary alert gate did not pass on the sealed test and is not deployed. T-Day RED/YELLOW remains structural-policy driven.",
+    "Candidate architecture/hyperparameters were not changed after the v1.1 sealed result. Future threshold-policy research requires a new independent validation exercise.",
+    "Live drift and calibration must be monitored."
+  ],
+  "fetchErrors": [
+    {
+      "symbol": "AAN",
+      "error": "AAN.VN: AAN.VN: only 59 rows"
+    },
+    {
+      "symbol": "CRV",
+      "error": "Yahoo history only 212 rows"
+    },
+    {
+      "symbol": "DMX",
+      "error": "DMX.VN: DMX.VN: only 4 rows"
+    },
+    {
+      "symbol": "GEL",
+      "error": "Yahoo history only 133 rows"
+    },
+    {
+      "symbol": "HPA",
+      "error": "Yahoo history only 133 rows"
+    },
+    {
+      "symbol": "TCX",
+      "error": "Yahoo history only 210 rows"
+    },
+    {
+      "symbol": "VCK",
+      "error": "Yahoo history only 168 rows"
+    },
+    {
+      "symbol": "VPX",
+      "error": "Yahoo history only 168 rows"
+    }
+  ]
+}
