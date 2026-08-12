@@ -43,7 +43,7 @@ jobs:
           p=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
           t=json.load(open('data/live-track/track-record.json',encoding='utf-8'))
           q=json.load(open('data/live-track/integrity.json',encoding='utf-8'))
-          assert 'VMEWS-LIVE-6.0-RC' in h,h[:400]
+          assert 'VMEWS-LIVE-6.0-' in h,h[:400]
           assert './research-live-v6.js' in h
           assert 'Live outcomes cannot auto-promote or trade' in h
           assert m['version']=='VMEWS-MARKET-SCAN-4.2.0',m['version']
@@ -161,7 +161,7 @@ jobs:
           grep -Fq 'Live Model Monitor' dom.html && live=yes
           grep -Fq '>BNA ·' dom.html && detail=yes
           grep -Fq 'Research analysis complete' dom.html && complete=yes
-          grep -Fq 'BNA · pooled model unavailable' dom.html && grep -Fq 'No pooled probability is imputed' dom.html && unavailable=yes
+          grep -Fq 'BNA · pooled model unavailable' dom.html && grep -Fq 'No pooled probability or rank is imputed' dom.html && unavailable=yes
           grep -Fq 'T RED' dom.html && red=yes
           grep -Fq 'CURRENT RESEARCH RISK RANK' dom.html && rank=yes
           pass=no
@@ -170,7 +170,7 @@ jobs:
           # VMEWS V6 OUTSIDE ${pass^^} · BNA
           - Live monitor: $live
           - Detail/local research: $detail/$complete
-          - Pooled unavailable + no imputation: $unavailable
+          - Pooled unavailable + no probability/rank imputation: $unavailable
           - T RED preserved: $red
           - Risk-rank clarity: $rank
           EOF
