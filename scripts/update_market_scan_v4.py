@@ -16,11 +16,22 @@ spec.loader.exec_module(scan)
 bands = POLICY['riskIndexBands']
 elig = POLICY['eligibility']
 confirm = POLICY['marketConfirmation']
-scan.VERSION = 'VMEWS-MARKET-SCAN-4.1.0'
+scan.VERSION = 'VMEWS-MARKET-SCAN-4.2.0'
 scan.RED_THRESHOLD = float(bands['red'])
 scan.YELLOW_THRESHOLD = float(bands['yellow'])
 scan.WATCH_THRESHOLD = float(bands['watch'])
 scan.MIN_AVG_TURNOVER_30D = float(elig['minAverageTurnover30dVnd'])
+
+
+def compact_monitor(x):
+    return {
+        'symbol': x.get('symbol'), 'name': x.get('name'), 'exchange': x.get('exchange'),
+        'date': x.get('date'), 'close': x.get('close'), 'ret5': x.get('ret5'),
+        'score': x.get('score'), 'status': x.get('status'), 'technicalScore': x.get('technicalScore'),
+        'drivers': x.get('drivers') or [], 'independentStressSignals': x.get('independentStressSignals'),
+        'medianTurnover20': x.get('medianTurnover20'), 'liquidEligible': x.get('liquidEligible'),
+        'stale': x.get('stale', False), 'marketRelativeEvidenceAvailable': x.get('marketRelativeEvidenceAvailable', False),
+    }
 
 
 def upgrade_payload(payload, note=None):
@@ -36,6 +47,30 @@ def upgrade_payload(payload, note=None):
         'minAverageTurnover30dVnd': scan.MIN_AVG_TURNOVER_30D,
         'canonicalPolicy': POLICY['version'],
     })
+    ranking = payload.get('ranking') or []
+    payload['monitorUniverse'] = [compact_monitor(x) for x in ranking]
+    payload['outcomeTape'] = [
+        {'symbol': x.get('symbol'), 'exchange': x.get('exchange'), 'date': x.get('date'), 'close': x.get('close')}
+        for x in ranking if x.get('symbol') and x.get('close') is not None and x.get('date') == payload.get('modelDate')
+    ]
+    market = payload.get('marketContext') or {}
+    market_date = market.get('vnindexModelDate')
+    model_date = payload.get('modelDate')
+    if market.get('available'):
+        market_status = 'ALIGNED' if market_date == model_date else 'STALE_CONTEXT'
+    else:
+        market_status = 'EXCLUDED_UNAVAILABLE'
+    payload['dataQuality'] = {
+        'priceTimeBasis': 'LATEST_COMPLETED_EOD',
+        'watchlistTimeBasis': 'SAME_CANONICAL_EOD_AS_MARKET_SCAN',
+        'modelDate': model_date,
+        'marketContextDate': market_date,
+        'marketContextStatus': market_status,
+        'marketContextImputed': False,
+        'monitorUniverseCount': len(payload['monitorUniverse']),
+        'outcomeTapeCount': len(payload['outcomeTape']),
+        'pointInTimeReady': bool(model_date and payload['outcomeTape']),
+    }
     g = payload.setdefault('governance', [])
     canonical = f"Canonical alert policy: {POLICY['version']}; the same WATCH/YELLOW/RED risk-index bands are used by market scan, deep research and investor chart."
     if canonical not in g:
@@ -43,6 +78,9 @@ def upgrade_payload(payload, note=None):
     guard = 'Intraday overwrite guard: market-wide snapshots are published only from completed EOD/pre-session states; code pushes during the Vietnam cash session preserve the latest prior completed snapshot.'
     if guard not in g:
         g.insert(1, guard)
+    pit = 'Point-in-time monitor tape: the canonical completed-EOD close/risk state is archived for live outcome analysis; unavailable market-relative context is excluded rather than silently synchronized or imputed.'
+    if pit not in g:
+        g.insert(2, pit)
     if note:
         payload['snapshotGuardNote'] = note
     return payload
