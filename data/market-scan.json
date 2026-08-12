@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-MARKET-SCAN-3.1.0",
-  "generatedAt": "2026-08-12T00:41:03.997471+07:00",
+  "generatedAt": "2026-08-12T07:06:54.311942+07:00",
   "reviewDate": "2026-08-12",
   "modelDate": "2026-08-11",
   "scope": "VCI reference universe of listed common stocks on HOSE, HNX and UPCOM, cross-matched to TradingView Vietnam stock screener.",
@@ -97,7 +97,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 84373367500.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -152,7 +152,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -207,7 +207,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -262,7 +262,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -317,7 +317,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 18396404258728.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -372,7 +372,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 313773098145.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -427,7 +427,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 513449962692.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -482,7 +482,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 560174583435.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -537,7 +537,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 832073057556.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -592,7 +592,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 42745500000000.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -647,7 +647,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -702,14 +702,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "NRC",
       "exchange": "HNX",
-      "name": "Công ty Cổ phần Tập đoàn NRC",
+      "name": "Công ty Cổ phần Tập đoàn Bất động sản Quốc gia",
       "close": 4800.0,
       "ret1": 0.0,
       "ret5": 0.02127659574468085,
@@ -757,7 +757,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 444469262695.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -812,7 +812,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 782707371521.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -867,7 +867,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3035620355988.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -922,7 +922,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 984936614990.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -977,7 +977,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 247379101257.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1032,7 +1032,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 276502633667.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1087,7 +1087,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2000884222400.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1142,7 +1142,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1958683124542.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1197,7 +1197,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12073493585205.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1252,7 +1252,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 744240205688.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1307,7 +1307,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1023833155060.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1362,7 +1362,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 147514589539.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1417,7 +1417,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 359999847412.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1472,7 +1472,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1527,7 +1527,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 659253012085.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1582,7 +1582,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1637,7 +1637,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2745063572693.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1692,7 +1692,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 669000000000.0,
       "sector": "Retail Trade",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     }
@@ -1749,7 +1749,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 84373367500.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1804,7 +1804,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1859,7 +1859,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     }
@@ -1916,7 +1916,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1971,7 +1971,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 18396404258728.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2026,7 +2026,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 313773098145.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2081,7 +2081,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 513449962692.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2136,7 +2136,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 560174583435.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2191,7 +2191,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 832073057556.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2246,7 +2246,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 42745500000000.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2301,7 +2301,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2356,14 +2356,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "NRC",
       "exchange": "HNX",
-      "name": "Công ty Cổ phần Tập đoàn NRC",
+      "name": "Công ty Cổ phần Tập đoàn Bất động sản Quốc gia",
       "close": 4800.0,
       "ret1": 0.0,
       "ret5": 0.02127659574468085,
@@ -2411,7 +2411,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 444469262695.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2466,7 +2466,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 782707371521.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2521,7 +2521,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3035620355988.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2576,7 +2576,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 984936614990.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2631,7 +2631,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 247379101257.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2686,7 +2686,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 276502633667.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2741,7 +2741,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2000884222400.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2796,7 +2796,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1958683124542.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2851,7 +2851,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12073493585205.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2906,7 +2906,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 744240205688.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2961,7 +2961,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1023833155060.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3016,7 +3016,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 147514589539.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3071,7 +3071,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 359999847412.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3126,7 +3126,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3181,7 +3181,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 659253012085.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3236,7 +3236,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3291,7 +3291,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2745063572693.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3346,7 +3346,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 669000000000.0,
       "sector": "Retail Trade",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3401,7 +3401,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 44514694854736.0,
       "sector": "Electronic Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3456,7 +3456,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14426499450000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3511,7 +3511,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 63871905518.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     }
@@ -3569,7 +3569,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 84373367500.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3624,7 +3624,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3679,7 +3679,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3734,7 +3734,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3789,7 +3789,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 18396404258728.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3844,7 +3844,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 313773098145.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3899,7 +3899,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 513449962692.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3954,7 +3954,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 560174583435.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4009,7 +4009,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 832073057556.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4064,7 +4064,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 42745500000000.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4119,7 +4119,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4174,14 +4174,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "NRC",
       "exchange": "HNX",
-      "name": "Công ty Cổ phần Tập đoàn NRC",
+      "name": "Công ty Cổ phần Tập đoàn Bất động sản Quốc gia",
       "close": 4800.0,
       "ret1": 0.0,
       "ret5": 0.02127659574468085,
@@ -4229,7 +4229,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 444469262695.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4284,7 +4284,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 782707371521.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4339,7 +4339,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3035620355988.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4394,7 +4394,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 984936614990.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4449,7 +4449,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 247379101257.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4504,7 +4504,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 276502633667.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4559,7 +4559,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2000884222400.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4614,7 +4614,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1958683124542.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4669,7 +4669,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12073493585205.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4724,7 +4724,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 744240205688.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4779,7 +4779,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1023833155060.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4834,7 +4834,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 147514589539.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4889,7 +4889,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 359999847412.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4944,7 +4944,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4999,7 +4999,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 659253012085.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5054,7 +5054,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5109,7 +5109,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2745063572693.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5164,7 +5164,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 669000000000.0,
       "sector": "Retail Trade",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5219,7 +5219,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 44514694854736.0,
       "sector": "Electronic Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5274,7 +5274,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14426499450000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5329,7 +5329,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 63871905518.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5384,7 +5384,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 984744695435.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5439,7 +5439,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5130988061523.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5494,7 +5494,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 273861515045.0,
       "sector": "Consumer Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5549,7 +5549,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 78487179565.0,
       "sector": "Retail Trade",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5604,7 +5604,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4458275754000.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5659,7 +5659,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3304800000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5714,7 +5714,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2792559017944.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5769,7 +5769,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 544103175353.99994,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5824,7 +5824,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3428290644531.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5879,7 +5879,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 276322741699.0,
       "sector": "Commercial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5934,7 +5934,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1996476402283.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5989,7 +5989,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 9575790390015.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6044,7 +6044,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1057191768188.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6099,7 +6099,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1113587199402.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6154,7 +6154,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 701461038971.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6209,7 +6209,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2161289573669.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6264,7 +6264,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 21748349401855.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6319,7 +6319,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8480492980957.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6374,7 +6374,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14421856201172.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6429,7 +6429,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5652992456055.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6484,7 +6484,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2117000000000.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6539,7 +6539,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 34181515393065.996,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6594,7 +6594,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1399419354248.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6649,7 +6649,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 894916241455.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6704,14 +6704,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4462188457489.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "DSH",
       "exchange": "UPCOM",
-      "name": "Công ty Cổ Phần Đầu tư Hạ tầng Đông Sơn",
+      "name": "Công ty Cổ phần Đông Sơn Holdings",
       "close": 12700.0,
       "ret1": 0.0,
       "ret5": -0.0078125,
@@ -6759,7 +6759,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6814,7 +6814,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6938622586060.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6869,7 +6869,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7268464233398.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6924,7 +6924,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6979,7 +6979,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 85909941769.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7034,7 +7034,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 259967566299.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7089,7 +7089,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1510261548920.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7144,7 +7144,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1656900050163.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7199,7 +7199,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7254,7 +7254,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 11136063366699.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7309,7 +7309,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 20368199414062.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7364,7 +7364,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1574086915131.0,
       "sector": "Technology Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7419,7 +7419,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7854135113525.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7474,7 +7474,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 11218943811035.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7529,7 +7529,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 460079967499.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7584,7 +7584,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 624475682068.0,
       "sector": "Commercial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7639,7 +7639,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1701996455400.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7694,7 +7694,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14391396484375.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7749,7 +7749,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4992574375610.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7804,7 +7804,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1213234481812.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7859,7 +7859,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 951428250732.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7914,14 +7914,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1671124582672.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "VES",
       "exchange": "UPCOM",
-      "name": "Công ty Cổ phần Đầu tư và Xây dựng Điện MÊ CA VNECO",
+      "name": "Công ty Cổ phần Tập đoàn VinaLiving",
       "close": 22600.0,
       "ret1": 0.0761904761904762,
       "ret5": -0.017391304347826087,
@@ -7969,7 +7969,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 189157500000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8024,7 +8024,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 528487740000.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8079,7 +8079,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6152735510254.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8134,7 +8134,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 992927698517.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8189,7 +8189,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8244,7 +8244,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1246011447906.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8299,7 +8299,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 448156859665.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8354,7 +8354,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 641913697815.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8409,7 +8409,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1600560075378.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8464,7 +8464,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8760743347168.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8519,7 +8519,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 639995246400.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8574,7 +8574,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1999944142151.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8629,7 +8629,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 73439955902.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8684,7 +8684,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 769999465942.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8739,7 +8739,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1365986350098.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8794,7 +8794,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 344250536957.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8849,7 +8849,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 170437347412.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8904,7 +8904,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 504717512054.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8959,7 +8959,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8738994946288.999,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9014,7 +9014,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3403799807739.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9069,7 +9069,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 559000000000.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9124,7 +9124,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3059377890015.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9179,7 +9179,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 16861390777587.998,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9234,7 +9234,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10963200823975.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9289,7 +9289,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3587259689331.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9344,7 +9344,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1019699546814.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9399,7 +9399,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 593661086578.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9454,14 +9454,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 64124449218750.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "DXG",
       "exchange": "HOSE",
-      "name": "Công ty Cổ phần Tập đoàn Đất Xanh",
+      "name": "Công ty Cổ phần Bluemarq Group",
       "close": 11050.0,
       "ret1": 0.0,
       "ret5": 0.018433179723502304,
@@ -9509,7 +9509,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14012560034180.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9564,7 +9564,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 19017734802246.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9619,7 +9619,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5360000000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9674,7 +9674,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 33808378546143.004,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9729,7 +9729,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 812701744080.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9784,7 +9784,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9839,7 +9839,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4406256811523.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9894,7 +9894,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10912509402466.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9949,7 +9949,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4293925075531.0005,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10004,7 +10004,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 25464325732422.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10059,7 +10059,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1142276586914.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10114,7 +10114,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2839966800000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10169,7 +10169,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6977768884277.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10223,7 +10223,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1570745400000.0,
       "sector": "Consumer Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10278,7 +10278,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1354936435547.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10333,7 +10333,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5239080456543.0,
       "sector": "Commercial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10388,7 +10388,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3689710029602.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10443,7 +10443,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 731061315918.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10498,7 +10498,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 48610671200000.0,
       "sector": "Technology Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10553,7 +10553,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 998691833496.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10607,7 +10607,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1883506399536.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10662,7 +10662,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 330644219971.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10717,7 +10717,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 58057740319824.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10772,7 +10772,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10827,7 +10827,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 522900000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10882,7 +10882,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 871320003033.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10937,7 +10937,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 694398557129.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10992,7 +10992,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1985043096313.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11047,7 +11047,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1539267801285.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11102,7 +11102,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 677862302399.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11157,7 +11157,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 607598587799.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11212,14 +11212,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 487687065125.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "BIG",
       "exchange": "UPCOM",
-      "name": "Công ty Cổ phần Đầu tư BIG Group Holdings",
+      "name": "Công ty Cổ phần Tập đoàn Đầu tư BIG",
       "close": 5100.0,
       "ret1": -0.019230769230769232,
       "ret5": 0.13333333333333333,
@@ -11266,7 +11266,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11321,7 +11321,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7241581347656.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11376,14 +11376,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2214177709961.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "TIN",
       "exchange": "UPCOM",
-      "name": "Công ty Tài chính tổng hợp cổ phần Tín Việt",
+      "name": "Công ty Tài chính Tổng hợp cổ phần Tín Việt",
       "close": 105000.0,
       "ret1": 0.0,
       "ret5": -0.015932521087160263,
@@ -11431,7 +11431,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11486,7 +11486,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4608701370239.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11541,7 +11541,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 147379849914551.0,
       "sector": "Consumer Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11596,7 +11596,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11650,7 +11650,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1049817892456.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11705,7 +11705,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1644671784210.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11760,7 +11760,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 866941629410.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11814,7 +11814,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1279235746002.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11868,7 +11868,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1121523351288.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11923,7 +11923,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2893000000000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11977,7 +11977,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12032,7 +12032,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 855968469620.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12087,7 +12087,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8102852551270.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12141,7 +12141,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 56902995489502.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12196,7 +12196,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Consumer Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12251,7 +12251,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4690944400787.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12306,7 +12306,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 592500000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12361,7 +12361,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5775719287109.0,
       "sector": "Technology Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12416,7 +12416,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1585823431396.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12471,7 +12471,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 15230319726562.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12526,7 +12526,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17899703674316.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12581,7 +12581,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 899024218750.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12636,7 +12636,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14318491455078.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12691,7 +12691,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1656350170135.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12745,7 +12745,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3155230938721.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12800,7 +12800,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 9064047300000.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12855,7 +12855,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3188713738251.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12910,7 +12910,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 728315384674.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12965,7 +12965,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 50549487011719.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13020,7 +13020,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 34151104467772.996,
       "sector": "Electronic Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13075,7 +13075,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 40917187805176.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13130,7 +13130,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5514028515625.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13185,7 +13185,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13240,7 +13240,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8245243249512.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13295,7 +13295,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13350,7 +13350,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12776392395000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13405,7 +13405,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1575000000000.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13460,7 +13460,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 16558338757324.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13515,7 +13515,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1833335276413.0,
       "sector": "Commercial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13570,7 +13570,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1731828948975.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13625,7 +13625,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3563833364105.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13680,7 +13680,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17870330017090.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13735,7 +13735,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1127054542236.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13790,7 +13790,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 107194912719727.0,
       "sector": "Retail Trade",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13845,7 +13845,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 574476489258.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13899,7 +13899,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 349648050000.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13953,7 +13953,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 520000000000.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14008,7 +14008,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5888746994019.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14062,7 +14062,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 47647210693359.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14117,7 +14117,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 96521166046143.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14172,7 +14172,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7468605651855.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14227,7 +14227,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8799163378906.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14282,7 +14282,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5188031938477.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14335,7 +14335,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 335921738167.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14390,7 +14390,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14445,7 +14445,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8493042257689.999,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14498,7 +14498,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 482435531616.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14553,7 +14553,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5850625000000.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14608,7 +14608,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 26013808300781.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14663,7 +14663,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 151553528168240.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14717,7 +14717,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2469672953796.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14772,7 +14772,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14827,7 +14827,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 599462379551.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14882,7 +14882,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 62777551171875.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14936,7 +14936,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 16931688125610.002,
       "sector": "Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14991,7 +14991,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 25955213751221.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15045,7 +15045,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1392106329346.0,
       "sector": "Health Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15100,7 +15100,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2148300309448.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15155,7 +15155,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15208,7 +15208,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15263,7 +15263,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 373415462494.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15318,7 +15318,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 670351471043.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15373,7 +15373,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 19747057885742.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15428,7 +15428,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1624595357000.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15483,7 +15483,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 287562565185547.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15538,14 +15538,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1575195713378906.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "BSR",
       "exchange": "HOSE",
-      "name": "Công ty Cổ phần Lọc Hóa dầu Bình Sơn",
+      "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
       "close": 26050.0,
       "ret1": -0.031598513011152414,
       "ret5": 0.025590551181102362,
@@ -15592,7 +15592,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 134696351611328.0,
       "sector": "Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15647,7 +15647,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 409950000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15702,7 +15702,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14100306610107.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15756,7 +15756,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10781154931641.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15810,7 +15810,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 13300000000000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15865,7 +15865,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 98867362707520.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15920,7 +15920,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2840631779175.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -15974,7 +15974,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2892424822998.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16027,7 +16027,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 117809320000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16081,7 +16081,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 192553386621094.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16136,7 +16136,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 26389666369629.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16191,7 +16191,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 222153646655273.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16246,7 +16246,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 16776180000000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16301,7 +16301,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 186589523046875.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16356,7 +16356,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 205091918334961.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16410,7 +16410,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 801382700000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16465,7 +16465,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 110956005859375.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16519,7 +16519,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 127200000000000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16574,7 +16574,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 74053659326172.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16629,7 +16629,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 983073090363.0,
       "sector": "Retail Trade",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16684,7 +16684,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 254755774218750.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16737,7 +16737,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 58800000000.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16792,7 +16792,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16846,7 +16846,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Communications",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16901,7 +16901,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1108383983612.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16954,7 +16954,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 84816000000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17009,7 +17009,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3550038389587.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17063,7 +17063,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1749750771332.0,
       "sector": "Technology Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17117,7 +17117,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1852820068359.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17171,7 +17171,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 780232444763.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17226,7 +17226,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1215899926376.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17281,7 +17281,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 121937750683594.0,
       "sector": "Technology Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17334,7 +17334,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10028331738281.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17388,7 +17388,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 939363583374.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17443,7 +17443,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 18449604006958.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17498,7 +17498,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 618033362579.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17552,7 +17552,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 29649994677734.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17605,7 +17605,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1319039965057.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17660,7 +17660,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 9507072448730.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17715,7 +17715,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 609996916580.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17768,7 +17768,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17823,7 +17823,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1918780158997.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17876,7 +17876,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1297574939728.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17928,7 +17928,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 72072962127686.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -17983,7 +17983,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6203728610229.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18037,7 +18037,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 588181414062500.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18090,7 +18090,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 438735095978.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18144,7 +18144,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 719860477066.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18197,7 +18197,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1814792938232.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18251,7 +18251,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18305,7 +18305,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 20234973623874.9,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18358,7 +18358,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 376783739090.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18413,7 +18413,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10057015228271.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18466,7 +18466,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 33388746801758.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18519,7 +18519,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 439917509651.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18573,7 +18573,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18627,7 +18627,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3349812673950.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18680,7 +18680,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1419491244507.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18734,7 +18734,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3335838244629.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18788,7 +18788,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 726312713623.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18841,7 +18841,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2047447668457.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18895,7 +18895,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18950,7 +18950,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2356107138062.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19002,7 +19002,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1994806521606.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19057,7 +19057,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 59639150573730.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19112,7 +19112,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 572508782387.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19165,7 +19165,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19218,7 +19218,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 669647113037.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19272,7 +19272,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19326,7 +19326,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 338625000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19380,7 +19380,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 664808470306.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19434,7 +19434,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19488,7 +19488,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1512911299133.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19540,7 +19540,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 246400000000.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19593,7 +19593,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 846586607361.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19648,7 +19648,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1326175004883.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19700,7 +19700,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5533500000000.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19753,7 +19753,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 497551105500.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19806,7 +19806,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2670437736511.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19861,7 +19861,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 298602814400.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19914,7 +19914,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 35820000000000.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19967,7 +19967,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5074379830933.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20021,7 +20021,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1094621129837.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20075,7 +20075,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 32768859716797.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20129,7 +20129,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 42489662988281.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20184,7 +20184,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4686667565918.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20237,7 +20237,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 677699758911.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20291,7 +20291,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 9877449279785.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20345,7 +20345,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1294295981216.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20398,7 +20398,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2942853794861.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20452,7 +20452,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 503847190722656.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20504,7 +20504,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 24497661605835.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20556,7 +20556,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 276844577789.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20611,7 +20611,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3584929356384.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20666,7 +20666,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 649917735291.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20721,7 +20721,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2216683477020.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20775,7 +20775,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5750000000000.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20827,7 +20827,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 792128068542.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20880,7 +20880,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12371970738220.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20933,7 +20933,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 50106785888672.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -20985,7 +20985,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1421845247955.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21039,7 +21039,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 883470760000.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21092,7 +21092,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 35031096697998.004,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21146,7 +21146,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21200,7 +21200,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1180248300000.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21253,7 +21253,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3734674091339.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21308,7 +21308,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21361,7 +21361,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17624357556152.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21414,7 +21414,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1386429460144.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21468,7 +21468,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21521,7 +21521,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 156234847680664.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21575,7 +21575,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2379293762207.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21628,7 +21628,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 52289200744629.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21681,7 +21681,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 724839385986.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21734,7 +21734,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 35882434686000.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21788,7 +21788,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8912788117981.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21841,7 +21841,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12180907727051.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21893,7 +21893,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7577019943237.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21946,7 +21946,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2376000000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -21999,7 +21999,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 728998980331.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22053,7 +22053,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1748276390076.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22106,7 +22106,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2026645754242.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22159,7 +22159,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 162711058598086.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22212,7 +22212,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8859818029785.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22265,7 +22265,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22318,7 +22318,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 874687947083.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22371,7 +22371,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1588718347168.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22425,7 +22425,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 9592795898438.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22477,7 +22477,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22530,7 +22530,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2870384328918.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22582,7 +22582,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1529721783829.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22634,7 +22634,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1932208012390.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22687,7 +22687,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 13993888000000.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22740,7 +22740,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22792,7 +22792,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 131470155468750.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22844,7 +22844,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3222000000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -22897,14 +22897,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2459452867432.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "GMD",
       "exchange": "HOSE",
-      "name": "Công ty Cổ phần Gemadept",
+      "name": "Công ty Cổ phần Tập đoàn Gemadept",
       "close": 77400.0,
       "ret1": -0.010230179028132993,
       "ret5": 0.015748031496062992,
@@ -22949,7 +22949,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 33351915777588.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23002,7 +23002,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4836069994354.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23054,7 +23054,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 134892198095703.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23107,7 +23107,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 19261319580078.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23160,7 +23160,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6049644016266.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23213,7 +23213,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 11200125064087.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23265,7 +23265,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 690663940430.0,
       "sector": "Consumer Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23318,7 +23318,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23370,7 +23370,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1546044667053.0,
       "sector": "Consumer Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23422,7 +23422,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 47039520000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23475,7 +23475,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1450348251343.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23528,7 +23528,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 129786240673828.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23580,7 +23580,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 544387277221.99994,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23632,7 +23632,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12538547463989.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23685,7 +23685,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 11034132635498.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23737,7 +23737,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10276494667053.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23789,7 +23789,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 965980773926.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23841,14 +23841,14 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
     {
       "symbol": "STB",
       "exchange": "HOSE",
-      "name": "Ngân hàng Thương mại Cổ phần Sài Gòn Thương Tín",
+      "name": "Ngân hàng Thương mại Cổ phần Sài Gòn Tài Lộc",
       "close": 74300.0,
       "ret1": -0.004021447721179625,
       "ret5": 0.015027322404371584,
@@ -23893,7 +23893,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 140637091088867.02,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23945,7 +23945,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1181483862305.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -23997,7 +23997,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3108000000000.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -24047,7 +24047,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 50700000000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -24097,7 +24097,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 14342321401978.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -24147,7 +24147,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -24197,7 +24197,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 215212855339.0,
       "sector": "Transportation",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -24247,7 +24247,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -24297,7 +24297,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     }
