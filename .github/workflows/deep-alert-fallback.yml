@@ -1,0 +1,53 @@
+name: Deep alert fallback smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'api/price_history.py'
+      - 'api/radar.py'
+      - 'api/validate2.py'
+      - '.github/workflows/deep-alert-fallback.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check -q -r requirements.txt
+      - name: Verify RED-symbol deep history and validation history
+        run: |
+          python - <<'PY'
+          import importlib.util, pathlib
+          root=pathlib.Path('.')
+          def load(name,path):
+              s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
+          radar=load('radar_smoke',root/'api'/'radar.py')
+          val=load('validate_smoke',root/'api'/'validate2.py')
+          lines=['# VMEWS DEEP ALERT FALLBACK PASS','']
+          for sym in ['BNA','BOT','AAH']:
+              rows,a=radar.load_rows(sym)
+              assert len(rows)>=240,(sym,len(rows),a)
+              cur,hz,_=radar.core.technical_state(rows)
+              lines.append(f"- {sym}: detail history {len(rows)} rows · {a.get('source')} · model date {cur['date']} · close {cur['close']}")
+              try:
+                  vr,va=val.fetch_history(sym)
+                  lines.append(f"  validation history {len(vr)} rows · {va[0].get('source')}")
+              except Exception as e:
+                  lines.append(f"  validation unavailable: {e}")
+          open('deep-alert-report.md','w',encoding='utf-8').write('\n'.join(lines)+'\n')
+          print('\n'.join(lines))
+          PY
+      - name: Publish diagnostic
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS DEEP ALERT FALLBACK PASS ${GITHUB_SHA::7}" --body-file deep-alert-report.md
