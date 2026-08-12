@@ -1,0 +1,75 @@
+name: VMEWS live outcomes and PIT monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '5 0 * * 1-5'
+    - cron: '20 10 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'data/market-scan.json'
+      - 'data/pooled-hose/current-scores.json'
+      - 'data/alert-policy.json'
+      - 'scripts/update_live_model_monitor.py'
+      - '.github/workflows/live-model-monitor.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vmews-live-model-monitor
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Archive aligned PIT snapshot and mature live outcomes
+        run: python scripts/update_live_model_monitor.py
+      - name: Validate live-monitor governance
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          t=json.load(open('data/live-track/track-record.json',encoding='utf-8'))
+          q=json.load(open('data/live-track/integrity.json',encoding='utf-8'))
+          assert t['version']=='VMEWS-LIVE-MONITOR-1.0.0',t['version']
+          assert t['horizonSessions']==20,t
+          assert '<= -12%' in t['eventDefinition'],t['eventDefinition']
+          assert q['timeBasis']=='LATEST_COMPLETED_EOD_ONLY',q
+          assert q['marketContextImputed'] is False,q
+          assert q['status'] in {'PASS','WAITING_OR_REVIEW'},q
+          if q['status']=='PASS':
+              assert q['sameCompletedEod'] is True,q
+              assert q['policyAligned'] is True,q
+              assert q['pointInTimeReady'] is True,q
+              assert q['archiveStatus'] in {'CREATED','EXISTING_IDENTICAL','REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE'},q
+              d=q['marketModelDate'];p=pathlib.Path(f'data/live-track/snapshots/{d}.json')
+              assert p.exists(),p
+              s=json.load(open(p,encoding='utf-8'))
+              assert s['modelDate']==d,s
+              assert s['snapshotHash'],s
+              assert len(s.get('closeTape') or [])>=150,len(s.get('closeTape') or [])
+              assert all(x.get('status') in {'RED','YELLOW'} for x in s.get('signals') or []),s.get('signals')
+          cal=t['calibrationLiveMonitor']
+          assert cal['status'] in {'INSUFFICIENT_MATURED_LIVE_DATA','UNSTABLE_KEEP_WITHHELD','STABLE_REVIEW_ELIGIBLE'},cal
+          assert 'manual' in cal['effect'].lower(),cal['effect']
+          assert t['pooledLiveTrack']['effect'].endswith('never auto-promotes a model.'),t['pooledLiveTrack']['effect']
+          print(json.dumps({'integrity':q['status'],'modelDate':q.get('marketModelDate'),'archive':q.get('archiveStatus'),'snapshots':t['archivedSnapshots'],'maturedSignals':t['tDayLiveTrack']['maturedSignals'],'maturedPooled':t['pooledLiveTrack']['maturedStates'],'calibration':cal['status']},indent=2))
+          PY
+      - name: Commit PIT archive and live track record
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/live-track
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh VMEWS immutable PIT live model monitor [data-only]'
+          git pull --rebase origin main
+          git push origin HEAD:main
