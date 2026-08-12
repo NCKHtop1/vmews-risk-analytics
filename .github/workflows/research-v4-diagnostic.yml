@@ -1,0 +1,42 @@
+name: VMEWS v4 runtime diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/research-v4-diagnostic.yml','research-engine-v3.js','research-final.html','deep-alert-fallback.js','investor-chart-v2.js']
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Run FPT and extract status
+        shell: bash
+        run: |
+          set +e
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          for i in $(seq 1 35);do curl -fsSL --max-time 20 "$BASE/research-final.html" -o /tmp/p.html && break;sleep 3;done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          timeout 360s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --enable-logging=stderr --v=0 --user-data-dir=/tmp/vmews-diag --virtual-time-budget=320000 --dump-dom "$BASE/research-final.html?smoke=FPT" > dom.html 2>chrome.err
+          python - <<'PY' > diag.txt
+          import re,html
+          s=open('dom.html',encoding='utf-8',errors='ignore').read()
+          m=re.search(r'id="analysisStatus"[^>]*>(.*?)</span>',s,re.S)
+          print('ANALYSIS_STATUS='+html.unescape(re.sub('<[^>]+>',' ',m.group(1))).strip() if m else 'ANALYSIS_STATUS=NOT_FOUND')
+          for key in ['investorChart','researchBlock','validationDiagnostics','modelAblation']:
+              print(key+'='+('yes' if f'id="{key}"' in s else 'no'))
+          print('TAIL_TEXT=')
+          txt=html.unescape(re.sub('<[^>]+>',' ',s))
+          print(' '.join(txt.split())[-2500:])
+          PY
+          cat > issue.md <<EOF
+          # VMEWS V4 RUNTIME DIAGNOSTIC ${GITHUB_SHA::7}
+          EOF
+          cat diag.txt >> issue.md
+          echo '--- chrome stderr tail ---' >> issue.md;echo '```' >> issue.md;tail -80 chrome.err >> issue.md;echo '```' >> issue.md
+          cat issue.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 RUNTIME DIAG ${GITHUB_SHA::7}" --body-file issue.md
