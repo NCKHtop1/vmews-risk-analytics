@@ -41,7 +41,10 @@ jobs:
       - name: Train pooled panel challengers and run sealed promotion gate
         id: pooled
         continue-on-error: true
-        run: python scripts/train_pooled_hose_model_v2.py 2>&1 | tee pooled-train.log
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/train_pooled_hose_model_v2.py 2>&1 | tee pooled-train.log
       - name: Build pooled validation report
         if: always()
         run: |
