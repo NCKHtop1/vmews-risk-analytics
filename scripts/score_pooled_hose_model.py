@@ -111,6 +111,11 @@ def main():
             'symbol': row['symbol'],
             'modelAsOf': str(pd.Timestamp(row['date']).date()),
             'rawScore': float(rr),
+            # This value is retained only so future matured live outcomes can
+            # audit calibration stability. It is NOT user-facing and is NOT an
+            # approved point probability while probabilityUsable is false.
+            'auditCalibratedProbability': float(pp),
+            'auditCalibrationUse': 'OUTCOME_MONITORING_ONLY_NOT_USER_FACING',
             # Absolute calibrated probability is intentionally withheld when
             # post-freeze sub-period calibration is unstable.
             'crashProbability': float(pp) if probability_usable else None,
@@ -147,6 +152,7 @@ def main():
             'Daily frozen pooled ranking inference only; no automatic retraining or model promotion. '
             + ('Absolute calibrated probability passed stability audit. ' if probability_usable else 'Absolute calibrated probability is WITHHELD because post-freeze calibration stability did not pass. ')
             + ('Standalone binary alert policy is approved.' if standalone else 'Standalone binary alert policy is NOT approved; pooled evidence cannot create RED/YELLOW or autonomous actions.')
+            + ' Internal calibrated scores are retained only for future matured-outcome calibration monitoring and are not user-facing probabilities while the probability gate is withheld.'
         )
     }
     SCORES.write_text(json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
