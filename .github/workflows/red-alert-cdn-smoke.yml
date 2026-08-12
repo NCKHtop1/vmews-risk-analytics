@@ -8,6 +8,7 @@ on:
       - 'research-final.html'
       - 'deep-alert-fallback.js'
       - 'investor-chart.js'
+      - 'tday-chart-marker.js'
       - 'research-short-history.js'
       - 'research-engine-v2.js'
       - 'research-runtime.js'
@@ -41,11 +42,12 @@ jobs:
           SYMBOL='${{ matrix.symbol }}'
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
           URL="$BASE/research-final.html?smoke=$SYMBOL"
-          assets=no; cache=no; analysis=no; detail=no; chart=no; warninglegend=no; rf=no; anfis=no; vae=no; lstm=no; walk=no; old404=no; oldsample=no
+          assets=no; cache=no; analysis=no; detail=no; chart=no; warninglegend=no; tdaymarker=no; rf=no; anfis=no; vae=no; lstm=no; walk=no; old404=no; oldsample=no
           for i in $(seq 1 35); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/deep-alert-fallback.js" -o fallback.js \
               && curl -fsSL --max-time 20 "$BASE/investor-chart.js" -o chart.js \
+              && curl -fsSL --max-time 20 "$BASE/tday-chart-marker.js" -o marker.js \
               && curl -fsSL --max-time 20 "$BASE/research-short-history.js" -o short.js \
               && curl -fsSL --max-time 20 "$BASE/research-app.js" -o app.js; then assets=yes; break; fi
             sleep 4
@@ -58,7 +60,7 @@ jobs:
           PY
           fi
           syntax=no
-          if [ "$assets" = yes ] && node --check fallback.js >/dev/null 2>&1 && node --check chart.js >/dev/null 2>&1 && node --check short.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1; then syntax=yes; fi
+          if [ "$assets" = yes ] && node --check fallback.js >/dev/null 2>&1 && node --check chart.js >/dev/null 2>&1 && node --check marker.js >/dev/null 2>&1 && node --check short.js >/dev/null 2>&1 && node --check app.js >/dev/null 2>&1; then syntax=yes; fi
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           EXIT=127
           if [ "$assets" = yes ] && [ "$cache" = yes ] && [ "$syntax" = yes ] && [ -n "$CHROME" ]; then
@@ -71,6 +73,7 @@ jobs:
           grep -Fq 'CURRENT STRUCTURAL ASSESSMENT' dom.html && grep -Fq ">$SYMBOL ·" dom.html && detail=yes
           grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && grep -Fq 'Price &amp; warning history' dom.html && grep -Fq '<svg' dom.html && chart=yes
           grep -Fq 'YELLOW entry' dom.html && grep -Fq 'RED entry' dom.html && warninglegend=yes
+          grep -Fq 'id="tdayRiskMarker"' dom.html && grep -Fq 'T RED' dom.html && tdaymarker=yes
           grep -Fq 'Research analysis complete' dom.html && analysis=yes
           grep -Fq 'Random Forest' dom.html && rf=yes
           grep -Fq 'ANFIS' dom.html && anfis=yes
@@ -86,7 +89,7 @@ jobs:
           PY
           )
           pass=no
-          if [ "$assets" = yes ] && [ "$cache" = yes ] && [ "$syntax" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$warninglegend" = yes ] && [ "$analysis" = yes ] && [ "$rf" = yes ] && [ "$anfis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$walk" = yes ] && [ "$old404" = no ] && [ "$oldsample" = no ]; then pass=yes; fi
+          if [ "$assets" = yes ] && [ "$cache" = yes ] && [ "$syntax" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$warninglegend" = yes ] && [ "$tdaymarker" = yes ] && [ "$analysis" = yes ] && [ "$rf" = yes ] && [ "$anfis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$walk" = yes ] && [ "$old404" = no ] && [ "$oldsample" = no ]; then pass=yes; fi
           cat > result.md <<EOF
           # VMEWS RED ALERT CDN ${pass^^} · $SYMBOL
 
@@ -99,7 +102,8 @@ jobs:
           - Chrome exit: $EXIT
           - Detail rendered: $detail
           - Investor chart rendered: $chart
-          - Warning legend rendered: $warninglegend
+          - Historical warning legend rendered: $warninglegend
+          - Current T-Day marker rendered: $tdaymarker
           - Analysis status: $STATUS
           - Research complete: $analysis
           - Random Forest: $rf
