@@ -1,0 +1,78 @@
+name: VMEWS v4 metric audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/research-v4-metric-audit.yml'
+      - 'research-engine-v3.js'
+      - 'research-runtime.js'
+      - 'deep-alert-fallback.js'
+      - 'data/alert-policy.json'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: [FPT, PNJ, VCB, HPG, MWG, DGC]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Run calibrated metric audit
+        shell: bash
+        run: |
+          set -e
+          SYMBOL='${{ matrix.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf "/tmp/vmews-metric-$SYMBOL"
+          timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-metric-$SYMBOL" --virtual-time-budget=350000 --dump-dom "$BASE/research-final.html?smoke=$SYMBOL" > dom.html 2>chrome.err
+          grep -Fq 'Research analysis complete' dom.html
+          python - "$SYMBOL" <<'PY' > metrics.txt
+          import re,html,sys,json
+          sym=sys.argv[1];s=open('dom.html',encoding='utf-8',errors='ignore').read()
+          def clean(x):return ' '.join(html.unescape(re.sub('<[^>]+>',' ',x or '')).split())
+          def label(name):
+              m=re.search(r'<span[^>]*>\s*'+re.escape(name)+r'\s*</span>\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+              return clean(m.group(1)) if m else None
+          def audit(name):
+              m=re.search(re.escape(name)+r'\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+              return clean(m.group(1)) if m else None
+          def concl(name):
+              m=re.search(r'<span[^>]*>\s*'+re.escape(name)+r'\s*</span>\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+              return clean(m.group(1)) if m else None
+          out={
+            'symbol':sym,
+            'riskIndex':label('CURRENT RESEARCH RISK INDEX'),
+            'calibratedCrash':label('CALIBRATED 20D CRASH ESTIMATE'),
+            'historicalRiskPercentile':label('HISTORICAL RISK PERCENTILE'),
+            'evidence':concl('Evidence sufficiency'),
+            'prAuc':audit('PR-AUC'),
+            'crashBaseRate':audit('Crash base rate'),
+            'brierSkill':audit('Brier skill'),
+            'alertRate':audit('Alert rate'),
+            'missedEventRate':audit('Missed-event rate'),
+            'currentFeatureDate':audit('Current feature date'),
+            'lastLabelledState':audit('Last labelled training state'),
+          }
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          assert out['prAuc'] not in (None,'N/A')
+          assert out['crashBaseRate'] not in (None,'N/A')
+          assert out['brierSkill'] not in (None,'N/A')
+          assert out['currentFeatureDate'] and out['lastLabelledState']<out['currentFeatureDate']
+          PY
+          cat > issue.md <<EOF
+          # VMEWS V4 METRIC AUDIT · $SYMBOL
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          EOF
+          cat metrics.txt >> issue.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 METRICS $SYMBOL ${GITHUB_SHA::7}" --body-file issue.md
