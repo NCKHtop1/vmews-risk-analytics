@@ -1,0 +1,68 @@
+name: VMEWS pooled HOSE robustness audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audit_pooled_hose_robustness.py'
+      - '.github/workflows/pooled-hose-robustness.yml'
+      - 'data/pooled-hose/validation.json'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: vmews-pooled-robustness
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install audit dependencies
+        run: |
+          pip install --disable-pip-version-check -q -r requirements.txt
+          pip install --disable-pip-version-check -q scikit-learn==1.9.0 joblib==1.5.1
+      - name: Run frozen-model dependence and stability audit
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/audit_pooled_hose_robustness.py 2>&1 | tee robustness.log
+      - name: Validate robustness artifact
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=json.load(open('data/pooled-hose/robustness.json',encoding='utf-8'));m=p['movingDateBlockPrAucCI95'];s=p['securityClusterPrAucCI95'];r=p['sealedReconstruction'];g=p['robustnessGate']
+          assert p['version']=='VMEWS-POOLED-ROBUSTNESS-1.0.0',p['version']
+          assert p['modelVersion']=='VMEWS-POOLED-HOSE-1.2.0',p['modelVersion']
+          assert g['passed'],g
+          assert g['grade'] in {'MODERATE','STRONG'},g
+          assert m['low']>r['baseRate'],(m,r['baseRate'])
+          assert s['low']>r['baseRate'],(s,r['baseRate'])
+          assert all(x['prAuc']>x['baseRate'] and x['rocAuc']>=.55 for x in p['sealedSubperiods']),p['sealedSubperiods']
+          lines=['# VMEWS POOLED ROBUSTNESS PASS','',f"Model: {p['modelVersion']}",f"Grade: {g['grade']}",f"Reconstructed sealed PR-AUC: {r['prAuc']:.4f} vs base {r['baseRate']:.4f}",f"Moving-date-block 95% CI: {m['low']:.4f}–{m['high']:.4f}",f"Security-cluster 95% CI: {s['low']:.4f}–{s['high']:.4f}",f"Calibration ECE: {p['calibrationDiagnostics']['ece']:.4f}",'','Sealed halves:']
+          for x in p['sealedSubperiods']:lines.append(f"- {x['period']['from']} → {x['period']['to']}: PR-AUC {x['prAuc']:.4f} vs base {x['baseRate']:.4f}; ROC-AUC {x['rocAuc']:.4f}; Brier skill {x['brierSkill']:.4f}")
+          pathlib.Path('robustness-report.md').write_text('\n'.join(lines)+'\n',encoding='utf-8');print('\n'.join(lines))
+          PY
+      - name: Publish robustness evidence
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS POOLED ROBUSTNESS PASS ${GITHUB_SHA::7}" --body-file robustness-report.md
+      - name: Commit robustness audit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/pooled-hose/robustness.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish frozen pooled HOSE robustness audit [model-data]'
+          git pull --rebase origin main
+          git push origin HEAD:main
