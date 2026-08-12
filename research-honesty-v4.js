@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='VMEWS-HONESTY-GATE-4.1.1-FINAL';
+const VERSION='VMEWS-HONESTY-GATE-4.1.2-FINAL';
 const C=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const M=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
 const pct=x=>Number.isFinite(+x)?`${(+x*100).toFixed(1)}%`:'N/A';
