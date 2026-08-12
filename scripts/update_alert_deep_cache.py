@@ -18,9 +18,10 @@ try: market_payload=json.loads((ROOT/'data'/'market-context.json').read_text(enc
 except Exception: market_payload={}
 market=market_payload.get('market') or {'score':50,'available':False,'reason':'Static VNINDEX context unavailable'}
 
-# Guarantee all RED names and cache the leading YELLOW attention set used by the UI.
+# Every visible RED/YELLOW alert must have a deep-history path. This keeps
+# market-wide triage and single-name research as one connected workflow.
 selected=[]; seen=set()
-for x in list(scan.get('redList') or []) + list(scan.get('topAttention') or [])[:15]:
+for x in list(scan.get('redList') or []) + list(scan.get('yellowList') or []):
     s=x.get('symbol')
     if s and s not in seen:
         seen.add(s); selected.append(x)
@@ -41,7 +42,7 @@ def build(meta):
     phase,color,state=radar.classify(score,cur,conf)
     cutoff_i=cur['i']
     payload={
-      'version':'VMEWS-DEEP-ALERT-CACHE-1.0.0','mode':'detail','symbol':symbol,
+      'version':'VMEWS-DEEP-ALERT-CACHE-1.1.0','mode':'detail','symbol':symbol,
       'name':meta.get('name') or radar.core.NAMES.get(symbol,symbol),
       'request':{'from':None,'to':None,'asOf':None},'fetchedAt':datetime.now(timezone.utc).isoformat(),
       'modelAsOf':cur['date'],'quote':None,'score':score,'confidence':conf,'phase':phase,'color':color,'state':state,
@@ -62,7 +63,7 @@ for p in OUT.glob('*.json'):
         except:pass
 
 ok={}; errors=[]
-with ThreadPoolExecutor(max_workers=5) as ex:
+with ThreadPoolExecutor(max_workers=6) as ex:
     fut={ex.submit(build,m):m for m in selected}
     for f in as_completed(fut):
         meta=fut[f]
@@ -74,8 +75,11 @@ with ThreadPoolExecutor(max_workers=5) as ex:
             errors.append({'symbol':meta.get('symbol'),'error':str(e)[:400]})
 
 red_symbols=[x.get('symbol') for x in scan.get('redList') or [] if x.get('symbol')]
+yellow_symbols=[x.get('symbol') for x in scan.get('yellowList') or [] if x.get('symbol')]
+alert_symbols=red_symbols+yellow_symbols
 missing_red=[s for s in red_symbols if s not in ok]
-manifest={'version':'VMEWS-DEEP-ALERT-CACHE-1.0.0','generatedAt':datetime.now(timezone.utc).isoformat(),'marketModelDate':scan.get('modelDate'),'requested':len(selected),'cached':len(ok),'symbols':ok,'errors':errors,'redSymbols':red_symbols,'missingRed':missing_red}
+missing_alerts=[s for s in alert_symbols if s not in ok]
+manifest={'version':'VMEWS-DEEP-ALERT-CACHE-1.1.0','generatedAt':datetime.now(timezone.utc).isoformat(),'marketModelDate':scan.get('modelDate'),'requested':len(selected),'cached':len(ok),'symbols':ok,'errors':errors,'redSymbols':red_symbols,'yellowSymbols':yellow_symbols,'missingRed':missing_red,'missingAlerts':missing_alerts,'alertCoverageRatio':len(ok)/len(alert_symbols) if alert_symbols else 1.0}
 (OUT/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8')
 print(json.dumps(manifest,ensure_ascii=False))
-if missing_red: raise RuntimeError(f'Missing RED deep cache: {missing_red}')
+if missing_alerts: raise RuntimeError(f'Missing RED/YELLOW deep cache: {missing_alerts}')
