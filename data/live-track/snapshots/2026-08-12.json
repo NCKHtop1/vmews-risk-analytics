@@ -1,0 +1,7718 @@
+{
+  "version": "VMEWS-PIT-SNAPSHOT-1.0.0",
+  "modelDate": "2026-08-12",
+  "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
+  "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
+  "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
+  "marketGeneratedAt": "2026-08-12T17:43:01.293221+07:00",
+  "pooledGeneratedAt": "2026-08-12T10:48:03.548055+00:00",
+  "integrityAtArchive": {
+    "status": "PASS",
+    "reasons": [],
+    "marketModelDate": "2026-08-12",
+    "pooledModelDate": "2026-08-12",
+    "sameCompletedEod": true,
+    "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
+    "policyAligned": true,
+    "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
+    "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
+    "marketContextDate": "2026-08-10",
+    "marketContextStatus": "EXCLUDED_UNAVAILABLE",
+    "marketContextImputed": false,
+    "pointInTimeReady": true,
+    "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
+    "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
+    "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed."
+  },
+  "signals": [
+    {
+      "symbol": "DHT",
+      "exchange": "HNX",
+      "close": 56300.0,
+      "status": "RED",
+      "score": 79.85833103128157,
+      "technicalScore": 79.85833103128157,
+      "independentStressSignals": 6,
+      "drivers": [
+        "3M drawdown -20.7%",
+        "1M momentum -13.8%",
+        "daily volatility 7.9%",
+        "vs SMA50 -10.2%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "AMV",
+      "exchange": "HNX",
+      "close": 1200.0,
+      "status": "RED",
+      "score": 79.10433917010785,
+      "technicalScore": 79.10433917010785,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -29.4%",
+        "1M momentum -14.3%",
+        "vs SMA50 -13.4%",
+        "daily volatility 8.3%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "CRC",
+      "exchange": "HOSE",
+      "close": 5350.0,
+      "status": "YELLOW",
+      "score": 76.54808501521029,
+      "technicalScore": 76.54808501521029,
+      "independentStressSignals": 7,
+      "drivers": [
+        "3M drawdown -36.8%",
+        "1M momentum -11.1%",
+        "vs SMA50 -10.0%",
+        "vs SMA200 -35.6%"
+      ],
+      "pooledRiskPercentile": 0.9629729365827386,
+      "pooledRiskBucket": 10,
+      "pooledAuditCalibratedProbability": 0.2610454664795686,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "AAH",
+      "exchange": "UPCOM",
+      "close": 1900.0,
+      "status": "YELLOW",
+      "score": 75.55362568993826,
+      "technicalScore": 75.55362568993826,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -40.6%",
+        "1M momentum -17.4%",
+        "vs SMA50 -21.8%",
+        "vs SMA200 -39.7%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "NRC",
+      "exchange": "HNX",
+      "close": 4700.0,
+      "status": "YELLOW",
+      "score": 74.42424643059837,
+      "technicalScore": 74.42424643059837,
+      "independentStressSignals": 6,
+      "drivers": [
+        "3M drawdown -39.0%",
+        "1M momentum -24.2%",
+        "vs SMA50 -17.7%",
+        "vs SMA200 -21.5%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "ACC",
+      "exchange": "HOSE",
+      "close": 4700.0,
+      "status": "YELLOW",
+      "score": 74.36202380405312,
+      "technicalScore": 74.36202380405312,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -64.3%",
+        "1M momentum -54.1%",
+        "vs SMA50 -49.3%",
+        "vs SMA200 -61.2%"
+      ],
+      "pooledRiskPercentile": 0.9571832503029487,
+      "pooledRiskBucket": 10,
+      "pooledAuditCalibratedProbability": 0.2539275737248253,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "TOS",
+      "exchange": "UPCOM",
+      "close": 99100.0,
+      "status": "YELLOW",
+      "score": 73.81732378752412,
+      "technicalScore": 73.81732378752412,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -49.9%",
+        "1M momentum -43.2%",
+        "vs SMA50 -34.2%",
+        "vs SMA200 -38.0%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "THG",
+      "exchange": "HOSE",
+      "close": 28150.0,
+      "status": "YELLOW",
+      "score": 72.3404255319149,
+      "technicalScore": 72.3404255319149,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -27.0%",
+        "1M momentum -15.0%",
+        "vs SMA50 -13.8%",
+        "vs SMA200 -26.7%"
+      ],
+      "pooledRiskPercentile": 0.7502356267672008,
+      "pooledRiskBucket": 8,
+      "pooledAuditCalibratedProbability": 0.17065570607566694,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "HBC",
+      "exchange": "UPCOM",
+      "close": 4200.0,
+      "status": "YELLOW",
+      "score": 71.97168115927576,
+      "technicalScore": 71.97168115927576,
+      "independentStressSignals": 6,
+      "drivers": [
+        "3M drawdown -19.2%",
+        "1M momentum -12.5%",
+        "vs SMA50 -10.1%",
+        "vs SMA200 -24.6%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "GIL",
+      "exchange": "HOSE",
+      "close": 8690.0,
+      "status": "YELLOW",
+      "score": 71.51330321528933,
+      "technicalScore": 71.51330321528933,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -34.2%",
+        "1M momentum -12.3%",
+        "vs SMA50 -11.3%",
+        "daily volatility 10.2%"
+      ],
+      "pooledRiskPercentile": 0.8835330550693415,
+      "pooledRiskBucket": 9,
+      "pooledAuditCalibratedProbability": 0.20608490350632666,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "TCM",
+      "exchange": "HOSE",
+      "close": 16650.0,
+      "status": "YELLOW",
+      "score": 69.29700185044314,
+      "technicalScore": 69.29700185044314,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -24.2%",
+        "1M momentum -16.8%",
+        "vs SMA50 -12.1%",
+        "vs SMA200 -27.7%"
+      ],
+      "pooledRiskPercentile": 0.9120775548673757,
+      "pooledRiskBucket": 10,
+      "pooledAuditCalibratedProbability": 0.21837907314710703,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "HID",
+      "exchange": "HOSE",
+      "close": 3550.0,
+      "status": "YELLOW",
+      "score": 69.16143385550731,
+      "technicalScore": 69.16143385550731,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -28.4%",
+        "1M momentum -13.2%",
+        "daily volatility 7.1%",
+        "vs SMA200 -29.5%"
+      ],
+      "pooledRiskPercentile": 0.6431937525245726,
+      "pooledRiskBucket": 7,
+      "pooledAuditCalibratedProbability": 0.1525829357757114,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "TTH",
+      "exchange": "HNX",
+      "close": 2000.0,
+      "status": "YELLOW",
+      "score": 69.09339464121783,
+      "technicalScore": 69.09339464121783,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -28.6%",
+        "1M momentum -16.7%",
+        "vs SMA50 -11.2%",
+        "vs SMA200 -14.7%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "IDJ",
+      "exchange": "HNX",
+      "close": 3700.0,
+      "status": "YELLOW",
+      "score": 68.23600459384193,
+      "technicalScore": 68.23600459384193,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -36.2%",
+        "vs SMA50 -10.8%",
+        "1M momentum -9.8%",
+        "vs SMA200 -17.8%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "HDG",
+      "exchange": "HOSE",
+      "close": 16550.0,
+      "status": "YELLOW",
+      "score": 67.83021541675843,
+      "technicalScore": 67.83021541675843,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -27.0%",
+        "1M momentum -12.4%",
+        "vs SMA50 -12.4%",
+        "vs SMA200 -30.5%"
+      ],
+      "pooledRiskPercentile": 0.8427359633768682,
+      "pooledRiskBucket": 9,
+      "pooledAuditCalibratedProbability": 0.1921677878413379,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "VMS",
+      "exchange": "HNX",
+      "close": 40000.0,
+      "status": "YELLOW",
+      "score": 67.30893619327334,
+      "technicalScore": 67.30893619327334,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -33.2%",
+        "1M momentum -26.1%",
+        "vs SMA50 -23.6%",
+        "negative MACD impulse"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "BCE",
+      "exchange": "HOSE",
+      "close": 5790.0,
+      "status": "YELLOW",
+      "score": 67.11425455073723,
+      "technicalScore": 67.11425455073723,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -39.8%",
+        "1M momentum -27.2%",
+        "vs SMA50 -20.3%",
+        "vs SMA200 -33.5%"
+      ],
+      "pooledRiskPercentile": 0.9064225124545577,
+      "pooledRiskBucket": 10,
+      "pooledAuditCalibratedProbability": 0.21564715780188315,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "PNJ",
+      "exchange": "HOSE",
+      "close": 35050.0,
+      "status": "YELLOW",
+      "score": 67.09843465249382,
+      "technicalScore": 67.09843465249382,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -49.3%",
+        "1M momentum -23.6%",
+        "vs SMA50 -30.4%",
+        "vs SMA200 -45.4%"
+      ],
+      "pooledRiskPercentile": 0.9935370943853508,
+      "pooledRiskBucket": 10,
+      "pooledAuditCalibratedProbability": 0.34185396894359843,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "BKG",
+      "exchange": "HOSE",
+      "close": 2040.0,
+      "status": "YELLOW",
+      "score": 66.82216731567605,
+      "technicalScore": 66.82216731567605,
+      "independentStressSignals": 5,
+      "drivers": [
+        "3M drawdown -27.4%",
+        "vs SMA50 -12.4%",
+        "1M momentum -11.7%",
+        "vs SMA200 -22.6%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "HDC",
+      "exchange": "HOSE",
+      "close": 11950.0,
+      "status": "YELLOW",
+      "score": 66.7410259308458,
+      "technicalScore": 66.7410259308458,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -29.2%",
+        "1M momentum -17.6%",
+        "vs SMA50 -13.8%",
+        "vs SMA200 -32.7%"
+      ],
+      "pooledRiskPercentile": 0.8590278712804632,
+      "pooledRiskBucket": 9,
+      "pooledAuditCalibratedProbability": 0.19763842093150644,
+      "pooledAuditUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING"
+    },
+    {
+      "symbol": "DDV",
+      "exchange": "UPCOM",
+      "close": 18800.0,
+      "status": "YELLOW",
+      "score": 66.35676265132795,
+      "technicalScore": 66.35676265132795,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -31.6%",
+        "1M momentum -15.7%",
+        "vs SMA50 -14.9%",
+        "vs SMA200 -28.9%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    },
+    {
+      "symbol": "OGC",
+      "exchange": "HOSE",
+      "close": 2240.0,
+      "status": "YELLOW",
+      "score": 66.02057479298297,
+      "technicalScore": 66.02057479298297,
+      "independentStressSignals": 4,
+      "drivers": [
+        "3M drawdown -35.1%",
+        "1M momentum -18.8%",
+        "vs SMA50 -14.0%",
+        "vs SMA200 -31.2%"
+      ],
+      "pooledRiskPercentile": null,
+      "pooledRiskBucket": null,
+      "pooledAuditCalibratedProbability": null,
+      "pooledAuditUse": null
+    }
+  ],
+  "marketStates": [
+    {
+      "symbol": "DHT",
+      "exchange": "HNX",
+      "close": 56300.0,
+      "status": "RED",
+      "score": 79.85833103128157,
+      "technicalScore": 79.85833103128157,
+      "independentStressSignals": 6
+    },
+    {
+      "symbol": "AMV",
+      "exchange": "HNX",
+      "close": 1200.0,
+      "status": "RED",
+      "score": 79.10433917010785,
+      "technicalScore": 79.10433917010785,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "CRC",
+      "exchange": "HOSE",
+      "close": 5350.0,
+      "status": "YELLOW",
+      "score": 76.54808501521029,
+      "technicalScore": 76.54808501521029,
+      "independentStressSignals": 7
+    },
+    {
+      "symbol": "AAH",
+      "exchange": "UPCOM",
+      "close": 1900.0,
+      "status": "YELLOW",
+      "score": 75.55362568993826,
+      "technicalScore": 75.55362568993826,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "NRC",
+      "exchange": "HNX",
+      "close": 4700.0,
+      "status": "YELLOW",
+      "score": 74.42424643059837,
+      "technicalScore": 74.42424643059837,
+      "independentStressSignals": 6
+    },
+    {
+      "symbol": "ACC",
+      "exchange": "HOSE",
+      "close": 4700.0,
+      "status": "YELLOW",
+      "score": 74.36202380405312,
+      "technicalScore": 74.36202380405312,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "TOS",
+      "exchange": "UPCOM",
+      "close": 99100.0,
+      "status": "YELLOW",
+      "score": 73.81732378752412,
+      "technicalScore": 73.81732378752412,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "THG",
+      "exchange": "HOSE",
+      "close": 28150.0,
+      "status": "YELLOW",
+      "score": 72.3404255319149,
+      "technicalScore": 72.3404255319149,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "HBC",
+      "exchange": "UPCOM",
+      "close": 4200.0,
+      "status": "YELLOW",
+      "score": 71.97168115927576,
+      "technicalScore": 71.97168115927576,
+      "independentStressSignals": 6
+    },
+    {
+      "symbol": "GIL",
+      "exchange": "HOSE",
+      "close": 8690.0,
+      "status": "YELLOW",
+      "score": 71.51330321528933,
+      "technicalScore": 71.51330321528933,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "TCM",
+      "exchange": "HOSE",
+      "close": 16650.0,
+      "status": "YELLOW",
+      "score": 69.29700185044314,
+      "technicalScore": 69.29700185044314,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "HID",
+      "exchange": "HOSE",
+      "close": 3550.0,
+      "status": "YELLOW",
+      "score": 69.16143385550731,
+      "technicalScore": 69.16143385550731,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "TTH",
+      "exchange": "HNX",
+      "close": 2000.0,
+      "status": "YELLOW",
+      "score": 69.09339464121783,
+      "technicalScore": 69.09339464121783,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "IDJ",
+      "exchange": "HNX",
+      "close": 3700.0,
+      "status": "YELLOW",
+      "score": 68.23600459384193,
+      "technicalScore": 68.23600459384193,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "HDG",
+      "exchange": "HOSE",
+      "close": 16550.0,
+      "status": "YELLOW",
+      "score": 67.83021541675843,
+      "technicalScore": 67.83021541675843,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "VMS",
+      "exchange": "HNX",
+      "close": 40000.0,
+      "status": "YELLOW",
+      "score": 67.30893619327334,
+      "technicalScore": 67.30893619327334,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "BCE",
+      "exchange": "HOSE",
+      "close": 5790.0,
+      "status": "YELLOW",
+      "score": 67.11425455073723,
+      "technicalScore": 67.11425455073723,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "PNJ",
+      "exchange": "HOSE",
+      "close": 35050.0,
+      "status": "YELLOW",
+      "score": 67.09843465249382,
+      "technicalScore": 67.09843465249382,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "BKG",
+      "exchange": "HOSE",
+      "close": 2040.0,
+      "status": "YELLOW",
+      "score": 66.82216731567605,
+      "technicalScore": 66.82216731567605,
+      "independentStressSignals": 5
+    },
+    {
+      "symbol": "HDC",
+      "exchange": "HOSE",
+      "close": 11950.0,
+      "status": "YELLOW",
+      "score": 66.7410259308458,
+      "technicalScore": 66.7410259308458,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "DDV",
+      "exchange": "UPCOM",
+      "close": 18800.0,
+      "status": "YELLOW",
+      "score": 66.35676265132795,
+      "technicalScore": 66.35676265132795,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "OGC",
+      "exchange": "HOSE",
+      "close": 2240.0,
+      "status": "YELLOW",
+      "score": 66.02057479298297,
+      "technicalScore": 66.02057479298297,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "TTF",
+      "exchange": "HOSE",
+      "close": 1850.0,
+      "status": "WATCH",
+      "score": 64.57024272333457,
+      "technicalScore": 64.57024272333457,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "SGI",
+      "exchange": "UPCOM",
+      "close": 9000.0,
+      "status": "WATCH",
+      "score": 64.4242065259934,
+      "technicalScore": 64.4242065259934,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "DST",
+      "exchange": "HNX",
+      "close": 9200.0,
+      "status": "WATCH",
+      "score": 63.829787234042556,
+      "technicalScore": 63.829787234042556,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "PDR",
+      "exchange": "HOSE",
+      "close": 12100.0,
+      "status": "WATCH",
+      "score": 63.59158941333282,
+      "technicalScore": 63.59158941333282,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "TVC",
+      "exchange": "HNX",
+      "close": 8000.0,
+      "status": "WATCH",
+      "score": 63.08327596634741,
+      "technicalScore": 63.08327596634741,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "DXS",
+      "exchange": "HOSE",
+      "close": 6030.0,
+      "status": "WATCH",
+      "score": 63.07386093844176,
+      "technicalScore": 63.07386093844176,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "QCG",
+      "exchange": "HOSE",
+      "close": 10150.0,
+      "status": "WATCH",
+      "score": 63.00110991329059,
+      "technicalScore": 63.00110991329059,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "NVB",
+      "exchange": "HNX",
+      "close": 11300.0,
+      "status": "WATCH",
+      "score": 62.70835330840629,
+      "technicalScore": 62.70835330840629,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "EVG",
+      "exchange": "HOSE",
+      "close": 4490.0,
+      "status": "WATCH",
+      "score": 62.041066292514834,
+      "technicalScore": 62.041066292514834,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "FIR",
+      "exchange": "HOSE",
+      "close": 4550.0,
+      "status": "WATCH",
+      "score": 61.786453860191884,
+      "technicalScore": 61.786453860191884,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "TDC",
+      "exchange": "HOSE",
+      "close": 7600.0,
+      "status": "WATCH",
+      "score": 61.702127659574465,
+      "technicalScore": 61.702127659574465,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "BFC",
+      "exchange": "HOSE",
+      "close": 48300.0,
+      "status": "WATCH",
+      "score": 61.65752221623234,
+      "technicalScore": 61.65752221623234,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "HUT",
+      "exchange": "HNX",
+      "close": 13600.0,
+      "status": "WATCH",
+      "score": 61.608631425364344,
+      "technicalScore": 61.608631425364344,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "PVB",
+      "exchange": "HNX",
+      "close": 21400.0,
+      "status": "WATCH",
+      "score": 61.06219589062249,
+      "technicalScore": 61.06219589062249,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "MBG",
+      "exchange": "HNX",
+      "close": 2400.0,
+      "status": "WATCH",
+      "score": 60.921512416136245,
+      "technicalScore": 60.921512416136245,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "VDS",
+      "exchange": "HOSE",
+      "close": 12150.0,
+      "status": "WATCH",
+      "score": 60.793790518202975,
+      "technicalScore": 60.793790518202975,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "CTP",
+      "exchange": "HNX",
+      "close": 7100.0,
+      "status": "WATCH",
+      "score": 60.71362926252072,
+      "technicalScore": 60.71362926252072,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "DDG",
+      "exchange": "UPCOM",
+      "close": 1000.0,
+      "status": "WATCH",
+      "score": 60.66961279530644,
+      "technicalScore": 60.66961279530644,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "FIT",
+      "exchange": "HOSE",
+      "close": 3130.0,
+      "status": "WATCH",
+      "score": 60.53945037808138,
+      "technicalScore": 60.53945037808138,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "BCM",
+      "exchange": "HOSE",
+      "close": 44000.0,
+      "status": "WATCH",
+      "score": 60.42755794477815,
+      "technicalScore": 60.42755794477815,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "L40",
+      "exchange": "HNX",
+      "close": 22700.0,
+      "status": "WATCH",
+      "score": 59.997313530734374,
+      "technicalScore": 59.997313530734374,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "F88",
+      "exchange": "UPCOM",
+      "close": 67300.0,
+      "status": "WATCH",
+      "score": 59.92651151356819,
+      "technicalScore": 59.92651151356819,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "VES",
+      "exchange": "UPCOM",
+      "close": 22900.0,
+      "status": "WATCH",
+      "score": 59.60043341987171,
+      "technicalScore": 59.60043341987171,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "VCG",
+      "exchange": "HOSE",
+      "close": 16150.0,
+      "status": "WATCH",
+      "score": 59.58433187202245,
+      "technicalScore": 59.58433187202245,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "LCG",
+      "exchange": "HOSE",
+      "close": 7400.0,
+      "status": "WATCH",
+      "score": 59.41655746254473,
+      "technicalScore": 59.41655746254473,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "NCT",
+      "exchange": "HOSE",
+      "close": 82500.0,
+      "status": "WATCH",
+      "score": 59.14053749526812,
+      "technicalScore": 59.14053749526812,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "NTL",
+      "exchange": "HOSE",
+      "close": 13600.0,
+      "status": "WATCH",
+      "score": 58.874761881626185,
+      "technicalScore": 58.874761881626185,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "NDN",
+      "exchange": "HNX",
+      "close": 9200.0,
+      "status": "WATCH",
+      "score": 58.64384497052839,
+      "technicalScore": 58.64384497052839,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "KDH",
+      "exchange": "HOSE",
+      "close": 18150.0,
+      "status": "WATCH",
+      "score": 58.5044769920992,
+      "technicalScore": 58.5044769920992,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "FOC",
+      "exchange": "UPCOM",
+      "close": 63500.0,
+      "status": "WATCH",
+      "score": 58.471445012977654,
+      "technicalScore": 58.471445012977654,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "CEO",
+      "exchange": "HNX",
+      "close": 12300.0,
+      "status": "WATCH",
+      "score": 58.42487031500317,
+      "technicalScore": 58.42487031500317,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "CII",
+      "exchange": "HOSE",
+      "close": 14200.0,
+      "status": "WATCH",
+      "score": 58.33746051846333,
+      "technicalScore": 58.33746051846333,
+      "independentStressSignals": 4
+    },
+    {
+      "symbol": "CKG",
+      "exchange": "HOSE",
+      "close": 5920.0,
+      "status": "WATCH",
+      "score": 58.11954326199087,
+      "technicalScore": 58.11954326199087,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "C4G",
+      "exchange": "UPCOM",
+      "close": 5800.0,
+      "status": "WATCH",
+      "score": 58.05785006581581,
+      "technicalScore": 58.05785006581581,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "SZG",
+      "exchange": "UPCOM",
+      "close": 33000.0,
+      "status": "WATCH",
+      "score": 58.01187818405638,
+      "technicalScore": 58.01187818405638,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "AAS",
+      "exchange": "UPCOM",
+      "close": 7400.0,
+      "status": "WATCH",
+      "score": 57.99825915399247,
+      "technicalScore": 57.99825915399247,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "PAC",
+      "exchange": "HOSE",
+      "close": 16050.0,
+      "status": "WATCH",
+      "score": 57.016091641918045,
+      "technicalScore": 57.016091641918045,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "VC7",
+      "exchange": "HNX",
+      "close": 7200.0,
+      "status": "WATCH",
+      "score": 56.969366325544584,
+      "technicalScore": 56.969366325544584,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "TCH",
+      "exchange": "HOSE",
+      "close": 12200.0,
+      "status": "WATCH",
+      "score": 56.83655916712716,
+      "technicalScore": 56.83655916712716,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "DSH",
+      "exchange": "UPCOM",
+      "close": 12700.0,
+      "status": "WATCH",
+      "score": 56.40964971221866,
+      "technicalScore": 56.40964971221866,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "FTS",
+      "exchange": "HOSE",
+      "close": 22450.0,
+      "status": "WATCH",
+      "score": 56.26768180483807,
+      "technicalScore": 56.26768180483807,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "BSI",
+      "exchange": "HOSE",
+      "close": 29000.0,
+      "status": "WATCH",
+      "score": 55.88611777775319,
+      "technicalScore": 55.88611777775319,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DPG",
+      "exchange": "HOSE",
+      "close": 30650.0,
+      "status": "WATCH",
+      "score": 55.825775743660685,
+      "technicalScore": 55.825775743660685,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "ANV",
+      "exchange": "HOSE",
+      "close": 18050.0,
+      "status": "WATCH",
+      "score": 55.81427571572246,
+      "technicalScore": 55.81427571572246,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "TVN",
+      "exchange": "UPCOM",
+      "close": 9100.0,
+      "status": "WATCH",
+      "score": 55.26633482517647,
+      "technicalScore": 55.26633482517647,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "VGS",
+      "exchange": "HNX",
+      "close": 18400.0,
+      "status": "WATCH",
+      "score": 55.26609599555726,
+      "technicalScore": 55.26609599555726,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "GEE",
+      "exchange": "HOSE",
+      "close": 75300.0,
+      "status": "WATCH",
+      "score": 55.242189780805965,
+      "technicalScore": 55.242189780805965,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "C32",
+      "exchange": "HOSE",
+      "close": 15400.0,
+      "status": "WATCH",
+      "score": 55.05450954772058,
+      "technicalScore": 55.05450954772058,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "VSC",
+      "exchange": "HOSE",
+      "close": 14850.0,
+      "status": "WATCH",
+      "score": 54.89271664955193,
+      "technicalScore": 54.89271664955193,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "LAS",
+      "exchange": "HNX",
+      "close": 12300.0,
+      "status": "WATCH",
+      "score": 54.75713263554827,
+      "technicalScore": 54.75713263554827,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "JVC",
+      "exchange": "HOSE",
+      "close": 3050.0,
+      "status": "WATCH",
+      "score": 54.52774912628158,
+      "technicalScore": 54.52774912628158,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "SHS",
+      "exchange": "HNX",
+      "close": 15900.0,
+      "status": "WATCH",
+      "score": 54.431619720003404,
+      "technicalScore": 54.431619720003404,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "SCR",
+      "exchange": "HOSE",
+      "close": 4630.0,
+      "status": "WATCH",
+      "score": 53.874722883233964,
+      "technicalScore": 53.874722883233964,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "IJC",
+      "exchange": "HOSE",
+      "close": 7950.0,
+      "status": "WATCH",
+      "score": 53.624584468291424,
+      "technicalScore": 53.624584468291424,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "ITC",
+      "exchange": "HOSE",
+      "close": 10350.0,
+      "status": "WATCH",
+      "score": 53.59038733847083,
+      "technicalScore": 53.59038733847083,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DIG",
+      "exchange": "HOSE",
+      "close": 10950.0,
+      "status": "WATCH",
+      "score": 53.35477273225876,
+      "technicalScore": 53.35477273225876,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "SAS",
+      "exchange": "UPCOM",
+      "close": 33300.0,
+      "status": "WATCH",
+      "score": 52.47269060227001,
+      "technicalScore": 52.47269060227001,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "LIX",
+      "exchange": "HOSE",
+      "close": 24900.0,
+      "status": "WATCH",
+      "score": 51.81532967656563,
+      "technicalScore": 51.81532967656563,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "YEG",
+      "exchange": "HOSE",
+      "close": 7750.0,
+      "status": "WATCH",
+      "score": 51.767689472426895,
+      "technicalScore": 51.767689472426895,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "C69",
+      "exchange": "HNX",
+      "close": 17200.0,
+      "status": "WATCH",
+      "score": 51.62793344800625,
+      "technicalScore": 51.62793344800625,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "HGM",
+      "exchange": "HNX",
+      "close": 134500.0,
+      "status": "WATCH",
+      "score": 51.49969266495646,
+      "technicalScore": 51.49969266495646,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "TLH",
+      "exchange": "HOSE",
+      "close": 4000.0,
+      "status": "WATCH",
+      "score": 51.07945306998353,
+      "technicalScore": 51.07945306998353,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "NHA",
+      "exchange": "HOSE",
+      "close": 8400.0,
+      "status": "WATCH",
+      "score": 50.47150229505892,
+      "technicalScore": 50.47150229505892,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DTD",
+      "exchange": "HNX",
+      "close": 12100.0,
+      "status": "WATCH",
+      "score": 50.40045495709969,
+      "technicalScore": 50.40045495709969,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "SKG",
+      "exchange": "HOSE",
+      "close": 7670.0,
+      "status": "WATCH",
+      "score": 50.12790496101272,
+      "technicalScore": 50.12790496101272,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "IDI",
+      "exchange": "HOSE",
+      "close": 4970.0,
+      "status": "GREEN",
+      "score": 49.99149450401407,
+      "technicalScore": 49.99149450401407,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "VIX",
+      "exchange": "HOSE",
+      "close": 14300.0,
+      "status": "GREEN",
+      "score": 49.8987434153259,
+      "technicalScore": 49.8987434153259,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "HAH",
+      "exchange": "HOSE",
+      "close": 46350.0,
+      "status": "GREEN",
+      "score": 49.577138553610844,
+      "technicalScore": 49.577138553610844,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "TIG",
+      "exchange": "HNX",
+      "close": 5800.0,
+      "status": "GREEN",
+      "score": 49.31842740052155,
+      "technicalScore": 49.31842740052155,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "HLD",
+      "exchange": "HNX",
+      "close": 13900.0,
+      "status": "GREEN",
+      "score": 48.74899132478305,
+      "technicalScore": 48.74899132478305,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "HHS",
+      "exchange": "HOSE",
+      "close": 9990.0,
+      "status": "GREEN",
+      "score": 48.668228659699174,
+      "technicalScore": 48.668228659699174,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "NLG",
+      "exchange": "HOSE",
+      "close": 22650.0,
+      "status": "GREEN",
+      "score": 48.52598330522309,
+      "technicalScore": 48.52598330522309,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "TV1",
+      "exchange": "UPCOM",
+      "close": 20300.0,
+      "status": "GREEN",
+      "score": 48.13447209557582,
+      "technicalScore": 48.13447209557582,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "SHB",
+      "exchange": "HOSE",
+      "close": 11850.0,
+      "status": "GREEN",
+      "score": 47.881687468586634,
+      "technicalScore": 47.881687468586634,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "BVS",
+      "exchange": "HNX",
+      "close": 27000.0,
+      "status": "GREEN",
+      "score": 47.62341232638374,
+      "technicalScore": 47.62341232638374,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "AGR",
+      "exchange": "HOSE",
+      "close": 13250.0,
+      "status": "GREEN",
+      "score": 46.81454309541636,
+      "technicalScore": 46.81454309541636,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "CTS",
+      "exchange": "HOSE",
+      "close": 22800.0,
+      "status": "GREEN",
+      "score": 46.7555824683323,
+      "technicalScore": 46.7555824683323,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "LDG",
+      "exchange": "HOSE",
+      "close": 2920.0,
+      "status": "GREEN",
+      "score": 46.668855322305475,
+      "technicalScore": 46.668855322305475,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "VIP",
+      "exchange": "HOSE",
+      "close": 9820.0,
+      "status": "GREEN",
+      "score": 46.40831319077406,
+      "technicalScore": 46.40831319077406,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "HQC",
+      "exchange": "HOSE",
+      "close": 2300.0,
+      "status": "GREEN",
+      "score": 46.18536964238195,
+      "technicalScore": 46.18536964238195,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DXG",
+      "exchange": "HOSE",
+      "close": 11150.0,
+      "status": "GREEN",
+      "score": 45.97847128392458,
+      "technicalScore": 45.97847128392458,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "TSJ",
+      "exchange": "UPCOM",
+      "close": 21100.0,
+      "status": "GREEN",
+      "score": 45.30975304012577,
+      "technicalScore": 45.30975304012577,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "SZC",
+      "exchange": "HOSE",
+      "close": 20150.0,
+      "status": "GREEN",
+      "score": 44.60543678102577,
+      "technicalScore": 44.60543678102577,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "PAN",
+      "exchange": "HOSE",
+      "close": 20700.0,
+      "status": "GREEN",
+      "score": 44.4609070342213,
+      "technicalScore": 44.4609070342213,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "NNC",
+      "exchange": "HOSE",
+      "close": 40300.0,
+      "status": "GREEN",
+      "score": 44.31614570044686,
+      "technicalScore": 44.31614570044686,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "TNG",
+      "exchange": "HNX",
+      "close": 17100.0,
+      "status": "GREEN",
+      "score": 44.22473422156064,
+      "technicalScore": 44.22473422156064,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DCM",
+      "exchange": "HOSE",
+      "close": 31350.0,
+      "status": "GREEN",
+      "score": 44.16729086688547,
+      "technicalScore": 44.16729086688547,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "VHC",
+      "exchange": "HOSE",
+      "close": 53100.0,
+      "status": "GREEN",
+      "score": 44.12986656494627,
+      "technicalScore": 44.12986656494627,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VIT",
+      "exchange": "HNX",
+      "close": 23500.0,
+      "status": "GREEN",
+      "score": 44.05879020896986,
+      "technicalScore": 44.05879020896986,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "TPC",
+      "exchange": "HOSE",
+      "close": 9450.0,
+      "status": "GREEN",
+      "score": 43.9034133865269,
+      "technicalScore": 43.9034133865269,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "CMG",
+      "exchange": "HOSE",
+      "close": 24700.0,
+      "status": "GREEN",
+      "score": 43.85195749758119,
+      "technicalScore": 43.85195749758119,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "UNI",
+      "exchange": "HNX",
+      "close": 6600.0,
+      "status": "GREEN",
+      "score": 43.422414060795596,
+      "technicalScore": 43.422414060795596,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "VFS",
+      "exchange": "HNX",
+      "close": 10000.0,
+      "status": "GREEN",
+      "score": 43.15957082561573,
+      "technicalScore": 43.15957082561573,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "FOX",
+      "exchange": "UPCOM",
+      "close": 66000.0,
+      "status": "GREEN",
+      "score": 42.48117698984041,
+      "technicalScore": 42.48117698984041,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DLG",
+      "exchange": "HOSE",
+      "close": 2330.0,
+      "status": "GREEN",
+      "score": 42.36253360580649,
+      "technicalScore": 42.36253360580649,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "BMS",
+      "exchange": "UPCOM",
+      "close": 13100.0,
+      "status": "GREEN",
+      "score": 42.32199741801912,
+      "technicalScore": 42.32199741801912,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "CTD",
+      "exchange": "HOSE",
+      "close": 63500.0,
+      "status": "GREEN",
+      "score": 41.80437475130206,
+      "technicalScore": 41.80437475130206,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "APS",
+      "exchange": "HNX",
+      "close": 6300.0,
+      "status": "GREEN",
+      "score": 41.72859420744382,
+      "technicalScore": 41.72859420744382,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PTB",
+      "exchange": "HOSE",
+      "close": 33650.0,
+      "status": "GREEN",
+      "score": 41.33017319909813,
+      "technicalScore": 41.33017319909813,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "EIB",
+      "exchange": "HOSE",
+      "close": 18200.0,
+      "status": "GREEN",
+      "score": 41.32667143452729,
+      "technicalScore": 41.32667143452729,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "MBS",
+      "exchange": "HNX",
+      "close": 18800.0,
+      "status": "GREEN",
+      "score": 41.15344999392949,
+      "technicalScore": 41.15344999392949,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "D2D",
+      "exchange": "HOSE",
+      "close": 28200.0,
+      "status": "GREEN",
+      "score": 40.97010282241007,
+      "technicalScore": 40.97010282241007,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VIW",
+      "exchange": "UPCOM",
+      "close": 24900.0,
+      "status": "GREEN",
+      "score": 40.765856012144404,
+      "technicalScore": 40.765856012144404,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "VRE",
+      "exchange": "HOSE",
+      "close": 25450.0,
+      "status": "GREEN",
+      "score": 40.34817715481909,
+      "technicalScore": 40.34817715481909,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DRC",
+      "exchange": "HOSE",
+      "close": 10750.0,
+      "status": "GREEN",
+      "score": 39.57739597388881,
+      "technicalScore": 39.57739597388881,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "G36",
+      "exchange": "UPCOM",
+      "close": 9300.0,
+      "status": "GREEN",
+      "score": 39.482211451909365,
+      "technicalScore": 39.482211451909365,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "TCO",
+      "exchange": "HOSE",
+      "close": 10350.0,
+      "status": "GREEN",
+      "score": 39.2223868525297,
+      "technicalScore": 39.2223868525297,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DL1",
+      "exchange": "HNX",
+      "close": 4600.0,
+      "status": "GREEN",
+      "score": 39.21907598084965,
+      "technicalScore": 39.21907598084965,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "BIG",
+      "exchange": "UPCOM",
+      "close": 5100.0,
+      "status": "GREEN",
+      "score": 39.214450952212296,
+      "technicalScore": 39.214450952212296,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "VPL",
+      "exchange": "HOSE",
+      "close": 78400.0,
+      "status": "GREEN",
+      "score": 39.02035572020507,
+      "technicalScore": 39.02035572020507,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VCI",
+      "exchange": "HOSE",
+      "close": 22050.0,
+      "status": "GREEN",
+      "score": 38.94107654003902,
+      "technicalScore": 38.94107654003902,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PVC",
+      "exchange": "HNX",
+      "close": 12600.0,
+      "status": "GREEN",
+      "score": 38.30594640203294,
+      "technicalScore": 38.30594640203294,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "SCS",
+      "exchange": "HOSE",
+      "close": 45150.0,
+      "status": "GREEN",
+      "score": 38.087882138651224,
+      "technicalScore": 38.087882138651224,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DBC",
+      "exchange": "HOSE",
+      "close": 16700.0,
+      "status": "GREEN",
+      "score": 37.368990770512696,
+      "technicalScore": 37.368990770512696,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VEF",
+      "exchange": "UPCOM",
+      "close": 79400.0,
+      "status": "GREEN",
+      "score": 37.350758947323044,
+      "technicalScore": 37.350758947323044,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DPM",
+      "exchange": "HOSE",
+      "close": 22300.0,
+      "status": "GREEN",
+      "score": 37.34601144317889,
+      "technicalScore": 37.34601144317889,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PHR",
+      "exchange": "HOSE",
+      "close": 58500.0,
+      "status": "GREEN",
+      "score": 37.27321941817184,
+      "technicalScore": 37.27321941817184,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DVN",
+      "exchange": "UPCOM",
+      "close": 18700.0,
+      "status": "GREEN",
+      "score": 36.85375770673563,
+      "technicalScore": 36.85375770673563,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SHN",
+      "exchange": "HNX",
+      "close": 7900.0,
+      "status": "GREEN",
+      "score": 36.327162199502624,
+      "technicalScore": 36.327162199502624,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "HSL",
+      "exchange": "HOSE",
+      "close": 8560.0,
+      "status": "GREEN",
+      "score": 35.930246115946815,
+      "technicalScore": 35.930246115946815,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "SGR",
+      "exchange": "HOSE",
+      "close": 12500.0,
+      "status": "GREEN",
+      "score": 35.88840701603904,
+      "technicalScore": 35.88840701603904,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "API",
+      "exchange": "HNX",
+      "close": 5700.0,
+      "status": "GREEN",
+      "score": 35.58268127467631,
+      "technicalScore": 35.58268127467631,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HNG",
+      "exchange": "UPCOM",
+      "close": 6600.0,
+      "status": "GREEN",
+      "score": 35.09061559173893,
+      "technicalScore": 35.09061559173893,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DHB",
+      "exchange": "UPCOM",
+      "close": 11600.0,
+      "status": "GREEN",
+      "score": 35.02206965722036,
+      "technicalScore": 35.02206965722036,
+      "independentStressSignals": 3
+    },
+    {
+      "symbol": "KOS",
+      "exchange": "HOSE",
+      "close": 35000.0,
+      "status": "GREEN",
+      "score": 34.99692008283069,
+      "technicalScore": 34.99692008283069,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VOS",
+      "exchange": "HOSE",
+      "close": 11150.0,
+      "status": "GREEN",
+      "score": 34.571700679734164,
+      "technicalScore": 34.571700679734164,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DC4",
+      "exchange": "HOSE",
+      "close": 6900.0,
+      "status": "GREEN",
+      "score": 34.54863885030467,
+      "technicalScore": 34.54863885030467,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DGC",
+      "exchange": "HOSE",
+      "close": 43800.0,
+      "status": "GREEN",
+      "score": 34.26532792610134,
+      "technicalScore": 34.26532792610134,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "GEG",
+      "exchange": "HOSE",
+      "close": 12350.0,
+      "status": "GREEN",
+      "score": 34.12137137813169,
+      "technicalScore": 34.12137137813169,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "NAB",
+      "exchange": "HOSE",
+      "close": 11900.0,
+      "status": "GREEN",
+      "score": 34.005384051263995,
+      "technicalScore": 34.005384051263995,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "CSV",
+      "exchange": "HOSE",
+      "close": 22150.0,
+      "status": "GREEN",
+      "score": 33.94571127182071,
+      "technicalScore": 33.94571127182071,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "TCI",
+      "exchange": "HOSE",
+      "close": 9790.0,
+      "status": "GREEN",
+      "score": 33.622566991951025,
+      "technicalScore": 33.622566991951025,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VIB",
+      "exchange": "HOSE",
+      "close": 14800.0,
+      "status": "GREEN",
+      "score": 33.480725835248705,
+      "technicalScore": 33.480725835248705,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TNI",
+      "exchange": "HOSE",
+      "close": 6000.0,
+      "status": "GREEN",
+      "score": 33.07880455711626,
+      "technicalScore": 33.07880455711626,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "GEX",
+      "exchange": "HOSE",
+      "close": 26150.0,
+      "status": "GREEN",
+      "score": 32.642506927291976,
+      "technicalScore": 32.642506927291976,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "TPB",
+      "exchange": "HOSE",
+      "close": 14700.0,
+      "status": "GREEN",
+      "score": 32.4144806954324,
+      "technicalScore": 32.4144806954324,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CAP",
+      "exchange": "HNX",
+      "close": 43700.0,
+      "status": "GREEN",
+      "score": 32.38260803518161,
+      "technicalScore": 32.38260803518161,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TV2",
+      "exchange": "HOSE",
+      "close": 26700.0,
+      "status": "GREEN",
+      "score": 32.376325895677866,
+      "technicalScore": 32.376325895677866,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "DPR",
+      "exchange": "HOSE",
+      "close": 36500.0,
+      "status": "GREEN",
+      "score": 32.35994410287407,
+      "technicalScore": 32.35994410287407,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VGR",
+      "exchange": "UPCOM",
+      "close": 96000.0,
+      "status": "GREEN",
+      "score": 32.344836164876604,
+      "technicalScore": 32.344836164876604,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "TIN",
+      "exchange": "UPCOM",
+      "close": 113000.0,
+      "status": "GREEN",
+      "score": 32.21591200964546,
+      "technicalScore": 32.21591200964546,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "NKG",
+      "exchange": "HOSE",
+      "close": 11200.0,
+      "status": "GREEN",
+      "score": 32.20429343265222,
+      "technicalScore": 32.20429343265222,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "IDC",
+      "exchange": "HNX",
+      "close": 34300.0,
+      "status": "GREEN",
+      "score": 32.15707135218588,
+      "technicalScore": 32.15707135218588,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TAL",
+      "exchange": "HOSE",
+      "close": 24750.0,
+      "status": "GREEN",
+      "score": 32.024414316789766,
+      "technicalScore": 32.024414316789766,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "PVS",
+      "exchange": "HNX",
+      "close": 35600.0,
+      "status": "GREEN",
+      "score": 31.919913680240278,
+      "technicalScore": 31.919913680240278,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "VCS",
+      "exchange": "HNX",
+      "close": 33700.0,
+      "status": "GREEN",
+      "score": 31.911240530022773,
+      "technicalScore": 31.911240530022773,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "MCM",
+      "exchange": "HOSE",
+      "close": 26200.0,
+      "status": "GREEN",
+      "score": 31.602176982087304,
+      "technicalScore": 31.602176982087304,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VTD",
+      "exchange": "UPCOM",
+      "close": 5100.0,
+      "status": "GREEN",
+      "score": 31.55595220773314,
+      "technicalScore": 31.55595220773314,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PLC",
+      "exchange": "HNX",
+      "close": 20800.0,
+      "status": "GREEN",
+      "score": 31.427435892855968,
+      "technicalScore": 31.427435892855968,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PSD",
+      "exchange": "HNX",
+      "close": 12400.0,
+      "status": "GREEN",
+      "score": 31.093626024197924,
+      "technicalScore": 31.093626024197924,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PSI",
+      "exchange": "HNX",
+      "close": 9600.0,
+      "status": "GREEN",
+      "score": 31.02314233411717,
+      "technicalScore": 31.02314233411717,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "SMC",
+      "exchange": "HOSE",
+      "close": 10600.0,
+      "status": "GREEN",
+      "score": 30.80949506439974,
+      "technicalScore": 30.80949506439974,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "THD",
+      "exchange": "HNX",
+      "close": 147700.0,
+      "status": "GREEN",
+      "score": 30.133566893190498,
+      "technicalScore": 30.133566893190498,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "KSB",
+      "exchange": "HOSE",
+      "close": 14250.0,
+      "status": "GREEN",
+      "score": 30.03223789393684,
+      "technicalScore": 30.03223789393684,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HSG",
+      "exchange": "HOSE",
+      "close": 10900.0,
+      "status": "GREEN",
+      "score": 29.954433485212984,
+      "technicalScore": 29.954433485212984,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "FCN",
+      "exchange": "HOSE",
+      "close": 11350.0,
+      "status": "GREEN",
+      "score": 29.502831760046824,
+      "technicalScore": 29.502831760046824,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "APG",
+      "exchange": "HOSE",
+      "close": 4950.0,
+      "status": "GREEN",
+      "score": 29.04234828344884,
+      "technicalScore": 29.04234828344884,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "BIC",
+      "exchange": "HOSE",
+      "close": 22000.0,
+      "status": "GREEN",
+      "score": 28.529654608875756,
+      "technicalScore": 28.529654608875756,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HHV",
+      "exchange": "HOSE",
+      "close": 10300.0,
+      "status": "GREEN",
+      "score": 28.18730671066194,
+      "technicalScore": 28.18730671066194,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "HAG",
+      "exchange": "HOSE",
+      "close": 14150.0,
+      "status": "GREEN",
+      "score": 28.056428541069515,
+      "technicalScore": 28.056428541069515,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VJC",
+      "exchange": "HOSE",
+      "close": 127700.0,
+      "status": "GREEN",
+      "score": 27.957632892989192,
+      "technicalScore": 27.957632892989192,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VFG",
+      "exchange": "HOSE",
+      "close": 45400.0,
+      "status": "GREEN",
+      "score": 27.713625406025404,
+      "technicalScore": 27.713625406025404,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VAB",
+      "exchange": "HOSE",
+      "close": 10200.0,
+      "status": "GREEN",
+      "score": 27.651489785826623,
+      "technicalScore": 27.651489785826623,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "KHG",
+      "exchange": "HOSE",
+      "close": 4810.0,
+      "status": "GREEN",
+      "score": 27.59848361528327,
+      "technicalScore": 27.59848361528327,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "OIL",
+      "exchange": "UPCOM",
+      "close": 13400.0,
+      "status": "GREEN",
+      "score": 27.3830463741415,
+      "technicalScore": 27.3830463741415,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VPI",
+      "exchange": "HOSE",
+      "close": 59700.0,
+      "status": "GREEN",
+      "score": 27.35127025306032,
+      "technicalScore": 27.35127025306032,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "KBC",
+      "exchange": "HOSE",
+      "close": 28000.0,
+      "status": "GREEN",
+      "score": 27.166729035811017,
+      "technicalScore": 27.166729035811017,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MSH",
+      "exchange": "HOSE",
+      "close": 31350.0,
+      "status": "GREEN",
+      "score": 26.555804782802138,
+      "technicalScore": 26.555804782802138,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SJS",
+      "exchange": "HOSE",
+      "close": 47350.0,
+      "status": "GREEN",
+      "score": 26.520579689731086,
+      "technicalScore": 26.520579689731086,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MIG",
+      "exchange": "HOSE",
+      "close": 16700.0,
+      "status": "GREEN",
+      "score": 26.51109684479651,
+      "technicalScore": 26.51109684479651,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BMI",
+      "exchange": "HOSE",
+      "close": 13550.0,
+      "status": "GREEN",
+      "score": 26.304469866498874,
+      "technicalScore": 26.304469866498874,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "TNH",
+      "exchange": "HOSE",
+      "close": 8390.0,
+      "status": "GREEN",
+      "score": 26.184379299184382,
+      "technicalScore": 26.184379299184382,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "APF",
+      "exchange": "UPCOM",
+      "close": 45300.0,
+      "status": "GREEN",
+      "score": 26.17779671806747,
+      "technicalScore": 26.17779671806747,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PLX",
+      "exchange": "HOSE",
+      "close": 36650.0,
+      "status": "GREEN",
+      "score": 26.0217711624283,
+      "technicalScore": 26.0217711624283,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "AIG",
+      "exchange": "UPCOM",
+      "close": 48600.0,
+      "status": "GREEN",
+      "score": 25.85794636221532,
+      "technicalScore": 25.85794636221532,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VSF",
+      "exchange": "UPCOM",
+      "close": 26800.0,
+      "status": "GREEN",
+      "score": 25.782570594160347,
+      "technicalScore": 25.782570594160347,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "SBS",
+      "exchange": "UPCOM",
+      "close": 4700.0,
+      "status": "GREEN",
+      "score": 25.626824218994283,
+      "technicalScore": 25.626824218994283,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ELC",
+      "exchange": "HOSE",
+      "close": 15800.0,
+      "status": "GREEN",
+      "score": 25.551287075385986,
+      "technicalScore": 25.551287075385986,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "MSN",
+      "exchange": "HOSE",
+      "close": 67200.0,
+      "status": "GREEN",
+      "score": 25.05761655528584,
+      "technicalScore": 25.05761655528584,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MML",
+      "exchange": "UPCOM",
+      "close": 28100.0,
+      "status": "GREEN",
+      "score": 24.985363150027204,
+      "technicalScore": 24.985363150027204,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VND",
+      "exchange": "HOSE",
+      "close": 16800.0,
+      "status": "GREEN",
+      "score": 24.961169119806133,
+      "technicalScore": 24.961169119806133,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VNZ",
+      "exchange": "UPCOM",
+      "close": 590000.0,
+      "status": "GREEN",
+      "score": 24.949483073526565,
+      "technicalScore": 24.949483073526565,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "TVS",
+      "exchange": "HOSE",
+      "close": 14000.0,
+      "status": "GREEN",
+      "score": 24.50986404165643,
+      "technicalScore": 24.50986404165643,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SSI",
+      "exchange": "HOSE",
+      "close": 25300.0,
+      "status": "GREEN",
+      "score": 24.490026244691443,
+      "technicalScore": 24.490026244691443,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "GCF",
+      "exchange": "UPCOM",
+      "close": 19300.0,
+      "status": "GREEN",
+      "score": 24.36932107289329,
+      "technicalScore": 24.36932107289329,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "ABT",
+      "exchange": "HOSE",
+      "close": 51000.0,
+      "status": "GREEN",
+      "score": 24.365231452942474,
+      "technicalScore": 24.365231452942474,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "BID",
+      "exchange": "HOSE",
+      "close": 39250.0,
+      "status": "GREEN",
+      "score": 24.333808403293908,
+      "technicalScore": 24.333808403293908,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CSM",
+      "exchange": "HOSE",
+      "close": 13950.0,
+      "status": "GREEN",
+      "score": 24.045272286565343,
+      "technicalScore": 24.045272286565343,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PIV",
+      "exchange": "UPCOM",
+      "close": 6500.0,
+      "status": "GREEN",
+      "score": 23.51694247438928,
+      "technicalScore": 23.51694247438928,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HHP",
+      "exchange": "HOSE",
+      "close": 15350.0,
+      "status": "GREEN",
+      "score": 23.508778379362045,
+      "technicalScore": 23.508778379362045,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HVN",
+      "exchange": "HOSE",
+      "close": 23700.0,
+      "status": "GREEN",
+      "score": 23.45881422541024,
+      "technicalScore": 23.45881422541024,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "GVR",
+      "exchange": "HOSE",
+      "close": 32250.0,
+      "status": "GREEN",
+      "score": 23.428156614530877,
+      "technicalScore": 23.428156614530877,
+      "independentStressSignals": 2
+    },
+    {
+      "symbol": "PVD",
+      "exchange": "HOSE",
+      "close": 18700.0,
+      "status": "GREEN",
+      "score": 23.375382623700045,
+      "technicalScore": 23.375382623700045,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HAX",
+      "exchange": "HOSE",
+      "close": 9110.0,
+      "status": "GREEN",
+      "score": 23.358430725802585,
+      "technicalScore": 23.358430725802585,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PPC",
+      "exchange": "HOSE",
+      "close": 8960.0,
+      "status": "GREEN",
+      "score": 23.301271861309807,
+      "technicalScore": 23.301271861309807,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "RYG",
+      "exchange": "HOSE",
+      "close": 9200.0,
+      "status": "GREEN",
+      "score": 23.279782164584066,
+      "technicalScore": 23.279782164584066,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TTL",
+      "exchange": "HNX",
+      "close": 7700.0,
+      "status": "GREEN",
+      "score": 23.12745620934045,
+      "technicalScore": 23.12745620934045,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "MWG",
+      "exchange": "HOSE",
+      "close": 74000.0,
+      "status": "GREEN",
+      "score": 23.01894220925524,
+      "technicalScore": 23.01894220925524,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BSR",
+      "exchange": "HOSE",
+      "close": 26500.0,
+      "status": "GREEN",
+      "score": 22.88367937676997,
+      "technicalScore": 22.88367937676997,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "AGG",
+      "exchange": "HOSE",
+      "close": 11350.0,
+      "status": "GREEN",
+      "score": 22.833004936629628,
+      "technicalScore": 22.833004936629628,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PVT",
+      "exchange": "HOSE",
+      "close": 20100.0,
+      "status": "GREEN",
+      "score": 22.44435348517045,
+      "technicalScore": 22.44435348517045,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "CTG",
+      "exchange": "HOSE",
+      "close": 32200.0,
+      "status": "GREEN",
+      "score": 22.413554497913978,
+      "technicalScore": 22.413554497913978,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ACV",
+      "exchange": "UPCOM",
+      "close": 41500.0,
+      "status": "GREEN",
+      "score": 22.29104136495203,
+      "technicalScore": 22.29104136495203,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DCL",
+      "exchange": "HOSE",
+      "close": 38600.0,
+      "status": "GREEN",
+      "score": 22.176965526412243,
+      "technicalScore": 22.176965526412243,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PMC",
+      "exchange": "HNX",
+      "close": 130000.0,
+      "status": "GREEN",
+      "score": 22.16172791730716,
+      "technicalScore": 22.16172791730716,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HII",
+      "exchange": "HOSE",
+      "close": 8800.0,
+      "status": "GREEN",
+      "score": 21.965746749015377,
+      "technicalScore": 21.965746749015377,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HHC",
+      "exchange": "HNX",
+      "close": 85500.0,
+      "status": "GREEN",
+      "score": 21.9635091176683,
+      "technicalScore": 21.9635091176683,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "TNW",
+      "exchange": "UPCOM",
+      "close": 13600.0,
+      "status": "GREEN",
+      "score": 21.886627404672016,
+      "technicalScore": 21.886627404672016,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "ABS",
+      "exchange": "HOSE",
+      "close": 3100.0,
+      "status": "GREEN",
+      "score": 21.819395545413613,
+      "technicalScore": 21.819395545413613,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "QTP",
+      "exchange": "UPCOM",
+      "close": 11200.0,
+      "status": "GREEN",
+      "score": 21.797528229668846,
+      "technicalScore": 21.797528229668846,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SJE",
+      "exchange": "HNX",
+      "close": 12800.0,
+      "status": "GREEN",
+      "score": 21.73927925197658,
+      "technicalScore": 21.73927925197658,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "CRE",
+      "exchange": "HOSE",
+      "close": 7120.0,
+      "status": "GREEN",
+      "score": 21.598504769454323,
+      "technicalScore": 21.598504769454323,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VGI",
+      "exchange": "UPCOM",
+      "close": 86800.0,
+      "status": "GREEN",
+      "score": 21.3565950993858,
+      "technicalScore": 21.3565950993858,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HPG",
+      "exchange": "HOSE",
+      "close": 22100.0,
+      "status": "GREEN",
+      "score": 21.356513957218105,
+      "technicalScore": 21.356513957218105,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "REE",
+      "exchange": "HOSE",
+      "close": 47150.0,
+      "status": "GREEN",
+      "score": 21.257433039913625,
+      "technicalScore": 21.257433039913625,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PC1",
+      "exchange": "HOSE",
+      "close": 20750.0,
+      "status": "GREEN",
+      "score": 21.240412983571975,
+      "technicalScore": 21.240412983571975,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TIP",
+      "exchange": "HOSE",
+      "close": 17050.0,
+      "status": "GREEN",
+      "score": 21.21890767276763,
+      "technicalScore": 21.21890767276763,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ABB",
+      "exchange": "UPCOM",
+      "close": 16900.0,
+      "status": "GREEN",
+      "score": 20.79311796578411,
+      "technicalScore": 20.79311796578411,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VTV",
+      "exchange": "HNX",
+      "close": 14200.0,
+      "status": "GREEN",
+      "score": 20.739557248135785,
+      "technicalScore": 20.739557248135785,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HVH",
+      "exchange": "HOSE",
+      "close": 10350.0,
+      "status": "GREEN",
+      "score": 20.583191936894757,
+      "technicalScore": 20.583191936894757,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VIC",
+      "exchange": "HOSE",
+      "close": 215500.0,
+      "status": "GREEN",
+      "score": 20.52420146753086,
+      "technicalScore": 20.52420146753086,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "TCX",
+      "exchange": "HOSE",
+      "close": 40500.0,
+      "status": "GREEN",
+      "score": 20.400412552598862,
+      "technicalScore": 20.400412552598862,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BDT",
+      "exchange": "UPCOM",
+      "close": 9400.0,
+      "status": "GREEN",
+      "score": 20.371448423503782,
+      "technicalScore": 20.371448423503782,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "NHH",
+      "exchange": "HOSE",
+      "close": 9730.0,
+      "status": "GREEN",
+      "score": 20.36010428349577,
+      "technicalScore": 20.36010428349577,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CTI",
+      "exchange": "HOSE",
+      "close": 19500.0,
+      "status": "GREEN",
+      "score": 20.02216010511985,
+      "technicalScore": 20.02216010511985,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "GAS",
+      "exchange": "HOSE",
+      "close": 80000.0,
+      "status": "GREEN",
+      "score": 20.008241026525624,
+      "technicalScore": 20.008241026525624,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BBT",
+      "exchange": "UPCOM",
+      "close": 13000.0,
+      "status": "GREEN",
+      "score": 19.57477708747441,
+      "technicalScore": 19.57477708747441,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TDM",
+      "exchange": "HOSE",
+      "close": 58100.0,
+      "status": "GREEN",
+      "score": 19.559851674135864,
+      "technicalScore": 19.559851674135864,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "MVN",
+      "exchange": "UPCOM",
+      "close": 60000.0,
+      "status": "GREEN",
+      "score": 19.52015614228752,
+      "technicalScore": 19.52015614228752,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "KTL",
+      "exchange": "UPCOM",
+      "close": 22000.0,
+      "status": "GREEN",
+      "score": 19.466669364887142,
+      "technicalScore": 19.466669364887142,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PAT",
+      "exchange": "UPCOM",
+      "close": 65100.0,
+      "status": "GREEN",
+      "score": 19.447721381040708,
+      "technicalScore": 19.447721381040708,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "EVF",
+      "exchange": "HOSE",
+      "close": 12500.0,
+      "status": "GREEN",
+      "score": 19.31936324510372,
+      "technicalScore": 19.31936324510372,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VTP",
+      "exchange": "HOSE",
+      "close": 55000.0,
+      "status": "GREEN",
+      "score": 19.300987958189754,
+      "technicalScore": 19.300987958189754,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "KSF",
+      "exchange": "HNX",
+      "close": 80900.0,
+      "status": "GREEN",
+      "score": 19.148936170212767,
+      "technicalScore": 19.148936170212767,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "ADS",
+      "exchange": "HOSE",
+      "close": 8180.0,
+      "status": "GREEN",
+      "score": 18.756711366603625,
+      "technicalScore": 18.756711366603625,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "L14",
+      "exchange": "HNX",
+      "close": 23600.0,
+      "status": "GREEN",
+      "score": 18.6021304616019,
+      "technicalScore": 18.6021304616019,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "CDC",
+      "exchange": "HOSE",
+      "close": 18800.0,
+      "status": "GREEN",
+      "score": 18.392567962553958,
+      "technicalScore": 18.392567962553958,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "FPT",
+      "exchange": "HOSE",
+      "close": 70800.0,
+      "status": "GREEN",
+      "score": 17.941416762953367,
+      "technicalScore": 17.941416762953367,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HPX",
+      "exchange": "HOSE",
+      "close": 4310.0,
+      "status": "GREEN",
+      "score": 17.647371320053104,
+      "technicalScore": 17.647371320053104,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "LHC",
+      "exchange": "HNX",
+      "close": 46000.0,
+      "status": "GREEN",
+      "score": 17.629398609322696,
+      "technicalScore": 17.629398609322696,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ITD",
+      "exchange": "HOSE",
+      "close": 12500.0,
+      "status": "GREEN",
+      "score": 17.623952382517825,
+      "technicalScore": 17.623952382517825,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "HTN",
+      "exchange": "HOSE",
+      "close": 7850.0,
+      "status": "GREEN",
+      "score": 17.48502714921582,
+      "technicalScore": 17.48502714921582,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VNG",
+      "exchange": "HOSE",
+      "close": 6960.0,
+      "status": "GREEN",
+      "score": 17.389958304609554,
+      "technicalScore": 17.389958304609554,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "LLM",
+      "exchange": "UPCOM",
+      "close": 39900.0,
+      "status": "GREEN",
+      "score": 17.117988394584142,
+      "technicalScore": 17.117988394584142,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "QNS",
+      "exchange": "UPCOM",
+      "close": 46900.0,
+      "status": "GREEN",
+      "score": 17.07407882406833,
+      "technicalScore": 17.07407882406833,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CBS",
+      "exchange": "UPCOM",
+      "close": 24800.0,
+      "status": "GREEN",
+      "score": 17.05050921808205,
+      "technicalScore": 17.05050921808205,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "NVL",
+      "exchange": "HOSE",
+      "close": 13550.0,
+      "status": "GREEN",
+      "score": 17.00255108136703,
+      "technicalScore": 17.00255108136703,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "NTH",
+      "exchange": "HNX",
+      "close": 53000.0,
+      "status": "GREEN",
+      "score": 16.704914010475694,
+      "technicalScore": 16.704914010475694,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VPB",
+      "exchange": "HOSE",
+      "close": 25700.0,
+      "status": "GREEN",
+      "score": 16.697548603098838,
+      "technicalScore": 16.697548603098838,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VTO",
+      "exchange": "HOSE",
+      "close": 10650.0,
+      "status": "GREEN",
+      "score": 16.495644679609367,
+      "technicalScore": 16.495644679609367,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VHM",
+      "exchange": "HOSE",
+      "close": 73800.0,
+      "status": "GREEN",
+      "score": 16.471869395603377,
+      "technicalScore": 16.471869395603377,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VGC",
+      "exchange": "HOSE",
+      "close": 40800.0,
+      "status": "GREEN",
+      "score": 16.16330833606883,
+      "technicalScore": 16.16330833606883,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "EVS",
+      "exchange": "HNX",
+      "close": 5800.0,
+      "status": "GREEN",
+      "score": 16.098055405893305,
+      "technicalScore": 16.098055405893305,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "NT2",
+      "exchange": "HOSE",
+      "close": 21750.0,
+      "status": "GREEN",
+      "score": 15.877817409314915,
+      "technicalScore": 15.877817409314915,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VLC",
+      "exchange": "UPCOM",
+      "close": 12400.0,
+      "status": "GREEN",
+      "score": 15.773589996826432,
+      "technicalScore": 15.773589996826432,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PET",
+      "exchange": "HOSE",
+      "close": 40350.0,
+      "status": "GREEN",
+      "score": 15.515478204597411,
+      "technicalScore": 15.515478204597411,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HT1",
+      "exchange": "HOSE",
+      "close": 13300.0,
+      "status": "GREEN",
+      "score": 15.34250621099094,
+      "technicalScore": 15.34250621099094,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SVN",
+      "exchange": "HNX",
+      "close": 3300.0,
+      "status": "GREEN",
+      "score": 15.325975651382413,
+      "technicalScore": 15.325975651382413,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DP3",
+      "exchange": "HNX",
+      "close": 60300.0,
+      "status": "GREEN",
+      "score": 15.047915997530437,
+      "technicalScore": 15.047915997530437,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SCG",
+      "exchange": "HNX",
+      "close": 65400.0,
+      "status": "GREEN",
+      "score": 14.801323527967877,
+      "technicalScore": 14.801323527967877,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SHI",
+      "exchange": "HOSE",
+      "close": 14000.0,
+      "status": "GREEN",
+      "score": 14.405180380017933,
+      "technicalScore": 14.405180380017933,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SAM",
+      "exchange": "HOSE",
+      "close": 5900.0,
+      "status": "GREEN",
+      "score": 14.39748036810731,
+      "technicalScore": 14.39748036810731,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PVP",
+      "exchange": "HOSE",
+      "close": 18100.0,
+      "status": "GREEN",
+      "score": 14.248191021496908,
+      "technicalScore": 14.248191021496908,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TCB",
+      "exchange": "HOSE",
+      "close": 31500.0,
+      "status": "GREEN",
+      "score": 14.173640575800755,
+      "technicalScore": 14.173640575800755,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PCH",
+      "exchange": "HNX",
+      "close": 18200.0,
+      "status": "GREEN",
+      "score": 14.050863546758206,
+      "technicalScore": 14.050863546758206,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "KSV",
+      "exchange": "HNX",
+      "close": 120200.0,
+      "status": "GREEN",
+      "score": 14.010980552549587,
+      "technicalScore": 14.010980552549587,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TLD",
+      "exchange": "HOSE",
+      "close": 8350.0,
+      "status": "GREEN",
+      "score": 13.996314577943494,
+      "technicalScore": 13.996314577943494,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "PVI",
+      "exchange": "HNX",
+      "close": 68000.0,
+      "status": "GREEN",
+      "score": 13.932651269448074,
+      "technicalScore": 13.932651269448074,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PPT",
+      "exchange": "HNX",
+      "close": 15100.0,
+      "status": "GREEN",
+      "score": 13.702848454034418,
+      "technicalScore": 13.702848454034418,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VCP",
+      "exchange": "UPCOM",
+      "close": 23300.0,
+      "status": "GREEN",
+      "score": 13.573871844255926,
+      "technicalScore": 13.573871844255926,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VGT",
+      "exchange": "UPCOM",
+      "close": 11400.0,
+      "status": "GREEN",
+      "score": 13.361408125807083,
+      "technicalScore": 13.361408125807083,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "POW",
+      "exchange": "HOSE",
+      "close": 13750.0,
+      "status": "GREEN",
+      "score": 13.356056251365331,
+      "technicalScore": 13.356056251365331,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "IPA",
+      "exchange": "HNX",
+      "close": 15500.0,
+      "status": "GREEN",
+      "score": 13.22483677526006,
+      "technicalScore": 13.22483677526006,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "NAF",
+      "exchange": "HOSE",
+      "close": 48200.0,
+      "status": "GREEN",
+      "score": 13.048899385673796,
+      "technicalScore": 13.048899385673796,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TRC",
+      "exchange": "HOSE",
+      "close": 83300.0,
+      "status": "GREEN",
+      "score": 13.031672324889476,
+      "technicalScore": 13.031672324889476,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "NBB",
+      "exchange": "HOSE",
+      "close": 17250.0,
+      "status": "GREEN",
+      "score": 12.975355091559384,
+      "technicalScore": 12.975355091559384,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "HMH",
+      "exchange": "HNX",
+      "close": 20000.0,
+      "status": "GREEN",
+      "score": 12.765957446808512,
+      "technicalScore": 12.765957446808512,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "VDN",
+      "exchange": "UPCOM",
+      "close": 42100.0,
+      "status": "GREEN",
+      "score": 12.765957446808512,
+      "technicalScore": 12.765957446808512,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "SEA",
+      "exchange": "UPCOM",
+      "close": 65600.0,
+      "status": "GREEN",
+      "score": 12.765957446808512,
+      "technicalScore": 12.765957446808512,
+      "independentStressSignals": 1
+    },
+    {
+      "symbol": "DBD",
+      "exchange": "HOSE",
+      "close": 49400.0,
+      "status": "GREEN",
+      "score": 12.759920056400038,
+      "technicalScore": 12.759920056400038,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DRI",
+      "exchange": "UPCOM",
+      "close": 13700.0,
+      "status": "GREEN",
+      "score": 12.691406730295052,
+      "technicalScore": 12.691406730295052,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DHA",
+      "exchange": "HOSE",
+      "close": 49400.0,
+      "status": "GREEN",
+      "score": 12.331011258644185,
+      "technicalScore": 12.331011258644185,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SAB",
+      "exchange": "HOSE",
+      "close": 46300.0,
+      "status": "GREEN",
+      "score": 12.281990411353394,
+      "technicalScore": 12.281990411353394,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SSB",
+      "exchange": "HOSE",
+      "close": 15450.0,
+      "status": "GREEN",
+      "score": 12.243459776297888,
+      "technicalScore": 12.243459776297888,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ASP",
+      "exchange": "HOSE",
+      "close": 11500.0,
+      "status": "GREEN",
+      "score": 12.05429301423564,
+      "technicalScore": 12.05429301423564,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "FMC",
+      "exchange": "HOSE",
+      "close": 34250.0,
+      "status": "GREEN",
+      "score": 11.945602873826273,
+      "technicalScore": 11.945602873826273,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VCB",
+      "exchange": "HOSE",
+      "close": 59700.0,
+      "status": "GREEN",
+      "score": 11.813633234835242,
+      "technicalScore": 11.813633234835242,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VC3",
+      "exchange": "HNX",
+      "close": 25800.0,
+      "status": "GREEN",
+      "score": 11.620345313000977,
+      "technicalScore": 11.620345313000977,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DNA",
+      "exchange": "UPCOM",
+      "close": 23500.0,
+      "status": "GREEN",
+      "score": 11.36868513713319,
+      "technicalScore": 11.36868513713319,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TDP",
+      "exchange": "HOSE",
+      "close": 28800.0,
+      "status": "GREEN",
+      "score": 11.325008428050921,
+      "technicalScore": 11.325008428050921,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SIP",
+      "exchange": "HOSE",
+      "close": 51100.0,
+      "status": "GREEN",
+      "score": 11.06972841720051,
+      "technicalScore": 11.06972841720051,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "NTP",
+      "exchange": "HNX",
+      "close": 48800.0,
+      "status": "GREEN",
+      "score": 10.752676581841264,
+      "technicalScore": 10.752676581841264,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CTR",
+      "exchange": "HOSE",
+      "close": 76500.0,
+      "status": "GREEN",
+      "score": 10.678983850387903,
+      "technicalScore": 10.678983850387903,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TEG",
+      "exchange": "HOSE",
+      "close": 6000.0,
+      "status": "GREEN",
+      "score": 10.65855618918354,
+      "technicalScore": 10.65855618918354,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CQN",
+      "exchange": "UPCOM",
+      "close": 30300.0,
+      "status": "GREEN",
+      "score": 10.574345744084539,
+      "technicalScore": 10.574345744084539,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "XMC",
+      "exchange": "UPCOM",
+      "close": 10000.0,
+      "status": "GREEN",
+      "score": 10.276425756296625,
+      "technicalScore": 10.276425756296625,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DXP",
+      "exchange": "HNX",
+      "close": 14300.0,
+      "status": "GREEN",
+      "score": 10.083295540680654,
+      "technicalScore": 10.083295540680654,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ASM",
+      "exchange": "HOSE",
+      "close": 5950.0,
+      "status": "GREEN",
+      "score": 9.239942644015784,
+      "technicalScore": 9.239942644015784,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ORS",
+      "exchange": "HOSE",
+      "close": 14400.0,
+      "status": "GREEN",
+      "score": 9.197498811534404,
+      "technicalScore": 9.197498811534404,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MSR",
+      "exchange": "UPCOM",
+      "close": 38800.0,
+      "status": "GREEN",
+      "score": 9.138847543559878,
+      "technicalScore": 9.138847543559878,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BVH",
+      "exchange": "HOSE",
+      "close": 66800.0,
+      "status": "GREEN",
+      "score": 8.89434855203996,
+      "technicalScore": 8.89434855203996,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BMP",
+      "exchange": "HOSE",
+      "close": 148500.0,
+      "status": "GREEN",
+      "score": 8.807957543754142,
+      "technicalScore": 8.807957543754142,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "LSG",
+      "exchange": "UPCOM",
+      "close": 34500.0,
+      "status": "GREEN",
+      "score": 8.651669329745182,
+      "technicalScore": 8.651669329745182,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "AAA",
+      "exchange": "HOSE",
+      "close": 7340.0,
+      "status": "GREEN",
+      "score": 8.604578570940086,
+      "technicalScore": 8.604578570940086,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "LPB",
+      "exchange": "HOSE",
+      "close": 53800.0,
+      "status": "GREEN",
+      "score": 8.35472238054776,
+      "technicalScore": 8.35472238054776,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DHC",
+      "exchange": "HOSE",
+      "close": 34900.0,
+      "status": "GREEN",
+      "score": 7.858908157765809,
+      "technicalScore": 7.858908157765809,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "OPC",
+      "exchange": "HOSE",
+      "close": 21000.0,
+      "status": "GREEN",
+      "score": 7.734142477186813,
+      "technicalScore": 7.734142477186813,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TTA",
+      "exchange": "HOSE",
+      "close": 11300.0,
+      "status": "GREEN",
+      "score": 7.606390399066029,
+      "technicalScore": 7.606390399066029,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VLB",
+      "exchange": "UPCOM",
+      "close": 48400.0,
+      "status": "GREEN",
+      "score": 7.598287302127745,
+      "technicalScore": 7.598287302127745,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MBB",
+      "exchange": "HOSE",
+      "close": 20450.0,
+      "status": "GREEN",
+      "score": 7.531595382766116,
+      "technicalScore": 7.531595382766116,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SCL",
+      "exchange": "UPCOM",
+      "close": 23600.0,
+      "status": "GREEN",
+      "score": 7.525200935694293,
+      "technicalScore": 7.525200935694293,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SJD",
+      "exchange": "HOSE",
+      "close": 13900.0,
+      "status": "GREEN",
+      "score": 7.359639427959767,
+      "technicalScore": 7.359639427959767,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "OCB",
+      "exchange": "HOSE",
+      "close": 10950.0,
+      "status": "GREEN",
+      "score": 7.190480757582472,
+      "technicalScore": 7.190480757582472,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DGW",
+      "exchange": "HOSE",
+      "close": 41000.0,
+      "status": "GREEN",
+      "score": 6.78230836628984,
+      "technicalScore": 6.78230836628984,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ABW",
+      "exchange": "UPCOM",
+      "close": 14100.0,
+      "status": "GREEN",
+      "score": 6.520145290052755,
+      "technicalScore": 6.520145290052755,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SZL",
+      "exchange": "HOSE",
+      "close": 50800.0,
+      "status": "GREEN",
+      "score": 6.419817933384199,
+      "technicalScore": 6.419817933384199,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SBT",
+      "exchange": "HOSE",
+      "close": 21600.0,
+      "status": "GREEN",
+      "score": 6.41040833479896,
+      "technicalScore": 6.41040833479896,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "GMD",
+      "exchange": "HOSE",
+      "close": 77200.0,
+      "status": "GREEN",
+      "score": 6.17307480618327,
+      "technicalScore": 6.17307480618327,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DSE",
+      "exchange": "HOSE",
+      "close": 22750.0,
+      "status": "GREEN",
+      "score": 5.489011998787521,
+      "technicalScore": 5.489011998787521,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "HDB",
+      "exchange": "HOSE",
+      "close": 27200.0,
+      "status": "GREEN",
+      "score": 5.377375052983147,
+      "technicalScore": 5.377375052983147,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VTZ",
+      "exchange": "HNX",
+      "close": 20200.0,
+      "status": "GREEN",
+      "score": 5.256741871857234,
+      "technicalScore": 5.256741871857234,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SBG",
+      "exchange": "HOSE",
+      "close": 12400.0,
+      "status": "GREEN",
+      "score": 5.084254697871153,
+      "technicalScore": 5.084254697871153,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "HNM",
+      "exchange": "UPCOM",
+      "close": 8200.0,
+      "status": "GREEN",
+      "score": 5.002334422730611,
+      "technicalScore": 5.002334422730611,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ACB",
+      "exchange": "HOSE",
+      "close": 22750.0,
+      "status": "GREEN",
+      "score": 4.472497727765871,
+      "technicalScore": 4.472497727765871,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "LHG",
+      "exchange": "HOSE",
+      "close": 28850.0,
+      "status": "GREEN",
+      "score": 4.272408471007601,
+      "technicalScore": 4.272408471007601,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "HCM",
+      "exchange": "HOSE",
+      "close": 26150.0,
+      "status": "GREEN",
+      "score": 4.105041438501302,
+      "technicalScore": 4.105041438501302,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SP2",
+      "exchange": "UPCOM",
+      "close": 24500.0,
+      "status": "GREEN",
+      "score": 4.074764141633444,
+      "technicalScore": 4.074764141633444,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DHG",
+      "exchange": "HOSE",
+      "close": 95600.0,
+      "status": "GREEN",
+      "score": 3.898024985505938,
+      "technicalScore": 3.898024985505938,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "APH",
+      "exchange": "HOSE",
+      "close": 6060.0,
+      "status": "GREEN",
+      "score": 3.226164308181907,
+      "technicalScore": 3.226164308181907,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "TLG",
+      "exchange": "HOSE",
+      "close": 50700.0,
+      "status": "GREEN",
+      "score": 2.9110483250041983,
+      "technicalScore": 2.9110483250041983,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MST",
+      "exchange": "HNX",
+      "close": 10400.0,
+      "status": "GREEN",
+      "score": 2.8022998822188767,
+      "technicalScore": 2.8022998822188767,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PPH",
+      "exchange": "UPCOM",
+      "close": 26200.0,
+      "status": "GREEN",
+      "score": 2.754141442965888,
+      "technicalScore": 2.754141442965888,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MSB",
+      "exchange": "HOSE",
+      "close": 16050.0,
+      "status": "GREEN",
+      "score": 2.5873889686905205,
+      "technicalScore": 2.5873889686905205,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "PHP",
+      "exchange": "UPCOM",
+      "close": 42400.0,
+      "status": "GREEN",
+      "score": 2.4454559046986555,
+      "technicalScore": 2.4454559046986555,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VEA",
+      "exchange": "UPCOM",
+      "close": 35200.0,
+      "status": "GREEN",
+      "score": 2.421222461974778,
+      "technicalScore": 2.421222461974778,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "STB",
+      "exchange": "HOSE",
+      "close": 74100.0,
+      "status": "GREEN",
+      "score": 2.3987572153093977,
+      "technicalScore": 2.3987572153093977,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "MCP",
+      "exchange": "HOSE",
+      "close": 27700.0,
+      "status": "GREEN",
+      "score": 2.1917374929071567,
+      "technicalScore": 2.1917374929071567,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VNM",
+      "exchange": "HOSE",
+      "close": 61800.0,
+      "status": "GREEN",
+      "score": 2.062573908898404,
+      "technicalScore": 2.062573908898404,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "FRT",
+      "exchange": "HOSE",
+      "close": 148000.0,
+      "status": "GREEN",
+      "score": 1.860197385042311,
+      "technicalScore": 1.860197385042311,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BWE",
+      "exchange": "HOSE",
+      "close": 44400.0,
+      "status": "GREEN",
+      "score": 1.8269981664013462,
+      "technicalScore": 1.8269981664013462,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VSH",
+      "exchange": "HOSE",
+      "close": 43600.0,
+      "status": "GREEN",
+      "score": 1.7603720687631723,
+      "technicalScore": 1.7603720687631723,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "DVP",
+      "exchange": "HOSE",
+      "close": 77800.0,
+      "status": "GREEN",
+      "score": 1.753967132604784,
+      "technicalScore": 1.753967132604784,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "BAF",
+      "exchange": "HOSE",
+      "close": 31450.0,
+      "status": "GREEN",
+      "score": 1.4960106382978744,
+      "technicalScore": 1.4960106382978744,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "SPV",
+      "exchange": "UPCOM",
+      "close": 35000.0,
+      "status": "GREEN",
+      "score": 0.7590670584359098,
+      "technicalScore": 0.7590670584359098,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "KDC",
+      "exchange": "HOSE",
+      "close": 51800.0,
+      "status": "GREEN",
+      "score": 0.3347716113673549,
+      "technicalScore": 0.3347716113673549,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "CTF",
+      "exchange": "HOSE",
+      "close": 20750.0,
+      "status": "GREEN",
+      "score": 0.20923225710459678,
+      "technicalScore": 0.20923225710459678,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "VGP",
+      "exchange": "HNX",
+      "close": 27700.0,
+      "status": "GREEN",
+      "score": 0.0,
+      "technicalScore": 0.0,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "KHD",
+      "exchange": "UPCOM",
+      "close": 22000.0,
+      "status": "GREEN",
+      "score": 0.0,
+      "technicalScore": 0.0,
+      "independentStressSignals": 0
+    },
+    {
+      "symbol": "ODE",
+      "exchange": "UPCOM",
+      "close": 47200.0,
+      "status": "GREEN",
+      "score": 0.0,
+      "technicalScore": 0.0,
+      "independentStressSignals": 0
+    }
+  ],
+  "pooledScores": [
+    {
+      "symbol": "AAA",
+      "exchange": "HOSE",
+      "close": 7340.0,
+      "riskPercentile": 0.39410259862663255,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.12329573426366632,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ABS",
+      "exchange": "HOSE",
+      "close": 3100.0,
+      "riskPercentile": 0.6461559175979534,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15293320748822553,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ACB",
+      "exchange": "HOSE",
+      "close": 22750.0,
+      "riskPercentile": 0.6741618419281001,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15716681840498126,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ACC",
+      "exchange": "HOSE",
+      "close": 4700.0,
+      "riskPercentile": 0.9571832503029487,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.2539275737248253,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ADS",
+      "exchange": "HOSE",
+      "close": 8180.0,
+      "riskPercentile": 0.59956913962569,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1459367701632908,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "AGG",
+      "exchange": "HOSE",
+      "close": 11350.0,
+      "riskPercentile": 0.4673488622593241,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.13060783636525344,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "AGR",
+      "exchange": "HOSE",
+      "close": 13250.0,
+      "riskPercentile": 0.6884340918271172,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15976106654234315,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ANV",
+      "exchange": "HOSE",
+      "close": 18050.0,
+      "riskPercentile": 0.7474081055607917,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17000820012516307,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "APG",
+      "exchange": "HOSE",
+      "close": 4950.0,
+      "riskPercentile": 0.7553520937121314,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17154530828271022,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "APH",
+      "exchange": "HOSE",
+      "close": 6060.0,
+      "riskPercentile": 0.4833714824289754,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.1321879238545477,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ASM",
+      "exchange": "HOSE",
+      "close": 5950.0,
+      "riskPercentile": 0.36151878281944255,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.1201287711436926,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ASP",
+      "exchange": "HOSE",
+      "close": 11500.0,
+      "riskPercentile": 0.9582604012387236,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.25560193412420407,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BAF",
+      "exchange": "HOSE",
+      "close": 31450.0,
+      "riskPercentile": 0.5979534132220278,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14573043400168084,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BCE",
+      "exchange": "HOSE",
+      "close": 5790.0,
+      "riskPercentile": 0.9064225124545577,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.21564715780188315,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BCM",
+      "exchange": "HOSE",
+      "close": 44000.0,
+      "riskPercentile": 0.8521610340648983,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.195142603220515,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BFC",
+      "exchange": "HOSE",
+      "close": 48300.0,
+      "riskPercentile": 0.7188636057627575,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16467703356776084,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BIC",
+      "exchange": "HOSE",
+      "close": 22000.0,
+      "riskPercentile": 0.40500875185135315,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12437207986170457,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BID",
+      "exchange": "HOSE",
+      "close": 39250.0,
+      "riskPercentile": 0.7760872492257977,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17579071280801425,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BMI",
+      "exchange": "HOSE",
+      "close": 13550.0,
+      "riskPercentile": 0.27898209236569277,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.11216952474356179,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BMP",
+      "exchange": "HOSE",
+      "close": 148500.0,
+      "riskPercentile": 0.429110004039316,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12689003924304645,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BSI",
+      "exchange": "HOSE",
+      "close": 29000.0,
+      "riskPercentile": 0.8215968762622863,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18681874519134556,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BSR",
+      "exchange": "HOSE",
+      "close": 26500.0,
+      "riskPercentile": 0.9543557290965397,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.2517967888943906,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BVH",
+      "exchange": "HOSE",
+      "close": 66800.0,
+      "riskPercentile": 0.8257708361384138,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18771243978601762,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "BWE",
+      "exchange": "HOSE",
+      "close": 44400.0,
+      "riskPercentile": 0.2966204389390063,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.11362992833448073,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CDC",
+      "exchange": "HOSE",
+      "close": 18800.0,
+      "riskPercentile": 0.8071899824962973,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18309822529642694,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CII",
+      "exchange": "HOSE",
+      "close": 14200.0,
+      "riskPercentile": 0.8720883263767335,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20203261506116443,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CMG",
+      "exchange": "HOSE",
+      "close": 24700.0,
+      "riskPercentile": 0.5737175171670931,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1426899901632458,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CRC",
+      "exchange": "HOSE",
+      "close": 5350.0,
+      "riskPercentile": 0.9629729365827386,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.2610454664795686,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CRE",
+      "exchange": "HOSE",
+      "close": 7120.0,
+      "riskPercentile": 0.5597145550020196,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14114757832050184,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CSM",
+      "exchange": "HOSE",
+      "close": 13950.0,
+      "riskPercentile": 0.6238050356806247,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14925241750970045,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CSV",
+      "exchange": "HOSE",
+      "close": 22150.0,
+      "riskPercentile": 0.727076881648041,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16597995706761237,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CTD",
+      "exchange": "HOSE",
+      "close": 63500.0,
+      "riskPercentile": 0.7533324357075535,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17121845367454847,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CTF",
+      "exchange": "HOSE",
+      "close": 20750.0,
+      "riskPercentile": 0.639827655850276,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15194388819845683,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CTG",
+      "exchange": "HOSE",
+      "close": 32200.0,
+      "riskPercentile": 0.8051703244917194,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18271728438702195,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CTI",
+      "exchange": "HOSE",
+      "close": 19500.0,
+      "riskPercentile": 0.3383600377002828,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11799447065425409,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CTR",
+      "exchange": "HOSE",
+      "close": 76500.0,
+      "riskPercentile": 0.8094789282348189,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18362434754716414,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "CTS",
+      "exchange": "HOSE",
+      "close": 22800.0,
+      "riskPercentile": 0.9138279251380099,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.21970616487776776,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "D2D",
+      "exchange": "HOSE",
+      "close": 28200.0,
+      "riskPercentile": 0.6554463444190117,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15438029442753665,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DBC",
+      "exchange": "HOSE",
+      "close": 16700.0,
+      "riskPercentile": 0.733674431129662,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16720826744848777,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DBD",
+      "exchange": "HOSE",
+      "close": 49400.0,
+      "riskPercentile": 0.28261747677393295,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.11245358646542089,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DC4",
+      "exchange": "HOSE",
+      "close": 6900.0,
+      "riskPercentile": 0.4907768951124276,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.13309439864685288,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DCL",
+      "exchange": "HOSE",
+      "close": 38600.0,
+      "riskPercentile": 0.818903998922849,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18583704520569388,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DCM",
+      "exchange": "HOSE",
+      "close": 31350.0,
+      "riskPercentile": 0.9294466137067456,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.22934581583728542,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DGC",
+      "exchange": "HOSE",
+      "close": 43800.0,
+      "riskPercentile": 0.8089403527669314,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1834532059011875,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DGW",
+      "exchange": "HOSE",
+      "close": 41000.0,
+      "riskPercentile": 0.6515416722768278,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15378795801044431,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DHA",
+      "exchange": "HOSE",
+      "close": 49400.0,
+      "riskPercentile": 0.38548539114043356,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.12249283742250064,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DHC",
+      "exchange": "HOSE",
+      "close": 34900.0,
+      "riskPercentile": 0.5964723306853373,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14554219036693358,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DHG",
+      "exchange": "HOSE",
+      "close": 95600.0,
+      "riskPercentile": 0.16264979130200619,
+      "riskBucket": 2,
+      "empiricalBucketEventRate": 0.05787348586810229,
+      "auditCalibratedProbability": 0.10093242730450687,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DIG",
+      "exchange": "HOSE",
+      "close": 10950.0,
+      "riskPercentile": 0.8890534536151878,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20869848107563552,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DLG",
+      "exchange": "HOSE",
+      "close": 2330.0,
+      "riskPercentile": 0.6843947758179615,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15886729578318812,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DPG",
+      "exchange": "HOSE",
+      "close": 30650.0,
+      "riskPercentile": 0.8999596068399084,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.2132589947830687,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DPM",
+      "exchange": "HOSE",
+      "close": 22300.0,
+      "riskPercentile": 0.8078632018311566,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18333160633542053,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DPR",
+      "exchange": "HOSE",
+      "close": 36500.0,
+      "riskPercentile": 0.5741214487680086,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14274397988503623,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DRC",
+      "exchange": "HOSE",
+      "close": 10750.0,
+      "riskPercentile": 0.7389255419415646,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.168239418408129,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DSE",
+      "exchange": "HOSE",
+      "close": 22750.0,
+      "riskPercentile": 0.42722498990171,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12660457910973877,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DVP",
+      "exchange": "HOSE",
+      "close": 77800.0,
+      "riskPercentile": 0.42991786724114717,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12701578654741244,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DXG",
+      "exchange": "HOSE",
+      "close": 11150.0,
+      "riskPercentile": 0.8552578430052511,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19635882382573175,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "DXS",
+      "exchange": "HOSE",
+      "close": 6030.0,
+      "riskPercentile": 0.8909384677527938,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20925740169363174,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "EIB",
+      "exchange": "HOSE",
+      "close": 18200.0,
+      "riskPercentile": 0.8504106637942642,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19461749707994208,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ELC",
+      "exchange": "HOSE",
+      "close": 15800.0,
+      "riskPercentile": 0.5241685741214488,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.13712398701981435,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "EVF",
+      "exchange": "HOSE",
+      "close": 12500.0,
+      "riskPercentile": 0.601454153763296,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1462265501998623,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "EVG",
+      "exchange": "HOSE",
+      "close": 4490.0,
+      "riskPercentile": 0.7273461693819846,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1660324038396954,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FCN",
+      "exchange": "HOSE",
+      "close": 11350.0,
+      "riskPercentile": 0.6806247475427494,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1583061841587342,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FIR",
+      "exchange": "HOSE",
+      "close": 4550.0,
+      "riskPercentile": 0.5356133028140568,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1383485418538992,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FIT",
+      "exchange": "HOSE",
+      "close": 3130.0,
+      "riskPercentile": 0.7451191598222701,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16933361384017848,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FMC",
+      "exchange": "HOSE",
+      "close": 34250.0,
+      "riskPercentile": 0.14447286926080516,
+      "riskBucket": 2,
+      "empiricalBucketEventRate": 0.05787348586810229,
+      "auditCalibratedProbability": 0.0992047498437768,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FPT",
+      "exchange": "HOSE",
+      "close": 70800.0,
+      "riskPercentile": 0.84287060724384,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1924360048541262,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FRT",
+      "exchange": "HOSE",
+      "close": 148000.0,
+      "riskPercentile": 0.8866298640096943,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.2072528159892216,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "FTS",
+      "exchange": "HOSE",
+      "close": 22450.0,
+      "riskPercentile": 0.8517571024639827,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1949696049917137,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GAS",
+      "exchange": "HOSE",
+      "close": 80000.0,
+      "riskPercentile": 0.8411202369732059,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19182856822056446,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GEE",
+      "exchange": "HOSE",
+      "close": 75300.0,
+      "riskPercentile": 0.9767066110138684,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.28172609955138794,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GEG",
+      "exchange": "HOSE",
+      "close": 12350.0,
+      "riskPercentile": 0.7088999596068399,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1630825144653955,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GEX",
+      "exchange": "HOSE",
+      "close": 26150.0,
+      "riskPercentile": 0.9811498586239397,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.29106820177929066,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GIL",
+      "exchange": "HOSE",
+      "close": 8690.0,
+      "riskPercentile": 0.8835330550693415,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20608490350632666,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GMD",
+      "exchange": "HOSE",
+      "close": 77200.0,
+      "riskPercentile": 0.613976033391679,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14780409995511917,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "GVR",
+      "exchange": "HOSE",
+      "close": 32250.0,
+      "riskPercentile": 0.8535074727346169,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1957280037282955,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HAG",
+      "exchange": "HOSE",
+      "close": 14150.0,
+      "riskPercentile": 0.4474215699474889,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12856527702312265,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HAH",
+      "exchange": "HOSE",
+      "close": 46350.0,
+      "riskPercentile": 0.6893765988959203,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15997163871083112,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HAX",
+      "exchange": "HOSE",
+      "close": 9110.0,
+      "riskPercentile": 0.40972128719536827,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12481554576658123,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HCM",
+      "exchange": "HOSE",
+      "close": 26150.0,
+      "riskPercentile": 0.7284233203177595,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1664542156025461,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HDB",
+      "exchange": "HOSE",
+      "close": 27200.0,
+      "riskPercentile": 0.7041874242628249,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16224646295151518,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HDC",
+      "exchange": "HOSE",
+      "close": 11950.0,
+      "riskPercentile": 0.8590278712804632,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19763842093150644,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HDG",
+      "exchange": "HOSE",
+      "close": 16550.0,
+      "riskPercentile": 0.8427359633768682,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1921677878413379,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HHP",
+      "exchange": "HOSE",
+      "close": 15350.0,
+      "riskPercentile": 0.7094385350747273,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16321334286947117,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HHS",
+      "exchange": "HOSE",
+      "close": 9990.0,
+      "riskPercentile": 0.7133432072169112,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16377316448293486,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HHV",
+      "exchange": "HOSE",
+      "close": 10300.0,
+      "riskPercentile": 0.5653695974148377,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1417852478763948,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HID",
+      "exchange": "HOSE",
+      "close": 3550.0,
+      "riskPercentile": 0.6431937525245726,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1525829357757114,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HII",
+      "exchange": "HOSE",
+      "close": 8800.0,
+      "riskPercentile": 0.9919213679816884,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.3297640807933298,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HPG",
+      "exchange": "HOSE",
+      "close": 22100.0,
+      "riskPercentile": 0.8156725461155244,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1849565836022681,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HPX",
+      "exchange": "HOSE",
+      "close": 4310.0,
+      "riskPercentile": 0.4136259593375522,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12515356104689773,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HQC",
+      "exchange": "HOSE",
+      "close": 2300.0,
+      "riskPercentile": 0.7492931196983977,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17041748356765163,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HSG",
+      "exchange": "HOSE",
+      "close": 10900.0,
+      "riskPercentile": 0.7818769355055877,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17727486622571736,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HSL",
+      "exchange": "HOSE",
+      "close": 8560.0,
+      "riskPercentile": 0.9437188636057627,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.24078862033933762,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HT1",
+      "exchange": "HOSE",
+      "close": 13300.0,
+      "riskPercentile": 0.38117678739733407,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.1221108110254488,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HTN",
+      "exchange": "HOSE",
+      "close": 7850.0,
+      "riskPercentile": 0.429110004039316,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12695103788096251,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HVH",
+      "exchange": "HOSE",
+      "close": 10350.0,
+      "riskPercentile": 0.6749697051299314,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15728257839933496,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "HVN",
+      "exchange": "HOSE",
+      "close": 23700.0,
+      "riskPercentile": 0.8393698667025717,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19144273315136842,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "IDI",
+      "exchange": "HOSE",
+      "close": 4970.0,
+      "riskPercentile": 0.5716978591625151,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1424866580676095,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "IJC",
+      "exchange": "HOSE",
+      "close": 7950.0,
+      "riskPercentile": 0.7910327184596742,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17987942200269327,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "KBC",
+      "exchange": "HOSE",
+      "close": 28000.0,
+      "riskPercentile": 0.639827655850276,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15198584981198074,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "KDC",
+      "exchange": "HOSE",
+      "close": 51800.0,
+      "riskPercentile": 0.3088730308334455,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11514797731614915,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "KDH",
+      "exchange": "HOSE",
+      "close": 18150.0,
+      "riskPercentile": 0.8803016022620169,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20498395123632468,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "KHG",
+      "exchange": "HOSE",
+      "close": 4810.0,
+      "riskPercentile": 0.31385485391140433,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11568307091710887,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "KOS",
+      "exchange": "HOSE",
+      "close": 35000.0,
+      "riskPercentile": 0.3348592971590144,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11771196537402817,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "KSB",
+      "exchange": "HOSE",
+      "close": 14250.0,
+      "riskPercentile": 0.5101656119563754,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.13537360099047652,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "LCG",
+      "exchange": "HOSE",
+      "close": 7400.0,
+      "riskPercentile": 0.7923791571293928,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.18035281104709816,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "LDG",
+      "exchange": "HOSE",
+      "close": 2920.0,
+      "riskPercentile": 0.7386562542076208,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16813759199467687,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "LHG",
+      "exchange": "HOSE",
+      "close": 28850.0,
+      "riskPercentile": 0.252861182173152,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.10961872634491267,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "LPB",
+      "exchange": "HOSE",
+      "close": 53800.0,
+      "riskPercentile": 0.7277501009829003,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16616000480153434,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MBB",
+      "exchange": "HOSE",
+      "close": 20450.0,
+      "riskPercentile": 0.7926484448633365,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1804881677173979,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MCM",
+      "exchange": "HOSE",
+      "close": 26200.0,
+      "riskPercentile": 0.3550558772047933,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11950564585389437,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MCP",
+      "exchange": "HOSE",
+      "close": 27700.0,
+      "riskPercentile": 0.13679816884340917,
+      "riskBucket": 2,
+      "empiricalBucketEventRate": 0.05787348586810229,
+      "auditCalibratedProbability": 0.098396676998269,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MIG",
+      "exchange": "HOSE",
+      "close": 16700.0,
+      "riskPercentile": 0.3978726269018446,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.12360248573971083,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MSB",
+      "exchange": "HOSE",
+      "close": 16050.0,
+      "riskPercentile": 0.5510973475158206,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14011756301471287,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MSH",
+      "exchange": "HOSE",
+      "close": 31350.0,
+      "riskPercentile": 0.4958933620573583,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.1337147613622053,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MSN",
+      "exchange": "HOSE",
+      "close": 67200.0,
+      "riskPercentile": 0.8463713477851084,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19377299907114354,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "MWG",
+      "exchange": "HOSE",
+      "close": 74000.0,
+      "riskPercentile": 0.7445805843543827,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16930427038385762,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NAB",
+      "exchange": "HOSE",
+      "close": 11900.0,
+      "riskPercentile": 0.6002423589605493,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14602290887726704,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NAF",
+      "exchange": "HOSE",
+      "close": 48200.0,
+      "riskPercentile": 0.6555809882859835,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15440030856347842,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NBB",
+      "exchange": "HOSE",
+      "close": 17250.0,
+      "riskPercentile": 0.11525515012791167,
+      "riskBucket": 2,
+      "empiricalBucketEventRate": 0.05787348586810229,
+      "auditCalibratedProbability": 0.09594777682608997,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NCT",
+      "exchange": "HOSE",
+      "close": 82500.0,
+      "riskPercentile": 0.6957048606435977,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.16086214955755748,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NHA",
+      "exchange": "HOSE",
+      "close": 8400.0,
+      "riskPercentile": 0.7330012117948027,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16704509828399625,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NKG",
+      "exchange": "HOSE",
+      "close": 11200.0,
+      "riskPercentile": 0.7157667968224047,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1641716056339905,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NLG",
+      "exchange": "HOSE",
+      "close": 22650.0,
+      "riskPercentile": 0.8252322606705265,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18753575620056595,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NNC",
+      "exchange": "HOSE",
+      "close": 40300.0,
+      "riskPercentile": 0.557425609263498,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14084920749266952,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NT2",
+      "exchange": "HOSE",
+      "close": 21750.0,
+      "riskPercentile": 0.563215295543288,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14155774313789213,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NTL",
+      "exchange": "HOSE",
+      "close": 13600.0,
+      "riskPercentile": 0.7167093038912078,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16433499284518302,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "NVL",
+      "exchange": "HOSE",
+      "close": 13550.0,
+      "riskPercentile": 0.8903998922849065,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20912074625883031,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "OCB",
+      "exchange": "HOSE",
+      "close": 10950.0,
+      "riskPercentile": 0.5754678874377273,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14295986510543413,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "ORS",
+      "exchange": "HOSE",
+      "close": 14400.0,
+      "riskPercentile": 0.6251514743503434,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14956712049914914,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PAC",
+      "exchange": "HOSE",
+      "close": 16050.0,
+      "riskPercentile": 0.8031506664871415,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18230649947049948,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PAN",
+      "exchange": "HOSE",
+      "close": 20700.0,
+      "riskPercentile": 0.8913423993537094,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20932735777814906,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PC1",
+      "exchange": "HOSE",
+      "close": 20750.0,
+      "riskPercentile": 0.6574660024235897,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1547206134450008,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PDR",
+      "exchange": "HOSE",
+      "close": 12100.0,
+      "riskPercentile": 0.9442574390736502,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.24116466659306945,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PET",
+      "exchange": "HOSE",
+      "close": 40350.0,
+      "riskPercentile": 0.6098020735155514,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1472746579110722,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PHR",
+      "exchange": "HOSE",
+      "close": 58500.0,
+      "riskPercentile": 0.751985997037835,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1709448659675178,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PLX",
+      "exchange": "HOSE",
+      "close": 36650.0,
+      "riskPercentile": 0.879224451326242,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.204500599652908,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PNJ",
+      "exchange": "HOSE",
+      "close": 35050.0,
+      "riskPercentile": 0.9935370943853508,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.34185396894359843,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "POW",
+      "exchange": "HOSE",
+      "close": 13750.0,
+      "riskPercentile": 0.6273057762218931,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14993496495014433,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PPC",
+      "exchange": "HOSE",
+      "close": 8960.0,
+      "riskPercentile": 0.2416857412144877,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.10864515376228356,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PTB",
+      "exchange": "HOSE",
+      "close": 33650.0,
+      "riskPercentile": 0.6295947219604147,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1502619664011509,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PVD",
+      "exchange": "HOSE",
+      "close": 18700.0,
+      "riskPercentile": 0.5991652080247745,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14589405413289508,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PVP",
+      "exchange": "HOSE",
+      "close": 18100.0,
+      "riskPercentile": 0.5741214487680086,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14273905907911125,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "PVT",
+      "exchange": "HOSE",
+      "close": 20100.0,
+      "riskPercentile": 0.7451191598222701,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1693595948249903,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "QCG",
+      "exchange": "HOSE",
+      "close": 10150.0,
+      "riskPercentile": 0.7429648579507203,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1690631264407174,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "REE",
+      "exchange": "HOSE",
+      "close": 47150.0,
+      "riskPercentile": 0.7210179076343073,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1650683920926454,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "RYG",
+      "exchange": "HOSE",
+      "close": 9200.0,
+      "riskPercentile": 0.3504779857277501,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11910732024562236,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SAB",
+      "exchange": "HOSE",
+      "close": 46300.0,
+      "riskPercentile": 0.4028544499798034,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12412201457170498,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SBG",
+      "exchange": "HOSE",
+      "close": 12400.0,
+      "riskPercentile": 0.2847717786454827,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.11262031298440775,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SBT",
+      "exchange": "HOSE",
+      "close": 21600.0,
+      "riskPercentile": 0.3809074996633903,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.12209173214897245,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SCR",
+      "exchange": "HOSE",
+      "close": 4630.0,
+      "riskPercentile": 0.5788339841120237,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14344491626229508,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SCS",
+      "exchange": "HOSE",
+      "close": 45150.0,
+      "riskPercentile": 0.5979534132220278,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14569701278194652,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SGR",
+      "exchange": "HOSE",
+      "close": 12500.0,
+      "riskPercentile": 0.6247475427494278,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14949335045561424,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SHB",
+      "exchange": "HOSE",
+      "close": 11850.0,
+      "riskPercentile": 0.8685875858354652,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20092992190966522,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SHI",
+      "exchange": "HOSE",
+      "close": 14000.0,
+      "riskPercentile": 0.18149993267806652,
+      "riskBucket": 2,
+      "empiricalBucketEventRate": 0.05787348586810229,
+      "auditCalibratedProbability": 0.10260308961418353,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SIP",
+      "exchange": "HOSE",
+      "close": 51100.0,
+      "riskPercentile": 0.3407836273057762,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11824449610683949,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SJD",
+      "exchange": "HOSE",
+      "close": 13900.0,
+      "riskPercentile": 0.07890130604550963,
+      "riskBucket": 1,
+      "empiricalBucketEventRate": 0.05114401076716016,
+      "auditCalibratedProbability": 0.09136079360193673,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SJS",
+      "exchange": "HOSE",
+      "close": 47350.0,
+      "riskPercentile": 0.660024235896055,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15514159669526684,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SMC",
+      "exchange": "HOSE",
+      "close": 10600.0,
+      "riskPercentile": 0.5571563215295543,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1408128804212262,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SSB",
+      "exchange": "HOSE",
+      "close": 15450.0,
+      "riskPercentile": 0.5570216776625825,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.14080443221475147,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SSI",
+      "exchange": "HOSE",
+      "close": 25300.0,
+      "riskPercentile": 0.841928100175037,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1920094327512031,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "STB",
+      "exchange": "HOSE",
+      "close": 74100.0,
+      "riskPercentile": 0.6355190521071765,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15107174304905277,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SZC",
+      "exchange": "HOSE",
+      "close": 20150.0,
+      "riskPercentile": 0.8337148242897536,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18958184521010038,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "SZL",
+      "exchange": "HOSE",
+      "close": 50800.0,
+      "riskPercentile": 0.45590413356671605,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12935871649216427,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TAL",
+      "exchange": "HOSE",
+      "close": 24750.0,
+      "riskPercentile": 0.9478928234818904,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.24419690869995236,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TCB",
+      "exchange": "HOSE",
+      "close": 31500.0,
+      "riskPercentile": 0.8077285579641847,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.1832941116751621,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TCH",
+      "exchange": "HOSE",
+      "close": 12200.0,
+      "riskPercentile": 0.8930927696243436,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.2101728577560944,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TCM",
+      "exchange": "HOSE",
+      "close": 16650.0,
+      "riskPercentile": 0.9120775548673757,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.21837907314710703,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TCO",
+      "exchange": "HOSE",
+      "close": 10350.0,
+      "riskPercentile": 0.9478928234818904,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.24417773134808493,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TDC",
+      "exchange": "HOSE",
+      "close": 7600.0,
+      "riskPercentile": 0.8166150531843275,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18517175294468713,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TDM",
+      "exchange": "HOSE",
+      "close": 58100.0,
+      "riskPercentile": 0.2839639154436515,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.11256227617310284,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TDP",
+      "exchange": "HOSE",
+      "close": 28800.0,
+      "riskPercentile": 0.23980072707688166,
+      "riskBucket": 3,
+      "empiricalBucketEventRate": 0.06864064602960969,
+      "auditCalibratedProbability": 0.10839330914552785,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "THG",
+      "exchange": "HOSE",
+      "close": 28150.0,
+      "riskPercentile": 0.7502356267672008,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17065570607566694,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TLD",
+      "exchange": "HOSE",
+      "close": 8350.0,
+      "riskPercentile": 0.192540729769759,
+      "riskBucket": 2,
+      "empiricalBucketEventRate": 0.05787348586810229,
+      "auditCalibratedProbability": 0.10382534877538496,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TLG",
+      "exchange": "HOSE",
+      "close": 50700.0,
+      "riskPercentile": 0.3405143395718325,
+      "riskBucket": 4,
+      "empiricalBucketEventRate": 0.08209959623149395,
+      "auditCalibratedProbability": 0.11820538756306619,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TNH",
+      "exchange": "HOSE",
+      "close": 8390.0,
+      "riskPercentile": 0.6368654907768951,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15136216639831818,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TNI",
+      "exchange": "HOSE",
+      "close": 6000.0,
+      "riskPercentile": 0.9410259862663256,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.23823575514708883,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TPB",
+      "exchange": "HOSE",
+      "close": 14700.0,
+      "riskPercentile": 0.7083613841389524,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16301414505914982,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TRC",
+      "exchange": "HOSE",
+      "close": 83300.0,
+      "riskPercentile": 0.4280328531035411,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12678624848725842,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TTA",
+      "exchange": "HOSE",
+      "close": 11300.0,
+      "riskPercentile": 0.49400834791975223,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.1335126395648684,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TTF",
+      "exchange": "HOSE",
+      "close": 1850.0,
+      "riskPercentile": 0.7090346034738118,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16309819777005663,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TV2",
+      "exchange": "HOSE",
+      "close": 26700.0,
+      "riskPercentile": 0.772047933216642,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.17499535610941144,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "TVS",
+      "exchange": "HOSE",
+      "close": 14000.0,
+      "riskPercentile": 0.6998788205197253,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.16165191831596923,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VAB",
+      "exchange": "HOSE",
+      "close": 10200.0,
+      "riskPercentile": 0.5073380907499664,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1348980193814533,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VCB",
+      "exchange": "HOSE",
+      "close": 59700.0,
+      "riskPercentile": 0.7918405816615053,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1802264976321036,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VCG",
+      "exchange": "HOSE",
+      "close": 16150.0,
+      "riskPercentile": 0.7841658812441094,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1779787669315434,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VCI",
+      "exchange": "HOSE",
+      "close": 22050.0,
+      "riskPercentile": 0.8331762488218661,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.18923542865160842,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VDS",
+      "exchange": "HOSE",
+      "close": 12150.0,
+      "riskPercentile": 0.8866298640096943,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20725850222153133,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VGC",
+      "exchange": "HOSE",
+      "close": 40800.0,
+      "riskPercentile": 0.6196310758044971,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.14842393750369073,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VHC",
+      "exchange": "HOSE",
+      "close": 53100.0,
+      "riskPercentile": 0.547865894708496,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.13977367009917366,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VHM",
+      "exchange": "HOSE",
+      "close": 73800.0,
+      "riskPercentile": 0.925272653830618,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.22701464978201716,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VIB",
+      "exchange": "HOSE",
+      "close": 14800.0,
+      "riskPercentile": 0.6604281674969705,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1552449557899554,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VIC",
+      "exchange": "HOSE",
+      "close": 215500.0,
+      "riskPercentile": 0.8758583546519456,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.20347869251131062,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VIP",
+      "exchange": "HOSE",
+      "close": 9820.0,
+      "riskPercentile": 0.44863336475023563,
+      "riskBucket": 5,
+      "empiricalBucketEventRate": 0.08882907133243607,
+      "auditCalibratedProbability": 0.12866628034973004,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VIX",
+      "exchange": "HOSE",
+      "close": 14300.0,
+      "riskPercentile": 0.9697051299313316,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.271057477711001,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VJC",
+      "exchange": "HOSE",
+      "close": 127700.0,
+      "riskPercentile": 0.6732193348592972,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.1570029906878337,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VND",
+      "exchange": "HOSE",
+      "close": 16800.0,
+      "riskPercentile": 0.7429648579507203,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16905814614759082,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VNM",
+      "exchange": "HOSE",
+      "close": 61800.0,
+      "riskPercentile": 0.7413491315470581,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16873637646367182,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VOS",
+      "exchange": "HOSE",
+      "close": 11150.0,
+      "riskPercentile": 0.5784300525111081,
+      "riskBucket": 6,
+      "empiricalBucketEventRate": 0.1009421265141319,
+      "auditCalibratedProbability": 0.1433910932884067,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VPB",
+      "exchange": "HOSE",
+      "close": 25700.0,
+      "riskPercentile": 0.7522552847717786,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.1710107918734829,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VPI",
+      "exchange": "HOSE",
+      "close": 59700.0,
+      "riskPercentile": 0.6581392217584489,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15479606458204787,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VPL",
+      "exchange": "HOSE",
+      "close": 78400.0,
+      "riskPercentile": 0.8463713477851084,
+      "riskBucket": 9,
+      "empiricalBucketEventRate": 0.11725067385444744,
+      "auditCalibratedProbability": 0.19376130879820316,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VRE",
+      "exchange": "HOSE",
+      "close": 25450.0,
+      "riskPercentile": 0.9489699744176653,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.24554942045146222,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VSC",
+      "exchange": "HOSE",
+      "close": 14850.0,
+      "riskPercentile": 0.9330819981149858,
+      "riskBucket": 10,
+      "empiricalBucketEventRate": 0.22776280323450135,
+      "auditCalibratedProbability": 0.23232745815589184,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VTO",
+      "exchange": "HOSE",
+      "close": 10650.0,
+      "riskPercentile": 0.6965127238454288,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.16101970778657548,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "VTP",
+      "exchange": "HOSE",
+      "close": 55000.0,
+      "riskPercentile": 0.7207486199003635,
+      "riskBucket": 8,
+      "empiricalBucketEventRate": 0.1280323450134771,
+      "auditCalibratedProbability": 0.16497311688871205,
+      "probabilityUsable": false
+    },
+    {
+      "symbol": "YEG",
+      "exchange": "HOSE",
+      "close": 7750.0,
+      "riskPercentile": 0.6854719267537364,
+      "riskBucket": 7,
+      "empiricalBucketEventRate": 0.11036339165545088,
+      "auditCalibratedProbability": 0.15909323322739743,
+      "probabilityUsable": false
+    }
+  ],
+  "closeTape": [
+    {
+      "symbol": "DHT",
+      "exchange": "HNX",
+      "close": 56300.0
+    },
+    {
+      "symbol": "AMV",
+      "exchange": "HNX",
+      "close": 1200.0
+    },
+    {
+      "symbol": "CRC",
+      "exchange": "HOSE",
+      "close": 5350.0
+    },
+    {
+      "symbol": "AAH",
+      "exchange": "UPCOM",
+      "close": 1900.0
+    },
+    {
+      "symbol": "NRC",
+      "exchange": "HNX",
+      "close": 4700.0
+    },
+    {
+      "symbol": "ACC",
+      "exchange": "HOSE",
+      "close": 4700.0
+    },
+    {
+      "symbol": "TOS",
+      "exchange": "UPCOM",
+      "close": 99100.0
+    },
+    {
+      "symbol": "THG",
+      "exchange": "HOSE",
+      "close": 28150.0
+    },
+    {
+      "symbol": "HBC",
+      "exchange": "UPCOM",
+      "close": 4200.0
+    },
+    {
+      "symbol": "GIL",
+      "exchange": "HOSE",
+      "close": 8690.0
+    },
+    {
+      "symbol": "TCM",
+      "exchange": "HOSE",
+      "close": 16650.0
+    },
+    {
+      "symbol": "HID",
+      "exchange": "HOSE",
+      "close": 3550.0
+    },
+    {
+      "symbol": "TTH",
+      "exchange": "HNX",
+      "close": 2000.0
+    },
+    {
+      "symbol": "IDJ",
+      "exchange": "HNX",
+      "close": 3700.0
+    },
+    {
+      "symbol": "HDG",
+      "exchange": "HOSE",
+      "close": 16550.0
+    },
+    {
+      "symbol": "VMS",
+      "exchange": "HNX",
+      "close": 40000.0
+    },
+    {
+      "symbol": "BCE",
+      "exchange": "HOSE",
+      "close": 5790.0
+    },
+    {
+      "symbol": "PNJ",
+      "exchange": "HOSE",
+      "close": 35050.0
+    },
+    {
+      "symbol": "BKG",
+      "exchange": "HOSE",
+      "close": 2040.0
+    },
+    {
+      "symbol": "HDC",
+      "exchange": "HOSE",
+      "close": 11950.0
+    },
+    {
+      "symbol": "DDV",
+      "exchange": "UPCOM",
+      "close": 18800.0
+    },
+    {
+      "symbol": "OGC",
+      "exchange": "HOSE",
+      "close": 2240.0
+    },
+    {
+      "symbol": "TTF",
+      "exchange": "HOSE",
+      "close": 1850.0
+    },
+    {
+      "symbol": "SGI",
+      "exchange": "UPCOM",
+      "close": 9000.0
+    },
+    {
+      "symbol": "DST",
+      "exchange": "HNX",
+      "close": 9200.0
+    },
+    {
+      "symbol": "PDR",
+      "exchange": "HOSE",
+      "close": 12100.0
+    },
+    {
+      "symbol": "TVC",
+      "exchange": "HNX",
+      "close": 8000.0
+    },
+    {
+      "symbol": "DXS",
+      "exchange": "HOSE",
+      "close": 6030.0
+    },
+    {
+      "symbol": "QCG",
+      "exchange": "HOSE",
+      "close": 10150.0
+    },
+    {
+      "symbol": "NVB",
+      "exchange": "HNX",
+      "close": 11300.0
+    },
+    {
+      "symbol": "EVG",
+      "exchange": "HOSE",
+      "close": 4490.0
+    },
+    {
+      "symbol": "FIR",
+      "exchange": "HOSE",
+      "close": 4550.0
+    },
+    {
+      "symbol": "TDC",
+      "exchange": "HOSE",
+      "close": 7600.0
+    },
+    {
+      "symbol": "BFC",
+      "exchange": "HOSE",
+      "close": 48300.0
+    },
+    {
+      "symbol": "HUT",
+      "exchange": "HNX",
+      "close": 13600.0
+    },
+    {
+      "symbol": "PVB",
+      "exchange": "HNX",
+      "close": 21400.0
+    },
+    {
+      "symbol": "MBG",
+      "exchange": "HNX",
+      "close": 2400.0
+    },
+    {
+      "symbol": "VDS",
+      "exchange": "HOSE",
+      "close": 12150.0
+    },
+    {
+      "symbol": "CTP",
+      "exchange": "HNX",
+      "close": 7100.0
+    },
+    {
+      "symbol": "DDG",
+      "exchange": "UPCOM",
+      "close": 1000.0
+    },
+    {
+      "symbol": "FIT",
+      "exchange": "HOSE",
+      "close": 3130.0
+    },
+    {
+      "symbol": "BCM",
+      "exchange": "HOSE",
+      "close": 44000.0
+    },
+    {
+      "symbol": "L40",
+      "exchange": "HNX",
+      "close": 22700.0
+    },
+    {
+      "symbol": "F88",
+      "exchange": "UPCOM",
+      "close": 67300.0
+    },
+    {
+      "symbol": "VES",
+      "exchange": "UPCOM",
+      "close": 22900.0
+    },
+    {
+      "symbol": "VCG",
+      "exchange": "HOSE",
+      "close": 16150.0
+    },
+    {
+      "symbol": "LCG",
+      "exchange": "HOSE",
+      "close": 7400.0
+    },
+    {
+      "symbol": "NCT",
+      "exchange": "HOSE",
+      "close": 82500.0
+    },
+    {
+      "symbol": "NTL",
+      "exchange": "HOSE",
+      "close": 13600.0
+    },
+    {
+      "symbol": "NDN",
+      "exchange": "HNX",
+      "close": 9200.0
+    },
+    {
+      "symbol": "KDH",
+      "exchange": "HOSE",
+      "close": 18150.0
+    },
+    {
+      "symbol": "FOC",
+      "exchange": "UPCOM",
+      "close": 63500.0
+    },
+    {
+      "symbol": "CEO",
+      "exchange": "HNX",
+      "close": 12300.0
+    },
+    {
+      "symbol": "CII",
+      "exchange": "HOSE",
+      "close": 14200.0
+    },
+    {
+      "symbol": "CKG",
+      "exchange": "HOSE",
+      "close": 5920.0
+    },
+    {
+      "symbol": "C4G",
+      "exchange": "UPCOM",
+      "close": 5800.0
+    },
+    {
+      "symbol": "SZG",
+      "exchange": "UPCOM",
+      "close": 33000.0
+    },
+    {
+      "symbol": "AAS",
+      "exchange": "UPCOM",
+      "close": 7400.0
+    },
+    {
+      "symbol": "PAC",
+      "exchange": "HOSE",
+      "close": 16050.0
+    },
+    {
+      "symbol": "VC7",
+      "exchange": "HNX",
+      "close": 7200.0
+    },
+    {
+      "symbol": "TCH",
+      "exchange": "HOSE",
+      "close": 12200.0
+    },
+    {
+      "symbol": "DSH",
+      "exchange": "UPCOM",
+      "close": 12700.0
+    },
+    {
+      "symbol": "FTS",
+      "exchange": "HOSE",
+      "close": 22450.0
+    },
+    {
+      "symbol": "BSI",
+      "exchange": "HOSE",
+      "close": 29000.0
+    },
+    {
+      "symbol": "DPG",
+      "exchange": "HOSE",
+      "close": 30650.0
+    },
+    {
+      "symbol": "ANV",
+      "exchange": "HOSE",
+      "close": 18050.0
+    },
+    {
+      "symbol": "TVN",
+      "exchange": "UPCOM",
+      "close": 9100.0
+    },
+    {
+      "symbol": "VGS",
+      "exchange": "HNX",
+      "close": 18400.0
+    },
+    {
+      "symbol": "GEE",
+      "exchange": "HOSE",
+      "close": 75300.0
+    },
+    {
+      "symbol": "C32",
+      "exchange": "HOSE",
+      "close": 15400.0
+    },
+    {
+      "symbol": "VSC",
+      "exchange": "HOSE",
+      "close": 14850.0
+    },
+    {
+      "symbol": "LAS",
+      "exchange": "HNX",
+      "close": 12300.0
+    },
+    {
+      "symbol": "JVC",
+      "exchange": "HOSE",
+      "close": 3050.0
+    },
+    {
+      "symbol": "SHS",
+      "exchange": "HNX",
+      "close": 15900.0
+    },
+    {
+      "symbol": "SCR",
+      "exchange": "HOSE",
+      "close": 4630.0
+    },
+    {
+      "symbol": "IJC",
+      "exchange": "HOSE",
+      "close": 7950.0
+    },
+    {
+      "symbol": "ITC",
+      "exchange": "HOSE",
+      "close": 10350.0
+    },
+    {
+      "symbol": "DIG",
+      "exchange": "HOSE",
+      "close": 10950.0
+    },
+    {
+      "symbol": "SAS",
+      "exchange": "UPCOM",
+      "close": 33300.0
+    },
+    {
+      "symbol": "LIX",
+      "exchange": "HOSE",
+      "close": 24900.0
+    },
+    {
+      "symbol": "YEG",
+      "exchange": "HOSE",
+      "close": 7750.0
+    },
+    {
+      "symbol": "C69",
+      "exchange": "HNX",
+      "close": 17200.0
+    },
+    {
+      "symbol": "HGM",
+      "exchange": "HNX",
+      "close": 134500.0
+    },
+    {
+      "symbol": "TLH",
+      "exchange": "HOSE",
+      "close": 4000.0
+    },
+    {
+      "symbol": "NHA",
+      "exchange": "HOSE",
+      "close": 8400.0
+    },
+    {
+      "symbol": "DTD",
+      "exchange": "HNX",
+      "close": 12100.0
+    },
+    {
+      "symbol": "SKG",
+      "exchange": "HOSE",
+      "close": 7670.0
+    },
+    {
+      "symbol": "IDI",
+      "exchange": "HOSE",
+      "close": 4970.0
+    },
+    {
+      "symbol": "VIX",
+      "exchange": "HOSE",
+      "close": 14300.0
+    },
+    {
+      "symbol": "HAH",
+      "exchange": "HOSE",
+      "close": 46350.0
+    },
+    {
+      "symbol": "TIG",
+      "exchange": "HNX",
+      "close": 5800.0
+    },
+    {
+      "symbol": "HLD",
+      "exchange": "HNX",
+      "close": 13900.0
+    },
+    {
+      "symbol": "HHS",
+      "exchange": "HOSE",
+      "close": 9990.0
+    },
+    {
+      "symbol": "NLG",
+      "exchange": "HOSE",
+      "close": 22650.0
+    },
+    {
+      "symbol": "TV1",
+      "exchange": "UPCOM",
+      "close": 20300.0
+    },
+    {
+      "symbol": "SHB",
+      "exchange": "HOSE",
+      "close": 11850.0
+    },
+    {
+      "symbol": "BVS",
+      "exchange": "HNX",
+      "close": 27000.0
+    },
+    {
+      "symbol": "AGR",
+      "exchange": "HOSE",
+      "close": 13250.0
+    },
+    {
+      "symbol": "CTS",
+      "exchange": "HOSE",
+      "close": 22800.0
+    },
+    {
+      "symbol": "LDG",
+      "exchange": "HOSE",
+      "close": 2920.0
+    },
+    {
+      "symbol": "VIP",
+      "exchange": "HOSE",
+      "close": 9820.0
+    },
+    {
+      "symbol": "HQC",
+      "exchange": "HOSE",
+      "close": 2300.0
+    },
+    {
+      "symbol": "DXG",
+      "exchange": "HOSE",
+      "close": 11150.0
+    },
+    {
+      "symbol": "TSJ",
+      "exchange": "UPCOM",
+      "close": 21100.0
+    },
+    {
+      "symbol": "SZC",
+      "exchange": "HOSE",
+      "close": 20150.0
+    },
+    {
+      "symbol": "PAN",
+      "exchange": "HOSE",
+      "close": 20700.0
+    },
+    {
+      "symbol": "NNC",
+      "exchange": "HOSE",
+      "close": 40300.0
+    },
+    {
+      "symbol": "TNG",
+      "exchange": "HNX",
+      "close": 17100.0
+    },
+    {
+      "symbol": "DCM",
+      "exchange": "HOSE",
+      "close": 31350.0
+    },
+    {
+      "symbol": "VHC",
+      "exchange": "HOSE",
+      "close": 53100.0
+    },
+    {
+      "symbol": "VIT",
+      "exchange": "HNX",
+      "close": 23500.0
+    },
+    {
+      "symbol": "TPC",
+      "exchange": "HOSE",
+      "close": 9450.0
+    },
+    {
+      "symbol": "CMG",
+      "exchange": "HOSE",
+      "close": 24700.0
+    },
+    {
+      "symbol": "UNI",
+      "exchange": "HNX",
+      "close": 6600.0
+    },
+    {
+      "symbol": "VFS",
+      "exchange": "HNX",
+      "close": 10000.0
+    },
+    {
+      "symbol": "FOX",
+      "exchange": "UPCOM",
+      "close": 66000.0
+    },
+    {
+      "symbol": "DLG",
+      "exchange": "HOSE",
+      "close": 2330.0
+    },
+    {
+      "symbol": "BMS",
+      "exchange": "UPCOM",
+      "close": 13100.0
+    },
+    {
+      "symbol": "CTD",
+      "exchange": "HOSE",
+      "close": 63500.0
+    },
+    {
+      "symbol": "APS",
+      "exchange": "HNX",
+      "close": 6300.0
+    },
+    {
+      "symbol": "PTB",
+      "exchange": "HOSE",
+      "close": 33650.0
+    },
+    {
+      "symbol": "EIB",
+      "exchange": "HOSE",
+      "close": 18200.0
+    },
+    {
+      "symbol": "MBS",
+      "exchange": "HNX",
+      "close": 18800.0
+    },
+    {
+      "symbol": "D2D",
+      "exchange": "HOSE",
+      "close": 28200.0
+    },
+    {
+      "symbol": "VIW",
+      "exchange": "UPCOM",
+      "close": 24900.0
+    },
+    {
+      "symbol": "VRE",
+      "exchange": "HOSE",
+      "close": 25450.0
+    },
+    {
+      "symbol": "DRC",
+      "exchange": "HOSE",
+      "close": 10750.0
+    },
+    {
+      "symbol": "G36",
+      "exchange": "UPCOM",
+      "close": 9300.0
+    },
+    {
+      "symbol": "TCO",
+      "exchange": "HOSE",
+      "close": 10350.0
+    },
+    {
+      "symbol": "DL1",
+      "exchange": "HNX",
+      "close": 4600.0
+    },
+    {
+      "symbol": "BIG",
+      "exchange": "UPCOM",
+      "close": 5100.0
+    },
+    {
+      "symbol": "VPL",
+      "exchange": "HOSE",
+      "close": 78400.0
+    },
+    {
+      "symbol": "VCI",
+      "exchange": "HOSE",
+      "close": 22050.0
+    },
+    {
+      "symbol": "PVC",
+      "exchange": "HNX",
+      "close": 12600.0
+    },
+    {
+      "symbol": "SCS",
+      "exchange": "HOSE",
+      "close": 45150.0
+    },
+    {
+      "symbol": "DBC",
+      "exchange": "HOSE",
+      "close": 16700.0
+    },
+    {
+      "symbol": "VEF",
+      "exchange": "UPCOM",
+      "close": 79400.0
+    },
+    {
+      "symbol": "DPM",
+      "exchange": "HOSE",
+      "close": 22300.0
+    },
+    {
+      "symbol": "PHR",
+      "exchange": "HOSE",
+      "close": 58500.0
+    },
+    {
+      "symbol": "DVN",
+      "exchange": "UPCOM",
+      "close": 18700.0
+    },
+    {
+      "symbol": "SHN",
+      "exchange": "HNX",
+      "close": 7900.0
+    },
+    {
+      "symbol": "HSL",
+      "exchange": "HOSE",
+      "close": 8560.0
+    },
+    {
+      "symbol": "SGR",
+      "exchange": "HOSE",
+      "close": 12500.0
+    },
+    {
+      "symbol": "API",
+      "exchange": "HNX",
+      "close": 5700.0
+    },
+    {
+      "symbol": "HNG",
+      "exchange": "UPCOM",
+      "close": 6600.0
+    },
+    {
+      "symbol": "DHB",
+      "exchange": "UPCOM",
+      "close": 11600.0
+    },
+    {
+      "symbol": "KOS",
+      "exchange": "HOSE",
+      "close": 35000.0
+    },
+    {
+      "symbol": "VOS",
+      "exchange": "HOSE",
+      "close": 11150.0
+    },
+    {
+      "symbol": "DC4",
+      "exchange": "HOSE",
+      "close": 6900.0
+    },
+    {
+      "symbol": "DGC",
+      "exchange": "HOSE",
+      "close": 43800.0
+    },
+    {
+      "symbol": "GEG",
+      "exchange": "HOSE",
+      "close": 12350.0
+    },
+    {
+      "symbol": "NAB",
+      "exchange": "HOSE",
+      "close": 11900.0
+    },
+    {
+      "symbol": "CSV",
+      "exchange": "HOSE",
+      "close": 22150.0
+    },
+    {
+      "symbol": "TCI",
+      "exchange": "HOSE",
+      "close": 9790.0
+    },
+    {
+      "symbol": "VIB",
+      "exchange": "HOSE",
+      "close": 14800.0
+    },
+    {
+      "symbol": "TNI",
+      "exchange": "HOSE",
+      "close": 6000.0
+    },
+    {
+      "symbol": "GEX",
+      "exchange": "HOSE",
+      "close": 26150.0
+    },
+    {
+      "symbol": "TPB",
+      "exchange": "HOSE",
+      "close": 14700.0
+    },
+    {
+      "symbol": "CAP",
+      "exchange": "HNX",
+      "close": 43700.0
+    },
+    {
+      "symbol": "TV2",
+      "exchange": "HOSE",
+      "close": 26700.0
+    },
+    {
+      "symbol": "DPR",
+      "exchange": "HOSE",
+      "close": 36500.0
+    },
+    {
+      "symbol": "VGR",
+      "exchange": "UPCOM",
+      "close": 96000.0
+    },
+    {
+      "symbol": "TIN",
+      "exchange": "UPCOM",
+      "close": 113000.0
+    },
+    {
+      "symbol": "NKG",
+      "exchange": "HOSE",
+      "close": 11200.0
+    },
+    {
+      "symbol": "IDC",
+      "exchange": "HNX",
+      "close": 34300.0
+    },
+    {
+      "symbol": "TAL",
+      "exchange": "HOSE",
+      "close": 24750.0
+    },
+    {
+      "symbol": "PVS",
+      "exchange": "HNX",
+      "close": 35600.0
+    },
+    {
+      "symbol": "VCS",
+      "exchange": "HNX",
+      "close": 33700.0
+    },
+    {
+      "symbol": "MCM",
+      "exchange": "HOSE",
+      "close": 26200.0
+    },
+    {
+      "symbol": "VTD",
+      "exchange": "UPCOM",
+      "close": 5100.0
+    },
+    {
+      "symbol": "PLC",
+      "exchange": "HNX",
+      "close": 20800.0
+    },
+    {
+      "symbol": "PSD",
+      "exchange": "HNX",
+      "close": 12400.0
+    },
+    {
+      "symbol": "PSI",
+      "exchange": "HNX",
+      "close": 9600.0
+    },
+    {
+      "symbol": "SMC",
+      "exchange": "HOSE",
+      "close": 10600.0
+    },
+    {
+      "symbol": "THD",
+      "exchange": "HNX",
+      "close": 147700.0
+    },
+    {
+      "symbol": "KSB",
+      "exchange": "HOSE",
+      "close": 14250.0
+    },
+    {
+      "symbol": "HSG",
+      "exchange": "HOSE",
+      "close": 10900.0
+    },
+    {
+      "symbol": "FCN",
+      "exchange": "HOSE",
+      "close": 11350.0
+    },
+    {
+      "symbol": "APG",
+      "exchange": "HOSE",
+      "close": 4950.0
+    },
+    {
+      "symbol": "BIC",
+      "exchange": "HOSE",
+      "close": 22000.0
+    },
+    {
+      "symbol": "HHV",
+      "exchange": "HOSE",
+      "close": 10300.0
+    },
+    {
+      "symbol": "HAG",
+      "exchange": "HOSE",
+      "close": 14150.0
+    },
+    {
+      "symbol": "VJC",
+      "exchange": "HOSE",
+      "close": 127700.0
+    },
+    {
+      "symbol": "VFG",
+      "exchange": "HOSE",
+      "close": 45400.0
+    },
+    {
+      "symbol": "VAB",
+      "exchange": "HOSE",
+      "close": 10200.0
+    },
+    {
+      "symbol": "KHG",
+      "exchange": "HOSE",
+      "close": 4810.0
+    },
+    {
+      "symbol": "OIL",
+      "exchange": "UPCOM",
+      "close": 13400.0
+    },
+    {
+      "symbol": "VPI",
+      "exchange": "HOSE",
+      "close": 59700.0
+    },
+    {
+      "symbol": "KBC",
+      "exchange": "HOSE",
+      "close": 28000.0
+    },
+    {
+      "symbol": "MSH",
+      "exchange": "HOSE",
+      "close": 31350.0
+    },
+    {
+      "symbol": "SJS",
+      "exchange": "HOSE",
+      "close": 47350.0
+    },
+    {
+      "symbol": "MIG",
+      "exchange": "HOSE",
+      "close": 16700.0
+    },
+    {
+      "symbol": "BMI",
+      "exchange": "HOSE",
+      "close": 13550.0
+    },
+    {
+      "symbol": "TNH",
+      "exchange": "HOSE",
+      "close": 8390.0
+    },
+    {
+      "symbol": "APF",
+      "exchange": "UPCOM",
+      "close": 45300.0
+    },
+    {
+      "symbol": "PLX",
+      "exchange": "HOSE",
+      "close": 36650.0
+    },
+    {
+      "symbol": "AIG",
+      "exchange": "UPCOM",
+      "close": 48600.0
+    },
+    {
+      "symbol": "VSF",
+      "exchange": "UPCOM",
+      "close": 26800.0
+    },
+    {
+      "symbol": "SBS",
+      "exchange": "UPCOM",
+      "close": 4700.0
+    },
+    {
+      "symbol": "ELC",
+      "exchange": "HOSE",
+      "close": 15800.0
+    },
+    {
+      "symbol": "MSN",
+      "exchange": "HOSE",
+      "close": 67200.0
+    },
+    {
+      "symbol": "MML",
+      "exchange": "UPCOM",
+      "close": 28100.0
+    },
+    {
+      "symbol": "VND",
+      "exchange": "HOSE",
+      "close": 16800.0
+    },
+    {
+      "symbol": "VNZ",
+      "exchange": "UPCOM",
+      "close": 590000.0
+    },
+    {
+      "symbol": "TVS",
+      "exchange": "HOSE",
+      "close": 14000.0
+    },
+    {
+      "symbol": "SSI",
+      "exchange": "HOSE",
+      "close": 25300.0
+    },
+    {
+      "symbol": "GCF",
+      "exchange": "UPCOM",
+      "close": 19300.0
+    },
+    {
+      "symbol": "ABT",
+      "exchange": "HOSE",
+      "close": 51000.0
+    },
+    {
+      "symbol": "BID",
+      "exchange": "HOSE",
+      "close": 39250.0
+    },
+    {
+      "symbol": "CSM",
+      "exchange": "HOSE",
+      "close": 13950.0
+    },
+    {
+      "symbol": "PIV",
+      "exchange": "UPCOM",
+      "close": 6500.0
+    },
+    {
+      "symbol": "HHP",
+      "exchange": "HOSE",
+      "close": 15350.0
+    },
+    {
+      "symbol": "HVN",
+      "exchange": "HOSE",
+      "close": 23700.0
+    },
+    {
+      "symbol": "GVR",
+      "exchange": "HOSE",
+      "close": 32250.0
+    },
+    {
+      "symbol": "PVD",
+      "exchange": "HOSE",
+      "close": 18700.0
+    },
+    {
+      "symbol": "HAX",
+      "exchange": "HOSE",
+      "close": 9110.0
+    },
+    {
+      "symbol": "PPC",
+      "exchange": "HOSE",
+      "close": 8960.0
+    },
+    {
+      "symbol": "RYG",
+      "exchange": "HOSE",
+      "close": 9200.0
+    },
+    {
+      "symbol": "TTL",
+      "exchange": "HNX",
+      "close": 7700.0
+    },
+    {
+      "symbol": "MWG",
+      "exchange": "HOSE",
+      "close": 74000.0
+    },
+    {
+      "symbol": "BSR",
+      "exchange": "HOSE",
+      "close": 26500.0
+    },
+    {
+      "symbol": "AGG",
+      "exchange": "HOSE",
+      "close": 11350.0
+    },
+    {
+      "symbol": "PVT",
+      "exchange": "HOSE",
+      "close": 20100.0
+    },
+    {
+      "symbol": "CTG",
+      "exchange": "HOSE",
+      "close": 32200.0
+    },
+    {
+      "symbol": "ACV",
+      "exchange": "UPCOM",
+      "close": 41500.0
+    },
+    {
+      "symbol": "DCL",
+      "exchange": "HOSE",
+      "close": 38600.0
+    },
+    {
+      "symbol": "PMC",
+      "exchange": "HNX",
+      "close": 130000.0
+    },
+    {
+      "symbol": "HII",
+      "exchange": "HOSE",
+      "close": 8800.0
+    },
+    {
+      "symbol": "HHC",
+      "exchange": "HNX",
+      "close": 85500.0
+    },
+    {
+      "symbol": "TNW",
+      "exchange": "UPCOM",
+      "close": 13600.0
+    },
+    {
+      "symbol": "ABS",
+      "exchange": "HOSE",
+      "close": 3100.0
+    },
+    {
+      "symbol": "QTP",
+      "exchange": "UPCOM",
+      "close": 11200.0
+    },
+    {
+      "symbol": "SJE",
+      "exchange": "HNX",
+      "close": 12800.0
+    },
+    {
+      "symbol": "CRE",
+      "exchange": "HOSE",
+      "close": 7120.0
+    },
+    {
+      "symbol": "VGI",
+      "exchange": "UPCOM",
+      "close": 86800.0
+    },
+    {
+      "symbol": "HPG",
+      "exchange": "HOSE",
+      "close": 22100.0
+    },
+    {
+      "symbol": "REE",
+      "exchange": "HOSE",
+      "close": 47150.0
+    },
+    {
+      "symbol": "PC1",
+      "exchange": "HOSE",
+      "close": 20750.0
+    },
+    {
+      "symbol": "TIP",
+      "exchange": "HOSE",
+      "close": 17050.0
+    },
+    {
+      "symbol": "ABB",
+      "exchange": "UPCOM",
+      "close": 16900.0
+    },
+    {
+      "symbol": "VTV",
+      "exchange": "HNX",
+      "close": 14200.0
+    },
+    {
+      "symbol": "HVH",
+      "exchange": "HOSE",
+      "close": 10350.0
+    },
+    {
+      "symbol": "VIC",
+      "exchange": "HOSE",
+      "close": 215500.0
+    },
+    {
+      "symbol": "TCX",
+      "exchange": "HOSE",
+      "close": 40500.0
+    },
+    {
+      "symbol": "BDT",
+      "exchange": "UPCOM",
+      "close": 9400.0
+    },
+    {
+      "symbol": "NHH",
+      "exchange": "HOSE",
+      "close": 9730.0
+    },
+    {
+      "symbol": "CTI",
+      "exchange": "HOSE",
+      "close": 19500.0
+    },
+    {
+      "symbol": "GAS",
+      "exchange": "HOSE",
+      "close": 80000.0
+    },
+    {
+      "symbol": "BBT",
+      "exchange": "UPCOM",
+      "close": 13000.0
+    },
+    {
+      "symbol": "TDM",
+      "exchange": "HOSE",
+      "close": 58100.0
+    },
+    {
+      "symbol": "MVN",
+      "exchange": "UPCOM",
+      "close": 60000.0
+    },
+    {
+      "symbol": "KTL",
+      "exchange": "UPCOM",
+      "close": 22000.0
+    },
+    {
+      "symbol": "PAT",
+      "exchange": "UPCOM",
+      "close": 65100.0
+    },
+    {
+      "symbol": "EVF",
+      "exchange": "HOSE",
+      "close": 12500.0
+    },
+    {
+      "symbol": "VTP",
+      "exchange": "HOSE",
+      "close": 55000.0
+    },
+    {
+      "symbol": "KSF",
+      "exchange": "HNX",
+      "close": 80900.0
+    },
+    {
+      "symbol": "ADS",
+      "exchange": "HOSE",
+      "close": 8180.0
+    },
+    {
+      "symbol": "L14",
+      "exchange": "HNX",
+      "close": 23600.0
+    },
+    {
+      "symbol": "CDC",
+      "exchange": "HOSE",
+      "close": 18800.0
+    },
+    {
+      "symbol": "FPT",
+      "exchange": "HOSE",
+      "close": 70800.0
+    },
+    {
+      "symbol": "HPX",
+      "exchange": "HOSE",
+      "close": 4310.0
+    },
+    {
+      "symbol": "LHC",
+      "exchange": "HNX",
+      "close": 46000.0
+    },
+    {
+      "symbol": "ITD",
+      "exchange": "HOSE",
+      "close": 12500.0
+    },
+    {
+      "symbol": "HTN",
+      "exchange": "HOSE",
+      "close": 7850.0
+    },
+    {
+      "symbol": "VNG",
+      "exchange": "HOSE",
+      "close": 6960.0
+    },
+    {
+      "symbol": "LLM",
+      "exchange": "UPCOM",
+      "close": 39900.0
+    },
+    {
+      "symbol": "QNS",
+      "exchange": "UPCOM",
+      "close": 46900.0
+    },
+    {
+      "symbol": "CBS",
+      "exchange": "UPCOM",
+      "close": 24800.0
+    },
+    {
+      "symbol": "NVL",
+      "exchange": "HOSE",
+      "close": 13550.0
+    },
+    {
+      "symbol": "NTH",
+      "exchange": "HNX",
+      "close": 53000.0
+    },
+    {
+      "symbol": "VPB",
+      "exchange": "HOSE",
+      "close": 25700.0
+    },
+    {
+      "symbol": "VTO",
+      "exchange": "HOSE",
+      "close": 10650.0
+    },
+    {
+      "symbol": "VHM",
+      "exchange": "HOSE",
+      "close": 73800.0
+    },
+    {
+      "symbol": "VGC",
+      "exchange": "HOSE",
+      "close": 40800.0
+    },
+    {
+      "symbol": "EVS",
+      "exchange": "HNX",
+      "close": 5800.0
+    },
+    {
+      "symbol": "NT2",
+      "exchange": "HOSE",
+      "close": 21750.0
+    },
+    {
+      "symbol": "VLC",
+      "exchange": "UPCOM",
+      "close": 12400.0
+    },
+    {
+      "symbol": "PET",
+      "exchange": "HOSE",
+      "close": 40350.0
+    },
+    {
+      "symbol": "HT1",
+      "exchange": "HOSE",
+      "close": 13300.0
+    },
+    {
+      "symbol": "SVN",
+      "exchange": "HNX",
+      "close": 3300.0
+    },
+    {
+      "symbol": "DP3",
+      "exchange": "HNX",
+      "close": 60300.0
+    },
+    {
+      "symbol": "SCG",
+      "exchange": "HNX",
+      "close": 65400.0
+    },
+    {
+      "symbol": "SHI",
+      "exchange": "HOSE",
+      "close": 14000.0
+    },
+    {
+      "symbol": "SAM",
+      "exchange": "HOSE",
+      "close": 5900.0
+    },
+    {
+      "symbol": "PVP",
+      "exchange": "HOSE",
+      "close": 18100.0
+    },
+    {
+      "symbol": "TCB",
+      "exchange": "HOSE",
+      "close": 31500.0
+    },
+    {
+      "symbol": "PCH",
+      "exchange": "HNX",
+      "close": 18200.0
+    },
+    {
+      "symbol": "KSV",
+      "exchange": "HNX",
+      "close": 120200.0
+    },
+    {
+      "symbol": "TLD",
+      "exchange": "HOSE",
+      "close": 8350.0
+    },
+    {
+      "symbol": "PVI",
+      "exchange": "HNX",
+      "close": 68000.0
+    },
+    {
+      "symbol": "PPT",
+      "exchange": "HNX",
+      "close": 15100.0
+    },
+    {
+      "symbol": "VCP",
+      "exchange": "UPCOM",
+      "close": 23300.0
+    },
+    {
+      "symbol": "VGT",
+      "exchange": "UPCOM",
+      "close": 11400.0
+    },
+    {
+      "symbol": "POW",
+      "exchange": "HOSE",
+      "close": 13750.0
+    },
+    {
+      "symbol": "IPA",
+      "exchange": "HNX",
+      "close": 15500.0
+    },
+    {
+      "symbol": "NAF",
+      "exchange": "HOSE",
+      "close": 48200.0
+    },
+    {
+      "symbol": "TRC",
+      "exchange": "HOSE",
+      "close": 83300.0
+    },
+    {
+      "symbol": "NBB",
+      "exchange": "HOSE",
+      "close": 17250.0
+    },
+    {
+      "symbol": "HMH",
+      "exchange": "HNX",
+      "close": 20000.0
+    },
+    {
+      "symbol": "VDN",
+      "exchange": "UPCOM",
+      "close": 42100.0
+    },
+    {
+      "symbol": "SEA",
+      "exchange": "UPCOM",
+      "close": 65600.0
+    },
+    {
+      "symbol": "DBD",
+      "exchange": "HOSE",
+      "close": 49400.0
+    },
+    {
+      "symbol": "DRI",
+      "exchange": "UPCOM",
+      "close": 13700.0
+    },
+    {
+      "symbol": "DHA",
+      "exchange": "HOSE",
+      "close": 49400.0
+    },
+    {
+      "symbol": "SAB",
+      "exchange": "HOSE",
+      "close": 46300.0
+    },
+    {
+      "symbol": "SSB",
+      "exchange": "HOSE",
+      "close": 15450.0
+    },
+    {
+      "symbol": "ASP",
+      "exchange": "HOSE",
+      "close": 11500.0
+    },
+    {
+      "symbol": "FMC",
+      "exchange": "HOSE",
+      "close": 34250.0
+    },
+    {
+      "symbol": "VCB",
+      "exchange": "HOSE",
+      "close": 59700.0
+    },
+    {
+      "symbol": "VC3",
+      "exchange": "HNX",
+      "close": 25800.0
+    },
+    {
+      "symbol": "DNA",
+      "exchange": "UPCOM",
+      "close": 23500.0
+    },
+    {
+      "symbol": "TDP",
+      "exchange": "HOSE",
+      "close": 28800.0
+    },
+    {
+      "symbol": "SIP",
+      "exchange": "HOSE",
+      "close": 51100.0
+    },
+    {
+      "symbol": "NTP",
+      "exchange": "HNX",
+      "close": 48800.0
+    },
+    {
+      "symbol": "CTR",
+      "exchange": "HOSE",
+      "close": 76500.0
+    },
+    {
+      "symbol": "TEG",
+      "exchange": "HOSE",
+      "close": 6000.0
+    },
+    {
+      "symbol": "CQN",
+      "exchange": "UPCOM",
+      "close": 30300.0
+    },
+    {
+      "symbol": "XMC",
+      "exchange": "UPCOM",
+      "close": 10000.0
+    },
+    {
+      "symbol": "DXP",
+      "exchange": "HNX",
+      "close": 14300.0
+    },
+    {
+      "symbol": "ASM",
+      "exchange": "HOSE",
+      "close": 5950.0
+    },
+    {
+      "symbol": "ORS",
+      "exchange": "HOSE",
+      "close": 14400.0
+    },
+    {
+      "symbol": "MSR",
+      "exchange": "UPCOM",
+      "close": 38800.0
+    },
+    {
+      "symbol": "BVH",
+      "exchange": "HOSE",
+      "close": 66800.0
+    },
+    {
+      "symbol": "BMP",
+      "exchange": "HOSE",
+      "close": 148500.0
+    },
+    {
+      "symbol": "LSG",
+      "exchange": "UPCOM",
+      "close": 34500.0
+    },
+    {
+      "symbol": "AAA",
+      "exchange": "HOSE",
+      "close": 7340.0
+    },
+    {
+      "symbol": "LPB",
+      "exchange": "HOSE",
+      "close": 53800.0
+    },
+    {
+      "symbol": "DHC",
+      "exchange": "HOSE",
+      "close": 34900.0
+    },
+    {
+      "symbol": "OPC",
+      "exchange": "HOSE",
+      "close": 21000.0
+    },
+    {
+      "symbol": "TTA",
+      "exchange": "HOSE",
+      "close": 11300.0
+    },
+    {
+      "symbol": "VLB",
+      "exchange": "UPCOM",
+      "close": 48400.0
+    },
+    {
+      "symbol": "MBB",
+      "exchange": "HOSE",
+      "close": 20450.0
+    },
+    {
+      "symbol": "SCL",
+      "exchange": "UPCOM",
+      "close": 23600.0
+    },
+    {
+      "symbol": "SJD",
+      "exchange": "HOSE",
+      "close": 13900.0
+    },
+    {
+      "symbol": "OCB",
+      "exchange": "HOSE",
+      "close": 10950.0
+    },
+    {
+      "symbol": "DGW",
+      "exchange": "HOSE",
+      "close": 41000.0
+    },
+    {
+      "symbol": "ABW",
+      "exchange": "UPCOM",
+      "close": 14100.0
+    },
+    {
+      "symbol": "SZL",
+      "exchange": "HOSE",
+      "close": 50800.0
+    },
+    {
+      "symbol": "SBT",
+      "exchange": "HOSE",
+      "close": 21600.0
+    },
+    {
+      "symbol": "GMD",
+      "exchange": "HOSE",
+      "close": 77200.0
+    },
+    {
+      "symbol": "DSE",
+      "exchange": "HOSE",
+      "close": 22750.0
+    },
+    {
+      "symbol": "HDB",
+      "exchange": "HOSE",
+      "close": 27200.0
+    },
+    {
+      "symbol": "VTZ",
+      "exchange": "HNX",
+      "close": 20200.0
+    },
+    {
+      "symbol": "SBG",
+      "exchange": "HOSE",
+      "close": 12400.0
+    },
+    {
+      "symbol": "HNM",
+      "exchange": "UPCOM",
+      "close": 8200.0
+    },
+    {
+      "symbol": "ACB",
+      "exchange": "HOSE",
+      "close": 22750.0
+    },
+    {
+      "symbol": "LHG",
+      "exchange": "HOSE",
+      "close": 28850.0
+    },
+    {
+      "symbol": "HCM",
+      "exchange": "HOSE",
+      "close": 26150.0
+    },
+    {
+      "symbol": "SP2",
+      "exchange": "UPCOM",
+      "close": 24500.0
+    },
+    {
+      "symbol": "DHG",
+      "exchange": "HOSE",
+      "close": 95600.0
+    },
+    {
+      "symbol": "APH",
+      "exchange": "HOSE",
+      "close": 6060.0
+    },
+    {
+      "symbol": "TLG",
+      "exchange": "HOSE",
+      "close": 50700.0
+    },
+    {
+      "symbol": "MST",
+      "exchange": "HNX",
+      "close": 10400.0
+    },
+    {
+      "symbol": "PPH",
+      "exchange": "UPCOM",
+      "close": 26200.0
+    },
+    {
+      "symbol": "MSB",
+      "exchange": "HOSE",
+      "close": 16050.0
+    },
+    {
+      "symbol": "PHP",
+      "exchange": "UPCOM",
+      "close": 42400.0
+    },
+    {
+      "symbol": "VEA",
+      "exchange": "UPCOM",
+      "close": 35200.0
+    },
+    {
+      "symbol": "STB",
+      "exchange": "HOSE",
+      "close": 74100.0
+    },
+    {
+      "symbol": "MCP",
+      "exchange": "HOSE",
+      "close": 27700.0
+    },
+    {
+      "symbol": "VNM",
+      "exchange": "HOSE",
+      "close": 61800.0
+    },
+    {
+      "symbol": "FRT",
+      "exchange": "HOSE",
+      "close": 148000.0
+    },
+    {
+      "symbol": "BWE",
+      "exchange": "HOSE",
+      "close": 44400.0
+    },
+    {
+      "symbol": "VSH",
+      "exchange": "HOSE",
+      "close": 43600.0
+    },
+    {
+      "symbol": "DVP",
+      "exchange": "HOSE",
+      "close": 77800.0
+    },
+    {
+      "symbol": "BAF",
+      "exchange": "HOSE",
+      "close": 31450.0
+    },
+    {
+      "symbol": "SPV",
+      "exchange": "UPCOM",
+      "close": 35000.0
+    },
+    {
+      "symbol": "KDC",
+      "exchange": "HOSE",
+      "close": 51800.0
+    },
+    {
+      "symbol": "CTF",
+      "exchange": "HOSE",
+      "close": 20750.0
+    },
+    {
+      "symbol": "VGP",
+      "exchange": "HNX",
+      "close": 27700.0
+    },
+    {
+      "symbol": "KHD",
+      "exchange": "UPCOM",
+      "close": 22000.0
+    },
+    {
+      "symbol": "ODE",
+      "exchange": "UPCOM",
+      "close": 47200.0
+    }
+  ],
+  "snapshotHash": "874361b10396fbf5e451d15b6495740b4e587a47a91d2c5e556d3b46681622e2"
+}

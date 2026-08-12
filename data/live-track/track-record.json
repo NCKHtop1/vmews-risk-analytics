@@ -1,16 +1,16 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-08-12T06:58:41.419408+00:00",
+  "generatedAt": "2026-08-12T11:12:26.594185+00:00",
   "trackingStarted": "2026-08-11",
-  "latestArchivedEod": "2026-08-11",
-  "archivedSnapshots": 1,
+  "latestArchivedEod": "2026-08-12",
+  "archivedSnapshots": 2,
   "horizonSessions": 20,
   "eventDefinition": "20-session forward maximum drawdown <= -12%",
   "currentIntegrity": {
     "status": "PASS",
     "reasons": [],
-    "marketModelDate": "2026-08-11",
-    "pooledModelDate": "2026-08-11",
+    "marketModelDate": "2026-08-12",
+    "pooledModelDate": "2026-08-12",
     "sameCompletedEod": true,
     "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
     "policyAligned": true,
@@ -34,14 +34,14 @@
         "events": 0,
         "eventRate": null,
         "medianMaxDrawdown20": null,
-        "pending": 33
+        "pending": 55
       },
       "YELLOW": {
         "matured": 0,
         "events": 0,
         "eventRate": null,
         "medianMaxDrawdown20": null,
-        "pending": 33
+        "pending": 55
       }
     },
     "combinedAlerts": {
@@ -58,9 +58,9 @@
       "medianMaxDrawdown20": null
     },
     "maturedSignals": 0,
-    "pendingSignals": 33,
+    "pendingSignals": 55,
     "unresolvedSignals": 0,
-    "baselinePending": 383,
+    "baselinePending": 754,
     "baselineUnresolved": 0,
     "minimumRecommendedMaturedSignals": 100
   },
@@ -77,7 +77,7 @@
       "medianMaxDrawdown20": null,
       "liftVsLiveBase": null
     },
-    "pendingStates": 211,
+    "pendingStates": 418,
     "unresolvedStates": 0,
     "minimumLiveEvidenceMet": false,
     "rankMonitorPass": false,
