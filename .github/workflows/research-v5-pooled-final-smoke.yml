@@ -1,0 +1,198 @@
+name: VMEWS pooled v5 final smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'research-pooled-v5.js'
+      - 'research-honesty-v4.js'
+      - 'research-engine-v3.js'
+      - 'investor-chart-v2.js'
+      - 'alert-policy.js'
+      - 'deep-alert-fallback.js'
+      - 'data/pooled-hose/validation.json'
+      - 'data/pooled-hose/current-scores.json'
+      - '.github/workflows/research-v5-pooled-final-smoke.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-pooled-v5-final-smoke
+  cancel-in-progress: true
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate pooled evidence, canonical policy and syntax
+        run: |
+          node --check research-pooled-v5.js
+          node --check research-honesty-v4.js
+          node --check research-engine-v3.js
+          node --check investor-chart-v2.js
+          node --check alert-policy.js
+          python - <<'PY'
+          import json
+          v=json.load(open('data/pooled-hose/validation.json',encoding='utf-8'))
+          c=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
+          p=json.load(open('data/alert-policy.json',encoding='utf-8'))
+          assert p['riskIndexBands']=={'red':78,'yellow':65,'watch':50,'greenBelow':50}
+          assert v['version']=='VMEWS-POOLED-HOSE-1.2.0',v['version']
+          assert v['promotionGate']['passed'] is True,v['promotionGate']
+          assert v['promotionGate']['evidenceGrade'] in {'MODERATE','STRONG'}
+          assert v['standaloneAlertGate']['passed'] is False,v['standaloneAlertGate']
+          s=v['sealedTest'];ci=s['prAucCI95']
+          assert v['dataset']['states']>=60000,v['dataset']
+          assert v['universe']['panelSymbols']>=300,v['universe']
+          assert s['eventEpisodes']>=250,s
+          assert s['prAuc']>s['baseRate']+.02,s
+          assert ci['low']>s['baseRate'],(ci,s['baseRate'])
+          assert s['rocAuc']>=.58,s
+          assert s['brierSkill']>0,s
+          assert v['incremental']['deltaPrAucVsStructural']>=.005,v['incremental']
+          assert c['version']=='VMEWS-POOLED-HOSE-1.2.0',c['version']
+          assert c['promotionPassed'] is True,c
+          assert c['standaloneAlertApproved'] is False,c
+          assert c['modelAsOf'],c
+          assert len(c.get('scores',{}))>=150,len(c.get('scores',{}))
+          html=open('research-final.html',encoding='utf-8').read()
+          pooled=open('research-pooled-v5.js',encoding='utf-8').read()
+          assert './research-pooled-v5.js' in html
+          assert 'Watchlist Monitor' in html and 'WATCH 50 / YELLOW 65 / RED 78' in html
+          for t in ['Standalone pooled alert','NOT APPROVED','predictive-evidence','standaloneAlertGate','riskPercentile']:
+              assert t in pooled,t
+          print('POOLED V5 STATIC PASS')
+          PY
+
+  hose-browser:
+    needs: static
+    strategy:
+      fail-fast: false
+      matrix:
+        preferred: [FPT, PNJ, HPG, VCB]
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pick a current pooled HOSE symbol
+        id: pick
+        run: |
+          PREFERRED='${{ matrix.preferred }}' python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json,os
+          p=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
+          scores=p.get('scores',{});pref=os.environ['PREFERRED']
+          choices=[pref,'FPT','PNJ','HPG','VCB','MWG','VNM','MBB','ACB']
+          s=next((x for x in choices if x in scores),None)
+          assert s,'No preferred liquid HOSE symbol in pooled current scores'
+          print('symbol='+s)
+          PY
+      - name: Browser pooled + single-name end-to-end smoke
+        shell: bash
+        run: |
+          set +e
+          SYMBOL='${{ steps.pick.outputs.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          assets=no
+          for i in $(seq 1 45); do
+            if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
+              && curl -fsSL --max-time 20 "$BASE/research-pooled-v5.js" -o pooled.js \
+              && curl -fsSL --max-time 20 "$BASE/research-engine-v3.js" -o engine.js; then assets=yes;break;fi
+            sleep 4
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          EXIT=127
+          if [ "$assets" = yes ] && [ -n "$CHROME" ];then
+            rm -rf "/tmp/vmews-pool-$SYMBOL"
+            timeout 430s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-pool-$SYMBOL" --virtual-time-budget=390000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else : >dom.html; : >chrome.err;fi
+          detail=no;chart=no;complete=no;pool=no;prob=no;gate=no;moderate=no;panel=no;ci=no;rf=no;vae=no;lstm=no;watchlist=no;old404=no
+          grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && chart=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'POOLED HOSE PREDICTIVE LAYER · SEALED OOS' dom.html && pool=yes
+          grep -Fq 'Calibrated 20D crash estimate' dom.html && prob=yes
+          grep -Fq 'Standalone pooled alert · NOT APPROVED' dom.html && gate=yes
+          grep -Fq 'Evidence grade' dom.html && grep -Fq 'MODERATE' dom.html && moderate=yes
+          grep -Fq 'Panel states' dom.html && grep -Fq 'Crash episodes' dom.html && panel=yes
+          grep -Fq 'PR-AUC 95% date-block CI' dom.html && ci=yes
+          grep -Fq 'Random Forest' dom.html && rf=yes
+          grep -Fq 'VAE anomaly' dom.html && vae=yes
+          grep -Fq 'LSTM crash' dom.html && lstm=yes
+          grep -Fq 'Watchlist Monitor' dom.html && watchlist=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          python - <<'PY' > datecheck.txt
+          import json,re,html
+          d=open('dom.html',encoding='utf-8',errors='ignore').read()
+          p=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
+          expected=p['modelAsOf']
+          assert expected in d,(expected,'missing pooled EOD date')
+          m=re.search(r'Model date\s+([0-9]{4}-[0-9]{2}-[0-9]{2})',html.unescape(re.sub('<[^>]+>',' ',d)))
+          if m: assert m.group(1)==expected,(m.group(1),expected)
+          print('EXPECTED='+expected)
+          PY
+          dates=$?
+          pass=no
+          if [ "$assets" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$complete" = yes ] && [ "$pool" = yes ] && [ "$prob" = yes ] && [ "$gate" = yes ] && [ "$moderate" = yes ] && [ "$panel" = yes ] && [ "$ci" = yes ] && [ "$rf" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$watchlist" = yes ] && [ "$old404" = no ] && [ "$dates" = 0 ];then pass=yes;fi
+          cat > result.md <<EOF
+          # VMEWS POOLED V5 ${pass^^} · $SYMBOL
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Chrome exit: $EXIT
+          - Detail/chart/local research: $detail/$chart/$complete
+          - Pooled section/probability: $pool/$prob
+          - Standalone pooled alert NOT APPROVED surfaced: $gate
+          - MODERATE evidence / panel / bootstrap CI: $moderate/$panel/$ci
+          - RF/VAE/LSTM preserved: $rf/$vae/$lstm
+          - Canonical Watchlist UI: $watchlist
+          - EOD alignment check: $dates
+          - Old Yahoo 404: $old404
+          EOF
+          cat datecheck.txt >> result.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS POOLED V5 ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
+
+  outside-domain:
+    needs: static
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify HNX/UPCOM alert does not receive an imputed HOSE probability
+        shell: bash
+        run: |
+          set +e
+          SYMBOL=BNA
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          for i in $(seq 1 45);do curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html && break;sleep 4;done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf /tmp/vmews-pool-outside
+          timeout 430s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-pool-outside --virtual-time-budget=390000 --dump-dom "$URL" > dom.html 2>chrome.err
+          detail=no;complete=no;unavailable=no;imputed=no;red=no
+          grep -Fq '>BNA ·' dom.html && detail=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'BNA · pooled model unavailable' dom.html && grep -Fq 'No pooled probability is imputed' dom.html && unavailable=yes
+          grep -Fq 'POOLED HOSE PREDICTIVE LAYER · SEALED OOS' dom.html && imputed=yes
+          grep -Fq 'T RED' dom.html && red=yes
+          pass=no
+          if [ "$detail" = yes ] && [ "$complete" = yes ] && [ "$unavailable" = yes ] && [ "$imputed" = no ] && [ "$red" = yes ];then pass=yes;fi
+          cat > result.md <<EOF
+          # VMEWS POOLED OUTSIDE-DOMAIN ${pass^^} · BNA
+          - Detail/local research: $detail/$complete
+          - Pooled unavailable + no-imputation disclosure: $unavailable
+          - Incorrect pooled sealed section: $imputed
+          - Existing T RED preserved: $red
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS POOLED OUTSIDE ${pass^^} BNA ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
