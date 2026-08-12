@@ -59,7 +59,7 @@ The candidate set is intentionally small and fixed before the sealed test to red
 1. L2-regularized logistic regression with class weighting.
 2. Shallow histogram gradient boosting with fixed depth, leaf-size, L2 regularization and deterministic random seed.
 
-The purpose is not to maximize the number of algorithms. The selected champion must demonstrate incremental out-of-sample value over the structural baseline.
+The purpose is not to maximize the number of algorithms. The selected champion must demonstrate incremental out-of-sample value over the structural baseline. A more complicated model is not preferred merely because it is more complicated.
 
 ## Chronological validation
 
@@ -70,9 +70,9 @@ The panel is ordered by date. No random train/test split is used.
 - Candidate selection: development folds only.
 - Final promotion test: last 15% of sampled panel dates is sealed and is not used for candidate selection.
 - Probability calibration: regularized Platt calibration on a chronological window that is separate from classifier fitting.
-- Decision threshold: selected on calibration data using a missed-event cost of 2 and false-alert cost of 1.
+- A binary decision threshold is selected on calibration data using a missed-event cost of 2 and false-alert cost of 1, but this threshold is assessed separately from the quality of the underlying probability/ranking model.
 
-This separation follows the principle in scikit-learn's probability-calibration guidance that the calibrator should be fit on data independent of the data used to fit the base classifier.
+This separation follows scikit-learn's distinction between the statistical problem of estimating scores/probabilities and the decision problem of converting those scores to actions or class labels. Probability calibration is also fit on data separate from classifier fitting.
 
 ## Rare-event evaluation
 
@@ -83,7 +83,7 @@ The sealed report also includes:
 - event base rate
 - ROC-AUC
 - Brier score and Brier skill versus a base-rate probability forecast
-- precision and recall
+- precision and recall at the pre-specified operating threshold
 - false-positive rate and alert rate
 - missed-event rate
 - precision enrichment versus the base rate
@@ -91,18 +91,36 @@ The sealed report also includes:
 - date-block bootstrap confidence interval for PR-AUC
 - direct comparison with the deterministic structural baseline on the same sealed test
 
-## Promotion gate
+## Dual promotion governance
 
-A pooled challenger is not deployed unless the sealed test satisfies all of the following:
+VMEWS deliberately uses **two different gates** because predictive quality and an action threshold are different questions.
+
+### Gate A — pooled predictive evidence / calibrated probability
+
+The pooled challenger may be deployed as a separate predictive-evidence layer only if the sealed test satisfies all of the following:
 
 - at least 100 distinct crash episodes in the sealed evaluation
 - PR-AUC exceeds the sealed event base rate by more than 0.02
 - PR-AUC exceeds the structural baseline on the same sealed block by at least 0.005
 - Brier skill is positive
 - ROC-AUC is at least 0.58
-- crash-episode recall is at least 35%
+- the lower bound of a 95% date-block-bootstrap confidence interval for PR-AUC remains above the sealed event base rate
 
-A failed challenger is not silently substituted into the user-facing web application.
+Passing Gate A permits VMEWS to show the pooled calibrated probability and risk percentile as **predictive research evidence**. It does not authorize a RED/YELLOW alert by itself.
+
+### Gate B — standalone binary alert policy
+
+The pooled model may become an independent alert generator only if Gate A passes **and** crash-episode recall at the pre-specified binary operating threshold is at least 35% on the sealed test.
+
+If Gate B fails:
+
+- the pooled probability/rank may still be displayed if Gate A passed;
+- the failure and low binary-threshold recall remain visible in the model audit;
+- pooled output cannot create RED/YELLOW;
+- pooled output cannot create a buy/sell or autonomous risk action;
+- the canonical T-Day structural policy remains the alert source.
+
+This prevents the project from hiding a weak operating threshold behind otherwise useful probability/ranking performance.
 
 ## Production learning loop
 
@@ -111,7 +129,7 @@ VMEWS does **not** automatically retrain after every daily observation.
 - Daily: refresh completed-EOD features and run inference with the frozen champion.
 - After labels mature: observations become eligible for the next research dataset.
 - Monthly: retrain challenger candidates.
-- Promotion: only after the complete validation gate passes.
+- Promotion: only after the complete sealed predictive-evidence gate passes. An independent alert policy requires its own Gate B approval.
 
 This champion/challenger design prevents a model from changing behavior every day simply because a few new observations arrived.
 
@@ -120,8 +138,9 @@ This champion/challenger design prevents a model from changing behavior every da
 1. The historical pooled panel currently uses today's HOSE reference universe. Historical delisted constituents are not yet reconstructed, so survivorship bias is an explicit limitation. Classic survivorship research shows that conditioning on survivors can create or exaggerate apparent predictability; VMEWS therefore does not claim a survivorship-free historical panel at this stage.
 2. Corporate-action treatment is still a research heuristic rather than an authoritative adjusted-price/corporate-action master.
 3. The model predicts the defined drawdown event only. It does not predict target prices or investment returns.
-4. A sealed historical pass does not guarantee future accuracy. Live calibration and drift must be monitored.
-5. Model development is deliberately constrained after sealed-test observation. Repeatedly tuning against the same holdout would convert it into a development set and create backtest-overfitting risk (Bailey et al., *The Probability of Backtest Overfitting*).
+4. Positive Brier skill may still be economically small. A statistically acceptable probability layer is not the same as a highly accurate forecast.
+5. A sealed historical pass does not guarantee future accuracy. Live calibration and drift must be monitored.
+6. Model development is deliberately constrained after sealed-test observation. Repeatedly tuning features, architectures or thresholds against the same holdout would convert it into a development set and create backtest-overfitting risk (Bailey et al., *The Probability of Backtest Overfitting*).
 
 ## Research references
 
@@ -130,4 +149,4 @@ This champion/challenger design prevents a model from changing behavior every da
 - Saito, T., & Rehmsmeier, M. (2015). *The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets*. PLOS ONE, 10(3), e0118432. DOI: 10.1371/journal.pone.0118432.
 - Bailey, D. H., Borwein, J., López de Prado, M., & Zhu, Q. J. (2015). *The Probability of Backtest Overfitting*. Journal of Computational Finance / SSRN 2326253.
 - Brown, S. J., Goetzmann, W., Ibbotson, R. G., & Ross, S. A. (1992). *Survivorship Bias in Performance Studies*. Review of Financial Studies, 5(4), 553–580. DOI: 10.1093/rfs/5.4.553.
-- scikit-learn 1.9 documentation, *Probability calibration*.
+- scikit-learn 1.9 documentation, *Probability calibration* and *Tuning the decision threshold for class prediction*.
