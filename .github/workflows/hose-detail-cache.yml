@@ -1,0 +1,77 @@
+name: HOSE universal detail resolver
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '10 23 * * 0-4'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_hose_detail_cache.py'
+      - 'api/price_history.py'
+      - 'api/radar.py'
+      - 'api/stocks.py'
+      - '.github/workflows/hose-detail-cache.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: vmews-hose-detail-cache
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install data dependencies
+        run: pip install --disable-pip-version-check -q -r requirements.txt
+      - name: Build HOSE resolver snapshot
+        run: python scripts/update_hose_detail_cache.py
+      - name: Validate HOSE route coverage
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('data/hose-fallbacks/manifest.json',encoding='utf-8'))
+          assert p.get('version')=='VMEWS-HOSE-RESOLVER-1.0.0',p
+          assert p.get('hoseReference',0)>=250,p
+          assert p.get('routeCoverageRatio',0)>=0.999,p
+          assert not p.get('unresolved'),p.get('unresolved')
+          assert p.get('deepResearchCoverageRatio',0)>=0.90,p
+          for s in p.get('fallbackSymbols',[]):
+              q=json.load(open(f'data/hose-fallbacks/{s}.json',encoding='utf-8'))
+              assert q.get('symbol')==s and q.get('mode')=='detail' and len(q.get('history',[]))>=1,(s,len(q.get('history',[])))
+          report=(
+            '# VMEWS HOSE UNIVERSAL RESOLVER PASS\n\n'
+            f"HOSE reference: {p.get('hoseReference')}\n"
+            f"Primary Yahoo deep route: {p.get('primaryYahooDeep')}\n"
+            f"CDN Vnstock deep fallback: {p.get('cdnVnstockDeep')}\n"
+            f"CDN limited-history fallback: {p.get('cdnLimitedHistory')}\n"
+            f"Route coverage: {p.get('routeCoverageRatio',0):.1%}\n"
+            f"Full deep-research coverage: {p.get('deepResearchCoverageRatio',0):.1%}\n"
+            f"Unresolved: {len(p.get('unresolved',[]))}\n"
+          )
+          open('hose-resolver-report.md','w',encoding='utf-8').write(report)
+          print(report)
+          PY
+      - name: Publish resolver diagnostic
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS HOSE RESOLVER PASS ${GITHUB_SHA::7}" --body-file hose-resolver-report.md
+      - name: Commit refreshed fallback data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/hose-fallbacks
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh VMEWS HOSE detail fallback cache [data-only]'
+          git pull --rebase origin main
+          git push origin HEAD:main
