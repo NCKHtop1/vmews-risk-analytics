@@ -36,6 +36,7 @@ jobs:
           rm -rf "/tmp/vmews-honesty-$SYMBOL"
           timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-honesty-$SYMBOL" --virtual-time-budget=350000 --dump-dom "$BASE/research-final.html?smoke=$SYMBOL" > dom.html 2>chrome.err
           grep -Fq 'Research analysis complete' dom.html
+          grep -Fq 'regularized chronological Platt' dom.html
           python - "$SYMBOL" <<'PY' > result.txt
           import re,html,sys,json
           s=open('dom.html',encoding='utf-8',errors='ignore').read();sym=sys.argv[1]
@@ -50,26 +51,30 @@ jobs:
               if not v:return None
               m=re.search(r'-?\d+(?:\.\d+)?',v);return float(m.group()) if m else None
           crash=spanval('CALIBRATED 20D CRASH ESTIMATE');evidence=spanval('Evidence sufficiency')
-          pr=num(audit('PR-AUC'));base=num(audit('Crash base rate'));base=base/100 if base is not None and '%' in (audit('Crash base rate') or '') else base
-          bs=num(audit('Brier skill'))
+          pr=num(audit('Rank PR-AUC'))
+          base_raw=audit('Meta-test base rate');base=num(base_raw);base=base/100 if base is not None and '%' in (base_raw or '') else base
+          bs=num(audit('Probability Platt Brier skill'))
+          gate=audit('Probability gate')
+          meta=audit('Meta calibration test')
           names=['Structural EWS','Random Forest','ANFIS','Regime model','VAE anomaly','LSTM crash']
-          vals=[]
-          for name in names:
-              x=spanval(name);vals.append(x)
-          weak=(bs is None or bs<=0 or pr is None or base is None or pr<=base)
+          vals=[spanval(name) for name in names]
+          weak=(gate!='PASS')
           if weak:
-              assert crash=='WITHHELD',(sym,crash,pr,base,bs)
+              assert crash=='WITHHELD',(sym,crash,pr,base,bs,gate)
               assert evidence and (evidence.startswith('LIMITED') or evidence.startswith('THIN')),(sym,evidence)
           else:
-              assert crash and crash!='WITHHELD',(sym,crash,pr,base,bs)
+              assert crash and crash!='WITHHELD',(sym,crash,pr,base,bs,gate)
+              assert pr is not None and base is not None and pr>base,(sym,pr,base)
+              assert bs is not None and bs>0,(sym,bs)
+          assert meta and 'states' in meta and 'events' in meta,(sym,meta)
           assert len(set(v for v in vals if v))>=2,(sym,vals)
-          out={'symbol':sym,'probabilityDisplay':crash,'evidence':evidence,'prAuc':pr,'baseRate':base,'brierSkill':bs,'weakCalibration':weak,'modelCardValues':vals}
+          out={'symbol':sym,'probabilityDisplay':crash,'probabilityGate':gate,'evidence':evidence,'rankPrAuc':pr,'metaBaseRate':base,'plattBrierSkill':bs,'metaTest':meta,'modelCardValues':vals}
           print(json.dumps(out,ensure_ascii=False,indent=2))
           PY
           cat > issue.md <<EOF
-          # VMEWS V4 HONESTY PASS · $SYMBOL
+          # VMEWS V4 PLATT HONESTY PASS · $SYMBOL
           - Candidate: $BASE/research-final.html
           - Commit: $GITHUB_SHA
           EOF
           cat result.txt >> issue.md
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 HONESTY PASS $SYMBOL ${GITHUB_SHA::7}" --body-file issue.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 PLATT HONESTY PASS $SYMBOL ${GITHUB_SHA::7}" --body-file issue.md
