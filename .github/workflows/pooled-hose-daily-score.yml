@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths:
       - 'data/pooled-hose/model-meta.json'
+      - 'data/pooled-hose/robustness.json'
       - 'scripts/score_pooled_hose_model.py'
       - '.github/workflows/pooled-hose-daily-score.yml'
 
@@ -39,32 +40,44 @@ jobs:
           pip install --disable-pip-version-check -q scikit-learn==1.9.0 joblib==1.5.1
       - name: Score latest completed-EOD HOSE cross-section
         run: python scripts/score_pooled_hose_model.py
-      - name: Validate daily pooled predictive snapshot
+      - name: Validate rank-robust daily pooled snapshot
         run: |
           python - <<'PY'
           import json, pathlib
           p=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
+          r=json.load(open('data/pooled-hose/robustness.json',encoding='utf-8'))
           assert p.get('version')=='VMEWS-POOLED-HOSE-1.2.0',p.get('version')
           assert p.get('promotionPassed') is True,p
+          assert p.get('rankRobustnessPassed') is True,p
+          assert p.get('rankEvidenceGrade') in {'MODERATE','STRONG_RANKING'},p.get('rankEvidenceGrade')
+          assert p.get('robustnessVersion')=='VMEWS-POOLED-ROBUSTNESS-1.1.0',p.get('robustnessVersion')
           assert isinstance(p.get('standaloneAlertApproved'),bool),p
-          assert p.get('evidenceGrade') in {'MODERATE','STRONG'},p.get('evidenceGrade')
           assert p.get('modelAsOf'),p
           assert p.get('currentScored',0)>=100,p.get('currentScored')
           assert p.get('historyCoverage',0)>=.90,p.get('historyCoverage')
-          assert p.get('governance','').startswith('Daily frozen pooled predictive-evidence inference'),p.get('governance')
-          probs=[x.get('crashProbability') for x in p.get('scores',{}).values()]
-          assert all(x is not None and 0<=x<=1 for x in probs),'invalid probabilities'
-          assert all(x.get('standaloneAlertApproved')==p.get('standaloneAlertApproved') for x in p.get('scores',{}).values()),'dual-gate mismatch'
+          assert p.get('governance','').startswith('Daily frozen pooled ranking inference'),p.get('governance')
+          prob_ok=bool(r['absoluteProbabilityGate']['passed'])
+          assert p.get('absoluteProbabilityUsable') is prob_ok,(p.get('absoluteProbabilityUsable'),prob_ok)
+          for x in p.get('scores',{}).values():
+              assert 0<=x.get('riskPercentile',-1)<=1,x
+              assert 1<=x.get('riskBucket',0)<=10,x
+              assert x.get('empiricalBucketEventRate') is not None,x
+              assert x.get('standaloneAlertApproved')==p.get('standaloneAlertApproved'),x
+              if prob_ok:
+                  assert x.get('crashProbability') is not None and 0<=x['crashProbability']<=1,x
+              else:
+                  assert x.get('crashProbability') is None and x.get('probabilityUsable') is False,x
           report=(
             '# VMEWS POOLED HOSE DAILY SCORE PASS\n\n'
             f"Version: {p.get('version')}\n"
             f"Model EOD: {p.get('modelAsOf')}\n"
             f"Champion: {p.get('champion')}\n"
-            f"Evidence grade: {p.get('evidenceGrade')}\n"
+            f"Ranking evidence: {p.get('rankEvidenceGrade')}\n"
+            f"Absolute probability: {p.get('absoluteProbabilityStatus')}\n"
             f"Standalone alert approved: {p.get('standaloneAlertApproved')}\n"
             f"Scored: {p.get('currentScored')} HOSE names\n"
             f"History coverage: {p.get('historyCoverage',0):.1%}\n"
-            'Retraining: no — frozen champion inference only.\n'
+            'Retraining: no — frozen champion ranking inference only.\n'
           )
           pathlib.Path('pooled-daily-report.md').write_text(report,encoding='utf-8')
           print(report)
@@ -75,6 +88,6 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/pooled-hose/current-scores.json
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh frozen VMEWS pooled HOSE scores [data-only]'
+          git commit -m 'Refresh frozen VMEWS pooled HOSE rank scores [data-only]'
           git pull --rebase origin main
           git push origin HEAD:main
