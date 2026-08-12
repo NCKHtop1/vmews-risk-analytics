@@ -5,6 +5,14 @@ on:
     branches: [main]
     paths:
       - 'data/hose-fallbacks/**'
+      - 'research-final.html'
+      - 'deep-alert-fallback.js'
+      - 'investor-chart.js'
+      - 'tday-chart-marker.js'
+      - 'research-short-history.js'
+      - 'research-engine-v2.js'
+      - 'research-app.js'
+      - '.github/workflows/hose-universal-cdn-smoke.yml'
   workflow_dispatch:
 
 permissions:
@@ -55,11 +63,13 @@ jobs:
           for i in $(seq 1 35); do
             if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
               && curl -fsSL --max-time 20 "$BASE/deep-alert-fallback.js" -o fallback.js \
-              && curl -fsSL --max-time 20 "$BASE/investor-chart.js" -o chart.js; then assets=yes; break; fi
+              && curl -fsSL --max-time 20 "$BASE/investor-chart.js" -o chart.js \
+              && curl -fsSL --max-time 20 "$BASE/tday-chart-marker.js" -o marker.js; then assets=yes; break; fi
             sleep 4
           done
           node --check fallback.js >/dev/null 2>&1 || assets=no
           node --check chart.js >/dev/null 2>&1 || assets=no
+          node --check marker.js >/dev/null 2>&1 || assets=no
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           EXIT=127
           if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
