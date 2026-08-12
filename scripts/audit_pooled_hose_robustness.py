@@ -2,8 +2,9 @@
 
 The model specification is NOT changed by this script. It reconstructs the
 same panel and sealed test used by VMEWS-POOLED-HOSE-1.2.0, then asks whether
-the reported predictive ranking survives dependence-aware resampling and
-sub-period checks. These diagnostics are governance evidence, not a tuning set.
+the predictive ranking survives dependence-aware resampling and sub-period
+checks. Absolute probability calibration is audited separately. These
+post-freeze diagnostics may only downgrade evidence; they are not a tuning set.
 """
 import importlib.util
 import json
@@ -18,7 +19,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score, brier_score_
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 OUT=ROOT/'data'/'pooled-hose'
-VERSION='VMEWS-POOLED-ROBUSTNESS-1.0.0'
+VERSION='VMEWS-POOLED-ROBUSTNESS-1.1.0'
 SEED=20260812
 REPS=200
 
@@ -75,18 +76,27 @@ def symbol_cluster_ci(frame,p,reps=REPS):
 
 def calibration_bins(y,p,bins=10):
     y=np.asarray(y,dtype=int);p=np.asarray(p,dtype=float);order=np.argsort(p);parts=np.array_split(order,bins);out=[];ece=0.0
-    for ids in parts:
+    for j,ids in enumerate(parts,1):
         if not len(ids):continue
         mp=float(p[ids].mean());obs=float(y[ids].mean());w=len(ids)/len(y);ece+=w*abs(mp-obs)
-        out.append({'n':int(len(ids)),'meanProbability':mp,'observedRate':obs,'absoluteGap':abs(mp-obs)})
+        out.append({'bin':j,'n':int(len(ids)),'meanProbability':mp,'observedRate':obs,'absoluteGap':abs(mp-obs)})
     return {'ece':float(ece),'bins':out}
+
+def risk_buckets(y,p,buckets=10):
+    y=np.asarray(y,dtype=int);p=np.asarray(p,dtype=float);base=float(y.mean());order=np.argsort(p);parts=np.array_split(order,buckets);out=[]
+    for j,ids in enumerate(parts,1):
+        if not len(ids):continue
+        rate=float(y[ids].mean());out.append({'bucket':j,'percentileFrom':(j-1)/buckets,'percentileTo':j/buckets,
+            'n':int(len(ids)),'events':int(y[ids].sum()),'eventRate':rate,'liftVsBase':float(rate/base) if base>0 else None,
+            'minCalibratedScore':float(p[ids].min()),'maxCalibratedScore':float(p[ids].max())})
+    return out
 
 def main():
     validation=json.load(open(OUT/'validation.json',encoding='utf-8'))
     assert validation['version']=='VMEWS-POOLED-HOSE-1.2.0',validation['version']
     assert validation['champion']=='logistic_l2','Audit is frozen to the promoted champion; update only through a new model version.'
 
-    universe= B.hose_universe();hist={};errors=[]
+    universe=B.hose_universe();hist={};errors=[]
     with ThreadPoolExecutor(max_workers=12) as ex:
         fut={ex.submit(B.fetch_one,m):m for m in universe}
         for f in as_completed(fut):
@@ -102,40 +112,51 @@ def main():
     tr,ca,te,split=V2.sealed_split(panel,dates,sealed_idx)
     m,model,cal,p=V2.eval_split('logistic_l2',tr,ca,te)
 
-    # Integrity: reconstructed core sealed metrics must remain close to the promoted report.
     ref=validation['sealedTest']
     if abs(m['prAuc']-ref['prAuc'])>.01 or abs(m['baseRate']-ref['baseRate'])>.01:
         raise RuntimeError(f"Audit reconstruction drifted: PR {m['prAuc']} vs {ref['prAuc']}; base {m['baseRate']} vs {ref['baseRate']}")
 
-    mb=moving_date_block_ci(te,p,block_dates=max(2,V2.PURGE_DATES))
-    sc=symbol_cluster_ci(te,p)
-    unique=sorted(te.date.unique());cut=unique[len(unique)//2]
-    mask1=(te.date<cut).to_numpy();mask2=~mask1
+    mb=moving_date_block_ci(te,p,block_dates=max(2,V2.PURGE_DATES));sc=symbol_cluster_ci(te,p)
+    unique=sorted(te.date.unique());cut=unique[len(unique)//2];mask1=(te.date<cut).to_numpy();mask2=~mask1
     halves=[metrics(te.loc[mask1],p[mask1]),metrics(te.loc[mask2],p[mask2])]
     halves[0]['period']={'from':str(te.loc[mask1].date.min().date()),'to':str(te.loc[mask1].date.max().date())}
     halves[1]['period']={'from':str(te.loc[mask2].date.min().date()),'to':str(te.loc[mask2].date.max().date())}
-    caldiag=calibration_bins(te.crash.to_numpy(dtype=int),p,10)
-    base=m['baseRate'];reasons=[]
-    if not mb or mb['low']<=base:reasons.append('moving-date-block PR-AUC lower 95% bound is not above sealed base rate')
-    if not sc or sc['low']<=base:reasons.append('security-cluster PR-AUC lower 95% bound is not above sealed base rate')
+    caldiag=calibration_bins(te.crash.to_numpy(dtype=int),p,10);buckets=risk_buckets(te.crash.to_numpy(dtype=int),p,10)
+
+    base=m['baseRate'];rank_reasons=[]
+    if not mb or mb['low']<=base:rank_reasons.append('moving-date-block PR-AUC lower 95% bound is not above sealed base rate')
+    if not sc or sc['low']<=base:rank_reasons.append('security-cluster PR-AUC lower 95% bound is not above sealed base rate')
     for i,h in enumerate(halves,1):
-        if h['prAuc'] is None or h['prAuc']<=h['baseRate']:reasons.append(f'sealed half {i} PR-AUC does not exceed its own base rate')
-        if h['rocAuc'] is None or h['rocAuc']<.55:reasons.append(f'sealed half {i} ROC-AUC < 0.55')
-    robust=len(reasons)==0
-    grade='MODERATE' if robust else 'LIMITED'
-    if robust and m['brierSkill']>=.03 and caldiag['ece']<=.03:grade='STRONG'
+        if h['prAuc'] is None or h['prAuc']<=h['baseRate']:rank_reasons.append(f'sealed half {i} PR-AUC does not exceed its own base rate')
+        if h['rocAuc'] is None or h['rocAuc']<.55:rank_reasons.append(f'sealed half {i} ROC-AUC < 0.55')
+    rank_robust=len(rank_reasons)==0
+
+    prob_reasons=[]
+    if m.get('brierSkill') is None or m['brierSkill']<=0:prob_reasons.append('full sealed Brier skill is not positive')
+    for i,h in enumerate(halves,1):
+        if h.get('brierSkill') is None or h['brierSkill']<=0:prob_reasons.append(f'sealed half {i} Brier skill is not positive')
+    if caldiag['ece']>.05:prob_reasons.append('sealed equal-count-bin expected calibration error exceeds 5%')
+    absolute_prob=rank_robust and not prob_reasons
+
+    rank_grade='MODERATE' if rank_robust else 'LIMITED'
+    if rank_robust and m['prAuc']>=2*base and mb['low']>=1.25*base and sc['low']>=1.25*base:rank_grade='STRONG_RANKING'
     payload={'version':VERSION,'modelVersion':validation['version'],'generatedAt':datetime.now(timezone.utc).isoformat(),
-             'purpose':'Independent robustness audit of the frozen pooled champion; no model or threshold tuning.',
+             'purpose':'Independent post-freeze robustness audit; model and threshold are not retuned.',
              'historyCoverage':len(hist)/len(universe),'sealedReconstruction':m,'movingDateBlockPrAucCI95':mb,
-             'securityClusterPrAucCI95':sc,'sealedSubperiods':halves,'calibrationDiagnostics':caldiag,
-             'robustnessGate':{'passed':robust,'grade':grade,'reasons':reasons,
+             'securityClusterPrAucCI95':sc,'sealedSubperiods':halves,'calibrationDiagnostics':caldiag,'riskBuckets':buckets,
+             'rankRobustnessGate':{'passed':rank_robust,'grade':rank_grade,'reasons':rank_reasons,
                 'rule':'Both dependence-aware PR-AUC lower bounds > sealed base; each sealed half PR-AUC > own base and ROC-AUC >=0.55.'},
+             'absoluteProbabilityGate':{'passed':absolute_prob,'status':'USABLE' if absolute_prob else 'WITHHELD_CALIBRATION_STABILITY',
+                'reasons':prob_reasons,'rule':'Rank robustness plus positive Brier skill in the full sealed block and each sealed half; ECE <=5%.'},
              'notes':['Moving-date blocks preserve approximately one 20-session label horizon of serial dependence.',
                       'Security-cluster bootstrap preserves each sampled security time history.',
-                      'These post-freeze diagnostics are used to downgrade evidence if needed, never to retune the existing sealed model.'],
+                      'Risk buckets report empirical sealed event frequency by pooled risk rank and are not point forecasts.',
+                      'Post-freeze diagnostics may downgrade ranking/probability evidence, never retune the existing sealed model.'],
              'fetchErrors':errors[:30]}
     (OUT/'robustness.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8')
-    print(json.dumps({'robustnessPassed':robust,'grade':grade,'movingDateCI':mb,'symbolCI':sc,'subperiods':halves,'ece':caldiag['ece'],'reasons':reasons},ensure_ascii=False,indent=2))
-    if not robust:raise RuntimeError('Frozen pooled robustness audit did not pass: '+' | '.join(reasons))
+    print(json.dumps({'rankRobustnessPassed':rank_robust,'rankGrade':rank_grade,'absoluteProbabilityPassed':absolute_prob,
+        'probabilityReasons':prob_reasons,'movingDateCI':mb,'symbolCI':sc,'subperiods':halves,'ece':caldiag['ece'],
+        'topRiskBucket':buckets[-1] if buckets else None,'rankReasons':rank_reasons},ensure_ascii=False,indent=2))
+    if not rank_robust:raise RuntimeError('Frozen pooled rank robustness audit did not pass: '+' | '.join(rank_reasons))
 
 if __name__=='__main__':main()
