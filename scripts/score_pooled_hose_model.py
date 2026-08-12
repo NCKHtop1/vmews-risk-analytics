@@ -2,7 +2,8 @@
 
 This script never retrains or promotes a model. It rebuilds the current
 completed-EOD cross-section with the exact production feature recipe and applies
-the versioned model artifact produced by the dual-gate pooled trainer.
+the frozen pooled champion. Post-freeze robustness governance can downgrade
+absolute probability display without changing the underlying ranking model.
 """
 import importlib.util
 import json
@@ -18,6 +19,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / 'data' / 'pooled-hose'
 MODEL = OUT / 'model.joblib'
 SCORES = OUT / 'current-scores.json'
+ROBUSTNESS = OUT / 'robustness.json'
 
 
 def load(name, path):
@@ -35,6 +37,28 @@ def current_from_rows(symbol, rows):
     return current
 
 
+def robust_governance():
+    if not ROBUSTNESS.exists():
+        raise RuntimeError('No post-freeze pooled robustness audit is available')
+    p = json.loads(ROBUSTNESS.read_text(encoding='utf-8'))
+    if p.get('modelVersion') != 'VMEWS-POOLED-HOSE-1.2.0':
+        raise RuntimeError(f"Robustness/model mismatch: {p.get('modelVersion')}")
+    rank = p.get('rankRobustnessGate') or {}
+    prob = p.get('absoluteProbabilityGate') or {}
+    if not rank.get('passed'):
+        raise RuntimeError('Frozen pooled ranking has not passed the post-freeze robustness gate')
+    buckets = p.get('riskBuckets') or []
+    if len(buckets) != 10:
+        raise RuntimeError('Pooled robustness audit does not contain 10 empirical sealed risk buckets')
+    return p, rank, prob, buckets
+
+
+def bucket_for_percentile(buckets, q):
+    q = min(1.0, max(0.0, float(q)))
+    k = min(10, max(1, int(math.ceil(max(q, 1e-12) * 10))))
+    return next((x for x in buckets if int(x.get('bucket', 0)) == k), buckets[k-1])
+
+
 def main():
     if not MODEL.exists():
         raise RuntimeError('No promoted pooled model artifact is available')
@@ -43,6 +67,7 @@ def main():
         raise RuntimeError('Pooled predictive model artifact is not promotion-approved')
     if bundle.get('featureVersion') != B.FEATURE_VERSION:
         raise RuntimeError(f"Feature version mismatch: {bundle.get('featureVersion')} vs {B.FEATURE_VERSION}")
+    robust, rank_gate, probability_gate, buckets = robust_governance()
 
     universe = B.hose_universe()
     rows_by_symbol, errors = {}, []
@@ -72,19 +97,31 @@ def main():
 
     model, platt = bundle['model'], bundle['platt']
     raw = B.predict_raw(model, frame)
-    prob = B.calibrate(platt, raw)
+    internal_prob = B.calibrate(platt, raw)
     sealed_ref = bundle['sealedReferenceProbabilities']
     base = float(bundle['sealedBaseRate'])
     standalone = bool(bundle.get('standaloneAlertApproved', False))
-    evidence_grade = str(bundle.get('evidenceGrade') or 'MODERATE')
+    probability_usable = bool(probability_gate.get('passed'))
+    rank_grade = str(rank_gate.get('grade') or 'MODERATE')
     scores = {}
-    for row, rr, pp in zip(frame.to_dict('records'), raw, prob):
+    for row, rr, pp in zip(frame.to_dict('records'), raw, internal_prob):
+        percentile = B.percentile(sealed_ref, pp)
+        bucket = bucket_for_percentile(buckets, percentile)
         scores[row['symbol']] = {
-            'symbol': row['symbol'], 'modelAsOf': str(pd.Timestamp(row['date']).date()),
-            'rawScore': float(rr), 'crashProbability': float(pp),
-            'probabilityUsable': True, 'standaloneAlertApproved': standalone,
-            'riskPercentile': B.percentile(sealed_ref, pp),
-            'relativeRisk': float(pp / base) if base > 0 else None,
+            'symbol': row['symbol'],
+            'modelAsOf': str(pd.Timestamp(row['date']).date()),
+            'rawScore': float(rr),
+            # Absolute calibrated probability is intentionally withheld when
+            # post-freeze sub-period calibration is unstable.
+            'crashProbability': float(pp) if probability_usable else None,
+            'probabilityUsable': probability_usable,
+            'probabilityStatus': 'USABLE' if probability_usable else str(probability_gate.get('status') or 'WITHHELD'),
+            'standaloneAlertApproved': standalone,
+            'riskPercentile': percentile,
+            'riskBucket': int(bucket['bucket']),
+            'empiricalBucketEventRate': float(bucket['eventRate']),
+            'empiricalBucketLiftVsBase': float(bucket['liftVsBase']) if bucket.get('liftVsBase') is not None else None,
+            'sealedBaseRate': base,
             'technical': float(row['technical']),
             'turnover20': float(math.expm1(row['logTurnover20'])),
             'domain': 'HOSE_CURRENT_LIQUID_PIT',
@@ -95,21 +132,30 @@ def main():
         'generatedAt': datetime.now(timezone.utc).isoformat(),
         'modelAsOf': str(pd.Timestamp(modal).date()),
         'champion': bundle['champion'], 'promotionPassed': True,
-        'standaloneAlertApproved': standalone, 'evidenceGrade': evidence_grade,
+        'rankRobustnessPassed': True, 'rankEvidenceGrade': rank_grade,
+        'absoluteProbabilityUsable': probability_usable,
+        'absoluteProbabilityStatus': 'USABLE' if probability_usable else str(probability_gate.get('status') or 'WITHHELD'),
+        'absoluteProbabilityReasons': probability_gate.get('reasons') or [],
+        'standaloneAlertApproved': standalone,
         'trainingCutoff': bundle.get('trainingCutoff'),
         'calibrationCutoff': bundle.get('calibrationCutoff'),
         'sealedBaseRate': base, 'currentScored': len(scores),
         'historyCoverage': len(rows_by_symbol) / len(universe),
+        'robustnessVersion': robust.get('version'),
         'scores': scores, 'fetchErrors': errors[:30],
         'governance': (
-            'Daily frozen pooled predictive-evidence inference only; no automatic retraining or model promotion. '
-            + ('Standalone binary alert policy is approved.' if standalone else 'Standalone binary alert policy is NOT approved; pooled scores cannot create RED/YELLOW or autonomous actions.')
+            'Daily frozen pooled ranking inference only; no automatic retraining or model promotion. '
+            + ('Absolute calibrated probability passed stability audit. ' if probability_usable else 'Absolute calibrated probability is WITHHELD because post-freeze calibration stability did not pass. ')
+            + ('Standalone binary alert policy is approved.' if standalone else 'Standalone binary alert policy is NOT approved; pooled evidence cannot create RED/YELLOW or autonomous actions.')
         )
     }
     SCORES.write_text(json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
-    print(json.dumps({'version': payload['version'], 'modelAsOf': payload['modelAsOf'],
-                      'currentScored': len(scores), 'historyCoverage': payload['historyCoverage'],
-                      'standaloneAlertApproved': standalone, 'evidenceGrade': evidence_grade}, indent=2))
+    print(json.dumps({
+        'version': payload['version'], 'modelAsOf': payload['modelAsOf'],
+        'currentScored': len(scores), 'historyCoverage': payload['historyCoverage'],
+        'rankEvidenceGrade': rank_grade, 'absoluteProbabilityUsable': probability_usable,
+        'standaloneAlertApproved': standalone,
+    }, indent=2))
 
 
 if __name__ == '__main__':
