@@ -8,6 +8,7 @@ on:
       - 'research-final.html'
       - 'research-engine-v3.js'
       - 'research-runtime.js'
+      - 'research-honesty-v4.js'
       - 'deep-alert-fallback.js'
       - 'alert-policy.js'
       - '.github/workflows/research-v4-repro.yml'
@@ -35,6 +36,7 @@ jobs:
             rm -rf "/tmp/vmews-repro-$RUN"
             timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-repro-$RUN" --virtual-time-budget=350000 --dump-dom "$URL" > "dom$RUN.html" 2>"chrome$RUN.err"
             grep -Fq 'Research analysis complete' "dom$RUN.html"
+            grep -Fq 'regularized chronological Platt' "dom$RUN.html"
           done
           python - <<'PY' > repro.txt
           import re,html
@@ -57,6 +59,10 @@ jobs:
                   'historicalRisk':after('HISTORICAL RISK PERCENTILE'),
                   'crashEstimate':after('CALIBRATED 20D CRASH ESTIMATE'),
                   'researchRisk':after('CURRENT RESEARCH RISK INDEX'),
+                  'probabilityGate':audit('Probability gate'),
+                  'rankPrAuc':audit('Rank PR-AUC'),
+                  'plattBrierSkill':audit('Probability Platt Brier skill'),
+                  'metaTest':audit('Meta calibration test'),
                   'currentDate':audit('Current feature date'),
                   'lastLabelled':audit('Last labelled training state'),
                   'models':models,
@@ -65,10 +71,11 @@ jobs:
           print('RUN1',a);print('RUN2',b)
           assert a==b,(a,b)
           assert a['currentDate'] and a['lastLabelled'] and a['lastLabelled']<a['currentDate'],a
+          assert a['probabilityGate'] in ('PASS','WITHHELD'),a
+          assert a['rankPrAuc'] and a['plattBrierSkill'] and a['metaTest'],a
           now=datetime.now(ZoneInfo('Asia/Ho_Chi_Minh'))
           in_cash=now.weekday()<5 and time(8,45)<=now.time()<time(15,20)
-          if in_cash:
-              assert a['currentDate']<now.date().isoformat(),(a['currentDate'],now.isoformat())
+          if in_cash: assert a['currentDate']<now.date().isoformat(),(a['currentDate'],now.isoformat())
           for k,v in a['models'].items(): assert v and v!='UNAVAILABLE',(k,v)
           print('IDENTICAL=yes')
           print('VIETNAM_CASH_SESSION='+str(in_cash).lower())
@@ -79,7 +86,7 @@ jobs:
           - Candidate: $BASE/research-final.html
           - Commit: $GITHUB_SHA
           - Two independent browser runs: identical
-          - Seeded RF/VAE/LSTM: identical rendered outputs
+          - Seeded RF/VAE/LSTM and probability gate: identical rendered outputs
           - Current state later than last labelled state: yes
           - Completed-EOD guard during Vietnam cash session: yes
           EOF
