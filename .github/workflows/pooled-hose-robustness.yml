@@ -43,16 +43,19 @@ jobs:
         run: |
           python - <<'PY'
           import json,pathlib
-          p=json.load(open('data/pooled-hose/robustness.json',encoding='utf-8'));m=p['movingDateBlockPrAucCI95'];s=p['securityClusterPrAucCI95'];r=p['sealedReconstruction'];g=p['robustnessGate']
-          assert p['version']=='VMEWS-POOLED-ROBUSTNESS-1.0.0',p['version']
+          p=json.load(open('data/pooled-hose/robustness.json',encoding='utf-8'));m=p['movingDateBlockPrAucCI95'];s=p['securityClusterPrAucCI95'];r=p['sealedReconstruction'];g=p['rankRobustnessGate'];prob=p['absoluteProbabilityGate']
+          assert p['version']=='VMEWS-POOLED-ROBUSTNESS-1.1.0',p['version']
           assert p['modelVersion']=='VMEWS-POOLED-HOSE-1.2.0',p['modelVersion']
           assert g['passed'],g
-          assert g['grade'] in {'MODERATE','STRONG'},g
+          assert g['grade'] in {'MODERATE','STRONG_RANKING'},g
           assert m['low']>r['baseRate'],(m,r['baseRate'])
           assert s['low']>r['baseRate'],(s,r['baseRate'])
           assert all(x['prAuc']>x['baseRate'] and x['rocAuc']>=.55 for x in p['sealedSubperiods']),p['sealedSubperiods']
-          lines=['# VMEWS POOLED ROBUSTNESS PASS','',f"Model: {p['modelVersion']}",f"Grade: {g['grade']}",f"Reconstructed sealed PR-AUC: {r['prAuc']:.4f} vs base {r['baseRate']:.4f}",f"Moving-date-block 95% CI: {m['low']:.4f}–{m['high']:.4f}",f"Security-cluster 95% CI: {s['low']:.4f}–{s['high']:.4f}",f"Calibration ECE: {p['calibrationDiagnostics']['ece']:.4f}",'','Sealed halves:']
+          assert len(p.get('riskBuckets',[]))==10,p.get('riskBuckets')
+          lines=['# VMEWS POOLED ROBUSTNESS PASS','',f"Model: {p['modelVersion']}",f"Ranking grade: {g['grade']}",f"Absolute probability: {'PASS' if prob['passed'] else prob['status']}",f"Reconstructed sealed PR-AUC: {r['prAuc']:.4f} vs base {r['baseRate']:.4f}",f"Moving-date-block 95% CI: {m['low']:.4f}–{m['high']:.4f}",f"Security-cluster 95% CI: {s['low']:.4f}–{s['high']:.4f}",f"Calibration ECE: {p['calibrationDiagnostics']['ece']:.4f}",'','Sealed halves:']
           for x in p['sealedSubperiods']:lines.append(f"- {x['period']['from']} → {x['period']['to']}: PR-AUC {x['prAuc']:.4f} vs base {x['baseRate']:.4f}; ROC-AUC {x['rocAuc']:.4f}; Brier skill {x['brierSkill']:.4f}")
+          lines+=['','Probability stability:']+[f"- {x}" for x in (prob.get('reasons') or ['all probability stability conditions passed'])]
+          top=p['riskBuckets'][-1];lines+=['',f"Top sealed risk decile: {top['events']}/{top['n']} events = {top['eventRate']:.1%} · {top['liftVsBase']:.2f}x base"]
           pathlib.Path('robustness-report.md').write_text('\n'.join(lines)+'\n',encoding='utf-8');print('\n'.join(lines))
           PY
       - name: Publish robustness evidence
