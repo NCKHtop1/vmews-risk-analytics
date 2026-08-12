@@ -2,17 +2,6 @@ name: VMEWS pooled HOSE model train
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 20 1 * *'
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/train_pooled_hose_model.py'
-      - 'scripts/train_pooled_hose_model_v2.py'
-      - 'scripts/train_pooled_hose_model_v3.py'
-      - '.github/workflows/pooled-hose-train.yml'
-      - 'api/stocks.py'
-      - 'api/price_history.py'
 
 permissions:
   contents: write
