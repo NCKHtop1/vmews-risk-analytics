@@ -1,0 +1,126 @@
+name: VMEWS pooled HOSE model train
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 1 * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/train_pooled_hose_model.py'
+      - '.github/workflows/pooled-hose-train.yml'
+      - 'api/stocks.py'
+      - 'api/price_history.py'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: vmews-pooled-hose-train
+  cancel-in-progress: true
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deterministic research dependencies
+        run: |
+          pip install --disable-pip-version-check -q -r requirements.txt
+          pip install --disable-pip-version-check -q scikit-learn==1.9.0 joblib==1.5.1
+      - name: Train pooled panel challengers and run sealed promotion gate
+        id: pooled
+        continue-on-error: true
+        run: python scripts/train_pooled_hose_model.py 2>&1 | tee pooled-train.log
+      - name: Build pooled validation report
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('data/pooled-hose/validation.json')
+          if not p.exists():
+              body='# VMEWS POOLED HOSE TRAIN FAILED BEFORE VALIDATION\n\n```\n'+pathlib.Path('pooled-train.log').read_text(errors='ignore')[-12000:]+'\n```\n'
+              pathlib.Path('pooled-report.md').write_text(body,encoding='utf-8')
+              raise SystemExit(0)
+          q=json.loads(p.read_text(encoding='utf-8'))
+          s=q['sealedTest'];b=q['structuralBaselineSealed'];g=q['promotionGate'];d=q['dataset'];u=q['universe']
+          ci=s.get('prAucCI95') or {}
+          lines=[
+              '# VMEWS POOLED HOSE SEALED VALIDATION', '',
+              f"Version: {q['version']}",
+              f"Champion: {q['champion']}",
+              f"Promotion: {'PASS' if g['passed'] else 'FAIL'}", '',
+              '## Panel',
+              f"- history coverage: {u['historyCovered']}/{u['reference']} ({u['historyCoverageRatio']:.1%})",
+              f"- panel symbols: {u['panelSymbols']}",
+              f"- labelled PIT states: {d['states']:,}",
+              f"- positive states: {d['positiveStates']:,} ({d['baseRate']:.1%})",
+              f"- unique dates: {d['uniqueDates']} · {d['start']} → {d['end']}", '',
+              '## Sealed test',
+              f"- period: {q['sealedSplit']['sealedFrom']} → {q['sealedSplit']['sealedTo']}",
+              f"- states: {s['n']:,} · symbols: {s['symbols']} · positive states: {s['events']:,}",
+              f"- unique crash episodes: {s['eventEpisodes']}",
+              f"- PR-AUC: {s['prAuc']:.4f} vs base rate {s['baseRate']:.4f}",
+              f"- PR-AUC 95% date-block bootstrap: {ci.get('low','N/A')} → {ci.get('high','N/A')}",
+              f"- ROC-AUC: {s['rocAuc']:.4f}",
+              f"- Brier skill: {s['brierSkill']:.4f}",
+              f"- precision: {s['precision']:.1%} · recall: {s['recall']:.1%} · episode recall: {s['episodeRecall']:.1%}",
+              f"- precision enrichment: {s['precisionEnrichment']:.2f}x base rate", '',
+              '## Structural baseline on the same sealed test',
+              f"- PR-AUC: {b['prAuc']:.4f}",
+              f"- ROC-AUC: {b['rocAuc']:.4f}",
+              f"- Brier skill: {b['brierSkill']:.4f}",
+              f"- delta pooled PR-AUC: {q['incremental']['deltaPrAucVsStructural']:+.4f}", '',
+              '## Gate',
+              f"- passed: {g['passed']}",
+              *[f"- {x}" for x in (g.get('reasons') or ['all promotion conditions satisfied'])], '',
+              '## Governance',
+              *[f"- {x}" for x in q.get('limitations',[])],
+          ]
+          pathlib.Path('pooled-report.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
+          print('\n'.join(lines))
+          PY
+      - name: Publish pooled validation diagnostic
+        if: always()
+        run: |
+          title="VMEWS POOLED HOSE ${{ steps.pooled.outcome == 'success' && 'PASS' || 'FAIL' }} ${GITHUB_SHA::7}"
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file pooled-report.md
+      - name: Reject unpromoted candidate
+        if: steps.pooled.outcome != 'success'
+        run: exit 1
+      - name: Validate promoted artifacts
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          v=json.load(open('data/pooled-hose/validation.json',encoding='utf-8'))
+          c=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
+          assert v['version']=='VMEWS-POOLED-HOSE-1.0.0',v['version']
+          assert v['promotionGate']['passed'],v['promotionGate']
+          assert v['dataset']['states']>=30000,v['dataset']
+          assert v['universe']['panelSymbols']>=150,v['universe']
+          assert v['sealedTest']['eventEpisodes']>=100,v['sealedTest']
+          assert v['sealedTest']['prAuc']>v['sealedTest']['baseRate']+.02,v['sealedTest']
+          assert v['sealedTest']['brierSkill']>0,v['sealedTest']
+          assert v['incremental']['deltaPrAucVsStructural']>=.005,v['incremental']
+          assert len(c.get('scores',{}))>=100,len(c.get('scores',{}))
+          assert pathlib.Path('data/pooled-hose/model.joblib').stat().st_size>1000
+          print(json.dumps({'champion':v['champion'],'sealed':v['sealedTest'],'incremental':v['incremental'],'currentScored':len(c['scores'])},indent=2))
+          PY
+      - name: Commit promoted pooled model artifacts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/pooled-hose
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Promote sealed pooled HOSE crash-risk model [model-data]'
+          git pull --rebase origin main
+          git push origin HEAD:main
