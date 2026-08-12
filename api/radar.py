@@ -9,7 +9,12 @@ spec = importlib.util.spec_from_file_location('vmews_core_final', core_path)
 core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
 
-VERSION = 'STOCK-EWS-5.0.0-PRODUCTION'
+price_path = pathlib.Path(__file__).with_name('price_history.py')
+pspec = importlib.util.spec_from_file_location('vmews_price_history', price_path)
+price_history = importlib.util.module_from_spec(pspec)
+pspec.loader.exec_module(price_history)
+
+VERSION = 'STOCK-EWS-5.1.0-PRODUCTION'
 VN_TZ = timezone(timedelta(hours=7))
 DEFAULT_SCAN = ['FPT','PNJ','VCB','HPG','MWG','VHM','SSI','DGC']
 SCAN_MAX = 8
@@ -17,8 +22,8 @@ SCAN_MAX = 8
 def clean_symbol(s):
     return re.sub('[^A-Z0-9]','',str(s or '').upper())[:8]
 
-def pct_quality(rows):
-    return {'status':'PASS' if len(rows)>=240 else 'REVIEW','rows':len(rows),'start':rows[0]['date'] if rows else None,'end':rows[-1]['date'] if rows else None,'coverageRatio':1.0 if len(rows)>=240 else max(0,len(rows)/240),'largeGaps':0,'intradayBarExcluded':False,'requestAudit':[{'source':'Yahoo Finance','type':'price-history','rows':len(rows),'ok':bool(rows)}]}
+def pct_quality(rows,audit=None):
+    return {'status':'PASS' if len(rows)>=240 else 'REVIEW','rows':len(rows),'start':rows[0]['date'] if rows else None,'end':rows[-1]['date'] if rows else None,'coverageRatio':1.0 if len(rows)>=240 else max(0,len(rows)/240),'largeGaps':0,'intradayBarExcluded':False,'requestAudit':[audit] if audit else []}
 
 def safe_market(asof=None):
     last=None
@@ -56,17 +61,32 @@ def reasons(mods):
         if m.get('available',True) and isinstance(m.get('score'),(int,float)):xs.append((m['score'],labels[k]))
     xs.sort(reverse=True); return [f'{name} {score:.0f}/100' for score,name in xs[:4]]
 
-def load_rows(symbol,asof=None):
-    rows,_,host=core.yahoo_chart(symbol,'10y',10)
-    if asof: rows=[r for r in rows if r['date']<=asof]
-    if len(rows)<240: raise RuntimeError(f'{symbol}: only {len(rows)} completed sessions available; 240 required')
-    return rows,host
+def load_rows(symbol,asof=None,min_rows=240):
+    errors=[]
+    try:
+        rows,_,host=core.yahoo_chart(symbol,'10y',10)
+        if asof: rows=[r for r in rows if r['date']<=asof]
+        if len(rows)>=min_rows:
+            return rows,{'source':'Yahoo Finance','provider':host,'type':'price-history','symbol':symbol,'rows':len(rows),'ok':True}
+        errors.append(f'Yahoo only {len(rows)} rows')
+    except Exception as e:
+        errors.append(f'Yahoo: {e}')
+    try:
+        rows,audit=price_history.vnstock_equity_history(symbol,11)
+        if asof: rows=[r for r in rows if r['date']<=asof]
+        audit={**audit,'type':'price-history','rows':len(rows)}
+        if len(rows)>=min_rows:
+            return rows,audit
+        errors.append(f'Vnstock only {len(rows)} rows')
+    except Exception as e:
+        errors.append(f'Vnstock: {e}')
+    raise RuntimeError(f'{symbol}: no deep-history source with >= {min_rows} completed sessions; ' + ' | '.join(errors))
 
 def scan_one(symbol,market,macro):
-    rows,host=load_rows(symbol); cur,hz,_=core.technical_state(rows)
+    rows,audit=load_rows(symbol); cur,hz,_=core.technical_state(rows)
     mods={'technical':{'score':cur['technical'],'available':True,'drivers':cur.get('technicalDrivers',{})},'analog':hz['20'],'market':market,'macro':macro,'sentiment':{'score':50,'available':False,'note':'Deferred in watchlist scan'},'fundamental':{'score':50,'available':False,'note':'Deferred in watchlist scan'}}
     score,conf=aggregate(mods); phase,color,state=classify(score,cur,conf)
-    return {'symbol':symbol,'name':core.NAMES.get(symbol,symbol),'date':cur['date'],'close':cur['close'],'ret5':cur['ret5'],'score':score,'confidence':conf,'phase':phase,'color':color,'state':state,'effectiveScore':score,'modules':mods,'current':cur,'quote':None,'liveOverlay':{'available':False,'score':score},'reasons':reasons(mods),'dataQuality':pct_quality(rows),'audit':[{'source':'Yahoo Finance','provider':host,'symbol':symbol,'rows':len(rows),'ok':True}]}
+    return {'symbol':symbol,'name':core.NAMES.get(symbol,symbol),'date':cur['date'],'close':cur['close'],'ret5':cur['ret5'],'score':score,'confidence':conf,'phase':phase,'color':color,'state':state,'effectiveScore':score,'modules':mods,'current':cur,'quote':None,'liveOverlay':{'available':False,'score':score},'reasons':reasons(mods),'dataQuality':pct_quality(rows,audit),'audit':[audit]}
 
 def scan(q):
     raw=q.get('symbols',[''])[0]; symbols=[clean_symbol(x) for x in raw.split(',') if clean_symbol(x)] if raw else DEFAULT_SCAN[:]; symbols=list(dict.fromkeys(symbols))[:SCAN_MAX]
@@ -75,9 +95,9 @@ def scan(q):
         fut={ex.submit(scan_one,s,market,macro):s for s in symbols}
         for f in as_completed(fut):
             try:items.append(f.result())
-            except Exception as e:errors.append({'symbol':fut[f],'error':str(e)[:240]})
+            except Exception as e:errors.append({'symbol':fut[f],'error':str(e)[:400]})
     items.sort(key=lambda x:x['effectiveScore'],reverse=True)
-    return {'version':VERSION,'mode':'scan','asOf':datetime.now(VN_TZ).isoformat(),'universeSize':len(core.UNIVERSE),'requestedSymbols':symbols,'scanned':len(items),'redList':[x for x in items if x['color']=='RED'],'yellowList':[x for x in items if x['color']=='YELLOW'],'greenList':[x for x in items if x['color']=='GREEN'],'activeDrawdown':[x for x in items if x['phase']=='ACTIVE_DRAWDOWN'],'ranking':items,'market':market,'macro':macro,'errors':errors,'scanPolicy':{'maxSymbolsPerRequest':SCAN_MAX,'priceSource':'Yahoo Finance price history','fundamentals':'Vnstock optional in detail'}}
+    return {'version':VERSION,'mode':'scan','asOf':datetime.now(VN_TZ).isoformat(),'universeSize':len(core.UNIVERSE),'requestedSymbols':symbols,'scanned':len(items),'redList':[x for x in items if x['color']=='RED'],'yellowList':[x for x in items if x['color']=='YELLOW'],'greenList':[x for x in items if x['color']=='GREEN'],'activeDrawdown':[x for x in items if x['phase']=='ACTIVE_DRAWDOWN'],'ranking':items,'market':market,'macro':macro,'errors':errors,'scanPolicy':{'maxSymbolsPerRequest':SCAN_MAX,'priceSource':'Yahoo Finance with Vnstock Unified Market fallback','fundamentals':'Vnstock optional in detail'}}
 
 def safe_sentiment(symbol,asof=None,days=45):
     try:return core.sentiment_module(symbol,asof,days,20)
@@ -107,13 +127,14 @@ def detail(symbol,q):
     symbol=clean_symbol(symbol)
     if not symbol:raise ValueError('Invalid symbol')
     asof=q.get('asof',[None])[0] or None; start=q.get('from',[None])[0] or None; end=q.get('to',[None])[0] or None
-    rows,host=load_rows(symbol)
+    rows,audit=load_rows(symbol)
     if end:rows=[r for r in rows if r['date']<=end]
     if len(rows)<240:raise RuntimeError(f'{symbol}: only {len(rows)} completed sessions before selected TO date')
     cur,hz,fs=core.technical_state(rows,asof); market=safe_market(asof); macro=safe_macro(); sent=safe_sentiment(symbol,asof,45); fund=safe_fundamental(symbol,historical=bool(asof))
     mods={'technical':{'score':cur['technical'],'available':True,'drivers':cur.get('technicalDrivers',{})},'analog':hz['20'],'market':market,'macro':macro,'sentiment':sent,'fundamental':fund}
     score,conf=aggregate(mods); phase,color,state=classify(score,cur,conf); view=[r for r in rows if not start or r['date']>=start]; cutoff_i=cur['i']
-    return {'version':VERSION,'mode':'detail','symbol':symbol,'name':core.NAMES.get(symbol,symbol),'request':{'from':start,'to':end,'asOf':asof},'fetchedAt':datetime.now(timezone.utc).isoformat(),'modelAsOf':cur['date'],'quote':None,'score':score,'confidence':conf,'phase':phase,'color':color,'state':state,'effectiveScore':score,'liveOverlay':{'available':False,'score':score,'intradayReturn':None},'reasons':reasons(mods),'current':cur,'horizons':hz,'modules':mods,'news':sent.get('headlines',[]),'fundamentals':fund.get('metrics',{}),'history':view[-1800:],'scoreHistory':[{'date':f['date'],'technical':f['technical']} for f in fs if f['i']<=cutoff_i and (not start or f['date']>=start)],'crashReplay':replay(rows,fs,cutoff_i),'dataQuality':pct_quality(rows),'warnings':[],'source':{'price':f'Yahoo Finance ({host})','quote':'Not used in final EOD risk model','market':'Yahoo Finance VNINDEX context when available','fundamental':'Vnstock Fundamental current snapshot when available','sentiment':'Google News RSS headline sentiment','macro':'Yahoo cross-asset proxies'}}
+    price_label=f"{audit.get('source')} · {audit.get('provider')}"
+    return {'version':VERSION,'mode':'detail','symbol':symbol,'name':core.NAMES.get(symbol,symbol),'request':{'from':start,'to':end,'asOf':asof},'fetchedAt':datetime.now(timezone.utc).isoformat(),'modelAsOf':cur['date'],'quote':None,'score':score,'confidence':conf,'phase':phase,'color':color,'state':state,'effectiveScore':score,'liveOverlay':{'available':False,'score':score,'intradayReturn':None},'reasons':reasons(mods),'current':cur,'horizons':hz,'modules':mods,'news':sent.get('headlines',[]),'fundamentals':fund.get('metrics',{}),'history':view[-1800:],'scoreHistory':[{'date':f['date'],'technical':f['technical']} for f in fs if f['i']<=cutoff_i and (not start or f['date']>=start)],'crashReplay':replay(rows,fs,cutoff_i),'dataQuality':pct_quality(rows,audit),'warnings':[],'audit':[audit],'source':{'price':price_label,'quote':'Not used in final EOD risk model','market':'Yahoo Finance VNINDEX context when available','fundamental':'Vnstock Fundamental current snapshot when available','sentiment':'Google News RSS headline sentiment','macro':'Yahoo cross-asset proxies'}}
 
 class handler(BaseHTTPRequestHandler):
     def sendj(self,code,payload):
@@ -122,7 +143,7 @@ class handler(BaseHTTPRequestHandler):
         q=parse_qs(urlparse(self.path).query); mode=q.get('mode',['scan'])[0]
         try:
             if mode=='detail':out=detail(q.get('symbol',['FPT'])[0],q)
-            elif mode=='health':out={'ok':True,'version':VERSION,'time':datetime.now(VN_TZ).isoformat(),'priceSource':'Yahoo Finance price history','vnstockRole':'optional fundamentals only'}
+            elif mode=='health':out={'ok':True,'version':VERSION,'time':datetime.now(VN_TZ).isoformat(),'priceSource':'Yahoo Finance with Vnstock Unified Market fallback','vnstockRole':'price fallback + optional fundamentals'}
             else:out=scan(q)
             self.sendj(200,out)
         except Exception as e:self.sendj(503,{'error':'VMEWS_FINAL_REQUEST_FAILED','message':str(e),'type':type(e).__name__,'version':VERSION,'retryable':True})
