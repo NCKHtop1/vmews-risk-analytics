@@ -1,50 +1,50 @@
 {
-  "version": "VMEWS-POOLED-ROBUSTNESS-1.0.0",
+  "version": "VMEWS-POOLED-ROBUSTNESS-1.1.0",
   "modelVersion": "VMEWS-POOLED-HOSE-1.2.0",
-  "generatedAt": "2026-08-12T05:33:57.283026+00:00",
-  "purpose": "Independent robustness audit of the frozen pooled champion; no model or threshold tuning.",
+  "generatedAt": "2026-08-12T05:40:52.794297+00:00",
+  "purpose": "Independent post-freeze robustness audit; model and threshold are not retuned.",
   "historyCoverage": 0.9801980198019802,
   "sealedReconstruction": {
     "n": 7427,
     "symbols": 242,
-    "events": 768,
+    "events": 767,
     "eventEpisodes": 295,
-    "baseRate": 0.10340648983438805,
-    "prAuc": 0.1834460781797791,
-    "rocAuc": 0.6304828677979677,
-    "brier": 0.09204288857876029,
-    "baseRateBrier": 0.09271358769451865,
-    "brierSkill": 0.007234097314497645,
+    "baseRate": 0.10327184596741619,
+    "prAuc": 0.18354609824417198,
+    "rocAuc": 0.6312026498467176,
+    "brier": 0.09193394092443138,
+    "baseRateBrier": 0.09260677179789846,
+    "brierSkill": 0.00726546083406765,
     "threshold": 0.2612,
     "precision": 0.27007299270072993,
-    "recall": 0.09635416666666667,
-    "falsePositiveRate": 0.03003453972067878,
+    "recall": 0.09647979139504563,
+    "falsePositiveRate": 0.03003003003003003,
     "alertRate": 0.03689241955028948,
-    "missRate": 0.9036458333333334,
+    "missRate": 0.9035202086049544,
     "episodeRecall": 0.0847457627118644,
-    "precisionEnrichment": 2.611760568734793,
+    "precisionEnrichment": 2.6151657324489195,
     "calibrationN": 2463,
     "calibrationEvents": 302,
     "prAucCI95": {
-      "low": 0.16107725946878648,
-      "high": 0.22170125478011102,
+      "low": 0.1611817919954643,
+      "high": 0.22192950758550192,
       "reps": 120,
       "unit": "date-block bootstrap"
     }
   },
   "movingDateBlockPrAucCI95": {
-    "low": 0.14856617427236335,
-    "high": 0.24829623857815672,
-    "median": 0.19682197682253882,
+    "low": 0.14879602164388023,
+    "high": 0.2484071299525595,
+    "median": 0.1968768725227884,
     "reps": 200,
     "blockPanelDates": 4,
     "tradingSessionsEquivalent": 20,
     "unit": "moving contiguous sampled-date blocks; each date retains its full cross-section"
   },
   "securityClusterPrAucCI95": {
-    "low": 0.13646561661845802,
-    "high": 0.2375955726684971,
-    "median": 0.18222252301402586,
+    "low": 0.1365431590828293,
+    "high": 0.2377082644875147,
+    "median": 0.18232849281406754,
     "reps": 200,
     "unit": "security-cluster bootstrap; complete time history retained per sampled security"
   },
@@ -56,7 +56,7 @@
       "baseRate": 0.0666491043203372,
       "prAuc": 0.1382235610538577,
       "rocAuc": 0.6750771715981745,
-      "brierSkill": -0.08892462884946717,
+      "brierSkill": -0.08892462884946739,
       "period": {
         "from": "2025-04-23",
         "to": "2025-10-22"
@@ -65,11 +65,11 @@
     {
       "n": 3631,
       "symbols": 129,
-      "events": 515,
-      "baseRate": 0.14183420545304323,
-      "prAuc": 0.2586239784899251,
-      "rocAuc": 0.6181181998329948,
-      "brierSkill": 0.03504673100572231,
+      "events": 514,
+      "baseRate": 0.14155879922886258,
+      "prAuc": 0.25883740486397766,
+      "rocAuc": 0.6191713822404812,
+      "brierSkill": 0.03531339380161724,
       "period": {
         "from": "2025-10-29",
         "to": "2026-07-08"
@@ -77,80 +77,211 @@
     }
   ],
   "calibrationDiagnostics": {
-    "ece": 0.04311483199730853,
+    "ece": 0.043249475864280365,
     "bins": [
       {
+        "bin": 1,
         "n": 743,
-        "meanProbability": 0.08529463307270026,
+        "meanProbability": 0.0852946330727002,
         "observedRate": 0.05114401076716016,
-        "absoluteGap": 0.0341506223055401
+        "absoluteGap": 0.03415062230554004
       },
       {
+        "bin": 2,
         "n": 743,
-        "meanProbability": 0.0995582379699416,
+        "meanProbability": 0.09955823796994155,
         "observedRate": 0.05787348586810229,
-        "absoluteGap": 0.041684752101839306
+        "absoluteGap": 0.041684752101839265
       },
       {
+        "bin": 3,
         "n": 743,
-        "meanProbability": 0.10935177110749358,
-        "observedRate": 0.07133243606998654,
-        "absoluteGap": 0.03801933503750704
+        "meanProbability": 0.10935177110749354,
+        "observedRate": 0.06864064602960969,
+        "absoluteGap": 0.04071112507788385
       },
       {
+        "bin": 4,
         "n": 743,
         "meanProbability": 0.11910336469795091,
         "observedRate": 0.08209959623149395,
         "absoluteGap": 0.03700376846645696
       },
       {
+        "bin": 5,
         "n": 743,
         "meanProbability": 0.12889838966497236,
-        "observedRate": 0.08748317631224764,
-        "absoluteGap": 0.04141521335272472
+        "observedRate": 0.08882907133243607,
+        "absoluteGap": 0.04006931833253628
       },
       {
+        "bin": 6,
         "n": 743,
-        "meanProbability": 0.14005496838686687,
+        "meanProbability": 0.1400549683868669,
         "observedRate": 0.1009421265141319,
-        "absoluteGap": 0.03911284187273498
+        "absoluteGap": 0.039112841872735005
       },
       {
+        "bin": 7,
         "n": 743,
         "meanProbability": 0.15358053000525554,
         "observedRate": 0.11036339165545088,
         "absoluteGap": 0.04321713834980466
       },
       {
+        "bin": 8,
         "n": 742,
-        "meanProbability": 0.17093472340888305,
+        "meanProbability": 0.170934723408883,
         "observedRate": 0.1280323450134771,
-        "absoluteGap": 0.04290237839540595
+        "absoluteGap": 0.042902378395405893
       },
       {
+        "bin": 9,
         "n": 742,
         "meanProbability": 0.19557110167949796,
         "observedRate": 0.11725067385444744,
         "absoluteGap": 0.07832042782505051
       },
       {
+        "bin": 10,
         "n": 742,
-        "meanProbability": 0.2631213033879814,
+        "meanProbability": 0.2631213033879813,
         "observedRate": 0.22776280323450135,
-        "absoluteGap": 0.03535850015348005
+        "absoluteGap": 0.03535850015347994
       }
     ]
   },
-  "robustnessGate": {
+  "riskBuckets": [
+    {
+      "bucket": 1,
+      "percentileFrom": 0.0,
+      "percentileTo": 0.1,
+      "n": 743,
+      "events": 38,
+      "eventRate": 0.05114401076716016,
+      "liftVsBase": 0.49523672486010234,
+      "minCalibratedScore": 0.06251405903974211,
+      "maxCalibratedScore": 0.09400688079500275
+    },
+    {
+      "bucket": 2,
+      "percentileFrom": 0.1,
+      "percentileTo": 0.2,
+      "n": 743,
+      "events": 43,
+      "eventRate": 0.05787348586810229,
+      "liftVsBase": 0.560399451815379,
+      "minCalibratedScore": 0.0940116606201597,
+      "maxCalibratedScore": 0.10443826080900001
+    },
+    {
+      "bucket": 3,
+      "percentileFrom": 0.2,
+      "percentileTo": 0.3,
+      "n": 743,
+      "events": 51,
+      "eventRate": 0.06864064602960969,
+      "liftVsBase": 0.6646598149438215,
+      "minCalibratedScore": 0.10445460092230757,
+      "maxCalibratedScore": 0.11408272360158321
+    },
+    {
+      "bucket": 4,
+      "percentileFrom": 0.3,
+      "percentileTo": 0.4,
+      "n": 743,
+      "events": 61,
+      "eventRate": 0.08209959623149395,
+      "liftVsBase": 0.7949852688543748,
+      "minCalibratedScore": 0.11412706714550055,
+      "maxCalibratedScore": 0.1238362905694114
+    },
+    {
+      "bucket": 5,
+      "percentileFrom": 0.4,
+      "percentileTo": 0.5,
+      "n": 743,
+      "events": 66,
+      "eventRate": 0.08882907133243607,
+      "liftVsBase": 0.8601479958096515,
+      "minCalibratedScore": 0.12384057875314455,
+      "maxCalibratedScore": 0.13413163519540963
+    },
+    {
+      "bucket": 6,
+      "percentileFrom": 0.5,
+      "percentileTo": 0.6,
+      "n": 743,
+      "events": 75,
+      "eventRate": 0.1009421265141319,
+      "liftVsBase": 0.9774409043291493,
+      "minCalibratedScore": 0.13415891049739007,
+      "maxCalibratedScore": 0.14602075245119342
+    },
+    {
+      "bucket": 7,
+      "percentileFrom": 0.6,
+      "percentileTo": 0.7,
+      "n": 743,
+      "events": 82,
+      "eventRate": 0.11036339165545088,
+      "liftVsBase": 1.0686687220665367,
+      "minCalibratedScore": 0.1460506226634233,
+      "maxCalibratedScore": 0.16166571789291517
+    },
+    {
+      "bucket": 8,
+      "percentileFrom": 0.7,
+      "percentileTo": 0.8,
+      "n": 742,
+      "events": 95,
+      "eventRate": 0.1280323450134771,
+      "liftVsBase": 1.2397603994981674,
+      "minCalibratedScore": 0.1617412878430429,
+      "maxCalibratedScore": 0.18188788225815797
+    },
+    {
+      "bucket": 9,
+      "percentileFrom": 0.8,
+      "percentileTo": 0.9,
+      "n": 742,
+      "events": 87,
+      "eventRate": 0.11725067385444744,
+      "liftVsBase": 1.1353595237509533,
+      "minCalibratedScore": 0.18193708398442993,
+      "maxCalibratedScore": 0.21332948889713352
+    },
+    {
+      "bucket": 10,
+      "percentileFrom": 0.9,
+      "percentileTo": 1.0,
+      "n": 742,
+      "events": 169,
+      "eventRate": 0.22776280323450135,
+      "liftVsBase": 2.2054685001598977,
+      "minCalibratedScore": 0.21337011931034555,
+      "maxCalibratedScore": 0.6938653565756158
+    }
+  ],
+  "rankRobustnessGate": {
     "passed": true,
     "grade": "MODERATE",
     "reasons": [],
     "rule": "Both dependence-aware PR-AUC lower bounds > sealed base; each sealed half PR-AUC > own base and ROC-AUC >=0.55."
   },
+  "absoluteProbabilityGate": {
+    "passed": false,
+    "status": "WITHHELD_CALIBRATION_STABILITY",
+    "reasons": [
+      "sealed half 1 Brier skill is not positive"
+    ],
+    "rule": "Rank robustness plus positive Brier skill in the full sealed block and each sealed half; ECE <=5%."
+  },
   "notes": [
     "Moving-date blocks preserve approximately one 20-session label horizon of serial dependence.",
     "Security-cluster bootstrap preserves each sampled security time history.",
-    "These post-freeze diagnostics are used to downgrade evidence if needed, never to retune the existing sealed model."
+    "Risk buckets report empirical sealed event frequency by pooled risk rank and are not point forecasts.",
+    "Post-freeze diagnostics may downgrade ranking/probability evidence, never retune the existing sealed model."
   ],
   "fetchErrors": [
     {
