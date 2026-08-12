@@ -1,0 +1,189 @@
+{
+  "version": "VMEWS-POOLED-ROBUSTNESS-1.0.0",
+  "modelVersion": "VMEWS-POOLED-HOSE-1.2.0",
+  "generatedAt": "2026-08-12T05:33:57.283026+00:00",
+  "purpose": "Independent robustness audit of the frozen pooled champion; no model or threshold tuning.",
+  "historyCoverage": 0.9801980198019802,
+  "sealedReconstruction": {
+    "n": 7427,
+    "symbols": 242,
+    "events": 768,
+    "eventEpisodes": 295,
+    "baseRate": 0.10340648983438805,
+    "prAuc": 0.1834460781797791,
+    "rocAuc": 0.6304828677979677,
+    "brier": 0.09204288857876029,
+    "baseRateBrier": 0.09271358769451865,
+    "brierSkill": 0.007234097314497645,
+    "threshold": 0.2612,
+    "precision": 0.27007299270072993,
+    "recall": 0.09635416666666667,
+    "falsePositiveRate": 0.03003453972067878,
+    "alertRate": 0.03689241955028948,
+    "missRate": 0.9036458333333334,
+    "episodeRecall": 0.0847457627118644,
+    "precisionEnrichment": 2.611760568734793,
+    "calibrationN": 2463,
+    "calibrationEvents": 302,
+    "prAucCI95": {
+      "low": 0.16107725946878648,
+      "high": 0.22170125478011102,
+      "reps": 120,
+      "unit": "date-block bootstrap"
+    }
+  },
+  "movingDateBlockPrAucCI95": {
+    "low": 0.14856617427236335,
+    "high": 0.24829623857815672,
+    "median": 0.19682197682253882,
+    "reps": 200,
+    "blockPanelDates": 4,
+    "tradingSessionsEquivalent": 20,
+    "unit": "moving contiguous sampled-date blocks; each date retains its full cross-section"
+  },
+  "securityClusterPrAucCI95": {
+    "low": 0.13646561661845802,
+    "high": 0.2375955726684971,
+    "median": 0.18222252301402586,
+    "reps": 200,
+    "unit": "security-cluster bootstrap; complete time history retained per sampled security"
+  },
+  "sealedSubperiods": [
+    {
+      "n": 3796,
+      "symbols": 236,
+      "events": 253,
+      "baseRate": 0.0666491043203372,
+      "prAuc": 0.1382235610538577,
+      "rocAuc": 0.6750771715981745,
+      "brierSkill": -0.08892462884946717,
+      "period": {
+        "from": "2025-04-23",
+        "to": "2025-10-22"
+      }
+    },
+    {
+      "n": 3631,
+      "symbols": 129,
+      "events": 515,
+      "baseRate": 0.14183420545304323,
+      "prAuc": 0.2586239784899251,
+      "rocAuc": 0.6181181998329948,
+      "brierSkill": 0.03504673100572231,
+      "period": {
+        "from": "2025-10-29",
+        "to": "2026-07-08"
+      }
+    }
+  ],
+  "calibrationDiagnostics": {
+    "ece": 0.04311483199730853,
+    "bins": [
+      {
+        "n": 743,
+        "meanProbability": 0.08529463307270026,
+        "observedRate": 0.05114401076716016,
+        "absoluteGap": 0.0341506223055401
+      },
+      {
+        "n": 743,
+        "meanProbability": 0.0995582379699416,
+        "observedRate": 0.05787348586810229,
+        "absoluteGap": 0.041684752101839306
+      },
+      {
+        "n": 743,
+        "meanProbability": 0.10935177110749358,
+        "observedRate": 0.07133243606998654,
+        "absoluteGap": 0.03801933503750704
+      },
+      {
+        "n": 743,
+        "meanProbability": 0.11910336469795091,
+        "observedRate": 0.08209959623149395,
+        "absoluteGap": 0.03700376846645696
+      },
+      {
+        "n": 743,
+        "meanProbability": 0.12889838966497236,
+        "observedRate": 0.08748317631224764,
+        "absoluteGap": 0.04141521335272472
+      },
+      {
+        "n": 743,
+        "meanProbability": 0.14005496838686687,
+        "observedRate": 0.1009421265141319,
+        "absoluteGap": 0.03911284187273498
+      },
+      {
+        "n": 743,
+        "meanProbability": 0.15358053000525554,
+        "observedRate": 0.11036339165545088,
+        "absoluteGap": 0.04321713834980466
+      },
+      {
+        "n": 742,
+        "meanProbability": 0.17093472340888305,
+        "observedRate": 0.1280323450134771,
+        "absoluteGap": 0.04290237839540595
+      },
+      {
+        "n": 742,
+        "meanProbability": 0.19557110167949796,
+        "observedRate": 0.11725067385444744,
+        "absoluteGap": 0.07832042782505051
+      },
+      {
+        "n": 742,
+        "meanProbability": 0.2631213033879814,
+        "observedRate": 0.22776280323450135,
+        "absoluteGap": 0.03535850015348005
+      }
+    ]
+  },
+  "robustnessGate": {
+    "passed": true,
+    "grade": "MODERATE",
+    "reasons": [],
+    "rule": "Both dependence-aware PR-AUC lower bounds > sealed base; each sealed half PR-AUC > own base and ROC-AUC >=0.55."
+  },
+  "notes": [
+    "Moving-date blocks preserve approximately one 20-session label horizon of serial dependence.",
+    "Security-cluster bootstrap preserves each sampled security time history.",
+    "These post-freeze diagnostics are used to downgrade evidence if needed, never to retune the existing sealed model."
+  ],
+  "fetchErrors": [
+    {
+      "symbol": "AAN",
+      "error": "AAN.VN: AAN.VN: only 59 rows"
+    },
+    {
+      "symbol": "CRV",
+      "error": "Yahoo history only 212 rows"
+    },
+    {
+      "symbol": "DMX",
+      "error": "DMX.VN: DMX.VN: only 4 rows"
+    },
+    {
+      "symbol": "GEL",
+      "error": "Yahoo history only 133 rows"
+    },
+    {
+      "symbol": "HPA",
+      "error": "Yahoo history only 133 rows"
+    },
+    {
+      "symbol": "TCX",
+      "error": "Yahoo history only 210 rows"
+    },
+    {
+      "symbol": "VCK",
+      "error": "Yahoo history only 168 rows"
+    },
+    {
+      "symbol": "VPX",
+      "error": "Yahoo history only 168 rows"
+    }
+  ]
+}
