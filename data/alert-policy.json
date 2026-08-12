@@ -38,14 +38,14 @@
   "validation": {
     "chronologicalFolds": 3,
     "purgeSessions": 20,
-    "calibrationMethod": "chronological holdout isotonic regression with beta smoothing",
+    "calibrationMethod": "separate chronological calibration diagnostics; final user-facing probability uses regularized chronological Platt meta-calibration and is withheld unless its OOS gate passes",
     "thresholdSelection": "calibration-window minimum expected loss",
     "missedEventCost": 2.0,
     "falseAlertCost": 1.0,
     "minimumOutOfSampleEventsForModerateEvidence": 10,
     "minimumOutOfSampleEventsForStrongEvidence": 20,
     "primaryRareEventMetric": "PR-AUC",
-    "secondaryMetrics": ["ROC-AUC", "Brier score", "precision", "recall", "false-positive rate", "alert rate"]
+    "secondaryMetrics": ["ROC-AUC", "Brier score", "Brier skill", "precision", "recall", "false-positive rate", "alert rate"]
   },
   "corporateActionGuard": {
     "oneDayAbsoluteLogReturnThreshold": 0.22,
@@ -55,7 +55,7 @@
   "semantics": {
     "marketWideScore": "0-100 structural risk index, not probability",
     "deepRiskIndex": "0-100 historical risk percentile blended with a limited current-context overlay",
-    "calibratedCrashProbability": "empirical 20-session crash probability estimate shown separately when validation is sufficient",
+    "calibratedCrashProbability": "regularized Platt 20-session crash estimate shown only when chronological out-of-sample probability calibration beats the historical base-rate benchmark and event-depth gates pass",
     "alertMeaning": "risk-review triage; not a buy/sell signal"
   }
 }
