@@ -1,0 +1,61 @@
+{
+  "version": "VMEWS-ALERT-POLICY-4.0.0",
+  "effectiveDate": "2026-08-12",
+  "purpose": "Canonical research policy for T-day screening, deep-research risk bands, validation and chart markers.",
+  "riskIndexBands": {
+    "red": 78,
+    "yellow": 65,
+    "watch": 50,
+    "greenBelow": 50
+  },
+  "marketConfirmation": {
+    "redMinIndependentStressSignals": 3,
+    "yellowMinIndependentStressSignals": 2,
+    "watchMinIndependentStressSignals": 1,
+    "weakTrendRequiredForAlert": true
+  },
+  "eligibility": {
+    "minAverageTurnover30dVnd": 500000000,
+    "minCompletedSessionsForStructuralDetail": 240,
+    "minCompletedSessionsForDeepResearch": 420,
+    "historyGate": "SMA200 must be available for market-wide RED/YELLOW eligibility",
+    "staleEodPolicy": "exclude"
+  },
+  "eventDefinitions": {
+    "primaryCrash": {
+      "horizonSessions": 20,
+      "forwardDrawdownThreshold": -0.12
+    },
+    "primaryRebound": {
+      "horizonSessions": 20,
+      "forwardGainThreshold": 0.12
+    },
+    "secondaryStress": [
+      {"horizonSessions": 5, "forwardDrawdownThreshold": -0.06},
+      {"horizonSessions": 60, "forwardDrawdownThreshold": -0.20}
+    ]
+  },
+  "validation": {
+    "chronologicalFolds": 3,
+    "purgeSessions": 20,
+    "calibrationMethod": "chronological holdout isotonic regression with beta smoothing",
+    "thresholdSelection": "calibration-window minimum expected loss",
+    "missedEventCost": 2.0,
+    "falseAlertCost": 1.0,
+    "minimumOutOfSampleEventsForModerateEvidence": 10,
+    "minimumOutOfSampleEventsForStrongEvidence": 20,
+    "primaryRareEventMetric": "PR-AUC",
+    "secondaryMetrics": ["ROC-AUC", "Brier score", "precision", "recall", "false-positive rate", "alert rate"]
+  },
+  "corporateActionGuard": {
+    "oneDayAbsoluteLogReturnThreshold": 0.22,
+    "treatment": "flag and neutralize only for model-return/event-label construction; preserve raw prices for investor chart",
+    "note": "Heuristic guard only. Official adjusted-price/corporate-action data remain preferable."
+  },
+  "semantics": {
+    "marketWideScore": "0-100 structural risk index, not probability",
+    "deepRiskIndex": "0-100 historical risk percentile blended with a limited current-context overlay",
+    "calibratedCrashProbability": "empirical 20-session crash probability estimate shown separately when validation is sufficient",
+    "alertMeaning": "risk-review triage; not a buy/sell signal"
+  }
+}
