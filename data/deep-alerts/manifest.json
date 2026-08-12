@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-08-12T02:59:04.066762+00:00",
+  "generatedAt": "2026-08-12T02:59:52.224573+00:00",
   "marketModelDate": "2026-08-12",
   "requested": 17,
-  "reused": 15,
-  "fetched": 2,
+  "reused": 17,
+  "fetched": 0,
   "cached": 17,
   "symbols": {
     "FIR": {
@@ -37,6 +37,11 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
+    "DHT": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-12",
+      "source": "Vnstock"
+    },
     "TOS": {
       "rows": 1117,
       "modelAsOf": "2026-08-11",
@@ -52,12 +57,12 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "OGC": {
+    "BCE": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "BCE": {
+    "OGC": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
@@ -77,20 +82,15 @@
       "modelAsOf": "2026-08-11",
       "source": "Vnstock"
     },
+    "HBC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-12",
+      "source": "Vnstock"
+    },
     "GIL": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
-    },
-    "DHT": {
-      "rows": 1995,
-      "modelAsOf": "2026-08-12",
-      "source": "Vnstock"
-    },
-    "HBC": {
-      "rows": 1989,
-      "modelAsOf": "2026-08-12",
-      "source": "Vnstock"
     }
   },
   "errors": [],
@@ -107,8 +107,8 @@
     "TOS",
     "THG",
     "TCM",
-    "OGC",
     "BCE",
+    "OGC",
     "BKG",
     "PNJ",
     "DDV",
