@@ -47,16 +47,22 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from datetime import datetime
           p=json.load(open('data/market-scan.json',encoding='utf-8'))
           policy=json.load(open('data/alert-policy.json',encoding='utf-8'))
           c=p.get('coverage',{});b=p.get('breadth',{});m=p.get('marketContext',{});t=p.get('thresholds',{})
           bands=policy['riskIndexBands'];confirm=policy['marketConfirmation']
-          assert p.get('version')=='VMEWS-MARKET-SCAN-4.0.0', p.get('version')
+          assert p.get('version')=='VMEWS-MARKET-SCAN-4.1.0', p.get('version')
           assert p.get('policyVersion')==policy.get('version'),(p.get('policyVersion'),policy.get('version'))
           assert t.get('red')==bands['red'] and t.get('yellow')==bands['yellow'] and t.get('watch')==bands['watch'],t
           assert t.get('redMinIndependentSignals')==confirm['redMinIndependentStressSignals'],t
           assert t.get('yellowMinIndependentSignals')==confirm['yellowMinIndependentStressSignals'],t
+          assert t.get('watchMinIndependentSignals')==confirm['watchMinIndependentStressSignals'],t
           assert p.get('modelDate')
+          # During a Vietnam cash-session code run the guard must keep an already completed EOD date.
+          now=datetime.now()
+          if p.get('snapshotGuardNote'):
+              assert 'Intraday run' in p['snapshotGuardNote'],p['snapshotGuardNote']
           assert c.get('listedUniverse',0)>=500, c
           assert c.get('tradingViewUniverseRows',0)>=500, c
           assert c.get('priceCovered',0)>=700, c
@@ -70,30 +76,10 @@ jobs:
           assert all(x.get('status')=='YELLOW' and x.get('date')==p['modelDate'] and x.get('liquidEligible') and x.get('independentStressSignals',0)>=confirm['yellowMinIndependentStressSignals'] for x in p['yellowList'])
           if not m.get('available'):
               assert all(x.get('marketRelativeEvidenceAvailable') is False for x in p.get('ranking',[])), m
-          rows=[
-            '# VMEWS MARKET-WIDE T-DAY SCAN PASS','',
-            f"Policy: {p.get('policyVersion')}",
-            f"Generated: {p.get('generatedAt')}",
-            f"Review date: {p.get('reviewDate')}",
-            f"Model date: {p.get('modelDate')}",
-            f"VCI listed-stock reference: {c.get('listedUniverse')}",
-            f"TradingView Vietnam rows: {c.get('tradingViewUniverseRows')}",
-            f"Cross-matched coverage: {c.get('priceCovered')} ({c.get('coverageRatio',0):.1%})",
-            f"Feature-ready: {c.get('featureReady')}",
-            f"Eligible liquid/current: {c.get('eligibleLiquidCurrent')}",
-            f"RED: {b.get('red')} ({b.get('redShareEligible',0):.1%} of eligible)",
-            f"YELLOW: {b.get('yellow')} ({b.get('yellowShareEligible',0):.1%} of eligible)",
-            f"WATCH: {b.get('watch')}",
-            f"New escalations: {b.get('newEscalations')}",
-            f"Market-relative evidence: {'available' if m.get('available') else 'excluded / unavailable'}",
-            f"Benchmark: {m.get('benchmarkTicker') or m.get('source')}",
-            '', 'Top morning attention:',
-          ]
+          rows=['# VMEWS MARKET-WIDE T-DAY SCAN V4.1 PASS','',f"Policy: {p.get('policyVersion')}",f"Generated: {p.get('generatedAt')}",f"Review date: {p.get('reviewDate')}",f"Model date: {p.get('modelDate')}",f"Snapshot guard: {p.get('snapshotGuardNote') or 'normal pre/post-session refresh'}",f"VCI listed-stock reference: {c.get('listedUniverse')}",f"TradingView Vietnam rows: {c.get('tradingViewUniverseRows')}",f"Cross-matched coverage: {c.get('priceCovered')} ({c.get('coverageRatio',0):.1%})",f"Feature-ready: {c.get('featureReady')}",f"Eligible liquid/current: {c.get('eligibleLiquidCurrent')}",f"RED: {b.get('red')} ({b.get('redShareEligible',0):.1%} of eligible)",f"YELLOW: {b.get('yellow')} ({b.get('yellowShareEligible',0):.1%} of eligible)",f"WATCH: {b.get('watch')}",f"New escalations: {b.get('newEscalations')}",f"Market-relative evidence: {'available' if m.get('available') else 'excluded / unavailable'}",f"Benchmark: {m.get('benchmarkTicker') or m.get('source')}",'','Top morning attention:']
           for x in p.get('topAttention',[])[:15]:
-            rows.append(f"- {x['symbol']} [{x['exchange']}] {x['status']} {x['score']:.1f}/100 · signals={x.get('independentStressSignals')} · {x.get('transition')} · {'; '.join(x.get('drivers',[])[:2])}")
-          body='\n'.join(rows)+'\n'
-          open('market-scan-report.md','w',encoding='utf-8').write(body)
-          print(body)
+              rows.append(f"- {x['symbol']} [{x['exchange']}] {x['status']} {x['score']:.1f}/100 · signals={x.get('independentStressSignals')} · {x.get('transition')} · {'; '.join(x.get('drivers',[])[:2])}")
+          body='\n'.join(rows)+'\n';open('market-scan-report.md','w',encoding='utf-8').write(body);print(body)
           PY
       - name: Build deep-alert CDN cache
         run: python scripts/update_alert_deep_cache.py
@@ -126,7 +112,7 @@ jobs:
           print(f"- missing alerts: {p.get('missingAlerts')}")
           print(f"- alert deep-history coverage: {p.get('alertCoverageRatio',0):.1%}")
           PY
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS MARKET SCAN V4 PASS ${GITHUB_SHA::7}" --body-file market-scan-report.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS MARKET SCAN V4.1 PASS ${GITHUB_SHA::7}" --body-file market-scan-report.md
       - name: Commit refreshed market snapshot
         run: |
           git config user.name 'github-actions[bot]'
