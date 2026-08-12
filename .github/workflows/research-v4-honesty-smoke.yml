@@ -1,0 +1,75 @@
+name: VMEWS v4 honesty gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'research-honesty-v4.js'
+      - 'research-engine-v3.js'
+      - 'research-runtime.js'
+      - '.github/workflows/research-v4-honesty-smoke.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: [FPT, PNJ, HPG, VCB]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify probability gate and raw-model transparency
+        shell: bash
+        run: |
+          set -e
+          SYMBOL='${{ matrix.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf "/tmp/vmews-honesty-$SYMBOL"
+          timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-honesty-$SYMBOL" --virtual-time-budget=350000 --dump-dom "$BASE/research-final.html?smoke=$SYMBOL" > dom.html 2>chrome.err
+          grep -Fq 'Research analysis complete' dom.html
+          python - "$SYMBOL" <<'PY' > result.txt
+          import re,html,sys,json
+          s=open('dom.html',encoding='utf-8',errors='ignore').read();sym=sys.argv[1]
+          def clean(x):return ' '.join(html.unescape(re.sub('<[^>]+>',' ',x or '')).split())
+          def spanval(label):
+              m=re.search(r'<span[^>]*>\s*'+re.escape(label)+r'\s*</span>\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+              return clean(m.group(1)) if m else None
+          def audit(label):
+              m=re.search(re.escape(label)+r'\s*<b[^>]*>(.*?)</b>',s,re.S|re.I)
+              return clean(m.group(1)) if m else None
+          def num(v):
+              if not v:return None
+              m=re.search(r'-?\d+(?:\.\d+)?',v);return float(m.group()) if m else None
+          crash=spanval('CALIBRATED 20D CRASH ESTIMATE');evidence=spanval('Evidence sufficiency')
+          pr=num(audit('PR-AUC'));base=num(audit('Crash base rate'));base=base/100 if base is not None and '%' in (audit('Crash base rate') or '') else base
+          bs=num(audit('Brier skill'))
+          names=['Structural EWS','Random Forest','ANFIS','Regime model','VAE anomaly','LSTM crash']
+          vals=[]
+          for name in names:
+              x=spanval(name);vals.append(x)
+          weak=(bs is None or bs<=0 or pr is None or base is None or pr<=base)
+          if weak:
+              assert crash=='WITHHELD',(sym,crash,pr,base,bs)
+              assert evidence and (evidence.startswith('LIMITED') or evidence.startswith('THIN')),(sym,evidence)
+          else:
+              assert crash and crash!='WITHHELD',(sym,crash,pr,base,bs)
+          assert len(set(v for v in vals if v))>=2,(sym,vals)
+          out={'symbol':sym,'probabilityDisplay':crash,'evidence':evidence,'prAuc':pr,'baseRate':base,'brierSkill':bs,'weakCalibration':weak,'modelCardValues':vals}
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+          cat > issue.md <<EOF
+          # VMEWS V4 HONESTY PASS · $SYMBOL
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          EOF
+          cat result.txt >> issue.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 HONESTY PASS $SYMBOL ${GITHUB_SHA::7}" --body-file issue.md
