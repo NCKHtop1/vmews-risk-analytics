@@ -1,0 +1,199 @@
+name: VMEWS calibrated final smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'research-engine-v3.js'
+      - 'research-runtime.js'
+      - 'alert-policy.js'
+      - 'investor-chart-v2.js'
+      - 'deep-alert-fallback.js'
+      - 'sector-context.js'
+      - 'data/alert-policy.json'
+      - '.github/workflows/research-v4-final-smoke.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-calibrated-final-smoke
+  cancel-in-progress: true
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and policy invariants
+        run: |
+          node --check research-engine-v3.js
+          node --check research-runtime.js
+          node --check alert-policy.js
+          node --check investor-chart-v2.js
+          node --check deep-alert-fallback.js
+          node --check sector-context.js
+          python - <<'PY'
+          import json,re
+          p=json.load(open('data/alert-policy.json',encoding='utf-8'))
+          assert p['version']=='VMEWS-ALERT-POLICY-4.0.0'
+          assert p['riskIndexBands']=={'red':78,'yellow':65,'watch':50,'greenBelow':50}
+          assert p['eventDefinitions']['primaryCrash']['horizonSessions']==20
+          assert p['eventDefinitions']['primaryCrash']['forwardDrawdownThreshold']==-0.12
+          assert p['validation']['purgeSessions']==20
+          html=open('research-final.html',encoding='utf-8').read()
+          assert './research-engine-v3.js' in html and './alert-policy.js' in html
+          assert 'research-engine-v2.js' not in html and 'research-short-history.js' not in html
+          js=open('research-engine-v3.js',encoding='utf-8').read()
+          for token in ['averagePrecision','brierSkill','isotonicFit','chooseThreshold','currentFeatureDate','lastLabelledDate','calibratedCrashProbability','MODEL CALIBRATION & ABLATION']:
+              assert token in js,token
+          print('STATIC V4 PASS')
+          PY
+
+  browser:
+    needs: static
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: [FPT, PNJ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Browser calibrated research smoke
+        shell: bash
+        run: |
+          set +e
+          SYMBOL='${{ matrix.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          assets=no; detail=no; chart=no; riskpane=no; complete=no; calprob=no; pra=no; brier=no; ablation=no; dates=no; rf=no; anfis=no; vae=no; lstm=no; old404=no; oldengine=no
+          for i in $(seq 1 40); do
+            if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
+              && curl -fsSL --max-time 20 "$BASE/research-engine-v3.js" -o engine.js \
+              && curl -fsSL --max-time 20 "$BASE/investor-chart-v2.js" -o chart.js \
+              && curl -fsSL --max-time 20 "$BASE/alert-policy.js" -o policy.js; then assets=yes; break; fi
+            sleep 4
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          EXIT=127
+          if [ "$assets" = yes ] && [ -n "$CHROME" ]; then
+            rm -rf "/tmp/vmews-v4-$SYMBOL"
+            timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-v4-$SYMBOL" --virtual-time-budget=350000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else : > dom.html; : > chrome.err; fi
+          grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && chart=yes
+          grep -Fq 'STRUCTURAL TECHNICAL RISK INDEX' dom.html && riskpane=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'CALIBRATED 20D CRASH ESTIMATE' dom.html && calprob=yes
+          grep -Fq 'PR-AUC' dom.html && pra=yes
+          grep -Fq 'Brier skill' dom.html && brier=yes
+          grep -Fq 'MODEL CALIBRATION &amp; ABLATION' dom.html && ablation=yes
+          grep -Fq 'Current feature date' dom.html && grep -Fq 'Last labelled training state' dom.html && dates=yes
+          grep -Fq 'Random Forest' dom.html && rf=yes
+          grep -Fq 'ANFIS' dom.html && anfis=yes
+          grep -Fq 'VAE anomaly' dom.html && vae=yes
+          grep -Fq 'LSTM crash' dom.html && grep -Fq 'LSTM rebound' dom.html && lstm=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          grep -Fq 'VMEWS-RESEARCH-ENGINE-2' dom.html && oldengine=yes
+          python - <<'PY' > temporal.txt
+          import re,html,sys
+          s=open('dom.html',encoding='utf-8',errors='ignore').read()
+          def txt(label):
+              m=re.search(label+r'.{0,400}?<b>(.*?)</b>',s,re.S|re.I)
+              return html.unescape(re.sub('<[^>]+>',' ',m.group(1))).strip() if m else ''
+          cur=txt('Current feature date'); last=txt('Last labelled training state')
+          print('CURRENT='+cur);print('LAST_LABELLED='+last)
+          if cur and last:
+              assert last < cur,(last,cur)
+          else:
+              raise SystemExit('Missing current/last-labelled dates')
+          PY
+          temporal=$?
+          pass=no
+          if [ "$assets" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$riskpane" = yes ] && [ "$complete" = yes ] && [ "$calprob" = yes ] && [ "$pra" = yes ] && [ "$brier" = yes ] && [ "$ablation" = yes ] && [ "$dates" = yes ] && [ "$rf" = yes ] && [ "$anfis" = yes ] && [ "$vae" = yes ] && [ "$lstm" = yes ] && [ "$old404" = no ] && [ "$oldengine" = no ] && [ "$temporal" = 0 ]; then pass=yes; fi
+          cat > result.md <<EOF
+          # VMEWS CALIBRATED FINAL ${pass^^} · $SYMBOL
+
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Chrome exit: $EXIT
+          - Detail: $detail
+          - Investor chart: $chart
+          - Risk pane: $riskpane
+          - Research complete: $complete
+          - Calibrated 20D crash estimate: $calprob
+          - PR-AUC: $pra
+          - Brier diagnostics: $brier
+          - Model ablation: $ablation
+          - Current-vs-labelled date audit: $dates / temporal=$temporal
+          - RF/ANFIS/VAE/LSTM: $rf/$anfis/$vae/$lstm
+          - Old Yahoo 404: $old404
+          - Old engine marker: $oldengine
+          EOF
+          cat temporal.txt >> result.md
+          echo '--- chrome tail ---' >> result.md; echo '```' >> result.md; tail -30 chrome.err >> result.md; echo '```' >> result.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS CALIBRATED FINAL ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
+
+  fallback:
+    needs: static
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select non-alert Vnstock HOSE fallback
+        id: pick
+        run: |
+          SYMBOL=$(python - <<'PY'
+          import json
+          h=json.load(open('data/hose-fallbacks/manifest.json',encoding='utf-8'))
+          try:a=json.load(open('data/deep-alerts/manifest.json',encoding='utf-8'))
+          except Exception:a={}
+          alerts=set((a.get('symbols') or {}).keys())
+          z=[]
+          for s,r in (h.get('routes') or {}).items():
+              if r.get('route')=='CDN_VNSTOCK_DEEP' and r.get('rows',0)>=600 and s not in alerts:z.append((r.get('rows',0),s))
+          assert z,'No non-alert deep Vnstock fallback'
+          print(sorted(z,reverse=True)[0][1])
+          PY
+          )
+          echo "symbol=$SYMBOL" >> "$GITHUB_OUTPUT"
+      - name: Browser universal fallback smoke
+        shell: bash
+        run: |
+          set +e
+          SYMBOL='${{ steps.pick.outputs.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          for i in $(seq 1 40); do curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html && break; sleep 4; done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf /tmp/vmews-v4-fallback
+          timeout 390s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-v4-fallback --virtual-time-budget=350000 --dump-dom "$URL" > dom.html 2>chrome.err
+          detail=no;chart=no;vn=no;complete=no;cal=no;old404=no
+          grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && chart=yes
+          grep -Fq 'Vnstock' dom.html && vn=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'CALIBRATED 20D CRASH ESTIMATE' dom.html && cal=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          pass=no
+          if [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$vn" = yes ] && [ "$complete" = yes ] && [ "$cal" = yes ] && [ "$old404" = no ];then pass=yes;fi
+          cat > result.md <<EOF
+          # VMEWS V4 UNIVERSAL FALLBACK ${pass^^}
+          - Symbol: $SYMBOL
+          - Candidate: $BASE/research-final.html
+          - Detail/chart/Vnstock: $detail/$chart/$vn
+          - Calibrated research complete: $complete/$cal
+          - Old Yahoo 404: $old404
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V4 FALLBACK ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
