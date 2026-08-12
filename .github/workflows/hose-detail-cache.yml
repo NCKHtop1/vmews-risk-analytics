@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/update_hose_detail_cache.py'
+      - 'scripts/update_hose_detail_cache_runner.py'
       - 'api/price_history.py'
       - 'api/radar.py'
       - 'api/stocks.py'
@@ -37,7 +38,7 @@ jobs:
       - name: Install data dependencies
         run: pip install --disable-pip-version-check -q -r requirements.txt
       - name: Build HOSE resolver snapshot
-        run: python scripts/update_hose_detail_cache.py
+        run: python scripts/update_hose_detail_cache_runner.py
       - name: Validate HOSE route coverage
         run: |
           python - <<'PY'
