@@ -2,7 +2,7 @@
 
 This script never retrains or promotes a model. It rebuilds the current
 completed-EOD cross-section with the exact production feature recipe and applies
-the versioned model artifact produced by train_pooled_hose_model_v2.py.
+the versioned model artifact produced by the dual-gate pooled trainer.
 """
 import importlib.util
 import json
@@ -40,7 +40,7 @@ def main():
         raise RuntimeError('No promoted pooled model artifact is available')
     bundle = joblib.load(MODEL)
     if not bundle.get('promotionPassed'):
-        raise RuntimeError('Pooled model artifact is not promotion-approved')
+        raise RuntimeError('Pooled predictive model artifact is not promotion-approved')
     if bundle.get('featureVersion') != B.FEATURE_VERSION:
         raise RuntimeError(f"Feature version mismatch: {bundle.get('featureVersion')} vs {B.FEATURE_VERSION}")
 
@@ -75,12 +75,15 @@ def main():
     prob = B.calibrate(platt, raw)
     sealed_ref = bundle['sealedReferenceProbabilities']
     base = float(bundle['sealedBaseRate'])
+    standalone = bool(bundle.get('standaloneAlertApproved', False))
+    evidence_grade = str(bundle.get('evidenceGrade') or 'MODERATE')
     scores = {}
     for row, rr, pp in zip(frame.to_dict('records'), raw, prob):
         scores[row['symbol']] = {
             'symbol': row['symbol'], 'modelAsOf': str(pd.Timestamp(row['date']).date()),
             'rawScore': float(rr), 'crashProbability': float(pp),
-            'probabilityUsable': True, 'riskPercentile': B.percentile(sealed_ref, pp),
+            'probabilityUsable': True, 'standaloneAlertApproved': standalone,
+            'riskPercentile': B.percentile(sealed_ref, pp),
             'relativeRisk': float(pp / base) if base > 0 else None,
             'technical': float(row['technical']),
             'turnover20': float(math.expm1(row['logTurnover20'])),
@@ -92,16 +95,21 @@ def main():
         'generatedAt': datetime.now(timezone.utc).isoformat(),
         'modelAsOf': str(pd.Timestamp(modal).date()),
         'champion': bundle['champion'], 'promotionPassed': True,
+        'standaloneAlertApproved': standalone, 'evidenceGrade': evidence_grade,
         'trainingCutoff': bundle.get('trainingCutoff'),
         'calibrationCutoff': bundle.get('calibrationCutoff'),
         'sealedBaseRate': base, 'currentScored': len(scores),
         'historyCoverage': len(rows_by_symbol) / len(universe),
         'scores': scores, 'fetchErrors': errors[:30],
-        'governance': 'Daily frozen-model inference only; no automatic retraining or model promotion.'
+        'governance': (
+            'Daily frozen pooled predictive-evidence inference only; no automatic retraining or model promotion. '
+            + ('Standalone binary alert policy is approved.' if standalone else 'Standalone binary alert policy is NOT approved; pooled scores cannot create RED/YELLOW or autonomous actions.')
+        )
     }
     SCORES.write_text(json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
     print(json.dumps({'version': payload['version'], 'modelAsOf': payload['modelAsOf'],
-                      'currentScored': len(scores), 'historyCoverage': payload['historyCoverage']}, indent=2))
+                      'currentScored': len(scores), 'historyCoverage': payload['historyCoverage'],
+                      'standaloneAlertApproved': standalone, 'evidenceGrade': evidence_grade}, indent=2))
 
 
 if __name__ == '__main__':
