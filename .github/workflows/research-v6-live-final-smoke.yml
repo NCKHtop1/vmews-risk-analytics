@@ -1,0 +1,178 @@
+name: VMEWS v6 live final smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research-final.html'
+      - 'research-live-v6.js'
+      - 'research-honesty-v4.js'
+      - 'research-pooled-v5.js'
+      - 'research-app.js'
+      - 'data/market-scan.json'
+      - 'data/pooled-hose/current-scores.json'
+      - 'data/live-track/**'
+      - 'scripts/update_live_model_monitor.py'
+      - '.github/workflows/research-v6-live-final-smoke.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-v6-live-final-smoke
+  cancel-in-progress: true
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate V6 syntax, PIT integrity and live governance
+        run: |
+          node --check research-live-v6.js
+          node --check research-honesty-v4.js
+          node --check research-pooled-v5.js
+          node --check research-app.js
+          python - <<'PY'
+          import json,pathlib
+          h=open('research-final.html',encoding='utf-8').read()
+          m=json.load(open('data/market-scan.json',encoding='utf-8'))
+          p=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
+          t=json.load(open('data/live-track/track-record.json',encoding='utf-8'))
+          q=json.load(open('data/live-track/integrity.json',encoding='utf-8'))
+          assert 'VMEWS-LIVE-6.0-RC' in h,h[:400]
+          assert './research-live-v6.js' in h
+          assert 'Live outcomes cannot auto-promote or trade' in h
+          assert m['version']=='VMEWS-MARKET-SCAN-4.2.0',m['version']
+          assert m['modelDate']==p['modelAsOf']==q['marketModelDate']==q['pooledModelDate'],(m['modelDate'],p['modelAsOf'],q)
+          assert q['status']=='PASS',q
+          assert q['sameCompletedEod'] is True,q
+          assert q['marketContextImputed'] is False,q
+          assert m['dataQuality']['watchlistTimeBasis']=='SAME_CANONICAL_EOD_AS_MARKET_SCAN',m['dataQuality']
+          assert len(m.get('monitorUniverse') or [])>=200,len(m.get('monitorUniverse') or [])
+          assert len(m.get('outcomeTape') or [])>=200,len(m.get('outcomeTape') or [])
+          assert t['version']=='VMEWS-LIVE-MONITOR-1.0.0',t['version']
+          assert t['archivedSnapshots']>=1,t
+          assert t['calibrationLiveMonitor']['status'] in {'INSUFFICIENT_MATURED_LIVE_DATA','UNSTABLE_KEEP_WITHHELD','STABLE_REVIEW_ELIGIBLE'},t['calibrationLiveMonitor']
+          assert p['absoluteProbabilityUsable'] is False,p
+          assert all(x.get('auditCalibrationUse')=='OUTCOME_MONITORING_ONLY_NOT_USER_FACING' for x in p.get('scores',{}).values()),'missing audit-only calibration field'
+          snap=pathlib.Path(f"data/live-track/snapshots/{m['modelDate']}.json")
+          assert snap.exists(),snap
+          s=json.load(open(snap,encoding='utf-8'))
+          assert s['snapshotHash'] and s['modelDate']==m['modelDate'],s
+          print('VMEWS V6 STATIC/PIT PASS',m['modelDate'],t['archivedSnapshots'])
+          PY
+
+  browser:
+    needs: static
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: [FPT, GEE, PNJ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Browser V6 end-to-end live + research smoke
+        shell: bash
+        run: |
+          set +e
+          SYMBOL='${{ matrix.symbol }}'
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          assets=no
+          for i in $(seq 1 45);do
+            if curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html \
+             && curl -fsSL --max-time 20 "$BASE/research-live-v6.js" -o live.js \
+             && curl -fsSL --max-time 20 "$BASE/research-pooled-v5.js" -o pool.js;then assets=yes;break;fi
+            sleep 4
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          EXIT=127
+          if [ "$assets" = yes ] && [ -n "$CHROME" ];then
+            rm -rf "/tmp/vmews-v6-$SYMBOL"
+            timeout 430s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir="/tmp/vmews-v6-$SYMBOL" --virtual-time-budget=390000 --dump-dom "$URL" > dom.html 2>chrome.err
+            EXIT=$?
+          else : >dom.html; : >chrome.err;fi
+          live=no;aligned=no;watch=no;detail=no;chart=no;complete=no;rank=no;clarity=no;pool=no;withheld=no;reliability=no;oldindex=no;old404=no
+          grep -Fq 'Live Model Monitor' dom.html && grep -Fq 'Archived PIT snapshots' dom.html && live=yes
+          grep -Fq 'Current EOD integrity' dom.html && grep -Fq 'ALIGNED' dom.html && aligned=yes
+          grep -Fq 'VMEWS-WATCHLIST-6.0.0-CANONICAL-EOD' dom.html && watch=yes
+          grep -Fq ">$SYMBOL ·" dom.html && detail=yes
+          grep -Fq 'INVESTOR OBSERVATION CHART' dom.html && chart=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'CURRENT RESEARCH RISK RANK' dom.html && grep -Fq 'percentile' dom.html && rank=yes
+          grep -Fq 'Evidence sufficiency' dom.html && grep -Fq 'Risk rank and probability are different quantities' dom.html && clarity=yes
+          grep -Fq 'POOLED HOSE PREDICTIVE LAYER · SEALED + ROBUSTNESS AUDITED' dom.html && pool=yes
+          grep -Fq 'Absolute 20D crash probability' dom.html && grep -Fq 'WITHHELD' dom.html && withheld=yes
+          grep -Fq 'OOS reliability' dom.html && reliability=yes
+          grep -Fq 'CURRENT RESEARCH RISK INDEX' dom.html && oldindex=yes
+          grep -Eq 'HTTP Error 404|\.VN: HTTP Error 404' dom.html && old404=yes
+          expected=$(python - <<'PY'
+          import json
+          print(json.load(open('data/market-scan.json',encoding='utf-8'))['modelDate'])
+          PY
+          )
+          dateok=no;grep -Fq "$expected" dom.html && dateok=yes
+          pass=no
+          if [ "$assets" = yes ] && [ "$live" = yes ] && [ "$aligned" = yes ] && [ "$watch" = yes ] && [ "$detail" = yes ] && [ "$chart" = yes ] && [ "$complete" = yes ] && [ "$rank" = yes ] && [ "$clarity" = yes ] && [ "$pool" = yes ] && [ "$withheld" = yes ] && [ "$reliability" = yes ] && [ "$oldindex" = no ] && [ "$old404" = no ] && [ "$dateok" = yes ];then pass=yes;fi
+          cat > result.md <<EOF
+          # VMEWS V6 LIVE ${pass^^} · $SYMBOL
+          - Candidate: $BASE/research-final.html
+          - Commit: $GITHUB_SHA
+          - Chrome exit: $EXIT
+          - Live monitor / EOD aligned: $live/$aligned
+          - Canonical EOD Watchlist: $watch
+          - Detail/chart/research: $detail/$chart/$complete
+          - Risk-rank clarity: $rank/$clarity
+          - Pooled / probability WITHHELD: $pool/$withheld
+          - Raw-model OOS reliability disclosure: $reliability
+          - Legacy CURRENT RESEARCH RISK INDEX present: $oldindex
+          - Expected EOD date visible ($expected): $dateok
+          - Old Yahoo 404: $old404
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V6 LIVE ${pass^^} $SYMBOL ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
+
+  outside-domain:
+    needs: static
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify BNA keeps local RED and receives no HOSE pooled evidence
+        shell: bash
+        run: |
+          set +e
+          SYMBOL=BNA
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          URL="$BASE/research-final.html?smoke=$SYMBOL"
+          for i in $(seq 1 45);do curl -fsSL --max-time 20 "$BASE/research-final.html" -o page.html && break;sleep 4;done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          rm -rf /tmp/vmews-v6-bna
+          timeout 430s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-v6-bna --virtual-time-budget=390000 --dump-dom "$URL" > dom.html 2>chrome.err
+          live=no;detail=no;complete=no;unavailable=no;red=no;rank=no
+          grep -Fq 'Live Model Monitor' dom.html && live=yes
+          grep -Fq '>BNA ·' dom.html && detail=yes
+          grep -Fq 'Research analysis complete' dom.html && complete=yes
+          grep -Fq 'BNA · pooled model unavailable' dom.html && grep -Fq 'No pooled probability is imputed' dom.html && unavailable=yes
+          grep -Fq 'T RED' dom.html && red=yes
+          grep -Fq 'CURRENT RESEARCH RISK RANK' dom.html && rank=yes
+          pass=no
+          if [ "$live" = yes ] && [ "$detail" = yes ] && [ "$complete" = yes ] && [ "$unavailable" = yes ] && [ "$red" = yes ] && [ "$rank" = yes ];then pass=yes;fi
+          cat > result.md <<EOF
+          # VMEWS V6 OUTSIDE ${pass^^} · BNA
+          - Live monitor: $live
+          - Detail/local research: $detail/$complete
+          - Pooled unavailable + no imputation: $unavailable
+          - T RED preserved: $red
+          - Risk-rank clarity: $rank
+          EOF
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS V6 OUTSIDE ${pass^^} BNA ${GITHUB_SHA::7}" --body-file result.md
+          test "$pass" = yes
