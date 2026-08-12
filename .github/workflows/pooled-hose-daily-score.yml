@@ -5,6 +5,12 @@ on:
   schedule:
     - cron: '25 23 * * 0-4'
     - cron: '55 9 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'data/pooled-hose/model-meta.json'
+      - 'scripts/score_pooled_hose_model.py'
+      - '.github/workflows/pooled-hose-daily-score.yml'
 
 permissions:
   contents: write
@@ -33,24 +39,29 @@ jobs:
           pip install --disable-pip-version-check -q scikit-learn==1.9.0 joblib==1.5.1
       - name: Score latest completed-EOD HOSE cross-section
         run: python scripts/score_pooled_hose_model.py
-      - name: Validate daily pooled score snapshot
+      - name: Validate daily pooled predictive snapshot
         run: |
           python - <<'PY'
           import json, pathlib
           p=json.load(open('data/pooled-hose/current-scores.json',encoding='utf-8'))
-          assert p.get('version')=='VMEWS-POOLED-HOSE-1.1.0',p.get('version')
+          assert p.get('version')=='VMEWS-POOLED-HOSE-1.2.0',p.get('version')
           assert p.get('promotionPassed') is True,p
+          assert isinstance(p.get('standaloneAlertApproved'),bool),p
+          assert p.get('evidenceGrade') in {'MODERATE','STRONG'},p.get('evidenceGrade')
           assert p.get('modelAsOf'),p
           assert p.get('currentScored',0)>=100,p.get('currentScored')
           assert p.get('historyCoverage',0)>=.90,p.get('historyCoverage')
-          assert p.get('governance','').startswith('Daily frozen-model inference'),p.get('governance')
+          assert p.get('governance','').startswith('Daily frozen pooled predictive-evidence inference'),p.get('governance')
           probs=[x.get('crashProbability') for x in p.get('scores',{}).values()]
-          assert all(x is not None and 0<=x<=1 for x in probs), 'invalid probabilities'
+          assert all(x is not None and 0<=x<=1 for x in probs),'invalid probabilities'
+          assert all(x.get('standaloneAlertApproved')==p.get('standaloneAlertApproved') for x in p.get('scores',{}).values()),'dual-gate mismatch'
           report=(
             '# VMEWS POOLED HOSE DAILY SCORE PASS\n\n'
             f"Version: {p.get('version')}\n"
             f"Model EOD: {p.get('modelAsOf')}\n"
             f"Champion: {p.get('champion')}\n"
+            f"Evidence grade: {p.get('evidenceGrade')}\n"
+            f"Standalone alert approved: {p.get('standaloneAlertApproved')}\n"
             f"Scored: {p.get('currentScored')} HOSE names\n"
             f"History coverage: {p.get('historyCoverage',0):.1%}\n"
             'Retraining: no — frozen champion inference only.\n'
