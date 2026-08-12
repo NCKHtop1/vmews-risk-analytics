@@ -1,0 +1,107 @@
+{
+  "version": "VMEWS-LIVE-MONITOR-1.0.0",
+  "generatedAt": "2026-08-12T06:58:41.419408+00:00",
+  "trackingStarted": "2026-08-11",
+  "latestArchivedEod": "2026-08-11",
+  "archivedSnapshots": 1,
+  "horizonSessions": 20,
+  "eventDefinition": "20-session forward maximum drawdown <= -12%",
+  "currentIntegrity": {
+    "status": "PASS",
+    "reasons": [],
+    "marketModelDate": "2026-08-11",
+    "pooledModelDate": "2026-08-11",
+    "sameCompletedEod": true,
+    "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
+    "policyAligned": true,
+    "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
+    "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
+    "marketContextDate": "2026-08-10",
+    "marketContextStatus": "EXCLUDED_UNAVAILABLE",
+    "marketContextImputed": false,
+    "pointInTimeReady": true,
+    "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
+    "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
+    "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
+    "archiveStatus": "CREATED",
+    "revision": null
+  },
+  "tDayLiveTrack": {
+    "status": "BUILDING_LIVE_TRACK_RECORD",
+    "bySignalBand": {
+      "RED": {
+        "matured": 0,
+        "events": 0,
+        "eventRate": null,
+        "medianMaxDrawdown20": null,
+        "pending": 33
+      },
+      "YELLOW": {
+        "matured": 0,
+        "events": 0,
+        "eventRate": null,
+        "medianMaxDrawdown20": null,
+        "pending": 33
+      }
+    },
+    "combinedAlerts": {
+      "matured": 0,
+      "events": 0,
+      "eventRate": null,
+      "medianMaxDrawdown20": null,
+      "liftVsEligibleMarketStates": null
+    },
+    "eligibleMarketBaseline": {
+      "matured": 0,
+      "events": 0,
+      "eventRate": null,
+      "medianMaxDrawdown20": null
+    },
+    "maturedSignals": 0,
+    "pendingSignals": 33,
+    "unresolvedSignals": 0,
+    "baselinePending": 383,
+    "baselineUnresolved": 0,
+    "minimumRecommendedMaturedSignals": 100
+  },
+  "pooledLiveTrack": {
+    "status": "BUILDING_LIVE_TRACK_RECORD",
+    "maturedStates": 0,
+    "events": 0,
+    "baseRate": null,
+    "prAuc": null,
+    "topDecile": {
+      "matured": 0,
+      "events": 0,
+      "eventRate": null,
+      "medianMaxDrawdown20": null,
+      "liftVsLiveBase": null
+    },
+    "pendingStates": 211,
+    "unresolvedStates": 0,
+    "minimumLiveEvidenceMet": false,
+    "rankMonitorPass": false,
+    "effect": "Live rank monitoring can trigger review or downgrade. It never auto-promotes a model."
+  },
+  "calibrationLiveMonitor": {
+    "maturedAuditStates": 0,
+    "events": 0,
+    "baseRate": null,
+    "brier": null,
+    "baseRateBrier": null,
+    "brierSkill": null,
+    "ece10": null,
+    "halves": [],
+    "minimumLiveEvidenceMet": false,
+    "stable": false,
+    "status": "INSUFFICIENT_MATURED_LIVE_DATA",
+    "effect": "Monitoring only. Even a future PASS requires manual independent review before any probability promotion."
+  },
+  "governance": [
+    "Daily inference remains frozen; this monitor never retrains or promotes a champion.",
+    "A live signal is labelled only after exactly 20 later archived completed-EOD dates exist.",
+    "Any missing close inside the fixed 20-date horizon produces UNRESOLVED_DATA_GAP rather than an imputed label.",
+    "The first archived snapshot for a model date is immutable; later revisions are flagged rather than silently replacing history.",
+    "Absolute pooled probability remains WITHHELD until the existing historical stability limitation and future live calibration evidence are both reviewed manually."
+  ]
+}
