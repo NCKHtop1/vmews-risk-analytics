@@ -6,7 +6,7 @@ VMEWS is a point-in-time early-warning research system for Vietnamese listed equ
 
 The workflow is:
 
-**Market-wide T-day scan → RED/YELLOW shortlist → single-name evidence → calibrated model validation → human risk review.**
+**Market-wide T-day scan → RED/YELLOW shortlist → single-name evidence → chronological validation/calibration → human risk review.**
 
 ## Canonical alert policy
 
@@ -34,6 +34,8 @@ The detail path uses multiple routes:
 1. Yahoo Finance history when usable.
 2. Vnstock Unified Market equity OHLCV fallback.
 3. Pre-built CDN fallback for alert names and HOSE symbols where the primary API route is unavailable.
+
+During the Vietnam cash session, any current-session daily bar returned by an upstream source is removed before the chart, structural state or deep-research engine receives the series. The latest completed EOD is therefore the current research date.
 
 A valid symbol with insufficient history should still show the available detail/chart, but deep models are not forced to produce output when the history gate cannot support them.
 
@@ -73,7 +75,7 @@ This is a heuristic research guard, not a substitute for an authoritative adjust
 
 ## Models
 
-The calibrated research engine contains independent components:
+The research engine contains independent components:
 
 - deterministic Structural EWS;
 - Random Forest nonlinear benchmark;
@@ -92,49 +94,67 @@ Each walk-forward fold is separated into:
 
 1. model-fitting window;
 2. purge;
-3. probability-calibration window;
+3. calibration/threshold window;
 4. purge;
 5. later out-of-sample test window.
 
 The purge corresponds to approximately 20 trading sessions so that adjacent states cannot share the same forward event horizon across a boundary.
 
-## Probability calibration
+## Ranking versus probability
 
 Raw model outputs do not share a common statistical meaning: a Random Forest score, a regime event rate and a VAE anomaly score are not automatically comparable probabilities.
 
-Therefore each model is mapped to the observed crash outcome using **chronological isotonic calibration with beta smoothing** on the calibration window. A final current calibrated estimate uses the calibration relationship learned from historical out-of-sample predictions; historical performance metrics remain based on fold-level calibration/test separation.
+VMEWS therefore separates **ranking** from **probability**.
 
-The UI therefore separates:
+### Risk ranking
 
-- **Historical Risk Percentile / Research Risk Index (0–100):** a relative risk-ranking index;
-- **Calibrated 20-session crash estimate (%):** an empirical probability estimate, shown with its historical OOS base rate.
+For historical ranking, each component is assessed from raw out-of-sample predictions. Reliability weights are driven primarily by PR-AUC skill over the event base rate and secondarily by ROC-AUC skill. Components with no demonstrated ranking value can receive zero effective weight.
+
+The current raw ensemble is ranked against historical OOS raw-ensemble states to produce the **Historical Risk Percentile / Research Risk Index (0–100)**. This number is a relative risk-ranking index, not a crash probability.
+
+### Probability calibration
+
+Small per-security calibration samples made flexible isotonic calibration unstable in testing, including cases with poor Brier skill. The final user-facing probability layer therefore uses a more strongly regularised **Platt/sigmoid meta-calibration** over the historical OOS ensemble rank signal.
+
+Its validation is chronological:
+
+- an earlier block of OOS states fits the sigmoid calibrator;
+- a later OOS block evaluates probability quality;
+- later evaluation data never fit their own calibrator;
+- the final current-state calibrator can use all historical OOS predictions only after the validation gate has been measured.
+
+The user-facing 20-session crash probability is shown **only if all probability-governance conditions pass**, including sufficient event depth, ranking PR-AUC above the evaluation base rate and positive Brier skill versus a constant base-rate forecast. Otherwise the UI displays **WITHHELD**.
+
+Withholding is deliberate model-risk governance, not a runtime failure.
 
 ## Rare-event metrics
 
-For crash events, ROC-AUC alone is insufficient. VMEWS reports:
+For crash events, ROC-AUC alone is insufficient. VMEWS reports or audits:
 
 - PR-AUC / average precision;
 - ROC-AUC;
-- Brier score and Brier skill;
+- Brier score;
+- base-rate Brier score;
+- Brier skill;
 - precision;
 - recall / missed-event rate;
 - false-positive rate;
 - alert rate;
 - number of out-of-sample crash events.
 
-PR-AUC is the primary ranking diagnostic for the rare positive event. Brier skill is used to assess probability calibration relative to a constant base-rate forecast.
+PR-AUC is the primary ranking diagnostic for the rare positive event. Brier skill evaluates whether a probability forecast improves upon a constant historical event-rate forecast.
 
 ## Decision threshold governance
 
-Within each fold, an alert probability threshold is selected only from the preceding calibration window. The objective minimises an explicit expected loss where a missed event currently costs twice a false alert. The test fold does not choose its own threshold.
+Within each validation fold, an alert threshold is selected only from the preceding calibration window. The objective minimises an explicit expected loss where a missed event currently costs twice a false alert. The test fold does not choose its own threshold.
 
 This does not imply that the selected cost ratio is universally optimal; it is a transparent research-policy choice and can be stress-tested.
 
 ## Validation-aware ensemble and ablation
 
-Models are not guaranteed equal weight. Historical reliability is measured from PR-AUC skill over the event base rate, Brier skill and ROC-AUC skill. A weak component can receive zero effective weight.
+Models are not guaranteed equal weight. A weak component can receive zero effective rank weight.
 
-The UI includes a model-ablation table showing each model's OOS PR-AUC, ROC-AUC, Brier skill and incremental PR-AUC relative to the structural benchmark.
+The UI includes model-ablation evidence showing each model's OOS PR-AUC, ROC-AUC and incremental PR-AUC relative to the structural benchmark. Raw current model values are shown as model/anomaly scores rather than being mislabelled as probabilities.
 
 Adding a model is justified only if it contributes incremental out-of-sample evidence; model complexity is not treated as evidence by itself.
 
@@ -158,12 +178,16 @@ The system separately grades evidence sufficiency using:
 - historical session/sample depth;
 - number of OOS crash events;
 - PR-AUC skill over the event base rate;
-- Brier skill;
+- probability-calibration quality;
 - market context availability;
 - news coverage;
 - fundamental context availability.
 
-When evidence is thin or historically weak, the system should explicitly downgrade the use case to screening/human review rather than state a strong conclusion.
+When probability calibration fails its OOS gate, evidence cannot be upgraded merely because a current risk rank is high. The probability is withheld and the intended use is downgraded to screening/human review as appropriate.
+
+## Reproducibility
+
+The RF/VAE/LSTM initialisation is seeded; TensorFlow.js runs on CPU in the research runtime; the feature version and policy version are recorded. CI runs identical browser analyses twice and compares the rendered research outputs. A difference on the same immutable code/data state is a release-blocking failure.
 
 ## Research limitations
 
@@ -172,7 +196,7 @@ The current implementation has important boundaries:
 1. The broad T-day reference universe is a **current listed universe**. It is appropriate for today's monitoring but is not yet a full historical point-in-time constituent database. Claims about long-horizon whole-market validation must account for delisted/transferred/new listings to avoid survivorship bias.
 2. The corporate-action guard is heuristic; authoritative adjusted-price data would be preferable.
 3. Current fundamentals/news are not historical vintages and therefore do not participate in historical ML validation.
-4. Single-name event counts can be small. Probability estimates and model weights are downgraded when the OOS event depth is weak.
+4. Single-name event counts can be small. Probability is withheld when the OOS calibration gate does not pass.
 5. Browser deep learning is retained for a transparent research demonstration. A production institutional implementation should train/version signed model artefacts offline and perform inference from frozen models.
 6. VMEWS is an early-warning decision-support system. It does not replace portfolio limits, suitability review, independent market judgement or investment due diligence.
 
@@ -183,6 +207,7 @@ The current implementation has important boundaries:
 - Aldasoro, I., Borio, C. & Drehmann, M. (2018), *Early warning indicators of banking crises: expanding the family*, BIS Quarterly Review.
 - Niculescu-Mizil, A. & Caruana, R. (2005), *Predicting Good Probabilities With Supervised Learning*, ICML.
 - Davis, J. & Goadrich, M. (2006), *The Relationship Between Precision-Recall and ROC Curves*, ICML.
+- Guo, C., Pleiss, G., Sun, Y. & Weinberger, K.Q. (2017), *On Calibration of Modern Neural Networks*, ICML/PMLR.
 - Bailey, D.H., Borwein, J., López de Prado, M. & Zhu, Q.J. (2015), *The Probability of Backtest Overfitting*, Journal of Computational Finance / SSRN.
 
-These sources motivate real-time information discipline, interpretable amber/red alert zones, explicit false-alarm/missed-event trade-offs, probability calibration, rare-event evaluation and controls against repeated backtest selection.
+These sources motivate real-time information discipline, interpretable amber/red alert zones, explicit false-alarm/missed-event trade-offs, probability calibration, rare-event evaluation, conservative probability disclosure and controls against repeated backtest selection.
