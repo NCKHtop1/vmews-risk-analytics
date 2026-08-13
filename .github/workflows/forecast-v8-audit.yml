@@ -1,15 +1,13 @@
-name: Forecast V8 market-regime audit
+name: Forecast V9 relative-alpha audit
 on:
   push:
     branches: [forecast-v6-research-grade]
-    paths: ['scripts/train_forecast_v8.py','scripts/run_forecast_v8_patched4.py','.github/workflows/forecast-v8-audit.yml']
+    paths: ['scripts/train_forecast_v9.py','.github/workflows/forecast-v8-audit.yml']
   workflow_dispatch:
-permissions:
-  contents: write
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,10 +16,8 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install numpy scipy scikit-learn
-      - run: python scripts/run_forecast_v8_patched4.py
+      - run: python scripts/train_forecast_v9.py
       - uses: actions/upload-artifact@v4
         with:
-          name: forecast-v8-artifacts
-          path: |
-            data/forecast-model-v8.json
-            forecast-validation-v8.json
+          name: forecast-v9-artifacts
+          path: data/forecast-model-v9.json
