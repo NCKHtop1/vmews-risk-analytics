@@ -1,0 +1,17 @@
+{
+  "version": "VMEWS-FORECAST-LIVE-1.0.0",
+  "generatedAt": "2026-08-13T18:40:32.041038+00:00",
+  "count": 1,
+  "snapshots": [
+    {
+      "date": "2026-08-13",
+      "file": "data/forecast-live/snapshots/2026-08-13.json",
+      "sha256": "7f0b3cc3950185f77f903f9cd99c3bf30993388c5d0e640fc236517a1e2fc6f1",
+      "snapshotHash": "1b69b1f1786e13e7120299ca48aaa94dc327e4ba80216da06192895514193588",
+      "modelVersion": "VMEWS-FORECAST-9.0.0",
+      "symbols": 10,
+      "coverageState": "LIMITED_CURRENT_EOD_CACHE"
+    }
+  ],
+  "rule": "Append-only date-keyed forecast snapshots; first archive is preserved."
+}

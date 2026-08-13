@@ -1,0 +1,16 @@
+{
+  "version": "VMEWS-FORECAST-LIVE-1.0.0",
+  "generatedAt": "2026-08-13T18:40:32.041145+00:00",
+  "status": "PASS",
+  "asOf": "2026-08-13",
+  "archiveStatus": "CREATED",
+  "coverageState": "LIMITED_CURRENT_EOD_CACHE",
+  "symbols": 10,
+  "integrity": {
+    "ok": true,
+    "snapshots": 1
+  },
+  "modelVersion": "VMEWS-FORECAST-9.0.0",
+  "sentimentVersion": "VMEWS-SENTIMENT-8.0.1",
+  "timeBasis": "COMPLETED_EOD_ONLY"
+}
