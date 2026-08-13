@@ -5,11 +5,11 @@ from email.utils import parsedate_to_datetime
 import torch
 from transformers import AutoTokenizer,AutoModelForSequenceClassification
 from pyvi import ViTokenizer
-MODEL='mnguyn11/phobert-stock-sentiment-PTDLW';VERSION='VMEWS-SENTIMENT-8.0.0'
+MODEL='mnguyn11/phobert-stock-sentiment-PTDLW';VERSION='VMEWS-SENTIMENT-8.0.1'
 POS_RULE=[r'mua ròng mạnh',r'nợ xấu giảm',r'vượt kế hoạch',r'vượt kỳ vọng',r'lợi nhuận.{0,20}tăng',r'lãi.{0,20}tăng',r'trúng thầu',r'nâng khuyến nghị',r'khuyến nghị mua']
 NEG_RULE=[r'bán ròng mạnh',r'nợ xấu tăng',r'thấp hơn.{0,20}kỳ vọng',r'không đạt.{0,20}kế hoạch',r'không hoàn thành.{0,20}kế hoạch',r'báo lỗ',r'lỗ ròng',r'giảm mạnh',r'bán tháo',r'hủy niêm yết',r'chậm thanh toán',r'bị điều tra',r'bị khởi tố',r'xử phạt',r'biên lợi nhuận.{0,25}suy yếu']
 NEU_RULE=[r'đại hội đồng cổ đông',r'báo cáo thường niên',r'ngày đăng ký cuối cùng',r'thay đổi địa chỉ',r'đăng ký giao dịch',r'dao động nhẹ quanh tham chiếu',r'bác bỏ tin đồn',r'không ghi nhận khoản lỗ bất thường']
-SIBLING={'FPT':[r'fpt retail',r'\bfrt\b',r'long châu',r'fpt shop',r'fpt telecom',r'\bfox\b',r'fpt securities',r'\bfts\b']}
+SIBLING={'FPT':[r'fpt retail',r'\bfrt\b',r'long châu',r'fpt shop',r'fpt telecom',r'\bfox\b',r'fpt securities',r'\bfts\b',r'fpt online']}
 def ts(x):
  try:return parsedate_to_datetime(str(x)).timestamp()
  except:
