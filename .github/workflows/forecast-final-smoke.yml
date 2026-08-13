@@ -11,6 +11,7 @@ on:
       - 'data/research-news.json'
       - 'scripts/forecast_v4_smoke.js'
       - 'scripts/forecast_final_smoke.js'
+      - 'scripts/forecast_final_dom_smoke.js'
       - '.github/workflows/forecast-final-smoke.yml'
   workflow_dispatch:
 jobs:
@@ -22,11 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Syntax
-        run: |
-          node --check forecast-v4-core.js
-          node --check forecast-final-v5.js
-      - name: Model inference
-        run: node scripts/forecast_v4_smoke.js
-      - name: Final page and news
-        run: node scripts/forecast_final_smoke.js
+      - run: node --check forecast-v4-core.js
+      - run: node --check forecast-final-v5.js
+      - run: node scripts/forecast_v4_smoke.js
+      - run: node scripts/forecast_final_smoke.js
+      - run: npm install --no-save jsdom@26
+      - run: node scripts/forecast_final_dom_smoke.js
