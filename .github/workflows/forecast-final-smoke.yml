@@ -1,0 +1,31 @@
+name: Forecast final smoke
+on:
+  push:
+    branches: [fix/forecast-v4-runtime-news, main]
+    paths:
+      - 'forecast-final.html'
+      - 'forecast-final-v5.js'
+      - 'forecast-v4-core.js'
+      - 'forecast-v4.css'
+      - 'data/forecast-model-v4.json'
+      - 'data/research-news.json'
+      - 'scripts/forecast_v4_smoke.js'
+      - 'scripts/forecast_final_smoke.js'
+      - 'scripts/forecast_final_dom_smoke.js'
+      - '.github/workflows/forecast-final-smoke.yml'
+  workflow_dispatch:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check forecast-v4-core.js
+      - run: node --check forecast-final-v5.js
+      - run: node scripts/forecast_v4_smoke.js
+      - run: node scripts/forecast_final_smoke.js
+      - run: npm install --no-save jsdom@26
+      - run: node scripts/forecast_final_dom_smoke.js
