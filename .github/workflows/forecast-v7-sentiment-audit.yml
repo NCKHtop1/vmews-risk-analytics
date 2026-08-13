@@ -1,0 +1,65 @@
+name: Forecast V8 DL sentiment audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 9 * * 1-5'
+  push:
+    branches: [main, forecast-v6-research-grade]
+    paths: ['scripts/audit_sentiment_dl_v7.py','scripts/update_sentiment_v8.py','.github/workflows/forecast-v7-sentiment-audit.yml']
+permissions:
+  contents: write
+
+# Serialize all branch data writers. A queued run is preserved rather than canceled.
+concurrency:
+  group: vmews-data-writer-${{ github.ref_name }}
+  queue: max
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install torch transformers pyvi scikit-learn
+      - name: Audit base Vietnamese financial sentiment model
+        run: python scripts/audit_sentiment_dl_v7.py
+      - name: Build governed hybrid sentiment snapshot
+        run: python scripts/update_sentiment_v8.py
+      - name: Validate snapshot contract and entity hygiene
+        run: |
+          python - <<'PY'
+          import json,re
+          d=json.load(open('data/sentiment-v8.json',encoding='utf-8'))
+          assert d['version']=='VMEWS-SENTIMENT-8.0.1',d.get('version')
+          assert len(d.get('symbols') or {})>=20,len(d.get('symbols') or {})
+          f=d.get('symbols',{}).get('FPT') or {}
+          assert f.get('available') and f.get('n',0)>=10,f
+          bad=[x.get('title','') for x in f.get('top',[]) if re.search(r'FPT Retail|FRT|Long Châu|FPT Shop',x.get('title',''),re.I) and not re.search(r'Tập đoàn FPT|FPT Corporation|cổ phiếu FPT|mã FPT',x.get('title',''),re.I)]
+          assert not bad,bad
+          assert f.get('state') in {'TÍCH CỰC','TRUNG TÍNH','TIÊU CỰC'},f
+          print(json.dumps({'version':d['version'],'symbols':len(d['symbols']),'FPT':{'n':f['n'],'state':f['state'],'counts':f.get('counts')}},ensure_ascii=False,indent=2))
+          PY
+      - name: Persist sentiment snapshot without non-fast-forward races
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sentiment-v8.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update governed V8 sentiment snapshot [data-only]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$GITHUB_REF_NAME"
+            git rebase "origin/$GITHUB_REF_NAME"
+            if git push origin "HEAD:$GITHUB_REF_NAME"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 3))
+          done
+          echo 'Could not persist sentiment snapshot after retries' >&2
+          exit 1

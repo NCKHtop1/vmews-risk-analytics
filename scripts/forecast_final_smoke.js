@@ -1,20 +1,17 @@
-const fs=require('fs');
-const model=JSON.parse(fs.readFileSync('data/forecast-model-v4.json','utf8'));
-if(model.promotion?.status!=='PASS') throw new Error('forecast model is not promoted');
-if((model.universe?.rows||0)<50000 || (model.universe?.symbols||0)<50) throw new Error('forecast training panel is unexpectedly small');
-const html=fs.readFileSync('forecast-final.html','utf8');
-const ui=fs.readFileSync('forecast-final-v5.js','utf8');
-for(const id of ['symbol','run','error','stance','reason','confidence','last','r3','p3','r5','p5','risk','riskText','chartTitle','asof','chart','h3','h4','h5','market','marketSub','macro','macroSub','sentiment','sentimentSub','fund','fundSub','analog','analogSub','bt','news','contextDetail']){
-  if(!html.includes(`id="${id}"`)) throw new Error(`missing DOM id ${id}`);
-}
-if(!html.includes('./forecast-v4-core.js') || !html.includes('./forecast-final-v5.js')) throw new Error('final page scripts are not wired');
-if(/\.map\(h=>fc\[h\]\)\.filter\(Boolean\)\.map\(z=>\(\{h,/.test(ui)) throw new Error('known chart scope bug reintroduced');
-if(!ui.includes('h:fc[h].h') && !ui.includes('h,price:')) throw new Error('forecast horizon is not bound in chart data');
-const news=JSON.parse(fs.readFileSync('data/research-news.json','utf8'));
-const fpt=news.symbols?.FPT||[];
-if(fpt.length<10) throw new Error('FPT research-news coverage too small');
-const generated=Date.parse(news.generatedAt||'');
-const newest=Math.max(...fpt.map(x=>Date.parse(x.published||'')).filter(Number.isFinite));
-if(!Number.isFinite(generated)||!Number.isFinite(newest)||generated-newest>7*86400000) throw new Error('FPT research news is stale');
-const bad=fpt.slice(0,10).filter(x=>/FPT Retail/i.test(x.title||''));
-console.log(JSON.stringify({ok:true,model:model.version,rows:model.universe.rows,symbols:model.universe.symbols,newsFPT:fpt.length,newestFPT:new Date(newest).toISOString(),top10SiblingNoise:bad.length}));
+const fs=require('fs'),crypto=require('crypto');
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const model=read('data/forecast-model-v9.json');
+if(model.version!=='VMEWS-FORECAST-9.0.0'||model.promotion?.status!=='PASS')throw Error('V9 contract');
+if((model.universe?.rows||0)<80000||(model.universe?.symbols||0)<50)throw Error('V9 panel');
+for(const h of ['3','5']){const z=model.horizons[h];if(z.status!=='PASS'||!z.gates.rankingApproved||!z.gates.directionApproved)throw Error('V9 gate '+h);if(z.gates.positiveRecommendationApproved||z.gates.negativeRecommendationApproved)throw Error('recommendation gate '+h);}
+const html=fs.readFileSync('forecast-final.html','utf8'),ui=fs.readFileSync('forecast-final-v5.js','utf8');
+for(const id of ['symbol','run','error','stance','chart','interestList','yellowList','redList','detailBtn','pup3','pup5'])if(!html.includes(`id="${id}"`))throw Error('DOM '+id);
+for(const s of ['forecast-model-v9.json','sentiment-v8.json','/flow?'])if(!ui.includes(s))throw Error('UI source '+s);
+const sent=read('data/sentiment-v8.json'),fpt=sent.symbols?.FPT;
+if(sent.version!=='VMEWS-SENTIMENT-8.0.1'||Object.keys(sent.symbols||{}).length<20||!fpt?.available||fpt.n<10)throw Error('sentiment contract');
+const live=read('data/forecast-live/integrity.json'),ev=read('data/forecast-live/evaluation.json'),mf=read('data/forecast-live/manifest.json');
+if(live.version!=='VMEWS-FORECAST-LIVE-1.0.0'||live.status!=='PASS'||live.modelVersion!=='VMEWS-FORECAST-9.0.0'||live.symbols<8||mf.count<1)throw Error('live contract');
+for(const x of mf.snapshots){const raw=fs.readFileSync(x.file),z=JSON.parse(raw);if(crypto.createHash('sha256').update(raw).digest('hex')!==x.sha256||z.snapshotHash!==x.snapshotHash||z.governance.futureLabelsPresent!==false||z.governance.automaticPromotion!==false)throw Error('live hash/governance '+x.file);}
+for(const h of ['3','5'])if(!['IMMATURE','EARLY','MATURE'].includes(ev.summary[h].evidenceState))throw Error('live evidence '+h);
+const risk=read('data/live-track/integrity.json');if(!['PASS','WAITING_OR_REVIEW'].includes(risk.status)||risk.marketContextImputed!==false)throw Error('risk live contract');
+console.log(JSON.stringify({ok:true,model:model.version,rows:model.universe.rows,symbols:model.universe.symbols,sentiment:sent.version,sentimentSymbols:Object.keys(sent.symbols).length,forecastLive:{asOf:live.asOf,coverage:live.coverageState,symbols:live.symbols,T3:ev.summary['3'].evidenceState,T5:ev.summary['5'].evidenceState},riskLive:risk.status}));

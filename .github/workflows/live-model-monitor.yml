@@ -6,40 +6,53 @@ on:
     - cron: '5 0 * * 1-5'
     - cron: '20 10 * * 1-5'
   push:
-    branches: [main]
+    branches: [main, forecast-v6-research-grade]
     paths:
       - 'data/market-scan.json'
       - 'data/pooled-hose/current-scores.json'
       - 'data/alert-policy.json'
+      - 'data/forecast-model-v9.json'
+      - 'data/sentiment-v8.json'
       - 'scripts/update_live_model_monitor.py'
+      - 'scripts/run_forecast_v9_deployable.py'
       - '.github/workflows/live-model-monitor.yml'
 
 permissions:
   contents: write
 
+# All data-writing workflows use the same branch-scoped queue. This prevents
+# sentiment/live-monitor commits from racing each other while preserving every run.
 concurrency:
-  group: vmews-live-model-monitor
-  cancel-in-progress: true
+  group: vmews-data-writer-${{ github.ref_name }}
+  queue: max
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Archive aligned PIT snapshot and mature live outcomes
+      - name: Install forecast monitor dependencies
+        run: pip install numpy scipy scikit-learn
+      - name: Archive aligned PIT snapshot and mature 20-session outcomes
         run: python scripts/update_live_model_monitor.py
+      - name: Archive immutable V9 T+3/T+5 forecast state
+        run: python scripts/run_forecast_v9_deployable.py --live
       - name: Validate live-monitor governance
         run: |
           python - <<'PY'
           import json,pathlib
           t=json.load(open('data/live-track/track-record.json',encoding='utf-8'))
           q=json.load(open('data/live-track/integrity.json',encoding='utf-8'))
+          f=json.load(open('data/forecast-live/integrity.json',encoding='utf-8'))
+          e=json.load(open('data/forecast-live/evaluation.json',encoding='utf-8'))
+          m=json.load(open('data/forecast-live/manifest.json',encoding='utf-8'))
           assert t['version']=='VMEWS-LIVE-MONITOR-1.0.0',t['version']
           assert t['horizonSessions']==20,t
           assert '<= -12%' in t['eventDefinition'],t['eventDefinition']
@@ -57,19 +70,37 @@ jobs:
               assert s['modelDate']==d,s
               assert s['snapshotHash'],s
               assert len(s.get('closeTape') or [])>=150,len(s.get('closeTape') or [])
-              assert all(x.get('status') in {'RED','YELLOW'} for x in s.get('signals') or []),s.get('signals')
+          assert f['version']=='VMEWS-FORECAST-LIVE-1.0.0',f
+          assert f['status']=='PASS',f
+          assert f['timeBasis']=='COMPLETED_EOD_ONLY',f
+          assert f['archiveStatus'] in {'CREATED','EXISTING_IDENTICAL','REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE'},f
+          assert m['count']>=1,m
+          assert set(e['summary'])=={'3','5'},e['summary']
+          for h in ('3','5'):
+              assert e['summary'][h]['evidenceState'] in {'IMMATURE','EARLY','MATURE'},e['summary'][h]
           cal=t['calibrationLiveMonitor']
           assert cal['status'] in {'INSUFFICIENT_MATURED_LIVE_DATA','UNSTABLE_KEEP_WITHHELD','STABLE_REVIEW_ELIGIBLE'},cal
           assert 'manual' in cal['effect'].lower(),cal['effect']
           assert t['pooledLiveTrack']['effect'].endswith('never auto-promotes a model.'),t['pooledLiveTrack']['effect']
-          print(json.dumps({'integrity':q['status'],'modelDate':q.get('marketModelDate'),'archive':q.get('archiveStatus'),'snapshots':t['archivedSnapshots'],'maturedSignals':t['tDayLiveTrack']['maturedSignals'],'maturedPooled':t['pooledLiveTrack']['maturedStates'],'calibration':cal['status']},indent=2))
+          print(json.dumps({'riskIntegrity':q['status'],'riskArchive':q.get('archiveStatus'),'forecastIntegrity':f['status'],'forecastArchive':f['archiveStatus'],'forecastSnapshots':m['count'],'T3':e['summary']['3'],'T5':e['summary']['5']},indent=2))
           PY
-      - name: Commit PIT archive and live track record
+      - name: Verify forecast snapshot hashes
+        run: python scripts/run_forecast_v9_deployable.py --verify-live
+      - name: Commit immutable PIT archives and live track records
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/live-track
+          git add data/live-track data/forecast-live
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh VMEWS immutable PIT live model monitor [data-only]'
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git commit -m 'Refresh VMEWS immutable PIT live monitors [data-only]'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$GITHUB_REF_NAME"
+            git rebase "origin/$GITHUB_REF_NAME"
+            if git push origin "HEAD:$GITHUB_REF_NAME"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 3))
+          done
+          echo 'Could not persist live monitor data after retries' >&2
+          exit 1

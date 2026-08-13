@@ -1,0 +1,15 @@
+name: Forecast V6 flow v3
+on:
+  push:
+    branches: [forecast-v6-research-grade]
+    paths: ['scripts/audit_vnstock_flow_v3.py','.github/workflows/forecast-v6-flow-v3.yml']
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements.txt
+      - run: python scripts/audit_vnstock_flow_v3.py
