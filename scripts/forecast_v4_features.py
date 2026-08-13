@@ -1,4 +1,4 @@
-import json, math
+import json, math, os, subprocess
 from datetime import datetime, timezone
 from urllib.request import Request, urlopen
 from urllib.parse import quote
@@ -30,23 +30,23 @@ def sanitize(rows):
         except:pass
     d={r["date"]:r for r in out};rows=[d[k] for k in sorted(d)]
     if not rows:return []
-    m=[rows[0]["close"]]
+    m=[max(1e-9,rows[0]["close"])]
     for i in range(1,len(rows)):
-        z=math.log(rows[i]["close"]/rows[i-1]["close"]);m.append(m[-1]*math.exp(0 if abs(z)>.22 else z))
+        z=math.log(rows[i]["close"]/rows[i-1]["close"]);m.append(max(1e-9,m[-1]*math.exp(0 if abs(z)>CORP_GUARD else z)))
     for r,x in zip(rows,m):r["modelClose"]=x
     return rows
 
 def stock_features(raw):
     rows=sanitize(raw)
-    if len(rows)<520:return rows,[]
+    if len(rows)<MIN_ROWS:return rows,[]
     c=np.array([r["modelClose"] for r in rows]);h=np.array([r["high"] for r in rows]);l=np.array([r["low"] for r in rows]);v=np.array([r["volume"] for r in rows]);lr=np.zeros(len(c));lr[1:]=np.log(c[1:]/c[:-1]);e12=ema(c,12);e26=ema(c,26);mac=e12-e26;sig=ema(mac,9);vol20=np.zeros(len(c))
     for i in range(1,len(c)):
         x=lr[max(1,i-19):i+1];vol20[i]=(np.std(x,ddof=1) if len(x)>1 else 0)*math.sqrt(252)
     fs=[]
     for i in range(200,len(rows)):
-        ret=lambda k:math.log(c[i]/c[i-k]);sma=lambda k:float(np.mean(c[i-k+1:i+1]));dd20=c[i]/np.max(c[i-19:i+1])-1;dd60=c[i]/np.max(c[i-59:i+1])-1;tr={k:c[i]/sma(k)-1 for k in (5,10,20,50,200)};vp=rank(vol20[i],vol20[max(200,i-252):i].tolist());rv=v[max(1,i-20):i];rv=rv[rv>0];vz=(v[i]-rv.mean())/(rv.std(ddof=1) if len(rv)>1 else 1) if v[i]>0 and len(rv) else 0;rs=rsi(c,i);mn=(mac[i]-sig[i])/c[i] if c[i] else 0;mom=c[i]/c[i-20]-1
-        p=[min(1,max(0,-dd60/.22)),min(1,max(0,-mom/.14)),min(1,max(0,-tr[50]/.12)),min(1,max(0,-tr[200]/.18)),min(1,max(0,(vp-.45)/.55)),min(1,max(0,(45-rs)/20)),min(1,max(0,-mn/.025)),min(1,max(0,vz/3))*min(1,max(0,-lr[i]/.05))];tech=100*(.18*p[0]+.16*p[1]+.14*p[2]+.10*p[3]+.16*p[4]+.10*p[5]+.08*p[6]+.08*p[7]);ranges=[(h[j]-l[j])/c[j] if c[j] else 0 for j in range(i-4,i+1)]
-        fs.append({"i":i,"date":rows[i]["date"],"ret1":lr[i],"ret2":ret(2),"ret3":ret(3),"ret5":ret(5),"ret10":ret(10),"ret20":ret(20),"dd20":dd20,"dd60":dd60,"trend5":tr[5],"trend10":tr[10],"trend20":tr[20],"trend50":tr[50],"trend200":tr[200],"vol5":np.std(lr[i-4:i+1],ddof=1)*math.sqrt(252),"vol20":vol20[i],"volPct":vp,"rsi14":rs/100,"macdNorm":mn,"volumeZ":vz,"range1":(h[i]-l[i])/c[i] if c[i] else 0,"range5":float(np.mean(ranges)),"technical":tech})
+        ret=lambda k:math.log(max(c[i],1e-9)/max(c[i-k],1e-9));sma=lambda k:max(1e-9,float(np.mean(c[i-k+1:i+1])));dd20=c[i]/max(1e-9,np.max(c[i-19:i+1]))-1;dd60=c[i]/max(1e-9,np.max(c[i-59:i+1]))-1;tr={k:c[i]/sma(k)-1 for k in (5,10,20,50,200)};vp=rank(vol20[i],vol20[max(200,i-252):i].tolist());rv=v[max(1,i-20):i];rv=rv[rv>0];vz=(v[i]-rv.mean())/(rv.std(ddof=1) if len(rv)>1 else 1) if v[i]>0 and len(rv) else 0;rs=rsi(c,i);mn=(mac[i]-sig[i])/max(c[i],1e-9);mom=c[i]/max(c[i-20],1e-9)-1
+        p=[min(1,max(0,-dd60/.22)),min(1,max(0,-mom/.14)),min(1,max(0,-tr[50]/.12)),min(1,max(0,-tr[200]/.18)),min(1,max(0,(vp-.45)/.55)),min(1,max(0,(45-rs)/20)),min(1,max(0,-mn/.025)),min(1,max(0,vz/3))*min(1,max(0,-lr[i]/.05))];tech=100*(.18*p[0]+.16*p[1]+.14*p[2]+.10*p[3]+.16*p[4]+.10*p[5]+.08*p[6]+.08*p[7]);ranges=[(h[j]-l[j])/max(c[j],1e-9) for j in range(i-4,i+1)]
+        fs.append({"i":i,"date":rows[i]["date"],"ret1":lr[i],"ret2":ret(2),"ret3":ret(3),"ret5":ret(5),"ret10":ret(10),"ret20":ret(20),"dd20":dd20,"dd60":dd60,"trend5":tr[5],"trend10":tr[10],"trend20":tr[20],"trend50":tr[50],"trend200":tr[200],"vol5":np.std(lr[i-4:i+1],ddof=1)*math.sqrt(252),"vol20":vol20[i],"volPct":vp,"rsi14":rs/100,"macdNorm":mn,"volumeZ":vz,"range1":(h[i]-l[i])/max(c[i],1e-9),"range5":float(np.mean(ranges)),"technical":tech})
     by={f["date"]:f["technical"] for f in fs}
     for f in fs:f["technicalDelta5"]=(f["technical"]-by.get(rows[max(0,f["i"]-5)]["date"],f["technical"]))/100
     return rows,fs
@@ -90,3 +90,8 @@ def aligned(series,d,default=np.nan):
     if not keys:return default
     import bisect;i=bisect.bisect_right(keys,d)-1
     return vals[i] if i>=0 else default
+
+if os.environ.get('GITHUB_ACTIONS')=='true' and os.path.exists('data/forecast-model-v4.json'):
+    subprocess.run(['node','--check','forecast-v4-core.js'],check=True)
+    subprocess.run(['node','--check','forecast-v4-ui.js'],check=True)
+    subprocess.run(['node','scripts/forecast_v4_smoke.js'],check=True)
