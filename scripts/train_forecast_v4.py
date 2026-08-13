@@ -4,7 +4,7 @@ from datetime import datetime,timezone
 import numpy as np
 from sklearn.linear_model import Ridge
 from forecast_v4_features import FEATURE_NAMES,stock_features,external,aligned
-VERSION='VMEWS-FORECAST-4.2.0';H=[1,2,3,4,5]
+VERSION='VMEWS-FORECAST-4.2.1';H=[1,2,3,4,5]
 
 def panel(root):
  pth={}
@@ -46,13 +46,13 @@ def market_table(P,dates):
  names=['ret1Mean','ret5Mean','ret20Mean','technicalMean','riskShare','positive5Share','trendShare','vol20Mean','marketTechnical','vixLevel','vixRet20','usdVndRet20','dxyRet20','us10yRet20','brentRet20'];vals=[]
  for d in dates:
   a=[P[i] for i in groups[d]];med=lambda k:float(np.nanmedian([x.get(k,np.nan) for x in a]));mean=lambda k:float(np.nanmean([x.get(k,np.nan) for x in a]));vals.append([mean('ret1'),mean('ret5'),mean('ret20'),med('technical'),float(np.mean([x['technical']>=50 for x in a])),float(np.mean([x['ret5']>0 for x in a])),float(np.mean([x['trend20']>0 for x in a])),med('vol20'),med('marketTechnical'),med('vixLevel'),med('vixRet20'),med('usdVndRet20'),med('dxyRet20'),med('us10yRet20'),med('brentRet20')])
- A=np.array(vals,float);im=np.nanmedian(A,0);q=np.where(~np.isfinite(A));A[q]=np.take(im,q[1]);mu=A.mean(0);sd=A.std(0);sd[sd<1e-9]=1
+ A=np.array(vals,float);im=np.nanmedian(A,0);im=np.nan_to_num(im,nan=0.0,posinf=0.0,neginf=0.0);q=np.where(~np.isfinite(A));A[q]=np.take(im,q[1]);mu=A.mean(0);sd=A.std(0);sd[sd<1e-9]=1
  return groups,names,im,mu,sd,A,(A-mu)/sd
 
 def train(root='.'):
  P,ns=panel(root)
  if len(P)<15000:raise SystemExit('panel too small')
- dates=sorted(set(x['date'] for x in P));D=np.array([x['date'] for x in P]);X0=np.array([[x.get(k,np.nan) for k in FEATURE_NAMES] for x in P],float);im=np.nanmedian(X0,0);q=np.where(~np.isfinite(X0));X0[q]=np.take(im,q[1]);mu=X0.mean(0);sd=X0.std(0);sd[sd<1e-9]=1;X=(X0-mu)/sd;groups,mnames,mim,mmu,msd,MRAW,MX=market_table(P,dates);didx={d:i for i,d in enumerate(dates)}
+ dates=sorted(set(x['date'] for x in P));D=np.array([x['date'] for x in P]);X0=np.array([[x.get(k,np.nan) for k in FEATURE_NAMES] for x in P],float);im=np.nanmedian(X0,0);im=np.nan_to_num(im,nan=0.0,posinf=0.0,neginf=0.0);q=np.where(~np.isfinite(X0));X0[q]=np.take(im,q[1]);mu=X0.mean(0);sd=X0.std(0);sd[sd<1e-9]=1;X=(X0-mu)/sd;groups,mnames,mim,mmu,msd,MRAW,MX=market_table(P,dates);didx={d:i for i,d in enumerate(dates)}
  out={'version':VERSION,'trainedAt':datetime.now(timezone.utc).isoformat(),'featureNames':FEATURE_NAMES,'impute':im.tolist(),'mean':mu.tolist(),'std':sd.tolist(),'marketFeatureNames':mnames,'marketImpute':mim.tolist(),'marketMean':mmu.tolist(),'marketStd':msd.tolist(),'currentMarket':{k:float(v) for k,v in zip(mnames,MRAW[-1])},'modelDate':dates[-1],'universe':{'symbols':ns,'rows':len(P),'dates':len(dates),'start':dates[0],'end':dates[-1]},'horizons':{}};rep={}
  for h in H:
   y=np.array([x['y'+str(h)] for x in P],float);ok=np.isfinite(y);ym=np.full(len(dates),np.nan)
