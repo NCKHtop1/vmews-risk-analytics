@@ -1,34 +1,30 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-08-13T02:04:13.180333+00:00",
+  "generatedAt": "2026-08-13T11:12:55.271457+00:00",
   "trackingStarted": "2026-08-11",
-  "latestArchivedEod": "2026-08-12",
-  "archivedSnapshots": 2,
+  "latestArchivedEod": "2026-08-13",
+  "archivedSnapshots": 3,
   "horizonSessions": 20,
   "eventDefinition": "20-session forward maximum drawdown <= -12%",
   "currentIntegrity": {
     "status": "PASS",
     "reasons": [],
-    "marketModelDate": "2026-08-12",
-    "pooledModelDate": "2026-08-12",
+    "marketModelDate": "2026-08-13",
+    "pooledModelDate": "2026-08-13",
     "sameCompletedEod": true,
     "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
     "policyAligned": true,
     "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
     "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
-    "marketContextDate": "2026-08-10",
+    "marketContextDate": "2026-08-11",
     "marketContextStatus": "EXCLUDED_UNAVAILABLE",
     "marketContextImputed": false,
     "pointInTimeReady": true,
     "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
     "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-    "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
-    "revision": {
-      "existingHash": "874361b10396fbf5e451d15b6495740b4e587a47a91d2c5e556d3b46681622e2",
-      "newHash": "c4a5a8929a047aa7974a69cffe640f1a12f5a881a0ae3d94a1f41bfb9c0dd762",
-      "modelDate": "2026-08-12"
-    }
+    "archiveStatus": "CREATED",
+    "revision": null
   },
   "tDayLiveTrack": {
     "status": "BUILDING_LIVE_TRACK_RECORD",
@@ -38,14 +34,14 @@
         "events": 0,
         "eventRate": null,
         "medianMaxDrawdown20": null,
-        "pending": 55
+        "pending": 97
       },
       "YELLOW": {
         "matured": 0,
         "events": 0,
         "eventRate": null,
         "medianMaxDrawdown20": null,
-        "pending": 55
+        "pending": 97
       }
     },
     "combinedAlerts": {
@@ -62,9 +58,9 @@
       "medianMaxDrawdown20": null
     },
     "maturedSignals": 0,
-    "pendingSignals": 55,
+    "pendingSignals": 97,
     "unresolvedSignals": 0,
-    "baselinePending": 754,
+    "baselinePending": 1129,
     "baselineUnresolved": 0,
     "minimumRecommendedMaturedSignals": 100
   },
@@ -81,7 +77,7 @@
       "medianMaxDrawdown20": null,
       "liftVsLiveBase": null
     },
-    "pendingStates": 418,
+    "pendingStates": 619,
     "unresolvedStates": 0,
     "minimumLiveEvidenceMet": false,
     "rankMonitorPass": false,
