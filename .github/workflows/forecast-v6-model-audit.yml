@@ -1,17 +1,17 @@
-name: Forecast V6 model audit
+name: Forecast V7 model audit
 on:
   push:
     branches: [forecast-v6-research-grade]
-    paths: ['scripts/train_forecast_v6.py','.github/workflows/forecast-v6-model-audit.yml']
+    paths: ['scripts/train_forecast_v7.py','.github/workflows/forecast-v6-model-audit.yml']
   workflow_dispatch:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install numpy scipy scikit-learn
-      - run: python scripts/train_forecast_v6.py
+      - run: python scripts/train_forecast_v7.py
