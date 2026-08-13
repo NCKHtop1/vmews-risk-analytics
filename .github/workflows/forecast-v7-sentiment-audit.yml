@@ -1,0 +1,17 @@
+name: Forecast V7 DL sentiment audit
+on:
+  push:
+    branches: [forecast-v6-research-grade]
+    paths: ['scripts/audit_sentiment_dl_v7.py','.github/workflows/forecast-v7-sentiment-audit.yml']
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install torch transformers pyvi scikit-learn
+      - run: python scripts/audit_sentiment_dl_v7.py
