@@ -1,3 +1,3 @@
-trigger=2026-08-15T00:18:00+07:00
-source_parent=4ac4ec847c171eef4a225d2e314dcf463efd87b0
-reason=retry-after-evidence-timeline-runtime-fix-and-fast-gate-pass
+trigger=2026-08-15T01:05:00+07:00
+source_parent=f1059113cae52cc5ccec79311d5c6e7b1ef1957d
+reason=retry-after-sealed-holdout-numpy-runtime-fix-and-unit-pass
