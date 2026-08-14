@@ -1,14 +1,20 @@
 _fit_horizon_before_fixed_blind=fit_horizon
 
 def _fixed_blind_holdout_audit(y,D,z,h):
-    idx=np.asarray(z.get('auditIndices') or [],dtype=int)
+    idx_raw=z.get('auditIndices')
+    idx=np.asarray([] if idx_raw is None else idx_raw,dtype=int)
     if len(idx)==0:return {'status':'FAIL','reason':'sealed audit indices missing','horizon':int(h),'blocks':[]}
     score=np.asarray(z.get('auditScore'),float);p=np.asarray(z.get('auditP'),float);med=np.asarray(z.get('auditMed'),float);lo=np.asarray(z.get('auditLo'),float);hi=np.asarray(z.get('auditHi'),float)
     if not (len(score)==len(p)==len(med)==len(lo)==len(hi)==len(idx)):return {'status':'FAIL','reason':'sealed audit prediction arrays are misaligned','horizon':int(h),'blocks':[]}
     audit_dates=np.asarray(D[idx],dtype=object);unique=np.asarray(sorted(set(str(x) for x in audit_dates)),dtype=object);date_blocks=[np.asarray(b,dtype=object) for b in np.array_split(unique,4) if len(b)];blocks=[]
     for b in date_blocks:
         m=np.isin(audit_dates,b);yy=np.asarray(y[idx][m],float);ss=score[m];pp=p[m];mm=med[m];ll=lo[m];hh=hi[m];metrics=audit_metrics(yy,ss,pp,mm,ll,hh,audit_dates[m]);blocks.append({'start':str(b[0]),'end':str(b[-1]),'n':int(len(yy)),'metrics':metrics})
-    sealed=z.get('sealedAudit') or {};emb=z.get('embargoAudit') or {};sealed_start=str(emb.get('sealedAuditStart') or (unique[0] if len(unique) else '9999-99-99'));max_cal=str(emb.get('maxCalBLabelMaturity') or '');cap=OOF_CAPTURE.get(int(h)) or {};kind_lock=str(cap.get('kindSelectionLockDate') or '');prediction_end=str(cap.get('predictionAvailabilityEndExclusive') or '');replay=z.get('walkForwardReplay') or {};meta_max=str(replay.get('metaTrainMaxMaturity') or '')
+    sealed_raw=z.get('sealedAudit');sealed=sealed_raw if isinstance(sealed_raw,dict) else {}
+    emb_raw=z.get('embargoAudit');emb=emb_raw if isinstance(emb_raw,dict) else {}
+    sealed_start=str(emb.get('sealedAuditStart') or (unique[0] if len(unique) else '9999-99-99'));max_cal=str(emb.get('maxCalBLabelMaturity') or '')
+    cap_raw=OOF_CAPTURE.get(int(h));cap=cap_raw if isinstance(cap_raw,dict) else {}
+    kind_lock=str(cap.get('kindSelectionLockDate') or '');prediction_end=str(cap.get('predictionAvailabilityEndExclusive') or '')
+    replay_raw=z.get('walkForwardReplay');replay=replay_raw if isinstance(replay_raw,dict) else {};meta_max=str(replay.get('metaTrainMaxMaturity') or '')
     chronology=bool(max_cal and max_cal<sealed_start and kind_lock and kind_lock<sealed_start and prediction_end and prediction_end<sealed_start and (not meta_max or meta_max<sealed_start) and all(int(x.get('n') or 0)>=500 for x in blocks) and len(blocks)==4)
     positive_rank=sum(float((x.get('metrics') or {}).get('rankIC') or 0)>0 for x in blocks);positive_mae=sum(float((x.get('metrics') or {}).get('scenarioMAEImprove') or -99)>0 for x in blocks);tolerable_rank=sum(float((x.get('metrics') or {}).get('rankIC') or -99)>-.03 for x in blocks);tolerable_mae=sum(float((x.get('metrics') or {}).get('scenarioMAEImprove') or -99)>-.05 for x in blocks)
     overall_skill=bool(float(sealed.get('rankIC') or 0)>.02 and float(sealed.get('spread') or 0)>.001 and float(sealed.get('scenarioMAEImprove') or -99)>0 and .52<=float(sealed.get('coverage20_80') or 0)<=.72);stability=bool(len(blocks)==4 and positive_rank>=3 and positive_mae>=3 and tolerable_rank==4 and tolerable_mae==4);literal_replay=bool(replay.get('status')=='PASS' and replay.get('chronologyVerified') is True and int(replay.get('futureRowsUsedForTraining') or 0)==0 and int(replay.get('futureMetaRowsUsedForTraining') or 0)==0 and int(replay.get('futureCalibrationRowsUsedForTraining') or 0)==0);passed=bool(chronology and overall_skill and stability and literal_replay)
