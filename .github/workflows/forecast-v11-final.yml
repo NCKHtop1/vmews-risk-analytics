@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/forecast-v11-final.yml'
       - 'v11-final-trigger.txt'
-  schedule:
-    - cron: '35 11 * * 1-5'
 permissions:
   contents: write
   actions: read
@@ -18,38 +16,27 @@ jobs:
   build:
     if: ${{ !contains(github.event.head_commit.message || '', '[v11-data]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 1}
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
-      - name: Install runtime research dependencies
-        run: pip install -q numpy scipy scikit-learn pandas requests beautifulsoup4 lxml openpyxl vnstock==4.0.4 tradingview-screener
-      - name: Restore latest validated numerical model
+      - name: Restore complete V11 evidence snapshot
         uses: actions/download-artifact@v4
         with:
-          name: forecast-v11-final-evidence-31789700206
-          path: /tmp/v11-model
+          name: forecast-v11-final-evidence-31790884093
+          path: /tmp/v11-final
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: NCKHtop1/vmews-risk-analytics
-          run-id: 31789700206
-      - name: Restore validated historical news and flow corpus
-        uses: actions/download-artifact@v4
-        with:
-          name: forecast-v11-final-evidence-31782208209
-          path: /tmp/v11-history
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: NCKHtop1/vmews-risk-analytics
-          run-id: 31782208209
-      - name: Install and sanitize evidence inputs
+          run-id: 31790884093
+      - name: Install and sanitize final evidence
         run: |
-          for f in forecast-model-v11.json forecast-current-v11.json; do
-            src=$(find /tmp/v11-model -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/$f"
+          for f in forecast-model-v11.json forecast-current-v11.json forecast-dashboard-v11.json news-history-v11.json sentiment-v11.json news-event-study-v11.json flow-v11.json flow-study-v11.json macro-study-v11.json market-scan.json; do
+            src=$(find /tmp/v11-final -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/$f"
           done
-          for f in news-history-v11.json sentiment-v11.json news-event-study-v11.json flow-v11.json; do
-            src=$(find /tmp/v11-history -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/$f"
-          done
+          mkdir -p data/forecast-live-v11
+          src=$(find /tmp/v11-final -path '*/forecast-live-v11/summary.json' -type f | head -1); test -n "$src"; cp "$src" data/forecast-live-v11/summary.json
           python - <<'PY'
           import json, math
           from pathlib import Path
@@ -62,19 +49,7 @@ jobs:
               p=Path('data')/name
               z=json.loads(p.read_text(encoding='utf-8'))
               p.write_text(json.dumps(clean(z),ensure_ascii=False,separators=(',',':'),allow_nan=False),encoding='utf-8')
-          for p in ['data/forecast-model-v11.json','data/forecast-current-v11.json','data/news-history-v11.json','data/sentiment-v11.json','data/news-event-study-v11.json','data/flow-v11.json']:
-              z=json.load(open(p,encoding='utf-8')); print(p,z.get('version'),z.get('summary',{}),z.get('count'),z.get('events'))
           PY
-      - name: Rebuild trading flow evidence gate
-        run: python scripts/build_flow_study_v11_fixed.py
-      - name: Refresh canonical VMEWS risk scan
-        run: python scripts/update_market_scan.py
-      - name: Build PIT macro study
-        run: python scripts/build_macro_study_v11_fixed.py
-      - name: Build dashboard
-        run: python scripts/build_dashboard_v11.py
-      - name: Update immutable live monitor
-        run: python scripts/update_live_forecast_v11.py
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
       - name: Frontend syntax
@@ -86,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: forecast-v11-final-evidence-${{ github.run_id }}
-          retention-days: 7
+          retention-days: 14
           path: |
             data/forecast-model-v11.json
             data/forecast-current-v11.json
