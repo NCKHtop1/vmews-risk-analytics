@@ -1,0 +1,32 @@
+name: V12 methodfix fast gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_train_parts/**'
+      - 'scripts/v12_entity.py'
+      - 'scripts/train_forecast_v12.py'
+      - '.github/workflows/v12-methodfix-syntax.yml'
+permissions:
+  contents: read
+jobs:
+  fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q numpy scipy scikit-learn lightgbm
+      - name: Compile assembled V12 methodfix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
+          code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
+          compile(code,'v12-methodfix-assembled.py','exec')
+          print('V12 METHODFIX ASSEMBLED SYNTAX PASS',len(parts),[p.name for p in parts])
+          PY
+      - name: Entity adversarial tests
+        run: PYTHONPATH=scripts python scripts/v12_entity_test.py
