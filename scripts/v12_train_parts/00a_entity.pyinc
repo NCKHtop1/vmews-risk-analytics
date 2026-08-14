@@ -1,0 +1,17 @@
+from v12_entity import filter_sentiment_entities
+ENTITY_AUDIT={}
+_raw_prepare_articles=prepare_articles
+_raw_source_audit_summary=source_audit_summary
+
+def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
+    market_path=SEED/'market-scan.json' if (SEED/'market-scan.json').exists() else ROOT/'data'/'market-scan.json'
+    market_scan=load_json(market_path)
+    cleaned,audit=filter_sentiment_entities(sentiment,market_scan,eligible_symbols=set(price_store))
+    ENTITY_AUDIT.clear();ENTITY_AUDIT.update(audit)
+    print(json.dumps({'v12EntityGate':{'input':audit.get('input'),'accepted':audit.get('accepted'),'rejected':audit.get('rejected'),'acceptanceRate':audit.get('acceptanceRate'),'HCM':(audit.get('perSymbol') or {}).get('HCM'),'CDC':(audit.get('perSymbol') or {}).get('CDC')}},ensure_ascii=False),flush=True)
+    return _raw_prepare_articles(cleaned,price_store,sector_map,index_rows)
+
+def source_audit_summary(audits,failures):
+    out=_raw_source_audit_summary(audits,failures)
+    out['entityFilter']=dict(ENTITY_AUDIT)
+    return out
