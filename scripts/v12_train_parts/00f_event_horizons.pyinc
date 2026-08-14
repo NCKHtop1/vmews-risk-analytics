@@ -32,15 +32,16 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
     return articles,outcomes
 
 class _HorizonOutcomePrior:
-    # Fixed conjugate prior strengths are chosen before the replay. They are deliberately NOT estimated from future outcomes.
-    MARKET_AR_KAPPA=16.0;SECTOR_AR_KAPPA=12.0;STOCK_AR_KAPPA=6.0
-    MARKET_HIT_ALPHA=4.0;MARKET_HIT_BETA=4.0;SECTOR_HIT_KAPPA=12.0;STOCK_HIT_KAPPA=6.0
+    # Fixed conjugate prior strengths are selected before replay. Sector shrinkage is deliberately disabled until an as-of sector-membership archive exists.
+    MARKET_AR_KAPPA=16.0;STOCK_AR_KAPPA=6.0
+    MARKET_HIT_ALPHA=4.0;MARKET_HIT_BETA=4.0;STOCK_HIT_KAPPA=6.0
     def __init__(self,outcomes,h):
         self.h=h;groups=defaultdict(list);ak=f'ar{h}';mk=f'matureDate{h}'
         for x in outcomes:
             ar=x.get(ak);mature=x.get(mk)
             if not isinstance(ar,(int,float)) or not math.isfinite(ar) or not mature:continue
-            for key in [('MARKET',x['event']),('SECTOR',x['sector'],x['event']),('STOCK',x['symbol'],x['event'])]:groups[key].append((mature,float(ar)))
+            # Never group historical labels by the current-2026 sector reference. Market and stock identities are PIT-safe here.
+            for key in [('MARKET',x['event']),('STOCK',x['symbol'],x['event'])]:groups[key].append((mature,float(ar)))
         self.groups={}
         for key,vals in groups.items():
             vals.sort();dates=[];sums=[0.0];sumsq=[0.0];pos=[0]
@@ -64,17 +65,19 @@ class _HorizonOutcomePrior:
         if obs:a+=obs['pos'];b+=obs['n']-obs['pos']
         mean=a/(a+b);var=(a*b)/(((a+b)**2)*(a+b+1.0));return {'mean':float(mean),'sd':float(math.sqrt(max(0.0,var)))}
     def hierarchical(self,symbol,sector,event,date):
-        market=self._q(('MARKET',event),date);sec=self._q(('SECTOR',sector,event),date);stock=self._q(('STOCK',symbol,event),date)
-        mar_ar=self._normal_update(market,0.0,self.MARKET_AR_KAPPA);sec_ar=self._normal_update(sec,mar_ar['mean'],self.SECTOR_AR_KAPPA);stk_ar=self._normal_update(stock,sec_ar['mean'],self.STOCK_AR_KAPPA)
-        mar_hit=self._beta_update(market,.5,self.MARKET_HIT_ALPHA+self.MARKET_HIT_BETA);sec_hit=self._beta_update(sec,mar_hit['mean'],self.SECTOR_HIT_KAPPA);stk_hit=self._beta_update(stock,sec_hit['mean'],self.STOCK_HIT_KAPPA)
-        source_n=(stock or sec or market or {'n':0})['n'];unc=max(stk_ar['unc'],stk_hit['sd'])
-        return {'mean':stk_ar['mean'],'hit':stk_hit['mean'],'n':int(source_n),'uncertainty':float(unc),'levels':{'stock':int((stock or {'n':0})['n']),'sector':int((sec or {'n':0})['n']),'market':int((market or {'n':0})['n'])}}
+        market=self._q(('MARKET',event),date);stock=self._q(('STOCK',symbol,event),date)
+        mar_ar=self._normal_update(market,0.0,self.MARKET_AR_KAPPA);stk_ar=self._normal_update(stock,mar_ar['mean'],self.STOCK_AR_KAPPA)
+        mar_hit=self._beta_update(market,.5,self.MARKET_HIT_ALPHA+self.MARKET_HIT_BETA);stk_hit=self._beta_update(stock,mar_hit['mean'],self.STOCK_HIT_KAPPA)
+        source_n=(stock or market or {'n':0})['n'];unc=max(stk_ar['unc'],stk_hit['sd'])
+        return {'mean':stk_ar['mean'],'hit':stk_hit['mean'],'n':int(source_n),'uncertainty':float(unc),'levels':{'stock':int((stock or {'n':0})['n']),'sector':0,'market':int((market or {'n':0})['n'])},'sectorPITStatus':'ABSTAIN'}
 
 class EvidenceFeatureStore(_EventHBaseStore):
     def __init__(self,articles_by_symbol,outcomes,sector_map):
-        super().__init__(articles_by_symbol,outcomes,sector_map);self.horizonPriors={h:_HorizonOutcomePrior(outcomes,h) for h in HORIZONS};self.hierarchyPolicy='PIT-safe Normal/Beta-Binomial Market→Sector→Stock shrinkage with fixed pre-replay prior strengths'
+        super().__init__(articles_by_symbol,outcomes,sector_map);self.horizonPriors={h:_HorizonOutcomePrior(outcomes,h) for h in HORIZONS};self.hierarchyPolicy='PIT-safe Normal/Beta-Binomial Market→Stock shrinkage. Sector level is ABSTAIN until a dated historical membership archive exists.'
     def features(self,symbol,date):
         out=super().features(symbol,date);sec=self.sector_map.get(symbol,'OTHER');st=self.stock.get(symbol,Timeline([]));latest=st.latest(date)
+        # Override the legacy stock→sector→market sentiment shrinkage: current sector taxonomy is not historical PIT.
+        s20=self._agg(st.window(date,20));m20=self._agg(self.market.window(date,20));ws=s20['n']/(s20['n']+5);out['hierSent20']=ws*s20['sent']+(1-ws)*m20['sent']
         for h in HORIZONS:
             if latest:pr=self.horizonPriors[h].hierarchical(symbol,sec,latest['event'],date)
             else:pr={'mean':0.0,'hit':.5,'n':0,'uncertainty':1.0}
