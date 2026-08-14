@@ -1,12 +1,19 @@
 (()=>{'use strict';
-const VERSION='VMEWS-FORECAST-RESOLVER-11.1.0';
+const VERSION='VMEWS-FORECAST-RESOLVER-11.2.0';
 const MIN_FORECAST_ROWS=520;
 const MAX_STALE_DAYS=7;
+const RESEARCH_SNAPSHOT_SHA='71f12c862d759a1167ebf72cebd38c4eae0e19d1';
+const CDN_ROOT='https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics';
+const RESEARCH_URLS={
+  sentiment:`${CDN_ROOT}/${RESEARCH_SNAPSHOT_SHA}/data/sentiment-v10.json`,
+  event:`${CDN_ROOT}/${RESEARCH_SNAPSHOT_SHA}/data/news-event-study.json`
+};
 const PARAMS=new URLSearchParams(location.search);
 const MODE=(PARAMS.get('resolver')||'cdn').toLowerCase();
 const nativeFetch=window.fetch.bind(window);
 const detailCache=new Map();
 const marketCache={data:null};
+const researchCache=new Map();
 
 function cleanSymbol(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)}
 const QUERY_SYMBOL=cleanSymbol(PARAMS.get('symbol'));
@@ -31,7 +38,7 @@ function validDetail(d,s,requireFresh=false){
   return true;
 }
 function cloneResponse(d,source,status=200){
-  const body=JSON.stringify({...d,resolverClient:{version:VERSION,source,minForecastRows:MIN_FORECAST_ROWS,maxStaleDays:MAX_STALE_DAYS,mode:MODE,policy:'PINNED_CDN_FIRST'}});
+  const body=JSON.stringify({...d,resolverClient:{version:VERSION,source,minForecastRows:MIN_FORECAST_ROWS,maxStaleDays:MAX_STALE_DAYS,mode:MODE,policy:'PINNED_CDN_FIRST',researchSnapshotSha:RESEARCH_SNAPSHOT_SHA}});
   return new Response(body,{status,headers:{'Content-Type':'application/json; charset=utf-8','X-VMEWS-Resolver':source}});
 }
 function inputUrl(input){try{return typeof input==='string'?input:String(input?.url||'')}catch{return''}}
@@ -44,8 +51,14 @@ function parseDetail(input){
     return cleanSymbol(u.searchParams.get('symbol'))||null;
   }catch{return null}
 }
-function isMarketScan(input){
-  try{return /\/data\/market-scan\.json(?:[?#]|$)/i.test(new URL(inputUrl(input),location.href).href)}catch{return false}
+function matchesDataFile(input,name){
+  try{return new RegExp(`/data/${name.replace('.','\\.')}(?:[?#]|$)`,'i').test(new URL(inputUrl(input),location.href).href)}catch{return false}
+}
+function isMarketScan(input){return matchesDataFile(input,'market-scan.json')}
+function researchKind(input){
+  if(matchesDataFile(input,'sentiment-v10.json'))return 'sentiment';
+  if(matchesDataFile(input,'news-event-study.json'))return 'event';
+  return null;
 }
 async function fetchJson(url,cacheMode='force-cache'){
   const r=await nativeFetch(url,{cache:cacheMode,credentials:'omit'});
@@ -65,6 +78,17 @@ async function pinnedMarketScan(){
   if(!Array.isArray(d?.ranking))throw new Error('Pinned market scan invalid');
   marketCache.data=d;return d;
 }
+function validResearch(kind,d){
+  if(kind==='sentiment')return /^VMEWS-SENTIMENT-/.test(String(d?.version||''))&&d?.symbols&&Object.keys(d.symbols).length>0;
+  if(kind==='event')return /^VMEWS-NEWS-EVENT-STUDY-/.test(String(d?.version||''))&&Number(d?.events)>0&&d?.symbols&&Object.keys(d.symbols).length>0&&d?.rumorStudy;
+  return false;
+}
+async function pinnedResearch(kind){
+  if(researchCache.has(kind))return researchCache.get(kind);
+  const d=await fetchJson(RESEARCH_URLS[kind],'force-cache');
+  if(!validResearch(kind,d))throw new Error(`Pinned ${kind} research snapshot invalid`);
+  researchCache.set(kind,d);return d;
+}
 async function liveApi(input,init,symbol){
   const r=await nativeFetch(input,{...(init||{}),cache:'no-store'});
   if(!r.ok)return r;
@@ -76,6 +100,13 @@ async function liveApi(input,init,symbol){
 }
 
 window.fetch=async function(input,init){
+  const rk=researchKind(input);
+  if(rk){
+    try{return cloneResponse(await pinnedResearch(rk),rk==='event'?'PINNED_EVENT_INTELLIGENCE':'PINNED_FINANCIAL_SENTIMENT')}
+    catch(e){
+      return cloneResponse({symbols:{},error:'VMEWS_PINNED_RESEARCH_UNAVAILABLE',message:String(e?.message||e)},'UNRESOLVED_RESEARCH',503);
+    }
+  }
   if(isMarketScan(input)){
     try{return cloneResponse(await pinnedMarketScan(),'PINNED_MARKET_SCAN')}catch(e){
       if(MODE==='live'||MODE==='api')return nativeFetch(input,init);
@@ -125,5 +156,5 @@ addEventListener('DOMContentLoaded',()=>{
   enforceHonestUI();
   observer.observe(document.body,{childList:true,subtree:true,characterData:true});
 });
-window.VMEWSForecastResolver={version:VERSION,minForecastRows:MIN_FORECAST_ROWS,maxStaleDays:MAX_STALE_DAYS,mode:MODE,policy:'PINNED_CDN_FIRST',querySymbol:QUERY_SYMBOL,cache:detailCache};
+window.VMEWSForecastResolver={version:VERSION,minForecastRows:MIN_FORECAST_ROWS,maxStaleDays:MAX_STALE_DAYS,mode:MODE,policy:'PINNED_CDN_FIRST',querySymbol:QUERY_SYMBOL,researchSnapshotSha:RESEARCH_SNAPSHOT_SHA,cache:detailCache,researchCache};
 })();
