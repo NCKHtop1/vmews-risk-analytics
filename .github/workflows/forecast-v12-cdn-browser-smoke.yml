@@ -1,0 +1,41 @@
+name: Forecast V12 exact-SHA CDN browser smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'forecast-final.html'
+      - 'forecast-final-v12.js'
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-backtest-v12.json'
+      - 'data/data-audit-v12.json'
+      - 'data/phase-gates-v12.json'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Wait for immutable CDN edge
+        run: sleep 10
+      - name: Browser-test exact immutable CDN commit
+        env:
+          V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.sha }}/forecast-final.html?symbol=FPT
+        run: node scripts/v12_browser_smoke.mjs
+      - name: Upload exact-CDN UX screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-exact-cdn-browser-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            v12-browser-desktop.png
+            v12-browser-mobile.png
