@@ -10,8 +10,9 @@ if(model.governance?.crossSectionalFeaturesInNumericalModel!==false)throw Error(
 for(const h of ['3','5']){const z=model.horizons[h];if(z.status!=='PASS'||!z.gates.rankingApproved||!z.gates.directionApproved||!z.gates.alphaCalibrationApproved||!z.sealedAudit?.bootstrap?.ic95)throw Error('audit '+h);if((z.alphaCalibrationBuckets||[]).length<6||(z.directionCalibrationBuckets||[]).length<6)throw Error('calibration '+h)}
 if(news.version!=='VMEWS-NEWS-10.0.0'||news.universe<300||news.coverage?.FRT?.used<5)throw Error('news');
 if(sent.version!=='VMEWS-SENTIMENT-10.0.0'||!sent.symbols?.FRT)throw Error('sentiment');
-if(ev.version!=='VMEWS-NEWS-EVENT-STUDY-1.1.0'||ev.events<50||ev.pointInTimeEligibleForForecast!==false||!ev.rumorStudy?.preEvent?.['2'])throw Error('events');
+if(ev.version!=='VMEWS-NEWS-EVENT-STUDY-1.2.0'||ev.events<50||ev.pointInTimeEligibleForForecast!==false||!ev.rumorStudy?.preEvent?.['2'])throw Error('events');
+const frt=ev.symbols?.FRT?.latestEvent;if(!frt||frt.cluster===undefined||frt.cluster===null||!frt.historicalSameCluster)throw Error('cluster evidence');
 for(const s of ['Đọc hướng đi ngắn hạn cùng trạng thái rủi ro','Hệ thống tách riêng khả năng xếp hạng tương đối','Mô hình chỉ vẽ các horizon','Khối ngoại / tự doanh'])if(html.includes(s))throw Error('copy');
 if(ui.includes('/flow?')||ui.includes('P(tăng)'))throw Error('deprecated-ui');
 if(!ui.includes("x!==null&&x!==undefined&&x!==''")||!ui.includes('Math.abs(z)>.22')||!ui.includes('displayClose'))throw Error('chart-guard');
-console.log(JSON.stringify({ok:true,model:model.version,symbols:model.universe.symbols,rows:model.universe.rows,featureCount:model.featureNames.length,absoluteScenario:model.promotion.absoluteScenario,T3:model.horizons['3'].sealedAudit,T5:model.horizons['5'].sealedAudit,FRTNews:news.coverage.FRT,eventStudy:ev.events,rumorStudy:ev.rumorStudy}));
+console.log(JSON.stringify({ok:true,model:model.version,symbols:model.universe.symbols,rows:model.universe.rows,featureCount:model.featureNames.length,absoluteScenario:model.promotion.absoluteScenario,T3:model.horizons['3'].sealedAudit,T5:model.horizons['5'].sealedAudit,FRTNews:news.coverage.FRT,eventStudy:ev.events,rumorStudy:ev.rumorStudy,FRTCluster:{cluster:frt.cluster,terms:frt.clusterTerms,n:frt.historicalSameCluster.n}}));
