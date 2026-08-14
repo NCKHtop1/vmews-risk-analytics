@@ -1,5 +1,4 @@
 from datetime import date,timedelta
-import math
 import v12_rumor_runtime
 v12_rumor_runtime.apply()
 from v12_evidence import prepare_articles,EvidenceFeatureStore,resolve_rumor_state,_tokens
@@ -15,11 +14,13 @@ assert resolve_rumor_state(rumor,[rumor,main1,main2,official],'2026-01-07')['sta
 assert resolve_rumor_state(rumor,[rumor,main1,main2,official],'2026-01-08')['state']=='CONFIRMED'
 assert resolve_rumor_state(rumor,[rumor,main1,main2,denial],'2026-01-08')['state']=='DENIED'
 
-# 2) Synthetic price/volume history: pre-rumor price and volume leads must be measured, never future-filled.
+# 2) Synthetic price/volume history: a jump appears at T-1 and remains in price at T0;
+# volume is elevated during T-2..T-1. The engine must detect both without reading T+ data.
 start=date(2025,10,1);rows=[]
 for i in range(110):
     d=(start+timedelta(days=i)).isoformat();close=100.0*(1.001**i);vol=100.0
-    if i in (98,99):close*=1.04;vol=350.0
+    if i>=99:close*=1.04
+    if i in (98,99):vol=350.0
     rows.append({'date':d,'open':close,'high':close,'low':close,'close':close,'modelClose':close,'volume':vol})
 pub=rows[100]['date']+'T10:00:00+07:00'
 sent={'symbols':{'ABC':{'items':[{'id':'r2','title':'ABC được đồn đoán có thương vụ M&A lớn','publisher':'RumorA','sourceClass':'RUMOR_UNVERIFIED','event':'OPERATIONS_MA','label':'POS','confidence':.8,'materiality':.9,'sourceQuality':.5,'publishedAt':pub,'link':'#'}]}}}
