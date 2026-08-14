@@ -1,4 +1,4 @@
-import json, math, hashlib, urllib.request, urllib.parse, time
+import json, math, hashlib, urllib.request, urllib.parse, time, importlib.util
 from pathlib import Path
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -7,12 +7,8 @@ from scipy.stats import spearmanr
 from forecast_v4_features import stock_features
 
 ROOT=Path(__file__).resolve().parents[1]
-MODEL=ROOT/'data/forecast-model-v10.json'
-OUT=ROOT/'data/forecast-live-v10'
-SNAP=OUT/'snapshots'
-VERSION='VMEWS-FORECAST-LIVE-10.0.0'
-H=('3','5')
-API='https://vmews-risk-analytics-sojd.vercel.app/api'
+MODEL=ROOT/'data/forecast-model-v10.json';OUT=ROOT/'data/forecast-live-v10';SNAP=OUT/'snapshots'
+VERSION='VMEWS-FORECAST-LIVE-10.0.0';H=('3','5');API='https://vmews-risk-analytics-sojd.vercel.app/api'
 
 def load(p,default=None):
     try:return json.loads(Path(p).read_text(encoding='utf-8'))
@@ -25,6 +21,10 @@ def finite(x):
     try:return math.isfinite(float(x))
     except:return False
 
+def load_core():
+    p=ROOT/'api/stocks.py';spec=importlib.util.spec_from_file_location('vmews_live_core',p);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
+CORE=load_core()
+
 def lin(m,x):return float(m.get('intercept') or 0)+sum(float(a or 0)*float(b) for a,b in zip(m.get('coef') or [],x))
 def sigmoid(x):return 1/(1+math.exp(-max(-35,min(35,float(x)))))
 def bucket(bs,x):
@@ -33,16 +33,17 @@ def bucket(bs,x):
     if not bs:return None
     return bs[0] if x<bs[0]['lo'] else bs[-1]
 
-def fetch_detail(sym):
-    for attempt in range(2):
-        for route in ('radar','stocks'):
-            try:
-                u=f'{API}/{route}?mode=detail&symbol={urllib.parse.quote(sym)}'
-                req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Live/10','Accept':'application/json'})
-                with urllib.request.urlopen(req,timeout=18) as r:z=json.loads(r.read().decode())
-                if len(z.get('history') or [])>=520:return sym,z,'API_'+route.upper()
-            except Exception:pass
-        if attempt==0:time.sleep(.4)
+def resolve_detail(sym):
+    try:
+        raw,_,_=CORE.yahoo_chart(sym,'10y',5)
+        if len(raw or [])>=520:return sym,{'symbol':sym,'history':raw},'YAHOO_PRIMARY'
+    except Exception:pass
+    for route in ('radar','stocks'):
+        try:
+            u=f'{API}/{route}?mode=detail&symbol={urllib.parse.quote(sym)}';req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Live/10','Accept':'application/json'})
+            with urllib.request.urlopen(req,timeout=18) as r:z=json.loads(r.read().decode())
+            if len(z.get('history') or [])>=520:return sym,z,'API_'+route.upper()
+        except Exception:pass
     return sym,None,None
 
 def predict(model,d):
@@ -98,8 +99,8 @@ def main():
         d=load(p,{});s=str(d.get('symbol') or p.stem).upper()
         if s in allowed and len(d.get('history') or [])>=520:current[s]=d;sources[s]='LOCAL'
     missing=sorted(allowed-set(current))
-    with ThreadPoolExecutor(max_workers=14) as ex:
-        fut=[ex.submit(fetch_detail,s) for s in missing]
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        fut=[ex.submit(resolve_detail,s) for s in missing]
         for f in as_completed(fut):
             s,d,src=f.result()
             if d:current[s]=d;sources[s]=src
