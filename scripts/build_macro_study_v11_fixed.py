@@ -3,13 +3,14 @@ from pathlib import Path
 from datetime import datetime,timezone
 from urllib.parse import quote
 from urllib.request import Request,urlopen
+from concurrent.futures import ThreadPoolExecutor,as_completed
 import numpy as np
-ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));VERSION='VMEWS-MACRO-STUDY-11.1.0';H=(1,2,3,4,5);SPECS={'vix':'^VIX','usdVnd':'USDVND=X','dxy':'DX-Y.NYB','us10y':'^TNX','brent':'BZ=F'}
+ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));VERSION='VMEWS-MACRO-STUDY-11.2.0';H=(1,2,3,4,5);SPECS={'vix':'^VIX','usdVnd':'USDVND=X','dxy':'DX-Y.NYB','us10y':'^TNX','brent':'BZ=F'}
 
 def fetch(sym,rg='10y'):
     for host in ('query1.finance.yahoo.com','query2.finance.yahoo.com'):
         try:
-            u=f'https://{host}/v8/finance/chart/{quote(sym,safe="")}?range={rg}&interval=1d&includePrePost=false';p=json.loads(urlopen(Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Macro/11'}),timeout=15).read().decode());z=(p.get('chart',{}).get('result') or [None])[0]
+            u=f'https://{host}/v8/finance/chart/{quote(sym,safe="")}?range={rg}&interval=1d&includePrePost=false';p=json.loads(urlopen(Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Macro/11'}),timeout=12).read().decode());z=(p.get('chart',{}).get('result') or [None])[0]
             if not z:continue
             ts=z.get('timestamp') or [];q=(z.get('indicators',{}).get('quote') or [{}])[0];out=[]
             for i,t in enumerate(ts):
@@ -20,23 +21,24 @@ def fetch(sym,rg='10y'):
         except:pass
     return {},[]
 
-def hose_benchmark():
-    man=json.loads((ROOT/'data/hose-fallbacks/manifest.json').read_text(encoding='utf-8'));ret={}
-    for s,r in (man.get('routes') or {}).items():
-        if int((r or {}).get('rows') or 0)<520:continue
-        p=ROOT/f'data/hose-fallbacks/{s}.json'
-        if not p.exists():continue
-        try:a=json.loads(p.read_text(encoding='utf-8')).get('history') or []
+def stock_returns(sym):
+    vals,days=fetch(sym+'.VN','10y')
+    out={}
+    for a,b in zip(days[:-1],days[1:]):
+        try:r=math.log(vals[b]/vals[a])
         except:continue
-        prev=None
-        for x in a:
-            try:d=str(x.get('date'))[:10];c=float(x.get('close'))
-            except:continue
-            if prev and prev[1]>0 and c>0:
-                z=math.log(c/prev[1])
-                if math.isfinite(z) and abs(z)<.35:ret.setdefault(d,[]).append(z)
-            prev=(d,c)
-    days=sorted(d for d,v in ret.items() if len(v)>=30);idx={};level=1000.
+        if math.isfinite(r) and abs(r)<.35:out[b]=r
+    return out
+
+def hose_benchmark():
+    man=json.loads((ROOT/'data/hose-fallbacks/manifest.json').read_text(encoding='utf-8'));syms=[s for s,r in (man.get('routes') or {}).items() if int((r or {}).get('rows') or 0)>=520][:120];ret={}
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        fs={ex.submit(stock_returns,s):s for s in syms}
+        for f in as_completed(fs):
+            try:z=f.result()
+            except:z={}
+            for d,r in z.items():ret.setdefault(d,[]).append(r)
+    days=sorted(d for d,v in ret.items() if len(v)>=25);idx={};level=1000.
     for d in days:
         level*=math.exp(float(np.median(ret[d])));idx[d]=level
     return idx,days
@@ -56,10 +58,9 @@ def stat(a):
     return {'n':len(x),'mean':float(x.mean()),'median':float(np.median(x)),'positiveRate':float(np.mean(x>0)),'q20':float(np.quantile(x,.2)),'q80':float(np.quantile(x,.8))} if len(x) else None
 
 def main():
-    m={k:fetch(s) for k,s in SPECS.items()};vni,vd=fetch('^VNINDEX')
-    source='YAHOO_VNINDEX'
+    m={k:fetch(s) for k,s in SPECS.items()};vni,vd=fetch('^VNINDEX');source='YAHOO_VNINDEX'
     if len(vd)<800:vni,vd=fetch('^VNINDEX.VN');source='YAHOO_VNINDEX_VN'
-    if len(vd)<800:vni,vd=hose_benchmark();source='HOSE_EQUAL_WEIGHT_MEDIAN_RETURN'
+    if len(vd)<800:vni,vd=hose_benchmark();source='HOSE_CROSS_SECTION_MEDIAN_RETURN'
     if len(vd)<800:raise RuntimeError(f'HOSE macro benchmark unavailable: {len(vd)} rows')
     rows=[];hist=[]
     for i,d in enumerate(vd):
@@ -77,6 +78,6 @@ def main():
     groups={}
     for st in ('SUPPORTIVE','NEUTRAL','STRESS'):
         a=[x for x in rows if x['state']==st];groups[st]={'n':len(a),'horizons':{str(h):stat([x['r'+str(h)] for x in a if 'r'+str(h) in x]) for h in H}}
-    cur=rows[-1] if rows else None;out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimeRule':'For Vietnam date T, cross-market macro closes are restricted to dates strictly earlier than T. Market outcomes use VNINDEX when available and otherwise an equal-weighted HOSE median-return benchmark built from contemporaneous stock histories.','benchmarkSource':source,'features':list(SPECS),'current':cur,'groups':groups,'observations':len(rows)}
+    cur=rows[-1] if rows else None;out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimeRule':'For Vietnam date T, cross-market macro closes are restricted to dates strictly earlier than T. Market outcomes use VNINDEX when available and otherwise a contemporaneous cross-sectional HOSE median-return benchmark.','benchmarkSource':source,'features':list(SPECS),'current':cur,'groups':groups,'observations':len(rows)}
     (ROOT/'data/macro-study-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8');print(json.dumps({'observations':len(rows),'benchmarkSource':source,'current':cur,'groups':{k:v['n'] for k,v in groups.items()}},ensure_ascii=False))
 if __name__=='__main__':main()
