@@ -28,9 +28,9 @@ jobs:
       - name: Build numerical forecast
         run: python scripts/train_forecast_v11_clean.py
       - name: Backfill trading flow
-        run: python scripts/backfill_flow_v11.py
+        run: python scripts/backfill_flow_v11_fixed.py
       - name: Build trading flow study
-        run: python scripts/build_flow_study_v11.py
+        run: python scripts/build_flow_study_v11_fixed.py
       - name: Refresh VMEWS risk scan
         run: python scripts/update_market_scan.py
       - name: Backfill news history
@@ -40,7 +40,7 @@ jobs:
       - name: Build event study
         run: python scripts/build_news_event_study_v11.py
       - name: Build macro study
-        run: python scripts/build_macro_study_v11.py
+        run: python scripts/build_macro_study_v11_fixed.py
       - name: Build dashboard
         run: python scripts/build_dashboard_v11.py
       - name: Update immutable live monitor
@@ -49,10 +49,8 @@ jobs:
         with: {node-version: '22'}
       - name: Frontend syntax
         run: node --check forecast-final-v11.js
-      - name: Acceptance tests
-        run: |
-          python scripts/forecast_v11_acceptance.py
-          python scripts/forecast_v11_extended_acceptance.py
+      - name: Final production acceptance gate
+        run: python scripts/forecast_v11_final_gate.py
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -69,8 +67,7 @@ jobs:
             data/flow-v11.json
             data/flow-study-v11.json
             data/macro-study-v11.json
-            data/forecast-v11-acceptance.json
-            data/forecast-v11-extended-acceptance.json
+            data/forecast-v11-final-gate.json
             data/forecast-live-v11/
             data/market-scan.json
       - name: Persist validated snapshots
@@ -78,7 +75,7 @@ jobs:
         run: |
           git config user.name github-actions-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add data/forecast-model-v11.json data/forecast-current-v11.json data/forecast-dashboard-v11.json data/news-event-study-v11.json data/flow-study-v11.json data/macro-study-v11.json data/forecast-v11-acceptance.json data/forecast-v11-extended-acceptance.json data/forecast-live-v11 data/market-scan.json
+          git add data/forecast-model-v11.json data/forecast-current-v11.json data/forecast-dashboard-v11.json data/news-event-study-v11.json data/flow-study-v11.json data/macro-study-v11.json data/forecast-v11-final-gate.json data/forecast-live-v11 data/market-scan.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'Refresh V11 final snapshots [v11-data]'
           git pull --rebase origin forecast-v11-production
