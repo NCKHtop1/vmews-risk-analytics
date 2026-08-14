@@ -3,13 +3,14 @@ from pathlib import Path
 from datetime import datetime,timezone
 from urllib.parse import quote
 from urllib.request import Request,urlopen
+from concurrent.futures import ThreadPoolExecutor,as_completed
 import numpy as np
-ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));VERSION='VMEWS-MACRO-STUDY-11.3.0';H=(1,2,3,4,5);SPECS={'vix':'^VIX','usdVnd':'USDVND=X','dxy':'DX-Y.NYB','us10y':'^TNX','brent':'BZ=F'}
+ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));VERSION='VMEWS-MACRO-STUDY-11.4.0';H=(1,2,3,4,5);SPECS={'vix':'^VIX','usdVnd':'USDVND=X','dxy':'DX-Y.NYB','us10y':'^TNX','brent':'BZ=F'}
 
 def fetch(sym,rg='10y'):
     for host in ('query1.finance.yahoo.com','query2.finance.yahoo.com'):
         try:
-            u=f'https://{host}/v8/finance/chart/{quote(sym,safe="")}?range={rg}&interval=1d&includePrePost=false';p=json.loads(urlopen(Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Macro/11.3'}),timeout=12).read().decode());z=(p.get('chart',{}).get('result') or [None])[0]
+            u=f'https://{host}/v8/finance/chart/{quote(sym,safe="")}?range={rg}&interval=1d&includePrePost=false';p=json.loads(urlopen(Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Macro/11.4'}),timeout=12).read().decode());z=(p.get('chart',{}).get('result') or [None])[0]
             if not z:continue
             ts=z.get('timestamp') or [];q=(z.get('indicators',{}).get('quote') or [{}])[0];out=[]
             for i,t in enumerate(ts):
@@ -25,6 +26,29 @@ def panel_benchmark():
     if not p.exists():return {},[]
     try:z=json.loads(p.read_text(encoding='utf-8'));rows=z.get('series') or [];vals={str(x['date']):float(x['level']) for x in rows if x.get('date') and float(x.get('level',0))>0};days=sorted(vals);return vals,days
     except:return {},[]
+
+def stock_returns(sym):
+    vals,days=fetch(sym+'.VN','10y');out={}
+    for a,b in zip(days[:-1],days[1:]):
+        try:r=math.log(vals[b]/vals[a])
+        except:continue
+        if math.isfinite(r) and abs(r)<.35:out[b]=r
+    return out
+
+def dynamic_hose_benchmark():
+    try:man=json.loads((ROOT/'data/hose-fallbacks/manifest.json').read_text(encoding='utf-8'));syms=[s for s,r in (man.get('routes') or {}).items() if int((r or {}).get('rows') or 0)>=520][:140]
+    except:return {},[]
+    ret={}
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        fs={ex.submit(stock_returns,s):s for s in syms}
+        for f in as_completed(fs):
+            try:z=f.result()
+            except:z={}
+            for d,r in z.items():ret.setdefault(d,[]).append(r)
+    days=sorted(d for d,a in ret.items() if len(a)>=25);level=1000.;vals={}
+    for d in days:
+        level*=math.exp(float(np.median(ret[d])));vals[d]=level
+    return vals,days
 
 def ret_before(vals,dates,d,k=20):
     # all macro information must be available strictly before Vietnam date T
@@ -45,7 +69,10 @@ def stat(a):
 def main():
     m={k:fetch(s) for k,s in SPECS.items()};vni,vd=fetch('^VNINDEX');source='YAHOO_VNINDEX'
     if len(vd)<800:vni,vd=fetch('^VNINDEX.VN');source='YAHOO_VNINDEX_VN'
-    if len(vd)<800:vni,vd=panel_benchmark();source='HOSE_EQUAL_WEIGHT_MEDIAN_RETURN'
+    if len(vd)<1500:
+        pv,pd=panel_benchmark()
+        if len(pd)>=1500:vni,vd=pv,pd;source='HOSE_EQUAL_WEIGHT_MEDIAN_RETURN'
+    if len(vd)<1500:vni,vd=dynamic_hose_benchmark();source='HOSE_CROSS_SECTION_MEDIAN_RETURN'
     if len(vd)<1500:raise RuntimeError(f'HOSE macro benchmark unavailable: {len(vd)} rows')
     available={k:v for k,v in m.items() if len(v[1])>=800}
     if len(available)<4:raise RuntimeError(f'macro factor coverage too low: {list(available)}')
@@ -64,6 +91,6 @@ def main():
     groups={}
     for st in ('SUPPORTIVE','NEUTRAL','STRESS'):
         a=[x for x in rows if x['state']==st];groups[st]={'n':len(a),'horizons':{str(h):stat([x['r'+str(h)] for x in a if 'r'+str(h) in x]) for h in H}}
-    cur=rows[-1] if rows else None;out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimeRule':'For Vietnam date T, cross-market macro closes are restricted to dates strictly earlier than T. Market outcomes use VNINDEX when available and otherwise the daily HOSE median-return benchmark persisted from the exact adjusted-price panel used by V11.','benchmarkSource':source,'features':list(available),'current':cur,'groups':groups,'observations':len(rows)}
+    cur=rows[-1] if rows else None;out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimeRule':'For Vietnam date T, cross-market macro closes are restricted to dates strictly earlier than T. Market outcomes use VNINDEX when available, otherwise the persisted V11 HOSE panel benchmark, otherwise a contemporaneous HOSE cross-sectional median-return benchmark.','benchmarkSource':source,'features':list(available),'current':cur,'groups':groups,'observations':len(rows)}
     (ROOT/'data/macro-study-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8');print(json.dumps({'observations':len(rows),'benchmarkSource':source,'features':list(available),'current':cur,'groups':{k:v['n'] for k,v in groups.items()}},ensure_ascii=False))
 if __name__=='__main__':main()
