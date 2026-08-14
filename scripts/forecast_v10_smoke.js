@@ -1,0 +1,20 @@
+const fs=require('fs');
+const model=JSON.parse(fs.readFileSync('data/forecast-model-v10.json','utf8'));
+const news=JSON.parse(fs.readFileSync('data/research-news-v10.json','utf8'));
+const sent=JSON.parse(fs.readFileSync('data/sentiment-v10.json','utf8'));
+const ev=JSON.parse(fs.readFileSync('data/news-event-study.json','utf8'));
+const html=fs.readFileSync('forecast-final.html','utf8'),ui=fs.readFileSync('forecast-final-v10.js','utf8');
+if(model.version!=='VMEWS-FORECAST-10.0.0'||model.promotion?.status!=='PASS')throw Error('V10 model not promoted');
+if(model.universe?.symbols<50||model.universe?.rows<50000||!Array.isArray(model.universe?.symbolList))throw Error('model universe too small');
+for(const bad of ['vixLevel','vixRet20','usdVndRet20','dxyRet20','us10yRet20','brentRet20','marketTechnical'])if(model.featureNames.includes(bad))throw Error('train/live mismatch feature '+bad);
+for(const h of ['3','5']){const z=model.horizons[h];if(z.status!=='PASS'||!z.gates.rankingApproved||!z.gates.bucketApproved)throw Error('gate '+h);if(!z.sealedAudit?.bootstrap?.ic95||z.calibrationBuckets?.length<6)throw Error('audit '+h);}
+if(news.version!=='VMEWS-NEWS-10.0.0'||news.universe<300)throw Error('news universe too small');
+if(!news.coverage?.FRT||news.coverage.FRT.used<5)throw Error('FRT news coverage still insufficient');
+if(sent.version!=='VMEWS-SENTIMENT-10.0.0'||!sent.symbols?.FRT)throw Error('FRT sentiment missing');
+if(ev.version!=='VMEWS-NEWS-EVENT-STUDY-1.0.0'||ev.events<50||ev.pointInTimeEligibleForForecast!==false)throw Error('event study invalid');
+for(const bad of ['Đọc hướng đi ngắn hạn cùng trạng thái rủi ro','Hệ thống tách riêng khả năng xếp hạng tương đối','Mô hình chỉ vẽ các horizon','Khối ngoại / tự doanh'])if(html.includes(bad))throw Error('AI/filler copy remains: '+bad);
+if(ui.includes('/flow?')||ui.includes('P(tăng)'))throw Error('deprecated flow/probability UI remains');
+if(!ui.includes("x!==null&&x!==undefined&&x!==''"))throw Error('strict finite guard missing');
+if(!ui.includes('Math.abs(z)>.22')||!ui.includes('displayClose'))throw Error('corporate-action display guard missing');
+for(const id of ['symbol','run','stance','reason','last','a3','a5','histUp5','risk','riskText','market','riskCard','newsCard','macro','fund','interestList','yellowList','redList','chart','h3','h5','eventSummary','news','backtest'])if(!html.includes(`id="${id}"`))throw Error('missing DOM '+id);
+console.log(JSON.stringify({ok:true,model:model.version,rows:model.universe.rows,symbols:model.universe.symbols,T3:model.horizons['3'].sealedAudit,T5:model.horizons['5'].sealedAudit,newsUniverse:news.universe,FRTNews:news.coverage.FRT,eventStudy:ev.events,rumors:ev.rumorStudy?.n||0}));

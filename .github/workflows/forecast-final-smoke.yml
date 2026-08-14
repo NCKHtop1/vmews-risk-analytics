@@ -1,18 +1,16 @@
-name: Forecast V9 final smoke
+name: Forecast V10 production smoke
 on:
   push:
-    branches: [forecast-v6-research-grade, main]
+    branches: [main, forecast-v10-release-final]
     paths:
       - 'forecast-final.html'
-      - 'forecast-final-v5.js'
+      - 'forecast-final-v10.js'
       - 'forecast-v4-core.js'
-      - 'forecast-v4.css'
-      - 'data/forecast-model-v9.json'
-      - 'data/sentiment-v8.json'
-      - 'data/forecast-live/**'
-      - 'data/live-track/**'
-      - 'scripts/forecast_final_smoke.js'
-      - 'scripts/forecast_final_dom_smoke.js'
+      - 'data/forecast-model-v10.json'
+      - 'data/research-news-v10.json'
+      - 'data/sentiment-v10.json'
+      - 'data/news-event-study.json'
+      - 'scripts/forecast_v10_smoke.js'
       - '.github/workflows/forecast-final-smoke.yml'
   workflow_dispatch:
 jobs:
@@ -27,11 +25,7 @@ jobs:
       - name: Syntax
         run: |
           node --check forecast-v4-core.js
-          node --check forecast-final-v5.js
-          node --check scripts/forecast_final_smoke.js
-          node --check scripts/forecast_final_dom_smoke.js
-      - name: Production artifact contract
-        run: node scripts/forecast_final_smoke.js
-      - run: npm install --no-save jsdom@26
-      - name: Browser DOM smoke
-        run: node scripts/forecast_final_dom_smoke.js
+          node --check forecast-final-v10.js
+          node --check scripts/forecast_v10_smoke.js
+      - name: V10 production contract
+        run: node scripts/forecast_v10_smoke.js
