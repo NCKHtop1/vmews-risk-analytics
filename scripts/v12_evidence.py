@@ -66,7 +66,7 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
                 if i+h<len(rows):
                     a=_finite(rows[i].get("modelClose",rows[i].get("close")),None);b=_finite(rows[i+h].get("modelClose",rows[i+h].get("close")),None)
                     if a and b and a>0 and b>0:
-                        rr=math.log(b/a);br=benchmark_return(index_rows,avail,h);outcome[f"r{h}"]=rr;outcome[f"ar{h}"]=rr-br if isinstance(br,(int,float)) else rr;outcome[f"matureDate{h}"]=rows[i+h]["date"]
+                        rr=math.log(b/a);br=benchmark_return(index_rows,avail,h);has_benchmark=isinstance(br,(int,float)) and math.isfinite(float(br));outcome[f"r{h}"]=rr;outcome[f"benchmarkR{h}"]=float(br) if has_benchmark else None;outcome[f"benchmarkAvailable{h}"]=bool(has_benchmark);outcome[f"ar{h}"]=rr-float(br) if has_benchmark else None;outcome[f"matureDate{h}"]=rows[i+h]["date"]
             prepared.append(rec);outcomes.append(outcome)
         by_symbol[symbol]=prepared
     return by_symbol,outcomes
