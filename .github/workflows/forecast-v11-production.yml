@@ -1,0 +1,81 @@
+name: Forecast V11 production build
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v11-production]
+    paths:
+      - '.github/workflows/forecast-v11-production.yml'
+      - 'v11-trigger.txt'
+  schedule:
+    - cron: '35 11 * * 1-5'
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v11-production-data
+  cancel-in-progress: false
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[v11-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install research dependencies
+        run: pip install -q numpy scipy scikit-learn pandas requests beautifulsoup4 lxml torch transformers pyvi vnstock==4.0.4 tradingview-screener
+      - name: Build direct T+1..T+5 numerical model
+        run: python scripts/train_forecast_v11.py
+      - name: Backfill historical foreign and proprietary flow
+        run: python scripts/backfill_flow_v11.py
+      - name: Build flow event study
+        run: python scripts/build_flow_study_v11.py
+      - name: Backfill historical HOSE news
+        run: python scripts/backfill_news_v11.py
+      - name: Run supervised financial sentiment
+        run: python scripts/sentiment_news_v11.py
+      - name: Build news event study and unsupervised clusters
+        run: python scripts/build_news_event_study_v11.py
+      - name: Refresh canonical VMEWS risk scan
+        run: python scripts/update_market_scan.py
+      - name: Build production dashboard snapshot
+        run: python scripts/build_dashboard_v11.py
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Frontend syntax
+        run: node --check forecast-final-v11.js
+      - name: Full acceptance matrix
+        run: python scripts/forecast_v11_acceptance.py
+      - name: Upload generated evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-v11-evidence-${{ github.run_id }}
+          retention-days: 7
+          path: |
+            data/forecast-model-v11.json
+            data/forecast-current-v11.json
+            data/forecast-dashboard-v11.json
+            data/news-history-v11.json
+            data/sentiment-v11.json
+            data/news-event-study-v11.json
+            data/flow-v11.json
+            data/flow-study-v11.json
+            data/forecast-v11-acceptance.json
+            data/market-scan.json
+      - name: Persist validated production snapshots
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/forecast-model-v11.json data/forecast-current-v11.json data/forecast-dashboard-v11.json data/news-event-study-v11.json data/flow-study-v11.json data/forecast-v11-acceptance.json data/market-scan.json
+          if git diff --cached --quiet; then echo 'No data changes'; exit 0; fi
+          git commit -m 'Refresh V11 production research snapshots [v11-data]'
+          for i in 1 2 3; do
+            git fetch origin "${GITHUB_REF_NAME}" || true
+            git rebase "origin/${GITHUB_REF_NAME}" || { git rebase --abort || true; }
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((i*4))
+          done
+          exit 1
