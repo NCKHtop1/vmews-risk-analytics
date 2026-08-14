@@ -1,0 +1,84 @@
+import json
+import math
+import os
+import pathlib
+import statistics
+import warnings
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
+
+import numpy as np
+from scipy.stats import spearmanr
+from sklearn.isotonic import IsotonicRegression
+from sklearn.linear_model import Ridge
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.metrics import balanced_accuracy_score, matthews_corrcoef, brier_score_loss
+
+from forecast_v11_features import stock_features, FEATURES as LOCAL_FEATURES
+from v12_data_sources import build_price_store, get_index_history, source_audit_summary
+from v12_evidence import prepare_articles, build_sector_map, EvidenceFeatureStore, EVENT_FEATURES, RUMOR_FEATURES
+from v12_flow import FlowFeatureStore, FLOW_FEATURES
+warnings.filterwarnings("ignore", message="An input array is constant")
+ROOT=pathlib.Path(os.environ.get("GITHUB_WORKSPACE",".")).resolve();SEED=ROOT/"data"/"v12-seed";HORIZONS=(1,2,3,4,5);VERSION="VMEWS-FORECAST-12.0.0"
+CROSS_FEATURES=["mret1","mret5","mret20","breadth1","breadth5","breadth20","disp1","disp5","disp20","csad1","csad5","csad20","riskShare","volumeBreadth","highVolShare","herdingCompression","turnoverConcentration","leadershipSpread"]
+EVENT_MAIN=[x for x in EVENT_FEATURES if x not in {"earningsN20","earningsSent20","fundamentalN20","fundamentalSent20"}];FUNDAMENTAL_EVENT=["earningsN20","earningsSent20","fundamentalN20","fundamentalSent20"]
+EXPERTS={"NUMERICAL":list(LOCAL_FEATURES),"REGIME":list(CROSS_FEATURES),"EVENT":list(EVENT_MAIN),"FLOW":list(FLOW_FEATURES),"FUNDAMENTAL_EVENT":list(FUNDAMENTAL_EVENT),"RUMOR":list(RUMOR_FEATURES)}
+FEATURES=list(dict.fromkeys(list(LOCAL_FEATURES)+list(CROSS_FEATURES)+list(EVENT_MAIN)+list(FLOW_FEATURES)+list(FUNDAMENTAL_EVENT)+list(RUMOR_FEATURES)));OOF_FOLDS=((.50,.60),(.60,.70),(.70,.80))
+def finite(x):
+    try:return math.isfinite(float(x))
+    except Exception:return False
+def load_json(path):return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+def clean_json(x):
+    if isinstance(x,float) and not math.isfinite(x):return None
+    if isinstance(x,dict):return {k:clean_json(v) for k,v in x.items()}
+    if isinstance(x,list):return [clean_json(v) for v in x]
+    return x
+def risk_status(f):
+    weak=f["ret20"]<0 or f["trend50"]<0;daily=f["vol20"]/math.sqrt(252);flags=[f["dd60"]<=-.18,f["ret20"]<=-.10,f["trend50"]<=-.10,f["trend200"]<=-.15,f["rsi14"]<=.35,f["macdNorm"]<=-.008,daily>=.04,f["ret1"]<=-.04 and f["volumeZ"]>=1.5];n=sum(flags);s=f["technical"]
+    return ("RED",n) if s>=78 and weak and n>=3 else ("YELLOW",n) if s>=65 and weak and n>=2 else ("WATCH",n) if s>=50 and weak and n>=1 else ("GREEN",n)
+def manifest_symbols():return sorted((load_json(ROOT/"data"/"hose-fallbacks"/"manifest.json").get("routes") or {}).keys())
+def base_panel(price_store):
+    rows_by_symbol={};panel=[];latest={}
+    for s,raw in price_store.items():
+        rows,fs=stock_features(raw)
+        if len(rows)<520 or len(fs)<260:continue
+        rows_by_symbol[s]=rows;out=[]
+        for f in fs:
+            i=f["i"];turn=[rows[j]["modelClose"]*rows[j]["volume"] for j in range(max(0,i-29),i+1)];z={"symbol":s,**f,"avgTurnover30":float(np.mean(turn)) if turn else 0.0}
+            for h in HORIZONS:z["y"+str(h)]=float(math.log(rows[i+h]["modelClose"]/rows[i]["modelClose"])) if i+h<len(rows) else np.nan
+            out.append(z)
+        panel.extend(out);latest[s]={"symbol":s,"rows":rows,"feature":out[-1],"rawClose":float(rows[-1]["close"]),"modelClose":float(rows[-1]["modelClose"])}
+    dates=sorted(set(x["date"] for x in panel));keep=set(dates[::5]);panel=[x for x in panel if x["date"] in keep];by_date=defaultdict(list)
+    for x in panel:by_date[x["date"]].append(x)
+    cross_by_date={}
+    for d,a in by_date.items():
+        cross=cross_state(a);cross_by_date[d]=cross
+        for x in a:x.update(cross)
+    current_features=[v["feature"] for v in latest.values() if v]
+    if current_features:
+        latest_dates=[x["date"] for x in current_features];modal=max(set(latest_dates),key=latest_dates.count);same=[x for x in current_features if x["date"]==modal]
+        if len(same)>=50:
+            cur_cross=cross_state(same);cross_by_date[modal]=cur_cross
+            for x in same:x.update(cur_cross)
+        cross_dates=sorted(cross_by_date)
+        for v in latest.values():
+            f=v["feature"]
+            if all(k in f for k in CROSS_FEATURES):f["crossContextDate"]=f["date"];continue
+            eligible=[d for d in cross_dates if d<=f["date"]]
+            if eligible:use=eligible[-1];f.update(cross_by_date[use]);f["crossContextDate"]=use
+    print(json.dumps({"v12BasePanel":len(panel),"symbols":len(rows_by_symbol),"dates":len(keep),"start":min(keep) if keep else None,"end":max(keep) if keep else None}),flush=True);return panel,latest,rows_by_symbol
+def cross_state(a):
+    def vals(k):return np.asarray([float(x[k]) for x in a if finite(x.get(k))],float)
+    r1,r5,r20=vals("ret1"),vals("ret5"),vals("ret20");med=[float(np.median(v)) if len(v) else 0.0 for v in (r1,r5,r20)];disp=[float(np.std(v)) if len(v)>1 else 0.0 for v in (r1,r5,r20)];csad=[float(np.mean(np.abs(v-m))) if len(v) else 0.0 for v,m in zip((r1,r5,r20),med)];turn=np.asarray([max(0.0,float(x.get("avgTurnover30",0.0))) for x in a],float);tot=float(turn.sum());topn=max(1,int(.1*len(turn)));conc=float(np.sort(turn)[-topn:].sum()/tot) if tot>0 else 0.0;leader=float(np.quantile(r20,.9)-np.median(r20)) if len(r20)>=10 else 0.0
+    return {"mret1":med[0],"mret5":med[1],"mret20":med[2],"breadth1":float(np.mean(r1>0)) if len(r1) else .5,"breadth5":float(np.mean(r5>0)) if len(r5) else .5,"breadth20":float(np.mean(r20>0)) if len(r20) else .5,"disp1":disp[0],"disp5":disp[1],"disp20":disp[2],"csad1":csad[0],"csad5":csad[1],"csad20":csad[2],"riskShare":float(np.mean([x["technical"]>=50 for x in a])),"volumeBreadth":float(np.mean([x["volumeZ"]>0 for x in a])),"highVolShare":float(np.mean([x["volPct"]>=.8 for x in a])),"herdingCompression":float(abs(med[2])/(csad[2]+1e-6)),"turnoverConcentration":conc,"leadershipSpread":leader}
+def merge_evidence(panel,latest,evidence,flow):
+    for i,x in enumerate(panel,1):
+        x.update(evidence.features(x["symbol"],x["date"]));x.update(flow.features(x["symbol"],x["date"]))
+        if i%50000==0:print(json.dumps({"v12EvidenceRows":i,"total":len(panel)}),flush=True)
+    for s,v in latest.items():v["feature"].update(evidence.features(s,v["feature"]["date"]));v["feature"].update(flow.features(s,v["feature"]["date"]))
+def feature_matrix(panel):return np.asarray([[float(x.get(k,0.0)) if finite(x.get(k)) else np.nan for k in FEATURES] for x in panel],float)
+def expert_indexes():
+    pos={k:i for i,k in enumerate(FEATURES)};return {name:np.asarray([pos[k] for k in cols],int) for name,cols in EXPERTS.items()}
+def prep(X,mask):
+    imp=np.nanmedian(X[mask],axis=0);imp=np.where(np.isfinite(imp),imp,0.0);Z=np.where(np.isfinite(X),X,imp);mu=Z[mask].mean(axis=0);sd=Z[mask].std(axis=0);sd=np.where(sd<1e-9,1.0,sd);return imp,mu,sd
