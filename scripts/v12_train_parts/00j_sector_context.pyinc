@@ -1,0 +1,74 @@
+SECTOR_FEATURES=['sectorRet1','sectorRet5','sectorRet20','sectorBreadth1','sectorBreadth5','sectorBreadth20','sectorDisp20','sectorRel1','sectorRel5','sectorRel20','sectorAvailable']
+for _f in SECTOR_FEATURES:
+    if _f not in CROSS_FEATURES:CROSS_FEATURES.append(_f)
+    if _f not in EXPERTS['REGIME']:EXPERTS['REGIME'].append(_f)
+    if _f not in FEATURES:FEATURES.append(_f)
+V12_SECTOR_AUDIT={}
+
+def _sector_zero():
+    return {'sectorRet1':0.0,'sectorRet5':0.0,'sectorRet20':0.0,'sectorBreadth1':0.0,'sectorBreadth5':0.0,'sectorBreadth20':0.0,'sectorDisp20':0.0,'sectorRel1':0.0,'sectorRel5':0.0,'sectorRel20':0.0,'sectorAvailable':0.0}
+
+def _sector_context(panel,latest,sector_map):
+    global V12_SECTOR_AUDIT
+    by_date=defaultdict(list)
+    for x in panel:by_date[str(x['date'])].append(x)
+    assigned=0;eligible=0;dates_with_sector=0
+    for d,rows in by_date.items():
+        groups=defaultdict(list)
+        for x in rows:
+            sec=str(sector_map.get(x['symbol']) or '').strip()
+            if sec:groups[sec].append(x)
+        used=False
+        for sec,g in groups.items():
+            if len(g)<3:
+                for x in g:x.update(_sector_zero())
+                continue
+            used=True
+            vals={k:np.asarray([float(x[k]) for x in g if finite(x.get(k))],float) for k in ('ret1','ret5','ret20')}
+            if any(len(vals[k])<3 for k in vals):
+                for x in g:x.update(_sector_zero())
+                continue
+            med={k:float(np.median(v)) for k,v in vals.items()};disp20=float(np.std(vals['ret20'])) if len(vals['ret20'])>1 else 0.0
+            br={k:float(np.mean(v>0)) for k,v in vals.items()}
+            for x in g:
+                z={'sectorRet1':med['ret1'],'sectorRet5':med['ret5'],'sectorRet20':med['ret20'],'sectorBreadth1':br['ret1'],'sectorBreadth5':br['ret5'],'sectorBreadth20':br['ret20'],'sectorDisp20':disp20,'sectorRel1':float(x['ret1'])-med['ret1'],'sectorRel5':float(x['ret5'])-med['ret5'],'sectorRel20':float(x['ret20'])-med['ret20'],'sectorAvailable':1.0}
+                x.update(z);assigned+=1
+        if used:dates_with_sector+=1
+        for x in rows:
+            if not all(k in x for k in SECTOR_FEATURES):x.update(_sector_zero())
+            eligible+=1
+    # Current snapshot: compute from same-date current rows only, never borrow a future sector cross-section.
+    current_by_date=defaultdict(list)
+    for s,v in latest.items():
+        x=v.get('feature') or {};current_by_date[str(x.get('date'))].append(x)
+    current_assigned=0;current_total=0
+    for d,rows in current_by_date.items():
+        groups=defaultdict(list)
+        for x in rows:
+            sec=str(sector_map.get(x['symbol']) or '').strip()
+            if sec:groups[sec].append(x)
+        for sec,g in groups.items():
+            if len(g)<3:continue
+            vals={k:np.asarray([float(x[k]) for x in g if finite(x.get(k))],float) for k in ('ret1','ret5','ret20')}
+            if any(len(vals[k])<3 for k in vals):continue
+            med={k:float(np.median(v)) for k,v in vals.items()};disp20=float(np.std(vals['ret20'])) if len(vals['ret20'])>1 else 0.0;br={k:float(np.mean(v>0)) for k,v in vals.items()}
+            for x in g:
+                x.update({'sectorRet1':med['ret1'],'sectorRet5':med['ret5'],'sectorRet20':med['ret20'],'sectorBreadth1':br['ret1'],'sectorBreadth5':br['ret5'],'sectorBreadth20':br['ret20'],'sectorDisp20':disp20,'sectorRel1':float(x['ret1'])-med['ret1'],'sectorRel5':float(x['ret5'])-med['ret5'],'sectorRel20':float(x['ret20'])-med['ret20'],'sectorAvailable':1.0});current_assigned+=1
+        for x in rows:
+            if not all(k in x for k in SECTOR_FEATURES):x.update(_sector_zero())
+            current_total+=1
+    map_symbols=len(set(sector_map));panel_symbols=len(set(x['symbol'] for x in panel));mapped_panel_symbols=len(set(x['symbol'] for x in panel if x['symbol'] in sector_map))
+    V12_SECTOR_AUDIT={'version':'VMEWS-SECTOR-PIT-12.0.0','method':'Same-T0 cross-sectional sector medians/breadth/dispersion and stock-minus-sector relative returns; minimum 3 members; missing sector has explicit sectorAvailable=0.','sectorMapSymbols':map_symbols,'panelSymbols':panel_symbols,'mappedPanelSymbols':mapped_panel_symbols,'mappedPanelSymbolCoverage':mapped_panel_symbols/max(1,panel_symbols),'panelRows':eligible,'sectorAvailableRows':assigned,'sectorAvailableRowCoverage':assigned/max(1,eligible),'dates':len(by_date),'datesWithUsableSector':dates_with_sector,'currentRows':current_total,'currentSectorAvailable':current_assigned,'currentSectorCoverage':current_assigned/max(1,current_total)}
+    print(json.dumps({'v12SectorContext':V12_SECTOR_AUDIT},ensure_ascii=False),flush=True)
+    return V12_SECTOR_AUDIT
+
+_merge_evidence_before_sector=merge_evidence
+def merge_evidence(panel,latest,evidence,flow):
+    _sector_context(panel,latest,evidence.sector_map)
+    return _merge_evidence_before_sector(panel,latest,evidence,flow)
+
+_source_audit_summary_before_sector=source_audit_summary
+def source_audit_summary(price_audits,failures):
+    z=_source_audit_summary_before_sector(price_audits,failures)
+    z['sectorPIT']=dict(V12_SECTOR_AUDIT)
+    return z
