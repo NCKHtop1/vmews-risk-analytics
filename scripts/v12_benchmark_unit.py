@@ -15,9 +15,10 @@ articles,outcomes=ns['prepare_articles'](sentiment,{'FPT':rows},{'FPT':'Technolo
 assert o['matureDate5']==target and o['benchmarkTargetDate5']==target,o
 origin_i=market_dates.index(rec['availableDate']);target_i=market_dates.index(target);expected=math.log(index[target_i]['modelClose']/index[origin_i]['modelClose']);assert abs(o['benchmarkR5']-expected)<1e-12,(o['benchmarkR5'],expected);assert abs(o['ar5']-(o['r5']-expected))<1e-12,o
 assert o.get('preBenchmarkAvailable5') is True and isinstance(o.get('preAR5'),float),o
+# Exercise the assembled event feature store itself; this catches missing runtime symbols that syntax-only checks cannot see.
+store=ns['EvidenceFeatureStore'](articles,outcomes,{'FPT':'Technology'});feat=store.features('FPT',rec['availableDate']);assert isinstance(feat,dict) and all(k in feat for k in ('hierSent20','eventPriorAR1','eventPriorAR5','eventPriorUncertainty5')),feat
 # Missing benchmark is abstention for both post- and pre-event abnormal return.
 articles2,outcomes2=ns['prepare_articles'](sentiment,{'FPT':rows},{'FPT':'Technology'},[]);assert outcomes2;z=outcomes2[0];assert z.get('benchmarkAvailable5') is False and z.get('benchmarkR5') is None and z.get('ar5') is None,z;assert z.get('preBenchmarkAvailable5') is False and z.get('preBenchmarkR5') is None and z.get('preAR5') is None,z
-
 # Provider-local IDs may collide across tickers. Internal joins must remain ticker+newsId safe.
 vcb_rows=[{'date':d,'close':70+0.35*i,'modelClose':70+0.35*i,'volume':1800+i} for i,d in enumerate(market_dates)]
 collision_sent={'symbols':{
@@ -29,4 +30,4 @@ assert ca['FPT'][0]['publisher']=='FPT-SOURCE' and ca['FPT'][0]['stream']=='MAIN
 assert ca['VCB'][0]['publisher']=='VCB-SOURCE' and ca['VCB'][0]['stream']=='OFFICIAL',ca['VCB'][0]
 f_i=ca['FPT'][0]['availableIndex'];v_i=ca['VCB'][0]['availableIndex'];assert by_symbol['FPT']['matureDate5']==rows[f_i+5]['date'];assert by_symbol['VCB']['matureDate5']==vcb_rows[v_i+5]['date']
 artifact=ns['build_event_intelligence_artifact'](ca,co,{'FPT':rows,'VCB':vcb_rows});keys=[r['eventKey'] for r in artifact['records']];assert sorted(keys)==['FPT::shared-id','VCB::shared-id'],keys;assert artifact['summary']['duplicateEventKeys']==0,artifact['summary']
-print('V12 EXACT VNINDEX BENCHMARK UNIT PASS',{'origin':rec['availableDate'],'stockT5':target,'ordinalMarketT5':market_dates[origin_i+5],'benchmarkR5':o['benchmarkR5'],'ar5':o['ar5'],'collisionKeys':keys})
+print('V12 EXACT VNINDEX BENCHMARK + EVIDENCE STORE UNIT PASS',{'origin':rec['availableDate'],'stockT5':target,'ordinalMarketT5':market_dates[origin_i+5],'benchmarkR5':o['benchmarkR5'],'ar5':o['ar5'],'collisionKeys':keys,'eventFeatureCount':len(feat)})
