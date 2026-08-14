@@ -1,0 +1,18 @@
+_live_prefetch_index_before_cache=_prefetch_index_once
+
+def _load_vnindex_cache(symbol='VNINDEX'):
+    p=ROOT/'data'/'vnindex-v12.json'
+    if str(symbol).upper()!='VNINDEX' or not p.exists():raise RuntimeError(f'no audited index cache for {symbol}')
+    z=load_json(p);rows=z.get('rows') or [];summary=z.get('summary') or {}
+    if not str(z.get('version','')).startswith('VMEWS-VNINDEX-CACHE-12') or len(rows)<520:raise RuntimeError(f'invalid VNINDEX cache: {z.get("version")} rows={len(rows)}')
+    dates=[str(r.get('date'))[:10] for r in rows]
+    if dates!=sorted(dates) or len(dates)!=len(set(dates)):raise RuntimeError('VNINDEX cache date integrity failed')
+    audit={'route':'LAST_GOOD_INDEX_CACHE','provider':'data/vnindex-v12.json','rows':len(rows),'cacheVersion':z.get('version'),'cacheGeneratedAt':z.get('generatedAt'),'cacheLastDate':summary.get('last'),'liveProviderFailure':True}
+    return rows,audit
+
+def _prefetch_index_once(symbol='VNINDEX'):
+    key=str(symbol).upper()
+    if key in _INDEX_PREFETCH_CACHE:return _INDEX_PREFETCH_CACHE[key]
+    try:return _live_prefetch_index_before_cache(key)
+    except BaseException as live_error:
+        rows,audit=_load_vnindex_cache(key);audit['liveError']=f'{type(live_error).__name__}: {live_error}'[:600];audit['prefetchedBeforeUniverse']=True;_INDEX_PREFETCH_CACHE[key]=(rows,audit);print(json.dumps({'v12IndexPrefetch':{'symbol':key,'route':audit.get('route'),'rows':len(rows),'liveFallback':True}},ensure_ascii=False),flush=True);return _INDEX_PREFETCH_CACHE[key]
