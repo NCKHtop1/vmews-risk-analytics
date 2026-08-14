@@ -47,7 +47,7 @@ jobs:
 
       - name: Compile V12 source before network work
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -55,6 +55,9 @@ jobs:
           compile(code,'v12-assembled-training.py','exec')
           print('ASSEMBLED V12 PYTHON SYNTAX PASS',len(parts),len(code))
           PY
+
+      - name: Phase 0 - deterministic entity relevance tests
+        run: PYTHONPATH=scripts python scripts/v12_entity_test.py
 
       - name: Restore real V11 historical evidence seed
         uses: actions/download-artifact@v4
@@ -81,13 +84,13 @@ jobs:
           PY
 
       - name: Phase 1 - VNStock-first representative source probe
-        run: python scripts/v12_source_probe.py
+        run: PYTHONPATH=scripts python scripts/v12_source_probe.py
 
       - name: Phases 2-7 - train full PIT multimodal forecast and sealed backtest
-        run: python scripts/train_forecast_v12.py
+        run: PYTHONPATH=scripts python scripts/train_forecast_v12.py
 
-      - name: Phase gates - data PIT OOF calibration ablation backtest
-        run: python scripts/v12_acceptance.py
+      - name: Phase gates - data entity PIT OOF calibration ablation backtest
+        run: PYTHONPATH=scripts python scripts/v12_acceptance.py
 
       - uses: actions/setup-node@v4
         with:
