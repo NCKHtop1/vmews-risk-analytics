@@ -11,17 +11,17 @@ def fit_experts_at_cut(X,y,D,dates,h,idx_by_expert,kinds,cut_frac):
     return models
 
 def expert_oof(X,y,D,dates,h,idx_by_expert):
-    result={};selection={};Maturity=label_maturity_array(h);lock_date=dates[int(.80*len(dates))];lock=np.isfinite(y)&(Maturity<lock_date)
+    result={};selection={};Maturity=label_maturity_array(h);n=len(dates);kind_lock_date=dates[int(.70*n)];prediction_lock_date=dates[int(.80*n)];kind_lock=np.isfinite(y)&(Maturity<kind_lock_date)&(D<kind_lock_date);prediction_lock=np.isfinite(y)&(Maturity<prediction_lock_date)&(D<prediction_lock_date)
     for name,fi in idx_by_expert.items():
         best=None;best_pred=None
         for kind in ('RIDGE','LGBM'):
             pred=np.full(len(y),np.nan)
             for fold in OOF_FOLDS:
                 ii,pp,_=fit_predict(X,y,D,dates,fi,fold,h,kind);pred[ii]=pp
-            mask=np.isfinite(pred)&lock;m=reg_metrics(y[mask],pred[mask],D[mask]);row={'kind':kind,**m,'objective':m['ic']+.12*m['maeImprove']+.10*m['spread'],'lockDate':str(lock_date),'labelMaturityPurged':True,'rows':int(mask.sum())}
+            mask=np.isfinite(pred)&kind_lock;m=reg_metrics(y[mask],pred[mask],D[mask]);row={'kind':kind,**m,'objective':m['ic']+.12*m['maeImprove']+.10*m['spread'],'selectionLockDate':str(kind_lock_date),'predictionAvailabilityEndExclusive':str(prediction_lock_date),'selectionWindow':'OOF origins 50%-70% only; labels must mature before 70% lock','incrementalOOSReserved':'70%-80% origins are excluded from Ridge/LightGBM kind selection','labelMaturityPurged':True,'selectionRows':int(mask.sum())}
             if best is None or row['objective']>best['objective']:best=row;best_pred=np.array(pred,copy=True)
-        best_pred[~lock]=np.nan;result[name]=best_pred;selection[name]=best
-    OOF_CAPTURE[int(h)]={'predictions':{k:np.array(v,copy=True) for k,v in result.items()},'selection':selection,'lockDate':str(lock_date),'purgeMethod':'LABEL_MATURITY_DATE'}
+        best_pred[~prediction_lock]=np.nan;result[name]=best_pred;selection[name]=best
+    OOF_CAPTURE[int(h)]={'predictions':{k:np.array(v,copy=True) for k,v in result.items()},'selection':selection,'kindSelectionLockDate':str(kind_lock_date),'predictionAvailabilityEndExclusive':str(prediction_lock_date),'purgeMethod':'LABEL_MATURITY_DATE','nestedSelectionPolicy':'Model kind is selected only on 50%-70% chronological OOF. Optional-expert incremental OOS is reserved for 70%-80% and cannot influence model-kind choice.'}
     return result,selection
 
 def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
@@ -30,6 +30,6 @@ def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
         candidate=active+[name];cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D);di=cand_metrics['ic']-base_metrics['ic'];dm=cand_metrics['maeImprove']-base_metrics['maeImprove'];ds=cand_metrics['spread']-base_metrics['spread'];activity_mask,activity_count,activity,minimum_rows=_expert_activity(X,name);active_in_test=int(np.sum(activity_mask&test));enough=activity_count>=minimum_rows and active_in_test>=max(50,min(250,minimum_rows//10 if minimum_rows else 0))
         bidx,bpred=_meta_score_on_block(expert_pred,active,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y);common=np.intersect1d(bidx,cidx,assume_unique=False);bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)};bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float);inc=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]}
         ci=inc.get('bootstrap90') or [None,None];statistical=inc.get('days',0)>=15 and inc.get('meanDeltaIC',0)>0 and inc.get('pValue',1)<0.0125 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0;promote=bool(enough and statistical and di>0.001 and dm>0.0 and ds>=-0.00005)
-        decisions[name]={'promoted':promote,'evidenceRows':activity_count,'activityCoverage':activity,'evidenceRowsSelectionWindow':active_in_test,'minimumEvidenceRows':minimum_rows,'evidenceGatePassed':bool(enough),'deltaIC':di,'deltaMAEImprove':dm,'deltaSpread':ds,'selectionTrainLabelMaturityBefore':str(cut70),'selectionOutcomeMaturityBefore':str(cut80),'purgeMethod':'LABEL_MATURITY_DATE','multipleTesting':'Bonferroni one-sided alpha=0.0125 across four optional experts; Newey-West HAC mean-delta-IC test + moving-block bootstrap','incrementalICTest':inc,'candidate':cand_metrics,'reference':base_metrics}
+        decisions[name]={'promoted':promote,'evidenceRows':activity_count,'activityCoverage':activity,'evidenceRowsSelectionWindow':active_in_test,'minimumEvidenceRows':minimum_rows,'evidenceGatePassed':bool(enough),'deltaIC':di,'deltaMAEImprove':dm,'deltaSpread':ds,'modelKindSelectionLock':str(cut70),'selectionTrainLabelMaturityBefore':str(cut70),'selectionTestOriginStart':str(cut70),'selectionTestOriginEndExclusive':str(cut80),'selectionOutcomeMaturityBefore':str(cut80),'purgeMethod':'LABEL_MATURITY_DATE','nestedSelection':'Ridge/LightGBM kind locked before this 70%-80% incremental test window','multipleTesting':'Bonferroni one-sided alpha=0.0125 across four optional experts; Newey-West HAC mean-delta-IC test + moving-block bootstrap','incrementalICTest':inc,'candidate':cand_metrics,'reference':base_metrics}
         if promote:active.append(name);base_metrics=cand_metrics
     return active,decisions
