@@ -1,43 +1,118 @@
 import json,sys,math
 from pathlib import Path
-R=Path('.');checks=[]
+R=Path('.'); checks=[]
 def ck(name,cond,detail=''):
-    ok=bool(cond);checks.append((name,ok,str(detail)));print(('PASS ' if ok else 'FAIL ')+name+(f' :: {detail}' if detail else ''));return ok
-def load(p):return json.loads((R/p).read_text(encoding='utf-8'))
+    ok=bool(cond); checks.append((name,ok,str(detail))); print(('PASS ' if ok else 'FAIL ')+name+(f' :: {detail}' if detail else '')); return ok
+def load(p): return json.loads((R/p).read_text(encoding='utf-8'))
 def fin(x):
-    try:return math.isfinite(float(x))
-    except:return False
+    try: return math.isfinite(float(x))
+    except: return False
 
-model=load('data/forecast-model-v11.json');cur=load('data/forecast-current-v11.json');dash=load('data/forecast-dashboard-v11.json');news=load('data/news-history-v11.json');sent=load('data/sentiment-v11.json');ev=load('data/news-event-study-v11.json');flow=load('data/flow-v11.json');fst=load('data/flow-study-v11.json');macro=load('data/macro-study-v11.json');scan=load('data/market-scan.json');live=load('data/forecast-live-v11/summary.json')
-html=(R/'forecast-final.html').read_text(encoding='utf-8');js=(R/'forecast-final-v11.js').read_text(encoding='utf-8')
-ck('V11 model version',model.get('version')=='VMEWS-FORECAST-11.0.0',model.get('version'));ck('five direct forecast horizons',set(model.get('horizons',{}))==set('12345'),list(model.get('horizons',{})));ck('HOSE universe >=380',model['universe']['symbols']>=380,model['universe']['symbols']);ck('PIT panel >=150k states',model['universe']['rows']>=150000,model['universe']['rows']);ck('history begins before 2018',model['universe']['start']<'2018-01-01',model['universe']['start']);ck('audit history recent',model['universe']['end']>='2026-07-01',model['universe']['end']);ck('current inference broad',cur.get('count',0)>=380,cur.get('count'));ck('dashboard broad',dash.get('counts',{}).get('symbols',0)>=380,dash.get('counts'));ck('chart coverage broad',dash.get('counts',{}).get('chartSymbols',0)>=360,dash.get('counts',{}).get('chartSymbols'));ck('exact target price disabled',model.get('promotion',{}).get('exactTargetPrice') is False,model.get('promotion'));ck('scenario distributions enabled',model.get('promotion',{}).get('scenarioDistribution') is True,model.get('promotion'))
+model=load('data/forecast-model-v11.json'); cur=load('data/forecast-current-v11.json'); dash=load('data/forecast-dashboard-v11.json')
+news=load('data/news-history-v11.json'); sent=load('data/sentiment-v11.json'); ev=load('data/news-event-study-v11.json')
+flow=load('data/flow-v11.json'); fst=load('data/flow-study-v11.json'); macro=load('data/macro-study-v11.json')
+scan=load('data/market-scan.json'); live=load('data/forecast-live-v11/summary.json')
+html=(R/'forecast-final.html').read_text(encoding='utf-8'); js=(R/'forecast-final-v11.js').read_text(encoding='utf-8')
+
+# Numerical model and sealed OOS evidence
+ck('V11 model version',model.get('version')=='VMEWS-FORECAST-11.0.0',model.get('version'))
+ck('five direct forecast horizons',set(model.get('horizons',{}))==set('12345'),list(model.get('horizons',{})))
+ck('HOSE universe >=380',model['universe']['symbols']>=380,model['universe']['symbols'])
+ck('PIT panel >=150k states',model['universe']['rows']>=150000,model['universe']['rows'])
+ck('history begins before 2018',model['universe']['start']<'2018-01-01',model['universe']['start'])
+ck('audit history recent',model['universe']['end']>='2026-07-01',model['universe']['end'])
+ck('current inference broad',cur.get('count',0)>=380,cur.get('count'))
+ck('dashboard broad',dash.get('counts',{}).get('symbols',0)>=380,dash.get('counts'))
+ck('chart coverage broad',dash.get('counts',{}).get('chartSymbols',0)>=360,dash.get('counts',{}).get('chartSymbols'))
+ck('exact target price disabled',model.get('promotion',{}).get('exactTargetPrice') is False,model.get('promotion'))
+ck('scenario distributions enabled',model.get('promotion',{}).get('scenarioDistribution') is True,model.get('promotion'))
 for h in range(1,6):
- z=model['horizons'][str(h)];a=z['sealedAudit'];g=z.get('gates',{});ck(f'T+{h} sealed sample >=17k',a['n']>=17000,a['n']);ck(f'T+{h} alpha IC positive',fin(a['alphaIC']) and a['alphaIC']>.04,a['alphaIC']);ck(f'T+{h} alpha spread positive',fin(a['alphaSpread']) and a['alphaSpread']>.004,a['alphaSpread']);ck(f'T+{h} interval coverage sane',fin(a['coverage20_80']) and .43<=a['coverage20_80']<=.77,a['coverage20_80']);ck(f'T+{h} scenario rank nonnegative',fin(a['scenarioRankIC']) and a['scenarioRankIC']>=0,a['scenarioRankIC']);ck(f'T+{h} calibration has >=7 buckets',len(z.get('calibration',[]))>=7,len(z.get('calibration',[])));ck(f'T+{h} model family audited',z.get('choice',{}).get('reg') in {'RIDGE','HGB'} and z.get('choice',{}).get('cls') in {'LINEAR','HGB'},z.get('choice'))
- if h>=2:ck(f'T+{h} direction accuracy >52%',fin(a['balancedAccuracy']) and a['balancedAccuracy']>.52,a['balancedAccuracy']);ck(f'T+{h} MCC positive',fin(a['mcc']) and a['mcc']>.04,a['mcc']);ck(f'T+{h} probability calibration bounded',fin(a['ece']) and a['ece']<.10,a['ece'])
- else:ck('T+1 not falsely promoted as direction signal',not g.get('direction',False) or (a['balancedAccuracy']>.515 and a['mcc']>.02),g)
+    z=model['horizons'][str(h)]; a=z['sealedAudit']; g=z.get('gates',{})
+    ck(f'T+{h} sealed sample >=17k',a['n']>=17000,a['n'])
+    ck(f'T+{h} alpha IC positive',fin(a['alphaIC']) and a['alphaIC']>.04,a['alphaIC'])
+    ck(f'T+{h} alpha spread positive',fin(a['alphaSpread']) and a['alphaSpread']>.004,a['alphaSpread'])
+    ck(f'T+{h} interval coverage sane',fin(a['coverage20_80']) and .43<=a['coverage20_80']<=.77,a['coverage20_80'])
+    ck(f'T+{h} scenario rank nonnegative',fin(a['scenarioRankIC']) and a['scenarioRankIC']>=0,a['scenarioRankIC'])
+    ck(f'T+{h} calibration >=7 buckets',len(z.get('calibration',[]))>=7,len(z.get('calibration',[])))
+    ck(f'T+{h} model family audited',z.get('choice',{}).get('reg') in {'RIDGE','HGB'} and z.get('choice',{}).get('cls') in {'LINEAR','HGB'},z.get('choice'))
+    if h>=2:
+        ck(f'T+{h} direction accuracy >52%',fin(a['balancedAccuracy']) and a['balancedAccuracy']>.52,a['balancedAccuracy'])
+        ck(f'T+{h} MCC positive',fin(a['mcc']) and a['mcc']>.04,a['mcc'])
+        ck(f'T+{h} ECE <10%',fin(a['ece']) and a['ece']<.10,a['ece'])
+    else:
+        ck('T+1 not falsely promoted as direction signal',not g.get('direction',False) or (a['balancedAccuracy']>.515 and a['mcc']>.02),g)
+
+# Current symbol invariants across direct T+1..T+5
 sample=sorted(cur['symbols'])[:32]+[s for s in ['FPT','FRT','PNJ','VCB','HPG','MBB','SSI','VHM','MWG','DGC'] if s in cur['symbols']]
 for s in dict.fromkeys(sample):
- z=cur['symbols'][s];ck(f'{s} all horizons',all(str(h) in z.get('horizons',{}) for h in range(1,6)));ck(f'{s} risk bounded',fin(z.get('technical')) and 0<=z['technical']<=100,z.get('technical'));ck(f'{s} market psychology',all(k in z.get('market',{}) for k in ['breadth20','csad20','herdingCompression','turnoverConcentration']))
- for h in range(1,6):q=z['horizons'][str(h)];ck(f'{s} T+{h} finite scenario',all(fin(q.get(k)) for k in ['alpha','historicalUpRate','medianReturn','q20','q80']),q);ck(f'{s} T+{h} quantile order',q['q20']<=q['medianReturn']<=q['q80'],(q['q20'],q['medianReturn'],q['q80']))
-ns=news['summary'];ck('news corpus >=12k',ns['articles']>=12000,ns);ck('news symbols >=375',ns['symbolsWithNews']>=375,ns);ck('news median >=12 per symbol',ns['medianPerSymbol']>=12,ns);ck('news 10+ symbols >=220',ns['symbols10plus']>=220,ns);ck('sentiment article parity',sent['summary']['articles']>=int(.98*ns['articles']),sent['summary']);ck('sentiment all symbols',sent['summary']['symbols']>=380,sent['summary']);ck('sentiment POS volume',sent['summary']['positive']>=1000);ck('sentiment NEG volume',sent['summary']['negative']>=500);ck('sentiment NEU volume',sent['summary']['neutral']>=3000)
-source=set();streams=set();events=set();methods=set();pubs=set()
+    z=cur['symbols'][s]
+    ck(f'{s} all horizons',all(str(h) in z.get('horizons',{}) for h in range(1,6)))
+    ck(f'{s} risk bounded',fin(z.get('technical')) and 0<=z['technical']<=100,z.get('technical'))
+    ck(f'{s} market psychology',all(k in z.get('market',{}) for k in ['breadth20','csad20','herdingCompression','turnoverConcentration']))
+    for h in range(1,6):
+        q=z['horizons'][str(h)]
+        ck(f'{s} T+{h} finite scenario',all(fin(q.get(k)) for k in ['alpha','historicalUpRate','medianReturn','q20','q80']),q)
+        ck(f'{s} T+{h} quantile order',q['q20']<=q['medianReturn']<=q['q80'],(q['q20'],q['medianReturn'],q['q80']))
+
+# Historical news corpus, DL sentiment, clustering and event study
+ns=news['summary']
+ck('news corpus >=12k',ns['articles']>=12000,ns); ck('news symbols >=375',ns['symbolsWithNews']>=375,ns)
+ck('news median >=12 per symbol',ns['medianPerSymbol']>=12,ns); ck('news 10+ symbols >=220',ns['symbols10plus']>=220,ns)
+ck('sentiment article parity',sent['summary']['articles']>=int(.98*ns['articles']),sent['summary']); ck('sentiment all symbols',sent['summary']['symbols']>=380,sent['summary'])
+ck('sentiment POS volume',sent['summary']['positive']>=1000); ck('sentiment NEG volume',sent['summary']['negative']>=500); ck('sentiment NEU volume',sent['summary']['neutral']>=3000)
+source=set(); streams=set(); events=set(); methods=set(); pubs=set()
 for z in sent['symbols'].values():
- for x in z.get('items',[]):source.add(x.get('sourceClass'));streams.add(x.get('stream'));events.add(x.get('event'));methods.add(x.get('method'));pubs.add(x.get('publisher'))
-ck('mainstream news present','MAINSTREAM' in source,source);ck('rumor separated','RUMOR_UNVERIFIED' in source and 'RUMOR' in streams,(source,streams));ck('disclosure-search stream present','OFFICIAL' in streams,streams);ck('publisher diversity >=100',len(pubs)>=100,len(pubs));ck('event taxonomy >=8',len(events)>=8,events);ck('PhoBERT actually used','phobert' in methods,methods);ck('event study >=12k events',ev['events']>=12000,ev['events']);ck('event-study symbols >=375',len(ev['symbols'])>=375,len(ev['symbols']));ck('unsupervised clusters >=18',len(ev['clusters'])>=18,len(ev['clusters']));ck('rumor study >=20 events',ev['rumorStudy']['events']>=20,ev['rumorStudy']['events']);ck('T+2 is outcome only','outcomes are labels only' in ev.get('pointInTime',''),ev.get('pointInTime'));ck('hierarchy groups exist',all(k in ev['groups'] for k in ['eventLabel','cluster','sectorEvent','sectorEventLabel']),ev['groups'].keys());ck('sector hierarchy material coverage',ev.get('sectorCoverage',0)>=200,ev.get('sectorCoverage'));pooled=sum(1 for z in ev['symbols'].values() if z.get('pooledLatest') and z['pooledLatest'].get('n',0)>=20);ck('hierarchical pooling covers >=370 symbols',pooled>=370,pooled)
-# Flow is optional per ticker but must be genuine and deep wherever displayed. The UI suppresses
-# a ticker/type if the source or its historical state is not adequate; absence is never shown as a fake zero.
-fs=flow['summary'];ck('flow source universe broad',fs['symbolsWithFlow']>=380,fs);ck('foreign source current >=250',fs.get('currentForeign',0)>=250,fs.get('currentForeign'));ck('foreign median depth >=60',fs.get('foreignMedianRows',0)>=60,fs);ck('foreign state study >=8k origins',fst.get('sampledObservations',0)>=8000,fst.get('sampledObservations'));ck('foreign display coverage >=180 symbols',len(fst.get('current',{}))>=180,len(fst.get('current',{}));q=fst.get('typeQuality',{});fq=q.get('foreign',{});pq=q.get('prop',{});ck('foreign flow usable',fq.get('usable') is True,fq);ck('foreign non-degenerate',fq.get('nonzeroShare',0)>=.01,fq);ck('foreign has >=3 adequate states',fq.get('adequateStates',0)>=3,fq)
-if pq.get('usable'):ck('proprietary flow non-degenerate',pq.get('nonzeroShare',0)>=.01,pq);ck('proprietary >=3 adequate states',pq.get('adequateStates',0)>=3,pq)
-else:ck('degenerate proprietary layer suppressed',all('prop' not in z for z in fst.get('current',{}).values()),pq)
-ck('macro observations >=1000',macro.get('observations',0)>=1000,macro.get('observations'));ck('macro PIT strict','strictly earlier than T' in macro.get('pointInTimeRule',''),macro.get('pointInTimeRule'));ck('macro benchmark declared',macro.get('benchmarkSource') in {'YAHOO_VNINDEX','YAHOO_VNINDEX_VN','HOSE_CROSS_SECTION_MEDIAN_RETURN','HOSE_EQUAL_WEIGHT_MEDIAN_RETURN'},macro.get('benchmarkSource'));ck('macro current state',macro.get('current',{}).get('state') in {'SUPPORTIVE','NEUTRAL','STRESS'},macro.get('current'))
+    for x in z.get('items',[]):
+        source.add(x.get('sourceClass')); streams.add(x.get('stream')); events.add(x.get('event')); methods.add(x.get('method')); pubs.add(x.get('publisher'))
+ck('mainstream news present','MAINSTREAM' in source,source); ck('rumor separated','RUMOR_UNVERIFIED' in source and 'RUMOR' in streams,(source,streams))
+ck('disclosure-search stream present','OFFICIAL' in streams,streams); ck('publisher diversity >=100',len(pubs)>=100,len(pubs)); ck('event taxonomy >=8',len(events)>=8,events); ck('PhoBERT used','phobert' in methods,methods)
+ck('event study >=12k events',ev['events']>=12000,ev['events']); ck('event-study symbols >=375',len(ev['symbols'])>=375,len(ev['symbols'])); ck('unsupervised clusters >=18',len(ev['clusters'])>=18,len(ev['clusters']))
+ck('rumor study >=20 events',ev['rumorStudy']['events']>=20,ev['rumorStudy']['events']); ck('T+2 is outcome only','outcomes are labels only' in ev.get('pointInTime',''),ev.get('pointInTime'))
+ck('hierarchy groups exist',all(k in ev['groups'] for k in ['eventLabel','cluster','sectorEvent','sectorEventLabel']),ev['groups'].keys()); ck('sector hierarchy coverage',ev.get('sectorCoverage',0)>=200,ev.get('sectorCoverage'))
+pooled=sum(1 for z in ev['symbols'].values() if z.get('pooledLatest') and z['pooledLatest'].get('n',0)>=20); ck('hierarchical pooling >=370 symbols',pooled>=370,pooled)
+
+# Foreign flow is shown only if historical evidence is usable; proprietary is suppressed if degenerate
+fs=flow['summary']
+ck('flow source universe broad',fs['symbolsWithFlow']>=380,fs); ck('flow source current broad',len(flow.get('current',{}))>=300,len(flow.get('current',{})))
+ck('foreign median depth >=60',fs.get('foreignMedianRows',0)>=60,fs); ck('flow state study >=15k origins',fst.get('sampledObservations',0)>=15000,fst.get('sampledObservations'))
+ck('flow display coverage >=300 symbols',len(fst.get('current',{}))>=300,len(fst.get('current',{})))
+q=fst.get('typeQuality',{}); fq=q.get('foreign',{}); pq=q.get('prop',{})
+ck('foreign flow usable',fq.get('usable') is True,fq); ck('foreign non-degenerate',fq.get('nonzeroShare',0)>=.01,fq); ck('foreign >=3 adequate states',fq.get('adequateStates',0)>=3,fq)
+if pq.get('usable'):
+    ck('proprietary non-degenerate',pq.get('nonzeroShare',0)>=.01,pq); ck('proprietary >=3 adequate states',pq.get('adequateStates',0)>=3,pq)
+else:
+    ck('degenerate proprietary suppressed',all('prop' not in z for z in fst.get('current',{}).values()),pq)
+
+# Macro PIT evidence
+ck('macro observations >=1000',macro.get('observations',0)>=1000,macro.get('observations'))
+ck('macro PIT strict','strictly earlier than T' in macro.get('pointInTimeRule',''),macro.get('pointInTimeRule'))
+ck('macro benchmark declared',macro.get('benchmarkSource') in {'YAHOO_VNINDEX','YAHOO_VNINDEX_VN','HOSE_CROSS_SECTION_MEDIAN_RETURN','HOSE_EQUAL_WEIGHT_MEDIAN_RETURN'},macro.get('benchmarkSource'))
+ck('macro current state',macro.get('current',{}).get('state') in {'SUPPORTIVE','NEUTRAL','STRESS'},macro.get('current'))
 for st in ('SUPPORTIVE','NEUTRAL','STRESS'):
- z=macro.get('groups',{}).get(st,{});ck(f'macro {st} n>=100',z.get('n',0)>=100,z.get('n'));ck(f'macro {st} all horizons',all((z.get('horizons',{}).get(str(h)) or {}).get('n',0)>=80 for h in range(1,6)),z.get('horizons'))
-hose=[x for x in scan.get('ranking',[]) if x.get('exchange')=='HOSE'];ck('canonical HOSE risk coverage >=220',len(hose)>=220,len(hose));ck('dashboard canonical coverage >=220',dash.get('canonicalRiskCoverage',0)>=220,dash.get('canonicalRiskCoverage'));ck('YELLOW liquidity gate',all(float(x.get('liquidity30',0))>=500_000_000 for x in dash['lists']['yellow']),dash['lists']['yellow'][:3]);ck('RED liquidity gate',all(float(x.get('liquidity30',0))>=500_000_000 for x in dash['lists']['red']),dash['lists']['red'][:3]);ck('watchlist nonempty',len(dash['lists']['watch'])>=8,len(dash['lists']['watch']))
-ck('live monitor PASS',live.get('status')=='PASS',live);ck('live no bad hashes',not live.get('badHashes'),live.get('badHashes'));ck('live five horizons',set(live.get('horizons',{}))==set('12345'),live.get('horizons',{}).keys());ck('live origin exists',live.get('origins',0)>=1,live.get('origins'));ck('live model version matches',live.get('modelVersion')==dash.get('modelVersion'),(live.get('modelVersion'),dash.get('modelVersion')))
-for bad in ['Đọc hướng đi ngắn hạn','Hệ thống tách riêng','Mô hình chỉ vẽ','CHƯA CÓ','chưa khả dụng','MẪU MỎNG','không phải giá mục tiêu','PhoBERT + finance rules']:ck('UI excludes '+bad,bad not in html+js)
-for wanted in ['Mã HOSE cần theo dõi','YELLOW','RED','Tin tức & phản ứng giá','Backtest ngoài mẫu','Các yếu tố cần cân nhắc']:ck('UI contains '+wanted,wanted in html)
-for wanted in ["for(let i=1;i<=5;i++)","flow5(f,'foreign')","event5(n)","herdingCompression","newsFollowsPrice","forecast-dashboard-v11.json","[0,1,2,3,4,5]"]:ck('frontend contract '+wanted,wanted in js)
+    z=macro.get('groups',{}).get(st,{})
+    ck(f'macro {st} n>=100',z.get('n',0)>=100,z.get('n'))
+    ck(f'macro {st} all horizons',all((z.get('horizons',{}).get(str(h)) or {}).get('n',0)>=80 for h in range(1,6)),z.get('horizons'))
+
+# Canonical VMEWS risk lists and liquidity
+hose=[x for x in scan.get('ranking',[]) if x.get('exchange')=='HOSE']
+ck('canonical HOSE risk coverage >=220',len(hose)>=220,len(hose)); ck('dashboard canonical coverage >=220',dash.get('canonicalRiskCoverage',0)>=220,dash.get('canonicalRiskCoverage'))
+ck('YELLOW liquidity gate',all(float(x.get('liquidity30',0))>=500_000_000 for x in dash['lists']['yellow']),dash['lists']['yellow'][:3]); ck('RED liquidity gate',all(float(x.get('liquidity30',0))>=500_000_000 for x in dash['lists']['red']),dash['lists']['red'][:3]); ck('watchlist nonempty',len(dash['lists']['watch'])>=8,len(dash['lists']['watch']))
+
+# Immutable live monitor and frontend contract
+ck('live monitor PASS',live.get('status')=='PASS',live); ck('live no bad hashes',not live.get('badHashes'),live.get('badHashes')); ck('live five horizons',set(live.get('horizons',{}))==set('12345'),live.get('horizons',{}).keys()); ck('live origin exists',live.get('origins',0)>=1,live.get('origins')); ck('live model version matches',live.get('modelVersion')==dash.get('modelVersion'),(live.get('modelVersion'),dash.get('modelVersion')))
+for bad in ['Đọc hướng đi ngắn hạn','Hệ thống tách riêng','Mô hình chỉ vẽ','CHƯA CÓ','chưa khả dụng','MẪU MỎNG','không phải giá mục tiêu','PhoBERT + finance rules']:
+    ck('UI excludes '+bad,bad not in html+js)
+for wanted in ['Mã HOSE cần theo dõi','YELLOW','RED','Tin tức & phản ứng giá','Backtest ngoài mẫu','Các yếu tố cần cân nhắc']:
+    ck('UI contains '+wanted,wanted in html)
+for wanted in ["for(let i=1;i<=5;i++)","flow5(f,'foreign')","event5(n)","herdingCompression","newsFollowsPrice","forecast-dashboard-v11.json","[0,1,2,3,4,5]"]:
+    ck('frontend contract '+wanted,wanted in js)
 ck('fan chart interval fill',"fillStyle='rgba(226,171,70,.12)'" in js)
+
+# Serialization integrity
 for p in ['data/forecast-model-v11.json','data/forecast-current-v11.json','data/forecast-dashboard-v11.json','data/news-history-v11.json','data/sentiment-v11.json','data/news-event-study-v11.json','data/flow-v11.json','data/flow-study-v11.json','data/macro-study-v11.json']:
- t=(R/p).read_text(encoding='utf-8');ck(p+' finite JSON','NaN' not in t and 'Infinity' not in t)
-ck('production gate executes >=150 assertions',len(checks)>=150,len(checks));failed=[x for x in checks if not x[1]];report={'version':'VMEWS-V11-FINAL-GATE-1.2.0','tests':len(checks),'passed':len(checks)-len(failed),'failed':len(failed),'failures':[{'name':n,'detail':d} for n,_,d in failed]};(R/'data/forecast-v11-final-gate.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(report,ensure_ascii=False));sys.exit(1 if failed else 0)
+    t=(R/p).read_text(encoding='utf-8'); ck(p+' finite JSON','NaN' not in t and 'Infinity' not in t)
+ck('production gate executes >=150 assertions',len(checks)>=150,len(checks))
+failed=[x for x in checks if not x[1]]
+report={'version':'VMEWS-V11-FINAL-GATE-1.3.0','tests':len(checks),'passed':len(checks)-len(failed),'failed':len(failed),'failures':[{'name':n,'detail':d} for n,_,d in failed]}
+(R/'data/forecast-v11-final-gate.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+print(json.dumps(report,ensure_ascii=False)); sys.exit(1 if failed else 0)
