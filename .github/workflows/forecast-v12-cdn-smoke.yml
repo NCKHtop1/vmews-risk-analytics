@@ -1,0 +1,41 @@
+name: Forecast V12 immutable CDN smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'forecast-final.html'
+      - 'forecast-final-v12.js'
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-backtest-v12.json'
+      - 'data/data-audit-v12.json'
+      - 'data/phase-gates-v12.json'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for immutable CDN edge
+        run: sleep 8
+      - name: Verify immutable CDN assets
+        env:
+          ROOT: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for f in forecast-final.html forecast-final-v12.js data/forecast-model-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/phase-gates-v12.json; do
+            curl --fail --silent --show-error --retry 5 --retry-delay 4 "$ROOT/$f" -o "/tmp/$(basename "$f")"
+          done
+          grep -q 'VMEWS Forecast V12' /tmp/forecast-final.html
+          grep -q 'forecast-final-v12.js' /tmp/forecast-final.html
+          grep -q 'expectedPrice' /tmp/forecast-final-v12.js
+          python - <<'PY'
+          import json
+          g=json.load(open('/tmp/phase-gates-v12.json'))
+          m=json.load(open('/tmp/forecast-model-v12.json'))
+          assert g['status']=='PASS',g
+          assert m['promotion']['status']=='PASS',m['promotion']
+          print('V12 IMMUTABLE CDN PASS',m['version'])
+          PY
