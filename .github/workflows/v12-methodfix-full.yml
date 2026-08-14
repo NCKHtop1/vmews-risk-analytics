@@ -24,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 1}
+      - name: Capture immutable training source
+        run: echo "V12_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -184,10 +186,18 @@ jobs:
             data/flow-audit-v12.json
       - name: Persist only nine-phase validated snapshots
         if: success()
+        shell: bash
         run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$V12_SOURCE_SHA"
+          git fetch origin forecast-v12-methodfix
+          REMOTE_SHA=$(git rev-parse origin/forecast-v12-methodfix)
+          test "$REMOTE_SHA" = "$V12_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING TRAINING: source=$V12_SOURCE_SHA remote=$REMOTE_SHA; refusing to attach old-model artifacts to new code"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/embargo-gate-v12.json
           git commit -m 'Publish nine-phase validated V12 forecast snapshots [v12-model-data]'
-          git pull --rebase origin forecast-v12-methodfix
+          PUBLISHED_SHA=$(git rev-parse HEAD)
+          test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_SOURCE_SHA"
           git push origin HEAD:forecast-v12-methodfix
+          echo "V12_PUBLISHED_SHA=$PUBLISHED_SHA" >> "$GITHUB_ENV"
