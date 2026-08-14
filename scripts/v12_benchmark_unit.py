@@ -17,4 +17,16 @@ origin_i=market_dates.index(rec['availableDate']);target_i=market_dates.index(ta
 assert o.get('preBenchmarkAvailable5') is True and isinstance(o.get('preAR5'),float),o
 # Missing benchmark is abstention for both post- and pre-event abnormal return.
 articles2,outcomes2=ns['prepare_articles'](sentiment,{'FPT':rows},{'FPT':'Technology'},[]);assert outcomes2;z=outcomes2[0];assert z.get('benchmarkAvailable5') is False and z.get('benchmarkR5') is None and z.get('ar5') is None,z;assert z.get('preBenchmarkAvailable5') is False and z.get('preBenchmarkR5') is None and z.get('preAR5') is None,z
-print('V12 EXACT VNINDEX BENCHMARK UNIT PASS',{'origin':rec['availableDate'],'stockT5':target,'ordinalMarketT5':market_dates[origin_i+5],'benchmarkR5':o['benchmarkR5'],'ar5':o['ar5']})
+
+# Provider-local IDs may collide across tickers. Internal joins must remain ticker+newsId safe.
+vcb_rows=[{'date':d,'close':70+0.35*i,'modelClose':70+0.35*i,'volume':1800+i} for i,d in enumerate(market_dates)]
+collision_sent={'symbols':{
+ 'FPT':{'items':[{'id':'shared-id','publishedAt':pub,'title':'FPT xác nhận kết quả kinh doanh','label':'POS','sourceQuality':.8,'materiality':.7,'confidence':.8,'event':'EARNINGS','publisher':'FPT-SOURCE','sourceClass':'MAINSTREAM','stream':'MAIN'}]},
+ 'VCB':{'items':[{'id':'shared-id','publishedAt':pub,'title':'VCB xác nhận kết quả kinh doanh','label':'NEG','sourceQuality':.95,'materiality':.9,'confidence':.9,'event':'EARNINGS','publisher':'VCB-SOURCE','sourceClass':'OFFICIAL','stream':'OFFICIAL'}]}
+}}
+ca,co=ns['prepare_articles'](collision_sent,{'FPT':rows,'VCB':vcb_rows},{'FPT':'Technology','VCB':'Banking'},index);assert len(co)==2,(ca,co);by_symbol={x['symbol']:x for x in co};assert set(by_symbol)=={'FPT','VCB'},by_symbol
+assert ca['FPT'][0]['publisher']=='FPT-SOURCE' and ca['FPT'][0]['stream']=='MAIN',ca['FPT'][0]
+assert ca['VCB'][0]['publisher']=='VCB-SOURCE' and ca['VCB'][0]['stream']=='OFFICIAL',ca['VCB'][0]
+f_i=ca['FPT'][0]['availableIndex'];v_i=ca['VCB'][0]['availableIndex'];assert by_symbol['FPT']['matureDate5']==rows[f_i+5]['date'];assert by_symbol['VCB']['matureDate5']==vcb_rows[v_i+5]['date']
+artifact=ns['build_event_intelligence_artifact'](ca,co,{'FPT':rows,'VCB':vcb_rows});keys=[r['eventKey'] for r in artifact['records']];assert sorted(keys)==['FPT::shared-id','VCB::shared-id'],keys;assert artifact['summary']['duplicateEventKeys']==0,artifact['summary']
+print('V12 EXACT VNINDEX BENCHMARK UNIT PASS',{'origin':rec['availableDate'],'stockT5':target,'ordinalMarketT5':market_dates[origin_i+5],'benchmarkR5':o['benchmarkR5'],'ar5':o['ar5'],'collisionKeys':keys})
