@@ -25,7 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 55
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -37,29 +37,56 @@ jobs:
           python-version: '3.12'
       - name: Install data dependencies
         run: pip install --disable-pip-version-check -q -r requirements.txt
-      - name: Build HOSE resolver snapshot
+      - name: Build universal HOSE continuity mirror
         run: python scripts/update_hose_detail_cache_runner.py
-      - name: Validate HOSE route coverage
+      - name: Validate route and forecast coverage
         run: |
           python - <<'PY'
-          import json
+          import json, pathlib
+          root=pathlib.Path('.')
           p=json.load(open('data/hose-fallbacks/manifest.json',encoding='utf-8'))
-          assert p.get('version')=='VMEWS-HOSE-RESOLVER-1.0.0',p
+          assert p.get('version')=='VMEWS-HOSE-RESOLVER-1.1.0',p.get('version')
           assert p.get('hoseReference',0)>=250,p
           assert p.get('routeCoverageRatio',0)>=0.999,p
+          assert p.get('cachedSymbols')==p.get('resolved'),p
           assert not p.get('unresolved'),p.get('unresolved')
           assert p.get('deepResearchCoverageRatio',0)>=0.90,p
-          for s in p.get('fallbackSymbols',[]):
-              q=json.load(open(f'data/hose-fallbacks/{s}.json',encoding='utf-8'))
-              assert q.get('symbol')==s and q.get('mode')=='detail' and len(q.get('history',[]))>=1,(s,len(q.get('history',[])))
+          assert p.get('forecastMinRows')==520,p
+          assert p.get('cacheHistoryRows',0)>=520,p
+
+          eligible=set(p.get('forecastEligibleSymbols') or [])
+          for s,route in p.get('routes',{}).items():
+              fp=root/'data'/'hose-fallbacks'/f'{s}.json'
+              assert fp.exists(),f'missing CDN mirror {s}'
+              q=json.load(open(fp,encoding='utf-8'))
+              assert q.get('symbol')==s and q.get('mode')=='detail',(s,q.get('symbol'),q.get('mode'))
+              hist=q.get('history') or []
+              assert len(hist)>=1,(s,'empty history')
+              assert q.get('modelAsOf')==hist[-1].get('date'),(s,q.get('modelAsOf'),hist[-1].get('date'))
+              if route.get('forecastEligible'):
+                  assert s in eligible,(s,'eligible route missing from manifest list')
+                  assert len(hist)>=520,(s,len(hist))
+                  assert q.get('dataQuality',{}).get('forecastEligible') is True,s
+
+          # Mandatory operating set: these must never depend solely on a live API call.
+          for s in ['FPT','FRT','PNJ','VCB','HPG','MBB']:
+              assert s in p.get('routes',{}),f'{s} missing route'
+              fp=root/'data'/'hose-fallbacks'/f'{s}.json'
+              assert fp.exists(),f'{s} missing mirror'
+              q=json.load(open(fp,encoding='utf-8'))
+              source_rows=int(q.get('dataQuality',{}).get('totalSourceRows') or len(q.get('history') or []))
+              if source_rows>=520:
+                  assert len(q.get('history') or [])>=520,(s,len(q.get('history') or []))
+
           report=(
             '# VMEWS HOSE UNIVERSAL RESOLVER PASS\n\n'
             f"HOSE reference: {p.get('hoseReference')}\n"
-            f"Primary Yahoo deep route: {p.get('primaryYahooDeep')}\n"
-            f"CDN Vnstock deep fallback: {p.get('cdnVnstockDeep')}\n"
-            f"CDN limited-history fallback: {p.get('cdnLimitedHistory')}\n"
+            f"Primary Yahoo + CDN mirror: {p.get('primaryYahooDeep')}\n"
+            f"CDN Vnstock deep: {p.get('cdnVnstockDeep')}\n"
+            f"Limited-history observations: {p.get('cdnLimitedHistory')}\n"
+            f"Forecast eligible (>=520 EOD): {p.get('forecastEligibleCount')}\n"
             f"Route coverage: {p.get('routeCoverageRatio',0):.1%}\n"
-            f"Full deep-research coverage: {p.get('deepResearchCoverageRatio',0):.1%}\n"
+            f"Deep-research coverage: {p.get('deepResearchCoverageRatio',0):.1%}\n"
             f"Unresolved: {len(p.get('unresolved',[]))}\n"
           )
           open('hose-resolver-report.md','w',encoding='utf-8').write(report)
@@ -67,12 +94,12 @@ jobs:
           PY
       - name: Publish resolver diagnostic
         run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS HOSE RESOLVER PASS ${GITHUB_SHA::7}" --body-file hose-resolver-report.md
-      - name: Commit refreshed fallback data
+      - name: Commit refreshed universal mirror
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/hose-fallbacks
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh VMEWS HOSE detail fallback cache [data-only]'
+          git commit -m 'Refresh universal VMEWS HOSE continuity mirror [data-only]'
           git pull --rebase origin main
           git push origin HEAD:main
