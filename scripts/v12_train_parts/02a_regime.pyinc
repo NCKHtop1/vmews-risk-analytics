@@ -1,5 +1,5 @@
 def sealed_regime_audit(panel,fit,h):
-    idx=np.asarray(fit.get('auditIndices') or [],int)
+    raw_idx=fit.get('auditIndices');idx=np.asarray(raw_idx if raw_idx is not None else [],int)
     if len(idx)==0:return {}
     y=np.asarray([panel[k].get('y'+str(h),np.nan) for k in idx],float);score=np.asarray(fit['auditScore'],float);p=np.asarray(fit['auditP'],float);med=np.asarray(fit['auditMed'],float);lo=np.asarray(fit['auditLo'],float);hi=np.asarray(fit['auditHi'],float);D=np.asarray([panel[k]['date'] for k in idx]);breadth=np.asarray([float(panel[k].get('breadth20',.5)) for k in idx]);hv=np.asarray([float(panel[k].get('highVolShare',0)) for k in idx]);turn=np.asarray([float(panel[k].get('avgTurnover30',0)) for k in idx]);risk=np.asarray([float(panel[k].get('riskShare',0)) for k in idx]);tv=turn[np.isfinite(turn)];q33=float(np.quantile(tv,.33)) if len(tv) else 0.;q67=float(np.quantile(tv,.67)) if len(tv) else 0.;hmed=float(np.median(hv)) if len(hv) else 0.;rmed=float(np.median(risk)) if len(risk) else 0.
     masks={
