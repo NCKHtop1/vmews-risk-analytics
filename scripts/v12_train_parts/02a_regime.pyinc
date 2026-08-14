@@ -1,0 +1,24 @@
+def sealed_regime_audit(panel,fit,h):
+    idx=np.asarray(fit.get('auditIndices') or [],int)
+    if len(idx)==0:return {}
+    y=np.asarray([panel[k].get('y'+str(h),np.nan) for k in idx],float);score=np.asarray(fit['auditScore'],float);p=np.asarray(fit['auditP'],float);med=np.asarray(fit['auditMed'],float);lo=np.asarray(fit['auditLo'],float);hi=np.asarray(fit['auditHi'],float);D=np.asarray([panel[k]['date'] for k in idx]);breadth=np.asarray([float(panel[k].get('breadth20',.5)) for k in idx]);hv=np.asarray([float(panel[k].get('highVolShare',0)) for k in idx]);turn=np.asarray([float(panel[k].get('avgTurnover30',0)) for k in idx]);risk=np.asarray([float(panel[k].get('riskShare',0)) for k in idx]);tv=turn[np.isfinite(turn)];q33=float(np.quantile(tv,.33)) if len(tv) else 0.;q67=float(np.quantile(tv,.67)) if len(tv) else 0.;hmed=float(np.median(hv)) if len(hv) else 0.;rmed=float(np.median(risk)) if len(risk) else 0.
+    masks={
+      'BREADTH_STRONG':breadth>=.60,
+      'BREADTH_WEAK':breadth<=.40,
+      'HIGH_VOL_REGIME':hv>=hmed,
+      'LOW_VOL_REGIME':hv<hmed,
+      'HIGH_LIQUIDITY':turn>=q67,
+      'LOW_LIQUIDITY':turn<=q33,
+      'HIGH_MARKET_RISK':risk>=rmed,
+      'LOW_MARKET_RISK':risk<rmed,
+    }
+    out={}
+    for name,m in masks.items():
+        good=m&np.isfinite(y)&np.isfinite(score)
+        if good.sum()>=500:out[name]=audit_metrics(y[good],score[good],p[good],med[good],lo[good],hi[good],D[good])
+    years=sorted(set(str(d)[:4] for d in D))
+    out['BY_YEAR']={}
+    for yr in years:
+        m=np.asarray([str(d).startswith(yr) for d in D])&np.isfinite(y)&np.isfinite(score)
+        if m.sum()>=500:out['BY_YEAR'][yr]=audit_metrics(y[m],score[m],p[m],med[m],lo[m],hi[m],D[m])
+    return out
