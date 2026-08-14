@@ -1,0 +1,58 @@
+name: V12 HOSE official API route mapping probe
+on:
+  push:
+    branches: [forecast-v12-rumor-hardening]
+    paths: ['.github/workflows/v12-hose-api-route-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download HSX app bundle and test official news bases
+        run: |
+          set -euo pipefail
+          curl -L --fail --silent --show-error -A 'Mozilla/5.0 VMEWS-Research/12' https://www.hsx.vn/static/js/main.d430e296.js -o /tmp/hsx.js
+          python - <<'PY'
+          import re
+          s=open('/tmp/hsx.js',encoding='utf-8').read()
+          for needle in ['/news/cate?','/news/homepage?','/news/newstype/','/news/securities/']:
+              print('\nNEEDLE',needle)
+              start=0
+              for n in range(8):
+                  i=s.find(needle,start)
+                  if i<0:break
+                  print('---',i,'---')
+                  print(s[max(0,i-600):i+900])
+                  start=i+1
+          print('\nAPI BASE DEFINITIONS')
+          for m in re.finditer(r'https://api\.hsx\.vn/[a-z]+/api/v1',s):
+              print(m.start(),s[max(0,m.start()-260):m.end()+260])
+          PY
+          python - <<'PY'
+          import json,urllib.request,urllib.parse
+          bases=['a','c','i','l','m','mk','n','q','s']
+          paths=[
+            '/news/cate?pageIndex=1&pageSize=5&startDate=2026-08-01&endDate=2026-08-14&aliasCate=tin-to-chuc-niem-yet',
+            '/news/cate?pageIndex=1&pageSize=5&startDate=2026-08-01&endDate=2026-08-14&aliasCate=thong-tin-cong-bo',
+            '/news/homepage?pageIndex=1&pageSize=5&startDate=2026-08-01&endDate=2026-08-14',
+            '/news/newstype/-1/1?pageIndex=1&pageSize=5&startDate=2026-08-01&endDate=2026-08-14',
+          ]
+          results=[]
+          for b in bases:
+            for p in paths:
+              u=f'https://api.hsx.vn/{b}/api/v1'+p
+              try:
+                req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research/12','Accept':'application/json','Origin':'https://www.hsx.vn','Referer':'https://www.hsx.vn/'})
+                with urllib.request.urlopen(req,timeout=10) as r:
+                  body=r.read(3000).decode('utf-8','ignore');results.append({'url':u,'status':r.status,'ct':r.headers.get('content-type'),'body':body[:1000]})
+              except Exception as e:
+                code=getattr(e,'code',None);body=''
+                try:body=e.read(1000).decode('utf-8','ignore')
+                except:pass
+                results.append({'url':u,'status':code,'error':f'{type(e).__name__}: {e}','body':body[:500]})
+          print(json.dumps(results,ensure_ascii=False,indent=2))
+          ok=[x for x in results if x.get('status')==200]
+          print('SUCCESS_COUNT',len(ok))
+          for x in ok:print('SUCCESS',x['url'],x.get('body','')[:500])
+          PY
