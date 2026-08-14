@@ -1,38 +1,17 @@
-name: Update VNINDEX market context
+name: Legacy VNINDEX market context (manual only)
 
+# Gemini is the target external live provider. This workflow is intentionally
+# manual-only so the old public market adapter cannot continue on a schedule.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/update_market_context.py'
-      - '.github/workflows/update-market-context.yml'
-  schedule:
-    - cron: '20 10 * * 1-5'
 
 permissions:
-  contents: write
-
-concurrency:
-  group: vmews-market-context
-  cancel-in-progress: true
+  contents: read
 
 jobs:
-  refresh:
+  legacy-disabled:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Generate market context
-        run: python scripts/update_market_context.py
-      - name: Commit snapshot
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/market-context.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh VNINDEX market context snapshot'
-          git push
+      - run: |
+          echo "Legacy market-context refresh is disabled."
+          echo "Use the server-side Gemini live provider after GEMINI_API_KEY is configured."

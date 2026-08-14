@@ -1,49 +1,17 @@
-name: Update V10 news and event study
+name: Legacy research news refresh (manual only)
+
+# Gemini + Google Search grounding is the target external live news provider.
+# Automatic Google News RSS refreshes are intentionally disabled.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '17 */12 * * *'
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/update_research_news_v10.py'
-      - 'scripts/update_sentiment_v10.py'
-      - 'scripts/build_news_event_study.py'
-      - '.github/workflows/update-research-news.yml'
+
 permissions:
-  contents: write
-concurrency:
-  group: vmews-data-writer-${{ github.ref_name }}
-  cancel-in-progress: false
-  queue: max
+  contents: read
+
 jobs:
-  update:
+  legacy-disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install -q numpy scipy scikit-learn torch transformers pyvi
-      - run: python scripts/update_research_news_v10.py
-      - run: python scripts/update_sentiment_v10.py
-      - run: python scripts/build_news_event_study.py
-      - name: Commit V10 news evidence
-        run: |
-          set -euo pipefail
-          git config user.name 'vmews-news-v10-bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git add data/research-news-v10.json data/sentiment-v10.json data/news-event-study.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Update V10 news and event-study snapshot [data-only]'
-          for attempt in 1 2 3 4 5; do
-            git fetch origin main
-            git rebase origin/main
-            if git push origin HEAD:main; then exit 0; fi
-            git rebase --abort || true
-            sleep $((attempt * 3))
-          done
-          exit 1
+      - run: |
+          echo "Legacy RSS news refresh is disabled."
+          echo "Use the server-side Gemini live provider after GEMINI_API_KEY is configured."
