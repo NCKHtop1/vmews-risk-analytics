@@ -1,0 +1,56 @@
+{
+  "version": "VMEWS-LIVE-FORECAST-11.0.0",
+  "generatedAt": "2026-08-14T10:07:48.276581+00:00",
+  "currentAsOf": "2026-08-14",
+  "modelVersion": "VMEWS-FORECAST-11.0.0",
+  "origins": 1,
+  "badHashes": [],
+  "horizons": {
+    "1": {
+      "n": 0,
+      "directionAccuracy": null,
+      "medianMAE": null,
+      "zeroMAE": null,
+      "medianMAEImprove": null,
+      "alphaRankIC": null,
+      "evidence": "ACCUMULATING"
+    },
+    "2": {
+      "n": 0,
+      "directionAccuracy": null,
+      "medianMAE": null,
+      "zeroMAE": null,
+      "medianMAEImprove": null,
+      "alphaRankIC": null,
+      "evidence": "ACCUMULATING"
+    },
+    "3": {
+      "n": 0,
+      "directionAccuracy": null,
+      "medianMAE": null,
+      "zeroMAE": null,
+      "medianMAEImprove": null,
+      "alphaRankIC": null,
+      "evidence": "ACCUMULATING"
+    },
+    "4": {
+      "n": 0,
+      "directionAccuracy": null,
+      "medianMAE": null,
+      "zeroMAE": null,
+      "medianMAEImprove": null,
+      "alphaRankIC": null,
+      "evidence": "ACCUMULATING"
+    },
+    "5": {
+      "n": 0,
+      "directionAccuracy": null,
+      "medianMAE": null,
+      "zeroMAE": null,
+      "medianMAEImprove": null,
+      "alphaRankIC": null,
+      "evidence": "ACCUMULATING"
+    }
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,88 @@
+name: Forecast V11 final build
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v11-production]
+    paths:
+      - '.github/workflows/forecast-v11-final.yml'
+      - 'v11-final-trigger.txt'
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: vmews-v11-production-data
+  cancel-in-progress: true
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[v11-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Restore complete V11 evidence snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: forecast-v11-final-evidence-31790884093
+          path: /tmp/v11-final
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: NCKHtop1/vmews-risk-analytics
+          run-id: 31790884093
+      - name: Install and sanitize final evidence
+        run: |
+          for f in forecast-model-v11.json forecast-current-v11.json forecast-dashboard-v11.json news-history-v11.json sentiment-v11.json news-event-study-v11.json flow-v11.json flow-study-v11.json macro-study-v11.json market-scan.json; do
+            src=$(find /tmp/v11-final -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/$f"
+          done
+          mkdir -p data/forecast-live-v11
+          src=$(find /tmp/v11-final -path '*/forecast-live-v11/summary.json' -type f | head -1); test -n "$src"; cp "$src" data/forecast-live-v11/summary.json
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+          def clean(x):
+              if isinstance(x,float) and not math.isfinite(x): return None
+              if isinstance(x,str): return x.replace('NaN','N/A').replace('Infinity','Inf')
+              if isinstance(x,dict): return {k:clean(v) for k,v in x.items()}
+              if isinstance(x,list): return [clean(v) for v in x]
+              return x
+          for name in ['news-history-v11.json','sentiment-v11.json','news-event-study-v11.json']:
+              p=Path('data')/name
+              z=json.loads(p.read_text(encoding='utf-8'))
+              p.write_text(json.dumps(clean(z),ensure_ascii=False,separators=(',',':'),allow_nan=False),encoding='utf-8')
+          PY
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Frontend syntax
+        run: node --check forecast-final-v11.js
+      - name: Final production acceptance gate
+        run: python scripts/forecast_v11_final_gate.py
+      - name: Upload final evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-v11-final-evidence-${{ github.run_id }}
+          retention-days: 14
+          path: |
+            data/forecast-model-v11.json
+            data/forecast-current-v11.json
+            data/forecast-dashboard-v11.json
+            data/news-history-v11.json
+            data/sentiment-v11.json
+            data/news-event-study-v11.json
+            data/flow-v11.json
+            data/flow-study-v11.json
+            data/macro-study-v11.json
+            data/forecast-v11-final-gate.json
+            data/forecast-live-v11/
+            data/market-scan.json
+      - name: Persist validated production snapshots
+        if: success()
+        run: |
+          git config user.name github-actions-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/forecast-model-v11.json data/forecast-current-v11.json data/forecast-dashboard-v11.json data/news-event-study-v11.json data/flow-study-v11.json data/macro-study-v11.json data/forecast-v11-final-gate.json data/forecast-live-v11 data/market-scan.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh V11 final snapshots [v11-data]'
+          git pull --rebase origin forecast-v11-production
+          git push origin HEAD:forecast-v11-production

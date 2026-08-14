@@ -10,9 +10,6 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / 'data' / 'hose-fallbacks'
 OUT.mkdir(parents=True, exist_ok=True)
 VN_TZ = timezone(timedelta(hours=7))
-MIN_DEEP_ROWS = 240
-MIN_FORECAST_ROWS = 520
-CACHE_HISTORY_ROWS = 900
 
 
 def load_module(name, path):
@@ -62,15 +59,9 @@ def yahoo_probe(meta):
     sym = meta['symbol']
     try:
         rows, _, host = core.yahoo_chart(sym, '10y', 5)
-        return sym, rows, {
-            'source': 'Yahoo Finance', 'provider': host, 'symbol': sym,
-            'rows': len(rows), 'ok': True
-        }
+        return sym, rows, {'source': 'Yahoo Finance', 'provider': host, 'symbol': sym, 'rows': len(rows), 'ok': True}
     except Exception as e:
-        return sym, None, {
-            'source': 'Yahoo Finance', 'symbol': sym, 'ok': False,
-            'error': str(e)[:240]
-        }
+        return sym, None, {'source': 'Yahoo Finance', 'symbol': sym, 'ok': False, 'error': str(e)[:240]}
 
 
 def vnstock_once(sym):
@@ -81,8 +72,7 @@ def vnstock_once(sym):
     df = Market().equity(sym).ohlcv(start=start, end=end, interval='1D', count=4000)
     rows, scale = price_history._normalize_df(df, sym, 'Vnstock Unified Market')
     return rows, {
-        'source': 'Vnstock',
-        'provider': 'Unified Market equity OHLCV (KBS/VCI routing)',
+        'source': 'Vnstock', 'provider': 'Unified Market equity OHLCV (KBS/VCI routing)',
         'symbol': sym, 'rows': len(rows), 'ok': True,
         'unitNormalization': 'x1000 to VND' if scale == 1000.0 else 'already VND'
     }
@@ -92,10 +82,8 @@ def simple_current(rows):
     c = [float(x['close']) for x in rows]
     i = len(c) - 1
     last = c[-1]
-
     def ret(n):
         return last / c[-1-n] - 1 if len(c) > n and c[-1-n] > 0 else None
-
     peak = max(c[-60:]) if c else last
     return {
         'i': i, 'date': rows[-1]['date'], 'close': last,
@@ -106,7 +94,7 @@ def simple_current(rows):
     }
 
 
-def full_payload(meta, rows, audit, route):
+def full_payload(meta, rows, audit):
     cur, hz, fs = core.technical_state(rows)
     try:
         mp = json.loads((ROOT / 'data' / 'market-context.json').read_text(encoding='utf-8'))
@@ -115,104 +103,60 @@ def full_payload(meta, rows, audit, route):
         market = {'score': 50, 'available': False, 'reason': 'Static market context unavailable'}
     mods = {
         'technical': {'score': cur['technical'], 'available': True, 'drivers': cur.get('technicalDrivers', {})},
-        'analog': hz['20'],
-        'market': market,
-        'macro': {'score': 50, 'available': False, 'note': 'Optional context omitted from immutable CDN mirror.'},
-        'sentiment': {'score': 50, 'available': False, 'note': 'Event intelligence is loaded from its own PIT snapshot.'},
-        'fundamental': {'score': 50, 'available': False, 'note': 'Optional current fundamentals are not copied into PIT price history.'}
+        'analog': hz['20'], 'market': market,
+        'macro': {'score': 50, 'available': False, 'note': 'Excluded from CDN fallback cache.'},
+        'sentiment': {'score': 50, 'available': False, 'note': 'Merged from the browser research-news snapshot when available.'},
+        'fundamental': {'score': 50, 'available': False, 'note': 'Excluded from static fallback; current API detail is preferred when available.'}
     }
     score, conf = radar.aggregate(mods)
     phase, color, state = radar.classify(score, cur, conf)
     cutoff = cur['i']
-    history = rows[-CACHE_HISTORY_ROWS:]
     return {
-        'version': 'VMEWS-HOSE-RESOLVER-1.1.0',
-        'mode': 'detail', 'symbol': meta['symbol'], 'name': meta['name'], 'exchange': 'HOSE',
-        'request': {'from': None, 'to': None, 'asOf': None},
+        'version': 'VMEWS-HOSE-FALLBACK-1.0.0', 'mode': 'detail', 'symbol': meta['symbol'], 'name': meta['name'],
+        'exchange': 'HOSE', 'request': {'from': None, 'to': None, 'asOf': None},
         'fetchedAt': datetime.now(timezone.utc).isoformat(), 'modelAsOf': cur['date'],
-        'quote': None, 'score': score, 'confidence': conf, 'phase': phase,
-        'color': color, 'state': state, 'effectiveScore': score,
-        'liveOverlay': {'available': False, 'score': score, 'intradayReturn': None},
+        'quote': None, 'score': score, 'confidence': conf, 'phase': phase, 'color': color, 'state': state,
+        'effectiveScore': score, 'liveOverlay': {'available': False, 'score': score, 'intradayReturn': None},
         'reasons': radar.reasons(mods), 'current': cur, 'horizons': hz, 'modules': mods,
-        'news': [], 'fundamentals': {}, 'history': history,
-        'scoreHistory': [
-            {'date': f['date'], 'technical': f['technical']}
-            for f in fs if f['i'] <= cutoff and f['date'] >= history[0]['date']
-        ],
-        'crashReplay': radar.replay(rows, fs, cutoff),
-        'dataQuality': {
-            **radar.pct_quality(rows, audit),
-            'forecastEligible': len(rows) >= MIN_FORECAST_ROWS,
-            'forecastMinRows': MIN_FORECAST_ROWS,
-            'cachedHistoryRows': len(history),
-            'totalSourceRows': len(rows)
-        },
-        'warnings': [], 'audit': [audit],
-        'resolver': {'route': route, 'immutableMirror': True, 'historyLimit': CACHE_HISTORY_ROWS},
-        'source': {
-            'price': f"{audit.get('source')} · {audit.get('provider')}",
-            'quote': 'Not used', 'market': 'Static VMEWS VNINDEX context snapshot',
-            'fundamental': 'Separate optional current context',
-            'sentiment': 'Separate PIT event-intelligence snapshot',
-            'macro': 'Separate context; excluded when unavailable'
-        }
+        'news': [], 'fundamentals': {}, 'history': rows[-1800:],
+        'scoreHistory': [{'date': f['date'], 'technical': f['technical']} for f in fs if f['i'] <= cutoff],
+        'crashReplay': radar.replay(rows, fs, cutoff), 'dataQuality': radar.pct_quality(rows, audit),
+        'warnings': ['Universal HOSE CDN fallback used because the primary Yahoo detail route was unavailable or insufficient.'],
+        'audit': [audit],
+        'source': {'price': f"{audit.get('source')} · {audit.get('provider')}", 'quote': 'Not used',
+                   'market': 'Static VMEWS VNINDEX context snapshot', 'fundamental': 'Excluded in static fallback',
+                   'sentiment': 'Browser research-news merge when available', 'macro': 'Excluded in static fallback'}
     }
 
 
-def limited_payload(meta, rows, audit, route):
+def limited_payload(meta, rows, audit):
     cur = simple_current(rows)
-    unavailable = {
-        'score': 50, 'available': False,
-        'reason': 'Insufficient completed history for the validated forecast model.'
-    }
-    history = rows[-CACHE_HISTORY_ROWS:]
+    unavailable = {'score': 50, 'available': False, 'reason': 'Insufficient completed history for the full structural/deep model stack.'}
     return {
-        'version': 'VMEWS-HOSE-RESOLVER-1.1.0', 'mode': 'detail',
-        'symbol': meta['symbol'], 'name': meta['name'], 'exchange': 'HOSE',
-        'request': {'from': None, 'to': None, 'asOf': None},
+        'version': 'VMEWS-HOSE-FALLBACK-1.0.0', 'mode': 'detail', 'symbol': meta['symbol'], 'name': meta['name'],
+        'exchange': 'HOSE', 'request': {'from': None, 'to': None, 'asOf': None},
         'fetchedAt': datetime.now(timezone.utc).isoformat(), 'modelAsOf': cur['date'], 'quote': None,
-        'score': 50, 'confidence': 0.0, 'phase': 'INSUFFICIENT_HISTORY',
-        'color': 'GRAY', 'state': 'REVIEW', 'effectiveScore': 50,
-        'liveOverlay': {'available': False, 'score': 50, 'intradayReturn': None},
+        'score': 50, 'confidence': 0.0, 'phase': 'INSUFFICIENT_HISTORY', 'color': 'GRAY', 'state': 'REVIEW',
+        'effectiveScore': 50, 'liveOverlay': {'available': False, 'score': 50, 'intradayReturn': None},
         'reasons': ['Limited-history observation only'], 'current': cur,
         'horizons': {'5': unavailable, '20': unavailable, '60': unavailable},
-        'modules': {
-            'technical': unavailable, 'analog': unavailable, 'market': unavailable,
-            'macro': unavailable, 'sentiment': unavailable, 'fundamental': unavailable
-        },
-        'news': [], 'fundamentals': {}, 'history': history,
-        'scoreHistory': [], 'crashReplay': [],
-        'dataQuality': {
-            'status': 'REVIEW', 'rows': len(rows), 'start': rows[0]['date'], 'end': rows[-1]['date'],
-            'coverageRatio': min(1.0, len(rows) / MIN_DEEP_ROWS), 'largeGaps': 0,
-            'intradayBarExcluded': False, 'requestAudit': [audit],
-            'forecastEligible': False, 'forecastMinRows': MIN_FORECAST_ROWS,
-            'cachedHistoryRows': len(history), 'totalSourceRows': len(rows)
-        },
-        'warnings': [f'Only {len(rows)} completed sessions are available; numerical forecast is intentionally withheld.'],
-        'audit': [audit], 'resolver': {'route': route, 'immutableMirror': True, 'historyLimit': CACHE_HISTORY_ROWS},
-        'source': {
-            'price': f"{audit.get('source')} · {audit.get('provider')}", 'quote': 'Not used',
-            'market': 'Excluded for limited-history observation', 'fundamental': 'Excluded',
-            'sentiment': 'Excluded', 'macro': 'Excluded'
-        }
+        'modules': {'technical': unavailable, 'analog': unavailable, 'market': unavailable, 'macro': unavailable,
+                    'sentiment': unavailable, 'fundamental': unavailable},
+        'news': [], 'fundamentals': {}, 'history': rows[-1800:], 'scoreHistory': [], 'crashReplay': [],
+        'dataQuality': {'status': 'REVIEW', 'rows': len(rows), 'start': rows[0]['date'], 'end': rows[-1]['date'],
+                        'coverageRatio': min(1.0, len(rows) / 240.0), 'largeGaps': 0, 'intradayBarExcluded': False,
+                        'requestAudit': [audit]},
+        'warnings': [f'Only {len(rows)} completed sessions are available. Price chart is shown, but full RF/ANFIS/VAE/LSTM validation is not considered reliable.'],
+        'audit': [audit],
+        'source': {'price': f"{audit.get('source')} · {audit.get('provider')}", 'quote': 'Not used',
+                   'market': 'Excluded for limited-history fallback', 'fundamental': 'Excluded', 'sentiment': 'Excluded', 'macro': 'Excluded'}
     }
-
-
-def write_payload(meta, rows, audit, route):
-    payload = full_payload(meta, rows, audit, route) if len(rows) >= MIN_DEEP_ROWS else limited_payload(meta, rows, audit, route)
-    (OUT / f"{meta['symbol']}.json").write_text(
-        json.dumps(payload, ensure_ascii=False, separators=(',', ':'), allow_nan=False),
-        encoding='utf-8'
-    )
-    return payload
 
 
 def main():
     universe = hose_universe()
-
-    # Rebuild the mirror atomically at the dataset level: stale symbol files from
-    # previous universes must not survive and masquerade as current PIT data.
+    by_symbol = {x['symbol']: x for x in universe}
+    # Keep only fallback files; Yahoo-supported names continue to use the primary API.
     for p in OUT.glob('*.json'):
         if p.name != 'manifest.json':
             try:
@@ -227,99 +171,61 @@ def main():
             sym, rows, audit = f.result()
             yahoo[sym] = (rows, audit)
 
-    routes = {}
-    unresolved = []
-    primary = []
+    primary_deep = []
+    needs_fallback = []
+    for m in universe:
+        rows, audit = yahoo[m['symbol']]
+        if rows is not None and len(rows) >= 240:
+            primary_deep.append(m['symbol'])
+        else:
+            needs_fallback.append(m)
+
     fallback_deep = []
     fallback_limited = []
-    forecast_eligible = []
+    unresolved = []
+    routes = {s: {'route': 'PRIMARY_YAHOO', 'rows': len(yahoo[s][0]), 'source': 'Yahoo Finance'} for s in primary_deep}
 
-    # IMPORTANT: Yahoo-primary symbols are also written to CDN. The old resolver
-    # only recorded PRIMARY_YAHOO in the manifest and created no file. A transient
-    # API/provider failure then looked like "insufficient EOD" in the browser.
-    for meta in universe:
+    for idx, meta in enumerate(needs_fallback):
         sym = meta['symbol']
-        rows, audit = yahoo.get(sym, (None, {'source': 'Yahoo Finance', 'symbol': sym, 'ok': False}))
-        if rows and len(rows) >= MIN_DEEP_ROWS:
-            try:
-                payload = write_payload(meta, rows, audit, 'PRIMARY_YAHOO_WITH_CDN_MIRROR')
-                primary.append(sym)
-                if payload['dataQuality']['forecastEligible']:
-                    forecast_eligible.append(sym)
-                routes[sym] = {
-                    'route': 'PRIMARY_YAHOO_WITH_CDN_MIRROR', 'rows': len(rows),
-                    'cachedRows': len(payload['history']), 'forecastEligible': payload['dataQuality']['forecastEligible'],
-                    'source': audit.get('source'), 'provider': audit.get('provider')
-                }
-                continue
-            except Exception as e:
-                # Try the independent source rather than publishing a broken mirror.
-                audit = {**audit, 'mirrorError': str(e)[:220]}
-
+        rows = None
+        audit = None
         try:
-            rows2, audit2 = vnstock_once(sym)
-            if not rows2:
-                raise RuntimeError('Vnstock returned no completed rows')
-            route = 'CDN_VNSTOCK_DEEP' if len(rows2) >= MIN_DEEP_ROWS else 'CDN_LIMITED_HISTORY'
-            payload = write_payload(meta, rows2, audit2, route)
-            if len(rows2) >= MIN_DEEP_ROWS:
-                fallback_deep.append(sym)
-            else:
-                fallback_limited.append(sym)
-            if payload['dataQuality']['forecastEligible']:
-                forecast_eligible.append(sym)
-            routes[sym] = {
-                'route': route, 'rows': len(rows2), 'cachedRows': len(payload['history']),
-                'forecastEligible': payload['dataQuality']['forecastEligible'],
-                'source': audit2.get('source'), 'provider': audit2.get('provider')
-            }
-        except BaseException as e:
-            # A short Yahoo history can still be published for chart-only observation.
-            yr, ya = yahoo.get(sym, (None, {}))
+            rows, audit = vnstock_once(sym)
+        except Exception as e:
+            yr, ya = yahoo[sym]
             if yr:
-                try:
-                    payload = write_payload(meta, yr, ya, 'CDN_LIMITED_YAHOO_HISTORY')
+                rows, audit = yr, ya
+            else:
+                unresolved.append({'symbol': sym, 'error': str(e)[:260], 'yahoo': ya.get('error')})
+        if rows:
+            try:
+                payload = full_payload(meta, rows, audit) if len(rows) >= 240 else limited_payload(meta, rows, audit)
+                (OUT / f'{sym}.json').write_text(json.dumps(payload, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
+                if len(rows) >= 240:
+                    fallback_deep.append(sym)
+                    route = 'CDN_VNSTOCK_DEEP'
+                else:
                     fallback_limited.append(sym)
-                    routes[sym] = {
-                        'route': 'CDN_LIMITED_YAHOO_HISTORY', 'rows': len(yr),
-                        'cachedRows': len(payload['history']), 'forecastEligible': False,
-                        'source': ya.get('source'), 'provider': ya.get('provider')
-                    }
-                    continue
-                except Exception as e2:
-                    e = RuntimeError(f'{e}; limited Yahoo payload failed: {e2}')
-            unresolved.append({'symbol': sym, 'error': str(e)[:300], 'yahoo': ya.get('error') if isinstance(ya, dict) else None})
-        # Guest Vnstock requests are deliberately slow; the runner adds a stronger throttle.
-        time.sleep(0.2)
+                    route = 'CDN_LIMITED_HISTORY'
+                routes[sym] = {'route': route, 'rows': len(rows), 'source': audit.get('source'), 'provider': audit.get('provider')}
+            except Exception as e:
+                unresolved.append({'symbol': sym, 'error': f'payload: {e}'[:260]})
+        # Guest limit is 20 requests/minute. Stay below it deliberately.
+        if idx < len(needs_fallback) - 1:
+            time.sleep(3.25)
 
     resolved = len(routes)
     manifest = {
-        'version': 'VMEWS-HOSE-RESOLVER-1.1.0',
-        'generatedAt': datetime.now(timezone.utc).isoformat(),
-        'hoseReference': len(universe),
-        'primaryYahooDeep': len(primary),
-        'cdnVnstockDeep': len(fallback_deep),
-        'cdnLimitedHistory': len(fallback_limited),
-        'resolved': resolved,
-        'cachedSymbols': resolved,
-        'routeCoverageRatio': resolved / len(universe) if universe else 0,
-        'deepResearchCoverageRatio': (len(primary) + len(fallback_deep)) / len(universe) if universe else 0,
-        'forecastEligibleCount': len(set(forecast_eligible)),
-        'forecastEligibleSymbols': sorted(set(forecast_eligible)),
-        'forecastMinRows': MIN_FORECAST_ROWS,
-        'cacheHistoryRows': CACHE_HISTORY_ROWS,
-        'fallbackSymbols': fallback_deep + fallback_limited,
-        'limitedSymbols': fallback_limited,
-        'unresolved': unresolved,
-        'routes': routes
+        'version': 'VMEWS-HOSE-RESOLVER-1.0.0', 'generatedAt': datetime.now(timezone.utc).isoformat(),
+        'hoseReference': len(universe), 'primaryYahooDeep': len(primary_deep),
+        'cdnVnstockDeep': len(fallback_deep), 'cdnLimitedHistory': len(fallback_limited),
+        'resolved': resolved, 'routeCoverageRatio': resolved / len(universe) if universe else 0,
+        'deepResearchCoverageRatio': (len(primary_deep) + len(fallback_deep)) / len(universe) if universe else 0,
+        'fallbackSymbols': fallback_deep + fallback_limited, 'limitedSymbols': fallback_limited,
+        'unresolved': unresolved, 'routes': routes
     }
-    (OUT / 'manifest.json').write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8'
-    )
-    print(json.dumps({k: manifest[k] for k in [
-        'hoseReference', 'primaryYahooDeep', 'cdnVnstockDeep', 'cdnLimitedHistory',
-        'resolved', 'routeCoverageRatio', 'deepResearchCoverageRatio', 'forecastEligibleCount'
-    ]}, ensure_ascii=False))
+    (OUT / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
+    print(json.dumps({k: manifest[k] for k in ['hoseReference','primaryYahooDeep','cdnVnstockDeep','cdnLimitedHistory','resolved','routeCoverageRatio','deepResearchCoverageRatio']}, ensure_ascii=False))
     if unresolved:
         raise RuntimeError(f'Unresolved HOSE symbols: {[x["symbol"] for x in unresolved]}')
 
