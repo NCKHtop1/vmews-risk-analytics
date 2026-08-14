@@ -1,3 +1,5 @@
+import bisect
+
 _prepare_articles_before_exact_benchmark=prepare_articles
 _V12_INDEX_BY_DATE={}
 _V12_INDEX_DATES=[]
