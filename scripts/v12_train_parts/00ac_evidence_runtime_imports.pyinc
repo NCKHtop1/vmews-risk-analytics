@@ -1,0 +1,2 @@
+# Runtime symbols used by later V12 evidence wrappers must be present in the assembled namespace.
+from v12_evidence import Timeline
