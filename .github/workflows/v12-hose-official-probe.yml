@@ -1,0 +1,43 @@
+name: V12 HOSE official-source endpoint probe
+on:
+  push:
+    branches: [forecast-v12-rumor-hardening]
+    paths: ['.github/workflows/v12-hose-official-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Inspect HOSE disclosure app and JavaScript endpoints
+        run: |
+          set -euo pipefail
+          URL='https://www.hsx.vn/vi/tin-tuc/tin-to-chuc-niem-yet'
+          curl -L --fail --silent --show-error -A 'Mozilla/5.0 VMEWS-Research/12' "$URL" -o /tmp/hsx.html
+          echo 'HTML_BYTES' $(wc -c </tmp/hsx.html)
+          echo 'SCRIPT_SRCS'
+          grep -oE '<script[^>]+src="[^"]+' /tmp/hsx.html | sed -E 's/.*src="//' | tee /tmp/scripts.txt || true
+          echo 'INTERESTING_HTML'
+          grep -Eoi '.{0,100}(api|rss|tin-to-chuc-niem-yet|article|news).{0,180}' /tmp/hsx.html | head -100 || true
+          python - <<'PY'
+          from urllib.parse import urljoin
+          import pathlib,subprocess
+          base='https://www.hsx.vn/vi/tin-tuc/tin-to-chuc-niem-yet'
+          scripts=[x.strip() for x in pathlib.Path('/tmp/scripts.txt').read_text().splitlines() if x.strip()]
+          print('SCRIPT_COUNT',len(scripts))
+          for i,s in enumerate(scripts):
+              u=urljoin(base,s);p=f'/tmp/bundle{i}.js'
+              r=subprocess.run(['curl','-L','--fail','--silent','--show-error','-A','Mozilla/5.0 VMEWS-Research/12',u,'-o',p])
+              if r.returncode==0:
+                  print('BUNDLE',i,u,pathlib.Path(p).stat().st_size)
+          PY
+          echo 'ENDPOINT_STRINGS'
+          for f in /tmp/bundle*.js; do
+            [ -f "$f" ] || continue
+            grep -Eo 'https?://[^"'"'"' ]+|/[A-Za-z0-9_.?=&/-]*(api|Api|API|article|Article|news|News|rss|RSS)[A-Za-z0-9_.?=&/%-]*' "$f" | sort -u | head -250 || true
+          done
+          echo 'CONTEXT_STRINGS'
+          for f in /tmp/bundle*.js; do
+            [ -f "$f" ] || continue
+            grep -Eo '.{0,120}(tin-to-chuc-niem-yet|ArticleInCategory|GetArticles|category|Category|baseURL|axios|fetch\().{0,220}' "$f" | head -200 || true
+          done
