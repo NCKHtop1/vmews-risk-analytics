@@ -1,9 +1,15 @@
-import warnings,math
+import warnings,math,json
+from pathlib import Path
+from datetime import datetime,timezone
 import numpy as np
 from scipy.stats import spearmanr,ConstantInputWarning
+from sklearn.metrics import balanced_accuracy_score,matthews_corrcoef,brier_score_loss
 import train_forecast_v11 as m
+
 warnings.filterwarnings('ignore',category=ConstantInputWarning)
 warnings.filterwarnings('ignore',message='All-NaN slice encountered')
+ROOT=Path('.')
+CACHE={}
 
 def safe_rank_stats(y,p,D):
     ics=[];sp=[]
@@ -16,8 +22,68 @@ def safe_rank_stats(y,p,D):
             if z is not None and math.isfinite(float(z)):ics.append(float(z))
         order=np.argsort(pp);k=max(1,len(q)//5);sp.append(float(np.mean(yy[order[-k:]])-np.mean(yy[order[:k]])))
     return {'ic':float(np.mean(ics)) if ics else 0.,'spread':float(np.mean(sp)) if sp else 0.}
-orig=m.risk_status
+
+orig_build=m.build_panel
+def broad_current_panel():
+    P,latest=orig_build()
+    # The cross-sectional market state is a market-level EOD observation.  Copy the
+    # modal-date state to symbols whose own last completed EOD is one or a few days
+    # earlier instead of dropping otherwise usable stock histories from inference.
+    donor=next((v['feature'] for v in latest.values() if v and all(k in v['feature'] for k in m.CROSS)),None)
+    if donor:
+        cross={k:float(donor[k]) for k in m.CROSS}
+        for v in latest.values():
+            if v:v['feature'].update(cross)
+    CACHE['panel']=(P,latest)
+    return P,latest
+
 def safe_risk(f):
-    st,n=orig(f);return st,int(n)
-m.rank_stats=safe_rank_stats;m.risk_status=safe_risk
+    st,n=m._orig_risk(f) if hasattr(m,'_orig_risk') else m.risk_status(f)
+    return st,int(n)
+
+def ece(y,p,bins=10):
+    q=np.linspace(0,1,bins+1);s=0.;n=len(y)
+    for a,b in zip(q[:-1],q[1:]):
+        z=(p>=a)&(p<(b if b<1 else 1.000001))
+        if z.any():s+=z.sum()*abs(float(np.mean(y[z]))-float(np.mean(p[z])))
+    return s/max(1,n)
+
+def repaired_audit(y,alpha,ap,dp,D,dir_cal,scenario_cal):
+    rs=safe_rank_stats(alpha,ap,D)
+    md=[m.bfind(dir_cal,x) for x in dp];ms=[m.bfind(scenario_cal,x) for x in ap]
+    prob=np.asarray([x['positiveRate'] for x in md],float);med=np.asarray([x['medianReturn'] for x in ms],float);lo=np.asarray([x['q20'] for x in ms],float);hi=np.asarray([x['q80'] for x in ms],float)
+    yy=y>0;base=np.full(len(y),np.mean(yy));ba=float(balanced_accuracy_score(yy,prob>=.5));mc=float(matthews_corrcoef(yy,prob>=.5));br=float(brier_score_loss(yy,prob));b0=float(brier_score_loss(yy,base));mae=float(np.mean(abs(y-med)));mae0=float(np.mean(abs(y)));rho=spearmanr(med,y).statistic
+    return {'n':len(y),'alphaIC':rs['ic'],'alphaSpread':rs['spread'],'balancedAccuracy':ba,'mcc':mc,'brierSkill':1-br/b0 if b0 else 0.,'ece':ece(yy.astype(float),prob),'scenarioMAEImprove':1-mae/(mae0 or 1e-12),'scenarioRankIC':float(rho) if rho is not None and math.isfinite(float(rho)) else 0.,'coverage20_80':float(np.mean((y>=lo)&(y<=hi)))}
+
+def repair_calibration():
+    P,latest=CACHE['panel'];D=np.asarray([x['date'] for x in P]);dates=np.asarray(sorted(set(D)));X=np.asarray([[x.get(k,np.nan) for k in m.FEATURES] for x in P],float)
+    model=json.loads((ROOT/'data/forecast-model-v11.json').read_text(encoding='utf-8'));cur=json.loads((ROOT/'data/forecast-current-v11.json').read_text(encoding='utf-8'))
+    for h in m.HORIZONS:
+        key=str(h);z=model['horizons'][key];y=np.asarray([x.get('y'+key,np.nan) for x in P],float);mr={d:float(np.nanmedian(y[D==d])) for d in dates};alpha=np.asarray([y[i]-mr.get(D[i],np.nan) for i in range(len(y))]);choice=z['choice']
+        ci,cap,cdp=m.train_block(X,y,alpha,D,dates,h,m.CAL,choice);dir_cal=z.get('calibration') or m.buckets(y[ci],cdp,10);scenario_cal=m.buckets(y[ci],cap,10)
+        ai,aap,adp=m.train_block(X,y,alpha,D,dates,h,m.AUD,choice);A=repaired_audit(y[ai],alpha[ai],aap,adp,D[ai],dir_cal,scenario_cal)
+        gates={'ranking':A['alphaIC']>.02 and A['alphaSpread']>.0015,'direction':A['balancedAccuracy']>.515 and A['mcc']>.02 and A['brierSkill']>-.03,'scenario':len(scenario_cal)>=7 and .45<=A['coverage20_80']<=.75 and A['scenarioRankIC']>.01}
+        z['directionCalibration']=dir_cal;z['calibration']=scenario_cal;z['sealedAudit']=A;z['gates']=gates;z['status']='PASS' if all(gates.values()) else ('SCENARIO_PASS' if gates['ranking'] and gates['scenario'] else 'REVIEW')
+        # Current alpha is already produced by the production model.  Use the
+        # alpha-calibrated bucket for magnitude/range and use the direction bucket
+        # only when its sealed direction gate passed.
+        for s,c in cur['symbols'].items():
+            hh=c.get('horizons',{}).get(key)
+            if not hh:continue
+            sb=m.bfind(scenario_cal,float(hh['alpha']));db=m.bfind(dir_cal,float(hh.get('rawDirectionScore',.5)))
+            if sb:
+                hh['historicalUpRate']=(db['positiveRate'] if gates['direction'] and db else sb['positiveRate']);hh['medianReturn']=sb['medianReturn'];hh['meanReturn']=sb['meanReturn'];hh['q20']=sb['q20'];hh['q80']=sb['q80'];hh['n']=sb['n'];hh['status']=z['status'];hh['directionValidated']=bool(gates['direction'])
+    scenario_h=[h for h in m.HORIZONS if model['horizons'][str(h)]['gates']['ranking'] and model['horizons'][str(h)]['gates']['scenario']]
+    direction_h=[h for h in m.HORIZONS if model['horizons'][str(h)]['gates']['direction']]
+    model['promotion']={'status':'PASS' if len(scenario_h)>=4 and 3 in scenario_h and 5 in scenario_h else 'REVIEW','directHorizons':scenario_h,'directionHorizons':direction_h,'exactTargetPrice':False,'scenarioDistribution':True}
+    model['governance']['magnitudeCalibration']='Absolute T+1..T+5 scenario distributions are calibrated on predicted cross-sectional alpha in CAL and audited only in the sealed AUD block.'
+    cur['generatedAt']=datetime.now(timezone.utc).isoformat();cur['count']=len(cur['symbols'])
+    (ROOT/'data/forecast-model-v11.json').write_text(json.dumps(model,ensure_ascii=False,indent=2),encoding='utf-8');(ROOT/'data/forecast-current-v11.json').write_text(json.dumps(cur,ensure_ascii=False,indent=2),encoding='utf-8')
+    print(json.dumps({'calibrationRepair':'PASS','current':cur['count'],'directHorizons':scenario_h,'directionHorizons':direction_h,'audit':{h:model['horizons'][str(h)]['sealedAudit'] for h in m.HORIZONS}},ensure_ascii=False))
+
+m.rank_stats=safe_rank_stats
+m._orig_risk=m.risk_status
+m.risk_status=lambda f:(lambda z:(z[0],int(z[1])))(m._orig_risk(f))
+m.build_panel=broad_current_panel
 m.main()
+repair_calibration()
