@@ -1,0 +1,96 @@
+name: Forecast V12 VNStock final validation
+on:
+  push:
+    branches: [fix/vnstock-primary-v11-20260814]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: forecast-v12-vnstock-final
+  cancel-in-progress: true
+jobs:
+  validate:
+    if: ${{ !contains(github.event.head_commit.message || '', '[v12-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      VNSTOCK_MIN_INTERVAL_SECONDS: '3.2'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Frontend syntax and deterministic price math
+        run: |
+          node --check forecast-v12-math.js
+          node --check forecast-final-v12.js
+          node scripts/forecast_v12_math_test.js
+      - name: Install DOM smoke dependency
+        run: npm install --no-save --no-package-lock jsdom@24
+      - name: DOM render and forecast hover smoke
+        run: node scripts/forecast_v12_dom_smoke.js
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install model and VNStock dependencies
+        run: pip install --disable-pip-version-check -q vnstock==4.0.4 pandas numpy scipy scikit-learn tzdata
+      - name: Compile source adapters and pipeline wrappers
+        run: python -m py_compile scripts/vnstock_primary_history.py scripts/train_forecast_v11_vnstock.py scripts/build_dashboard_v11_consistent.py scripts/forecast_v12_acceptance.py
+      - name: Probe VNStock-first source with Yahoo fallback
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          from vnstock_primary_history import vnstock_adjusted
+          from forecast_v11_features import yahoo_adjusted,stock_features
+          samples=['FPT','HPG','MBB']
+          primary=0; report=[]
+          for s in samples:
+              try:
+                  rows,a=vnstock_adjusted(s,years=9,min_rows=520);src=a['source'];primary+=1
+              except BaseException as e:
+                  rows,a=yahoo_adjusted(s,'10y',18);src='YAHOO_ADJUSTED_FALLBACK';a={'vnstockError':str(e)[:240],**a}
+              clean,fs=stock_features(rows)
+              assert len(clean)>=520 and len(fs)>=260,(s,len(clean),len(fs))
+              assert all(clean[i]['date']<clean[i+1]['date'] for i in range(len(clean)-1))
+              assert all(float(x['modelClose'])>0 for x in clean[-520:])
+              report.append({'symbol':s,'source':src,'rows':len(clean),'end':clean[-1]['date']})
+          assert primary>=1,report
+          print({'primaryVnstock':primary,'resolved':len(report),'samples':report})
+          PY
+      - name: Static source/UI/model acceptance
+        run: python scripts/forecast_v12_acceptance.py
+      - name: Full VNStock-first chronological retrain
+        run: PYTHONPATH=scripts python scripts/train_forecast_v11_vnstock.py
+      - name: Build dashboard from exact model price lineage
+        run: PYTHONPATH=scripts python scripts/build_dashboard_v11_consistent.py
+      - name: Validate rebuilt source mix and model invariants
+        run: |
+          python - <<'PY'
+          import json,math
+          cur=json.load(open('data/forecast-current-v11.json',encoding='utf-8'))
+          model=json.load(open('data/forecast-model-v11.json',encoding='utf-8'))
+          dash=json.load(open('data/forecast-dashboard-v11.json',encoding='utf-8'))
+          counts=cur['dataPolicy']['sourceCounts'];vn=sum(v for k,v in counts.items() if k.startswith('VNSTOCK'))
+          yahoo=counts.get('YAHOO_ADJUSTED_FALLBACK',0);local=counts.get('LOCAL_SNAPSHOT_LAST_RESORT',0)
+          assert cur['count']>=380,cur['count']
+          assert vn>=300,(vn,yahoo,local,counts)
+          assert dash['counts']['chartSymbols']>=360,dash['counts']
+          assert dash.get('chartLineage')=='Exact accepted model history; no independent chart refetch.'
+          assert set(model['horizons'])==set('12345')
+          for h in range(1,6):
+              a=model['horizons'][str(h)]['sealedAudit']
+              assert a['n']>=17000,(h,a['n'])
+              assert math.isfinite(float(a['alphaIC'])) and math.isfinite(float(a['coverage20_80']))
+          print({'current':cur['count'],'vnstock':vn,'yahooFallback':yahoo,'localLastResort':local,'chartSymbols':dash['counts']['chartSymbols']})
+          PY
+      - name: Re-run UI acceptance and DOM smoke on rebuilt data
+        run: |
+          python scripts/forecast_v12_acceptance.py
+          node scripts/forecast_v12_dom_smoke.js
+      - name: Persist validated V12 data snapshots
+        run: |
+          git config user.name github-actions-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/forecast-model-v11.json data/forecast-current-v11.json data/forecast-dashboard-v11.json data/market-benchmark-v11.json data/forecast-v12-acceptance.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh Forecast V12 VNStock-first snapshots [v12-data]'
+          git pull --rebase origin fix/vnstock-primary-v11-20260814
+          git push origin HEAD:fix/vnstock-primary-v11-20260814
