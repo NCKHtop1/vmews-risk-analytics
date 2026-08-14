@@ -33,7 +33,7 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile exact final-candidate source
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -74,6 +74,25 @@ jobs:
           z=FlowTimeline(rows).features(missing_day)
           assert z['foreignAvailable']==0.0 and z['propAvailable']==0.0,z
           print('V12 FLOW MISSINGNESS PASS')
+          PY
+      - name: VNINDEX abnormal-return missingness regression
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          from datetime import date,timedelta
+          from v12_evidence import prepare_articles
+          start=date(2026,1,1)
+          dates=[(start+timedelta(days=i)).isoformat() for i in range(40)]
+          rows=[{'date':d,'close':100+i,'modelClose':100+i,'volume':1} for i,d in enumerate(dates)]
+          sentiment={'symbols':{'FPT':{'items':[{'id':'evt1','publishedAt':dates[5]+'T08:00:00+07:00','title':'FPT test event','label':'POS','sourceQuality':1,'materiality':1,'confidence':1,'event':'GENERAL'}]}}}
+          _,missing=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},[])
+          z=missing[0]
+          assert z['benchmarkAvailable5'] is False and z['benchmarkR5'] is None and z['ar5'] is None,z
+          index=[{'date':d,'close':1000+2*i,'modelClose':1000+2*i,'volume':0} for i,d in enumerate(dates)]
+          _,bench=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},index)
+          b=bench[0]
+          assert b['benchmarkAvailable5'] is True and isinstance(b['benchmarkR5'],float) and isinstance(b['ar5'],float),b
+          assert abs(b['ar5']-b['r5'])>1e-12,b
+          print('V12 VNINDEX BENCHMARK MISSINGNESS PASS')
           PY
       - name: Assert audited V12 flow archive already exists
         run: |
@@ -125,6 +144,8 @@ jobs:
           PY
       - name: Nine-phase research acceptance gates
         run: PYTHONPATH=scripts python scripts/v12_acceptance.py
+      - name: Phase 2 VNINDEX event-study benchmark gate
+        run: PYTHONPATH=scripts python scripts/v12_benchmark_acceptance.py
       - name: Phase 4 active-flow certified-or-abstain gate
         run: PYTHONPATH=scripts python scripts/v12_active_flow_acceptance.py
       - name: Phase 4 sector taxonomy PIT gate
@@ -155,6 +176,7 @@ jobs:
             data/data-audit-v12.json
             data/event-intelligence-v12.json
             data/phase-gates-v12.json
+            data/benchmark-gate-v12.json
             data/active-flow-audit-v12.json
             data/active-flow-gate-v12.json
             data/sector-gate-v12.json
@@ -165,7 +187,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/embargo-gate-v12.json
+          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/embargo-gate-v12.json
           git commit -m 'Publish nine-phase validated V12 forecast snapshots [v12-model-data]'
           git pull --rebase origin forecast-v12-methodfix
           git push origin HEAD:forecast-v12-methodfix
