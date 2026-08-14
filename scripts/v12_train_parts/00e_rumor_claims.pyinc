@@ -2,7 +2,7 @@ import re as _rumor_re
 
 _RUMOR_EXTRA=[
     'rumorClaims20','rumorPropagation20','rumorSourceDiversity20','rumorDuplication20',
-    'rumorConfirmed20','rumorDenied20','rumorUnverified20','rumorPreVolume20','rumorLeadScore20'
+    'rumorConfirmed20','rumorDenied20','rumorClarified20','rumorUnverified20','rumorPreVolume20','rumorLeadScore20'
 ]
 for _f in _RUMOR_EXTRA:
     if _f not in RUMOR_FEATURES:RUMOR_FEATURES.append(_f)
@@ -15,25 +15,19 @@ _RUMOR_DENY=('bác bỏ','bac bo','phủ nhận','phu nhan','đính chính','din
 _RUMOR_CONFIRM_STRONG=('xác nhận','xac nhan','chính thức xác nhận','chinh thuc xac nhan','đã ký','da ky','ký kết','ky ket','phê duyệt','phe duyet','thông qua','thong qua','chấp thuận','chap thuan','hoàn tất','hoan tat')
 
 def _claim_tokens(title):
-    s=_rumor_re.sub(r'[^a-z0-9à-ỹ]+',' ',str(title or '').lower())
-    stop={'công','ty','ctcp','và','của','cho','với','một','các','được','theo','trong','trên','sẽ','đã','tại'}
+    s=_rumor_re.sub(r'[^a-z0-9à-ỹ]+',' ',str(title or '').lower());stop={'công','ty','ctcp','và','của','cho','với','một','các','được','theo','trong','trên','sẽ','đã','tại'}
     return set(x for x in s.split() if len(x)>=3 and x not in stop)
-
 def _claim_sim(a,b):return len(a&b)/max(1,len(a|b)) if a and b else 0.0
-
 def _truth_label(title):
     t=str(title or '').lower()
     if any(k in t for k in _RUMOR_DENY):return 'DENIED'
     if any(k in t for k in _RUMOR_CONFIRM_STRONG):return 'CONFIRMED'
-    # Generic words such as “công bố/chính thức” are evidence of clarification, not proof that the rumor itself was true.
     return 'CLARIFIED'
-
 def _volume_lead(rows,idx):
     if idx is None or idx<6:return 0.0
     pre=[float(rows[j].get('volume',0) or 0) for j in range(max(0,idx-5),idx)];base=[float(rows[j].get('volume',0) or 0) for j in range(max(0,idx-25),max(0,idx-5))]
     if not pre or not base:return 0.0
     a=float(np.mean(pre));b=float(np.median(base));return float(math.log1p(a/max(1.0,b)))
-
 def _cluster_asof(items,asof):
     a=sorted([x for x in items if (x.get('availableDate') or '')<=asof],key=lambda x:(x.get('availableDate') or '',str(x.get('publishedAt') or '')))
     if not a:return {'n':0,'sources':0,'velocity':0.0,'diversity':0.0,'first':None,'last':None}
@@ -41,22 +35,18 @@ def _cluster_asof(items,asof):
     return {'n':len(a),'sources':len(pubs),'velocity':len(a)/age,'diversity':len(pubs)/max(1,len(a)),'first':first,'last':last}
 
 def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
-    articles,outcomes=_claim_prepare_articles(sentiment,price_store,sector_map,index_rows);claim_audit={'clusters':0,'rumorItems':0,'multiSourceClusters':0,'resolvedClusters':0,'confirmed':0,'denied':0,'clarified':0,'maxClusterSize':0,'pitClusterMetadata':True,'officialStreamAware':True,'crossEventMergeGuard':True,'genericOfficialWordsDoNotAutoConfirm':True}
+    articles,outcomes=_claim_prepare_articles(sentiment,price_store,sector_map,index_rows);claim_audit={'clusters':0,'rumorItems':0,'multiSourceClusters':0,'officialClarificationClusters':0,'truthResolvedClusters':0,'resolvedClusters':0,'confirmed':0,'denied':0,'clarified':0,'maxClusterSize':0,'pitClusterMetadata':True,'officialStreamAware':True,'crossEventMergeGuard':True,'genericOfficialWordsDoNotAutoConfirm':True,'clarifiedTruthRemainsUnverified':True}
     for symbol,rows in articles.items():
         rumors=[x for x in rows if x.get('sourceClass')=='RUMOR_UNVERIFIED'];clusters=[]
         for x in sorted(rumors,key=lambda z:(z.get('availableDate') or '',str(z.get('publishedAt') or ''))):
             tok=_claim_tokens(x.get('title'));chosen=None;best=0.0;event=str(x.get('event') or 'GENERAL')
             for c in reversed(clusters):
                 if (datetime.fromisoformat(x['availableDate']).date()-datetime.fromisoformat(c['lastDate']).date()).days>30:break
-                sim=_claim_sim(tok,c['tokens']);same_event=(event==c.get('event'))
-                # Claims from different event families require much stronger lexical identity to prevent topic drift.
-                eligible=sim>=.28 and (same_event or sim>=.50)
+                sim=_claim_sim(tok,c['tokens']);same_event=(event==c.get('event'));eligible=sim>=.28 and (same_event or sim>=.50)
                 if eligible and sim>best:chosen=c;best=sim
             if chosen is None:
                 chosen={'id':f'{symbol}-R{len(clusters)+1:04d}','event':event,'tokens':set(tok),'firstDate':x['availableDate'],'lastDate':x['availableDate'],'items':[],'publishers':set(),'resolutionDate':None,'truthState':'UNVERIFIED','resolutionTitle':None};clusters.append(chosen)
-            chosen['items'].append(x);chosen['publishers'].add(str(x.get('publisher') or 'Unknown'));chosen['tokens']|=tok;chosen['lastDate']=max(chosen['lastDate'],x['availableDate']);x['claimId']=chosen['id']
-            snap=_cluster_asof(chosen['items'],x['availableDate']);x['claimFirstDateAtPublication']=snap['first'];x['claimLastDateAtPublication']=snap['last'];x['claimSizeAtPublication']=snap['n'];x['claimSourceCountAtPublication']=snap['sources'];x['claimVelocityAtPublication']=snap['velocity'];x['claimSourceDiversityAtPublication']=snap['diversity']
-            prow=price_store.get(symbol) or [];pidx=x.get('availableIndex');x['preVolumeLead']=_volume_lead(prow,int(pidx) if isinstance(pidx,(int,float)) else None)
+            chosen['items'].append(x);chosen['publishers'].add(str(x.get('publisher') or 'Unknown'));chosen['tokens']|=tok;chosen['lastDate']=max(chosen['lastDate'],x['availableDate']);x['claimId']=chosen['id'];snap=_cluster_asof(chosen['items'],x['availableDate']);x['claimFirstDateAtPublication']=snap['first'];x['claimLastDateAtPublication']=snap['last'];x['claimSizeAtPublication']=snap['n'];x['claimSourceCountAtPublication']=snap['sources'];x['claimVelocityAtPublication']=snap['velocity'];x['claimSourceDiversityAtPublication']=snap['diversity'];prow=price_store.get(symbol) or [];pidx=x.get('availableIndex');x['preVolumeLead']=_volume_lead(prow,int(pidx) if isinstance(pidx,(int,float)) else None)
         official=sorted([x for x in rows if x.get('sourceClass') in {'OFFICIAL','CLARIFICATION'} or x.get('stream')=='OFFICIAL'],key=lambda x:(x.get('availableDate') or '',str(x.get('publishedAt') or '')))
         for c in clusters:
             for rx in official:
@@ -66,13 +56,10 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
                 prior_items=[y for y in c['items'] if y.get('availableDate') and y['availableDate']<=rd]
                 if not prior_items:continue
                 prior_tokens=set().union(*[_claim_tokens(y.get('title')) for y in prior_items]);sim=_claim_sim(prior_tokens,_claim_tokens(rx.get('title')));event_match=any(y.get('event')==rx.get('event') for y in prior_items)
-                # A later official item must either match the same event family or be lexically near-identical; generic same-company news is insufficient.
-                if sim>=.24 and (event_match or sim>=.45):
-                    c['resolutionDate']=rd;c['truthState']=_truth_label(rx.get('title'));c['resolutionTitle']=rx.get('title');c['resolutionSimilarity']=float(sim);c['resolutionEventMatch']=bool(event_match);break
+                if sim>=.24 and (event_match or sim>=.45):c['resolutionDate']=rd;c['truthState']=_truth_label(rx.get('title'));c['resolutionTitle']=rx.get('title');c['resolutionSimilarity']=float(sim);c['resolutionEventMatch']=bool(event_match);break
             for x in c['items']:
-                # Final fields are audit metadata only. Feature extraction below still checks resolutionDate <= forecast date, so final truth is never backfilled.
                 x['claimFinalSize']=len(c['items']);x['claimFinalSourceCount']=len(c['publishers']);x['claimResolutionDate']=c['resolutionDate'];x['claimTruthState']=c['truthState'];x['claimResolutionTitle']=c['resolutionTitle'];x['claimResolutionSimilarity']=c.get('resolutionSimilarity');x['claimResolutionEventMatch']=c.get('resolutionEventMatch')
-        claim_audit['clusters']+=len(clusters);claim_audit['rumorItems']+=len(rumors);claim_audit['multiSourceClusters']+=sum(len(c['publishers'])>=2 for c in clusters);claim_audit['resolvedClusters']+=sum(c['resolutionDate'] is not None for c in clusters);claim_audit['confirmed']+=sum(c['truthState']=='CONFIRMED' for c in clusters);claim_audit['denied']+=sum(c['truthState']=='DENIED' for c in clusters);claim_audit['clarified']+=sum(c['truthState']=='CLARIFIED' for c in clusters);claim_audit['maxClusterSize']=max(claim_audit['maxClusterSize'],max([len(c['items']) for c in clusters],default=0))
+        official_clar=sum(c['resolutionDate'] is not None for c in clusters);truth_res=sum(c['truthState'] in {'CONFIRMED','DENIED'} for c in clusters);claim_audit['clusters']+=len(clusters);claim_audit['rumorItems']+=len(rumors);claim_audit['multiSourceClusters']+=sum(len(c['publishers'])>=2 for c in clusters);claim_audit['officialClarificationClusters']+=official_clar;claim_audit['truthResolvedClusters']+=truth_res;claim_audit['resolvedClusters']+=official_clar;claim_audit['confirmed']+=sum(c['truthState']=='CONFIRMED' for c in clusters);claim_audit['denied']+=sum(c['truthState']=='DENIED' for c in clusters);claim_audit['clarified']+=sum(c['truthState']=='CLARIFIED' for c in clusters);claim_audit['maxClusterSize']=max(claim_audit['maxClusterSize'],max([len(c['items']) for c in clusters],default=0))
     ENTITY_AUDIT['rumorClaimAudit']=claim_audit;print(json.dumps({'v12RumorClaims':claim_audit},ensure_ascii=False),flush=True);return articles,outcomes
 
 class EvidenceFeatureStore(_BaseEvidenceFeatureStore):
@@ -85,13 +72,13 @@ class EvidenceFeatureStore(_BaseEvidenceFeatureStore):
         for c in claims.values():
             snap=_cluster_asof(c['items'],date)
             if snap['n']:vel.append(snap['velocity'])
-        prop=float(np.mean(vel)) if vel else 0.0;dup=(n-cn)/max(1,n);div=len(sources)/max(1,n);pv=float(np.mean([float(x.get('preVolumeLead',0) or 0) for x in rows])) if rows else 0.0;prem=float(np.mean([abs(float(x.get('preR2',0) or 0)) for x in rows])) if rows else 0.0;states=[c['state'] if c['resolved'] else 'UNVERIFIED' for c in claims.values()]
-        out.update({'rumorClaims20':float(cn),'rumorPropagation20':prop,'rumorSourceDiversity20':div,'rumorDuplication20':dup,'rumorConfirmed20':float(sum(x=='CONFIRMED' for x in states)),'rumorDenied20':float(sum(x=='DENIED' for x in states)),'rumorUnverified20':float(sum(x=='UNVERIFIED' for x in states)),'rumorPreVolume20':pv,'rumorLeadScore20':prem+0.25*pv});return out
+        prop=float(np.mean(vel)) if vel else 0.0;dup=(n-cn)/max(1,n);div=len(sources)/max(1,n);pv=float(np.mean([float(x.get('preVolumeLead',0) or 0) for x in rows])) if rows else 0.0;prem=float(np.mean([abs(float(x.get('preR2',0) or 0)) for x in rows])) if rows else 0.0;states=[c['state'] if c['resolved'] else 'UNVERIFIED' for c in claims.values()];clarified=sum(x=='CLARIFIED' for x in states);truth_unverified=sum(x in {'UNVERIFIED','CLARIFIED'} for x in states)
+        out.update({'rumorClaims20':float(cn),'rumorPropagation20':prop,'rumorSourceDiversity20':div,'rumorDuplication20':dup,'rumorConfirmed20':float(sum(x=='CONFIRMED' for x in states)),'rumorDenied20':float(sum(x=='DENIED' for x in states)),'rumorClarified20':float(clarified),'rumorUnverified20':float(truth_unverified),'rumorPreVolume20':pv,'rumorLeadScore20':prem+0.25*pv});return out
     def current_intelligence(self,symbol,date,limit=10):
         out=super().current_intelligence(symbol,date,limit);st=self.stock.get(symbol,Timeline([]));recent=[x for x in reversed(st.window(date,90)) if x.get('sourceClass')=='RUMOR_UNVERIFIED'];seen=set();claims=[]
         for x in recent:
             cid=x.get('claimId') or str(x.get('id'))
             if cid in seen:continue
-            seen.add(cid);same=[y for y in recent if (y.get('claimId') or str(y.get('id')))==cid];snap=_cluster_asof(same,date);rd=x.get('claimResolutionDate');state=(x.get('claimTruthState') if rd and rd<=date else 'UNVERIFIED') or 'UNVERIFIED';claims.append({'claimId':cid,'title':x.get('title'),'firstDate':snap['first'],'lastDate':snap['last'],'items':snap['n'],'sources':snap['sources'],'velocity':snap['velocity'],'sourceDiversity':snap['diversity'],'preMove2':x.get('preR2'),'preMove5':x.get('preR5'),'preVolumeLead':x.get('preVolumeLead'),'truthState':state,'resolutionDate':rd if rd and rd<=date else None,'resolutionTitle':x.get('claimResolutionTitle') if rd and rd<=date else None})
+            seen.add(cid);same=[y for y in recent if (y.get('claimId') or str(y.get('id')))==cid];snap=_cluster_asof(same,date);rd=x.get('claimResolutionDate');state=(x.get('claimTruthState') if rd and rd<=date else 'UNVERIFIED') or 'UNVERIFIED';truth_state=state if state in {'CONFIRMED','DENIED'} else 'UNVERIFIED';claims.append({'claimId':cid,'title':x.get('title'),'firstDate':snap['first'],'lastDate':snap['last'],'items':snap['n'],'sources':snap['sources'],'velocity':snap['velocity'],'sourceDiversity':snap['diversity'],'preMove2':x.get('preR2'),'preMove5':x.get('preR5'),'preVolumeLead':x.get('preVolumeLead'),'truthState':truth_state,'clarificationState':state if state=='CLARIFIED' else None,'resolutionDate':rd if rd and rd<=date else None,'resolutionTitle':x.get('claimResolutionTitle') if rd and rd<=date else None})
             if len(claims)>=limit:break
         out['rumorClaims']=claims;return out
