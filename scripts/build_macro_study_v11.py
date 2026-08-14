@@ -8,9 +8,11 @@ ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));VERSION='VMEWS-MACRO-STUDY-11.
 def fetch(sym,rg='10y'):
  for host in ('query1.finance.yahoo.com','query2.finance.yahoo.com'):
   try:
-   u=f'https://{host}/v8/finance/chart/{quote(sym,safe="")}?range={rg}&interval=1d&includePrePost=false';p=json.loads(urlopen(Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Macro/11'}),timeout=15).read().decode());z=(p.get('chart',{}).get('result') or [None])[0];ts=z.get('timestamp') or [];q=(z.get('indicators',{}).get('quote') or [{}])[0];out=[]
+   u=f'https://{host}/v8/finance/chart/{quote(sym,safe="")}?range={rg}&interval=1d&includePrePost=false';p=json.loads(urlopen(Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Macro/11'}),timeout=15).read().decode());z=(p.get('chart',{}).get('result') or [None])[0]
+   if not z:continue
+   ts=z.get('timestamp') or [];q=(z.get('indicators',{}).get('quote') or [{}])[0];out=[]
    for i,t in enumerate(ts):
-    try:c=float((q.get('close') or [])[i]);d=datetime.fromtimestamp(t,timezone.utc).date().isoformat();
+    try:c=float((q.get('close') or [])[i]);d=datetime.fromtimestamp(t,timezone.utc).date().isoformat()
     except:continue
     if math.isfinite(c) and c>0:out.append((d,c))
    if len(out)>100:return dict(out),[x[0] for x in out]
@@ -28,7 +30,10 @@ def stat(a):
  x=np.asarray(a,float)
  return {'n':len(x),'mean':float(x.mean()),'median':float(np.median(x)),'positiveRate':float(np.mean(x>0)),'q20':float(np.quantile(x,.2)),'q80':float(np.quantile(x,.8))} if len(x) else None
 def main():
- m={k:fetch(s) for k,s in SPECS.items()};vni,vd=fetch('^VNINDEX.VN');rows=[];hist=[]
+ m={k:fetch(s) for k,s in SPECS.items()};vni,vd=fetch('^VNINDEX')
+ if not vni:vni,vd=fetch('^VNINDEX.VN')
+ if len(vd)<800:raise RuntimeError(f'VNINDEX macro benchmark unavailable: {len(vd)} rows')
+ rows=[];hist=[]
  for i,d in enumerate(vd):
   if i<260:continue
   f={};ok=True
@@ -37,7 +42,6 @@ def main():
    if r is None:ok=False;break
    f[k+'Ret20']=r
   if not ok:continue
-  # Risk pressure: rising VIX, DXY, US10Y and abrupt Brent moves are adverse; weaker USD/VND is supportive.
   score=.32*f['vixRet20']+.18*f['dxyRet20']+.18*f['us10yRet20']+.18*f['usdVndRet20']+.14*abs(f['brentRet20']);hist.append(score);zs=zscore(hist,score);state='STRESS' if zs>=.8 else 'SUPPORTIVE' if zs<=-.8 else 'NEUTRAL';z={'date':d,'score':score,'z':zs,'state':state,**f}
   for h in H:
    if i+h<len(vd):z['r'+str(h)]=math.log(vni[vd[i+h]]/vni[d])
