@@ -76,8 +76,11 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          for name in ['flow-v12.json','flow-audit-v12.json']:
-              z=json.load(open('data/'+name,encoding='utf-8'));s=z.get('summary') or {};assert str(z.get('version','')).startswith('VMEWS-FLOW-12'),z.get('version');assert s.get('status')=='PASS',s
+          expected={'flow-v12.json':'VMEWS-FLOW-12','flow-audit-v12.json':'VMEWS-FLOW-AUDIT-12'}
+          for name,prefix in expected.items():
+              z=json.load(open('data/'+name,encoding='utf-8'));s=z.get('summary') or {}
+              assert str(z.get('version','')).startswith(prefix),(name,z.get('version'),prefix)
+              assert s.get('status')=='PASS',(name,s)
           print('V12 FLOW INPUT PASS')
           PY
       - name: Restore historical PIT news and market evidence seed
