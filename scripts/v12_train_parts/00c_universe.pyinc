@@ -1,0 +1,44 @@
+from v12_universe import current_hose_symbols, discover_candidates
+HISTORICAL_ONLY=set();CURRENT_HOSE=set();UNIVERSE_AUDIT={}
+_raw_build_price_store=build_price_store
+_raw_base_panel=base_panel
+_entity_source_audit_summary=source_audit_summary
+
+def manifest_symbols():
+    global CURRENT_HOSE
+    CURRENT_HOSE=set(current_hose_symbols())
+    candidates,discovery=discover_candidates()
+    # Limit network burden while retaining a deterministic cross-section of confirmed delisted candidates.
+    candidate_symbols=sorted(candidates)[:100]
+    UNIVERSE_AUDIT.clear();UNIVERSE_AUDIT.update({'version':'VMEWS-UNIVERSE-AUDIT-12.0.0','policy':'Current HOSE plus historical-only securities independently tagged delisted/inactive by reference metadata and whose accepted price history is stale before the current market cutoff. Historical-only securities enter training/backtest but never current forecasts.','currentHOSE':len(CURRENT_HOSE),'discovery':discovery,'candidateMetadata':{s:candidates[s] for s in candidate_symbols},'candidateCount':len(candidate_symbols)})
+    return sorted(CURRENT_HOSE|set(candidate_symbols))
+
+def build_price_store(symbols):
+    store,audits,failures=_raw_build_price_store(symbols)
+    current_ends=[rows[-1]['date'] for s,rows in store.items() if s in CURRENT_HOSE and rows]
+    modal_cut=max(set(current_ends),key=current_ends.count) if current_ends else max(current_ends,default='9999-12-31')
+    cutoff=(datetime.fromisoformat(modal_cut).date()-__import__('datetime').timedelta(days=20)).isoformat() if modal_cut!='9999-12-31' else modal_cut
+    historical={};rejected={}
+    for s in list(store):
+        if s in CURRENT_HOSE:continue
+        rows=store[s];meta=(UNIVERSE_AUDIT.get('candidateMetadata') or {}).get(s,{})
+        if len(rows)>=520 and rows[-1]['date']<cutoff and (meta.get('isListing') is False or _is_universe_delisted(meta.get('status'))):historical[s]={'rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'metadata':meta,'priceRoute':audits.get(s,{}).get('route')}
+        else:
+            rejected[s]={'rows':len(rows),'end':rows[-1]['date'] if rows else None,'metadata':meta};store.pop(s,None);audits.pop(s,None)
+    HISTORICAL_ONLY.clear();HISTORICAL_ONLY.update(historical)
+    UNIVERSE_AUDIT.update({'currentMarketCutoff':modal_cut,'historicalStaleBefore':cutoff,'historicalOnlyCount':len(historical),'historicalOnly':historical,'rejectedCandidateCount':len(rejected),'rejectedCandidates':rejected})
+    print(json.dumps({'v12Universe':{'current':len(CURRENT_HOSE),'historicalOnly':len(HISTORICAL_ONLY),'staleBefore':cutoff,'symbols':sorted(HISTORICAL_ONLY)}},ensure_ascii=False),flush=True)
+    return store,audits,failures
+
+def _is_universe_delisted(status):
+    s=str(status or '').lower();return any(x in s for x in ('delist','huy niem yet','hủy niêm yết','inactive','cancel'))
+
+def base_panel(price_store):
+    panel,latest,rows_by_symbol=_raw_base_panel(price_store)
+    # Historical-only members improve historical cross-sections but must never appear in current forecasts.
+    for s in list(latest):
+        if s in HISTORICAL_ONLY:latest.pop(s,None)
+    return panel,latest,rows_by_symbol
+
+def source_audit_summary(audits,failures):
+    out=_entity_source_audit_summary(audits,failures);out['universeAudit']=dict(UNIVERSE_AUDIT);return out
