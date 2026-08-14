@@ -1,0 +1,88 @@
+def apply_prep(X,p):
+    imp,mu,sd=p;return (np.where(np.isfinite(X),X,imp)-mu)/sd
+def make_model(kind):
+    if kind=="RIDGE":return Ridge(alpha=80.0)
+    if kind=="LGBM":
+        try:
+            from lightgbm import LGBMRegressor
+            return LGBMRegressor(objective="regression",n_estimators=140,learning_rate=.04,num_leaves=15,max_depth=4,min_child_samples=100,reg_lambda=2.,reg_alpha=.1,subsample=.9,colsample_bytree=.9,random_state=73,n_jobs=2,verbosity=-1)
+        except Exception:kind="HGB"
+    return HistGradientBoostingRegressor(loss="squared_error",max_depth=3,learning_rate=.05,max_iter=130,l2_regularization=2.,random_state=73)
+def date_mask(D,dates,start_frac,end_frac,h,valid):
+    n=len(dates);a=max(1,int(start_frac*n));b=min(n,int(end_frac*n));purge=max(0,a-h);train=valid&(D<dates[purge]);test_end=dates[b] if b<n else "9999-99-99";test=valid&(D>=dates[a])&(D<test_end);return train,test
+def fit_predict(X,y,D,dates,feature_idx,fold,h,kind):
+    valid=np.isfinite(y);tr,te=date_mask(D,dates,fold[0],fold[1],h,valid);idx=np.where(te)[0]
+    if tr.sum()<500 or len(idx)<100:raise RuntimeError(f"insufficient split h={h} fold={fold}: {tr.sum()} / {len(idx)}")
+    xx=X[:,feature_idx];pp=prep(xx,tr);zz=apply_prep(xx,pp);model=make_model(kind);model.fit(zz[tr],y[tr]);return idx,model.predict(zz[te]),(model,pp)
+def rank_stats(y,pred,dates):
+    ics=[];spreads=[]
+    for d in sorted(set(dates)):
+        q=np.where(dates==d)[0]
+        if len(q)<12:continue
+        yy=y[q];pp=pred[q]
+        if np.nanstd(yy)>1e-12 and np.nanstd(pp)>1e-12:
+            z=spearmanr(yy,pp).statistic
+            if z is not None and finite(z):ics.append(float(z))
+        order=np.argsort(pp);k=max(1,len(q)//5);spreads.append(float(np.mean(yy[order[-k:]])-np.mean(yy[order[:k]])))
+    return {"ic":float(np.mean(ics)) if ics else 0.,"spread":float(np.mean(spreads)) if spreads else 0.}
+def reg_metrics(y,pred,dates):
+    rs=rank_stats(y,pred,dates);mae=float(np.mean(np.abs(y-pred)));base=float(np.mean(np.abs(y)));return {**rs,"mae":mae,"maeImprove":1-mae/(base or 1e-12)}
+def expert_oof(X,y,D,dates,h,idx_by_expert):
+    result={};selection={}
+    for name,fi in idx_by_expert.items():
+        best=best_pred=None
+        for kind in ("RIDGE","LGBM"):
+            pred=np.full(len(y),np.nan)
+            for fold in OOF_FOLDS:
+                ii,pp,_=fit_predict(X,y,D,dates,fi,fold,h,kind);pred[ii]=pp
+            mask=np.isfinite(pred)&np.isfinite(y);m=reg_metrics(y[mask],pred[mask],D[mask]);row={"kind":kind,**m,"objective":m["ic"]+.12*m["maeImprove"]+.10*m["spread"]}
+            if best is None or row["objective"]>best["objective"]:best=row;best_pred=pred
+        result[name]=best_pred;selection[name]=best
+    return result,selection
+def fit_meta(expert_pred,active,mask,y,alpha=20.):
+    M=np.column_stack([expert_pred[k] for k in active]);good=mask&np.all(np.isfinite(M),axis=1)&np.isfinite(y);model=Ridge(alpha=alpha);model.fit(M[good],y[good]);return model,M
+def meta_eval(expert_pred,active,train_mask,test_mask,y,D):
+    model,M=fit_meta(expert_pred,active,train_mask,y);good=test_mask&np.all(np.isfinite(M),axis=1)&np.isfinite(y);p=model.predict(M[good]);return reg_metrics(y[good],p,D[good]),model
+def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
+    n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];train=(D<cut70)&np.isfinite(y);test=(D>=cut70)&(D<cut80)&np.isfinite(y);active=["NUMERICAL","REGIME"];base,_=meta_eval(expert_pred,active,train,test,y,D);decisions={}
+    for name in ["EVENT","FLOW","FUNDAMENTAL_EVENT","RUMOR"]:
+        candidate=active+[name];z,_=meta_eval(expert_pred,candidate,train,test,y,D);di=z["ic"]-base["ic"];dm=z["maeImprove"]-base["maeImprove"];fi=idx_by_expert[name];activity=float(np.mean(np.any(np.abs(np.nan_to_num(X[:,fi],nan=0.0))>1e-10,axis=1)));minimum=.02 if name=="RUMOR" else .05;promote=activity>=minimum and (di>.001 or (di>-.001 and dm>.002));decisions[name]={"promoted":bool(promote),"activityCoverage":activity,"deltaIC":di,"deltaMAEImprove":dm,"candidate":z,"reference":base}
+        if promote:active.append(name);base=z
+    return active,decisions
+def fit_experts_at_cut(X,y,D,dates,h,idx_by_expert,kinds,cut_frac):
+    cut_i=max(1,int(cut_frac*len(dates)));purge=max(0,cut_i-h);cutoff=dates[purge];valid=np.isfinite(y);tr=valid&(D<cutoff);models={}
+    for name,fi in idx_by_expert.items():
+        xx=X[:,fi];pp=prep(xx,tr);zz=apply_prep(xx,pp);m=make_model(kinds[name]);m.fit(zz[tr],y[tr]);models[name]=(m,pp,fi)
+    return models
+def predict_experts(models,X,indices=None):
+    if indices is None:indices=np.arange(len(X))
+    out={}
+    for name,(m,pp,fi) in models.items():out[name]=m.predict(apply_prep(X[:,fi],pp)[indices])
+    return out
+def buckets(y,score,n=10):
+    q=np.unique(np.quantile(score,np.linspace(0,1,n+1)));out=[]
+    for j in range(len(q)-1):
+        mask=(score>=q[j])&(score<=(q[j+1]) if j==len(q)-2 else score<q[j+1])
+        if mask.sum()<80:continue
+        z=y[mask];out.append({"lo":float(q[j]),"hi":float(q[j+1]),"n":int(mask.sum()),"positiveRate":float(np.mean(z>0)),"meanReturn":float(np.mean(z)),"medianReturn":float(np.median(z)),"q20":float(np.quantile(z,.2)),"q80":float(np.quantile(z,.8))})
+    return out
+def bfind(bs,x):
+    if not bs:return None
+    for b in bs:
+        if x>=b["lo"] and x<=b["hi"]:return b
+    return bs[0] if x<bs[0]["lo"] else bs[-1]
+def ece(y,p,bins=10):
+    edges=np.linspace(0,1,bins+1);total=0.;n=len(y)
+    for a,b in zip(edges[:-1],edges[1:]):
+        m=(p>=a)&(p<(b if b<1 else 1.000001))
+        if m.any():total+=m.sum()*abs(float(np.mean(y[m]))-float(np.mean(p[m])))
+    return total/max(1,n)
+def calibrate(cal_y,cal_score,conform_y,conform_score):
+    scen=buckets(cal_y,cal_score,10)
+    if len(scen)<6:raise RuntimeError("scenario calibration buckets too sparse")
+    iso=IsotonicRegression(y_min=.02,y_max=.98,out_of_bounds="clip");iso.fit(cal_score,(cal_y>0).astype(float));lo=[];hi=[]
+    for x in conform_score:
+        b=bfind(scen,x);lo.append(b["q20"]);hi.append(b["q80"])
+    lo=np.asarray(lo);hi=np.asarray(hi);nonconf=np.maximum.reduce([lo-conform_y,conform_y-hi,np.zeros(len(conform_y))]);qlevel=min(1.0,math.ceil((len(nonconf)+1)*.60)/max(1,len(nonconf)));qadj=float(np.quantile(nonconf,qlevel,method="higher")) if len(nonconf) else 0.;return scen,iso,max(0.,qadj)
+def apply_calibration(score,scen,iso,qadj):
+    p=np.asarray(iso.predict(score),float)
