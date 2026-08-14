@@ -87,7 +87,10 @@ jobs:
         run: PYTHONPATH=scripts python scripts/v12_source_probe.py
 
       - name: Phases 2-7 - train full PIT multimodal forecast and sealed backtest
-        run: PYTHONPATH=scripts python scripts/train_forecast_v12.py
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHONPATH=scripts python scripts/train_forecast_v12.py 2>&1 | tee data/v12-training.log
 
       - name: Phase gates - data entity PIT OOF calibration ablation backtest
         run: PYTHONPATH=scripts python scripts/v12_acceptance.py
@@ -108,8 +111,11 @@ jobs:
         with:
           name: forecast-v12-production-evidence-${{ github.run_id }}
           retention-days: 30
+          if-no-files-found: warn
           path: |
             data/v12-source-probe.json
+            data/v12-training.log
+            data/v12-training-error.json
             data/forecast-model-v12.json
             data/forecast-current-v12.json
             data/forecast-dashboard-v12.json
