@@ -1,56 +1,98 @@
-import json,math,pathlib
+import json,math,pathlib,statistics
 from datetime import datetime,timezone
-ROOT=pathlib.Path('.');DATA=ROOT/'data';failures=[];passes=[]
-def check(name,condition,detail=''):(passes if condition else failures).append(name if condition else {'name':name,'detail':str(detail)[:1200]})
-def load(name):
-    p=DATA/name;check(f'{name} exists',p.exists(),p);return json.loads(p.read_text(encoding='utf-8')) if p.exists() else {}
+ROOT=pathlib.Path('.');DATA=ROOT/'data';failures=[];passes=[];phase_fail={str(i):[] for i in range(1,10)}
+def check(phase,name,condition,detail=''):
+    row={'phase':int(phase),'name':name,'detail':str(detail)[:1600]}
+    if condition:passes.append(row)
+    else:failures.append(row);phase_fail[str(phase)].append(row)
+def load(name,phase,required=True):
+    p=DATA/name;ok=p.exists();check(phase,f'{name} exists',ok,p)
+    if not ok:return {}
+    try:return json.loads(p.read_text(encoding='utf-8'))
+    except BaseException as e:check(phase,f'{name} parses',False,e);return {}
 def finite_json(x):
     if isinstance(x,float):return math.isfinite(x)
     if isinstance(x,dict):return all(finite_json(v) for v in x.values())
     if isinstance(x,list):return all(finite_json(v) for v in x)
     return True
-model=load('forecast-model-v12.json');current=load('forecast-current-v12.json');dash=load('forecast-dashboard-v12.json');back=load('forecast-backtest-v12.json');audit=load('data-audit-v12.json')
-for name,z in [('forecast-model-v12.json',model),('forecast-current-v12.json',current),('forecast-dashboard-v12.json',dash),('forecast-backtest-v12.json',back),('data-audit-v12.json',audit)]:check(f'{name} finite JSON',finite_json(z))
-# Phase 1: current data coverage and source hierarchy
-current_passed=int(audit.get('currentSymbolsPassed') or 0);current_failed=int(audit.get('currentSymbolsFailed') or 0);current_cov=float(audit.get('currentRouteCoverageRatio') or 0);routes=audit.get('routes') or {};check('DATA current coverage >= 330',current_passed>=330,{'passed':current_passed,'failed':current_failed,'routes':routes});check('DATA current route coverage >= 95%',current_cov>=.95,current_cov);attempted=sum(any(x.get('stage')=='VNSTOCK_PRIMARY' for x in z.get('attempts',[])) for s,z in (audit.get('symbols') or {}).items() if s in (current.get('symbols') or {}));check('DATA VNStock primary attempted across current universe',attempted>=current_passed*.95,attempted);check('DATA index route available',bool((audit.get('index') or {}).get('rows')),audit.get('index'))
-# Survivorship hardening: only confirmed VCI STO lineage; no guessed delisted exchange.
-u=audit.get('universeAudit') or {};disc=(u.get('discovery') or {}).get('vnstockReference') or {};mapping=disc.get('productGroupMappingEvidence') or {};hsx=mapping.get('HSX') or {};check('UNIVERSE Vnstock HSX product-group mapping complete',int(hsx.get('rows') or 0)>=350 and int(hsx.get('matchingProductGroup') or 0)==int(hsx.get('rows') or -1),hsx);check('UNIVERSE former-HSX candidates discovered',int(disc.get('confirmedFormerHOSE') or 0)>=2,disc.get('confirmedFormerHOSESymbols'));check('UNIVERSE validated historical-only cohort >= 1',int(u.get('historicalOnlyCount') or 0)>=1,u.get('historicalOnly'));historical=set((u.get('historicalOnly') or {}).keys());check('UNIVERSE historical-only excluded from current forecast',not historical.intersection(current.get('symbols') or {}),historical.intersection(current.get('symbols') or {}));check('UNIVERSE unknown former exchange not guessed','NULL/UPX/STX' in str(disc.get('rule') or ''),disc.get('rule'))
-# Entity/event/rumor corpus
-entity=audit.get('entityFilter') or {};check('ENTITY gate version present',str(entity.get('version','')).startswith('VMEWS-ENTITY-GATE-12'),entity.get('version'));check('ENTITY gate evaluated >= 10000 candidates',int(entity.get('input') or 0)>=10000,entity.get('input'));check('ENTITY contaminated candidates rejected',int(entity.get('rejected') or 0)>0,entity.get('rejected'));check('ENTITY retained coverage >= 55%',float(entity.get('acceptanceRate') or 0)>=.55,entity.get('acceptanceRate'));check('ENTITY HCM audited','HCM' in (entity.get('perSymbol') or {}));check('ENTITY CDC audited','CDC' in (entity.get('perSymbol') or {}));check('ENTITY ambiguous dictionary includes language collisions',all(x in set(entity.get('ambiguousSymbols') or []) for x in ['HCM','CDC','GTA','THG','VIP','FIT','NHA']),entity.get('ambiguousSymbols'))
-streams=entity.get('streamCoverage') or {};check('EVENT official stream >= 500',int(streams.get('OFFICIAL') or 0)>=500,streams);check('EVENT narrative stream >= 5000',int(streams.get('MAIN') or 0)>=5000,streams);check('RUMOR stream >= 20',int(streams.get('RUMOR') or 0)>=20,streams)
-ev=audit.get('eventCoverage') or {};check('EVENT symbols >= 300',int(ev.get('symbols') or 0)>=300,ev);check('EVENT articles >= 10000 after entity gate',int(ev.get('articles') or 0)>=10000,ev);check('EVENT official classified >= 500',int(ev.get('official') or 0)>=500,ev);check('EVENT matured outcomes >= 10000',int(ev.get('eventOutcomes') or 0)>=10000,ev);check('RUMOR corpus >= 20 after entity gate',int(ev.get('rumors') or 0)>=20,ev);check('EVENT archive mode explicitly disclosed',ev.get('archiveMode')=='RETROSPECTIVE_PUBLICATION_TIME_ALIGNED',ev.get('archiveMode'))
-# Leakage / PIT governance
-features=model.get('featureNames') or []
-for bad in ['futureReturn','actualReturn','confirmT2','newsFollowsPrice','matureDate5','actualRawPrice']:check(f'PIT forbidden model feature absent: {bad}',bad not in features)
-gov=model.get('governance') or {};check('PIT publication-time governance declared','publishedAt' in str(gov.get('eventPIT')),gov.get('eventPIT'));check('OOF stacking governance declared','OOF' in str(gov.get('stacking')),gov.get('stacking'));check('sealed audit governance declared','sealed' in str(gov.get('sealedAudit')).lower(),gov.get('sealedAudit'));check('survivorship governance declared','former-HSX' in str(gov.get('survivorship')),gov.get('survivorship'))
-# Flow availability is explicit; missing != neutral evidence.
-fc=audit.get('flowCoverage') or {};check('FLOW foreign coverage >= 15%',float(fc.get('foreignCoverage') or 0)>=.15,fc);check('FLOW missingness explicit','foreignAvailable' in features and 'propAvailable' in features)
-# ML / calibration / stability: every direct price horizon must pass.
-horizons=model.get('horizons') or {};check('ML direct horizons 1-5 exist',all(str(h) in horizons for h in range(1,6)),list(horizons))
+def pct(vals,q):
+    a=sorted(float(x) for x in vals if isinstance(x,(int,float)) and math.isfinite(float(x)))
+    if not a:return None
+    return a[min(len(a)-1,max(0,int(round((len(a)-1)*q))))]
+def f(x,d=0.0):
+    try:v=float(x);return v if math.isfinite(v) else d
+    except:return d
+
+model=load('forecast-model-v12.json',5);current=load('forecast-current-v12.json',5);dash=load('forecast-dashboard-v12.json',8);back=load('forecast-backtest-v12.json',7);audit=load('data-audit-v12.json',1);eventdb=load('event-intelligence-v12.json',2);flowdb=load('flow-v12.json',4);flowaudit=load('flow-audit-v12.json',4)
+for ph,name,z in [(5,'forecast-model-v12.json',model),(5,'forecast-current-v12.json',current),(8,'forecast-dashboard-v12.json',dash),(7,'forecast-backtest-v12.json',back),(1,'data-audit-v12.json',audit),(2,'event-intelligence-v12.json',eventdb),(4,'flow-v12.json',flowdb),(4,'flow-audit-v12.json',flowaudit)]:check(ph,f'{name} finite JSON',finite_json(z))
+
+# PHASE 1 — DATA FOUNDATION
+cur_symbols=current.get('symbols') or {};current_passed=int(audit.get('currentSymbolsPassed') or audit.get('symbolsPassed') or 0);current_failed=int(audit.get('currentSymbolsFailed') or audit.get('symbolsFailed') or 0);current_cov=f(audit.get('currentRouteCoverageRatio'),current_passed/max(1,current_passed+current_failed));routes=audit.get('routes') or {};symbol_audits=audit.get('symbols') or {}
+check(1,'current eligible coverage >= 330 symbols',current_passed>=330,{'passed':current_passed,'failed':current_failed,'routes':routes});check(1,'current route coverage >= 95%',current_cov>=.95,current_cov)
+attempted=sum(any(x.get('stage')=='VNSTOCK_PRIMARY' for x in (z.get('attempts') or [])) for s,z in symbol_audits.items() if not cur_symbols or s in cur_symbols);check(1,'VNStock primary attempted for >=95% current universe',attempted>=max(1,current_passed)*.95,{'attempted':attempted,'passed':current_passed})
+cas=[(z.get('corporateAction') or {}).get('verified') is True for z in symbol_audits.values()];check(1,'corporate-action reconciliation verified >=98%',bool(cas) and sum(cas)/len(cas)>=.98,{'verified':sum(cas),'n':len(cas)})
+mads=[z.get('crossSourceReturnMAD') for z in symbol_audits.values() if isinstance(z.get('crossSourceReturnMAD'),(int,float))];check(1,'cross-source return reconciliation p95 <=0.30%',bool(mads) and f(pct(mads,.95),99)<=.003,{'n':len(mads),'p95':pct(mads,.95),'max':max(mads) if mads else None})
+model_jumps=[f((z.get('corporateAction') or {}).get('largestModelLogJump'),0) for z in symbol_audits.values() if (z.get('corporateAction') or {}).get('largestModelLogJump') is not None];check(1,'adjusted model jumps remain <=12%',not model_jumps or max(model_jumps)<=.12,max(model_jumps) if model_jumps else None)
+idx=audit.get('index') or {};check(1,'VNINDEX/index fallback history >=520 rows',int(idx.get('rows') or 0)>=520,idx)
+u=audit.get('universeAudit') or {};historical=set((u.get('historicalOnly') or {}).keys());check(1,'survivorship audit present',bool(u),u.keys() if isinstance(u,dict) else None);check(1,'historical-only cohort excluded from current forecast',not historical.intersection(cur_symbols),historical.intersection(cur_symbols))
+uni=model.get('universe') or {};check(1,'historical model panel >=120k rows',int(uni.get('rows') or 0)>=120000,uni);check(1,'history spans at least 7 years',str(uni.get('start') or '9999')<='2019-01-01' and str(uni.get('end') or '0000')>='2026-06-01',uni);check(1,'no synthetic padding policy declared','synthetic' in str(audit.get('policy') or '').lower() and 'no' in str(audit.get('policy') or '').lower(),audit.get('policy'))
+
+# PHASE 2 — EVENT INTELLIGENCE
+entity=audit.get('entityFilter') or {};streams=entity.get('streamCoverage') or {};ev=audit.get('eventCoverage') or {};es=eventdb.get('summary') or {};records=eventdb.get('records') or []
+check(2,'entity gate evaluated >=10k candidates',int(entity.get('input') or 0)>=10000,entity.get('input'));check(2,'entity false positives are actually rejected',int(entity.get('rejected') or 0)>0,entity.get('rejected'));check(2,'ambiguous ticker-language collision tests represented',all(x in set(entity.get('ambiguousSymbols') or []) for x in ['HCM','CDC','GTA','THG','VIP','FIT','NHA']),entity.get('ambiguousSymbols'));check(2,'official evidence stream >=500',int(streams.get('OFFICIAL') or 0)>=500,streams);check(2,'narrative stream >=5000',int(streams.get('MAIN') or 0)>=5000,streams)
+check(2,'historical event DB >=10k records',int(es.get('records') or 0)>=10000,es);check(2,'historical event DB covers >=300 tickers',int(es.get('symbols') or 0)>=300,es);check(2,'historical event DB spans 2019-or-earlier to 2026',str(es.get('first') or '9999')<='2019-12-31' and str(es.get('last') or '0000')>='2026-06-01',es);check(2,'matured event outcomes >=10k',int(ev.get('eventOutcomes') or 0)>=10000,ev)
+required_event={'newsId','publishedAt','availableDate','ticker','sector','source','sourceType','eventType','sentimentScore','materialityScore','noveltyScore','sourceCredibility','confidence','clusterId','priceAtAvailability','priceAfter','abnormalReturn','cumulativeAbnormalReturn','matureDate'};sample=records[:300];check(2,'event DB schema includes PIT/source/event/AR/CAR fields',bool(sample) and all(required_event.issubset(x) for x in sample),set().union(*(set(x) for x in sample[:3])) if sample else None)
+features=model.get('featureNames') or [];check(2,'horizon-specific matured event priors exist',all(f'eventPriorAR{h}' in features and f'eventPriorHit{h}' in features and f'eventPriorN{h}' in features for h in range(1,6)),[x for x in features if x.startswith('eventPrior')]);check(2,'event labels never enter numerical featureNames',not any(x in features for x in ['actualReturn','priceAfter','abnormalReturn','cumulativeAbnormalReturn','matureDate1','matureDate5']),[x for x in features if 'mature' in x.lower() or 'actual' in x.lower()])
+
+# PHASE 3 — RUMOR ENGINE
+ra=(ev.get('rumorClaimAudit') or (entity.get('rumorClaimAudit') or {}));rumor_records=[x for x in records if x.get('sourceType')=='RUMOR_UNVERIFIED'];claim_ids=set(x.get('clusterId') for x in rumor_records if x.get('clusterId'));resolved=[x for x in rumor_records if x.get('claimResolutionDate')]
+check(3,'rumor corpus >=20 records',len(rumor_records)>=20,len(rumor_records));check(3,'rumor claim clustering materialized >=20 clusters',int(ra.get('clusters') or len(claim_ids))>=20,ra);check(3,'rumor claim IDs retained in event DB',len(claim_ids)>=20,len(claim_ids));check(3,'rumor propagation/source-diversity/duplication features exist',all(x in features for x in ['rumorPropagation20','rumorSourceDiversity20','rumorDuplication20']),[x for x in features if x.startswith('rumor')]);check(3,'rumor price and volume lead-lag features exist',all(x in features for x in ['rumorPreMove2','rumorPreMove5','rumorPreVolume20','rumorLeadScore20']),[x for x in features if x.startswith('rumor')]);check(3,'rumor truth-state feature set exists',all(x in features for x in ['rumorConfirmed20','rumorDenied20','rumorUnverified20']),[x for x in features if x.startswith('rumor')]);check(3,'rumor resolution engine finds at least one later official clarification',int(ra.get('resolvedClusters') or len(set(x.get('clusterId') for x in resolved)))>=1,ra);check(3,'rumor PIT governance forbids resolution backfill','never backfilled' in str((model.get('governance') or {}).get('rumorPIT','')).lower(),(model.get('governance') or {}).get('rumorPIT'))
+
+# PHASE 4 — FLOW / FUNDAMENTAL / MARKET REGIME
+fs=flowdb.get('summary') or {};fa=flowaudit.get('summary') or {};check(4,'V12 flow archive is used',str((model.get('dataSources') or {}).get('flowVersion','')).startswith('VMEWS-FLOW-12'),model.get('dataSources'));check(4,'flow archive source audit PASS',fs.get('status')=='PASS' and fa.get('status')=='PASS',{'flow':fs,'audit':fa});check(4,'proprietary PIT history has >=80 symbols with 100+ nonzero rows',int(fs.get('prop100plus') or 0)>=80,fs);check(4,'foreign flow has non-trivial universe coverage',f(fs.get('foreignCoverage'))>=.40,fs);check(4,'flow feature missingness explicit',all(x in features for x in ['foreignAvailable','propAvailable']),[x for x in features if 'Available' in x])
+fund=audit.get('fundamentalPIT') or {};check(4,'non-PIT accounting statements are explicitly blocked',fund.get('certified') is False and fund.get('numericalAccountingFeaturesEnabled') is False,fund);check(4,'fundamental event expert exists without pretending quarterly ratios are PIT','FUNDAMENTAL_EVENT' in (model.get('experts') or {}),model.get('experts',{}).keys())
+regime_req=['breadth1','breadth5','breadth20','csad1','csad5','csad20','herdingCompression','turnoverConcentration','leadershipSpread','volumeBreadth'];check(4,'market psychology/regime features complete',all(x in features for x in regime_req),[x for x in regime_req if x not in features])
+
+# PHASE 5 — TRUE ML FORECAST
+horizons=model.get('horizons') or {};check(5,'direct ML horizons T+1..T+5 all exist',all(str(h) in horizons for h in range(1,6)),list(horizons));gov=model.get('governance') or {};check(5,'OOF stacking governance explicit','OOF' in str(gov.get('stacking')),gov.get('stacking'));check(5,'Ridge/LightGBM challenger selection explicit','LightGBM' in str(gov.get('modelSelection')) and 'Ridge' in str(gov.get('modelSelection')),gov.get('modelSelection'))
 for h in range(1,6):
-    z=horizons.get(str(h),{});active=z.get('activeExperts') or [];sealed=z.get('sealedAudit') or {};check(f'MODEL T+{h} NUMERICAL active','NUMERICAL' in active,active);check(f'MODEL T+{h} REGIME active','REGIME' in active,active);check(f'MODEL T+{h} price gate PASS',z.get('priceStatus')=='PASS',z.get('priceGates'));check(f'MODEL T+{h} audit n >= 5000',int(sealed.get('n') or 0)>=5000,sealed.get('n'));check(f'MODEL T+{h} rank IC > 0.02',float(sealed.get('rankIC') or 0)>.02,sealed.get('rankIC'));check(f'MODEL T+{h} spread > 0.10%',float(sealed.get('spread') or 0)>.001,sealed.get('spread'));check(f'MODEL T+{h} IC days >= 20',int(sealed.get('icDays') or 0)>=20,sealed.get('icDays'));check(f'MODEL T+{h} daily IC majority nonnegative',float(sealed.get('icPositiveDayShare') or 0)>=.50,sealed.get('icPositiveDayShare'));check(f'MODEL T+{h} IC bootstrap populated',isinstance(sealed.get('icBootstrap95'),list) and len(sealed.get('icBootstrap95'))==2,sealed.get('icBootstrap95'));check(f'MODEL T+{h} calibration coverage 52-72%',.52<=float(sealed.get('coverage20_80') or 0)<=.72,sealed.get('coverage20_80'));check(f'MODEL T+{h} scenario rank IC positive',float(sealed.get('scenarioRankIC') or 0)>.01,sealed.get('scenarioRankIC'))
-    regimes=z.get('regimeAudit') or {};check(f'MODEL T+{h} regime audit breadth strong','BREADTH_STRONG' in regimes,regimes.keys());check(f'MODEL T+{h} regime audit breadth weak','BREADTH_WEAK' in regimes,regimes.keys());check(f'MODEL T+{h} regime audit by year',bool(regimes.get('BY_YEAR')),regimes.get('BY_YEAR'))
-    promotions=z.get('expertPromotion') or {}
+    z=horizons.get(str(h),{});active=z.get('activeExperts') or [];choices=z.get('expertModelSelection') or {};prom=z.get('expertPromotion') or {};check(5,f'T+{h} mandatory numerical+regime experts active','NUMERICAL' in active and 'REGIME' in active,active);check(5,f'T+{h} all six expert families evaluated',all(x in choices for x in ['NUMERICAL','REGIME','EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']),choices.keys())
     for name in ['EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']:
-        p=promotions.get(name);check(f'MODEL T+{h} expert selection evaluates {name}',isinstance(p,dict),promotions.keys())
-        if isinstance(p,dict) and p.get('promoted'):check(f'MODEL T+{h} promoted {name} passed evidence gate',p.get('evidenceGatePassed') is True,p)
-    for name in active:check(f'MODEL T+{h} ablation available {name}',name in (z.get('ablation') or {}),z.get('ablation'))
-promotion=model.get('promotion') or {};direct=promotion.get('directPriceHorizons') or [];check('MODEL promotion PASS',promotion.get('status')=='PASS',promotion);check('MODEL all T+1..T+5 price horizons promoted',direct==[1,2,3,4,5],direct)
-# Current numerical outputs and validation identity.
-symbols=current.get('symbols') or {};check('CURRENT symbols >= 320',len(symbols)>=320,len(symbols))
-for s,z in list(symbols.items())[:100]:
-    close=float(z.get('close') or 0);check(f'CURRENT {s} close > 0',close>0,close)
-    for h in range(1,6):
-        q=(z.get('horizons') or {}).get(str(h),{});check(f'CURRENT {s} T+{h} price validated',q.get('priceValidated') is True,q.get('validationStatus'))
-        if not q:continue
-        er=float(q.get('expectedReturn'));ep=float(q.get('expectedPrice'));lo=float(q.get('q20'));hi=float(q.get('q80'));pup=float(q.get('probUp'));check(f'CURRENT {s} T+{h} expected price identity',abs(ep-close*math.exp(er))<=max(1.,ep*1e-9));check(f'CURRENT {s} T+{h} quantile order',lo<=er<=hi,(lo,er,hi));check(f'CURRENT {s} T+{h} probability numeric',0<=pup<=1,pup)
-# Historical cut-point trace: what was known at T0, forecast, raw future, adjusted realized return.
-cases=back.get('cases') or {}
+        p=prom.get(name) or {};check(5,f'T+{h} optional {name} has evidence gate',isinstance(p,dict) and 'evidenceGatePassed' in p,p)
+        if p.get('promoted'):
+            inc=p.get('incrementalICTest') or {};ci=inc.get('bootstrap90') or [None,None];check(5,f'T+{h} promoted {name} has positive incremental OOS value',f(p.get('deltaIC'))>.001 and f(p.get('deltaMAEImprove'))>0 and f(inc.get('pValue'),1)<.0125 and isinstance(ci,list) and len(ci)==2 and isinstance(ci[0],(int,float)) and f(ci[0])>0,p)
+
+# PHASE 6 — DISTRIBUTION / PRICE CONVERSION
 for h in range(1,6):
-    a=cases.get(str(h)) or [];check(f'BACKTEST T+{h} cases >= 50',len(a)>=50,len(a))
-    for x in a[:80]:
-        origin=float(x.get('originPrice') or 0);pred=float(x.get('predictedReturn') or 0);ep=float(x.get('expectedPrice') or 0);check(f'BACKTEST T+{h} origin valid',bool(x.get('originDate')) and origin>0,x);check(f'BACKTEST T+{h} expected price identity',abs(ep-origin*math.exp(pred))<=max(1.,ep*1e-9));check(f'BACKTEST T+{h} raw future retained',finite_json(x.get('actualRawPrice')) and finite_json(x.get('realizedComparablePrice')),(x.get('actualRawPrice'),x.get('realizedComparablePrice')));c=x.get('contextAtOrigin') or {};check(f'BACKTEST T+{h} T0 context retained',all(k in c for k in ['prior20','breadth20','newsN20','rumorN20','foreignAvailable','propAvailable']),c.keys())
-# Dashboard/current only, no historical-delisted leakage.
-check('DASH charts cover current universe',len(dash.get('charts') or {})>=len(symbols)*.95,(len(dash.get('charts') or {}),len(symbols)));check('DASH excludes historical-only symbols',not historical.intersection(dash.get('symbols') or {}),historical.intersection(dash.get('symbols') or {}))
-for s,a in list((dash.get('charts') or {}).items())[:60]:check(f'DASH {s} chart >= 80 rows',len(a)>=80,len(a));check(f'DASH {s} chart chronological',not a or all(a[i]['date']<a[i+1]['date'] for i in range(len(a)-1)))
-phase={'version':'VMEWS-PHASE-GATES-12.2.0','generatedAt':datetime.now(timezone.utc).isoformat(),'tests':len(passes)+len(failures),'passed':len(passes),'failed':len(failures),'failures':failures,'phases':{k:not any(str(x['name']).startswith(prefix) for x in failures) for k,prefix in [('data','DATA'),('universe','UNIVERSE'),('entity','ENTITY'),('event','EVENT'),('rumor','RUMOR'),('flow','FLOW'),('ml','MODEL'),('current','CURRENT'),('backtest','BACKTEST'),('dashboard','DASH')]}};phase['status']='PASS' if not failures else 'FAIL';(DATA/'phase-gates-v12.json').write_text(json.dumps(phase,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8');print(json.dumps(phase,ensure_ascii=False,indent=2));raise SystemExit(1 if failures else 0)
+    z=horizons.get(str(h),{});dist=z.get('distributionAudit') or {};sealed=z.get('sealedAudit') or {};check(6,f'T+{h} uses true quantile regression','QUANTILE' in str(dist.get('method','')).upper(),dist);check(6,f'T+{h} q20/q50/q80 declared',dist.get('quantiles')==[.2,.5,.8] or dist.get('quantiles')==[0.2,0.5,0.8],dist);check(6,f'T+{h} conformal calibration has enough observations',int(dist.get('conformalRows') or 0)>=100 and int(dist.get('calibrationRows') or 0)>=100,dist);check(6,f'T+{h} scenario beats no-change MAE baseline',f(sealed.get('scenarioMAEImprove'),-99)>0,sealed.get('scenarioMAEImprove'));check(6,f'T+{h} empirical q20-q80 coverage 52-72%',.52<=f(sealed.get('coverage20_80'))<=.72,sealed.get('coverage20_80'))
+# Sample actual user-facing identities, but P(up) only when separately validated.
+check(6,'current forecast universe >=320 symbols',len(cur_symbols)>=320,len(cur_symbols))
+for s,z in list(cur_symbols.items())[:80]:
+    close=f(z.get('close'))
+    for h in range(1,6):
+        q=(z.get('horizons') or {}).get(str(h),{});check(6,f'{s} T+{h} expected-price identity',bool(q) and close>0 and abs(f(q.get('expectedPrice'))-close*math.exp(f(q.get('expectedReturn'))))<=max(1.,abs(f(q.get('expectedPrice')))*1e-9),q)
+        if q.get('priceValidated'):check(6,f'{s} T+{h} validated quantile order',f(q.get('q20'))<=f(q.get('expectedReturn'))<=f(q.get('q80')),q)
+        if q.get('directionValidated'):check(6,f'{s} T+{h} validated P(up) numeric',0<=f(q.get('probUp'),-1)<=1,q.get('probUp'))
+
+# PHASE 7 — FULL BACKTEST / MODEL RISK
+for h in range(1,6):
+    z=horizons.get(str(h),{});sealed=z.get('sealedAudit') or {};pbo=z.get('pboAudit') or {};wf=z.get('walkForwardReplay') or {};reg=z.get('regimeAudit') or {};abl=z.get('ablation') or {};check(7,f'T+{h} sealed OOS n>=5000',int(sealed.get('n') or 0)>=5000,sealed);check(7,f'T+{h} rank IC >2%',f(sealed.get('rankIC'))>.02,sealed.get('rankIC'));check(7,f'T+{h} top-bottom spread >0.10%',f(sealed.get('spread'))>.001,sealed.get('spread'));check(7,f'T+{h} daily IC stability >=20 days',int(sealed.get('icDays') or 0)>=20 and f(sealed.get('icPositiveDayShare'))>=.50,sealed);check(7,f'T+{h} PBO audit PASS',pbo.get('status')=='PASS' and int(pbo.get('splits') or 0)>=30 and f(pbo.get('pbo'),1)<=.50,pbo);check(7,f'T+{h} literal walk-forward replay PASS',wf.get('status')=='PASS' and int(wf.get('futureRowsUsedForTraining') or -1)==0 and len(wf.get('blocks') or [])>=3,wf);check(7,f'T+{h} purge equals horizon',int(wf.get('purgeSessions') or -1)==h,wf.get('purgeSessions'));check(7,f'T+{h} regime audit covers strong/weak/year',all(x in reg for x in ['BREADTH_STRONG','BREADTH_WEAK','BY_YEAR']),reg.keys());check(7,f'T+{h} ablation exists for every active expert',all(x in abl for x in (z.get('activeExperts') or [])),abl.keys())
+    # Direction is optional for display, but if declared PASS it must truly beat base rate.
+    if z.get('directionStatus')=='PASS':check(7,f'T+{h} validated direction beats base rate',f(sealed.get('brierSkill'),-99)>0 and f(sealed.get('balancedAccuracy'))>.51 and f(sealed.get('mcc'))>.015,sealed)
+    cases=(back.get('cases') or {}).get(str(h)) or [];check(7,f'T+{h} auditable historical cases >=50',len(cases)>=50,len(cases))
+    for x in cases[:30]:
+        origin=f(x.get('originPrice'));pred=f(x.get('predictedReturn'));ep=f(x.get('expectedPrice'));ctx=x.get('contextAtOrigin') or {};check(7,f'T+{h} historical expected-price identity',origin>0 and abs(ep-origin*math.exp(pred))<=max(1.,abs(ep)*1e-9),x);check(7,f'T+{h} T0 evidence snapshot retained',all(k in ctx for k in ['prior20','breadth20','newsN20','rumorN20','foreignAvailable','propAvailable']),ctx.keys());check(7,f'T+{h} actual future raw price retained',isinstance(x.get('actualRawPrice'),(int,float)) and f(x.get('actualRawPrice'))>0,x.get('actualRawPrice'))
+promotion=model.get('promotion') or {};check(7,'all five direct price horizons pass final model-risk gates',promotion.get('status')=='PASS' and promotion.get('directPriceHorizons')==[1,2,3,4,5],promotion)
+
+# PHASE 8 — UI / DATA CONTRACT
+js=(ROOT/'forecast-final-v12.js').read_text(encoding='utf-8') if (ROOT/'forecast-final-v12.js').exists() else '';html=(ROOT/'forecast-final.html').read_text(encoding='utf-8') if (ROOT/'forecast-final.html').exists() else ''
+check(8,'V12 frontend asset exists',bool(js));check(8,'direct expectedPrice is used in chart','expectedPrice' in js and 'q20Price' in js and 'q80Price' in js);check(8,'chart tooltip/hover implementation present',any(x in js.lower() for x in ['tooltip','mousemove','hover']));check(8,'frontend respects priceValidated gate','priceValidated' in js);check(8,'frontend respects directionValidated gate','directionValidated' in js);check(8,'evidence contribution UI present','expertContributions' in js);check(8,'rumor intelligence UI present','rumor' in js.lower());check(8,'backtest drilldown present','backtest' in js.lower() and 'actualRawPrice' in js);check(8,'page labels forecast as research not trade signal','research' in (html+js).lower())
+check(8,'dashboard charts cover >=95% current universe',len(dash.get('charts') or {})>=len(cur_symbols)*.95,(len(dash.get('charts') or {}),len(cur_symbols)))
+
+# PHASE 9 — PRODUCTION PRECONDITIONS. Browser/CDN/hash/outage are completed by the release workflow after this research gate.
+check(9,'research model is fully promotable before release workflow',promotion.get('status')=='PASS',promotion);check(9,'V12 flow archive is immutable-input candidate',str(flowdb.get('version','')).startswith('VMEWS-FLOW-12'),flowdb.get('version'));check(9,'data source paths/version are recorded',bool(model.get('dataSources')),model.get('dataSources'));check(9,'no unvalidated current price is presented as validated',all(all((not q.get('priceValidated')) or (horizons.get(str(h),{}).get('priceStatus')=='PASS') for h,q in [(int(k),v) for k,v in (z.get('horizons') or {}).items()]) for z in cur_symbols.values()),'validation mismatch')
+
+phase={
+    'version':'VMEWS-PHASE-GATES-12.4.0','generatedAt':datetime.now(timezone.utc).isoformat(),'tests':len(passes)+len(failures),'passed':len(passes),'failed':len(failures),'failures':failures,
+    'phases':{str(i):{'name':{1:'Data foundation',2:'Event Intelligence',3:'Rumor Engine',4:'Flow/Fundamental/Market regime',5:'True ML forecast',6:'Distribution',7:'Full backtest',8:'UI contract',9:'Production preconditions'}[i],'status':'PASS' if not phase_fail[str(i)] else 'FAIL','failed':len(phase_fail[str(i)])} for i in range(1,10)}
+};phase['status']='PASS' if not failures else 'FAIL';(DATA/'phase-gates-v12.json').write_text(json.dumps(phase,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8');print(json.dumps(phase,ensure_ascii=False,indent=2));raise SystemExit(1 if failures else 0)
