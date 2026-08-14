@@ -1,0 +1,126 @@
+name: Forecast V12 production research build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-production]
+    paths:
+      - 'scripts/v12_*.py'
+      - 'scripts/v12_train_parts/**'
+      - 'scripts/train_forecast_v12.py'
+      - 'forecast-final-v12.js'
+      - 'forecast-final.html'
+      - 'requirements-v12.txt'
+      - '.github/workflows/forecast-v12-production.yml'
+      - 'v12-trigger.txt'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: vmews-v12-production
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[v12-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    env:
+      V12_MIN_ROWS: '520'
+      V12_VNSTOCK_INTERVAL: '3.15'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+
+      - name: Install V12 research dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+
+      - name: Compile V12 source before network work
+        run: |
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          python - <<'PY'
+          from pathlib import Path
+          parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
+          code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
+          compile(code,'v12-assembled-training.py','exec')
+          print('ASSEMBLED V12 PYTHON SYNTAX PASS',len(parts),len(code))
+          PY
+
+      - name: Restore real V11 historical evidence seed
+        uses: actions/download-artifact@v4
+        with:
+          name: forecast-v11-final-evidence-31790884093
+          path: /tmp/v11-seed
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: NCKHtop1/vmews-risk-analytics
+          run-id: 31790884093
+
+      - name: Install PIT evidence seed
+        run: |
+          mkdir -p data/v12-seed
+          for f in sentiment-v11.json flow-v11.json market-scan.json; do
+            src=$(find /tmp/v11-seed -name "$f" -type f | head -1)
+            test -n "$src"
+            cp "$src" "data/v12-seed/$f"
+          done
+          python - <<'PY'
+          import json
+          for f in ['sentiment-v11.json','flow-v11.json','market-scan.json']:
+              z=json.load(open('data/v12-seed/'+f,encoding='utf-8'))
+              print(f,z.get('version'))
+          PY
+
+      - name: Phase 1 - VNStock-first representative source probe
+        run: python scripts/v12_source_probe.py
+
+      - name: Phases 2-7 - train full PIT multimodal forecast and sealed backtest
+        run: python scripts/train_forecast_v12.py
+
+      - name: Phase gates - data PIT OOF calibration ablation backtest
+        run: python scripts/v12_acceptance.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Frontend syntax
+        run: node --check forecast-final-v12.js
+
+      - name: Phase 8 - static UX and forecast-integrity smoke
+        run: python scripts/v12_static_smoke.py
+
+      - name: Upload V12 production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-v12-production-evidence-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            data/v12-source-probe.json
+            data/forecast-model-v12.json
+            data/forecast-current-v12.json
+            data/forecast-dashboard-v12.json
+            data/forecast-backtest-v12.json
+            data/data-audit-v12.json
+            data/phase-gates-v12.json
+
+      - name: Persist only validated V12 snapshots
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/phase-gates-v12.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish validated V12 research snapshots [v12-data]'
+          git pull --rebase origin forecast-v12-production
+          git push origin HEAD:forecast-v12-production
