@@ -1,0 +1,23 @@
+def build_event_intelligence_artifact(articles_by_symbol,event_outcomes,rows_by_symbol):
+    outcome_by_id={x.get('id'):x for x in event_outcomes if x.get('id') is not None};records=[]
+    for symbol,items in articles_by_symbol.items():
+        rows=rows_by_symbol.get(symbol) or []
+        for x in items:
+            i=x.get('availableIndex');o=outcome_by_id.get(x.get('id'),{});origin=float(rows[i]['close']) if isinstance(i,int) and 0<=i<len(rows) else None;price_after={}
+            if isinstance(i,int):
+                for h in HORIZONS:
+                    if i+h<len(rows):price_after[str(h)]=float(rows[i+h]['close'])
+            rec={
+                'newsId':x.get('id'),'publishedAt':x.get('publishedAt'),'availableDate':x.get('availableDate'),'ticker':symbol,'sector':x.get('sector'),
+                'source':x.get('publisher'),'sourceType':x.get('sourceClass'),'stream':x.get('stream'),'eventType':x.get('event'),
+                'sentimentLabel':x.get('label'),'sentimentScore':float(x.get('sent',0) or 0),'materialityScore':float(x.get('materiality',0) or 0),
+                'noveltyScore':float(x.get('novelty',0) or 0),'sourceCredibility':float(x.get('quality',0) or 0),'confidence':float(x.get('confidence',0) or 0),
+                'clusterId':x.get('claimId'),'claimTruthState':x.get('claimTruthState') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
+                'claimResolutionDate':x.get('claimResolutionDate') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
+                'preReturn2':x.get('preR2'),'preReturn5':x.get('preR5'),'preVolumeLead':x.get('preVolumeLead'),'priceAtAvailability':origin,'priceAfter':price_after,
+                'abnormalReturn':{str(h):o.get(f'ar{h}') for h in HORIZONS},'cumulativeAbnormalReturn':{str(h):o.get(f'car{h}') for h in HORIZONS},
+                'preAbnormalReturn':{str(k):o.get(f'preAR{k}') for k in (1,2,5)},'matureDate':{str(h):o.get(f'matureDate{h}') for h in HORIZONS},
+                'link':x.get('link'),'title':x.get('title')
+            };records.append(rec)
+    dates=[x.get('availableDate') for x in records if x.get('availableDate')];symbols=set(x.get('ticker') for x in records);rumors=[x for x in records if x.get('sourceType')=='RUMOR_UNVERIFIED'];resolved=[x for x in rumors if x.get('claimResolutionDate')]
+    return {'version':'VMEWS-EVENT-INTELLIGENCE-12.0.0','generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimePolicy':'Feature eligibility is publication/availableDate based. Forward AR/CAR and priceAfter are labels/audit fields only and are forbidden from featureNames; maturity-date priors query only outcomes matured by T.','summary':{'records':len(records),'symbols':len(symbols),'first':min(dates) if dates else None,'last':max(dates) if dates else None,'rumorRecords':len(rumors),'resolvedRumorRecords':len(resolved)},'records':records}
