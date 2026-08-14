@@ -10,6 +10,7 @@ on:
     - cron: '35 11 * * 1-5'
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: vmews-v11-production-data
   cancel-in-progress: true
@@ -33,12 +34,27 @@ jobs:
         run: python scripts/build_flow_study_v11_fixed.py
       - name: Refresh VMEWS risk scan
         run: python scripts/update_market_scan.py
-      - name: Backfill news history
-        run: python scripts/backfill_news_v11.py
-      - name: Run supervised sentiment
-        run: python scripts/sentiment_news_v11.py
-      - name: Build event study
-        run: python scripts/build_news_event_study_v11.py
+      - name: Restore validated same-day historical news evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: forecast-v11-final-evidence-31782208209
+          path: /tmp/v11-news
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: NCKHtop1/vmews-risk-analytics
+          run-id: 31782208209
+      - name: Install restored news corpus
+        run: |
+          for f in news-history-v11.json sentiment-v11.json news-event-study-v11.json; do
+            src=$(find /tmp/v11-news -name "$f" -type f | head -1)
+            test -n "$src"
+            cp "$src" "data/$f"
+          done
+          python - <<'PY'
+          import json
+          for p in ['data/news-history-v11.json','data/sentiment-v11.json','data/news-event-study-v11.json']:
+              z=json.load(open(p,encoding='utf-8'))
+              print(p, z.get('version'), z.get('summary',{}), z.get('events'))
+          PY
       - name: Build macro study
         run: python scripts/build_macro_study_v11_fixed.py
       - name: Build dashboard
