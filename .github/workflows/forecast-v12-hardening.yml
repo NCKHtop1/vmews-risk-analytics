@@ -68,7 +68,20 @@ jobs:
       - name: VNStock-first source probe
         run: PYTHONPATH=scripts python scripts/v12_source_probe.py
       - name: Train full hardening model and sealed audit
-        run: PYTHONPATH=scripts python scripts/train_forecast_v12.py
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHONPATH=scripts python scripts/train_forecast_v12.py 2>&1 | tee data/v12-training.log
+      - name: Assert training artifacts before acceptance
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          expected=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json']
+          rows={x:(Path('data')/x).stat().st_size if (Path('data')/x).exists() else None for x in expected}
+          print('V12 MATERIALIZED OUTPUTS',rows)
+          missing=[k for k,v in rows.items() if v is None or v<100]
+          if missing: raise SystemExit('missing/invalid V12 outputs before acceptance: '+str(missing))
+          PY
       - name: Run all hard phase gates
         run: PYTHONPATH=scripts python scripts/v12_acceptance.py
       - uses: actions/setup-node@v4
@@ -83,8 +96,11 @@ jobs:
         with:
           name: forecast-v12-hardening-evidence-${{ github.run_id }}
           retention-days: 30
+          if-no-files-found: warn
           path: |
             data/v12-source-probe.json
+            data/v12-training.log
+            data/v12-training-error.json
             data/forecast-model-v12.json
             data/forecast-current-v12.json
             data/forecast-dashboard-v12.json
