@@ -6,19 +6,37 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
         for x in z.get('items') or []:
             if x.get('id') is not None:stream_by_id[x.get('id')]=str(x.get('stream') or 'MAIN').upper()
     articles,outcomes=_entity_filtered_prepare_articles(sentiment,price_store,sector_map,index_rows)
-    search_counts={};source_counts={};rumor_candidates=0;official_event_hits=0
-    for rows in articles.values():
+    search_counts={};source_counts={};rumor_candidates=0;official_event_hits=0;published=[];publishers=set();by_year={};symbol_counts={}
+    for symbol,rows in articles.items():
+        symbol_counts[symbol]=len(rows)
         for x in rows:
             stream=stream_by_id.get(x.get('id'),'MAIN');x['searchStream']=stream
-            # IMPORTANT: search stream describes how Google News was queried. It is NOT publisher identity.
-            # A mainstream publisher found by an OFFICIAL query remains MAINSTREAM; only actual sourceClass
-            # assigned from publisher/domain identity may be OFFICIAL.
+            # searchStream is the historical Google News query strategy, not source identity.
+            # Actual official-source status may only come from publisher/domain identity or an official exchange/regulator feed.
             x['rumorCandidate']=bool(x.get('sourceClass')=='RUMOR_UNVERIFIED' or stream=='RUMOR')
             x['officialEventQueryHit']=bool(stream=='OFFICIAL')
             search_counts[stream]=search_counts.get(stream,0)+1;sc=str(x.get('sourceClass') or 'UNKNOWN');source_counts[sc]=source_counts.get(sc,0)+1
             rumor_candidates+=int(x['rumorCandidate']);official_event_hits+=int(x['officialEventQueryHit'])
+            p=str(x.get('publishedAt') or '')
+            if len(p)>=10:
+                published.append(p);yr=p[:4];by_year[yr]=by_year.get(yr,0)+1
+            pub=str(x.get('publisher') or '').strip()
+            if pub:publishers.add(pub)
     for x in outcomes:
         stream=stream_by_id.get(x.get('id'),'MAIN');x['searchStream']=stream;x['rumorCandidate']=bool(x.get('sourceClass')=='RUMOR_UNVERIFIED' or stream=='RUMOR');x['officialEventQueryHit']=bool(stream=='OFFICIAL')
-    ENTITY_AUDIT['searchStreamCoverage']=search_counts;ENTITY_AUDIT['sourceClassCoverage']=source_counts;ENTITY_AUDIT['rumorCandidateCount']=rumor_candidates;ENTITY_AUDIT['officialEventQueryHits']=official_event_hits;ENTITY_AUDIT['sourceSeparationPolicy']='searchStream is retrieval/query intent only; sourceClass is publisher/domain identity. OFFICIAL search hits are never promoted to OFFICIAL sourceClass without an actual official publisher/domain.'
-    print(json.dumps({'v12SearchStreams':search_counts,'v12ActualSourceClasses':source_counts,'rumorCandidates':rumor_candidates,'officialEventQueryHits':official_event_hits},ensure_ascii=False),flush=True)
+    actual_official=int(source_counts.get('OFFICIAL') or 0)
+    coverage={
+        'articleStart':min(published)[:10] if published else None,
+        'articleEnd':max(published)[:10] if published else None,
+        'byYear':dict(sorted(by_year.items())),
+        'calendarYears':len(by_year),
+        'yearsWithAtLeast30':sum(v>=30 for v in by_year.values()),
+        'uniquePublishers':len(publishers),
+        'symbolsWithAnyEvidence':sum(v>0 for v in symbol_counts.values()),
+        'symbolsWithAtLeast5':sum(v>=5 for v in symbol_counts.values()),
+        'symbolsWithAtLeast20':sum(v>=20 for v in symbol_counts.values()),
+        'perSymbolArticleCount':symbol_counts,
+    }
+    ENTITY_AUDIT['searchStreamCoverage']=search_counts;ENTITY_AUDIT['sourceClassCoverage']=source_counts;ENTITY_AUDIT['rumorCandidateCount']=rumor_candidates;ENTITY_AUDIT['officialEventQueryHits']=official_event_hits;ENTITY_AUDIT['publicationCoverage']=coverage;ENTITY_AUDIT['sourceSeparationPolicy']='searchStream is retrieval/query intent only; sourceClass is publisher/domain identity. OFFICIAL search hits are never promoted to OFFICIAL sourceClass without an actual exchange/regulator/company-IR publisher/domain.';ENTITY_AUDIT['officialSourceStatus']='AVAILABLE_IN_ARCHIVE' if actual_official>0 else 'HISTORICAL_OFFICIAL_SOURCE_NOT_CAPTURED';ENTITY_AUDIT['officialSourceCount']=actual_official
+    print(json.dumps({'v12SearchStreams':search_counts,'v12ActualSourceClasses':source_counts,'rumorCandidates':rumor_candidates,'officialEventQueryHits':official_event_hits,'publicationCoverage':{k:v for k,v in coverage.items() if k!='perSymbolArticleCount'},'officialSourceStatus':ENTITY_AUDIT['officialSourceStatus']},ensure_ascii=False),flush=True)
     return articles,outcomes
