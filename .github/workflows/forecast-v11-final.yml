@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - name: Install research dependencies
-        run: pip install -q numpy scipy scikit-learn pandas requests beautifulsoup4 lxml torch transformers pyvi vnstock==4.0.4 tradingview-screener
+        run: pip install -q numpy scipy scikit-learn pandas requests beautifulsoup4 lxml openpyxl torch transformers pyvi vnstock==4.0.4 tradingview-screener
       - name: Build numerical forecast
         run: python scripts/train_forecast_v11_clean.py
       - name: Backfill trading flow
