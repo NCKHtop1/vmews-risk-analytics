@@ -35,7 +35,7 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile exact final-candidate source
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/v12_benchmark_unit.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/v12_benchmark_unit.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -120,6 +120,8 @@ jobs:
         run: PYTHONPATH=scripts python scripts/v12_sector_acceptance.py
       - name: Phase 5 nested model-selection and incremental OOS gate
         run: PYTHONPATH=scripts python scripts/v12_nested_selection_acceptance.py
+      - name: Phase 7 fixed-model blind 90-100 holdout gate
+        run: PYTHONPATH=scripts python scripts/v12_blind_holdout_acceptance.py
       - name: Phase 7 explicit purge and embargo gate
         run: PYTHONPATH=scripts python scripts/v12_embargo_acceptance.py
       - uses: actions/setup-node@v4
@@ -151,6 +153,7 @@ jobs:
             data/active-flow-gate-v12.json
             data/sector-gate-v12.json
             data/nested-selection-gate-v12.json
+            data/blind-holdout-gate-v12.json
             data/embargo-gate-v12.json
             data/flow-audit-v12.json
       - name: Persist only nine-phase validated snapshots
@@ -164,6 +167,6 @@ jobs:
           test "$REMOTE_SHA" = "$V12_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING TRAINING: source=$V12_SOURCE_SHA remote=$REMOTE_SHA; refusing to attach old-model artifacts to new code"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/nested-selection-gate-v12.json data/embargo-gate-v12.json
+          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/nested-selection-gate-v12.json data/blind-holdout-gate-v12.json data/embargo-gate-v12.json
           git commit -m 'Publish nine-phase validated V12 forecast snapshots [v12-model-data]'
           PUBLISHED_SHA=$(git rev-parse HEAD);test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_SOURCE_SHA";git push origin HEAD:forecast-v12-methodfix;echo "V12_PUBLISHED_SHA=$PUBLISHED_SHA" >> "$GITHUB_ENV"
