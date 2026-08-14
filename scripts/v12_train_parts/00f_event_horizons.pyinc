@@ -20,7 +20,7 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
             i=rec['availableIndex'];origin=str(rec.get('availableDate'))[:10]
             for k in (1,2,5):
                 if i-k>=0:
-                    target=str(rows[i-k].get('date'))[:10];a=_finite(rows[i-k].get('modelClose',rows[i-k].get('close')),None);b=_finite(rows[i].get('modelClose',rows[i].get('close')),None)
+                    target=str(rows[i-k].get('date'))[:10];a=_benchmark_num(rows[i-k].get('modelClose',rows[i-k].get('close')));b=_benchmark_num(rows[i].get('modelClose',rows[i].get('close')))
                     if a and b and a>0 and b>0:
                         sr=math.log(b/a);br=_benchmark_exact_date(index_rows,target,origin);ok=isinstance(br,(int,float)) and math.isfinite(float(br));o[f'preR{k}']=float(sr);o[f'preBenchmarkTargetDate{k}']=target;o[f'preBenchmarkR{k}']=float(br) if ok else None;o[f'preBenchmarkAvailable{k}']=bool(ok);o[f'preAR{k}']=float(sr)-float(br) if ok else None
     return articles,outcomes
