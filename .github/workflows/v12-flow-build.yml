@@ -15,10 +15,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 45
     env:
-      V12_FLOW_WORKERS: '8'
-      V12_FLOW_START_YEAR: '2018'
+      V12_FLOW_WORKERS: '10'
+      V12_FLOW_START_YEAR: '2023'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
