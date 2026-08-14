@@ -1,6 +1,7 @@
-import json, math, hashlib
+import json, math, hashlib, urllib.request, urllib.parse, time
 from pathlib import Path
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 from scipy.stats import spearmanr
 from forecast_v4_features import stock_features
@@ -11,6 +12,7 @@ OUT=ROOT/'data/forecast-live-v10'
 SNAP=OUT/'snapshots'
 VERSION='VMEWS-FORECAST-LIVE-10.0.0'
 H=('3','5')
+API='https://vmews-risk-analytics-sojd.vercel.app/api'
 
 def load(p,default=None):
     try:return json.loads(Path(p).read_text(encoding='utf-8'))
@@ -30,6 +32,18 @@ def bucket(bs,x):
         if x>=b['lo'] and x<=b['hi']:return b
     if not bs:return None
     return bs[0] if x<bs[0]['lo'] else bs[-1]
+
+def fetch_detail(sym):
+    for attempt in range(2):
+        for route in ('radar','stocks'):
+            try:
+                u=f'{API}/{route}?mode=detail&symbol={urllib.parse.quote(sym)}'
+                req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 VMEWS-Live/10','Accept':'application/json'})
+                with urllib.request.urlopen(req,timeout=18) as r:z=json.loads(r.read().decode())
+                if len(z.get('history') or [])>=520:return sym,z,'API_'+route.upper()
+            except Exception:pass
+        if attempt==0:time.sleep(.4)
+    return sym,None,None
 
 def predict(model,d):
     rows,fs=stock_features(d.get('history') or []);f=fs[-1] if fs else None
@@ -73,25 +87,32 @@ def evaluate(current):
             else:row['horizons'][h]={'n':len(obs),'state':'IMMATURE'}
         origins.append(row)
     for h in H:
-        mature=[x['horizons'][h] for x in origins if x['horizons'][h].get('n',0)>=20];summary[h]={'matureOrigins':len(mature),'nPredictions':sum(x['n'] for x in mature),'alphaIC':float(np.mean([x['alphaIC'] for x in mature if x.get('alphaIC') is not None])) if any(x.get('alphaIC') is not None for x in mature) else None,'directionHitRate':float(np.mean([x['directionHitRate'] for x in mature])) if mature else None,'evidenceState':'MATURE' if len(mature)>=20 else 'EARLY' if len(mature)>=5 else 'IMMATURE'}
+        mature=[x['horizons'][h] for x in origins if x['horizons'][h].get('n',0)>=20]
+        summary[h]={'matureOrigins':len(mature),'nPredictions':sum(x['n'] for x in mature),'alphaIC':float(np.mean([x['alphaIC'] for x in mature if x.get('alphaIC') is not None])) if any(x.get('alphaIC') is not None for x in mature) else None,'directionHitRate':float(np.mean([x['directionHitRate'] for x in mature])) if mature else None,'evidenceState':'MATURE' if len(mature)>=20 else 'EARLY' if len(mature)>=5 else 'IMMATURE'}
     return {'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'method':'Immutable completed-EOD prequential test-then-score.','summary':summary,'origins':origins,'governance':{'automaticPromotion':False,'minimumMatureOrigins':20}}
 
 def main():
-    model=load(MODEL,{});assert model.get('version')=='VMEWS-FORECAST-10.1.0',model.get('version');allowed=set(model.get('universe',{}).get('symbolList') or []);current={};pred=[]
+    model=load(MODEL,{});assert model.get('version')=='VMEWS-FORECAST-10.1.0',model.get('version');allowed=set(model.get('universe',{}).get('symbolList') or []);current={};sources={}
     for p in sorted((ROOT/'data/hose-fallbacks').glob('*.json')):
         if p.name=='manifest.json':continue
         d=load(p,{});s=str(d.get('symbol') or p.stem).upper()
-        if allowed and s not in allowed:continue
-        if len(d.get('history') or [])<520:continue
-        current[s]=d
+        if s in allowed and len(d.get('history') or [])>=520:current[s]=d;sources[s]='LOCAL'
+    missing=sorted(allowed-set(current))
+    with ThreadPoolExecutor(max_workers=14) as ex:
+        fut=[ex.submit(fetch_detail,s) for s in missing]
+        for f in as_completed(fut):
+            s,d,src=f.result()
+            if d:current[s]=d;sources[s]=src
+    pred=[]
+    for s,d in current.items():
         try:
             z=predict(model,d)
-            if z:pred.append({'symbol':s,**z})
+            if z:pred.append({'symbol':s,'source':sources.get(s),**z})
         except:pass
-    if len(pred)<250:raise RuntimeError(f'V10 live coverage below floor: {len(pred)}')
+    if len(pred)<250:raise RuntimeError(f'V10 live coverage below floor: {len(pred)} / {len(allowed)}')
     dates=[x['date'] for x in pred];asof=max(set(dates),key=dates.count);pred=sorted([x for x in pred if x['date']==asof],key=lambda x:x['symbol'])
     if len(pred)<200:raise RuntimeError(f'V10 aligned EOD coverage below floor: {len(pred)}')
-    SNAP.mkdir(parents=True,exist_ok=True);p=SNAP/f'{asof}.json';z={'version':VERSION,'createdAt':datetime.now(timezone.utc).isoformat(),'asOf':asof,'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','symbols':len(pred),'predictions':pred};z['snapshotHash']=core_hash(z)
+    SNAP.mkdir(parents=True,exist_ok=True);p=SNAP/f'{asof}.json';z={'version':VERSION,'createdAt':datetime.now(timezone.utc).isoformat(),'asOf':asof,'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','universeRequested':len(allowed),'symbols':len(pred),'sourceCounts':{k:sum(x.get('source')==k for x in pred) for k in sorted(set(x.get('source') for x in pred))},'predictions':pred};z['snapshotHash']=core_hash(z)
     status='CREATED'
     if p.exists():
         old=load(p,{})
@@ -102,5 +123,5 @@ def main():
     for x in SNAP.glob('*.json'):
         a=load(x,{});h=a.get('snapshotHash')
         if not h or core_hash(a)!=h:bad.append(x.name)
-    ev=evaluate(current);dump(OUT/'evaluation.json',ev);manifest={'version':VERSION,'count':len(list(SNAP.glob('*.json'))),'latest':asof,'files':[x.name for x in sorted(SNAP.glob('*.json'))]};dump(OUT/'manifest.json',manifest);integrity={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS' if not bad else 'FAIL','asOf':asof,'archiveStatus':status,'symbols':len(pred),'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','snapshotHash':z.get('snapshotHash'),'badHashes':bad};dump(OUT/'integrity.json',integrity);print(json.dumps({'integrity':integrity,'evaluation':ev['summary']},ensure_ascii=False,indent=2));assert not bad,bad
+    ev=evaluate(current);dump(OUT/'evaluation.json',ev);manifest={'version':VERSION,'count':len(list(SNAP.glob('*.json'))),'latest':asof,'files':[x.name for x in sorted(SNAP.glob('*.json'))]};dump(OUT/'manifest.json',manifest);integrity={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS' if not bad else 'FAIL','asOf':asof,'archiveStatus':status,'universeRequested':len(allowed),'symbols':len(pred),'sourceCounts':z.get('sourceCounts'),'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','snapshotHash':z.get('snapshotHash'),'badHashes':bad};dump(OUT/'integrity.json',integrity);print(json.dumps({'integrity':integrity,'evaluation':ev['summary']},ensure_ascii=False,indent=2));assert not bad,bad
 if __name__=='__main__':main()
