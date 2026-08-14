@@ -113,16 +113,18 @@ def main():
     if len(pred)<250:raise RuntimeError(f'V10 live coverage below floor: {len(pred)} / {len(allowed)}')
     dates=[x['date'] for x in pred];asof=max(set(dates),key=dates.count);pred=sorted([x for x in pred if x['date']==asof],key=lambda x:x['symbol'])
     if len(pred)<200:raise RuntimeError(f'V10 aligned EOD coverage below floor: {len(pred)}')
-    SNAP.mkdir(parents=True,exist_ok=True);p=SNAP/f'{asof}.json';z={'version':VERSION,'createdAt':datetime.now(timezone.utc).isoformat(),'asOf':asof,'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','universeRequested':len(allowed),'symbols':len(pred),'sourceCounts':{k:sum(x.get('source')==k for x in pred) for k in sorted(set(x.get('source') for x in pred))},'predictions':pred};z['snapshotHash']=core_hash(z)
-    status='CREATED'
+    current_counts={k:sum(x.get('source')==k for x in pred) for k in sorted(set(x.get('source') for x in pred))}
+    SNAP.mkdir(parents=True,exist_ok=True);p=SNAP/f'{asof}.json';candidate={'version':VERSION,'createdAt':datetime.now(timezone.utc).isoformat(),'asOf':asof,'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','universeRequested':len(allowed),'symbols':len(pred),'sourceCounts':current_counts,'predictions':pred};candidate['snapshotHash']=core_hash(candidate)
+    archived=candidate;status='CREATED'
     if p.exists():
         old=load(p,{})
-        if old.get('snapshotHash')==z['snapshotHash']:status='EXISTING_IDENTICAL';z=old
-        else:status='REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE';z=old
-    else:dump(p,z)
+        if old.get('snapshotHash')==candidate['snapshotHash']:status='EXISTING_IDENTICAL';archived=old
+        else:status='REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE';archived=old
+    else:dump(p,candidate)
     bad=[]
     for x in SNAP.glob('*.json'):
         a=load(x,{});h=a.get('snapshotHash')
         if not h or core_hash(a)!=h:bad.append(x.name)
-    ev=evaluate(current);dump(OUT/'evaluation.json',ev);manifest={'version':VERSION,'count':len(list(SNAP.glob('*.json'))),'latest':asof,'files':[x.name for x in sorted(SNAP.glob('*.json'))]};dump(OUT/'manifest.json',manifest);integrity={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS' if not bad else 'FAIL','asOf':asof,'archiveStatus':status,'universeRequested':len(allowed),'symbols':len(pred),'sourceCounts':z.get('sourceCounts'),'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','snapshotHash':z.get('snapshotHash'),'badHashes':bad};dump(OUT/'integrity.json',integrity);print(json.dumps({'integrity':integrity,'evaluation':ev['summary']},ensure_ascii=False,indent=2));assert not bad,bad
+    ev=evaluate(current);dump(OUT/'evaluation.json',ev);manifest={'version':VERSION,'count':len(list(SNAP.glob('*.json'))),'latest':asof,'files':[x.name for x in sorted(SNAP.glob('*.json'))]};dump(OUT/'manifest.json',manifest)
+    integrity={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS' if not bad else 'FAIL','asOf':asof,'archiveStatus':status,'universeRequested':len(allowed),'currentResolvedSymbols':len(current),'currentAlignedSymbols':len(pred),'currentSourceCounts':current_counts,'archivedSymbols':int(archived.get('symbols') or 0),'archivedSourceCounts':archived.get('sourceCounts') or {},'modelVersion':model['version'],'timeBasis':'COMPLETED_EOD_ONLY','snapshotHash':archived.get('snapshotHash'),'badHashes':bad};dump(OUT/'integrity.json',integrity);print(json.dumps({'integrity':integrity,'evaluation':ev['summary']},ensure_ascii=False,indent=2));assert not bad,bad
 if __name__=='__main__':main()
