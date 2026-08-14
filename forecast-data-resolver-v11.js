@@ -1,11 +1,14 @@
 (()=>{'use strict';
-const VERSION='VMEWS-FORECAST-RESOLVER-11.0.1';
+const VERSION='VMEWS-FORECAST-RESOLVER-11.0.2';
 const MIN_FORECAST_ROWS=520;
-const FORCE_CDN=new URLSearchParams(location.search).get('resolver')==='cdn';
+const PARAMS=new URLSearchParams(location.search);
+const FORCE_CDN=PARAMS.get('resolver')==='cdn';
 const nativeFetch=window.fetch.bind(window);
 const detailCache=new Map();
 
 function cleanSymbol(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)}
+const QUERY_SYMBOL=cleanSymbol(PARAMS.get('symbol'));
+if(QUERY_SYMBOL){const input=document.querySelector('#symbol');if(input)input.value=QUERY_SYMBOL}
 function validDetail(d,s){
   const h=d?.history;
   if(!Array.isArray(h)||h.length<MIN_FORECAST_ROWS)return false;
@@ -95,5 +98,5 @@ addEventListener('DOMContentLoaded',()=>{
   enforceHonestUI();
   observer.observe(document.body,{childList:true,subtree:true,characterData:true});
 });
-window.VMEWSForecastResolver={version:VERSION,minForecastRows:MIN_FORECAST_ROWS,forceCdn:FORCE_CDN,cache:detailCache};
+window.VMEWSForecastResolver={version:VERSION,minForecastRows:MIN_FORECAST_ROWS,forceCdn:FORCE_CDN,querySymbol:QUERY_SYMBOL,cache:detailCache};
 })();
