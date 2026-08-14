@@ -43,6 +43,41 @@ jobs:
           PY
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
+      - name: Flow source-missingness regression tests
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          from datetime import date,timedelta
+          from v12_flow import FlowTimeline
+
+          start=date(2026,1,1);rows=[]
+          for i in range(50):
+              d=(start+timedelta(days=i)).isoformat()
+              r={'date':d,'foreignBuyValue':100.0+i,'foreignSellValue':80.0,'foreignNetValue':20.0+i}
+              if i>=25:r.update({'propBuyValue':40.0,'propSellValue':30.0,'propNetValue':10.0})
+              rows.append(r)
+
+          # Union row exists because proprietary data exists, but foreign is genuinely missing.
+          prop_only=(start+timedelta(days=50)).isoformat()
+          rows.append({'date':prop_only,'propBuyValue':45.0,'propSellValue':35.0,'propNetValue':10.0})
+          z=FlowTimeline(rows).features(prop_only)
+          assert z['foreignAvailable']==0.0,z
+          assert z['foreignNetRatio1']==0.0,z
+          assert z['propAvailable']==1.0,z
+
+          # A genuine reported zero is still an observation, not missingness.
+          zero_day=(start+timedelta(days=51)).isoformat()
+          rows.append({'date':zero_day,'foreignBuyValue':0.0,'foreignSellValue':0.0,'foreignNetValue':0.0,'propBuyValue':0.0,'propSellValue':0.0,'propNetValue':0.0})
+          z=FlowTimeline(rows).features(zero_day)
+          assert z['foreignAvailable']==1.0,z
+          assert z['foreignNetRatio1']==0.0,z
+          assert z['propAvailable']==1.0,z
+
+          # No stale carry-forward onto a date without an observation.
+          missing_day=(start+timedelta(days=52)).isoformat()
+          z=FlowTimeline(rows).features(missing_day)
+          assert z['foreignAvailable']==0.0 and z['propAvailable']==0.0,z
+          print('V12 FLOW MISSINGNESS PASS')
+          PY
       - name: Assert audited V12 flow archive already exists
         run: |
           python - <<'PY'
