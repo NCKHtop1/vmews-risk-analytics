@@ -26,7 +26,12 @@ def sanitize(rows):
     for r in rows or []:
         try:
             c=float(r["close"])
-            if math.isfinite(c) and c>0:out.append({"date":str(r["date"])[:10],"open":float(r.get("open") or c),"high":float(r.get("high") or c),"low":float(r.get("low") or c),"close":c,"volume":max(0.,float(r.get("volume") or 0))})
+            if not math.isfinite(c) or c<=0:continue
+            o=float(r.get("open") or c);hi=float(r.get("high") or c);lo=float(r.get("low") or c);vol=max(0.,float(r.get("volume") or 0))
+            if not all(math.isfinite(x) and x>0 for x in (o,hi,lo)):o=hi=lo=c
+            # Normalize malformed OHLC instead of allowing negative/undefined range features.
+            hi=max(hi,o,c,lo);lo=min(lo,o,c,hi)
+            out.append({"date":str(r["date"])[:10],"open":o,"high":hi,"low":lo,"close":c,"volume":vol})
         except:pass
     d={r["date"]:r for r in out};rows=[d[k] for k in sorted(d)]
     if not rows:return []
@@ -44,9 +49,10 @@ def stock_features(raw):
         x=lr[max(1,i-19):i+1];vol20[i]=(np.std(x,ddof=1) if len(x)>1 else 0)*math.sqrt(252)
     fs=[]
     for i in range(200,len(rows)):
-        ret=lambda k:math.log(max(c[i],1e-9)/max(c[i-k],1e-9));sma=lambda k:max(1e-9,float(np.mean(c[i-k+1:i+1])));dd20=c[i]/max(1e-9,np.max(c[i-19:i+1]))-1;dd60=c[i]/max(1e-9,np.max(c[i-59:i+1]))-1;tr={k:c[i]/sma(k)-1 for k in (5,10,20,50,200)};vp=rank(vol20[i],vol20[max(200,i-252):i].tolist());rv=v[max(1,i-20):i];rv=rv[rv>0];vz=(v[i]-rv.mean())/(rv.std(ddof=1) if len(rv)>1 else 1) if v[i]>0 and len(rv) else 0;rs=rsi(c,i);mn=(mac[i]-sig[i])/max(c[i],1e-9);mom=c[i]/max(c[i-20],1e-9)-1
-        p=[min(1,max(0,-dd60/.22)),min(1,max(0,-mom/.14)),min(1,max(0,-tr[50]/.12)),min(1,max(0,-tr[200]/.18)),min(1,max(0,(vp-.45)/.55)),min(1,max(0,(45-rs)/20)),min(1,max(0,-mn/.025)),min(1,max(0,vz/3))*min(1,max(0,-lr[i]/.05))];tech=100*(.18*p[0]+.16*p[1]+.14*p[2]+.10*p[3]+.16*p[4]+.10*p[5]+.08*p[6]+.08*p[7]);ranges=[(h[j]-l[j])/max(c[j],1e-9) for j in range(i-4,i+1)]
-        fs.append({"i":i,"date":rows[i]["date"],"ret1":lr[i],"ret2":ret(2),"ret3":ret(3),"ret5":ret(5),"ret10":ret(10),"ret20":ret(20),"dd20":dd20,"dd60":dd60,"trend5":tr[5],"trend10":tr[10],"trend20":tr[20],"trend50":tr[50],"trend200":tr[200],"vol5":np.std(lr[i-4:i+1],ddof=1)*math.sqrt(252),"vol20":vol20[i],"volPct":vp,"rsi14":rs/100,"macdNorm":mn,"volumeZ":vz,"range1":(h[i]-l[i])/max(c[i],1e-9),"range5":float(np.mean(ranges)),"technical":tech})
+        ret=lambda k:math.log(max(c[i],1e-9)/max(c[i-k],1e-9));sma=lambda k:max(1e-9,float(np.mean(c[i-k+1:i+1])));dd20=c[i]/max(1e-9,np.max(c[i-19:i+1]))-1;dd60=c[i]/max(1e-9,np.max(c[i-59:i+1]))-1;tr={k:c[i]/sma(k)-1 for k in (5,10,20,50,200)};vp=rank(vol20[i],vol20[max(200,i-252):i].tolist());rv=v[max(1,i-20):i];rv=rv[rv>0];rvs=float(rv.std(ddof=1)) if len(rv)>1 else 0.;den=rvs if math.isfinite(rvs) and rvs>1e-12 else 1.;vz=float((v[i]-rv.mean())/den) if v[i]>0 and len(rv) else 0.;rs=rsi(c,i);mn=(mac[i]-sig[i])/max(c[i],1e-9);mom=c[i]/max(c[i-20],1e-9)-1
+        if not math.isfinite(vz):vz=0.
+        p=[min(1,max(0,-dd60/.22)),min(1,max(0,-mom/.14)),min(1,max(0,-tr[50]/.12)),min(1,max(0,-tr[200]/.18)),min(1,max(0,(vp-.45)/.55)),min(1,max(0,(45-rs)/20)),min(1,max(0,-mn/.025)),min(1,max(0,vz/3))*min(1,max(0,-lr[i]/.05))];tech=100*(.18*p[0]+.16*p[1]+.14*p[2]+.10*p[3]+.16*p[4]+.10*p[5]+.08*p[6]+.08*p[7]);ranges=[max(0.,(h[j]-l[j])/max(c[j],1e-9)) for j in range(i-4,i+1)]
+        fs.append({"i":i,"date":rows[i]["date"],"ret1":lr[i],"ret2":ret(2),"ret3":ret(3),"ret5":ret(5),"ret10":ret(10),"ret20":ret(20),"dd20":dd20,"dd60":dd60,"trend5":tr[5],"trend10":tr[10],"trend20":tr[20],"trend50":tr[50],"trend200":tr[200],"vol5":np.std(lr[i-4:i+1],ddof=1)*math.sqrt(252),"vol20":vol20[i],"volPct":vp,"rsi14":rs/100,"macdNorm":mn,"volumeZ":vz,"range1":max(0.,(h[i]-l[i])/max(c[i],1e-9)),"range5":float(np.mean(ranges)),"technical":tech})
     by={f["date"]:f["technical"] for f in fs}
     for f in fs:f["technicalDelta5"]=(f["technical"]-by.get(rows[max(0,f["i"]-5)]["date"],f["technical"]))/100
     return rows,fs
