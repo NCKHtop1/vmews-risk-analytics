@@ -1,6 +1,6 @@
 _EVENT_H_EXTRA=[]
 for _h in HORIZONS:
-    for _k in (f'eventPriorAR{_h}',f'eventPriorHit{_h}',f'eventPriorN{_h}'):
+    for _k in (f'eventPriorAR{_h}',f'eventPriorHit{_h}',f'eventPriorN{_h}',f'eventPriorUncertainty{_h}'):
         _EVENT_H_EXTRA.append(_k)
         if _k not in EVENT_FEATURES:EVENT_FEATURES.append(_k)
         if _k not in EXPERTS['EVENT']:EXPERTS['EVENT'].append(_k)
@@ -32,6 +32,9 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
     return articles,outcomes
 
 class _HorizonOutcomePrior:
+    # Fixed conjugate prior strengths are chosen before the replay. They are deliberately NOT estimated from future outcomes.
+    MARKET_AR_KAPPA=16.0;SECTOR_AR_KAPPA=12.0;STOCK_AR_KAPPA=6.0
+    MARKET_HIT_ALPHA=4.0;MARKET_HIT_BETA=4.0;SECTOR_HIT_KAPPA=12.0;STOCK_HIT_KAPPA=6.0
     def __init__(self,outcomes,h):
         self.h=h;groups=defaultdict(list);ak=f'ar{h}';mk=f'matureDate{h}'
         for x in outcomes:
@@ -40,25 +43,40 @@ class _HorizonOutcomePrior:
             for key in [('MARKET',x['event']),('SECTOR',x['sector'],x['event']),('STOCK',x['symbol'],x['event'])]:groups[key].append((mature,float(ar)))
         self.groups={}
         for key,vals in groups.items():
-            vals.sort();dates=[];sums=[0.0];pos=[0]
-            for d,v in vals:dates.append(d);sums.append(sums[-1]+v);pos.append(pos[-1]+(1 if v>0 else 0))
-            self.groups[key]=(dates,sums,pos)
+            vals.sort();dates=[];sums=[0.0];sumsq=[0.0];pos=[0]
+            for d,v in vals:
+                dates.append(d);sums.append(sums[-1]+v);sumsq.append(sumsq[-1]+v*v);pos.append(pos[-1]+(1 if v>0 else 0))
+            self.groups[key]=(dates,sums,sumsq,pos)
     def _q(self,key,date):
         z=self.groups.get(key)
         if not z:return None
-        dates,sums,pos=z;n=bisect.bisect_right(dates,date)
-        return None if n<=0 else {'n':n,'mean':sums[n]/n,'hit':pos[n]/n}
+        dates,sums,sumsq,pos=z;n=bisect.bisect_right(dates,date)
+        if n<=0:return None
+        mean=sums[n]/n;var=max(1e-8,(sumsq[n]-n*mean*mean)/max(1,n-1)) if n>1 else max(1e-6,(.018*math.sqrt(self.h))**2)
+        return {'n':n,'sum':sums[n],'pos':pos[n],'mean':mean,'var':var,'hit':pos[n]/n}
+    @staticmethod
+    def _normal_update(obs,prior_mean,kappa):
+        if not obs:return {'mean':float(prior_mean),'n':0,'unc':1.0/math.sqrt(max(1.0,kappa))}
+        n=float(obs['n']);post=(obs['sum']+kappa*prior_mean)/(n+kappa);unc=math.sqrt(max(obs['var'],1e-8)/(n+kappa));return {'mean':float(post),'n':int(n),'unc':float(unc)}
+    @staticmethod
+    def _beta_update(obs,prior_mean,prior_strength):
+        a=max(1e-6,float(prior_mean)*prior_strength);b=max(1e-6,(1.0-float(prior_mean))*prior_strength)
+        if obs:a+=obs['pos'];b+=obs['n']-obs['pos']
+        mean=a/(a+b);var=(a*b)/(((a+b)**2)*(a+b+1.0));return {'mean':float(mean),'sd':float(math.sqrt(max(0.0,var)))}
     def hierarchical(self,symbol,sector,event,date):
-        stock=self._q(('STOCK',symbol,event),date);sec=self._q(('SECTOR',sector,event),date);market=self._q(('MARKET',event),date);mn=market or {'n':0,'mean':0.0,'hit':.5};sn=sec or mn;st=stock or sn
-        wm=min(1,mn['n']/60);mm=wm*mn['mean'];mh=wm*mn['hit']+(1-wm)*.5;ws=min(1,sn['n']/30);sm=ws*sn['mean']+(1-ws)*mm;sh=ws*sn['hit']+(1-ws)*mh;wt=min(1,st['n']/8);return {'mean':wt*st['mean']+(1-wt)*sm,'hit':wt*st['hit']+(1-wt)*sh,'n':st['n'] if stock else sn['n'] if sec else mn['n']}
+        market=self._q(('MARKET',event),date);sec=self._q(('SECTOR',sector,event),date);stock=self._q(('STOCK',symbol,event),date)
+        mar_ar=self._normal_update(market,0.0,self.MARKET_AR_KAPPA);sec_ar=self._normal_update(sec,mar_ar['mean'],self.SECTOR_AR_KAPPA);stk_ar=self._normal_update(stock,sec_ar['mean'],self.STOCK_AR_KAPPA)
+        mar_hit=self._beta_update(market,.5,self.MARKET_HIT_ALPHA+self.MARKET_HIT_BETA);sec_hit=self._beta_update(sec,mar_hit['mean'],self.SECTOR_HIT_KAPPA);stk_hit=self._beta_update(stock,sec_hit['mean'],self.STOCK_HIT_KAPPA)
+        source_n=(stock or sec or market or {'n':0})['n'];unc=max(stk_ar['unc'],stk_hit['sd'])
+        return {'mean':stk_ar['mean'],'hit':stk_hit['mean'],'n':int(source_n),'uncertainty':float(unc),'levels':{'stock':int((stock or {'n':0})['n']),'sector':int((sec or {'n':0})['n']),'market':int((market or {'n':0})['n'])}}
 
 class EvidenceFeatureStore(_EventHBaseStore):
     def __init__(self,articles_by_symbol,outcomes,sector_map):
-        super().__init__(articles_by_symbol,outcomes,sector_map);self.horizonPriors={h:_HorizonOutcomePrior(outcomes,h) for h in HORIZONS}
+        super().__init__(articles_by_symbol,outcomes,sector_map);self.horizonPriors={h:_HorizonOutcomePrior(outcomes,h) for h in HORIZONS};self.hierarchyPolicy='PIT-safe Normal/Beta-Binomial Market→Sector→Stock shrinkage with fixed pre-replay prior strengths'
     def features(self,symbol,date):
         out=super().features(symbol,date);sec=self.sector_map.get(symbol,'OTHER');st=self.stock.get(symbol,Timeline([]));latest=st.latest(date)
         for h in HORIZONS:
             if latest:pr=self.horizonPriors[h].hierarchical(symbol,sec,latest['event'],date)
-            else:pr={'mean':0.0,'hit':.5,'n':0}
-            out[f'eventPriorAR{h}']=pr['mean'];out[f'eventPriorHit{h}']=pr['hit']-.5;out[f'eventPriorN{h}']=math.log1p(pr['n'])/5
+            else:pr={'mean':0.0,'hit':.5,'n':0,'uncertainty':1.0}
+            out[f'eventPriorAR{h}']=pr['mean'];out[f'eventPriorHit{h}']=pr['hit']-.5;out[f'eventPriorN{h}']=math.log1p(pr['n'])/5;out[f'eventPriorUncertainty{h}']=min(1.0,float(pr['uncertainty']))
         return out
