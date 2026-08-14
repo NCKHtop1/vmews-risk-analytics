@@ -1,13 +1,407 @@
 {
-  "version": "VMEWS-HOSE-RESOLVER-1.0.0",
-  "generatedAt": "2026-08-14T00:03:30.763715+00:00",
+  "version": "VMEWS-HOSE-RESOLVER-1.1.0",
+  "generatedAt": "2026-08-14T09:55:19.782100+00:00",
   "hoseReference": 404,
   "primaryYahooDeep": 382,
   "cdnVnstockDeep": 14,
   "cdnLimitedHistory": 8,
   "resolved": 404,
+  "cachedSymbols": 404,
   "routeCoverageRatio": 1.0,
   "deepResearchCoverageRatio": 0.9801980198019802,
+  "forecastEligibleCount": 388,
+  "forecastEligibleSymbols": [
+    "AAA",
+    "AAM",
+    "AAT",
+    "ABR",
+    "ABS",
+    "ABT",
+    "ACB",
+    "ACC",
+    "ACG",
+    "ACL",
+    "ADG",
+    "ADP",
+    "ADS",
+    "AFX",
+    "AGG",
+    "AGR",
+    "ANT",
+    "ANV",
+    "APG",
+    "APH",
+    "ASG",
+    "ASM",
+    "ASP",
+    "AST",
+    "BAF",
+    "BCE",
+    "BCM",
+    "BFC",
+    "BHN",
+    "BIC",
+    "BID",
+    "BKG",
+    "BMC",
+    "BMI",
+    "BMP",
+    "BRC",
+    "BSI",
+    "BTP",
+    "BTT",
+    "BVB",
+    "BVH",
+    "BWE",
+    "C32",
+    "C47",
+    "CCI",
+    "CCL",
+    "CDC",
+    "CHP",
+    "CIG",
+    "CII",
+    "CKG",
+    "CLC",
+    "CLL",
+    "CLW",
+    "CMG",
+    "CMV",
+    "CMX",
+    "CNG",
+    "COM",
+    "CRC",
+    "CRE",
+    "CSM",
+    "CSV",
+    "CTD",
+    "CTF",
+    "CTG",
+    "CTI",
+    "CTR",
+    "CTS",
+    "CVT",
+    "D2D",
+    "DAH",
+    "DAT",
+    "DBC",
+    "DBD",
+    "DBT",
+    "DC4",
+    "DCL",
+    "DCM",
+    "DGC",
+    "DGW",
+    "DHA",
+    "DHC",
+    "DHG",
+    "DHM",
+    "DIG",
+    "DLG",
+    "DMC",
+    "DPG",
+    "DPM",
+    "DPR",
+    "DQC",
+    "DRC",
+    "DRH",
+    "DRL",
+    "DSE",
+    "DSN",
+    "DTA",
+    "DTL",
+    "DTT",
+    "DVP",
+    "DXG",
+    "DXS",
+    "DXV",
+    "EIB",
+    "ELC",
+    "EVE",
+    "EVF",
+    "EVG",
+    "FCM",
+    "FCN",
+    "FDC",
+    "FIR",
+    "FIT",
+    "FMC",
+    "FPT",
+    "FRT",
+    "FTS",
+    "GAS",
+    "GDT",
+    "GEE",
+    "GEG",
+    "GEX",
+    "GHC",
+    "GIL",
+    "GMD",
+    "GMH",
+    "GSP",
+    "GTA",
+    "GVR",
+    "HAG",
+    "HAH",
+    "HAP",
+    "HAR",
+    "HAS",
+    "HAX",
+    "HCD",
+    "HCM",
+    "HDB",
+    "HDC",
+    "HDG",
+    "HHP",
+    "HHS",
+    "HHV",
+    "HID",
+    "HII",
+    "HMC",
+    "HNA",
+    "HPG",
+    "HPX",
+    "HQC",
+    "HRC",
+    "HSG",
+    "HSL",
+    "HT1",
+    "HTG",
+    "HTI",
+    "HTL",
+    "HTN",
+    "HTV",
+    "HU1",
+    "HUB",
+    "HVH",
+    "HVN",
+    "ICT",
+    "IDI",
+    "IJC",
+    "ILB",
+    "IMP",
+    "ITC",
+    "ITD",
+    "JVC",
+    "KBC",
+    "KDC",
+    "KDH",
+    "KHG",
+    "KHP",
+    "KLB",
+    "KMR",
+    "KOS",
+    "KSB",
+    "L10",
+    "LAF",
+    "LBM",
+    "LCG",
+    "LDG",
+    "LGC",
+    "LGL",
+    "LHG",
+    "LIX",
+    "LM8",
+    "LPB",
+    "LSS",
+    "MBB",
+    "MCH",
+    "MCM",
+    "MCP",
+    "MDG",
+    "MHC",
+    "MIG",
+    "MSB",
+    "MSH",
+    "MSN",
+    "MWG",
+    "NAB",
+    "NAF",
+    "NAV",
+    "NBB",
+    "NCT",
+    "NHA",
+    "NHH",
+    "NHT",
+    "NKG",
+    "NLG",
+    "NNC",
+    "NO1",
+    "NSC",
+    "NT2",
+    "NTC",
+    "NTL",
+    "NVL",
+    "NVT",
+    "OCB",
+    "OGC",
+    "OPC",
+    "ORS",
+    "PAC",
+    "PAN",
+    "PC1",
+    "PDN",
+    "PDR",
+    "PDV",
+    "PET",
+    "PGC",
+    "PGD",
+    "PGI",
+    "PGV",
+    "PHC",
+    "PHR",
+    "PIT",
+    "PJT",
+    "PLP",
+    "PLX",
+    "PMG",
+    "PNC",
+    "PNJ",
+    "POW",
+    "PPC",
+    "PTB",
+    "PTC",
+    "PTL",
+    "PVD",
+    "PVP",
+    "PVT",
+    "QCG",
+    "QNP",
+    "RAL",
+    "REE",
+    "S4A",
+    "SAB",
+    "SAM",
+    "SAV",
+    "SBA",
+    "SBG",
+    "SBT",
+    "SBV",
+    "SC5",
+    "SCR",
+    "SCS",
+    "SFC",
+    "SFG",
+    "SFI",
+    "SGN",
+    "SGR",
+    "SGT",
+    "SHA",
+    "SHB",
+    "SHI",
+    "SHP",
+    "SIP",
+    "SJD",
+    "SJS",
+    "SKG",
+    "SMA",
+    "SMB",
+    "SMC",
+    "SPM",
+    "SRC",
+    "SRF",
+    "SSB",
+    "SSC",
+    "SSI",
+    "ST8",
+    "STB",
+    "STG",
+    "STK",
+    "SVC",
+    "SVD",
+    "SVT",
+    "SZC",
+    "SZL",
+    "TBC",
+    "TCB",
+    "TCH",
+    "TCI",
+    "TCL",
+    "TCM",
+    "TCO",
+    "TCR",
+    "TCT",
+    "TDC",
+    "TDG",
+    "TDH",
+    "TDM",
+    "TDP",
+    "TDW",
+    "TEG",
+    "THG",
+    "TIP",
+    "TIX",
+    "TLD",
+    "TLG",
+    "TLH",
+    "TMP",
+    "TMS",
+    "TMT",
+    "TN1",
+    "TNC",
+    "TNH",
+    "TNI",
+    "TNT",
+    "TPB",
+    "TPC",
+    "TRA",
+    "TRC",
+    "TSC",
+    "TTA",
+    "TTE",
+    "TTF",
+    "TV2",
+    "TVB",
+    "TVS",
+    "TVT",
+    "TYA",
+    "UIC",
+    "VAB",
+    "VBB",
+    "VCA",
+    "VCB",
+    "VCF",
+    "VCG",
+    "VCI",
+    "VDP",
+    "VDS",
+    "VFG",
+    "VGC",
+    "VHC",
+    "VHM",
+    "VIB",
+    "VIC",
+    "VID",
+    "VIP",
+    "VIX",
+    "VJC",
+    "VMD",
+    "VND",
+    "VNG",
+    "VNL",
+    "VNM",
+    "VNS",
+    "VOS",
+    "VPB",
+    "VPD",
+    "VPG",
+    "VPH",
+    "VPI",
+    "VPS",
+    "VRC",
+    "VRE",
+    "VSC",
+    "VSH",
+    "VSI",
+    "VTB",
+    "VTO",
+    "VTP",
+    "VVS",
+    "YBM",
+    "YEG"
+  ],
+  "forecastMinRows": 520,
+  "cacheHistoryRows": 900,
   "fallbackSymbols": [
     "AFX",
     "ANT",
@@ -45,2046 +439,3236 @@
   "unresolved": [],
   "routes": {
     "AAA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "AAM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "AAT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1398,
-      "source": "Yahoo Finance"
-    },
-    "ABR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1152,
-      "source": "Yahoo Finance"
-    },
-    "ABS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1561,
-      "source": "Yahoo Finance"
-    },
-    "ABT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "ACB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1482,
-      "source": "Yahoo Finance"
-    },
-    "ACC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ACG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 995,
-      "source": "Yahoo Finance"
-    },
-    "ACL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ADG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1418,
-      "source": "Yahoo Finance"
-    },
-    "ADP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 787,
-      "source": "Yahoo Finance"
-    },
-    "ADS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "AGG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1711,
-      "source": "Yahoo Finance"
-    },
-    "AGR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ANV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "APG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "APH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1569,
-      "source": "Yahoo Finance"
-    },
-    "ASG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1528,
-      "source": "Yahoo Finance"
-    },
-    "ASM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "ASP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "AST": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2242,
-      "source": "Yahoo Finance"
-    },
-    "BAF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1225,
-      "source": "Yahoo Finance"
-    },
-    "BCE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "BCM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1405,
-      "source": "Yahoo Finance"
-    },
-    "BFC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BHN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2475,
-      "source": "Yahoo Finance"
-    },
-    "BIC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "BID": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BKG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1457,
-      "source": "Yahoo Finance"
-    },
-    "BMC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BMI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "BMP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BSI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2599,
-      "source": "Yahoo Finance"
-    },
-    "BSR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 410,
-      "source": "Yahoo Finance"
-    },
-    "BTP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BTT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2591,
-      "source": "Yahoo Finance"
-    },
-    "BVH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "BWE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2354,
-      "source": "Yahoo Finance"
-    },
-    "C32": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "C47": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CCC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 325,
-      "source": "Yahoo Finance"
-    },
-    "CCI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "CCL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CDC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CHP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2563,
-      "source": "Yahoo Finance"
-    },
-    "CIG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CII": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CKG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1658,
-      "source": "Yahoo Finance"
-    },
-    "CLC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CLL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CLW": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2591,
-      "source": "Yahoo Finance"
-    },
-    "CMG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CMV": {
-      "route": "PRIMARY_YAHOO",
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
       "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "CMX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CNG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "COM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "CRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2071,
-      "source": "Yahoo Finance"
-    },
-    "CRE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2059,
-      "source": "Yahoo Finance"
-    },
-    "CSM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CSV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CTD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CTF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2390,
-      "source": "Yahoo Finance"
-    },
-    "CTG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CTI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "CTR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1167,
-      "source": "Yahoo Finance"
-    },
-    "CTS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "CVT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2301,
-      "source": "Yahoo Finance"
-    },
-    "D2D": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DAH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2547,
-      "source": "Yahoo Finance"
-    },
-    "DAT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "DBC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1833,
-      "source": "Yahoo Finance"
-    },
-    "DBD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2117,
-      "source": "Yahoo Finance"
-    },
-    "DBT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1512,
-      "source": "Yahoo Finance"
-    },
-    "DC4": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1414,
-      "source": "Yahoo Finance"
-    },
-    "DCL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DCM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DGC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1569,
-      "source": "Yahoo Finance"
-    },
-    "DGW": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "DHA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DHC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "DHG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DHM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DIG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "DLG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DMC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "DPG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2135,
-      "source": "Yahoo Finance"
-    },
-    "DPM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "DPR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DQC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "DRH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "DRL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DSC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 470,
-      "source": "Yahoo Finance"
-    },
-    "DSE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 550,
-      "source": "Yahoo Finance"
-    },
-    "DSN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DTA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "DTL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DTT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "DVP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "DXG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "DXS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1280,
-      "source": "Yahoo Finance"
-    },
-    "DXV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "EIB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "ELC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "EVE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "EVF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1188,
-      "source": "Yahoo Finance"
-    },
-    "EVG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2392,
-      "source": "Yahoo Finance"
-    },
-    "FCM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "FCN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "FDC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2591,
-      "source": "Yahoo Finance"
-    },
-    "FIR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2037,
-      "source": "Yahoo Finance"
-    },
-    "FIT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "FMC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "FPT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "FRT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2162,
-      "source": "Yahoo Finance"
-    },
-    "FTS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2488,
-      "source": "Yahoo Finance"
-    },
-    "GAS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "GDT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "GEE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 522,
-      "source": "Yahoo Finance"
-    },
-    "GEG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1797,
-      "source": "Yahoo Finance"
-    },
-    "GEX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2227,
-      "source": "Yahoo Finance"
-    },
-    "GIL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "GMD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "GMH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1188,
-      "source": "Yahoo Finance"
-    },
-    "GSP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "GTA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "GVR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1664,
-      "source": "Yahoo Finance"
-    },
-    "HAG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HAH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "HAP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "HAR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HAS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "HAX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "HCD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "HCM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HDB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2241,
-      "source": "Yahoo Finance"
-    },
-    "HDC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "HDG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "HHP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1413,
-      "source": "Yahoo Finance"
-    },
-    "HHS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HHV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1191,
-      "source": "Yahoo Finance"
-    },
-    "HID": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HII": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2373,
-      "source": "Yahoo Finance"
-    },
-    "HMC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HNA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 666,
-      "source": "Yahoo Finance"
-    },
-    "HPG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "HPX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2092,
-      "source": "Yahoo Finance"
-    },
-    "HQC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "HSG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "HSL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2143,
-      "source": "Yahoo Finance"
-    },
-    "HT1": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HTG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 721,
-      "source": "Yahoo Finance"
-    },
-    "HTI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HTL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "HTN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2011,
-      "source": "Yahoo Finance"
-    },
-    "HTV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "HU1": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "HUB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1944,
-      "source": "Yahoo Finance"
-    },
-    "HVH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2006,
-      "source": "Yahoo Finance"
-    },
-    "HVN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1885,
-      "source": "Yahoo Finance"
-    },
-    "ICT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1707,
-      "source": "Yahoo Finance"
-    },
-    "IDI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "IJC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ILB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1879,
-      "source": "Yahoo Finance"
-    },
-    "IMP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ITC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ITD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "JVC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "KBC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "KDC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "KDH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "KHG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1280,
-      "source": "Yahoo Finance"
-    },
-    "KHP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "KMR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "KOS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1831,
-      "source": "Yahoo Finance"
-    },
-    "KSB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "L10": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "LAF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "LBM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "LCG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "LDG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "LGC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "LGL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "LHG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "LIX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "LM8": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2591,
-      "source": "Yahoo Finance"
-    },
-    "LPB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1495,
-      "source": "Yahoo Finance"
-    },
-    "LSS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "MBB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "MCM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 554,
-      "source": "Yahoo Finance"
-    },
-    "MCP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "MDG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "MHC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "MIG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1451,
-      "source": "Yahoo Finance"
-    },
-    "MSB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1472,
-      "source": "Yahoo Finance"
-    },
-    "MSH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1999,
-      "source": "Yahoo Finance"
-    },
-    "MSN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "MWG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NAB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 635,
-      "source": "Yahoo Finance"
-    },
-    "NAF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "NAV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "NBB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NCT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NHA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1451,
-      "source": "Yahoo Finance"
-    },
-    "NHH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1731,
-      "source": "Yahoo Finance"
-    },
-    "NHT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1233,
-      "source": "Yahoo Finance"
-    },
-    "NKG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "NLG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NNC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NO1": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 931,
-      "source": "Yahoo Finance"
-    },
-    "NSC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "NT2": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NTL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "NVL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2499,
-      "source": "Yahoo Finance"
-    },
-    "NVT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "OCB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1446,
-      "source": "Yahoo Finance"
-    },
-    "OGC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "OPC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "ORS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1235,
-      "source": "Yahoo Finance"
-    },
-    "PAC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "PAN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2599,
-      "source": "Yahoo Finance"
-    },
-    "PC1": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2529,
-      "source": "Yahoo Finance"
-    },
-    "PDN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "PDR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "PET": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "PGC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PGD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PGI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "PGV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1176,
-      "source": "Yahoo Finance"
-    },
-    "PHC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2039,
-      "source": "Yahoo Finance"
-    },
-    "PHR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PIT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PJT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2592,
-      "source": "Yahoo Finance"
-    },
-    "PLP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2331,
-      "source": "Yahoo Finance"
-    },
-    "PLX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2415,
-      "source": "Yahoo Finance"
-    },
-    "PMG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2223,
-      "source": "Yahoo Finance"
-    },
-    "PNC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "PNJ": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "POW": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1975,
-      "source": "Yahoo Finance"
-    },
-    "PPC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PTB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "PTC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PTL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "PVD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "PVP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 924,
-      "source": "Yahoo Finance"
-    },
-    "PVT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "QCG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "QNP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 662,
-      "source": "Yahoo Finance"
-    },
-    "RAL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "REE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "RYG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 369,
-      "source": "Yahoo Finance"
-    },
-    "S4A": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "SAB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2506,
-      "source": "Yahoo Finance"
-    },
-    "SAM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SAV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SBA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SBG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 705,
-      "source": "Yahoo Finance"
-    },
-    "SBT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SBV": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2409,
-      "source": "Yahoo Finance"
-    },
-    "SC5": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SCR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SCS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2082,
-      "source": "Yahoo Finance"
-    },
-    "SFC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "SFG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SFI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SGN": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2084,
-      "source": "Yahoo Finance"
-    },
-    "SGR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2235,
-      "source": "Yahoo Finance"
-    },
-    "SGT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SHA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SHB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2599,
-      "source": "Yahoo Finance"
-    },
-    "SHI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SHP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SIP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1279,
-      "source": "Yahoo Finance"
-    },
-    "SJD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SJS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SKG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SMA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "SMB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2082,
-      "source": "Yahoo Finance"
-    },
-    "SMC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SPM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "SRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SRF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "SSB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1407,
-      "source": "Yahoo Finance"
-    },
-    "SSC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2591,
-      "source": "Yahoo Finance"
-    },
-    "SSI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "ST8": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "STB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "STG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "STK": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2599,
-      "source": "Yahoo Finance"
-    },
-    "SVC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "SVD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1434,
-      "source": "Yahoo Finance"
-    },
-    "SVT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "SZC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1965,
-      "source": "Yahoo Finance"
-    },
-    "SZL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TAL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 262,
-      "source": "Yahoo Finance"
-    },
-    "TBC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TCB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2126,
-      "source": "Yahoo Finance"
-    },
-    "TCH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2558,
-      "source": "Yahoo Finance"
-    },
-    "TCI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 658,
-      "source": "Yahoo Finance"
-    },
-    "TCL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TCM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "TCO": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TCR": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "TCT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TDC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TDG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2378,
-      "source": "Yahoo Finance"
-    },
-    "TDH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TDM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2024,
-      "source": "Yahoo Finance"
-    },
-    "TDP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1515,
-      "source": "Yahoo Finance"
-    },
-    "TDW": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "TEG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "THG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "TIP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TIX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "TLD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2253,
-      "source": "Yahoo Finance"
-    },
-    "TLG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "TLH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TMP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TMS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "TMT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "TN1": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1877,
-      "source": "Yahoo Finance"
-    },
-    "TNC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "TNH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1462,
-      "source": "Yahoo Finance"
-    },
-    "TNI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2391,
-      "source": "Yahoo Finance"
-    },
-    "TNT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TPB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2167,
-      "source": "Yahoo Finance"
-    },
-    "TPC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "TRA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "TRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TSC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TTA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1540,
-      "source": "Yahoo Finance"
-    },
-    "TTE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1994,
-      "source": "Yahoo Finance"
-    },
-    "TTF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "TV2": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1863,
-      "source": "Yahoo Finance"
-    },
-    "TVB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2111,
-      "source": "Yahoo Finance"
-    },
-    "TVS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "TVT": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2356,
-      "source": "Yahoo Finance"
-    },
-    "TYA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "UIC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VCA": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1406,
-      "source": "Yahoo Finance"
-    },
-    "VCB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VCF": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VCG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1468,
-      "source": "Yahoo Finance"
-    },
-    "VCI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2371,
-      "source": "Yahoo Finance"
-    },
-    "VDP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2335,
-      "source": "Yahoo Finance"
-    },
-    "VDS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2354,
-      "source": "Yahoo Finance"
-    },
-    "VFG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2590,
-      "source": "Yahoo Finance"
-    },
-    "VGC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1869,
-      "source": "Yahoo Finance"
-    },
-    "VHC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VHM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2147,
-      "source": "Yahoo Finance"
-    },
-    "VIB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1503,
-      "source": "Yahoo Finance"
-    },
-    "VIC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2595,
-      "source": "Yahoo Finance"
-    },
-    "VID": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VIP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VIX": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 1451,
-      "source": "Yahoo Finance"
-    },
-    "VJC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2461,
-      "source": "Yahoo Finance"
-    },
-    "VMD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VND": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2336,
-      "source": "Yahoo Finance"
-    },
-    "VNG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VNL": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VNM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VNS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VOS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VPB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2333,
-      "source": "Yahoo Finance"
-    },
-    "VPD": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2222,
-      "source": "Yahoo Finance"
-    },
-    "VPG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2223,
-      "source": "Yahoo Finance"
-    },
-    "VPH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VPI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2107,
-      "source": "Yahoo Finance"
-    },
-    "VPS": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2589,
-      "source": "Yahoo Finance"
-    },
-    "VRC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VRE": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2276,
-      "source": "Yahoo Finance"
-    },
-    "VSC": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2588,
-      "source": "Yahoo Finance"
-    },
-    "VSH": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VSI": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2587,
-      "source": "Yahoo Finance"
-    },
-    "VTB": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VTO": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2586,
-      "source": "Yahoo Finance"
-    },
-    "VTP": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 633,
-      "source": "Yahoo Finance"
-    },
-    "YBM": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2079,
-      "source": "Yahoo Finance"
-    },
-    "YEG": {
-      "route": "PRIMARY_YAHOO",
-      "rows": 2119,
-      "source": "Yahoo Finance"
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "AAN": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 60,
+      "rows": 61,
+      "cachedRows": 61,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
+    "AAT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1399,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ABR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1153,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ABS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1562,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ABT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ACB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1483,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ACC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ACG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 996,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ACL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ADG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1419,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ADP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 788,
+      "cachedRows": 788,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ADS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
     "AFX": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1885,
+      "rows": 1886,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "AGG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1712,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "AGR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "ANT": {
       "route": "CDN_VNSTOCK_DEEP",
       "rows": 1493,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
+    "ANV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "APG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "APH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1570,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ASG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1529,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ASM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ASP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "AST": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2243,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BAF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1226,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BCE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BCM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1406,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BFC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BHN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2476,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BIC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BID": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BKG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1458,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BMC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BMI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BMP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BSI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2600,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BSR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 411,
+      "cachedRows": 411,
+      "forecastEligible": false,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BTP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BTT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
     "BVB": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1515,
+      "rows": 1516,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "BVH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "BWE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2355,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "C32": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "C47": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CCC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 325,
+      "cachedRows": 325,
+      "forecastEligible": false,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CCI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CCL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CDC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CHP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2564,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CIG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CII": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CKG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1659,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CLC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CLL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CLW": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2592,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CMG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CMV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CMX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CNG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "COM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2072,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CRE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2060,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "CRV": {
       "route": "CDN_LIMITED_HISTORY",
       "rows": 153,
+      "cachedRows": 153,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "CSM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CSV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CTD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CTF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2391,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CTG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CTI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CTR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1168,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CTS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "CVT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2302,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "D2D": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DAH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2548,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DAT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DBC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1834,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DBD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2118,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DBT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1513,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DC4": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1415,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DCL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DCM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DGC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1570,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DGW": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2589,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DHA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DHC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DHG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DHM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DIG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DLG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DMC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "DMX": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 6,
+      "rows": 7,
+      "cachedRows": 7,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "DPG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2136,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DPM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DPR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DQC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DRH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DRL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DSC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 471,
+      "cachedRows": 471,
+      "forecastEligible": false,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DSE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 551,
+      "cachedRows": 551,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DSN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DTA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DTL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DTT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DVP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DXG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DXS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1281,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "DXV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2586,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "EIB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2589,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ELC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "EVE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "EVF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1189,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "EVG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2393,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FCM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FCN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FDC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FIR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2038,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FIT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FMC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FPT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FRT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2163,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "FTS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2489,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GAS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GDT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GEE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 523,
+      "cachedRows": 523,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GEG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1798,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "GEL": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 127,
+      "rows": 128,
+      "cachedRows": 128,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "GEX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2228,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "GHC": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1902,
+      "rows": 1903,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
+    "GIL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GMD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GMH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1188,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GSP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GTA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "GVR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1665,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HAG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HAH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HAP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HAR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HAS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HAX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2589,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HCD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HCM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HDB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2242,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HDC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HDG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HHP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1414,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HHS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HHV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1192,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HID": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HII": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2374,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HMC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HNA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 667,
+      "cachedRows": 667,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
     "HPA": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 127,
+      "rows": 128,
+      "cachedRows": 128,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "HPG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HPX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2093,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HQC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HSG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HSL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2144,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HT1": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HTG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 722,
+      "cachedRows": 722,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HTI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HTL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HTN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2012,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HTV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2589,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HU1": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HUB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1945,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HVH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2007,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "HVN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1886,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ICT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1708,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "IDI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "IJC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ILB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1880,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "IMP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ITC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ITD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "JVC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KBC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KDC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KDH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KHG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1281,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KHP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "KLB": {
       "route": "CDN_VNSTOCK_DEEP",
       "rows": 1909,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "KMR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KOS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1832,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "KSB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "L10": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LAF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LBM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LCG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LDG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LGC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LGL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LHG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LIX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LM8": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2592,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LPB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1496,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "LSS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MBB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "MCH": {
       "route": "CDN_VNSTOCK_DEEP",
       "rows": 1986,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
+    "MCM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 555,
+      "cachedRows": 555,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MCP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MDG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MHC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MIG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1452,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MSB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1473,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MSH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2000,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MSN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "MWG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
     "MZG": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 428,
+      "rows": 429,
+      "cachedRows": 429,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "NAB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 636,
+      "cachedRows": 636,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NAF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NAV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NBB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NCT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NHA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1452,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NHH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1732,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NHT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1234,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NKG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NLG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NNC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NO1": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 932,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NSC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NT2": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "NTC": {
       "route": "CDN_VNSTOCK_DEEP",
       "rows": 1988,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "NTL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NVL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2500,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "NVT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "OCB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1447,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "OGC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "OPC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ORS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1236,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PAC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PAN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2600,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PC1": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2530,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PDN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PDR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "PDV": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1556,
+      "rows": 1557,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "PET": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PGC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PGD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2586,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PGI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PGV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1177,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PHC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2040,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PHR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PIT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PJT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2592,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PLP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2332,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PLX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2416,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PMG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2224,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PNC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PNJ": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "POW": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1976,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PPC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PTB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PTC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PTL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PVD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PVP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 925,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "PVT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "QCG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "QNP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 663,
+      "cachedRows": 663,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "RAL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "REE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "RYG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 370,
+      "cachedRows": 370,
+      "forecastEligible": false,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "S4A": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SAB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2507,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SAM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SAV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SBA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SBG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 706,
+      "cachedRows": 706,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SBT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SBV": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2409,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SC5": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SCR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SCS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2083,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SFC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SFG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SFI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SGN": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2085,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SGR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2236,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SGT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SHA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SHB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2600,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SHI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SHP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SIP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1280,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SJD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SJS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SKG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SMA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SMB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2083,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SMC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SPM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2595,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SRF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SSB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1408,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SSC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SSI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "ST8": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "STB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "STG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "STK": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2600,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SVC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SVD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1435,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SVT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SZC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1966,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "SZL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TAL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 263,
+      "cachedRows": 263,
+      "forecastEligible": false,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TBC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2127,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2559,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 659,
+      "cachedRows": 659,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCO": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCR": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TCT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "TCX": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 203,
+      "rows": 204,
+      "cachedRows": 204,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "TDC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TDG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2379,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TDH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TDM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2025,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TDP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1516,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TDW": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TEG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "THG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TIP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TIX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TLD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2254,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TLG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TLH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TMP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TMS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TMT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TN1": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1878,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TNC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TNH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1463,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TNI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2392,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TNT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TPB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2168,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TPC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TRA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "TSA": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 509,
+      "rows": 510,
+      "cachedRows": 510,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
+    "TSC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TTA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1541,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TTE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1994,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TTF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TV2": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1864,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TVB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2112,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TVS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TVT": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2357,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "TYA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2586,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "UIC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
     "VAB": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1257,
+      "rows": 1258,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VBB": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1716,
+      "rows": 1717,
+      "cachedRows": 900,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "VCA": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1407,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VCB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VCF": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VCG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1469,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VCI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2372,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "VCK": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 163,
+      "rows": 164,
+      "cachedRows": 164,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "VDP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2335,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VDS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2355,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VFG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2591,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VGC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1870,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VHC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VHM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2148,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VIB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1504,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VIC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2596,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VID": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VIP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VIX": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 1452,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VJC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2462,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VMD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VND": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2337,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VNG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VNL": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VNM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VNS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VOS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VPB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2334,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VPD": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2223,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VPG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2224,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VPH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VPI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2108,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "VPL": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 316,
+      "rows": 317,
+      "cachedRows": 317,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "VPS": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2590,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     },
     "VPX": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 166,
+      "rows": 167,
+      "cachedRows": 167,
+      "forecastEligible": false,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
+    "VRC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VRE": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2277,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VSC": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2589,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VSH": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VSI": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2588,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VTB": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VTO": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2587,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "VTP": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 634,
+      "cachedRows": 634,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
     "VVS": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 590,
+      "rows": 591,
+      "cachedRows": 591,
+      "forecastEligible": true,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
+    },
+    "YBM": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2080,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
+    },
+    "YEG": {
+      "route": "PRIMARY_YAHOO_WITH_CDN_MIRROR",
+      "rows": 2120,
+      "cachedRows": 900,
+      "forecastEligible": true,
+      "source": "Yahoo Finance",
+      "provider": "query1.finance.yahoo.com"
     }
   }
 }
