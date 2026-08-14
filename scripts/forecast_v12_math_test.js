@@ -1,0 +1,17 @@
+const assert=require('assert');
+const M=require('../forecast-v12-math.js');
+const h={medianReturn:Math.log(1.08),q20:Math.log(.96),q80:Math.log(1.15),historicalUpRate:.63,n:812,status:'PASS'};
+const p=M.scenarioPoint(h,100000);
+assert(Math.abs(p.expectedPrice-108000)<1e-6);
+assert(Math.abs(p.lowPrice-96000)<1e-6);
+assert(Math.abs(p.highPrice-115000)<1e-6);
+assert(Math.abs(p.change-.08)<1e-12);
+assert.strictEqual(p.direction,'UP');
+assert.strictEqual(p.n,812);
+assert.strictEqual(p.upRate,.63);
+const down=M.scenarioPoint({medianReturn:Math.log(.93),q20:Math.log(.86),q80:Math.log(1.01),historicalUpRate:.39,n:700,status:'REVIEW'},50000);
+assert.strictEqual(down.direction,'DOWN');
+assert(down.lowPrice<=down.expectedPrice&&down.expectedPrice<=down.highPrice);
+const a=M.auditSummary({choice:{reg:'RIDGE',cls:'LINEAR'},gates:{ranking:true,direction:false,scenario:true},sealedAudit:{n:17001,alphaIC:.07,alphaSpread:.005,balancedAccuracy:.53,mcc:.06,brierSkill:.01,ece:.04,scenarioMAEImprove:.02,scenarioRankIC:.03,coverage20_80:.61}});
+assert.strictEqual(a.n,17001);assert.strictEqual(a.reg,'RIDGE');assert.strictEqual(a.directionGate,false);assert.strictEqual(a.scenarioGate,true);
+console.log('PASS forecast-v12-math: expected price, interval, direction and audit mapping');
