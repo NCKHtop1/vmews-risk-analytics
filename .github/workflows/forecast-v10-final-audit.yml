@@ -11,7 +11,7 @@ on:
       - 'scripts/update_research_news_v10.py'
       - 'scripts/update_sentiment_v10.py'
       - 'scripts/build_news_event_study.py'
-      - 'scripts/forecast_v10_smoke.js'
+      - 'scripts/forecast_v10_smoke_final.js'
       - '.github/workflows/forecast-v10-final-audit.yml'
       - '.v10-trigger'
 permissions:
@@ -47,8 +47,8 @@ jobs:
         run: |
           node --check forecast-v4-core.js
           node --check forecast-final-v10.js
-          node --check scripts/forecast_v10_smoke.js
-          node scripts/forecast_v10_smoke.js
+          node --check scripts/forecast_v10_smoke_final.js
+          node scripts/forecast_v10_smoke_final.js
       - name: Persist audited artifacts
         run: |
           set -euo pipefail
