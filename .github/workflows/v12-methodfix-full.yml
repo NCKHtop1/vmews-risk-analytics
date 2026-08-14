@@ -35,7 +35,7 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile exact final-candidate source
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/v12_benchmark_unit.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -45,36 +45,21 @@ jobs:
           PY
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
+      - name: Exact VNINDEX and ticker-news identity runtime regression
+        run: PYTHONPATH=scripts python scripts/v12_benchmark_unit.py
       - name: Flow source-missingness regression tests
         run: |
           PYTHONPATH=scripts python - <<'PY'
           from datetime import date,timedelta
           from v12_flow import FlowTimeline
-
           start=date(2026,1,1);rows=[]
           for i in range(50):
-              d=(start+timedelta(days=i)).isoformat()
-              r={'date':d,'foreignBuyValue':100.0+i,'foreignSellValue':80.0,'foreignNetValue':20.0+i}
+              d=(start+timedelta(days=i)).isoformat();r={'date':d,'foreignBuyValue':100.0+i,'foreignSellValue':80.0,'foreignNetValue':20.0+i}
               if i>=25:r.update({'propBuyValue':40.0,'propSellValue':30.0,'propNetValue':10.0})
               rows.append(r)
-
-          prop_only=(start+timedelta(days=50)).isoformat()
-          rows.append({'date':prop_only,'propBuyValue':45.0,'propSellValue':35.0,'propNetValue':10.0})
-          z=FlowTimeline(rows).features(prop_only)
-          assert z['foreignAvailable']==0.0,z
-          assert z['foreignNetRatio1']==0.0,z
-          assert z['propAvailable']==1.0,z
-
-          zero_day=(start+timedelta(days=51)).isoformat()
-          rows.append({'date':zero_day,'foreignBuyValue':0.0,'foreignSellValue':0.0,'foreignNetValue':0.0,'propBuyValue':0.0,'propSellValue':0.0,'propNetValue':0.0})
-          z=FlowTimeline(rows).features(zero_day)
-          assert z['foreignAvailable']==1.0,z
-          assert z['foreignNetRatio1']==0.0,z
-          assert z['propAvailable']==1.0,z
-
-          missing_day=(start+timedelta(days=52)).isoformat()
-          z=FlowTimeline(rows).features(missing_day)
-          assert z['foreignAvailable']==0.0 and z['propAvailable']==0.0,z
+          prop_only=(start+timedelta(days=50)).isoformat();rows.append({'date':prop_only,'propBuyValue':45.0,'propSellValue':35.0,'propNetValue':10.0});z=FlowTimeline(rows).features(prop_only);assert z['foreignAvailable']==0.0 and z['foreignNetRatio1']==0.0 and z['propAvailable']==1.0,z
+          zero_day=(start+timedelta(days=51)).isoformat();rows.append({'date':zero_day,'foreignBuyValue':0.0,'foreignSellValue':0.0,'foreignNetValue':0.0,'propBuyValue':0.0,'propSellValue':0.0,'propNetValue':0.0});z=FlowTimeline(rows).features(zero_day);assert z['foreignAvailable']==1.0 and z['foreignNetRatio1']==0.0 and z['propAvailable']==1.0,z
+          missing_day=(start+timedelta(days=52)).isoformat();z=FlowTimeline(rows).features(missing_day);assert z['foreignAvailable']==0.0 and z['propAvailable']==0.0,z
           print('V12 FLOW MISSINGNESS PASS')
           PY
       - name: VNINDEX abnormal-return missingness regression
@@ -82,18 +67,9 @@ jobs:
           PYTHONPATH=scripts python - <<'PY'
           from datetime import date,timedelta
           from v12_evidence import prepare_articles
-          start=date(2026,1,1)
-          dates=[(start+timedelta(days=i)).isoformat() for i in range(40)]
-          rows=[{'date':d,'close':100+i,'modelClose':100+i,'volume':1} for i,d in enumerate(dates)]
-          sentiment={'symbols':{'FPT':{'items':[{'id':'evt1','publishedAt':dates[5]+'T08:00:00+07:00','title':'FPT test event','label':'POS','sourceQuality':1,'materiality':1,'confidence':1,'event':'GENERAL'}]}}}
-          _,missing=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},[])
-          z=missing[0]
-          assert z['benchmarkAvailable5'] is False and z['benchmarkR5'] is None and z['ar5'] is None,z
-          index=[{'date':d,'close':1000+2*i,'modelClose':1000+2*i,'volume':0} for i,d in enumerate(dates)]
-          _,bench=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},index)
-          b=bench[0]
-          assert b['benchmarkAvailable5'] is True and isinstance(b['benchmarkR5'],float) and isinstance(b['ar5'],float),b
-          assert abs(b['ar5']-b['r5'])>1e-12,b
+          start=date(2026,1,1);dates=[(start+timedelta(days=i)).isoformat() for i in range(40)];rows=[{'date':d,'close':100+i,'modelClose':100+i,'volume':1} for i,d in enumerate(dates)];sentiment={'symbols':{'FPT':{'items':[{'id':'evt1','publishedAt':dates[5]+'T08:00:00+07:00','title':'FPT test event','label':'POS','sourceQuality':1,'materiality':1,'confidence':1,'event':'GENERAL'}]}}}
+          _,missing=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},[]);z=missing[0];assert z['benchmarkAvailable5'] is False and z['benchmarkR5'] is None and z['ar5'] is None,z
+          index=[{'date':d,'close':1000+2*i,'modelClose':1000+2*i,'volume':0} for i,d in enumerate(dates)];_,bench=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},index);b=bench[0];assert b['benchmarkAvailable5'] is True and isinstance(b['benchmarkR5'],float) and isinstance(b['ar5'],float) and abs(b['ar5']-b['r5'])>1e-12,b
           print('V12 VNINDEX BENCHMARK MISSINGNESS PASS')
           PY
       - name: Assert audited V12 flow archive already exists
@@ -101,9 +77,7 @@ jobs:
           python - <<'PY'
           import json
           for name in ['flow-v12.json','flow-audit-v12.json']:
-              z=json.load(open('data/'+name,encoding='utf-8'));s=z.get('summary') or {}
-              assert str(z.get('version','')).startswith('VMEWS-FLOW-12'),z.get('version')
-              assert s.get('status')=='PASS',s
+              z=json.load(open('data/'+name,encoding='utf-8'));s=z.get('summary') or {};assert str(z.get('version','')).startswith('VMEWS-FLOW-12'),z.get('version');assert s.get('status')=='PASS',s
           print('V12 FLOW INPUT PASS')
           PY
       - name: Restore historical PIT news and market evidence seed
@@ -117,11 +91,7 @@ jobs:
       - name: Install only news and market seed
         run: |
           mkdir -p data/v12-seed
-          for f in sentiment-v11.json market-scan.json; do
-            src=$(find /tmp/v11-seed -name "$f" -type f | head -1)
-            test -n "$src"
-            cp "$src" "data/v12-seed/$f"
-          done
+          for f in sentiment-v11.json market-scan.json; do src=$(find /tmp/v11-seed -name "$f" -type f | head -1);test -n "$src";cp "$src" "data/v12-seed/$f";done
           python - <<'PY'
           import json
           for f in ['sentiment-v11.json','market-scan.json']:
@@ -138,20 +108,18 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          expected=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json','event-intelligence-v12.json']
-          sizes={x:(Path('data')/x).stat().st_size if (Path('data')/x).exists() else None for x in expected}
-          print('V12 OUTPUTS',sizes)
-          bad=[x for x,v in sizes.items() if v is None or v<100]
-          assert not bad,bad
+          expected=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json','event-intelligence-v12.json'];sizes={x:(Path('data')/x).stat().st_size if (Path('data')/x).exists() else None for x in expected};print('V12 OUTPUTS',sizes);bad=[x for x,v in sizes.items() if v is None or v<100];assert not bad,bad
           PY
       - name: Nine-phase research acceptance gates
         run: PYTHONPATH=scripts python scripts/v12_acceptance.py
-      - name: Phase 2 VNINDEX event-study benchmark gate
+      - name: Phase 2 VNINDEX event-study and event-identity gate
         run: PYTHONPATH=scripts python scripts/v12_benchmark_acceptance.py
       - name: Phase 4 active-flow certified-or-abstain gate
         run: PYTHONPATH=scripts python scripts/v12_active_flow_acceptance.py
       - name: Phase 4 sector taxonomy PIT gate
         run: PYTHONPATH=scripts python scripts/v12_sector_acceptance.py
+      - name: Phase 5 nested model-selection and incremental OOS gate
+        run: PYTHONPATH=scripts python scripts/v12_nested_selection_acceptance.py
       - name: Phase 7 explicit purge and embargo gate
         run: PYTHONPATH=scripts python scripts/v12_embargo_acceptance.py
       - uses: actions/setup-node@v4
@@ -182,6 +150,7 @@ jobs:
             data/active-flow-audit-v12.json
             data/active-flow-gate-v12.json
             data/sector-gate-v12.json
+            data/nested-selection-gate-v12.json
             data/embargo-gate-v12.json
             data/flow-audit-v12.json
       - name: Persist only nine-phase validated snapshots
@@ -195,9 +164,6 @@ jobs:
           test "$REMOTE_SHA" = "$V12_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING TRAINING: source=$V12_SOURCE_SHA remote=$REMOTE_SHA; refusing to attach old-model artifacts to new code"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/embargo-gate-v12.json
+          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/nested-selection-gate-v12.json data/embargo-gate-v12.json
           git commit -m 'Publish nine-phase validated V12 forecast snapshots [v12-model-data]'
-          PUBLISHED_SHA=$(git rev-parse HEAD)
-          test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_SOURCE_SHA"
-          git push origin HEAD:forecast-v12-methodfix
-          echo "V12_PUBLISHED_SHA=$PUBLISHED_SHA" >> "$GITHUB_ENV"
+          PUBLISHED_SHA=$(git rev-parse HEAD);test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_SOURCE_SHA";git push origin HEAD:forecast-v12-methodfix;echo "V12_PUBLISHED_SHA=$PUBLISHED_SHA" >> "$GITHUB_ENV"
