@@ -19,6 +19,10 @@ def price(s):
 
 def main():
     flow=json.loads((ROOT/'data/flow-v11.json').read_text(encoding='utf-8'))
+    # Normalize coverage counters even for older validated source snapshots.
+    src_current=flow.get('current',{})
+    flow.setdefault('summary',{})['currentForeign']=sum(all(k in z for k in ('foreignZ60','foreignNet1','foreignNet5','foreignNet20')) for z in src_current.values())
+    flow['summary']['currentProp']=sum(all(k in z for k in ('propZ60','propNet1','propNet5','propNet20')) for z in src_current.values())
     # Use only rows where the source actually reports gross foreign trading. Zero-gross
     # placeholder rows are not interpreted as genuine zero flow.
     valid={}
@@ -66,13 +70,14 @@ def main():
         a=[x for x in obs if x['foreignState']==st];groups['foreign'][st]={'n':len(a),'horizons':{str(h):stat([x.get('ar'+str(h)) for x in a]) for h in H}}
     adequate=sum(z['n']>=250 for z in groups['foreign'].values());rawTotal=sum(len(a) for a in valid.values());nonzero=sum(abs(float(r.get('foreignNetValue',0) or 0))>1e-12 for a in valid.values() for r in a);quality={'foreign':{'usable':adequate>=3 and len(obs)>=8000,'adequateStates':adequate,'nonzeroShare':nonzero/max(1,rawTotal),'observations':rawTotal},'prop':{'usable':False,'adequateStates':0,'nonzeroShare':0.0,'observations':0}}
     cur={}
-    for s,c in flow.get('current',{}).items():
+    for s,c in src_current.items():
         if not all(k in c for k in ('foreignZ60','foreignNet1','foreignNet5','foreignNet20')):continue
         st=fstate(float(c.get('foreignZ60') or 0));hist=groups['foreign'].get(st)
         if hist and hist.get('n',0)>=250:
             cur[s]={'foreign':{'state':st,'z60':c.get('foreignZ60'),'net1':c.get('foreignNet1'),'net5':c.get('foreignNet5'),'net20':c.get('foreignNet20'),'netRatio20':c.get('foreignNetRatio20'),'history':hist}}
             if 'foreignRoom' in c:cur[s]['foreign']['room']=c.get('foreignRoom')
-    out={'version':'VMEWS-FLOW-STUDY-11.2.0','generatedAt':flow.get('generatedAt'),'sourceVersion':flow.get('version'),'sampledObservations':len(obs),'symbolsWithUsableForeignHistory':len(valid),'groups':groups,'current':cur,'typeQuality':quality,'governance':{'role':'separate historically tested evidence layer; it changes confidence only when the current state has at least 250 historical observations','minimumStateN':250,'displayRule':'Foreign flow is rendered only for symbols with genuine source observations and a historically populated state. Proprietary flow is suppressed when the source is degenerate.','overlappingOutcomeStudy':True}}
+    out={'version':'VMEWS-FLOW-STUDY-11.2.1','generatedAt':flow.get('generatedAt'),'sourceVersion':flow.get('version'),'sampledObservations':len(obs),'symbolsWithUsableForeignHistory':len(valid),'groups':groups,'current':cur,'typeQuality':quality,'governance':{'role':'separate historically tested evidence layer; it changes confidence only when the current state has at least 250 historical observations','minimumStateN':250,'displayRule':'Foreign flow is rendered only for symbols with genuine source observations and a historically populated state. Proprietary flow is suppressed when the source is degenerate.','overlappingOutcomeStudy':True}}
+    (ROOT/'data/flow-v11.json').write_text(json.dumps(flow,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     (ROOT/'data/flow-study-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    print(json.dumps({'flowQuality':quality,'sampledObservations':len(obs),'usableSymbols':len(valid),'currentSymbols':len(cur),'states':{k:v['n'] for k,v in groups['foreign'].items()}},ensure_ascii=False))
+    print(json.dumps({'sourceCurrentForeign':flow['summary']['currentForeign'],'flowQuality':quality,'sampledObservations':len(obs),'usableSymbols':len(valid),'currentSymbols':len(cur),'states':{k:v['n'] for k,v in groups['foreign'].items()}},ensure_ascii=False))
 if __name__=='__main__':main()
