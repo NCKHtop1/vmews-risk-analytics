@@ -2,43 +2,17 @@ _fit_horizon_before_fixed_blind=fit_horizon
 
 def _fixed_blind_holdout_audit(y,D,z,h):
     idx=np.asarray(z.get('auditIndices') or [],dtype=int)
-    if len(idx)==0:
-        return {'status':'FAIL','reason':'sealed audit indices missing','horizon':int(h),'blocks':[]}
+    if len(idx)==0:return {'status':'FAIL','reason':'sealed audit indices missing','horizon':int(h),'blocks':[]}
     score=np.asarray(z.get('auditScore'),float);p=np.asarray(z.get('auditP'),float);med=np.asarray(z.get('auditMed'),float);lo=np.asarray(z.get('auditLo'),float);hi=np.asarray(z.get('auditHi'),float)
-    if not (len(score)==len(p)==len(med)==len(lo)==len(hi)==len(idx)):
-        return {'status':'FAIL','reason':'sealed audit prediction arrays are misaligned','horizon':int(h),'blocks':[]}
-    audit_dates=np.asarray(D[idx],dtype=object);unique=np.asarray(sorted(set(str(x) for x in audit_dates)),dtype=object);date_blocks=[np.asarray(b,dtype=object) for b in np.array_split(unique,4) if len(b)]
-    blocks=[]
+    if not (len(score)==len(p)==len(med)==len(lo)==len(hi)==len(idx)):return {'status':'FAIL','reason':'sealed audit prediction arrays are misaligned','horizon':int(h),'blocks':[]}
+    audit_dates=np.asarray(D[idx],dtype=object);unique=np.asarray(sorted(set(str(x) for x in audit_dates)),dtype=object);date_blocks=[np.asarray(b,dtype=object) for b in np.array_split(unique,4) if len(b)];blocks=[]
     for b in date_blocks:
-        m=np.isin(audit_dates,b);yy=np.asarray(y[idx][m],float);ss=score[m];pp=p[m];mm=med[m];ll=lo[m];hh=hi[m]
-        metrics=audit_metrics(yy,ss,pp,mm,ll,hh,audit_dates[m])
-        blocks.append({'start':str(b[0]),'end':str(b[-1]),'n':int(len(yy)),'metrics':metrics})
-    sealed=z.get('sealedAudit') or {};emb=z.get('embargoAudit') or {};sealed_start=str(emb.get('sealedAuditStart') or (unique[0] if len(unique) else '9999-99-99'))
-    max_cal=str(emb.get('maxCalBLabelMaturity') or '')
-    chronology=bool(max_cal and max_cal<sealed_start and all(int(x.get('n') or 0)>=500 for x in blocks) and len(blocks)==4)
-    positive_rank=sum(float((x.get('metrics') or {}).get('rankIC') or 0)>0 for x in blocks)
-    positive_mae=sum(float((x.get('metrics') or {}).get('scenarioMAEImprove') or -99)>0 for x in blocks)
-    tolerable_rank=sum(float((x.get('metrics') or {}).get('rankIC') or -99)>-.03 for x in blocks)
-    tolerable_mae=sum(float((x.get('metrics') or {}).get('scenarioMAEImprove') or -99)>-.05 for x in blocks)
-    overall_skill=bool(float(sealed.get('rankIC') or 0)>.02 and float(sealed.get('spread') or 0)>.001 and float(sealed.get('scenarioMAEImprove') or -99)>0 and .52<=float(sealed.get('coverage20_80') or 0)<=.72)
-    stability=bool(len(blocks)==4 and positive_rank>=3 and positive_mae>=3 and tolerable_rank==4 and tolerable_mae==4)
-    replay=z.get('walkForwardReplay') or {};literal_replay=bool(replay.get('status')=='PASS' and replay.get('chronologyVerified') is True and int(replay.get('futureRowsUsedForTraining') or 0)==0 and int(replay.get('futureMetaRowsUsedForTraining') or 0)==0 and int(replay.get('futureCalibrationRowsUsedForTraining') or 0)==0)
-    passed=bool(chronology and overall_skill and stability and literal_replay)
-    return {
-        'status':'PASS' if passed else 'FAIL','horizon':int(h),
-        'method':'FIXED_MODEL_BLIND_90_100: expert architecture/model family/meta learner are selected before the 80% lock; quantile/isotonic/conformal calibration is frozen before the 90% lock; the final 90-100% labels are used only once for evaluation. Four chronological sub-blocks test stability without refitting the frozen forecast. A separate literal expanding-window replay tests realistic retraining while preserving label maturity.',
-        'sealedAuditStart':sealed_start,'sealedAuditEnd':str(unique[-1]) if len(unique) else None,'rows':int(len(idx)),'dates':int(len(unique)),
-        'calibrationMaxLabelMaturity':max_cal or None,'chronologyVerified':chronology,'futureBlindLabelsUsedForSelectionOrCalibration':0,
-        'overall':sealed,'blocks':blocks,'positiveRankBlocks':int(positive_rank),'positiveMAEBlocks':int(positive_mae),'tolerableRankBlocks':int(tolerable_rank),'tolerableMAEBlocks':int(tolerable_mae),
-        'checks':{'overallPositiveSkill':overall_skill,'fourBlockStability':stability,'literalWalkForwardReplay':literal_replay,'preBlindCalibrationMaturity':chronology},
-        'policy':'No user-facing price is valid unless this fixed blind holdout, the literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass.'
-    }
+        m=np.isin(audit_dates,b);yy=np.asarray(y[idx][m],float);ss=score[m];pp=p[m];mm=med[m];ll=lo[m];hh=hi[m];metrics=audit_metrics(yy,ss,pp,mm,ll,hh,audit_dates[m]);blocks.append({'start':str(b[0]),'end':str(b[-1]),'n':int(len(yy)),'metrics':metrics})
+    sealed=z.get('sealedAudit') or {};emb=z.get('embargoAudit') or {};sealed_start=str(emb.get('sealedAuditStart') or (unique[0] if len(unique) else '9999-99-99'));max_cal=str(emb.get('maxCalBLabelMaturity') or '');cap=OOF_CAPTURE.get(int(h)) or {};kind_lock=str(cap.get('kindSelectionLockDate') or '');prediction_end=str(cap.get('predictionAvailabilityEndExclusive') or '');replay=z.get('walkForwardReplay') or {};meta_max=str(replay.get('metaTrainMaxMaturity') or '')
+    chronology=bool(max_cal and max_cal<sealed_start and kind_lock and kind_lock<sealed_start and prediction_end and prediction_end<sealed_start and (not meta_max or meta_max<sealed_start) and all(int(x.get('n') or 0)>=500 for x in blocks) and len(blocks)==4)
+    positive_rank=sum(float((x.get('metrics') or {}).get('rankIC') or 0)>0 for x in blocks);positive_mae=sum(float((x.get('metrics') or {}).get('scenarioMAEImprove') or -99)>0 for x in blocks);tolerable_rank=sum(float((x.get('metrics') or {}).get('rankIC') or -99)>-.03 for x in blocks);tolerable_mae=sum(float((x.get('metrics') or {}).get('scenarioMAEImprove') or -99)>-.05 for x in blocks)
+    overall_skill=bool(float(sealed.get('rankIC') or 0)>.02 and float(sealed.get('spread') or 0)>.001 and float(sealed.get('scenarioMAEImprove') or -99)>0 and .52<=float(sealed.get('coverage20_80') or 0)<=.72);stability=bool(len(blocks)==4 and positive_rank>=3 and positive_mae>=3 and tolerable_rank==4 and tolerable_mae==4);literal_replay=bool(replay.get('status')=='PASS' and replay.get('chronologyVerified') is True and int(replay.get('futureRowsUsedForTraining') or 0)==0 and int(replay.get('futureMetaRowsUsedForTraining') or 0)==0 and int(replay.get('futureCalibrationRowsUsedForTraining') or 0)==0);passed=bool(chronology and overall_skill and stability and literal_replay)
+    return {'status':'PASS' if passed else 'FAIL','horizon':int(h),'method':'FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.','sealedAuditStart':sealed_start,'sealedAuditEnd':str(unique[-1]) if len(unique) else None,'rows':int(len(idx)),'dates':int(len(unique)),'kindSelectionLockDate':kind_lock or None,'predictionAvailabilityEndExclusive':prediction_end or None,'metaTrainMaxMaturity':meta_max or None,'calibrationMaxLabelMaturity':max_cal or None,'chronologyVerified':chronology,'futureBlindLabelsUsedForSelectionOrCalibration':0 if chronology else -1,'neverSeenAcrossDevelopmentClaimed':False,'overall':sealed,'blocks':blocks,'positiveRankBlocks':int(positive_rank),'positiveMAEBlocks':int(positive_mae),'tolerableRankBlocks':int(tolerable_rank),'tolerableMAEBlocks':int(tolerable_mae),'checks':{'overallPositiveSkill':overall_skill,'fourBlockStability':stability,'literalWalkForwardReplay':literal_replay,'preBlindCalibrationMaturity':chronology},'policy':'No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence.'}
 
 def fit_horizon(X,y,D,dates,h,idx_by_expert):
-    z=_fit_horizon_before_fixed_blind(X,y,D,dates,h,idx_by_expert)
-    blind=_fixed_blind_holdout_audit(y,D,z,h)
-    replay=z.setdefault('walkForwardReplay',{})
-    replay['fixedBlindHoldout']=blind
-    z.setdefault('gates',{})['blindHoldout']=blind.get('status')=='PASS'
-    z['gates']['generalization']=bool(z['gates'].get('generalization')) and bool(z['gates']['blindHoldout'])
-    return z
+    z=_fit_horizon_before_fixed_blind(X,y,D,dates,h,idx_by_expert);blind=_fixed_blind_holdout_audit(y,D,z,h);replay=z.setdefault('walkForwardReplay',{});replay['fixedBlindHoldout']=blind;z.setdefault('gates',{})['blindHoldout']=blind.get('status')=='PASS';z['gates']['generalization']=bool(z['gates'].get('generalization')) and bool(z['gates']['blindHoldout']);return z
