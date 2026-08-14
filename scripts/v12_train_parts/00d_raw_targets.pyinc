@@ -1,0 +1,13 @@
+_survivorship_base_panel=base_panel
+
+def base_panel(price_store):
+    panel,latest,rows_by_symbol=_survivorship_base_panel(price_store)
+    for x in panel:
+        rows=rows_by_symbol.get(x['symbol']) or [];i=int(x.get('i',-1))
+        if 0<=i<len(rows):
+            x['originRawClose']=float(rows[i]['close'])
+            x['originModelClose']=float(rows[i].get('modelClose',rows[i]['close']))
+            for h in HORIZONS:
+                if i+h<len(rows):
+                    x['rawPrice'+str(h)]=float(rows[i+h]['close']);x['modelPrice'+str(h)]=float(rows[i+h].get('modelClose',rows[i+h]['close']))
+    return panel,latest,rows_by_symbol
