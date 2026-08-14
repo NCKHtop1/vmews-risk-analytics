@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/backfill_flow_v12.py'
       - '.github/workflows/v12-flow-build.yml'
+      - 'v12-flow-trigger.txt'
 permissions:
   contents: write
 concurrency:
@@ -25,6 +26,15 @@ jobs:
       - run: pip install --disable-pip-version-check -q numpy openpyxl
       - name: Compile flow builder
         run: python -m py_compile scripts/backfill_flow_v12.py
+      - name: Assert corrected foreign-window contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/backfill_flow_v12.py').read_text(encoding='utf-8')
+          for token in ['QUARTERLY_JSON_MMDDYYYY','qwindows','%m/%d/%Y','foreign100plus','future flow rows']:
+              assert token in s,token
+          print('CORRECTED FLOW BUILDER CONTRACT PASS')
+          PY
       - name: Build quarterly foreign and full-range proprietary archive
         shell: bash
         run: |
@@ -38,16 +48,19 @@ jobs:
           z=json.load(open('data/flow-v12.json',encoding='utf-8'));a=json.load(open('data/flow-audit-v12.json',encoding='utf-8'));s=z.get('summary') or {}
           assert z.get('version','').startswith('VMEWS-FLOW-12'),z.get('version')
           assert s.get('status')=='PASS',s
+          assert s.get('foreignWindowContract')=='quarterly MM/DD/YYYY',s
           assert s.get('routeCoverage',0)>=.90,s
           assert s.get('foreignCoverage',0)>=.60 and s.get('foreign100plus',0)>=150,s
           assert s.get('propCoverage',0)>=.25 and s.get('prop100plus',0)>=80,s
           assert a.get('summary')==s
-          future=[]
-          today=s.get('todayVN')
+          future=[];dupes=[];today=s.get('todayVN')
           for sym,rows in (z.get('symbols') or {}).items():
-              for r in rows:
-                  if r.get('date') and today and r['date']>today: future.append((sym,r['date']))
+              dates=[r.get('date') for r in rows if r.get('date')]
+              if len(dates)!=len(set(dates)):dupes.append(sym)
+              for d in dates:
+                  if today and d>today:future.append((sym,d))
           assert not future,future[:5]
+          assert not dupes,dupes[:10]
           print('V12 FLOW ARCHIVE PASS',s,'bytes',Path('data/flow-v12.json').stat().st_size)
           PY
       - uses: actions/upload-artifact@v4
