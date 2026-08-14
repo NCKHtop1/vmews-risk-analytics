@@ -23,24 +23,27 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          g=json.load(open('data/phase-gates-v12.json',encoding='utf-8'));m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
+          g=json.load(open('data/phase-gates-v12.json',encoding='utf-8'));m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'));a=json.load(open('data/active-flow-gate-v12.json',encoding='utf-8'));e=json.load(open('data/embargo-gate-v12.json',encoding='utf-8'))
           assert g.get('status')=='PASS',g
           assert all((g.get('phases') or {}).get(str(i),{}).get('status')=='PASS' for i in range(1,10)),g.get('phases')
+          assert a.get('status')=='PASS',a
+          assert a.get('mode') in {'CERTIFIED','ABSTAIN'},a
+          assert e.get('status')=='PASS',e
           assert m.get('promotion',{}).get('status')=='PASS',m.get('promotion')
           assert m.get('promotion',{}).get('directPriceHorizons')==[1,2,3,4,5],m.get('promotion')
-          print('NINE-PHASE RESEARCH GATE PASS')
+          print('NINE-PHASE + ACTIVE-FLOW + EMBARGO RESEARCH GATE PASS')
           PY
       - name: Create immutable model manifest
         run: |
           python - <<'PY'
           import hashlib,json,pathlib,subprocess
           from datetime import datetime,timezone
-          files=['forecast-final.html','forecast-final-v12.js','data/forecast-model-v12.json','data/forecast-current-v12.json','data/forecast-dashboard-v12.json','data/forecast-backtest-v12.json','data/data-audit-v12.json','data/event-intelligence-v12.json','data/flow-v12.json','data/flow-audit-v12.json','data/phase-gates-v12.json']
+          files=['forecast-final.html','forecast-final-v12.js','data/forecast-model-v12.json','data/forecast-current-v12.json','data/forecast-dashboard-v12.json','data/forecast-backtest-v12.json','data/data-audit-v12.json','data/event-intelligence-v12.json','data/flow-v12.json','data/flow-audit-v12.json','data/phase-gates-v12.json','data/active-flow-audit-v12.json','data/active-flow-gate-v12.json','data/embargo-gate-v12.json']
           rows={}
           for name in files:
               p=pathlib.Path(name);assert p.exists(),name;b=p.read_bytes();rows[name]={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)}
-          model=json.load(open('data/forecast-model-v12.json',encoding='utf-8'));dash=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'));gates=json.load(open('data/phase-gates-v12.json',encoding='utf-8'))
-          z={'version':'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.0.0','generatedAt':datetime.now(timezone.utc).isoformat(),'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'modelVersion':model.get('version'),'asOf':dash.get('asOf'),'promotion':model.get('promotion'),'phaseGateVersion':gates.get('version'),'files':rows,'policy':'All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity.'}
+          model=json.load(open('data/forecast-model-v12.json',encoding='utf-8'));dash=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'));gates=json.load(open('data/phase-gates-v12.json',encoding='utf-8'));active=json.load(open('data/active-flow-gate-v12.json',encoding='utf-8'));embargo=json.load(open('data/embargo-gate-v12.json',encoding='utf-8'))
+          z={'version':'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.1.0','generatedAt':datetime.now(timezone.utc).isoformat(),'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'modelVersion':model.get('version'),'asOf':dash.get('asOf'),'promotion':model.get('promotion'),'phaseGateVersion':gates.get('version'),'activeFlowGate':{'version':active.get('version'),'mode':active.get('mode'),'status':active.get('status')},'embargoGate':{'version':embargo.get('version'),'status':embargo.get('status')},'files':rows,'policy':'All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity.'}
           pathlib.Path('data/forecast-release-v12.json').write_text(json.dumps(z,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(z,ensure_ascii=False,indent=2))
           PY
       - name: Install Chromium smoke runtime
@@ -73,7 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${RELEASE_SHA}"
-          for path in forecast-final.html forecast-final-v12.js data/forecast-dashboard-v12.json data/forecast-model-v12.json data/forecast-backtest-v12.json data/phase-gates-v12.json data/forecast-release-v12.json; do
+          for path in forecast-final.html forecast-final-v12.js data/forecast-dashboard-v12.json data/forecast-model-v12.json data/forecast-backtest-v12.json data/phase-gates-v12.json data/active-flow-gate-v12.json data/embargo-gate-v12.json data/forecast-release-v12.json; do
             ok=0
             for i in 1 2 3 4 5 6; do
               if curl -LfsS --connect-timeout 10 --max-time 35 "$BASE/$path" -o "/tmp/$(basename "$path")"; then ok=1; break; fi
@@ -86,8 +89,8 @@ jobs:
           grep -q 'VMEWS Forecast V12' /tmp/forecast-final.html
           python - <<'PY'
           import json,os
-          g=json.load(open('/tmp/phase-gates-v12.json'));m=json.load(open('/tmp/forecast-model-v12.json'));r=json.load(open('/tmp/forecast-release-v12.json'))
-          assert g['status']=='PASS';assert m['promotion']['status']=='PASS';assert r['version'].startswith('VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST')
+          g=json.load(open('/tmp/phase-gates-v12.json'));m=json.load(open('/tmp/forecast-model-v12.json'));a=json.load(open('/tmp/active-flow-gate-v12.json'));e=json.load(open('/tmp/embargo-gate-v12.json'));r=json.load(open('/tmp/forecast-release-v12.json'))
+          assert g['status']=='PASS';assert m['promotion']['status']=='PASS';assert a['status']=='PASS';assert e['status']=='PASS';assert r['version'].startswith('VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST')
           print('PINNED CDN DATA PASS',os.environ['RELEASE_SHA'])
           PY
       - name: Commit-pinned CDN Chromium smoke
@@ -107,5 +110,7 @@ jobs:
           retention-days: 30
           path: |
             data/forecast-release-v12.json
+            data/active-flow-gate-v12.json
+            data/embargo-gate-v12.json
             v12-release-result.json
             /tmp/v12-http.log
