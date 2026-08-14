@@ -10,6 +10,8 @@ on:
       - 'scripts/update_research_news_v10.py'
       - 'scripts/update_sentiment_v10.py'
       - 'scripts/build_news_event_study.py'
+      - 'scripts/forecast_v4_features.py'
+      - 'scripts/forecast_v10_smoke_final.js'
       - 'forecast-final-v10.js'
       - '.github/workflows/update-research-news.yml'
 
