@@ -1,133 +1,133 @@
-import json,re,math,time,os,io
+import json,re,math,os,io
 from pathlib import Path
-from datetime import datetime,timezone,date
+from datetime import datetime,timezone
+from concurrent.futures import ThreadPoolExecutor,as_completed
 from urllib.parse import urlencode
 from urllib.request import Request,urlopen
-from concurrent.futures import ThreadPoolExecutor,as_completed
-import numpy as np
 from openpyxl import load_workbook
+import numpy as np
 
-ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));MANIFEST=ROOT/'data/hose-fallbacks/manifest.json';VERSION='VMEWS-FLOW-11.1.0';BASE='https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/'
-HEAD={'User-Agent':'Mozilla/5.0 VMEWS-Flow/11','Referer':'https://cafef.vn/du-lieu/lich-su-giao-dich-fpt-3.chn'}
-def syms():
- m=json.loads(MANIFEST.read_text(encoding='utf-8'));return sorted(s for s,r in (m.get('routes') or {}).items() if int((r or {}).get('rows') or 0)>=520)
-def nkey(k):
- s=str(k or '').lower();tr=str.maketrans('àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ','aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd');return re.sub(r'[^a-z0-9]','',s.translate(tr))
-def longest_list(x):
- best=[]
- if isinstance(x,list) and (not x or isinstance(x[0],dict)):best=x
- if isinstance(x,dict):
-  for v in x.values():
-   z=longest_list(v)
-   if len(z)>len(best):best=z
- return best
-def get_json(url,timeout=25):
- with urlopen(Request(url,headers=HEAD),timeout=timeout) as r:return json.loads(r.read().decode('utf-8','ignore'))
-def get_bytes(url,timeout=40):
- with urlopen(Request(url,headers=HEAD),timeout=timeout) as r:return r.read(),str(r.headers.get('content-type') or '')
-def endpoint(kind):return 'GDKhoiNgoai.ashx' if kind=='foreign' else 'GDTuDoanh.ashx'
-def export_rows(sym,kind):
- q=urlencode({'Type':'EXPORT','Symbol':sym,'Exchange':'HOSE','StartDate':'01/01/2018','EndDate':'31/12/2026','PageIndex':1,'PageSize':20});raw,ct=get_bytes(BASE+endpoint(kind)+'?'+q)
- if not raw.startswith(b'PK'):return []
- wb=load_workbook(io.BytesIO(raw),read_only=True,data_only=True);best=[]
- for ws in wb.worksheets:
-  vals=list(ws.iter_rows(values_only=True))
-  for hi in range(min(20,len(vals))):
-   hdr=[str(x or '').strip() for x in vals[hi]];joined=' '.join(nkey(x) for x in hdr)
-   if ('ngay' in joined or 'date' in joined) and any(x in joined for x in ['mua','buy','ban','sell','rong','net']):
-    rows=[]
-    for rr in vals[hi+1:]:
-     if not any(x is not None and str(x).strip() for x in rr):continue
-     rows.append({hdr[j] if j<len(hdr) and hdr[j] else f'c{j}':rr[j] for j in range(len(rr))})
-    if len(rows)>len(best):best=rows
- return best
-def page(sym,kind,p,size=2000):
- q=urlencode({'Symbol':sym,'Exchange':'HOSE','StartDate':'01/01/2018','EndDate':'31/12/2026','PageIndex':p,'PageSize':size});return longest_list(get_json(BASE+endpoint(kind)+'?'+q))
-def asnum(v):
- if v is None:return None
- if isinstance(v,(int,float)):
-  try:return float(v) if math.isfinite(float(v)) else None
-  except:return None
- s=str(v).strip().replace('\xa0','').replace(' ','')
- if not s:return None
- # Excel export is normally numeric; this handles formatted strings conservatively.
- if ',' in s and '.' in s:s=s.replace(',','')
- elif s.count(',')==1 and len(s.rsplit(',',1)[-1])<=2:s=s.replace(',','.')
- else:s=s.replace(',','')
- s=s.replace('%','')
+ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));VERSION='VMEWS-FLOW-11.2.0';START='01/01/2018';END='31/12/2026';BASE='https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/'
+UA={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/144 Safari/537.36','Accept':'*/*','Referer':'https://cafef.vn/du-lieu/lich-su-giao-dich.chn'}
+
+def nkey(x):
+ s=str(x or '').lower();s=s.translate(str.maketrans('áàạảãâấầậẩẫăắằặẳẵéèẹẻẽêếềệểễíìịỉĩóòọỏõôốồộổỗơớờợởỡúùụủũưứừựửữýỳỵỷỹđ','aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd'));return re.sub(r'[^a-z0-9]','',s)
+def asnum(x):
+ if x is None:return 0.
+ if isinstance(x,(int,float)):return float(x) if math.isfinite(float(x)) else 0.
+ s=str(x).strip().replace('\xa0','').replace(' ','').replace('%','')
+ if not s or s in {'-','--','nan','None'}:return 0.
+ if ',' in s and '.' not in s:
+  tail=s.rsplit(',',1)[-1];s=s.replace(',','.') if len(tail)<=3 else s.replace(',','')
+ elif ',' in s and '.' in s:
+  s=s.replace('.','').replace(',','.') if s.rfind(',')>s.rfind('.') else s.replace(',','')
  try:return float(s)
- except:return None
-def val(row,include,exclude=()):
- for k,v in row.items():
-  nk=nkey(k)
-  if all(x in nk for x in include) and not any(x in nk for x in exclude):
-   z=asnum(v)
-   if z is not None:return z
- return None
-def datev(row):
- for k,v in row.items():
-  if 'date' in nkey(k) or 'ngay' in nkey(k):
-   if isinstance(v,(datetime,date)):return v.date().isoformat() if isinstance(v,datetime) else v.isoformat()
-   s=str(v).split('T')[0].strip()
-   for f in ('%d/%m/%Y','%Y-%m-%d','%m/%d/%Y','%d-%m-%Y'):
-    try:return datetime.strptime(s,f).date().isoformat()
-    except:pass
- return None
-def parse(row,kind):
- d=datev(row)
- if not d:return None
- buyV=val(row,('mua','gt')) or val(row,('buy','value')) or 0.;sellV=val(row,('ban','gt')) or val(row,('sell','value')) or 0.;buyQ=val(row,('mua','kl')) or val(row,('buy','volume')) or 0.;sellQ=val(row,('ban','kl')) or val(row,('sell','volume')) or 0.
- netV=val(row,('rong','gt')) or val(row,('net','value'));netQ=val(row,('rong','kl')) or val(row,('net','volume'));netV=(buyV-sellV) if netV is None else netV;netQ=(buyQ-sellQ) if netQ is None else netQ
- z={'date':d,kind+'BuyValue':buyV,kind+'SellValue':sellV,kind+'NetValue':netV,kind+'BuyVolume':buyQ,kind+'SellVolume':sellQ,kind+'NetVolume':netQ}
- if kind=='foreign':
-  room=val(row,('room',),('total',));own=val(row,('sohuu',)) or val(row,('ownership',))
-  if room is not None:z['foreignRoom']=room
-  if own is not None:z['foreignOwnership']=own
- return z
-def fetch_kind(sym,kind):
- # Export is the only reliable way to avoid the foreign endpoint's fixed 20-row JSON cap.
- try:raw=export_rows(sym,kind)
- except Exception:raw=[]
- out=[];seen=set()
- for x in raw:
-  z=parse(x,kind)
-  if z and z['date'] not in seen:seen.add(z['date']);out.append(z)
- if len(out)>=100:return sorted(out,key=lambda x:x['date']), 'EXPORT_XLSX'
- # Fallback JSON. Proprietary endpoint honors large PageSize; foreign does not, so paginate deeply when needed.
- maxp=140 if kind=='foreign' else 20
- for p in range(1,maxp+1):
-  try:r=page(sym,kind,p,2000)
-  except Exception:
-   time.sleep(.25);continue
-  if not r:break
-  fresh=0
-  for x in r:
-   z=parse(x,kind)
-   if z and z['date'] not in seen:seen.add(z['date']);out.append(z);fresh+=1
-  if fresh==0 or (kind!='foreign' and len(r)<2000):break
- return sorted(out,key=lambda x:x['date']), 'JSON_FALLBACK'
+ except:return 0.
+def get(url,timeout=20):
+ with urlopen(Request(url,headers=UA),timeout=timeout) as r:return r.read(),str(r.headers.get('Content-Type') or '')
+def date_iso(x):
+ if hasattr(x,'date'):
+  try:return x.date().isoformat()
+  except:pass
+ s=str(x or '').strip()
+ for f in ('%d/%m/%Y','%d-%m-%Y','%Y-%m-%d','%d/%m/%y'):
+  try:return datetime.strptime(s[:10],f).date().isoformat()
+  except:pass
+ return s[:10] if re.match(r'^\d{4}-\d{2}-\d{2}',s) else None
+def combined_headers(ws,hi):
+ top=[ws.cell(hi,c).value for c in range(1,ws.max_column+1)];bot=[ws.cell(hi+1,c).value for c in range(1,ws.max_column+1)] if hi<ws.max_row else [None]*len(top);sub=sum(any(w in nkey(x) for w in ('khoiluong','giatri','volume','value')) for x in bot if x is not None)>=2;out=[];parent=''
+ for a,b in zip(top,bot):
+  if a not in (None,''):parent=str(a)
+  child=str(b) if sub and b not in (None,'') else ''
+  if child and parent and nkey(child)!=nkey(parent):out.append(parent+' '+child)
+  elif a not in (None,''):out.append(str(a))
+  elif child:out.append(child)
+  else:out.append(parent)
+ return out,hi+(2 if sub else 1)
+def export_rows(sym,kind):
+ ep='GDKhoiNgoai.ashx' if kind=='foreign' else 'GDTuDoanh.ashx';q=urlencode({'Type':'EXPORT','Symbol':sym,'Exchange':'HOSE','StartDate':START,'EndDate':END,'PageIndex':1,'PageSize':20});raw,ct=get(BASE+ep+'?'+q,30)
+ if not raw.startswith(b'PK'):return []
+ try:ws=load_workbook(io.BytesIO(raw),read_only=True,data_only=True).active
+ except:return []
+ hi=None
+ for r in range(1,min(ws.max_row,30)+1):
+  if any('ngay' in nkey(ws.cell(r,c).value) for c in range(1,ws.max_column+1)):hi=r;break
+ if hi is None:return []
+ hdr,start=combined_headers(ws,hi);keys=[nkey(x) for x in hdr]
+ def v(row,*groups):
+  for group in groups:
+   for i,k in enumerate(keys):
+    if all(term in k for term in group):return asnum(row[i] if i<len(row) else 0)
+  return 0.
+ out=[]
+ for vals in ws.iter_rows(min_row=start,values_only=True):
+  d=None
+  for i,k in enumerate(keys):
+   if 'ngay' in k:d=date_iso(vals[i] if i<len(vals) else None);break
+  if not d:continue
+  if kind=='foreign':z={'date':d,'foreignBuyValue':v(vals,('mua','giatri'),('mua','gt'),('buy','value')),'foreignSellValue':v(vals,('ban','giatri'),('ban','gt'),('sell','value')),'foreignNetValue':v(vals,('rong','giatri'),('rong','gt'),('net','value')),'foreignBuyVolume':v(vals,('mua','khoiluong'),('mua','kl'),('buy','volume')),'foreignSellVolume':v(vals,('ban','khoiluong'),('ban','kl'),('sell','volume')),'foreignNetVolume':v(vals,('rong','khoiluong'),('rong','kl'),('net','volume')),'foreignRoom':v(vals,('room',)),'foreignOwnership':v(vals,('sohuu',),('ownership',))}
+  else:z={'date':d,'propBuyValue':v(vals,('mua','giatri'),('mua','gt'),('buy','value')),'propSellValue':v(vals,('ban','giatri'),('ban','gt'),('sell','value')),'propNetValue':v(vals,('rong','giatri'),('rong','gt'),('net','value')),'propBuyVolume':v(vals,('mua','khoiluong'),('mua','kl'),('buy','volume')),'propSellVolume':v(vals,('ban','khoiluong'),('ban','kl'),('sell','volume')),'propNetVolume':v(vals,('rong','khoiluong'),('rong','kl'),('net','volume'))}
+  out.append(z)
+ fields=['foreignBuyValue','foreignSellValue','foreignNetValue'] if kind=='foreign' else ['propBuyValue','propSellValue','propNetValue']
+ if out and not any(any(abs(float(x.get(k,0) or 0))>1e-12 for k in fields) for x in out):return []
+ return sorted({x['date']:x for x in out}.values(),key=lambda x:x['date'])
+def json_rows(sym,kind):
+ ep='GDKhoiNgoai.ashx' if kind=='foreign' else 'GDTuDoanh.ashx';out=[]
+ for pg in range(1,500):
+  q=urlencode({'Symbol':sym,'StartDate':START,'EndDate':END,'PageIndex':pg,'PageSize':100})
+  try:raw,_=get(BASE+ep+'?'+q,20);p=json.loads(raw.decode('utf-8','ignore'))
+  except:break
+  a=p.get('Data') or p.get('data') or p.get('DataRows') or []
+  if isinstance(a,dict):a=a.get('Data') or a.get('Rows') or []
+  if not isinstance(a,list) or not a:break
+  for r in a:
+   kk={nkey(k):v for k,v in r.items()};d=date_iso(next((v for k,v in kk.items() if 'ngay' in k or 'date' in k),None))
+   if not d:continue
+   def pick(*alts):
+    for alt in alts:
+     for k,vv in kk.items():
+      if all(t in k for t in alt):return asnum(vv)
+    return 0.
+   if kind=='foreign':z={'date':d,'foreignBuyValue':pick(('mua','giatri'),('mua','gt'),('buy','value')),'foreignSellValue':pick(('ban','giatri'),('ban','gt'),('sell','value')),'foreignNetValue':pick(('rong','giatri'),('rong','gt'),('net','value')),'foreignBuyVolume':pick(('mua','khoiluong'),('mua','kl'),('buy','volume')),'foreignSellVolume':pick(('ban','khoiluong'),('ban','kl'),('sell','volume')),'foreignNetVolume':pick(('rong','khoiluong'),('rong','kl'),('net','volume')),'foreignRoom':pick(('room',)),'foreignOwnership':pick(('sohuu',),('ownership',))}
+   else:z={'date':d,'propBuyValue':pick(('mua','giatri'),('mua','gt'),('buy','value')),'propSellValue':pick(('ban','giatri'),('ban','gt'),('sell','value')),'propNetValue':pick(('rong','giatri'),('rong','gt'),('net','value')),'propBuyVolume':pick(('mua','khoiluong'),('mua','kl'),('buy','volume')),'propSellVolume':pick(('ban','khoiluong'),('ban','kl'),('sell','volume')),'propNetVolume':pick(('rong','khoiluong'),('rong','kl'),('net','volume'))}
+   out.append(z)
+  total=int(p.get('TotalCount') or p.get('totalCount') or p.get('Total') or 0);pages=int(p.get('TotalPage') or p.get('totalPage') or p.get('TotalPages') or 0)
+  if (pages and pg>=pages) or (total and len(out)>=total):break
+  if len(a)<20 and not pages:break
+ return sorted({x['date']:x for x in out}.values(),key=lambda x:x['date'])
 def one(sym):
- f,fs=fetch_kind(sym,'foreign');p,ps=fetch_kind(sym,'prop');d={}
- for x in f+p:d.setdefault(x['date'],{'date':x['date']}).update(x)
- rows=[d[k] for k in sorted(d)];return sym,rows,{'foreign':fs,'prop':ps,'foreignRows':len(f),'propRows':len(p)}
-def roll(rows,k,field):return float(sum(float(x.get(field,0) or 0) for x in rows[-k:])) if rows else 0.
-def current(rows):
- if not rows:return None
- z={'date':rows[-1]['date']}
- for typ in ('foreign','prop'):
-  fld=typ+'NetValue';gross=typ+'BuyValue';gross2=typ+'SellValue'
-  for k in (1,5,20):z[typ+'Net'+str(k)]=roll(rows,k,fld)
-  vals=np.asarray([float(x.get(fld,0) or 0) for x in rows[-60:]],float);z[typ+'Z60']=float((vals[-1]-vals.mean())/(vals.std(ddof=1) or 1)) if len(vals)>2 else 0.;g=sum(float(x.get(gross,0) or 0)+float(x.get(gross2,0) or 0) for x in rows[-20:]);z[typ+'NetRatio20']=z[typ+'Net20']/g if g else 0.
- if 'foreignRoom' in rows[-1]:z['foreignRoom']=rows[-1]['foreignRoom']
- return z
+ audit={};parts={}
+ for kind in ('foreign','prop'):
+  try:r=export_rows(sym,kind);src='EXPORT_XLSX'
+  except:r=[];src='EXPORT_ERROR'
+  if len(r)<40:
+   try:j=json_rows(sym,kind)
+   except:j=[]
+   if len(j)>len(r):r=j;src='JSON_FALLBACK'
+  parts[kind]=r;audit[kind]=src;audit[kind+'Rows']=len(r)
+ d={}
+ for kind in ('foreign','prop'):
+  for x in parts[kind]:d.setdefault(x['date'],{'date':x['date']}).update(x)
+ return sym,[d[k] for k in sorted(d)],audit
 def main():
- symbols=syms();data={};cur={};sources={}
- with ThreadPoolExecutor(max_workers=14) as ex:
-  fs={ex.submit(one,s):s for s in symbols}
+ man=json.loads((ROOT/'data/hose-fallbacks/manifest.json').read_text(encoding='utf-8'));syms=[s for s,r in (man.get('routes') or {}).items() if int((r or {}).get('rows') or 0)>=520];allr={};aud={}
+ with ThreadPoolExecutor(max_workers=10) as ex:
+  fs={ex.submit(one,s):s for s in syms}
   for i,f in enumerate(as_completed(fs),1):
-   s,r,src=f.result();data[s]=r;sources[s]=src;c=current(r)
-   if c:cur[s]=c
-   if i%50==0:print(json.dumps({'flowSymbolsDone':i,'total':len(symbols)}))
- counts=sorted(len(x) for x in data.values());foreignCounts=sorted(x['foreignRows'] for x in sources.values());propCounts=sorted(x['propRows'] for x in sources.values());out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'source':'CafeF public historical export/JSON endpoints','start':'2018-01-01','symbols':data,'current':cur,'sourceAudit':sources,'summary':{'symbols':len(symbols),'symbolsWithFlow':sum(x>0 for x in counts),'symbols100plus':sum(x>=100 for x in counts),'symbols500plus':sum(x>=500 for x in counts),'medianRows':counts[len(counts)//2] if counts else 0,'p10Rows':counts[int(.1*(len(counts)-1))] if counts else 0,'foreignMedianRows':foreignCounts[len(foreignCounts)//2] if foreignCounts else 0,'propMedianRows':propCounts[len(propCounts)//2] if propCounts else 0,'foreignExportSymbols':sum(x['foreign']=='EXPORT_XLSX' for x in sources.values()),'propExportSymbols':sum(x['prop']=='EXPORT_XLSX' for x in sources.values())}}
- (ROOT/'data/flow-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8');print(json.dumps(out['summary'],ensure_ascii=False))
+   s,r,a=f.result();allr[s]=r;aud[s]=a
+   if i%50==0:print(json.dumps({'flowSymbolsDone':i,'total':len(syms)}))
+ lens=[len(x) for x in allr.values()];fl=[a['foreignRows'] for a in aud.values()];pl=[a['propRows'] for a in aud.values()];cur={}
+ for s,r in allr.items():
+  if not r:continue
+  z={}
+  for typ in ('foreign','prop'):
+   vv=np.asarray([float(x.get(typ+'NetValue',0) or 0) for x in r],float);gross=np.asarray([float(x.get(typ+'BuyValue',0) or 0)+float(x.get(typ+'SellValue',0) or 0) for x in r],float);nz=np.where(gross>0)[0]
+   if len(nz)<20:continue
+   j=int(nz[-1]);hist=vv[max(0,j-59):j+1];sd=float(hist.std(ddof=1)) if len(hist)>2 else 0.;z[typ+'Net1']=float(vv[j]);z[typ+'Net5']=float(vv[max(0,j-4):j+1].sum());z[typ+'Net20']=float(vv[max(0,j-19):j+1].sum());z[typ+'Z60']=float((vv[j]-hist.mean())/(sd or 1));gg=float(gross[max(0,j-19):j+1].sum());z[typ+'NetRatio20']=z[typ+'Net20']/gg if gg else 0.
+  if z:
+   z['date']=r[-1]['date'];last=r[-1]
+   if 'foreignRoom' in last:z['foreignRoom']=last.get('foreignRoom');z['foreignOwnership']=last.get('foreignOwnership')
+   cur[s]=z
+ summary={'symbols':len(syms),'symbolsWithFlow':sum(x>0 for x in lens),'symbols100plus':sum(x>=100 for x in lens),'symbols500plus':sum(x>=500 for x in lens),'medianRows':int(np.median(lens)) if lens else 0,'p10Rows':int(np.quantile(lens,.1)) if lens else 0,'foreignMedianRows':int(np.median(fl)) if fl else 0,'propMedianRows':int(np.median(pl)) if pl else 0,'foreignExportSymbols':sum(a['foreign']=='EXPORT_XLSX' for a in aud.values()),'propExportSymbols':sum(a['prop']=='EXPORT_XLSX' for a in aud.values()),'currentForeign':sum('foreignNet1' in z for z in cur.values()),'currentProp':sum('propNet1' in z for z in cur.values())}
+ out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'range':{'start':'2018-01-01','end':'2026-12-31'},'source':'CafeF historical foreign/proprietary trading export with deep JSON fallback','symbols':allr,'current':cur,'sourceAudit':aud,'summary':summary};(ROOT/'data/flow-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8');print(json.dumps(summary,ensure_ascii=False))
 if __name__=='__main__':main()
