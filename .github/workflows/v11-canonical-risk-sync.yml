@@ -46,6 +46,11 @@ jobs:
           assert all(float(x.get('liquidity30',0))>=500_000_000 for x in d['lists']['red'])
           print('V11 DASHBOARD CANONICAL RISK PASS',d['counts'],d['canonicalRiskCoverage'])
           PY
+      - name: Use mutable main data endpoint from immutable CDN shell
+        run: |
+          sed -i 's#https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/main#https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main#g' forecast-final-v11.js
+          node --check forecast-final-v11.js
+          grep -q 'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main' forecast-final-v11.js
       - name: Validate original VMEWS live governance remains intact
         run: |
           node --check research-live-v6.js
@@ -68,12 +73,12 @@ jobs:
           assert snap.exists(),snap
           print('ORIGINAL VMEWS GOVERNANCE PASS',m['modelDate'])
           PY
-      - name: Persist canonical risk and V11 dashboard
+      - name: Persist canonical risk, V11 dashboard and live data source
         run: |
           git config user.name github-actions-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add data/market-scan.json data/forecast-dashboard-v11.json
+          git add data/market-scan.json data/forecast-dashboard-v11.json forecast-final-v11.js
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Sync V11 dashboard to canonical VMEWS risk [v11-risk-sync]'
+          git commit -m 'Finalize V11 canonical risk and live data source [v11-risk-sync]'
           git pull --rebase origin main
           git push origin HEAD:main
