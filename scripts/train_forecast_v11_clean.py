@@ -26,20 +26,26 @@ def safe_rank_stats(y,p,D):
 orig_build=m.build_panel
 def broad_current_panel():
     P,latest=orig_build()
-    # The cross-sectional market state is a market-level EOD observation.  Copy the
-    # modal-date state to symbols whose own last completed EOD is one or a few days
-    # earlier instead of dropping otherwise usable stock histories from inference.
-    donor=next((v['feature'] for v in latest.values() if v and all(k in v['feature'] for k in m.CROSS)),None)
-    if donor:
-        cross={k:float(donor[k]) for k in m.CROSS}
-        for v in latest.values():
-            if v:v['feature'].update(cross)
+    # A stale symbol must never receive a market state observed after its own EOD.
+    # Reuse the most recent sampled cross-sectional state on or before that symbol date.
+    cross_by_date={}
+    for x in P:
+        if all(k in x for k in m.CROSS):
+            cross_by_date.setdefault(str(x['date']),{k:float(x[k]) for k in m.CROSS})
+    cross_dates=sorted(cross_by_date)
+    for v in latest.values():
+        if not v:continue
+        f=v.get('feature') or {}
+        if all(k in f for k in m.CROSS):
+            f['crossContextDate']=str(f.get('date'))
+            continue
+        d=str(f.get('date') or '')
+        eligible=[x for x in cross_dates if x<=d]
+        if not eligible:continue
+        use=eligible[-1]
+        f.update(cross_by_date[use]);f['crossContextDate']=use
     CACHE['panel']=(P,latest)
     return P,latest
-
-def safe_risk(f):
-    st,n=m._orig_risk(f) if hasattr(m,'_orig_risk') else m.risk_status(f)
-    return st,int(n)
 
 def ece(y,p,bins=10):
     q=np.linspace(0,1,bins+1);s=0.;n=len(y)
@@ -64,9 +70,6 @@ def repair_calibration():
         ai,aap,adp=m.train_block(X,y,alpha,D,dates,h,m.AUD,choice);A=repaired_audit(y[ai],alpha[ai],aap,adp,D[ai],dir_cal,scenario_cal)
         gates={'ranking':A['alphaIC']>.02 and A['alphaSpread']>.0015,'direction':A['balancedAccuracy']>.515 and A['mcc']>.02 and A['brierSkill']>-.03,'scenario':len(scenario_cal)>=7 and .45<=A['coverage20_80']<=.75 and A['scenarioRankIC']>.01}
         z['directionCalibration']=dir_cal;z['calibration']=scenario_cal;z['sealedAudit']=A;z['gates']=gates;z['status']='PASS' if all(gates.values()) else ('SCENARIO_PASS' if gates['ranking'] and gates['scenario'] else 'REVIEW')
-        # Current alpha is already produced by the production model.  Use the
-        # alpha-calibrated bucket for magnitude/range and use the direction bucket
-        # only when its sealed direction gate passed.
         for s,c in cur['symbols'].items():
             hh=c.get('horizons',{}).get(key)
             if not hh:continue
@@ -77,6 +80,7 @@ def repair_calibration():
     direction_h=[h for h in m.HORIZONS if model['horizons'][str(h)]['gates']['direction']]
     model['promotion']={'status':'PASS' if len(scenario_h)>=4 and 3 in scenario_h and 5 in scenario_h else 'REVIEW','directHorizons':scenario_h,'directionHorizons':direction_h,'exactTargetPrice':False,'scenarioDistribution':True}
     model['governance']['magnitudeCalibration']='Absolute T+1..T+5 scenario distributions are calibrated on predicted cross-sectional alpha in CAL and audited only in the sealed AUD block.'
+    model['governance']['currentCrossSection']='Each current symbol uses a same-day cross-section when available; otherwise the latest sampled cross-sectional state not later than that symbol EOD.'
     cur['generatedAt']=datetime.now(timezone.utc).isoformat();cur['count']=len(cur['symbols'])
     (ROOT/'data/forecast-model-v11.json').write_text(json.dumps(model,ensure_ascii=False,indent=2),encoding='utf-8');(ROOT/'data/forecast-current-v11.json').write_text(json.dumps(cur,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps({'calibrationRepair':'PASS','current':cur['count'],'directHorizons':scenario_h,'directionHorizons':direction_h,'audit':{h:model['horizons'][str(h)]['sealedAudit'] for h in m.HORIZONS}},ensure_ascii=False))
