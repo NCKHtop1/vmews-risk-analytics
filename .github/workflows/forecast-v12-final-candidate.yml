@@ -1,0 +1,141 @@
+name: Forecast V12 complete final candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-final-candidate2]
+    paths:
+      - 'scripts/v12_*.py'
+      - 'scripts/v12_train_parts/**'
+      - 'scripts/train_forecast_v12.py'
+      - 'scripts/v12_browser_smoke.mjs'
+      - 'forecast-final-v12.js'
+      - 'forecast-v12-evidence-ui.js'
+      - 'forecast-final.html'
+      - 'requirements-v12.txt'
+      - '.github/workflows/forecast-v12-final-candidate.yml'
+      - 'v12-final-trigger.txt'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: vmews-v12-complete-final-candidate
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[v12-final-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 105
+    env:
+      V12_MIN_ROWS: '520'
+      V12_VNSTOCK_INTERVAL: '3.15'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - name: Install research dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Compile assembled V12 source
+        run: |
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_rumor_runtime.py scripts/v12_rumor_test.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          python - <<'PY'
+          from pathlib import Path
+          parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
+          code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
+          compile(code,'v12-final-assembled.py','exec')
+          print('V12 FINAL ASSEMBLED SYNTAX PASS',len(parts),[p.name for p in parts])
+          PY
+      - name: Phase 0A - adversarial entity tests
+        run: PYTHONPATH=scripts python scripts/v12_entity_test.py
+      - name: Phase 0B - deterministic rumor PIT tests
+        run: PYTHONPATH=scripts python scripts/v12_rumor_test.py
+      - name: Restore real historical evidence archive
+        uses: actions/download-artifact@v4
+        with:
+          name: forecast-v11-final-evidence-31790884093
+          path: /tmp/v11-seed
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: NCKHtop1/vmews-risk-analytics
+          run-id: 31790884093
+      - name: Install immutable evidence seed
+        run: |
+          mkdir -p data/v12-seed
+          for f in sentiment-v11.json flow-v11.json market-scan.json; do src=$(find /tmp/v11-seed -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/v12-seed/$f"; done
+          python - <<'PY'
+          import json
+          for f in ['sentiment-v11.json','flow-v11.json','market-scan.json']:
+              z=json.load(open('data/v12-seed/'+f,encoding='utf-8'));print(f,z.get('version'))
+          PY
+      - name: Phase 1 - VNStock-first source and corporate-action probe
+        run: PYTHONPATH=scripts python scripts/v12_source_probe.py
+      - name: Phases 2-7 - full multimodal training and sealed OOS audit
+        run: PYTHONPATH=scripts python scripts/train_forecast_v12.py
+      - name: Phase gates - data universe sentiment rumor flow ML calibration backtest
+        run: PYTHONPATH=scripts python scripts/v12_acceptance.py
+      - name: Bind evidence overlay only after all model gates pass
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('forecast-final.html');s=p.read_text(encoding='utf-8');tag='<script src="./forecast-v12-evidence-ui.js"></script>'
+          if tag not in s:s=s.replace('</body>',tag+'</body>')
+          p.write_text(s,encoding='utf-8')
+          assert tag in p.read_text(encoding='utf-8')
+          PY
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Frontend syntax and static contracts
+        run: |
+          node --check forecast-final-v12.js
+          node --check forecast-v12-evidence-ui.js
+          grep -q 'forecast-v12-evidence-ui.js' forecast-final.html
+          python scripts/v12_static_smoke.py
+      - name: Install real-browser test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Phase 8 - real Chromium desktop mobile hover navigation smoke
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/v12-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:8000/forecast-final.html >/dev/null && break; sleep 1; done
+          V12_BROWSER_URL='http://127.0.0.1:8000/forecast-final.html?symbol=FPT' node scripts/v12_browser_smoke.mjs
+      - name: Print promotion evidence
+        run: |
+          python - <<'PY'
+          import json
+          m=json.load(open('data/forecast-model-v12.json'));a=json.load(open('data/data-audit-v12.json'));g=json.load(open('data/phase-gates-v12.json'))
+          print(json.dumps({'promotion':m['promotion'],'horizons':{h:{'active':z['activeExperts'],'price':z['priceStatus'],'direction':z['directionStatus'],'audit':z['sealedAudit'],'expertPromotion':z['expertPromotion']} for h,z in m['horizons'].items()},'entity':a.get('entityFilter'),'universe':a.get('universeAudit'),'flow':a.get('flowCoverage'),'gates':{'status':g['status'],'tests':g['tests'],'failed':g['failed']}},ensure_ascii=False,indent=2))
+          PY
+      - name: Upload complete final-candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-v12-complete-final-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            data/v12-source-probe.json
+            data/forecast-model-v12.json
+            data/forecast-current-v12.json
+            data/forecast-dashboard-v12.json
+            data/forecast-backtest-v12.json
+            data/data-audit-v12.json
+            data/phase-gates-v12.json
+            v12-browser-desktop.png
+            v12-browser-mobile.png
+      - name: Persist only fully validated candidate snapshots and bound UI
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add forecast-final.html data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/phase-gates-v12.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish complete validated V12 candidate [v12-final-data]'
+          git pull --rebase origin forecast-v12-final-candidate2
+          git push origin HEAD:forecast-v12-final-candidate2
