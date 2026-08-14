@@ -7,6 +7,7 @@ on:
       - 'scripts/v12_train_parts/**'
       - 'scripts/v12_entity.py'
       - 'scripts/v12_acceptance.py'
+      - 'scripts/v12_embargo_acceptance.py'
       - 'scripts/v12_flow.py'
       - 'scripts/backfill_flow_v12.py'
       - 'scripts/train_forecast_v12.py'
@@ -24,13 +25,20 @@ jobs:
       - run: pip install --disable-pip-version-check -q numpy scipy scikit-learn lightgbm
       - name: Compile strict utilities and assembled V12 methodfix
         run: |
-          python -m py_compile scripts/v12_acceptance.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
-          python - <<'PY'
+          python -m py_compile scripts/v12_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
+          PYTHONPATH=scripts python - <<'PY'
+          import sys
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
           code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
-          compile(code,'v12-methodfix-assembled.py','exec')
-          print('V12 METHODFIX ASSEMBLED SYNTAX PASS',len(parts),[p.name for p in parts])
+          compiled=compile(code,'v12-methodfix-assembled.py','exec')
+          ns={'__name__':'v12_structure_check','__file__':'scripts/train_forecast_v12.py'}
+          exec(compiled,ns,ns)
+          assert callable(ns.get('run_v12_pipeline')),'top-level run_v12_pipeline missing'
+          names=set(ns['run_v12_pipeline'].__code__.co_names)
+          for required in ['build_price_store','get_index_history','base_panel','prepare_articles','merge_evidence','fit_horizon','current_predictions','backtest_cases']:
+              assert required in names,(required,sorted(names))
+          print('V12 METHODFIX ASSEMBLED STRUCTURE PASS',len(parts),[p.name for p in parts])
           PY
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
