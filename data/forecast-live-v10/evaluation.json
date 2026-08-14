@@ -1,0 +1,40 @@
+{
+  "version": "VMEWS-FORECAST-LIVE-10.0.0",
+  "generatedAt": "2026-08-14T01:06:31.943701+00:00",
+  "method": "Immutable completed-EOD prequential test-then-score.",
+  "summary": {
+    "3": {
+      "matureOrigins": 0,
+      "nPredictions": 0,
+      "alphaIC": null,
+      "directionHitRate": null,
+      "evidenceState": "IMMATURE"
+    },
+    "5": {
+      "matureOrigins": 0,
+      "nPredictions": 0,
+      "alphaIC": null,
+      "directionHitRate": null,
+      "evidenceState": "IMMATURE"
+    }
+  },
+  "origins": [
+    {
+      "asOf": "2026-08-13",
+      "horizons": {
+        "3": {
+          "n": 0,
+          "state": "IMMATURE"
+        },
+        "5": {
+          "n": 0,
+          "state": "IMMATURE"
+        }
+      }
+    }
+  ],
+  "governance": {
+    "automaticPromotion": false,
+    "minimumMatureOrigins": 20
+  }
+}
