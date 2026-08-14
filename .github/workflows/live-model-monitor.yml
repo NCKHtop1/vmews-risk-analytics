@@ -49,7 +49,7 @@ jobs:
       - name: Validate live-monitor governance
         run: |
           python - <<'PY'
-          import json,pathlib
+          import json
           t=json.load(open('data/live-track/track-record.json',encoding='utf-8'))
           q=json.load(open('data/live-track/integrity.json',encoding='utf-8'))
           f=json.load(open('data/forecast-live/integrity.json',encoding='utf-8'))
@@ -58,31 +58,26 @@ jobs:
           v10=json.load(open('data/forecast-live-v10/integrity.json',encoding='utf-8'))
           v10e=json.load(open('data/forecast-live-v10/evaluation.json',encoding='utf-8'))
           v10m=json.load(open('data/forecast-live-v10/manifest.json',encoding='utf-8'))
-          assert t['version']=='VMEWS-LIVE-MONITOR-1.0.0',t['version']
-          assert t['horizonSessions']==20,t
-          assert '<= -12%' in t['eventDefinition'],t['eventDefinition']
-          assert q['timeBasis']=='LATEST_COMPLETED_EOD_ONLY',q
-          assert q['marketContextImputed'] is False,q
-          assert q['status'] in {'PASS','WAITING_OR_REVIEW'},q
+          assert t['version']=='VMEWS-LIVE-MONITOR-1.0.0'
+          assert t['horizonSessions']==20 and '<= -12%' in t['eventDefinition']
+          assert q['timeBasis']=='LATEST_COMPLETED_EOD_ONLY' and q['marketContextImputed'] is False
+          assert q['status'] in {'PASS','WAITING_OR_REVIEW'}
           if q['status']=='PASS':
-              assert q['sameCompletedEod'] is True,q
-              assert q['policyAligned'] is True,q
-              assert q['pointInTimeReady'] is True,q
-          assert f['version']=='VMEWS-FORECAST-LIVE-1.0.0' and f['status']=='PASS',f
-          assert f['timeBasis']=='COMPLETED_EOD_ONLY',f
-          assert m['count']>=1,m
-          assert set(e['summary'])=={'3','5'},e['summary']
-          assert v10['version']=='VMEWS-FORECAST-LIVE-10.0.0' and v10['status']=='PASS',v10
-          assert v10['modelVersion']=='VMEWS-FORECAST-10.1.0',v10
-          assert v10['timeBasis']=='COMPLETED_EOD_ONLY' and v10['symbols']>=200,v10
-          assert v10m['count']>=1,v10m
-          assert set(v10e['summary'])=={'3','5'},v10e['summary']
+              assert q['sameCompletedEod'] is True and q['policyAligned'] is True and q['pointInTimeReady'] is True
+          assert f['version']=='VMEWS-FORECAST-LIVE-1.0.0' and f['status']=='PASS' and f['timeBasis']=='COMPLETED_EOD_ONLY'
+          assert m['count']>=1 and set(e['summary'])=={'3','5'}
+          assert v10['version']=='VMEWS-FORECAST-LIVE-10.0.0' and v10['status']=='PASS'
+          assert v10['modelVersion']=='VMEWS-FORECAST-10.1.0' and v10['timeBasis']=='COMPLETED_EOD_ONLY'
+          assert v10['currentResolvedSymbols']>=250 and v10['currentAlignedSymbols']>=200,v10
+          assert v10['archivedSymbols']>=200,v10
+          assert sum((v10.get('archivedSourceCounts') or {}).values())==v10['archivedSymbols'],v10
+          assert v10m['count']>=1 and set(v10e['summary'])=={'3','5'}
           for h in ('3','5'):
-              assert v10e['summary'][h]['evidenceState'] in {'IMMATURE','EARLY','MATURE'},v10e['summary'][h]
+              assert v10e['summary'][h]['evidenceState'] in {'IMMATURE','EARLY','MATURE'}
           cal=t['calibrationLiveMonitor']
-          assert cal['status'] in {'INSUFFICIENT_MATURED_LIVE_DATA','UNSTABLE_KEEP_WITHHELD','STABLE_REVIEW_ELIGIBLE'},cal
-          assert 'manual' in cal['effect'].lower(),cal['effect']
-          print(json.dumps({'riskIntegrity':q['status'],'v9Forecast':f['status'],'v10Forecast':v10['status'],'v10Archive':v10['archiveStatus'],'v10Symbols':v10['symbols'],'v10Snapshots':v10m['count'],'T3':v10e['summary']['3'],'T5':v10e['summary']['5']},indent=2))
+          assert cal['status'] in {'INSUFFICIENT_MATURED_LIVE_DATA','UNSTABLE_KEEP_WITHHELD','STABLE_REVIEW_ELIGIBLE'}
+          assert 'manual' in cal['effect'].lower()
+          print(json.dumps({'riskIntegrity':q['status'],'v9Forecast':f['status'],'v10Forecast':v10['status'],'v10Archive':v10['archiveStatus'],'currentAligned':v10['currentAlignedSymbols'],'archivedSymbols':v10['archivedSymbols'],'v10Snapshots':v10m['count'],'T3':v10e['summary']['3'],'T5':v10e['summary']['5']},indent=2))
           PY
       - name: Verify V9 forecast snapshot hashes
         run: python scripts/run_forecast_v9_deployable.py --verify-live
