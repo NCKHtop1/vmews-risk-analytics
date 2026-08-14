@@ -1,0 +1,32 @@
+_prepare_articles_before_exact_benchmark=prepare_articles
+
+def _benchmark_exact_date(index_rows,origin_date,target_date):
+    if not index_rows or not origin_date or not target_date:return None
+    by_date={str(r.get('date'))[:10]:r for r in index_rows if r.get('date')}
+    arow=by_date.get(str(origin_date)[:10]);brow=by_date.get(str(target_date)[:10])
+    if not arow or not brow:return None
+    a=_finite(arow.get('modelClose',arow.get('close')),None);b=_finite(brow.get('modelClose',brow.get('close')),None)
+    return math.log(b/a) if a and b and a>0 and b>0 else None
+
+def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
+    articles,outcomes=_prepare_articles_before_exact_benchmark(sentiment,price_store,sector_map,index_rows)
+    by_id={x.get('id'):x for rows in articles.values() for x in rows if x.get('id') is not None}
+    corrected=missing=0;suspension_aligned=0
+    for o in outcomes:
+        rec=by_id.get(o.get('id'));rows=price_store.get(o.get('symbol')) or []
+        i=rec.get('availableIndex') if rec else None
+        if not isinstance(i,int):continue
+        for h in HORIZONS:
+            if i+h>=len(rows):continue
+            target=str(rows[i+h].get('date'))[:10];origin=str(rec.get('availableDate'))[:10]
+            rr=o.get(f'r{h}');br=_benchmark_exact_date(index_rows,origin,target);ok=isinstance(br,(int,float)) and math.isfinite(float(br))
+            o[f'matureDate{h}']=target;o[f'benchmarkTargetDate{h}']=target;o[f'benchmarkR{h}']=float(br) if ok else None;o[f'benchmarkAvailable{h}']=bool(ok);o[f'ar{h}']=float(rr)-float(br) if ok and isinstance(rr,(int,float)) and math.isfinite(float(rr)) else None
+            if ok:corrected+=1
+            else:missing+=1
+            # Diagnostic: exact maturity can differ from the h-th index session when the stock did not trade every market session.
+            if index_rows:
+                idx_dates=[str(r.get('date'))[:10] for r in index_rows];j=bisect.bisect_left(idx_dates,origin)
+                if j<len(idx_dates) and idx_dates[j]==origin and j+h<len(idx_dates) and idx_dates[j+h]!=target:suspension_aligned+=1
+    ENTITY_AUDIT['benchmarkAlignment']={'method':'VNINDEX_ORIGIN_TO_EXACT_STOCK_MATURITY_DATE','correctedOutcomes':corrected,'missingBenchmarkOutcomes':missing,'stockMaturityDifferentFromOrdinalIndexH':suspension_aligned,'missingPolicy':'ABSTAIN_NOT_RAW_RETURN'}
+    print(json.dumps({'v12ExactEventBenchmark':ENTITY_AUDIT['benchmarkAlignment']},ensure_ascii=False),flush=True)
+    return articles,outcomes
