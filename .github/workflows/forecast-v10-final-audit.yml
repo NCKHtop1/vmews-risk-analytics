@@ -11,23 +11,21 @@ on:
       - 'scripts/update_research_news_v10.py'
       - 'scripts/update_sentiment_v10.py'
       - 'scripts/build_news_event_study.py'
+      - 'scripts/forecast_v10_test_cases.py'
       - 'scripts/forecast_v10_smoke_final.js'
       - '.github/workflows/forecast-v10-final-audit.yml'
       - '.v10-trigger'
 permissions:
-  contents: write
+  contents: read
 concurrency:
-  group: vmews-data-writer-${{ github.ref_name }}
-  cancel-in-progress: false
-  queue: max
+  group: vmews-v10-audit-${{ github.ref_name }}
+  cancel-in-progress: true
 jobs:
   audit:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -35,12 +33,14 @@ jobs:
         run: pip install -q numpy scipy scikit-learn torch transformers pyvi
       - name: Train strict-parity V10 model and sealed backtest
         run: python scripts/train_forecast_v10_strict.py
-      - name: Refresh full HOSE news universe
+      - name: Refresh full HOSE news universe in workspace
         run: python scripts/update_research_news_v10.py
       - name: Run supervised financial sentiment
         run: python scripts/update_sentiment_v10.py
       - name: Build event study and unsupervised clusters
         run: python scripts/build_news_event_study.py
+      - name: Run end-to-end research acceptance matrix
+        run: python scripts/forecast_v10_test_cases.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -50,19 +50,8 @@ jobs:
           node --check forecast-final-v10.js
           node --check scripts/forecast_v10_smoke_final.js
           node scripts/forecast_v10_smoke_final.js
-      - name: Persist audited artifacts
+      - name: Verify audit is read-only
         run: |
-          set -euo pipefail
-          git config user.name 'vmews-v10-audit-bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git add data/forecast-model-v10.json data/research-news-v10.json data/sentiment-v10.json data/news-event-study.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Persist V10 audited model and event-study data [data-only]'
-          for attempt in 1 2 3 4 5; do
-            git fetch origin "$GITHUB_REF_NAME"
-            git rebase "origin/$GITHUB_REF_NAME"
-            if git push origin "HEAD:$GITHUB_REF_NAME"; then exit 0; fi
-            git rebase --abort || true
-            sleep $((attempt * 3))
-          done
-          exit 1
+          echo 'Audit artifacts are intentionally not pushed.'
+          echo 'Daily news/event snapshots are persisted only by update-research-news.yml.'
+          echo 'Immutable live forecasts are persisted only by live-model-monitor.yml.'
