@@ -25,11 +25,15 @@ jobs:
           import json
           g=json.load(open('data/phase-gates-v12.json',encoding='utf-8'))
           m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
+          b=json.load(open('data/benchmark-gate-v12.json',encoding='utf-8'))
           a=json.load(open('data/active-flow-gate-v12.json',encoding='utf-8'))
           s=json.load(open('data/sector-gate-v12.json',encoding='utf-8'))
           e=json.load(open('data/embargo-gate-v12.json',encoding='utf-8'))
           assert g.get('status')=='PASS',g
           assert all((g.get('phases') or {}).get(str(i),{}).get('status')=='PASS' for i in range(1,10)),g.get('phases')
+          assert b.get('status')=='PASS',b
+          assert b.get('benchmark')=='VNINDEX',b
+          assert (b.get('checks') or {}).get('noRawReturnFallbackWhenBenchmarkMissing') is True,b
           assert a.get('status')=='PASS',a
           assert a.get('mode') in {'CERTIFIED','ABSTAIN'},a
           assert s.get('status')=='PASS',s
@@ -40,24 +44,25 @@ jobs:
           assert e.get('status')=='PASS',e
           assert m.get('promotion',{}).get('status')=='PASS',m.get('promotion')
           assert m.get('promotion',{}).get('directPriceHorizons')==[1,2,3,4,5],m.get('promotion')
-          print('NINE-PHASE + FLOW + SECTOR-PIT + EMBARGO RESEARCH GATE PASS')
+          print('NINE-PHASE + VNINDEX + FLOW + SECTOR-PIT + EMBARGO RESEARCH GATE PASS')
           PY
       - name: Create immutable model manifest
         run: |
           python - <<'PY'
           import hashlib,json,pathlib,subprocess
           from datetime import datetime,timezone
-          files=['forecast-final.html','forecast-final-v12.js','data/forecast-model-v12.json','data/forecast-current-v12.json','data/forecast-dashboard-v12.json','data/forecast-backtest-v12.json','data/data-audit-v12.json','data/event-intelligence-v12.json','data/flow-v12.json','data/flow-audit-v12.json','data/phase-gates-v12.json','data/active-flow-audit-v12.json','data/active-flow-gate-v12.json','data/sector-gate-v12.json','data/embargo-gate-v12.json']
+          files=['forecast-final.html','forecast-final-v12.js','data/forecast-model-v12.json','data/forecast-current-v12.json','data/forecast-dashboard-v12.json','data/forecast-backtest-v12.json','data/data-audit-v12.json','data/event-intelligence-v12.json','data/flow-v12.json','data/flow-audit-v12.json','data/phase-gates-v12.json','data/benchmark-gate-v12.json','data/active-flow-audit-v12.json','data/active-flow-gate-v12.json','data/sector-gate-v12.json','data/embargo-gate-v12.json']
           rows={}
           for name in files:
               p=pathlib.Path(name);assert p.exists(),name;b=p.read_bytes();rows[name]={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)}
           model=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
           dash=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'))
           gates=json.load(open('data/phase-gates-v12.json',encoding='utf-8'))
+          benchmark=json.load(open('data/benchmark-gate-v12.json',encoding='utf-8'))
           active=json.load(open('data/active-flow-gate-v12.json',encoding='utf-8'))
           sector=json.load(open('data/sector-gate-v12.json',encoding='utf-8'))
           embargo=json.load(open('data/embargo-gate-v12.json',encoding='utf-8'))
-          z={'version':'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.2.0','generatedAt':datetime.now(timezone.utc).isoformat(),'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'modelVersion':model.get('version'),'asOf':dash.get('asOf'),'promotion':model.get('promotion'),'phaseGateVersion':gates.get('version'),'activeFlowGate':{'version':active.get('version'),'mode':active.get('mode'),'status':active.get('status')},'sectorGate':{'version':sector.get('version'),'status':sector.get('status'),'mode':(sector.get('sectorAudit') or {}).get('status')},'embargoGate':{'version':embargo.get('version'),'status':embargo.get('status')},'files':rows,'policy':'All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity. Current sector taxonomy is descriptive only unless PIT-certified.'}
+          z={'version':'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.3.0','generatedAt':datetime.now(timezone.utc).isoformat(),'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'modelVersion':model.get('version'),'asOf':dash.get('asOf'),'promotion':model.get('promotion'),'phaseGateVersion':gates.get('version'),'benchmarkGate':{'version':benchmark.get('version'),'benchmark':benchmark.get('benchmark'),'status':benchmark.get('status'),'h5Coverage':benchmark.get('benchmarkH5Coverage')},'activeFlowGate':{'version':active.get('version'),'mode':active.get('mode'),'status':active.get('status')},'sectorGate':{'version':sector.get('version'),'status':sector.get('status'),'mode':(sector.get('sectorAudit') or {}).get('status')},'embargoGate':{'version':embargo.get('version'),'status':embargo.get('status')},'files':rows,'policy':'All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity. Event-study abnormal returns are VNINDEX-relative only; missing benchmark observations abstain. Current sector taxonomy is descriptive only unless PIT-certified.'}
           pathlib.Path('data/forecast-release-v12.json').write_text(json.dumps(z,ensure_ascii=False,indent=2),encoding='utf-8')
           print(json.dumps(z,ensure_ascii=False,indent=2))
           PY
@@ -132,10 +137,11 @@ jobs:
               assert hashlib.sha256(b).hexdigest()==meta['sha256'],name
           g=json.load(open(root/'data/phase-gates-v12.json'))
           m=json.load(open(root/'data/forecast-model-v12.json'))
+          b=json.load(open(root/'data/benchmark-gate-v12.json'))
           a=json.load(open(root/'data/active-flow-gate-v12.json'))
           s=json.load(open(root/'data/sector-gate-v12.json'))
           e=json.load(open(root/'data/embargo-gate-v12.json'))
-          assert g['status']=='PASS';assert m['promotion']['status']=='PASS';assert a['status']=='PASS';assert s['status']=='PASS';assert e['status']=='PASS'
+          assert g['status']=='PASS';assert m['promotion']['status']=='PASS';assert b['status']=='PASS';assert b['benchmark']=='VNINDEX';assert a['status']=='PASS';assert s['status']=='PASS';assert e['status']=='PASS'
           assert r['version'].startswith('VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST')
           print('PINNED CDN HASH + DATA PASS',release,'files',len(r['files']))
           PY
@@ -157,6 +163,7 @@ jobs:
           retention-days: 30
           path: |
             data/forecast-release-v12.json
+            data/benchmark-gate-v12.json
             data/active-flow-gate-v12.json
             data/sector-gate-v12.json
             data/embargo-gate-v12.json
