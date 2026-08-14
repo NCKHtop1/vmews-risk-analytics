@@ -1,13 +1,14 @@
 import { chromium } from 'playwright';
 
 const base=process.env.V12_BROWSER_URL || 'http://127.0.0.1:8000/forecast-final.html?symbol=FPT';
+const allowedOrigin=new URL(base).origin;
 const browser=await chromium.launch({headless:true});
 const errors=[];const failed=[];const external=[];
 const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
 page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text())});
 page.on('pageerror',err=>errors.push(String(err)));
 page.on('requestfailed',req=>failed.push(`${req.method()} ${req.url()} ${req.failure()?.errorText||''}`));
-page.on('request',req=>{const u=req.url();if(/^https?:/.test(u)&&!u.startsWith('http://127.0.0.1:8000')&&!u.startsWith('http://localhost:8000'))external.push(u)});
+page.on('request',req=>{const u=req.url();if(/^https?:/.test(u)&&new URL(u).origin!==allowedOrigin)external.push(u)});
 await page.goto(base,{waitUntil:'networkidle',timeout:60000});
 await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('phase gates PASS'),null,{timeout:30000});
 const badge=(await page.locator('#modelBadge').innerText()).trim();if(!badge.includes('PASS'))throw new Error(`model badge not PASS: ${badge}`);
@@ -38,5 +39,5 @@ if(failed.length)throw new Error(`failed requests: ${failed.join(' | ')}`);
 if(external.length)throw new Error(`unexpected external runtime requests: ${external.join(' | ')}`);
 const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});const mobileErrors=[];mobile.on('console',m=>{if(m.type()==='error')mobileErrors.push(m.text())});mobile.on('pageerror',e=>mobileErrors.push(String(e)));await mobile.goto(base,{waitUntil:'networkidle',timeout:60000});await mobile.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('phase gates PASS'),null,{timeout:30000});
 const dims=await mobile.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,chart:document.querySelector('#chart')?.getBoundingClientRect().width,wrap:document.querySelector('.chartWrap')?.getBoundingClientRect().width}));if(dims.sw>dims.cw+3)throw new Error(`mobile document horizontal overflow ${JSON.stringify(dims)}`);if(!dims.chart||dims.chart>dims.cw+3)throw new Error(`mobile chart overflow ${JSON.stringify(dims)}`);if(await mobile.locator('#forecastCards .forecastCard').count()!==5)throw new Error('mobile forecast cards missing');await mobile.screenshot({path:'v12-browser-mobile.png',fullPage:true});if(mobileErrors.length)throw new Error(`mobile console errors: ${mobileErrors.join(' | ')}`);
-console.log(JSON.stringify({browserSmoke:'PASS',badge,decision,newsCount,desktop:{width:1440,height:1000},mobile:dims,externalRuntimeRequests:external.length,consoleErrors:errors.length},null,2));
+console.log(JSON.stringify({browserSmoke:'PASS',url:base,allowedOrigin,badge,decision,newsCount,desktop:{width:1440,height:1000},mobile:dims,externalRuntimeRequests:external.length,consoleErrors:errors.length},null,2));
 await browser.close();
