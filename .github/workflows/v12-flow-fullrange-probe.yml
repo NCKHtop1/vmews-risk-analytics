@@ -1,0 +1,26 @@
+name: V12 full-range flow probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_flow_fullrange_probe.py'
+      - '.github/workflows/v12-flow-fullrange-probe.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q numpy openpyxl
+      - run: PYTHONPATH=scripts python scripts/v12_flow_fullrange_probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-flow-fullrange-probe-${{ github.run_id }}
+          retention-days: 7
+          path: data/v12-flow-fullrange-probe.json
