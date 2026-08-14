@@ -1,0 +1,111 @@
+name: V12 immutable production release gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'v12-release-trigger.txt'
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-final-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Assert nine-phase research acceptance
+        run: |
+          python - <<'PY'
+          import json
+          g=json.load(open('data/phase-gates-v12.json',encoding='utf-8'));m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
+          assert g.get('status')=='PASS',g
+          assert all((g.get('phases') or {}).get(str(i),{}).get('status')=='PASS' for i in range(1,10)),g.get('phases')
+          assert m.get('promotion',{}).get('status')=='PASS',m.get('promotion')
+          assert m.get('promotion',{}).get('directPriceHorizons')==[1,2,3,4,5],m.get('promotion')
+          print('NINE-PHASE RESEARCH GATE PASS')
+          PY
+      - name: Create immutable model manifest
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          from datetime import datetime,timezone
+          files=['forecast-final.html','forecast-final-v12.js','data/forecast-model-v12.json','data/forecast-current-v12.json','data/forecast-dashboard-v12.json','data/forecast-backtest-v12.json','data/data-audit-v12.json','data/event-intelligence-v12.json','data/flow-v12.json','data/flow-audit-v12.json','data/phase-gates-v12.json']
+          rows={}
+          for name in files:
+              p=pathlib.Path(name);assert p.exists(),name;b=p.read_bytes();rows[name]={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)}
+          model=json.load(open('data/forecast-model-v12.json',encoding='utf-8'));dash=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'));gates=json.load(open('data/phase-gates-v12.json',encoding='utf-8'))
+          z={'version':'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.0.0','generatedAt':datetime.now(timezone.utc).isoformat(),'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'modelVersion':model.get('version'),'asOf':dash.get('asOf'),'promotion':model.get('promotion'),'phaseGateVersion':gates.get('version'),'files':rows,'policy':'All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity.'}
+          pathlib.Path('data/forecast-release-v12.json').write_text(json.dumps(z,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(z,ensure_ascii=False,indent=2))
+          PY
+      - name: Install Chromium smoke runtime
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --silent playwright@1.55.0
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Provider-outage local browser smoke
+        shell: bash
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/v12-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 2
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();return route.abort('blockedbyclient')});await page.goto('http://127.0.0.1:8765/forecast-final.html?symbol=FPT',{waitUntil:'networkidle',timeout:30000});await page.waitForFunction(()=>document.querySelector('#decision')?.textContent&&!document.querySelector('#decision').textContent.includes('—'),null,{timeout:20000});const r=await page.evaluate(()=>({decision:document.querySelector('#decision')?.textContent,t1:document.querySelector('#t1')?.textContent,t3:document.querySelector('#t3')?.textContent,t5:document.querySelector('#t5')?.textContent,pup:document.querySelector('#pup')?.textContent,status:document.querySelector('#status')?.textContent,cw:document.querySelector('#chart')?.width,ch:document.querySelector('#chart')?.height,rumor:document.querySelector('#rumors')?.textContent,bt:document.querySelector('#btRows')?.textContent,detail:document.querySelector('#btDetail')?.textContent}));if(!r.decision||['LOCKED','Loading'].some(x=>r.decision.includes(x)))throw Error(JSON.stringify(r));for(const k of ['t1','t3','t5'])if(!r[k]||r[k]==='LOCKED'||r[k]==='—')throw Error('invalid '+k+' '+JSON.stringify(r));if(!(r.cw>500&&r.ch>300))throw Error('chart not rendered '+JSON.stringify(r));if(!r.bt||!r.bt.includes('FPT'))throw Error('backtest drilldown missing '+JSON.stringify(r));if(!r.detail||!r.detail.includes('Actual raw'))throw Error('historical detail missing '+JSON.stringify(r));if(errors.length)throw Error(errors.join('\n'));console.log('PROVIDER OUTAGE BROWSER PASS',r);await browser.close()})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+      - name: Commit immutable release manifest
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/forecast-release-v12.json
+          git commit -m 'Seal VMEWS Forecast V12 immutable production manifest [v12-release]'
+          git pull --rebase origin forecast-v12-methodfix
+          git push origin HEAD:forecast-v12-methodfix
+          echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Commit-pinned CDN HTTP smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${RELEASE_SHA}"
+          for path in forecast-final.html forecast-final-v12.js data/forecast-dashboard-v12.json data/forecast-model-v12.json data/forecast-backtest-v12.json data/phase-gates-v12.json data/forecast-release-v12.json; do
+            ok=0
+            for i in 1 2 3 4 5 6; do
+              if curl -LfsS --connect-timeout 10 --max-time 35 "$BASE/$path" -o "/tmp/$(basename "$path")"; then ok=1; break; fi
+              sleep $((i*5))
+            done
+            test "$ok" = 1 || { echo "CDN FAIL $path"; exit 1; }
+            test -s "/tmp/$(basename "$path")"
+            echo "CDN PASS $path $(wc -c < "/tmp/$(basename "$path")") bytes"
+          done
+          grep -q 'VMEWS Forecast V12' /tmp/forecast-final.html
+          python - <<'PY'
+          import json,os
+          g=json.load(open('/tmp/phase-gates-v12.json'));m=json.load(open('/tmp/forecast-model-v12.json'));r=json.load(open('/tmp/forecast-release-v12.json'))
+          assert g['status']=='PASS';assert m['promotion']['status']=='PASS';assert r['version'].startswith('VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST')
+          print('PINNED CDN DATA PASS',os.environ['RELEASE_SHA'])
+          PY
+      - name: Commit-pinned CDN Chromium smoke
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');const sha=process.env.RELEASE_SHA;const host='cdn.githubraw.com';const url=`https://${host}/NCKHtop1/vmews-risk-analytics/${sha}/forecast-final.html?symbol=FPT`;
+          (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname===host)return route.continue();return route.abort('blockedbyclient')});await page.goto(url,{waitUntil:'networkidle',timeout:45000});await page.waitForFunction(()=>document.querySelector('#t5')?.textContent&&!['—','LOCKED'].includes(document.querySelector('#t5').textContent),null,{timeout:25000});const r=await page.evaluate(()=>({decision:document.querySelector('#decision')?.textContent,t1:document.querySelector('#t1')?.textContent,t3:document.querySelector('#t3')?.textContent,t5:document.querySelector('#t5')?.textContent,chart:document.querySelector('#chart')?.width,bt:document.querySelector('#btRows')?.textContent}));if(!r.decision||r.decision.includes('LOCKED')||!r.bt?.includes('FPT')||!(r.chart>500)||errors.length)throw Error(JSON.stringify({r,errors}));console.log('PINNED CDN CHROMIUM PASS',url,r);await browser.close()})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+      - name: Write release evidence summary
+        if: success()
+        run: |
+          printf '{"status":"PASS","releaseSha":"%s","cdn":"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/%s/forecast-final.html"}\n' "$RELEASE_SHA" "$RELEASE_SHA" > v12-release-result.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-final-release-evidence-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            data/forecast-release-v12.json
+            v12-release-result.json
+            /tmp/v12-http.log
