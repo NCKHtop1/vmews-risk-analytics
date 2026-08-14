@@ -13,6 +13,7 @@ EXPECTED = [
     "forecast-dashboard-v12.json",
     "forecast-backtest-v12.json",
     "data-audit-v12.json",
+    "event-intelligence-v12.json",
 ]
 parts_paths = sorted((ROOT / "v12_train_parts").glob("*.pyinc"))
 parts = [p.read_text(encoding="utf-8") for p in parts_paths]
@@ -21,7 +22,7 @@ code = "\n".join(parts)
 def diagnostics(message, exc=None):
     DATA.mkdir(parents=True, exist_ok=True)
     payload = {
-        "version": "VMEWS-V12-TRAINING-DIAGNOSTIC-1.1.0",
+        "version": "VMEWS-V12-TRAINING-DIAGNOSTIC-1.2.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "message": message,
         "exceptionType": type(exc).__name__ if exc is not None else None,
