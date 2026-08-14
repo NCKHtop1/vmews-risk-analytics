@@ -6,6 +6,9 @@ on:
     paths:
       - 'scripts/v12_train_parts/**'
       - 'scripts/v12_entity.py'
+      - 'scripts/v12_acceptance.py'
+      - 'scripts/v12_flow.py'
+      - 'scripts/backfill_flow_v12.py'
       - 'scripts/train_forecast_v12.py'
       - '.github/workflows/v12-methodfix-syntax.yml'
 permissions:
@@ -19,8 +22,9 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install --disable-pip-version-check -q numpy scipy scikit-learn lightgbm
-      - name: Compile assembled V12 methodfix
+      - name: Compile strict utilities and assembled V12 methodfix
         run: |
+          python -m py_compile scripts/v12_acceptance.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
