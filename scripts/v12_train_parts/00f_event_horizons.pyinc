@@ -9,26 +9,20 @@ for _h in HORIZONS:
 _event_h_prepare=prepare_articles
 _EventHBaseStore=EvidenceFeatureStore
 
-def _pre_benchmark(index_rows,origin_date,k):
-    if not index_rows:return None
-    dates=[r['date'] for r in index_rows];i=bisect.bisect_left(dates,origin_date)
-    if i>=len(dates) or dates[i]!=origin_date or i-k<0:return None
-    a=_finite(index_rows[i-k].get('modelClose',index_rows[i-k].get('close')),None);b=_finite(index_rows[i].get('modelClose',index_rows[i].get('close')),None)
-    return math.log(b/a) if a and b and a>0 and b>0 else None
-
 def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
     articles,outcomes=_event_h_prepare(sentiment,price_store,sector_map,index_rows);by_id={x.get('id'):x for rows in articles.values() for x in rows if x.get('id') is not None}
     for o in outcomes:
         for h in HORIZONS:
-            if isinstance(o.get(f'ar{h}'),(int,float)):o[f'car{h}']=float(o[f'ar{h}'])
+            if isinstance(o.get(f'ar{h}'),(int,float)) and math.isfinite(float(o[f'ar{h}'])):o[f'car{h}']=float(o[f'ar{h}'])
+            else:o[f'car{h}']=None
         rec=by_id.get(o.get('id'));rows=price_store.get(o.get('symbol')) or []
         if rec and isinstance(rec.get('availableIndex'),int):
-            i=rec['availableIndex']
+            i=rec['availableIndex'];origin=str(rec.get('availableDate'))[:10]
             for k in (1,2,5):
                 if i-k>=0:
-                    a=_finite(rows[i-k].get('modelClose',rows[i-k].get('close')),None);b=_finite(rows[i].get('modelClose',rows[i].get('close')),None)
+                    target=str(rows[i-k].get('date'))[:10];a=_finite(rows[i-k].get('modelClose',rows[i-k].get('close')),None);b=_finite(rows[i].get('modelClose',rows[i].get('close')),None)
                     if a and b and a>0 and b>0:
-                        sr=math.log(b/a);br=_pre_benchmark(index_rows,rec['availableDate'],k);o[f'preAR{k}']=sr-br if isinstance(br,(int,float)) else sr
+                        sr=math.log(b/a);br=_benchmark_exact_date(index_rows,target,origin);ok=isinstance(br,(int,float)) and math.isfinite(float(br));o[f'preR{k}']=float(sr);o[f'preBenchmarkTargetDate{k}']=target;o[f'preBenchmarkR{k}']=float(br) if ok else None;o[f'preBenchmarkAvailable{k}']=bool(ok);o[f'preAR{k}']=float(sr)-float(br) if ok else None
     return articles,outcomes
 
 class _HorizonOutcomePrior:
