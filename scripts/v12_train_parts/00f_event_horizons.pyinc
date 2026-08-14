@@ -10,12 +10,12 @@ _event_h_prepare=prepare_articles
 _EventHBaseStore=EvidenceFeatureStore
 
 def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
-    articles,outcomes=_event_h_prepare(sentiment,price_store,sector_map,index_rows);by_id={x.get('id'):x for rows in articles.values() for x in rows if x.get('id') is not None}
+    articles,outcomes=_event_h_prepare(sentiment,price_store,sector_map,index_rows);by_key={_event_key(symbol,x.get('id')):x for symbol,items in articles.items() for x in items if x.get('id') is not None}
     for o in outcomes:
         for h in HORIZONS:
             if isinstance(o.get(f'ar{h}'),(int,float)) and math.isfinite(float(o[f'ar{h}'])):o[f'car{h}']=float(o[f'ar{h}'])
             else:o[f'car{h}']=None
-        rec=by_id.get(o.get('id'));rows=price_store.get(o.get('symbol')) or []
+        rec=by_key.get(_event_key(o.get('symbol'),o.get('id')));rows=price_store.get(o.get('symbol')) or []
         if rec and isinstance(rec.get('availableIndex'),int):
             i=rec['availableIndex'];origin=str(rec.get('availableDate'))[:10]
             for k in (1,2,5):
@@ -26,7 +26,6 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
     return articles,outcomes
 
 class _HorizonOutcomePrior:
-    # Fixed conjugate prior strengths are selected before replay. Sector shrinkage is deliberately disabled until an as-of sector-membership archive exists.
     MARKET_AR_KAPPA=16.0;STOCK_AR_KAPPA=6.0
     MARKET_HIT_ALPHA=4.0;MARKET_HIT_BETA=4.0;STOCK_HIT_KAPPA=6.0
     def __init__(self,outcomes,h):
@@ -34,7 +33,6 @@ class _HorizonOutcomePrior:
         for x in outcomes:
             ar=x.get(ak);mature=x.get(mk)
             if not isinstance(ar,(int,float)) or not math.isfinite(ar) or not mature:continue
-            # Never group historical labels by the current-2026 sector reference. Market and stock identities are PIT-safe here.
             for key in [('MARKET',x['event']),('STOCK',x['symbol'],x['event'])]:groups[key].append((mature,float(ar)))
         self.groups={}
         for key,vals in groups.items():
@@ -70,7 +68,6 @@ class EvidenceFeatureStore(_EventHBaseStore):
         super().__init__(articles_by_symbol,outcomes,sector_map);self.horizonPriors={h:_HorizonOutcomePrior(outcomes,h) for h in HORIZONS};self.hierarchyPolicy='PIT-safe Normal/Beta-Binomial Market→Stock shrinkage. Sector level is ABSTAIN until a dated historical membership archive exists.'
     def features(self,symbol,date):
         out=super().features(symbol,date);sec=self.sector_map.get(symbol,'OTHER');st=self.stock.get(symbol,Timeline([]));latest=st.latest(date)
-        # Override the legacy stock→sector→market sentiment shrinkage: current sector taxonomy is not historical PIT.
         s20=self._agg(st.window(date,20));m20=self._agg(self.market.window(date,20));ws=s20['n']/(s20['n']+5);out['hierSent20']=ws*s20['sent']+(1-ws)*m20['sent']
         for h in HORIZONS:
             if latest:pr=self.horizonPriors[h].hierarchical(symbol,sec,latest['event'],date)
