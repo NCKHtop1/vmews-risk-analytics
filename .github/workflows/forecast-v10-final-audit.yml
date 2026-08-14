@@ -7,6 +7,7 @@ on:
       - 'forecast-final.html'
       - 'forecast-final-v10.js'
       - 'scripts/train_forecast_v10.py'
+      - 'scripts/train_forecast_v10_strict.py'
       - 'scripts/update_research_news_v10.py'
       - 'scripts/update_sentiment_v10.py'
       - 'scripts/build_news_event_study.py'
@@ -31,8 +32,8 @@ jobs:
           python-version: '3.12'
       - name: Install model and NLP dependencies
         run: pip install -q numpy scipy scikit-learn torch transformers pyvi
-      - name: Train aligned V10 model and sealed backtest
-        run: python scripts/train_forecast_v10.py
+      - name: Train strict-parity V10 model and sealed backtest
+        run: python scripts/train_forecast_v10_strict.py
       - name: Refresh full HOSE news universe
         run: python scripts/update_research_news_v10.py
       - name: Run supervised financial sentiment
