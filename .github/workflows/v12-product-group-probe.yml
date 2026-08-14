@@ -1,0 +1,32 @@
+name: V12 Vnstock product group mapping probe
+on:
+  push:
+    branches: [forecast-v12-hardening]
+    paths: ['.github/workflows/v12-product-group-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q vnstock==4.0.4 pandas
+      - name: Cross-tab stock exchange and product group
+        run: |
+          python - <<'PY'
+          import json,pandas as pd
+          from vnstock import Listing
+          df=Listing(source='VCI').symbols_by_exchange(show_log=False)
+          s=df[df['type'].astype(str).str.upper()=='STOCK'].copy()
+          print('STOCK_ROWS',len(s))
+          print('CROSSTAB')
+          print(pd.crosstab(s['exchange'].fillna('NULL'),s['product_grp_id'].fillna('NULL')).to_string())
+          print('HSX_SAMPLE')
+          print(json.dumps(s[s.exchange.astype(str).str.upper()=='HSX'].head(30).to_dict('records'),ensure_ascii=False,indent=2,default=str))
+          print('HNX_SAMPLE')
+          print(json.dumps(s[s.exchange.astype(str).str.upper()=='HNX'].head(20).to_dict('records'),ensure_ascii=False,indent=2,default=str))
+          print('DELISTED_BY_GROUP')
+          d=s[s.exchange.astype(str).str.upper()=='DELISTED']
+          print(json.dumps(d['product_grp_id'].fillna('NULL').astype(str).value_counts().to_dict(),ensure_ascii=False,indent=2))
+          PY
