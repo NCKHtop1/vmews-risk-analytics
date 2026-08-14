@@ -4,6 +4,13 @@ _prepare_articles_before_exact_benchmark=prepare_articles
 _V12_INDEX_BY_DATE={}
 _V12_INDEX_DATES=[]
 
+def _benchmark_num(x):
+    try:
+        v=float(x)
+        return v if math.isfinite(v) else None
+    except Exception:
+        return None
+
 def _benchmark_exact_date(index_rows,origin_date,target_date):
     if not index_rows or not origin_date or not target_date:return None
     global _V12_INDEX_BY_DATE,_V12_INDEX_DATES
@@ -11,7 +18,7 @@ def _benchmark_exact_date(index_rows,origin_date,target_date):
         _V12_INDEX_BY_DATE={str(r.get('date'))[:10]:r for r in index_rows if r.get('date')};_V12_INDEX_DATES=sorted(_V12_INDEX_BY_DATE)
     arow=_V12_INDEX_BY_DATE.get(str(origin_date)[:10]);brow=_V12_INDEX_BY_DATE.get(str(target_date)[:10])
     if not arow or not brow:return None
-    a=_finite(arow.get('modelClose',arow.get('close')),None);b=_finite(brow.get('modelClose',brow.get('close')),None)
+    a=_benchmark_num(arow.get('modelClose',arow.get('close')));b=_benchmark_num(brow.get('modelClose',brow.get('close')))
     return math.log(b/a) if a and b and a>0 and b>0 else None
 
 def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
