@@ -83,14 +83,26 @@ jobs:
           (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();return route.abort('blockedbyclient')});await page.goto('http://127.0.0.1:8765/forecast-final.html?symbol=FPT',{waitUntil:'networkidle',timeout:30000});await page.waitForFunction(()=>document.querySelector('#decision')?.textContent&&!document.querySelector('#decision').textContent.includes('—'),null,{timeout:20000});const r=await page.evaluate(()=>({decision:document.querySelector('#decision')?.textContent,t1:document.querySelector('#t1')?.textContent,t3:document.querySelector('#t3')?.textContent,t5:document.querySelector('#t5')?.textContent,pup:document.querySelector('#pup')?.textContent,status:document.querySelector('#status')?.textContent,cw:document.querySelector('#chart')?.width,ch:document.querySelector('#chart')?.height,rumor:document.querySelector('#rumors')?.textContent,bt:document.querySelector('#btRows')?.textContent,detail:document.querySelector('#btDetail')?.textContent}));if(!r.decision||['LOCKED','Loading'].some(x=>r.decision.includes(x)))throw Error(JSON.stringify(r));for(const k of ['t1','t3','t5'])if(!r[k]||r[k]==='LOCKED'||r[k]==='—')throw Error('invalid '+k+' '+JSON.stringify(r));if(!(r.cw>500&&r.ch>300))throw Error('chart not rendered '+JSON.stringify(r));if(!r.bt||!r.bt.includes('FPT'))throw Error('backtest drilldown missing '+JSON.stringify(r));if(!r.detail||!r.detail.includes('Actual raw'))throw Error('historical detail missing '+JSON.stringify(r));if(errors.length)throw Error(errors.join('\n'));console.log('PROVIDER OUTAGE BROWSER PASS',r);await browser.close()})().catch(e=>{console.error(e);process.exit(1)})
           NODE
       - name: Commit immutable release manifest
+        shell: bash
         run: |
+          set -euo pipefail
+          SOURCE_SHA=$(python - <<'PY'
+          import json
+          print(json.load(open('data/forecast-release-v12.json',encoding='utf-8'))['sourceCommit'])
+          PY
+          )
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git fetch origin forecast-v12-methodfix
+          REMOTE_SHA=$(git rev-parse origin/forecast-v12-methodfix)
+          test "$REMOTE_SHA" = "$SOURCE_SHA" || { echo "BRANCH ADVANCED DURING RELEASE: source=$SOURCE_SHA remote=$REMOTE_SHA; refusing to rebase immutable manifest"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/forecast-release-v12.json
           git commit -m 'Seal VMEWS Forecast V12 immutable production manifest [v12-release]'
-          git pull --rebase origin forecast-v12-methodfix
+          RELEASE_SHA=$(git rev-parse HEAD)
+          test "$(git rev-parse ${RELEASE_SHA}^)" = "$SOURCE_SHA"
           git push origin HEAD:forecast-v12-methodfix
-          echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "RELEASE_SHA=$RELEASE_SHA" >> "$GITHUB_ENV"
       - name: Commit-pinned CDN integrity and HTTP smoke
         shell: bash
         run: |
