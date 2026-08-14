@@ -1,0 +1,23 @@
+_distribution_fit_horizon_before_replay=fit_horizon
+
+def _fit_active_models_before_date(X,y,D,dates,h,idx_by_expert,kinds,active,cut_date):
+    ci=int(np.searchsorted(dates,cut_date));purge=max(0,ci-int(h));cutoff=dates[purge];valid=np.isfinite(y);tr=valid&(D<cutoff);models={}
+    if tr.sum()<1000:raise RuntimeError(f'walk-forward training too small h={h} cut={cut_date}: {tr.sum()}')
+    for name in active:
+        fi=idx_by_expert[name];xx=X[:,fi];pp=prep(xx,tr);zz=apply_prep(xx,pp);m=make_model(kinds[name]);m.fit(zz[tr],y[tr]);models[name]=(m,pp,fi)
+    return models,str(cutoff),int(tr.sum())
+
+def _walkforward_replay(X,y,D,dates,h,idx_by_expert,z):
+    cap=OOF_CAPTURE.get(int(h)) or {};expert_pred=cap.get('predictions') or {};active=list(z.get('active') or []);runtime=z.get('_sealedCalibrationRuntime')
+    if not expert_pred or not active or not runtime:return {'status':'INSUFFICIENT','reason':'OOF or sealed calibration runtime missing','blocks':[]}
+    layer,iso,qadj=runtime;M=combine_pred(expert_pred,active);good=np.all(np.isfinite(M),axis=1)&np.isfinite(y);meta,_=fit_meta(expert_pred,active,good,y);kinds={k:v['kind'] for k,v in (z.get('choice') or {}).items()};audit_dates=np.asarray(dates[int(.90*len(dates)):]);blocks=[np.asarray(b) for b in np.array_split(audit_dates,4) if len(b)];all_y=[];all_score=[];all_p=[];all_med=[];all_lo=[];all_hi=[];all_d=[];detail=[]
+    for b in blocks:
+        cut=str(b[0]);models,train_cutoff,train_n=_fit_active_models_before_date(X,y,D,dates,h,idx_by_expert,kinds,active,cut);mask=np.isfinite(y)&np.isin(D,b);idx=np.where(mask)[0]
+        if len(idx)<300:continue
+        ep=predict_experts(models,X,idx);score=meta.predict(combine_pred(ep,active));p,med,lo,hi,_=apply_calibration(score,layer,iso,qadj);m=audit_metrics(y[idx],score,p,med,lo,hi,D[idx]);detail.append({'originBlockStart':cut,'originBlockEnd':str(b[-1]),'trainLabelCutoffExclusive':train_cutoff,'trainingRows':train_n,'testRows':len(idx),'metrics':m});all_y.append(y[idx]);all_score.append(score);all_p.append(p);all_med.append(med);all_lo.append(lo);all_hi.append(hi);all_d.append(D[idx])
+    if not all_y:return {'status':'INSUFFICIENT','reason':'no replay blocks materialized','blocks':detail}
+    yy=np.concatenate(all_y);ss=np.concatenate(all_score);pp=np.concatenate(all_p);mm=np.concatenate(all_med);ll=np.concatenate(all_lo);hh=np.concatenate(all_hi);dd=np.concatenate(all_d);overall=audit_metrics(yy,ss,pp,mm,ll,hh,dd);passed=bool(len(detail)>=3 and overall.get('n',0)>=3000 and overall.get('rankIC',0)>.01 and overall.get('scenarioMAEImprove',-99)>0 and .50<=overall.get('coverage20_80',0)<=.75)
+    return {'status':'PASS' if passed else 'FAIL','method':'Expanding-window replay on four sealed-audit time blocks; experts refit using labels strictly before T0-h purge. Meta learner uses only chronological OOF predictions. Distribution layer is frozen from pre-audit calibration.','blocks':detail,'overall':overall,'purgeSessions':int(h),'futureRowsUsedForTraining':0}
+
+def fit_horizon(X,y,D,dates,h,idx_by_expert):
+    z=_distribution_fit_horizon_before_replay(X,y,D,dates,h,idx_by_expert);replay=_walkforward_replay(X,y,D,dates,h,idx_by_expert,z);z['walkForwardReplay']=replay;ok=replay.get('status')=='PASS';z.setdefault('gates',{})['walkForward']=ok;z['gates']['generalization']=bool(z['gates'].get('generalization')) and ok;return z
