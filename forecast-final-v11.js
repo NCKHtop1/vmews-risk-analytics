@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const MAIN='https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/main',API='https://vmews-risk-analytics-sojd.vercel.app/api';
+const MAIN='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main',API='https://vmews-risk-analytics-sojd.vercel.app/api';
 const $=s=>document.querySelector(s),finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x)),pct=(x,d=1)=>finite(x)?`${(+x*100).toFixed(d)}%`:'—',price=x=>finite(x)?(+x).toLocaleString('vi-VN',{maximumFractionDigits:2}):'—',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 let baseP,last=null,token=0;
 async function json(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);return r.json()}
