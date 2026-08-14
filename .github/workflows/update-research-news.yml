@@ -1,17 +1,94 @@
-name: Legacy research news refresh (manual only)
+name: VMEWS production news and event evidence
 
-# Gemini + Google Search grounding is the target external live news provider.
-# Automatic Google News RSS refreshes are intentionally disabled.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 1,4,7,10 * * 1-5'
+  push:
+    branches: [main, forecast-v11-evidence-hardening]
+    paths:
+      - 'scripts/update_research_news_v10.py'
+      - 'scripts/update_sentiment_v10.py'
+      - 'scripts/build_news_event_study.py'
+      - 'forecast-final-v10.js'
+      - '.github/workflows/update-research-news.yml'
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: vmews-data-writer-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
-  legacy-disabled:
+  refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 55
     steps:
-      - run: |
-          echo "Legacy RSS news refresh is disabled."
-          echo "Use the server-side Gemini live provider after GEMINI_API_KEY is configured."
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install NLP and event-study dependencies
+        run: pip install -q numpy scipy scikit-learn torch transformers pyvi
+      - name: Accumulate multi-source HOSE news
+        run: python scripts/update_research_news_v10.py
+      - name: Run supervised Vietnamese financial sentiment
+        run: python scripts/update_sentiment_v10.py
+      - name: Build event study, rumor study and semantic clusters
+        run: python scripts/build_news_event_study.py
+      - name: Audit sentiment challenge set
+        run: python scripts/audit_sentiment_dl_v7.py
+      - name: Validate production evidence coverage
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          def load(p):
+              p=pathlib.Path(p)
+              assert p.exists() and p.stat().st_size>100, f'empty artifact: {p}'
+              return json.loads(p.read_text(encoding='utf-8'))
+          n=load('data/research-news-v10.json');s=load('data/sentiment-v10.json');e=load('data/news-event-study.json')
+          cov=list((n.get('coverage') or {}).values())
+          with_news=sum(int(x.get('used') or 0)>0 for x in cov)
+          total=sum(int(x.get('used') or 0) for x in cov)
+          moderate=sum(x.get('coverageGrade') in {'MODERATE','STRONG'} for x in cov)
+          assert n.get('universe',0)>=350,n.get('universe')
+          assert with_news>=350,(with_news,total)
+          assert total>=3000,total
+          assert len(s.get('symbols') or {})>=350,len(s.get('symbols') or {})
+          assert e.get('events',0)>=2500,e.get('events')
+          assert e.get('symbolsWithPrice',0)>=340,e.get('symbolsWithPrice')
+          assert (e.get('global') or {}).get('n',0)>=2500,e.get('global')
+          selected=sum(bool((z or {}).get('selectedEvidence')) for z in (e.get('symbols') or {}).values())
+          assert selected>=340,selected
+          print(json.dumps({'symbolsWithNews':with_news,'totalNews':total,'moderatePlus':moderate,'sentimentSymbols':len(s.get('symbols') or {}),'eventStudyEvents':e.get('events'),'eventSymbols':e.get('symbolsWithPrice'),'hierarchicalEvidenceSymbols':selected},ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Frontend contract with generated evidence
+        run: |
+          node --check forecast-final-v10.js
+          node --check forecast-v4-core.js
+          node scripts/forecast_v10_smoke_final.js
+      - name: Persist production evidence snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/research-news-v10.json data/sentiment-v10.json data/news-event-study.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh VMEWS production news and event evidence [data-only]'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$GITHUB_REF_NAME"
+            git rebase "origin/$GITHUB_REF_NAME"
+            if git push origin "HEAD:$GITHUB_REF_NAME"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 3))
+          done
+          echo 'Could not persist production evidence after retries' >&2
+          exit 1
