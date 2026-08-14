@@ -1,0 +1,93 @@
+import re as _rumor_re
+
+_RUMOR_EXTRA=[
+    'rumorClaims20','rumorPropagation20','rumorSourceDiversity20','rumorDuplication20',
+    'rumorConfirmed20','rumorDenied20','rumorUnverified20','rumorPreVolume20','rumorLeadScore20'
+]
+for _f in _RUMOR_EXTRA:
+    if _f not in RUMOR_FEATURES:RUMOR_FEATURES.append(_f)
+    if _f not in EXPERTS['RUMOR']:EXPERTS['RUMOR'].append(_f)
+    if _f not in FEATURES:FEATURES.append(_f)
+
+_claim_prepare_articles=prepare_articles
+_BaseEvidenceFeatureStore=EvidenceFeatureStore
+_RUMOR_DENY=('bác bỏ','bac bo','phủ nhận','phu nhan','đính chính','dinh chinh','không đúng','khong dung','tin đồn sai','tin don sai','sai sự thật','sai su that')
+_RUMOR_CONFIRM=('xác nhận','xac nhan','chính thức','chinh thuc','thông qua','thong qua','phê duyệt','phe duyet','công bố','cong bo','ký kết','ky ket')
+
+def _claim_tokens(title):
+    s=_rumor_re.sub(r'[^a-z0-9à-ỹ]+',' ',str(title or '').lower())
+    stop={'công','ty','ctcp','và','của','cho','với','một','các','được','theo','trong','trên','sẽ','đã','tại'}
+    return set(x for x in s.split() if len(x)>=3 and x not in stop)
+
+def _claim_sim(a,b):
+    return len(a&b)/max(1,len(a|b)) if a and b else 0.0
+
+def _truth_label(title):
+    t=str(title or '').lower()
+    if any(k in t for k in _RUMOR_DENY):return 'DENIED'
+    if any(k in t for k in _RUMOR_CONFIRM):return 'CONFIRMED'
+    return 'CLARIFIED'
+
+def _volume_lead(rows,idx):
+    if idx is None or idx<6:return 0.0
+    pre=[float(rows[j].get('volume',0) or 0) for j in range(max(0,idx-5),idx)]
+    base=[float(rows[j].get('volume',0) or 0) for j in range(max(0,idx-25),max(0,idx-5))]
+    if not pre or not base:return 0.0
+    a=float(np.mean(pre));b=float(np.median(base))
+    return float(math.log1p(a/max(1.0,b)))
+
+def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
+    articles,outcomes=_claim_prepare_articles(sentiment,price_store,sector_map,index_rows)
+    claim_audit={'clusters':0,'rumorItems':0,'multiSourceClusters':0,'resolvedClusters':0,'confirmed':0,'denied':0,'clarified':0,'maxClusterSize':0}
+    for symbol,rows in articles.items():
+        rumors=[x for x in rows if x.get('sourceClass')=='RUMOR_UNVERIFIED']
+        clusters=[]
+        for x in sorted(rumors,key=lambda z:(z.get('availableDate') or '',str(z.get('publishedAt') or ''))):
+            tok=_claim_tokens(x.get('title'));chosen=None;best=0.0
+            for c in reversed(clusters):
+                if (datetime.fromisoformat(x['availableDate']).date()-datetime.fromisoformat(c['lastDate']).date()).days>30:break
+                sim=_claim_sim(tok,c['tokens'])
+                if sim>best and sim>=.28:chosen=c;best=sim
+            if chosen is None:
+                chosen={'id':f'{symbol}-R{len(clusters)+1:04d}','tokens':set(tok),'firstDate':x['availableDate'],'lastDate':x['availableDate'],'items':[],'publishers':set(),'resolutionDate':None,'truthState':'UNVERIFIED','resolutionTitle':None};clusters.append(chosen)
+            chosen['items'].append(x);chosen['publishers'].add(str(x.get('publisher') or 'Unknown'));chosen['tokens']|=tok;chosen['lastDate']=max(chosen['lastDate'],x['availableDate']);x['claimId']=chosen['id']
+            prow=price_store.get(symbol) or [];pidx=x.get('availableIndex');x['preVolumeLead']=_volume_lead(prow,int(pidx) if isinstance(pidx,(int,float)) else None)
+        official=[x for x in rows if x.get('sourceClass') in {'OFFICIAL','CLARIFICATION'}]
+        for c in clusters:
+            best=None
+            for x in official:
+                if not x.get('availableDate') or x['availableDate']<c['firstDate']:continue
+                if (datetime.fromisoformat(x['availableDate']).date()-datetime.fromisoformat(c['firstDate']).date()).days>90:continue
+                sim=_claim_sim(c['tokens'],_claim_tokens(x.get('title')))
+                event_match=any(y.get('event')==x.get('event') for y in c['items'])
+                score=sim+(.08 if event_match else 0.0)
+                if sim>=.24 and (best is None or score>best[0]):best=(score,x)
+            if best:
+                rx=best[1];c['resolutionDate']=rx['availableDate'];c['truthState']=_truth_label(rx.get('title'));c['resolutionTitle']=rx.get('title')
+            age=max(1,(datetime.fromisoformat(c['lastDate']).date()-datetime.fromisoformat(c['firstDate']).date()).days+1);velocity=len(c['items'])/age;div=len(c['publishers'])/max(1,len(c['items']))
+            for x in c['items']:
+                x['claimFirstDate']=c['firstDate'];x['claimLastDate']=c['lastDate'];x['claimSize']=len(c['items']);x['claimSourceCount']=len(c['publishers']);x['claimVelocity']=velocity;x['claimSourceDiversity']=div;x['claimResolutionDate']=c['resolutionDate'];x['claimTruthState']=c['truthState'];x['claimResolutionTitle']=c['resolutionTitle']
+        claim_audit['clusters']+=len(clusters);claim_audit['rumorItems']+=len(rumors);claim_audit['multiSourceClusters']+=sum(len(c['publishers'])>=2 for c in clusters);claim_audit['resolvedClusters']+=sum(c['resolutionDate'] is not None for c in clusters);claim_audit['confirmed']+=sum(c['truthState']=='CONFIRMED' for c in clusters);claim_audit['denied']+=sum(c['truthState']=='DENIED' for c in clusters);claim_audit['clarified']+=sum(c['truthState']=='CLARIFIED' for c in clusters);claim_audit['maxClusterSize']=max(claim_audit['maxClusterSize'],max([len(c['items']) for c in clusters],default=0))
+    ENTITY_AUDIT['rumorClaimAudit']=claim_audit
+    print(json.dumps({'v12RumorClaims':claim_audit},ensure_ascii=False),flush=True)
+    return articles,outcomes
+
+class EvidenceFeatureStore(_BaseEvidenceFeatureStore):
+    def features(self,symbol,date):
+        out=super().features(symbol,date);st=self.stock.get(symbol,Timeline([]));rows=[x for x in st.window(date,20) if x.get('sourceClass')=='RUMOR_UNVERIFIED'];claims={}
+        for x in rows:
+            cid=x.get('claimId') or str(x.get('id'));c=claims.setdefault(cid,{'items':[],'publishers':set(),'resolved':None,'state':'UNVERIFIED'});c['items'].append(x);c['publishers'].add(str(x.get('publisher') or 'Unknown'))
+            rd=x.get('claimResolutionDate')
+            if rd and rd<=date:c['resolved']=rd;c['state']=x.get('claimTruthState') or 'CLARIFIED'
+        n=len(rows);cn=len(claims);sources=set(str(x.get('publisher') or 'Unknown') for x in rows);prop=float(np.mean([float(x.get('claimVelocity',0) or 0) for x in rows])) if rows else 0.0;dup=(n-cn)/max(1,n);div=len(sources)/max(1,n);pv=float(np.mean([float(x.get('preVolumeLead',0) or 0) for x in rows])) if rows else 0.0;prem=float(np.mean([abs(float(x.get('preR2',0) or 0)) for x in rows])) if rows else 0.0
+        states=[c['state'] if c['resolved'] else 'UNVERIFIED' for c in claims.values()]
+        out.update({'rumorClaims20':float(cn),'rumorPropagation20':prop,'rumorSourceDiversity20':div,'rumorDuplication20':dup,'rumorConfirmed20':float(sum(x=='CONFIRMED' for x in states)),'rumorDenied20':float(sum(x=='DENIED' for x in states)),'rumorUnverified20':float(sum(x=='UNVERIFIED' for x in states)),'rumorPreVolume20':pv,'rumorLeadScore20':prem+0.25*pv})
+        return out
+    def current_intelligence(self,symbol,date,limit=10):
+        out=super().current_intelligence(symbol,date,limit);st=self.stock.get(symbol,Timeline([]));recent=[x for x in reversed(st.window(date,90)) if x.get('sourceClass')=='RUMOR_UNVERIFIED'];seen=set();claims=[]
+        for x in recent:
+            cid=x.get('claimId') or str(x.get('id'))
+            if cid in seen:continue
+            seen.add(cid);rd=x.get('claimResolutionDate');state=(x.get('claimTruthState') if rd and rd<=date else 'UNVERIFIED') or 'UNVERIFIED';claims.append({'claimId':cid,'title':x.get('title'),'firstDate':x.get('claimFirstDate'),'lastDate':x.get('claimLastDate'),'items':x.get('claimSize',1),'sources':x.get('claimSourceCount',1),'velocity':x.get('claimVelocity',0),'sourceDiversity':x.get('claimSourceDiversity',1),'preMove2':x.get('preR2'),'preMove5':x.get('preR5'),'preVolumeLead':x.get('preVolumeLead'),'truthState':state,'resolutionDate':rd if rd and rd<=date else None,'resolutionTitle':x.get('claimResolutionTitle') if rd and rd<=date else None})
+            if len(claims)>=limit:break
+        out['rumorClaims']=claims;return out
