@@ -1,0 +1,33 @@
+name: V12 UI fast integrity gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'forecast-final-v12.js'
+      - 'forecast-final.html'
+      - '.github/workflows/v12-ui-fast.yml'
+permissions:
+  contents: read
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: JavaScript syntax
+        run: node --check forecast-final-v12.js
+      - name: Static final UI contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          h=Path('forecast-final.html').read_text(encoding='utf-8');j=Path('forecast-final-v12.js').read_text(encoding='utf-8')
+          for x in ['Dự báo giá trực tiếp T+1 → T+5','Actual raw','Adjusted comparable','btDetail','forecast-final-v12.js']: assert x in h,x
+          for x in ['priceValidated','directionValidated','expectedPrice','q20Price','q80Price','actualRawPrice','realizedComparablePrice','contextAtOrigin','rumorClaims','claimId','preVolumeLead','mousemove','expertContributions','Direction gate REVIEW']: assert x in j,x
+          assert 'vmews-risk-analytics-sojd.vercel.app' not in j
+          assert '/api/' not in j
+          assert 'bezierCurveTo' not in j and 'quadraticCurveTo' not in j
+          print('V12 UI FAST GATE PASS')
+          PY
