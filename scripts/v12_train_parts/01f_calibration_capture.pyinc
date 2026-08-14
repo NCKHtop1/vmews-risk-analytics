@@ -1,0 +1,5 @@
+CALIBRATION_CAPTURE=[]
+_quantile_calibrate_before_capture=calibrate
+
+def calibrate(cal_y,cal_score,conform_y,conform_score):
+    out=_quantile_calibrate_before_capture(cal_y,cal_score,conform_y,conform_score);CALIBRATION_CAPTURE.append(out);return out
