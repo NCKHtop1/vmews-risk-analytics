@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import MiniBatchKMeans
 from forecast_v11_features import yahoo_adjusted
-ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));H=(1,2,3,4,5);PRE=(1,2,5);VERSION='VMEWS-NEWS-EVENT-11.1.0'
+ROOT=Path(os.environ.get('GITHUB_WORKSPACE','.'));H=(1,2,3,4,5);PRE=(1,2,5);VERSION='VMEWS-NEWS-EVENT-11.2.0'
 def dt(x):
     try:return datetime.fromisoformat(str(x).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7)))
     except:
@@ -34,17 +34,29 @@ def aggregate(items):
         s=stats([x.get('preAR'+str(h)) for x in items]);
         if s:out['preEvent'][str(h)]=s
     c=[x.get('confirmT2') for x in items if x.get('confirmT2') in {'POS','NEG','NEU'}];out['confirmT2']={k:sum(x==k for x in c)/len(c) for k in ('POS','NEG','NEU')} if c else None;pre=[x.get('preAR2') for x in items if isinstance(x.get('preAR2'),(int,float))];out['preMoveShare2']=float(np.mean(np.abs(pre)>.01)) if pre else None;return out
-def main():
-    sent=json.loads((ROOT/'data/sentiment-v11.json').read_text(encoding='utf-8'));sectorBy={}
+def sector_map():
+    out={}
     try:
         scan=json.loads((ROOT/'data/market-scan.json').read_text(encoding='utf-8'))
         for x in scan.get('ranking',[]):
-            if x.get('exchange')=='HOSE' and x.get('symbol'):sectorBy[str(x['symbol']).upper()]=str(x.get('sector') or 'UNKNOWN')
+            if x.get('exchange')=='HOSE' and x.get('symbol') and str(x.get('sector') or '').strip():out[str(x['symbol']).upper()]=str(x['sector']).strip()
     except:pass
-    items=[]
+    try:
+        from tradingview_screener import stocks
+        _,df=stocks('vietnam').select('name','exchange','sector').limit(3000).get_scanner_data()
+        if df is not None:
+            for _,r in df.iterrows():
+                s=str(r.get('name') or '').upper().split(':')[-1].strip();sec=str(r.get('sector') or '').strip();ex=str(r.get('exchange') or '').upper()
+                if s and sec and ex in {'HOSE','HSX','HOCHIMINH'}:out.setdefault(s,sec)
+    except:pass
+    return out
+def main():
+    sent=json.loads((ROOT/'data/sentiment-v11.json').read_text(encoding='utf-8'));sectorBy=sector_map();items=[]
     for s,z in sent['symbols'].items():
-        for x in z['items']:items.append({'symbol':s,'sector':sectorBy.get(s,'UNKNOWN'),**x})
-    texts=[x['title'] for x in items];vec=TfidfVectorizer(max_features=4000,ngram_range=(1,2),min_df=3,max_df=.93);X=vec.fit_transform(texts);k=max(18,min(48,int(math.sqrt(len(texts)/18))));km=MiniBatchKMeans(n_clusters=k,random_state=43,n_init=10,batch_size=1024).fit(X);terms=np.asarray(vec.get_feature_names_out());clusters={str(j):{'n':int(np.sum(km.labels_==j)),'terms':[str(x) for x in terms[np.argsort(km.cluster_centers_[j])[-7:][::-1]]]} for j in range(k)}
+        for x in z['items']:items.append({'symbol':s,'sector':sectorBy.get(s,'OTHER'),**x})
+    texts=[x['title'] for x in items]
+    if len(texts)<100:raise RuntimeError('event-study news history too small')
+    vec=TfidfVectorizer(max_features=5000,ngram_range=(1,2),min_df=3,max_df=.93);X=vec.fit_transform(texts);k=max(18,min(56,int(math.sqrt(len(texts)/18))));km=MiniBatchKMeans(n_clusters=k,random_state=43,n_init=10,batch_size=1024).fit(X);terms=np.asarray(vec.get_feature_names_out());clusters={str(j):{'n':int(np.sum(km.labels_==j)),'terms':[str(x) for x in terms[np.argsort(km.cluster_centers_[j])[-7:][::-1]]]} for j in range(k)}
     for x,c in zip(items,km.labels_):x['cluster']=int(c)
     syms=sorted(sent['symbols']);prices={}
     with ThreadPoolExecutor(max_workers=12) as ex:
@@ -86,10 +98,10 @@ def main():
     for x in mature:tickerEvent.setdefault((x['symbol'],x['event'],x['label']),[]).append(x)
     idCluster={x['id']:x['cluster'] for x in items};now=max([dt(x['publishedAt']) for x in items if dt(x['publishedAt'])] or [datetime.now(timezone.utc)]);bys={}
     for s,z in sent['symbols'].items():
-        cur=sorted(z['items'],key=lambda x:x['publishedAt'],reverse=True);latest=cur[0] if cur else None;rows=[x for x in mature if x['symbol']==s];pooled=None;sector=sectorBy.get(s,'UNKNOWN')
+        cur=sorted(z['items'],key=lambda x:x['publishedAt'],reverse=True);latest=cur[0] if cur else None;rows=[x for x in mature if x['symbol']==s];pooled=None;sector=sectorBy.get(s,'OTHER')
         if latest:
             direct=tickerEvent.get((s,latest['event'],latest['label']),[]);cand=[('TICKER_EVENT',aggregate(direct)),('SECTOR_EVENT_LABEL',groups['sectorEventLabel'].get(sector+'|'+latest['event']+'|'+latest['label'])),('EVENT_LABEL',groups['eventLabel'].get(latest['event']+'|'+latest['label'])),('SECTOR_EVENT',groups['sectorEvent'].get(sector+'|'+latest['event'])),('EVENT',groups['event'].get(latest['event'])),('CLUSTER',groups['cluster'].get(str(idCluster.get(latest['id'],-1))))];pooled=next(({'level':n,**a} for n,a in cand if a and a.get('n',0)>=20),None) or next(({'level':n,**a} for n,a in cand if a and a.get('n',0)>=8),None)
         d7=sum((now-dt(x['publishedAt'])).days<=7 for x in cur if dt(x['publishedAt']));d30=sum((now-dt(x['publishedAt'])).days<=30 for x in cur if dt(x['publishedAt']));velocity=d7/max(1,d30/4.3);recent=[{k:x.get(k) for k in ('id','title','link','publishedAt','publisher','stream','sourceClass','event','label','confidence')} for x in cur[:20]];latestM=next((x for x in mature if latest and x['id']==latest['id']),None);bys[s]={'sector':sector,'newsCount':len(cur),'publishers':len(set(x['publisher'] for x in cur)),'years':len(set(x['publishedAt'][:4] for x in cur)),'newsVelocity7v30':velocity,'sentiment':z['signed'],'counts':z['counts'],'recent':recent,'tickerStudy':aggregate(rows),'pooledLatest':pooled,'latestOutcomeStudy':latestM}
-    rumor=[x for x in mature if x['sourceClass']=='RUMOR_UNVERIFIED'];clar=[x for x in mature if x['sourceClass']=='CLARIFICATION'];out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTime':'publishedAt is the availability timestamp; T+2 confirmation and T+1..T+5 outcomes are labels only, never forecast features','events':len(mature),'symbols':bys,'groups':groups,'clusters':clusters,'sectorCoverage':sum(z['sector']!='UNKNOWN' for z in bys.values()),'rumorStudy':{**aggregate(rumor),'events':len(rumor),'share':len(rumor)/max(1,len(mature)),'symbols':len(set(x['symbol'] for x in rumor))},'clarificationStudy':{**aggregate(clar),'events':len(clar),'share':len(clar)/max(1,len(mature))}}
+    rumor=[x for x in mature if x['sourceClass']=='RUMOR_UNVERIFIED'];clar=[x for x in mature if x['sourceClass']=='CLARIFICATION'];out={'version':VERSION,'generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTime':'publishedAt is the availability timestamp; T+2 confirmation and T+1..T+5 outcomes are labels only, never forecast features','events':len(mature),'symbols':bys,'groups':groups,'clusters':clusters,'sectorCoverage':sum(z['sector']!='OTHER' for z in bys.values()),'sectorFallbackCount':sum(z['sector']=='OTHER' for z in bys.values()),'rumorStudy':{**aggregate(rumor),'events':len(rumor),'share':len(rumor)/max(1,len(mature)),'symbols':len(set(x['symbol'] for x in rumor))},'clarificationStudy':{**aggregate(clar),'events':len(clar),'share':len(clar)/max(1,len(mature))}}
     (ROOT/'data/news-event-study-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8');print(json.dumps({'events':out['events'],'symbols':len(bys),'sectorCoverage':out['sectorCoverage'],'rumors':len(rumor),'medianNews':int(np.median([z['newsCount'] for z in bys.values()])),'FPT':bys.get('FPT',{}).get('newsCount')},ensure_ascii=False))
 if __name__=='__main__':main()
