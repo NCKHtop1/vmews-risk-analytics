@@ -1,0 +1,107 @@
+name: Promote validated V12 candidate to main
+
+on:
+  push:
+    branches: [forecast-v12-final-candidate2]
+    paths:
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-backtest-v12.json'
+      - 'data/data-audit-v12.json'
+      - 'data/phase-gates-v12.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vmews-v12-promote-main
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: ${{ contains(github.event.head_commit.message || '', '[v12-final-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout validated candidate
+        uses: actions/checkout@v4
+        with:
+          ref: forecast-v12-final-candidate2
+          path: candidate
+          fetch-depth: 1
+      - name: Candidate contract gate
+        working-directory: candidate
+        run: |
+          python - <<'PY'
+          import json
+          g=json.load(open('data/phase-gates-v12.json'))
+          m=json.load(open('data/forecast-model-v12.json'))
+          d=json.load(open('data/forecast-dashboard-v12.json'))
+          a=json.load(open('data/data-audit-v12.json'))
+          assert g['status']=='PASS' and g.get('failed')==0,g
+          p=m['promotion'];assert p['status']=='PASS',p
+          assert p.get('directPriceHorizons')==[1,2,3,4,5],p
+          assert len(d.get('symbols',{}))>=320,len(d.get('symbols',{}))
+          u=a.get('universeAudit') or {};assert (u.get('historicalOnlyCount') or 0)>=1,u
+          for h in map(str,range(1,6)):
+              z=m['horizons'][h]
+              assert z['priceStatus']=='PASS',(h,z.get('priceGates'))
+              assert z['sealedAudit']['rankIC']>.02,(h,z['sealedAudit'])
+          print('CANDIDATE CONTRACT PASS',m['version'],p)
+          PY
+          node --check forecast-final-v12.js
+          node --check forecast-v12-evidence-ui.js
+          grep -q 'forecast-v12-evidence-ui.js' forecast-final.html
+          python scripts/v12_static_smoke.py
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: mainrepo
+          fetch-depth: 0
+      - name: Copy only validated V12 release scope
+        run: |
+          set -euo pipefail
+          C="$GITHUB_WORKSPACE/candidate"
+          M="$GITHUB_WORKSPACE/mainrepo"
+          cp "$C/forecast-final.html" "$M/forecast-final.html"
+          cp "$C/forecast-final-v12.js" "$M/forecast-final-v12.js"
+          cp "$C/forecast-v12-evidence-ui.js" "$M/forecast-v12-evidence-ui.js"
+          cp "$C/requirements-v12.txt" "$M/requirements-v12.txt"
+          cp "$C/scripts/train_forecast_v12.py" "$M/scripts/train_forecast_v12.py"
+          cp "$C/scripts/v12_data_sources.py" "$M/scripts/v12_data_sources.py"
+          cp "$C/scripts/v12_universe.py" "$M/scripts/v12_universe.py"
+          cp "$C/scripts/v12_entity.py" "$M/scripts/v12_entity.py"
+          cp "$C/scripts/v12_entity_test.py" "$M/scripts/v12_entity_test.py"
+          cp "$C/scripts/v12_evidence.py" "$M/scripts/v12_evidence.py"
+          cp "$C/scripts/v12_rumor_runtime.py" "$M/scripts/v12_rumor_runtime.py"
+          cp "$C/scripts/v12_rumor_test.py" "$M/scripts/v12_rumor_test.py"
+          cp "$C/scripts/v12_flow.py" "$M/scripts/v12_flow.py"
+          cp "$C/scripts/v12_source_probe.py" "$M/scripts/v12_source_probe.py"
+          cp "$C/scripts/v12_acceptance.py" "$M/scripts/v12_acceptance.py"
+          cp "$C/scripts/v12_static_smoke.py" "$M/scripts/v12_static_smoke.py"
+          cp "$C/scripts/v12_browser_smoke.mjs" "$M/scripts/v12_browser_smoke.mjs"
+          rm -rf "$M/scripts/v12_train_parts"
+          cp -a "$C/scripts/v12_train_parts" "$M/scripts/v12_train_parts"
+          for f in v12-source-probe.json forecast-model-v12.json forecast-current-v12.json forecast-dashboard-v12.json forecast-backtest-v12.json data-audit-v12.json phase-gates-v12.json; do cp "$C/data/$f" "$M/data/$f"; done
+          cp "$C/.github/workflows/forecast-v12-cdn-smoke.yml" "$M/.github/workflows/forecast-v12-cdn-smoke.yml"
+          cp "$C/.github/workflows/forecast-v12-cdn-browser-smoke.yml" "$M/.github/workflows/forecast-v12-cdn-browser-smoke.yml"
+      - name: Re-run release contracts in main worktree
+        working-directory: mainrepo
+        run: |
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_evidence.py scripts/v12_rumor_runtime.py scripts/v12_flow.py scripts/v12_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          node --check forecast-final-v12.js
+          node --check forecast-v12-evidence-ui.js
+          python scripts/v12_static_smoke.py
+      - name: Commit V12 final to latest main without rewriting unrelated history
+        working-directory: mainrepo
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add forecast-final.html forecast-final-v12.js forecast-v12-evidence-ui.js requirements-v12.txt scripts/train_forecast_v12.py scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_rumor_runtime.py scripts/v12_rumor_test.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_static_smoke.py scripts/v12_browser_smoke.mjs scripts/v12_train_parts data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/phase-gates-v12.json .github/workflows/forecast-v12-cdn-smoke.yml .github/workflows/forecast-v12-cdn-browser-smoke.yml
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No V12 release delta'; exit 0; }
+          git commit -m 'Promote validated VMEWS Forecast V12 final [v12-final]'
+          git pull --rebase origin main
+          git push origin HEAD:main
