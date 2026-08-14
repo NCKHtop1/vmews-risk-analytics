@@ -1,0 +1,6 @@
+vnstock==4.0.4
+tzdata>=2025.2
+numpy>=1.26,<3
+scipy>=1.12,<2
+scikit-learn>=1.5,<2
+lightgbm>=4.5,<5
