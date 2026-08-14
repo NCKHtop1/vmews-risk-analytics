@@ -1,0 +1,15 @@
+def _expert_activity(X,name):
+    pos={k:i for i,k in enumerate(FEATURES)}
+    if name=='EVENT':mask=np.nan_to_num(X[:,pos['newsN20']],nan=0.0)>0;minimum_rows=2000
+    elif name=='FLOW':mask=(np.nan_to_num(X[:,pos['foreignAvailable']],nan=0.0)>0)|(np.nan_to_num(X[:,pos['propAvailable']],nan=0.0)>0);minimum_rows=5000
+    elif name=='FUNDAMENTAL_EVENT':mask=np.nan_to_num(X[:,pos['fundamentalN20']],nan=0.0)>0;minimum_rows=1000
+    elif name=='RUMOR':mask=np.nan_to_num(X[:,pos['rumorN20']],nan=0.0)>0;minimum_rows=250
+    else:mask=np.ones(len(X),dtype=bool);minimum_rows=0
+    return mask,int(mask.sum()),float(np.mean(mask)),minimum_rows
+
+def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
+    n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];train=(D<cut70)&np.isfinite(y);test=(D>=cut70)&(D<cut80)&np.isfinite(y);active=['NUMERICAL','REGIME'];base,_=meta_eval(expert_pred,active,train,test,y,D);decisions={}
+    for name in ['EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']:
+        candidate=active+[name];z,_=meta_eval(expert_pred,candidate,train,test,y,D);di=z['ic']-base['ic'];dm=z['maeImprove']-base['maeImprove'];activity_mask,activity_count,activity,minimum_rows=_expert_activity(X,name);active_in_test=int(np.sum(activity_mask&test));enough=activity_count>=minimum_rows and active_in_test>=max(50,min(250,minimum_rows//10 if minimum_rows else 0));promote=enough and (di>.001 or (di>-.001 and dm>.002));decisions[name]={'promoted':bool(promote),'evidenceRows':activity_count,'activityCoverage':activity,'evidenceRowsSelectionWindow':active_in_test,'minimumEvidenceRows':minimum_rows,'evidenceGatePassed':bool(enough),'deltaIC':di,'deltaMAEImprove':dm,'candidate':z,'reference':base}
+        if promote:active.append(name);base=z
+    return active,decisions
