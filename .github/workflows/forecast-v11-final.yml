@@ -42,7 +42,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: NCKHtop1/vmews-risk-analytics
           run-id: 31782208209
-      - name: Install evidence inputs
+      - name: Install and sanitize evidence inputs
         run: |
           for f in forecast-model-v11.json forecast-current-v11.json; do
             src=$(find /tmp/v11-model -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/$f"
@@ -51,7 +51,17 @@ jobs:
             src=$(find /tmp/v11-history -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/$f"
           done
           python - <<'PY'
-          import json
+          import json, math
+          from pathlib import Path
+          def clean(x):
+              if isinstance(x,float) and not math.isfinite(x): return None
+              if isinstance(x,dict): return {k:clean(v) for k,v in x.items()}
+              if isinstance(x,list): return [clean(v) for v in x]
+              return x
+          for name in ['news-history-v11.json','sentiment-v11.json','news-event-study-v11.json']:
+              p=Path('data')/name
+              z=json.loads(p.read_text(encoding='utf-8'))
+              p.write_text(json.dumps(clean(z),ensure_ascii=False,separators=(',',':'),allow_nan=False),encoding='utf-8')
           for p in ['data/forecast-model-v11.json','data/forecast-current-v11.json','data/news-history-v11.json','data/sentiment-v11.json','data/news-event-study-v11.json','data/flow-v11.json']:
               z=json.load(open(p,encoding='utf-8')); print(p,z.get('version'),z.get('summary',{}),z.get('count'),z.get('events'))
           PY
