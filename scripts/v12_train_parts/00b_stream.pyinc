@@ -6,18 +6,19 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
         for x in z.get('items') or []:
             if x.get('id') is not None:stream_by_id[x.get('id')]=str(x.get('stream') or 'MAIN').upper()
     articles,outcomes=_entity_filtered_prepare_articles(sentiment,price_store,sector_map,index_rows)
+    search_counts={};source_counts={};rumor_candidates=0;official_event_hits=0
     for rows in articles.values():
         for x in rows:
-            stream=stream_by_id.get(x.get('id'),'MAIN');x['stream']=stream
-            if stream=='OFFICIAL' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='OFFICIAL'
-            elif stream=='RUMOR' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='RUMOR_UNVERIFIED'
+            stream=stream_by_id.get(x.get('id'),'MAIN');x['searchStream']=stream
+            # IMPORTANT: search stream describes how Google News was queried. It is NOT publisher identity.
+            # A mainstream publisher found by an OFFICIAL query remains MAINSTREAM; only actual sourceClass
+            # assigned from publisher/domain identity may be OFFICIAL.
+            x['rumorCandidate']=bool(x.get('sourceClass')=='RUMOR_UNVERIFIED' or stream=='RUMOR')
+            x['officialEventQueryHit']=bool(stream=='OFFICIAL')
+            search_counts[stream]=search_counts.get(stream,0)+1;sc=str(x.get('sourceClass') or 'UNKNOWN');source_counts[sc]=source_counts.get(sc,0)+1
+            rumor_candidates+=int(x['rumorCandidate']);official_event_hits+=int(x['officialEventQueryHit'])
     for x in outcomes:
-        stream=stream_by_id.get(x.get('id'),'MAIN');x['stream']=stream
-        if stream=='OFFICIAL' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='OFFICIAL'
-        elif stream=='RUMOR' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='RUMOR_UNVERIFIED'
-    counts={}
-    for rows in articles.values():
-        for x in rows:counts[x.get('stream','MAIN')]=counts.get(x.get('stream','MAIN'),0)+1
-    ENTITY_AUDIT['streamCoverage']=counts
-    print(json.dumps({'v12EvidenceStreams':counts},ensure_ascii=False),flush=True)
+        stream=stream_by_id.get(x.get('id'),'MAIN');x['searchStream']=stream;x['rumorCandidate']=bool(x.get('sourceClass')=='RUMOR_UNVERIFIED' or stream=='RUMOR');x['officialEventQueryHit']=bool(stream=='OFFICIAL')
+    ENTITY_AUDIT['searchStreamCoverage']=search_counts;ENTITY_AUDIT['sourceClassCoverage']=source_counts;ENTITY_AUDIT['rumorCandidateCount']=rumor_candidates;ENTITY_AUDIT['officialEventQueryHits']=official_event_hits;ENTITY_AUDIT['sourceSeparationPolicy']='searchStream is retrieval/query intent only; sourceClass is publisher/domain identity. OFFICIAL search hits are never promoted to OFFICIAL sourceClass without an actual official publisher/domain.'
+    print(json.dumps({'v12SearchStreams':search_counts,'v12ActualSourceClasses':source_counts,'rumorCandidates':rumor_candidates,'officialEventQueryHits':official_event_hits},ensure_ascii=False),flush=True)
     return articles,outcomes
