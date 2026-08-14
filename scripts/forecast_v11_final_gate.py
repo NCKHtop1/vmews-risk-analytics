@@ -7,6 +7,11 @@ def load(p): return json.loads((R/p).read_text(encoding='utf-8'))
 def fin(x):
     try: return math.isfinite(float(x))
     except: return False
+def finite_tree(x):
+    if isinstance(x,float): return math.isfinite(x)
+    if isinstance(x,dict): return all(finite_tree(v) for v in x.values())
+    if isinstance(x,list): return all(finite_tree(v) for v in x)
+    return True
 
 model=load('data/forecast-model-v11.json'); cur=load('data/forecast-current-v11.json'); dash=load('data/forecast-dashboard-v11.json')
 news=load('data/news-history-v11.json'); sent=load('data/sentiment-v11.json'); ev=load('data/news-event-study-v11.json')
@@ -108,11 +113,11 @@ for wanted in ["for(let i=1;i<=5;i++)","flow5(f,'foreign')","event5(n)","herding
     ck('frontend contract '+wanted,wanted in js)
 ck('fan chart interval fill',"fillStyle='rgba(226,171,70,.12)'" in js)
 
-# Serialization integrity
+# Serialization integrity: valid string values such as publisher/title text are not numeric failures.
 for p in ['data/forecast-model-v11.json','data/forecast-current-v11.json','data/forecast-dashboard-v11.json','data/news-history-v11.json','data/sentiment-v11.json','data/news-event-study-v11.json','data/flow-v11.json','data/flow-study-v11.json','data/macro-study-v11.json']:
-    t=(R/p).read_text(encoding='utf-8'); ck(p+' finite JSON','NaN' not in t and 'Infinity' not in t)
+    z=load(p); ck(p+' finite numeric JSON',finite_tree(z))
 ck('production gate executes >=150 assertions',len(checks)>=150,len(checks))
 failed=[x for x in checks if not x[1]]
-report={'version':'VMEWS-V11-FINAL-GATE-1.3.0','tests':len(checks),'passed':len(checks)-len(failed),'failed':len(failed),'failures':[{'name':n,'detail':d} for n,_,d in failed]}
+report={'version':'VMEWS-V11-FINAL-GATE-1.4.0','tests':len(checks),'passed':len(checks)-len(failed),'failed':len(failed),'failures':[{'name':n,'detail':d} for n,_,d in failed]}
 (R/'data/forecast-v11-final-gate.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False)); sys.exit(1 if failed else 0)
