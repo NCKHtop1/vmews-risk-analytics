@@ -10,7 +10,7 @@ on:
       - 'data/research-news-v10.json'
       - 'data/sentiment-v10.json'
       - 'data/news-event-study.json'
-      - 'scripts/forecast_v10_smoke.js'
+      - 'scripts/forecast_v10_smoke_final.js'
       - '.github/workflows/forecast-final-smoke.yml'
   workflow_dispatch:
 jobs:
@@ -26,6 +26,6 @@ jobs:
         run: |
           node --check forecast-v4-core.js
           node --check forecast-final-v10.js
-          node --check scripts/forecast_v10_smoke.js
+          node --check scripts/forecast_v10_smoke_final.js
       - name: V10 production contract
-        run: node scripts/forecast_v10_smoke.js
+        run: node scripts/forecast_v10_smoke_final.js
