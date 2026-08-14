@@ -9,6 +9,8 @@
     {"source": "/api/validate", "destination": "/api/validate2"}
   ],
   "functions": {
+    "api/gemini.js": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
+    "api/market.js": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
     "api/ews.py": {"maxDuration": 30,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
     "api/stocks.py": {"maxDuration": 30,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
     "api/stocks2.py": {"maxDuration": 60,"excludeFiles": "{model/**,docs/**,**/*.md,PORTFOLIO_CV_TEXT.md}"},
@@ -22,6 +24,8 @@
       {"key": "X-Content-Type-Options", "value": "nosniff"},
       {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
     ]},
+    {"source": "/api/gemini", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
+    {"source": "/api/market", "headers": [{"key": "Cache-Control", "value": "s-maxage=300, stale-while-revalidate=900"}]},
     {"source": "/api/ews", "headers": [{"key": "Cache-Control", "value": "s-maxage=60, stale-while-revalidate=120"}]},
     {"source": "/api/stocks2", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
     {"source": "/api/radar", "headers": [{"key": "Cache-Control", "value": "no-store"}]},

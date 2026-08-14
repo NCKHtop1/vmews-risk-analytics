@@ -1,45 +1,41 @@
+import { groundedJson, geminiConfigured, schemas } from '../lib/gemini-provider.mjs';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
+  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
 
-  const range = ['1y','5y','max'].includes(String(req.query?.range)) ? String(req.query.range) : '5y';
-  const rangeMap = { '1y':'1y', '5y':'5y', 'max':'max' };
-  const symbol = '%5EVNINDEX';
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${rangeMap[range]}&interval=1d&events=history&includeAdjustedClose=true`;
+  if (!geminiConfigured()) {
+    return res.status(503).json({
+      error: 'GEMINI_API_KEY_MISSING',
+      message: 'Gemini is the configured live provider, but GEMINI_API_KEY has not been added yet.',
+      provider: 'Gemini API',
+      fallback: '/data/fallback-market.json',
+    });
+  }
 
   try {
-    const upstream = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 VMEWS/1.0',
-        'Accept': 'application/json,text/plain,*/*'
-      }
+    const result = await groundedJson({
+      schema: schemas.market,
+      input: `Act as the VMEWS live market data adapter. Use Google Search grounding. Return the newest verified COMPLETED-session Vietnam market context: VN-Index close/change/volume/breadth and current USD/VND, DXY, US 10Y, VIX and Brent. Use null for unverifiable values. Never fabricate historical OHLCV.`,
     });
-    if (!upstream.ok) throw new Error(`Upstream HTTP ${upstream.status}`);
-    const json = await upstream.json();
-    const result = json?.chart?.result?.[0];
-    const ts = result?.timestamp || [];
-    const q = result?.indicators?.quote?.[0] || {};
-    const rows = ts.map((t,i)=>({
-      date: new Date(t*1000).toISOString().slice(0,10),
-      open: q.open?.[i],
-      high: q.high?.[i],
-      low: q.low?.[i],
-      close: q.close?.[i],
-      volume: q.volume?.[i] || 0
-    })).filter(r=>Number.isFinite(r.close) && r.close>0);
-    if (rows.length < 10) throw new Error('Insufficient market rows');
     return res.status(200).json({
-      source: 'Yahoo Finance chart adapter · ^VNINDEX',
-      symbol: '^VNINDEX',
-      range,
+      source: 'Gemini API · Google Search grounding',
+      symbol: 'VNINDEX',
       fetchedAt: new Date().toISOString(),
-      rows
+      snapshot: result.data,
+      citations: result.citations,
+      model: result.model,
+      interactionId: result.interactionId,
+      rows: [],
+      note: 'Long historical price series remain immutable repository research assets; Gemini is used only for external live context.',
     });
   } catch (error) {
     return res.status(502).json({
-      error: 'LIVE_FEED_UNAVAILABLE',
-      message: error?.message || 'Unable to fetch live market data',
-      fallback: '/data/fallback-market.json'
+      error: 'GEMINI_LIVE_FEED_UNAVAILABLE',
+      message: error?.message || 'Unable to fetch Gemini-grounded market context',
+      provider: 'Gemini API',
+      fallback: '/data/fallback-market.json',
     });
   }
 }
