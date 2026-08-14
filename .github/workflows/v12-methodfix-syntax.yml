@@ -11,6 +11,7 @@ on:
       - 'scripts/v12_active_flow_acceptance.py'
       - 'scripts/v12_sector_acceptance.py'
       - 'scripts/v12_benchmark_acceptance.py'
+      - 'scripts/v12_benchmark_unit.py'
       - 'scripts/v12_embargo_acceptance.py'
       - 'scripts/v12_method_unit_test.py'
       - 'scripts/v12_flow.py'
@@ -30,7 +31,7 @@ jobs:
       - run: pip install --disable-pip-version-check -q numpy scipy scikit-learn lightgbm
       - name: Compile strict utilities and assembled V12 methodfix
         run: |
-          python -m py_compile scripts/v12_evidence.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_method_unit_test.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_evidence.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_benchmark_unit.py scripts/v12_embargo_acceptance.py scripts/v12_method_unit_test.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
           PYTHONPATH=scripts python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -47,6 +48,8 @@ jobs:
           PY
       - name: Runtime method-risk unit tests
         run: PYTHONPATH=scripts python scripts/v12_method_unit_test.py
+      - name: Exact-date VNINDEX benchmark unit
+        run: PYTHONPATH=scripts python scripts/v12_benchmark_unit.py
       - name: Flow source-missingness unit regression
         run: |
           PYTHONPATH=scripts python - <<'PY'
@@ -62,28 +65,16 @@ jobs:
           dm=(start+timedelta(days=52)).isoformat();z=FlowTimeline(rows).features(dm);assert z['foreignAvailable']==0 and z['propAvailable']==0,z
           print('V12 FLOW MISSINGNESS UNIT PASS')
           PY
-      - name: VNINDEX abnormal-return missingness regression
+      - name: VNINDEX base missingness regression
         run: |
           PYTHONPATH=scripts python - <<'PY'
           from datetime import date,timedelta
           from v12_evidence import prepare_articles
-          start=date(2026,1,1)
-          dates=[(start+timedelta(days=i)).isoformat() for i in range(40)]
-          rows=[{'date':d,'close':100+i,'modelClose':100+i,'volume':1} for i,d in enumerate(dates)]
+          start=date(2026,1,1);dates=[(start+timedelta(days=i)).isoformat() for i in range(40)];rows=[{'date':d,'close':100+i,'modelClose':100+i,'volume':1} for i,d in enumerate(dates)]
           sentiment={'symbols':{'FPT':{'items':[{'id':'evt1','publishedAt':dates[5]+'T08:00:00+07:00','title':'FPT test event','label':'POS','sourceQuality':1,'materiality':1,'confidence':1,'event':'GENERAL'}]}}}
-          _,missing=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},[])
-          z=missing[0]
-          assert z['benchmarkAvailable5'] is False,z
-          assert z['benchmarkR5'] is None,z
-          assert z['ar5'] is None,z
-          index=[{'date':d,'close':1000+2*i,'modelClose':1000+2*i,'volume':0} for i,d in enumerate(dates)]
-          _,bench=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},index)
-          b=bench[0]
-          assert b['benchmarkAvailable5'] is True,b
-          assert isinstance(b['benchmarkR5'],float),b
-          assert isinstance(b['ar5'],float),b
-          assert abs(b['ar5']-b['r5'])>1e-12,b
-          print('V12 VNINDEX BENCHMARK MISSINGNESS PASS')
+          _,missing=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},[]);z=missing[0];assert z['benchmarkAvailable5'] is False and z['benchmarkR5'] is None and z['ar5'] is None,z
+          index=[{'date':d,'close':1000+2*i,'modelClose':1000+2*i,'volume':0} for i,d in enumerate(dates)];_,bench=prepare_articles(sentiment,{'FPT':rows},{'FPT':'TECH'},index);b=bench[0];assert b['benchmarkAvailable5'] is True and isinstance(b['benchmarkR5'],float) and isinstance(b['ar5'],float),b
+          print('V12 VNINDEX BASE MISSINGNESS PASS')
           PY
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
