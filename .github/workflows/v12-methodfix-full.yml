@@ -33,7 +33,7 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile exact final-candidate source
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -93,6 +93,8 @@ jobs:
           PY
       - name: Nine-phase research acceptance gates
         run: PYTHONPATH=scripts python scripts/v12_acceptance.py
+      - name: Phase 4 active-flow certified-or-abstain gate
+        run: PYTHONPATH=scripts python scripts/v12_active_flow_acceptance.py
       - name: Phase 7 explicit purge and embargo gate
         run: PYTHONPATH=scripts python scripts/v12_embargo_acceptance.py
       - uses: actions/setup-node@v4
@@ -119,6 +121,8 @@ jobs:
             data/data-audit-v12.json
             data/event-intelligence-v12.json
             data/phase-gates-v12.json
+            data/active-flow-audit-v12.json
+            data/active-flow-gate-v12.json
             data/embargo-gate-v12.json
             data/flow-audit-v12.json
       - name: Persist only nine-phase validated snapshots
@@ -126,7 +130,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/embargo-gate-v12.json
+          git add data/v12-source-probe.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/active-flow-gate-v12.json data/embargo-gate-v12.json
           git commit -m 'Publish nine-phase validated V12 forecast snapshots [v12-model-data]'
           git pull --rebase origin forecast-v12-methodfix
           git push origin HEAD:forecast-v12-methodfix
