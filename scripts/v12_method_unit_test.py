@@ -1,0 +1,36 @@
+import math,pathlib,sys
+import numpy as np
+sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent))
+ROOT=pathlib.Path(__file__).resolve().parent
+parts=sorted((ROOT/'v12_train_parts').glob('*.pyinc'))
+code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
+ns={'__name__':'v12_method_unit','__file__':str(ROOT/'train_forecast_v12.py')}
+exec(compile(code,'v12-method-unit-assembled.py','exec'),ns,ns)
+assert callable(ns.get('run_v12_pipeline'))
+
+# Quantile + conformal runtime.
+rng=np.random.default_rng(73)
+score=rng.normal(size=2500)
+y=.004*score+rng.normal(scale=.018,size=len(score))
+layer,iso,qadj=ns['calibrate'](y[:1200],score[:1200],y[1200:1800],score[1200:1800])
+p,med,lo,hi,n=ns['apply_calibration'](score[1800:],layer,iso,qadj)
+assert len(p)==700 and np.all(np.isfinite(p)) and np.all(np.isfinite(med))
+assert np.all(lo<=med) and np.all(med<=hi) and np.all((p>=0)&(p<=1))
+assert 'QUANTILE' in str(getattr(layer,'method','')).upper()
+
+# Boundary embargo: h=5 removes five origins before 85% and 90% boundaries.
+dates=np.asarray([f'2025-{1+(i//28):02d}-{1+(i%28):02d}' for i in range(196)])
+D=np.repeat(dates,3);ns['V12_ACTIVE_HORIZON']=5;m=ns['interval_masks'](D,dates);i85=int(.85*len(dates));i90=int(.90*len(dates));assert not np.any(m['calA'] & (D>=dates[i85-5]));assert not np.any(m['calB'] & (D>=dates[i90-5]));assert np.all(~m['audit'] | (D>=dates[i90]))
+
+# Incremental IC significance on repeated cross-sections.
+days=np.asarray([f'2026-01-{1+i:02d}' for i in range(20) for _ in range(30)])
+y2=rng.normal(size=len(days));base=rng.normal(size=len(days));candidate=y2*.75+rng.normal(scale=.35,size=len(days));inc=ns['_incremental_ic_test'](y2,base,candidate,days);assert inc['days']>=15 and inc['meanDeltaIC']>0 and inc['pValue']<.0125 and inc['bootstrap90'][0]>0,inc
+
+# CSCV/PBO runtime with 100 dates x 25 symbols.
+dates3=np.asarray([f'{2020+i//240:04d}-{1+(i//20)%12:02d}-{1+i%20:02d}' for i in range(100)])
+D3=np.repeat(dates3,25);latent=rng.normal(size=len(D3));y3=.03*latent+rng.normal(scale=.03,size=len(D3));ep={'NUMERICAL':latent+rng.normal(scale=.7,size=len(D3)),'REGIME':.4*latent+rng.normal(size=len(D3)),'EVENT':rng.normal(size=len(D3)),'FLOW':rng.normal(size=len(D3)),'FUNDAMENTAL_EVENT':rng.normal(size=len(D3)),'RUMOR':rng.normal(size=len(D3))};pbo=ns['_pbo_metric'](ep,y3,D3,['NUMERICAL','REGIME']);assert pbo['splits']>=30 and pbo['candidateCount']>=3 and 0<=pbo['pbo']<=1,pbo
+
+# Rumor claim functions must distinguish similar claims and denial/confirmation state.
+a=ns['_claim_tokens']('FPT tin đồn mua lại công ty ABC');b=ns['_claim_tokens']('FPT được cho là mua lại ABC');c=ns['_claim_tokens']('VCB tăng lãi suất tiền gửi');assert ns['_claim_sim'](a,b)>ns['_claim_sim'](a,c);assert ns['_truth_label']('Công ty chính thức xác nhận thương vụ')=='CONFIRMED';assert ns['_truth_label']('Doanh nghiệp phủ nhận tin đồn')=='DENIED'
+
+print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'qadj':float(qadj),'incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo']})
