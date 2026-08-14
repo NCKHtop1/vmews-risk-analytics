@@ -1,0 +1,44 @@
+name: V12 acceptance contract patch
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths: ['.github/workflows/v12-acceptance-contract-patch.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch strict acceptance contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v12_acceptance.py');s=p.read_text(encoding='utf-8')
+          changes=[
+          ("features=model.get('featureNames') or [];check(2,'horizon-specific matured event priors exist',all(f'eventPriorAR{h}' in features and f'eventPriorHit{h}' in features and f'eventPriorN{h}' in features for h in range(1,6)),[x for x in features if x.startswith('eventPrior')]);check(2,'event labels never enter numerical featureNames'",
+           "source_types=es.get('sourceTypes') or {};check(2,'normalized official source type >=500',int(source_types.get('OFFICIAL') or 0)>=500,source_types);check(2,'normalized narrative source type >=5000',int(source_types.get('NARRATIVE') or 0)>=5000,source_types);check(2,'official stream semantics restored before event/rumor processing',entity.get('officialStreamRestored') is True,entity.get('officialStreamRestored'));features=model.get('featureNames') or [];check(2,'horizon-specific matured Bayesian event priors exist',all(f'eventPriorAR{h}' in features and f'eventPriorHit{h}' in features and f'eventPriorN{h}' in features and f'eventPriorUncertainty{h}' in features for h in range(1,6)),[x for x in features if x.startswith('eventPrior')]);check(2,'event labels never enter numerical featureNames'"),
+          ("rumor_records=[x for x in records if x.get('sourceType')=='RUMOR_UNVERIFIED']",
+           "rumor_records=[x for x in records if x.get('sourceType')=='RUMOR' or x.get('sourceClass')=='RUMOR_UNVERIFIED']"),
+          ("check(3,'rumor corpus >=20 records',len(rumor_records)>=20,len(rumor_records));",
+           "check(3,'rumor corpus >=20 records',len(rumor_records)>=20,len(rumor_records));check(3,'rumor cluster metadata is PIT as-of publication',ra.get('pitClusterMetadata') is True,ra);check(3,'rumor confirmation engine is official-stream aware',ra.get('officialStreamAware') is True,ra);"),
+          ("check(4,'foreign flow has non-trivial universe coverage',f(fs.get('foreignCoverage'))>=.40,fs)",
+           "check(4,'foreign flow PIT coverage >=60%',f(fs.get('foreignCoverage'))>=.60 and int(fs.get('foreign100plus') or 0)>=150,fs)"),
+          ("check(5,f'T+{h} promoted {name} has positive incremental OOS value',f(p.get('deltaIC'))>.001 and f(p.get('deltaMAEImprove'))>0 and f(inc.get('pValue'),1)<.0125 and isinstance(ci,list) and len(ci)==2 and isinstance(ci[0],(int,float)) and f(ci[0])>0,p)",
+           "check(5,f'T+{h} promoted {name} has positive incremental OOS value',f(p.get('deltaIC'))>.001 and f(p.get('deltaMAEImprove'))>0 and f(inc.get('pValue'),1)<.0125 and isinstance(ci,list) and len(ci)==2 and isinstance(ci[0],(int,float)) and f(ci[0])>0 and inc.get('test')=='HAC_NEWey_WEST_ONE_SIDED' and inc.get('bootstrap')=='MOVING_BLOCK',p)"),
+          ("'version':'VMEWS-PHASE-GATES-12.4.0'","'version':'VMEWS-PHASE-GATES-12.5.0'")]
+          for old,new in changes:
+              if old not in s: raise SystemExit(f'PATCH TARGET NOT FOUND: {old[:120]}')
+              s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          compile(s,'scripts/v12_acceptance.py','exec')
+          print('V12 ACCEPTANCE CONTRACT PATCH PASS')
+          PY
+      - name: Persist acceptance patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/v12_acceptance.py
+          git commit -m 'Align V12 acceptance with PIT event rumor flow contracts'
+          git pull --rebase origin forecast-v12-methodfix
+          git push origin HEAD:forecast-v12-methodfix
