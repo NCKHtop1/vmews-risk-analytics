@@ -1,31 +1,105 @@
-name: Forecast V10 production smoke
+name: Forecast production continuity smoke
 on:
   push:
     branches: [main, forecast-v10-release-final]
     paths:
       - 'forecast-final.html'
+      - 'forecast-data-resolver-v11.js'
       - 'forecast-final-v10.js'
       - 'forecast-v4-core.js'
       - 'data/forecast-model-v10.json'
       - 'data/research-news-v10.json'
       - 'data/sentiment-v10.json'
       - 'data/news-event-study.json'
+      - 'data/forecast-live-v10.json'
+      - 'data/market-scan.json'
+      - 'data/hose-fallbacks/**'
       - 'scripts/forecast_v10_smoke_final.js'
+      - 'scripts/forecast_continuity_smoke.js'
       - '.github/workflows/forecast-final-smoke.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vmews-forecast-production-continuity
+  cancel-in-progress: true
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Syntax
         run: |
           node --check forecast-v4-core.js
+          node --check forecast-data-resolver-v11.js
           node --check forecast-final-v10.js
           node --check scripts/forecast_v10_smoke_final.js
-      - name: V10 production contract
+          node --check scripts/forecast_continuity_smoke.js
+
+      - name: V10 numerical research contract
         run: node scripts/forecast_v10_smoke_final.js
+
+      - name: Universal EOD continuity contract
+        run: node scripts/forecast_continuity_smoke.js
+
+      - name: Browser smoke with API deliberately bypassed
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
+          [ -n "$CHROME" ] || { echo 'Chrome unavailable'; exit 1; }
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}/forecast-final.html"
+          mkdir -p smoke-dom
+
+          # Retry immutable CDN propagation before treating it as an application failure.
+          for i in $(seq 1 30); do
+            if curl -fsSL --max-time 20 -A 'VMEWS-forecast-continuity/11.0' "$BASE" -o /tmp/forecast-final.html \
+               && grep -q 'forecast-data-resolver-v11.js' /tmp/forecast-final.html; then
+              break
+            fi
+            [ "$i" -lt 30 ] || { echo 'Immutable CDN did not publish the tested commit'; exit 1; }
+            sleep 4
+          done
+
+          PASS=yes
+          REPORT=""
+          for S in FPT FRT PNJ VCB HPG MBB; do
+            PROFILE="/tmp/vmews-${S}-${GITHUB_RUN_ID}"
+            DOM="smoke-dom/${S}.html"
+            rm -rf "$PROFILE"
+            timeout 85s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --user-data-dir="$PROFILE" --virtual-time-budget=70000 --dump-dom \
+              "$BASE?symbol=${S}&resolver=cdn" > "$DOM" 2>/dev/null || true
+
+            symbol=no; loaded=no; a3=no; a5=no; asof=no; eod_error=no; js_error=no
+            grep -Eq "id=\"symbol\"[^>]*value=\"${S}\"|value=\"${S}\"[^>]*id=\"symbol\"" "$DOM" && symbol=yes || true
+            if grep -Eq 'id="stance"[^>]*>[^<]+' "$DOM" && ! grep -Eq 'id="stance"[^>]*>Đang tải' "$DOM"; then loaded=yes; fi
+            if grep -Eq 'id="a3"[^>]*>[^—<][^<]*<' "$DOM"; then a3=yes; fi
+            if grep -Eq 'id="a5"[^>]*>[^—<][^<]*<' "$DOM"; then a5=yes; fi
+            if grep -Eq 'id="asof"[^>]*>[^—<][^<]*<' "$DOM"; then asof=yes; fi
+            grep -qi 'chưa đủ dữ liệu EOD' "$DOM" && eod_error=yes || true
+            grep -qi 'VMEWS_FORECAST_DATA_UNAVAILABLE' "$DOM" && js_error=yes || true
+
+            REPORT="${REPORT}${S}: symbol=${symbol}, loaded=${loaded}, a3=${a3}, a5=${a5}, asof=${asof}, eod_error=${eod_error}, resolver_error=${js_error}\n"
+            for X in "$symbol" "$loaded" "$a3" "$a5" "$asof"; do [ "$X" = yes ] || PASS=no; done
+            [ "$eod_error" = no ] || PASS=no
+            [ "$js_error" = no ] || PASS=no
+          done
+          printf '%b' "$REPORT"
+          printf '# VMEWS FORECAST CDN CONTINUITY\n\nCommit: `%s`\n\n```text\n%b```\n' "$GITHUB_SHA" "$REPORT" > forecast-continuity-report.md
+          [ "$PASS" = yes ] || exit 1
+
+      - name: Publish green continuity diagnostic
+        if: success()
+        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS FORECAST CONTINUITY PASS ${GITHUB_SHA::7}" --body-file forecast-continuity-report.md
