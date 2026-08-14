@@ -9,31 +9,20 @@ def build_event_intelligence_artifact(articles_by_symbol,event_outcomes,rows_by_
                     if i+h<len(rows):price_after[str(h)]=float(rows[i+h]['close'])
                 for k in (1,2,5):
                     if i-k>=0:price_before[str(k)]=float(rows[i-k]['close'])
-            car={str(h):o.get(f'ar{h}') for h in HORIZONS};dar={}
-            prev=0.0
+            car={str(h):o.get(f'ar{h}') for h in HORIZONS};dar={};prev=0.0
             for h in HORIZONS:
                 v=o.get(f'ar{h}')
-                if isinstance(v,(int,float)) and math.isfinite(float(v)):
-                    dar[str(h)]=float(v)-prev;prev=float(v)
+                if isinstance(v,(int,float)) and math.isfinite(float(v)):dar[str(h)]=float(v)-prev;prev=float(v)
                 else:dar[str(h)]=None
             source_type=x.get('sourceTypeNormalized') or ('RUMOR' if x.get('sourceClass')=='RUMOR_UNVERIFIED' else 'CLARIFICATION' if x.get('sourceClass')=='CLARIFICATION' else 'OFFICIAL' if x.get('stream')=='OFFICIAL' or x.get('sourceClass')=='OFFICIAL' else 'NARRATIVE')
             rec={
-                'newsId':x.get('id'),'publishedAt':x.get('publishedAt'),'availableDate':x.get('availableDate'),'ticker':symbol,'sector':x.get('sector'),
+                'newsId':x.get('id'),'publishedAt':x.get('publishedAt'),'availableDate':x.get('availableDate'),'ticker':symbol,'sector':x.get('sector'),'sectorReferenceType':'CURRENT_REFERENCE_NOT_HISTORICAL_PIT',
                 'source':x.get('publisher'),'sourceType':source_type,'sourceClass':x.get('sourceClass'),'stream':x.get('stream'),'eventType':x.get('event'),
-                'sentimentLabel':x.get('label'),'sentimentScore':float(x.get('sent',0) or 0),'materialityScore':float(x.get('materiality',0) or 0),
-                'noveltyScore':float(x.get('novelty',0) or 0),'sourceCredibility':float(x.get('quality',0) or 0),'confidence':float(x.get('confidence',0) or 0),
-                'clusterId':x.get('claimId'),'claimTruthState':x.get('claimTruthState') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
-                'claimResolutionDate':x.get('claimResolutionDate') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
-                'claimSizeAtPublication':x.get('claimSizeAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
-                'claimSourceCountAtPublication':x.get('claimSourceCountAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
-                'claimVelocityAtPublication':x.get('claimVelocityAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
-                'claimSourceDiversityAtPublication':x.get('claimSourceDiversityAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
+                'sentimentLabel':x.get('label'),'sentimentScore':float(x.get('sent',0) or 0),'materialityScore':float(x.get('materiality',0) or 0),'noveltyScore':float(x.get('novelty',0) or 0),'sourceCredibility':float(x.get('quality',0) or 0),'confidence':float(x.get('confidence',0) or 0),
+                'clusterId':x.get('claimId'),'claimTruthState':x.get('claimTruthState') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,'claimResolutionDate':x.get('claimResolutionDate') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,'claimSizeAtPublication':x.get('claimSizeAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,'claimSourceCountAtPublication':x.get('claimSourceCountAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,'claimVelocityAtPublication':x.get('claimVelocityAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,'claimSourceDiversityAtPublication':x.get('claimSourceDiversityAtPublication') if x.get('sourceClass')=='RUMOR_UNVERIFIED' else None,
                 'preReturn2':x.get('preR2'),'preReturn5':x.get('preR5'),'preVolumeLead':x.get('preVolumeLead'),'priceBefore':price_before,'priceAtAvailability':origin,'priceAfter':price_after,
-                # ar{h} generated upstream is cumulative abnormal return from T0 to T+h. Store it as CAR; daily AR is the increment between adjacent CAR horizons.
-                'abnormalReturn':dar,'cumulativeAbnormalReturn':car,
-                'preAbnormalReturn':{str(k):o.get(f'preAR{k}') for k in (1,2,5)},'matureDate':{str(h):o.get(f'matureDate{h}') for h in HORIZONS},
-                'link':x.get('link'),'title':x.get('title')
+                'abnormalReturn':dar,'cumulativeAbnormalReturn':car,'preAbnormalReturn':{str(k):o.get(f'preAR{k}') for k in (1,2,5)},'matureDate':{str(h):o.get(f'matureDate{h}') for h in HORIZONS},'link':x.get('link'),'title':x.get('title')
             };records.append(rec)
     dates=[x.get('availableDate') for x in records if x.get('availableDate')];symbols=set(x.get('ticker') for x in records);rumors=[x for x in records if x.get('sourceType')=='RUMOR'];resolved=[x for x in rumors if x.get('claimResolutionDate')];types=defaultdict(int)
     for x in records:types[x.get('sourceType') or 'UNKNOWN']+=1
-    return {'version':'VMEWS-EVENT-INTELLIGENCE-12.1.0','generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimePolicy':'Feature eligibility is publication/availableDate based. priceAfter, daily AR, CAR and maturity fields are labels/audit only and forbidden from featureNames; horizon priors query cumulative outcomes only after matureDate. Rumor propagation metadata is frozen as-of each publication.','summary':{'records':len(records),'symbols':len(symbols),'first':min(dates) if dates else None,'last':max(dates) if dates else None,'rumorRecords':len(rumors),'resolvedRumorRecords':len(resolved),'sourceTypes':dict(types)},'records':records}
+    return {'version':'VMEWS-EVENT-INTELLIGENCE-12.2.0','generatedAt':datetime.now(timezone.utc).isoformat(),'pointInTimePolicy':'Feature eligibility is publication/availableDate based. priceAfter, daily AR, CAR and maturity fields are labels/audit only and forbidden from featureNames; horizon priors query cumulative outcomes only after matureDate. Rumor propagation metadata is frozen as-of each publication. Sector is retained only as current descriptive reference and is forbidden from historical numerical shrinkage until dated sector membership exists.','sectorPITStatus':'ABSTAIN','summary':{'records':len(records),'symbols':len(symbols),'first':min(dates) if dates else None,'last':max(dates) if dates else None,'rumorRecords':len(rumors),'resolvedRumorRecords':len(resolved),'sourceTypes':dict(types)},'records':records}
