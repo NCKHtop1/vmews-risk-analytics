@@ -5,6 +5,7 @@ const assert=require('assert');
 
 const ROOT=path.resolve(__dirname,'..');
 const MIN=520;
+const MAX_STALE_DAYS=7;
 const REQUIRED=['FPT','FRT','PNJ','VCB','HPG','MBB'];
 const read=p=>JSON.parse(fs.readFileSync(path.join(ROOT,p),'utf8'));
 const html=fs.readFileSync(path.join(ROOT,'forecast-final.html'),'utf8');
@@ -13,8 +14,10 @@ const resolver=fs.readFileSync(path.join(ROOT,'forecast-data-resolver-v11.js'),'
 assert(html.includes('./forecast-data-resolver-v11.js'),'forecast resolver missing from production page');
 assert(html.indexOf('./forecast-data-resolver-v11.js')<html.indexOf('./forecast-final-v10.js'),'resolver must load before forecast runtime');
 assert(resolver.includes('MIN_FORECAST_ROWS=520'),'resolver minimum history contract drift');
-assert(resolver.includes("get('resolver')==='cdn'"),'forced immutable-CDN test mode missing');
-assert(resolver.includes('IMMUTABLE_CDN_MIRROR'),'immutable mirror fallback missing');
+assert(resolver.includes('MAX_STALE_DAYS=7'),'resolver freshness contract drift');
+assert(resolver.includes("get('resolver')==='cdn'"),'forced CDN test mode missing');
+assert(resolver.includes('DAILY_CDN_MIRROR'),'daily CDN mirror path missing');
+assert(resolver.includes('PINNED_CDN_MIRROR'),'pinned audit mirror path missing');
 
 const manifest=read('data/hose-fallbacks/manifest.json');
 assert.equal(manifest.version,'VMEWS-HOSE-RESOLVER-1.1.0','resolver manifest is not V1.1');
@@ -24,9 +27,13 @@ assert.equal((manifest.unresolved||[]).length,0,'unresolved HOSE symbols remain'
 assert.equal(manifest.forecastMinRows,MIN,'forecast minimum row contract drift');
 assert(manifest.cacheHistoryRows>=MIN,'mirror history window cannot support forecast');
 
+function staleDays(date){
+  const t=Date.parse(`${date}T23:59:59+07:00`);
+  return Number.isFinite(t)?Math.max(0,(Date.now()-t)/86400000):Infinity;
+}
 function validateFile(sym,requireEligible=false){
   const fp=path.join(ROOT,'data','hose-fallbacks',`${sym}.json`);
-  assert(fs.existsSync(fp),`${sym}: immutable CDN mirror missing`);
+  assert(fs.existsSync(fp),`${sym}: CDN mirror missing`);
   const d=JSON.parse(fs.readFileSync(fp,'utf8'));
   assert.equal(d.symbol,sym,`${sym}: symbol mismatch`);
   assert.equal(d.mode,'detail',`${sym}: wrong payload mode`);
@@ -50,13 +57,14 @@ function validateFile(sym,requireEligible=false){
   if(requireEligible||dq.forecastEligible===true){
     assert(h.length>=MIN,`${sym}: forecast eligible but mirror has only ${h.length}`);
     assert(dq.totalSourceRows>=MIN,`${sym}: source history below ${MIN}`);
+    assert(staleDays(h[h.length-1].date)<=MAX_STALE_DAYS,`${sym}: stale forecast mirror ${h[h.length-1].date}`);
   }
   // Guard against fake padding: no repeated dates and no repeated final bar injected to hit MIN.
   if(h.length>=MIN){
     const tail=h.slice(-10).map(r=>`${r.date}|${r.close}|${r.volume??''}`);
     assert(new Set(tail).size===tail.length,`${sym}: suspicious repeated tail bars`);
   }
-  return {rows:h.length,eligible:dq.forecastEligible===true,sourceRows:dq.totalSourceRows||h.length,route:d.resolver?.route||''};
+  return {rows:h.length,eligible:dq.forecastEligible===true,sourceRows:dq.totalSourceRows||h.length,route:d.resolver?.route||'',modelAsOf:d.modelAsOf};
 }
 
 const required={};
