@@ -1,0 +1,42 @@
+import { chromium } from 'playwright';
+
+const base=process.env.V12_BROWSER_URL || 'http://127.0.0.1:8000/forecast-final.html?symbol=FPT';
+const browser=await chromium.launch({headless:true});
+const errors=[];const failed=[];const external=[];
+const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text())});
+page.on('pageerror',err=>errors.push(String(err)));
+page.on('requestfailed',req=>failed.push(`${req.method()} ${req.url()} ${req.failure()?.errorText||''}`));
+page.on('request',req=>{const u=req.url();if(/^https?:/.test(u)&&!u.startsWith('http://127.0.0.1:8000')&&!u.startsWith('http://localhost:8000'))external.push(u)});
+await page.goto(base,{waitUntil:'networkidle',timeout:60000});
+await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('phase gates PASS'),null,{timeout:30000});
+const badge=(await page.locator('#modelBadge').innerText()).trim();if(!badge.includes('PASS'))throw new Error(`model badge not PASS: ${badge}`);
+const decision=(await page.locator('#decision').innerText()).trim();if(!decision||decision==='—'||decision.includes('LOCKED'))throw new Error(`decision invalid: ${decision}`);
+for(const id of ['#close','#t1','#t3','#t5','#risk']){const t=(await page.locator(id).innerText()).trim();if(!t||t==='—')throw new Error(`${id} empty`)}
+const cards=page.locator('#forecastCards .forecastCard');if(await cards.count()!==5)throw new Error(`expected 5 forecast cards, got ${await cards.count()}`);
+for(let i=0;i<5;i++){const t=await cards.nth(i).innerText();if(t.includes('Chưa validate'))throw new Error(`forecast card ${i+1} not validated: ${t}`)}
+const canvas=page.locator('#chart');const box=await canvas.boundingBox();if(!box)throw new Error('chart canvas has no box');
+let tipShown=false;
+for(const frac of [.80,.84,.88,.92,.96]){
+  await page.mouse.move(box.x+box.width*frac,box.y+box.height*.45);
+  await page.waitForTimeout(100);
+  if(await page.locator('#tooltip').isVisible()){
+    const tt=await page.locator('#tooltip').innerText();
+    if(tt.includes('Giá dự kiến')&&tt.includes('Expected return')&&tt.includes('20–80%')){tipShown=true;break}
+  }
+}
+if(!tipShown)throw new Error('forecast hover tooltip did not expose expected price/return/interval');
+const newsCount=await page.locator('#news .newsItem').count();if(newsCount<1)throw new Error('FPT event intelligence is empty');
+const sourceText=await page.locator('#sourceAudit').innerText();for(const token of ['Price route','VNStock primary','Current HOSE coverage','Historical universe','Event corpus','Flow coverage'])if(!sourceText.includes(token))throw new Error(`source audit missing ${token}`);
+const btRows=page.locator('#btRows tr');if(await btRows.count()<1)throw new Error('backtest rows missing');
+await page.locator('#tabs button[data-h="3"]').click();await page.waitForTimeout(150);if(!(await page.locator('#btMeta').innerText()).includes('sealed n='))throw new Error('backtest T+3 did not render');
+const firstRow=page.locator('#btRows tr').first();const title=await firstRow.getAttribute('title');if(!title?.includes('Prior20')||!title.includes('News20')||!title.includes('Rumor20'))throw new Error(`backtest T0 trace missing: ${title}`);
+const vcb=page.locator('#quick button',{hasText:'VCB'});if(await vcb.count()){await vcb.first().click();await page.waitForFunction(()=>document.querySelector('#chartTitle')?.textContent?.startsWith('VCB'));if(new URL(page.url()).searchParams.get('symbol')!=='VCB')throw new Error('symbol navigation did not update URL')}
+await page.screenshot({path:'v12-browser-desktop.png',fullPage:true});
+if(errors.length)throw new Error(`browser console errors: ${errors.join(' | ')}`);
+if(failed.length)throw new Error(`failed requests: ${failed.join(' | ')}`);
+if(external.length)throw new Error(`unexpected external runtime requests: ${external.join(' | ')}`);
+const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});const mobileErrors=[];mobile.on('console',m=>{if(m.type()==='error')mobileErrors.push(m.text())});mobile.on('pageerror',e=>mobileErrors.push(String(e)));await mobile.goto(base,{waitUntil:'networkidle',timeout:60000});await mobile.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('phase gates PASS'),null,{timeout:30000});
+const dims=await mobile.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,chart:document.querySelector('#chart')?.getBoundingClientRect().width,wrap:document.querySelector('.chartWrap')?.getBoundingClientRect().width}));if(dims.sw>dims.cw+3)throw new Error(`mobile document horizontal overflow ${JSON.stringify(dims)}`);if(!dims.chart||dims.chart>dims.cw+3)throw new Error(`mobile chart overflow ${JSON.stringify(dims)}`);if(await mobile.locator('#forecastCards .forecastCard').count()!==5)throw new Error('mobile forecast cards missing');await mobile.screenshot({path:'v12-browser-mobile.png',fullPage:true});if(mobileErrors.length)throw new Error(`mobile console errors: ${mobileErrors.join(' | ')}`);
+console.log(JSON.stringify({browserSmoke:'PASS',badge,decision,newsCount,desktop:{width:1440,height:1000},mobile:dims,externalRuntimeRequests:external.length,consoleErrors:errors.length},null,2));
+await browser.close();
