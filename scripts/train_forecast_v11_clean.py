@@ -23,9 +23,33 @@ def safe_rank_stats(y,p,D):
         order=np.argsort(pp);k=max(1,len(q)//5);sp.append(float(np.mean(yy[order[-k:]])-np.mean(yy[order[:k]])))
     return {'ic':float(np.mean(ics)) if ics else 0.,'spread':float(np.mean(sp)) if sp else 0.}
 
-orig_build=m.build_panel
+def save_market_benchmark(latest):
+    """Persist a daily HOSE cross-sectional median-return index from the exact adjusted
+    price histories already accepted by the numerical panel. This avoids a second
+    network dependency and keeps the macro outcome benchmark contemporaneous/PIT."""
+    by={}
+    symbols=0
+    for v in latest.values():
+        if not v or not v.get('rows'):continue
+        rows=v['rows'];symbols+=1;prev=None
+        for r in rows:
+            try:d=str(r.get('date'))[:10];c=float(r.get('modelClose',r.get('close')))
+            except:continue
+            if prev is not None and prev[1]>0 and c>0:
+                rr=math.log(c/prev[1])
+                if math.isfinite(rr) and abs(rr)<.35:by.setdefault(d,[]).append(rr)
+            prev=(d,c)
+    days=sorted(d for d,a in by.items() if len(a)>=30);level=1000.;series=[]
+    for d in days:
+        r=float(np.median(by[d]));level*=math.exp(r);series.append({'date':d,'return':r,'level':level,'n':len(by[d])})
+    out={'version':'VMEWS-HOSE-MARKET-BENCHMARK-11.0.0','generatedAt':datetime.now(timezone.utc).isoformat(),'method':'Daily cross-sectional median log return from the same adjusted HOSE histories accepted by the V11 panel; minimum 30 securities per date.','symbols':symbols,'observations':len(series),'series':series}
+    (ROOT/'data/market-benchmark-v11.json').write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+    if len(series)<1500:raise RuntimeError(f'V11 market benchmark too short: {len(series)}')
+    print(json.dumps({'marketBenchmark':'PASS','symbols':symbols,'observations':len(series),'start':series[0]['date'],'end':series[-1]['date']},ensure_ascii=False))
+
 def broad_current_panel():
     P,latest=orig_build()
+    save_market_benchmark(latest)
     # A stale symbol must never receive a market state observed after its own EOD.
     # Reuse the most recent sampled cross-sectional state on or before that symbol date.
     cross_by_date={}
@@ -85,6 +109,7 @@ def repair_calibration():
     (ROOT/'data/forecast-model-v11.json').write_text(json.dumps(model,ensure_ascii=False,indent=2),encoding='utf-8');(ROOT/'data/forecast-current-v11.json').write_text(json.dumps(cur,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps({'calibrationRepair':'PASS','current':cur['count'],'directHorizons':scenario_h,'directionHorizons':direction_h,'audit':{h:model['horizons'][str(h)]['sealedAudit'] for h in m.HORIZONS}},ensure_ascii=False))
 
+orig_build=m.build_panel
 m.rank_stats=safe_rank_stats
 m._orig_risk=m.risk_status
 m.risk_status=lambda f:(lambda z:(z[0],int(z[1])))(m._orig_risk(f))
