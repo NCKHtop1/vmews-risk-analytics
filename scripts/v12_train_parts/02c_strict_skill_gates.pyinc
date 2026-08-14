@@ -1,0 +1,18 @@
+_raw_fit_horizon_before_strict_skill=fit_horizon
+
+def fit_horizon(X,y,D,dates,h,idx_by_expert):
+    z=_raw_fit_horizon_before_strict_skill(X,y,D,dates,h,idx_by_expert)
+    s=z.get('sealedAudit') or {};old=dict(z.get('gates') or {})
+    ranking=bool(s.get('rankIC',0)>.02 and s.get('spread',0)>.001 and s.get('icDays',0)>=20 and s.get('icPositiveDayShare',0)>=.50)
+    direction=bool(s.get('balancedAccuracy',0)>.51 and s.get('mcc',0)>.015 and s.get('brierSkill',-99)>0.0 and s.get('ece',99)<.12)
+    scenario=bool(s.get('scenarioRankIC',0)>.01 and s.get('scenarioMAEImprove',-99)>0.0 and .52<=s.get('coverage20_80',0)<=.72)
+    # Generalization/PBO gate may be supplied by model-risk hardening wrappers. Never discard it when present.
+    generalization=old.get('generalization',True)
+    z['gates']={'ranking':ranking,'direction':direction,'scenario':scenario,'generalization':bool(generalization)}
+    z['skillGatePolicy']={
+        'ranking':'rankIC > 0.02; spread > 0.10%; >=20 daily IC observations; >=50% non-negative daily IC',
+        'direction':'balanced accuracy > 0.51; MCC > 0.015; Brier skill > 0; ECE < 0.12',
+        'scenario':'scenario rank IC > 0.01; scenario MAE improvement over zero-return baseline > 0; empirical CQR coverage 52%-72%',
+        'rule':'A forecast that is worse than the no-change/base-rate baseline cannot be promoted merely because rank IC is positive.'
+    }
+    return z
