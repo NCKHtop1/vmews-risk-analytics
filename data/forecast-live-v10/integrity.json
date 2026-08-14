@@ -1,0 +1,16 @@
+{
+  "version": "VMEWS-FORECAST-LIVE-10.0.0",
+  "generatedAt": "2026-08-14T01:06:31.944984+00:00",
+  "status": "PASS",
+  "asOf": "2026-08-13",
+  "archiveStatus": "CREATED",
+  "universeRequested": 388,
+  "symbols": 377,
+  "sourceCounts": {
+    "YAHOO_PRIMARY": 377
+  },
+  "modelVersion": "VMEWS-FORECAST-10.1.0",
+  "timeBasis": "COMPLETED_EOD_ONLY",
+  "snapshotHash": "92332eca4338c989e61db67d3079da34d202977406a8624ba31e9e96797f23c3",
+  "badHashes": []
+}
