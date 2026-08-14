@@ -4,6 +4,8 @@ _prepare_articles_before_exact_benchmark=prepare_articles
 _V12_INDEX_BY_DATE={}
 _V12_INDEX_DATES=[]
 
+def _event_key(symbol,news_id):return (str(symbol or '').upper(),str(news_id))
+
 def _benchmark_num(x):
     try:
         v=float(x)
@@ -25,9 +27,9 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
     global _V12_INDEX_BY_DATE,_V12_INDEX_DATES
     _V12_INDEX_BY_DATE={str(r.get('date'))[:10]:r for r in (index_rows or []) if r.get('date')};_V12_INDEX_DATES=sorted(_V12_INDEX_BY_DATE)
     articles,outcomes=_prepare_articles_before_exact_benchmark(sentiment,price_store,sector_map,index_rows)
-    by_id={x.get('id'):x for rows in articles.values() for x in rows if x.get('id') is not None};corrected=missing=0;suspension_aligned=0
+    by_key={_event_key(symbol,x.get('id')):x for symbol,items in articles.items() for x in items if x.get('id') is not None};corrected=missing=0;suspension_aligned=0
     for o in outcomes:
-        rec=by_id.get(o.get('id'));rows=price_store.get(o.get('symbol')) or [];i=rec.get('availableIndex') if rec else None
+        rec=by_key.get(_event_key(o.get('symbol'),o.get('id')));rows=price_store.get(o.get('symbol')) or [];i=rec.get('availableIndex') if rec else None
         if not isinstance(i,int):continue
         origin=str(rec.get('availableDate'))[:10];j=bisect.bisect_left(_V12_INDEX_DATES,origin) if _V12_INDEX_DATES else -1
         for h in HORIZONS:
@@ -36,5 +38,5 @@ def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
             o[f'matureDate{h}']=target;o[f'benchmarkTargetDate{h}']=target;o[f'benchmarkR{h}']=float(br) if ok else None;o[f'benchmarkAvailable{h}']=bool(ok);o[f'ar{h}']=float(rr)-float(br) if ok and isinstance(rr,(int,float)) and math.isfinite(float(rr)) else None
             corrected+=int(ok);missing+=int(not ok)
             if j>=0 and j<len(_V12_INDEX_DATES) and _V12_INDEX_DATES[j]==origin and j+h<len(_V12_INDEX_DATES) and _V12_INDEX_DATES[j+h]!=target:suspension_aligned+=1
-    ENTITY_AUDIT['benchmarkAlignment']={'method':'VNINDEX_ORIGIN_TO_EXACT_STOCK_MATURITY_DATE','correctedOutcomes':corrected,'missingBenchmarkOutcomes':missing,'stockMaturityDifferentFromOrdinalIndexH':suspension_aligned,'missingPolicy':'ABSTAIN_NOT_RAW_RETURN'}
+    ENTITY_AUDIT['benchmarkAlignment']={'method':'VNINDEX_ORIGIN_TO_EXACT_STOCK_MATURITY_DATE','joinKey':'TICKER_NEWS_ID','correctedOutcomes':corrected,'missingBenchmarkOutcomes':missing,'stockMaturityDifferentFromOrdinalIndexH':suspension_aligned,'missingPolicy':'ABSTAIN_NOT_RAW_RETURN'}
     print(json.dumps({'v12ExactEventBenchmark':ENTITY_AUDIT['benchmarkAlignment']},ensure_ascii=False),flush=True);return articles,outcomes
