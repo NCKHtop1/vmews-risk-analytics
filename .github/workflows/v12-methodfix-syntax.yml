@@ -8,6 +8,7 @@ on:
       - 'scripts/v12_entity.py'
       - 'scripts/v12_acceptance.py'
       - 'scripts/v12_embargo_acceptance.py'
+      - 'scripts/v12_method_unit_test.py'
       - 'scripts/v12_flow.py'
       - 'scripts/backfill_flow_v12.py'
       - 'scripts/train_forecast_v12.py'
@@ -17,7 +18,7 @@ permissions:
 jobs:
   fast:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,9 +26,8 @@ jobs:
       - run: pip install --disable-pip-version-check -q numpy scipy scikit-learn lightgbm
       - name: Compile strict utilities and assembled V12 methodfix
         run: |
-          python -m py_compile scripts/v12_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_method_unit_test.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
           PYTHONPATH=scripts python - <<'PY'
-          import sys
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
           code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
@@ -40,5 +40,7 @@ jobs:
               assert required in names,(required,sorted(names))
           print('V12 METHODFIX ASSEMBLED STRUCTURE PASS',len(parts),[p.name for p in parts])
           PY
+      - name: Runtime method-risk unit tests
+        run: PYTHONPATH=scripts python scripts/v12_method_unit_test.py
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
