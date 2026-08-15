@@ -26,7 +26,12 @@ def clean_json(x):
                 key = key.isoformat()
             elif isinstance(key, float) and not math.isfinite(key):
                 key = str(key)
-            elif key is not None and not isinstance(key, (str, int, float, bool)):
+            elif key is None:
+                key = "null"
+            elif not isinstance(key, str):
+                # JSON object keys are strings on disk.  Canonicalizing them
+                # here avoids mixed Python key types and keeps sort/hash output
+                # deterministic without changing any value carried by a key.
                 key = str(key)
             out[key] = clean_json(value)
         return out
@@ -65,5 +70,5 @@ assert '"count": 7' in _v12_json_probe_blob, _v12_json_probe_blob
 assert '"missing": null' in _v12_json_probe_blob, _v12_json_probe_blob
 assert _v12_json_probe_clean["nested"]["flag"] is True, _v12_json_probe_clean
 assert _v12_json_probe_clean["array"] == [1, 2, 3], _v12_json_probe_clean
-assert _v12_json_probe_clean[9] == "numpy-key", _v12_json_probe_clean
+assert _v12_json_probe_clean["9"] == "numpy-key", _v12_json_probe_clean
 del _v12_json_probe, _v12_json_probe_clean, _v12_json_probe_blob
