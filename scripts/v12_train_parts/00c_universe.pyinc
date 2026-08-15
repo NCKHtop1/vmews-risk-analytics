@@ -20,7 +20,7 @@ def _probe_current_short_route(symbol,modal_cut):
     try:
         from vnstock.ui import Market
         today=datetime.now(_v12ds.VN_TZ).date();start=(today-__import__('datetime').timedelta(days=1100)).isoformat()
-        _v12ds._throttle_vnstock();df=Market().equity(symbol=symbol).ohlcv(start=start,end=today.isoformat(),count=800);rows,scale=_v12ds._normalize_df(df,symbol)
+        _v12ds._throttle_vnstock();df=Market().equity(symbol).ohlcv(start=start,end=today.isoformat(),count=800);rows,scale=_v12ds._normalize_df(df,symbol,'Vnstock Unified Market current-route probe')
         attempts.append({'stage':'VNSTOCK_CURRENT_ROUTE_PROBE','rows':len(rows),'scale':scale,'end':rows[-1]['date'] if rows else None})
         if len(rows)>=60 and rows[-1]['date']>=fresh_cut:
             return {'symbol':symbol,'route':'VNSTOCK_CURRENT_SHORT_HISTORY','rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'routeAvailable':True,'trainingEligible':False,'minimumTrainingRows':_v12ds.MIN_ROWS,'attempts':attempts,'policy':'Real fresh OHLCV route is available, but <520 rows remain excluded from model training.'}
@@ -31,7 +31,7 @@ def _probe_current_short_route(symbol,modal_cut):
             return {'symbol':symbol,'route':'YAHOO_CURRENT_SHORT_HISTORY','rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'routeAvailable':True,'trainingEligible':False,'minimumTrainingRows':_v12ds.MIN_ROWS,'attempts':attempts,'policy':'Real fresh adjusted OHLCV route is available, but <520 rows remain excluded from model training.'}
     except Exception as e:attempts.append({'stage':'YAHOO_CURRENT_ROUTE_PROBE','error':str(e)[:300]})
     try:
-        rows,meta=_v12ds.cache_history(symbol);attempts.append({'stage':'CACHE_CURRENT_ROUTE_PROBE','rows':len(rows),'end':rows[-1]['date'] if rows else None,'meta':meta})
+        rows,meta=_v12ds.cached_history(symbol);attempts.append({'stage':'CACHE_CURRENT_ROUTE_PROBE','rows':len(rows),'end':rows[-1]['date'] if rows else None,'meta':meta})
         if len(rows)>=60 and rows[-1]['date']>=fresh_cut:
             return {'symbol':symbol,'route':'CACHE_CURRENT_SHORT_HISTORY','rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'routeAvailable':True,'trainingEligible':False,'minimumTrainingRows':_v12ds.MIN_ROWS,'attempts':attempts,'policy':'Real fresh cached OHLCV route is available, but <520 rows remain excluded from model training.'}
     except Exception as e:attempts.append({'stage':'CACHE_CURRENT_ROUTE_PROBE','error':str(e)[:300]})
