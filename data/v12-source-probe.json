@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-V12-SOURCE-PROBE-1.0.0",
-  "generatedAt": "2026-08-15T10:36:41.136558+00:00",
+  "generatedAt": "2026-08-15T22:00:00.123847+00:00",
   "symbols": {
     "FPT": {
       "ok": true,
@@ -13,7 +13,7 @@
         "verified": true,
         "largestRawLogJump": 0.07245993972487662,
         "largestRawJumpDate": "2025-04-08",
-        "largestModelLogJump": 0.07905667813623862,
+        "largestModelLogJump": 0.0790570771222594,
         "largestModelJumpDate": "2020-05-13",
         "factorDates": 2596
       },
@@ -31,11 +31,11 @@
         "verified": true,
         "largestRawLogJump": 0.07270515590039621,
         "largestRawJumpDate": "2025-04-08",
-        "largestModelLogJump": 0.07270513243737822,
+        "largestModelLogJump": 0.07270513599880914,
         "largestModelJumpDate": "2025-04-08",
         "factorDates": 2587
       },
-      "crossSourceReturnMAD": 8.458568183875893e-05,
+      "crossSourceReturnMAD": 8.970443511807039e-05,
       "unexplainedModelJumps": 0
     },
     "HPG": {
@@ -85,7 +85,7 @@
         "verified": true,
         "largestRawLogJump": 0.07255459612580728,
         "largestRawJumpDate": "2020-03-16",
-        "largestModelLogJump": 0.07887500474406686,
+        "largestModelLogJump": 0.07887501007474422,
         "largestModelJumpDate": "2020-04-01",
         "factorDates": 2596
       },
@@ -121,7 +121,7 @@
         "verified": true,
         "largestRawLogJump": 0.0724633251079371,
         "largestRawJumpDate": "2021-01-19",
-        "largestModelLogJump": 0.0724634243137348,
+        "largestModelLogJump": 0.07246328564485757,
         "largestModelJumpDate": "2021-01-19",
         "factorDates": 2596
       },

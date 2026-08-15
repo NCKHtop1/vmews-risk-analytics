@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-EMBARGO-GATE-12.1.1",
-  "generatedAt": "2026-08-15T11:22:25.025019+00:00",
+  "generatedAt": "2026-08-15T22:52:08.243921+00:00",
   "status": "PASS",
   "horizons": [
     {
@@ -36,7 +36,7 @@
         "maxCalALabelMaturity": "2025-03-28",
         "calBStart": "2025-03-31",
         "calBEndExclusive": "2025-09-15",
-        "maxCalBLabelMaturity": "2025-09-10",
+        "maxCalBLabelMaturity": "2025-09-12",
         "sealedAuditStart": "2025-09-15",
         "policy": "Each row is admitted only if its actual symbol-specific T+h label maturity date is strictly before the next lock boundary; sampled-origin ordinal distance is not used as a proxy for h trading sessions."
       },
@@ -48,7 +48,7 @@
         "futureMetaRowsUsedForTraining": 0,
         "futureCalibrationRowsUsedForTraining": 0,
         "metaTrainMaxMaturity": "2024-10-10",
-        "calibrationMaxMaturity": "2025-09-10",
+        "calibrationMaxMaturity": "2025-09-12",
         "sealedAuditStart": "2025-09-15"
       }
     },

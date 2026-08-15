@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.2.0",
-  "generatedAt": "2026-08-15T11:22:24.582943+00:00",
+  "generatedAt": "2026-08-15T22:52:07.794482+00:00",
   "status": "PASS",
   "benchmark": "VNINDEX",
   "checks": {
@@ -27,9 +27,9 @@
     "prefetchedBeforeUniverse": true
   },
   "cacheFallbackAudit": null,
-  "maturedH5Records": 12481,
-  "benchmarkH5Available": 12329,
-  "benchmarkH5Coverage": 0.9878214886627674,
+  "maturedH5Records": 12472,
+  "benchmarkH5Available": 12366,
+  "benchmarkH5Coverage": 0.9915009621552278,
   "identityFailures": [],
   "semanticFailures": [],
   "targetAlignmentFailures": [],
