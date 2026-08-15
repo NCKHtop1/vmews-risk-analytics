@@ -1,0 +1,33 @@
+import itertools as _admissible_pbo_itertools
+from scipy.stats import spearmanr as _admissible_pbo_spearman
+
+def _pbo_metric(expert_pred,y,D,active):
+    # CSCV must evaluate the architecture path the production selection policy can actually choose.
+    # Rejected optional experts are not winner-take-all alternatives: they are admitted only after
+    # passing the separate 70-80% HAC/bootstrap/Bonferroni promotion rule.
+    candidates=[('NUMERICAL',),('REGIME',),('NUMERICAL','REGIME')]
+    running=['NUMERICAL','REGIME']
+    for name in [x for x in active if x not in {'NUMERICAL','REGIME'}]:
+        if name not in expert_pred:continue
+        running=running+[name];c=tuple(running)
+        if c not in candidates:candidates.append(c)
+    required=set(n for c in candidates for n in c)
+    common=np.isfinite(y)
+    for name in required:common&=np.isfinite(expert_pred[name])
+    idx=np.where(common)[0];odates=np.asarray(sorted(set(D[idx])))
+    excluded=sorted(set(expert_pred)-required)
+    if len(odates)<40 or len(idx)<2000:
+        return {'status':'INSUFFICIENT','pbo':1.0,'splits':0,'candidateCount':len(candidates),'candidates':[list(x) for x in candidates],'medianRankCorrelation':None,'candidatePolicy':'ADMISSIBLE_SELECTION_PATH','rejectedOptionalExcluded':excluded}
+    blocks=np.array_split(odates,8);block_of={d:i for i,b in enumerate(blocks) for d in b};rows_by_block=[np.asarray([k for k in idx if block_of.get(D[k])==b],int) for b in range(8)]
+    oos_percentiles=[];rank_corr=[];details=[]
+    for tr_blocks in _admissible_pbo_itertools.combinations(range(8),4):
+        tr=np.concatenate([rows_by_block[b] for b in tr_blocks]);te=np.concatenate([rows_by_block[b] for b in range(8) if b not in tr_blocks])
+        if len(tr)<500 or len(te)<500:continue
+        ins=[];outs=[]
+        for c in candidates:
+            M=np.column_stack([expert_pred[n] for n in c]);m=Ridge(alpha=20.0);m.fit(M[tr],y[tr]);pi=m.predict(M[tr]);po=m.predict(M[te]);ins.append(rank_stats(y[tr],pi,D[tr])['ic']);outs.append(rank_stats(y[te],po,D[te])['ic'])
+        best=int(np.argmax(ins));order=np.argsort(np.asarray(outs));rank=int(np.where(order==best)[0][0]);pct=(rank+.5)/len(candidates);oos_percentiles.append(float(pct));rc=_admissible_pbo_spearman(ins,outs).statistic if len(candidates)>=3 else None
+        if rc is not None and finite(rc):rank_corr.append(float(rc))
+        if len(details)<12:details.append({'trainBlocks':list(tr_blocks),'selected':list(candidates[best]),'selectedIS':float(ins[best]),'selectedOOS':float(outs[best]),'oosPercentile':float(pct)})
+    pbo=float(np.mean(np.asarray(oos_percentiles)<.5)) if oos_percentiles else 1.0;med=float(np.median(rank_corr)) if rank_corr else None
+    return {'status':'PASS' if oos_percentiles else 'INSUFFICIENT','method':'CSCV 8 blocks / 4 train blocks over the admissible production selection path; optional families appear only after pre-sealed promotion','pbo':pbo,'splits':len(oos_percentiles),'candidateCount':len(candidates),'candidates':[list(x) for x in candidates],'medianRankCorrelation':med,'oosWinnerPercentileMedian':float(np.median(oos_percentiles)) if oos_percentiles else None,'sampleSplits':details,'candidatePolicy':'ADMISSIBLE_SELECTION_PATH','rejectedOptionalExcluded':excluded}
