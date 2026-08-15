@@ -16,7 +16,17 @@ const badge=(await page.locator('#modelBadge').innerText()).trim();if(!badge.inc
 const decision=(await page.locator('#decision').innerText()).trim();if(!decision||decision==='—'||decision.includes('LOCKED'))throw new Error(`decision invalid: ${decision}`);
 for(const id of ['#close','#t1','#t3','#t5','#risk']){const t=(await page.locator(id).innerText()).trim();if(!t||t==='—')throw new Error(`${id} empty`)}
 const cards=page.locator('#forecastCards .forecastCard');if(await cards.count()!==5)throw new Error(`expected 5 forecast cards, got ${await cards.count()}`);
-for(let i=0;i<5;i++){const t=await cards.nth(i).innerText();if(t.includes('Chưa đủ điều kiện'))throw new Error(`forecast card ${i+1} not validated: ${t}`)}
+// Price promotion and direction-probability promotion are independent. T+4/T+5 may
+// legitimately show an abstaining P↑ label while the direct price horizon is validated.
+// Validate that every horizon card contains a released numeric price rather than treating
+// direction abstention text as a price-validation failure.
+for(let i=0;i<5;i++){
+  const t=(await cards.nth(i).innerText()).trim();
+  const lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const hasHorizon=lines.some(x=>x===`T+${i+1}`);
+  const hasPrice=lines.some(x=>/^\d{1,3}(?:\.\d{3})+$/.test(x));
+  if(!hasHorizon||!hasPrice||t.includes('LOCKED'))throw new Error(`forecast card ${i+1} price not released: ${t}`);
+}
 const proofText=await page.locator('#methodProof').innerText();for(const token of ['Nhìn trước tương lai','0 dòng','Sealed holdout','Walk-forward & embargo','T+1 · T+2 · T+3 · T+4 · T+5'])if(!proofText.includes(token))throw new Error(`method proof missing ${token}: ${proofText}`);
 const visible=await page.locator('body').innerText();for(const banned of ['VNStock ưu tiên cho OHLCV Việt Nam','không nội suy','whisker =','Completed EOD snapshot','không phát lệnh mua/bán','Missing rumor không được coi là neutral signal'])if(visible.includes(banned))throw new Error(`banned visible copy: ${banned}`);
 const canvas=page.locator('#chart');const box=await canvas.boundingBox();if(!box)throw new Error('chart canvas has no box');
