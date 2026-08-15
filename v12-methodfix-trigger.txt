@@ -1,3 +1,3 @@
-trigger=2026-08-15T01:05:00+07:00
-source_parent=f1059113cae52cc5ccec79311d5c6e7b1ef1957d
-reason=retry-after-sealed-holdout-numpy-runtime-fix-and-unit-pass
+trigger=2026-08-15T10:08:00+07:00
+source_parent=802d8a62a396a16292915b316292bd77d439b601
+reason=retry-after-full-data-numpy-json-serialization-fix-and-fast-gate-pass
