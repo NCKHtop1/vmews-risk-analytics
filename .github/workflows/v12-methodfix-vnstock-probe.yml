@@ -4,7 +4,9 @@ on:
   push:
     branches: [forecast-v12-methodfix]
     paths:
+      - 'scripts/v12_data_sources.py'
       - 'scripts/v12_vnstock_flow_fundamental_probe.py'
+      - 'requirements-v12.txt'
       - '.github/workflows/v12-methodfix-vnstock-probe.yml'
 permissions:
   contents: read
@@ -12,6 +14,8 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      V12_VNSTOCK_INTERVAL: '4.0'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
