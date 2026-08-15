@@ -1,0 +1,39 @@
+{
+  "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.2.0",
+  "generatedAt": "2026-08-15T11:22:24.582943+00:00",
+  "status": "PASS",
+  "benchmark": "VNINDEX",
+  "checks": {
+    "indexHistoryAudited": true,
+    "indexRouteExplicitAndAudited": true,
+    "eventIdentityComposite": true,
+    "eventKeysUnique": true,
+    "eventBenchmarkIdentityVNINDEX": true,
+    "benchmarkFieldsMaterialized": true,
+    "exactStockMaturityAlignment": true,
+    "noRawReturnFallbackWhenBenchmarkMissing": true,
+    "preEventBenchmarkAbstentionSafe": true,
+    "dailyARUsesAdjacentCAROnly": true,
+    "benchmarkH5CoverageAtLeast90Pct": true,
+    "summaryMatchesComputedCoverage": true,
+    "policyExactDate": true,
+    "policyExplicitlyAbstainsOnMissingBenchmark": true
+  },
+  "indexAudit": {
+    "route": "VNSTOCK_INDEX_PRIMARY",
+    "provider": "Vnstock Market.index OHLCV",
+    "rows": 1997,
+    "unitNormalization": "native",
+    "prefetchedBeforeUniverse": true
+  },
+  "cacheFallbackAudit": null,
+  "maturedH5Records": 12481,
+  "benchmarkH5Available": 12329,
+  "benchmarkH5Coverage": 0.9878214886627674,
+  "identityFailures": [],
+  "semanticFailures": [],
+  "targetAlignmentFailures": [],
+  "preEventFailures": [],
+  "dailyARFailures": [],
+  "policy": "Event identity is ticker+newsId. Abnormal returns are VNINDEX-relative from event origin to the exact stock maturity date. Missing post/pre benchmark observations abstain; raw stock returns are never substituted or relabelled as abnormal returns. Audited VNINDEX cache is accepted only when its integrity contract matches the training index audit."
+}

@@ -1,0 +1,141 @@
+{
+  "version": "VMEWS-V12-SOURCE-PROBE-1.0.0",
+  "generatedAt": "2026-08-15T10:36:41.136558+00:00",
+  "symbols": {
+    "FPT": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.07245993972487662,
+        "largestRawJumpDate": "2025-04-08",
+        "largestModelLogJump": 0.07905667813623862,
+        "largestModelJumpDate": "2020-05-13",
+        "factorDates": 2596
+      },
+      "crossSourceReturnMAD": 5.8890264103115056e-05,
+      "unexplainedModelJumps": 0
+    },
+    "VCB": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.07270515590039621,
+        "largestRawJumpDate": "2025-04-08",
+        "largestModelLogJump": 0.07270513243737822,
+        "largestModelJumpDate": "2025-04-08",
+        "factorDates": 2587
+      },
+      "crossSourceReturnMAD": 8.458568183875893e-05,
+      "unexplainedModelJumps": 0
+    },
+    "HPG": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.07266622967232032,
+        "largestRawJumpDate": "2025-04-03",
+        "largestModelLogJump": 0.07650752576550032,
+        "largestModelJumpDate": "2021-05-31",
+        "factorDates": 2596
+      },
+      "crossSourceReturnMAD": 0.00016035162279928045,
+      "unexplainedModelJumps": 0
+    },
+    "FRT": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.07267296033260937,
+        "largestRawJumpDate": "2022-03-08",
+        "largestModelLogJump": 0.07267300722218448,
+        "largestModelJumpDate": "2022-03-08",
+        "factorDates": 2163
+      },
+      "crossSourceReturnMAD": 2.9424199705183063e-05,
+      "unexplainedModelJumps": 0
+    },
+    "PNJ": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.07255459612580728,
+        "largestRawJumpDate": "2020-03-16",
+        "largestModelLogJump": 0.07887500474406686,
+        "largestModelJumpDate": "2020-04-01",
+        "factorDates": 2596
+      },
+      "crossSourceReturnMAD": 6.730556018411842e-05,
+      "unexplainedModelJumps": 0
+    },
+    "VIC": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.07258705931301518,
+        "largestRawJumpDate": "2020-03-20",
+        "largestModelLogJump": 0.07258705931301518,
+        "largestModelJumpDate": "2020-03-20",
+        "factorDates": 2596
+      },
+      "crossSourceReturnMAD": 0.0,
+      "unexplainedModelJumps": 0
+    },
+    "MBB": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_PRIMARY",
+      "corporateAction": {
+        "method": "VNSTOCK_RAW_YAHOO_CORPORATE_ACTION_FACTOR",
+        "verified": true,
+        "largestRawLogJump": 0.0724633251079371,
+        "largestRawJumpDate": "2021-01-19",
+        "largestModelLogJump": 0.0724634243137348,
+        "largestModelJumpDate": "2021-01-19",
+        "factorDates": 2596
+      },
+      "crossSourceReturnMAD": 3.448585589053629e-05,
+      "unexplainedModelJumps": 0
+    }
+  },
+  "index": {
+    "ok": true,
+    "rows": 1997,
+    "start": "2018-08-16",
+    "end": "2026-08-14",
+    "route": "VNSTOCK_INDEX_PRIMARY"
+  },
+  "passed": 7,
+  "total": 7
+}

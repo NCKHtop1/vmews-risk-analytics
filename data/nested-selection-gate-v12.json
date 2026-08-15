@@ -1,0 +1,419 @@
+{
+  "version": "VMEWS-NESTED-SELECTION-GATE-12.0.0",
+  "generatedAt": "2026-08-15T11:22:24.802695+00:00",
+  "status": "PASS",
+  "horizons": [
+    {
+      "horizon": 1,
+      "experts": {
+        "NUMERICAL": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "REGIME": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "EVENT": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "FLOW": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        }
+      },
+      "optional": {
+        "EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.4243353301739452
+        },
+        "FLOW": {
+          "status": "PASS",
+          "promoted": true,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.004712162358525322
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.9633763406809895
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.47959288675365824
+        }
+      },
+      "commonKindLock": true
+    },
+    {
+      "horizon": 2,
+      "experts": {
+        "NUMERICAL": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "REGIME": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "EVENT": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "FLOW": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32074
+        }
+      },
+      "optional": {
+        "EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.9824077470600263
+        },
+        "FLOW": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.3243313227716852
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.2643684255516645
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.5
+        }
+      },
+      "commonKindLock": true
+    },
+    {
+      "horizon": 3,
+      "experts": {
+        "NUMERICAL": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32069
+        },
+        "REGIME": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32069
+        },
+        "EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32069
+        },
+        "FLOW": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32069
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32069
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32069
+        }
+      },
+      "optional": {
+        "EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.9595131154786681
+        },
+        "FLOW": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.612614953336954
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.8186381646537765
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.8929283938214554
+        }
+      },
+      "commonKindLock": true
+    },
+    {
+      "horizon": 4,
+      "experts": {
+        "NUMERICAL": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32063
+        },
+        "REGIME": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32063
+        },
+        "EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32063
+        },
+        "FLOW": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32063
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32063
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 32063
+        }
+      },
+      "optional": {
+        "EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.9706069063156963
+        },
+        "FLOW": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.8947935192470968
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.08283971205119806
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.9771458773139835
+        }
+      },
+      "commonKindLock": true
+    },
+    {
+      "horizon": 5,
+      "experts": {
+        "NUMERICAL": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 31713
+        },
+        "REGIME": {
+          "status": "PASS",
+          "kind": "RIDGE",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 31713
+        },
+        "EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 31713
+        },
+        "FLOW": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 31713
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 31713
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "kind": "LGBM",
+          "selectionLockDate": "2023-11-13",
+          "predictionAvailabilityEndExclusive": "2024-10-14",
+          "selectionRows": 31713
+        }
+      },
+      "optional": {
+        "EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.6771937223236746
+        },
+        "FLOW": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.9978145541166425
+        },
+        "FUNDAMENTAL_EVENT": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.10123963918042389
+        },
+        "RUMOR": {
+          "status": "PASS",
+          "promoted": false,
+          "modelKindSelectionLock": "2023-11-13",
+          "testStart": "2023-11-13",
+          "testEndExclusive": "2024-10-14",
+          "pValue": 0.5
+        }
+      },
+      "commonKindLock": true
+    }
+  ],
+  "failures": [],
+  "policy": "Ridge/LightGBM kind selection is locked using chronological OOF origins 50%-70% only. Optional EVENT/FLOW/FUNDAMENTAL_EVENT/RUMOR incremental contribution is evaluated on the disjoint 70%-80% window with label-maturity purge and multiple-testing control. 80%-90% is distribution calibration; 90%-100% remains sealed audit."
+}

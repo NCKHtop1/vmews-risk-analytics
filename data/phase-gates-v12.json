@@ -1,0 +1,56 @@
+{
+  "version": "VMEWS-PHASE-GATES-12.6.0",
+  "generatedAt": "2026-08-15T11:22:23.741437+00:00",
+  "tests": 1682,
+  "passed": 1682,
+  "failed": 0,
+  "failures": [],
+  "phases": {
+    "1": {
+      "name": "Data foundation",
+      "status": "PASS",
+      "failed": 0
+    },
+    "2": {
+      "name": "Event Intelligence",
+      "status": "PASS",
+      "failed": 0
+    },
+    "3": {
+      "name": "Rumor Engine",
+      "status": "PASS",
+      "failed": 0
+    },
+    "4": {
+      "name": "Flow/Fundamental/Market regime",
+      "status": "PASS",
+      "failed": 0
+    },
+    "5": {
+      "name": "True ML forecast",
+      "status": "PASS",
+      "failed": 0
+    },
+    "6": {
+      "name": "Distribution",
+      "status": "PASS",
+      "failed": 0
+    },
+    "7": {
+      "name": "Full backtest",
+      "status": "PASS",
+      "failed": 0
+    },
+    "8": {
+      "name": "UI contract",
+      "status": "PASS",
+      "failed": 0
+    },
+    "9": {
+      "name": "Production preconditions",
+      "status": "PASS",
+      "failed": 0
+    }
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,992 @@
+{
+  "version": "VMEWS-FIXED-SEALED-HOLDOUT-GATE-12.1.0",
+  "generatedAt": "2026-08-15T11:22:24.954212+00:00",
+  "status": "PASS",
+  "checks": {
+    "T+1": true,
+    "T+2": true,
+    "T+3": true,
+    "T+4": true,
+    "T+5": true,
+    "backtestCarriesSealedHoldoutEvidence": true,
+    "allPriceHorizonsPromoted": true
+  },
+  "horizons": {
+    "T+1": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 1,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-09-15",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 17023,
+        "dates": 48,
+        "kindSelectionLockDate": "2023-11-13",
+        "predictionAvailabilityEndExclusive": "2024-10-14",
+        "metaTrainMaxMaturity": "2024-10-10",
+        "calibrationMaxLabelMaturity": "2025-09-10",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 17023,
+          "rankIC": 0.15952695725502558,
+          "spread": 0.010468810506780566,
+          "balancedAccuracy": 0.5349793402634416,
+          "mcc": 0.1287706190283103,
+          "brier": 0.2323784262774236,
+          "brierSkill": 0.01790218739539373,
+          "ece": 0.02913633074847931,
+          "scenarioMAE": 0.01328420038061339,
+          "scenarioMAEImprove": 0.00024103998850599773,
+          "scenarioRankIC": 0.16838499729163925,
+          "coverage20_80": 0.5458497327145626,
+          "intervalWidth": 0.01711195945106516,
+          "icDays": 47,
+          "icStd": 0.10603620596568633,
+          "icTStat": 10.31404045847613,
+          "icPositiveDayShare": 0.9574468085106383,
+          "icBootstrap95": [
+            0.12861747975379642,
+            0.18942496866941577
+          ],
+          "spreadDays": 48,
+          "spreadStd": 0.00734213101006259,
+          "spreadTStat": 9.878609721185159
+        },
+        "blocks": [
+          {
+            "start": "2025-09-15",
+            "end": "2025-12-01",
+            "n": 4397,
+            "metrics": {
+              "n": 4397,
+              "rankIC": 0.17347107743307957,
+              "spread": 0.010093644329436624,
+              "balancedAccuracy": 0.5300915621539953,
+              "mcc": 0.11430521303954463,
+              "brier": 0.21992465791944094,
+              "brierSkill": -0.002514657318187563,
+              "ece": 0.07596672852232826,
+              "scenarioMAE": 0.012377727987146548,
+              "scenarioMAEImprove": 0.00010245821280308043,
+              "scenarioRankIC": 0.16989003989265056,
+              "coverage20_80": 0.5694791903570616,
+              "intervalWidth": 0.01708287329174179,
+              "icDays": 12,
+              "icStd": 0.12909775320469882,
+              "icTStat": 4.654778449651171,
+              "icPositiveDayShare": 0.9166666666666666,
+              "icBootstrap95": [
+                0.10217341099495968,
+                0.24478791245123122
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.008675779775515473,
+              "spreadTStat": 4.0302325011644236
+            }
+          },
+          {
+            "start": "2025-12-08",
+            "end": "2026-02-23",
+            "n": 4156,
+            "metrics": {
+              "n": 4156,
+              "rankIC": 0.13523253147682693,
+              "spread": 0.00842432309497665,
+              "balancedAccuracy": 0.5394875634067099,
+              "mcc": 0.1494413883927795,
+              "brier": 0.2360239817808969,
+              "brierSkill": 0.021800506443242385,
+              "ece": 0.029185068791023703,
+              "scenarioMAE": 0.013673226445779375,
+              "scenarioMAEImprove": 0.0002565129627823959,
+              "scenarioRankIC": 0.17162724748521843,
+              "coverage20_80": 0.5356111645813282,
+              "intervalWidth": 0.017103355087972356,
+              "icDays": 11,
+              "icStd": 0.10993417624899154,
+              "icTStat": 4.079855615988895,
+              "icPositiveDayShare": 0.9090909090909091,
+              "icBootstrap95": [
+                0.07337181783807976,
+                0.2022488857104136
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.007008562393401186,
+              "spreadTStat": 4.163865512166585
+            }
+          },
+          {
+            "start": "2026-03-02",
+            "end": "2026-05-18",
+            "n": 4124,
+            "metrics": {
+              "n": 4124,
+              "rankIC": 0.15623936301432842,
+              "spread": 0.010993433347793298,
+              "balancedAccuracy": 0.5434394948018372,
+              "mcc": 0.15082746598649988,
+              "brier": 0.2353352321761869,
+              "brierSkill": 0.022421824915348276,
+              "ece": 0.030923299171622766,
+              "scenarioMAE": 0.013888231226975347,
+              "scenarioMAEImprove": 0.0003673827313103173,
+              "scenarioRankIC": 0.20341329472260322,
+              "coverage20_80": 0.5303103782735209,
+              "intervalWidth": 0.017133990862538417,
+              "icDays": 12,
+              "icStd": 0.11722529502519566,
+              "icTStat": 4.616998657582399,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.09499061834355627,
+                0.2238645663929255
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.00917761107592036,
+              "spreadTStat": 4.149486168129105
+            }
+          },
+          {
+            "start": "2026-05-25",
+            "end": "2026-08-10",
+            "n": 4346,
+            "metrics": {
+              "n": 4346,
+              "rankIC": 0.17114032161435086,
+              "spread": 0.012363841254915688,
+              "balancedAccuracy": 0.5261159846882347,
+              "mcc": 0.095850634867431,
+              "brier": 0.23868639297579333,
+              "brierSkill": 0.009113383290170418,
+              "ece": 0.019897899542883114,
+              "scenarioMAE": 0.013256115607683602,
+              "scenarioMAEImprove": 0.00023105511776522203,
+              "scenarioRankIC": 0.12409646337762065,
+              "coverage20_80": 0.5464795213989876,
+              "intervalWidth": 0.017128709113891402,
+              "icDays": 12,
+              "icStd": 0.0682855628681598,
+              "icTStat": 8.681885886539284,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.1333366179344627,
+                0.20917529309395042
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.003574976457494697,
+              "spreadTStat": 11.980387275186347
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+2": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 2,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-09-15",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 17023,
+        "dates": 48,
+        "kindSelectionLockDate": "2023-11-13",
+        "predictionAvailabilityEndExclusive": "2024-10-14",
+        "metaTrainMaxMaturity": "2024-10-11",
+        "calibrationMaxLabelMaturity": "2025-09-11",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 17023,
+          "rankIC": 0.15482258619683137,
+          "spread": 0.012781243926199106,
+          "balancedAccuracy": 0.543177136267216,
+          "mcc": 0.13136814906188507,
+          "brier": 0.244833932525926,
+          "brierSkill": 0.014874780506728857,
+          "ece": 0.022658475131200336,
+          "scenarioMAE": 0.01983191519376755,
+          "scenarioMAEImprove": 0.00030991517966205695,
+          "scenarioRankIC": 0.1473508538456258,
+          "coverage20_80": 0.5756329671620748,
+          "intervalWidth": 0.03081276370033461,
+          "icDays": 47,
+          "icStd": 0.1441491364319566,
+          "icTStat": 7.363278071438996,
+          "icPositiveDayShare": 0.851063829787234,
+          "icBootstrap95": [
+            0.11351627317273888,
+            0.19678687472745163
+          ],
+          "spreadDays": 48,
+          "spreadStd": 0.010193644309162137,
+          "spreadTStat": 8.68688888593468
+        },
+        "blocks": [
+          {
+            "start": "2025-09-15",
+            "end": "2025-12-01",
+            "n": 4397,
+            "metrics": {
+              "n": 4397,
+              "rankIC": 0.22330968459465494,
+              "spread": 0.01632055566543213,
+              "balancedAccuracy": 0.5608902857774658,
+              "mcc": 0.17468215489403774,
+              "brier": 0.24125554044696115,
+              "brierSkill": 0.030614411765696792,
+              "ece": 0.022204283943928062,
+              "scenarioMAE": 0.019076718445595834,
+              "scenarioMAEImprove": 0.0008504342855149005,
+              "scenarioRankIC": 0.21352541483519474,
+              "coverage20_80": 0.5785763020241074,
+              "intervalWidth": 0.030821392464605836,
+              "icDays": 12,
+              "icStd": 0.14860699103029626,
+              "icTStat": 5.205457924402364,
+              "icPositiveDayShare": 0.9166666666666666,
+              "icBootstrap95": [
+                0.14686830257634534,
+                0.3060768568900342
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.01052653052010766,
+              "spreadTStat": 5.370816446366115
+            }
+          },
+          {
+            "start": "2025-12-08",
+            "end": "2026-02-23",
+            "n": 4156,
+            "metrics": {
+              "n": 4156,
+              "rankIC": 0.1196966220123671,
+              "spread": 0.010120191780104863,
+              "balancedAccuracy": 0.5247606389180366,
+              "mcc": 0.07373941676949736,
+              "brier": 0.24737089400373313,
+              "brierSkill": 0.003690521661918078,
+              "ece": 0.018317234045536843,
+              "scenarioMAE": 0.019371846968783368,
+              "scenarioMAEImprove": 0.00021820402160765973,
+              "scenarioRankIC": 0.09813047847172764,
+              "coverage20_80": 0.5907122232916265,
+              "intervalWidth": 0.03077729508134836,
+              "icDays": 11,
+              "icStd": 0.11597823056911524,
+              "icTStat": 3.4229594807573642,
+              "icPositiveDayShare": 0.8181818181818182,
+              "icBootstrap95": [
+                0.0546830470850959,
+                0.18398874645386212
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.008610825202957681,
+              "spreadTStat": 4.071313940843141
+            }
+          },
+          {
+            "start": "2026-03-02",
+            "end": "2026-05-18",
+            "n": 4124,
+            "metrics": {
+              "n": 4124,
+              "rankIC": 0.13139794963155974,
+              "spread": 0.011782037192248608,
+              "balancedAccuracy": 0.5615667201726503,
+              "mcc": 0.18388554193824008,
+              "brier": 0.24929732311056652,
+              "brierSkill": 0.0019372532445756097,
+              "ece": 0.06307939319623887,
+              "scenarioMAE": 0.023037456428273526,
+              "scenarioMAEImprove": -0.00016666088587413697,
+              "scenarioRankIC": 0.13078074062762496,
+              "coverage20_80": 0.5140640155189137,
+              "intervalWidth": 0.030885765768866296,
+              "icDays": 12,
+              "icStd": 0.18142345757275058,
+              "icTStat": 2.50891398297792,
+              "icPositiveDayShare": 0.75,
+              "icBootstrap95": [
+                0.04154207821817589,
+                0.2292860550980263
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.013426708097296897,
+              "spreadTStat": 3.0397751832780457
+            }
+          },
+          {
+            "start": "2026-05-25",
+            "end": "2026-08-10",
+            "n": 4346,
+            "metrics": {
+              "n": 4346,
+              "rankIC": 0.14195892486670494,
+              "spread": 0.012902191067010819,
+              "balancedAccuracy": 0.5233920582106716,
+              "mcc": 0.08028240715448291,
+              "brier": 0.2417928729995534,
+              "brierSkill": 0.017433485972912277,
+              "ece": 0.01706966009843263,
+              "scenarioMAE": 0.017994131391108246,
+              "scenarioMAEImprove": 0.0004029434359208439,
+              "scenarioRankIC": 0.14306376276756758,
+              "coverage20_80": 0.616658996778647,
+              "intervalWidth": 0.030768678650491446,
+              "icDays": 12,
+              "icStd": 0.1119705640967474,
+              "icTStat": 4.391869817580536,
+              "icPositiveDayShare": 0.9166666666666666,
+              "icBootstrap95": [
+                0.08255427682824093,
+                0.2006954549151368
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.007500299008465196,
+              "spreadTStat": 5.959029215182453
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 3,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+3": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 3,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-09-15",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 17011,
+        "dates": 48,
+        "kindSelectionLockDate": "2023-11-13",
+        "predictionAvailabilityEndExclusive": "2024-10-14",
+        "metaTrainMaxMaturity": "2024-10-11",
+        "calibrationMaxLabelMaturity": "2025-09-12",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 17011,
+          "rankIC": 0.138382623028827,
+          "spread": 0.012816188005334364,
+          "balancedAccuracy": 0.5575230733384613,
+          "mcc": 0.11682225898020537,
+          "brier": 0.24576350163038377,
+          "brierSkill": 0.0095396688701479,
+          "ece": 0.050867722330693185,
+          "scenarioMAE": 0.02347535888343652,
+          "scenarioMAEImprove": 0.0010141849160326677,
+          "scenarioRankIC": 0.13469373594785186,
+          "coverage20_80": 0.6106049027100112,
+          "intervalWidth": 0.04094045288333618,
+          "icDays": 47,
+          "icStd": 0.10890021684076225,
+          "icTStat": 8.711676557727786,
+          "icPositiveDayShare": 0.8936170212765957,
+          "icBootstrap95": [
+            0.10701564660836106,
+            0.16799989033775423
+          ],
+          "spreadDays": 48,
+          "spreadStd": 0.00990103596032105,
+          "spreadTStat": 8.968067128956935
+        },
+        "blocks": [
+          {
+            "start": "2025-09-15",
+            "end": "2025-12-01",
+            "n": 4397,
+            "metrics": {
+              "n": 4397,
+              "rankIC": 0.17670963790339012,
+              "spread": 0.01577264434281612,
+              "balancedAccuracy": 0.5895525586445327,
+              "mcc": 0.18113571376779125,
+              "brier": 0.23813611948772095,
+              "brierSkill": 0.04675731460797894,
+              "ece": 0.027774075129975224,
+              "scenarioMAE": 0.023175250071382755,
+              "scenarioMAEImprove": 0.0028247783184869313,
+              "scenarioRankIC": 0.25419536694641526,
+              "coverage20_80": 0.6170115988173754,
+              "intervalWidth": 0.0410373768477362,
+              "icDays": 12,
+              "icStd": 0.13268326362369606,
+              "icTStat": 4.613544507072395,
+              "icPositiveDayShare": 0.8333333333333334,
+              "icBootstrap95": [
+                0.10381944969687232,
+                0.2500781238190565
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.011792202078852692,
+              "spreadTStat": 4.633404547987413
+            }
+          },
+          {
+            "start": "2025-12-08",
+            "end": "2026-02-23",
+            "n": 4156,
+            "metrics": {
+              "n": 4156,
+              "rankIC": 0.12987204918369086,
+              "spread": 0.011677273112522946,
+              "balancedAccuracy": 0.5798762185640381,
+              "mcc": 0.17325853296826807,
+              "brier": 0.24128176467669668,
+              "brierSkill": 0.02638702533733961,
+              "ece": 0.043994951135260044,
+              "scenarioMAE": 0.023056958184128628,
+              "scenarioMAEImprove": 0.000995666168645215,
+              "scenarioRankIC": 0.18516479955070453,
+              "coverage20_80": 0.615255052935515,
+              "intervalWidth": 0.04088179544595309,
+              "icDays": 11,
+              "icStd": 0.09608793944173864,
+              "icTStat": 4.482735922941246,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.07574574848686372,
+                0.1849589931113903
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.008235641646486434,
+              "spreadTStat": 4.9117315184243235
+            }
+          },
+          {
+            "start": "2026-03-02",
+            "end": "2026-05-18",
+            "n": 4124,
+            "metrics": {
+              "n": 4124,
+              "rankIC": 0.10336788296099814,
+              "spread": 0.008012700213973526,
+              "balancedAccuracy": 0.5489080475400473,
+              "mcc": 0.1025971764146324,
+              "brier": 0.2524978799988076,
+              "brierSkill": -0.01558292473281453,
+              "ece": 0.07320646480577565,
+              "scenarioMAE": 0.025924145305448416,
+              "scenarioMAEImprove": 0.00012315143585439614,
+              "scenarioRankIC": 0.05035395319191702,
+              "coverage20_80": 0.5681377303588748,
+              "intervalWidth": 0.04095058328005709,
+              "icDays": 12,
+              "icStd": 0.12832354133678883,
+              "icTStat": 2.7904221360193064,
+              "icPositiveDayShare": 0.75,
+              "icBootstrap95": [
+                0.0387854597558585,
+                0.17346706832844608
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.01021253011022977,
+              "spreadTStat": 2.7179168583343176
+            }
+          },
+          {
+            "start": "2026-05-25",
+            "end": "2026-08-10",
+            "n": 4334,
+            "metrics": {
+              "n": 4334,
+              "rankIC": 0.14287170758013418,
+              "spread": 0.015802134352024863,
+              "balancedAccuracy": 0.5188765572249658,
+              "mcc": 0.037406394432379635,
+              "brier": 0.2513913561918585,
+              "brierSkill": -0.02929074265194731,
+              "ece": 0.07792528555837593,
+              "scenarioMAE": 0.02185091415536704,
+              "scenarioMAEImprove": 8.529106052590496e-05,
+              "scenarioRankIC": 0.06837146174523306,
+              "coverage20_80": 0.6400553760959853,
+              "intervalWidth": 0.04088872881370537,
+              "icDays": 12,
+              "icStd": 0.06398073463763526,
+              "icTStat": 7.7354865615235475,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.10871823912237905,
+                0.17338845964688945
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.007863349940167703,
+              "spreadTStat": 6.961434954312318
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+4": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 4,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-09-15",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 16995,
+        "dates": 48,
+        "kindSelectionLockDate": "2023-11-13",
+        "predictionAvailabilityEndExclusive": "2024-10-14",
+        "metaTrainMaxMaturity": "2024-10-11",
+        "calibrationMaxLabelMaturity": "2025-09-12",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 16995,
+          "rankIC": 0.10271498135803872,
+          "spread": 0.01059329170813546,
+          "balancedAccuracy": 0.5350082107093409,
+          "mcc": 0.10668231333108366,
+          "brier": 0.2455072111192079,
+          "brierSkill": -0.006709202173591722,
+          "ece": 0.061288645963455825,
+          "scenarioMAE": 0.027598689962815403,
+          "scenarioMAEImprove": 0.0004256779103477548,
+          "scenarioRankIC": 0.08780658958033741,
+          "coverage20_80": 0.599117387466902,
+          "intervalWidth": 0.0471943904019972,
+          "icDays": 47,
+          "icStd": 0.10198768732677936,
+          "icTStat": 6.904543606534417,
+          "icPositiveDayShare": 0.8085106382978723,
+          "icBootstrap95": [
+            0.07552367757480845,
+            0.13275107843273018
+          ],
+          "spreadDays": 48,
+          "spreadStd": 0.010269620779715563,
+          "spreadTStat": 7.1465616312258415
+        },
+        "blocks": [
+          {
+            "start": "2025-09-15",
+            "end": "2025-12-01",
+            "n": 4397,
+            "metrics": {
+              "n": 4397,
+              "rankIC": 0.12796810244851478,
+              "spread": 0.01290425284707803,
+              "balancedAccuracy": 0.5466121779035783,
+              "mcc": 0.12494113417435565,
+              "brier": 0.2439275482184539,
+              "brierSkill": 0.012670345443076991,
+              "ece": 0.03364153592336263,
+              "scenarioMAE": 0.02632801642077114,
+              "scenarioMAEImprove": 0.0010974826024892081,
+              "scenarioRankIC": 0.12504851495751187,
+              "coverage20_80": 0.6292926995678872,
+              "intervalWidth": 0.04726806436389279,
+              "icDays": 12,
+              "icStd": 0.12075351822895362,
+              "icTStat": 3.671069107382106,
+              "icPositiveDayShare": 0.8333333333333334,
+              "icBootstrap95": [
+                0.06627714132796804,
+                0.19786579711478175
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.012129337444234797,
+              "spreadTStat": 3.685415080191057
+            }
+          },
+          {
+            "start": "2025-12-08",
+            "end": "2026-02-23",
+            "n": 4155,
+            "metrics": {
+              "n": 4155,
+              "rankIC": 0.08125653884139918,
+              "spread": 0.007468640076230306,
+              "balancedAccuracy": 0.5330699674598661,
+              "mcc": 0.10353658994121834,
+              "brier": 0.24176306457737176,
+              "brierSkill": 0.0092199599727959,
+              "ece": 0.04121413523139312,
+              "scenarioMAE": 0.028625020625150925,
+              "scenarioMAEImprove": 0.0006326535159129065,
+              "scenarioRankIC": 0.15970990434997953,
+              "coverage20_80": 0.5819494584837546,
+              "intervalWidth": 0.047149219399731,
+              "icDays": 11,
+              "icStd": 0.1029839135282848,
+              "icTStat": 2.6168888117253646,
+              "icPositiveDayShare": 0.7272727272727273,
+              "icBootstrap95": [
+                0.023173540408661174,
+                0.13898434714053273
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.010952775606551939,
+              "spreadTStat": 2.3621526707326392
+            }
+          },
+          {
+            "start": "2026-03-02",
+            "end": "2026-05-18",
+            "n": 4124,
+            "metrics": {
+              "n": 4124,
+              "rankIC": 0.09158502508238665,
+              "spread": 0.0093089308408997,
+              "balancedAccuracy": 0.5334738955823293,
+              "mcc": 0.10018733537474198,
+              "brier": 0.25369717938032543,
+              "brierSkill": -0.03144083951535692,
+              "ece": 0.08605789494183555,
+              "scenarioMAE": 0.030655274752118596,
+              "scenarioMAEImprove": -0.00042482690124523437,
+              "scenarioRankIC": 0.017410501290394707,
+              "coverage20_80": 0.5482541222114452,
+              "intervalWidth": 0.04727966360825366,
+              "icDays": 12,
+              "icStd": 0.12892818070846956,
+              "icTStat": 2.4607485467254864,
+              "icPositiveDayShare": 0.6666666666666666,
+              "icBootstrap95": [
+                0.029100406678260946,
+                0.16504802664354842
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.011628821175430907,
+              "spreadTStat": 2.773031064343578
+            }
+          },
+          {
+            "start": "2026-05-25",
+            "end": "2026-08-10",
+            "n": 4319,
+            "metrics": {
+              "n": 4319,
+              "rankIC": 0.10826205551680095,
+              "spread": 0.012691343068333805,
+              "balancedAccuracy": 0.5201286394961211,
+              "mcc": 0.07479723253316894,
+              "brier": 0.24289718045171452,
+              "brierSkill": -0.02862241313931624,
+              "ece": 0.09124551564834857,
+              "scenarioMAE": 0.024986370442388953,
+              "scenarioMAEImprove": 0.00047187800087711285,
+              "scenarioRankIC": 0.03499425139897494,
+              "coverage20_80": 0.6334799722157907,
+              "intervalWidth": 0.04708141851067041,
+              "icDays": 12,
+              "icStd": 0.036425924441549656,
+              "icTStat": 10.295710187827112,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.08873685036416716,
+                0.12898037208985388
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.005023091149374246,
+              "spreadTStat": 8.752399809977433
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 3,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+5": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 5,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-09-15",
+        "sealedAuditEnd": "2026-08-03",
+        "rows": 16649,
+        "dates": 47,
+        "kindSelectionLockDate": "2023-11-13",
+        "predictionAvailabilityEndExclusive": "2024-10-14",
+        "metaTrainMaxMaturity": "2024-10-11",
+        "calibrationMaxLabelMaturity": "2025-09-12",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 16649,
+          "rankIC": 0.09878861773223568,
+          "spread": 0.01134110182166933,
+          "balancedAccuracy": 0.5251207972319855,
+          "mcc": 0.06826073164675545,
+          "brier": 0.24429461010939954,
+          "brierSkill": -0.00712688475853307,
+          "ece": 0.05776943466304558,
+          "scenarioMAE": 0.03455997709924621,
+          "scenarioMAEImprove": 0.00035963237742386855,
+          "scenarioRankIC": 0.07412036818973369,
+          "coverage20_80": 0.5837587843113701,
+          "intervalWidth": 0.057788107946508835,
+          "icDays": 47,
+          "icStd": 0.09741798918343268,
+          "icTStat": 6.95211066559809,
+          "icPositiveDayShare": 0.851063829787234,
+          "icBootstrap95": [
+            0.06999093815890929,
+            0.12621865970212467
+          ],
+          "spreadDays": 47,
+          "spreadStd": 0.013822708266142882,
+          "spreadTStat": 5.624851178244517
+        },
+        "blocks": [
+          {
+            "start": "2025-09-15",
+            "end": "2025-12-01",
+            "n": 4397,
+            "metrics": {
+              "n": 4397,
+              "rankIC": 0.10532722131028883,
+              "spread": 0.01479430042172368,
+              "balancedAccuracy": 0.528516199741765,
+              "mcc": 0.08413974369253344,
+              "brier": 0.24099925438874728,
+              "brierSkill": 0.0006508736571190221,
+              "ece": 0.04952393325036156,
+              "scenarioMAE": 0.03255840328328816,
+              "scenarioMAEImprove": 0.0007696714766617374,
+              "scenarioRankIC": 0.1343341538831389,
+              "coverage20_80": 0.6158744598589948,
+              "intervalWidth": 0.05781141752445429,
+              "icDays": 12,
+              "icStd": 0.09562047041700286,
+              "icTStat": 3.8157540521162767,
+              "icPositiveDayShare": 0.75,
+              "icBootstrap95": [
+                0.05588064996866136,
+                0.15900653473418525
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.0126638199665291,
+              "spreadTStat": 4.046880018918374
+            }
+          },
+          {
+            "start": "2025-12-08",
+            "end": "2026-02-23",
+            "n": 4155,
+            "metrics": {
+              "n": 4155,
+              "rankIC": 0.10365060021197164,
+              "spread": 0.009912824182049668,
+              "balancedAccuracy": 0.5304472894848342,
+              "mcc": 0.09107290803349832,
+              "brier": 0.24472922845662076,
+              "brierSkill": 0.01206389034247457,
+              "ece": 0.01669488013353606,
+              "scenarioMAE": 0.03420582203560117,
+              "scenarioMAEImprove": 0.0004941234088301494,
+              "scenarioRankIC": 0.12537088022232584,
+              "coverage20_80": 0.5809867629362214,
+              "intervalWidth": 0.05773617825148022,
+              "icDays": 12,
+              "icStd": 0.05528184994419866,
+              "icTStat": 6.495010785035576,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.07403360888484382,
+                0.13244775708554402
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.009211239121993151,
+              "spreadTStat": 3.7279490636200614
+            }
+          },
+          {
+            "start": "2026-03-02",
+            "end": "2026-05-18",
+            "n": 4124,
+            "metrics": {
+              "n": 4124,
+              "rankIC": 0.07577347427241243,
+              "spread": 0.00423574789070216,
+              "balancedAccuracy": 0.540202440538548,
+              "mcc": 0.09856980964079902,
+              "brier": 0.2463536328679734,
+              "brierSkill": -0.016041221227540037,
+              "ece": 0.08716149307087107,
+              "scenarioMAE": 0.039136755463172385,
+              "scenarioMAEImprove": 0.00011952444460217038,
+              "scenarioRankIC": 0.05285158907540839,
+              "coverage20_80": 0.532007759456838,
+              "intervalWidth": 0.057870811486448945,
+              "icDays": 12,
+              "icStd": 0.09687227558265483,
+              "icTStat": 2.7096195793160636,
+              "icPositiveDayShare": 0.8333333333333334,
+              "icBootstrap95": [
+                0.016176096055073294,
+                0.12439673824917198
+              ],
+              "spreadDays": 12,
+              "spreadStd": 0.010460581014121168,
+              "spreadTStat": 1.40270039395421
+            }
+          },
+          {
+            "start": "2026-05-25",
+            "end": "2026-08-03",
+            "n": 3973,
+            "metrics": {
+              "n": 3973,
+              "rankIC": 0.11145904398900028,
+              "spread": 0.0168833923349775,
+              "balancedAccuracy": 0.5025223274376242,
+              "mcc": 0.006541071569979881,
+              "brier": 0.24534984041764146,
+              "brierSkill": -0.038420444710892676,
+              "ece": 0.09335137260192683,
+              "scenarioMAE": 0.03239481233342216,
+              "scenarioMAEImprove": 5.575891206566208e-05,
+              "scenarioRankIC": -0.00320693989193874,
+              "coverage20_80": 0.6048326201862573,
+              "intervalWidth": 0.05773077249971919,
+              "icDays": 11,
+              "icStd": 0.13791795437122836,
+              "icTStat": 2.680345935295784,
+              "icPositiveDayShare": 0.8181818181818182,
+              "icBootstrap95": [
+                0.03127272944775565,
+                0.18118296248407498
+              ],
+              "spreadDays": 11,
+              "spreadStd": 0.019433802440354572,
+              "spreadTStat": 2.8813649688650984
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    }
+  },
+  "policy": "A numerical forecast may be published only when all five horizons pass the fixed 90-100% sealed holdout for the current training run. The holdout labels cannot participate in model-family selection, expert promotion, meta fitting or calibration. This is a model-blind evaluation partition, not a claim that those historical dates were never inspected during earlier V12 development. Literal maturity-aware walk-forward replay and all other model-risk gates must also pass."
+}
