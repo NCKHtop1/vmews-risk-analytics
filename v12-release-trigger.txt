@@ -1,6 +1,6 @@
-Retrigger immutable V12.1 release after browser-smoke semantics fix for independent direction abstention.
+Retrigger immutable V12.1 release after browser-smoke geometry robustness fix.
 Persisted commit: eabba5e7ee185954a31ee864c069c3ae37b3acfd
 Full source: 554aa0b036fd419d92547e1042982ec29044d6eb
-Browser smoke fix: be209e13d4e80a3ab53f01a584cd8bdec7c03de7
+Browser smoke fixes: be209e13d4e80a3ab53f01a584cd8bdec7c03de7, 8fd415ae3cad4396165c253bdd2f4ade0dfe6193
 Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.5.0
 UI assets: forecast-final.html + forecast-polish-v12.js
