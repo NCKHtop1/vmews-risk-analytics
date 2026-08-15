@@ -1,0 +1,129 @@
+{
+  "version": "VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.4.0",
+  "generatedAt": "2026-08-15T11:34:29.553685+00:00",
+  "sourceCommit": "ab9e0f5e5081cf68126e5488818ce52621316c78",
+  "modelVersion": "VMEWS-FORECAST-12.0.0",
+  "asOf": "2026-08-14",
+  "promotion": {
+    "status": "PASS",
+    "directPriceHorizons": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "directionHorizons": [
+      1,
+      2,
+      3
+    ],
+    "exactTargetPrice": false,
+    "calibratedScenarioPrice": true,
+    "rule": "All five direct price horizons must pass positive-skill ranking + quantile scenario + CSCV/PBO + embargoed literal walk-forward generalization gates. Probability-up is rendered only when the independent positive-Brier direction gate also passes."
+  },
+  "phaseGateVersion": "VMEWS-PHASE-GATES-12.6.0",
+  "benchmarkGate": {
+    "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.2.0",
+    "benchmark": "VNINDEX",
+    "status": "PASS",
+    "h5Coverage": 0.9878214886627674
+  },
+  "activeFlowGate": {
+    "version": "VMEWS-ACTIVE-FLOW-GATE-12.0.0",
+    "mode": "ABSTAIN",
+    "status": "PASS"
+  },
+  "sectorGate": {
+    "version": "VMEWS-SECTOR-PIT-GATE-12.1.0",
+    "status": "PASS",
+    "mode": "ABSTAIN"
+  },
+  "nestedSelectionGate": {
+    "version": "VMEWS-NESTED-SELECTION-GATE-12.0.0",
+    "status": "PASS"
+  },
+  "blindHoldoutGate": {
+    "version": "VMEWS-FIXED-SEALED-HOLDOUT-GATE-12.1.0",
+    "status": "PASS"
+  },
+  "embargoGate": {
+    "version": "VMEWS-EMBARGO-GATE-12.1.1",
+    "status": "PASS"
+  },
+  "files": {
+    "forecast-final.html": {
+      "sha256": "42dba6269cba6a7d17deb667995e20a5aa81c8403f1f5664786f2903c09de299",
+      "bytes": 12003
+    },
+    "forecast-final-v12.js": {
+      "sha256": "034856c2e791f21c08d4469a00e2d8f6ccc9ff04d4d03f1861aa46e245b6a320",
+      "bytes": 20305
+    },
+    "data/forecast-model-v12.json": {
+      "sha256": "856251ef1e9ecdc611234f71a6aa45e6f461d0c7abe54b1ee8b921ff9426b12a",
+      "bytes": 181685
+    },
+    "data/forecast-current-v12.json": {
+      "sha256": "b8fc905b8ab309d4559ce56dd29aedefe1d7e988af055829e37dd75c42fbf684",
+      "bytes": 2183364
+    },
+    "data/forecast-dashboard-v12.json": {
+      "sha256": "f6a6ae6aae1c454f0c4c05e31c0f367ea27895dc7c1df944b123cc289a88d561",
+      "bytes": 7402904
+    },
+    "data/forecast-backtest-v12.json": {
+      "sha256": "7e5a044ac6eeed4bdeb84ac3ab95559b75c21842f99cdb7129163263510fe7ac",
+      "bytes": 6429157
+    },
+    "data/data-audit-v12.json": {
+      "sha256": "e166388ea4338c9e69aba670b89250a42ab42afc485d173e0665e39e4260e2b8",
+      "bytes": 517471
+    },
+    "data/event-intelligence-v12.json": {
+      "sha256": "fada1bdaab7dad03414398d174f8713b1dd1eef2f425635a9ea92b1861189c1a",
+      "bytes": 32452823
+    },
+    "data/flow-v12.json": {
+      "sha256": "afdb2bf7bfd5c46f38329fd69bc88eeb39b4676187141926941d0fc67fb04c24",
+      "bytes": 40014422
+    },
+    "data/flow-audit-v12.json": {
+      "sha256": "9e94cd6c824cd6c5aee5e8070cd4079542a9c1e8409a6a23e4b139b043330cd1",
+      "bytes": 164498
+    },
+    "data/phase-gates-v12.json": {
+      "sha256": "3d50b6da6a2444b52a8d662baec3ee101eeaf20f18ef37a50c19aa76e0f018be",
+      "bytes": 1055
+    },
+    "data/benchmark-gate-v12.json": {
+      "sha256": "63ba12a4e90b3239383e460e05f12c8a9099618e03df194e54d738603632728e",
+      "bytes": 1581
+    },
+    "data/active-flow-audit-v12.json": {
+      "sha256": "edbce59c6107d486dca2365ade804ddd9a51aa618d5d27a775a53c61baf07db0",
+      "bytes": 1564
+    },
+    "data/active-flow-gate-v12.json": {
+      "sha256": "c20bc7f89613f1e6f0ecbbab21e12e65410c7bed717d1ce0cc38c54820f3164c",
+      "bytes": 2230
+    },
+    "data/sector-gate-v12.json": {
+      "sha256": "f5a3c071262aab46b262168c345dd5bb4cb8bbbc3a767fc84ccfbdd9577b4f64",
+      "bytes": 2810
+    },
+    "data/nested-selection-gate-v12.json": {
+      "sha256": "1231bc329141acb12abf433c3386e2879d481401064a2be7db3fdcd5e4d9fd23",
+      "bytes": 13068
+    },
+    "data/blind-holdout-gate-v12.json": {
+      "sha256": "e4d44dc908adc375d4fbd6979de31c187ae9f519d239937e827a91fcbb4a33d4",
+      "bytes": 40430
+    },
+    "data/embargo-gate-v12.json": {
+      "sha256": "9114936753e10e5cbb4b4ccccf2ed47650f0918b9a45d0ec5ccc621abf0d72df",
+      "bytes": 10391
+    }
+  },
+  "policy": "All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity. Event-study abnormal returns are VNINDEX-relative only; missing benchmark observations abstain. Current sector taxonomy is descriptive only unless PIT-certified. No numerical price is released unless all T+1..T+5 horizons pass frozen 90-100% blind holdout, nested pre-audit model selection, maturity-aware walk-forward replay, PBO/generalization, distribution and embargo gates."
+}
