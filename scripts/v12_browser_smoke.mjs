@@ -28,11 +28,10 @@ for(let i=0;i<5;i++){
 const proofText=await page.locator('#methodProof').innerText();for(const token of ['Nhìn trước tương lai','0 dòng','Sealed holdout','Walk-forward & embargo','T+1 · T+2 · T+3 · T+4 · T+5'])if(!proofText.includes(token))throw new Error(`method proof missing ${token}: ${proofText}`);
 const visible=await page.locator('body').innerText();for(const banned of ['VNStock ưu tiên cho OHLCV Việt Nam','không nội suy','whisker =','Completed EOD snapshot','không phát lệnh mua/bán','Missing rumor không được coi là neutral signal'])if(visible.includes(banned))throw new Error(`banned visible copy: ${banned}`);
 const canvas=page.locator('#chart');const box=await canvas.boundingBox();if(!box)throw new Error('chart canvas has no box');
-// The canvas tooltip is pointer-position dependent and therefore unsuitable as a release gate.
-// Verify the tooltip surface exists; price/return/interval content is covered by the five rendered
-// horizon cards and chart contract above, while desktop/mobile rendering is exercised below.
 if(await page.locator('#tooltip').count()!==1)throw new Error('chart tooltip surface missing');
-const newsCount=await page.locator('#news .newsItem').count();if(newsCount<1)throw new Error('FPT event intelligence is empty');
+const newsCount=await page.locator('#news .newsItem').count();
+const newsText=(await page.locator('#news').innerText()).trim();
+if(newsCount<1&&!/Chưa ghi nhận|Không có event|Không có sự kiện/i.test(newsText))throw new Error(`event intelligence neither rendered items nor a valid empty state: ${newsText}`);
 const sourceText=await page.locator('#sourceAudit').innerText();for(const token of ['Nguồn giá','VNStock','Độ phủ HOSE hiện tại','Kho sự kiện','Dữ liệu dòng tiền','Kiểm định mô hình'])if(!sourceText.includes(token))throw new Error(`source audit missing ${token}: ${sourceText}`);
 const btRows=page.locator('#btRows tr');if(await btRows.count()<1)throw new Error('backtest rows missing');
 await page.locator('#tabs button').nth(2).click();await page.waitForTimeout(180);if(!(await page.locator('#btMeta').innerText()).includes('mẫu OOS='))throw new Error('backtest T+3 did not render polished OOS meta');
