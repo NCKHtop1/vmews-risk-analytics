@@ -56,11 +56,11 @@ def _history_window(years=8):
 
 def _provider_history(symbol,source,start,end):
     _throttle_vnstock()
-    from vnstock import Vnstock
-    stock=Vnstock().stock(symbol=symbol,source=source)
-    df=stock.quote.history(start=start,end=end,interval="1D")
+    from vnstock.api.quote import Quote
+    quote=Quote(symbol=symbol,source=source,show_log=False)
+    df=quote.history(start=start,end=end,interval="1D")
     rows,scale=_normalize_df(df,symbol,f"Vnstock {source}")
-    return rows,{"source":"VNSTOCK","provider":f"{source} Quote.history","rows":len(rows),"unitNormalization":"x1000_to_VND" if scale==1000.0 else "VND","providerCode":source}
+    return rows,{"source":"VNSTOCK","provider":f"{source} Quote.history","rows":len(rows),"unitNormalization":"x1000_to_VND" if scale==1000.0 else "VND","providerCode":source,"api":"vnstock.api.quote.Quote"}
 
 def vnstock_history(symbol,years=8):
     start,end=_history_window(years); errors=[]
@@ -209,4 +209,4 @@ def source_audit_summary(audits,failures):
     for a in audits.values():
         r=a.get("route","UNKNOWN"); routes[r]=routes.get(r,0)+1; x=a.get("crossSourceReturnMAD")
         if isinstance(x,(int,float)) and math.isfinite(x):mad.append(float(x))
-    return {"version":"VMEWS-DATA-AUDIT-12.0.1","generatedAt":datetime.now(timezone.utc).isoformat(),"policy":["VNStock 4.0.4 Unified Market is the primary Vietnamese-equity OHLCV route.","If the primary route fails a quality gate, explicit VCI/KBS routes may recover only after the same return and corporate-action checks pass.","Yahoo adjusted data is used as corporate-action reference and fallback.","A previous validated cache is last-resort only.","No synthetic history padding is allowed."],"symbolsPassed":len(audits),"symbolsFailed":len(failures),"routes":routes,"crossSourceMedianReturnMAD":statistics.median(mad) if mad else None,"failures":failures,"symbols":audits}
+    return {"version":"VMEWS-DATA-AUDIT-12.0.2","generatedAt":datetime.now(timezone.utc).isoformat(),"policy":["VNStock Unified Market is the primary Vietnamese-equity OHLCV route.","Explicit VCI/KBS recovery uses the supported vnstock.api.quote.Quote adapter and is admitted only after the same return and corporate-action checks pass.","Yahoo adjusted data is used as corporate-action reference and fallback.","A previous validated cache is last-resort only.","No synthetic history padding is allowed."],"symbolsPassed":len(audits),"symbolsFailed":len(failures),"routes":routes,"crossSourceMedianReturnMAD":statistics.median(mad) if mad else None,"failures":failures,"symbols":audits}
