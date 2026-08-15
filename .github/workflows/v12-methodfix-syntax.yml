@@ -80,7 +80,7 @@ jobs:
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
       - name: Trigger clean full only after fast PASS on this HEAD
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[no-full]')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
