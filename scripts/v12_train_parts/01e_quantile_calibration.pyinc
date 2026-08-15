@@ -6,11 +6,18 @@ class _QuantileLayer:
         x=np.asarray(score,float).reshape(-1,1);q20=np.asarray(self.models[.2].predict(x),float);q50=np.asarray(self.models[.5].predict(x),float);q80=np.asarray(self.models[.8].predict(x),float);stack=np.sort(np.column_stack([q20,q50,q80]),axis=1);return stack[:,0],stack[:,1],stack[:,2]
 
 def _fit_quantile_model(alpha,x,y):
+    # The calibration input is the already-fitted direct return score. Scenario quantiles must
+    # therefore remain non-decreasing in that score; otherwise an unconstrained 1-D tree can
+    # destroy the ranking signal while merely remapping it into conditional quantiles.
+    # This constraint is fitted strictly on the pre-blind calibration block and never uses
+    # 90-100% labels. Sorting three non-decreasing quantile curves also preserves monotonicity.
     try:
         from lightgbm import LGBMRegressor
-        m=LGBMRegressor(objective='quantile',alpha=alpha,n_estimators=120,learning_rate=.035,num_leaves=9,max_depth=3,min_child_samples=120,reg_lambda=3.,reg_alpha=.2,subsample=.9,colsample_bytree=1.0,random_state=1200+int(alpha*100),n_jobs=2,verbosity=-1);m.fit(x,y);return m,'LIGHTGBM_QUANTILE'
+        m=LGBMRegressor(objective='quantile',alpha=alpha,n_estimators=120,learning_rate=.035,num_leaves=9,max_depth=3,min_child_samples=120,reg_lambda=3.,reg_alpha=.2,subsample=.9,colsample_bytree=1.0,monotone_constraints=[1],monotone_constraints_method='intermediate',random_state=1200+int(alpha*100),n_jobs=2,verbosity=-1);m.fit(x,y);return m,'LIGHTGBM_QUANTILE_MONOTONE'
     except Exception:
-        m=_QuantileGBR(loss='quantile',alpha=alpha,n_estimators=100,learning_rate=.04,max_depth=2,min_samples_leaf=100,random_state=1200+int(alpha*100));m.fit(x,y);return m,'SKLEARN_GBR_QUANTILE'
+        # Keep the fallback order-preserving as well. HistGradientBoostingRegressor supports
+        # quantile loss and monotonic constraints for a numerical feature.
+        m=HistGradientBoostingRegressor(loss='quantile',quantile=alpha,max_iter=100,learning_rate=.04,max_depth=2,min_samples_leaf=100,l2_regularization=1.0,monotonic_cst=[1],random_state=1200+int(alpha*100));m.fit(x,y);return m,'SKLEARN_HGB_QUANTILE_MONOTONE'
 
 def calibrate(cal_y,cal_score,conform_y,conform_score):
     x=np.asarray(cal_score,float).reshape(-1,1);models={};methods=[]
