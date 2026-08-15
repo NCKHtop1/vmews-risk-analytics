@@ -21,5 +21,16 @@ for name,arr in [('q20',lo),('q50',med),('q80',hi)]:
     assert np.min(d)>=-1e-10,(name,float(np.min(d)),getattr(layer,'method',None))
 assert np.all(lo<=med) and np.all(med<=hi)
 assert 'MONOTONE' in str(getattr(layer,'method','')).upper(),getattr(layer,'method',None)
-# Exact-final-HEAD provenance marker only; no calibration/test logic change.
-print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj)})
+
+# Regression for unstable tiny pre-blind MAE gains: the empirical minimizer may be around .5,
+# but when many shrink candidates are within one standard error, the selector must choose the
+# more conservative strictly-positive magnitude without consulting the sealed 90-100% block.
+rng2=np.random.default_rng(912)
+m2=rng2.normal(scale=.02,size=1200)
+y2=.5*m2+rng2.normal(scale=.03,size=1200)
+g2,n2,a2=ns['_select_return_shrink'](y2,m2)
+assert n2==1200 and a2['selectionRule']=='ONE_STANDARD_ERROR_TOWARD_STRONGER_POSITIVE_SHRINK',a2
+assert .05<=g2<a2['empiricalBestShrink'] and a2['selectedMAE']<=a2['oneSELimit']+1e-15,(g2,a2)
+assert a2['oneSEEligibleN']>1 and a2['empiricalBestSE']>0,a2
+
+print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj),'oneSEReturnShrink':float(g2),'empiricalBestShrink':float(a2['empiricalBestShrink'])})
