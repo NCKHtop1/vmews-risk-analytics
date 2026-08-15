@@ -8,15 +8,24 @@ def _select_return_shrink(y,med):
     # Regularized one-dimensional calibration only on the pre-blind conformal block.
     # The production/blind 90-100% labels are never supplied to this function.
     # Keep a strictly-positive floor (no degenerate no-change g=0 candidate), but allow
-    # stronger shrinkage when the pre-blind optimum is genuinely below the former .25 floor.
+    # stronger shrinkage when the pre-blind data support it. To avoid chasing tiny pooled-MAE
+    # differences that do not generalize, use the standard one-SE model-selection rule:
+    # among candidates statistically indistinguishable from the empirical optimum, choose the
+    # smaller positive multiplier (the more conservative return magnitude). This is determined
+    # entirely from pre-blind row losses and cannot inspect the sealed audit block.
     grid_min=.05;grid=np.linspace(grid_min,1.0,39)
-    scored=[]
+    rows=[]
     for g in grid:
-        mae=float(np.mean(np.abs(yy-float(g)*mm)))
-        scored.append((mae,abs(float(g)-1.0),float(g)))
-    best=min(scored);selected=float(best[2])
+        losses=np.abs(yy-float(g)*mm)
+        mae=float(np.mean(losses))
+        se=float(np.std(losses,ddof=1)/math.sqrt(len(losses))) if len(losses)>1 else 0.0
+        rows.append((float(g),mae,se))
+    best_g,best_mae,best_se=min(rows,key=lambda z:(z[1],abs(z[0]-1.0),z[0]))
+    one_se_limit=float(best_mae+best_se)
+    eligible=[z for z in rows if z[1]<=one_se_limit+1e-15]
+    selected_g,selected_mae,selected_se=min(eligible,key=lambda z:z[0])
     base=float(np.mean(np.abs(yy-mm)));eps=1e-12
-    return selected,len(yy),{'baseMAE':base,'selectedMAE':best[0],'gridMin':grid_min,'gridMax':1.0,'gridN':len(grid),'selectedAtLowerBound':bool(abs(selected-grid_min)<=eps),'selectedAtUpperBound':bool(abs(selected-1.0)<=eps)}
+    return float(selected_g),len(yy),{'baseMAE':base,'selectedMAE':float(selected_mae),'empiricalBestMAE':float(best_mae),'empiricalBestShrink':float(best_g),'empiricalBestSE':float(best_se),'oneSELimit':one_se_limit,'oneSEEligibleN':len(eligible),'selectionRule':'ONE_STANDARD_ERROR_TOWARD_STRONGER_POSITIVE_SHRINK','gridMin':grid_min,'gridMax':1.0,'gridN':len(grid),'selectedAtLowerBound':bool(abs(float(selected_g)-grid_min)<=eps),'selectedAtUpperBound':bool(abs(float(selected_g)-1.0)<=eps)}
 
 def calibrate(cal_y,cal_score,conform_y,conform_score):
     layer,iso,_=_preblind_shrink_base_calibrate(cal_y,cal_score,conform_y,conform_score)
@@ -30,7 +39,7 @@ def calibrate(cal_y,cal_score,conform_y,conform_score):
     nonconf=np.maximum.reduce([lo-yy,yy-hi,np.zeros(len(yy))]) if len(yy) else np.asarray([],float)
     target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)))
     qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0
-    layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% quantile/isotonic; first half of maturity-purged 85-90% selects strictly-positive return shrink; second half computes conformal widening; 90-100% remains sealed.'
+    layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% quantile/isotonic; first half of maturity-purged 85-90% selects strictly-positive return shrink via a pre-blind one-standard-error rule; second half computes conformal widening; 90-100% remains sealed.'
     return layer,iso,max(0.0,qadj)
 
 def apply_calibration(score,scen,iso,qadj):
