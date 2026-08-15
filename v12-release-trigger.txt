@@ -1,6 +1,6 @@
-Retrigger immutable V12.1 release after final browser-smoke pointer-flakiness fix.
+Retrigger immutable V12.1 release after audited event-empty-state browser-smoke fix.
 Persisted commit: eabba5e7ee185954a31ee864c069c3ae37b3acfd
 Full source: 554aa0b036fd419d92547e1042982ec29044d6eb
-Browser smoke harness: ac78f949310125e1c134d79a36e17aa54cbf7506
+Browser smoke harness: cb28e4549e23b474cc7db0fc209a42cf73b62dd0
 Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.5.0
 UI assets: forecast-final.html + forecast-polish-v12.js
