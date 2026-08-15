@@ -33,7 +33,7 @@ if(!tipShown)throw new Error('forecast hover tooltip did not expose expected pri
 const newsCount=await page.locator('#news .newsItem').count();if(newsCount<1)throw new Error('FPT event intelligence is empty');
 const sourceText=await page.locator('#sourceAudit').innerText();for(const token of ['Nguồn giá','VNStock','Độ phủ HOSE hiện tại','Kho sự kiện','Dữ liệu dòng tiền','Kiểm định mô hình'])if(!sourceText.includes(token))throw new Error(`source audit missing ${token}: ${sourceText}`);
 const btRows=page.locator('#btRows tr');if(await btRows.count()<1)throw new Error('backtest rows missing');
-await page.locator('#tabs button[data-h="3"]').click().catch(async()=>{await page.locator('#tabs button').nth(2).click()});await page.waitForTimeout(180);if(!(await page.locator('#btMeta').innerText()).includes('mẫu OOS='))throw new Error('backtest T+3 did not render polished OOS meta');
+await page.locator('#tabs button').nth(2).click();await page.waitForTimeout(180);if(!(await page.locator('#btMeta').innerText()).includes('mẫu OOS='))throw new Error('backtest T+3 did not render polished OOS meta');
 const firstRow=page.locator('#btRows tr').first();const title=await firstRow.getAttribute('title');if(title&&!title.includes('Prior20'))throw new Error(`backtest T0 trace malformed: ${title}`);
 const vcb=page.locator('#quick button',{hasText:'VCB'});if(await vcb.count()){await vcb.first().click();await page.waitForFunction(()=>document.querySelector('#chartTitle')?.textContent?.startsWith('VCB'));if(new URL(page.url()).searchParams.get('symbol')!=='VCB')throw new Error('symbol navigation did not update URL')}
 await page.screenshot({path:'v12-browser-desktop.png',fullPage:true});
