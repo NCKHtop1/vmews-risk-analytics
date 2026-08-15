@@ -23,16 +23,6 @@ jobs:
           q.write_text("_audit_metrics_before_daily_contract=audit_metrics\n\ndef audit_metrics(y,score,p,med,lo,hi,D):\n    z=_audit_metrics_before_daily_contract(y,score,p,med,lo,hi,D)\n    rs=rank_stats(y,score,D)\n    for key in ('icDays','icStd','icTStat','icPositiveDayShare','icBootstrap95','spreadDays','spreadStd','spreadTStat'):\n        z[key]=rs.get(key)\n    return z\n",encoding='utf-8')
           r=Path('scripts/v12_contract_regression.py')
           r.write_text("from pathlib import Path\nacceptance=Path('scripts/v12_acceptance.py').read_text(encoding='utf-8')\nassert \"int(wf.get('futureRowsUsedForTraining') or -1)==0\" not in acceptance\nassert \"wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0\" in acceptance\nwf={'status':'PASS','futureRowsUsedForTraining':0,'blocks':[1,2,3,4]}\nassert wf.get('status')=='PASS' and wf.get('futureRowsUsedForTraining') is not None and int(wf['futureRowsUsedForTraining'])==0 and len(wf['blocks'])>=3\npart=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc').read_text(encoding='utf-8')\nfor token in ('icDays','icPositiveDayShare','icBootstrap95','spreadTStat'): assert token in part,token\nprint('V12 ACCEPTANCE CONTRACT REGRESSION PASS')\n",encoding='utf-8')
-          w=Path('.github/workflows/v12-methodfix-syntax.yml');x=w.read_text(encoding='utf-8')
-          marker="      - name: Runtime method-risk unit tests\n        run: PYTHONPATH=scripts python scripts/v12_method_unit_test.py\n"
-          if 'Acceptance contract regression' not in x:
-              if marker not in x: raise SystemExit('FAST GATE INSERT TARGET NOT FOUND')
-              x=x.replace(marker,marker+"      - name: Acceptance contract regression\n        run: PYTHONPATH=scripts python scripts/v12_contract_regression.py\n",1)
-          path_marker="      - 'scripts/v12_method_unit_test.py'\n"
-          if "scripts/v12_contract_regression.py" not in x:
-              if path_marker not in x: raise SystemExit('FAST GATE PATH TARGET NOT FOUND')
-              x=x.replace(path_marker,path_marker+"      - 'scripts/v12_contract_regression.py'\n",1)
-          w.write_text(x,encoding='utf-8')
           compile(r.read_text(encoding='utf-8'),str(r),'exec')
           print('V12 CONTRACT PATCH PRECOMMIT PASS')
           PY
@@ -42,7 +32,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/v12_acceptance.py scripts/v12_train_parts/02b_daily_audit_metrics.pyinc scripts/v12_contract_regression.py .github/workflows/v12-methodfix-syntax.yml
+          git add scripts/v12_acceptance.py scripts/v12_train_parts/02b_daily_audit_metrics.pyinc scripts/v12_contract_regression.py
           git commit -m 'Fix V12 acceptance zero semantics and daily IC audit contract'
           git pull --rebase origin forecast-v12-methodfix
           git push origin HEAD:forecast-v12-methodfix
