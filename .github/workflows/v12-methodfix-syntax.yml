@@ -96,3 +96,4 @@ jobs:
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
           gh workflow run v12-methodfix-full.yml --repo "${GITHUB_REPOSITORY}" --ref "${GITHUB_REF_NAME}"
           echo "Dispatched clean full from ${GITHUB_SHA} after all fast-gate checks passed; data-route and PIT regressions verified."
+# Exact-head dispatch marker after VNStock 4.0.4 source-consensus, supported Quote API and polished UI validation.
