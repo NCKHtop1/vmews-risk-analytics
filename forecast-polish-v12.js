@@ -111,6 +111,13 @@ function installObserver(){
   const obs=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh()})});
   obs.observe(document.body,{subtree:true,childList:true,characterData:true});
 }
-function init(){refresh();renderMethodProof();installObserver();document.documentElement.classList.add("uiReady")}
+function installResponsiveFix(){
+  if(document.getElementById("v12PolishResponsive"))return;
+  const style=document.createElement("style");
+  style.id="v12PolishResponsive";
+  style.textContent='@media(max-width:430px){.top{gap:8px}.brand{font-size:10px;letter-spacing:.055em;min-width:0;flex:1 1 auto}.topMeta{min-width:0;max-width:145px;flex:0 1 145px}.topMeta .badge{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}}';
+  document.head.appendChild(style);
+}
+function init(){installResponsiveFix();refresh();renderMethodProof();installObserver();document.documentElement.classList.add("uiReady")}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
