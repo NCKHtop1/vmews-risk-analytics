@@ -7,14 +7,16 @@ def _select_return_shrink(y,med):
     if len(yy)<100:return 1.0,0,None
     # Regularized one-dimensional calibration only on the pre-blind conformal block.
     # The production/blind 90-100% labels are never supplied to this function.
-    grid=np.linspace(.25,1.0,31)
+    # Keep a strictly-positive floor (no degenerate no-change g=0 candidate), but allow
+    # stronger shrinkage when the pre-blind optimum is genuinely below the former .25 floor.
+    grid_min=.05;grid=np.linspace(grid_min,1.0,39)
     scored=[]
     for g in grid:
         mae=float(np.mean(np.abs(yy-float(g)*mm)))
         scored.append((mae,abs(float(g)-1.0),float(g)))
-    best=min(scored)
-    base=float(np.mean(np.abs(yy-mm)))
-    return best[2],len(yy),{'baseMAE':base,'selectedMAE':best[0],'gridMin':.25,'gridMax':1.0,'gridN':31}
+    best=min(scored);selected=float(best[2])
+    base=float(np.mean(np.abs(yy-mm)));eps=1e-12
+    return selected,len(yy),{'baseMAE':base,'selectedMAE':best[0],'gridMin':grid_min,'gridMax':1.0,'gridN':len(grid),'selectedAtLowerBound':bool(abs(selected-grid_min)<=eps),'selectedAtUpperBound':bool(abs(selected-1.0)<=eps)}
 
 def calibrate(cal_y,cal_score,conform_y,conform_score):
     layer,iso,_=_preblind_shrink_base_calibrate(cal_y,cal_score,conform_y,conform_score)
@@ -28,7 +30,7 @@ def calibrate(cal_y,cal_score,conform_y,conform_score):
     nonconf=np.maximum.reduce([lo-yy,yy-hi,np.zeros(len(yy))]) if len(yy) else np.asarray([],float)
     target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)))
     qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0
-    layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% quantile/isotonic; first half of maturity-purged 85-90% selects return shrink; second half computes conformal widening; 90-100% remains sealed.'
+    layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% quantile/isotonic; first half of maturity-purged 85-90% selects strictly-positive return shrink; second half computes conformal widening; 90-100% remains sealed.'
     return layer,iso,max(0.0,qadj)
 
 def apply_calibration(score,scen,iso,qadj):
