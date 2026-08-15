@@ -16,10 +16,8 @@ const badge=(await page.locator('#modelBadge').innerText()).trim();if(!badge.inc
 const decision=(await page.locator('#decision').innerText()).trim();if(!decision||decision==='—'||decision.includes('LOCKED'))throw new Error(`decision invalid: ${decision}`);
 for(const id of ['#close','#t1','#t3','#t5','#risk']){const t=(await page.locator(id).innerText()).trim();if(!t||t==='—')throw new Error(`${id} empty`)}
 const cards=page.locator('#forecastCards .forecastCard');if(await cards.count()!==5)throw new Error(`expected 5 forecast cards, got ${await cards.count()}`);
-// Price promotion and direction-probability promotion are independent. T+4/T+5 may
-// legitimately show an abstaining P↑ label while the direct price horizon is validated.
-// Validate that every horizon card contains a released numeric price rather than treating
-// direction abstention text as a price-validation failure.
+// Direct-price promotion and direction-probability promotion are independent. T+4/T+5 may
+// legitimately abstain on P↑ while their direct price horizon remains validated.
 for(let i=0;i<5;i++){
   const t=(await cards.nth(i).innerText()).trim();
   const lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);
@@ -30,13 +28,17 @@ for(let i=0;i<5;i++){
 const proofText=await page.locator('#methodProof').innerText();for(const token of ['Nhìn trước tương lai','0 dòng','Sealed holdout','Walk-forward & embargo','T+1 · T+2 · T+3 · T+4 · T+5'])if(!proofText.includes(token))throw new Error(`method proof missing ${token}: ${proofText}`);
 const visible=await page.locator('body').innerText();for(const banned of ['VNStock ưu tiên cho OHLCV Việt Nam','không nội suy','whisker =','Completed EOD snapshot','không phát lệnh mua/bán','Missing rumor không được coi là neutral signal'])if(visible.includes(banned))throw new Error(`banned visible copy: ${banned}`);
 const canvas=page.locator('#chart');const box=await canvas.boundingBox();if(!box)throw new Error('chart canvas has no box');
+// Canvas geometry varies with viewport/content. Scan the forecast side rather than assuming a
+// single hard-coded y coordinate; this validates the real interactive tooltip without flakiness.
 let tipShown=false;
-for(const frac of [.80,.84,.88,.92,.96]){
-  await page.mouse.move(box.x+box.width*frac,box.y+box.height*.45);
-  await page.waitForTimeout(160);
-  if(await page.locator('#tooltip').isVisible()){
-    const tt=await page.locator('#tooltip').innerText();
-    if(tt.includes('Giá dự kiến')&&tt.includes('Biến động kỳ vọng')&&tt.includes('Q20–Q80')){tipShown=true;break}
+for(let xf=.72;xf<=.99&&!tipShown;xf+=.015){
+  for(const yf of [.25,.35,.45,.55,.65,.75,.85]){
+    await page.mouse.move(box.x+box.width*xf,box.y+box.height*yf);
+    await page.waitForTimeout(45);
+    if(await page.locator('#tooltip').isVisible()){
+      const tt=await page.locator('#tooltip').innerText();
+      if(tt.includes('Giá dự kiến')&&tt.includes('Biến động kỳ vọng')&&tt.includes('Q20–Q80')){tipShown=true;break}
+    }
   }
 }
 if(!tipShown)throw new Error('forecast hover tooltip did not expose expected price/return/interval');
