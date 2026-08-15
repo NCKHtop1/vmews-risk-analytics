@@ -43,8 +43,27 @@ def _incremental_ic_test(y,base_pred,candidate_pred,D):
     mean=float(np.mean(diff));z,p,se,lag=_hac_mean_test(diff);ci,block=_moving_block_bootstrap_mean(diff)
     return {'days':len(diff),'meanDeltaIC':mean,'pValue':p,'bootstrap90':ci,'test':'HAC_NEWey_WEST_ONE_SIDED','hacZ':z,'hacSE':se,'hacLag':lag,'bootstrap':'MOVING_BLOCK','blockLength':block}
 
+def _core_regime_decision(expert_pred,y,D,train,test):
+    """Admit REGIME only if it adds pre-blind incremental OOS value over NUMERICAL.
+
+    The 70-80% chronological window is already reserved for architecture promotion and is strictly
+    before calibration/sealed audit. This prevents a weak regime learner from being forced into every
+    horizon merely because it is a named core family. No 80-100% label can affect this decision.
+    """
+    base=['NUMERICAL'];candidate=['NUMERICAL','REGIME']
+    base_metrics,_=meta_eval(expert_pred,base,train,test,y,D);cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D)
+    bidx,bpred=_meta_score_on_block(expert_pred,base,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y)
+    common=np.intersect1d(bidx,cidx,assume_unique=False);bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)};bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float)
+    inc=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]}
+    di=float(cand_metrics['ic']-base_metrics['ic']);dm=float(cand_metrics['maeImprove']-base_metrics['maeImprove']);ds=float(cand_metrics['spread']-base_metrics['spread']);ci=inc.get('bootstrap90') or [None,None]
+    statistical=bool(inc.get('days',0)>=15 and inc.get('meanDeltaIC',0)>0 and inc.get('pValue',1)<0.05 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0)
+    promote=bool(statistical and di>0.001 and dm>0.0 and ds>=-0.00005)
+    audit={'promoted':promote,'selectionWindow':'70%-80% origins; labels mature before 80% lock','reference':['NUMERICAL'],'candidate':['NUMERICAL','REGIME'],'deltaIC':di,'deltaMAEImprove':dm,'deltaSpread':ds,'incrementalICTest':inc,'rule':'REGIME joins the core only with positive pre-blind incremental IC, MAE skill and non-degrading spread; sealed 80-100% is never consulted.','candidateMetrics':cand_metrics,'referenceMetrics':base_metrics}
+    return (candidate if promote else base),(cand_metrics if promote else base_metrics),audit
+
 def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
-    n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];train=(D<cut70)&np.isfinite(y);test=(D>=cut70)&(D<cut80)&np.isfinite(y);active=['NUMERICAL','REGIME'];base_metrics,_=meta_eval(expert_pred,active,train,test,y,D);decisions={}
+    n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];train=(D<cut70)&np.isfinite(y);test=(D>=cut70)&(D<cut80)&np.isfinite(y)
+    active,base_metrics,core_audit=_core_regime_decision(expert_pred,y,D,train,test);decisions={'REGIME_CORE':core_audit}
     for name in ['EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']:
         candidate=active+[name];cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D);di=cand_metrics['ic']-base_metrics['ic'];dm=cand_metrics['maeImprove']-base_metrics['maeImprove'];ds=cand_metrics['spread']-base_metrics['spread'];activity_mask,activity_count,activity,minimum_rows=_expert_activity(X,name);active_in_test=int(np.sum(activity_mask&test));enough=activity_count>=minimum_rows and active_in_test>=max(50,min(250,minimum_rows//10 if minimum_rows else 0))
         bidx,bpred=_meta_score_on_block(expert_pred,active,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y)
