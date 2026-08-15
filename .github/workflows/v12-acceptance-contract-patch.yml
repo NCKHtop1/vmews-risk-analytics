@@ -14,58 +14,25 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
-          # 1) A valid zero leakage counter must not be treated as missing.
           p=Path('scripts/v12_acceptance.py');s=p.read_text(encoding='utf-8')
           old="int(wf.get('futureRowsUsedForTraining') or -1)==0"
           new="wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0"
           if old not in s: raise SystemExit('ACCEPTANCE ZERO PATCH TARGET NOT FOUND')
-          s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8');compile(s,str(p),'exec')
-
-          # 2) rank_stats already computes daily stability. Preserve those fields in sealed audits.
+          s=s.replace(old,new,1);p.write_text(s,encoding='utf-8');compile(s,str(p),'exec')
           q=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc')
-          q.write_text(r'''_audit_metrics_before_daily_contract=audit_metrics
-
-def audit_metrics(y,score,p,med,lo,hi,D):
-    z=_audit_metrics_before_daily_contract(y,score,p,med,lo,hi,D)
-    rs=rank_stats(y,score,D)
-    for key in ('icDays','icStd','icTStat','icPositiveDayShare','icBootstrap95','spreadDays','spreadStd','spreadTStat'):
-        z[key]=rs.get(key)
-    return z
-''',encoding='utf-8')
-
-          # 3) Regression test: zero is data, not absence; daily metrics must survive audit_metrics.
+          q.write_text("_audit_metrics_before_daily_contract=audit_metrics\n\ndef audit_metrics(y,score,p,med,lo,hi,D):\n    z=_audit_metrics_before_daily_contract(y,score,p,med,lo,hi,D)\n    rs=rank_stats(y,score,D)\n    for key in ('icDays','icStd','icTStat','icPositiveDayShare','icBootstrap95','spreadDays','spreadStd','spreadTStat'):\n        z[key]=rs.get(key)\n    return z\n",encoding='utf-8')
           r=Path('scripts/v12_contract_regression.py')
-          r.write_text(r'''from pathlib import Path
-import numpy as np
-
-acceptance=Path('scripts/v12_acceptance.py').read_text(encoding='utf-8')
-assert "int(wf.get('futureRowsUsedForTraining') or -1)==0" not in acceptance
-assert "wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0" in acceptance
-wf={'status':'PASS','futureRowsUsedForTraining':0,'blocks':[1,2,3,4]}
-assert wf.get('status')=='PASS' and wf.get('futureRowsUsedForTraining') is not None and int(wf['futureRowsUsedForTraining'])==0 and len(wf['blocks'])>=3
-
-part=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc').read_text(encoding='utf-8')
-for token in ('icDays','icPositiveDayShare','icBootstrap95','spreadTStat'):
-    assert token in part, token
-print('V12 ACCEPTANCE CONTRACT REGRESSION PASS')
-''',encoding='utf-8')
-
-          # 4) Make the normal fast gate execute this regression every time.
+          r.write_text("from pathlib import Path\nacceptance=Path('scripts/v12_acceptance.py').read_text(encoding='utf-8')\nassert \"int(wf.get('futureRowsUsedForTraining') or -1)==0\" not in acceptance\nassert \"wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0\" in acceptance\nwf={'status':'PASS','futureRowsUsedForTraining':0,'blocks':[1,2,3,4]}\nassert wf.get('status')=='PASS' and wf.get('futureRowsUsedForTraining') is not None and int(wf['futureRowsUsedForTraining'])==0 and len(wf['blocks'])>=3\npart=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc').read_text(encoding='utf-8')\nfor token in ('icDays','icPositiveDayShare','icBootstrap95','spreadTStat'): assert token in part,token\nprint('V12 ACCEPTANCE CONTRACT REGRESSION PASS')\n",encoding='utf-8')
           w=Path('.github/workflows/v12-methodfix-syntax.yml');x=w.read_text(encoding='utf-8')
           marker="      - name: Runtime method-risk unit tests\n        run: PYTHONPATH=scripts python scripts/v12_method_unit_test.py\n"
-          insert=marker+"      - name: Acceptance contract regression\n        run: PYTHONPATH=scripts python scripts/v12_contract_regression.py\n"
           if 'Acceptance contract regression' not in x:
               if marker not in x: raise SystemExit('FAST GATE INSERT TARGET NOT FOUND')
-              x=x.replace(marker,insert,1)
+              x=x.replace(marker,marker+"      - name: Acceptance contract regression\n        run: PYTHONPATH=scripts python scripts/v12_contract_regression.py\n",1)
           path_marker="      - 'scripts/v12_method_unit_test.py'\n"
           if "scripts/v12_contract_regression.py" not in x:
               if path_marker not in x: raise SystemExit('FAST GATE PATH TARGET NOT FOUND')
               x=x.replace(path_marker,path_marker+"      - 'scripts/v12_contract_regression.py'\n",1)
           w.write_text(x,encoding='utf-8')
-
-          compile(p.read_text(encoding='utf-8'),str(p),'exec')
           compile(r.read_text(encoding='utf-8'),str(r),'exec')
           print('V12 CONTRACT PATCH PRECOMMIT PASS')
           PY
