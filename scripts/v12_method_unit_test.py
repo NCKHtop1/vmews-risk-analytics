@@ -17,14 +17,20 @@ p,med,lo,hi,n=ns['apply_calibration'](score[1800:],layer,iso,qadj)
 assert len(p)==700 and np.all(np.isfinite(p)) and np.all(np.isfinite(med))
 assert np.all(lo<=med) and np.all(med<=hi) and np.all((p>=0)&(p<=1))
 assert 'QUANTILE' in str(getattr(layer,'method','')).upper()
-assert .25<=float(getattr(layer,'returnShrink',0))<=1.0
+assert .05<=float(getattr(layer,'returnShrink',0))<=1.0
 assert int(getattr(layer,'shrinkSelectionN',0))>=100 and int(getattr(layer,'conformalN',0))>=100
 assert '90-100% remains sealed' in str(getattr(layer,'calibrationSplitPolicy',''))
+saudit=getattr(layer,'shrinkSelectionAudit',{}) or {};assert saudit.get('gridMin')==.05 and saudit.get('gridN')==39 and 'selectedAtLowerBound' in saudit,saudit
 
 # A deliberately over-magnified median must be shrunk using calibration rows only.
 ysh=rng.normal(scale=.012,size=1200);msh=2.0*ysh+rng.normal(scale=.002,size=1200);g,gn,ga=ns['_select_return_shrink'](ysh,msh)
-assert gn==1200 and .25<=g<.8,(g,ga)
+assert gn==1200 and .05<=g<.8,(g,ga)
 assert ga['selectedMAE']<ga['baseMAE'],ga
+# Regression for the former .25 binding floor: strong over-magnification must be able to
+# select a strictly-positive shrink below .25 using only synthetic/pre-blind rows.
+ysh2=rng.normal(scale=.012,size=1200);msh2=8.0*ysh2+rng.normal(scale=.002,size=1200);g2,gn2,ga2=ns['_select_return_shrink'](ysh2,msh2)
+assert gn2==1200 and .05<=g2<.25,(g2,ga2)
+assert ga2['selectedMAE']<ga2['baseMAE'] and ga2['gridMin']==.05 and ga2['gridN']==39,ga2
 
 # Exact maturity purge: panel origins can be sampled every 5 sessions, but labels are purged by their real maturity date, never by origin ordinal distance.
 dates=np.asarray([f'2025-{1+(i//28):02d}-{1+(i%28):02d}' for i in range(196)],dtype=object)
@@ -120,4 +126,4 @@ finally:
 # Rumor claim functions must distinguish similar claims and denial/confirmation state.
 a=ns['_claim_tokens']('FPT tin đồn mua lại công ty ABC');b=ns['_claim_tokens']('FPT được cho là mua lại ABC');c=ns['_claim_tokens']('VCB tăng lãi suất tiền gửi');assert ns['_claim_sim'](a,b)>ns['_claim_sim'](a,c);assert ns['_truth_label']('Công ty chính thức xác nhận thương vụ')=='CONFIRMED';assert ns['_truth_label']('Doanh nghiệp phủ nhận tin đồn')=='DENIED'
 
-print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','sectorPITIsolation':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS'})
+print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','sectorPITIsolation':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS','preblindShrinkFloorRegression':'PASS'})
