@@ -23,6 +23,7 @@ on:
       - '.github/workflows/v12-methodfix-syntax.yml'
 permissions:
   contents: read
+  actions: write
 jobs:
   fast:
     runs-on: ubuntu-latest
@@ -78,3 +79,12 @@ jobs:
           PY
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
+      - name: Trigger clean full only after fast PASS on this HEAD
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          gh workflow run v12-methodfix-full.yml --repo "${GITHUB_REPOSITORY}" --ref "${GITHUB_REF_NAME}"
+          echo "Dispatched clean full from ${GITHUB_SHA} after all fast-gate checks passed."
