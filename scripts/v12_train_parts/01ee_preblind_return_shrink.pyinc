@@ -1,0 +1,39 @@
+_preblind_shrink_base_calibrate=calibrate
+_preblind_shrink_base_apply=apply_calibration
+
+def _select_return_shrink(y,med):
+    yy=np.asarray(y,float);mm=np.asarray(med,float);good=np.isfinite(yy)&np.isfinite(mm)
+    yy=yy[good];mm=mm[good]
+    if len(yy)<100:return 1.0,0,None
+    # Regularized one-dimensional calibration only on the pre-blind conformal block.
+    # The production/blind 90-100% labels are never supplied to this function.
+    grid=np.linspace(.25,1.0,31)
+    scored=[]
+    for g in grid:
+        mae=float(np.mean(np.abs(yy-float(g)*mm)))
+        scored.append((mae,abs(float(g)-1.0),float(g)))
+    best=min(scored)
+    base=float(np.mean(np.abs(yy-mm)))
+    return best[2],len(yy),{'baseMAE':base,'selectedMAE':best[0],'gridMin':.25,'gridMax':1.0,'gridN':31}
+
+def calibrate(cal_y,cal_score,conform_y,conform_score):
+    layer,iso,_=_preblind_shrink_base_calibrate(cal_y,cal_score,conform_y,conform_score)
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);n=len(cy);mid=max(1,n//2)
+    lo0,med0,hi0=layer.predict(cs)
+    gamma,fit_n,audit=_select_return_shrink(cy[:mid],med0[:mid])
+    layer.returnShrink=float(gamma);layer.shrinkSelectionN=int(fit_n);layer.shrinkSelectionAudit=audit
+    # Recompute conformal widening on a disjoint second half after shrinkage.
+    # This keeps both tuning layers strictly pre-blind while avoiding same-row reuse.
+    yy=cy[mid:];lo=lo0[mid:]*gamma;hi=hi0[mid:]*gamma
+    nonconf=np.maximum.reduce([lo-yy,yy-hi,np.zeros(len(yy))]) if len(yy) else np.asarray([],float)
+    target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)))
+    qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0
+    layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% quantile/isotonic; first half of maturity-purged 85-90% selects return shrink; second half computes conformal widening; 90-100% remains sealed.'
+    return layer,iso,max(0.0,qadj)
+
+def apply_calibration(score,scen,iso,qadj):
+    if isinstance(scen,_QuantileLayer) and hasattr(scen,'returnShrink'):
+        p=np.asarray(iso.predict(score),float);lo,med,hi=scen.predict(score);g=float(scen.returnShrink)
+        lo=lo*g-float(qadj);med=med*g;hi=hi*g+float(qadj);ns=np.full(len(med),int(scen.n),dtype=int)
+        return p,med,lo,hi,ns
+    return _preblind_shrink_base_apply(score,scen,iso,qadj)
