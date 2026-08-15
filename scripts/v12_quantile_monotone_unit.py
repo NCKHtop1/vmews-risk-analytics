@@ -21,4 +21,5 @@ for name,arr in [('q20',lo),('q50',med),('q80',hi)]:
     assert np.min(d)>=-1e-10,(name,float(np.min(d)),getattr(layer,'method',None))
 assert np.all(lo<=med) and np.all(med<=hi)
 assert 'MONOTONE' in str(getattr(layer,'method','')).upper(),getattr(layer,'method',None)
+# Exact-final-HEAD provenance marker only; no calibration/test logic change.
 print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj)})
