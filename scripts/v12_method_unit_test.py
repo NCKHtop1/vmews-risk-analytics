@@ -128,4 +128,5 @@ a=ns['_claim_tokens']('FPT tin đồn mua lại công ty ABC');b=ns['_claim_toke
 
 # Final-fast provenance marker only; no model/test logic change.
 # Exact-head dispatch marker after one-SE pre-blind shrink fast PASS; no model/test logic change.
+# Exact-head dispatch marker after embargo zero-counter regression fast PASS; no model/test logic change.
 print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','sectorPITIsolation':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS','preblindShrinkFloorRegression':'PASS'})
