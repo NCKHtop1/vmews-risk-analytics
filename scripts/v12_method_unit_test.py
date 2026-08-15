@@ -58,8 +58,8 @@ for token in ('currentTrainingEligible','currentRoutePassed','currentShortHistor
     assert token in source,token
 assert 'len(rows)>=60' in source and 'currentCoverage' in source
 
-# Exercise both VNStock short-history and cached-history fallback branches so route audit
-# cannot silently regress through a provider-signature typo or a wrong cache helper name.
+# Exercise VNStock short-history, provider quota SystemExit, and cached-history fallback.
+# A provider-level sys.exit must become route evidence, never terminate the training process.
 ds=ns['_v12ds'];probe=ns['_probe_current_short_route'];old_norm=ds._normalize_df;old_throttle=ds._throttle_vnstock;old_yahoo=ds.yahoo_history;old_cached=ds.cached_history
 old_vnstock=sys.modules.get('vnstock');old_vnstock_ui=sys.modules.get('vnstock.ui')
 rows80=[{'date':'2026-08-14','open':10000.0,'high':10000.0,'low':10000.0,'close':10000.0,'volume':1.0} for _ in range(80)]
@@ -72,12 +72,13 @@ try:
     ds._throttle_vnstock=lambda:None
     ds._normalize_df=lambda df,symbol,provider:(list(rows80),1.0)
     q=probe('NEW','2026-08-14');assert q['routeAvailable'] and q['route']=='VNSTOCK_CURRENT_SHORT_HISTORY' and not q['trainingEligible'],q
-    class _FailMarket:
-        def __init__(self):raise RuntimeError('forced VNStock probe failure')
-    fake_ui.Market=_FailMarket
+    class _QuotaExitMarket:
+        def __init__(self):raise SystemExit('forced provider quota termination')
+    fake_ui.Market=_QuotaExitMarket
     def _fail_yahoo(symbol):raise RuntimeError('forced Yahoo probe failure')
     ds.yahoo_history=_fail_yahoo;ds.cached_history=lambda symbol:(list(rows80),{'provider':'mock-cache'})
     q2=probe('NEW','2026-08-14');assert q2['routeAvailable'] and q2['route']=='CACHE_CURRENT_SHORT_HISTORY' and not q2['trainingEligible'],q2
+    assert q2['attempts'][0]['stage']=='VNSTOCK_CURRENT_ROUTE_PROBE' and 'SystemExit' in q2['attempts'][0]['error'],q2
 finally:
     ds._normalize_df=old_norm;ds._throttle_vnstock=old_throttle;ds.yahoo_history=old_yahoo;ds.cached_history=old_cached
     if old_vnstock is None:sys.modules.pop('vnstock',None)
@@ -88,4 +89,4 @@ finally:
 # Rumor claim functions must distinguish similar claims and denial/confirmation state.
 a=ns['_claim_tokens']('FPT tin đồn mua lại công ty ABC');b=ns['_claim_tokens']('FPT được cho là mua lại ABC');c=ns['_claim_tokens']('VCB tăng lãi suất tiền gửi');assert ns['_claim_sim'](a,b)>ns['_claim_sim'](a,c);assert ns['_truth_label']('Công ty chính thức xác nhận thương vụ')=='CONFIRMED';assert ns['_truth_label']('Doanh nghiệp phủ nhận tin đồn')=='DENIED'
 
-print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','shortRouteRuntime':'PASS'})
+print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS'})
