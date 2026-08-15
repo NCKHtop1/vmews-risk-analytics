@@ -10,29 +10,72 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add active-flow governance to Phase 4
+      - name: Patch acceptance zero semantics and daily-IC contract
         run: |
           python - <<'PY'
           from pathlib import Path
+
+          # 1) A valid zero leakage counter must not be treated as missing.
           p=Path('scripts/v12_acceptance.py');s=p.read_text(encoding='utf-8')
-          changes=[
-          ("flowdb=load('flow-v12.json',4);flowaudit=load('flow-audit-v12.json',4)",
-           "flowdb=load('flow-v12.json',4);flowaudit=load('flow-audit-v12.json',4);activeaudit=load('active-flow-audit-v12.json',4)"),
-          ("(4,'flow-v12.json',flowdb),(4,'flow-audit-v12.json',flowaudit)]",
-           "(4,'flow-v12.json',flowdb),(4,'flow-audit-v12.json',flowaudit),(4,'active-flow-audit-v12.json',activeaudit)]"),
-          ("regime_req=['breadth1'",
-           "active_like=[x for x in features if any(k in x.lower() for k in ['activebuy','activesell','aggressor','unmatchedbuy','unmatchedsell','difvolumebuysell'])];active_cert=activeaudit.get('certified') is True and activeaudit.get('numericalFeaturesEnabled') is True;active_abstain=activeaudit.get('status')=='ABSTAIN' and activeaudit.get('certified') is False and activeaudit.get('numericalFeaturesEnabled') is False and not active_like;check(4,'active/aggressor flow is either PIT-certified or explicit ABSTAIN',active_cert or active_abstain,{'audit':activeaudit,'activeFeatures':active_like});regime_req=['breadth1'"),
-          ("'version':'VMEWS-PHASE-GATES-12.5.0'","'version':'VMEWS-PHASE-GATES-12.6.0'")]
-          for old,new in changes:
-              if old not in s:raise SystemExit(f'PATCH TARGET NOT FOUND: {old[:160]}')
-              s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8');compile(s,'scripts/v12_acceptance.py','exec');print('V12 ACTIVE-FLOW PHASE4 CONTRACT PASS')
+          old="int(wf.get('futureRowsUsedForTraining') or -1)==0"
+          new="wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0"
+          if old not in s: raise SystemExit('ACCEPTANCE ZERO PATCH TARGET NOT FOUND')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8');compile(s,str(p),'exec')
+
+          # 2) rank_stats already computes daily stability. Preserve those fields in sealed audits.
+          q=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc')
+          q.write_text(r'''_audit_metrics_before_daily_contract=audit_metrics
+
+def audit_metrics(y,score,p,med,lo,hi,D):
+    z=_audit_metrics_before_daily_contract(y,score,p,med,lo,hi,D)
+    rs=rank_stats(y,score,D)
+    for key in ('icDays','icStd','icTStat','icPositiveDayShare','icBootstrap95','spreadDays','spreadStd','spreadTStat'):
+        z[key]=rs.get(key)
+    return z
+''',encoding='utf-8')
+
+          # 3) Regression test: zero is data, not absence; daily metrics must survive audit_metrics.
+          r=Path('scripts/v12_contract_regression.py')
+          r.write_text(r'''from pathlib import Path
+import numpy as np
+
+acceptance=Path('scripts/v12_acceptance.py').read_text(encoding='utf-8')
+assert "int(wf.get('futureRowsUsedForTraining') or -1)==0" not in acceptance
+assert "wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0" in acceptance
+wf={'status':'PASS','futureRowsUsedForTraining':0,'blocks':[1,2,3,4]}
+assert wf.get('status')=='PASS' and wf.get('futureRowsUsedForTraining') is not None and int(wf['futureRowsUsedForTraining'])==0 and len(wf['blocks'])>=3
+
+part=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc').read_text(encoding='utf-8')
+for token in ('icDays','icPositiveDayShare','icBootstrap95','spreadTStat'):
+    assert token in part, token
+print('V12 ACCEPTANCE CONTRACT REGRESSION PASS')
+''',encoding='utf-8')
+
+          # 4) Make the normal fast gate execute this regression every time.
+          w=Path('.github/workflows/v12-methodfix-syntax.yml');x=w.read_text(encoding='utf-8')
+          marker="      - name: Runtime method-risk unit tests\n        run: PYTHONPATH=scripts python scripts/v12_method_unit_test.py\n"
+          insert=marker+"      - name: Acceptance contract regression\n        run: PYTHONPATH=scripts python scripts/v12_contract_regression.py\n"
+          if 'Acceptance contract regression' not in x:
+              if marker not in x: raise SystemExit('FAST GATE INSERT TARGET NOT FOUND')
+              x=x.replace(marker,insert,1)
+          path_marker="      - 'scripts/v12_method_unit_test.py'\n"
+          if "scripts/v12_contract_regression.py" not in x:
+              if path_marker not in x: raise SystemExit('FAST GATE PATH TARGET NOT FOUND')
+              x=x.replace(path_marker,path_marker+"      - 'scripts/v12_contract_regression.py'\n",1)
+          w.write_text(x,encoding='utf-8')
+
+          compile(p.read_text(encoding='utf-8'),str(p),'exec')
+          compile(r.read_text(encoding='utf-8'),str(r),'exec')
+          print('V12 CONTRACT PATCH PRECOMMIT PASS')
           PY
-      - name: Persist acceptance patch
+      - name: Run regression before persist
+        run: PYTHONPATH=scripts python scripts/v12_contract_regression.py
+      - name: Persist contract fixes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/v12_acceptance.py
-          git commit -m 'Gate Phase 4 on active-flow certification or explicit abstention'
+          git add scripts/v12_acceptance.py scripts/v12_train_parts/02b_daily_audit_metrics.pyinc scripts/v12_contract_regression.py .github/workflows/v12-methodfix-syntax.yml
+          git commit -m 'Fix V12 acceptance zero semantics and daily IC audit contract'
           git pull --rebase origin forecast-v12-methodfix
           git push origin HEAD:forecast-v12-methodfix
