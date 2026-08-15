@@ -1,3 +1,4 @@
-trigger=2026-08-15T10:08:00+07:00
-source_parent=802d8a62a396a16292915b316292bd77d439b601
-reason=retry-after-full-data-numpy-json-serialization-fix-and-fast-gate-pass
+trigger=2026-08-15T11:18:00+07:00
+source_parent=1005d97ce73bbb708f6d76c5eb99b3ffd2c14896
+fast_gate_run=31863985967
+reason=full-retry-after-acceptance-zero-daily-ic-admissible-pbo-preblind-shrink-and-route-eligibility-regressions-pass
