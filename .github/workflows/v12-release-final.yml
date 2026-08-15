@@ -46,7 +46,7 @@ jobs:
           assert n.get('status')=='PASS',n
           assert blind.get('status')=='PASS',blind
           assert all((blind.get('checks') or {}).get(f'T+{h}') is True for h in range(1,6)),blind.get('checks')
-          assert (blind.get('checks') or {}).get('backtestCarriesBlindEvidence') is True,blind.get('checks')
+          assert (blind.get('checks') or {}).get('backtestCarriesSealedHoldoutEvidence') is True,blind.get('checks')
           assert e.get('status')=='PASS',e
           assert m.get('promotion',{}).get('status')=='PASS',m.get('promotion')
           assert m.get('promotion',{}).get('directPriceHorizons')==[1,2,3,4,5],m.get('promotion')
