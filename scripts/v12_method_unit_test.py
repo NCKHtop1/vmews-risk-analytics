@@ -58,6 +58,37 @@ for token in ('currentTrainingEligible','currentRoutePassed','currentShortHistor
     assert token in source,token
 assert 'len(rows)>=60' in source and 'currentCoverage' in source
 
+# Current sector taxonomy is descriptive-only. Historical numerical event features must be invariant
+# to the current taxonomy, while the current reference builder may enrich coverage from VCI.
+sector_rows=[
+    {'symbol':'AAA','icb_level':1,'icb_name':'Industrials'},
+    {'symbol':'AAA','icb_level':2,'icb_name':'Capital Goods'},
+    {'symbol':'AAA','icb_level':4,'icb_name':'Machinery'},
+    {'symbol':'BBB','icb_level':1,'icb_name':'Financials'},
+]
+sm=ns['_sector_reference_from_rows'](sector_rows);assert sm['AAA']=='Capital Goods' and sm['BBB']=='Financials',sm
+old_vnstock_sector=sys.modules.get('vnstock')
+class _SectorDF:
+    def to_dict(self,orient):assert orient=='records';return list(sector_rows)
+class _SectorListing:
+    def __init__(self,source='VCI'):assert source=='VCI'
+    def symbols_by_industries(self,show_log=False):return _SectorDF()
+fake_sector_pkg=types.ModuleType('vnstock');fake_sector_pkg.Listing=_SectorListing;sys.modules['vnstock']=fake_sector_pkg
+try:
+    merged=ns['build_sector_map']({'ranking':[{'symbol':'CCC','sector':'Seed Sector'}]})
+    assert merged['AAA']=='Capital Goods' and merged['BBB']=='Financials' and merged['CCC']=='Seed Sector',merged
+    assert ns['build_sector_map'].last_audit['providerStatus']=='PASS' and ns['build_sector_map'].last_audit['providerSymbols']==2,ns['build_sector_map'].last_audit
+finally:
+    if old_vnstock_sector is None:sys.modules.pop('vnstock',None)
+    else:sys.modules['vnstock']=old_vnstock_sector
+edates=[f'2026-01-{i:02d}' for i in range(1,31)]+[f'2026-02-{i:02d}' for i in range(1,11)]
+prows=[{'date':d,'close':100.0+i,'modelClose':100.0+i,'volume':1000.0} for i,d in enumerate(edates)]
+sent={'symbols':{'AAA':{'items':[{'id':'sector-pit-1','publishedAt':edates[10]+'T08:00:00+07:00','title':'AAA current taxonomy must not enter history','label':'POS','sourceQuality':1.0,'materiality':1.0,'confidence':1.0,'event':'GENERAL'}]}}}
+arts,outcomes=ns['prepare_articles'](sent,{'AAA':prows},{'AAA':'TECH'},[]);assert arts['AAA'][0]['sector']=='OTHER',arts['AAA'][0]
+sa=ns['EvidenceFeatureStore'](arts,outcomes,{'AAA':'TECH'});sb=ns['EvidenceFeatureStore'](arts,outcomes,{'AAA':'BANK'})
+assert sa.sector_map=={} and sb.sector_map=={} and sa.current_reference_sector_map['AAA']=='TECH' and sb.current_reference_sector_map['AAA']=='BANK'
+fa=sa.features('AAA',edates[20]);fb=sb.features('AAA',edates[20]);keys=ns['EVENT_FEATURES']+ns['RUMOR_FEATURES'];assert all(abs(float(fa[k])-float(fb[k]))<1e-15 for k in keys),(fa,fb)
+
 # Exercise VNStock short-history, provider quota SystemExit, and cached-history fallback.
 # A provider-level sys.exit must become route evidence, never terminate the training process.
 ds=ns['_v12ds'];probe=ns['_probe_current_short_route'];old_norm=ds._normalize_df;old_throttle=ds._throttle_vnstock;old_yahoo=ds.yahoo_history;old_cached=ds.cached_history
@@ -89,4 +120,4 @@ finally:
 # Rumor claim functions must distinguish similar claims and denial/confirmation state.
 a=ns['_claim_tokens']('FPT tin đồn mua lại công ty ABC');b=ns['_claim_tokens']('FPT được cho là mua lại ABC');c=ns['_claim_tokens']('VCB tăng lãi suất tiền gửi');assert ns['_claim_sim'](a,b)>ns['_claim_sim'](a,c);assert ns['_truth_label']('Công ty chính thức xác nhận thương vụ')=='CONFIRMED';assert ns['_truth_label']('Doanh nghiệp phủ nhận tin đồn')=='DENIED'
 
-print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS'})
+print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','sectorPITIsolation':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS'})
