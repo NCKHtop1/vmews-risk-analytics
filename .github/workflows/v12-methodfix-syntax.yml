@@ -5,6 +5,7 @@ on:
     branches: [forecast-v12-methodfix]
     paths:
       - 'scripts/v12_train_parts/**'
+      - 'scripts/v12_data_sources.py'
       - 'scripts/v12_entity.py'
       - 'scripts/v12_evidence.py'
       - 'scripts/v12_acceptance.py'
@@ -36,7 +37,7 @@ jobs:
       - run: pip install --disable-pip-version-check -q numpy scipy scikit-learn lightgbm
       - name: Compile strict utilities and assembled V12 methodfix
         run: |
-          python -m py_compile scripts/v12_evidence.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_benchmark_unit.py scripts/v12_embargo_acceptance.py scripts/v12_method_unit_test.py scripts/v12_quantile_monotone_unit.py scripts/v12_contract_regression.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_evidence.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_benchmark_unit.py scripts/v12_embargo_acceptance.py scripts/v12_method_unit_test.py scripts/v12_quantile_monotone_unit.py scripts/v12_contract_regression.py scripts/v12_flow.py scripts/backfill_flow_v12.py scripts/train_forecast_v12.py
           PYTHONPATH=scripts python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'));code='\n'.join(p.read_text(encoding='utf-8') for p in parts);compiled=compile(code,'v12-methodfix-assembled.py','exec');ns={'__name__':'v12_structure_check','__file__':'scripts/train_forecast_v12.py'};exec(compiled,ns,ns)
@@ -45,6 +46,10 @@ jobs:
           assert 'sectorPIT' in ns['source_audit_summary']({},{}),'sector PIT audit injection missing'
           for token in ['selectionLockDate','incrementalOOSReserved','selectionTestOriginStart','TICKER_NEWS_ID','LABEL_MATURITY_DATE','fixedBlindHoldout','neverSeenAcrossDevelopmentClaimed']:
               assert token in code,token
+          data=Path('scripts/v12_data_sources.py').read_text(encoding='utf-8')
+          for token in ['vnstock.api.quote','VNSTOCK_PROVIDER_RECOVERY','CROSS_SOURCE_MAD_LIMIT','MIN_ROWS']:
+              assert token in data,token
+          assert 'Vnstock().stock' not in data,'deprecated VNStock provider adapter still present'
           print('V12 METHODFIX ASSEMBLED STRUCTURE PASS',len(parts),[p.name for p in parts])
           PY
       - name: Runtime method-risk unit tests
@@ -90,4 +95,4 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
           gh workflow run v12-methodfix-full.yml --repo "${GITHUB_REPOSITORY}" --ref "${GITHUB_REF_NAME}"
-          echo "Dispatched clean full from ${GITHUB_SHA} after all fast-gate checks passed; sector-PIT isolation regression verified."
+          echo "Dispatched clean full from ${GITHUB_SHA} after all fast-gate checks passed; data-route and PIT regressions verified."
