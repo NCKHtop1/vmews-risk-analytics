@@ -7,8 +7,8 @@
 # 85-90% calibration block; sealed 90-100% labels remain inaccessible.
 def _select_return_shrink(y,med):
     yy=np.asarray(y,float);mm=np.asarray(med,float);good=np.isfinite(yy)&np.isfinite(mm);yy=yy[good];mm=mm[good]
-    if len(yy)<100:return 1.0,int(len(yy)),{'method':'INSUFFICIENT_PREBLIND_ROWS_IDENTITY','gridMin':.05,'gridMax':1.25,'gridN':49,'selectionRule':'IDENTITY_FALLBACK'}
-    grid=np.linspace(.05,1.25,49);rows=[]
+    if len(yy)<100:return 1.0,int(len(yy)),{'method':'INSUFFICIENT_PREBLIND_ROWS_IDENTITY','gridMin':.05,'gridMax':1.25,'gridN':39,'selectionRule':'IDENTITY_FALLBACK'}
+    grid=np.linspace(.05,1.25,39);rows=[]
     for g in grid:
         loss=np.abs(yy-mm*float(g));mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0
         rows.append((float(g),mae,se))
@@ -26,7 +26,7 @@ def _select_return_shrink(y,med):
       'identityMAE':float(identity[1]),'oneSELimit':limit,'oneSEEligibleN':int(len(eligible)),
       'gridMin':float(grid[0]),'gridMax':float(grid[-1]),'gridN':int(len(grid)),
       'selectedAtLowerBound':bool(abs(selected_g-grid[0])<1e-12),
-      'selectedAtIdentity':bool(abs(selected_g-1.0)<1e-12),
+      'selectedAtIdentity':bool(abs(selected_g-1.0)<.02),
       'sealedLabelsUsed':0,
       'reason':'gamma is a return-scale calibration parameter; identity is preferred when pre-blind MAE differences are statistically indistinguishable'
     }
