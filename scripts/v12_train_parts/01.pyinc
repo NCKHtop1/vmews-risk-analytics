@@ -2,11 +2,18 @@ def apply_prep(X,p):
     imp,mu,sd=p;return (np.where(np.isfinite(X),X,imp)-mu)/sd
 def make_model(kind):
     if kind=="RIDGE":return Ridge(alpha=80.0)
-    if kind=="LGBM":
+    if kind in ("LGBM","LGBM_L1"):
         try:
             from lightgbm import LGBMRegressor
-            return LGBMRegressor(objective="regression",n_estimators=140,learning_rate=.04,num_leaves=15,max_depth=4,min_child_samples=100,reg_lambda=2.,reg_alpha=.1,subsample=.9,colsample_bytree=.9,random_state=73,n_jobs=2,verbosity=-1)
-        except Exception:kind="HGB"
+            # LGBM_L1 is a genuine model-family candidate, selected only inside the same
+            # maturity-purged 50-70% OOF window as the existing candidates.  It targets the
+            # conditional median directly and is useful when squared-error fits preserve rank
+            # but overreact to return tails.  No sealed/blind label is available here.
+            objective="regression_l1" if kind=="LGBM_L1" else "regression"
+            return LGBMRegressor(objective=objective,n_estimators=140,learning_rate=.04,num_leaves=15,max_depth=4,min_child_samples=100,reg_lambda=2.,reg_alpha=.1,subsample=.9,colsample_bytree=.9,random_state=73,n_jobs=2,verbosity=-1)
+        except Exception:kind="HGB_L1" if kind=="LGBM_L1" else "HGB"
+    if kind=="HGB_L1":
+        return HistGradientBoostingRegressor(loss="absolute_error",max_depth=3,learning_rate=.05,max_iter=130,l2_regularization=2.,random_state=73)
     return HistGradientBoostingRegressor(loss="squared_error",max_depth=3,learning_rate=.05,max_iter=130,l2_regularization=2.,random_state=73)
 def date_mask(D,dates,start_frac,end_frac,h,valid):
     n=len(dates);a=max(1,int(start_frac*n));b=min(n,int(end_frac*n));purge=max(0,a-h);train=valid&(D<dates[purge]);test_end=dates[b] if b<n else "9999-99-99";test=valid&(D>=dates[a])&(D<test_end);return train,test
@@ -31,7 +38,10 @@ def expert_oof(X,y,D,dates,h,idx_by_expert):
     result={};selection={}
     for name,fi in idx_by_expert.items():
         best=best_pred=None
-        for kind in ("RIDGE","LGBM"):
+        # Robust L1 is evaluated under exactly the same chronological OOF protocol.  Keep the
+        # selection objective unchanged so this expands the admissible model family rather than
+        # weakening any downstream rank, MAE, PBO, blind, magnitude or embargo gate.
+        for kind in ("RIDGE","LGBM","LGBM_L1"):
             pred=np.full(len(y),np.nan)
             for fold in OOF_FOLDS:
                 ii,pp,_=fit_predict(X,y,D,dates,fi,fold,h,kind);pred[ii]=pp
