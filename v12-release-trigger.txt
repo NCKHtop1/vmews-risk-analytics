@@ -1,7 +1,8 @@
-Retrigger immutable V12.1 release after mobile 390px overflow fix.
-Persisted commit: eabba5e7ee185954a31ee864c069c3ae37b3acfd
-Full source: 554aa0b036fd419d92547e1042982ec29044d6eb
-Responsive UI fix: 2c592bd1fe79cc8d79ae7561451421696c9c0024
-Browser smoke harness: cb28e4549e23b474cc7db0fc209a42cf73b62dd0
+Retrigger immutable V12.1 release after pinned-CDN Cloudflare telemetry handling fix.
+Validated Full source: 554aa0b036fd419d92547e1042982ec29044d6eb
+Persisted model/data commit: eabba5e7ee185954a31ee864c069c3ae37b3acfd
+Responsive production UI fix: 2c592bd1fe79cc8d79ae7561451421696c9c0024
+Pinned-CDN browser integrity smoke fix: 7a680b5e12ca6472d930ec5d6cb2e15ea19774ed
+Prior release candidate manifest commit: 98a23b31140ebff6aaa1cf84ece7b9f1674cee4b (superseded after CDN smoke failure)
 Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.5.0
 UI assets: forecast-final.html + forecast-polish-v12.js
