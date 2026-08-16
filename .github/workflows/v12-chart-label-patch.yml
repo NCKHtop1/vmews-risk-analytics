@@ -1,0 +1,32 @@
+name: V12 chart label patch
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_patch_chart_labels.py'
+      - '.github/workflows/v12-chart-label-patch.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: python scripts/v12_patch_chart_labels.py
+      - name: JS syntax and exact layout contract
+        run: |
+          node --check forecast-final-v12.js
+          grep -q 'labelAbove=hi-P.t>38' forecast-final-v12.js
+          grep -q 'if(W>900)' forecast-final-v12.js
+      - name: Commit deterministic patch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add forecast-final-v12.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Move forecast labels clear of uncertainty bars [no-full]'
+          git push origin HEAD:forecast-v12-methodfix
