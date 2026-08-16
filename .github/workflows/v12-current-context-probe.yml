@@ -25,3 +25,4 @@ jobs:
           name: v12-current-context-${{ github.run_id }}
           retention-days: 7
           path: data/current-context-v12.json
+# trigger: current-value schema validation
