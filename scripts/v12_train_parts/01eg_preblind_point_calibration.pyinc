@@ -17,11 +17,13 @@ def _point_candidate_metrics(y,p):
 def _candidate_stability(y,p,blocks=3):
     """Pre-blind contiguous-block stability audit for point-family selection."""
     yy=np.asarray(y,float);pp=np.asarray(p,float);good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good]
-    if not len(yy):return {'blocks':0,'positiveEdgeBlocks':0,'stable':False,'worstEdge':-float('inf'),'medianEdge':-float('inf'),'blockMetrics':[]}
+    if not len(yy):return {'blocks':0,'positiveEdgeBlocks':0,'stable':False,'worstEdge':-float('inf'),'medianEdge':-float('inf'),'downsideTolerance':0.0,'blockMetrics':[]}
     idx=[z for z in np.array_split(np.arange(len(yy)),min(int(blocks),len(yy))) if len(z)]
     bm=[_point_candidate_metrics(yy[z],pp[z]) for z in idx]
     edges=np.asarray([m['maeEdge'] for m in bm],float);pos=int(np.sum(edges>0));need=max(1,int(math.ceil(2*len(bm)/3)))
-    return {'blocks':int(len(bm)),'positiveEdgeBlocks':pos,'requiredPositiveBlocks':need,'stable':bool(pos>=need),'worstEdge':float(np.min(edges)),'medianEdge':float(np.median(edges)),'blockMetrics':bm}
+    median_edge=float(np.median(edges));worst=float(np.min(edges));downside=max(1e-5,0.25*abs(median_edge))
+    stable=bool(pos>=need and worst>=-downside)
+    return {'blocks':int(len(bm)),'positiveEdgeBlocks':pos,'requiredPositiveBlocks':need,'stable':stable,'worstEdge':worst,'medianEdge':median_edge,'downsideTolerance':float(downside),'blockMetrics':bm}
 
 def _choose_point_family(candidates,y):
     """MAE-first, stability-aware pre-blind selector; dispersion is only a near-tie breaker."""
