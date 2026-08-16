@@ -52,7 +52,8 @@ mode4,a4=ns['_choose_point_family']([('STABLE',stable),('HIGH_DISPERSION_UNSTABL
 assert mode4=='STABLE',(mode4,a4)
 assert a4['sealedLabelsUsed']==0,a4
 assert a4['candidateStability']['STABLE']['stable'] is True,a4
-assert a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['positiveEdgeBlocks']<a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['requiredPositiveBlocks'],a4
+assert a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['stable'] is False,a4
+assert a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['worstEdge'] < -a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['downsideTolerance'],a4
 assert a4['tightMAETolerance']<=5e-5,a4
 
 # Gamma is a return-scale calibration parameter, not a complexity parameter. When several
