@@ -1,7 +1,6 @@
-# Price-only reversal/shock features.  Every input is already present at origin T0, so these
-# transformations add no new data source and cannot look beyond T0.  They are deliberately
-# kept inside the NUMERICAL expert: model-kind selection and all sealed gates still decide
-# whether the extra state representation generalizes.
+# Price-only reversal/shock features. Every input exists at origin T0. These features therefore
+# add state resolution without adding a new data source or a future timestamp. They remain inside
+# NUMERICAL, so pre-blind model selection and the sealed gates still decide whether they survive.
 REVERSAL_FEATURES=[
     'stretch20Vol','stretch10Vol','snapback1v5','snapback2v10',
     'volRegimeShift','rangeRegimeShift','oversoldPressure','overboughtPressure',
@@ -19,8 +18,9 @@ def _reversal_state(r):
     r1=_clip_v12(r.get('ret1'),-1,1);r2=_clip_v12(r.get('ret2'),-1,1);r5=_clip_v12(r.get('ret5'),-1,1);r10=_clip_v12(r.get('ret10'),-1,1);r20=_clip_v12(r.get('ret20'),-1,1)
     v5=max(1e-5,abs(_clip_v12(r.get('vol5'),0,2)));v20=max(1e-5,abs(_clip_v12(r.get('vol20'),0,2)))
     rg1=max(0.0,abs(_clip_v12(r.get('range1'),0,2)));rg5=max(1e-5,abs(_clip_v12(r.get('range5'),0,2)))
-    rsi=_clip_v12(r.get('rsi14',50),0,100);vz=_clip_v12(r.get('volumeZ'),-8,8);t5=_clip_v12(r.get('trend5'),-2,2);t20=_clip_v12(r.get('trend20'),-2,2)
-    oversold=max(0.0,(45.0-rsi)/45.0);overbought=max(0.0,(rsi-55.0)/45.0)
+    # stock_features stores RSI as 0..1 (the risk layer uses <= .35 as weak), not 0..100.
+    rsi=_clip_v12(r.get('rsi14',.5),0,1);vz=_clip_v12(r.get('volumeZ'),-8,8);t5=_clip_v12(r.get('trend5'),-2,2);t20=_clip_v12(r.get('trend20'),-2,2)
+    oversold=max(0.0,(.45-rsi)/.45);overbought=max(0.0,(rsi-.55)/.45)
     return {
       'stretch20Vol':_clip_v12(-r20/(v20*math.sqrt(20.0)+1e-6),-6,6),
       'stretch10Vol':_clip_v12(-r10/(v20*math.sqrt(10.0)+1e-6),-6,6),
@@ -46,4 +46,4 @@ def base_panel(price_store):
     return panel,latest,rows_by_symbol
 
 EXPERTS['NUMERICAL']=list(dict.fromkeys(list(EXPERTS['NUMERICAL'])+REVERSAL_FEATURES))
-FEATURE_NAMES=list(dict.fromkeys(list(FEATURE_NAMES)+REVERSAL_FEATURES))
+FEATURES=list(dict.fromkeys(list(FEATURES)+REVERSAL_FEATURES))
