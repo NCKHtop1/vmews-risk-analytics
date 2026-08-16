@@ -64,6 +64,25 @@ def _fit_deadband(y,pred,lo,hi):
     return {'threshold':float(best[0]),'fitRows':int(len(yy)),'fitMAE':float(best[1]),'nonTrivialShare':float(best[2]),'gridN':int(len(rows)),'sealedLabelsUsed':0}
 
 
+def _paired_challenger_audit(y,incumbent,challenger):
+    """Require a challenger to beat the incumbent on paired pre-blind absolute loss.
+
+    Family search itself creates selection variance. A challenger therefore cannot replace the
+    already-selected point map merely because its raw MAE is microscopically lower. We require
+    the one-sided 90% lower confidence bound of the paired MAE improvement to be positive on the
+    disjoint pre-blind selection slice. This is a model-selection safeguard, not a release-gate
+    relaxation, and it never receives sealed labels.
+    """
+    yy=np.asarray(y,float);aa=np.asarray(incumbent,float);bb=np.asarray(challenger,float)
+    good=np.isfinite(yy)&np.isfinite(aa)&np.isfinite(bb);yy=yy[good];aa=aa[good];bb=bb[good]
+    if len(yy)<2:
+        return {'n':int(len(yy)),'pairedMAEEdge':-float('inf'),'pairedSE':float('inf'),'lower90':-float('inf'),'pass':False,'sealedLabelsUsed':0}
+    diff=np.abs(yy-aa)-np.abs(yy-bb)
+    edge=float(np.mean(diff));se=float(np.std(diff,ddof=1)/math.sqrt(len(diff)))
+    lower=float(edge-1.6448536269514722*se)
+    return {'n':int(len(diff)),'pairedMAEEdge':edge,'pairedSE':se,'lower90':lower,'pass':bool(lower>0.0),'sealedLabelsUsed':0}
+
+
 def calibrate(cal_y,cal_score,conform_y,conform_score):
     layer,iso,qadj=_point_family_calibrate_before_affine(cal_y,cal_score,conform_y,conform_score)
     if not isinstance(layer,_QuantileLayer):
@@ -88,7 +107,23 @@ def calibrate(cal_y,cal_score,conform_y,conform_score):
     affB=_clip_between(_affine_predict(affine,cs[a:b]),loB,hiB)
     deadB=_clip_between(np.where(np.abs(affB)<float(dead.get('threshold',0.0)),0.0,affB),loB,hiB)
     base_name='BASE_'+str(original_mode)
-    selected,choice=_choose_point_family([(base_name,baseB),('ROBUST_AFFINE_SCORE',affB),('ROBUST_AFFINE_DEADBAND',deadB)],cy[a:b])
+    candidate_rows=[(base_name,baseB),('ROBUST_AFFINE_SCORE',affB),('ROBUST_AFFINE_DEADBAND',deadB)]
+    selected,choice=_choose_point_family(candidate_rows,cy[a:b])
+
+    # A second family-search layer must earn replacement of the incumbent with paired evidence.
+    # This specifically prevents a near-no-change affine/deadband map from winning on numerical
+    # noise (the Full #22 T+1 failure mode) and prevents large affine intercepts from being chosen
+    # on a negligible pre-blind MAE difference (the Full #22 T+5 failure mode).
+    paired={'n':int(b-a),'pairedMAEEdge':0.0,'pairedSE':0.0,'lower90':0.0,'pass':True,'sealedLabelsUsed':0}
+    raw_selected=selected
+    if selected!=base_name:
+        pred_by_name={name:pred for name,pred in candidate_rows}
+        paired=_paired_challenger_audit(cy[a:b],baseB,pred_by_name[selected])
+        if not paired['pass']:
+            selected=base_name
+    choice['rawSelectedFamily']=raw_selected
+    choice['pairedChallengerAudit']=paired
+    choice['selectedFamilyAfterPairedGuard']=selected
 
     if selected=='ROBUST_AFFINE_SCORE':
         layer.pointMode='ROBUST_AFFINE_SCORE';layer.pointAffineModel=affine;layer.pointDeadband=0.0
@@ -99,10 +134,11 @@ def calibrate(cal_y,cal_score,conform_y,conform_score):
       'method':'PREBLIND_AFFINE_POINT_FAMILY_CHALLENGE',
       'fitRows':int(a),'selectionRows':int(b-a),'conformalRows':int(n-b),
       'baseFamily':str(original_mode),'selectedFamily':str(getattr(layer,'pointMode',original_mode)),
-      'challengerSelected':bool(selected!=base_name),'selectionAudit':choice,
+      'rawSelectedFamily':str(raw_selected),'challengerSelected':bool(selected!=base_name),
+      'pairedChallengerAudit':paired,'selectionAudit':choice,
       'affineFit':affine,'deadbandFit':dead,'baseSelectionAudit':original_audit,
       'sealedLabelsUsed':0,
-      'reason':'direct meta-return scores are allowed a positive-slope robust affine scale/intercept calibration because return-score scale is not model complexity; selection remains MAE/stability based and entirely pre-blind'
+      'reason':'affine challenger fitting and family selection are entirely pre-blind; challenger replacement additionally requires positive paired one-sided 90% MAE evidence versus the incumbent so numerical ties cannot promote degenerate or regime-specific magnitude maps'
     }
     return layer,iso,qadj
 
