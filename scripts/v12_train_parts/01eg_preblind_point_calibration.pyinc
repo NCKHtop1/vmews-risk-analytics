@@ -14,6 +14,40 @@ def _point_candidate_metrics(y,p):
     loss=np.abs(yy-pp);mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0;base=float(np.mean(np.abs(yy)));fs=float(np.std(pp));rs=float(np.std(yy))
     return {'n':int(len(yy)),'mae':mae,'maeSE':se,'baselineMAE':base,'maeEdge':base-mae,'forecastStd':fs,'realizedStd':rs,'dispersionRatio':fs/(rs or 1e-12),'nonTrivialShare':float(np.mean(np.abs(pp)>=.001))}
 
+def _candidate_stability(y,p,blocks=3):
+    """Pre-blind contiguous-block stability audit for point-family selection."""
+    yy=np.asarray(y,float);pp=np.asarray(p,float);good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good]
+    if not len(yy):return {'blocks':0,'positiveEdgeBlocks':0,'stable':False,'worstEdge':-float('inf'),'medianEdge':-float('inf'),'blockMetrics':[]}
+    idx=[z for z in np.array_split(np.arange(len(yy)),min(int(blocks),len(yy))) if len(z)]
+    bm=[_point_candidate_metrics(yy[z],pp[z]) for z in idx]
+    edges=np.asarray([m['maeEdge'] for m in bm],float);pos=int(np.sum(edges>0));need=max(1,int(math.ceil(2*len(bm)/3)))
+    return {'blocks':int(len(bm)),'positiveEdgeBlocks':pos,'requiredPositiveBlocks':need,'stable':bool(pos>=need),'worstEdge':float(np.min(edges)),'medianEdge':float(np.median(edges)),'blockMetrics':bm}
+
+def _choose_point_family(candidates,y):
+    """MAE-first, stability-aware pre-blind selector; dispersion is only a near-tie breaker."""
+    assessed=[]
+    for name,pred in candidates:
+        m=_point_candidate_metrics(y,pred);s=_candidate_stability(y,pred,3);assessed.append((name,m,s))
+    positive=[z for z in assessed if z[1]['maeEdge']>0 and z[2]['stable']]
+    pool=positive if positive else [z for z in assessed if z[1]['maeEdge']>0]
+    if not pool:pool=assessed
+    best=min(pool,key=lambda z:(z[1]['mae'],-z[2]['positiveEdgeBlocks'],-z[1]['nonTrivialShare']))
+    # Full #20 showed that a whole one-standard-error band is too permissive for a point-map
+    # family: a higher-dispersion map can be materially worse in MAE yet still enter that band.
+    # Keep magnitude as a tie-breaker only when MAE is genuinely near-identical on pre-blind B.
+    tight_tol=min(5e-5,max(1e-6,0.10*float(best[1]['maeSE'])))
+    near=[z for z in pool if z[1]['mae']<=best[1]['mae']+tight_tol+1e-15]
+    chosen=max(near,key=lambda z:(z[2]['positiveEdgeBlocks'],z[1]['nonTrivialShare'],z[1]['dispersionRatio'],-z[1]['mae']))
+    audit={
+      'selectionRule':'PREBLIND_STABILITY_THEN_MAE; dispersion only within tight MAE equivalence',
+      'tightMAETolerance':float(tight_tol),'bestMAEFamily':best[0],'selectedFamily':chosen[0],
+      'candidateMetrics':{name:m for name,m,_ in assessed},
+      'candidateStability':{name:s for name,_,s in assessed},
+      'stablePositiveFamilies':[name for name,m,s in assessed if m['maeEdge']>0 and s['stable']],
+      'sealedLabelsUsed':0
+    }
+    return chosen[0],audit
+
 def _weighted_pava(values,weights):
     """Weighted increasing PAVA; returns one fitted value per original point."""
     vals=[float(x) for x in values];w=[float(x) for x in weights];blocks=[]
@@ -59,7 +93,7 @@ def calibrate(cal_y,cal_score,conform_y,conform_score):
         lo0,med0,hi0=layer.predict(cs);g,fit_n,audit=_select_return_shrink(cy,med0)
         layer.returnShrink=float(g);layer.shrinkSelectionN=int(fit_n);layer.shrinkSelectionAudit=audit
         layer.pointMode='Q50';layer.pointScoreScale=1.0;layer.pointBinnedMedian=None
-        layer.pointSelectionAudit={'method':'INSUFFICIENT_PREBLIND_ROWS_Q50','n':int(n),'sealedLabelsUsed':0}
+        layer.pointSelectionAudit={'method':'INSUFFICIENT_PREBLIND_ROWS_Q50','n':int(n),'selectedFamily':'Q50','sealedLabelsUsed':0}
         lo=lo0*g;hi=hi0*g;nonconf=np.maximum.reduce([lo-cy,cy-hi,np.zeros(len(cy))]) if n else np.asarray([],float)
     else:
         # Three disjoint slices inside 85-90%:
@@ -77,25 +111,22 @@ def calibrate(cal_y,cal_score,conform_y,conform_score):
         mapped=np.clip(mapped,np.minimum(q_lo,q_hi),np.maximum(q_lo,q_hi))
         candidates=[('Q50',q_point),('DIRECT_SCORE',direct)]
         if median_map is not None:candidates.append(('BINNED_MONOTONE_MEDIAN',mapped))
-        metrics=[(name,_point_candidate_metrics(cy[a:b],pred)) for name,pred in candidates]
-        best=min(metrics,key=lambda z:(z[1]['mae'],-z[1]['nonTrivialShare']))
-        limit=float(best[1]['mae']+best[1]['maeSE'])
-        eligible=[(name,m) for name,m in metrics if m['mae']<=limit+1e-15 and m['maeEdge']>0]
-        # One-SE regularization keeps only pre-blind-positive candidates; among statistically
-        # indistinguishable maps, prefer a genuinely non-degenerate monotone point forecast.
-        chosen=max(eligible,key=lambda z:(z[1]['nonTrivialShare'],z[1]['dispersionRatio'],-z[1]['mae'])) if eligible else best
-        mode=chosen[0]
+        mode,choice_audit=_choose_point_family(candidates,cy[a:b])
+        metrics=choice_audit['candidateMetrics']
+        best_name=choice_audit['bestMAEFamily']
+        best_metric=metrics[best_name]
         layer.returnShrink=float(q50_scale);layer.shrinkSelectionN=int(q_n);layer.shrinkSelectionAudit=q_audit
         layer.pointMode=mode;layer.pointScoreScale=float(score_scale);layer.pointBinnedMedian=median_map
         layer.pointSelectionAudit={
           'method':'THREE_WAY_PREBLIND_POINT_FAMILY_SELECTION',
           'selectionFitRows':int(a),'selectionValidationRows':int(b-a),'conformalRows':int(n-b),
-          'selectionRule':'minimum validation MAE; within one-SE and positive no-change edge, prefer higher non-trivial share/dispersion',
-          'bestMAEFamily':best[0],'oneSELimit':limit,'selectedFamily':mode,
-          'candidateMetrics':{name:m for name,m in metrics},
+          'selectionRule':choice_audit['selectionRule'],'tightMAETolerance':choice_audit['tightMAETolerance'],
+          'bestMAEFamily':best_name,'bestMAE':best_metric['mae'],'selectedFamily':mode,
+          'candidateMetrics':metrics,'candidateStability':choice_audit['candidateStability'],
+          'stablePositiveFamilies':choice_audit['stablePositiveFamilies'],
           'q50ScaleAudit':q_audit,'directScoreScaleAudit':s_audit,
           'binnedMedianAudit':median_map,'sealedLabelsUsed':0,
-          'reason':'zero-inflated q50 and raw score scaling are augmented by a robust binned monotone conditional-median map fitted and selected entirely pre-blind; sealed gates remain unchanged'
+          'reason':'point-family choice is MAE-first and contiguous-block stability-aware entirely inside pre-blind validation; dispersion can break only a genuinely tight MAE tie; sealed gates remain unchanged'
         }
         lo=lo0[b:]*q50_scale;hi=hi0[b:]*q50_scale;yy=cy[b:]
         nonconf=np.maximum.reduce([lo-yy,yy-hi,np.zeros(len(yy))]) if len(yy) else np.asarray([],float)
