@@ -20,6 +20,13 @@ for name,arr in [('q20',lo),('q50',med),('q80',hi)]:
     d=np.diff(np.asarray(arr,float));assert np.min(d)>=-1e-10,(name,float(np.min(d)),getattr(layer,'method',None))
 assert np.all(lo<=med) and np.all(med<=hi)
 assert 'MONOTONE' in str(getattr(layer,'method','')).upper(),getattr(layer,'method',None)
+# The released point family is selected only inside the pre-blind calibration block. The
+# untouched sealed holdout must never enter the point-family/scale decision.
+pa=getattr(layer,'pointSelectionAudit',{})
+assert getattr(layer,'pointMode',None) in ('Q50','DIRECT_SCORE'),getattr(layer,'pointMode',None)
+assert pa.get('sealedLabelsUsed')==0,pa
+assert pa.get('selectedFamily',getattr(layer,'pointMode',None))==getattr(layer,'pointMode',None),pa
+assert int(getattr(layer,'conformalN',0))>0,getattr(layer,'conformalN',None)
 
 # Gamma is a return-scale calibration parameter, not a complexity parameter. When several
 # pre-blind candidates are statistically indistinguishable from the empirical MAE minimizer,
@@ -34,4 +41,4 @@ assert a2['oneSEEligibleN']>1 and a2['empiricalBestSE']>0,a2
 assert abs(g2-1.0)<=abs(a2['empiricalBestShrink']-1.0)+1e-12,(g2,a2)
 assert g2>=a2['empiricalBestShrink']-1e-12,(g2,a2)
 
-print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj),'oneSEIdentityShrink':float(g2),'empiricalBestShrink':float(a2['empiricalBestShrink'])})
+print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'pointMode':getattr(layer,'pointMode',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj),'oneSEIdentityShrink':float(g2),'empiricalBestShrink':float(a2['empiricalBestShrink'])})
