@@ -5,14 +5,22 @@ def fit_horizon(X,y,D,dates,h,idx_by_expert):
     s=z.get('sealedAudit') or {};old=dict(z.get('gates') or {})
     ranking=bool(s.get('rankIC',0)>.02 and s.get('spread',0)>.001 and s.get('icDays',0)>=20 and s.get('icPositiveDayShare',0)>=.50)
     direction=bool(s.get('balancedAccuracy',0)>.51 and s.get('mcc',0)>.015 and s.get('brierSkill',-99)>0.0 and s.get('ece',99)<.12)
-    scenario=bool(s.get('scenarioRankIC',0)>.01 and s.get('scenarioMAEImprove',-99)>0.0 and .52<=s.get('coverage20_80',0)<=.72)
+    # Point-price authority now rejects a degenerate near-zero forecast.  The magnitude floor is
+    # horizon-aware because one-day realized dispersion is naturally smaller than five-day dispersion.
+    min_disp={1:.05,2:.07,3:.08,4:.09,5:.10}.get(int(h),.08)
+    min_p90={1:.04,2:.05,3:.06,4:.07,5:.08}.get(int(h),.06)
+    daily=s.get('dailyMAEEdge') or {};ci=daily.get('bootstrap90') or [None,None]
+    stable_mae=bool(daily.get('days',0)>=20 and daily.get('mean',0)>0 and daily.get('positiveDayShare',0)>=.50 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0)
+    magnitude=bool(s.get('forecastDispersionRatio',0)>=min_disp and s.get('p90MagnitudeRatio',0)>=min_p90)
+    scenario=bool(s.get('scenarioRankIC',0)>.01 and s.get('scenarioMAEImprove',-99)>0.0 and .52<=s.get('coverage20_80',0)<=.72 and magnitude and stable_mae)
     # Generalization/PBO gate may be supplied by model-risk hardening wrappers. Never discard it when present.
     generalization=old.get('generalization',True)
     z['gates']={'ranking':ranking,'direction':direction,'scenario':scenario,'generalization':bool(generalization)}
+    z['magnitudeGate']={'status':'PASS' if magnitude and stable_mae else 'REVIEW','forecastDispersionRatio':s.get('forecastDispersionRatio'),'minimumDispersionRatio':min_disp,'p90MagnitudeRatio':s.get('p90MagnitudeRatio'),'minimumP90MagnitudeRatio':min_p90,'dailyMAEEdge':daily,'nonCollapsed':magnitude,'stableMAEEdge':stable_mae}
     z['skillGatePolicy']={
         'ranking':'rankIC > 0.02; spread > 0.10%; >=20 daily IC observations; >=50% non-negative daily IC',
         'direction':'balanced accuracy > 0.51; MCC > 0.015; Brier skill > 0; ECE < 0.12',
-        'scenario':'scenario rank IC > 0.01; scenario MAE improvement over zero-return baseline > 0; empirical CQR coverage 52%-72%',
-        'rule':'A forecast that is worse than the no-change/base-rate baseline cannot be promoted merely because rank IC is positive.'
+        'scenario':f'scenario rank IC > 0.01; MAE better than no-change with positive moving-block-bootstrap daily edge; empirical CQR coverage 52%-72%; forecast dispersion >= {min_disp:.0%} and P90 magnitude >= {min_p90:.0%} of realized dispersion',
+        'rule':'A point-price forecast cannot be promoted by hugging zero. It must beat no-change out of sample and retain non-trivial return dispersion; sealed 90-100% remains evaluation-only.'
     }
     return z
