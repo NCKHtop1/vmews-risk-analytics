@@ -25,3 +25,4 @@ print(
     ),
     flush=True,
 )
+# Push marker: run fast gate on the exact canonical-source implementation above.
