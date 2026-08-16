@@ -1,0 +1,120 @@
+# Robust affine point calibration for under-dispersed direct return scores.
+#
+# The meta-model score is an OOS direct-return estimate, but its numerical scale can be much
+# smaller than realized return dispersion. Reusing the q50 shrink grid for DIRECT_SCORE capped
+# the multiplier at 1.25, which is a methodological mismatch: it can preserve rank while making
+# a genuine magnitude forecast impossible. This layer adds a strictly pre-blind, positive-slope
+# LAD-style affine calibration. Candidate fitting uses the first third of the maturity-purged
+# 85-90% block, family selection uses the second third, and the final third remains reserved for
+# conformal widening by the underlying calibration layer. The sealed 90-100% labels are never
+# supplied here.
+_point_family_calibrate_before_affine = calibrate
+_point_family_apply_before_affine = apply_calibration
+
+
+def _clip_between(x, lo, hi):
+    xx=np.asarray(x,float);aa=np.minimum(np.asarray(lo,float),np.asarray(hi,float));bb=np.maximum(np.asarray(lo,float),np.asarray(hi,float))
+    return np.minimum(np.maximum(xx,aa),bb)
+
+
+def _fit_robust_affine_score(score,y):
+    """Fit y ~= intercept + positive_slope * score under absolute loss on pre-blind rows only."""
+    s=np.asarray(score,float);yy=np.asarray(y,float);good=np.isfinite(s)&np.isfinite(yy);s=s[good];yy=yy[good]
+    if len(s)<120 or float(np.std(s))<1e-10:
+        return None
+    sm=float(np.median(s));ym=float(np.median(yy));smad=float(np.median(np.abs(s-sm))*1.4826);ymad=float(np.median(np.abs(yy-ym))*1.4826)
+    ratio=float(ymad/max(smad,1e-8));upper=float(min(30.0,max(2.0,2.5*ratio)))
+    # Dense near identity plus a geometric tail for genuinely under-scaled scores.
+    g1=np.linspace(.05,min(2.0,upper),40)
+    g2=np.geomspace(max(.10,min(2.0,upper)),upper,44) if upper>2.0 else np.asarray([],float)
+    slopes=np.unique(np.concatenate([g1,g2,np.asarray([1.0],float)]))
+    rows=[]
+    for slope in slopes:
+        intercept=float(np.median(yy-float(slope)*s))
+        # Guard only pathological extrapolation; this is not a tuning target.
+        intercept=float(np.clip(intercept,-.08,.08))
+        pred=intercept+float(slope)*s;loss=np.abs(yy-pred);mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0
+        rows.append((float(slope),intercept,mae,se,float(np.std(pred))))
+    best=min(rows,key=lambda z:(z[2],abs(z[0]-1.0)))
+    return {
+      'intercept':float(best[1]),'slope':float(best[0]),'fitRows':int(len(yy)),
+      'fitMAE':float(best[2]),'fitMAESE':float(best[3]),'forecastStd':float(best[4]),
+      'scoreStd':float(np.std(s)),'realizedStd':float(np.std(yy)),'robustScaleRatio':ratio,
+      'slopeGridMin':float(np.min(slopes)),'slopeGridMax':float(np.max(slopes)),'slopeGridN':int(len(slopes)),
+      'objective':'PREBLIND_L1_AFFINE_POSITIVE_SLOPE','sealedLabelsUsed':0
+    }
+
+
+def _affine_predict(model,score):
+    s=np.asarray(score,float)
+    if not model:return np.full(len(s),np.nan)
+    return float(model['intercept'])+float(model['slope'])*s
+
+
+def _fit_deadband(y,pred,lo,hi):
+    """Optional monotone zero dead-band, tuned only on the affine fit slice."""
+    yy=np.asarray(y,float);pp=_clip_between(pred,lo,hi);good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good]
+    if len(yy)<120:return {'threshold':0.0,'fitRows':int(len(yy)),'fitMAE':float('inf'),'gridN':0,'sealedLabelsUsed':0}
+    mag=np.abs(pp);qs=np.unique(np.quantile(mag,[0,.10,.20,.30,.40,.50,.60,.70,.80]))
+    rows=[]
+    for t in qs:
+        z=np.where(np.abs(pp)<float(t),0.0,pp);mae=float(np.mean(np.abs(yy-z)));rows.append((float(t),mae,float(np.mean(np.abs(z)>=.001))))
+    # MAE first; retain more non-trivial forecasts only inside a numerical tie.
+    best=min(rows,key=lambda z:(z[1],-z[2],z[0]))
+    return {'threshold':float(best[0]),'fitRows':int(len(yy)),'fitMAE':float(best[1]),'nonTrivialShare':float(best[2]),'gridN':int(len(rows)),'sealedLabelsUsed':0}
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score):
+    layer,iso,qadj=_point_family_calibrate_before_affine(cal_y,cal_score,conform_y,conform_score)
+    if not isinstance(layer,_QuantileLayer):
+        return layer,iso,qadj
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);n=len(cy)
+    if n<300:
+        return layer,iso,qadj
+    a=max(1,n//3);b=max(a+1,2*n//3)
+    original_mode=getattr(layer,'pointMode','Q50');original_audit=getattr(layer,'pointSelectionAudit',None)
+    affine=_fit_robust_affine_score(cs[:a],cy[:a])
+    if affine is None:
+        return layer,iso,qadj
+
+    # The base layer's q20/q80 scale is already frozen from pre-blind A. Point candidates are
+    # clipped inside that calibrated scenario interval, while qadj remains untouched and is
+    # computed on the disjoint pre-blind conformal slice by the underlying layer.
+    loA0,_,hiA0=layer.predict(cs[:a]);g=float(getattr(layer,'returnShrink',1.0));loA=loA0*g;hiA=hiA0*g
+    affA=_clip_between(_affine_predict(affine,cs[:a]),loA,hiA)
+    dead=_fit_deadband(cy[:a],affA,loA,hiA)
+
+    _,baseB,loB,hiB,_=_point_family_apply_before_affine(cs[a:b],layer,iso,0.0)
+    affB=_clip_between(_affine_predict(affine,cs[a:b]),loB,hiB)
+    deadB=_clip_between(np.where(np.abs(affB)<float(dead.get('threshold',0.0)),0.0,affB),loB,hiB)
+    base_name='BASE_'+str(original_mode)
+    selected,choice=_choose_point_family([(base_name,baseB),('ROBUST_AFFINE_SCORE',affB),('ROBUST_AFFINE_DEADBAND',deadB)],cy[a:b])
+
+    if selected=='ROBUST_AFFINE_SCORE':
+        layer.pointMode='ROBUST_AFFINE_SCORE';layer.pointAffineModel=affine;layer.pointDeadband=0.0
+    elif selected=='ROBUST_AFFINE_DEADBAND':
+        layer.pointMode='ROBUST_AFFINE_DEADBAND';layer.pointAffineModel=affine;layer.pointDeadband=float(dead.get('threshold',0.0))
+    # If the existing family wins, leave its mode and parameters untouched.
+    layer.pointSelectionAudit={
+      'method':'PREBLIND_AFFINE_POINT_FAMILY_CHALLENGE',
+      'fitRows':int(a),'selectionRows':int(b-a),'conformalRows':int(n-b),
+      'baseFamily':str(original_mode),'selectedFamily':str(getattr(layer,'pointMode',original_mode)),
+      'challengerSelected':bool(selected!=base_name),'selectionAudit':choice,
+      'affineFit':affine,'deadbandFit':dead,'baseSelectionAudit':original_audit,
+      'sealedLabelsUsed':0,
+      'reason':'direct meta-return scores are allowed a positive-slope robust affine scale/intercept calibration because return-score scale is not model complexity; selection remains MAE/stability based and entirely pre-blind'
+    }
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj):
+    mode=getattr(scen,'pointMode','') if isinstance(scen,_QuantileLayer) else ''
+    if mode in {'ROBUST_AFFINE_SCORE','ROBUST_AFFINE_DEADBAND'}:
+        ss=np.asarray(score,float);p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=lo0*g;hi=hi0*g
+        point=_affine_predict(getattr(scen,'pointAffineModel',None),ss)
+        if mode=='ROBUST_AFFINE_DEADBAND':
+            t=float(getattr(scen,'pointDeadband',0.0));point=np.where(np.abs(point)<t,0.0,point)
+        point=_clip_between(point,lo,hi)
+        lo=lo-float(qadj);hi=hi+float(qadj);ns=np.full(len(point),int(scen.n),dtype=int)
+        return p,np.asarray(point,float),np.asarray(lo,float),np.asarray(hi,float),ns
+    return _point_family_apply_before_affine(score,scen,iso,qadj)
