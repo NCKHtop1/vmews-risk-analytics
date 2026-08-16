@@ -1,0 +1,91 @@
+# Drift-robust point calibration anchored at the pre-blind P(up)=50% score.
+#
+# The previous affine challengers can still inherit a regime-specific return intercept: a pooled
+# conditional median that is positive in one pre-blind window may become a stale directional
+# bias in the later walk-forward block.  This wrapper anchors zero expected return at the score
+# where the independently pre-blind isotonic direction calibration implies P(up)=50%, then fits
+# only a positive magnitude scale.  This keeps the strong cross-sectional ranking signal while
+# preventing a free return intercept from becoming a market-drift bet.  All fitting/selection is
+# confined to the 80-90% pre-blind blocks; sealed 90-100% labels are never supplied here.
+_centered_calibrate_before = calibrate
+_centered_apply_before = apply_calibration
+
+
+def _isotonic_half_center(iso, score):
+    s=np.asarray(score,float);s=s[np.isfinite(s)]
+    if not len(s):return 0.0
+    q=np.unique(np.quantile(s,np.linspace(0.01,0.99,199)))
+    if not len(q):return float(np.median(s))
+    p=np.asarray(iso.predict(q),float)
+    j=int(np.argmin(np.abs(p-.5)))
+    return float(q[j])
+
+
+def _fit_centered_positive_scale(score,y,center,min_dispersion=.08):
+    s=np.asarray(score,float);yy=np.asarray(y,float);good=np.isfinite(s)&np.isfinite(yy);x=s[good]-float(center);yy=yy[good]
+    if len(x)<120 or float(np.std(x))<1e-10:return None
+    realized=float(np.std(yy));score_std=float(np.std(x));ratio=realized/max(score_std,1e-10)
+    upper=float(min(80.0,max(3.0,2.5*ratio)))
+    g1=np.linspace(.05,min(3.0,upper),60)
+    g2=np.geomspace(max(.10,min(3.0,upper)),upper,64) if upper>3.0 else np.asarray([],float)
+    slopes=np.unique(np.concatenate([g1,g2,np.asarray([1.0],float)]));rows=[]
+    for g in slopes:
+        pred=float(g)*x;loss=np.abs(yy-pred);mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0;disp=float(np.std(pred)/(realized or 1e-12))
+        rows.append((float(g),mae,se,disp,float(np.mean(np.abs(pred)>=.001))))
+    best=min(rows,key=lambda z:(z[1],abs(z[0]-1.0)))
+    admissible=[z for z in rows if z[3]>=float(min_dispersion)]
+    mag=min(admissible,key=lambda z:(z[1],abs(z[0]-1.0))) if admissible else best
+    return {'center':float(center),'slope':float(best[0]),'magnitudeSlope':float(mag[0]),'fitRows':int(len(yy)),'fitMAE':float(best[1]),'magnitudeFitMAE':float(mag[1]),'fitMAESE':float(best[2]),'forecastDispersionRatio':float(best[3]),'magnitudeDispersionRatio':float(mag[3]),'nonTrivialShare':float(best[4]),'magnitudeNonTrivialShare':float(mag[4]),'scoreStd':score_std,'realizedStd':realized,'scaleRatio':ratio,'slopeGridMin':float(np.min(slopes)),'slopeGridMax':float(np.max(slopes)),'slopeGridN':int(len(slopes)),'minimumMagnitudeDispersion':float(min_dispersion),'objective':'PREBLIND_ISOTONIC_CENTER_POSITIVE_SCALE','sealedLabelsUsed':0}
+
+
+def _centered_predict(model,score,use_magnitude=False):
+    s=np.asarray(score,float)
+    if not model:return np.full(len(s),np.nan)
+    g=float(model['magnitudeSlope'] if use_magnitude else model['slope'])
+    return g*(s-float(model['center']))
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score):
+    layer,iso,qadj=_centered_calibrate_before(cal_y,cal_score,conform_y,conform_score)
+    if not isinstance(layer,_QuantileLayer):return layer,iso,qadj
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);n=len(cy)
+    if n<300:return layer,iso,qadj
+    a=max(1,n//3);b=max(a+1,2*n//3)
+    center=_isotonic_half_center(iso,np.asarray(cal_score,float));fit=_fit_centered_positive_scale(cs[:a],cy[:a],center,.08)
+    if fit is None:return layer,iso,qadj
+    # Incumbent prediction is frozen by all earlier pre-blind calibrators.  qadj is intentionally
+    # excluded during family selection; interval widening remains reserved to the disjoint final
+    # pre-blind conformal slice exactly as before.
+    _,baseB,loB,hiB,_=_centered_apply_before(cs[a:b],layer,iso,0.0)
+    centeredB=_clip_between(_centered_predict(fit,cs[a:b],False),loB,hiB)
+    magnitudeB=_clip_between(_centered_predict(fit,cs[a:b],True),loB,hiB)
+    original_mode=str(getattr(layer,'pointMode','Q50'));base_name='BASE_'+original_mode
+    rows=[(base_name,baseB),('ISOTONIC_CENTER_SCALE',centeredB),('ISOTONIC_CENTER_MAGNITUDE',magnitudeB)]
+    selected,choice=_choose_point_family(rows,cy[a:b]);raw=selected
+    paired={'n':int(b-a),'pairedMAEEdge':0.0,'pairedSE':0.0,'lower90':0.0,'pass':True,'sealedLabelsUsed':0}
+    if selected!=base_name:
+        pred=dict(rows)[selected];paired=_paired_challenger_audit(cy[a:b],baseB,pred)
+        # In addition to paired evidence, require chronological block stability and non-collapse
+        # on the selection slice.  This guards against a tiny pooled-MAE win that merely recreates
+        # the old near-zero forecast failure.
+        cm=(choice.get('candidateMetrics') or {}).get(selected) or {};st=(choice.get('candidateStability') or {}).get(selected) or {}
+        noncollapsed=bool(float(cm.get('dispersionRatio') or 0)>=.05 and float(cm.get('nonTrivialShare') or 0)>=.10)
+        if not (paired.get('pass') and st.get('stable') is True and noncollapsed):selected=base_name
+        choice['nonCollapseGuard']={'dispersionRatio':cm.get('dispersionRatio'),'nonTrivialShare':cm.get('nonTrivialShare'),'pass':noncollapsed}
+    choice['rawSelectedFamily']=raw;choice['pairedChallengerAudit']=paired;choice['selectedFamilyAfterGuards']=selected
+    if selected=='ISOTONIC_CENTER_SCALE':
+        layer.pointMode='ISOTONIC_CENTER_SCALE';layer.pointCenteredScaleModel=fit
+    elif selected=='ISOTONIC_CENTER_MAGNITUDE':
+        layer.pointMode='ISOTONIC_CENTER_MAGNITUDE';layer.pointCenteredScaleModel=fit
+    prior=getattr(layer,'pointSelectionAudit',None)
+    layer.pointSelectionAudit={'method':'PREBLIND_ISOTONIC_CENTER_SCALE_CHALLENGE','fitRows':int(a),'selectionRows':int(b-a),'conformalRows':int(n-b),'baseFamily':original_mode,'rawSelectedFamily':raw,'selectedFamily':str(getattr(layer,'pointMode',original_mode)),'challengerSelected':bool(selected!=base_name),'centerSource':'PREBLIND_ISOTONIC_P_UP_50_PERCENT','centeredScaleFit':fit,'pairedChallengerAudit':paired,'selectionAudit':choice,'priorPointSelectionAudit':prior,'sealedLabelsUsed':0,'reason':'zero expected return is anchored to the independently pre-blind P(up)=50% score; only positive magnitude scale is fit, and replacement requires paired MAE evidence, temporal stability and a non-collapse guard'}
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj):
+    mode=getattr(scen,'pointMode','') if isinstance(scen,_QuantileLayer) else ''
+    if mode in {'ISOTONIC_CENTER_SCALE','ISOTONIC_CENTER_MAGNITUDE'}:
+        ss=np.asarray(score,float);p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=lo0*g;hi=hi0*g;model=getattr(scen,'pointCenteredScaleModel',None)
+        point=_centered_predict(model,ss,mode=='ISOTONIC_CENTER_MAGNITUDE');point=_clip_between(point,lo,hi);lo=lo-float(qadj);hi=hi+float(qadj);ns=np.full(len(point),int(scen.n),dtype=int)
+        return p,np.asarray(point,float),np.asarray(lo,float),np.asarray(hi,float),ns
+    return _centered_apply_before(score,scen,iso,qadj)
