@@ -1,6 +1,7 @@
 # Make the released point-return method explicit in the model artifact.  The scenario interval
 # remains q20/q80 + conformal calibration, while expectedReturn may be a pre-blind-selected
 # monotone point family rather than q50 when that family wins the independent validation slice.
+# This audit is part of the exact-head fast/full validation contract.
 _fit_horizon_before_point_audit = fit_horizon
 
 
