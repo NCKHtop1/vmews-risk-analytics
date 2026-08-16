@@ -1,0 +1,57 @@
+name: V12 freeze audited research source
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'v12-source-freeze-trigger.txt'
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-source-freeze
+  cancel-in-progress: false
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    env:
+      V12_MIN_ROWS: '520'
+      V12_VNSTOCK_INTERVAL: '3.25'
+      V12_MAX_RAW_RETURN_GUARD: '0.12'
+      V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - name: Install V12 source dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Capture and fingerprint one immutable research source snapshot
+        run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot.py
+      - name: Verify frozen artifact before publication
+        run: |
+          python - <<'PY'
+          import gzip,hashlib,json
+          from pathlib import Path
+          p=Path('data/v12-frozen-source.json.gz');m=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'))
+          assert p.exists() and p.stat().st_size>1_000_000,p
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==m['snapshotFileSha256']
+          z=json.loads(gzip.decompress(p.read_bytes()).decode('utf-8'))
+          assert z['version']=='VMEWS-FROZEN-SOURCE-12.0.0'
+          assert len(z['histories'])==m['available']
+          assert m['coverageRatio']>=.98 and m['deepHistory']>=360
+          print('V12 FROZEN SOURCE VERIFY PASS',m['asOf'],m['snapshotFileSha256'],m['inputManifestSha256'])
+          PY
+      - name: Publish immutable source snapshot to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-frozen-source.json.gz data/v12-frozen-source-manifest.json
+          git commit -m 'Publish immutable V12 research source snapshot [no-full]'
+          git pull --rebase origin forecast-v12-methodfix
+          git push origin HEAD:forecast-v12-methodfix

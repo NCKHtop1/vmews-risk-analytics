@@ -1,12 +1,11 @@
 # Research-mode reproducibility override.
-# Keep the base data-source module for low-level adapters, but pin the assembled
-# V12 research pipeline to one canonical provider so repeated full runs cannot
-# silently change OHLCV vendors or the modelling universe.
+# Acquisition and modelling are deliberately separated:
+# 1) an audited VNStock-first resolver captures one dataset once;
+# 2) all model fitting/replay reads the immutable fingerprinted snapshot only.
 from v12_research_sources import (
     build_price_store as _repro_build_price_store,
     get_index_history as _repro_get_index_history,
     source_audit_summary as _repro_source_audit_summary,
-    CANONICAL_PROVIDER as V12_CANONICAL_PROVIDER,
 )
 
 build_price_store = _repro_build_price_store
@@ -16,13 +15,12 @@ source_audit_summary = _repro_source_audit_summary
 print(
     json.dumps(
         {
-            "v12ResearchSourceMode": "STRICT_CANONICAL",
-            "canonicalEquityProvider": V12_CANONICAL_PROVIDER,
-            "providerSwitching": False,
-            "canonicalFailurePolicy": "FAIL_SAFE",
+            "v12ResearchSourceMode": "IMMUTABLE_FROZEN_SNAPSHOT",
+            "runtimeProviderSwitching": False,
+            "runtimeNetworkPriceFetch": False,
+            "fingerprintRequired": True,
         },
         ensure_ascii=False,
     ),
     flush=True,
 )
-# Push marker: run fast gate on the exact canonical-source implementation above.
