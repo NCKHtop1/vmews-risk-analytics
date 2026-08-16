@@ -1,0 +1,32 @@
+# Correct the prior one-standard-error rule.  The old implementation treated the smallest
+# gamma as if it were the simplest model and therefore frequently collapsed a useful return
+# signal toward zero even when gamma≈1 had the best pre-blind MAE.  Gamma is a calibration
+# scale, not model complexity.  The statistically conservative reference is identity (g=1):
+# among candidates statistically indistinguishable from the pre-blind empirical optimum,
+# choose the candidate closest to 1.0.  Selection remains entirely inside the maturity-purged
+# 85-90% calibration block; sealed 90-100% labels remain inaccessible.
+def _select_return_shrink(y,med):
+    yy=np.asarray(y,float);mm=np.asarray(med,float);good=np.isfinite(yy)&np.isfinite(mm);yy=yy[good];mm=mm[good]
+    if len(yy)<100:return 1.0,int(len(yy)),{'method':'INSUFFICIENT_PREBLIND_ROWS_IDENTITY','gridMin':.05,'gridMax':1.25,'gridN':49,'selectionRule':'IDENTITY_FALLBACK'}
+    grid=np.linspace(.05,1.25,49);rows=[]
+    for g in grid:
+        loss=np.abs(yy-mm*float(g));mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0
+        rows.append((float(g),mae,se))
+    best_g,best_mae,best_se=min(rows,key=lambda z:(z[1],abs(z[0]-1.0)))
+    limit=float(best_mae+best_se)
+    eligible=[z for z in rows if z[1]<=limit+1e-15]
+    selected_g,selected_mae,selected_se=min(eligible,key=lambda z:(abs(z[0]-1.0),z[1]))
+    identity=min(rows,key=lambda z:abs(z[0]-1.0))
+    base=float(np.mean(np.abs(yy)))
+    return float(selected_g),int(len(yy)),{
+      'method':'PREBLIND_MAE_ONE_STANDARD_ERROR',
+      'selectionRule':'ONE_STANDARD_ERROR_TOWARD_IDENTITY',
+      'selectedMAE':float(selected_mae),'selectedSE':float(selected_se),'baseMAE':base,
+      'empiricalBestMAE':float(best_mae),'empiricalBestShrink':float(best_g),'empiricalBestSE':float(best_se),
+      'identityMAE':float(identity[1]),'oneSELimit':limit,'oneSEEligibleN':int(len(eligible)),
+      'gridMin':float(grid[0]),'gridMax':float(grid[-1]),'gridN':int(len(grid)),
+      'selectedAtLowerBound':bool(abs(selected_g-grid[0])<1e-12),
+      'selectedAtIdentity':bool(abs(selected_g-1.0)<1e-12),
+      'sealedLabelsUsed':0,
+      'reason':'gamma is a return-scale calibration parameter; identity is preferred when pre-blind MAE differences are statistically indistinguishable'
+    }
