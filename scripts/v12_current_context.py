@@ -3,9 +3,8 @@ from datetime import datetime,timezone
 
 ROOT=pathlib.Path(os.environ.get('GITHUB_WORKSPACE','.')).resolve();OUT=ROOT/'data'/'current-context-v12.json'
 FOCUS=[x.strip().upper() for x in os.environ.get('V12_CONTEXT_SYMBOLS','FPT,VCB,HPG,MBB,FRT,PNJ,VNM,SSI').split(',') if x.strip()]
-# Current UI needs income + ratio snapshots; balance/cash-flow are intentionally not burned through
-# the free guest quota until the UI has a concrete use for them. 16 calls / default focus list.
-VNSTOCK_FUNDAMENTAL_INTERVAL=float(os.environ.get('V12_FUNDAMENTAL_INTERVAL','5.5'));_last_fundamental_call=[0.0]
+VNSTOCK_FUNDAMENTAL_INTERVAL=float(os.environ.get('V12_FUNDAMENTAL_INTERVAL','5.5'));VNSTOCK_RATE_RESET=float(os.environ.get('V12_FUNDAMENTAL_RATE_RESET','65'))
+_last_fundamental_call=[0.0]
 def finite(v):
     try:x=float(v);return x if math.isfinite(x) else None
     except Exception:return None
@@ -20,6 +19,16 @@ def throttle_fundamental():
     wait=max(0.0,VNSTOCK_FUNDAMENTAL_INTERVAL-(time.monotonic()-_last_fundamental_call[0]))
     if wait:time.sleep(wait)
     _last_fundamental_call[0]=time.monotonic()
+def is_rate_limit(e):return 'rate limit' in str(e).lower() or 'giới hạn api' in str(e).lower() or isinstance(e,SystemExit)
+def with_rate_retry(fn,retries=2):
+    last=None
+    for attempt in range(retries+1):
+        try:throttle_fundamental();return fn()
+        except BaseException as e:
+            last=e
+            if not is_rate_limit(e) or attempt>=retries:raise
+            print(json.dumps({'vnstockRateWindow':'WAIT','attempt':attempt+1,'seconds':VNSTOCK_RATE_RESET},ensure_ascii=False),flush=True);time.sleep(VNSTOCK_RATE_RESET);_last_fundamental_call[0]=0.0
+    raise last
 def quarter_key(s):
     m=re.search(r'(20\d{2})[-_/ ]?Q([1-4])',str(s),re.I);return (int(m.group(1)),int(m.group(2))) if m else None
 def latest_period_col(df):
@@ -27,8 +36,7 @@ def latest_period_col(df):
     cand=[(quarter_key(c),str(c)) for c in df.columns if quarter_key(c)];return max(cand,key=lambda x:x[0])[1] if cand else None
 def previous_period_col(df,current):
     if df is None or current is None:return None
-    uq={quarter_key(c):str(c) for c in df.columns if quarter_key(c)};keys=sorted(uq);cur=quarter_key(current)
-    return uq[keys[keys.index(cur)-1]] if cur in keys and keys.index(cur)>0 else None
+    uq={quarter_key(c):str(c) for c in df.columns if quarter_key(c)};keys=sorted(uq);cur=quarter_key(current);return uq[keys[keys.index(cur)-1]] if cur in keys and keys.index(cur)>0 else None
 def row_map(df):
     if df is None:return []
     try:return [{str(k):serial(v) for k,v in r.to_dict().items()} for _,r in df.iterrows()]
@@ -43,9 +51,11 @@ def find_metric(rows,col,ids=(),patterns=()):
     return None
 def growth(cur,prev):
     a=finite(cur);b=finite(prev);return (a/b-1.0) if a is not None and b not in (None,0) else None
-def summarize_fundamental(symbol,fe):
+def summarize_fundamental(symbol):
+    from vnstock import Fundamental
+    fe=with_rate_retry(lambda:Fundamental().equity(symbol))
     def safe(fn):
-        try:throttle_fundamental();return fn(),None
+        try:return with_rate_retry(fn),None
         except BaseException as e:return None,f'{type(e).__name__}: {e}'[:500]
     ratio,er=safe(lambda:fe.ratios(period='quarter'));income,ei=safe(lambda:fe.income_statement(period='quarter'))
     rp=latest_period_col(ratio);ip=latest_period_col(income);rrows=row_map(ratio);irows=row_map(income);prev_i=previous_period_col(income,ip)
@@ -62,12 +72,11 @@ def typed_flow(rows,typ,asof):
     return {'available':True,'latestDate':str(latest.get('date'))[:10],'net1':val(latest,key)*scale,'buy1':val(latest,buy)*scale,'sell1':val(latest,sell)*scale,'net5':sum(val(r,key) for r in a[-5:])*scale,'net20':sum(val(r,key) for r in a[-20:])*scale,'observations':len(a),'unit':'VND','sourceUnit':'billion_VND' if typ=='prop' else 'VND','sourceScaleToVND':scale}
 def main():
     dash=load(ROOT/'data'/'forecast-dashboard-v12.json');flow=load(ROOT/'data'/'flow-v12.json');asof=str(dash.get('asOf') or '')[:10]
-    out={'version':'VMEWS-CURRENT-CONTEXT-12.3.2','generatedAt':datetime.now(timezone.utc).isoformat(),'forecastAsOf':asof,'symbols':{},'governance':{'flow':'Completed-EOD values are shown with their actual source date. CafeF proprietary value columns are normalized from billion VND to VND for display; missing data is never converted to zero.','fundamental':'VNStock income statements and ratios are shown as current descriptive context. They are not historical numerical forecast features until filing/publication availability timestamps are independently audited.','sponsorLayer':'vnstock_data/vnstock_ta sponsor packages are not assumed available on the public CI runner; equivalent open indicator calculations are deterministic in the browser.'}}
-    from vnstock import Fundamental
+    out={'version':'VMEWS-CURRENT-CONTEXT-12.3.3','generatedAt':datetime.now(timezone.utc).isoformat(),'forecastAsOf':asof,'symbols':{},'governance':{'flow':'Completed-EOD values are shown with their actual source date. CafeF proprietary value columns are normalized from billion VND to VND for display; missing data is never converted to zero.','fundamental':'VNStock income statements and ratios are shown as current descriptive context. They are not historical numerical forecast features until filing/publication availability timestamps are independently audited.','sponsorLayer':'vnstock_data/vnstock_ta sponsor packages are not assumed available on the public CI runner; equivalent open indicator calculations are deterministic in the browser.'}}
     for s in FOCUS:
         if s not in (dash.get('symbols') or {}):continue
         rows=(flow.get('symbols') or {}).get(s) or [];flowz={'foreign':typed_flow(rows,'foreign',asof),'proprietary':typed_flow(rows,'prop',asof)}
-        try:fund=summarize_fundamental(s,Fundamental().equity(s))
+        try:fund=summarize_fundamental(s)
         except BaseException as e:fund={'status':'REVIEW','publicationTimestampCertified':False,'numericalModelEligible':False,'modelPolicy':'CURRENT_DESCRIPTIVE_ONLY_UNTIL_FILING_PUBLICATION_TIMESTAMP_ARCHIVE_EXISTS','errors':{'init':f'{type(e).__name__}: {e}'[:500]}}
         out['symbols'][s]={'flow':flowz,'fundamental':fund};print(json.dumps({'context':s,'flowDates':[flowz['foreign'].get('latestDate'),flowz['proprietary'].get('latestDate')],'fundamentalStatus':fund.get('status'),'period':fund.get('ratioPeriod') or fund.get('incomePeriod')},ensure_ascii=False),flush=True)
     OUT.write_text(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8');print(json.dumps({'currentContext':'PASS','symbols':len(out['symbols']),'path':str(OUT)},ensure_ascii=False))
