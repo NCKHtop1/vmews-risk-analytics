@@ -1,0 +1,27 @@
+name: V12 current context probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_current_context.py'
+      - '.github/workflows/v12-current-context-probe.yml'
+permissions:
+  contents: read
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Build current context snapshot
+        run: PYTHONPATH=scripts python scripts/v12_current_context.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-current-context-${{ github.run_id }}
+          retention-days: 7
+          path: data/current-context-v12.json
