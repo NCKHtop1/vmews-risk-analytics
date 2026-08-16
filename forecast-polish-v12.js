@@ -1,123 +1,35 @@
 (()=>{"use strict";
-const $=s=>document.querySelector(s);
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
 const finite=x=>x!==null&&x!==undefined&&x!==""&&Number.isFinite(Number(x));
-const pct=(x,d=0)=>finite(x)?`${(+x*100).toFixed(d)}%`:"—";
+const pct=(x,d=1)=>finite(x)?`${(+x*100).toFixed(d)}%`:"—";
+const price=x=>finite(x)?(+x).toLocaleString("vi-VN",{maximumFractionDigits:0}):"—";
+const money=x=>{if(!finite(x))return"—";const v=+x,a=Math.abs(v);if(a>=1e12)return`${(v/1e12).toFixed(2)} nghìn tỷ`;if(a>=1e9)return`${(v/1e9).toFixed(1)} tỷ`;if(a>=1e6)return`${(v/1e6).toFixed(1)} triệu`;return v.toLocaleString("vi-VN")};
 const textMap=new Map([
-  ["T+5 expert contribution","Đóng góp mô hình · T+5"],
-  ["Không có event mới trong cửa sổ PIT hiện tại. “Không có tin” không bị quy đổi thành neutral sentiment.","Chưa ghi nhận sự kiện mới đáng chú ý trong cửa sổ dữ liệu hiện tại."],
-  ["Không có rumor claim đủ điều kiện trong cửa sổ hiện tại. Missing rumor không được coi là neutral signal.","Chưa ghi nhận thông tin lan truyền đủ điều kiện để theo dõi."],
-  ["Không có expert contribution đủ điều kiện.","Chưa có thành phần bổ sung đủ mạnh để đóng góp vào dự báo này."],
-  ["Horizon chưa vượt price-validation gate; contribution không được dùng để diễn giải một mức giá chưa hợp lệ.","Horizon này chưa đủ điều kiện để công bố mức giá dự báo."],
-  ["Chưa validate","Chưa đủ điều kiện"],
-  ["Price gate chưa PASS","Dữ liệu chưa đạt chuẩn công bố"],
-  ["Historical T0 replay drilldown","Kiểm tra lại dự báo trong quá khứ"],
-  ["Adjusted comparable","Giá so sánh điều chỉnh"],
-  ["Actual raw","Giá thực tế"],
-  ["Actual return","Biến động thực tế"],
-  ["Origin raw","Giá tại T0"],
-  ["Expected","Dự báo"],
-  ["Prior 20","Động lượng 20 phiên"],
-  ["Breadth 20","Độ rộng thị trường 20 phiên"],
-  ["News / rumor","Tin / thông tin lan truyền"],
-  ["Flow available","Dữ liệu dòng tiền"],
-  ["Rank IC","IC xếp hạng"],
-  ["Top-bottom spread","Chênh lệch nhóm cao-thấp"],
-  ["Scenario MAE skill","Cải thiện sai số MAE"],
-  ["Q20–Q80 coverage","Độ phủ Q20–Q80"],
-  ["Brier skill","Chất lượng xác suất"],
-  ["Price route","Nguồn giá"],
-  ["VNStock primary","VNStock"],
-  ["Current HOSE coverage","Độ phủ HOSE hiện tại"],
-  ["Event corpus","Kho sự kiện"],
-  ["Flow archive","Dữ liệu dòng tiền"],
-  ["Accounting PIT","Dữ liệu BCTC theo thời điểm"],
-  ["Model gates","Kiểm định mô hình"],
-  ["Model promotion","Phạm vi dự báo được duyệt"]
-]);
-function cleanText(s){
-  if(!s)return s;
-  let t=s;
-  for(const[a,b]of textMap)t=t.split(a).join(b);
-  t=t.replace(/P\(tăng\) chưa vượt direction gate/g,"xác suất hướng chưa đủ độ tin cậy")
-     .replace(/Direction gate REVIEW/g,"Chưa đủ độ tin cậy")
-     .replace(/Expected return/g,"Biến động kỳ vọng")
-     .replace(/Calibration n/g,"Mẫu hiệu chỉnh")
-     .replace(/Adjusted close/g,"Giá điều chỉnh")
-     .replace(/Raw close/g,"Giá đóng cửa")
-     .replace(/Volume/g,"Khối lượng")
-     .replace(/direct forecast/g,"dự báo")
-     .replace(/direct T\+1…T\+5/g,"T+1…T+5")
-     .replace(/Active:/g,"Thành phần:")
-     .replace(/price PASS/g,"Giá PASS")
-     .replace(/price REVIEW/g,"Giá REVIEW")
-     .replace(/direction PASS/g,"Hướng PASS")
-     .replace(/direction REVIEW/g,"Hướng REVIEW")
-     .replace(/Expert output/g,"Dự báo thành phần")
-     .replace(/cal n=/g,"mẫu=")
-     .replace(/sealed n=/g,"mẫu OOS=")
-     .replace(/Without /g,"Loại ")
-     .replace(/Current /g,"Hiện tại ")
-     .replace(/immutable validated snapshot/g,"snapshot đã kiểm định")
-     .replace(/period statements excluded without publication timestamp/g,"chưa dùng số liệu kỳ khi thiếu thời điểm công bố")
-     .replace(/numerical enabled/g,"đã bật dữ liệu định lượng")
-     .replace(/current symbols/g,"mã hiện tại")
-     .replace(/articles/g,"bài")
-     .replace(/official/g,"chính thức")
-     .replace(/rumor/g,"lan truyền")
-     .replace(/foreign/g,"khối ngoại")
-     .replace(/prop/g,"tự doanh")
-     .replace(/checks/g,"kiểm tra")
-     .replace(/price T\+h:/g,"T+h:");
-  return t;
-}
-function polishNode(el){
-  if(!el||el.dataset?.polishLock==="1")return;
-  const leaves=el.matches?.(".empty,#summary,#expertMeta,#btMeta,.sourceCard span,.sourceCard small,.forecastCard small,.forecastCard strong,.metric span,.metric small,#btDetail .eyebrow,#btDetail .metric span,#btDetail .metric small,#ablation .metric span,#tooltip span,#tooltip strong,#tooltip b,#status,#chartTitle")?[el]:[...el.querySelectorAll?.(".empty,#summary,#expertMeta,#btMeta,.sourceCard span,.sourceCard small,.forecastCard small,.forecastCard strong,.metric span,.metric small,#btDetail .eyebrow,#btDetail .metric span,#btDetail .metric small,#ablation .metric span,#tooltip span,#tooltip strong,#tooltip b,#status,#chartTitle")||[]];
-  for(const x of leaves){
-    if(x.children.length===0){const v=cleanText(x.textContent);if(v!==x.textContent)x.textContent=v}
-  }
-  const title=$("#driverTitle");if(title&&/^T\+\d+ expert contribution$/.test(title.textContent||""))title.textContent=(title.textContent||"").replace(/T\+(\d+) expert contribution/,"Đóng góp mô hình · T+$1");
-}
-function polishSummary(){
-  const s=$("#summary");if(!s)return;
-  let t=s.textContent||"";
-  t=t.replace(/; q20–q80 /gi," · vùng dự báo ").replace(/; khoảng q20–q80 /gi," · vùng dự báo ");
-  t=t.replace(/Full model T\+5 /g,"T+5 dự kiến ").replace(/VMEWS đang RED\. Risk chỉ override stance, không sửa numerical forecast\./g,"Rủi ro hệ thống đang ở mức cao.");
-  t=t.replace(/T\+5 chưa vượt đầy đủ ranking \+ distribution \+ generalization gate\. Giá dự báo bị ẩn thay vì nội suy hoặc giả lập\./g,"T+5 hiện chưa đủ điều kiện để công bố mức giá dự báo.");
-  t=cleanText(t);if(t!==s.textContent)s.textContent=t;
-}
+["T+5 expert contribution","Đóng góp mô hình · T+5"],["Không có event mới trong cửa sổ PIT hiện tại. “Không có tin” không bị quy đổi thành neutral sentiment.","Chưa ghi nhận sự kiện mới đáng chú ý trong cửa sổ dữ liệu hiện tại."],["Không có rumor claim đủ điều kiện trong cửa sổ hiện tại. Missing rumor không được coi là neutral signal.","Chưa ghi nhận thông tin lan truyền đủ điều kiện để theo dõi."],["Không có expert contribution đủ điều kiện.","Chưa có thành phần bổ sung đủ mạnh để đóng góp vào dự báo này."],["Horizon chưa vượt price-validation gate; contribution không được dùng để diễn giải một mức giá chưa hợp lệ.","Horizon này chưa đủ điều kiện để công bố mức giá dự báo."],["Chưa validate","Chưa đủ điều kiện"],["Price gate chưa PASS","Dữ liệu chưa đạt chuẩn công bố"],["Historical T0 replay drilldown","Kiểm tra lại dự báo trong quá khứ"],["Adjusted comparable","Giá so sánh điều chỉnh"],["Actual raw","Giá thực tế"],["Actual return","Biến động thực tế"],["Origin raw","Giá tại T0"],["Expected","Dự báo"],["Prior 20","Động lượng 20 phiên"],["Breadth 20","Độ rộng thị trường 20 phiên"],["News / rumor","Tin / thông tin lan truyền"],["Flow available","Dữ liệu dòng tiền"],["Rank IC","IC xếp hạng"],["Top-bottom spread","Chênh lệch nhóm cao-thấp"],["Scenario MAE skill","Cải thiện sai số MAE"],["Q20–Q80 coverage","Độ phủ Q20–Q80"],["Brier skill","Chất lượng xác suất"],["Price route","Nguồn giá"],["VNStock primary","VNStock"],["Current HOSE coverage","Độ phủ HOSE hiện tại"],["Event corpus","Kho sự kiện"],["Flow archive","Dữ liệu dòng tiền"],["Accounting PIT","BCTC định lượng"],["Model gates","Kiểm định mô hình"],["Model promotion","Phạm vi dự báo được duyệt"]]);
+function cleanText(s){if(!s)return s;let t=s;for(const[a,b]of textMap)t=t.split(a).join(b);return t.replace(/P\(tăng\) chưa vượt direction gate/g,"xác suất hướng chưa đủ độ tin cậy").replace(/Direction gate REVIEW/g,"Chưa đủ độ tin cậy").replace(/Expected return/g,"Biến động kỳ vọng").replace(/Calibration n/g,"Mẫu hiệu chỉnh").replace(/Adjusted close/g,"Giá điều chỉnh").replace(/Raw close/g,"Giá đóng cửa").replace(/Volume/g,"Khối lượng").replace(/direct forecast/g,"dự báo").replace(/direct T\+1…T\+5/g,"T+1…T+5").replace(/Active:/g,"Thành phần:").replace(/price PASS/g,"Giá PASS").replace(/price REVIEW/g,"Giá REVIEW").replace(/direction PASS/g,"Hướng PASS").replace(/direction REVIEW/g,"Hướng REVIEW").replace(/Expert output/g,"Dự báo thành phần").replace(/cal n=/g,"mẫu=").replace(/sealed n=/g,"mẫu OOS=").replace(/Without /g,"Loại ").replace(/Current /g,"Hiện tại ").replace(/immutable validated snapshot/g,"snapshot đã kiểm định").replace(/period statements excluded without publication timestamp/g,"chỉ hiển thị BCTC hiện tại; lịch sử chưa được dùng khi chưa có thời điểm công bố").replace(/numerical enabled/g,"đã bật dữ liệu định lượng").replace(/current symbols/g,"mã hiện tại").replace(/articles/g,"bài").replace(/official/g,"chính thức").replace(/rumor/g,"lan truyền").replace(/foreign/g,"khối ngoại").replace(/prop/g,"tự doanh").replace(/checks/g,"kiểm tra").replace(/price T\+h:/g,"T+h:")}
+function polishNode(el){if(!el||el.dataset?.polishLock==="1")return;const leaves=el.matches?.(".empty,#summary,#expertMeta,#btMeta,.sourceCard span,.sourceCard small,.forecastCard small,.forecastCard strong,.metric span,.metric small,#btDetail .eyebrow,#btDetail .metric span,#btDetail .metric small,#ablation .metric span,#tooltip span,#tooltip strong,#tooltip b,#status,#chartTitle")?[el]:[...el.querySelectorAll?.(".empty,#summary,#expertMeta,#btMeta,.sourceCard span,.sourceCard small,.forecastCard small,.forecastCard strong,.metric span,.metric small,#btDetail .eyebrow,#btDetail .metric span,#btDetail .metric small,#ablation .metric span,#tooltip span,#tooltip strong,#tooltip b,#status,#chartTitle")||[]];for(const x of leaves)if(x.children.length===0){const v=cleanText(x.textContent);if(v!==x.textContent)x.textContent=v}const title=$("#driverTitle");if(title&&/^T\+\d+ expert contribution$/.test(title.textContent||""))title.textContent=(title.textContent||"").replace(/T\+(\d+) expert contribution/,"Đóng góp mô hình · T+$1")}
+function polishSummary(){const s=$("#summary");if(!s)return;let t=s.textContent||"";t=t.replace(/; q20–q80 /gi," · vùng dự báo ").replace(/; khoảng q20–q80 /gi," · vùng dự báo ").replace(/Full model T\+5 /g,"T+5 dự kiến ").replace(/VMEWS đang RED\. Risk chỉ override stance, không sửa numerical forecast\./g,"Rủi ro hệ thống đang ở mức cao.").replace(/T\+5 chưa vượt đầy đủ ranking \+ distribution \+ generalization gate\. Giá dự báo bị ẩn thay vì nội suy hoặc giả lập\./g,"T+5 hiện chưa đủ điều kiện để công bố mức giá dự báo.");t=cleanText(t);if(t!==s.textContent)s.textContent=t}
 function refresh(){polishNode(document.body);polishSummary()}
-async function renderMethodProof(){
-  const box=$("#methodProof");if(!box)return;
-  try{
-    const [blind,embargo,model]=await Promise.all([
-      fetch("./data/blind-holdout-gate-v12.json",{cache:"no-store"}).then(r=>r.json()),
-      fetch("./data/embargo-gate-v12.json",{cache:"no-store"}).then(r=>r.json()),
-      fetch("./data/forecast-model-v12.json",{cache:"no-store"}).then(r=>r.json())
-    ]);
-    const hs=embargo.horizons||[];
-    const future=Math.max(0,...hs.map(x=>+(x.walkForwardChronology?.futureRowsUsedForTraining||0)),...hs.map(x=>+(x.walkForwardChronology?.futureMetaRowsUsedForTraining||0)),...hs.map(x=>+(x.walkForwardChronology?.futureCalibrationRowsUsedForTraining||0)));
-    const holdoutRows=Object.values(blind.horizons||{}).map(x=>+(x.holdout?.rows||0)).filter(Number.isFinite);
-    const direct=(model.promotion?.directPriceHorizons||[]).join(" · ");
-    box.innerHTML=`
-      <article class="proofCard"><span>Nhìn trước tương lai</span><b>${future===0?"0 dòng":"CẦN KIỂM TRA"}</b><small>train · meta · calibration</small></article>
-      <article class="proofCard"><span>Sealed holdout</span><b>${blind.status||"—"}</b><small>${holdoutRows.length?Math.min(...holdoutRows).toLocaleString("vi-VN")+"+ mẫu / horizon":"T+1 → T+5"}</small></article>
-      <article class="proofCard"><span>Walk-forward & embargo</span><b>${embargo.status||"—"}</b><small>label maturity theo từng T+h</small></article>
-      <article class="proofCard"><span>Giá được phát hành</span><b>${direct?`T+${direct.replace(/ · /g," · T+")}`:"—"}</b><small>5 horizon kiểm định độc lập</small></article>`;
-  }catch(e){box.innerHTML='<div class="empty">Chưa tải được bằng chứng kiểm định.</div>'}
-}
-function installObserver(){
-  let queued=false;
-  const obs=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh()})});
-  obs.observe(document.body,{subtree:true,childList:true,characterData:true});
-}
-function installResponsiveFix(){
-  if(document.getElementById("v12PolishResponsive"))return;
-  const style=document.createElement("style");
-  style.id="v12PolishResponsive";
-  style.textContent='@media(max-width:430px){.top{gap:8px}.brand{font-size:10px;letter-spacing:.055em;min-width:0;flex:1 1 auto}.topMeta{min-width:0;max-width:145px;flex:0 1 145px}.topMeta .badge{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}}';
-  document.head.appendChild(style);
-}
-function init(){installResponsiveFix();refresh();renderMethodProof();installObserver();document.documentElement.classList.add("uiReady")}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+async function renderMethodProof(){const box=$("#methodProof");if(!box)return;try{const[blind,embargo,model]=await Promise.all([fetch("./data/blind-holdout-gate-v12.json",{cache:"no-store"}).then(r=>r.json()),fetch("./data/embargo-gate-v12.json",{cache:"no-store"}).then(r=>r.json()),fetch("./data/forecast-model-v12.json",{cache:"no-store"}).then(r=>r.json())]);const hs=embargo.horizons||[];const future=Math.max(0,...hs.map(x=>+(x.walkForwardChronology?.futureRowsUsedForTraining||0)),...hs.map(x=>+(x.walkForwardChronology?.futureMetaRowsUsedForTraining||0)),...hs.map(x=>+(x.walkForwardChronology?.futureCalibrationRowsUsedForTraining||0)));const holdoutRows=Object.values(blind.horizons||{}).map(x=>+(x.holdout?.rows||0)).filter(Number.isFinite);const direct=(model.promotion?.directPriceHorizons||[]).join(" · ");const mags=Object.values(model.horizons||{}).map(x=>x.magnitudeGate?.status).filter(Boolean);box.innerHTML=`<article class="proofCard"><span>Nhìn trước tương lai</span><b>${future===0?"0 dòng":"CẦN KIỂM TRA"}</b><small>train · meta · calibration</small></article><article class="proofCard"><span>Sealed holdout</span><b>${blind.status||"—"}</b><small>${holdoutRows.length?Math.min(...holdoutRows).toLocaleString("vi-VN")+"+ mẫu / horizon":"T+1 → T+5"}</small></article><article class="proofCard"><span>Walk-forward & embargo</span><b>${embargo.status||"—"}</b><small>label maturity theo từng T+h</small></article><article class="proofCard"><span>Độ lớn dự báo</span><b>${mags.length&&mags.every(x=>x==="PASS")?"PASS":direct?"ĐANG KIỂM ĐỊNH":"—"}</b><small>chống dự báo co về 0</small></article>`}catch(e){box.innerHTML='<div class="empty">Chưa tải được bằng chứng kiểm định.</div>'}}
+
+let research=null,lastSym="",taState={SMA20:true,SMA50:true,EMA20:false,BB:true,RSI:true,MACD:true,OBV:false};
+async function researchData(){if(research)return research;const[dash,ctx]=await Promise.all([fetch('./data/forecast-dashboard-v12.json',{cache:'no-store'}).then(r=>r.json()),fetch('./data/current-context-v12.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)]);research={dash,ctx};return research}
+function currentSymbol(){return (($('#symbol')?.value||new URLSearchParams(location.search).get('symbol')||'FPT')+'').trim().toUpperCase()}
+function sma(a,n){return a.map((_,i)=>i+1<n?null:a.slice(i-n+1,i+1).reduce((x,y)=>x+y,0)/n)}
+function ema(a,n){const k=2/(n+1),o=[];let e=null;for(const v of a){e=e===null?v:v*k+e*(1-k);o.push(e)}return o}
+function rsi(a,n=14){const o=Array(a.length).fill(null);let g=0,l=0;for(let i=1;i<a.length;i++){const d=a[i]-a[i-1],up=Math.max(d,0),dn=Math.max(-d,0);if(i<=n){g+=up;l+=dn;if(i===n){g/=n;l/=n;o[i]=l===0?100:100-100/(1+g/l)}}else{g=(g*(n-1)+up)/n;l=(l*(n-1)+dn)/n;o[i]=l===0?100:100-100/(1+g/l)}}return o}
+function stdev(a,n){return a.map((_,i)=>{if(i+1<n)return null;const z=a.slice(i-n+1,i+1),m=z.reduce((x,y)=>x+y,0)/n;return Math.sqrt(z.reduce((x,y)=>x+(y-m)**2,0)/n)})}
+function indicators(hist){const c=hist.map(x=>+x.close),v=hist.map(x=>+x.volume||0),s20=sma(c,20),s50=sma(c,50),e20=ema(c,20),sd=stdev(c,20),e12=ema(c,12),e26=ema(c,26),mac=e12.map((x,i)=>x-e26[i]),sig=ema(mac,9),rs=rsi(c,14);const obv=[0];for(let i=1;i<c.length;i++)obv.push(obv[i-1]+(c[i]>c[i-1]?v[i]:c[i]<c[i-1]?-v[i]:0));const bbU=s20.map((x,i)=>x==null?null:x+2*sd[i]),bbL=s20.map((x,i)=>x==null?null:x-2*sd[i]);return{c,v,s20,s50,e20,rs,mac,sig,obv,bbU,bbL}}
+function lastFinite(a){for(let i=a.length-1;i>=0;i--)if(finite(a[i]))return+a[i];return null}
+function strategyReadout(hist,I){const c=I.c.at(-1),s20=lastFinite(I.s20),s50=lastFinite(I.s50),rs=lastFinite(I.rs),mac=lastFinite(I.mac),sig=lastFinite(I.sig),upper=lastFinite(I.bbU),lower=lastFinite(I.bbL);const prev20=I.c.slice(-21,-1),hi20=Math.max(...prev20),lo20=Math.min(...prev20);let trend=0,mean=0,breakout=0;if(c>s20)trend+=2;if(s20>s50)trend+=2;if(rs>=50&&rs<=70)trend+=1;if(mac>sig)trend+=1;if(rs<35)mean+=3;if(lower&&c<lower*1.01)mean+=2;if(c<s20)mean+=1;if(c>hi20)breakout+=3;if(mac>sig)breakout+=1;if(rs>55)breakout+=1;if(c<lo20)breakout-=1;const sets=[['Trend following',trend],['Mean reversion',mean],['Breakout',breakout]].sort((a,b)=>b[1]-a[1]);const best=sets[0];return{best:best[1]>=3?best[0]:'Chưa có setup rõ',score:best[1],trend,mean,breakout,rsi:rs,macd:mac,signal:sig,sma20:s20,sma50:s50,upper,lower}}
+function drawTA(hist,I){const cv=$('#taCanvas');if(!cv)return;const R=cv.parentElement.getBoundingClientRect(),D=devicePixelRatio||1,W=Math.max(620,R.width),H=330;cv.width=W*D;cv.height=H*D;cv.style.width=R.width+'px';cv.style.height=H+'px';const c=cv.getContext('2d');c.setTransform(D,0,0,D,0,0);c.clearRect(0,0,W,H);const P={l:50,r:16,t:18,b:28},vals=[...I.c];if(taState.SMA20)vals.push(...I.s20.filter(finite));if(taState.SMA50)vals.push(...I.s50.filter(finite));if(taState.BB){vals.push(...I.bbU.filter(finite),...I.bbL.filter(finite))}let mn=Math.min(...vals),mx=Math.max(...vals),pad=(mx-mn)*.08||1;mn-=pad;mx+=pad;const x=i=>P.l+i*(W-P.l-P.r)/(I.c.length-1),y=v=>P.t+(mx-v)/(mx-mn)*(H-P.t-P.b);c.strokeStyle='#183744';c.lineWidth=1;for(let i=0;i<4;i++){const yy=P.t+i*(H-P.t-P.b)/3;c.beginPath();c.moveTo(P.l,yy);c.lineTo(W-P.r,yy);c.stroke()}function line(a,color,w=1.4,dash=[]){c.save();c.strokeStyle=color;c.lineWidth=w;c.setLineDash(dash);c.beginPath();let on=false;a.forEach((v,i)=>{if(!finite(v)){on=false;return}if(!on){c.moveTo(x(i),y(v));on=true}else c.lineTo(x(i),y(v))});c.stroke();c.restore()}line(I.c,'#dce8ed',1.6);if(taState.SMA20)line(I.s20,'#6ed3d8',1.4);if(taState.SMA50)line(I.s50,'#f0bd63',1.4);if(taState.EMA20)line(I.e20,'#baa2ef',1.2);if(taState.BB){line(I.bbU,'#4f7080',1,[4,4]);line(I.bbL,'#4f7080',1,[4,4])}c.fillStyle='#8399a3';c.font='10px system-ui';c.fillText(price(mx),4,P.t+4);c.fillText(price(mn),4,H-P.b);c.fillText(hist[0]?.date||'',P.l,H-8);c.fillText(hist.at(-1)?.date||'',W-78,H-8)}
+function ensureWorkbench(){if($('#researchWorkbench'))return;const anchor=$('.mainChart');if(!anchor)return;const s=document.createElement('section');s.id='researchWorkbench';s.className='panel researchWorkbench';s.dataset.polishLock='1';s.innerHTML=`<div class="panelHead"><div><div class="eyebrow">MARKET WORKBENCH</div><h2>TA Studio · Dòng tiền · BCTC</h2></div><div class="meta">Phân tích sâu từ cùng snapshot dữ liệu; TA setup tách biệt với forecast model.</div></div><div class="workGrid"><div class="taBox"><div class="taControls" id="taControls">${[['SMA20','SMA 20'],['SMA50','SMA 50'],['EMA20','EMA 20'],['BB','Bollinger'],['RSI','RSI 14'],['MACD','MACD'],['OBV','OBV']].map(([k,l])=>`<label><input type="checkbox" data-ta="${k}" ${taState[k]?'checked':''}> ${l}</label>`).join('')}</div><div class="taChart"><canvas id="taCanvas"></canvas></div><div id="taReadout" class="taReadout"></div></div><div id="marketContext" class="contextBox"><div class="empty">Đang tải dòng tiền và BCTC…</div></div></div>`;anchor.after(s);$('#taControls').addEventListener('change',e=>{const k=e.target?.dataset?.ta;if(k){taState[k]=!!e.target.checked;renderWorkbench(true)}})}
+function flowCard(title,z){if(!z?.available)return`<article class="contextCard"><span>${title}</span><b>Chưa có tại EOD này</b><small>không quy đổi missing thành 0</small></article>`;return`<article class="contextCard"><span>${title} · ${z.latestDate||'—'}</span><b class="${(+z.net1)>=0?'ctxGood':'ctxBad'}">${(+z.net1)>=0?'+':''}${money(z.net1)}</b><small>5 phiên ${(+z.net5)>=0?'+':''}${money(z.net5)} · 20 phiên ${(+z.net20)>=0?'+':''}${money(z.net20)}</small></article>`}
+function fundamentalCards(f){if(!f)return'<article class="contextCard"><span>BCTC</span><b>Chưa tải được</b></article>';const rr=f.ratios||{},parts=[];parts.push(`<article class="contextCard"><span>BCTC · ${f.incomePeriod||f.ratioPeriod||'kỳ gần nhất'}</span><b>${f.revenue?money(f.revenue.value):'—'}</b><small>Doanh thu${finite(f.revenueQoQ)?` · QoQ ${pct(f.revenueQoQ)}`:''}</small></article>`);parts.push(`<article class="contextCard"><span>Lợi nhuận sau thuế</span><b>${f.profitAfterTax?money(f.profitAfterTax.value):'—'}</b><small>${finite(f.profitQoQ)?`QoQ ${pct(f.profitQoQ)}`:'kỳ báo cáo gần nhất'}</small></article>`);const vals=[['EPS',rr.eps],['P/E',rr.pe],['P/B',rr.pb],['ROE',rr.roe],['ROA',rr.roa]].filter(x=>x[1]);if(vals.length)parts.push(`<article class="contextCard wide"><span>Chỉ số tài chính hiện tại</span><b>${vals.map(([k,v])=>`${k} ${finite(v.value)?(+v.value).toLocaleString('vi-VN',{maximumFractionDigits:2}):'—'}`).join(' · ')}</b><small>Hiển thị mô tả; chưa backfill vào lịch sử nếu thiếu timestamp công bố.</small></article>`);return parts.join('')}
+async function renderWorkbench(force=false){ensureWorkbench();const sym=currentSymbol();if(!force&&sym===lastSym&&$('#taReadout')?.dataset?.ready==='1')return;lastSym=sym;try{const R=await researchData();const hist=(R.dash.charts?.[sym]||[]).slice(-180);if(hist.length<30)throw Error('history too short');const I=indicators(hist),S=strategyReadout(hist,I);drawTA(hist,I);const rd=$('#taReadout');rd.dataset.ready='1';rd.innerHTML=`<article><span>TA setup phù hợp nhất</span><b>${S.best}</b><small>Trend ${S.trend}/6 · Mean-reversion ${S.mean}/6 · Breakout ${S.breakout}/5</small></article><article><span>RSI 14</span><b>${finite(S.rsi)?S.rsi.toFixed(1):'—'}</b><small>${S.rsi<35?'quá bán':S.rsi>70?'quá mua':'trung tính'}</small></article><article><span>MACD</span><b>${finite(S.macd)?S.macd.toFixed(2):'—'}</b><small>${finite(S.signal)?`Signal ${S.signal.toFixed(2)}`:'—'}</small></article><article><span>Xu hướng</span><b>${finite(S.sma20)&&finite(S.sma50)?(S.sma20>S.sma50?'SMA20 > SMA50':'SMA20 ≤ SMA50'):'—'}</b><small>TA filter độc lập với dự báo T+h</small></article>`;const cz=R.ctx?.symbols?.[sym],box=$('#marketContext');box.innerHTML=`<div class="contextTitle"><b>${sym} · Dòng tiền & BCTC</b><small>${R.ctx?.forecastAsOf?'snapshot '+R.ctx.forecastAsOf:'current context'}</small></div><div class="contextGrid">${flowCard('Khối ngoại',cz?.flow?.foreign)}${flowCard('Tự doanh',cz?.flow?.proprietary)}${fundamentalCards(cz?.fundamental)}</div>`}catch(e){const box=$('#marketContext');if(box)box.innerHTML='<div class="empty">Context đang được cập nhật trong snapshot mới.</div>'}}
+function installResearchStyle(){if($('#v12ResearchStyle'))return;const s=document.createElement('style');s.id='v12ResearchStyle';s.textContent=`.researchWorkbench{margin-top:16px}.workGrid{display:grid;grid-template-columns:1.28fr .72fr;gap:14px}.taBox,.contextBox{border:1px solid rgba(27,59,73,.9);border-radius:12px;background:rgba(6,18,27,.42);padding:13px;min-width:0}.taControls{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}.taControls label{font-size:10.5px;color:#a4b7bf;border:1px solid #274958;border-radius:999px;padding:5px 8px;cursor:pointer;background:#081822}.taControls input{accent-color:#6ed3d8}.taChart{width:100%;overflow:hidden;border-radius:9px;background:#071923}.taReadout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}.taReadout article,.contextCard{border:1px solid #1c3b49;border-radius:9px;padding:9px;background:#081923}.taReadout span,.contextCard span{display:block;color:#8da4ae;font-size:10px;margin-bottom:5px}.taReadout b,.contextCard b{display:block;font-size:13px}.taReadout small,.contextCard small{display:block;color:#8298a2;font-size:10px;margin-top:4px}.contextTitle{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:9px}.contextTitle small{color:#7e959f}.contextGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.contextCard.wide{grid-column:1/-1}.ctxGood{color:#73d2a0}.ctxBad{color:#ed8080}@media(max-width:980px){.workGrid{grid-template-columns:1fr}.taReadout{grid-template-columns:1fr 1fr}}@media(max-width:520px){.taReadout,.contextGrid{grid-template-columns:1fr}.contextCard.wide{grid-column:auto}.taControls{gap:5px}.taControls label{padding:4px 7px}}`;document.head.appendChild(s)}
+function installObserver(){let queued=false;const obs=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh();const s=currentSymbol();if(s!==lastSym)renderWorkbench(true)})});obs.observe(document.body,{subtree:true,childList:true,characterData:true})}
+function installResponsiveFix(){if($('#v12PolishResponsive'))return;const style=document.createElement('style');style.id='v12PolishResponsive';style.textContent='@media(max-width:430px){.top{gap:8px}.brand{font-size:10px;letter-spacing:.055em;min-width:0;flex:1 1 auto}.topMeta{min-width:0;max-width:145px;flex:0 1 145px}.topMeta .badge{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}}';document.head.appendChild(style)}
+function init(){installResponsiveFix();installResearchStyle();ensureWorkbench();refresh();renderMethodProof();renderWorkbench(true);installObserver();window.addEventListener('resize',()=>renderWorkbench(true));document.documentElement.classList.add('uiReady')}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
