@@ -1,0 +1,24 @@
+# Diagnose whether a point forecast wins MAE merely by collapsing to zero.  A model that emits
+# nearly the same price for every stock/horizon is not useful magnitude forecasting even if its
+# average MAE is fractionally below the no-change baseline.
+_audit_metrics_before_magnitude=audit_metrics
+
+def audit_metrics(y,score,p,med,lo,hi,D):
+    z=_audit_metrics_before_magnitude(y,score,p,med,lo,hi,D)
+    yy=np.asarray(y,float);mm=np.asarray(med,float);good=np.isfinite(yy)&np.isfinite(mm);yy=yy[good];mm=mm[good]
+    if len(yy):
+        actual_std=float(np.std(yy));forecast_std=float(np.std(mm));
+        p90_actual=float(np.quantile(np.abs(yy),.90));p90_forecast=float(np.quantile(np.abs(mm),.90))
+        z.update({
+          'realizedReturnStd':actual_std,
+          'forecastReturnStd':forecast_std,
+          'forecastDispersionRatio':forecast_std/(actual_std or 1e-12),
+          'p90AbsRealizedReturn':p90_actual,
+          'p90AbsForecastReturn':p90_forecast,
+          'p90MagnitudeRatio':p90_forecast/(p90_actual or 1e-12),
+          'forecastAbsMedian':float(np.median(np.abs(mm))),
+          'forecastNonTrivialShare':float(np.mean(np.abs(mm)>=0.001)),
+        })
+    else:
+        z.update({'realizedReturnStd':0.0,'forecastReturnStd':0.0,'forecastDispersionRatio':0.0,'p90AbsRealizedReturn':0.0,'p90AbsForecastReturn':0.0,'p90MagnitudeRatio':0.0,'forecastAbsMedian':0.0,'forecastNonTrivialShare':0.0})
+    return z
