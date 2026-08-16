@@ -3,12 +3,22 @@
 # average MAE is fractionally below the no-change baseline.
 _audit_metrics_before_magnitude=audit_metrics
 
+def _daily_mae_edge(yy,mm,dd):
+    vals=[]
+    for d in sorted(set(dd)):
+        q=np.where(dd==d)[0]
+        if len(q)<12:continue
+        # Positive means the forecast improves absolute error over a zero-return/no-change baseline.
+        vals.append(float(np.mean(np.abs(yy[q])-np.abs(yy[q]-mm[q]))))
+    if not vals:return {'days':0,'mean':0.0,'positiveDayShare':0.0,'bootstrap90':[None,None],'blockLength':0}
+    a=np.asarray(vals,float);ci,block=_moving_block_bootstrap_mean(a,reps=1400) if '_moving_block_bootstrap_mean' in globals() else ([None,None],0)
+    return {'days':int(len(a)),'mean':float(np.mean(a)),'positiveDayShare':float(np.mean(a>0)),'bootstrap90':ci,'blockLength':int(block)}
+
 def audit_metrics(y,score,p,med,lo,hi,D):
     z=_audit_metrics_before_magnitude(y,score,p,med,lo,hi,D)
-    yy=np.asarray(y,float);mm=np.asarray(med,float);good=np.isfinite(yy)&np.isfinite(mm);yy=yy[good];mm=mm[good]
+    yy0=np.asarray(y,float);mm0=np.asarray(med,float);dd0=np.asarray(D);good=np.isfinite(yy0)&np.isfinite(mm0);yy=yy0[good];mm=mm0[good];dd=dd0[good]
     if len(yy):
-        actual_std=float(np.std(yy));forecast_std=float(np.std(mm));
-        p90_actual=float(np.quantile(np.abs(yy),.90));p90_forecast=float(np.quantile(np.abs(mm),.90))
+        actual_std=float(np.std(yy));forecast_std=float(np.std(mm));p90_actual=float(np.quantile(np.abs(yy),.90));p90_forecast=float(np.quantile(np.abs(mm),.90));daily=_daily_mae_edge(yy,mm,dd)
         z.update({
           'realizedReturnStd':actual_std,
           'forecastReturnStd':forecast_std,
@@ -18,7 +28,8 @@ def audit_metrics(y,score,p,med,lo,hi,D):
           'p90MagnitudeRatio':p90_forecast/(p90_actual or 1e-12),
           'forecastAbsMedian':float(np.median(np.abs(mm))),
           'forecastNonTrivialShare':float(np.mean(np.abs(mm)>=0.001)),
+          'dailyMAEEdge':daily,
         })
     else:
-        z.update({'realizedReturnStd':0.0,'forecastReturnStd':0.0,'forecastDispersionRatio':0.0,'p90AbsRealizedReturn':0.0,'p90AbsForecastReturn':0.0,'p90MagnitudeRatio':0.0,'forecastAbsMedian':0.0,'forecastNonTrivialShare':0.0})
+        z.update({'realizedReturnStd':0.0,'forecastReturnStd':0.0,'forecastDispersionRatio':0.0,'p90AbsRealizedReturn':0.0,'p90AbsForecastReturn':0.0,'p90MagnitudeRatio':0.0,'forecastAbsMedian':0.0,'forecastNonTrivialShare':0.0,'dailyMAEEdge':{'days':0,'mean':0.0,'positiveDayShare':0.0,'bootstrap90':[None,None],'blockLength':0}})
     return z
