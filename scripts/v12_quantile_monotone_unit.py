@@ -40,6 +40,21 @@ bp=ns['_predict_binned_monotone'](bm,s3[1200:])
 assert np.min(np.diff(bp))>=-1e-12,float(np.min(np.diff(bp)))
 assert np.std(bp)>0 and np.mean(np.abs(bp)>=.001)>0.05,(float(np.std(bp)),float(np.mean(np.abs(bp)>=.001)))
 
+# Regression for the Full #20 failure mode: a high-dispersion family that is unstable across
+# contiguous pre-blind validation blocks must not displace a stable MAE winner merely because
+# it falls inside a broad one-standard-error band. No sealed data is involved in this test.
+rng4=np.random.default_rng(808)
+y4=rng4.normal(scale=.02,size=900)
+stable=.55*y4
+unstable=.72*y4
+unstable[300:600]=-0.25*y4[300:600]
+mode4,a4=ns['_choose_point_family']([('STABLE',stable),('HIGH_DISPERSION_UNSTABLE',unstable)],y4)
+assert mode4=='STABLE',(mode4,a4)
+assert a4['sealedLabelsUsed']==0,a4
+assert a4['candidateStability']['STABLE']['stable'] is True,a4
+assert a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['positiveEdgeBlocks']<a4['candidateStability']['HIGH_DISPERSION_UNSTABLE']['requiredPositiveBlocks'],a4
+assert a4['tightMAETolerance']<=5e-5,a4
+
 # Gamma is a return-scale calibration parameter, not a complexity parameter. When several
 # pre-blind candidates are statistically indistinguishable from the empirical MAE minimizer,
 # regularize toward identity (g=1) rather than mechanically toward zero. Sealed 90-100% labels
@@ -53,4 +68,4 @@ assert a2['oneSEEligibleN']>1 and a2['empiricalBestSE']>0,a2
 assert abs(g2-1.0)<=abs(a2['empiricalBestShrink']-1.0)+1e-12,(g2,a2)
 assert g2>=a2['empiricalBestShrink']-1e-12,(g2,a2)
 
-print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'pointMode':getattr(layer,'pointMode',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj),'oneSEIdentityShrink':float(g2),'empiricalBestShrink':float(a2['empiricalBestShrink']),'binnedMedianKnots':len(bm['x'])})
+print('V12 QUANTILE MONOTONE UNIT PASS',{'method':getattr(layer,'method',None),'pointMode':getattr(layer,'pointMode',None),'returnShrink':float(getattr(layer,'returnShrink',1.0)),'qadj':float(qadj),'oneSEIdentityShrink':float(g2),'empiricalBestShrink':float(a2['empiricalBestShrink']),'binnedMedianKnots':len(bm['x']),'stabilitySelector':mode4})
