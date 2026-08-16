@@ -1,0 +1,26 @@
+# Make the released point-return method explicit in the model artifact.  The scenario interval
+# remains q20/q80 + conformal calibration, while expectedReturn may be a pre-blind-selected
+# monotone point family rather than q50 when that family wins the independent validation slice.
+_fit_horizon_before_point_audit = fit_horizon
+
+
+def fit_horizon(X,y,D,dates,h,idx_by_expert):
+    z=_fit_horizon_before_point_audit(X,y,D,dates,h,idx_by_expert)
+    layer=z.get('scenarioCalibration');audit=z.setdefault('distributionAudit',{})
+    mode=str(getattr(layer,'pointMode','Q50')) if layer is not None else 'Q50'
+    audit['pointMode']=mode
+    audit['pointSelectionAudit']=getattr(layer,'pointSelectionAudit',None) if layer is not None else None
+    if layer is not None and getattr(layer,'pointAffineModel',None) is not None:
+        audit['pointAffineModel']=getattr(layer,'pointAffineModel')
+        audit['pointDeadband']=float(getattr(layer,'pointDeadband',0.0))
+    definitions={
+      'Q50':'conditional q50 after strictly pre-blind scale calibration',
+      'DIRECT_SCORE':'direct meta-return score after strictly pre-blind positive scale calibration',
+      'BINNED_MONOTONE_MEDIAN':'pre-blind binned monotone conditional-median map of the direct return score',
+      'ROBUST_AFFINE_SCORE':'pre-blind robust positive-slope affine calibration of the direct return score, selected on a disjoint pre-blind validation slice',
+      'ROBUST_AFFINE_DEADBAND':'pre-blind robust positive-slope affine calibration with a monotone zero dead-band, selected on a disjoint pre-blind validation slice'
+    }
+    audit['expectedReturnDefinition']=definitions.get(mode,'pre-blind selected monotone calibration of the direct return score')
+    audit['priceConversion']='raw close * exp(pre-blind calibrated expected log return)'
+    audit['pointSelectionSealedLabelsUsed']=0
+    return z
