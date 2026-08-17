@@ -34,7 +34,12 @@ def _history_fingerprint(rows):
             _stable_number(r.get("volume")),
             _stable_number(r.get("adjustmentFactor", 1.0)),
         ])
-    raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    raw = json.dumps(
+        payload,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
 
 
@@ -60,14 +65,18 @@ def _load_snapshot():
         )
     payload = json.loads(gzip.decompress(blob).decode("utf-8"))
     if payload.get("version") != "VMEWS-FROZEN-SOURCE-12.0.0":
-        raise RuntimeError(f"Unexpected frozen source version: {payload.get('version')!r}")
+        raise RuntimeError(
+            f"Unexpected frozen source version: {payload.get('version')!r}"
+        )
     histories = payload.get("histories") or {}
     audits = payload.get("audits") or {}
     listed = manifest.get("symbols") or {}
     for symbol, meta in listed.items():
         rows = histories.get(symbol)
         if rows is None:
-            raise RuntimeError(f"Frozen V12 snapshot manifest symbol missing from payload: {symbol}")
+            raise RuntimeError(
+                f"Frozen V12 snapshot manifest symbol missing from payload: {symbol}"
+            )
         fp = _history_fingerprint(rows)
         if fp != meta.get("sha256"):
             raise RuntimeError(
@@ -88,15 +97,26 @@ def get_price_history(symbol, yahoo_reference=True):
     rows = (payload.get("histories") or {}).get(symbol)
     audit = (payload.get("audits") or {}).get(symbol)
     if rows is None or audit is None:
-        raise CanonicalIneligible(f"{symbol}: not present in immutable V12 source snapshot")
+        raise CanonicalIneligible(
+            f"{symbol}: not present in immutable V12 source snapshot"
+        )
     if len(rows) < _base.MIN_ROWS:
         raise CanonicalIneligible(
-            f"{symbol}: frozen real history has only {len(rows)} rows < MIN_ROWS={_base.MIN_ROWS}"
+            f"{symbol}: frozen real history has only {len(rows)} rows "
+            f"< MIN_ROWS={_base.MIN_ROWS}"
+        )
+    if audit.get("eligible") is False:
+        reasons = audit.get("ineligibleReasons") or ["capture_quality_gate_failed"]
+        raise CanonicalIneligible(
+            f"{symbol}: frozen source is model-ineligible: "
+            + " | ".join(map(str, reasons))
         )
     expected = ((manifest.get("symbols") or {}).get(symbol) or {}).get("sha256")
     got = _history_fingerprint(rows)
     if not expected or expected != got:
-        raise RuntimeError(f"{symbol}: frozen-source fingerprint verification failed")
+        raise RuntimeError(
+            f"{symbol}: frozen-source fingerprint verification failed"
+        )
     out_audit = dict(audit)
     out_audit.update({
         "researchFrozen": True,
@@ -111,7 +131,9 @@ def get_price_history(symbol, yahoo_reference=True):
 
 def get_index_history(symbol="VNINDEX", years=8):
     if symbol.upper() != "VNINDEX":
-        raise RuntimeError(f"Frozen V12 index source only certifies VNINDEX, got {symbol!r}")
+        raise RuntimeError(
+            f"Frozen V12 index source only certifies VNINDEX, got {symbol!r}"
+        )
     path = ROOT / "data" / "vnindex-v12.json"
     if not path.exists():
         raise RuntimeError("Pinned data/vnindex-v12.json is missing")
@@ -171,15 +193,22 @@ def source_audit_summary(audits, failures):
         manifest_rows.append({
             "symbol": symbol,
             "route": route,
-            "provider": ((a.get("rawSource") or {}).get("providerCode") or
-                         (a.get("rawSource") or {}).get("provider") or a.get("provider")),
+            "provider": (
+                (a.get("rawSource") or {}).get("providerCode")
+                or (a.get("rawSource") or {}).get("provider")
+                or a.get("provider")
+            ),
             "start": a.get("inputStartDate"),
             "end": a.get("inputEndDate"),
-            "rows": a.get("inputRows") or ((a.get("rawSource") or {}).get("rows")),
+            "rows": a.get("inputRows") or (a.get("rawSource") or {}).get("rows"),
             "sha256": a.get("inputFingerprintSha256"),
         })
     row_raw = json.dumps(
-        manifest_rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+        manifest_rows,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
     ).encode("utf-8")
     admitted_sha = hashlib.sha256(row_raw).hexdigest()
     try:
@@ -187,11 +216,14 @@ def source_audit_summary(audits, failures):
     except RuntimeError:
         frozen_manifest = {}
     return {
-        "version": "VMEWS-DATA-AUDIT-12.2.0",
+        "version": "VMEWS-DATA-AUDIT-12.3.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "researchInputPolicy": {
             "mode": "IMMUTABLE_FROZEN_SNAPSHOT",
-            "capturePolicy": "VNStock-first audited resolver captured once, then frozen",
+            "capturePolicy": (
+                "VNStock source capture is independent from model eligibility; "
+                "only certified frozen histories are admitted to research"
+            ),
             "runtimeProviderSwitching": False,
             "runtimeNetworkPriceFetch": False,
             "snapshotAsOf": frozen_manifest.get("asOf"),
@@ -200,17 +232,20 @@ def source_audit_summary(audits, failures):
             "admittedInputManifestSha256": admitted_sha,
         },
         "policy": [
-            "Research OHLCV is captured once through the audited VNStock-first resolver and then consumed from an immutable frozen snapshot.",
+            "Research OHLCV is captured once from audited VNStock routes and then consumed from an immutable frozen snapshot.",
+            "Source availability is distinct from model eligibility: short or quality-ineligible real histories remain fingerprinted for provenance but are excluded from model fitting and replay.",
             "No runtime price-provider switching or runtime price-network fallback is allowed during model fitting or replay.",
             "Each frozen symbol has a row-content SHA256 fingerprint and the complete frozen input manifest is hashed.",
-            "Yahoo adjusted data may appear only where the audited capture explicitly selected it as corporate-action reference/fallback.",
+            "Yahoo adjusted data may be used only as an audited corporate-action/reference series during source capture; training consumes only the frozen result.",
             "No synthetic history padding is allowed.",
         ],
         "symbolsPassed": len(audits),
         "symbolsFailed": len(failures),
         "routes": routes,
         "crossSourceMedianReturnMAD": statistics.median(mad) if mad else None,
-        "inputManifestSha256": frozen_manifest.get("inputManifestSha256") or admitted_sha,
+        "inputManifestSha256": (
+            frozen_manifest.get("inputManifestSha256") or admitted_sha
+        ),
         "admittedInputManifestSha256": admitted_sha,
         "failures": failures,
         "symbols": audits,
