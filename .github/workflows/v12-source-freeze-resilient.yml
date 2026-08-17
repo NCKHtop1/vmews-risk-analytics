@@ -31,8 +31,9 @@ jobs:
       - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile and deterministic regressions
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_corporate_actions_test.py scripts/v12_source_capture.py scripts/v12_reference_resilience.py scripts/v12_reference_resilience_test.py scripts/freeze_v12_source_snapshot.py scripts/freeze_v12_source_snapshot_resilient.py scripts/v12_universe.py scripts/v12_research_sources.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_corporate_actions_test.py scripts/v12_source_capture.py scripts/v12_source_capture_methodfix.py scripts/v12_source_capture_methodfix_test.py scripts/v12_reference_resilience.py scripts/v12_reference_resilience_test.py scripts/freeze_v12_source_snapshot.py scripts/freeze_v12_source_snapshot_resilient.py scripts/v12_universe.py scripts/v12_research_sources.py
           PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
+          PYTHONPATH=scripts python scripts/v12_source_capture_methodfix_test.py
           PYTHONPATH=scripts python scripts/v12_reference_resilience_test.py
           PYTHONPATH=scripts python - <<'PY'
           import v12_source_capture as c
@@ -44,7 +45,7 @@ jobs:
           assert c._capture_provider('AAM','KBS','2020-01-01','2026-01-01',attempts,'TEST') is None and len(calls)==1
           c.base._provider_history=old;c.reset_provider_circuits();print('V12 PROVIDER OUTAGE CIRCUIT PASS')
           PY
-      - name: Capture resilient immutable source
+      - name: Capture resilient immutable source with strict continuity salvage
         run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot_resilient.py
       - name: Upload diagnostic
         if: always()

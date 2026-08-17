@@ -1,2 +1,2 @@
-resilient-freeze-2026-08-18T00:20+07:00
-reason=reference-provider-transient-hardening-no-gate-change
+strict-continuity-source-freeze-2026-08-18T00:55+07:00
+reason=discard-only-pre-last-unresolved-gt-guard-prefix-if-post-break-suffix-repasses-unchanged-gates
