@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 150
     env:
       V12_MIN_ROWS: '520'
-      V12_VNSTOCK_INTERVAL: '4.00'
+      V12_VNSTOCK_INTERVAL: '6.50'
       V12_MAX_RAW_RETURN_GUARD: '0.12'
       V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
     steps:
