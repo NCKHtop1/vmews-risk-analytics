@@ -13,7 +13,7 @@ concurrency:
 jobs:
   freeze:
     runs-on: ubuntu-latest
-    timeout-minutes: 95
+    timeout-minutes: 150
     env:
       V12_MIN_ROWS: '520'
       V12_VNSTOCK_INTERVAL: '3.25'
@@ -42,6 +42,27 @@ jobs:
           PY
       - name: Corporate-action and source-spike reconciliation regression
         run: PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
+      - name: Provider outage circuit regression
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          import v12_source_capture as c
+          c.reset_provider_circuits()
+          calls=[]
+          original=c.base._provider_history
+          def fail(*args,**kwargs):
+              calls.append(args)
+              raise RuntimeError('ConnectTimeoutError: Max retries exceeded')
+          c.base._provider_history=fail
+          attempts=[]
+          assert c._capture_provider('AAA','KBS','2020-01-01','2026-01-01',attempts,'KBS_TEST') is None
+          assert len(calls)==1 and c._provider_state('KBS')['open'] is True,(calls,c._provider_state('KBS'))
+          assert c._capture_provider('AAM','KBS','2020-01-01','2026-01-01',attempts,'KBS_TEST') is None
+          assert len(calls)==1,(calls,attempts)
+          assert attempts[-1]['reason']=='provider_circuit_open',attempts[-1]
+          c.base._provider_history=original
+          c.reset_provider_circuits()
+          print('V12 PROVIDER OUTAGE CIRCUIT PASS')
+          PY
       - name: Capture and fingerprint one immutable research source snapshot
         run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot.py
       - name: Preserve source-freeze diagnostics
