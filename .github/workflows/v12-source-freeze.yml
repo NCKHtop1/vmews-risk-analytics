@@ -31,6 +31,15 @@ jobs:
           cache-dependency-path: requirements-v12.txt
       - name: Install V12 source dependencies
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Compile frozen-source implementation
+        run: |
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_source_capture.py scripts/v12_universe.py scripts/freeze_v12_source_snapshot.py scripts/v12_research_sources.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v12_train_parts/00c_universe.pyinc')
+          compile(p.read_text(encoding='utf-8'),str(p),'exec')
+          print('V12 FROZEN SOURCE SYNTAX PASS')
+          PY
       - name: Capture and fingerprint one immutable research source snapshot
         run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot.py
       - name: Preserve source-freeze diagnostics
@@ -46,14 +55,26 @@ jobs:
           python - <<'PY'
           import gzip,hashlib,json
           from pathlib import Path
-          p=Path('data/v12-frozen-source.json.gz');m=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'))
+          p=Path('data/v12-frozen-source.json.gz')
+          m=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'))
           assert p.exists() and p.stat().st_size>1_000_000,p
+          assert m['version']=='VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0',m.get('version')
           assert hashlib.sha256(p.read_bytes()).hexdigest()==m['snapshotFileSha256']
           z=json.loads(gzip.decompress(p.read_bytes()).decode('utf-8'))
-          assert z['version']=='VMEWS-FROZEN-SOURCE-12.0.0'
+          assert z['version']=='VMEWS-FROZEN-SOURCE-12.1.0',z.get('version')
           assert len(z['histories'])==m['available']
-          assert m['coverageRatio']>=.98 and m['deepHistory']>=360 and m['modelEligible']>=360
-          print('V12 FROZEN SOURCE VERIFY PASS',m['asOf'],m['snapshotFileSha256'],m['inputManifestSha256'])
+          current=set(z.get('currentHOSESymbols') or [])
+          historical=set((z.get('historicalCandidates') or {}).keys())
+          requested=set(z.get('requestedSymbols') or [])
+          assert current and not (current & historical),(len(current),len(historical),sorted(current&historical))
+          assert current|historical==requested,(len(current),len(historical),len(requested))
+          assert len(current)==m['currentHOSERequested']
+          assert len(historical)==m['historicalCandidateRequested']
+          assert m['currentSourceCoverageRatio']>=.98,m['currentSourceCoverageRatio']
+          assert m['deepHistory']>=360,m['deepHistory']
+          assert m['modelEligible']>=360,m['modelEligible']
+          assert len(str(m['inputManifestSha256']))==64
+          print('V12.1 FROZEN SOURCE + UNIVERSE VERIFY PASS',m['asOf'],len(current),len(historical),m['snapshotFileSha256'],m['inputManifestSha256'])
           PY
       - name: Publish immutable source snapshot to branch
         shell: bash
