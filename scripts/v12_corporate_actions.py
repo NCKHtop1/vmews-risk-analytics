@@ -70,15 +70,26 @@ def reconcile_vnstock_with_yahoo(
     raw_reference_rows=None,
     known_ca_dates=None,
 ):
-    """Build a VNStock-primary model series with auditable event/large-move reconciliation.
+    """Build a VNStock-primary model series with fail-safe CA reconciliation.
 
-    Yahoo adjusted returns remain the quantitative corporate-action reference. Outside
-    known corporate-action dates, a >guard VNStock raw move may be corroborated either
-    by Yahoo raw prices on the identical endpoints or, when Yahoo has no interval, by a
-    second captured VNStock route on those same endpoints. A secondary raw route can
-    validate that an observed market move is real, but can never neutralize a known
-    DIV/ISS event. Known event dates without an adjusted-return reference remain
-    fail-safe.
+    Core invariant: the reference series may *remove* a suspicious >guard discontinuity,
+    but it may never introduce a >guard discontinuity into an otherwise smooth VNStock
+    primary series.  This matters because VNStock and Yahoo can be expressed on different
+    historical adjustment bases; blindly splicing every Yahoo factor event can double-adjust
+    an already-adjusted VNStock history.
+
+    Policy per identical VNStock interval A->B:
+      * If the VNStock primary return is within the guard, preserve it verbatim, including
+        on factor/known-event dates. Yahoo is audit evidence only on that interval.
+      * If VNStock exceeds the guard and Yahoo adjusted A->B exists within the guard, splice
+        that *return* into the cumulative model index. This handles splits/ex-right events
+        even when Yahoo's factor-change date does not exactly match the VNStock convention.
+      * If a >guard VNStock interval has no safe adjusted-return reference, fail-safe. Raw
+        provider agreement cannot make a >guard HOSE model return admissible because the
+        same corporate-action convention can be shared by multiple raw routes.
+
+    The function never copies a Yahoo adjusted *price level* into VNStock. Only interval
+    returns are used, preserving continuity of the cumulative VNStock-primary model index.
     """
     yahoo_factors = {}
     yahoo_raw = {}
@@ -105,6 +116,8 @@ def reconcile_vnstock_with_yahoo(
     secondary_corroborations = 0
     yahoo_raw_corroborations = 0
     known_event_splices = 0
+    large_move_adjustments = 0
+    smooth_event_primary_preserved = 0
 
     prev = None
     splice_factor = 1.0
@@ -125,6 +138,9 @@ def reconcile_vnstock_with_yahoo(
 
         start_date = prev["date"]
         raw_return = math.log(raw_close / prev["rawClose"])
+        yahoo_adjusted_return = _interval_log_return(yahoo_adjusted, start_date, date)
+        yahoo_raw_return = _interval_log_return(yahoo_raw, start_date, date)
+        secondary_return = _interval_log_return(secondary_raw, start_date, date) if secondary_raw else None
 
         start_yf = _asof_value(yahoo_factors, factor_dates, start_date) if factor_dates else None
         end_yf = _asof_value(yahoo_factors, factor_dates, date) if factor_dates else None
@@ -134,71 +150,85 @@ def reconcile_vnstock_with_yahoo(
             else 0.0
         )
         known_event = date in ca_dates
-        event_boundary = abs(factor_log_change) > FACTOR_EVENT_LOG_EPS or known_event
+        factor_event = abs(factor_log_change) > FACTOR_EVENT_LOG_EPS
+        event_boundary = factor_event or known_event
 
-        if event_boundary:
-            yahoo_return = _interval_log_return(yahoo_adjusted, start_date, date)
-            reference_available = yahoo_return is not None and math.isfinite(yahoo_return)
-            if reference_available:
-                splice_factor *= math.exp(yahoo_return - raw_return)
-                if known_event and abs(factor_log_change) <= FACTOR_EVENT_LOG_EPS:
-                    known_event_splices += 1
-            model_close = raw_close * splice_factor
-            model_return = math.log(model_close / prev["modelClose"])
-            residual = abs(model_return - yahoo_return) if reference_available else None
-            corroborated = bool(reference_available and residual <= cross_source_limit)
+        raw_large = abs(raw_return) > max_return_guard
+        safe_adjusted = (
+            yahoo_adjusted_return is not None
+            and math.isfinite(yahoo_adjusted_return)
+            and abs(yahoo_adjusted_return) <= max_return_guard
+        )
+
+        target_return = raw_return
+        adjusted_large_move = False
+        if raw_large and safe_adjusted:
+            target_return = float(yahoo_adjusted_return)
+            splice_factor *= math.exp(target_return - raw_return)
+            adjusted_large_move = True
+            large_move_adjustments += 1
+            if known_event:
+                known_event_splices += 1
+        elif event_boundary and not raw_large:
+            smooth_event_primary_preserved += 1
+
+        model_close = raw_close * splice_factor
+        model_return = math.log(model_close / prev["modelClose"])
+
+        if event_boundary or adjusted_large_move:
+            residual = (
+                abs(model_return - yahoo_adjusted_return)
+                if yahoo_adjusted_return is not None and math.isfinite(yahoo_adjusted_return)
+                else None
+            )
             event = {
                 "startDate": start_date,
                 "date": date,
                 "knownCorporateActionDate": known_event,
+                "factorEvent": factor_event,
                 "yahooFactorLogChange": factor_log_change,
                 "rawLogReturn": raw_return,
                 "modelLogReturn": model_return,
-                "yahooAdjustedLogReturn": yahoo_return,
+                "yahooAdjustedLogReturn": yahoo_adjusted_return,
                 "postSpliceResidual": residual,
-                "yahooCorroborated": corroborated,
+                "adjustedLargeMove": adjusted_large_move,
+                "smoothPrimaryPreserved": bool(event_boundary and not raw_large),
+                "yahooCorroborated": bool(adjusted_large_move and residual is not None and residual <= cross_source_limit),
             }
             factor_events.append(event)
-            if not corroborated and abs(raw_return) > max_return_guard:
+            if raw_large and not adjusted_large_move:
                 ca_violations.append(event)
-        else:
-            model_close = raw_close * splice_factor
-            model_return = math.log(model_close / prev["modelClose"])
-            if abs(raw_return) > max_return_guard:
-                yahoo_return = _interval_log_return(yahoo_raw, start_date, date)
-                yahoo_ok = (
-                    yahoo_return is not None
-                    and math.isfinite(yahoo_return)
-                    and abs(raw_return - yahoo_return) <= cross_source_limit
-                )
-                secondary_return = None
-                secondary_ok = False
-                if not yahoo_ok and secondary_raw:
-                    secondary_return = _interval_log_return(secondary_raw, start_date, date)
-                    secondary_ok = (
-                        secondary_return is not None
-                        and math.isfinite(secondary_return)
-                        and abs(raw_return - secondary_return) <= cross_source_limit
-                    )
-                corroborated = yahoo_ok or secondary_ok
-                if yahoo_ok:
-                    yahoo_raw_corroborations += 1
-                elif secondary_ok:
-                    secondary_corroborations += 1
-                event = {
-                    "startDate": start_date,
-                    "date": date,
-                    "rawLogReturn": raw_return,
-                    "modelLogReturn": model_return,
-                    "yahooRawLogReturn": yahoo_return,
-                    "secondaryRawLogReturn": secondary_return,
-                    "corroborationSource": "YAHOO_RAW" if yahoo_ok else ("SECONDARY_VNSTOCK_ROUTE" if secondary_ok else None),
-                    "yahooCorroborated": yahoo_ok,
-                    "secondaryRouteCorroborated": secondary_ok,
-                }
-                ordinary_large_events.append(event)
-                if not corroborated:
-                    ordinary_violations.append(event)
+
+        if raw_large and not adjusted_large_move and not event_boundary:
+            yahoo_ok = (
+                yahoo_raw_return is not None
+                and math.isfinite(yahoo_raw_return)
+                and abs(raw_return - yahoo_raw_return) <= cross_source_limit
+            )
+            secondary_ok = (
+                secondary_return is not None
+                and math.isfinite(secondary_return)
+                and abs(raw_return - secondary_return) <= cross_source_limit
+            )
+            if yahoo_ok:
+                yahoo_raw_corroborations += 1
+            elif secondary_ok:
+                secondary_corroborations += 1
+            event = {
+                "startDate": start_date,
+                "date": date,
+                "rawLogReturn": raw_return,
+                "modelLogReturn": model_return,
+                "yahooAdjustedLogReturn": yahoo_adjusted_return,
+                "yahooRawLogReturn": yahoo_raw_return,
+                "secondaryRawLogReturn": secondary_return,
+                "corroborationSource": "YAHOO_RAW" if yahoo_ok else ("SECONDARY_VNSTOCK_ROUTE" if secondary_ok else None),
+                "yahooCorroborated": yahoo_ok,
+                "secondaryRouteCorroborated": secondary_ok,
+                "reason": "NO_SAFE_ADJUSTED_RETURN_FOR_GT_GUARD_PRIMARY_MOVE",
+            }
+            ordinary_large_events.append(event)
+            ordinary_violations.append(event)
 
         row["modelClose"] = model_close
         row["adjustmentFactor"] = splice_factor
@@ -206,30 +236,29 @@ def reconcile_vnstock_with_yahoo(
         prev = {"date": date, "rawClose": raw_close, "modelClose": model_close}
 
     raw_jump, raw_jump_date = _largest_jump(vn_rows)
-    model_jump, model_jump_date = _largest_jump(
-        [{**row, "close": row["modelClose"]} for row in out]
-    )
-    largest_factor_change = max(
-        factor_events, key=lambda e: abs(e["yahooFactorLogChange"])
-    ) if factor_events else None
-    largest_event_model_jump = max(
-        factor_events, key=lambda e: abs(e["modelLogReturn"])
-    ) if factor_events else None
-    largest_ordinary_raw_jump = max(
-        ordinary_large_events, key=lambda e: abs(e["rawLogReturn"])
-    ) if ordinary_large_events else None
-    verified = not ca_violations and not ordinary_violations
+    model_jump, model_jump_date = _largest_jump([{**row, "close": row["modelClose"]} for row in out])
+    largest_factor_change = max(factor_events, key=lambda e: abs(e["yahooFactorLogChange"])) if factor_events else None
+    largest_event_model_jump = max(factor_events, key=lambda e: abs(e["modelLogReturn"])) if factor_events else None
+    largest_ordinary_raw_jump = max(ordinary_large_events, key=lambda e: abs(e["rawLogReturn"])) if ordinary_large_events else None
+
+    model_guard_violation = bool(model_jump > max_return_guard + 1e-12)
+    verified = not ca_violations and not ordinary_violations and not model_guard_violation
+
     return out, {
-        "method": "VNSTOCK_PRIMARY_YAHOO_EVENT_SPLICE_WITH_SECONDARY_RAW_ROUTE_CORROBORATION",
+        "method": "VNSTOCK_PRIMARY_SAFE_ADJUSTED_RETURN_SPLICE_V2",
         "verified": verified,
         "largestRawLogJump": raw_jump,
         "largestRawJumpDate": raw_jump_date,
         "largestModelLogJump": model_jump,
         "largestModelJumpDate": model_jump_date,
+        "modelReturnGuard": float(max_return_guard),
+        "modelReturnGuardViolation": model_guard_violation,
         "factorDates": len(yahoo_factors),
         "factorChangeEvents": len(factor_events),
         "knownCorporateActionDates": len(ca_dates),
         "knownEventSplices": known_event_splices,
+        "largeMoveAdjustedSplices": large_move_adjustments,
+        "smoothEventPrimaryPreserved": smooth_event_primary_preserved,
         "eventResidualViolations": len(ca_violations),
         "ordinaryLargeMoveEvents": len(ordinary_large_events),
         "ordinaryLargeMoveViolations": len(ordinary_violations),
@@ -243,9 +272,10 @@ def reconcile_vnstock_with_yahoo(
         "largestOrdinaryRawLogJump": abs(largest_ordinary_raw_jump["rawLogReturn"]) if largest_ordinary_raw_jump else 0.0,
         "largestOrdinaryRawJumpDate": largest_ordinary_raw_jump["date"] if largest_ordinary_raw_jump else None,
         "verificationScope": (
-            "VNSTOCK_RETURNS_PRESERVED_OUTSIDE_AUDITED_CA_BOUNDARIES;"
-            "EVENT_INTERVALS_REQUIRE_YAHOO_ADJUSTED_RETURN;"
-            "NON_EVENT_LARGE_RAW_MOVES_REQUIRE_IDENTICAL-ENDPOINT_CORROBORATION_BY_YAHOO_RAW_OR_SECONDARY_VNSTOCK_ROUTE"
+            "VNSTOCK_PRIMARY_RETURNS_PRESERVED_WHEN_WITHIN_GUARD;"
+            "GT_GUARD_PRIMARY_RETURNS_REQUIRE_SAFE_YAHOO_ADJUSTED_INTERVAL_RETURN;"
+            "REFERENCE_SERIES_MAY_REMOVE_BUT_NEVER_INTRODUCE_GT_GUARD_MODEL_JUMPS;"
+            "RAW_ROUTE_CONSENSUS_IS_PROVENANCE_NOT_PERMISSION_FOR_GT_GUARD_HOSE_MODEL_RETURNS"
         ),
         "corporateActionViolations": ca_violations[:10],
         "ordinaryMoveViolations": ordinary_violations[:10],
