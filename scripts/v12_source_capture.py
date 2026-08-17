@@ -17,6 +17,7 @@ _PROVIDER_NETWORK_MARKERS = (
     "temporary failure in name resolution",
     "network is unreachable",
 )
+_PROVIDER_PRIORITY = {"UNIFIED": 0, "VCI": 1, "KBS": 2}
 
 
 class SourceCaptureError(RuntimeError):
@@ -141,6 +142,9 @@ def _capture_provider(symbol, source, start, end, attempts, stage):
         network_failure = _is_network_failure(exc)
         if network_failure:
             state["networkFailures"] = int(state.get("networkFailures") or 0) + 1
+            # vnstock direct providers already retry internally. Open a run-local
+            # circuit after the terminal network failure so the remaining universe
+            # does not burn minutes on the same unavailable provider.
             state["open"] = True
             state["reason"] = error
         attempts.append({
@@ -170,11 +174,7 @@ def _capture_unified(symbol, years, attempts, stage="VNSTOCK_PRIMARY"):
 
 
 def _vci_corporate_action_dates(symbol, attempts):
-    """Fetch DIV/ISS ex-right dates only when a price route needs recovery.
-
-    The event feed classifies whether a large move sits on a known corporate-action
-    boundary. It never supplies a price or return adjustment by itself.
-    """
+    """Return VCI DIV/ISS ex-right dates for event-boundary classification only."""
     try:
         from vnstock.explorer.vci import Company
 
@@ -204,7 +204,11 @@ def _vci_corporate_action_dates(symbol, attempts):
             "exrightDateCount": len(dates),
             "role": "EVENT_BOUNDARY_CLASSIFICATION_ONLY_NOT_RETURN_ADJUSTMENT",
         }
-        attempts.append({"stage": "VCI_CORPORATE_ACTION_EVENT_REFERENCE", "ok": True, **audit})
+        attempts.append({
+            "stage": "VCI_CORPORATE_ACTION_EVENT_REFERENCE",
+            "ok": True,
+            **audit,
+        })
         return dates, audit
     except BaseException as exc:
         attempts.append({
@@ -246,6 +250,7 @@ def _evaluate_candidate(
     raw_reference_audit=None,
     known_ca_dates=None,
     event_reference_audit=None,
+    stage_label=None,
 ):
     adjusted, audit = _candidate_audit(
         symbol,
@@ -259,10 +264,12 @@ def _evaluate_candidate(
         event_reference_audit=event_reference_audit,
     )
     provider = str(source_audit.get("providerCode") or "UNKNOWN")
+    reference_provider = str((raw_reference_audit or {}).get("providerCode") or "NONE")
     attempts.append({
-        "stage": f"VNSTOCK_{provider}_QUALITY",
+        "stage": stage_label or f"VNSTOCK_{provider}_QUALITY",
         "ok": audit.get("eligible") is True,
         "providerCode": provider,
+        "referenceProviderCode": reference_provider,
         "rows": len(adjusted),
         "deepHistory": audit.get("deepHistory"),
         "eligible": audit.get("eligible"),
@@ -276,21 +283,74 @@ def _evaluate_candidate(
     return adjusted, audit, priority
 
 
-def capture_price_history(symbol, years=8):
-    """Capture VNStock OHLCV and certify model eligibility without hiding source defects.
+def _provider_code(route):
+    return str((route[1] or {}).get("providerCode") or "UNKNOWN").upper()
 
-    Unified Market is audited first. If it fails the unchanged depth/CA/MAD gates, VCI
-    then KBS are deterministic recovery routes. During recovery, a second VNStock route
-    can corroborate a large non-event raw move on identical endpoints when Yahoo lacks
-    that historical interval. VCI DIV/ISS dates are used only to stop such raw consensus
-    from masking a corporate action; a known event still requires Yahoo adjusted-return
-    evidence. No threshold is relaxed and no synthetic/backfilled price is created.
+
+def _pairwise_certify(
+    symbol,
+    routes,
+    yahoo_rows,
+    yahoo_audit,
+    attempts,
+    event_dates,
+    event_audit,
+):
+    """Re-certify every available route against every other raw route.
+
+    This is intentionally strict: a candidate large non-event move is accepted only
+    when the reference route has the exact same two endpoints and the log-return
+    difference is within the unchanged CROSS_SOURCE_MAD_LIMIT. Known DIV/ISS dates are
+    still handled as events and cannot be cleared by raw-route consensus.
+    """
+    results = []
+    for candidate in routes:
+        c_rows, c_audit = candidate
+        c_code = _provider_code(candidate)
+        priority = _PROVIDER_PRIORITY.get(c_code, 9)
+        for reference in routes:
+            r_rows, r_audit = reference
+            r_code = _provider_code(reference)
+            if r_code == c_code:
+                continue
+            results.append(
+                _evaluate_candidate(
+                    symbol,
+                    c_rows,
+                    c_audit,
+                    yahoo_rows,
+                    yahoo_audit,
+                    attempts,
+                    priority,
+                    raw_reference_rows=r_rows,
+                    raw_reference_audit=r_audit,
+                    known_ca_dates=event_dates,
+                    event_reference_audit=event_audit,
+                    stage_label=f"VNSTOCK_PAIRWISE_{c_code}_VS_{r_code}_QUALITY",
+                )
+            )
+    return results
+
+
+def capture_price_history(symbol, years=8):
+    """Capture VNStock OHLCV and certify model eligibility without relaxing gates.
+
+    Unified is audited first. If it is already certified, no recovery provider is used.
+    Otherwise VCI and KBS are deterministic recovery routes. After recovery, all
+    available route pairs are re-audited on identical endpoints so a pre-Yahoo
+    non-event move can be certified when two VNStock routes genuinely agree within the
+    existing 0.003 limit. VCI DIV/ISS ex-right dates classify event boundaries only;
+    known events still require Yahoo adjusted-return evidence. No threshold is changed,
+    no missing value is treated as zero, and no synthetic price is created.
     """
     attempts = []
     start, end = base._history_window(years)
+    routes = []
     candidates = []
 
     unified = _capture_unified(symbol, years, attempts, "VNSTOCK_PRIMARY")
+    if unified is not None:
+        routes.append(unified)
 
     yahoo_rows = []
     yahoo_audit = None
@@ -310,107 +370,125 @@ def capture_price_history(symbol, years=8):
 
     if unified is not None:
         rows, source_audit = unified
-        candidates.append(
-            _evaluate_candidate(
-                symbol,
-                rows,
-                source_audit,
-                yahoo_rows,
-                yahoo_audit,
-                attempts,
-                0,
-            )
+        item = _evaluate_candidate(
+            symbol,
+            rows,
+            source_audit,
+            yahoo_rows,
+            yahoo_audit,
+            attempts,
+            0,
         )
+        candidates.append(item)
+        if item[1].get("eligible") is True:
+            selected = item
+            adjusted, audit, _ = selected
+            audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + _provider_code(unified)
+            audit["attempts"] = attempts
+            audit["candidateCount"] = len(candidates)
+            audit["selectionPolicy"] = "CERTIFIED_UNIFIED_PRIMARY_WITHOUT_RECOVERY"
+            return adjusted, audit
 
-    selected = next(
-        (item for item in candidates if item[1].get("eligible") is True),
-        None,
+    event_dates, event_audit = _vci_corporate_action_dates(symbol, attempts)
+
+    vci = _capture_provider(
+        symbol, "VCI", start, end, attempts, "VNSTOCK_VCI_RECOVERY"
     )
-
-    event_dates = set()
-    event_audit = None
-    if selected is None:
-        event_dates, event_audit = _vci_corporate_action_dates(symbol, attempts)
-        vci = _capture_provider(
-            symbol, "VCI", start, end, attempts, "VNSTOCK_VCI_RECOVERY"
+    if vci is not None:
+        routes.append(vci)
+        rows, source_audit = vci
+        item = _evaluate_candidate(
+            symbol,
+            rows,
+            source_audit,
+            yahoo_rows,
+            yahoo_audit,
+            attempts,
+            1,
+            raw_reference_rows=unified[0] if unified is not None else None,
+            raw_reference_audit=unified[1] if unified is not None else None,
+            known_ca_dates=event_dates,
+            event_reference_audit=event_audit,
         )
-        if vci is not None:
-            rows, source_audit = vci
-            raw_ref_rows = unified[0] if unified is not None else None
-            raw_ref_audit = unified[1] if unified is not None else None
-            item = _evaluate_candidate(
-                symbol,
-                rows,
-                source_audit,
-                yahoo_rows,
-                yahoo_audit,
-                attempts,
-                1,
-                raw_reference_rows=raw_ref_rows,
-                raw_reference_audit=raw_ref_audit,
-                known_ca_dates=event_dates,
-                event_reference_audit=event_audit,
-            )
-            candidates.append(item)
-            if item[1].get("eligible") is True:
-                selected = item
+        candidates.append(item)
+        if item[1].get("eligible") is True:
+            selected = item
+            adjusted, audit, _ = selected
+            audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + _provider_code(vci)
+            audit["attempts"] = attempts
+            audit["candidateCount"] = len(candidates)
+            audit["selectionPolicy"] = "CERTIFIED_VCI_RECOVERY_WITH_UNIFIED_RAW_REFERENCE"
+            return adjusted, audit
 
-    if selected is None:
-        kbs = _capture_provider(
-            symbol, "KBS", start, end, attempts, "VNSTOCK_KBS_RECOVERY"
+    kbs = _capture_provider(
+        symbol, "KBS", start, end, attempts, "VNSTOCK_KBS_RECOVERY"
+    )
+    if kbs is not None:
+        routes.append(kbs)
+        rows, source_audit = kbs
+        reference = vci if vci is not None else unified
+        item = _evaluate_candidate(
+            symbol,
+            rows,
+            source_audit,
+            yahoo_rows,
+            yahoo_audit,
+            attempts,
+            2,
+            raw_reference_rows=reference[0] if reference is not None else None,
+            raw_reference_audit=reference[1] if reference is not None else None,
+            known_ca_dates=event_dates,
+            event_reference_audit=event_audit,
         )
-        if kbs is not None:
-            rows, source_audit = kbs
-            vci_candidate = next(
-                (
-                    c for c in candidates
-                    if str((c[1].get("rawSource") or {}).get("providerCode")) == "VCI"
-                ),
-                None,
-            )
-            if vci_candidate is not None:
-                raw_ref_rows = vci_candidate[0]
-                raw_ref_audit = vci_candidate[1].get("rawSource")
-            elif unified is not None:
-                raw_ref_rows, raw_ref_audit = unified
-            else:
-                raw_ref_rows = raw_ref_audit = None
-            item = _evaluate_candidate(
-                symbol,
-                rows,
-                source_audit,
-                yahoo_rows,
-                yahoo_audit,
-                attempts,
-                2,
-                raw_reference_rows=raw_ref_rows,
-                raw_reference_audit=raw_ref_audit,
-                known_ca_dates=event_dates,
-                event_reference_audit=event_audit,
-            )
-            candidates.append(item)
-            if item[1].get("eligible") is True:
-                selected = item
+        candidates.append(item)
+        if item[1].get("eligible") is True:
+            selected = item
+            adjusted, audit, _ = selected
+            audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + _provider_code(kbs)
+            audit["attempts"] = attempts
+            audit["candidateCount"] = len(candidates)
+            audit["selectionPolicy"] = "CERTIFIED_KBS_RECOVERY_WITH_SECONDARY_RAW_REFERENCE"
+            return adjusted, audit
 
-    if not candidates:
+    if not routes:
         raise SourceCaptureError(symbol, attempts)
 
-    if selected is None:
+    # The initial one-way recovery comparisons can miss a real consensus pair (for
+    # example Unified and KBS agree while VCI differs). Audit every available pair
+    # before declaring the symbol ineligible.
+    pairwise = _pairwise_certify(
+        symbol,
+        routes,
+        yahoo_rows,
+        yahoo_audit,
+        attempts,
+        event_dates,
+        event_audit,
+    )
+    candidates.extend(pairwise)
+    certified = [item for item in pairwise if item[1].get("eligible") is True]
+    if certified:
+        certified.sort(key=_quality_rank)
+        selected = certified[0]
+    else:
         candidates.sort(key=_quality_rank)
         selected = candidates[0]
 
     adjusted, audit, _ = selected
-    provider = str(
-        (audit.get("rawSource") or {}).get("providerCode") or "UNKNOWN"
+    provider = str((audit.get("rawSource") or {}).get("providerCode") or "UNKNOWN")
+    reference_provider = str(
+        (audit.get("secondaryRawReference") or {}).get("providerCode") or "NONE"
     )
     audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + provider
     audit["attempts"] = attempts
     audit["candidateCount"] = len(candidates)
     audit["selectionPolicy"] = (
-        "FIRST_CERTIFIED_UNIFIED_THEN_VCI_THEN_KBS_WHEN_PROVIDER_AVAILABLE;"
-        "RECOVERY_MAY_USE_IDENTICAL_ENDPOINT_SECONDARY_RAW_ROUTE_CORROBORATION;"
-        "VCI_DIV_ISS_DATES_CLASSIFY_EVENT_BOUNDARIES_ONLY;"
-        "BEST_DEEP_CA_MAD_PROVENANCE_IF_NONE_CERTIFIED"
+        "UNIFIED_PRIMARY_THEN_VCI_THEN_KBS;"
+        "IF_NONE_ONE_WAY_CERTIFIED_REAUDIT_ALL_AVAILABLE_ROUTE_PAIRS_ON_EXACT_ENDPOINTS;"
+        "NON_EVENT_RAW_CONSENSUS_LIMIT_UNCHANGED;"
+        "VCI_DIV_ISS_DATES_CLASSIFY_EVENTS_ONLY;"
+        "KNOWN_EVENTS_REQUIRE_YAHOO_ADJUSTED_RETURN;"
+        f"SELECTED_REFERENCE={reference_provider}"
     )
     return adjusted, audit
 
@@ -442,12 +520,8 @@ def build_source_capture_store(symbols):
                 "total": len(symbols),
                 "captured": len(store),
                 "failed": len(failures),
-                "deep": sum(
-                    len(r) >= base.MIN_ROWS for r in store.values()
-                ),
-                "eligible": sum(
-                    a.get("eligible") is True for a in audits.values()
-                ),
+                "deep": sum(len(r) >= base.MIN_ROWS for r in store.values()),
+                "eligible": sum(a.get("eligible") is True for a in audits.values()),
                 "providerCircuits": _PROVIDER_CIRCUITS,
             }, ensure_ascii=False), flush=True)
 
@@ -456,16 +530,12 @@ def build_source_capture_store(symbols):
 
 def source_capture_summary(audits, failures):
     return {
-        "version": "VMEWS-SOURCE-CAPTURE-AUDIT-12.5.0",
+        "version": "VMEWS-SOURCE-CAPTURE-AUDIT-12.6.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "captured": len(audits),
         "failed": len(failures),
-        "deep": sum(
-            a.get("deepHistory") is True for a in audits.values()
-        ),
-        "eligible": sum(
-            a.get("eligible") is True for a in audits.values()
-        ),
+        "deep": sum(a.get("deepHistory") is True for a in audits.values()),
+        "eligible": sum(a.get("eligible") is True for a in audits.values()),
         "providerCircuits": _PROVIDER_CIRCUITS,
         "failures": failures,
         "symbols": audits,
