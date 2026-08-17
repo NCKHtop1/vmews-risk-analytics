@@ -83,6 +83,21 @@ def _capture_provider(symbol, source, start, end, attempts, stage):
         return None
 
 
+def _capture_unified(symbol, years, attempts, stage="VNSTOCK_PRIMARY"):
+    try:
+        rows, audit = _unified_history(symbol, years=years)
+        attempts.append({"stage": stage, "ok": True, **audit})
+        return rows, audit
+    except BaseException as exc:
+        attempts.append({
+            "stage": stage,
+            "ok": False,
+            "providerCode": "UNIFIED",
+            "error": f"{type(exc).__name__}: {exc}"[:700],
+        })
+        return None
+
+
 def _quality_rank(item):
     rows, audit, priority = item
     mad = audit.get("crossSourceReturnMAD")
@@ -129,41 +144,21 @@ def _evaluate_candidate(
     return adjusted, audit, priority
 
 
-def _capture_unified(symbol, years, attempts):
-    try:
-        rows, audit = _unified_history(symbol, years=years)
-        attempts.append({
-            "stage": "VNSTOCK_UNIFIED_RECOVERY",
-            "ok": True,
-            **audit,
-        })
-        return rows, audit
-    except BaseException as exc:
-        attempts.append({
-            "stage": "VNSTOCK_UNIFIED_RECOVERY",
-            "ok": False,
-            "providerCode": "UNIFIED",
-            "error": f"{type(exc).__name__}: {exc}"[:700],
-        })
-        return None
-
-
 def capture_price_history(symbol, years=8):
     """Capture real VNStock OHLCV separately from downstream model eligibility.
 
-    Provider policy is deterministic and non-shopping: VCI is audited first; KBS is
-    queried only when VCI is unavailable or fails the same depth/CA/MAD certification;
-    Unified Market is the final VNStock recovery route. If no provider is model-eligible,
-    the best real VNStock history is still frozen for provenance and explicitly marked
-    ineligible so research abstains rather than fabricating or padding history.
+    Provider policy is deterministic and non-shopping: Unified Market is audited first,
+    preserving the project's VNStock-primary policy; direct VCI and then KBS are queried
+    only when the preceding route is unavailable or fails the same depth/CA/MAD
+    certification. If no route is model-eligible, the best real VNStock history is still
+    frozen for provenance and explicitly marked ineligible so research abstains instead
+    of fabricating, padding, or misclassifying valid source data as unavailable.
     """
     attempts = []
     start, end = base._history_window(years)
     candidates = []
 
-    vci = _capture_provider(
-        symbol, "VCI", start, end, attempts, "VNSTOCK_PRIMARY"
-    )
+    unified = _capture_unified(symbol, years, attempts, "VNSTOCK_PRIMARY")
 
     yahoo_rows = []
     yahoo_audit = None
@@ -181,8 +176,8 @@ def capture_price_history(symbol, years=8):
             "error": f"{type(exc).__name__}: {exc}"[:700],
         })
 
-    if vci is not None:
-        rows, source_audit = vci
+    if unified is not None:
+        rows, source_audit = unified
         candidates.append(
             _evaluate_candidate(
                 symbol,
@@ -201,11 +196,11 @@ def capture_price_history(symbol, years=8):
     )
 
     if selected is None:
-        kbs = _capture_provider(
-            symbol, "KBS", start, end, attempts, "VNSTOCK_KBS_RECOVERY"
+        vci = _capture_provider(
+            symbol, "VCI", start, end, attempts, "VNSTOCK_VCI_RECOVERY"
         )
-        if kbs is not None:
-            rows, source_audit = kbs
+        if vci is not None:
+            rows, source_audit = vci
             item = _evaluate_candidate(
                 symbol,
                 rows,
@@ -220,9 +215,11 @@ def capture_price_history(symbol, years=8):
                 selected = item
 
     if selected is None:
-        unified = _capture_unified(symbol, years, attempts)
-        if unified is not None:
-            rows, source_audit = unified
+        kbs = _capture_provider(
+            symbol, "KBS", start, end, attempts, "VNSTOCK_KBS_RECOVERY"
+        )
+        if kbs is not None:
+            rows, source_audit = kbs
             item = _evaluate_candidate(
                 symbol,
                 rows,
@@ -251,7 +248,7 @@ def capture_price_history(symbol, years=8):
     audit["attempts"] = attempts
     audit["candidateCount"] = len(candidates)
     audit["selectionPolicy"] = (
-        "FIRST_CERTIFIED_VCI_THEN_KBS_THEN_UNIFIED;"
+        "FIRST_CERTIFIED_UNIFIED_THEN_VCI_THEN_KBS;"
         "BEST_DEEP_CA_MAD_PROVENANCE_IF_NONE_CERTIFIED"
     )
     return adjusted, audit
