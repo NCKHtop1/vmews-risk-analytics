@@ -86,7 +86,11 @@ def _capture_provider(symbol, source, start, end, attempts, stage):
 def _quality_rank(item):
     rows, audit, priority = item
     mad = audit.get("crossSourceReturnMAD")
-    mad_rank = float(mad) if isinstance(mad, (int, float)) and math.isfinite(mad) else float("inf")
+    mad_rank = (
+        float(mad)
+        if isinstance(mad, (int, float)) and math.isfinite(mad)
+        else float("inf")
+    )
     ca_ok = (audit.get("corporateAction") or {}).get("verified") is True
     return (
         0 if audit.get("eligible") is True else 1,
@@ -98,7 +102,15 @@ def _quality_rank(item):
     )
 
 
-def _evaluate_candidate(symbol, rows, source_audit, yahoo_rows, yahoo_audit, attempts, priority):
+def _evaluate_candidate(
+    symbol,
+    rows,
+    source_audit,
+    yahoo_rows,
+    yahoo_audit,
+    attempts,
+    priority,
+):
     adjusted, audit = _candidate_audit(
         symbol, rows, source_audit, yahoo_rows, yahoo_audit
     )
@@ -193,7 +205,14 @@ def capture_price_history(symbol, years=8):
         for rows, source_audit, priority in raw_candidates
     ]
 
-    if not any(audit.get("eligible") is True for _, audit, _ in candidates):
+    has_unified = any(
+        str((audit.get("rawSource") or {}).get("providerCode") or "") == "UNIFIED"
+        for _, audit, _ in candidates
+    )
+    if (
+        not any(audit.get("eligible") is True for _, audit, _ in candidates)
+        and not has_unified
+    ):
         try:
             rows, source_audit = _unified_history(symbol, years=years)
             attempts.append({
@@ -222,7 +241,9 @@ def capture_price_history(symbol, years=8):
 
     candidates.sort(key=_quality_rank)
     adjusted, audit, _ = candidates[0]
-    provider = str((audit.get("rawSource") or {}).get("providerCode") or "UNKNOWN")
+    provider = str(
+        (audit.get("rawSource") or {}).get("providerCode") or "UNKNOWN"
+    )
     audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + provider
     audit["attempts"] = attempts
     audit["candidateCount"] = len(candidates)
@@ -258,8 +279,12 @@ def build_source_capture_store(symbols):
                 "total": len(symbols),
                 "captured": len(store),
                 "failed": len(failures),
-                "deep": sum(len(r) >= base.MIN_ROWS for r in store.values()),
-                "eligible": sum(a.get("eligible") is True for a in audits.values()),
+                "deep": sum(
+                    len(r) >= base.MIN_ROWS for r in store.values()
+                ),
+                "eligible": sum(
+                    a.get("eligible") is True for a in audits.values()
+                ),
             }, ensure_ascii=False), flush=True)
 
     return store, audits, failures
@@ -271,8 +296,12 @@ def source_capture_summary(audits, failures):
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "captured": len(audits),
         "failed": len(failures),
-        "deep": sum(a.get("deepHistory") is True for a in audits.values()),
-        "eligible": sum(a.get("eligible") is True for a in audits.values()),
+        "deep": sum(
+            a.get("deepHistory") is True for a in audits.values()
+        ),
+        "eligible": sum(
+            a.get("eligible") is True for a in audits.values()
+        ),
         "failures": failures,
         "symbols": audits,
     }
