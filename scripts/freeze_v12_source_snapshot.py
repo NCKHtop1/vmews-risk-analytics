@@ -6,7 +6,7 @@ import pathlib
 from collections import Counter
 from datetime import datetime, timezone
 
-from v12_universe import current_hose_symbols
+from v12_universe import current_hose_symbols, discover_candidates
 import v12_data_sources as ds
 import v12_source_capture as capture
 
@@ -91,27 +91,64 @@ def _percentile95(values):
     return ordered[idx]
 
 
+def _modal_end(store, current_symbols):
+    ends = [
+        str(store[s][-1].get("date", ""))[:10]
+        for s in current_symbols
+        if s in store and store[s]
+    ]
+    if not ends:
+        return None
+    counts = Counter(ends)
+    return max(counts, key=lambda d: (counts[d], d))
+
+
 def main():
-    symbols = sorted(current_hose_symbols())
+    current_symbols = sorted(current_hose_symbols())
+    historical_candidates, universe_discovery = discover_candidates()
+    historical_candidates = {
+        s: meta
+        for s, meta in sorted(historical_candidates.items())
+        if s not in set(current_symbols)
+    }
+    historical_symbols = sorted(historical_candidates)
+    symbols = sorted(set(current_symbols) | set(historical_symbols))
+
+    discovery_error = (
+        (universe_discovery.get("vnstockReference") or {}).get("error")
+        if isinstance(universe_discovery, dict)
+        else "invalid universe discovery payload"
+    )
+
     store, audits, failures = capture.build_source_capture_store(symbols)
     if not store:
         diag = {
             "status": "FAIL",
             "gateFailures": ["captured_no_symbols"],
             "requested": len(symbols),
+            "currentHOSERequested": len(current_symbols),
+            "historicalCandidateRequested": len(historical_symbols),
             "available": 0,
             "sourceCoverageRatio": 0.0,
             "captureFailures": failures,
+            "universeDiscovery": universe_discovery,
         }
         _write_diag(diag)
         raise RuntimeError("V12 source freeze captured no symbols")
 
-    ends = [
-        str(rows[-1].get("date", ""))[:10]
-        for rows in store.values()
-        if rows
-    ]
-    as_of = max(set(ends), key=ends.count)
+    as_of = _modal_end(store, current_symbols)
+    if not as_of:
+        diag = {
+            "status": "FAIL",
+            "gateFailures": ["no_current_hose_modal_cutoff"],
+            "requested": len(symbols),
+            "available": len(store),
+            "captureFailures": failures,
+            "universeDiscovery": universe_discovery,
+        }
+        _write_diag(diag)
+        raise RuntimeError("V12 source freeze has no current-HOSE cutoff")
+
     store = {
         s: [r for r in rows if str(r.get("date", ""))[:10] <= as_of]
         for s, rows in store.items()
@@ -119,45 +156,65 @@ def main():
     store = {s: rows for s, rows in store.items() if rows}
     audits = {s: audits[s] for s in store if s in audits}
 
-    available = len(store)
-    requested = len(symbols)
-    coverage = available / max(1, requested)
+    requested_total = len(symbols)
+    available_total = len(store)
+    total_coverage = available_total / max(1, requested_total)
 
-    deep_symbols = {
+    current_set = set(current_symbols)
+    historical_set = set(historical_symbols)
+    current_captured = current_set & set(store)
+    historical_captured = historical_set & set(store)
+    current_coverage = len(current_captured) / max(1, len(current_set))
+    historical_coverage = len(historical_captured) / max(1, len(historical_set)) if historical_set else 1.0
+
+    total_deep_symbols = {
         s for s, rows in store.items()
         if len(rows) >= ds.MIN_ROWS
     }
-    deep = len(deep_symbols)
-    deep_ratio = deep / max(1, requested)
+    current_deep_symbols = total_deep_symbols & current_set
+    historical_deep_symbols = total_deep_symbols & historical_set
 
-    eligible_symbols = {
-        s for s in deep_symbols
+    current_eligible_symbols = {
+        s for s in current_deep_symbols
         if (audits.get(s) or {}).get("eligible") is True
     }
-    model_eligible = len(eligible_symbols)
-    eligible_ratio = model_eligible / max(1, requested)
+    historical_eligible_symbols = {
+        s for s in historical_deep_symbols
+        if (audits.get(s) or {}).get("eligible") is True
+    }
 
-    short_symbols = sorted(set(store) - deep_symbols)
-    deep_but_ineligible = sorted(deep_symbols - eligible_symbols)
+    current_deep = len(current_deep_symbols)
+    current_deep_ratio = current_deep / max(1, len(current_set))
+    model_eligible = len(current_eligible_symbols)
+    eligible_ratio = model_eligible / max(1, len(current_set))
 
-    deep_audits = [audits[s] for s in sorted(deep_symbols) if s in audits]
+    short_current = sorted(current_captured - current_deep_symbols)
+    deep_but_ineligible = sorted(current_deep_symbols - current_eligible_symbols)
+
+    deep_current_audits = [
+        audits[s] for s in sorted(current_deep_symbols) if s in audits
+    ]
     cas = [
         (a.get("corporateAction") or {}).get("verified") is True
-        for a in deep_audits
+        for a in deep_current_audits
     ]
     ca_ratio = sum(cas) / max(1, len(cas))
 
     mads = [
         float(a.get("crossSourceReturnMAD"))
-        for a in deep_audits
+        for a in deep_current_audits
         if isinstance(a.get("crossSourceReturnMAD"), (int, float))
         and finite(a.get("crossSourceReturnMAD"))
     ]
     p95 = _percentile95(mads)
 
-    attempt_stage_counts, attempt_stage_failures = _attempt_stage_counts(audits, failures)
+    current_audits = {s: audits[s] for s in current_set if s in audits}
+    current_failures = {s: failures[s] for s in current_set if s in failures}
+    attempt_stage_counts, attempt_stage_failures = _attempt_stage_counts(
+        current_audits, current_failures
+    )
     attempted = int(attempt_stage_counts.get("VNSTOCK_PRIMARY", 0))
-    attempt_ratio = attempted / max(1, requested)
+    attempt_ratio = attempted / max(1, len(current_set))
 
     route_counts = Counter(
         str(a.get("route") or "UNKNOWN")
@@ -173,46 +230,63 @@ def main():
     )
 
     gate_failures = []
-    if coverage < 0.98:
+    if discovery_error:
         gate_failures.append(
-            f"source_coverage:{available}/{requested}={coverage:.6f}<0.98"
+            "historical_universe_discovery:" + str(discovery_error)[:300]
         )
-    if deep < 360:
-        gate_failures.append(f"deep_history:{deep}<360")
+    if current_coverage < 0.98:
+        gate_failures.append(
+            f"current_source_coverage:{len(current_captured)}/{len(current_set)}={current_coverage:.6f}<0.98"
+        )
+    if current_deep < 360:
+        gate_failures.append(f"current_deep_history:{current_deep}<360")
     if model_eligible < 360:
-        gate_failures.append(f"model_eligible:{model_eligible}<360")
+        gate_failures.append(f"current_model_eligible:{model_eligible}<360")
     if ca_ratio < 0.98:
         gate_failures.append(
-            f"corporate_action_verified_deep:{ca_ratio:.6f}<0.98"
+            f"corporate_action_verified_current_deep:{ca_ratio:.6f}<0.98"
         )
     if p95 is not None and p95 > 0.003:
-        gate_failures.append(f"cross_source_mad_p95_deep:{p95:.10f}>0.003")
+        gate_failures.append(
+            f"cross_source_mad_p95_current_deep:{p95:.10f}>0.003"
+        )
     if attempt_ratio < 0.95:
         gate_failures.append(
-            f"vnstock_primary_attempted:{attempted}/{requested}={attempt_ratio:.6f}<0.95"
+            f"vnstock_primary_attempted_current:{attempted}/{len(current_set)}={attempt_ratio:.6f}<0.95"
         )
 
     diag = {
         "status": "FAIL" if gate_failures else "GATES_PASS",
         "asOf": as_of,
-        "requested": requested,
-        "available": available,
-        "sourceCaptured": available,
-        "coverageRatio": coverage,
-        "sourceCoverageRatio": coverage,
-        "deepHistory": deep,
-        "deepHistoryCoverageRatio": deep_ratio,
+        "requested": requested_total,
+        "available": available_total,
+        "coverageRatio": total_coverage,
+        "sourceCoverageRatio": total_coverage,
+        "currentHOSERequested": len(current_set),
+        "currentHOSECaptured": len(current_captured),
+        "currentSourceCoverageRatio": current_coverage,
+        "historicalCandidateRequested": len(historical_set),
+        "historicalCandidateCaptured": len(historical_captured),
+        "historicalCandidateCoverageRatio": historical_coverage,
+        "historicalCandidates": historical_symbols,
+        "historicalCandidateMetadata": historical_candidates,
+        "universeDiscovery": universe_discovery,
+        "deepHistory": current_deep,
+        "deepHistoryCoverageRatio": current_deep_ratio,
+        "totalDeepHistory": len(total_deep_symbols),
+        "historicalDeepHistory": len(historical_deep_symbols),
         "modelEligible": model_eligible,
         "modelEligibleCoverageRatio": eligible_ratio,
-        "shortHistoryCapturedCount": len(short_symbols),
-        "shortHistoryCaptured": short_symbols,
+        "historicalModelEligible": len(historical_eligible_symbols),
+        "shortHistoryCapturedCount": len(short_current),
+        "shortHistoryCaptured": short_current,
         "deepButIneligibleCount": len(deep_but_ineligible),
         "deepButIneligible": deep_but_ineligible,
         "corporateActionVerifiedRatio": ca_ratio,
-        "corporateActionGateCohort": "DEEP_HISTORY_ONLY",
+        "corporateActionGateCohort": "CURRENT_HOSE_DEEP_HISTORY_ONLY",
         "crossSourceMADP95": p95,
         "crossSourceMADCount": len(mads),
-        "crossSourceMADGateCohort": "DEEP_HISTORY_ONLY",
+        "crossSourceMADGateCohort": "CURRENT_HOSE_DEEP_HISTORY_ONLY",
         "vnstockPrimaryAttempted": attempted,
         "vnstockPrimaryAttemptRatio": attempt_ratio,
         "routeCounts": dict(sorted(route_counts.items())),
@@ -233,7 +307,9 @@ def main():
     symbol_manifest = {}
     for s, rows in sorted(store.items()):
         a = audits.get(s) or {}
+        role = "CURRENT_HOSE" if s in current_set else "HISTORICAL_CANDIDATE"
         symbol_manifest[s] = {
+            "universeRole": role,
             "route": a.get("route"),
             "provider": (
                 (a.get("rawSource") or {}).get("providerCode")
@@ -242,13 +318,23 @@ def main():
             "rows": len(rows),
             "start": rows[0]["date"],
             "end": rows[-1]["date"],
-            "deepHistory": s in deep_symbols,
-            "eligible": s in eligible_symbols,
+            "deepHistory": s in total_deep_symbols,
+            "eligible": (
+                s in current_eligible_symbols or s in historical_eligible_symbols
+            ),
             "sha256": fingerprint(rows),
         }
 
+    manifest_material = {
+        "currentHOSESymbols": current_symbols,
+        "historicalCandidates": historical_candidates,
+        "symbols": [
+            {"symbol": s, **m}
+            for s, m in sorted(symbol_manifest.items())
+        ],
+    }
     manifest_raw = json.dumps(
-        [{"symbol": s, **m} for s, m in sorted(symbol_manifest.items())],
+        manifest_material,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -257,10 +343,13 @@ def main():
     input_manifest_sha = hashlib.sha256(manifest_raw).hexdigest()
 
     payload = {
-        "version": "VMEWS-FROZEN-SOURCE-12.0.0",
+        "version": "VMEWS-FROZEN-SOURCE-12.1.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "asOf": as_of,
         "sourcePolicy": "ONE_TIME_AUDITED_VNSTOCK_CAPTURE_SEPARATE_FROM_MODEL_ELIGIBILITY",
+        "currentHOSESymbols": current_symbols,
+        "historicalCandidates": historical_candidates,
+        "universeDiscovery": universe_discovery,
         "requestedSymbols": symbols,
         "histories": store,
         "audits": audits,
@@ -277,19 +366,29 @@ def main():
     file_sha = hashlib.sha256(blob).hexdigest()
 
     manifest = {
-        "version": "VMEWS-FROZEN-SOURCE-MANIFEST-12.0.0",
+        "version": "VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "asOf": as_of,
-        "requested": requested,
-        "available": available,
-        "sourceCaptured": available,
-        "coverageRatio": coverage,
-        "sourceCoverageRatio": coverage,
-        "deepHistory": deep,
-        "deepHistoryCoverageRatio": deep_ratio,
+        "requested": requested_total,
+        "available": available_total,
+        "coverageRatio": total_coverage,
+        "sourceCoverageRatio": total_coverage,
+        "currentHOSERequested": len(current_set),
+        "currentHOSECaptured": len(current_captured),
+        "currentSourceCoverageRatio": current_coverage,
+        "historicalCandidateRequested": len(historical_set),
+        "historicalCandidateCaptured": len(historical_captured),
+        "historicalCandidateCoverageRatio": historical_coverage,
+        "historicalCandidates": historical_candidates,
+        "universeDiscovery": universe_discovery,
+        "deepHistory": current_deep,
+        "deepHistoryCoverageRatio": current_deep_ratio,
+        "totalDeepHistory": len(total_deep_symbols),
+        "historicalDeepHistory": len(historical_deep_symbols),
         "modelEligible": model_eligible,
         "modelEligibleCoverageRatio": eligible_ratio,
-        "shortHistoryCapturedCount": len(short_symbols),
+        "historicalModelEligible": len(historical_eligible_symbols),
+        "shortHistoryCapturedCount": len(short_current),
         "deepButIneligibleCount": len(deep_but_ineligible),
         "corporateActionVerifiedRatio": ca_ratio,
         "crossSourceMADP95": p95,
@@ -307,10 +406,14 @@ def main():
     print(json.dumps({
         "v12SourceFreeze": "PASS",
         "asOf": as_of,
-        "requested": requested,
-        "available": available,
-        "sourceCoverageRatio": coverage,
-        "deepHistory": deep,
+        "requested": requested_total,
+        "available": available_total,
+        "currentHOSERequested": len(current_set),
+        "currentHOSECaptured": len(current_captured),
+        "currentSourceCoverageRatio": current_coverage,
+        "historicalCandidateRequested": len(historical_set),
+        "historicalCandidateCaptured": len(historical_captured),
+        "deepHistory": current_deep,
         "modelEligible": model_eligible,
         "snapshotBytes": len(blob),
         "snapshotFileSha256": file_sha,
