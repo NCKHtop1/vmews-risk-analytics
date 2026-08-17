@@ -9,7 +9,7 @@ permissions:
   contents: write
 concurrency:
   group: vmews-v12-source-freeze
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   freeze:
     runs-on: ubuntu-latest
@@ -22,6 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 1}
+      - name: Pin source commit for immutable capture
+        run: echo "V12_FREEZE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -50,16 +52,21 @@ jobs:
           z=json.loads(gzip.decompress(p.read_bytes()).decode('utf-8'))
           assert z['version']=='VMEWS-FROZEN-SOURCE-12.0.0'
           assert len(z['histories'])==m['available']
-          assert m['coverageRatio']>=.98 and m['deepHistory']>=360
+          assert m['coverageRatio']>=.98 and m['deepHistory']>=360 and m['modelEligible']>=360
           print('V12 FROZEN SOURCE VERIFY PASS',m['asOf'],m['snapshotFileSha256'],m['inputManifestSha256'])
           PY
       - name: Publish immutable source snapshot to branch
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$V12_FREEZE_SOURCE_SHA"
+          git fetch origin forecast-v12-methodfix
+          REMOTE_SHA=$(git rev-parse origin/forecast-v12-methodfix)
+          test "$REMOTE_SHA" = "$V12_FREEZE_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING SOURCE FREEZE: source=$V12_FREEZE_SOURCE_SHA remote=$REMOTE_SHA; refusing to attach stale capture"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/v12-frozen-source.json.gz data/v12-frozen-source-manifest.json
           git commit -m 'Publish immutable V12 research source snapshot [no-full]'
-          git pull --rebase origin forecast-v12-methodfix
+          PUBLISHED_SHA=$(git rev-parse HEAD)
+          test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_FREEZE_SOURCE_SHA"
           git push origin HEAD:forecast-v12-methodfix
