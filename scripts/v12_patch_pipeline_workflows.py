@@ -14,6 +14,24 @@ s=replace_once(s,anchor,insert,'full context step')
 s=replace_once(s,"'event-intelligence-v12.json']","'event-intelligence-v12.json','current-context-v12.json']",'full materialization')
 s=replace_once(s,'            data/event-intelligence-v12.json\n            data/phase-gates-v12.json','            data/event-intelligence-v12.json\n            data/current-context-v12.json\n            data/phase-gates-v12.json','full evidence')
 s=replace_once(s,'data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json','data/data-audit-v12.json data/event-intelligence-v12.json data/current-context-v12.json data/phase-gates-v12.json','full persist')
+
+# Phase 1 and all model fitting must consume the immutable source freeze only.
+s=replace_once(
+    s,
+    'scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py',
+    'scripts/v12_flow.py scripts/v12_frozen_source_probe.py scripts/v12_acceptance.py',
+    'full frozen source probe compile',
+)
+s=replace_once(
+    s,
+    '      - name: Phase 1 representative VNStock-first source probe\n        run: PYTHONPATH=scripts python scripts/v12_source_probe.py\n',
+    '      - name: Phase 1 immutable frozen-source probe (no provider/network price fetch)\n        run: PYTHONPATH=scripts python scripts/v12_frozen_source_probe.py\n',
+    'full frozen source probe step',
+)
+if 'scripts/v12_source_probe.py' in s:
+    raise SystemExit('full workflow still references live v12_source_probe.py')
+if 'scripts/v12_frozen_source_probe.py' not in s:
+    raise SystemExit('full workflow frozen source probe integration missing')
 p.write_text(s,encoding='utf-8')
 
 # Immutable release: require non-collapsed magnitude authority and hash the new context payload.
