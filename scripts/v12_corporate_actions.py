@@ -34,6 +34,16 @@ def _largest_jump(rows):
     return abs(float(value)), date
 
 
+def _price_series(rows, field="close"):
+    out = {}
+    for row in rows or []:
+        date = str(row.get("date", ""))[:10]
+        value = _finite(row.get(field))
+        if date and value is not None and value > 0:
+            out[date] = value
+    return out
+
+
 def _interval_log_return(series, start_date, end_date):
     start = _finite(series.get(start_date))
     end = _finite(series.get(end_date))
@@ -51,37 +61,29 @@ def _asof_value(series, dates, date):
     return _finite(series.get(dates[idx]))
 
 
-def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross_source_limit):
-    """Build a VNStock-primary model series with event-boundary return splicing.
+def reconcile_vnstock_with_yahoo(
+    vn_rows,
+    yahoo_rows,
+    *,
+    max_return_guard,
+    cross_source_limit,
+    raw_reference_rows=None,
+    known_ca_dates=None,
+):
+    """Build a VNStock-primary model series with auditable event/large-move reconciliation.
 
-    Ordinary intervals preserve VNStock returns and large moves must be corroborated
-    by Yahoo raw returns on the identical VNStock endpoints. At a Yahoo adjustment-
-    factor boundary, providers may encode the raw ex-right/ex-dividend reference price
-    differently. Therefore the model series does not multiply VNStock by Yahoo's
-    absolute AdjClose/Close factor (which assumes identical raw-price conventions).
-    Instead it splices only that interval to Yahoo's adjusted return, then carries the
-    resulting VNStock-local multiplier forward. Missing reference remains fail-safe.
+    Yahoo adjusted returns remain the quantitative corporate-action reference. Outside
+    known corporate-action dates, a >guard VNStock raw move may be corroborated either
+    by Yahoo raw prices on the identical endpoints or, when Yahoo has no interval, by a
+    second captured VNStock route on those same endpoints. A secondary raw route can
+    validate that an observed market move is real, but can never neutralize a known
+    DIV/ISS event. Known event dates without an adjusted-return reference remain
+    fail-safe.
     """
-    if not yahoo_rows:
-        out = [{**row, "modelClose": row["close"], "adjustmentFactor": 1.0} for row in vn_rows]
-        jump, jump_date = _largest_jump(out)
-        return out, {
-            "method": "VNSTOCK_RAW_NO_ADJUSTMENT_REFERENCE",
-            "verified": jump <= max_return_guard,
-            "largestRawLogJump": jump,
-            "largestRawJumpDate": jump_date,
-            "factorDates": 0,
-            "factorChangeEvents": 0,
-            "eventResidualViolations": 0,
-            "ordinaryLargeMoveEvents": int(jump > max_return_guard),
-            "ordinaryLargeMoveViolations": int(jump > max_return_guard),
-            "verificationScope": "NO_ADJUSTMENT_REFERENCE_RAW_GUARD",
-        }
-
     yahoo_factors = {}
     yahoo_raw = {}
     yahoo_adjusted = {}
-    for row in yahoo_rows:
+    for row in yahoo_rows or []:
         raw = _finite(row.get("close"))
         adjusted = _finite(row.get("modelClose", row.get("adjClose")))
         date = str(row.get("date", ""))[:10]
@@ -91,17 +93,18 @@ def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross
             yahoo_factors[date] = adjusted / raw
             yahoo_adjusted[date] = adjusted
 
-    if not yahoo_factors:
-        return reconcile_vnstock_with_yahoo(
-            vn_rows, [], max_return_guard=max_return_guard, cross_source_limit=cross_source_limit
-        )
-
     factor_dates = sorted(yahoo_factors)
+    secondary_raw = _price_series(raw_reference_rows or [], "close")
+    ca_dates = {str(x)[:10] for x in (known_ca_dates or []) if str(x)[:10]}
+
     out = []
     factor_events = []
     ca_violations = []
     ordinary_large_events = []
     ordinary_violations = []
+    secondary_corroborations = 0
+    yahoo_raw_corroborations = 0
+    known_event_splices = 0
 
     prev = None
     splice_factor = 1.0
@@ -122,19 +125,24 @@ def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross
 
         start_date = prev["date"]
         raw_return = math.log(raw_close / prev["rawClose"])
-        start_yf = _asof_value(yahoo_factors, factor_dates, start_date)
-        end_yf = _asof_value(yahoo_factors, factor_dates, date)
+
+        start_yf = _asof_value(yahoo_factors, factor_dates, start_date) if factor_dates else None
+        end_yf = _asof_value(yahoo_factors, factor_dates, date) if factor_dates else None
         factor_log_change = (
             math.log(end_yf / start_yf)
             if start_yf is not None and end_yf is not None and start_yf > 0 and end_yf > 0
             else 0.0
         )
+        known_event = date in ca_dates
+        event_boundary = abs(factor_log_change) > FACTOR_EVENT_LOG_EPS or known_event
 
-        if abs(factor_log_change) > FACTOR_EVENT_LOG_EPS:
+        if event_boundary:
             yahoo_return = _interval_log_return(yahoo_adjusted, start_date, date)
             reference_available = yahoo_return is not None and math.isfinite(yahoo_return)
             if reference_available:
                 splice_factor *= math.exp(yahoo_return - raw_return)
+                if known_event and abs(factor_log_change) <= FACTOR_EVENT_LOG_EPS:
+                    known_event_splices += 1
             model_close = raw_close * splice_factor
             model_return = math.log(model_close / prev["modelClose"])
             residual = abs(model_return - yahoo_return) if reference_available else None
@@ -142,6 +150,7 @@ def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross
             event = {
                 "startDate": start_date,
                 "date": date,
+                "knownCorporateActionDate": known_event,
                 "yahooFactorLogChange": factor_log_change,
                 "rawLogReturn": raw_return,
                 "modelLogReturn": model_return,
@@ -157,18 +166,35 @@ def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross
             model_return = math.log(model_close / prev["modelClose"])
             if abs(raw_return) > max_return_guard:
                 yahoo_return = _interval_log_return(yahoo_raw, start_date, date)
-                corroborated = (
+                yahoo_ok = (
                     yahoo_return is not None
                     and math.isfinite(yahoo_return)
                     and abs(raw_return - yahoo_return) <= cross_source_limit
                 )
+                secondary_return = None
+                secondary_ok = False
+                if not yahoo_ok and secondary_raw:
+                    secondary_return = _interval_log_return(secondary_raw, start_date, date)
+                    secondary_ok = (
+                        secondary_return is not None
+                        and math.isfinite(secondary_return)
+                        and abs(raw_return - secondary_return) <= cross_source_limit
+                    )
+                corroborated = yahoo_ok or secondary_ok
+                if yahoo_ok:
+                    yahoo_raw_corroborations += 1
+                elif secondary_ok:
+                    secondary_corroborations += 1
                 event = {
                     "startDate": start_date,
                     "date": date,
                     "rawLogReturn": raw_return,
                     "modelLogReturn": model_return,
                     "yahooRawLogReturn": yahoo_return,
-                    "yahooCorroborated": corroborated,
+                    "secondaryRawLogReturn": secondary_return,
+                    "corroborationSource": "YAHOO_RAW" if yahoo_ok else ("SECONDARY_VNSTOCK_ROUTE" if secondary_ok else None),
+                    "yahooCorroborated": yahoo_ok,
+                    "secondaryRouteCorroborated": secondary_ok,
                 }
                 ordinary_large_events.append(event)
                 if not corroborated:
@@ -194,7 +220,7 @@ def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross
     ) if ordinary_large_events else None
     verified = not ca_violations and not ordinary_violations
     return out, {
-        "method": "VNSTOCK_PRIMARY_YAHOO_EVENT_RETURN_SPLICE_AND_RAW_OUTLIER_RECONCILIATION",
+        "method": "VNSTOCK_PRIMARY_YAHOO_EVENT_SPLICE_WITH_SECONDARY_RAW_ROUTE_CORROBORATION",
         "verified": verified,
         "largestRawLogJump": raw_jump,
         "largestRawJumpDate": raw_jump_date,
@@ -202,16 +228,25 @@ def reconcile_vnstock_with_yahoo(vn_rows, yahoo_rows, *, max_return_guard, cross
         "largestModelJumpDate": model_jump_date,
         "factorDates": len(yahoo_factors),
         "factorChangeEvents": len(factor_events),
+        "knownCorporateActionDates": len(ca_dates),
+        "knownEventSplices": known_event_splices,
         "eventResidualViolations": len(ca_violations),
         "ordinaryLargeMoveEvents": len(ordinary_large_events),
         "ordinaryLargeMoveViolations": len(ordinary_violations),
+        "yahooRawCorroborations": yahoo_raw_corroborations,
+        "secondaryRouteCorroborations": secondary_corroborations,
+        "secondaryRawReferenceAvailable": bool(secondary_raw),
         "largestFactorLogChange": abs(largest_factor_change["yahooFactorLogChange"]) if largest_factor_change else 0.0,
         "largestFactorChangeDate": largest_factor_change["date"] if largest_factor_change else None,
         "largestEventModelLogJump": abs(largest_event_model_jump["modelLogReturn"]) if largest_event_model_jump else 0.0,
         "largestEventModelJumpDate": largest_event_model_jump["date"] if largest_event_model_jump else None,
         "largestOrdinaryRawLogJump": abs(largest_ordinary_raw_jump["rawLogReturn"]) if largest_ordinary_raw_jump else 0.0,
         "largestOrdinaryRawJumpDate": largest_ordinary_raw_jump["date"] if largest_ordinary_raw_jump else None,
-        "verificationScope": "VNSTOCK_RETURNS_PRESERVED_OUTSIDE_YAHOO_FACTOR_BOUNDARIES;EVENT_INTERVALS_SPLICE_TO_YAHOO_ADJUSTED_RETURN_ON_IDENTICAL_ENDPOINTS;NON_EVENT_LARGE_RAW_MOVES_REQUIRE_YAHOO_RAW_CORROBORATION",
+        "verificationScope": (
+            "VNSTOCK_RETURNS_PRESERVED_OUTSIDE_AUDITED_CA_BOUNDARIES;"
+            "EVENT_INTERVALS_REQUIRE_YAHOO_ADJUSTED_RETURN;"
+            "NON_EVENT_LARGE_RAW_MOVES_REQUIRE_IDENTICAL-ENDPOINT_CORROBORATION_BY_YAHOO_RAW_OR_SECONDARY_VNSTOCK_ROUTE"
+        ),
         "corporateActionViolations": ca_violations[:10],
         "ordinaryMoveViolations": ordinary_violations[:10],
     }
