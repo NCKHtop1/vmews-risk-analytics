@@ -1,10 +1,6 @@
 name: V12 freeze audited research source
 on:
   workflow_dispatch:
-  push:
-    branches: [forecast-v12-methodfix]
-    paths:
-      - 'v12-source-freeze-trigger.txt'
 permissions:
   contents: write
 concurrency:
@@ -31,6 +27,14 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Capture and fingerprint one immutable research source snapshot
         run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot.py
+      - name: Preserve source-freeze diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-source-freeze-diagnostic-${{ github.run_id }}
+          path: data/v12-source-freeze-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify frozen artifact before publication
         run: |
           python - <<'PY'
