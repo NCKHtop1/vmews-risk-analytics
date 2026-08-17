@@ -6,6 +6,19 @@ import v12_data_sources as base
 from v12_corporate_actions import reconcile_vnstock_with_yahoo as reconcile_ca
 
 
+_PROVIDER_CIRCUITS = {}
+_PROVIDER_NETWORK_MARKERS = (
+    "connecttimeout",
+    "readtimeout",
+    "connectionpool",
+    "max retries exceeded",
+    "connection reset",
+    "name resolution",
+    "temporary failure in name resolution",
+    "network is unreachable",
+)
+
+
 class SourceCaptureError(RuntimeError):
     def __init__(self, symbol, attempts):
         self.symbol = symbol
@@ -18,6 +31,23 @@ class SourceCaptureError(RuntimeError):
         super().__init__(
             f"{symbol}: VNStock source capture failed" + (f": {detail}" if detail else "")
         )
+
+
+def _provider_state(source):
+    return _PROVIDER_CIRCUITS.setdefault(
+        str(source).upper(),
+        {"open": False, "networkFailures": 0, "reason": None},
+    )
+
+
+def _is_network_failure(exc):
+    text = f"{type(exc).__name__}: {exc}".lower()
+    return any(marker in text for marker in _PROVIDER_NETWORK_MARKERS)
+
+
+def reset_provider_circuits():
+    """Reset per-run provider health state; exposed for deterministic regressions."""
+    _PROVIDER_CIRCUITS.clear()
 
 
 def _candidate_audit(symbol, rows, source_audit, yahoo_rows, yahoo_audit):
@@ -75,16 +105,39 @@ def _unified_history(symbol, years=8):
 
 
 def _capture_provider(symbol, source, start, end, attempts, stage):
-    try:
-        rows, audit = base._provider_history(symbol, source, start, end)
-        attempts.append({"stage": stage, "ok": True, **audit})
-        return rows, audit
-    except BaseException as exc:
+    state = _provider_state(source)
+    if state.get("open") is True:
         attempts.append({
             "stage": stage,
             "ok": False,
             "providerCode": source,
-            "error": f"{type(exc).__name__}: {exc}"[:700],
+            "reason": "provider_circuit_open",
+            "error": state.get("reason"),
+        })
+        return None
+
+    try:
+        rows, audit = base._provider_history(symbol, source, start, end)
+        attempts.append({"stage": stage, "ok": True, **audit})
+        state["networkFailures"] = 0
+        return rows, audit
+    except BaseException as exc:
+        error = f"{type(exc).__name__}: {exc}"[:700]
+        network_failure = _is_network_failure(exc)
+        if network_failure:
+            state["networkFailures"] = int(state.get("networkFailures") or 0) + 1
+            # vnstock providers already retry internally. One terminal network failure
+            # therefore represents a real provider outage for this capture run. Open a
+            # run-local circuit instead of burning ~90 s for every remaining symbol.
+            state["open"] = True
+            state["reason"] = error
+        attempts.append({
+            "stage": stage,
+            "ok": False,
+            "providerCode": source,
+            "reason": "provider_network_unavailable" if network_failure else "provider_error",
+            "providerCircuitOpen": state.get("open") is True,
+            "error": error,
         })
         return None
 
@@ -156,9 +209,12 @@ def capture_price_history(symbol, years=8):
     Provider policy is deterministic and non-shopping: Unified Market is audited first,
     preserving the project's VNStock-primary policy; direct VCI and then KBS are queried
     only when the preceding route is unavailable or fails the same depth/CA/MAD
-    certification. If no route is model-eligible, the best real VNStock history is still
-    frozen for provenance and explicitly marked ineligible so research abstains instead
-    of fabricating, padding, or misclassifying valid source data as unavailable.
+    certification. A provider-wide network outage opens a run-local circuit so later
+    symbols abstain from that recovery source instead of timing out repeatedly. This
+    changes availability handling only; no scientific acceptance threshold is relaxed.
+    If no route is model-eligible, the best real VNStock history is still frozen for
+    provenance and explicitly marked ineligible so research abstains instead of
+    fabricating, padding, or misclassifying valid source data as unavailable.
     """
     attempts = []
     start, end = base._history_window(years)
@@ -254,13 +310,14 @@ def capture_price_history(symbol, years=8):
     audit["attempts"] = attempts
     audit["candidateCount"] = len(candidates)
     audit["selectionPolicy"] = (
-        "FIRST_CERTIFIED_UNIFIED_THEN_VCI_THEN_KBS;"
+        "FIRST_CERTIFIED_UNIFIED_THEN_VCI_THEN_KBS_WHEN_PROVIDER_AVAILABLE;"
         "BEST_DEEP_CA_MAD_PROVENANCE_IF_NONE_CERTIFIED"
     )
     return adjusted, audit
 
 
 def build_source_capture_store(symbols):
+    reset_provider_circuits()
     store = {}
     audits = {}
     failures = {}
@@ -292,6 +349,7 @@ def build_source_capture_store(symbols):
                 "eligible": sum(
                     a.get("eligible") is True for a in audits.values()
                 ),
+                "providerCircuits": _PROVIDER_CIRCUITS,
             }, ensure_ascii=False), flush=True)
 
     return store, audits, failures
@@ -299,7 +357,7 @@ def build_source_capture_store(symbols):
 
 def source_capture_summary(audits, failures):
     return {
-        "version": "VMEWS-SOURCE-CAPTURE-AUDIT-12.3.0",
+        "version": "VMEWS-SOURCE-CAPTURE-AUDIT-12.4.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "captured": len(audits),
         "failed": len(failures),
@@ -309,6 +367,7 @@ def source_capture_summary(audits, failures):
         "eligible": sum(
             a.get("eligible") is True for a in audits.values()
         ),
+        "providerCircuits": _PROVIDER_CIRCUITS,
         "failures": failures,
         "symbols": audits,
     }
