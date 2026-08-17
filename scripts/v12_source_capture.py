@@ -1,4 +1,5 @@
 import json
+import math
 from datetime import datetime, timezone
 
 import v12_data_sources as base
@@ -13,10 +14,12 @@ class SourceCaptureError(RuntimeError):
             for a in self.attempts
             if a.get("ok") is False
         )
-        super().__init__(f"{symbol}: VNStock source capture failed" + (f": {detail}" if detail else ""))
+        super().__init__(
+            f"{symbol}: VNStock source capture failed" + (f": {detail}" if detail else "")
+        )
 
 
-def _candidate_audit(rows, source_audit, yahoo_rows, yahoo_audit, attempts):
+def _candidate_audit(symbol, rows, source_audit, yahoo_rows, yahoo_audit):
     mad, common = base._cross_source_mad(rows, yahoo_rows or [])
     adjusted, ca = base.reconcile_vnstock_with_yahoo(rows, yahoo_rows or [])
     severe = mad is not None and mad > base.CROSS_SOURCE_MAD_LIMIT
@@ -32,14 +35,13 @@ def _candidate_audit(rows, source_audit, yahoo_rows, yahoo_audit, attempts):
             f"cross_source_mad:{float(mad):.10f}>{base.CROSS_SOURCE_MAD_LIMIT:.10f}"
         )
     return adjusted, {
-        "symbol": None,
+        "symbol": symbol,
         "route": "VNSTOCK_SOURCE_CAPTURE",
         "rawSource": source_audit,
         "adjustmentReference": yahoo_audit,
         "crossSourceReturnMAD": mad,
         "crossSourceCommonDates": common,
         "corporateAction": ca,
-        "attempts": attempts,
         "sourceCaptured": True,
         "deepHistory": deep,
         "eligible": eligible,
@@ -66,48 +68,91 @@ def _unified_history(symbol, years=8):
     }
 
 
-def capture_price_history(symbol, years=8):
-    """Capture real VNStock OHLCV independently from model-depth eligibility.
+def _capture_provider(symbol, source, start, end, attempts, stage):
+    try:
+        rows, audit = base._provider_history(symbol, source, start, end)
+        attempts.append({"stage": stage, "ok": True, **audit})
+        return rows, audit
+    except BaseException as exc:
+        attempts.append({
+            "stage": stage,
+            "ok": False,
+            "providerCode": source,
+            "error": f"{type(exc).__name__}: {exc}"[:700],
+        })
+        return None
 
-    VCI is the deterministic primary capture route. KBS and Unified are recovery
-    routes. A valid normalized VNStock history is preserved even when it is too
-    short or fails a later modelling-quality gate; the audit marks that history
-    ineligible instead of pretending the source is unavailable.
+
+def _quality_rank(item):
+    rows, audit, priority = item
+    mad = audit.get("crossSourceReturnMAD")
+    mad_rank = float(mad) if isinstance(mad, (int, float)) and math.isfinite(mad) else float("inf")
+    ca_ok = (audit.get("corporateAction") or {}).get("verified") is True
+    return (
+        0 if audit.get("eligible") is True else 1,
+        0 if audit.get("deepHistory") is True else 1,
+        0 if ca_ok else 1,
+        mad_rank,
+        -len(rows),
+        priority,
+    )
+
+
+def _evaluate_candidate(symbol, rows, source_audit, yahoo_rows, yahoo_audit, attempts, priority):
+    adjusted, audit = _candidate_audit(
+        symbol, rows, source_audit, yahoo_rows, yahoo_audit
+    )
+    provider = str(source_audit.get("providerCode") or "UNKNOWN")
+    attempts.append({
+        "stage": f"VNSTOCK_{provider}_QUALITY",
+        "ok": audit.get("eligible") is True,
+        "providerCode": provider,
+        "rows": len(adjusted),
+        "deepHistory": audit.get("deepHistory"),
+        "eligible": audit.get("eligible"),
+        "ineligibleReasons": audit.get("ineligibleReasons"),
+        "crossSourceReturnMAD": audit.get("crossSourceReturnMAD"),
+        "crossSourceCommonDates": audit.get("crossSourceCommonDates"),
+        "corporateAction": audit.get("corporateAction"),
+    })
+    return adjusted, audit, priority
+
+
+def capture_price_history(symbol, years=8):
+    """Capture normalized real VNStock OHLCV independently from model eligibility.
+
+    Explicit VCI and KBS histories are both evaluated under the same corporate-action,
+    cross-source and depth audit. Unified Market is a recovery candidate when neither
+    explicit provider is model-eligible. A real VNStock history is still frozen when
+    it is short or quality-ineligible; downstream research must abstain from that
+    symbol rather than treating the source as unavailable or padding history.
     """
     attempts = []
     start, end = base._history_window(years)
-    candidates = []
+    raw_candidates = []
 
-    try:
-        rows, audit = base._provider_history(symbol, "VCI", start, end)
-        attempts.append({"stage": "VNSTOCK_PRIMARY", "ok": True, **audit})
-        candidates.append((rows, audit, 0))
-    except BaseException as exc:
-        attempts.append({
-            "stage": "VNSTOCK_PRIMARY",
-            "ok": False,
-            "providerCode": "VCI",
-            "error": f"{type(exc).__name__}: {exc}"[:700],
-        })
+    for priority, source in enumerate(("VCI", "KBS")):
+        result = _capture_provider(
+            symbol,
+            source,
+            start,
+            end,
+            attempts,
+            "VNSTOCK_PRIMARY" if source == "VCI" else "VNSTOCK_KBS_RECOVERY",
+        )
+        if result is not None:
+            rows, source_audit = result
+            raw_candidates.append((rows, source_audit, priority))
 
-    if not candidates or len(candidates[0][0]) < base.MIN_ROWS:
+    if not raw_candidates:
         try:
-            rows, audit = base._provider_history(symbol, "KBS", start, end)
-            attempts.append({"stage": "VNSTOCK_KBS_RECOVERY", "ok": True, **audit})
-            candidates.append((rows, audit, 1))
-        except BaseException as exc:
+            rows, source_audit = _unified_history(symbol, years=years)
             attempts.append({
-                "stage": "VNSTOCK_KBS_RECOVERY",
-                "ok": False,
-                "providerCode": "KBS",
-                "error": f"{type(exc).__name__}: {exc}"[:700],
+                "stage": "VNSTOCK_UNIFIED_RECOVERY",
+                "ok": True,
+                **source_audit,
             })
-
-    if not candidates:
-        try:
-            rows, audit = _unified_history(symbol, years=years)
-            attempts.append({"stage": "VNSTOCK_UNIFIED_RECOVERY", "ok": True, **audit})
-            candidates.append((rows, audit, 2))
+            raw_candidates.append((rows, source_audit, 2))
         except BaseException as exc:
             attempts.append({
                 "stage": "VNSTOCK_UNIFIED_RECOVERY",
@@ -116,11 +161,8 @@ def capture_price_history(symbol, years=8):
                 "error": f"{type(exc).__name__}: {exc}"[:700],
             })
 
-    if not candidates:
+    if not raw_candidates:
         raise SourceCaptureError(symbol, attempts)
-
-    candidates.sort(key=lambda x: (-len(x[0]), x[2]))
-    rows, source_audit, _ = candidates[0]
 
     yahoo_rows = []
     yahoo_audit = None
@@ -138,12 +180,54 @@ def capture_price_history(symbol, years=8):
             "error": f"{type(exc).__name__}: {exc}"[:700],
         })
 
-    adjusted, audit = _candidate_audit(
-        rows, source_audit, yahoo_rows, yahoo_audit, attempts
-    )
-    audit["symbol"] = symbol
-    audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + str(
-        source_audit.get("providerCode") or "UNKNOWN"
+    candidates = [
+        _evaluate_candidate(
+            symbol,
+            rows,
+            source_audit,
+            yahoo_rows,
+            yahoo_audit,
+            attempts,
+            priority,
+        )
+        for rows, source_audit, priority in raw_candidates
+    ]
+
+    if not any(audit.get("eligible") is True for _, audit, _ in candidates):
+        try:
+            rows, source_audit = _unified_history(symbol, years=years)
+            attempts.append({
+                "stage": "VNSTOCK_UNIFIED_RECOVERY",
+                "ok": True,
+                **source_audit,
+            })
+            candidates.append(
+                _evaluate_candidate(
+                    symbol,
+                    rows,
+                    source_audit,
+                    yahoo_rows,
+                    yahoo_audit,
+                    attempts,
+                    2,
+                )
+            )
+        except BaseException as exc:
+            attempts.append({
+                "stage": "VNSTOCK_UNIFIED_RECOVERY",
+                "ok": False,
+                "providerCode": "UNIFIED",
+                "error": f"{type(exc).__name__}: {exc}"[:700],
+            })
+
+    candidates.sort(key=_quality_rank)
+    adjusted, audit, _ = candidates[0]
+    provider = str((audit.get("rawSource") or {}).get("providerCode") or "UNKNOWN")
+    audit["route"] = "VNSTOCK_SOURCE_CAPTURE_" + provider
+    audit["attempts"] = attempts
+    audit["candidateCount"] = len(candidates)
+    audit["selectionPolicy"] = (
+        "ELIGIBLE_THEN_DEEP_THEN_CA_THEN_LOWEST_MAD_THEN_ROWS_THEN_PROVIDER_PRIORITY"
     )
     return adjusted, audit
 
