@@ -20,6 +20,7 @@ jobs:
       V12_VNSTOCK_INTERVAL: '3.25'
       V12_MAX_RAW_RETURN_GUARD: '0.12'
       V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+      V12_RESEARCH_SOURCE_MODE: 'FROZEN'
       PYTHONHASHSEED: '0'
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +36,7 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile exact final-candidate source
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/v12_benchmark_unit.py scripts/train_forecast_v12.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_research_sources.py scripts/v12_frozen_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/v12_benchmark_unit.py scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
@@ -100,13 +101,37 @@ jobs:
           for f in ['sentiment-v11.json','market-scan.json']:
               z=json.load(open('data/v12-seed/'+f,encoding='utf-8'));print(f,z.get('version'))
           PY
-      - name: Phase 1 representative VNStock-first source probe
-        run: PYTHONPATH=scripts python scripts/v12_source_probe.py
+      - name: Phase 1 immutable frozen/no-network source probe
+        run: |
+          PYTHONPATH=scripts python scripts/v12_frozen_source_probe.py
+          python - <<'PY'
+          import json
+          z=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          assert z.get('status')=='PASS',z
+          assert z.get('mode')=='IMMUTABLE_FROZEN_SNAPSHOT',z
+          assert z.get('runtimeNetworkPriceFetch') is False,z
+          assert z.get('runtimeProviderSwitching') is False,z
+          assert all((z.get('sourceGates') or {}).values()),z.get('sourceGates')
+          snap=z.get('snapshot') or {}
+          assert len(str(snap.get('snapshotFileSha256') or ''))==64,snap
+          assert len(str(snap.get('inputManifestSha256') or ''))==64,snap
+          print('V12 FROZEN SOURCE PROBE PASS',snap.get('asOf'),snap.get('snapshotFileSha256'))
+          PY
       - name: Phases 1-7 full PIT model and historical replay
         shell: bash
         run: |
           set -o pipefail
           PYTHONPATH=scripts python scripts/train_forecast_v12.py 2>&1 | tee data/v12-final-training.log
+      - name: Assert frozen-only training contract
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          assert p['mode']=='IMMUTABLE_FROZEN_SNAPSHOT'
+          assert p['runtimeNetworkPriceFetch'] is False
+          assert p['runtimeProviderSwitching'] is False
+          print('V12 TRAINING SOURCE CONTRACT PASS')
+          PY
       - name: Assert every research artifact materialized
         run: |
           python - <<'PY'
@@ -141,6 +166,8 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
           path: |
+            data/v12-frozen-source-manifest.json
+            data/v12-frozen-source.json.gz
             data/v12-source-probe.json
             data/v12-final-training.log
             data/v12-training-error.json
@@ -159,6 +186,7 @@ jobs:
             data/blind-holdout-gate-v12.json
             data/embargo-gate-v12.json
             data/flow-audit-v12.json
+            data/vnindex-v12.json
       - name: Persist only nine-phase validated snapshots
         if: success()
         shell: bash
