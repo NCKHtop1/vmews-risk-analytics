@@ -1,6 +1,10 @@
 name: V12 freeze audited research source
 on:
   workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'v12-source-freeze-debug-trigger.txt'
 permissions:
   contents: write
 concurrency:
