@@ -33,13 +33,15 @@ jobs:
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile frozen-source implementation
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_source_capture.py scripts/v12_universe.py scripts/freeze_v12_source_snapshot.py scripts/v12_research_sources.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_corporate_actions_test.py scripts/v12_source_capture.py scripts/v12_universe.py scripts/freeze_v12_source_snapshot.py scripts/v12_research_sources.py
           python - <<'PY'
           from pathlib import Path
           p=Path('scripts/v12_train_parts/00c_universe.pyinc')
           compile(p.read_text(encoding='utf-8'),str(p),'exec')
           print('V12 FROZEN SOURCE SYNTAX PASS')
           PY
+      - name: Corporate-action and source-spike reconciliation regression
+        run: PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
       - name: Capture and fingerprint one immutable research source snapshot
         run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot.py
       - name: Preserve source-freeze diagnostics
