@@ -3,6 +3,7 @@ import math
 from datetime import datetime, timezone
 
 import v12_data_sources as base
+from v12_corporate_actions import reconcile_vnstock_with_yahoo as reconcile_ca
 
 
 class SourceCaptureError(RuntimeError):
@@ -21,7 +22,12 @@ class SourceCaptureError(RuntimeError):
 
 def _candidate_audit(symbol, rows, source_audit, yahoo_rows, yahoo_audit):
     mad, common = base._cross_source_mad(rows, yahoo_rows or [])
-    adjusted, ca = base.reconcile_vnstock_with_yahoo(rows, yahoo_rows or [])
+    adjusted, ca = reconcile_ca(
+        rows,
+        yahoo_rows or [],
+        max_return_guard=base.MAX_RAW_RETURN_GUARD,
+        cross_source_limit=base.CROSS_SOURCE_MAD_LIMIT,
+    )
     severe = mad is not None and mad > base.CROSS_SOURCE_MAD_LIMIT
     deep = len(adjusted) >= base.MIN_ROWS
     eligible = bool(deep and ca.get("verified") and not severe)
