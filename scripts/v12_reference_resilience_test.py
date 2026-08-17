@@ -53,7 +53,7 @@ assert u is not None and unified_calls['n']==2 and ua[-1]['sourceAttempts']==2,(
 pa=[];p=c._capture_provider('AAA','VCI','2020-01-01','2026-01-01',pa,'VNSTOCK_VCI_RECOVERY')
 assert p is not None and provider_calls['n']==2 and pa[-1]['sourceAttempts']==2,(p,provider_calls,pa)
 assert sum(1 for x in sleeps if x>=r._RATE_LIMIT_COOLDOWN_SECONDS)==3,sleeps
-assert a['gateMutation'] is False and a['priceOrReturnMutation'] is False and a['version']=='VMEWS-V12-REFERENCE-RESILIENCE-1.1.0'
+assert a['gateMutation'] is False and a['priceOrReturnMutation'] is False and a['version']=='VMEWS-V12-REFERENCE-RESILIENCE-1.2.0'
 
 # Permanent 404 must remain fail-safe and must not be retried.
 class PermanentBase:
@@ -76,4 +76,42 @@ a2=[];d2,v2=c2._vci_corporate_action_dates('ZZZ',a2)
 assert pv['n']==1 and v2 is None and pb.t==1,(pv,pb.t,a2)
 u2=[];assert c2._capture_unified('ZZZ',8,u2) is None and pu['n']==1,(pu,u2)
 p2=[];assert c2._capture_provider('ZZZ','VCI','a','b',p2,'RECOVERY') is None and pp['n']==1,(pp,p2)
+
+# A deep symbol that failed CA certification only because its first pass hit an explicit
+# transient provider window gets exactly one clean second pass. A permanent data
+# disagreement remains fail-safe and is not retried.
+class StoreBase:
+    MIN_ROWS=520
+    def yahoo_history(self,symbol):return [],{}
+    def _throttle_vnstock(self):pass
+sb=StoreBase();retry_calls=[];reset_calls=[]
+def store_vci(symbol,attempts):return set(),{}
+def store_unified(symbol,years,attempts,stage='VNSTOCK_PRIMARY'):return None
+def store_provider(symbol,source,start,end,attempts,stage):return None
+sample_rows=[{'date':'2020-01-01','close':1}]*520
+def initial_build(symbols):
+    return (
+        {'AAA':list(sample_rows),'BBB':list(sample_rows)},
+        {
+            'AAA':{'originalRows':520,'eligible':False,'corporateAction':{'verified':False},'attempts':[{'stage':'VCI','ok':False,'error':'HTTP 429 rate limit'}]},
+            'BBB':{'originalRows':520,'eligible':False,'corporateAction':{'verified':False},'attempts':[{'stage':'QUALITY','ok':False,'error':'permanent data disagreement'}]},
+        },
+        {},
+    )
+def second_pass(symbol):
+    retry_calls.append(symbol)
+    return list(sample_rows),{'originalRows':520,'eligible':True,'corporateAction':{'verified':True},'attempts':[{'stage':'RETRY','ok':True}]}
+c3=SimpleNamespace(
+    base=sb,_vci_corporate_action_dates=store_vci,_capture_unified=store_unified,
+    _capture_provider=store_provider,build_source_capture_store=initial_build,
+    capture_price_history=second_pass,reset_provider_circuits=lambda:reset_calls.append(1),
+)
+a3=r.install(c3,max_attempts=3,backoff_seconds=(0,0))
+store3,audits3,failures3=c3.build_source_capture_store(['AAA','BBB'])
+assert retry_calls==['AAA'],retry_calls
+assert audits3['AAA']['eligible'] is True and audits3['AAA']['sourceStoreRecovery']['accepted'] is True,audits3['AAA']
+assert [x['stage'] for x in audits3['AAA']['attempts']]==['VCI','SOURCE_STORE_TRANSIENT_RECOVERY_BOUNDARY','RETRY']
+assert audits3['BBB']['eligible'] is False and 'sourceStoreRecovery' not in audits3['BBB'],audits3['BBB']
+assert len(reset_calls)==1 and sum(1 for x in sleeps if x>=r._RATE_LIMIT_COOLDOWN_SECONDS)==4,(reset_calls,sleeps)
+assert a3['sourceStoreTransientSecondPass'] is True and a3['gateMutation'] is False and a3['priceOrReturnMutation'] is False
 print('V12 REFERENCE RESILIENCE TEST PASS')
