@@ -1,0 +1,590 @@
+{
+  "v12-source-freeze-resilient.yml": [
+    {
+      "id": 32075763209,
+      "name": "V12 resilient source freeze",
+      "run_number": 6,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "d6648c6a6a44b01770382e4c1232347af54b631a",
+      "created_at": "2026-08-17T22:23:10Z",
+      "run_started_at": "2026-08-17T22:23:10Z",
+      "updated_at": "2026-08-17T23:20:44Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32075763209",
+      "jobs": [
+        {
+          "id": 95528506645,
+          "name": "freeze",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-08-17T22:23:14Z",
+          "completed_at": "2026-08-17T23:20:43Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Pin immutable capture source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run pip install --disable-pip-version-check -q -r requirements-v12.txt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Compile and deterministic regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Capture resilient immutable source with strict continuity salvage",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 7
+            },
+            {
+              "name": "Upload diagnostic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Verify immutable source gates",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Publish immutable source snapshot",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 32068070544,
+      "name": "V12 resilient source freeze",
+      "run_number": 5,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "8f20ae02ddd95fddeffc57aa3eb116320fbefd69",
+      "created_at": "2026-08-17T20:51:55Z",
+      "run_started_at": "2026-08-17T20:51:55Z",
+      "updated_at": "2026-08-17T22:05:29Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32068070544",
+      "jobs": [
+        {
+          "id": 95504699008,
+          "name": "freeze",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-08-17T20:51:59Z",
+          "completed_at": "2026-08-17T22:05:28Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Pin immutable capture source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run pip install --disable-pip-version-check -q -r requirements-v12.txt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Compile and deterministic regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Capture resilient immutable source with strict continuity salvage",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 7
+            },
+            {
+              "name": "Upload diagnostic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Verify immutable source gates",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Publish immutable source snapshot",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 32059426024,
+      "name": "V12 resilient source freeze",
+      "run_number": 4,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "edebb65880c14d4ee1cfdfd5b3f7e31dabd54921",
+      "created_at": "2026-08-17T19:16:25Z",
+      "run_started_at": "2026-08-17T19:16:25Z",
+      "updated_at": "2026-08-17T20:28:27Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32059426024",
+      "jobs": [
+        {
+          "id": 95477055981,
+          "name": "freeze",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-08-17T19:16:28Z",
+          "completed_at": "2026-08-17T20:28:26Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Pin immutable capture source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run pip install --disable-pip-version-check -q -r requirements-v12.txt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Compile and deterministic regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Capture resilient immutable source with strict continuity salvage",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 7
+            },
+            {
+              "name": "Upload diagnostic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Verify immutable source gates",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Publish immutable source snapshot",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "v12-methodfix-full-hardened.yml": {
+    "error": "HTTPError: HTTP Error 404: Not Found"
+  },
+  "v12-release-final-hardened.yml": {
+    "error": "HTTPError: HTTP Error 404: Not Found"
+  },
+  "v12-ca-19-quota-probe.yml": [
+    {
+      "id": 32084285437,
+      "name": "V12 CA 19 quota-safe probe",
+      "run_number": 2,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "10f0ab74bd778e1b2fa9dc1efdc3b3ff0de836d8",
+      "created_at": "2026-08-18T00:22:53Z",
+      "run_started_at": "2026-08-18T00:22:53Z",
+      "updated_at": "2026-08-18T00:23:14Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32084285437",
+      "jobs": [
+        {
+          "id": 95553508468,
+          "name": "probe",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-08-18T00:23:13Z",
+          "completed_at": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run pip install --disable-pip-version-check -q -r requirements-v12.txt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Compile exact production capture and quota probe",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Preserve unchanged CA regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Probe 19 unresolved original-deep symbols",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Persist exact diagnostic on staging branch",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Upload exact per-symbol evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 32084022858,
+      "name": "V12 CA 19 quota-safe probe",
+      "run_number": 1,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head_sha": "3339d2c1f8c8f9a8cd9b674fa47661ed2bfea011",
+      "created_at": "2026-08-18T00:18:55Z",
+      "run_started_at": "2026-08-18T00:18:55Z",
+      "updated_at": "2026-08-18T00:23:10Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32084022858",
+      "jobs": [
+        {
+          "id": 95552659481,
+          "name": "probe",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "started_at": "2026-08-18T00:19:00Z",
+          "completed_at": "2026-08-18T00:23:09Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run pip install --disable-pip-version-check -q -r requirements-v12.txt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Compile exact production capture and quota probe",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Preserve unchanged CA regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Probe 19 unresolved original-deep symbols",
+              "status": "completed",
+              "conclusion": "cancelled",
+              "number": 7
+            },
+            {
+              "name": "Upload exact per-symbol evidence",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 8
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "v12-hardening-staging-test.yml": [
+    {
+      "id": 32083547805,
+      "name": "V12 hardening staging regression",
+      "run_number": 1,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "636162e3328263354e59a8678199791766ccb7fa",
+      "created_at": "2026-08-18T00:11:41Z",
+      "run_started_at": "2026-08-18T00:11:41Z",
+      "updated_at": "2026-08-18T00:11:55Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32083547805",
+      "jobs": [
+        {
+          "id": 95551185482,
+          "name": "regression",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-08-18T00:11:44Z",
+          "completed_at": "2026-08-18T00:11:54Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Compile hardening helpers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Restore pinned V11 seed without marketplace artifact action",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 5
+            },
+            {
+              "name": "Verify exact seed provenance",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 6
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
