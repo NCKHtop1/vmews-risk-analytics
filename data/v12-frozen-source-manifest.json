@@ -4615,5 +4615,24 @@
         }
       ]
     }
-  }
+  },
+  "corporateActionVerifiedCount": 385,
+  "corporateActionGateDenominator": 392,
+  "corporateActionGateCohort": "CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION",
+  "continuityTruncatedCount": 0,
+  "continuityTruncatedBelowMinRowsCount": 0,
+  "continuityTruncatedSymbols": [],
+  "continuityTruncatedBelowMinRows": [],
+  "sourceFreezeCertificationVersion": "VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1",
+  "sourceFreezeCertificationMode": "OFFLINE_RECOMPUTED_FROM_COMMITTED_SNAPSHOT_AUDITS_NO_NETWORK",
+  "sourceFreezeCertificationGates": {
+    "currentSourceCoverage": true,
+    "deepHistory": true,
+    "modelEligible": true,
+    "corporateActionOriginalDeep": true,
+    "corporateActionDenominatorNotShrunk": true,
+    "crossSourceMADP95": true,
+    "vnstockPrimaryAttempt": true
+  },
+  "sourceFreezeCertificationSnapshotSha256": "cce60b86c61df54f4ad8dba9ff496fc28156f8b9b89dc1be20f14c5db1957b0f"
 }
