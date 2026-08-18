@@ -16,7 +16,10 @@ jobs:
     env:
       V12_MIN_ROWS: '520'
       V12_VNSTOCK_INTERVAL: '6.50'
-      V12_NETWORK_CALL_TIMEOUT: '25'
+      V12_NETWORK_CALL_TIMEOUT: '12'
+      V12_SYMBOL_WALL_BUDGET: '45'
+      V12_UNIVERSE_WALL_BUDGET: '20'
+      V12_CAPTURE_WALL_BUDGET: '8400'
       V12_MAX_RAW_RETURN_GUARD: '0.12'
       V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
     steps:
@@ -32,16 +35,17 @@ jobs:
       - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile and deterministic regressions
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_corporate_actions_test.py scripts/v12_source_capture.py scripts/v12_source_capture_methodfix.py scripts/v12_source_capture_methodfix_test.py scripts/v12_reference_resilience.py scripts/v12_reference_resilience_test.py scripts/v12_freeze_gate_cohort_test.py scripts/freeze_v12_source_snapshot.py scripts/freeze_v12_source_snapshot_resilient.py scripts/v12_universe.py scripts/v12_research_sources.py
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_corporate_actions_test.py scripts/v12_source_capture.py scripts/v12_source_capture_methodfix.py scripts/v12_source_capture_methodfix_test.py scripts/v12_reference_resilience.py scripts/v12_reference_resilience_test.py scripts/v12_freeze_runtime_guard.py scripts/v12_freeze_runtime_guard_test.py scripts/v12_freeze_gate_cohort_test.py scripts/freeze_v12_source_snapshot.py scripts/freeze_v12_source_snapshot_resilient.py scripts/v12_universe.py scripts/v12_research_sources.py
           PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
           PYTHONPATH=scripts python scripts/v12_source_capture_methodfix_test.py
           PYTHONPATH=scripts python scripts/v12_reference_resilience_test.py
+          PYTHONPATH=scripts python scripts/v12_freeze_runtime_guard_test.py
           PYTHONPATH=scripts python scripts/v12_freeze_gate_cohort_test.py
       - name: Capture VNStock-only immutable source with strict continuity salvage
         shell: bash
         run: |
           set -o pipefail
-          timeout --signal=TERM --kill-after=30s 160m env PYTHONPATH=scripts \
+          timeout --signal=TERM --kill-after=30s 150m env PYTHONPATH=scripts \
             python scripts/freeze_v12_source_snapshot_resilient.py 2>&1 \
             | tee data/v12-source-freeze-live.log
       - name: Upload diagnostic
@@ -51,6 +55,7 @@ jobs:
           name: v12-source-freeze-diagnostic-${{ github.run_id }}
           path: |
             data/v12-source-freeze-diagnostic.json
+            data/v12-source-freeze-progress.json
             data/v12-source-freeze-live.log
           if-no-files-found: warn
           retention-days: 7
