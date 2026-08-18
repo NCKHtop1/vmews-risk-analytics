@@ -5,7 +5,7 @@ on:
     paths:
       - 'v12-ca-19-quota-probe-trigger.txt'
 permissions:
-  contents: read
+  contents: write
   actions: read
 concurrency:
   group: vmews-v12-ca-19-quota-probe
@@ -21,6 +21,7 @@ jobs:
       V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
     steps:
       - uses: actions/checkout@v4
+        with: {fetch-depth: 2}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -33,6 +34,14 @@ jobs:
         run: PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
       - name: Probe 19 unresolved original-deep symbols
         run: PYTHONPATH=scripts python scripts/v12_ca_19_quota_probe.py
+      - name: Persist exact diagnostic on staging branch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-ca-19-quota-probe.json
+          git commit -m 'Publish staging CA 19 quota probe result [no-full]'
+          git push origin HEAD:tmp-v12-detached-do-not-use
       - name: Upload exact per-symbol evidence
         if: always()
         uses: actions/upload-artifact@v4
