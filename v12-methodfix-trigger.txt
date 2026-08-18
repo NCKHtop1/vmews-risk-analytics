@@ -1,5 +1,8 @@
-trigger=2026-08-18T20:43:00+07:00
-source_parent=5849a6fd66a621a0db67fafcac86735a3aaac05f
+trigger=2026-08-18T21:41:00+07:00
+source_parent=043151455cc7e14530da6a5e2089d8432389d0ee
+source_publish=010f0c8b999800353fb1905f41b1b1e411b57752
+source_policy=VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0
 source_certification=VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1
-snapshot_sha256=cce60b86c61df54f4ad8dba9ff496fc28156f8b9b89dc1be20f14c5db1957b0f
-reason=clean-nine-phase-validation-on-fast-track-offline-certified-immutable-frozen-source-no-network-no-gate-mutation
+source_certification_mode=OFFLINE_RECOMPUTED_FROM_COMMITTED_SNAPSHOT_AUDITS_NO_NETWORK
+snapshot_sha256=b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762
+reason=clean-nine-phase-validation-on-certified-sharded-resumable-immutable-frozen-source-no-network-no-gate-mutation
