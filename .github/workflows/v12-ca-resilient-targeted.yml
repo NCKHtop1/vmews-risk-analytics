@@ -1,0 +1,51 @@
+name: V12 targeted resilient CA audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths: ['v12-ca-resilient-targeted-trigger.txt']
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-ca-resilient-targeted
+  cancel-in-progress: true
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      V12_MIN_ROWS: '520'
+      V12_VNSTOCK_INTERVAL: '6.50'
+      V12_MAX_RAW_RETURN_GUARD: '0.12'
+      V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Pin diagnostic source
+        run: echo "V12_DIAG_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - name: Install dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Compile and regression-test unchanged scientific gates
+        run: |
+          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_source_capture.py scripts/v12_source_capture_methodfix.py scripts/v12_reference_resilience.py scripts/v12_ca_resilient_targeted.py
+          PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
+          PYTHONPATH=scripts python scripts/v12_source_capture_methodfix_test.py
+          PYTHONPATH=scripts python scripts/v12_reference_resilience_test.py
+      - name: Re-audit historically unresolved cohort only
+        run: PYTHONPATH=scripts python scripts/v12_ca_resilient_targeted.py
+      - name: Publish diagnostic JSON to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin forecast-v12-methodfix
+          test "$(git rev-parse origin/forecast-v12-methodfix)" = "$V12_DIAG_SOURCE_SHA" || { echo 'BRANCH ADVANCED; refusing stale diagnostic'; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-ca-resilient-targeted.json
+          git commit -m 'Publish V12 targeted resilient CA diagnostic [no-full]'
+          git push origin HEAD:forecast-v12-methodfix
