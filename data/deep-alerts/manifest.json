@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-08-18T10:05:18.009048+00:00",
+  "generatedAt": "2026-08-18T23:45:24.630859+00:00",
   "marketModelDate": "2026-08-18",
   "requested": 43,
-  "reused": 37,
-  "fetched": 6,
+  "reused": 43,
+  "fetched": 0,
   "cached": 43,
   "symbols": {
     "BNA": {
@@ -37,6 +37,11 @@
       "modelAsOf": "2026-08-14",
       "source": "Vnstock"
     },
+    "APS": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
+      "source": "Vnstock"
+    },
     "BOT": {
       "rows": 1609,
       "modelAsOf": "2026-08-07",
@@ -60,6 +65,11 @@
     "DTD": {
       "rows": 1800,
       "modelAsOf": "2026-08-14",
+      "source": "Vnstock"
+    },
+    "API": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
       "source": "Vnstock"
     },
     "FIR": {
@@ -157,14 +167,34 @@
       "modelAsOf": "2026-08-17",
       "source": "Vnstock"
     },
+    "IJC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
+      "source": "Yahoo Finance"
+    },
     "EIB": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
       "source": "Yahoo Finance"
     },
+    "CTP": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
+      "source": "Vnstock"
+    },
+    "JVC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
+      "source": "Yahoo Finance"
+    },
     "EVG": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
+      "source": "Yahoo Finance"
+    },
+    "NHA": {
+      "rows": 1454,
+      "modelAsOf": "2026-08-18",
       "source": "Yahoo Finance"
     },
     "DIG": {
@@ -190,36 +220,6 @@
     "VDS": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
-      "source": "Yahoo Finance"
-    },
-    "APS": {
-      "rows": 1942,
-      "modelAsOf": "2026-08-18",
-      "source": "Vnstock"
-    },
-    "API": {
-      "rows": 1911,
-      "modelAsOf": "2026-08-18",
-      "source": "Vnstock"
-    },
-    "IJC": {
-      "rows": 2586,
-      "modelAsOf": "2026-08-18",
-      "source": "Yahoo Finance"
-    },
-    "CTP": {
-      "rows": 1972,
-      "modelAsOf": "2026-08-18",
-      "source": "Vnstock"
-    },
-    "JVC": {
-      "rows": 2586,
-      "modelAsOf": "2026-08-18",
-      "source": "Yahoo Finance"
-    },
-    "NHA": {
-      "rows": 1454,
-      "modelAsOf": "2026-08-18",
       "source": "Yahoo Finance"
     }
   },
