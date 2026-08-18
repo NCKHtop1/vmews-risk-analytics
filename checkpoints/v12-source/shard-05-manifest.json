@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-V12-SOURCE-SHARD-CHECKPOINT-MANIFEST-1.0.0",
   "policyVersion": "VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0",
-  "updatedAt": "2026-08-18T14:09:50.004400+00:00",
+  "updatedAt": "2026-08-18T14:10:21.161215+00:00",
   "planFingerprint": "52621a7901156839302d68f2c0dfc4a02a80fa670ff4b02e740ffd4000b2fcc3",
   "runtimeScriptsTreeSha": "ae229fb5b1ce09f5b41aec2798ddf2f39f999546",
   "workflowSha256": "1b15f1f02683d2c05d6c500f65068f4fae1fdea24fa488b13f470d81eaacf340",
@@ -10,9 +10,66 @@
   "shardCount": 8,
   "assigned": 51,
   "captured": 50,
-  "failed": 0,
+  "failed": 1,
   "pending": 1,
-  "lastSymbol": "VSI",
-  "checkpointFileSha256": "d6f2791d4201477855a959963d308e5b6d57c61c653aac12ad2e3e300bdb4d71",
-  "recentFailures": {}
+  "lastSymbol": "KSS",
+  "checkpointFileSha256": "a698e59fb0b7ad95e45217760ad40b26ad4f177d7ec46b7e1a76bb0008d8ef3a",
+  "recentFailures": {
+    "KSS": {
+      "symbol": "KSS",
+      "error": "SourceCaptureError: KSS: VNStock source capture failed: VNSTOCK_PRIMARY: RetryError: RetryError[<Future at 0x7f54107040b0 state=finished raised ValueError>] | VNSTOCK_VCI_RECOVERY: RetryError: RetryError[<Future at 0x7f540ece2a80 state=finished raised ValueError>] | VNSTOCK_KBS_RECOVERY: RetryError: RetryError[<Future at 0x7f540ec35940 state=finished raised ValueError>]",
+      "attempts": [
+        {
+          "stage": "VNSTOCK_PRIMARY",
+          "ok": false,
+          "providerCode": "UNIFIED",
+          "reason": "provider_error",
+          "error": "RetryError: RetryError[<Future at 0x7f54107040b0 state=finished raised ValueError>]",
+          "networkCallTimeoutSeconds": 12.0
+        },
+        {
+          "stage": "YAHOO_ADJUSTMENT_REFERENCE",
+          "ok": true,
+          "source": "DISABLED",
+          "provider": "NONE",
+          "rows": 0,
+          "networkCall": false,
+          "policy": "VNSTOCK_ONLY_NO_YAHOO_RUNTIME_REFERENCE",
+          "symbol": "KSS"
+        },
+        {
+          "stage": "VCI_CORPORATE_ACTION_EVENT_REFERENCE",
+          "ok": true,
+          "source": "VNSTOCK_VCI_EVENT_REFERENCE",
+          "provider": "Vietcap IQ corporate events",
+          "api": "vnstock.explorer.vci.Company._fetch_events",
+          "eventCodes": "DIV,ISS",
+          "eventCount": 0,
+          "exrightDateCount": 0,
+          "eventWindowStart": "2018-07-13",
+          "eventWindowEnd": "2026-08-19",
+          "role": "EVENT_BOUNDARY_CLASSIFICATION_ONLY_NOT_RETURN_ADJUSTMENT",
+          "referenceRetryPolicy": "VNSTOCK_ONLY_PER_CALL_WATCHDOG_BOUNDED_LOCAL_RETRY",
+          "referenceAttempts": 1
+        },
+        {
+          "stage": "VNSTOCK_VCI_RECOVERY",
+          "ok": false,
+          "providerCode": "VCI",
+          "reason": "provider_error",
+          "error": "RetryError: RetryError[<Future at 0x7f540ece2a80 state=finished raised ValueError>]",
+          "networkCallTimeoutSeconds": 12.0
+        },
+        {
+          "stage": "VNSTOCK_KBS_RECOVERY",
+          "ok": false,
+          "providerCode": "KBS",
+          "reason": "provider_error",
+          "error": "RetryError: RetryError[<Future at 0x7f540ec35940 state=finished raised ValueError>]",
+          "networkCallTimeoutSeconds": 12.0
+        }
+      ],
+      "updatedAt": "2026-08-18T14:10:21.161112+00:00"
+    }
+  }
 }
