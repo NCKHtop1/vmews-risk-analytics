@@ -24,7 +24,7 @@ def _ca_cohort_stats(payload,min_rows):
 
 
 def _postvalidate_original_deep_ca_cohort():
-    payload=json.loads(gzip.decompress(SNAP.read_bytes()).decode('utf-8'));m=json.loads(MAN.read_text(encoding='utf-8'));stats=_ca_cohort_stats(payload,capture.MIN_ROWS)
+    payload=json.loads(gzip.decompress(SNAP.read_bytes()).decode('utf-8'));m=json.loads(MAN.read_text(encoding='utf-8'));stats=_ca_cohort_stats(payload,capture.base.MIN_ROWS)
     retained_deep=int(m.get('deepHistory') or 0)
     if len(stats['cohort'])<retained_deep:raise RuntimeError(f'CA original-deep denominator shrank below retained-deep cohort: original={len(stats["cohort"])} retained={retained_deep}')
     fields={'corporateActionVerifiedRatio':stats['ratio'],'corporateActionVerifiedCount':len(stats['verified']),'corporateActionGateDenominator':len(stats['cohort']),'corporateActionGateCohort':'CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION','continuityTruncatedCount':len(stats['truncated']),'continuityTruncatedBelowMinRowsCount':len(stats['truncatedShort']),'continuityTruncatedSymbols':stats['truncated'],'continuityTruncatedBelowMinRows':stats['truncatedShort']}
