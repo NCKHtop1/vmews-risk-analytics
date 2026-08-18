@@ -4768,5 +4768,17 @@
     "VAB",
     "VBB",
     "VVS"
-  ]
+  ],
+  "sourceFreezeCertificationVersion": "VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1",
+  "sourceFreezeCertificationMode": "OFFLINE_RECOMPUTED_FROM_COMMITTED_SNAPSHOT_AUDITS_NO_NETWORK",
+  "sourceFreezeCertificationGates": {
+    "currentSourceCoverage": true,
+    "deepHistory": true,
+    "modelEligible": true,
+    "corporateActionOriginalDeep": true,
+    "corporateActionDenominatorNotShrunk": true,
+    "crossSourceMADP95": true,
+    "vnstockPrimaryAttempt": true
+  },
+  "sourceFreezeCertificationSnapshotSha256": "b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762"
 }
