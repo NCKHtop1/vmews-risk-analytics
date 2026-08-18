@@ -71,6 +71,7 @@ def _candidate_audit(
         cross_source_limit=base.CROSS_SOURCE_MAD_LIMIT,
         raw_reference_rows=raw_reference_rows or [],
         known_ca_dates=known_ca_dates or set(),
+        symbol=symbol,
     )
     severe = mad is not None and mad > base.CROSS_SOURCE_MAD_LIMIT
     deep = len(adjusted) >= base.MIN_ROWS
@@ -530,7 +531,7 @@ def build_source_capture_store(symbols):
 
 def source_capture_summary(audits, failures):
     return {
-        "version": "VMEWS-SOURCE-CAPTURE-AUDIT-12.6.0",
+        "version": "VMEWS-SOURCE-CAPTURE-AUDIT-12.7.0",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "captured": len(audits),
         "failed": len(failures),

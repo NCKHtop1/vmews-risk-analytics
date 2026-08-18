@@ -1,9 +1,9 @@
 """Strict source-capture method fix: salvage only a post-break continuous suffix.
 
 This module does not relax any V12 source gate. If an otherwise deep symbol contains
-an unresolved >guard discontinuity with no safe adjusted-return evidence, history
-before the LAST unresolved break is discarded. The break date itself becomes the
-first observation, so no model return crosses the unverified corporate-action/data
+an unresolved out-of-venue-band discontinuity with no safe adjusted-return evidence,
+history before the LAST unresolved break is discarded. The break date itself becomes
+the first observation, so no model return crosses the unverified corporate-action/data
 break. The suffix is admitted only if the unchanged candidate audit still passes and
 retains >= V12_MIN_ROWS observations.
 """
@@ -21,13 +21,21 @@ def _date(x):
 
 def _violation_dates(ca):
     dates = []
-    for key in ("corporateActionViolations", "ordinaryMoveViolations"):
+    # Newer CA audits expose the complete date-only break set even when detailed violation
+    # objects are capped for artifact size. Consume it first so suffix salvage always starts
+    # after the true LAST unresolved break, not merely the last displayed diagnostic item.
+    for value in (ca or {}).get("unresolvedBreakDates") or []:
+        d = _date(value)
+        if d:
+            dates.append(d)
+    # Backward-compatible fallback for older committed audits.
+    for key in ("corporateActionViolations", "ordinaryMoveViolations", "modelReturnGuardViolations"):
         for item in (ca or {}).get(key) or []:
             d = _date((item or {}).get("date"))
             if d:
                 dates.append(d)
     # Defensive: if the aggregate model guard caught a break not present in the
-    # truncated violation lists, preserve fail-safe behavior by including it.
+    # diagnostic lists, preserve fail-safe behavior by including it.
     if (ca or {}).get("modelReturnGuardViolation") is True:
         d = _date((ca or {}).get("largestModelJumpDate"))
         if d:
@@ -101,7 +109,7 @@ def _strict_suffix_candidate_audit(
     suffix_audit["preTruncationCorporateAction"] = deepcopy(ca)
     suffix_audit["preTruncationIneligibleReasons"] = list(audit.get("ineligibleReasons") or [])
     suffix_audit["continuityRationale"] = (
-        "NO_RETURN_CROSSES_THE_LAST_UNVERIFIED_GT_GUARD_BREAK;"
+        "NO_RETURN_CROSSES_THE_LAST_UNVERIFIED_OUT_OF_VENUE_BAND_BREAK;"
         "POST_BREAK_SUFFIX_MUST_REPASS_UNCHANGED_MIN_ROWS_CA_AND_CROSS_SOURCE_GATES"
     )
     return suffix_adjusted, suffix_audit

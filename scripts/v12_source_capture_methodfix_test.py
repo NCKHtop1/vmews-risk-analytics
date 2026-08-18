@@ -19,8 +19,8 @@ def smooth_rows(n, *, break_at=None, break_mult=1.35):
     return out
 
 
-def audit(rows,yahoo=None):
-    return basecap._candidate_audit('TST',rows,{'providerCode':'UNIFIED'},yahoo or [],None,raw_reference_rows=[],raw_reference_audit=None,known_ca_dates=set(),event_reference_audit=None)
+def audit(rows,yahoo=None,symbol='TST'):
+    return basecap._candidate_audit(symbol,rows,{'providerCode':'UNIFIED'},yahoo or [],None,raw_reference_rows=[],raw_reference_audit=None,known_ca_dates=set(),event_reference_audit=None)
 
 
 def main():
@@ -49,7 +49,29 @@ def main():
     assert a['eligible'] is True,a
     assert a['historyContinuityPolicy']=='FULL_HISTORY_CERTIFIED',a
     assert len(adjusted)==700
-    print('V12 STRICT CONTINUOUS-SUFFIX SOURCE-CAPTURE TEST PASS')
+
+    # Former-UPCOM symbols must not lose a long valid suffix merely because legal UPCOM
+    # +/-15% moves exceed the current-HOSE 0.12 guard. The impossible 35% break is still
+    # removed; a later +14%/-14% pair remains valid inside the retained UPCOM suffix.
+    rows=smooth_rows(700,break_at=100)
+    rows[200]=row(rows[200]['date'],rows[200]['close']*1.14)
+    adjusted,a=audit(rows,symbol='ADP')
+    assert a['eligible'] is True,a
+    assert a['historyContinuityPolicy']=='TRUNCATE_BEFORE_LAST_UNRESOLVED_GT_GUARD_BREAK',a
+    assert a['safeSuffixStartDate']==rows[100]['date'],a
+    assert len(adjusted)==600,(len(adjusted),a)
+    ca=a.get('corporateAction') or {}
+    assert ca.get('marketRegimePolicy')=='CURRENT_HOSE_BASE_GUARD_WITH_OFFICIAL_PRE_TRANSFER_UPCOM_15PCT_BAND',ca
+    assert ca.get('venueAwareGuardIntervalCount',0)>=2,ca
+
+    # The same synthetic +14% observation is not exempted for an ordinary HOSE symbol.
+    rows=smooth_rows(700,break_at=100)
+    rows[200]=row(rows[200]['date'],rows[200]['close']*1.14)
+    adjusted,a=audit(rows,symbol='FPT')
+    assert a['eligible'] is False,a
+    assert len(adjusted)<520,(len(adjusted),a)
+
+    print('V12 STRICT CONTINUOUS-SUFFIX + HISTORICAL-VENUE SOURCE-CAPTURE TEST PASS')
 
 
 if __name__=='__main__':main()

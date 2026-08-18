@@ -3,6 +3,29 @@ import math
 
 FACTOR_EVENT_LOG_EPS = 1e-7
 
+# Historical venue metadata is used only to interpret whether an observed raw close-to-close
+# move was legally plausible on its exchange at that date. These seven current-HOSE names
+# traded on UPCOM before their official transfer-to-HOSE effective dates. The dates are
+# immutable exchange-transfer facts (VSDC/HNX notices), not model labels or future returns.
+UPCOM_TO_HOSE_EFFECTIVE = {
+    "ADP": "2023-07-18",
+    "ANT": "2026-01-15",
+    "DSC": "2024-10-17",
+    "HNA": "2024-01-02",
+    "ORS": "2021-11-01",
+    "PDV": "2025-11-10",
+    "PVP": "2023-01-11",
+}
+
+# UPCOM's daily fluctuation band is +/-15% around the reference price. Convert the up/down
+# bounds separately to log-return space (they are asymmetric in logs) and add only a tiny
+# tolerance for tick/reference-price rounding. The current-HOSE V12 0.12 base guard is not
+# changed and no price/return is clipped or invented.
+UPCOM_DAILY_PRICE_LIMIT = 0.15
+UPCOM_ROUNDING_LOG_EPS = 0.002
+UPCOM_MAX_UP_LOG_RETURN = math.log1p(UPCOM_DAILY_PRICE_LIMIT) + UPCOM_ROUNDING_LOG_EPS
+UPCOM_MAX_DOWN_ABS_LOG_RETURN = -math.log1p(-UPCOM_DAILY_PRICE_LIMIT) + UPCOM_ROUNDING_LOG_EPS
+
 
 def _finite(value):
     try:
@@ -61,6 +84,22 @@ def _asof_value(series, dates, date):
     return _finite(series.get(dates[idx]))
 
 
+def _venue_limits(symbol, end_date, base_guard):
+    """Return (lower_log_return, upper_log_return, venue) for one observed interval."""
+    base_guard = float(base_guard)
+    symbol = str(symbol or "").upper()
+    transfer_date = UPCOM_TO_HOSE_EFFECTIVE.get(symbol)
+    if transfer_date and str(end_date or "")[:10] < transfer_date:
+        lower = -max(base_guard, float(UPCOM_MAX_DOWN_ABS_LOG_RETURN))
+        upper = max(base_guard, float(UPCOM_MAX_UP_LOG_RETURN))
+        return lower, upper, "UPCOM"
+    return -base_guard, base_guard, "HOSE_OR_DEFAULT"
+
+
+def _within_limits(value, lower, upper):
+    return value is not None and math.isfinite(value) and lower <= float(value) <= upper
+
+
 def reconcile_vnstock_with_yahoo(
     vn_rows,
     yahoo_rows,
@@ -69,27 +108,25 @@ def reconcile_vnstock_with_yahoo(
     cross_source_limit,
     raw_reference_rows=None,
     known_ca_dates=None,
+    symbol=None,
 ):
     """Build a VNStock-primary model series with fail-safe CA reconciliation.
 
-    Core invariant: the reference series may *remove* a suspicious >guard discontinuity,
-    but it may never introduce a >guard discontinuity into an otherwise smooth VNStock
-    primary series.  This matters because VNStock and Yahoo can be expressed on different
-    historical adjustment bases; blindly splicing every Yahoo factor event can double-adjust
-    an already-adjusted VNStock history.
+    Core invariant: the reference series may *remove* a suspicious out-of-venue-band
+    discontinuity, but it may never introduce one into an otherwise plausible VNStock
+    primary series. The venue-aware rule is scoped only to explicitly certified former-
+    UPCOM names; the current-HOSE V12 base guard remains unchanged.
 
     Policy per identical VNStock interval A->B:
-      * If the VNStock primary return is within the guard, preserve it verbatim, including
-        on factor/known-event dates. Yahoo is audit evidence only on that interval.
-      * If VNStock exceeds the guard and Yahoo adjusted A->B exists within the guard, splice
-        that *return* into the cumulative model index. This handles splits/ex-right events
-        even when Yahoo's factor-change date does not exactly match the VNStock convention.
-      * If a >guard VNStock interval has no safe adjusted-return reference, fail-safe. Raw
-        provider agreement cannot make a >guard HOSE model return admissible because the
-        same corporate-action convention can be shared by multiple raw routes.
+      * If the VNStock primary return is within the legally applicable venue limits, preserve
+        it verbatim, including on factor/known-event dates. Yahoo is audit evidence only.
+      * If VNStock exceeds those limits and Yahoo adjusted A->B is within the same limits,
+        splice only that adjusted *return* into the cumulative model index.
+      * If an out-of-band VNStock interval has no safe adjusted-return reference, fail-safe.
+        Raw provider agreement alone cannot legalize a move outside the venue band.
 
-    The function never copies a Yahoo adjusted *price level* into VNStock. Only interval
-    returns are used, preserving continuity of the cumulative VNStock-primary model index.
+    The function never copies a Yahoo adjusted price level into VNStock, never clips a raw
+    return, and never treats missing reference data as zero.
     """
     yahoo_factors = {}
     yahoo_raw = {}
@@ -107,12 +144,16 @@ def reconcile_vnstock_with_yahoo(
     factor_dates = sorted(yahoo_factors)
     secondary_raw = _price_series(raw_reference_rows or [], "close")
     ca_dates = {str(x)[:10] for x in (known_ca_dates or []) if str(x)[:10]}
+    normalized_symbol = str(symbol or "").upper()
+    transfer_date = UPCOM_TO_HOSE_EFFECTIVE.get(normalized_symbol)
 
     out = []
     factor_events = []
     ca_violations = []
     ordinary_large_events = []
     ordinary_violations = []
+    model_guard_violations = []
+    venue_aware_intervals = []
     secondary_corroborations = 0
     yahoo_raw_corroborations = 0
     known_event_splices = 0
@@ -137,6 +178,7 @@ def reconcile_vnstock_with_yahoo(
             continue
 
         start_date = prev["date"]
+        lower_guard, upper_guard, venue = _venue_limits(normalized_symbol, date, max_return_guard)
         raw_return = math.log(raw_close / prev["rawClose"])
         yahoo_adjusted_return = _interval_log_return(yahoo_adjusted, start_date, date)
         yahoo_raw_return = _interval_log_return(yahoo_raw, start_date, date)
@@ -153,12 +195,24 @@ def reconcile_vnstock_with_yahoo(
         factor_event = abs(factor_log_change) > FACTOR_EVENT_LOG_EPS
         event_boundary = factor_event or known_event
 
-        raw_large = abs(raw_return) > max_return_guard
-        safe_adjusted = (
-            yahoo_adjusted_return is not None
-            and math.isfinite(yahoo_adjusted_return)
-            and abs(yahoo_adjusted_return) <= max_return_guard
-        )
+        raw_large = not _within_limits(raw_return, lower_guard, upper_guard)
+        safe_adjusted = _within_limits(yahoo_adjusted_return, lower_guard, upper_guard)
+
+        if (
+            venue == "UPCOM"
+            and abs(raw_return) > float(max_return_guard)
+            and not raw_large
+        ):
+            venue_aware_intervals.append({
+                "startDate": start_date,
+                "date": date,
+                "venue": venue,
+                "rawLogReturn": raw_return,
+                "baseGuard": float(max_return_guard),
+                "venueLowerGuard": lower_guard,
+                "venueUpperGuard": upper_guard,
+                "knownCorporateActionDate": known_event,
+            })
 
         target_return = raw_return
         adjusted_large_move = False
@@ -174,6 +228,15 @@ def reconcile_vnstock_with_yahoo(
 
         model_close = raw_close * splice_factor
         model_return = math.log(model_close / prev["modelClose"])
+        if not _within_limits(model_return, lower_guard - 1e-12, upper_guard + 1e-12):
+            model_guard_violations.append({
+                "startDate": start_date,
+                "date": date,
+                "venue": venue,
+                "modelLogReturn": model_return,
+                "venueLowerGuard": lower_guard,
+                "venueUpperGuard": upper_guard,
+            })
 
         if event_boundary or adjusted_large_move:
             residual = (
@@ -184,6 +247,9 @@ def reconcile_vnstock_with_yahoo(
             event = {
                 "startDate": start_date,
                 "date": date,
+                "venue": venue,
+                "venueLowerGuard": lower_guard,
+                "venueUpperGuard": upper_guard,
                 "knownCorporateActionDate": known_event,
                 "factorEvent": factor_event,
                 "yahooFactorLogChange": factor_log_change,
@@ -217,6 +283,9 @@ def reconcile_vnstock_with_yahoo(
             event = {
                 "startDate": start_date,
                 "date": date,
+                "venue": venue,
+                "venueLowerGuard": lower_guard,
+                "venueUpperGuard": upper_guard,
                 "rawLogReturn": raw_return,
                 "modelLogReturn": model_return,
                 "yahooAdjustedLogReturn": yahoo_adjusted_return,
@@ -225,7 +294,7 @@ def reconcile_vnstock_with_yahoo(
                 "corroborationSource": "YAHOO_RAW" if yahoo_ok else ("SECONDARY_VNSTOCK_ROUTE" if secondary_ok else None),
                 "yahooCorroborated": yahoo_ok,
                 "secondaryRouteCorroborated": secondary_ok,
-                "reason": "NO_SAFE_ADJUSTED_RETURN_FOR_GT_GUARD_PRIMARY_MOVE",
+                "reason": "NO_SAFE_ADJUSTED_RETURN_FOR_OUT_OF_VENUE_BAND_PRIMARY_MOVE",
             }
             ordinary_large_events.append(event)
             ordinary_violations.append(event)
@@ -240,12 +309,17 @@ def reconcile_vnstock_with_yahoo(
     largest_factor_change = max(factor_events, key=lambda e: abs(e["yahooFactorLogChange"])) if factor_events else None
     largest_event_model_jump = max(factor_events, key=lambda e: abs(e["modelLogReturn"])) if factor_events else None
     largest_ordinary_raw_jump = max(ordinary_large_events, key=lambda e: abs(e["rawLogReturn"])) if ordinary_large_events else None
+    unresolved_break_dates = sorted({
+        str(item.get("date", ""))[:10]
+        for item in (ca_violations + ordinary_violations + model_guard_violations)
+        if str(item.get("date", ""))[:10]
+    })
 
-    model_guard_violation = bool(model_jump > max_return_guard + 1e-12)
+    model_guard_violation = bool(model_guard_violations)
     verified = not ca_violations and not ordinary_violations and not model_guard_violation
 
     return out, {
-        "method": "VNSTOCK_PRIMARY_SAFE_ADJUSTED_RETURN_SPLICE_V2",
+        "method": "VNSTOCK_PRIMARY_SAFE_ADJUSTED_RETURN_SPLICE_V3_VENUE_AWARE",
         "verified": verified,
         "largestRawLogJump": raw_jump,
         "largestRawJumpDate": raw_jump_date,
@@ -253,6 +327,16 @@ def reconcile_vnstock_with_yahoo(
         "largestModelJumpDate": model_jump_date,
         "modelReturnGuard": float(max_return_guard),
         "modelReturnGuardViolation": model_guard_violation,
+        "modelReturnGuardViolationCount": len(model_guard_violations),
+        "modelReturnGuardViolations": model_guard_violations[:10],
+        "unresolvedBreakDates": unresolved_break_dates,
+        "marketRegimePolicy": "CURRENT_HOSE_BASE_GUARD_WITH_OFFICIAL_PRE_TRANSFER_UPCOM_15PCT_BAND",
+        "historicalVenueTransitionDate": transfer_date,
+        "preTransferVenue": "UPCOM" if transfer_date else None,
+        "preTransferVenueUpLogGuard": float(UPCOM_MAX_UP_LOG_RETURN) if transfer_date else None,
+        "preTransferVenueDownAbsLogGuard": float(UPCOM_MAX_DOWN_ABS_LOG_RETURN) if transfer_date else None,
+        "venueAwareGuardIntervalCount": len(venue_aware_intervals),
+        "venueAwareGuardIntervals": venue_aware_intervals[:20],
         "factorDates": len(yahoo_factors),
         "factorChangeEvents": len(factor_events),
         "knownCorporateActionDates": len(ca_dates),
@@ -272,11 +356,16 @@ def reconcile_vnstock_with_yahoo(
         "largestOrdinaryRawLogJump": abs(largest_ordinary_raw_jump["rawLogReturn"]) if largest_ordinary_raw_jump else 0.0,
         "largestOrdinaryRawJumpDate": largest_ordinary_raw_jump["date"] if largest_ordinary_raw_jump else None,
         "verificationScope": (
-            "VNSTOCK_PRIMARY_RETURNS_PRESERVED_WHEN_WITHIN_GUARD;"
-            "GT_GUARD_PRIMARY_RETURNS_REQUIRE_SAFE_YAHOO_ADJUSTED_INTERVAL_RETURN;"
-            "REFERENCE_SERIES_MAY_REMOVE_BUT_NEVER_INTRODUCE_GT_GUARD_MODEL_JUMPS;"
-            "RAW_ROUTE_CONSENSUS_IS_PROVENANCE_NOT_PERMISSION_FOR_GT_GUARD_HOSE_MODEL_RETURNS"
+            "VNSTOCK_PRIMARY_RETURNS_PRESERVED_WHEN_WITHIN_DATE_VENUE_LIMITS;"
+            "CURRENT_HOSE_BASE_GUARD_UNCHANGED;"
+            "OFFICIAL_PRE_TRANSFER_UPCOM_INTERVALS_USE_ASYMMETRIC_15PCT_BAND_DERIVED_LOG_LIMITS;"
+            "OUT_OF_VENUE_BAND_PRIMARY_RETURNS_REQUIRE_SAFE_YAHOO_ADJUSTED_INTERVAL_RETURN;"
+            "REFERENCE_SERIES_MAY_REMOVE_BUT_NEVER_INTRODUCE_OUT_OF_BAND_MODEL_JUMPS;"
+            "RAW_ROUTE_CONSENSUS_IS_PROVENANCE_NOT_PERMISSION_FOR_OUT_OF_BAND_RETURNS"
         ),
+        "rawPriceOrReturnMutation": False,
+        "modelAdjustmentApplied": bool(large_move_adjustments),
+        "gateMutation": False,
         "corporateActionViolations": ca_violations[:10],
         "ordinaryMoveViolations": ordinary_violations[:10],
     }
