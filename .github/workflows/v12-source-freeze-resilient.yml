@@ -12,10 +12,11 @@ concurrency:
 jobs:
   freeze:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 180
     env:
       V12_MIN_ROWS: '520'
       V12_VNSTOCK_INTERVAL: '6.50'
+      V12_NETWORK_CALL_TIMEOUT: '25'
       V12_MAX_RAW_RETURN_GUARD: '0.12'
       V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
     steps:
@@ -36,21 +37,11 @@ jobs:
           PYTHONPATH=scripts python scripts/v12_source_capture_methodfix_test.py
           PYTHONPATH=scripts python scripts/v12_reference_resilience_test.py
           PYTHONPATH=scripts python scripts/v12_freeze_gate_cohort_test.py
-          PYTHONPATH=scripts python - <<'PY'
-          import v12_source_capture as c
-          c.reset_provider_circuits(); calls=[]; old=c.base._provider_history
-          def fail(*a,**k): calls.append(a); raise RuntimeError('ConnectTimeoutError: Max retries exceeded')
-          c.base._provider_history=fail; attempts=[]
-          assert c._capture_provider('AAA','KBS','2020-01-01','2026-01-01',attempts,'TEST') is None
-          assert c._provider_state('KBS')['open'] is True and len(calls)==1
-          assert c._capture_provider('AAM','KBS','2020-01-01','2026-01-01',attempts,'TEST') is None and len(calls)==1
-          c.base._provider_history=old;c.reset_provider_circuits();print('V12 PROVIDER OUTAGE CIRCUIT PASS')
-          PY
-      - name: Capture resilient immutable source with strict continuity salvage
+      - name: Capture VNStock-only immutable source with strict continuity salvage
         shell: bash
         run: |
           set -o pipefail
-          timeout --signal=TERM --kill-after=30s 300m env PYTHONPATH=scripts \
+          timeout --signal=TERM --kill-after=30s 160m env PYTHONPATH=scripts \
             python scripts/freeze_v12_source_snapshot_resilient.py 2>&1 \
             | tee data/v12-source-freeze-live.log
       - name: Upload diagnostic
@@ -71,11 +62,12 @@ jobs:
           assert p.stat().st_size>1_000_000 and hashlib.sha256(b).hexdigest()==m['snapshotFileSha256']
           z=json.loads(gzip.decompress(b).decode());assert z['version']=='VMEWS-FROZEN-SOURCE-12.1.0' and m['version']=='VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0'
           assert m['currentSourceCoverageRatio']>=.98 and m['deepHistory']>=360 and m['modelEligible']>=360,m
-          assert m['corporateActionVerifiedRatio']>=.98 and m['crossSourceMADP95']<=.003,m
+          assert m['corporateActionVerifiedRatio']>=.98,m
+          assert m.get('crossSourceMADP95') is not None and m['crossSourceMADP95']<=.003,m
           assert int(m['corporateActionGateDenominator'])>=int(m['deepHistory']),m
           assert m['corporateActionGateCohort']=='CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION',m
           assert int(m['vnstockPrimaryAttempted'])/max(1,int(m['currentHOSERequested']))>=.95,m
-          print('V12 RESILIENT SOURCE FREEZE PASS',m['modelEligible'],m['corporateActionVerifiedRatio'],m['corporateActionGateDenominator'],m['snapshotFileSha256'])
+          print('V12 VNSTOCK-ONLY SOURCE FREEZE PASS',m['modelEligible'],m['corporateActionVerifiedRatio'],m['crossSourceMADP95'],m['snapshotFileSha256'])
           PY
       - name: Publish immutable source snapshot
         shell: bash
