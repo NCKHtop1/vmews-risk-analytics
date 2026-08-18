@@ -53,7 +53,8 @@ assert u is not None and unified_calls['n']==2 and ua[-1]['sourceAttempts']==2,(
 pa=[];p=c._capture_provider('AAA','VCI','2020-01-01','2026-01-01',pa,'VNSTOCK_VCI_RECOVERY')
 assert p is not None and provider_calls['n']==2 and pa[-1]['sourceAttempts']==2,(p,provider_calls,pa)
 assert sum(1 for x in sleeps if x>=r._RATE_LIMIT_COOLDOWN_SECONDS)==3,sleeps
-assert a['gateMutation'] is False and a['priceOrReturnMutation'] is False and a['version']=='VMEWS-V12-REFERENCE-RESILIENCE-1.2.0'
+assert a['gateMutation'] is False and a['priceOrReturnMutation'] is False and a['version']=='VMEWS-V12-REFERENCE-RESILIENCE-1.3.0'
+assert a['unifiedTransientCircuit'] is True and a['yahooReferenceTransientCircuit'] is True
 
 # Permanent 404 must remain fail-safe and must not be retried.
 class PermanentBase:
@@ -114,4 +115,87 @@ assert [x['stage'] for x in audits3['AAA']['attempts']]==['VCI','SOURCE_STORE_TR
 assert audits3['BBB']['eligible'] is False and 'sourceStoreRecovery' not in audits3['BBB'],audits3['BBB']
 assert len(reset_calls)==1 and sum(1 for x in sleeps if x>=r._RATE_LIMIT_COOLDOWN_SECONDS)==4,(reset_calls,sleeps)
 assert a3['sourceStoreTransientSecondPass'] is True and a3['gateMutation'] is False and a3['priceOrReturnMutation'] is False
-print('V12 REFERENCE RESILIENCE TEST PASS')
+
+# A symbol that was not captured at all because every route hit a transient outage also
+# gets one clean second pass. This repairs transport failure only; it does not alter gates.
+failure_retry_calls=[]
+def initial_failure_build(symbols):
+    return {},{},{
+        'CCC':{
+            'error':'transient outage',
+            'attempts':[{'stage':'VNSTOCK_PRIMARY','ok':False,'error':'ReadTimeout: provider unavailable'}],
+        },
+        'DDD':{
+            'error':'permanent bad data',
+            'attempts':[{'stage':'VNSTOCK_PRIMARY','ok':False,'error':'ValueError: malformed payload'}],
+        },
+    }
+def failure_second_pass(symbol):
+    failure_retry_calls.append(symbol)
+    return list(sample_rows),{
+        'eligible':False,
+        'corporateAction':{'verified':True},
+        'attempts':[{'stage':'RETRY_CAPTURE','ok':True}],
+    }
+c4=SimpleNamespace(
+    base=sb,_vci_corporate_action_dates=store_vci,_capture_unified=store_unified,
+    _capture_provider=store_provider,build_source_capture_store=initial_failure_build,
+    capture_price_history=failure_second_pass,reset_provider_circuits=lambda:None,
+)
+a4=r.install(c4,max_attempts=2,backoff_seconds=(0,0))
+store4,audits4,failures4=c4.build_source_capture_store(['CCC','DDD'])
+assert failure_retry_calls==['CCC'],failure_retry_calls
+assert 'CCC' in store4 and 'CCC' in audits4 and 'CCC' not in failures4,(store4,audits4,failures4)
+assert audits4['CCC']['sourceStoreRecovery']['accepted'] is True,audits4['CCC']
+assert audits4['CCC']['eligible'] is False,audits4['CCC']
+assert 'DDD' in failures4 and 'DDD' not in store4,failures4
+assert a4['sourceStoreTransientCaptureFailureSecondPass'] is True
+
+# Provider-wide transient outages must stop consuming the time budget symbol-by-symbol.
+# Two symbols may exhaust the bounded retry policy; the third is short-circuited without
+# another underlying network call. Resetting circuits permits a later clean second pass.
+class OutageBase:
+    def __init__(self):self.y=0;self.t=0
+    def yahoo_history(self,symbol):
+        self.y+=1
+        raise RuntimeError('ReadTimeout: provider-wide outage')
+    def _throttle_vnstock(self):self.t+=1
+ob=OutageBase();ou={'n':0};reset5=[]
+def outage_vci(symbol,attempts):return set(),{}
+def outage_unified(symbol,years,attempts,stage='VNSTOCK_PRIMARY'):
+    ou['n']+=1
+    attempts.append({'stage':stage,'ok':False,'providerCode':'UNIFIED','error':'ReadTimeout: provider-wide outage'})
+    return None
+def outage_provider(symbol,source,start,end,attempts,stage):return None
+c5=SimpleNamespace(
+    base=ob,_vci_corporate_action_dates=outage_vci,_capture_unified=outage_unified,
+    _capture_provider=outage_provider,reset_provider_circuits=lambda:reset5.append(1),
+)
+a5=r.install(c5,max_attempts=2,backoff_seconds=(0,0))
+for symbol in ('AAA','BBB'):
+    try:c5.base.yahoo_history(symbol);raise AssertionError('transient outage unexpectedly succeeded')
+    except RuntimeError:pass
+assert ob.y==4,ob.y
+try:c5.base.yahoo_history('CCC');raise AssertionError('open Yahoo circuit unexpectedly called provider')
+except RuntimeError as exc:assert 'provider_circuit_open' in str(exc),str(exc)
+assert ob.y==4,ob.y
+
+for symbol in ('AAA','BBB'):
+    attempts=[]
+    assert c5._capture_unified(symbol,8,attempts) is None,(symbol,attempts)
+assert ou['n']==4,ou
+attempts=[]
+assert c5._capture_unified('CCC',8,attempts) is None
+assert ou['n']==4,(ou,attempts)
+assert attempts[-1]['reason']=='provider_circuit_open' and attempts[-1]['providerCircuitOpen'] is True,attempts
+
+c5.reset_provider_circuits()
+assert len(reset5)==1,reset5
+try:c5.base.yahoo_history('DDD');raise AssertionError('reset Yahoo outage unexpectedly succeeded')
+except RuntimeError:pass
+assert ob.y==6,ob.y
+attempts=[];assert c5._capture_unified('DDD',8,attempts) is None
+assert ou['n']==6,(ou,attempts)
+assert a5['componentCircuitTerminalFailures']==2 and a5['gateMutation'] is False
+
+print('V12 REFERENCE RESILIENCE + RUN-LOCAL OUTAGE CIRCUIT TEST PASS')
