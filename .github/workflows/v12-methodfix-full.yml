@@ -5,28 +5,40 @@ on:
     branches: [forecast-v12-methodfix]
     paths:
       - 'v12-methodfix-trigger.txt'
+
 permissions:
   contents: write
   actions: read
+
 concurrency:
   group: vmews-v12-nine-phase-final
   cancel-in-progress: true
+
+env:
+  V12_MIN_ROWS: '520'
+  V12_VNSTOCK_INTERVAL: '3.25'
+  V12_MAX_RAW_RETURN_GUARD: '0.12'
+  V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+  V12_RESEARCH_SOURCE_MODE: 'FROZEN'
+  PYTHONHASHSEED: '0'
+
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 110
-    env:
-      V12_MIN_ROWS: '520'
-      V12_VNSTOCK_INTERVAL: '3.25'
-      V12_MAX_RAW_RETURN_GUARD: '0.12'
-      V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
-      V12_RESEARCH_SOURCE_MODE: 'FROZEN'
-      PYTHONHASHSEED: '0'
+    timeout-minutes: 20
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 1}
-      - name: Capture immutable training source
-        run: echo "V12_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - id: source
+        name: Capture immutable Full source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "V12_SOURCE_SHA=$SHA" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -34,16 +46,38 @@ jobs:
           cache-dependency-path: requirements-v12.txt
       - name: Install research dependencies
         run: pip install --disable-pip-version-check -q -r requirements-v12.txt
-      - name: Compile exact final-candidate source
+      - name: Compile exact final-candidate source and orchestration regressions
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_universe.py scripts/v12_entity.py scripts/v12_entity_test.py scripts/v12_evidence.py scripts/v12_flow.py scripts/v12_research_sources.py scripts/v12_frozen_source_probe.py scripts/v12_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_static_smoke.py scripts/v12_benchmark_unit.py scripts/train_forecast_v12.py
+          python -m py_compile \
+            scripts/v12_data_sources.py \
+            scripts/v12_universe.py \
+            scripts/v12_entity.py \
+            scripts/v12_entity_test.py \
+            scripts/v12_evidence.py \
+            scripts/v12_flow.py \
+            scripts/v12_research_sources.py \
+            scripts/v12_frozen_source_probe.py \
+            scripts/v12_acceptance.py \
+            scripts/v12_active_flow_acceptance.py \
+            scripts/v12_sector_acceptance.py \
+            scripts/v12_benchmark_acceptance.py \
+            scripts/v12_nested_selection_acceptance.py \
+            scripts/v12_blind_holdout_acceptance.py \
+            scripts/v12_embargo_acceptance.py \
+            scripts/v12_static_smoke.py \
+            scripts/v12_benchmark_unit.py \
+            scripts/v12_merge_horizon_partials.py \
+            scripts/v12_merge_horizon_partials_test.py \
+            scripts/train_forecast_v12.py
           python - <<'PY'
           from pathlib import Path
           parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
           code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           compile(code,'v12-nine-phase-assembled.py','exec')
+          assert any(p.name=='00_zz_horizon_runtime.pyinc' for p in parts),[p.name for p in parts]
           print('V12 FINAL-CANDIDATE SYNTAX PASS',len(parts),[p.name for p in parts])
           PY
+          PYTHONPATH=scripts python scripts/v12_merge_horizon_partials_test.py
       - name: Entity adversarial tests
         run: PYTHONPATH=scripts python scripts/v12_entity_test.py
       - name: Exact VNINDEX and ticker-news identity runtime regression
@@ -117,26 +151,162 @@ jobs:
           assert len(str(snap.get('inputManifestSha256') or ''))==64,snap
           print('V12 FROZEN SOURCE PROBE PASS',snap.get('asOf'),snap.get('snapshotFileSha256'))
           PY
-      - name: Phases 1-7 full PIT model and historical replay
+      - name: Upload deterministic Full preparation
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-full-prep-${{ github.run_id }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            data/v12-seed/sentiment-v11.json
+            data/v12-seed/market-scan.json
+            data/v12-source-probe.json
+
+  horizon:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        horizon: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Verify exact Full source SHA
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = '${{ needs.prepare.outputs.source_sha }}'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - name: Install research dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Restore deterministic Full preparation
+        uses: actions/download-artifact@v4
+        with:
+          name: v12-full-prep-${{ github.run_id }}
+          path: data
+      - name: Train isolated direct horizon T+${{ matrix.horizon }}
         shell: bash
         run: |
           set -o pipefail
-          PYTHONPATH=scripts python scripts/train_forecast_v12.py 2>&1 | tee data/v12-final-training.log
+          timeout --signal=TERM --kill-after=30s 52m env \
+            V12_ONLY_HORIZON='${{ matrix.horizon }}' \
+            PYTHONPATH=scripts \
+            python scripts/train_forecast_v12.py 2>&1 \
+            | tee 'data/v12-final-training-h${{ matrix.horizon }}.log'
+      - name: Verify isolated horizon materialization
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          h=str(os.environ['H'])
+          expected=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json','event-intelligence-v12.json']
+          for name in expected:
+              p=pathlib.Path('data')/name
+              assert p.exists() and p.stat().st_size>100,(name,p.exists(),p.stat().st_size if p.exists() else None)
+          m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
+          b=json.load(open('data/forecast-backtest-v12.json',encoding='utf-8'))
+          c=json.load(open('data/forecast-current-v12.json',encoding='utf-8'))
+          assert sorted((m.get('horizons') or {}).keys())==[h],m.get('horizons')
+          assert sorted((b.get('horizons') or {}).keys())==[h],b.get('horizons')
+          assert sorted((b.get('cases') or {}).keys())==[h],b.get('cases')
+          assert c.get('symbols'),c
+          assert all(sorted((z.get('horizons') or {}).keys())==[h] for z in c['symbols'].values())
+          print('V12 ISOLATED HORIZON PASS',h,len(c['symbols']))
+          PY
+        env:
+          H: ${{ matrix.horizon }}
+      - name: Upload isolated horizon evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-horizon-${{ matrix.horizon }}-${{ github.run_id }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            data/v12-final-training-h${{ matrix.horizon }}.log
+            data/v12-training-error.json
+            data/forecast-model-v12.json
+            data/forecast-current-v12.json
+            data/forecast-dashboard-v12.json
+            data/forecast-backtest-v12.json
+            data/data-audit-v12.json
+            data/event-intelligence-v12.json
+
+  assemble:
+    needs: [prepare, horizon]
+    if: always() && needs.prepare.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      V12_SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Verify immutable assembly source
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$V12_SOURCE_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - name: Install research dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Restore deterministic Full preparation
+        uses: actions/download-artifact@v4
+        with:
+          name: v12-full-prep-${{ github.run_id }}
+          path: data
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-horizon-1-${{ github.run_id }}
+          path: /tmp/v12-partials/h1
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-horizon-2-${{ github.run_id }}
+          path: /tmp/v12-partials/h2
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-horizon-3-${{ github.run_id }}
+          path: /tmp/v12-partials/h3
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-horizon-4-${{ github.run_id }}
+          path: /tmp/v12-partials/h4
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-horizon-5-${{ github.run_id }}
+          path: /tmp/v12-partials/h5
+      - name: Deterministically assemble T+1..T+5 without refitting
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHONPATH=scripts python scripts/v12_merge_horizon_partials.py \
+            --partials-root /tmp/v12-partials \
+            --outdir data 2>&1 | tee data/v12-horizon-assembly.log
       - name: Assert frozen-only training contract
         run: |
           python - <<'PY'
           import json
           p=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          a=json.load(open('data/v12-horizon-assembly.json',encoding='utf-8'))
           assert p['mode']=='IMMUTABLE_FROZEN_SNAPSHOT'
           assert p['runtimeNetworkPriceFetch'] is False
           assert p['runtimeProviderSwitching'] is False
-          print('V12 TRAINING SOURCE CONTRACT PASS')
+          assert a['status']=='PASS' and a['scientificSemanticsChanged'] is False,a
+          assert a['horizons']==[1,2,3,4,5],a
+          assert (a.get('frozenSource') or {}).get('snapshotFileSha256')==(p.get('snapshot') or {}).get('snapshotFileSha256'),(a,p)
+          print('V12 SHARDED FULL SOURCE CONTRACT PASS')
           PY
-      - name: Assert every research artifact materialized
+      - name: Assert every merged research artifact materialized
         run: |
           python - <<'PY'
           from pathlib import Path
-          expected=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json','event-intelligence-v12.json'];sizes={x:(Path('data')/x).stat().st_size if (Path('data')/x).exists() else None for x in expected};print('V12 OUTPUTS',sizes);bad=[x for x,v in sizes.items() if v is None or v<100];assert not bad,bad
+          expected=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json','event-intelligence-v12.json','v12-horizon-assembly.json'];sizes={x:(Path('data')/x).stat().st_size if (Path('data')/x).exists() else None for x in expected};print('V12 MERGED OUTPUTS',sizes);bad=[x for x,v in sizes.items() if v is None or v<100];assert not bad,bad
           PY
       - name: Nine-phase research acceptance gates
         run: PYTHONPATH=scripts python scripts/v12_acceptance.py
@@ -169,8 +339,8 @@ jobs:
             data/v12-frozen-source-manifest.json
             data/v12-frozen-source.json.gz
             data/v12-source-probe.json
-            data/v12-final-training.log
-            data/v12-training-error.json
+            data/v12-horizon-assembly.json
+            data/v12-horizon-assembly.log
             data/forecast-model-v12.json
             data/forecast-current-v12.json
             data/forecast-dashboard-v12.json
@@ -187,6 +357,11 @@ jobs:
             data/embargo-gate-v12.json
             data/flow-audit-v12.json
             data/vnindex-v12.json
+            /tmp/v12-partials/h1/v12-final-training-h1.log
+            /tmp/v12-partials/h2/v12-final-training-h2.log
+            /tmp/v12-partials/h3/v12-final-training-h3.log
+            /tmp/v12-partials/h4/v12-final-training-h4.log
+            /tmp/v12-partials/h5/v12-final-training-h5.log
       - name: Persist only nine-phase validated snapshots
         if: success()
         shell: bash
@@ -195,9 +370,29 @@ jobs:
           test "$(git rev-parse HEAD)" = "$V12_SOURCE_SHA"
           git fetch origin forecast-v12-methodfix
           REMOTE_SHA=$(git rev-parse origin/forecast-v12-methodfix)
-          test "$REMOTE_SHA" = "$V12_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING TRAINING: source=$V12_SOURCE_SHA remote=$REMOTE_SHA; refusing to attach old-model artifacts to new code"; exit 1; }
+          test "$REMOTE_SHA" = "$V12_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING FULL: source=$V12_SOURCE_SHA remote=$REMOTE_SHA; refusing stale model publish"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/v12-source-probe.json data/vnindex-v12.json data/forecast-model-v12.json data/forecast-current-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/event-intelligence-v12.json data/phase-gates-v12.json data/benchmark-gate-v12.json data/active-flow-audit-v12.json data/active-flow-gate-v12.json data/sector-gate-v12.json data/nested-selection-gate-v12.json data/blind-holdout-gate-v12.json data/embargo-gate-v12.json
+          git add \
+            data/v12-source-probe.json \
+            data/v12-horizon-assembly.json \
+            data/vnindex-v12.json \
+            data/forecast-model-v12.json \
+            data/forecast-current-v12.json \
+            data/forecast-dashboard-v12.json \
+            data/forecast-backtest-v12.json \
+            data/data-audit-v12.json \
+            data/event-intelligence-v12.json \
+            data/phase-gates-v12.json \
+            data/benchmark-gate-v12.json \
+            data/active-flow-audit-v12.json \
+            data/active-flow-gate-v12.json \
+            data/sector-gate-v12.json \
+            data/nested-selection-gate-v12.json \
+            data/blind-holdout-gate-v12.json \
+            data/embargo-gate-v12.json
           git commit -m 'Publish nine-phase validated V12 forecast snapshots [v12-model-data]'
-          PUBLISHED_SHA=$(git rev-parse HEAD);test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_SOURCE_SHA";git push origin HEAD:forecast-v12-methodfix;echo "V12_PUBLISHED_SHA=$PUBLISHED_SHA" >> "$GITHUB_ENV"
+          PUBLISHED_SHA=$(git rev-parse HEAD)
+          test "$(git rev-parse ${PUBLISHED_SHA}^)" = "$V12_SOURCE_SHA"
+          git push origin HEAD:forecast-v12-methodfix
+          echo "V12_PUBLISHED_SHA=$PUBLISHED_SHA" >> "$GITHUB_ENV"
