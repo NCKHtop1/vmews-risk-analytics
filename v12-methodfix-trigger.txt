@@ -1,5 +1,5 @@
-trigger=2026-08-18T08:30:00+07:00
-source_parent=52646d06c37c34eafb6b04e4095dc16088cda8be
+trigger=2026-08-18T20:43:00+07:00
+source_parent=5849a6fd66a621a0db67fafcac86735a3aaac05f
 source_certification=VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1
 snapshot_sha256=cce60b86c61df54f4ad8dba9ff496fc28156f8b9b89dc1be20f14c5db1957b0f
-reason=nine-phase-validation-on-offline-certified-immutable-frozen-source-no-network-no-gate-mutation
+reason=clean-nine-phase-validation-on-fast-track-offline-certified-immutable-frozen-source-no-network-no-gate-mutation
