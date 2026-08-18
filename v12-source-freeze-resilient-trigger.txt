@@ -1,4 +1,4 @@
-resilient-source-freeze-2026-08-18T11:53+07:00
-reason=restart-after-provider-wide-transient-circuit-hardening-and-timeout-safe-diagnostics;preserve-gates-0.12-0.003-520
-sourceBase=a225be26ff7f1dbe4c49fe5a2fa9bf801421500e
-resilience=VMEWS-V12-REFERENCE-RESILIENCE-1.3.0
+resilient-source-freeze-2026-08-18T13:53+07:00
+reason=vnstock-only-no-yahoo-no-global-circuit-per-call-watchdog-preflight;preserve-gates-0.12-0.003-520
+sourceBase=1ae11f2594b9d2969c1daca2feed3f354eae6dce
+resilience=VMEWS-V12-VNSTOCK-ONLY-RESILIENCE-2.0.0
