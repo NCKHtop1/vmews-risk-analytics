@@ -1,0 +1,74 @@
+{
+  "version": "VMEWS-V12-SOURCE-SHARD-ASSEMBLY-1.0.0",
+  "generatedAt": "2026-08-18T14:12:01.770482+00:00",
+  "policyVersion": "VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0",
+  "sourceTriggerSha": "b99cc24f092fc946482305635f04fec376221316",
+  "planFingerprint": "52621a7901156839302d68f2c0dfc4a02a80fa670ff4b02e740ffd4000b2fcc3",
+  "runtimeScriptsTreeSha": "ae229fb5b1ce09f5b41aec2798ddf2f39f999546",
+  "workflowSha256": "1b15f1f02683d2c05d6c500f65068f4fae1fdea24fa488b13f470d81eaacf340",
+  "targetAsOfHint": "2026-08-18",
+  "actualModalAsOf": "2026-08-18",
+  "requested": 407,
+  "captured": 406,
+  "failed": 1,
+  "shards": {
+    "0": {
+      "branch": "v12-source-checkpoint-00",
+      "status": "PASS",
+      "checkpointFileSha256": "82f6e99041ed784cd939eafb8921558d7c4d9004eab15aa83e0954436893977f",
+      "assigned": 51,
+      "captured": 51
+    },
+    "1": {
+      "branch": "v12-source-checkpoint-01",
+      "status": "PASS",
+      "checkpointFileSha256": "320992522e688f02773abcbf8c417fa670270f012c78f8821a2d791ed9d5ff20",
+      "assigned": 51,
+      "captured": 51
+    },
+    "2": {
+      "branch": "v12-source-checkpoint-02",
+      "status": "PASS",
+      "checkpointFileSha256": "4791145a52979d6f496b51d622e3bc63d725d88087e9a0f27fc5e5121219779b",
+      "assigned": 51,
+      "captured": 51
+    },
+    "3": {
+      "branch": "v12-source-checkpoint-03",
+      "status": "PASS",
+      "checkpointFileSha256": "808f5edb7520393abbf2c8fa7f085f8c76070a93ae0f594ee9dd9f60da038193",
+      "assigned": 51,
+      "captured": 51
+    },
+    "4": {
+      "branch": "v12-source-checkpoint-04",
+      "status": "PASS",
+      "checkpointFileSha256": "c6f7a131010af827c902dde07690d558d455f8260d373c1a503cde000cc37a07",
+      "assigned": 51,
+      "captured": 51
+    },
+    "5": {
+      "branch": "v12-source-checkpoint-05",
+      "status": "PASS",
+      "checkpointFileSha256": "a698e59fb0b7ad95e45217760ad40b26ad4f177d7ec46b7e1a76bb0008d8ef3a",
+      "assigned": 51,
+      "captured": 50
+    },
+    "6": {
+      "branch": "v12-source-checkpoint-06",
+      "status": "PASS",
+      "checkpointFileSha256": "24408375ae905c4bdc7b536fabb6396bd44e36c9d7636a46373c9c5919edb982",
+      "assigned": 51,
+      "captured": 51
+    },
+    "7": {
+      "branch": "v12-source-checkpoint-07",
+      "status": "PASS",
+      "checkpointFileSha256": "9952c63e43ae489b09bd8121144a6a0c7ac66752ce34024b1728b5c60d6bf36b",
+      "assigned": 50,
+      "captured": 50
+    }
+  },
+  "normalizedCaptured": 406,
+  "status": "PASS"
+}
