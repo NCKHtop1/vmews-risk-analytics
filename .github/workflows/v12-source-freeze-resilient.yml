@@ -12,7 +12,7 @@ concurrency:
 jobs:
   freeze:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 330
     env:
       V12_MIN_ROWS: '520'
       V12_VNSTOCK_INTERVAL: '6.50'
@@ -47,13 +47,20 @@ jobs:
           c.base._provider_history=old;c.reset_provider_circuits();print('V12 PROVIDER OUTAGE CIRCUIT PASS')
           PY
       - name: Capture resilient immutable source with strict continuity salvage
-        run: PYTHONPATH=scripts python scripts/freeze_v12_source_snapshot_resilient.py
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=30s 300m env PYTHONPATH=scripts \
+            python scripts/freeze_v12_source_snapshot_resilient.py 2>&1 \
+            | tee data/v12-source-freeze-live.log
       - name: Upload diagnostic
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v12-source-freeze-diagnostic-${{ github.run_id }}
-          path: data/v12-source-freeze-diagnostic.json
+          path: |
+            data/v12-source-freeze-diagnostic.json
+            data/v12-source-freeze-live.log
           if-no-files-found: warn
           retention-days: 7
       - name: Verify immutable source gates
