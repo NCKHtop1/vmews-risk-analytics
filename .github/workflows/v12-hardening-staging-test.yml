@@ -1,0 +1,34 @@
+name: V12 hardening staging regression
+on:
+  push:
+    branches: [tmp-v12-detached-do-not-use]
+    paths:
+      - 'v12-hardening-staging-trigger.txt'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Compile hardening helpers
+        run: python -m py_compile scripts/v12_restore_seed.py scripts/v12_release_provenance.py
+      - name: Restore pinned V11 seed without marketplace artifact action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/v12_restore_seed.py
+      - name: Verify exact seed provenance
+        run: |
+          python - <<'PY'
+          import json,hashlib,pathlib
+          z=json.load(open('data/v12-seed-provenance.json',encoding='utf-8'))
+          assert z['status']=='PASS',z
+          exp={'sentiment-v11.json':'d94a4ca26ffd70d292e7fa0bea143baa877ec335ac6055b3a86c0ab24e319eed','market-scan.json':'3b4a10c99044ccf84762f58537eaaf29aae60e9011d84d43a621b2db436c7352'}
+          for n,h in exp.items():
+              b=pathlib.Path('data/v12-seed',n).read_bytes();assert hashlib.sha256(b).hexdigest()==h,n
+          print('HARDENED SEED REGRESSION PASS')
+          PY
