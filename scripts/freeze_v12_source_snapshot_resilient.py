@@ -32,7 +32,10 @@ def _postvalidate_original_deep_ca_cohort():
 
 
 def main():
-    audit=install_resilience(capture,max_attempts=3,backoff_seconds=(1.0,2.0));install_continuity();print({'v12ReferenceResilience':audit,'v12ContinuityPolicy':'STRICT_POST_LAST_UNRESOLVED_GT_GUARD_SUFFIX_MIN_ROWS_UNCHANGED'},flush=True)
+    # Install continuity first so the VNStock-only wrapper audits the exact retained suffix.
+    install_continuity()
+    audit=install_resilience(capture,max_attempts=2,backoff_seconds=(2.0,))
+    print({'v12ReferenceResilience':audit,'v12ContinuityPolicy':'STRICT_POST_LAST_UNRESOLVED_GT_GUARD_SUFFIX_MIN_ROWS_UNCHANGED'},flush=True)
     runpy.run_path(str(pathlib.Path(__file__).with_name('freeze_v12_source_snapshot.py')),run_name='__main__')
     _postvalidate_original_deep_ca_cohort()
 
