@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-V12-SOURCE-SHARD-CHECKPOINT-MANIFEST-1.0.0",
   "policyVersion": "VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0",
-  "updatedAt": "2026-08-18T14:00:23.662896+00:00",
+  "updatedAt": "2026-08-18T14:00:55.846546+00:00",
   "planFingerprint": "52621a7901156839302d68f2c0dfc4a02a80fa670ff4b02e740ffd4000b2fcc3",
   "runtimeScriptsTreeSha": "ae229fb5b1ce09f5b41aec2798ddf2f39f999546",
   "workflowSha256": "1b15f1f02683d2c05d6c500f65068f4fae1fdea24fa488b13f470d81eaacf340",
@@ -9,10 +9,10 @@
   "shard": 0,
   "shardCount": 8,
   "assigned": 51,
-  "captured": 35,
+  "captured": 40,
   "failed": 0,
-  "pending": 16,
-  "lastSymbol": "SBA",
-  "checkpointFileSha256": "17103a55d7ff7bdddc40064e6a3eb9ae305ed68b7c364512834a410b8edad465",
+  "pending": 11,
+  "lastSymbol": "TBC",
+  "checkpointFileSha256": "1bd8e50152efb1fcca388f75d9cf621f9916b8a25e839db6d661ddea90ac4808",
   "recentFailures": {}
 }
