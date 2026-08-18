@@ -1,30 +1,36 @@
-name: V12 resilient source freeze
+name: V12 resumable sharded source freeze
 on:
   workflow_dispatch:
   push:
     branches: [forecast-v12-methodfix]
     paths: ['v12-source-freeze-resilient-trigger.txt']
+
 permissions:
   contents: write
+
 concurrency:
   group: vmews-v12-source-freeze
   cancel-in-progress: true
+
+env:
+  V12_MIN_ROWS: '520'
+  V12_VNSTOCK_INTERVAL: '6.50'
+  V12_NETWORK_CALL_TIMEOUT: '12'
+  V12_SYMBOL_WALL_BUDGET: '45'
+  V12_UNIVERSE_WALL_BUDGET: '20'
+  V12_CAPTURE_WALL_BUDGET: '8400'
+  V12_MAX_RAW_RETURN_GUARD: '0.12'
+  V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+
 jobs:
-  freeze:
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
-    env:
-      V12_MIN_ROWS: '520'
-      V12_VNSTOCK_INTERVAL: '6.50'
-      V12_NETWORK_CALL_TIMEOUT: '12'
-      V12_SYMBOL_WALL_BUDGET: '45'
-      V12_UNIVERSE_WALL_BUDGET: '20'
-      V12_CAPTURE_WALL_BUDGET: '8400'
-      V12_MAX_RAW_RETURN_GUARD: '0.12'
-      V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-        with: {fetch-depth: 1}
+        with:
+          fetch-depth: 0
+          persist-credentials: true
       - name: Pin immutable capture source
         run: echo "V12_FREEZE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
@@ -35,53 +41,174 @@ jobs:
       - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
       - name: Compile and deterministic regressions
         run: |
-          python -m py_compile scripts/v12_data_sources.py scripts/v12_corporate_actions.py scripts/v12_corporate_actions_test.py scripts/v12_source_capture.py scripts/v12_source_capture_methodfix.py scripts/v12_source_capture_methodfix_test.py scripts/v12_reference_resilience.py scripts/v12_reference_resilience_test.py scripts/v12_freeze_runtime_guard.py scripts/v12_freeze_runtime_guard_test.py scripts/v12_freeze_gate_cohort_test.py scripts/freeze_v12_source_snapshot.py scripts/freeze_v12_source_snapshot_resilient.py scripts/v12_universe.py scripts/v12_research_sources.py
+          python -m py_compile \
+            scripts/v12_data_sources.py \
+            scripts/v12_corporate_actions.py \
+            scripts/v12_corporate_actions_test.py \
+            scripts/v12_source_capture.py \
+            scripts/v12_source_capture_methodfix.py \
+            scripts/v12_source_capture_methodfix_test.py \
+            scripts/v12_reference_resilience.py \
+            scripts/v12_reference_resilience_test.py \
+            scripts/v12_freeze_runtime_guard.py \
+            scripts/v12_freeze_runtime_guard_test.py \
+            scripts/v12_freeze_gate_cohort_test.py \
+            scripts/v12_sharded_source_capture.py \
+            scripts/v12_sharded_source_capture_test.py \
+            scripts/freeze_v12_source_snapshot.py \
+            scripts/freeze_v12_source_snapshot_resilient.py \
+            scripts/v12_universe.py \
+            scripts/v12_research_sources.py
           PYTHONPATH=scripts python scripts/v12_corporate_actions_test.py
           PYTHONPATH=scripts python scripts/v12_source_capture_methodfix_test.py
           PYTHONPATH=scripts python scripts/v12_reference_resilience_test.py
           PYTHONPATH=scripts python scripts/v12_freeze_runtime_guard_test.py
           PYTHONPATH=scripts python scripts/v12_freeze_gate_cohort_test.py
-      - name: Capture VNStock-only immutable source with strict continuity salvage
+          PYTHONPATH=scripts python scripts/v12_sharded_source_capture_test.py
+      - name: Bounded universe discovery and anchor preflight; build immutable shard plan
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=20s 8m env PYTHONPATH=scripts \
+            python scripts/v12_sharded_source_capture.py plan \
+              --shards 8 \
+              --out data/v12-source-shard-plan.json \
+            2>&1 | tee data/v12-source-shard-plan.log
+      - name: Upload immutable shard plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-source-shard-plan-${{ github.run_id }}
+          path: |
+            data/v12-source-shard-plan.json
+            data/v12-source-shard-plan.log
+          if-no-files-found: error
+          retention-days: 7
+
+  capture:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-source-shard-plan-${{ github.run_id }}
+          path: data
+      - name: Capture shard with persistent per-5-symbol checkpoint
         shell: bash
         run: |
           set -o pipefail
-          timeout --signal=TERM --kill-after=30s 150m env PYTHONPATH=scripts \
-            python scripts/freeze_v12_source_snapshot_resilient.py 2>&1 \
-            | tee data/v12-source-freeze-live.log
-      - name: Upload diagnostic
+          timeout --signal=TERM --kill-after=20s 50m env PYTHONPATH=scripts \
+            python scripts/v12_sharded_source_capture.py capture-shard \
+              --plan data/v12-source-shard-plan.json \
+              --shard '${{ matrix.shard }}' \
+              --checkpoint-every 5 \
+            2>&1 | tee "data/v12-source-shard-${{ matrix.shard }}.log"
+      - name: Upload shard diagnostic log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-source-shard-${{ matrix.shard }}-diagnostic-${{ github.run_id }}
+          path: |
+            data/v12-source-shard-${{ matrix.shard }}.log
+            data/v12-source-shard-plan.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  assemble:
+    needs: [plan, capture]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Pin immutable assembly source
+        run: echo "V12_FREEZE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-source-shard-plan-${{ github.run_id }}
+          path: data
+      - name: Assemble checkpoints offline and run unchanged frozen-source gates
+        shell: bash
+        run: |
+          set -o pipefail
+          env PYTHONPATH=scripts \
+            python scripts/v12_sharded_source_capture.py assemble \
+              --plan data/v12-source-shard-plan.json \
+            2>&1 | tee data/v12-source-shard-assembly.log
+      - name: Upload source-freeze evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v12-source-freeze-diagnostic-${{ github.run_id }}
           path: |
+            data/v12-source-shard-plan.json
+            data/v12-source-shard-assembly.json
+            data/v12-source-shard-assembly.log
             data/v12-source-freeze-diagnostic.json
-            data/v12-source-freeze-progress.json
-            data/v12-source-freeze-live.log
+            data/v12-frozen-source.json.gz
+            data/v12-frozen-source-manifest.json
           if-no-files-found: warn
           retention-days: 7
       - name: Verify immutable source gates
         run: |
           python - <<'PY'
           import gzip,hashlib,json,pathlib
-          p=pathlib.Path('data/v12-frozen-source.json.gz');m=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'));b=p.read_bytes()
+          p=pathlib.Path('data/v12-frozen-source.json.gz')
+          m=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'))
+          a=json.load(open('data/v12-source-shard-assembly.json',encoding='utf-8'))
+          b=p.read_bytes()
           assert p.stat().st_size>1_000_000 and hashlib.sha256(b).hexdigest()==m['snapshotFileSha256']
-          z=json.loads(gzip.decompress(b).decode());assert z['version']=='VMEWS-FROZEN-SOURCE-12.1.0' and m['version']=='VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0'
+          z=json.loads(gzip.decompress(b).decode())
+          assert z['version']=='VMEWS-FROZEN-SOURCE-12.1.0' and m['version']=='VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0'
+          assert a['status']=='PASS' and a['targetAsOfHint']==a['actualModalAsOf']==m['asOf'],a
           assert m['currentSourceCoverageRatio']>=.98 and m['deepHistory']>=360 and m['modelEligible']>=360,m
           assert m['corporateActionVerifiedRatio']>=.98,m
           assert m.get('crossSourceMADP95') is not None and m['crossSourceMADP95']<=.003,m
           assert int(m['corporateActionGateDenominator'])>=int(m['deepHistory']),m
           assert m['corporateActionGateCohort']=='CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION',m
           assert int(m['vnstockPrimaryAttempted'])/max(1,int(m['currentHOSERequested']))>=.95,m
-          print('V12 VNSTOCK-ONLY SOURCE FREEZE PASS',m['modelEligible'],m['corporateActionVerifiedRatio'],m['crossSourceMADP95'],m['snapshotFileSha256'])
+          sharded=((z.get('universeDiscovery') or {}).get('shardedCapture') or {})
+          assert sharded.get('policyVersion')=='VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0',sharded
+          assert sharded.get('retryScope')=='MISSING_OR_FAILED_SYMBOLS_ONLY',sharded
+          assert sharded.get('successfulSymbolsReusedWithoutRefetch') is True,sharded
+          print('V12 SHARDED RESUMABLE VNSTOCK-ONLY SOURCE FREEZE PASS',m['modelEligible'],m['corporateActionVerifiedRatio'],m['crossSourceMADP95'],m['snapshotFileSha256'])
           PY
-      - name: Publish immutable source snapshot
+      - name: Publish immutable source snapshot and shard provenance
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$V12_FREEZE_SOURCE_SHA"
           git fetch origin forecast-v12-methodfix
           test "$(git rev-parse origin/forecast-v12-methodfix)" = "$V12_FREEZE_SOURCE_SHA" || { echo 'BRANCH ADVANCED; refusing stale snapshot'; exit 1; }
-          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/v12-frozen-source.json.gz data/v12-frozen-source-manifest.json
-          git commit -m 'Publish immutable V12 research source snapshot [no-full]'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            data/v12-frozen-source.json.gz \
+            data/v12-frozen-source-manifest.json \
+            data/v12-source-shard-plan.json \
+            data/v12-source-shard-assembly.json
+          git commit -m 'Publish immutable V12 sharded research source snapshot [no-full]'
           git push origin HEAD:forecast-v12-methodfix
