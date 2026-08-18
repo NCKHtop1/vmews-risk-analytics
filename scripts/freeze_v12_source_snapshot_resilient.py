@@ -1,7 +1,10 @@
 import gzip, json, pathlib, runpy
 import v12_source_capture as capture
+import v12_reference_resilience as resilience
+import v12_universe as universe
 from v12_reference_resilience import install as install_resilience
 from v12_source_capture_methodfix import install as install_continuity
+from v12_freeze_runtime_guard import install as install_runtime_guard
 
 ROOT=pathlib.Path(__file__).resolve().parents[1];DATA=ROOT/'data';SNAP=DATA/'v12-frozen-source.json.gz';MAN=DATA/'v12-frozen-source-manifest.json';DIAG=DATA/'v12-source-freeze-diagnostic.json'
 
@@ -34,8 +37,9 @@ def _postvalidate_original_deep_ca_cohort():
 def main():
     # Install continuity first so the VNStock-only wrapper audits the exact retained suffix.
     install_continuity()
-    audit=install_resilience(capture,max_attempts=2,backoff_seconds=(2.0,))
-    print({'v12ReferenceResilience':audit,'v12ContinuityPolicy':'STRICT_POST_LAST_UNRESOLVED_GT_GUARD_SUFFIX_MIN_ROWS_UNCHANGED'},flush=True)
+    source_audit=install_resilience(capture,max_attempts=2,backoff_seconds=(2.0,))
+    runtime_audit=install_runtime_guard(capture,universe,resilience,repo_root=ROOT)
+    print({'v12ReferenceResilience':source_audit,'v12FreezeRuntimeGuard':runtime_audit,'v12ContinuityPolicy':'STRICT_POST_LAST_UNRESOLVED_GT_GUARD_SUFFIX_MIN_ROWS_UNCHANGED'},flush=True)
     runpy.run_path(str(pathlib.Path(__file__).with_name('freeze_v12_source_snapshot.py')),run_name='__main__')
     _postvalidate_original_deep_ca_cohort()
 
