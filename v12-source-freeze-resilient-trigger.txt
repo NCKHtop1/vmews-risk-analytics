@@ -1,4 +1,5 @@
-resilient-source-freeze-2026-08-18T13:53+07:00
-reason=vnstock-only-no-yahoo-no-global-circuit-per-call-watchdog-preflight;preserve-gates-0.12-0.003-520
-sourceBase=1ae11f2594b9d2969c1daca2feed3f354eae6dce
+resilient-source-freeze-2026-08-18T14:14+07:00
+reason=restart-after-removing-vercel-entirely-cdn-only-vnstock-only-bounded-acquisition;preserve-gates-0.12-0.003-520
+sourceBase=9e8926e3d2d7b11a68a1da5cad424c5afe27664c
 resilience=VMEWS-V12-VNSTOCK-ONLY-RESILIENCE-2.0.0
+releaseTarget=CDN_ONLY
