@@ -2,6 +2,11 @@
 
 No price, return, eligibility threshold, corporate-action rule, or gate is changed. Only
 transient transport/rate-limit failures are retried. Permanent errors remain fail-safe.
+
+Run-local reference circuits prevent a provider-wide outage from consuming the entire
+GitHub Actions time budget symbol-by-symbol. A circuit opens only after two symbols each
+exhaust the normal bounded transient retry policy. A clean second pass resets the
+circuits and retries only symbols that have explicit transient evidence.
 """
 import time
 
@@ -13,6 +18,7 @@ _TRANSIENT_MARKERS = (
 )
 _RATE_LIMIT_MARKERS = ("429", "rate limit", "too many requests", "giới hạn api", "requests/phút")
 _RATE_LIMIT_COOLDOWN_SECONDS = 61.0
+_CIRCUIT_TERMINAL_FAILURES = 2
 
 
 def _transient(value):
@@ -36,6 +42,20 @@ def _audit_has_transient_failure(audit):
     )
 
 
+def _failure_has_transient_failure(failure):
+    return any(
+        attempt.get("ok") is False and _transient(_attempt_error_text(attempt))
+        for attempt in (failure or {}).get("attempts") or []
+    )
+
+
+def _attempts_rate_limited(attempts):
+    return any(
+        attempt.get("ok") is False and _rate_limited(_attempt_error_text(attempt))
+        for attempt in attempts or []
+    )
+
+
 def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
     if getattr(capture, "_V12_REFERENCE_RESILIENCE_INSTALLED", False):
         return getattr(capture, "_V12_REFERENCE_RESILIENCE_AUDIT", {})
@@ -46,6 +66,46 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
     original_unified = getattr(capture, "_capture_unified", None)
     original_provider = getattr(capture, "_capture_provider", None)
     original_build = getattr(capture, "build_source_capture_store", None)
+    original_reset = getattr(capture, "reset_provider_circuits", None)
+
+    component_circuits = {
+        "YAHOO_REFERENCE": {
+            "open": False,
+            "terminalTransientFailures": 0,
+            "reason": None,
+        },
+        "UNIFIED": {
+            "open": False,
+            "terminalTransientFailures": 0,
+            "reason": None,
+        },
+    }
+
+    def reset_component_circuits():
+        for state in component_circuits.values():
+            state["open"] = False
+            state["terminalTransientFailures"] = 0
+            state["reason"] = None
+
+    def reset_all_provider_circuits():
+        if original_reset is not None:
+            original_reset()
+        reset_component_circuits()
+
+    def mark_success(name):
+        state = component_circuits[name]
+        state["open"] = False
+        state["terminalTransientFailures"] = 0
+        state["reason"] = None
+
+    def mark_terminal_transient(name, error):
+        state = component_circuits[name]
+        state["terminalTransientFailures"] = int(
+            state.get("terminalTransientFailures") or 0
+        ) + 1
+        state["reason"] = str(error or "")[:700]
+        if state["terminalTransientFailures"] >= _CIRCUIT_TERMINAL_FAILURES:
+            state["open"] = True
 
     def pause(i, error=""):
         if i >= max_attempts - 1:
@@ -59,18 +119,29 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
             time.sleep(delay)
 
     def yahoo(symbol):
+        state = component_circuits["YAHOO_REFERENCE"]
+        if state.get("open") is True:
+            raise RuntimeError(
+                "YAHOO reference provider_circuit_open after terminal transient "
+                f"failures: {state.get('reason') or 'transient provider outage'}"
+            )
+
         last = None
         for i in range(max_attempts):
             try:
                 rows, audit = original_yahoo(symbol)
+                mark_success("YAHOO_REFERENCE")
                 audit = dict(audit or {})
-                audit["referenceRetryPolicy"] = "TRANSIENT_ONLY_BOUNDED"
+                audit["referenceRetryPolicy"] = "TRANSIENT_ONLY_BOUNDED_WITH_RUN_CIRCUIT"
                 audit["referenceAttempts"] = i + 1
                 return rows, audit
             except BaseException as exc:
                 last = exc
                 error = f"{type(exc).__name__}: {exc}"
-                if not _transient(error) or i + 1 >= max_attempts:
+                if not _transient(error):
+                    raise
+                if i + 1 >= max_attempts:
+                    mark_terminal_transient("YAHOO_REFERENCE", error)
                     raise
                 pause(i, error)
         raise last
@@ -97,19 +168,41 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
         return set(), None
 
     def unified(symbol, years, attempts, stage="VNSTOCK_PRIMARY"):
-        """Retry only terminal transient failures from the same immutable VNStock request."""
+        """Retry transient Unified failures, then short-circuit a provider-wide outage."""
+        state = component_circuits["UNIFIED"]
+        if state.get("open") is True:
+            attempts.append({
+                "stage": stage,
+                "ok": False,
+                "providerCode": "UNIFIED",
+                "reason": "provider_circuit_open",
+                "providerCircuitOpen": True,
+                "error": state.get("reason"),
+            })
+            return None
+
         for i in range(max_attempts):
             before = len(attempts)
             result = original_unified(symbol, years, attempts, stage)
             if result is not None:
+                mark_success("UNIFIED")
                 if i and len(attempts) > before:
                     attempts[-1].update({
-                        "sourceRetryPolicy": "TRANSIENT_ONLY_BOUNDED",
+                        "sourceRetryPolicy": "TRANSIENT_ONLY_BOUNDED_WITH_RUN_CIRCUIT",
                         "sourceAttempts": i + 1,
                     })
                 return result
-            error = attempts[-1].get("error") if len(attempts) > before else ""
-            if not _transient(error) or i + 1 >= max_attempts:
+
+            last_attempt = attempts[-1] if len(attempts) > before else {}
+            error = last_attempt.get("error") or last_attempt.get("reason") or ""
+            if last_attempt.get("reason") == "provider_circuit_open":
+                return None
+            if not _transient(error):
+                return None
+            if i + 1 >= max_attempts:
+                mark_terminal_transient("UNIFIED", error)
+                if component_circuits["UNIFIED"].get("open") is True and attempts:
+                    attempts[-1]["providerCircuitOpen"] = True
                 return None
             pause(i, error)
         return None
@@ -126,26 +219,30 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
                         "sourceAttempts": i + 1,
                     })
                 return result
-            error = attempts[-1].get("error") if len(attempts) > before else ""
+            last_attempt = attempts[-1] if len(attempts) > before else {}
+            error = last_attempt.get("error") or last_attempt.get("reason") or ""
+            if last_attempt.get("reason") == "provider_circuit_open":
+                return None
             if not _rate_limited(error) or i + 1 >= max_attempts:
                 return None
             pause(i, error)
         return None
 
     def build_source_capture_store(symbols):
-        """Give original-deep CA failures one clean second pass only after transient faults.
+        """Cleanly retry only first-pass records with explicit transient evidence.
 
-        A long universe capture can leave a symbol fail-safe because its independent CA/raw
-        corroboration request hit a transient quota/network window even though the price
-        history itself was captured. Re-acquire only those original-deep symbols whose first
-        audit contains an explicit transient failure. The second pass uses the exact same PIT
-        capture function and unchanged gates. It replaces the first pass only if the normal
-        capture returns eligible with CA verified; permanent/data failures remain untouched.
+        Two cases are eligible for one clean second pass with all run-local circuits reset:
+        (1) an original-deep captured symbol whose CA certification failed during a transient
+        reference/provider window; and (2) a symbol that was not captured at all because every
+        available route hit an explicit transient failure. Permanent/data-quality failures are
+        never retried. No price/return/gate is mutated.
         """
         store, audits, failures = original_build(symbols)
         min_rows = int(getattr(capture.base, "MIN_ROWS", 520))
         retry_symbols = []
+        retry_failure_symbols = []
         rate_limited = False
+
         for symbol, rows in sorted(store.items()):
             audit = audits.get(symbol) or {}
             original_rows = int(audit.get("originalRows") or len(rows))
@@ -153,19 +250,54 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
             if original_rows < min_rows or ca_verified or not _audit_has_transient_failure(audit):
                 continue
             retry_symbols.append(symbol)
-            rate_limited = rate_limited or any(
-                attempt.get("ok") is False and _rate_limited(_attempt_error_text(attempt))
-                for attempt in audit.get("attempts") or []
+            rate_limited = rate_limited or _attempts_rate_limited(audit.get("attempts") or [])
+
+        for symbol, failure in sorted(failures.items()):
+            if not _failure_has_transient_failure(failure):
+                continue
+            retry_failure_symbols.append(symbol)
+            rate_limited = rate_limited or _attempts_rate_limited(
+                (failure or {}).get("attempts") or []
             )
 
-        if not retry_symbols:
+        if not retry_symbols and not retry_failure_symbols:
             return store, audits, failures
 
         if rate_limited:
             time.sleep(_RATE_LIMIT_COOLDOWN_SECONDS)
-        reset = getattr(capture, "reset_provider_circuits", None)
-        if reset is not None:
-            reset()
+        reset_all_provider_circuits()
+
+        for symbol in retry_failure_symbols:
+            first_failure = dict(failures.get(symbol) or {})
+            first_attempts = list(first_failure.get("attempts") or [])
+            try:
+                retry_rows, retry_audit = capture.capture_price_history(symbol)
+                retry_audit = dict(retry_audit or {})
+                retry_audit["attempts"] = first_attempts + [{
+                    "stage": "SOURCE_STORE_TRANSIENT_CAPTURE_RECOVERY_BOUNDARY",
+                    "ok": True,
+                    "policy": "TRANSIENT_CAPTURE_FAILURE_CLEAN_SECOND_PASS",
+                }] + list(retry_audit.get("attempts") or [])
+                retry_audit["sourceStoreRecovery"] = {
+                    "policy": "TRANSIENT_CAPTURE_FAILURE_CLEAN_SECOND_PASS",
+                    "attempted": True,
+                    "accepted": True,
+                    "priceOrReturnMutation": False,
+                    "gateMutation": False,
+                }
+                store[symbol] = retry_rows
+                audits[symbol] = retry_audit
+                failures.pop(symbol, None)
+            except BaseException as exc:
+                first_failure["sourceStoreRecovery"] = {
+                    "policy": "TRANSIENT_CAPTURE_FAILURE_CLEAN_SECOND_PASS",
+                    "attempted": True,
+                    "accepted": False,
+                    "error": f"{type(exc).__name__}: {exc}"[:700],
+                    "priceOrReturnMutation": False,
+                    "gateMutation": False,
+                }
+                failures[symbol] = first_failure
 
         for symbol in retry_symbols:
             first_audit = audits.get(symbol) or {}
@@ -219,19 +351,25 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
         capture._capture_unified = unified
     if original_provider is not None:
         capture._capture_provider = provider
+    capture.reset_provider_circuits = reset_all_provider_circuits
     if original_build is not None:
         capture.build_source_capture_store = build_source_capture_store
 
+    capture._V12_REFERENCE_COMPONENT_CIRCUITS = component_circuits
     capture._V12_REFERENCE_RESILIENCE_INSTALLED = True
     capture._V12_REFERENCE_RESILIENCE_AUDIT = {
-        "version": "VMEWS-V12-REFERENCE-RESILIENCE-1.2.0",
+        "version": "VMEWS-V12-REFERENCE-RESILIENCE-1.3.0",
         "maxAttempts": max_attempts,
         "retryScope": "TRANSIENT_TRANSPORT_RATE_LIMIT_ONLY",
         "rateLimitCooldownSeconds": _RATE_LIMIT_COOLDOWN_SECONDS,
+        "componentCircuitTerminalFailures": _CIRCUIT_TERMINAL_FAILURES,
+        "yahooReferenceTransientCircuit": True,
+        "unifiedTransientCircuit": original_unified is not None,
         "vciEventUsesVNStockThrottle": True,
         "unifiedTransientRetry": original_unified is not None,
         "providerRateLimitRetry": original_provider is not None,
         "sourceStoreTransientSecondPass": original_build is not None,
+        "sourceStoreTransientCaptureFailureSecondPass": original_build is not None,
         "priceOrReturnMutation": False,
         "gateMutation": False,
     }
