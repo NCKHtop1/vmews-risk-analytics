@@ -1,0 +1,128 @@
+name: V12 immutable final release hardened
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'v12-release-hardened-trigger.txt'
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-final-release
+  cancel-in-progress: true
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2}
+      - name: Capture validated model/data source SHA
+        run: echo "V12_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install validation dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Compile release governance
+        run: python -m py_compile scripts/v12_frozen_source_probe.py scripts/v12_acceptance.py scripts/v12_benchmark_acceptance.py scripts/v12_active_flow_acceptance.py scripts/v12_sector_acceptance.py scripts/v12_nested_selection_acceptance.py scripts/v12_blind_holdout_acceptance.py scripts/v12_embargo_acceptance.py scripts/v12_provider_outage_smoke.py scripts/v12_seed_provenance_test.py scripts/v12_polish_hash.py scripts/v12_release_provenance.py
+      - name: Re-verify immutable frozen research source
+        run: |
+          PYTHONPATH=scripts python scripts/v12_frozen_source_probe.py
+          python - <<'PY'
+          import json
+          z=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          assert z.get('status')=='PASS',z
+          assert z.get('mode')=='IMMUTABLE_FROZEN_SNAPSHOT',z
+          assert z.get('runtimeNetworkPriceFetch') is False,z
+          assert z.get('runtimeProviderSwitching') is False,z
+          assert all((z.get('sourceGates') or {}).values()),z.get('sourceGates')
+          print('FROZEN SOURCE RELEASE CONTRACT PASS')
+          PY
+      - name: Re-verify all research acceptance gates
+        run: |
+          PYTHONPATH=scripts python scripts/v12_acceptance.py
+          PYTHONPATH=scripts python scripts/v12_benchmark_acceptance.py
+          PYTHONPATH=scripts python scripts/v12_active_flow_acceptance.py
+          PYTHONPATH=scripts python scripts/v12_sector_acceptance.py
+          PYTHONPATH=scripts python scripts/v12_nested_selection_acceptance.py
+          PYTHONPATH=scripts python scripts/v12_blind_holdout_acceptance.py
+          PYTHONPATH=scripts python scripts/v12_embargo_acceptance.py
+      - name: Provider-outage runtime smoke
+        run: PYTHONPATH=scripts python scripts/v12_provider_outage_smoke.py
+      - name: Verify immutable seed provenance
+        run: |
+          PYTHONPATH=scripts python scripts/v12_seed_provenance_test.py
+          python - <<'PY'
+          import json
+          z=json.load(open('data/v12-seed-provenance.json',encoding='utf-8'))
+          assert z.get('status')=='PASS',z
+          print('V12 SEED PROVENANCE PASS',z.get('artifactId'))
+          PY
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium smoke runtime
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install chromium
+      - name: Seal UI polish hash
+        run: python scripts/v12_polish_hash.py
+      - name: Generate immutable source-to-release manifest 1.6
+        env:
+          V12_SOURCE_SHA: ${{ env.V12_SOURCE_SHA }}
+        run: python scripts/v12_release_provenance.py
+      - name: Local sealed browser smoke
+        run: |
+          python -m http.server 8787 --bind 127.0.0.1 >/tmp/v12-http.log 2>&1 &
+          echo $! >/tmp/v12-http.pid
+          for i in $(seq 1 40); do curl -fsS http://127.0.0.1:8787/forecast-final.html >/dev/null && break; sleep 0.25; done
+          node scripts/v12_browser_smoke.mjs http://127.0.0.1:8787/forecast-final.html
+          kill $(cat /tmp/v12-http.pid) || true
+      - name: Commit immutable release manifest with race guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$V12_SOURCE_SHA"
+          git fetch origin forecast-v12-methodfix
+          REMOTE_SHA=$(git rev-parse origin/forecast-v12-methodfix)
+          test "$REMOTE_SHA" = "$V12_SOURCE_SHA" || { echo "BRANCH ADVANCED DURING RELEASE: source=$V12_SOURCE_SHA remote=$REMOTE_SHA"; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-source-probe.json data/forecast-release-v12.json
+          git commit -m 'Seal immutable V12 release manifest 1.6 [v12-release]'
+          RELEASE_SHA=$(git rev-parse HEAD)
+          test "$(git rev-parse ${RELEASE_SHA}^)" = "$V12_SOURCE_SHA"
+          git push origin HEAD:forecast-v12-methodfix
+          echo "V12_RELEASE_SHA=$RELEASE_SHA" >> "$GITHUB_ENV"
+      - name: Verify commit-pinned CDN exact bytes and hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,os,time,urllib.request
+          sha=os.environ['V12_RELEASE_SHA'];base=f'https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics@{sha}/'
+          local=json.load(open('data/forecast-release-v12.json',encoding='utf-8'))
+          def get(path):
+              last=None
+              for i in range(30):
+                  try:
+                      req=urllib.request.Request(base+path+'?v='+sha+f'-{i}',headers={'Cache-Control':'no-cache','Pragma':'no-cache','User-Agent':'vmews-v12-release-verify'})
+                      with urllib.request.urlopen(req,timeout=30) as r:
+                          b=r.read()
+                      if b:return b
+                  except Exception as e:last=e
+                  time.sleep(min(15,1+i))
+              raise RuntimeError(f'CDN unavailable {path}: {last}')
+          for path,meta in local['files'].items():
+              b=get(path);h=hashlib.sha256(b).hexdigest()
+              assert len(b)==meta['bytes'],(path,len(b),meta['bytes'])
+              assert h==meta['sha256'],(path,h,meta['sha256'])
+          rb=get('data/forecast-release-v12.json')
+          assert json.loads(rb)==local
+          print('PINNED CDN EXACT-BYTE PASS',sha,len(local['files']))
+          PY
+      - name: Pinned CDN desktop/mobile Chromium smoke
+        run: node scripts/v12_browser_smoke.mjs "https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics@${V12_RELEASE_SHA}/forecast-final.html"
+      - name: Publish exact final identity
+        run: |
+          echo "FINAL_RELEASE_SHA=${V12_RELEASE_SHA}"
+          echo "FINAL_CDN=https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics@${V12_RELEASE_SHA}/forecast-final.html"
