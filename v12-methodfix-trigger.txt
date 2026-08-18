@@ -1,5 +1,5 @@
-trigger=2026-08-17T15:22:30Z
-source_parent=23c5b6464a581a5a3c6eca0696e1d08fa5f9d5db
-freeze_run=32038400524
+trigger=2026-08-18T08:30:00+07:00
+source_parent=52646d06c37c34eafb6b04e4095dc16088cda8be
+source_certification=VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1
 snapshot_sha256=cce60b86c61df54f4ad8dba9ff496fc28156f8b9b89dc1be20f14c5db1957b0f
-reason=nine-phase-validation-on-immutable-frozen-source
+reason=nine-phase-validation-on-offline-certified-immutable-frozen-source-no-network-no-gate-mutation
