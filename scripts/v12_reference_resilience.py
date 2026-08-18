@@ -1,24 +1,29 @@
-"""Bounded resilience for reference/source acquisition used during V12 source freeze.
+"""VNStock-only bounded acquisition for the V12 source freeze.
 
-No price, return, eligibility threshold, corporate-action rule, or gate is changed. Only
-transient transport/rate-limit failures are retried. Permanent errors remain fail-safe.
+Runtime source policy:
+- all network price/reference calls go through vnstock;
+- Yahoo is disabled for this workflow;
+- no run-global provider circuit breaker is used;
+- each external call is individually time-boxed on Linux;
+- transient failures get only bounded local retries;
+- one clean second pass is allowed only for records with explicit transient evidence.
 
-Run-local reference circuits prevent a provider-wide outage from consuming the entire
-GitHub Actions time budget symbol-by-symbol. A circuit opens only after two symbols each
-exhaust the normal bounded transient retry policy. A clean second pass resets the
-circuits and retries only symbols that have explicit transient evidence.
+No price, return, eligibility threshold, corporate-action rule, or scientific gate is relaxed.
 """
+import os
+import signal
 import time
 
+
 _TRANSIENT_MARKERS = (
-    "timeout", "timed out", "429", "rate limit", "too many requests", "502", "503",
-    "504", "connection reset", "connectionpool", "max retries exceeded",
-    "temporary failure", "name resolution", "network is unreachable",
-    "remote disconnected",
+    "timeout", "timed out", "network_call_timeout", "429", "rate limit",
+    "too many requests", "502", "503", "504", "connection reset",
+    "connectionpool", "max retries exceeded", "temporary failure",
+    "name resolution", "network is unreachable", "remote disconnected",
 )
 _RATE_LIMIT_MARKERS = ("429", "rate limit", "too many requests", "giới hạn api", "requests/phút")
-_RATE_LIMIT_COOLDOWN_SECONDS = 61.0
-_CIRCUIT_TERMINAL_FAILURES = 2
+_DEFAULT_NETWORK_CALL_TIMEOUT_SECONDS = 25.0
+_SECONDARY_AUDIT_MODULUS = 5
 
 
 def _transient(value):
@@ -49,111 +54,205 @@ def _failure_has_transient_failure(failure):
     )
 
 
-def _attempts_rate_limited(attempts):
-    return any(
-        attempt.get("ok") is False and _rate_limited(_attempt_error_text(attempt))
-        for attempt in attempts or []
-    )
+def _network_timeout_seconds():
+    try:
+        value = float(os.environ.get("V12_NETWORK_CALL_TIMEOUT", _DEFAULT_NETWORK_CALL_TIMEOUT_SECONDS))
+        return max(0.05, value)
+    except Exception:
+        return _DEFAULT_NETWORK_CALL_TIMEOUT_SECONDS
 
 
-def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
+def _call_with_timeout(label, fn, *args, **kwargs):
+    """Hard per-call watchdog for the Linux GitHub runner; direct call elsewhere."""
+    seconds = _network_timeout_seconds()
+    if not hasattr(signal, "SIGALRM") or not hasattr(signal, "setitimer"):
+        return fn(*args, **kwargs)
+
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_timer = signal.getitimer(signal.ITIMER_REAL)
+
+    def _alarm(_signum, _frame):
+        raise TimeoutError(f"{label}: network_call_timeout>{seconds:.1f}s")
+
+    signal.signal(signal.SIGALRM, _alarm)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    try:
+        return fn(*args, **kwargs)
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+        if previous_timer and previous_timer[0] > 0:
+            signal.setitimer(signal.ITIMER_REAL, *previous_timer)
+
+
+def _secondary_audit_required(symbol):
+    text = str(symbol or "").upper()
+    checksum = sum((i + 1) * ord(ch) for i, ch in enumerate(text))
+    return checksum % _SECONDARY_AUDIT_MODULUS == 0
+
+
+def install(capture, max_attempts=2, backoff_seconds=(2.0,)):
     if getattr(capture, "_V12_REFERENCE_RESILIENCE_INSTALLED", False):
         return getattr(capture, "_V12_REFERENCE_RESILIENCE_AUDIT", {})
 
     max_attempts = max(1, int(max_attempts))
-    original_yahoo = capture.base.yahoo_history
+    original_candidate = capture._candidate_audit
     original_vci = capture._vci_corporate_action_dates
-    original_unified = getattr(capture, "_capture_unified", None)
-    original_provider = getattr(capture, "_capture_provider", None)
-    original_build = getattr(capture, "build_source_capture_store", None)
-    original_reset = getattr(capture, "reset_provider_circuits", None)
-
-    component_circuits = {
-        "YAHOO_REFERENCE": {
-            "open": False,
-            "terminalTransientFailures": 0,
-            "reason": None,
-        },
-        "UNIFIED": {
-            "open": False,
-            "terminalTransientFailures": 0,
-            "reason": None,
-        },
-    }
-
-    def reset_component_circuits():
-        for state in component_circuits.values():
-            state["open"] = False
-            state["terminalTransientFailures"] = 0
-            state["reason"] = None
-
-    def reset_all_provider_circuits():
-        if original_reset is not None:
-            original_reset()
-        reset_component_circuits()
-
-    def mark_success(name):
-        state = component_circuits[name]
-        state["open"] = False
-        state["terminalTransientFailures"] = 0
-        state["reason"] = None
-
-    def mark_terminal_transient(name, error):
-        state = component_circuits[name]
-        state["terminalTransientFailures"] = int(
-            state.get("terminalTransientFailures") or 0
-        ) + 1
-        state["reason"] = str(error or "")[:700]
-        if state["terminalTransientFailures"] >= _CIRCUIT_TERMINAL_FAILURES:
-            state["open"] = True
+    original_unified_history = capture._unified_history
+    original_build = capture.build_source_capture_store
+    original_capture_price_history = capture.capture_price_history
 
     def pause(i, error=""):
         if i >= max_attempts - 1:
             return
-        if _rate_limited(error):
-            time.sleep(_RATE_LIMIT_COOLDOWN_SECONDS)
-            return
         seq = tuple(backoff_seconds or ())
         delay = float(seq[min(i, len(seq) - 1)]) if seq else 0.0
+        if _rate_limited(error):
+            delay = max(delay, 8.0)
         if delay > 0:
             time.sleep(delay)
 
-    def yahoo(symbol):
-        state = component_circuits["YAHOO_REFERENCE"]
-        if state.get("open") is True:
-            raise RuntimeError(
-                "YAHOO reference provider_circuit_open after terminal transient "
-                f"failures: {state.get('reason') or 'transient provider outage'}"
-            )
+    def yahoo_disabled(symbol):
+        return [], {
+            "source": "DISABLED",
+            "provider": "NONE",
+            "rows": 0,
+            "networkCall": False,
+            "policy": "VNSTOCK_ONLY_NO_YAHOO_RUNTIME_REFERENCE",
+            "symbol": symbol,
+        }
 
-        last = None
+    def candidate(
+        symbol,
+        rows,
+        source_audit,
+        yahoo_rows,
+        yahoo_audit,
+        *,
+        raw_reference_rows=None,
+        raw_reference_audit=None,
+        known_ca_dates=None,
+        event_reference_audit=None,
+    ):
+        adjusted, audit = original_candidate(
+            symbol,
+            rows,
+            source_audit,
+            [],
+            yahoo_disabled(symbol)[1],
+            raw_reference_rows=raw_reference_rows or [],
+            raw_reference_audit=raw_reference_audit,
+            known_ca_dates=known_ca_dates or set(),
+            event_reference_audit=event_reference_audit,
+        )
+        if raw_reference_rows:
+            mad, common = capture.base._cross_source_mad(adjusted, raw_reference_rows)
+            audit["crossSourceReturnMAD"] = mad
+            audit["crossSourceCommonDates"] = common
+            audit["crossSourceReferencePolicy"] = "VNSTOCK_RAW_SECONDARY_ROUTE_ONLY"
+            if mad is not None and mad > capture.base.CROSS_SOURCE_MAD_LIMIT:
+                audit["eligible"] = False
+                reasons = list(audit.get("ineligibleReasons") or [])
+                reason = f"cross_source_mad:{float(mad):.10f}>{capture.base.CROSS_SOURCE_MAD_LIMIT:.10f}"
+                if reason not in reasons:
+                    reasons.append(reason)
+                audit["ineligibleReasons"] = reasons
+        else:
+            audit["crossSourceReferencePolicy"] = "VNSTOCK_RAW_SECONDARY_NOT_REQUIRED_FOR_THIS_SYMBOL"
+        audit["adjustmentReference"] = yahoo_disabled(symbol)[1]
+        return adjusted, audit
+
+    def unified(symbol, years, attempts, stage="VNSTOCK_PRIMARY"):
         for i in range(max_attempts):
             try:
-                rows, audit = original_yahoo(symbol)
-                mark_success("YAHOO_REFERENCE")
-                audit = dict(audit or {})
-                audit["referenceRetryPolicy"] = "TRANSIENT_ONLY_BOUNDED_WITH_RUN_CIRCUIT"
-                audit["referenceAttempts"] = i + 1
+                rows, audit = _call_with_timeout(
+                    f"{symbol}:{stage}:UNIFIED",
+                    original_unified_history,
+                    symbol,
+                    years,
+                )
+                attempts.append({
+                    "stage": stage,
+                    "ok": True,
+                    **audit,
+                    "sourceRetryPolicy": "PER_CALL_WATCHDOG_BOUNDED_LOCAL_RETRY",
+                    "sourceAttempts": i + 1,
+                })
                 return rows, audit
             except BaseException as exc:
-                last = exc
-                error = f"{type(exc).__name__}: {exc}"
-                if not _transient(error):
-                    raise
-                if i + 1 >= max_attempts:
-                    mark_terminal_transient("YAHOO_REFERENCE", error)
-                    raise
+                error = f"{type(exc).__name__}: {exc}"[:700]
+                attempts.append({
+                    "stage": stage,
+                    "ok": False,
+                    "providerCode": "UNIFIED",
+                    "reason": "transient_provider_error" if _transient(error) else "provider_error",
+                    "error": error,
+                    "networkCallTimeoutSeconds": _network_timeout_seconds(),
+                })
+                if not _transient(error) or i + 1 >= max_attempts:
+                    return None
                 pause(i, error)
-        raise last
+        return None
+
+    def provider(symbol, source, start, end, attempts, stage):
+        for i in range(max_attempts):
+            try:
+                rows, audit = _call_with_timeout(
+                    f"{symbol}:{stage}:{source}",
+                    capture.base._provider_history,
+                    symbol,
+                    source,
+                    start,
+                    end,
+                )
+                attempts.append({
+                    "stage": stage,
+                    "ok": True,
+                    **audit,
+                    "sourceRetryPolicy": "PER_CALL_WATCHDOG_BOUNDED_LOCAL_RETRY",
+                    "sourceAttempts": i + 1,
+                })
+                return rows, audit
+            except BaseException as exc:
+                error = f"{type(exc).__name__}: {exc}"[:700]
+                attempts.append({
+                    "stage": stage,
+                    "ok": False,
+                    "providerCode": source,
+                    "reason": "transient_provider_error" if _transient(error) else "provider_error",
+                    "error": error,
+                    "networkCallTimeoutSeconds": _network_timeout_seconds(),
+                })
+                if not _transient(error) or i + 1 >= max_attempts:
+                    return None
+                pause(i, error)
+        return None
 
     def vci_events(symbol, attempts):
         for i in range(max_attempts):
-            capture.base._throttle_vnstock()
             before = len(attempts)
-            dates, audit = original_vci(symbol, attempts)
+            try:
+                result = _call_with_timeout(
+                    f"{symbol}:VNSTOCK_CA_EVENTS",
+                    original_vci,
+                    symbol,
+                    attempts,
+                )
+                dates, audit = result
+            except BaseException as exc:
+                error = f"{type(exc).__name__}: {exc}"[:700]
+                attempts.append({
+                    "stage": "VCI_CORPORATE_ACTION_EVENT_REFERENCE",
+                    "ok": False,
+                    "reason": "transient_provider_error" if _transient(error) else "provider_error",
+                    "error": error,
+                    "networkCallTimeoutSeconds": _network_timeout_seconds(),
+                })
+                dates, audit = set(), None
+
             if audit is not None:
                 audit = dict(audit)
-                audit["referenceRetryPolicy"] = "VNSTOCK_THROTTLED_TRANSIENT_ONLY_BOUNDED"
+                audit["referenceRetryPolicy"] = "VNSTOCK_ONLY_PER_CALL_WATCHDOG_BOUNDED_LOCAL_RETRY"
                 audit["referenceAttempts"] = i + 1
                 if len(attempts) > before and attempts[-1].get("ok") is True:
                     attempts[-1].update({
@@ -161,117 +260,122 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
                         "referenceAttempts": i + 1,
                     })
                 return dates, audit
+
             error = attempts[-1].get("error") if len(attempts) > before else ""
             if not _transient(error) or i + 1 >= max_attempts:
                 return dates, audit
             pause(i, error)
         return set(), None
 
-    def unified(symbol, years, attempts, stage="VNSTOCK_PRIMARY"):
-        """Retry transient Unified failures, then short-circuit a provider-wide outage."""
-        state = component_circuits["UNIFIED"]
-        if state.get("open") is True:
-            attempts.append({
-                "stage": stage,
-                "ok": False,
-                "providerCode": "UNIFIED",
-                "reason": "provider_circuit_open",
-                "providerCircuitOpen": True,
-                "error": state.get("reason"),
-            })
-            return None
+    def capture_price_history(symbol, years=8):
+        started = time.monotonic()
+        print({
+            "v12SourceSymbolStart": symbol,
+            "networkPolicy": "VNSTOCK_ONLY_NO_YAHOO_NO_GLOBAL_CIRCUIT",
+        }, flush=True)
+        rows, audit = original_capture_price_history(symbol, years=years)
 
-        for i in range(max_attempts):
-            before = len(attempts)
-            result = original_unified(symbol, years, attempts, stage)
-            if result is not None:
-                mark_success("UNIFIED")
-                if i and len(attempts) > before:
-                    attempts[-1].update({
-                        "sourceRetryPolicy": "TRANSIENT_ONLY_BOUNDED_WITH_RUN_CIRCUIT",
-                        "sourceAttempts": i + 1,
-                    })
-                return result
+        if (
+            audit.get("eligible") is True
+            and audit.get("crossSourceReturnMAD") is None
+            and _secondary_audit_required(symbol)
+        ):
+            start, end = capture.base._history_window(years)
+            attempts = list(audit.get("attempts") or [])
+            ref = provider(symbol, "VCI", start, end, attempts, "VNSTOCK_VCI_SECONDARY_AUDIT")
+            if ref is None:
+                ref = provider(symbol, "KBS", start, end, attempts, "VNSTOCK_KBS_SECONDARY_AUDIT")
+            if ref is not None:
+                ref_rows, ref_audit = ref
+                mad, common = capture.base._cross_source_mad(rows, ref_rows)
+                audit["crossSourceReturnMAD"] = mad
+                audit["crossSourceCommonDates"] = common
+                audit["secondaryRawReference"] = ref_audit
+                audit["crossSourceReferencePolicy"] = "DETERMINISTIC_VNSTOCK_SECONDARY_AUDIT_SAMPLE"
+                if mad is not None and mad > capture.base.CROSS_SOURCE_MAD_LIMIT:
+                    audit["eligible"] = False
+                    reasons = list(audit.get("ineligibleReasons") or [])
+                    reason = f"cross_source_mad:{float(mad):.10f}>{capture.base.CROSS_SOURCE_MAD_LIMIT:.10f}"
+                    if reason not in reasons:
+                        reasons.append(reason)
+                    audit["ineligibleReasons"] = reasons
+            audit["attempts"] = attempts
 
-            last_attempt = attempts[-1] if len(attempts) > before else {}
-            error = last_attempt.get("error") or last_attempt.get("reason") or ""
-            if last_attempt.get("reason") == "provider_circuit_open":
-                return None
-            if not _transient(error):
-                return None
-            if i + 1 >= max_attempts:
-                mark_terminal_transient("UNIFIED", error)
-                if component_circuits["UNIFIED"].get("open") is True and attempts:
-                    attempts[-1]["providerCircuitOpen"] = True
-                return None
-            pause(i, error)
-        return None
-
-    def provider(symbol, source, start, end, attempts, stage):
-        """Retry provider recovery only for quota-window failures, never for bad data."""
-        for i in range(max_attempts):
-            before = len(attempts)
-            result = original_provider(symbol, source, start, end, attempts, stage)
-            if result is not None:
-                if i and len(attempts) > before:
-                    attempts[-1].update({
-                        "sourceRetryPolicy": "RATE_LIMIT_ONLY_BOUNDED",
-                        "sourceAttempts": i + 1,
-                    })
-                return result
-            last_attempt = attempts[-1] if len(attempts) > before else {}
-            error = last_attempt.get("error") or last_attempt.get("reason") or ""
-            if last_attempt.get("reason") == "provider_circuit_open":
-                return None
-            if not _rate_limited(error) or i + 1 >= max_attempts:
-                return None
-            pause(i, error)
-        return None
+        audit["runtimeSourcePolicy"] = "VNSTOCK_ONLY_NO_YAHOO_NO_GLOBAL_CIRCUIT"
+        audit["networkCallTimeoutSeconds"] = _network_timeout_seconds()
+        print({
+            "v12SourceSymbolDone": symbol,
+            "elapsedSeconds": round(time.monotonic() - started, 3),
+            "eligible": audit.get("eligible"),
+            "route": audit.get("route"),
+            "crossSourceMAD": audit.get("crossSourceReturnMAD"),
+        }, flush=True)
+        return rows, audit
 
     def build_source_capture_store(symbols):
-        """Cleanly retry only first-pass records with explicit transient evidence.
+        anchors = [s for s in ("FPT", "VCB", "HPG") if s in set(symbols)]
+        preflight = {}
+        success = 0
+        start, end = capture.base._history_window(8)
+        for symbol in anchors:
+            attempts = []
+            route = unified(symbol, 8, attempts, "VNSTOCK_PREFLIGHT_UNIFIED")
+            if route is None:
+                route = provider(symbol, "VCI", start, end, attempts, "VNSTOCK_PREFLIGHT_VCI")
+            if route is None:
+                route = provider(symbol, "KBS", start, end, attempts, "VNSTOCK_PREFLIGHT_KBS")
+            ok = route is not None
+            success += int(ok)
+            preflight[symbol] = {"ok": ok, "attempts": attempts}
+        if anchors and success < min(2, len(anchors)):
+            print({
+                "v12VNStockPreflight": "FAIL",
+                "success": success,
+                "required": min(2, len(anchors)),
+                "anchors": preflight,
+            }, flush=True)
+            return {}, {}, {
+                "__VNSTOCK_PREFLIGHT__": {
+                    "error": f"VNStock preflight failed: {success}/{len(anchors)} anchor symbols reachable",
+                    "attempts": [
+                        x for item in preflight.values() for x in item.get("attempts", [])
+                    ],
+                    "anchors": preflight,
+                }
+            }
+        print({
+            "v12VNStockPreflight": "PASS",
+            "success": success,
+            "anchors": anchors,
+        }, flush=True)
 
-        Two cases are eligible for one clean second pass with all run-local circuits reset:
-        (1) an original-deep captured symbol whose CA certification failed during a transient
-        reference/provider window; and (2) a symbol that was not captured at all because every
-        available route hit an explicit transient failure. Permanent/data-quality failures are
-        never retried. No price/return/gate is mutated.
-        """
         store, audits, failures = original_build(symbols)
-        min_rows = int(getattr(capture.base, "MIN_ROWS", 520))
+
         retry_symbols = []
         retry_failure_symbols = []
-        rate_limited = False
-
+        min_rows = int(getattr(capture.base, "MIN_ROWS", 520))
         for symbol, rows in sorted(store.items()):
             audit = audits.get(symbol) or {}
             original_rows = int(audit.get("originalRows") or len(rows))
             ca_verified = (audit.get("corporateAction") or {}).get("verified") is True
-            if original_rows < min_rows or ca_verified or not _audit_has_transient_failure(audit):
-                continue
-            retry_symbols.append(symbol)
-            rate_limited = rate_limited or _attempts_rate_limited(audit.get("attempts") or [])
-
+            if original_rows >= min_rows and not ca_verified and _audit_has_transient_failure(audit):
+                retry_symbols.append(symbol)
         for symbol, failure in sorted(failures.items()):
-            if not _failure_has_transient_failure(failure):
-                continue
-            retry_failure_symbols.append(symbol)
-            rate_limited = rate_limited or _attempts_rate_limited(
-                (failure or {}).get("attempts") or []
-            )
+            if _failure_has_transient_failure(failure):
+                retry_failure_symbols.append(symbol)
 
-        if not retry_symbols and not retry_failure_symbols:
-            return store, audits, failures
-
-        if rate_limited:
-            time.sleep(_RATE_LIMIT_COOLDOWN_SECONDS)
-        reset_all_provider_circuits()
+        if retry_symbols or retry_failure_symbols:
+            print({
+                "v12SourceCleanSecondPass": True,
+                "capturedRetry": retry_symbols,
+                "captureFailureRetry": retry_failure_symbols,
+            }, flush=True)
 
         for symbol in retry_failure_symbols:
             first_failure = dict(failures.get(symbol) or {})
             first_attempts = list(first_failure.get("attempts") or [])
             try:
-                retry_rows, retry_audit = capture.capture_price_history(symbol)
+                retry_rows, retry_audit = capture_price_history(symbol)
                 retry_audit = dict(retry_audit or {})
                 retry_audit["attempts"] = first_attempts + [{
                     "stage": "SOURCE_STORE_TRANSIENT_CAPTURE_RECOVERY_BOUNDARY",
@@ -300,10 +404,10 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
                 failures[symbol] = first_failure
 
         for symbol in retry_symbols:
-            first_audit = audits.get(symbol) or {}
+            first_audit = dict(audits.get(symbol) or {})
             first_attempts = list(first_audit.get("attempts") or [])
             try:
-                retry_rows, retry_audit = capture.capture_price_history(symbol)
+                retry_rows, retry_audit = capture_price_history(symbol)
                 retry_audit = dict(retry_audit or {})
                 retry_ca = (retry_audit.get("corporateAction") or {}).get("verified") is True
                 retry_eligible = retry_audit.get("eligible") is True
@@ -325,14 +429,12 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
                     audits[symbol] = retry_audit
                     failures.pop(symbol, None)
                 else:
-                    first_audit = dict(first_audit)
                     first_audit["sourceStoreRecovery"] = {
                         **recovery,
                         "retryIneligibleReasons": retry_audit.get("ineligibleReasons"),
                     }
                     audits[symbol] = first_audit
             except BaseException as exc:
-                first_audit = dict(first_audit)
                 first_audit["sourceStoreRecovery"] = {
                     "policy": "TRANSIENT_ONLY_CLEAN_SECOND_PASS",
                     "attempted": True,
@@ -345,31 +447,28 @@ def install(capture, max_attempts=3, backoff_seconds=(1.0, 2.0)):
 
         return store, audits, failures
 
-    capture.base.yahoo_history = yahoo
+    capture.base.yahoo_history = yahoo_disabled
+    capture._candidate_audit = candidate
+    capture._capture_unified = unified
+    capture._capture_provider = provider
     capture._vci_corporate_action_dates = vci_events
-    if original_unified is not None:
-        capture._capture_unified = unified
-    if original_provider is not None:
-        capture._capture_provider = provider
-    capture.reset_provider_circuits = reset_all_provider_circuits
-    if original_build is not None:
-        capture.build_source_capture_store = build_source_capture_store
+    capture.capture_price_history = capture_price_history
+    capture.build_source_capture_store = build_source_capture_store
+    capture.reset_provider_circuits = lambda: None
 
-    capture._V12_REFERENCE_COMPONENT_CIRCUITS = component_circuits
     capture._V12_REFERENCE_RESILIENCE_INSTALLED = True
     capture._V12_REFERENCE_RESILIENCE_AUDIT = {
-        "version": "VMEWS-V12-REFERENCE-RESILIENCE-1.3.0",
-        "maxAttempts": max_attempts,
-        "retryScope": "TRANSIENT_TRANSPORT_RATE_LIMIT_ONLY",
-        "rateLimitCooldownSeconds": _RATE_LIMIT_COOLDOWN_SECONDS,
-        "componentCircuitTerminalFailures": _CIRCUIT_TERMINAL_FAILURES,
-        "yahooReferenceTransientCircuit": True,
-        "unifiedTransientCircuit": original_unified is not None,
-        "vciEventUsesVNStockThrottle": True,
-        "unifiedTransientRetry": original_unified is not None,
-        "providerRateLimitRetry": original_provider is not None,
+        "version": "VMEWS-V12-VNSTOCK-ONLY-RESILIENCE-2.0.0",
+        "runtimeNetworkSource": "VNSTOCK_ONLY",
+        "yahooRuntimeNetworkCall": False,
+        "globalCircuitBreaker": False,
+        "perCallWatchdog": True,
+        "networkCallTimeoutSeconds": _network_timeout_seconds(),
+        "maxAttemptsPerCall": max_attempts,
+        "retryScope": "TRANSIENT_ONLY_BOUNDED_LOCAL",
+        "preflightAnchors": ["FPT", "VCB", "HPG"],
+        "deterministicSecondaryAuditModulus": _SECONDARY_AUDIT_MODULUS,
         "sourceStoreTransientSecondPass": original_build is not None,
-        "sourceStoreTransientCaptureFailureSecondPass": original_build is not None,
         "priceOrReturnMutation": False,
         "gateMutation": False,
     }
