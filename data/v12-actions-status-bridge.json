@@ -321,25 +321,25 @@
   },
   "v12-ca-19-quota-probe.yml": [
     {
-      "id": 32084285437,
+      "id": 32085055032,
       "name": "V12 CA 19 quota-safe probe",
-      "run_number": 2,
+      "run_number": 3,
       "run_attempt": 1,
       "event": "push",
       "status": "in_progress",
       "conclusion": null,
-      "head_sha": "10f0ab74bd778e1b2fa9dc1efdc3b3ff0de836d8",
-      "created_at": "2026-08-18T00:22:53Z",
-      "run_started_at": "2026-08-18T00:22:53Z",
-      "updated_at": "2026-08-18T00:23:14Z",
-      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32084285437",
+      "head_sha": "39be067f5bb9f72c075f0a9db2359f56cf018b2d",
+      "created_at": "2026-08-18T00:34:48Z",
+      "run_started_at": "2026-08-18T00:34:48Z",
+      "updated_at": "2026-08-18T00:34:52Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32085055032",
       "jobs": [
         {
-          "id": 95553508468,
+          "id": 95555753285,
           "name": "probe",
           "status": "in_progress",
           "conclusion": null,
-          "started_at": "2026-08-18T00:23:13Z",
+          "started_at": "2026-08-18T00:34:51Z",
           "completed_at": null,
           "steps": [
             {
@@ -407,6 +407,104 @@
               "status": "pending",
               "conclusion": null,
               "number": 18
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 32084285437,
+      "name": "V12 CA 19 quota-safe probe",
+      "run_number": 2,
+      "run_attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "10f0ab74bd778e1b2fa9dc1efdc3b3ff0de836d8",
+      "created_at": "2026-08-18T00:22:53Z",
+      "run_started_at": "2026-08-18T00:22:53Z",
+      "updated_at": "2026-08-18T00:32:03Z",
+      "html_url": "https://github.com/NCKHtop1/vmews-risk-analytics/actions/runs/32084285437",
+      "jobs": [
+        {
+          "id": 95553508468,
+          "name": "probe",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-08-18T00:23:13Z",
+          "completed_at": "2026-08-18T00:32:02Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run pip install --disable-pip-version-check -q -r requirements-v12.txt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Compile exact production capture and quota probe",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Preserve unchanged CA regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Probe 19 unresolved original-deep symbols",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Persist exact diagnostic on staging branch",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 8
+            },
+            {
+              "name": "Upload exact per-symbol evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
             }
           ]
         }
