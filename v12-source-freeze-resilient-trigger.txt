@@ -1,5 +1,6 @@
-resilient-source-freeze-2026-08-18T14:14+07:00
-reason=restart-after-removing-vercel-entirely-cdn-only-vnstock-only-bounded-acquisition;preserve-gates-0.12-0.003-520
-sourceBase=9e8926e3d2d7b11a68a1da5cad424c5afe27664c
+resilient-source-freeze-2026-08-18T17:28:25+07:00
+reason=fix-timeout-root-causes-unbounded-universe-discovery-and-full-symbol-second-pass;current-hose-first;deadline-aware-watchdog;per-symbol-progress;no-gate-lowering
+sourceBase=d1603f7b77a0b0c198ae4762fc3acadff1e6365a
 resilience=VMEWS-V12-VNSTOCK-ONLY-RESILIENCE-2.0.0
+runtimeGuard=VMEWS-V12-FREEZE-RUNTIME-GUARD-1.0.0
 releaseTarget=CDN_ONLY
