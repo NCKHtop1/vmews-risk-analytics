@@ -1,6 +1,10 @@
-resilient-source-freeze-2026-08-18T17:28:25+07:00
-reason=fix-timeout-root-causes-unbounded-universe-discovery-and-full-symbol-second-pass;current-hose-first;deadline-aware-watchdog;per-symbol-progress;no-gate-lowering
-sourceBase=d1603f7b77a0b0c198ae4762fc3acadff1e6365a
+resumable-sharded-source-freeze-2026-08-18T20:53+07:00
+reason=replace-monolithic-serial-freeze-with-8-shard-resumable-checkpoints;fix-postfreeze-ca-minrows-reference;dynamic-vci-event-window;live-checkpoint-manifests;retry-missing-only;unchanged-scientific-gates
+sourceBase=e14dbfbc240f06ee892dfa8633a2402d07fc4b91
+sourcePolicy=VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0
 resilience=VMEWS-V12-VNSTOCK-ONLY-RESILIENCE-2.0.0
 runtimeGuard=VMEWS-V12-FREEZE-RUNTIME-GUARD-1.0.0
+shards=8
+maxParallel=4
+checkpointEverySymbols=5
 releaseTarget=CDN_ONLY
