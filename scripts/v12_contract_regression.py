@@ -74,16 +74,21 @@ assert '_FITLOCK_POWERS=(1.0,1.5,2.0,3.0)' in fitlock
 assert "validation=_nested_eval(cy[iv],predV,cd[iv],h,bootstrap=True)" in fitlock
 assert "if validation.get('preblindConfirmed') is True" in fitlock
 
-# V5/V6/V7 strengthen only the pre-blind point mapping. V5 expands monotone tail concentration
-# and selects by whole-date stability; V6 selects scale inside the existing one-SE L1/magnitude
-# admissible set by fit-date stability; V7 is a label-free same-origin score-dispersion challenger
-# invoked only after V6 abstains. Independent 85-90 can only confirm/reject; sealed use remains 0.
+# V5/V8/V7 strengthen only the pre-blind point mapping. V5 expands monotone tail concentration
+# and selects by whole-date stability. V8 keeps the same one-SE L1 and robust magnitude envelope
+# but requires each scale to have a positive moving-origin-date-block lower-90 MAE edge on the
+# 80-85% fit block, and ABSTAINS rather than falling back to a near-zero scale. V7 is a label-free
+# score-state challenger invoked only after the fit-locked path abstains. Early 85-90 only confirms
+# or rejects an already locked model; sealed use remains exactly zero.
 tail_v5=Path('scripts/v12_train_parts/01eoc_fit_locked_tail_stability.pyinc').read_text(encoding='utf-8')
 for token in ('_FITLOCK_CORE_POWERS','(4.0,6.0)','FIT_80_85_ONE_SE_THEN_ORIGIN_DATE_BLOCK_LOWER90','sealedLabelsUsed'):
     assert token in tail_v5,('V5 tail stability token',token)
-scale_v6=Path('scripts/v12_train_parts/01eod_fit_locked_scale_stability.pyinc').read_text(encoding='utf-8')
-for token in ('80-85% ONLY','WHOLE_ORIGIN_DATE_MAE_STABILITY','independentValidationUsedForScaleSelection','sealedLabelsUsed'):
-    assert token in scale_v6,('V6 scale stability token',token)
+scale_v8=Path('scripts/v12_train_parts/01eod_fit_locked_scale_stability.pyinc').read_text(encoding='utf-8')
+for token in ('80-85% ONLY','FIT_LOCKED_SCALE_BLOCK_BOOTSTRAP_LCB_V8','dailyLower90','dailyBootstrap90','independentValidationUsedForScaleSelection','ABSTAIN','sealedLabelsUsed'):
+    assert token in scale_v8,('V8 scale bootstrap-LCB token',token)
+assert "if z['dailyLower90']>0" in scale_v8
+assert "positive or at_or_above" not in scale_v8
+assert "90-100% is never supplied" in scale_v8
 state_v7=Path('scripts/v12_train_parts/01eoe_fit_locked_score_state.pyinc').read_text(encoding='utf-8')
 for token in ('SAME_ORIGIN_RAW_META_SCORE_IQR','_FITLOCK_STATE_GAMMAS=(0.0,0.5,1.0)','futureLabelRequirement','V6 point family already independently confirmed','preblindConfirmed','sealedLabelsUsed'):
     assert token in state_v7,('V7 score-state token',token)
@@ -106,4 +111,4 @@ assert "c.get('kind') in {'RIDGE','LGBM'}" not in nested_gate
 # fit-locked production layers; it is not used to tune the sealed holdout.
 nested=Path('scripts/v12_train_parts/01eo_nested_origin_cv_point.pyinc').read_text(encoding='utf-8')
 assert 'NESTED_EXPANDING_ORIGIN_CV_MBB_V3' in nested
-print('V12 ACCEPTANCE + EMBARGO + V5/V6/V7 FIT-LOCK + ROBUST NESTED FAMILY + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
+print('V12 ACCEPTANCE + EMBARGO + V5/V8/V7 FIT-LOCK + ROBUST NESTED FAMILY + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
