@@ -1,5 +1,12 @@
+V12_CURRENT_SEALED_START=None
+V12_PRIMARY_CALIBRATION_PENDING=False
+
 def interval_masks(D,dates):
+    global V12_CURRENT_SEALED_START,V12_PRIMARY_CALIBRATION_PENDING
     h=max(1,int(globals().get('V12_ACTIVE_HORIZON',1)));Maturity=label_maturity_array(h);n=len(dates);d80=dates[int(.80*n)];d85=dates[int(.85*n)];d90=dates[int(.90*n)]
+    # Expose the exact sealed boundary to the calibration controller so any later deployment
+    # refit can reuse the frozen pre-blind calibration instead of reading 90-100% labels.
+    V12_CURRENT_SEALED_START=str(d90);V12_PRIMARY_CALIBRATION_PENDING=True
     return {
         'calA':(D>=d80)&(D<d85)&(Maturity<d85),
         'calB':(D>=d85)&(D<d90)&(Maturity<d90),
