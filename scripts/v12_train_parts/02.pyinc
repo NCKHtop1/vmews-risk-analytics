@@ -1,0 +1,69 @@
+    med=[];lo=[];hi=[];ns=[]
+    for x in score:
+        b=bfind(scen,x);med.append(b["medianReturn"]);lo.append(b["q20"]-qadj);hi.append(b["q80"]+qadj);ns.append(b["n"])
+    return p,np.asarray(med),np.asarray(lo),np.asarray(hi),np.asarray(ns)
+def audit_metrics(y,score,p,med,lo,hi,D):
+    rs=rank_stats(y,score,D);yy=y>0;base_prob=np.full(len(y),float(np.mean(yy)));ba=float(balanced_accuracy_score(yy,p>=.5));mcc=float(matthews_corrcoef(yy,p>=.5));brier=float(brier_score_loss(yy,p));b0=float(brier_score_loss(yy,base_prob));mae=float(np.mean(np.abs(y-med)));mae0=float(np.mean(np.abs(y)));rho=spearmanr(med,y).statistic if len(y) else 0.
+    return {"n":int(len(y)),"rankIC":rs["ic"],"spread":rs["spread"],"balancedAccuracy":ba,"mcc":mcc,"brier":brier,"brierSkill":1-brier/(b0 or 1e-12),"ece":ece(yy.astype(float),p),"scenarioMAE":mae,"scenarioMAEImprove":1-mae/(mae0 or 1e-12),"scenarioRankIC":float(rho) if finite(rho) else 0.,"coverage20_80":float(np.mean((y>=lo)&(y<=hi))),"intervalWidth":float(np.mean(hi-lo))}
+def interval_masks(D,dates):
+    n=len(dates);d80=dates[int(.80*n)];d85=dates[int(.85*n)];d90=dates[int(.90*n)];return {"calA":(D>=d80)&(D<d85),"calB":(D>=d85)&(D<d90),"audit":D>=d90}
+def combine_pred(pred_dict,names):return np.column_stack([pred_dict[n] for n in names])
+def _sole_expert_null_ablation(y,D,idx_calA,idx_calB,idx_audit,sealed):
+    """Audit a one-expert stack against a locked no-expert baseline without sealed tuning.
+
+    Removing the only active expert leaves no cross-sectional score.  The scientifically meaningful
+    counterfactual is therefore an unconditional pre-sealed distribution: location/quantiles and
+    base-rate probability are estimated on 80-85%, interval conformity is fixed on 85-90%, and
+    90-100% is used only once for the final audit.  A constant null has no ranking information, so
+    Rank IC, top-bottom spread and scenario Rank IC are defined as zero rather than inheriting an
+    arbitrary row-order spread from argsort on tied scores.
+    """
+    ref=np.asarray(y[idx_calA],float);conform=np.asarray(y[idx_calB],float);audit_y=np.asarray(y[idx_audit],float)
+    if len(ref)<100 or len(conform)<100 or len(audit_y)<100:raise RuntimeError(f"sole-expert null ablation windows too small: {len(ref)}/{len(conform)}/{len(audit_y)}")
+    p0=min(.98,max(.02,float(np.mean(ref>0))));med0=float(np.median(ref));lo0=float(np.quantile(ref,.20));hi0=float(np.quantile(ref,.80))
+    nonconf=np.maximum.reduce([lo0-conform,conform-hi0,np.zeros(len(conform))]);qlevel=min(1.0,math.ceil((len(nonconf)+1)*.60)/max(1,len(nonconf)));qadj=float(np.quantile(nonconf,qlevel,method="higher")) if len(nonconf) else 0.
+    score=np.zeros(len(audit_y),dtype=float);p=np.full(len(audit_y),p0,dtype=float);med=np.full(len(audit_y),med0,dtype=float);lo=np.full(len(audit_y),lo0-qadj,dtype=float);hi=np.full(len(audit_y),hi0+qadj,dtype=float)
+    z=audit_metrics(audit_y,score,p,med,lo,hi,D[idx_audit]);z["rankIC"]=0.;z["spread"]=0.;z["scenarioRankIC"]=0.
+    return {"baseline":"NO_EXPERT_PRESEALED_NULL","baselineMethod":"UNCONDITIONAL_80_85_PLUS_CONFORMAL_85_90","baselineCalibrationWindow":"80%-85%","baselineConformalWindow":"85%-90%","sealedAuditWindow":"90%-100%","baselineCalibrationRows":int(len(ref)),"baselineConformalRows":int(len(conform)),"selectionLabelsUsed":0,"sealedLabelsUsedForSelection":0,"sealedAuditLabelsUsed":int(len(audit_y)),"usedForSelection":False,"without":z,"deltaRankIC":sealed["rankIC"]-z["rankIC"],"deltaMAEImprove":sealed["scenarioMAEImprove"]-z["scenarioMAEImprove"],"deltaBrierSkill":sealed["brierSkill"]-z["brierSkill"]}
+def fit_horizon(X,y,D,dates,h,idx_by_expert):
+    oof,choice=expert_oof(X,y,D,dates,h,idx_by_expert);active,selection=select_active_experts(oof,y,D,dates,X,idx_by_expert);kinds={k:v["kind"] for k,v in choice.items()};audit_experts=fit_experts_at_cut(X,y,D,dates,h,idx_by_expert,kinds,.80);masks=interval_masks(D,dates);idx_calA=np.where(masks["calA"]&np.isfinite(y))[0];idx_calB=np.where(masks["calB"]&np.isfinite(y))[0];idx_audit=np.where(masks["audit"]&np.isfinite(y))[0];oof_mask=np.all(np.isfinite(combine_pred(oof,active)),axis=1)&np.isfinite(y);meta,_=fit_meta(oof,active,oof_mask,y)
+    def score_indices(indices,models=audit_experts,meta_model=meta):
+        ep=predict_experts(models,X,indices);return meta_model.predict(combine_pred(ep,active)),ep
+    calA_score,calA_ep=score_indices(idx_calA);calB_score,calB_ep=score_indices(idx_calB);audit_score,audit_ep=score_indices(idx_audit);scen,iso,qadj=calibrate(y[idx_calA],calA_score,y[idx_calB],calB_score,D[idx_calA],D[idx_calB]);p,med,lo,hi,ns=apply_calibration(audit_score,scen,iso,qadj,D[idx_audit]);sealed=audit_metrics(y[idx_audit],audit_score,p,med,lo,hi,D[idx_audit]);gates={"ranking":sealed["rankIC"]>.02 and sealed["spread"]>.001,"direction":sealed["balancedAccuracy"]>.51 and sealed["mcc"]>.015 and sealed["brierSkill"]>-.03,"scenario":sealed["scenarioRankIC"]>.01 and sealed["scenarioMAEImprove"]>-.02 and .52<=sealed["coverage20_80"]<=.72}
+    ablation={}
+    for drop in active:
+        reduced=[x for x in active if x!=drop]
+        if not reduced:
+            ablation[drop]=_sole_expert_null_ablation(y,D,idx_calA,idx_calB,idx_audit,sealed);continue
+        rm,_=fit_meta(oof,reduced,oof_mask,y);ca=rm.predict(combine_pred(calA_ep,reduced));cb=rm.predict(combine_pred(calB_ep,reduced));au=rm.predict(combine_pred(audit_ep,reduced));rsc,riso,rq=calibrate(y[idx_calA],ca,y[idx_calB],cb,D[idx_calA],D[idx_calB]);rp,rmed,rlo,rhi,_=apply_calibration(au,rsc,riso,rq,D[idx_audit]);rz=audit_metrics(y[idx_audit],au,rp,rmed,rlo,rhi,D[idx_audit]);ablation[drop]={"without":rz,"deltaRankIC":sealed["rankIC"]-rz["rankIC"],"deltaMAEImprove":sealed["scenarioMAEImprove"]-rz["scenarioMAEImprove"],"deltaBrierSkill":sealed["brierSkill"]-rz["brierSkill"]}
+    deploy_pred={k:np.array(v,copy=True) for k,v in oof.items()};idx_80_90=np.where((masks["calA"]|masks["calB"])&np.isfinite(y))[0];p80=predict_experts(audit_experts,X,idx_80_90)
+    for name in deploy_pred:deploy_pred[name][idx_80_90]=p80[name]
+    model90=fit_experts_at_cut(X,y,D,dates,h,idx_by_expert,kinds,.90);p90=predict_experts(model90,X,idx_audit)
+    for name in deploy_pred:deploy_pred[name][idx_audit]=p90[name]
+    depM=combine_pred(deploy_pred,active);dep_good=np.all(np.isfinite(depM),axis=1)&np.isfinite(y);dep_dates=sorted(set(D[dep_good]));split=dep_dates[max(1,int(.75*len(dep_dates)))] if dep_dates else dates[int(.90*len(dates))];dep_train=dep_good&(D<split);dep_cal=dep_good&(D>=split);deploy_meta,_=fit_meta(deploy_pred,active,dep_train,y);dep_dates_cal=sorted(set(D[dep_cal]));
+    if len(dep_dates_cal)<6:raise RuntimeError("deployment calibration window too short")
+    mid_date=dep_dates_cal[len(dep_dates_cal)//2];a_idx=np.where(dep_cal&(D<mid_date))[0];b_idx=np.where(dep_cal&(D>=mid_date))[0]
+    if len(a_idx)<100 or len(b_idx)<100:raise RuntimeError(f"deployment calibration split too small: {len(a_idx)} / {len(b_idx)}")
+    a_score=deploy_meta.predict(depM[a_idx]);b_score=deploy_meta.predict(depM[b_idx]);dscen,diso,dq=calibrate(y[a_idx],a_score,y[b_idx],b_score,D[a_idx],D[b_idx]);valid=np.isfinite(y);final_models={}
+    for name,fi in idx_by_expert.items():
+        xx=X[:,fi];pp=prep(xx,valid);zz=apply_prep(xx,pp);mm=make_model(kinds[name]);mm.fit(zz[valid],y[valid]);final_models[name]=(mm,pp,fi)
+    return {"active":active,"choice":choice,"selection":selection,"sealedAudit":sealed,"gates":gates,"ablation":ablation,"scenarioCalibration":scen,"conformalAdjustment":qadj,"auditIndices":idx_audit,"auditScore":audit_score,"auditP":p,"auditMed":med,"auditLo":lo,"auditHi":hi,"auditN":ns,"auditExpertPred":audit_ep,"deployment":{"meta":deploy_meta,"scenario":dscen,"iso":diso,"qadj":dq,"models":final_models}}
+def current_predictions(latest,X_current,horizon_fit):
+    active=horizon_fit["active"];dep=horizon_fit["deployment"];ep=predict_experts(dep["models"],X_current);M=combine_pred(ep,active);score=dep["meta"].predict(M);symbols=list(latest);current_dates=np.asarray([str(latest[s].get("date") or latest[s].get("asOf") or "CURRENT") for s in symbols],dtype=object);p,med,lo,hi,ns=apply_calibration(score,dep["scenario"],dep["iso"],dep["qadj"],current_dates);coef={name:float(w) for name,w in zip(active,dep["meta"].coef_)};out={}
+    for i,s in enumerate(symbols):
+        close=latest[s]["rawClose"];expert={name:float(ep[name][i]) for name in active};contrib={name:coef[name]*expert[name] for name in active};out[s]={"alpha":float(score[i]),"expectedReturn":float(med[i]),"expectedPrice":float(close*math.exp(med[i])),"probUp":float(p[i]),"q20":float(lo[i]),"q80":float(hi[i]),"q20Price":float(close*math.exp(lo[i])),"q80Price":float(close*math.exp(hi[i])),"calibrationN":int(ns[i]),"activeExperts":active,"expertPredictions":expert,"expertContributions":contrib}
+    return out
+def backtest_cases(panel,fit_by_h,per_symbol=3):
+    out={}
+    for h,z in fit_by_h.items():
+        idx=z["auditIndices"];by_symbol=defaultdict(list)
+        for j,k in enumerate(idx):
+            x=panel[k];y=float(x["y"+str(h)]);origin=float(x["originRawClose"]);pred=float(z["auditMed"][j]);lo=float(z["auditLo"][j]);hi=float(z["auditHi"][j]);expert={name:float(z["auditExpertPred"][name][j]) for name in z["active"]};by_symbol[x["symbol"]].append({"symbol":x["symbol"],"originDate":x["date"],"originPrice":origin,"prior5":float(x["ret5"]),"prior20":float(x["ret20"]),"predictedReturn":pred,"expectedPrice":origin*math.exp(pred),"probUp":float(z["auditP"][j]),"q20":lo,"q80":hi,"q20Price":origin*math.exp(lo),"q80Price":origin*math.exp(hi),"actualReturn":y,"realizedComparablePrice":origin*math.exp(y),"correctDirection":bool((pred>=0)==(y>=0)),"intervalHit":bool(y>=lo and y<=hi),"absoluteError":abs(y-pred),"expertPredictions":expert})
+        cases=[]
+        for symbol in sorted(by_symbol):cases.extend(sorted(by_symbol[symbol],key=lambda x:x["originDate"])[-per_symbol:])
+        out[str(h)]=cases
+    return out
+def main():
+    symbols=manifest_symbols();price_store,price_audits,failures=build_price_store(symbols)
+    if len(price_store)<330:raise RuntimeError(f"V12 price coverage too small: {len(price_store)}/{len(symbols)}")
+    index_rows,index_audit=get_index_history("VNINDEX");panel,latest,rows_by_symbol=base_panel(price_store)

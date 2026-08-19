@@ -1,0 +1,39 @@
+name: V12 UI fast integrity gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'forecast-final-v12.js'
+      - 'forecast-polish-v12.js'
+      - 'forecast-final.html'
+      - 'scripts/v12_browser_smoke.mjs'
+      - '.github/workflows/v12-ui-fast.yml'
+permissions:
+  contents: read
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: JavaScript syntax
+        run: |
+          node --check forecast-final-v12.js
+          node --check forecast-polish-v12.js
+      - name: Static final UI contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          h=Path('forecast-final.html').read_text(encoding='utf-8');j=Path('forecast-final-v12.js').read_text(encoding='utf-8');p=Path('forecast-polish-v12.js').read_text(encoding='utf-8')
+          for x in ['Dự báo giá T+1 → T+5','Backtest: dự báo tại T0','Kiểm định không nhìn trước tương lai','methodProof','forecast-final-v12.js','forecast-polish-v12.js']: assert x in h,x
+          for banned in ['VNStock ưu tiên cho OHLCV Việt Nam','không nội suy','whisker =','Completed EOD snapshot','không phát lệnh mua/bán']: assert banned not in h,banned
+          for x in ['priceValidated','directionValidated','expectedPrice','q20Price','q80Price','actualRawPrice','realizedComparablePrice','contextAtOrigin','rumorClaims','claimId','preVolumeLead','mousemove','expertContributions','Direction gate REVIEW']: assert x in j,x
+          for x in ['blind-holdout-gate-v12.json','embargo-gate-v12.json','futureRowsUsedForTraining','MutationObserver']: assert x in p,x
+          assert 'vmews-risk-analytics-sojd.vercel.app' not in j+p
+          assert '/api/' not in j+p
+          assert 'bezierCurveTo' not in j and 'quadraticCurveTo' not in j
+          print('V12 UI FAST GATE PASS')
+          PY

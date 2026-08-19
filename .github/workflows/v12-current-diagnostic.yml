@@ -1,0 +1,189 @@
+name: V12 current scientific diagnostic
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'v12-diagnostic-trigger.txt'
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: vmews-v12-current-diagnostic
+  cancel-in-progress: true
+env:
+  V12_MIN_ROWS: '520'
+  V12_MAX_RAW_RETURN_GUARD: '0.12'
+  V12_CROSS_SOURCE_MAD_LIMIT: '0.003'
+  V12_RESEARCH_SOURCE_MODE: 'FROZEN'
+  PYTHONHASHSEED: '0'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      source_sha: ${{ steps.src.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - id: src
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+      - name: Publish run identity to runtime-state branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,os,pathlib
+          z={'version':'VMEWS-V12-RUNTIME-STATE-1.0.0','runId':int(os.environ['GITHUB_RUN_ID']),'runAttempt':int(os.environ['GITHUB_RUN_ATTEMPT']),'sourceSha':os.environ['GITHUB_SHA'],'workflow':os.environ['GITHUB_WORKFLOW'],'status':'STARTED'}
+          pathlib.Path('/tmp/v12-runtime.json').write_text(json.dumps(z,indent=2),encoding='utf-8')
+          PY
+          CONTENT=$(base64 -w0 /tmp/v12-runtime.json)
+          OLD=$(gh api "repos/${GITHUB_REPOSITORY}/contents/runtime/v12-latest-run.json?ref=v12-runtime-state" --jq .sha 2>/dev/null || true)
+          if [ -n "$OLD" ]; then
+            gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/runtime/v12-latest-run.json" -f message="Update V12 diagnostic run ${GITHUB_RUN_ID}" -f content="$CONTENT" -f sha="$OLD" -f branch="v12-runtime-state" >/dev/null
+          else
+            gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/runtime/v12-latest-run.json" -f message="Record V12 diagnostic run ${GITHUB_RUN_ID}" -f content="$CONTENT" -f branch="v12-runtime-state" >/dev/null
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - name: Install research dependencies
+        run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Compile exact assembled science
+        run: |
+          python -m py_compile scripts/train_forecast_v12.py scripts/v12_research_sources.py scripts/v12_frozen_source_probe.py
+          python - <<'PY'
+          from pathlib import Path
+          parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
+          code='\n'.join(p.read_text(encoding='utf-8') for p in parts)
+          compile(code,'v12-current-diagnostic-assembled.py','exec')
+          print('ASSEMBLED PASS',len(parts),[p.name for p in parts])
+          PY
+      - name: Restore historical PIT news and market evidence seed
+        uses: actions/download-artifact@v4
+        with:
+          name: forecast-v11-final-evidence-31790884093
+          path: /tmp/v11-seed
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: NCKHtop1/vmews-risk-analytics
+          run-id: 31790884093
+      - name: Install PIT seed and prove frozen source
+        run: |
+          mkdir -p data/v12-seed
+          for f in sentiment-v11.json market-scan.json; do src=$(find /tmp/v11-seed -name "$f" -type f | head -1); test -n "$src"; cp "$src" "data/v12-seed/$f"; done
+          PYTHONPATH=scripts python scripts/v12_frozen_source_probe.py
+          python - <<'PY'
+          import json
+          z=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          assert z.get('status')=='PASS' and z.get('mode')=='IMMUTABLE_FROZEN_SNAPSHOT',z
+          assert z.get('runtimeNetworkPriceFetch') is False and z.get('runtimeProviderSwitching') is False,z
+          assert (z.get('snapshot') or {}).get('snapshotFileSha256')=='b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762',z.get('snapshot')
+          print('FROZEN SOURCE PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v12-diagnostic-prep-${{ github.run_id }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            data/v12-seed/sentiment-v11.json
+            data/v12-seed/market-scan.json
+            data/v12-source-probe.json
+
+  horizon:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        horizon: [1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Verify exact source
+        run: test "$(git rev-parse HEAD)" = '${{ needs.prepare.outputs.source_sha }}'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: v12-diagnostic-prep-${{ github.run_id }}
+          path: data
+      - name: Run exact isolated horizon with durable status
+        shell: bash
+        env:
+          H: ${{ matrix.horizon }}
+        run: |
+          set +e
+          START=$(date +%s)
+          timeout --signal=TERM --kill-after=30s 38m env V12_ONLY_HORIZON="$H" PYTHONPATH=scripts python scripts/train_forecast_v12.py 2>&1 | tee "data/v12-diagnostic-h${H}.log"
+          RC=${PIPESTATUS[0]}
+          END=$(date +%s)
+          export RC START END
+          python - <<'PY'
+          import json,os,pathlib
+          h=int(os.environ['H']);rc=int(os.environ['RC']);start=int(os.environ['START']);end=int(os.environ['END'])
+          files=['forecast-model-v12.json','forecast-current-v12.json','forecast-dashboard-v12.json','forecast-backtest-v12.json','data-audit-v12.json','event-intelligence-v12.json','v12-training-error.json']
+          present={x:(pathlib.Path('data')/x).stat().st_size for x in files if (pathlib.Path('data')/x).exists()}
+          z={'version':'VMEWS-V12-HORIZON-DIAGNOSTIC-1.0.0','runId':int(os.environ['GITHUB_RUN_ID']),'sourceSha':os.environ['GITHUB_SHA'],'horizon':h,'exitCode':rc,'timeout':rc in (124,137),'elapsedSeconds':end-start,'status':'SUCCESS' if rc==0 else 'FAIL','files':present}
+          if (pathlib.Path('data')/'forecast-model-v12.json').exists():
+              try:
+                  m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'));hz=(m.get('horizons') or {}).get(str(h),{});s=hz.get('sealedAudit') or {};z['science']={'priceStatus':hz.get('priceStatus'),'directionStatus':hz.get('directionStatus'),'gates':hz.get('gates'),'magnitudeGate':hz.get('magnitudeGate'),'rankIC':s.get('rankIC'),'scenarioMAEImprove':s.get('scenarioMAEImprove'),'forecastDispersionRatio':s.get('forecastDispersionRatio'),'p90MagnitudeRatio':s.get('p90MagnitudeRatio'),'dailyMAEEdge':s.get('dailyMAEEdge'),'walkForwardStatus':(hz.get('walkForwardReplay') or {}).get('status'),'blindStatus':(((hz.get('walkForwardReplay') or {}).get('fixedBlindHoldout') or {}).get('status')),'pointMode':(hz.get('distributionAudit') or {}).get('pointMode'),'pointSelectionAudit':(hz.get('distributionAudit') or {}).get('pointSelectionAudit')}
+              except Exception as e:z['scienceReadError']=repr(e)
+          pathlib.Path(f'data/v12-horizon-status-h{h}.json').write_text(json.dumps(z,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8')
+          print(json.dumps(z,ensure_ascii=False))
+          PY
+          exit "$RC"
+      - name: Upload exact horizon evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-current-diagnostic-h${{ matrix.horizon }}-${{ github.run_id }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            data/v12-horizon-status-h${{ matrix.horizon }}.json
+            data/v12-diagnostic-h${{ matrix.horizon }}.log
+            data/v12-training-error.json
+            data/forecast-model-v12.json
+            data/forecast-current-v12.json
+            data/forecast-dashboard-v12.json
+            data/forecast-backtest-v12.json
+            data/data-audit-v12.json
+            data/event-intelligence-v12.json
+
+  finish:
+    needs: [prepare,horizon]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish terminal run identity to runtime-state branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREP: ${{ needs.prepare.result }}
+          HORIZON: ${{ needs.horizon.result }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,os,pathlib
+          z={'version':'VMEWS-V12-RUNTIME-STATE-1.0.0','runId':int(os.environ['GITHUB_RUN_ID']),'runAttempt':int(os.environ['GITHUB_RUN_ATTEMPT']),'sourceSha':os.environ.get('SOURCE_SHA') or os.environ['GITHUB_SHA'],'workflow':os.environ['GITHUB_WORKFLOW'],'prepareResult':os.environ['PREP'],'horizonAggregateResult':os.environ['HORIZON'],'status':'SUCCESS' if os.environ['PREP']=='success' and os.environ['HORIZON']=='success' else 'FAIL'}
+          pathlib.Path('/tmp/v12-runtime.json').write_text(json.dumps(z,indent=2),encoding='utf-8')
+          PY
+          CONTENT=$(base64 -w0 /tmp/v12-runtime.json)
+          OLD=$(gh api "repos/${GITHUB_REPOSITORY}/contents/runtime/v12-latest-run.json?ref=v12-runtime-state" --jq .sha)
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/runtime/v12-latest-run.json" -f message="Finalize V12 diagnostic run ${GITHUB_RUN_ID}" -f content="$CONTENT" -f sha="$OLD" -f branch="v12-runtime-state" >/dev/null

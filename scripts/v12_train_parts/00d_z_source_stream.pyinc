@@ -1,0 +1,33 @@
+_source_stream_prepare=prepare_articles
+_SourceAwareBaseStore=EvidenceFeatureStore
+
+def _normalized_source_type(x):
+    if x.get('sourceClass')=='RUMOR_UNVERIFIED' or x.get('stream')=='RUMOR':return 'RUMOR'
+    if x.get('sourceClass')=='CLARIFICATION':return 'CLARIFICATION'
+    if x.get('stream')=='OFFICIAL' or x.get('sourceClass')=='OFFICIAL':return 'OFFICIAL'
+    return 'NARRATIVE'
+
+def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
+    articles,outcomes=_source_stream_prepare(sentiment,price_store,sector_map,index_rows)
+    raw_by_key={}
+    for symbol,z in (sentiment or {}).get('symbols',{}).items():
+        for raw in z.get('items') or []:
+            if raw.get('id') is not None:raw_by_key[_event_key(symbol,raw.get('id'))]=raw
+    counts=defaultdict(int)
+    for symbol,rows in articles.items():
+        for x in rows:
+            raw=raw_by_key.get(_event_key(symbol,x.get('id'))) or {};x['stream']=str(raw.get('stream') or x.get('stream') or 'MAIN').upper();x['sourceTypeNormalized']=_normalized_source_type(x);counts[x['sourceTypeNormalized']]+=1
+    for o in outcomes:
+        raw=raw_by_key.get(_event_key(o.get('symbol'),o.get('id'))) or {};o['stream']=str(raw.get('stream') or 'MAIN').upper();o['sourceTypeNormalized']='RUMOR' if o.get('sourceClass')=='RUMOR_UNVERIFIED' or o['stream']=='RUMOR' else 'CLARIFICATION' if o.get('sourceClass')=='CLARIFICATION' else 'OFFICIAL' if o['stream']=='OFFICIAL' or o.get('sourceClass')=='OFFICIAL' else 'NARRATIVE'
+    ENTITY_AUDIT['normalizedSourceTypes']=dict(counts);ENTITY_AUDIT['officialStreamRestored']=True;ENTITY_AUDIT['sourceJoinKey']='TICKER_NEWS_ID'
+    print(json.dumps({'v12SourceTypeNormalization':dict(counts),'joinKey':'TICKER_NEWS_ID'},ensure_ascii=False),flush=True)
+    return articles,outcomes
+
+class EvidenceFeatureStore(_SourceAwareBaseStore):
+    @staticmethod
+    def _agg(rows):
+        z=_SourceAwareBaseStore._agg(rows)
+        if rows:
+            z['official']=sum(_normalized_source_type(x)=='OFFICIAL' for x in rows)/len(rows)
+            z['clar']=sum(_normalized_source_type(x)=='CLARIFICATION' for x in rows)
+        return z

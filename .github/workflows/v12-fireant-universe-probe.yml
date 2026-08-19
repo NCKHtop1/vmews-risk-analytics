@@ -1,0 +1,32 @@
+name: V12 FireAnt historical universe probe
+on:
+  push:
+    branches: [forecast-v12-hardening]
+    paths: ['.github/workflows/v12-fireant-universe-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Enumerate public stock metadata
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request
+          seen={};errors=[]
+          for k in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789':
+              try:
+                  url='https://api.fireant.vn/symbols/search?'+urllib.parse.urlencode({'keywords':k,'type':'stock','offset':0,'limit':1000})
+                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research/12','Accept':'application/json'})
+                  with urllib.request.urlopen(req,timeout=20) as r:rows=json.loads(r.read().decode())
+                  for x in rows if isinstance(rows,list) else []:
+                      s=str(x.get('symbol') or '').upper().strip()
+                      if s:seen[s]=x
+              except Exception as e:errors.append([k,type(e).__name__,str(e)[:120]])
+          hsx=[x for x in seen.values() if str(x.get('exchange') or '').upper() in {'HSX','HOSE'} and str(x.get('type') or '').lower()=='stock']
+          delisted=[x for x in hsx if x.get('isListing') is False]
+          current=[x for x in hsx if x.get('isListing') is True]
+          print(json.dumps({'unique':len(seen),'hsxStock':len(hsx),'hsxCurrent':len(current),'hsxDelisted':len(delisted),'errors':errors,'delistedSample':delisted[:100]},ensure_ascii=False,indent=2))
+          assert len(seen)>=500
+          assert not errors
+          PY

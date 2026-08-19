@@ -1,0 +1,19 @@
+def rank_stats(y,pred,dates):
+    ics=[];spreads=[]
+    for d in sorted(set(dates)):
+        q=np.where(dates==d)[0]
+        if len(q)<12:continue
+        yy=y[q];pp=pred[q]
+        day_ic=None
+        if np.nanstd(yy)>1e-12 and np.nanstd(pp)>1e-12:
+            z=spearmanr(yy,pp).statistic
+            if z is not None and finite(z):day_ic=float(z);ics.append(day_ic)
+        order=np.argsort(pp);k=max(1,len(q)//5);spreads.append(float(np.mean(yy[order[-k:]])-np.mean(yy[order[:k]])))
+    n=len(ics);mean=float(np.mean(ics)) if ics else 0.;std=float(np.std(ics,ddof=1)) if n>1 else 0.;t=mean/(std/math.sqrt(n)) if n>1 and std>1e-12 else 0.;pos=float(np.mean(np.asarray(ics)>0)) if ics else 0.;spmean=float(np.mean(spreads)) if spreads else 0.;spstd=float(np.std(spreads,ddof=1)) if len(spreads)>1 else 0.;spt=spmean/(spstd/math.sqrt(len(spreads))) if len(spreads)>1 and spstd>1e-12 else 0.
+    if n>=10:
+        rng=np.random.default_rng(12073+n);arr=np.asarray(ics,float);boots=np.asarray([float(np.mean(rng.choice(arr,size=n,replace=True))) for _ in range(1000)]);ci=[float(np.quantile(boots,.025)),float(np.quantile(boots,.975))]
+    else:ci=[None,None]
+    return {"ic":mean,"spread":spmean,"icDays":n,"icStd":std,"icTStat":float(t),"icPositiveDayShare":pos,"icBootstrap95":ci,"spreadDays":len(spreads),"spreadStd":spstd,"spreadTStat":float(spt)}
+
+def reg_metrics(y,pred,dates):
+    rs=rank_stats(y,pred,dates);mae=float(np.mean(np.abs(y-pred)));base=float(np.mean(np.abs(y)));return {**rs,"mae":mae,"maeImprove":1-mae/(base or 1e-12)}

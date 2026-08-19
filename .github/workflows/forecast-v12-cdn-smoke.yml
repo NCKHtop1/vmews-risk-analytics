@@ -1,0 +1,58 @@
+name: Forecast V12 immutable CDN smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'forecast-final.html'
+      - 'forecast-final-v12.js'
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-backtest-v12.json'
+      - 'data/data-audit-v12.json'
+      - 'data/phase-gates-v12.json'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for immutable CDN edge
+        run: sleep 10
+      - name: Verify immutable CDN assets and production contracts
+        env:
+          ROOT: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for f in forecast-final.html forecast-final-v12.js data/forecast-model-v12.json data/forecast-dashboard-v12.json data/forecast-backtest-v12.json data/data-audit-v12.json data/phase-gates-v12.json; do
+            curl --fail --silent --show-error --retry 7 --retry-delay 4 "$ROOT/$f" -o "/tmp/$(basename "$f")"
+          done
+          grep -q 'VMEWS Forecast V12' /tmp/forecast-final.html
+          grep -q 'forecast-final-v12.js' /tmp/forecast-final.html
+          grep -q 'priceValidated' /tmp/forecast-final-v12.js
+          grep -q 'directionValidated' /tmp/forecast-final-v12.js
+          ! grep -q 'vmews-risk-analytics-sojd.vercel.app' /tmp/forecast-final-v12.js
+          python - <<'PY'
+          import json, math
+          g=json.load(open('/tmp/phase-gates-v12.json'))
+          m=json.load(open('/tmp/forecast-model-v12.json'))
+          d=json.load(open('/tmp/forecast-dashboard-v12.json'))
+          b=json.load(open('/tmp/forecast-backtest-v12.json'))
+          a=json.load(open('/tmp/data-audit-v12.json'))
+          assert g['status']=='PASS',g
+          assert g.get('failed')==0,g
+          p=m['promotion']
+          assert p['status']=='PASS',p
+          assert p.get('directPriceHorizons')==[1,2,3,4,5],p
+          assert len(d.get('symbols',{}))>=320,len(d.get('symbols',{}))
+          hist=set((a.get('universeAudit') or {}).get('historicalOnly',{}))
+          assert hist and not hist.intersection(d.get('symbols',{})),hist
+          for h in map(str,range(1,6)):
+              z=m['horizons'][h]
+              assert z['priceStatus']=='PASS',(h,z.get('priceGates'))
+              assert z['sealedAudit']['n']>=5000,(h,z['sealedAudit']['n'])
+              assert z['sealedAudit']['rankIC']>.02,(h,z['sealedAudit']['rankIC'])
+              assert len((b.get('cases') or {}).get(h,[]))>=50,h
+          print('V12 IMMUTABLE CDN CONTRACT PASS',m['version'],'symbols',len(d['symbols']),'historicalOnly',sorted(hist))
+          PY

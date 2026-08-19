@@ -1,0 +1,37 @@
+name: V12 offline frozen CA cohort audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths: ['v12-frozen-ca-audit-trigger.txt']
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-frozen-ca-audit
+  cancel-in-progress: true
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Pin audit source
+        run: echo "V12_AUDIT_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Offline frozen cohort audit
+        run: |
+          python -m py_compile scripts/v12_frozen_ca_cohort_audit.py
+          python scripts/v12_frozen_ca_cohort_audit.py
+      - name: Publish offline audit JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin forecast-v12-methodfix
+          test "$(git rev-parse origin/forecast-v12-methodfix)" = "$V12_AUDIT_SOURCE_SHA" || { echo 'BRANCH ADVANCED; refusing stale audit'; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-frozen-ca-cohort-audit.json
+          git commit -m 'Publish offline V12 frozen CA cohort audit [no-full]'
+          git push origin HEAD:forecast-v12-methodfix

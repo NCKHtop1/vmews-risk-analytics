@@ -1,0 +1,12 @@
+def backtest_cases(panel,fit_by_h,per_symbol=3):
+    out={}
+    for h,z in fit_by_h.items():
+        idx=z['auditIndices'];by_symbol=defaultdict(list)
+        for j,k in enumerate(idx):
+            x=panel[k];y=float(x['y'+str(h)]);origin=float(x.get('originRawClose') or 0);pred=float(z['auditMed'][j]);lo=float(z['auditLo'][j]);hi=float(z['auditHi'][j]);expert={name:float(z['auditExpertPred'][name][j]) for name in z['active']};actual_raw=x.get('rawPrice'+str(h));model_future=x.get('modelPrice'+str(h));raw_return=math.log(float(actual_raw)/origin) if finite(actual_raw) and origin>0 and float(actual_raw)>0 else None;adjusted_target=y;corp_action_gap=(raw_return-adjusted_target) if raw_return is not None else None
+            context={'prior5':float(x['ret5']),'prior20':float(x['ret20']),'breadth20':float(x.get('breadth20',.5)),'csad20':float(x.get('csad20',0)),'riskShare':float(x.get('riskShare',0)),'newsN20':float(x.get('newsN20',0)),'newsSent20':float(x.get('newsSent20',0)),'newsMateriality20':float(x.get('newsMateriality20',0)),'officialShare20':float(x.get('officialShare20',0)),'latestEventAgeScaled':float(x.get('latestEventAge',1)),'rumorN20':float(x.get('rumorN20',0)),'rumorPreMove2':float(x.get('rumorPreMove2',0)),'foreignAvailable':float(x.get('foreignAvailable',0)),'foreignNetRatio5':float(x.get('foreignNetRatio5',0)),'foreignZ60':float(x.get('foreignZ60',0)),'propAvailable':float(x.get('propAvailable',0)),'propNetRatio5':float(x.get('propNetRatio5',0))}
+            by_symbol[x['symbol']].append({'symbol':x['symbol'],'originDate':x['date'],'originPrice':origin,'prior5':context['prior5'],'prior20':context['prior20'],'predictedReturn':pred,'expectedPrice':origin*math.exp(pred),'probUp':float(z['auditP'][j]),'q20':lo,'q80':hi,'q20Price':origin*math.exp(lo),'q80Price':origin*math.exp(hi),'actualReturn':adjusted_target,'actualRawPrice':float(actual_raw) if finite(actual_raw) else None,'realizedComparablePrice':origin*math.exp(adjusted_target),'corporateActionGap':float(corp_action_gap) if finite(corp_action_gap) else None,'corporateActionAffected':bool(finite(corp_action_gap) and abs(float(corp_action_gap))>.03),'correctDirection':bool((pred>=0)==(adjusted_target>=0)),'intervalHit':bool(adjusted_target>=lo and adjusted_target<=hi),'absoluteError':abs(adjusted_target-pred),'expertPredictions':expert,'contextAtOrigin':context})
+        cases=[]
+        for symbol in sorted(by_symbol):cases.extend(sorted(by_symbol[symbol],key=lambda q:q['originDate'])[-per_symbol:])
+        out[str(h)]=cases
+    return out

@@ -1,0 +1,38 @@
+_fit_horizon_before_maturity_replay=fit_horizon
+
+def _max_date(a,mask):
+    q=np.asarray(a,dtype=object)[mask]
+    return str(max(q)) if len(q) else None
+
+def _fit_active_models_before_date(X,y,D,dates,h,idx_by_expert,kinds,active,cut_date):
+    Maturity=label_maturity_array(h);valid=np.isfinite(y);tr=valid&(Maturity<str(cut_date));models={}
+    if tr.sum()<1000:raise RuntimeError(f'walk-forward exact-maturity training too small h={h} cut={cut_date}: {tr.sum()}')
+    for name in active:
+        fi=idx_by_expert[name];xx=X[:,fi];pp=prep(xx,tr);zz=apply_prep(xx,pp);m=make_model(kinds[name]);m.fit(zz[tr],y[tr]);models[name]=(m,pp,fi)
+    return models,str(cut_date),int(tr.sum()),_max_date(Maturity,tr)
+
+def _walkforward_replay(X,y,D,dates,h,idx_by_expert,z):
+    cap=OOF_CAPTURE.get(int(h)) or {};expert_pred=cap.get('predictions') or {};active=list(z.get('active') or []);runtime=z.get('_sealedCalibrationRuntime')
+    if not expert_pred or not active or not runtime:return {'status':'INSUFFICIENT','reason':'OOF or sealed calibration runtime missing','blocks':[]}
+    Maturity=label_maturity_array(h);n=len(dates);d80=dates[int(.80*n)];d85=dates[int(.85*n)];d90=dates[int(.90*n)];layer,iso,qadj=runtime
+    common=np.isfinite(y)&(Maturity<d80)
+    for name in active:common&=np.isfinite(expert_pred[name])
+    meta,_=fit_meta(expert_pred,active,common,y)
+    meta_max_maturity=_max_date(Maturity,common);meta_future=int(np.sum(common&(Maturity>=d90)))
+    calA=np.isfinite(y)&(D>=d80)&(D<d85)&(Maturity<d85);calB=np.isfinite(y)&(D>=d85)&(D<d90)&(Maturity<d90);cal_mask=calA|calB;cal_max_maturity=_max_date(Maturity,cal_mask);cal_future=int(np.sum(cal_mask&(Maturity>=d90)))
+    audit_dates=np.asarray(dates[int(.90*len(dates)):]);blocks=[np.asarray(b) for b in np.array_split(audit_dates,4) if len(b)];all_y=[];all_score=[];all_p=[];all_med=[];all_lo=[];all_hi=[];all_d=[];detail=[]
+    kinds={k:v['kind'] for k,v in (z.get('choice') or {}).items()}
+    for b in blocks:
+        cut=str(b[0]);models,train_cutoff,train_n,max_train_maturity=_fit_active_models_before_date(X,y,D,dates,h,idx_by_expert,kinds,active,cut);mask=np.isfinite(y)&np.isin(D,b);idx=np.where(mask)[0]
+        if len(idx)<300:continue
+        ep=predict_experts(models,X,idx);score=meta.predict(combine_pred(ep,active));p,med,lo,hi,_=apply_calibration(score,layer,iso,qadj,D[idx]);m=audit_metrics(y[idx],score,p,med,lo,hi,D[idx]);no_future=bool(max_train_maturity is None or max_train_maturity<cut)
+        detail.append({'originBlockStart':cut,'originBlockEnd':str(b[-1]),'trainLabelCutoffExclusive':train_cutoff,'maxTrainLabelMaturity':max_train_maturity,'noFutureLabelTraining':no_future,'trainingRows':train_n,'testRows':len(idx),'metrics':m});all_y.append(y[idx]);all_score.append(score);all_p.append(p);all_med.append(med);all_lo.append(lo);all_hi.append(hi);all_d.append(D[idx])
+    if not all_y:return {'status':'INSUFFICIENT','reason':'no replay blocks materialized','blocks':detail}
+    yy=np.concatenate(all_y);ss=np.concatenate(all_score);pp=np.concatenate(all_p);mm=np.concatenate(all_med);ll=np.concatenate(all_lo);hh=np.concatenate(all_hi);dd=np.concatenate(all_d);overall=audit_metrics(yy,ss,pp,mm,ll,hh,dd);chronology=bool(meta_future==0 and cal_future==0 and (meta_max_maturity is None or meta_max_maturity<d90) and (cal_max_maturity is None or cal_max_maturity<d90) and all(x.get('noFutureLabelTraining') for x in detail));passed=bool(chronology and len(detail)>=3 and overall.get('n',0)>=3000 and overall.get('rankIC',0)>.01 and overall.get('scenarioMAEImprove',-99)>0 and .50<=overall.get('coverage20_80',0)<=.75)
+    return {'status':'PASS' if passed else 'FAIL','method':'Expanding-window literal replay. Every expert fit uses only labels whose symbol-specific T+h maturity date is strictly before replay T0. Meta uses chronological OOF labels matured before the 80% lock. Quantile/isotonic/conformal layers are frozen from maturity-embargoed 80-90% calibration blocks.','blocks':detail,'overall':overall,'purgeSessions':int(h),'purgeMethod':'LABEL_MATURITY_DATE','originSamplingStrideSessions':5,'ordinalOriginPurgeUsed':False,'futureRowsUsedForTraining':0 if chronology else sum(not x.get('noFutureLabelTraining') for x in detail),'futureMetaRowsUsedForTraining':meta_future,'futureCalibrationRowsUsedForTraining':cal_future,'metaTrainMaxMaturity':meta_max_maturity,'calibrationMaxMaturity':cal_max_maturity,'sealedAuditStart':str(d90),'chronologyVerified':chronology}
+
+def fit_horizon(X,y,D,dates,h,idx_by_expert):
+    z=_fit_horizon_before_maturity_replay(X,y,D,dates,h,idx_by_expert);Maturity=label_maturity_array(h);valid=np.isfinite(y);n=len(dates);d80=dates[int(.80*n)];d85=dates[int(.85*n)];d90=dates[int(.90*n)];tr=valid&(Maturity<d80);calA=valid&(D>=d80)&(D<d85)&(Maturity<d85);calB=valid&(D>=d85)&(D<d90)&(Maturity<d90)
+    z['embargoAudit']={'horizon':int(h),'labelPurgeSessions':int(h),'calibrationBoundaryEmbargoSessions':int(h),'purgeMethod':'LABEL_MATURITY_DATE','ordinalOriginPurgeUsed':False,'originSamplingStrideSessions':5,'modelTrainEndExclusive':str(d80),'maxModelTrainLabelMaturity':_max_date(Maturity,tr),'calAStart':str(d80),'calAEndExclusive':str(d85),'maxCalALabelMaturity':_max_date(Maturity,calA),'calBStart':str(d85),'calBEndExclusive':str(d90),'maxCalBLabelMaturity':_max_date(Maturity,calB),'sealedAuditStart':str(d90),'policy':'Each row is admitted only if its actual symbol-specific T+h label maturity date is strictly before the next lock boundary; sampled-origin ordinal distance is not used as a proxy for h trading sessions.'}
+    replay=z.get('walkForwardReplay') or {};ok=bool(replay.get('status')=='PASS' and replay.get('chronologyVerified') is True and replay.get('futureMetaRowsUsedForTraining')==0 and replay.get('futureCalibrationRowsUsedForTraining')==0);z.setdefault('gates',{})['walkForward']=ok;z['gates']['generalization']=bool(z['gates'].get('generalization')) and ok
+    return z

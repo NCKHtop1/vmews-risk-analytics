@@ -1,0 +1,31 @@
+# Fail-safe cleanup for isolated V12 diagnostic horizons.
+#
+# The diagnostic workflow intentionally downloads only PIT seed/source-probe inputs, but the
+# repository can still contain generated V12 JSON from an earlier run.  If an isolated trainer
+# exits before replacing those files, the workflow's durable status reader must never mistake
+# old science for evidence from the current process.  Remove generated model outputs at process
+# start whenever V12_ONLY_HORIZON is set.  This does not alter frozen source, labels, gates, or
+# model science.
+if os.environ.get('V12_ONLY_HORIZON'):
+    from pathlib import Path as _V12DiagPath
+    _v12_diag_data = _V12DiagPath('data')
+    _v12_diag_generated = (
+        'forecast-model-v12.json',
+        'forecast-current-v12.json',
+        'forecast-dashboard-v12.json',
+        'forecast-backtest-v12.json',
+        'data-audit-v12.json',
+        'event-intelligence-v12.json',
+        'v12-training-error.json',
+    )
+    _v12_diag_removed = []
+    for _v12_diag_name in _v12_diag_generated:
+        _v12_diag_path = _v12_diag_data / _v12_diag_name
+        if _v12_diag_path.exists():
+            _v12_diag_path.unlink()
+            _v12_diag_removed.append(_v12_diag_name)
+    print('V12_DIAGNOSTIC_STALE_OUTPUT_GUARD', {
+        'horizon': os.environ.get('V12_ONLY_HORIZON'),
+        'removed': _v12_diag_removed,
+        'policy': 'GENERATED_OUTPUTS_CLEARED_BEFORE_ISOLATED_HORIZON',
+    })

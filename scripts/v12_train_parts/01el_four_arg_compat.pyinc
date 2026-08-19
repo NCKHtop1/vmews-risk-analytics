@@ -1,0 +1,12 @@
+# Compatibility shim for synthetic/legacy four-argument calibration callers.
+#
+# Production V12 fit_horizon always supplies explicit cal_dates/conform_dates and therefore
+# continues through the strict chronology-aware controller from 01ek. Four-argument unit tests
+# have no origin-date information; preserve the exact pre-existing (pre-XSEC) calibration stack
+# for those callers instead of inventing dates or weakening the production chronology contract.
+_chrono_strict_calibrate = calibrate
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    if cal_dates is None or conform_dates is None:
+        return _xsec_calibrate_before(cal_y,cal_score,conform_y,conform_score)
+    return _chrono_strict_calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates)

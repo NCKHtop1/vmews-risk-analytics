@@ -1,0 +1,17 @@
+# Runtime orchestration only: allow the exact same V12 scientific pipeline to run one
+# direct horizon per isolated GitHub Actions job.  The default remains all five horizons.
+# This changes compute scheduling only; it does not change features, labels, gates,
+# calibration, purge/embargo, sealed holdout, model families, or acceptance thresholds.
+_v12_only_horizon = str(os.environ.get("V12_ONLY_HORIZON", "")).strip()
+if _v12_only_horizon:
+    try:
+        _v12_h = int(_v12_only_horizon)
+    except ValueError as _v12_exc:
+        raise RuntimeError(f"invalid V12_ONLY_HORIZON={_v12_only_horizon!r}") from _v12_exc
+    if _v12_h not in (1, 2, 3, 4, 5):
+        raise RuntimeError(f"V12_ONLY_HORIZON must be one of 1..5, got {_v12_h}")
+    HORIZONS = (_v12_h,)
+    V12_PARTIAL_HORIZON = _v12_h
+else:
+    HORIZONS = (1, 2, 3, 4, 5)
+    V12_PARTIAL_HORIZON = None

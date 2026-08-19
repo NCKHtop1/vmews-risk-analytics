@@ -1,0 +1,26 @@
+V12_ACTIVE_HORIZON=1
+
+def interval_masks(D,dates):
+    h=max(1,int(globals().get('V12_ACTIVE_HORIZON',1)));n=len(dates);i80=int(.80*n);i85=int(.85*n);i90=int(.90*n);d80=dates[i80];d85=dates[i85];d90=dates[i90];endA=dates[max(i80+1,i85-h)];endB=dates[max(i85+1,i90-h)]
+    return {
+        'calA':(D>=d80)&(D<endA),
+        'calB':(D>=d85)&(D<endB),
+        'audit':D>=d90,
+    }
+
+_fit_horizon_before_embargo=fit_horizon
+
+def fit_horizon(X,y,D,dates,h,idx_by_expert):
+    global V12_ACTIVE_HORIZON
+    old=V12_ACTIVE_HORIZON;V12_ACTIVE_HORIZON=int(h)
+    try:z=_fit_horizon_before_embargo(X,y,D,dates,h,idx_by_expert)
+    finally:V12_ACTIVE_HORIZON=old
+    n=len(dates);i80=int(.80*n);i85=int(.85*n);i90=int(.90*n);z['embargoAudit']={
+        'horizon':int(h),'labelPurgeSessions':int(h),'calibrationBoundaryEmbargoSessions':int(h),
+        'modelTrainEndExclusive':str(dates[max(1,i80-int(h))]),
+        'calAStart':str(dates[i80]),'calAEndExclusive':str(dates[max(i80+1,i85-int(h))]),
+        'calBStart':str(dates[i85]),'calBEndExclusive':str(dates[max(i85+1,i90-int(h))]),
+        'sealedAuditStart':str(dates[i90]),
+        'policy':'No calibration/conformal label is allowed to mature inside the following calibration or sealed-audit block.'
+    }
+    return z

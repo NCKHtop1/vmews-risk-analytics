@@ -1,0 +1,84 @@
+name: V12 institutional flow archive
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/backfill_flow_v12.py'
+      - '.github/workflows/v12-flow-build.yml'
+      - 'v12-flow-trigger.txt'
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-flow-build
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      V12_FLOW_WORKERS: '10'
+      V12_FLOW_START_YEAR: '2023'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q numpy openpyxl
+      - name: Compile flow builder
+        run: python -m py_compile scripts/backfill_flow_v12.py
+      - name: Assert corrected foreign-window contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/backfill_flow_v12.py').read_text(encoding='utf-8')
+          for token in ['QUARTERLY_JSON_MMDDYYYY','qwindows','%m/%d/%Y','foreign100plus','future flow rows']:
+              assert token in s,token
+          print('CORRECTED FLOW BUILDER CONTRACT PASS')
+          PY
+      - name: Build quarterly foreign and full-range proprietary archive
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHONPATH=scripts python scripts/backfill_flow_v12.py 2>&1 | tee data/v12-flow-build.log
+      - name: Validate flow artifact contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          z=json.load(open('data/flow-v12.json',encoding='utf-8'));a=json.load(open('data/flow-audit-v12.json',encoding='utf-8'));s=z.get('summary') or {}
+          assert z.get('version','').startswith('VMEWS-FLOW-12'),z.get('version')
+          assert s.get('status')=='PASS',s
+          assert s.get('foreignWindowContract')=='quarterly MM/DD/YYYY',s
+          assert s.get('routeCoverage',0)>=.90,s
+          assert s.get('foreignCoverage',0)>=.60 and s.get('foreign100plus',0)>=150,s
+          assert s.get('propCoverage',0)>=.25 and s.get('prop100plus',0)>=80,s
+          assert a.get('summary')==s
+          future=[];dupes=[];today=s.get('todayVN')
+          for sym,rows in (z.get('symbols') or {}).items():
+              dates=[r.get('date') for r in rows if r.get('date')]
+              if len(dates)!=len(set(dates)):dupes.append(sym)
+              for d in dates:
+                  if today and d>today:future.append((sym,d))
+          assert not future,future[:5]
+          assert not dupes,dupes[:10]
+          print('V12 FLOW ARCHIVE PASS',s,'bytes',Path('data/flow-v12.json').stat().st_size)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-flow-build-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            data/v12-flow-build.log
+            data/flow-v12.json
+            data/flow-audit-v12.json
+      - name: Persist validated flow snapshot
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/flow-v12.json data/flow-audit-v12.json
+          git commit -m 'Publish audited V12 institutional flow archive [v12-flow-data]'
+          git pull --rebase origin forecast-v12-methodfix
+          git push origin HEAD:forecast-v12-methodfix

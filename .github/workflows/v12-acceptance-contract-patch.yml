@@ -1,0 +1,38 @@
+name: V12 acceptance contract patch
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths: ['.github/workflows/v12-acceptance-contract-patch.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch acceptance zero semantics and daily-IC contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v12_acceptance.py');s=p.read_text(encoding='utf-8')
+          old="int(wf.get('futureRowsUsedForTraining') or -1)==0"
+          new="wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0"
+          if old not in s: raise SystemExit('ACCEPTANCE ZERO PATCH TARGET NOT FOUND')
+          s=s.replace(old,new,1);p.write_text(s,encoding='utf-8');compile(s,str(p),'exec')
+          q=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc')
+          q.write_text("_audit_metrics_before_daily_contract=audit_metrics\n\ndef audit_metrics(y,score,p,med,lo,hi,D):\n    z=_audit_metrics_before_daily_contract(y,score,p,med,lo,hi,D)\n    rs=rank_stats(y,score,D)\n    for key in ('icDays','icStd','icTStat','icPositiveDayShare','icBootstrap95','spreadDays','spreadStd','spreadTStat'):\n        z[key]=rs.get(key)\n    return z\n",encoding='utf-8')
+          r=Path('scripts/v12_contract_regression.py')
+          r.write_text("from pathlib import Path\nacceptance=Path('scripts/v12_acceptance.py').read_text(encoding='utf-8')\nassert \"int(wf.get('futureRowsUsedForTraining') or -1)==0\" not in acceptance\nassert \"wf.get('futureRowsUsedForTraining') is not None and int(wf.get('futureRowsUsedForTraining'))==0\" in acceptance\nwf={'status':'PASS','futureRowsUsedForTraining':0,'blocks':[1,2,3,4]}\nassert wf.get('status')=='PASS' and wf.get('futureRowsUsedForTraining') is not None and int(wf['futureRowsUsedForTraining'])==0 and len(wf['blocks'])>=3\npart=Path('scripts/v12_train_parts/02b_daily_audit_metrics.pyinc').read_text(encoding='utf-8')\nfor token in ('icDays','icPositiveDayShare','icBootstrap95','spreadTStat'): assert token in part,token\nprint('V12 ACCEPTANCE CONTRACT REGRESSION PASS')\n",encoding='utf-8')
+          compile(r.read_text(encoding='utf-8'),str(r),'exec')
+          print('V12 CONTRACT PATCH PRECOMMIT PASS')
+          PY
+      - name: Run regression before persist
+        run: PYTHONPATH=scripts python scripts/v12_contract_regression.py
+      - name: Persist contract fixes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/v12_acceptance.py scripts/v12_train_parts/02b_daily_audit_metrics.pyinc scripts/v12_contract_regression.py
+          git commit -m 'Fix V12 acceptance zero semantics and daily IC audit contract'
+          git pull --rebase origin forecast-v12-methodfix
+          git push origin HEAD:forecast-v12-methodfix

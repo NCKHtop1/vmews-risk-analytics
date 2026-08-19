@@ -1,0 +1,37 @@
+name: V12 Vnstock delisted profile probe
+on:
+  push:
+    branches: [forecast-v12-hardening]
+    paths: ['.github/workflows/v12-delisted-profile-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q vnstock==4.0.4 pandas
+      - name: Inspect delisted stock profiles
+        run: |
+          python - <<'PY'
+          import json
+          from vnstock import Listing
+          df=Listing(source='VCI').symbols_by_exchange(show_log=False)
+          d=df[(df['exchange'].astype(str).str.upper()=='DELISTED') & (df['type'].astype(str).str.upper()=='STOCK')].copy()
+          print('DELISTED_STOCK_COUNT',len(d))
+          print(json.dumps(d.head(80).to_dict('records'),ensure_ascii=False,indent=2,default=str))
+          probes={}
+          syms=d['symbol'].astype(str).head(20).tolist()
+          try:
+              from vnstock_data import Reference
+              ref=Reference()
+              for s in syms:
+                  try:
+                      z=ref.company(s).info()
+                      probes[s]={'columns':list(map(str,z.columns)),'rows':z.head(3).to_dict('records')}
+                  except BaseException as e:probes[s]={'error':f'{type(e).__name__}: {e}'}
+          except BaseException as e:probes['REFERENCE_IMPORT']={'error':f'{type(e).__name__}: {e}'}
+          print('PROFILE_PROBES')
+          print(json.dumps(probes,ensure_ascii=False,indent=2,default=str))
+          PY

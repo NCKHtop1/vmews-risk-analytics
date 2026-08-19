@@ -1,0 +1,32 @@
+name: V12 pipeline workflow patch
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_patch_pipeline_workflows.py'
+      - '.github/workflows/v12-pipeline-workflow-patch.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/v12_patch_pipeline_workflows.py
+      - name: Verify workflow integration contracts
+        run: |
+          grep -q 'Build current flow and VNStock financial context' .github/workflows/v12-methodfix-full.yml
+          grep -q 'current-context-v12.json' .github/workflows/v12-methodfix-full.yml
+          grep -q "magnitudeGate.*status.*PASS" .github/workflows/v12-release-final.yml
+          grep -q 'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0' .github/workflows/v12-release-final.yml
+          grep -q 'data/current-context-v12.json' .github/workflows/v12-release-final.yml
+      - name: Commit deterministic workflow patch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/v12-methodfix-full.yml .github/workflows/v12-release-final.yml
+          git diff --cached --quiet && exit 0
+          git commit -m 'Integrate context and magnitude gates into V12 release pipeline [no-full]'
+          git push origin HEAD:forecast-v12-methodfix

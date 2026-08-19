@@ -1,0 +1,32 @@
+name: V12 former-HSX history probe
+on:
+  push:
+    branches: [forecast-v12-hardening]
+    paths: ['.github/workflows/v12-former-hsx-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Discover and validate former HSX cohort
+        env:
+          V12_VNSTOCK_INTERVAL: '3.15'
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          import json
+          from v12_universe import discover_candidates
+          from v12_data_sources import get_price_history
+          c,a=discover_candidates();print('DISCOVERY',json.dumps(a,ensure_ascii=False,indent=2,default=str));out={}
+          for s,m in c.items():
+              try:
+                  rows,qa=get_price_history(s);out[s]={'metadata':m,'rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'route':qa.get('route'),'corporateAction':qa.get('corporateAction')}
+              except BaseException as e:out[s]={'metadata':m,'error':f'{type(e).__name__}: {e}'}
+          print('RESULT',json.dumps(out,ensure_ascii=False,indent=2,default=str))
+          assert len(c)>=1,c
+          assert any(x.get('rows',0)>=520 and x.get('end','9999')<'2026-07-25' for x in out.values()),out
+          PY

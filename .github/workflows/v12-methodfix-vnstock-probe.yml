@@ -1,0 +1,31 @@
+name: V12 methodfix VNStock PIT probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_data_sources.py'
+      - 'scripts/v12_vnstock_flow_fundamental_probe.py'
+      - 'requirements-v12.txt'
+      - '.github/workflows/v12-methodfix-vnstock-probe.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      V12_VNSTOCK_INTERVAL: '4.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Probe real VNStock schemas
+        run: PYTHONPATH=scripts python scripts/v12_vnstock_flow_fundamental_probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-vnstock-flow-fundamental-probe-${{ github.run_id }}
+          retention-days: 7
+          path: data/v12-vnstock-flow-fundamental-probe.json

@@ -1,0 +1,24 @@
+V12_LABEL_MATURITY={}
+_base_panel_before_label_maturity=base_panel
+
+def _install_label_maturity(panel):
+    global V12_LABEL_MATURITY
+    V12_LABEL_MATURITY={int(h):np.asarray([str(x.get('matureDate'+str(h)) or '9999-12-31') for x in panel],dtype=object) for h in HORIZONS}
+    return V12_LABEL_MATURITY
+
+def label_maturity_array(h):
+    a=V12_LABEL_MATURITY.get(int(h))
+    if a is None or len(a)==0:raise RuntimeError(f'label maturity array missing for horizon {h}')
+    return a
+
+def base_panel(price_store):
+    panel,latest,rows_by_symbol=_base_panel_before_label_maturity(price_store)
+    index_by_symbol={s:{str(r.get('date')):i for i,r in enumerate(rows)} for s,rows in rows_by_symbol.items()}
+    for x in panel:
+        s=x['symbol'];rows=rows_by_symbol[s];i=index_by_symbol[s].get(str(x['date']))
+        if i is None:raise RuntimeError(f'origin date not found in raw symbol calendar: {s} {x["date"]}')
+        for h in HORIZONS:
+            x['matureDate'+str(h)]=str(rows[i+h]['date']) if i+h<len(rows) else '9999-12-31'
+    _install_label_maturity(panel)
+    print(json.dumps({'v12LabelMaturity':'INSTALLED','rows':len(panel),'horizons':list(HORIZONS),'policy':'symbol-specific actual trading calendar; no sampled-origin ordinal purge'},ensure_ascii=False),flush=True)
+    return panel,latest,rows_by_symbol

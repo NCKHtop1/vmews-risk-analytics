@@ -1,0 +1,132 @@
+# H5 quantile-scaled sparse-tail challenger.
+#
+# V10 established, using 80-85% only, that sparse extreme-rank forecasts can have robust positive
+# moving-origin-date MAE evidence, but fixed conditional medians remain too small to satisfy the
+# unchanged H5 total-forecast magnitude floor.  This layer does NOT relax that floor.  Instead it
+# uses the already fit-locked q20/q80 conditional distribution as a label-free-at-application
+# magnitude surface: lower extreme ranks receive a prespecified fraction of min(q20,0), upper
+# extreme ranks a fraction of max(q80,0), and the noisy middle remains exact no-change.
+#
+# Governance is unchanged:
+#   * H5 only and only after all earlier point challengers remain Q50;
+#   * quantile layer itself is fit on maturity-purged 80-85%; threshold/scale are selected there;
+#   * candidates must be inside the pooled-MAE one-SE set, pass unchanged total magnitude floors,
+#     and have positive moving-origin-date block-bootstrap lower-90 MAE evidence;
+#   * early whole-date 85-90% can only confirm/reject the locked candidate;
+#   * late 85-90% is conformal-only; 90-100% is never supplied to selection;
+#   * final PBO/walk-forward/blind/promotion gates remain untouched.
+
+_FITLOCK_H5_QTAIL_THRESHOLDS=(0.50,0.65,0.80)
+_FITLOCK_H5_QTAIL_SCALES=(0.25,0.50,0.75,1.00)
+
+
+def _fitlock_h5_qtail_apply(rank,lo,hi,threshold,scale):
+    rr=np.asarray(rank,float);ll=np.asarray(lo,float);hh=np.asarray(hi,float)
+    if not (len(rr)==len(ll)==len(hh)):raise RuntimeError('H5 quantile-tail alignment mismatch')
+    out=np.zeros(len(rr),float);t=float(threshold);s=float(scale)
+    low=rr<=-t;high=rr>=t
+    out[low]=s*np.minimum(ll[low],0.0)
+    out[high]=s*np.maximum(hh[high],0.0)
+    return out
+
+
+def _fitlock_h5_qtail_candidate(y,rank,lo,hi,dates,h,threshold,scale):
+    yy=np.asarray(y,float);rr=np.asarray(rank,float);ll=np.asarray(lo,float);hh=np.asarray(hi,float);dd=np.asarray(dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(rr)&np.isfinite(ll)&np.isfinite(hh);yy=yy[good];rr=rr[good];ll=ll[good];hh=hh[good];dd=dd[good]
+    low=rr<=-float(threshold);high=rr>=float(threshold)
+    if int(low.sum())<300 or int(high.sum())<300:return None
+    pred=_fitlock_h5_qtail_apply(rr,ll,hh,threshold,scale)
+    if float(np.std(pred))<1e-12:return None
+    base=np.abs(yy);loss=np.abs(yy-pred);ds=dd.astype(str);groups=[]
+    for day in sorted(set(ds)):
+        idx=np.where(ds==day)[0]
+        if len(idx)>=20:groups.append(idx)
+    if len(groups)<8:return None
+    edges=np.asarray([float(np.mean(base[idx]-loss[idx])) for idx in groups],float)
+    ci,block=_fitlock_scale_day_bootstrap(edges,h,reps=1000)
+    lower90=float(ci[0]) if isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -float('inf')
+    fd,fp=_gate_floor(h);disp=float(np.std(pred)/max(np.std(yy),1e-12));p90=float(np.quantile(np.abs(pred),.9)/max(np.quantile(np.abs(yy),.9),1e-12))
+    mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0
+    return {'threshold':float(threshold),'scale':float(scale),'fitRows':int(len(yy)),'lowerTailRows':int(low.sum()),'upperTailRows':int(high.sum()),
+        'fitDates':int(len(groups)),'fitMAE':mae,'fitMAESE':se,'fitDispersionRatio':disp,'fitP90MagnitudeRatio':p90,
+        'dailyMeanEdge':float(np.mean(edges)),'dailyPositiveShare':float(np.mean(edges>0)),'dailyBootstrap90':ci,'dailyLower90':lower90,
+        'dailyBlockLength':int(block),'magnitudeFloors':{'dispersionRatio':float(fd),'p90MagnitudeRatio':float(fp)},
+        'magnitudePass':bool(disp>=fd and p90>=fp),'robustMAEPass':bool(lower90>0 and float(np.mean(edges>0))>=.50),
+        'pointMagnitudeSource':'FIT_LOCKED_Q20_Q80_80_85','middleForecast':'EXACT_NO_CHANGE_ZERO_RETURN',
+        'objective':'H5_QUANTILE_SPARSE_TAIL_L1_BLOCK_BOOTSTRAP','selectionBlock':'80-85% ONLY','sealedLabelsUsed':0}
+
+
+def _fitlock_h5_qtail_family(y,score,dates,h,layer):
+    if int(h)!=5:return None,{'status':'NOT_APPLICABLE','horizon':int(h),'sealedLabelsUsed':0}
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object);rank=_xsec_rank_signal(ss,dd)
+    lo0,_,hi0=layer.predict(ss);g=float(getattr(layer,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+    rows=[]
+    for threshold in _FITLOCK_H5_QTAIL_THRESHOLDS:
+        for scale in _FITLOCK_H5_QTAIL_SCALES:
+            z=_fitlock_h5_qtail_candidate(yy,rank,lo,hi,dd,h,threshold,scale)
+            if z is not None:rows.append(z)
+    if not rows:return None,{'status':'ABSTAIN','reason':'no quantile sparse-tail candidate has sufficient support','sealedLabelsUsed':0}
+    best=min(rows,key=lambda z:(z['fitMAE'],z['threshold'],z['scale']));limit=float(best['fitMAE']+max(best['fitMAESE'],1e-12))
+    near=[z for z in rows if z['fitMAE']<=limit];robust=[z for z in near if z['magnitudePass'] and z['robustMAEPass']]
+    if not robust:
+        return None,{'status':'ABSTAIN','reason':'no one-SE quantile sparse-tail candidate passes unchanged total magnitude floors plus positive moving-date MAE lower-90 on 80-85%',
+            'bestFitMAE':float(best['fitMAE']),'bestFitSE':float(best['fitMAESE']),'oneSELimit':limit,'candidateN':int(len(rows)),
+            'oneSECandidateN':int(len(near)),'robustCandidateN':0,'candidates':rows,'sealedLabelsUsed':0}
+    chosen=max(robust,key=lambda z:(z['dailyLower90'],z['dailyMeanEdge'],z['dailyPositiveShare'],-z['fitMAE'],z['threshold'],-z['scale']))
+    model={'kind':'H5_QUANTILE_SPARSE_TAIL','threshold':float(chosen['threshold']),'quantileScale':float(chosen['scale']),'fitAudit':chosen}
+    return model,{'status':'PASS','selectionBlock':'80-85% ONLY','selectedThreshold':float(chosen['threshold']),'selectedScale':float(chosen['scale']),
+        'selectedDailyLower90':float(chosen['dailyLower90']),'selectedDailyMeanEdge':float(chosen['dailyMeanEdge']),
+        'selectedPositiveDayShare':float(chosen['dailyPositiveShare']),'selectedDispersionRatio':float(chosen['fitDispersionRatio']),
+        'selectedP90MagnitudeRatio':float(chosen['fitP90MagnitudeRatio']),'bestFitMAE':float(best['fitMAE']),'oneSELimit':limit,
+        'candidateN':int(len(rows)),'oneSECandidateN':int(len(near)),'robustCandidateN':int(len(robust)),
+        'thresholdGrid':[float(x) for x in _FITLOCK_H5_QTAIL_THRESHOLDS],'scaleGrid':[float(x) for x in _FITLOCK_H5_QTAIL_SCALES],
+        'candidates':rows,'objective':'H5_QUANTILE_SPARSE_TAIL__ONE_SE__MAGNITUDE__BLOCK_BOOTSTRAP_LCB','sealedLabelsUsed':0}
+
+
+_fitlock_h5_qtail_before_calibrate=calibrate
+_fitlock_h5_qtail_before_apply=apply_calibration
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_fitlock_h5_qtail_before_calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates)
+    if cal_dates is None or conform_dates is None or not isinstance(layer,_QuantileLayer):return layer,iso,qadj
+    audit=getattr(layer,'pointSelectionAudit',None)
+    if not isinstance(audit,dict) or int(audit.get('horizon') or _gate_h())!=5:return layer,iso,qadj
+    if str(audit.get('selectedFamily'))!='Q50':
+        audit['h5QuantileSparseTailChallenger']={'status':'NOT_INVOKED','reason':'an earlier fit-locked point family already independently confirmed','sealedLabelsUsed':0};return layer,iso,qadj
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object);cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
+    sp=_chrono_date_split(fd,cd)
+    if sp is None:return layer,iso,qadj
+    iv=sp['validationIndex'];model,fit_audit=_fitlock_h5_qtail_family(fy,fs,fd,5,layer);validation=None
+    if model is not None and len(iv):
+        lo0,_,hi0=layer.predict(cs[iv]);g=float(getattr(layer,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+        rank=_xsec_rank_signal(cs[iv],cd[iv]);raw=_fitlock_h5_qtail_apply(rank,lo,hi,model['threshold'],model['quantileScale']);pred=_clip_between(raw,lo,hi)
+        validation=_nested_eval(cy[iv],pred,cd[iv],5,bootstrap=True);validation['quantileSparseTailAudit']={'threshold':float(model['threshold']),'quantileScale':float(model['quantileScale']),
+            'magnitudeSource':'LOCKED_Q20_Q80','middleValue':0.0,'selectionFreeValidation':True,'sealedLabelsUsed':0}
+        if validation.get('preblindConfirmed') is True:
+            layer.pointMode='XSEC_QUANTILE_SPARSE_TAIL_FIT_LOCKED_H5';layer.pointXsecModel=model;audit['selectedFamily']=layer.pointMode;audit['selectedPreblindConfirmed']=True
+            audit['familyFitAudit']=fit_audit;audit['lockedModel']=model;audit['independentValidationAudit']=validation
+            audit['reason']='H5 fixed-median sparse tail had preblind MAE skill but insufficient total magnitude; a q20/q80-scaled sparse tail was locked on 80-85% and independently passed unchanged whole-date 85-90% MAE plus magnitude confirmation'
+    audit['h5QuantileSparseTailChallenger']={'status':'PASS' if validation and validation.get('preblindConfirmed') is True else 'REJECTED_PREBLIND',
+        'fitAudit':fit_audit,'independentValidationAudit':validation,'selectionData':'80-85% ONLY','validationData':'EARLY WHOLE-DATE 85-90% ONLY',
+        'middleForecast':'EXACT_NO_CHANGE_ZERO_RETURN','magnitudeSource':'FIT_LOCKED_Q20_Q80','magnitudeConstraintScope':'TOTAL_POINT_FORECAST','sealedLabelsUsed':0}
+    audit['revision']='FIT_LOCKED_H5_QUANTILE_SPARSE_TAIL_V11';audit['sealedLabelsUsed']=0
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode=='XSEC_QUANTILE_SPARSE_TAIL_FIT_LOCKED_H5':
+        if origin_dates is None:return _fitlock_h5_qtail_before_apply(score,scen,iso,qadj,origin_dates)
+        ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+        model=getattr(scen,'pointXsecModel',None) or {};rank=_xsec_rank_signal(ss,dd);raw=_fitlock_h5_qtail_apply(rank,lo,hi,float(model.get('threshold',.8)),float(model.get('quantileScale',.5)));point=_clip_between(raw,lo,hi)
+        return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
+    return _fitlock_h5_qtail_before_apply(score,scen,iso,qadj,origin_dates)
+
+
+# Structural regression: middle remains exact no-change; tail magnitude is sourced from locked
+# asymmetric quantiles and never exceeds the underlying interval for scale<=1.
+_v11_rank=np.asarray([-.9,-.2,.2,.9],float);_v11_lo=np.asarray([-.04,-.03,-.02,-.01]);_v11_hi=np.asarray([.01,.02,.03,.05])
+_v11_pred=_fitlock_h5_qtail_apply(_v11_rank,_v11_lo,_v11_hi,.8,.5)
+if not np.allclose(_v11_pred,np.asarray([-.02,0.,0.,.025])):raise RuntimeError('H5 quantile sparse-tail structural regression failed')
+del _v11_rank,_v11_lo,_v11_hi,_v11_pred

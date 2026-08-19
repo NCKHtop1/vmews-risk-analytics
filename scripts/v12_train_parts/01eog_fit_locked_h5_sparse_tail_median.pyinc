@@ -1,0 +1,166 @@
+# H5 sparse asymmetric tail-median challenger.
+#
+# Scientific motivation:
+#   H5 retains robust same-origin ordinal skill, but symmetric rank->return scale candidates can
+#   lose MAE because the middle of the cross-section has little absolute-return predictability and
+#   upper/lower tails need not have equal magnitude.  For L1 loss the conditional median is the
+#   natural point estimate.  This challenger therefore keeps the no-change baseline in the noisy
+#   middle and estimates only two robust tail medians from maturity-purged 80-85%.
+#
+# Governance:
+#   * H5 only, and only after earlier fit-locked challengers abstain to Q50;
+#   * thresholds and shrink factors come from a tiny prespecified grid;
+#   * upper/lower tail medians and all selection metrics use 80-85% ONLY;
+#   * the middle forecast is exactly zero; no blanket market drift is injected;
+#   * candidates must pass the unchanged authority magnitude floors AND have positive moving-
+#     origin-date block-bootstrap lower-90 MAE evidence on 80-85%;
+#   * early whole-date 85-90% independently confirms the already locked candidate;
+#   * late 85-90% remains conformal-only; 90-100% is never supplied here;
+#   * all final walk-forward, PBO, blind and promotion gates remain unchanged.
+
+_FITLOCK_H5_SPARSE_THRESHOLDS=(0.50,0.65,0.80)
+_FITLOCK_H5_SPARSE_SHRINKS=(0.50,0.75,1.00)
+
+
+def _fitlock_h5_sparse_rank(score,dates):
+    return np.asarray(_xsec_rank_signal(score,dates),float)
+
+
+def _fitlock_h5_sparse_apply_rank(rank,threshold,lower_value,upper_value):
+    r=np.asarray(rank,float);t=float(threshold)
+    out=np.zeros(len(r),float)
+    out[r<=-t]=float(lower_value)
+    out[r>= t]=float(upper_value)
+    return out
+
+
+def _fitlock_h5_sparse_candidate(y,rank,dates,h,threshold,shrink):
+    yy=np.asarray(y,float);rr=np.asarray(rank,float);dd=np.asarray(dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(rr);yy=yy[good];rr=rr[good];dd=dd[good]
+    lo_mask=rr<=-float(threshold);hi_mask=rr>=float(threshold)
+    if int(lo_mask.sum())<300 or int(hi_mask.sum())<300:
+        return None
+    # Sign-constrained conditional medians: if a tail has no directional L1 evidence, that side
+    # stays at the exact no-change baseline rather than being forced away from zero.
+    raw_lo=float(np.median(yy[lo_mask]));raw_hi=float(np.median(yy[hi_mask]))
+    lower=float(min(0.0,raw_lo))*float(shrink);upper=float(max(0.0,raw_hi))*float(shrink)
+    pred=_fitlock_h5_sparse_apply_rank(rr,threshold,lower,upper)
+    if float(np.std(pred))<1e-12:return None
+    base=np.abs(yy);loss=np.abs(yy-pred);ds=dd.astype(str);groups=[]
+    for day in sorted(set(ds)):
+        idx=np.where(ds==day)[0]
+        if len(idx)>=20:groups.append(idx)
+    if len(groups)<8:return None
+    edges=np.asarray([float(np.mean(base[idx]-loss[idx])) for idx in groups],float)
+    ci,block=_fitlock_scale_day_bootstrap(edges,h,reps=1000)
+    lower90=float(ci[0]) if isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -float('inf')
+    fd,fp=_gate_floor(h);disp=float(np.std(pred)/max(np.std(yy),1e-12));p90=float(np.quantile(np.abs(pred),.9)/max(np.quantile(np.abs(yy),.9),1e-12))
+    mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0
+    return {
+        'threshold':float(threshold),'shrink':float(shrink),'rawLowerMedian':raw_lo,'rawUpperMedian':raw_hi,
+        'lowerValue':lower,'upperValue':upper,'fitRows':int(len(yy)),'lowerTailRows':int(lo_mask.sum()),
+        'upperTailRows':int(hi_mask.sum()),'fitDates':int(len(groups)),'fitMAE':mae,'fitMAESE':se,
+        'fitDispersionRatio':disp,'fitP90MagnitudeRatio':p90,'dailyMeanEdge':float(np.mean(edges)),
+        'dailyPositiveShare':float(np.mean(edges>0)),'dailyBootstrap90':ci,'dailyLower90':lower90,
+        'dailyBlockLength':int(block),'magnitudeFloors':{'dispersionRatio':float(fd),'p90MagnitudeRatio':float(fp)},
+        'magnitudePass':bool(disp>=fd and p90>=fp),'robustMAEPass':bool(lower90>0 and float(np.mean(edges>0))>=.50),
+        'objective':'H5_SPARSE_ASYMMETRIC_TAIL_MEDIAN_L1_BLOCK_BOOTSTRAP','selectionBlock':'80-85% ONLY',
+        'sealedLabelsUsed':0,
+    }
+
+
+def _fitlock_h5_sparse_family(y,score,dates,h):
+    if int(h)!=5:return None,{'status':'NOT_APPLICABLE','horizon':int(h),'sealedLabelsUsed':0}
+    rank=_fitlock_h5_sparse_rank(score,dates);rows=[]
+    for threshold in _FITLOCK_H5_SPARSE_THRESHOLDS:
+        for shrink in _FITLOCK_H5_SPARSE_SHRINKS:
+            z=_fitlock_h5_sparse_candidate(y,rank,dates,h,threshold,shrink)
+            if z is not None:rows.append(z)
+    if not rows:
+        return None,{'status':'ABSTAIN','reason':'no sparse tail candidate has sufficient tail/date support','candidates':rows,'sealedLabelsUsed':0}
+    best=min(rows,key=lambda z:(z['fitMAE'],z['threshold'],-z['shrink']))
+    limit=float(best['fitMAE']+max(best['fitMAESE'],1e-12))
+    near=[z for z in rows if z['fitMAE']<=limit]
+    robust=[z for z in near if z['magnitudePass'] and z['robustMAEPass']]
+    if not robust:
+        return None,{
+            'status':'ABSTAIN','reason':'no one-SE sparse tail candidate passes unchanged total-magnitude floors plus positive moving-date MAE lower-90 on 80-85%',
+            'bestFitMAE':float(best['fitMAE']),'bestFitSE':float(best['fitMAESE']),'oneSELimit':limit,
+            'candidateN':int(len(rows)),'oneSECandidateN':int(len(near)),'robustCandidateN':0,'candidates':rows,'sealedLabelsUsed':0,
+        }
+    chosen=max(robust,key=lambda z:(z['dailyLower90'],z['dailyMeanEdge'],z['dailyPositiveShare'],-z['fitMAE'],z['threshold'],-z['shrink']))
+    model={'kind':'H5_SPARSE_TAIL_MEDIAN','threshold':float(chosen['threshold']),'shrink':float(chosen['shrink']),
+           'lowerValue':float(chosen['lowerValue']),'upperValue':float(chosen['upperValue']),'fitAudit':chosen}
+    return model,{
+        'status':'PASS','selectionBlock':'80-85% ONLY','selectedThreshold':float(chosen['threshold']),
+        'selectedShrink':float(chosen['shrink']),'selectedLowerValue':float(chosen['lowerValue']),
+        'selectedUpperValue':float(chosen['upperValue']),'selectedDailyLower90':float(chosen['dailyLower90']),
+        'selectedDailyMeanEdge':float(chosen['dailyMeanEdge']),'selectedPositiveDayShare':float(chosen['dailyPositiveShare']),
+        'selectedDispersionRatio':float(chosen['fitDispersionRatio']),'selectedP90MagnitudeRatio':float(chosen['fitP90MagnitudeRatio']),
+        'bestFitMAE':float(best['fitMAE']),'oneSELimit':limit,'candidateN':int(len(rows)),'oneSECandidateN':int(len(near)),
+        'robustCandidateN':int(len(robust)),'thresholdGrid':[float(x) for x in _FITLOCK_H5_SPARSE_THRESHOLDS],
+        'shrinkGrid':[float(x) for x in _FITLOCK_H5_SPARSE_SHRINKS],'candidates':rows,
+        'objective':'H5_SPARSE_TAIL_MEDIAN__ONE_SE__MAGNITUDE__BLOCK_BOOTSTRAP_LCB','sealedLabelsUsed':0,
+    }
+
+
+_fitlock_h5_sparse_before_calibrate=calibrate
+_fitlock_h5_sparse_before_apply=apply_calibration
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_fitlock_h5_sparse_before_calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates)
+    if cal_dates is None or conform_dates is None or not isinstance(layer,_QuantileLayer):return layer,iso,qadj
+    audit=getattr(layer,'pointSelectionAudit',None)
+    if not isinstance(audit,dict) or int(audit.get('horizon') or _gate_h())!=5:return layer,iso,qadj
+    # Earlier independently-confirmed point families remain authoritative. Sparse tail is only a
+    # fallback after all earlier fit-locked candidates abstain to Q50.
+    if str(audit.get('selectedFamily'))!='Q50':
+        audit['h5SparseTailChallenger']={'status':'NOT_INVOKED','reason':'an earlier fit-locked point family already independently confirmed','sealedLabelsUsed':0}
+        return layer,iso,qadj
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object)
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
+    sp=_chrono_date_split(fd,cd)
+    if sp is None:return layer,iso,qadj
+    h=5;iv=sp['validationIndex'];model,fit_audit=_fitlock_h5_sparse_family(fy,fs,fd,h);validation=None
+    if model is not None and len(iv):
+        loV,_,hiV=layer.predict(cs[iv]);g=float(getattr(layer,'returnShrink',1.0));loV=np.asarray(loV,float)*g;hiV=np.asarray(hiV,float)*g
+        rankV=_fitlock_h5_sparse_rank(cs[iv],cd[iv]);raw=_fitlock_h5_sparse_apply_rank(rankV,model['threshold'],model['lowerValue'],model['upperValue'])
+        predV=_clip_between(raw,loV,hiV);validation=_nested_eval(cy[iv],predV,cd[iv],h,bootstrap=True)
+        validation['sparseTailAudit']={'threshold':float(model['threshold']),'shrink':float(model['shrink']),
+            'lowerValue':float(model['lowerValue']),'upperValue':float(model['upperValue']),'middleValue':0.0,
+            'selectionFreeValidation':True,'sealedLabelsUsed':0}
+        if validation.get('preblindConfirmed') is True:
+            layer.pointMode='XSEC_SPARSE_TAIL_MEDIAN_FIT_LOCKED_H5';layer.pointXsecModel=model
+            audit['selectedFamily']='XSEC_SPARSE_TAIL_MEDIAN_FIT_LOCKED_H5';audit['selectedPreblindConfirmed']=True
+            audit['familyFitAudit']=fit_audit;audit['lockedModel']=model;audit['independentValidationAudit']=validation
+            audit['reason']='H5 earlier point families abstained; an asymmetric sparse rank-tail conditional-median model was fit/locked on 80-85% and independently passed unchanged whole-date 85-90% MAE plus magnitude confirmation'
+    audit['h5SparseTailChallenger']={
+        'status':'PASS' if validation and validation.get('preblindConfirmed') is True else 'REJECTED_PREBLIND',
+        'fitAudit':fit_audit,'independentValidationAudit':validation,'selectionData':'80-85% ONLY',
+        'validationData':'EARLY WHOLE-DATE 85-90% ONLY','middleForecast':'EXACT_NO_CHANGE_ZERO_RETURN',
+        'magnitudeConstraintScope':'TOTAL_POINT_FORECAST','sealedLabelsUsed':0,
+    }
+    audit['revision']='FIT_LOCKED_H5_SPARSE_TAIL_MEDIAN_V10';audit['sealedLabelsUsed']=0
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode=='XSEC_SPARSE_TAIL_MEDIAN_FIT_LOCKED_H5':
+        if origin_dates is None:return _fitlock_h5_sparse_before_apply(score,scen,iso,qadj,origin_dates)
+        ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(ss),float)
+        lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+        model=getattr(scen,'pointXsecModel',None) or {};rank=_fitlock_h5_sparse_rank(ss,dd)
+        raw=_fitlock_h5_sparse_apply_rank(rank,float(model.get('threshold',.8)),float(model.get('lowerValue',0.0)),float(model.get('upperValue',0.0)))
+        point=_clip_between(raw,lo,hi)
+        return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
+    return _fitlock_h5_sparse_before_apply(score,scen,iso,qadj,origin_dates)
+
+
+# Structural regression only; no research labels. Middle ranks must remain exactly at no-change
+# and upper/lower tails may carry asymmetric magnitude.
+_v10_rank=np.asarray([-.95,-.7,-.2,.2,.7,.95],float)
+_v10_pred=_fitlock_h5_sparse_apply_rank(_v10_rank,.65,-.02,.03)
+if not np.allclose(_v10_pred,np.asarray([-.02,-.02,0.,0.,.03,.03])):raise RuntimeError('H5 sparse tail median structural regression failed')
+del _v10_rank,_v10_pred

@@ -1,0 +1,15 @@
+Release immutable V12 after successful H5 conditional-core scientific fix and exact Full validation.
+Validated Full scientific source: b14f8726dfea6badc62f89341cd839a3598978a2
+Persisted validated model/data commit: 4fa1e5ac6cebfa7b9bb516b3bf1ca886bca47c6d
+Full run: 32274502365
+Nine-phase acceptance: 1601/1601 PASS; phases 1-9 PASS
+Price horizons PASS: T+1,T+2,T+3,T+4,T+5
+Direction probability: preserve independently validated horizons only; do not infer validation from price PASS
+H5 core policy: REGIME admitted only by maturity-purged pre-sealed 70%-80% incremental evidence; sealed labels used for admission = 0
+H5 sole-expert ablation: NO_EXPERT_PRESEALED_NULL fit on 80%-85%, conformed on 85%-90%, audited only on sealed 90%-100%
+No authority threshold lowering; no sealed selection; no forecast-value tuning in the contract fix
+Benchmark contract: exact-maturity VNINDEX + adjacent-CAR daily AR; frozen source fail-closed
+Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0
+Release CI fix: replace Playwright --with-deps OS provisioning with bounded Chromium-only install plus real launch precheck; all provider-outage/CDN/browser assertions retained
+Release workflow fix commit: 6bbada41547ee93470209bf216f792fd7653cddc
+Release requirement: all research/auxiliary gates + provider-outage browser smoke + commit-pinned CDN integrity + desktop/mobile browser smoke must PASS

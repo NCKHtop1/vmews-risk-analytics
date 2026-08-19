@@ -1,0 +1,40 @@
+name: V12 historical universe probe
+on:
+  push:
+    branches: [forecast-v12-production]
+    paths: ['.github/workflows/v12-universe-probe.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --disable-pip-version-check -q vnstock==4.0.4 pandas
+      - name: Inspect listing sources and delisted metadata
+        run: |
+          python - <<'PY'
+          import json
+          from vnstock import Listing
+          out={}
+          for src in ['VCI','VND']:
+              try:
+                  obj=Listing(source=src)
+                  frames={}
+                  for meth in ['all_symbols','symbols_by_exchange']:
+                      try:
+                          df=getattr(obj,meth)(show_log=False)
+                      except TypeError:
+                          df=getattr(obj,meth)()
+                      frames[meth]={
+                          'rows':len(df),'columns':list(map(str,df.columns)),
+                          'statusCounts':df['status'].astype(str).value_counts().head(20).to_dict() if 'status' in df.columns else {},
+                          'exchangeCounts':df['exchange'].astype(str).value_counts().head(20).to_dict() if 'exchange' in df.columns else {},
+                          'typeCounts':df['type'].astype(str).value_counts().head(20).to_dict() if 'type' in df.columns else {},
+                          'delistedSamples':df[df['status'].astype(str).str.lower().str.contains('delist')].head(30).to_dict('records') if 'status' in df.columns else []
+                      }
+                  out[src]=frames
+              except BaseException as e:out[src]={'error':f'{type(e).__name__}: {e}'}
+          print(json.dumps(out,ensure_ascii=False,indent=2,default=str))
+          PY

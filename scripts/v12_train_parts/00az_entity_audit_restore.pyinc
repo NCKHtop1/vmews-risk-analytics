@@ -1,0 +1,24 @@
+# Restore factual entity/source/rumor audit metadata after the immutable-source override.
+# 00a_entity installs an entity-aware source_audit_summary wrapper, but 00aa_reproducible_sources
+# deliberately replaces the source provider and therefore also replaces that wrapper.  Keep the
+# immutable frozen source implementation and re-attach only metadata produced by the actual
+# entity/source/rumor pipeline.  No counts are invented: MAIN is a backward-compatible alias for
+# the observed normalized NARRATIVE count.
+_entity_restore_source_audit_before = source_audit_summary
+
+def source_audit_summary(audits, failures):
+    out = _entity_restore_source_audit_before(audits, failures)
+    entity = dict(ENTITY_AUDIT)
+    norm = dict(entity.get('normalizedSourceTypes') or {})
+    if norm:
+        entity['streamCoverage'] = {
+            'OFFICIAL': int(norm.get('OFFICIAL') or 0),
+            'MAIN': int(norm.get('NARRATIVE') or 0),
+            'NARRATIVE': int(norm.get('NARRATIVE') or 0),
+            'RUMOR': int(norm.get('RUMOR') or 0),
+            'CLARIFICATION': int(norm.get('CLARIFICATION') or 0),
+        }
+    entity['auditRestoredAfterFrozenSourceOverride'] = True
+    entity['countsDerivedFromObservedPipeline'] = True
+    out['entityFilter'] = entity
+    return out

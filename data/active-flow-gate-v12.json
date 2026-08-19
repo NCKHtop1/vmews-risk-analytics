@@ -1,0 +1,55 @@
+{
+  "version": "VMEWS-ACTIVE-FLOW-GATE-12.0.0",
+  "generatedAt": "2026-08-19T16:28:28.184268+00:00",
+  "status": "PASS",
+  "mode": "ABSTAIN",
+  "activeFeaturesInNumericalModel": [],
+  "audit": {
+    "version": "VMEWS-ACTIVE-FLOW-AUDIT-12.0.0",
+    "generatedAt": "2026-08-14T14:59:07Z",
+    "status": "ABSTAIN",
+    "certified": false,
+    "numericalFeaturesEnabled": false,
+    "candidateSource": "VCI TickerPriceHistory",
+    "candidateFields": [
+      "totalBuyTrade",
+      "totalBuyTradeVolume",
+      "totalSellTrade",
+      "totalSellTradeVolume",
+      "unMatchedBuyTradeVolume",
+      "unMatchedSellTradeVolume",
+      "difVolumeBuySell"
+    ],
+    "probeRuns": [
+      {
+        "runId": 31811989904,
+        "contract": "requests.post(..., json=payload)",
+        "symbols": [
+          "FPT",
+          "VCB",
+          "HPG",
+          "MBB",
+          "SSI"
+        ],
+        "result": "FAIL",
+        "diagnostic": "HTTP response did not expose a usable GraphQL data object."
+      },
+      {
+        "runId": 31812151988,
+        "contract": "requests.post(..., data=json.dumps(payload), Content-Type=application/json)",
+        "symbols": [
+          "FPT",
+          "VCB",
+          "HPG",
+          "MBB",
+          "SSI"
+        ],
+        "result": "FAIL",
+        "diagnostic": "HTTP 200 with empty JSON object {} for every representative symbol."
+      }
+    ],
+    "policy": "Active/aggressor order-flow is not admitted to V12 numerical features unless a historical point-in-time source returns auditable dated observations with sufficient depth. Missing active-flow must not be encoded as zero or neutral evidence.",
+    "reason": "The candidate public VCI historical route could not be independently reproduced on the production runner. Foreign/proprietary institutional flow, breadth, sector and market-regime features remain independently auditable; active-flow is explicitly abstained rather than fabricated."
+  },
+  "rule": "Active/aggressor flow may enter the numerical model only with a reproducible historical PIT source. If unavailable, the only acceptable state is explicit abstention with zero active-flow features in featureNames; missingness must never be encoded as neutral/zero signal."
+}

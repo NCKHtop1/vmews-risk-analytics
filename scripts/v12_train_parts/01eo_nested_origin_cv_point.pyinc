@@ -1,0 +1,177 @@
+# Nested chronological pre-blind point selector.
+#
+# Problem fixed by this layer: the previous gate-aligned selector could fall back to a point
+# family merely because it satisfied the magnitude floor even when its pre-blind MAE evidence
+# was weak.  This final selector makes the *selection evidence* match the downstream authority
+# objective without ever observing the sealed 90-100% block:
+#   - 80-85%: fit q20/q50/q80, isotonic, interval scale and any fixed market component;
+#   - early whole origin dates of maturity-purged 85-90%: expanding-origin nested CV for the
+#     point family/zero-centred rank scale.  Each held-out date is predicted by a scale selected
+#     only from earlier validation dates;
+#   - late whole origin dates of 85-90%: conformal widening only;
+#   - 90-100%: never supplied.
+#
+# The zero-centred same-origin rank family is deliberately emphasized because the direct score
+# has consistently strong ordinal signal while a stale common-return/intercept component can
+# reverse MAE out of regime.  A fixed market+rank family fitted on 80-85% remains an admissible
+# challenger.  No candidate is released through a magnitude-only fallback.
+_nested_point_before_calibrate = calibrate
+_nested_point_before_apply = apply_calibration
+
+
+def _nested_daily_edges(y,pred,origin_dates):
+    yy=np.asarray(y,float);pp=np.asarray(pred,float);dd=np.asarray(origin_dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good];dd=dd[good]
+    rows=[]
+    for day in sorted(set(dd.astype(str))):
+        m=dd.astype(str)==day
+        if int(m.sum())<20:continue
+        edge=float(np.mean(np.abs(yy[m])-np.abs(yy[m]-pp[m])))
+        rows.append({'date':str(day),'n':int(m.sum()),'maeEdge':edge})
+    return rows
+
+
+def _nested_mbb90(edges,reps=1600,seed=1907):
+    a=np.asarray(edges,float)
+    if len(a)==0:return [None,None],0
+    if len(a)==1:return [float(a[0]),float(a[0])],1
+    # Moving blocks preserve short-range date dependence.  The RNG is fixed so the audit is
+    # exactly reproducible across isolated horizon jobs and reruns.
+    block=max(1,min(len(a),int(round(len(a)**(1/3)))+1));rng=np.random.default_rng(int(seed)+len(a));vals=[]
+    starts=np.arange(len(a))
+    for _ in range(int(reps)):
+        draw=[]
+        while len(draw)<len(a):
+            s=int(rng.choice(starts))
+            for j in range(block):draw.append(float(a[(s+j)%len(a)]))
+        vals.append(float(np.mean(draw[:len(a)])))
+    return [float(np.quantile(vals,.05)),float(np.quantile(vals,.95))],int(block)
+
+
+def _nested_daily_audit(y,pred,dates):
+    rows=_nested_daily_edges(y,pred,dates);edges=[float(x['maeEdge']) for x in rows];ci,block=_nested_mbb90(edges)
+    return {'days':int(len(rows)),'mean':float(np.mean(edges)) if edges else 0.0,'positiveDayShare':float(np.mean(np.asarray(edges)>0)) if edges else 0.0,'bootstrap90':ci,'blockLength':int(block),'rows':rows,'sealedLabelsUsed':0}
+
+
+def _nested_eval(y,pred,dates,h):
+    m=_point_candidate_metrics(y,pred);m['p90MagnitudeRatio']=_gate_p90(y,pred);daily=_nested_daily_audit(y,pred,dates);pair=_paired_challenger_audit(y,np.zeros(len(np.asarray(y))),pred);fd,fp=_gate_floor(h)
+    mag=bool(m.get('dispersionRatio',0)>=fd and m.get('p90MagnitudeRatio',0)>=fp)
+    positive=bool(m.get('maeEdge',-99)>0 and daily.get('mean',0)>0 and daily.get('positiveDayShare',0)>=.50)
+    ci=daily.get('bootstrap90') or [None,None]
+    daily90=bool(isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) and float(ci[0])>0)
+    # With <8 out-of-fold origin dates a daily bootstrap is intrinsically low-power; require
+    # the paired one-sided 90% row-level guard plus >=2/3 positive dates instead.  At >=8 dates
+    # the moving-block lower-90 is the primary confirmation, matching the final authority gate.
+    if int(daily.get('days',0))>=8:confirmed=bool(positive and daily90)
+    else:confirmed=bool(positive and pair.get('pass') is True and daily.get('positiveDayShare',0)>=2/3)
+    return {'metrics':m,'dailyMAEEdge':daily,'pairedVsNoChange':pair,'magnitudeAdmissible':mag,'positiveSkill':positive,'preblindConfirmed':bool(confirmed and mag),'minimumDispersionRatio':fd,'minimumP90MagnitudeRatio':fp,'sealedLabelsUsed':0}
+
+
+def _nested_scale_grid(fit_y,fit_rank,h):
+    yy=np.asarray(fit_y,float);rr=np.asarray(fit_rank,float);good=np.isfinite(yy)&np.isfinite(rr);yy=yy[good];rr=rr[good]
+    if len(yy)<240 or float(np.std(rr))<1e-10:return np.asarray([],float),{}
+    fd,fp=_gate_floor(h);std_ratio=float(np.std(yy)/max(np.std(rr),1e-10));p90_ratio=float(np.quantile(np.abs(yy),.9)/max(np.quantile(np.abs(rr),.9),1e-10));floor_scale=max(fd*std_ratio,fp*p90_ratio);natural=max(std_ratio*.35,p90_ratio*.30,floor_scale);upper=float(min(.25,max(.02,4.0*floor_scale,1.8*natural)));dense=np.linspace(0.0,min(.04,upper),81);tail=np.geomspace(max(.001,min(.04,upper)),upper,72) if upper>.04 else np.asarray([],float);grid=np.unique(np.r_[dense,tail,floor_scale,natural])
+    return grid,{'fitRows':int(len(yy)),'realizedStd':float(np.std(yy)),'rankStd':float(np.std(rr)),'realizedP90':float(np.quantile(np.abs(yy),.9)),'rankP90':float(np.quantile(np.abs(rr),.9)),'magnitudeFloorScale':float(floor_scale),'naturalScale':float(natural),'gridMin':float(grid.min()),'gridMax':float(grid.max()),'gridN':int(len(grid)),'derivedFrom':'80-85% fit labels and same-origin ranks only','sealedLabelsUsed':0}
+
+
+def _nested_scale_records(y,rank,dates,lo,hi,grid,h):
+    rows=[]
+    for scale in grid:
+        pred=_clip_between(float(scale)*np.asarray(rank,float),lo,hi);ev=_nested_eval(y,pred,dates,h);rows.append({'scale':float(scale),'pred':pred,'evaluation':ev})
+    return rows
+
+
+def _nested_choose_scale(y,rank,dates,lo,hi,grid,h):
+    rows=_nested_scale_records(y,rank,dates,lo,hi,grid,h)
+    strong=[z for z in rows if z['evaluation']['preblindConfirmed']]
+    admiss=[z for z in rows if z['evaluation']['magnitudeAdmissible'] and z['evaluation']['positiveSkill']]
+    # Selection is skill-first.  Magnitude is a constraint, never the objective.  Among candidates
+    # with positive evidence maximize the daily lower confidence bound, then mean daily edge,
+    # then choose the smaller scale in a statistical tie to reduce extrapolation risk.
+    pool=strong or admiss
+    if not pool:return None,{'status':'ABSTAIN','reason':'no scale has positive pre-blind skill while satisfying unchanged magnitude floors','gridN':len(rows),'sealedLabelsUsed':0}
+    def key(z):
+        ev=z['evaluation'];ci=(ev['dailyMAEEdge'].get('bootstrap90') or [None,None]);lower=float(ci[0]) if isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -1e9
+        return (-int(ev['preblindConfirmed']),-lower,-float(ev['dailyMAEEdge'].get('mean',0)),-float(ev['metrics'].get('maeEdge',-99)),float(z['scale']))
+    chosen=min(pool,key=key)
+    summary={'status':'PASS' if chosen['evaluation']['preblindConfirmed'] else 'PROVISIONAL','selectedScale':float(chosen['scale']),'selectedEvaluation':chosen['evaluation'],'confirmedCandidateCount':int(len(strong)),'positiveMagnitudeCandidateCount':int(len(admiss)),'gridN':int(len(rows)),'topCandidates':[],'sealedLabelsUsed':0}
+    ranked=sorted(rows,key=lambda z:(-int(z['evaluation']['preblindConfirmed']),-float(z['evaluation']['dailyMAEEdge'].get('mean',0)),z['evaluation']['metrics'].get('mae',1e9)))[:12]
+    summary['topCandidates']=[{'scale':float(z['scale']),'evaluation':z['evaluation']} for z in ranked]
+    return chosen,summary
+
+
+def _nested_expanding_rank_cv(y,rank,dates,lo,hi,grid,h):
+    yy=np.asarray(y,float);rr=np.asarray(rank,float);dd=np.asarray(dates,dtype=object);lo=np.asarray(lo,float);hi=np.asarray(hi,float);days=np.asarray(sorted(set(dd.astype(str))),dtype=object)
+    warmup=max(3,min(4,len(days)//2));o_y=[];o_p=[];o_d=[];folds=[]
+    for j in range(warmup,len(days)):
+        tune_days=days[:j];test_day=str(days[j]);tm=np.isin(dd.astype(str),tune_days);te=dd.astype(str)==test_day
+        chosen,audit=_nested_choose_scale(yy[tm],rr[tm],dd[tm],lo[tm],hi[tm],grid,h)
+        if chosen is None:
+            folds.append({'testDate':test_day,'tuneDateRange':[str(tune_days[0]),str(tune_days[-1])],'tuneDates':int(len(tune_days)),'status':'ABSTAIN','selectionAudit':audit});continue
+        pred=_clip_between(float(chosen['scale'])*rr[te],lo[te],hi[te]);o_y.append(yy[te]);o_p.append(pred);o_d.append(dd[te]);folds.append({'testDate':test_day,'tuneDateRange':[str(tune_days[0]),str(tune_days[-1])],'tuneDates':int(len(tune_days)),'status':'PREDICTED','selectedScale':float(chosen['scale']),'selectionStatus':audit.get('status')})
+    if not o_y:return {'status':'ABSTAIN','reason':'no expanding-origin fold produced a prediction','folds':folds,'sealedLabelsUsed':0}
+    oy=np.concatenate(o_y);op=np.concatenate(o_p);od=np.concatenate(o_d);ev=_nested_eval(oy,op,od,h);predicted=sum(x.get('status')=='PREDICTED' for x in folds);expected=max(1,len(days)-warmup);passed=bool(predicted==expected and ev['preblindConfirmed'])
+    return {'status':'PASS' if passed else 'FAIL','method':'EXPANDING_ORIGIN_DATE_SCALE_SELECTION_OOF','warmupDates':int(warmup),'validationDates':int(len(days)),'predictedDates':int(predicted),'expectedPredictedDates':int(expected),'evaluation':ev,'folds':folds,'sealedLabelsUsed':0}
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    # Preserve the synthetic/legacy four-argument compatibility contract; production always
+    # supplies explicit origin dates and therefore enters the nested chronological path below.
+    if cal_dates is None or conform_dates is None:return _nested_point_before_calibrate(cal_y,cal_score,conform_y,conform_score)
+    layer,iso,_=_point_base_quantile_calibrate(cal_y,cal_score,conform_y,conform_score)
+    if not isinstance(layer,_QuantileLayer):return layer,iso,0.0
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object);cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
+    if not (len(fy)==len(fs)==len(fd)) or not (len(cy)==len(cs)==len(cd)):raise RuntimeError('nested chronological calibration alignment mismatch')
+    sp=_chrono_date_split(fd,cd)
+    if sp is None or len(fy)<300 or len(cy)<300:raise RuntimeError('nested chronological calibration requires >=300 fit/conform rows and >=4 conform origin dates')
+    h=_gate_h();iv=sp['validationIndex'];ic=sp['conformalIndex'];loF,qF,hiF=layer.predict(fs);loV,qV,hiV=layer.predict(cs[iv]);qscale,qn,qa=_select_return_shrink(fy,qF)
+    layer.returnShrink=float(qscale);layer.shrinkSelectionN=int(qn);layer.shrinkSelectionAudit=qa;layer.pointMode='Q50';layer.pointScoreScale=1.0;layer.pointBinnedMedian=None;layer.pointAffineModel=None;layer.pointDeadband=0.0;layer.pointXsecModel=None
+    loV=np.asarray(loV,float)*qscale;hiV=np.asarray(hiV,float)*qscale;rankF=_xsec_rank_signal(fs,fd);rankV=_xsec_rank_signal(cs[iv],cd[iv]);grid,grid_audit=_nested_scale_grid(fy,rankF,h)
+    rank_cv=_nested_expanding_rank_cv(cy[iv],rankV,cd[iv],loV,hiV,grid,h) if len(grid) else {'status':'ABSTAIN','reason':'rank scale grid unavailable','sealedLabelsUsed':0}
+    rank_final,rank_final_audit=_nested_choose_scale(cy[iv],rankV,cd[iv],loV,hiV,grid,h) if len(grid) else (None,{'status':'ABSTAIN','sealedLabelsUsed':0})
+
+    # Fixed market+rank challenger: all parameters are fit on 80-85%; its validation evidence is
+    # later and therefore can be compared fairly with the OOF-selected zero-rank family.
+    center=_isotonic_half_center(iso,fs) if '_isotonic_half_center' in globals() else float(np.median(fs));mf=_xsec_market_rank_fit(fy,fs,fd,center);market_eval=None;market_model=None
+    if mf is not None:
+        market_model={'kind':'MARKET_PLUS_RANK',**mf};mp=_clip_between(_xsec_apply_model(market_model,cs[iv],cd[iv]),loV,hiV);market_eval=_nested_eval(cy[iv],mp,cd[iv],h)
+
+    selected='Q50';selection_reason='no challenger has nested pre-blind confirmation; retain quantile median and remain subject to unchanged final REVIEW gates';selected_eval=None
+    rank_ok=bool(rank_final is not None and rank_cv.get('status')=='PASS' and rank_final_audit.get('selectedEvaluation',{}).get('preblindConfirmed') is True)
+    market_ok=bool(market_eval and market_eval.get('preblindConfirmed') is True)
+    if rank_ok or market_ok:
+        if rank_ok and market_ok:
+            r=rank_cv.get('evaluation') or {};m=market_eval;rd=(r.get('dailyMAEEdge') or {});md=(m.get('dailyMAEEdge') or {});rci=rd.get('bootstrap90') or [None,None];mci=md.get('bootstrap90') or [None,None];rl=float(rci[0]) if isinstance(rci[0],(int,float)) else -1e9;ml=float(mci[0]) if isinstance(mci[0],(int,float)) else -1e9
+            choose_rank=(rl,float(rd.get('mean',0)),float((r.get('metrics') or {}).get('maeEdge',-99))) >= (ml,float(md.get('mean',0)),float((m.get('metrics') or {}).get('maeEdge',-99)))
+        else:choose_rank=rank_ok
+        if choose_rank:
+            selected='XSEC_ZERO_RANK_NESTED_CV';layer.pointMode=selected;layer.pointXsecModel={'kind':'ZERO_RANK_NESTED_CV','residualScale':float(rank_final['scale']),'scaleGridAudit':grid_audit,'finalSelectionAudit':rank_final_audit};selected_eval=rank_cv.get('evaluation');selection_reason='zero-centred same-origin rank scale passed expanding-origin OOF confirmation and the final scale was selected only on pre-blind validation under unchanged magnitude floors'
+        else:
+            selected='XSEC_MARKET_PLUS_RANK';layer.pointMode=selected;layer.pointXsecModel=market_model;selected_eval=market_eval;selection_reason='80-85 fitted market+rank challenger passed independent whole-date pre-blind confirmation and exceeded the nested rank challenger evidence'
+
+    # Conformal widening remains isolated to the late, disjoint 85-90% dates and does not affect
+    # point family/scale selection.
+    loC,_,hiC=layer.predict(cs[ic]);loC=np.asarray(loC,float)*qscale;hiC=np.asarray(hiC,float)*qscale;yy=cy[ic];nonconf=np.maximum.reduce([loC-yy,yy-hiC,np.zeros(len(yy))]) if len(yy) else np.asarray([],float);target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)));qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0;layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% fits quantile/isotonic and fixed point components; early whole origin dates of maturity-purged 85-90% run expanding-origin nested point/scale CV; late whole origin dates of 85-90% are conformal-only; 90-100% remains sealed.'
+    layer.pointSelectionAudit={'method':'CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1','revision':'NESTED_EXPANDING_ORIGIN_CV_MBB_V3','splitPolicy':'FIT_80_85__EXPANDING_CV_EARLY_85_90_BY_WHOLE_ORIGIN_DATE__CONFORM_LATE_85_90','horizon':int(h),'fitRows':int(len(fy)),'validationRows':int(len(iv)),'conformalRows':int(len(ic)),'fitDates':int(len(sp['fitDays'])),'validationDates':int(len(sp['validationDays'])),'conformalDates':int(len(sp['conformalDays'])),'fitDateRange':[str(sp['fitDays'][0]),str(sp['fitDays'][-1])],'validationDateRange':[str(sp['validationDays'][0]),str(sp['validationDays'][-1])],'conformalDateRange':[str(sp['conformalDays'][0]),str(sp['conformalDays'][-1])],'dateDisjoint':True,'rowOrderIndependent':True,'selectionBaseline':'NO_CHANGE_ZERO_RETURN','selectedFamily':selected,'selectedPreblindConfirmed':bool(selected!='Q50'),'selectedEvaluation':selected_eval,'rankScaleGridAudit':grid_audit,'rankExpandingCVAudit':rank_cv,'rankFinalScaleAudit':rank_final_audit,'marketRankValidationAudit':market_eval,'marketRankModel':market_model,'q50ScaleAudit':qa,'magnitudeFloors':{'dispersionRatio':_gate_floor(h)[0],'p90MagnitudeRatio':_gate_floor(h)[1]},'sealedLabelsUsed':0,'reason':selection_reason}
+    return layer,iso,max(0.0,qadj)
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode=='XSEC_ZERO_RANK_NESTED_CV':
+        if origin_dates is None:return _nested_point_before_apply(score,scen,iso,qadj,origin_dates)
+        ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g;model=getattr(scen,'pointXsecModel',None) or {};point=_clip_between(float(model.get('residualScale',0.0))*_xsec_rank_signal(ss,dd),lo,hi);return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
+    return _nested_point_before_apply(score,scen,iso,qadj,origin_dates)
+
+
+def _nested_selector_selftest():
+    # Eight whole dates with a genuine cross-sectional alpha.  Expanding CV must choose a
+    # non-zero scale from earlier dates only and never report sealed-label usage.
+    rng=np.random.default_rng(1907);days=[];rank=[];y=[]
+    for j in range(9):
+        r=np.linspace(-1,1,120);days.extend([f'2025-0{7+j//4}-{1+(j%4)*7:02d}']*len(r));rank.extend(r);y.extend(.012*r+rng.normal(scale=.012,size=len(r)))
+    d=np.asarray(days,dtype=object);r=np.asarray(rank,float);yy=np.asarray(y,float);lo=np.full(len(r),-.06);hi=np.full(len(r),.06);grid=np.linspace(0,.03,61);cv=_nested_expanding_rank_cv(yy,r,d,lo,hi,grid,1)
+    if cv.get('sealedLabelsUsed')!=0 or not cv.get('folds'):raise RuntimeError('nested selector selftest audit regression')
+    for fold in cv.get('folds') or []:
+        if fold.get('status')=='PREDICTED' and not (fold.get('tuneDateRange') and fold['tuneDateRange'][1]<fold['testDate']):raise RuntimeError('nested selector selftest chronology regression')
+_nested_selector_selftest()

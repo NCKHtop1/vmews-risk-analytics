@@ -1,0 +1,109 @@
+# Final fit-locked cross-sectional point calibration.
+#
+# Scientific design:
+#   * maturity-purged 80-85% is the ONLY block that fits point-shape and point-scale parameters;
+#   * early whole origin dates of 85-90% are an independent locked-model validation block;
+#   * late whole origin dates of 85-90% are conformal-only;
+#   * 90-100% is never supplied to calibration/selection.
+#
+# The direct meta score has robust ordinal skill but its pooled numerical scale/common drift is
+# unstable.  A same-origin rank removes the unforecastable common drift.  A prespecified monotone
+# tail transform sign(rank)*abs(rank)^p lets high-confidence tails carry more return magnitude
+# without inflating every middle-ranked name.  Power and scale are selected only on 80-85%.
+# Scale is constrained by the unchanged authority magnitude floors using a date-block bootstrap
+# upper-90 target, then regularised by the one-standard-error L1 rule.  The locked candidate must
+# subsequently pass independent 85-90% daily moving-block MAE evidence and magnitude floors.
+_fitlock_before_calibrate=calibrate
+_fitlock_before_apply=apply_calibration
+_FITLOCK_POWERS=(1.0,1.5,2.0,3.0)
+
+def _fitlock_tail_signal(score,origin_dates,power):
+    r=_xsec_rank_signal(score,origin_dates);t=np.sign(r)*np.power(np.abs(r),float(power));d=np.asarray(origin_dates,dtype=object).astype(str)
+    # Exact same-origin zero centring makes this an alpha component, never a hidden market bet.
+    for day in sorted(set(d)):
+        idx=np.where(d==day)[0]
+        if len(idx):t[idx]-=float(np.mean(t[idx]))
+    return np.asarray(t,float)
+
+def _fitlock_required_scale(y,x,h):
+    yy=np.asarray(y,float);xx=np.asarray(x,float);good=np.isfinite(yy)&np.isfinite(xx);yy=yy[good];xx=xx[good];fd,fp=_gate_floor(h)
+    if len(yy)<100 or float(np.std(xx))<1e-12:return float('inf')
+    return float(max(fd*float(np.std(yy))/max(float(np.std(xx)),1e-12),fp*float(np.quantile(np.abs(yy),.9))/max(float(np.quantile(np.abs(xx),.9)),1e-12)))
+
+def _fitlock_bootstrap_target(y,x,dates,h,reps=360):
+    yy=np.asarray(y,float);xx=np.asarray(x,float);dd=np.asarray(dates,dtype=object).astype(str);good=np.isfinite(yy)&np.isfinite(xx);yy=yy[good];xx=xx[good];dd=dd[good];days=np.asarray(sorted(set(dd)),dtype=object)
+    pooled=_fitlock_required_scale(yy,xx,h)
+    if len(days)<4:return {'pooledRequiredScale':pooled,'upper90RequiredScale':pooled,'bootstrapReps':0,'blockLength':0,'fitDates':int(len(days)),'sealedLabelsUsed':0}
+    groups={str(day):np.where(dd==str(day))[0] for day in days};block=max(1,min(len(days),int(round(len(days)**(1/3)))+1));rng=np.random.default_rng(4127+int(h)*101+int(round(float(np.std(xx))*1e6))%997);vals=[]
+    for _ in range(int(reps)):
+        chosen=[]
+        while len(chosen)<len(days):
+            s=int(rng.integers(0,len(days)))
+            for j in range(block):chosen.append(str(days[(s+j)%len(days)]))
+        idx=np.concatenate([groups[d] for d in chosen[:len(days)]])
+        q=_fitlock_required_scale(yy[idx],xx[idx],h)
+        if math.isfinite(q):vals.append(float(q))
+    upper=float(np.quantile(vals,.90)) if vals else pooled
+    return {'pooledRequiredScale':float(pooled),'upper90RequiredScale':float(max(pooled,upper)),'bootstrapReps':int(len(vals)),'blockLength':int(block),'fitDates':int(len(days)),'bootstrap':'MOVING_ORIGIN_DATE_BLOCKS','confidenceTarget':'UPPER_90_REQUIRED_SCALE','sealedLabelsUsed':0}
+
+def _fitlock_scale(y,x,dates,h):
+    yy=np.asarray(y,float);xx=np.asarray(x,float);dd=np.asarray(dates,dtype=object);good=np.isfinite(yy)&np.isfinite(xx);yy=yy[good];xx=xx[good];dd=dd[good]
+    if len(yy)<300 or float(np.std(xx))<1e-12:return None
+    mag=_fitlock_bootstrap_target(yy,xx,dd,h);target=float(mag['upper90RequiredScale']);ratio=float(np.std(yy)/max(np.std(xx),1e-12));upper=float(min(.30,max(.025,target*3.0,ratio*1.75)));g1=np.linspace(0.0,min(.04,upper),81);g2=np.geomspace(max(.001,min(.04,upper)),upper,72) if upper>.04 else np.asarray([],float);grid=np.unique(np.r_[g1,g2,target]);rows=[]
+    for scale in grid:
+        pred=float(scale)*xx;loss=np.abs(yy-pred);rows.append({'scale':float(scale),'mae':float(np.mean(loss)),'se':float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0,'dispersionRatio':float(np.std(pred)/max(np.std(yy),1e-12)),'p90MagnitudeRatio':float(np.quantile(np.abs(pred),.9)/max(np.quantile(np.abs(yy),.9),1e-12))})
+    best=min(rows,key=lambda z:(z['mae'],z['scale']));limit=float(best['mae']+max(best['se'],1e-12));eligible=[z for z in rows if z['mae']<=limit];at_or_above=[z for z in eligible if z['scale']>=target*(1-1e-12)]
+    if not at_or_above:
+        return {'status':'ABSTAIN','reason':'date-bootstrap magnitude target lies outside the one-standard-error L1 admissible set','fitRows':int(len(yy)),'bestMAE':best['mae'],'bestSE':best['se'],'oneSELimit':limit,'oneSEEligibleN':int(len(eligible)),'magnitudeTarget':mag,'gridN':int(len(grid)),'sealedLabelsUsed':0}
+    chosen=min(at_or_above,key=lambda z:(z['scale'],z['mae']))
+    daily=_nested_daily_audit(yy,float(chosen['scale'])*xx,dd,bootstrap=True)
+    return {'status':'PASS','scale':float(chosen['scale']),'fitRows':int(len(yy)),'fitMAE':float(chosen['mae']),'fitMAESE':float(chosen['se']),'bestMAE':float(best['mae']),'bestSE':float(best['se']),'oneSELimit':limit,'oneSEEligibleN':int(len(eligible)),'magnitudeTarget':mag,'fitDispersionRatio':float(chosen['dispersionRatio']),'fitP90MagnitudeRatio':float(chosen['p90MagnitudeRatio']),'fitDailyMAEEdge':daily,'gridMin':float(grid.min()),'gridMax':float(grid.max()),'gridN':int(len(grid)),'objective':'FIT_80_85_ONE_SE_L1_WITH_DATE_BOOTSTRAP_MAGNITUDE_TARGET','sealedLabelsUsed':0}
+
+def _fitlock_family(y,score,dates,h):
+    rows=[]
+    for power in _FITLOCK_POWERS:
+        sig=_fitlock_tail_signal(score,dates,power);fit=_fitlock_scale(y,sig,dates,h)
+        if not fit or fit.get('status')!='PASS':rows.append({'power':float(power),'fit':fit,'eligible':False});continue
+        rows.append({'power':float(power),'fit':fit,'eligible':True})
+    eligible=[z for z in rows if z.get('eligible')]
+    if not eligible:return None,{'status':'ABSTAIN','reason':'no prespecified monotone tail-rank power has an L1-admissible robust magnitude scale','powers':rows,'sealedLabelsUsed':0}
+    # Low-dimensional shape selection is completed entirely in 80-85%.  Prefer lower fit MAE;
+    # if MAE differences are within the best model's one-SE uncertainty prefer the simpler power.
+    best=min(eligible,key=lambda z:(z['fit']['fitMAE'],z['power']));limit=float(best['fit']['fitMAE']+max(best['fit']['fitMAESE'],1e-12));near=[z for z in eligible if z['fit']['fitMAE']<=limit];chosen=min(near,key=lambda z:(z['power'],z['fit']['fitMAE']))
+    model={'kind':'FIT_LOCKED_TAIL_RANK','power':float(chosen['power']),'residualScale':float(chosen['fit']['scale']),'fitAudit':chosen['fit']}
+    return model,{'status':'PASS','selectionBlock':'80-85% ONLY','selectedPower':float(chosen['power']),'selectedScale':float(chosen['fit']['scale']),'bestFitPower':float(best['power']),'bestFitMAE':float(best['fit']['fitMAE']),'familyOneSELimit':limit,'eligiblePowers':int(len(eligible)),'powers':rows,'sealedLabelsUsed':0}
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    if cal_dates is None or conform_dates is None:return _fitlock_before_calibrate(cal_y,cal_score,conform_y,conform_score)
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object);cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
+    if not (len(fy)==len(fs)==len(fd)) or not (len(cy)==len(cs)==len(cd)):raise RuntimeError('fit-locked tail-rank calibration alignment mismatch')
+    # Quantile interval layer may use the entire 80-85 calibration block.  Point shape/scale is
+    # fit on the same block; its independent validation remains strictly later in early 85-90.
+    layer,iso,_=_point_base_quantile_calibrate(fy,fs,cy,cs)
+    if not isinstance(layer,_QuantileLayer):return layer,iso,0.0
+    sp=_chrono_date_split(fd,cd)
+    if sp is None or len(fy)<300 or len(cy)<300:raise RuntimeError('fit-locked calibration requires >=300 fit/conform rows and >=4 conform origin dates')
+    h=_gate_h();iv=sp['validationIndex'];ic=sp['conformalIndex'];qscale,qn,qa=_select_return_shrink(fy,layer.predict(fs)[1]);layer.returnShrink=float(qscale);layer.shrinkSelectionN=int(qn);layer.shrinkSelectionAudit=qa;layer.pointMode='Q50';layer.pointScoreScale=1.0;layer.pointBinnedMedian=None;layer.pointAffineModel=None;layer.pointDeadband=0.0;layer.pointXsecModel=None
+    model,fit_audit=_fitlock_family(fy,fs,fd,h);validation=None;selected='Q50';reason='fit-locked tail-rank family unavailable or failed independent validation; retain Q50 and allow unchanged final gates to REVIEW the horizon'
+    if model is not None:
+        loV,_,hiV=layer.predict(cs[iv]);loV=np.asarray(loV,float)*qscale;hiV=np.asarray(hiV,float)*qscale;sigV=_fitlock_tail_signal(cs[iv],cd[iv],model['power']);predV=_clip_between(float(model['residualScale'])*sigV,loV,hiV);validation=_nested_eval(cy[iv],predV,cd[iv],h,bootstrap=True)
+        if validation.get('preblindConfirmed') is True:
+            selected='XSEC_TAIL_RANK_FIT_LOCKED';layer.pointMode=selected;layer.pointXsecModel=model;reason='power and scale were locked on 80-85% only and the unchanged candidate passed independent whole-date 85-90% moving-block MAE plus magnitude confirmation'
+    loC,_,hiC=layer.predict(cs[ic]);loC=np.asarray(loC,float)*qscale;hiC=np.asarray(hiC,float)*qscale;yy=cy[ic];nonconf=np.maximum.reduce([loC-yy,yy-hiC,np.zeros(len(yy))]) if len(yy) else np.asarray([],float);target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)));qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0;layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% exclusively fits tail-rank point shape/scale and quantile/isotonic calibration; early whole origin dates of maturity-purged 85-90% independently validate the locked point model; late origin dates of 85-90% are conformal-only; 90-100% remains sealed.'
+    layer.pointSelectionAudit={'method':'CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1','revision':'FIT_LOCKED_TAIL_RANK_DATE_BOOTSTRAP_V4','splitPolicy':'FIT_AND_LOCK_80_85__INDEPENDENT_VALIDATE_EARLY_85_90__CONFORM_LATE_85_90','horizon':int(h),'fitRows':int(len(fy)),'validationRows':int(len(iv)),'conformalRows':int(len(ic)),'fitDates':int(len(set(fd.astype(str)))),'validationDates':int(len(sp['validationDays'])),'conformalDates':int(len(sp['conformalDays'])),'fitDateRange':[str(min(fd.astype(str))),str(max(fd.astype(str)))],'validationDateRange':[str(sp['validationDays'][0]),str(sp['validationDays'][-1])],'conformalDateRange':[str(sp['conformalDays'][0]),str(sp['conformalDays'][-1])],'dateDisjoint':True,'rowOrderIndependent':True,'selectionBaseline':'NO_CHANGE_ZERO_RETURN','selectedFamily':selected,'selectedPreblindConfirmed':bool(selected!='Q50'),'familyFitAudit':fit_audit,'lockedModel':model,'independentValidationAudit':validation,'magnitudeFloors':{'dispersionRatio':_gate_floor(h)[0],'p90MagnitudeRatio':_gate_floor(h)[1]},'q50ScaleAudit':qa,'sealedLabelsUsed':0,'reason':reason}
+    return layer,iso,max(0.0,qadj)
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode=='XSEC_TAIL_RANK_FIT_LOCKED':
+        if origin_dates is None:return _fitlock_before_apply(score,scen,iso,qadj,origin_dates)
+        ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g;model=getattr(scen,'pointXsecModel',None) or {};sig=_fitlock_tail_signal(ss,dd,float(model.get('power',1.0)));point=_clip_between(float(model.get('residualScale',0.0))*sig,lo,hi);return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
+    return _fitlock_before_apply(score,scen,iso,qadj,origin_dates)
+
+def _fitlock_tail_selftest():
+    rng=np.random.default_rng(4417);days=np.asarray(sum(([f'2025-01-{d:02d}']*120 for d in range(1,13)),[]),dtype=object);r=np.tile(np.linspace(-1,1,120),12);score=r+rng.normal(scale=.02,size=len(r));y=.012*np.sign(r)*np.abs(r)**2+rng.normal(scale=.012,size=len(r));model,audit=_fitlock_family(y,score,days,3)
+    if model is None or audit.get('sealedLabelsUsed')!=0:raise RuntimeError('fit-locked tail family selftest failed')
+    sig=_fitlock_tail_signal(score,days,model['power'])
+    for day in sorted(set(days.astype(str))):
+        if abs(float(np.mean(sig[days.astype(str)==day])))>1e-12:raise RuntimeError('fit-locked tail signal must be zero mean by origin date')
+_fitlock_tail_selftest()

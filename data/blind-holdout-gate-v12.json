@@ -1,0 +1,1442 @@
+{
+  "version": "VMEWS-FIXED-SEALED-HOLDOUT-GATE-12.1.0",
+  "generatedAt": "2026-08-19T16:28:28.453020+00:00",
+  "status": "PASS",
+  "checks": {
+    "T+1": true,
+    "T+2": true,
+    "T+3": true,
+    "T+4": true,
+    "T+5": true,
+    "backtestCarriesSealedHoldoutEvidence": true,
+    "allPriceHorizonsPromoted": true
+  },
+  "horizons": {
+    "T+1": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 1,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-11-24",
+        "sealedAuditEnd": "2026-08-17",
+        "rows": 13009,
+        "dates": 37,
+        "kindSelectionLockDate": "2024-06-18",
+        "predictionAvailabilityEndExclusive": "2025-03-07",
+        "metaTrainMaxMaturity": "2025-03-06",
+        "calibrationMaxLabelMaturity": "2025-11-20",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 13009,
+          "rankIC": 0.1510702239759044,
+          "spread": 0.009987498358897534,
+          "balancedAccuracy": 0.5168174086885255,
+          "mcc": 0.09178471074995768,
+          "brier": 0.2330113613947919,
+          "brierSkill": 0.009864240326334928,
+          "ece": 0.015818518624601808,
+          "scenarioMAE": 0.013717322574301393,
+          "scenarioMAEImprove": 0.005331060285145517,
+          "scenarioRankIC": 0.14817332713211046,
+          "coverage20_80": 0.6287954493043277,
+          "intervalWidth": 0.02589627634200968,
+          "icDays": 37,
+          "icStd": 0.09604931829707099,
+          "icTStat": 9.567213116518426,
+          "icPositiveDayShare": 0.972972972972973,
+          "icBootstrap95": [
+            0.12077199985994416,
+            0.18142066190333958
+          ],
+          "spreadDays": 37,
+          "spreadStd": 0.006558394777590416,
+          "spreadTStat": 9.263178391837718,
+          "realizedReturnStd": 0.021281487100841295,
+          "forecastReturnStd": 0.0018025859962361647,
+          "forecastDispersionRatio": 0.08470206934763057,
+          "p90AbsRealizedReturn": 0.03509131981127019,
+          "p90AbsForecastReturn": 0.0034543665000000006,
+          "p90MagnitudeRatio": 0.098439343934011,
+          "forecastAbsMedian": 0.00010156250000000001,
+          "forecastNonTrivialShare": 0.2679683296179568,
+          "dailyMAEEdge": {
+            "days": 37,
+            "mean": 7.34647509662671e-05,
+            "positiveDayShare": 0.7837837837837838,
+            "bootstrap90": [
+              4.6203850452914415e-05,
+              0.00010996411290642514
+            ],
+            "blockLength": 3
+          }
+        },
+        "blocks": [
+          {
+            "start": "2025-11-24",
+            "end": "2026-01-28",
+            "n": 3550,
+            "metrics": {
+              "n": 3550,
+              "rankIC": 0.16994732073593274,
+              "spread": 0.010682809533741795,
+              "balancedAccuracy": 0.5159414461330519,
+              "mcc": 0.08413790504299536,
+              "brier": 0.2417355199557017,
+              "brierSkill": 0.008742638632767696,
+              "ece": 0.05701293374217607,
+              "scenarioMAE": 0.014561197411190474,
+              "scenarioMAEImprove": 0.007410780843223885,
+              "scenarioRankIC": 0.1667212939452713,
+              "coverage20_80": 0.6109859154929578,
+              "intervalWidth": 0.025634078851942545,
+              "icDays": 10,
+              "icStd": 0.13493196848249217,
+              "icTStat": 3.9829005817731216,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                0.09825647891629427,
+                0.2688675620071053
+              ],
+              "spreadDays": 10,
+              "spreadStd": 0.008039001638050776,
+              "spreadTStat": 4.202264342936074,
+              "realizedReturnStd": 0.022355228143904896,
+              "forecastReturnStd": 0.001802589662347475,
+              "forecastDispersionRatio": 0.08063391931157488,
+              "p90AbsRealizedReturn": 0.03826071971093004,
+              "p90AbsForecastReturn": 0.003460932694499753,
+              "p90MagnitudeRatio": 0.09045654971072223,
+              "forecastAbsMedian": 0.00010156250000000001,
+              "forecastNonTrivialShare": 0.26816901408450705,
+              "dailyMAEEdge": {
+                "days": 10,
+                "mean": 0.00010834237769211642,
+                "positiveDayShare": 0.8,
+                "bootstrap90": [
+                  3.662121032268555e-05,
+                  0.00018746535033386247
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-02-04",
+            "end": "2026-04-08",
+            "n": 3210,
+            "metrics": {
+              "n": 3210,
+              "rankIC": 0.15643680563590948,
+              "spread": 0.009323905407812604,
+              "balancedAccuracy": 0.5151599098111588,
+              "mcc": 0.07801975182923362,
+              "brier": 0.2199794952605974,
+              "brierSkill": -0.003880421888696084,
+              "ece": 0.049080189981634915,
+              "scenarioMAE": 0.013791144022096363,
+              "scenarioMAEImprove": 0.005250058998103269,
+              "scenarioRankIC": 0.15237769272459478,
+              "coverage20_80": 0.6152647975077882,
+              "intervalWidth": 0.025998527097350097,
+              "icDays": 9,
+              "icStd": 0.06013665192640274,
+              "icTStat": 7.80406627030195,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.005452556079222858,
+              "spreadTStat": 5.130018988713375,
+              "realizedReturnStd": 0.020459979951756566,
+              "forecastReturnStd": 0.0018025913977791246,
+              "forecastDispersionRatio": 0.0881032827025994,
+              "p90AbsRealizedReturn": 0.03391132063969053,
+              "p90AbsForecastReturn": 0.0034674718903738694,
+              "p90MagnitudeRatio": 0.10225116052588841,
+              "forecastAbsMedian": 0.00010156250000000002,
+              "forecastNonTrivialShare": 0.26791277258566976,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 7.276611549470149e-05,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  3.282829951007235e-05,
+                  0.00013300995328020238
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-04-15",
+            "end": "2026-06-15",
+            "n": 3134,
+            "metrics": {
+              "n": 3134,
+              "rankIC": 0.14380032024648137,
+              "spread": 0.01081292386759377,
+              "balancedAccuracy": 0.5213740424173642,
+              "mcc": 0.13068816320810314,
+              "brier": 0.22554734136212948,
+              "brierSkill": 0.017894354351762787,
+              "ece": 0.032460893645654264,
+              "scenarioMAE": 0.012766254793443014,
+              "scenarioMAEImprove": 0.006506137999062078,
+              "scenarioRankIC": 0.1411506314307716,
+              "coverage20_80": 0.6550733886407147,
+              "intervalWidth": 0.02514544484326449,
+              "icDays": 9,
+              "icStd": 0.08255460010995122,
+              "icTStat": 5.225644121161972,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.004574941641088531,
+              "spreadTStat": 7.0905323275474705,
+              "realizedReturnStd": 0.020356300954468158,
+              "forecastReturnStd": 0.0018025823462206462,
+              "forecastDispersionRatio": 0.08855156692036348,
+              "p90AbsRealizedReturn": 0.03212604818081676,
+              "p90AbsForecastReturn": 0.0034457869526924143,
+              "p90MagnitudeRatio": 0.10725835102090076,
+              "forecastAbsMedian": 0.00010156250000000001,
+              "forecastNonTrivialShare": 0.26802807913209953,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 8.462469197012894e-05,
+                "positiveDayShare": 0.7777777777777778,
+                "bootstrap90": [
+                  4.47962225906714e-05,
+                  0.00015021643261020173
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-06-22",
+            "end": "2026-08-17",
+            "n": 3115,
+            "metrics": {
+              "n": 3115,
+              "rankIC": 0.1319989940897352,
+              "spread": 0.009053097829237043,
+              "balancedAccuracy": 0.514846671365741,
+              "mcc": 0.08012748654764185,
+              "brier": 0.2440077550326405,
+              "brierSkill": -0.010213723470252178,
+              "ece": 0.04711510560975764,
+              "scenarioMAE": 0.013636399269913614,
+              "scenarioMAEImprove": 0.0017583817747266473,
+              "scenarioRankIC": 0.13173904720724605,
+              "coverage20_80": 0.6365971107544142,
+              "intervalWidth": 0.02684513094302509,
+              "icDays": 9,
+              "icStd": 0.09825483444550548,
+              "icTStat": 4.0303053229287675,
+              "icPositiveDayShare": 0.8888888888888888,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.008206325732552663,
+              "spreadTStat": 3.309555868587603,
+              "realizedReturnStd": 0.021462263269774327,
+              "forecastReturnStd": 0.0018025799241391917,
+              "forecastDispersionRatio": 0.08398834277081094,
+              "p90AbsRealizedReturn": 0.03668795304472859,
+              "p90AbsForecastReturn": 0.0034477731509061295,
+              "p90MagnitudeRatio": 0.09397562046328212,
+              "forecastAbsMedian": 9.984840487414705e-05,
+              "forecastNonTrivialShare": 0.2677367576243981,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 2.4250526849693856e-05,
+                "positiveDayShare": 0.6666666666666666,
+                "bootstrap90": [
+                  -3.0991787240875457e-05,
+                  7.645144995901291e-05
+                ],
+                "blockLength": 2
+              }
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+2": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 2,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-11-24",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 12678,
+        "dates": 36,
+        "kindSelectionLockDate": "2024-06-18",
+        "predictionAvailabilityEndExclusive": "2025-03-07",
+        "metaTrainMaxMaturity": "2025-03-06",
+        "calibrationMaxLabelMaturity": "2025-11-21",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 12678,
+          "rankIC": 0.1539626609749178,
+          "spread": 0.012499001740589648,
+          "balancedAccuracy": 0.5131115399191836,
+          "mcc": 0.06727894423664824,
+          "brier": 0.240701217412542,
+          "brierSkill": 0.010033386908293473,
+          "ece": 0.014454395714076773,
+          "scenarioMAE": 0.019263820000143587,
+          "scenarioMAEImprove": 0.008754183093771739,
+          "scenarioRankIC": 0.14497041311957787,
+          "coverage20_80": 0.6529421044328758,
+          "intervalWidth": 0.03920879506646559,
+          "icDays": 36,
+          "icStd": 0.09051400461921211,
+          "icTStat": 10.205889903289396,
+          "icPositiveDayShare": 0.9722222222222222,
+          "icBootstrap95": [
+            0.1245807650476292,
+            0.18181542007044582
+          ],
+          "spreadDays": 36,
+          "spreadStd": 0.007137471322039848,
+          "spreadTStat": 10.507083960108302,
+          "realizedReturnStd": 0.029864831010055264,
+          "forecastReturnStd": 0.0031523326838111,
+          "forecastDispersionRatio": 0.10555334074215031,
+          "p90AbsRealizedReturn": 0.047252884850545504,
+          "p90AbsForecastReturn": 0.006044381923786674,
+          "p90MagnitudeRatio": 0.12791561706558738,
+          "forecastAbsMedian": 0.00017761076338868064,
+          "forecastNonTrivialShare": 0.3331755797444392,
+          "dailyMAEEdge": {
+            "days": 36,
+            "mean": 0.00017036550470337435,
+            "positiveDayShare": 0.8333333333333334,
+            "bootstrap90": [
+              0.00010828357859959644,
+              0.0002058228921072116
+            ],
+            "blockLength": 3
+          }
+        },
+        "blocks": [
+          {
+            "start": "2025-11-24",
+            "end": "2026-01-21",
+            "n": 3198,
+            "metrics": {
+              "n": 3198,
+              "rankIC": 0.13965979032763884,
+              "spread": 0.009530401186700958,
+              "balancedAccuracy": 0.5108432599360743,
+              "mcc": 0.056931456180747034,
+              "brier": 0.24302559608306645,
+              "brierSkill": 0.015700124642493152,
+              "ece": 0.02877020418501986,
+              "scenarioMAE": 0.01886579071675548,
+              "scenarioMAEImprove": 0.010732794373355614,
+              "scenarioRankIC": 0.13272306510164728,
+              "coverage20_80": 0.6697936210131332,
+              "intervalWidth": 0.03805272448159262,
+              "icDays": 9,
+              "icStd": 0.13629939469407337,
+              "icTStat": 3.0739635485786554,
+              "icPositiveDayShare": 0.8888888888888888,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.009411859249073309,
+              "spreadTStat": 3.0377848630617765,
+              "realizedReturnStd": 0.0299544681992538,
+              "forecastReturnStd": 0.003152338592351801,
+              "forecastDispersionRatio": 0.10523767510685866,
+              "p90AbsRealizedReturn": 0.04721454832371465,
+              "p90AbsForecastReturn": 0.0060478126139660625,
+              "p90MagnitudeRatio": 0.1280921416954105,
+              "forecastAbsMedian": 0.00017761076338868064,
+              "forecastNonTrivialShare": 0.33270794246404,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00020533826160251654,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  4.560921954008276e-05,
+                  0.00028730575326321744
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-01-28",
+            "end": "2026-04-01",
+            "n": 3209,
+            "metrics": {
+              "n": 3209,
+              "rankIC": 0.12476122856089261,
+              "spread": 0.012246158245809088,
+              "balancedAccuracy": 0.510496071133168,
+              "mcc": 0.05744304287797025,
+              "brier": 0.2338357586460549,
+              "brierSkill": 0.004149690268790196,
+              "ece": 0.04222850036056765,
+              "scenarioMAE": 0.021918019836330977,
+              "scenarioMAEImprove": 0.005026551064762352,
+              "scenarioRankIC": 0.1150949995200778,
+              "coverage20_80": 0.6076659395450296,
+              "intervalWidth": 0.040166466094322,
+              "icDays": 9,
+              "icStd": 0.048611871000427596,
+              "icTStat": 7.699429747918684,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.007067035293979672,
+              "spreadTStat": 5.19856958528626,
+              "realizedReturnStd": 0.031851149881859546,
+              "forecastReturnStd": 0.0031523408102710716,
+              "forecastDispersionRatio": 0.09897102057425095,
+              "p90AbsRealizedReturn": 0.0533387387718654,
+              "p90AbsForecastReturn": 0.006063855551784314,
+              "p90MagnitudeRatio": 0.11368576931899294,
+              "forecastAbsMedian": 0.00017761076338868067,
+              "forecastNonTrivialShare": 0.3328139607354316,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00010963827343610915,
+                "positiveDayShare": 0.7777777777777778,
+                "bootstrap90": [
+                  1.6374883446814225e-05,
+                  0.00023563649661858746
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-04-08",
+            "end": "2026-06-08",
+            "n": 3137,
+            "metrics": {
+              "n": 3137,
+              "rankIC": 0.19528858855988332,
+              "spread": 0.014885102683924175,
+              "balancedAccuracy": 0.521271229687612,
+              "mcc": 0.10363843054899757,
+              "brier": 0.23632769608756377,
+              "brierSkill": 0.019165756888216423,
+              "ece": 0.029333705826083786,
+              "scenarioMAE": 0.017478893826592713,
+              "scenarioMAEImprove": 0.011324249489170435,
+              "scenarioRankIC": 0.1889555393864858,
+              "coverage20_80": 0.6729359260439911,
+              "intervalWidth": 0.037292077341117086,
+              "icDays": 9,
+              "icStd": 0.06314293423614811,
+              "icTStat": 9.278405775198408,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.00561929547376737,
+              "spreadTStat": 7.9467805635488435,
+              "realizedReturnStd": 0.02732391535916643,
+              "forecastReturnStd": 0.0031523258270839396,
+              "forecastDispersionRatio": 0.11536874513214374,
+              "p90AbsRealizedReturn": 0.0409278528493376,
+              "p90AbsForecastReturn": 0.006036239401583653,
+              "p90MagnitudeRatio": 0.14748487842262525,
+              "forecastAbsMedian": 0.00017761076338868064,
+              "forecastNonTrivialShare": 0.33407714376793113,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00020099376414795493,
+                "positiveDayShare": 0.7777777777777778,
+                "bootstrap90": [
+                  0.00012215887927273357,
+                  0.00025611772299097827
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-06-15",
+            "end": "2026-08-10",
+            "n": 3134,
+            "metrics": {
+              "n": 3134,
+              "rankIC": 0.15614103645125638,
+              "spread": 0.013334344845924379,
+              "balancedAccuracy": 0.5096589865933935,
+              "mcc": 0.04795093539560593,
+              "brier": 0.24973683661795887,
+              "brierSkill": -0.012005594856343782,
+              "ece": 0.037605328583776625,
+              "scenarioMAE": 0.018738894595031558,
+              "scenarioMAEImprove": 0.008759294284469976,
+              "scenarioRankIC": 0.15344163118322618,
+              "coverage20_80": 0.6620931716656031,
+              "intervalWidth": 0.041326437346762564,
+              "icDays": 9,
+              "icStd": 0.08831567148463189,
+              "icTStat": 5.3039636281911875,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.005966486869840529,
+              "spreadTStat": 6.704621230288961,
+              "realizedReturnStd": 0.029749276340976745,
+              "forecastReturnStd": 0.003152325196934046,
+              "forecastDispersionRatio": 0.10596308833879174,
+              "p90AbsRealizedReturn": 0.045614364827206606,
+              "p90AbsForecastReturn": 0.006029406733030739,
+              "p90MagnitudeRatio": 0.13218219207635465,
+              "forecastAbsMedian": 0.0001746131831418025,
+              "forecastNonTrivialShare": 0.33312061263560944,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00016549171962691687,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  9.195857566832603e-05,
+                  0.00021169713467629863
+                ],
+                "blockLength": 2
+              }
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+3": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 3,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-11-24",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 12668,
+        "dates": 36,
+        "kindSelectionLockDate": "2024-06-18",
+        "predictionAvailabilityEndExclusive": "2025-03-07",
+        "metaTrainMaxMaturity": "2025-03-06",
+        "calibrationMaxLabelMaturity": "2025-11-21",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 12668,
+          "rankIC": 0.12891938196763802,
+          "spread": 0.012156261126066652,
+          "balancedAccuracy": 0.5354431271428535,
+          "mcc": 0.07076376819688182,
+          "brier": 0.2464906396338302,
+          "brierSkill": -0.02821561442703624,
+          "ece": 0.08653094157683913,
+          "scenarioMAE": 0.025543739861559528,
+          "scenarioMAEImprove": 0.007733820159542715,
+          "scenarioRankIC": 0.1151269241174428,
+          "coverage20_80": 0.5746763498579097,
+          "intervalWidth": 0.04108461696933115,
+          "icDays": 36,
+          "icStd": 0.09662358308082407,
+          "icTStat": 8.005460645759682,
+          "icPositiveDayShare": 0.8611111111111112,
+          "icBootstrap95": [
+            0.0979252794033425,
+            0.15951428359534858
+          ],
+          "spreadDays": 36,
+          "spreadStd": 0.009794568524891852,
+          "spreadTStat": 7.446736073267225,
+          "realizedReturnStd": 0.03901939771982505,
+          "forecastReturnStd": 0.0034523618999386927,
+          "forecastDispersionRatio": 0.08847809299179957,
+          "p90AbsRealizedReturn": 0.0628469380748472,
+          "p90AbsForecastReturn": 0.0064396946992698505,
+          "p90MagnitudeRatio": 0.10246632368311298,
+          "forecastAbsMedian": 0.00018918810854285197,
+          "forecastNonTrivialShare": 0.340858856962425,
+          "dailyMAEEdge": {
+            "days": 36,
+            "mean": 0.00020010915017153435,
+            "positiveDayShare": 0.8611111111111112,
+            "bootstrap90": [
+              0.0001440099888300085,
+              0.0002389086266521492
+            ],
+            "blockLength": 3
+          }
+        },
+        "blocks": [
+          {
+            "start": "2025-11-24",
+            "end": "2026-01-21",
+            "n": 3198,
+            "metrics": {
+              "n": 3198,
+              "rankIC": 0.11225056155456842,
+              "spread": 0.009245326984293357,
+              "balancedAccuracy": 0.5326015709787992,
+              "mcc": 0.06643146457932822,
+              "brier": 0.24792428685452242,
+              "brierSkill": -0.009102260163751819,
+              "ece": 0.054219898405267995,
+              "scenarioMAE": 0.023553015382748847,
+              "scenarioMAEImprove": 0.008398345667654739,
+              "scenarioRankIC": 0.09700798980628329,
+              "coverage20_80": 0.5981863664790494,
+              "intervalWidth": 0.04084833030826908,
+              "icDays": 9,
+              "icStd": 0.1210782048792153,
+              "icTStat": 2.7812741772942586,
+              "icPositiveDayShare": 0.6666666666666666,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.007833273985843294,
+              "spreadTStat": 3.5407903519021544,
+              "realizedReturnStd": 0.03655130064476656,
+              "forecastReturnStd": 0.0034754672077218825,
+              "forecastDispersionRatio": 0.09508463847837115,
+              "p90AbsRealizedReturn": 0.055424305879309896,
+              "p90AbsForecastReturn": 0.006546287825856704,
+              "p90MagnitudeRatio": 0.11811222029756548,
+              "forecastAbsMedian": 0.00019266792974999866,
+              "forecastNonTrivialShare": 0.3420888055034397,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00019992955739761315,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  0.00011343293169026112,
+                  0.0002728954217430345
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-01-28",
+            "end": "2026-04-01",
+            "n": 3208,
+            "metrics": {
+              "n": 3208,
+              "rankIC": 0.08078106711384535,
+              "spread": 0.009593754881503352,
+              "balancedAccuracy": 0.522785422253484,
+              "mcc": 0.044780901981833404,
+              "brier": 0.24704312292301622,
+              "brierSkill": -0.11767969287607682,
+              "ece": 0.1581767012717964,
+              "scenarioMAE": 0.03492003809582874,
+              "scenarioMAEImprove": 0.002239819225232975,
+              "scenarioRankIC": 0.059843790228816654,
+              "coverage20_80": 0.4451371571072319,
+              "intervalWidth": 0.04186549967023014,
+              "icDays": 9,
+              "icStd": 0.08685639629754834,
+              "icTStat": 2.7901595239034407,
+              "icPositiveDayShare": 0.7777777777777778,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.011899033175713671,
+              "spreadTStat": 2.4187901840002928,
+              "realizedReturnStd": 0.04672363065882042,
+              "forecastReturnStd": 0.0036916210759416583,
+              "forecastDispersionRatio": 0.07900972214462874,
+              "p90AbsRealizedReturn": 0.08378973348155283,
+              "p90AbsForecastReturn": 0.006974535758536271,
+              "p90MagnitudeRatio": 0.08323854807429107,
+              "forecastAbsMedian": 0.00020600581218204012,
+              "forecastNonTrivialShare": 0.3497506234413965,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 7.726594553672522e-05,
+                "positiveDayShare": 0.7777777777777778,
+                "bootstrap90": [
+                  1.2777408291318413e-05,
+                  0.00017656951274827644
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-04-08",
+            "end": "2026-06-08",
+            "n": 3137,
+            "metrics": {
+              "n": 3137,
+              "rankIC": 0.15745332872798276,
+              "spread": 0.013805918751840824,
+              "balancedAccuracy": 0.5646831163614207,
+              "mcc": 0.1312321141884839,
+              "brier": 0.244931986716966,
+              "brierSkill": -0.017058626297203228,
+              "ece": 0.0842073902333106,
+              "scenarioMAE": 0.02071538879678427,
+              "scenarioMAEImprove": 0.011752539833747466,
+              "scenarioRankIC": 0.15268789256867887,
+              "coverage20_80": 0.6429709913930507,
+              "intervalWidth": 0.040293133454723636,
+              "icDays": 9,
+              "icStd": 0.07755971971997035,
+              "icTStat": 6.09027453798706,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.009232357031586463,
+              "spreadTStat": 4.486151923481816,
+              "realizedReturnStd": 0.033126810577730245,
+              "forecastReturnStd": 0.003124411113718191,
+              "forecastDispersionRatio": 0.09431668969117722,
+              "p90AbsRealizedReturn": 0.04907655851912599,
+              "p90AbsForecastReturn": 0.005815691025221122,
+              "p90MagnitudeRatio": 0.118502421537049,
+              "forecastAbsMedian": 0.00016996690343655814,
+              "forecastNonTrivialShare": 0.3289767293592604,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.0002476160162271047,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  0.00015966580950253152,
+                  0.0003636799198883295
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-06-15",
+            "end": "2026-08-10",
+            "n": 3125,
+            "metrics": {
+              "n": 3125,
+              "rankIC": 0.1651925704741556,
+              "spread": 0.015980043886629065,
+              "balancedAccuracy": 0.5331596677337685,
+              "mcc": 0.06561260947658303,
+              "brier": 0.24602098331278066,
+              "brierSkill": -0.005397721492215846,
+              "ece": 0.05019160623558944,
+              "scenarioMAE": 0.022802526881687817,
+              "scenarioMAEImprove": 0.011922832882289236,
+              "scenarioRankIC": 0.16563583189986028,
+              "coverage20_80": 0.61504,
+              "intervalWidth": 0.04131932315266439,
+              "icDays": 9,
+              "icStd": 0.0855004311389793,
+              "icTStat": 5.7962013152531915,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.00975168183241783,
+              "spreadTStat": 4.916088576692307,
+              "realizedReturnStd": 0.03587281281301058,
+              "forecastReturnStd": 0.003487903745030309,
+              "forecastDispersionRatio": 0.09722972556434978,
+              "p90AbsRealizedReturn": 0.05477439992759059,
+              "p90AbsForecastReturn": 0.006470339719243796,
+              "p90MagnitudeRatio": 0.11812707629471629,
+              "forecastAbsMedian": 0.00019187429404680427,
+              "forecastNonTrivialShare": 0.3424,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.0002756250815246942,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  0.00021893680818261762,
+                  0.0003476017447340598
+                ],
+                "blockLength": 2
+              }
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+4": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 4,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-11-24",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 12654,
+        "dates": 36,
+        "kindSelectionLockDate": "2024-06-18",
+        "predictionAvailabilityEndExclusive": "2025-03-07",
+        "metaTrainMaxMaturity": "2025-03-06",
+        "calibrationMaxLabelMaturity": "2025-11-21",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 12654,
+          "rankIC": 0.11556152154735165,
+          "spread": 0.012426364719425816,
+          "balancedAccuracy": 0.5154751141736027,
+          "mcc": 0.034512502026692635,
+          "brier": 0.25036092271420834,
+          "brierSkill": -0.05615232531740655,
+          "ece": 0.11568292084483096,
+          "scenarioMAE": 0.02863957673359349,
+          "scenarioMAEImprove": 0.006188172129925729,
+          "scenarioRankIC": 0.10185885556920357,
+          "coverage20_80": 0.5704125177809388,
+          "intervalWidth": 0.04906256671415955,
+          "icDays": 36,
+          "icStd": 0.10298904509705067,
+          "icTStat": 6.732455171622579,
+          "icPositiveDayShare": 0.8055555555555556,
+          "icBootstrap95": [
+            0.0842453837619508,
+            0.1490531842494132
+          ],
+          "spreadDays": 36,
+          "spreadStd": 0.01237010625784264,
+          "spreadTStat": 6.027287620854917,
+          "realizedReturnStd": 0.04383118933565854,
+          "forecastReturnStd": 0.004497215439882633,
+          "forecastDispersionRatio": 0.10260308944489344,
+          "p90AbsRealizedReturn": 0.06685189303560798,
+          "p90AbsForecastReturn": 0.008409082938462705,
+          "p90MagnitudeRatio": 0.12578675870829406,
+          "forecastAbsMedian": 0.00024631835863558475,
+          "forecastNonTrivialShare": 0.3688952110004742,
+          "dailyMAEEdge": {
+            "days": 36,
+            "mean": 0.0001798244375443454,
+            "positiveDayShare": 0.75,
+            "bootstrap90": [
+              8.965492214555507e-05,
+              0.00026622624956412354
+            ],
+            "blockLength": 3
+          }
+        },
+        "blocks": [
+          {
+            "start": "2025-11-24",
+            "end": "2026-01-21",
+            "n": 3198,
+            "metrics": {
+              "n": 3198,
+              "rankIC": 0.07623996049655987,
+              "spread": 0.006898123706189708,
+              "balancedAccuracy": 0.49780734170978075,
+              "mcc": -0.004940243935216943,
+              "brier": 0.2516547317765136,
+              "brierSkill": -0.031021810187413346,
+              "ece": 0.0805591438253789,
+              "scenarioMAE": 0.02834225588166928,
+              "scenarioMAEImprove": 0.004545316155576629,
+              "scenarioRankIC": 0.07145467593821868,
+              "coverage20_80": 0.5787992495309568,
+              "intervalWidth": 0.048758975348939096,
+              "icDays": 9,
+              "icStd": 0.12611457086115643,
+              "icTStat": 1.8135880725589169,
+              "icPositiveDayShare": 0.6666666666666666,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.011217506618600178,
+              "spreadTStat": 1.8448280729565154,
+              "realizedReturnStd": 0.043552463970900686,
+              "forecastReturnStd": 0.004581460949292572,
+              "forecastDispersionRatio": 0.10519407013007685,
+              "p90AbsRealizedReturn": 0.06622534765062446,
+              "p90AbsForecastReturn": 0.008640736315885633,
+              "p90MagnitudeRatio": 0.13047475962633406,
+              "forecastAbsMedian": 0.0002541685919598697,
+              "forecastNonTrivialShare": 0.37210756722951843,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00013003854805958878,
+                "positiveDayShare": 0.6666666666666666,
+                "bootstrap90": [
+                  3.840603932421836e-05,
+                  0.00024077293892971226
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-01-28",
+            "end": "2026-04-01",
+            "n": 3208,
+            "metrics": {
+              "n": 3208,
+              "rankIC": 0.08883031259843015,
+              "spread": 0.01334559534984498,
+              "balancedAccuracy": 0.5236814819935025,
+              "mcc": 0.06383864212311793,
+              "brier": 0.25190918996859707,
+              "brierSkill": -0.08605121289328621,
+              "ece": 0.1483347032353454,
+              "scenarioMAE": 0.03673794464666792,
+              "scenarioMAEImprove": 0.00019465362220849602,
+              "scenarioRankIC": 0.06730149023025038,
+              "coverage20_80": 0.4688279301745636,
+              "intervalWidth": 0.04925088863092667,
+              "icDays": 9,
+              "icStd": 0.11101193709615038,
+              "icTStat": 2.4005610996993556,
+              "icPositiveDayShare": 0.6666666666666666,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.01643244348117578,
+              "spreadTStat": 2.4364475128363687,
+              "realizedReturnStd": 0.05207024123163711,
+              "forecastReturnStd": 0.004700025918683547,
+              "forecastDispersionRatio": 0.09026318694732455,
+              "p90AbsRealizedReturn": 0.08661863196732203,
+              "p90AbsForecastReturn": 0.008813335534649282,
+              "p90MagnitudeRatio": 0.10174872697105426,
+              "forecastAbsMedian": 0.0002592463154852694,
+              "forecastNonTrivialShare": 0.37468827930174564,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 5.643502472055072e-06,
+                "positiveDayShare": 0.5555555555555556,
+                "bootstrap90": [
+                  -5.675460862486004e-05,
+                  0.0001522793835290605
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-04-08",
+            "end": "2026-06-08",
+            "n": 3137,
+            "metrics": {
+              "n": 3137,
+              "rankIC": 0.16049158048694154,
+              "spread": 0.014876384047173079,
+              "balancedAccuracy": 0.5327224418143331,
+              "mcc": 0.07106341123815454,
+              "brier": 0.24813934021798956,
+              "brierSkill": -0.05531643602910652,
+              "ece": 0.12102237989151023,
+              "scenarioMAE": 0.02338418842445067,
+              "scenarioMAEImprove": 0.012653526683916394,
+              "scenarioRankIC": 0.15514859065099426,
+              "coverage20_80": 0.6292636276697482,
+              "intervalWidth": 0.048441242901446226,
+              "icDays": 9,
+              "icStd": 0.07610911068006235,
+              "icTStat": 6.326111777665961,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.01146771215790175,
+              "spreadTStat": 3.89172238777966,
+              "realizedReturnStd": 0.03712809357370235,
+              "forecastReturnStd": 0.004081470303793507,
+              "forecastDispersionRatio": 0.10992943377745613,
+              "p90AbsRealizedReturn": 0.052089974423712875,
+              "p90AbsForecastReturn": 0.007576293172640745,
+              "p90MagnitudeRatio": 0.1454462832139882,
+              "forecastAbsMedian": 0.0002219934432033221,
+              "forecastNonTrivialShare": 0.35766656040803313,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00030125507742710645,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  0.00017617227717329565,
+                  0.00046541144973203015
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-06-15",
+            "end": "2026-08-10",
+            "n": 3111,
+            "metrics": {
+              "n": 3111,
+              "rankIC": 0.13668423260747506,
+              "spread": 0.014585355774495505,
+              "balancedAccuracy": 0.5118810444874276,
+              "mcc": 0.024262548573336613,
+              "brier": 0.24967453941536796,
+              "brierSkill": -0.06226056707802141,
+              "ece": 0.11829760850973425,
+              "scenarioMAE": 0.025893649682835498,
+              "scenarioMAEImprove": 0.0108021641697148,
+              "scenarioRankIC": 0.13167993327092006,
+              "coverage20_80": 0.6072002571520412,
+              "intervalWidth": 0.04980697085349348,
+              "icDays": 9,
+              "icStd": 0.08406572421597948,
+              "icTStat": 4.877763222129966,
+              "icPositiveDayShare": 0.8888888888888888,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.009734747475894158,
+              "spreadTStat": 4.49483332072437,
+              "realizedReturnStd": 0.040276914006813075,
+              "forecastReturnStd": 0.0045947380638476434,
+              "forecastDispersionRatio": 0.11407870183575675,
+              "p90AbsRealizedReturn": 0.059818495210910205,
+              "p90AbsForecastReturn": 0.0085448865608154,
+              "p90MagnitudeRatio": 0.1428468992857064,
+              "forecastAbsMedian": 0.0002512298684383413,
+              "forecastNonTrivialShare": 0.3709418193506911,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.0002823606222186313,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  0.00010549155826467404,
+                  0.00045095462411083625
+                ],
+                "blockLength": 2
+              }
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    },
+    "T+5": {
+      "checks": {
+        "fixedSealedHoldoutPass": true,
+        "generalizationGatePass": true,
+        "blindGatePass": true,
+        "chronologyVerified": true,
+        "zeroHoldoutLabelsUsedForSelectionOrCalibration": true,
+        "noNeverSeenAcrossDevelopmentOverclaim": true,
+        "enoughHoldoutRows": true,
+        "fourChronologicalBlocks": true,
+        "positiveSkillOverall": true,
+        "subBlockStability": true,
+        "literalReplayPass": true,
+        "preHoldoutCalibrationMaturity": true
+      },
+      "holdout": {
+        "status": "PASS",
+        "horizon": 5,
+        "method": "FIXED_MODEL_SEALED_90_100: within this training run, model-family/expert selection/meta fitting are locked before the holdout and quantile/isotonic/conformal calibration is frozen before the 90% boundary. The frozen forecast is evaluated on four chronological 90-100% sub-blocks without refitting. This is a fixed sealed evaluation partition for the current run, not a claim that the dates were never inspected across earlier V12 development iterations.",
+        "sealedAuditStart": "2025-11-24",
+        "sealedAuditEnd": "2026-08-10",
+        "rows": 12634,
+        "dates": 36,
+        "kindSelectionLockDate": "2024-06-18",
+        "predictionAvailabilityEndExclusive": "2025-03-07",
+        "metaTrainMaxMaturity": "2025-03-06",
+        "calibrationMaxLabelMaturity": "2025-11-21",
+        "chronologyVerified": true,
+        "futureBlindLabelsUsedForSelectionOrCalibration": 0,
+        "neverSeenAcrossDevelopmentClaimed": false,
+        "overall": {
+          "n": 12634,
+          "rankIC": 0.1106792252059268,
+          "spread": 0.014962492915584717,
+          "balancedAccuracy": 0.5297316117150096,
+          "mcc": 0.08422288688321024,
+          "brier": 0.24245091101560234,
+          "brierSkill": -0.011326734923141402,
+          "ece": 0.0730523415144406,
+          "scenarioMAE": 0.032057270899738324,
+          "scenarioMAEImprove": 0.007002907895829913,
+          "scenarioRankIC": 0.11239995687236207,
+          "coverage20_80": 0.6173816685135349,
+          "intervalWidth": 0.05851574487642623,
+          "icDays": 36,
+          "icStd": 0.1093289494480251,
+          "icTStat": 6.074103470199919,
+          "icPositiveDayShare": 0.8611111111111112,
+          "icBootstrap95": [
+            0.07734118646079263,
+            0.14650466130127246
+          ],
+          "spreadDays": 36,
+          "spreadStd": 0.016156405611519167,
+          "spreadTStat": 5.556616963707614,
+          "realizedReturnStd": 0.0488871942870368,
+          "forecastReturnStd": 0.005365406761464777,
+          "forecastDispersionRatio": 0.10975076069946396,
+          "p90AbsRealizedReturn": 0.07409628786324891,
+          "p90AbsForecastReturn": 0.009416884697318412,
+          "p90MagnitudeRatio": 0.12708983093320525,
+          "forecastAbsMedian": 0.000153709001805741,
+          "forecastNonTrivialShare": 0.4578122526515751,
+          "dailyMAEEdge": {
+            "days": 36,
+            "mean": 0.00022450173563228008,
+            "positiveDayShare": 0.75,
+            "bootstrap90": [
+              0.00010687762179616644,
+              0.00037875456098488227
+            ],
+            "blockLength": 3
+          }
+        },
+        "blocks": [
+          {
+            "start": "2025-11-24",
+            "end": "2026-01-21",
+            "n": 3198,
+            "metrics": {
+              "n": 3198,
+              "rankIC": 0.06496835774434204,
+              "spread": 0.005787667480111377,
+              "balancedAccuracy": 0.5338744866452471,
+              "mcc": 0.09733054092534364,
+              "brier": 0.2441756903851885,
+              "brierSkill": -0.0028100126253687296,
+              "ece": 0.05521581256854383,
+              "scenarioMAE": 0.03259856743203583,
+              "scenarioMAEImprove": 0.005344130420404936,
+              "scenarioRankIC": 0.08333485263345912,
+              "coverage20_80": 0.6128830519074422,
+              "intervalWidth": 0.05796965313814598,
+              "icDays": 9,
+              "icStd": 0.14112952783029029,
+              "icTStat": 1.3810368122778776,
+              "icPositiveDayShare": 0.6666666666666666,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.01361665995897613,
+              "spreadTStat": 1.2751293263285466,
+              "realizedReturnStd": 0.05037077929127549,
+              "forecastReturnStd": 0.005052215751281312,
+              "forecastDispersionRatio": 0.10030052785298847,
+              "p90AbsRealizedReturn": 0.0736595030713977,
+              "p90AbsForecastReturn": 0.008538212789246775,
+              "p90MagnitudeRatio": 0.11591461295863942,
+              "forecastAbsMedian": 0.000153709001805741,
+              "forecastNonTrivialShare": 0.42338961851156975,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00017452080367420501,
+                "positiveDayShare": 0.5555555555555556,
+                "bootstrap90": [
+                  3.76915266551238e-05,
+                  0.0003966265279435288
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-01-28",
+            "end": "2026-04-01",
+            "n": 3208,
+            "metrics": {
+              "n": 3208,
+              "rankIC": 0.14992870557362564,
+              "spread": 0.022322621375031538,
+              "balancedAccuracy": 0.5286899592990196,
+              "mcc": 0.0732901621811573,
+              "brier": 0.2439950421243868,
+              "brierSkill": 0.002236947337792783,
+              "ece": 0.0497176875098927,
+              "scenarioMAE": 0.034457443036598784,
+              "scenarioMAEImprove": 0.0075247571173990835,
+              "scenarioRankIC": 0.15257118741686937,
+              "coverage20_80": 0.5953865336658354,
+              "intervalWidth": 0.05919597742359625,
+              "icDays": 9,
+              "icStd": 0.10533544351890027,
+              "icTStat": 4.2700358179075035,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.020074197027368578,
+              "spreadTStat": 3.3360170787301016,
+              "realizedReturnStd": 0.05194666076935901,
+              "forecastReturnStd": 0.005421196350702765,
+              "forecastDispersionRatio": 0.10436082455372153,
+              "p90AbsRealizedReturn": 0.08185614951370859,
+              "p90AbsForecastReturn": 0.009416884697318412,
+              "p90MagnitudeRatio": 0.11504187227547699,
+              "forecastAbsMedian": 0.0012157755726913799,
+              "forecastNonTrivialShare": 0.5224438902743143,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.0002600923975841287,
+                "positiveDayShare": 0.8888888888888888,
+                "bootstrap90": [
+                  4.2566914196567066e-05,
+                  0.00047764307286955575
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-04-08",
+            "end": "2026-06-08",
+            "n": 3137,
+            "metrics": {
+              "n": 3137,
+              "rankIC": 0.10870903086028,
+              "spread": 0.01528007328328038,
+              "balancedAccuracy": 0.5325160659402067,
+              "mcc": 0.10168868686786042,
+              "brier": 0.23993301333889414,
+              "brierSkill": -0.01808102120996269,
+              "ece": 0.0876669324871266,
+              "scenarioMAE": 0.02753628566733346,
+              "scenarioMAEImprove": 0.008560694004967284,
+              "scenarioRankIC": 0.11359783465361631,
+              "coverage20_80": 0.6640102008288173,
+              "intervalWidth": 0.05764717792484291,
+              "icDays": 9,
+              "icStd": 0.06355561832411974,
+              "icTStat": 5.1313652699854675,
+              "icPositiveDayShare": 1.0,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.009005900665135758,
+              "spreadTStat": 5.09002059364266,
+              "realizedReturnStd": 0.042028993087039425,
+              "forecastReturnStd": 0.004719269082273051,
+              "forecastDispersionRatio": 0.11228603722434509,
+              "p90AbsRealizedReturn": 0.06011890736797688,
+              "p90AbsForecastReturn": 0.0067831783153086194,
+              "p90MagnitudeRatio": 0.11282936786908021,
+              "forecastAbsMedian": 0.000153709001805741,
+              "forecastNonTrivialShare": 0.41632132610774625,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00023907857475234464,
+                "positiveDayShare": 0.7777777777777778,
+                "bootstrap90": [
+                  0.00011868296328161523,
+                  0.00040421688742214076
+                ],
+                "blockLength": 2
+              }
+            }
+          },
+          {
+            "start": "2026-06-15",
+            "end": "2026-08-10",
+            "n": 3091,
+            "metrics": {
+              "n": 3091,
+              "rankIC": 0.11911080664545944,
+              "spread": 0.016459609523915564,
+              "balancedAccuracy": 0.5190694679586471,
+              "mcc": 0.05549990412615609,
+              "brier": 0.2416192151213663,
+              "brierSkill": -0.03945187325248667,
+              "ece": 0.10214910684734331,
+              "scenarioMAE": 0.03359447961818487,
+              "scenarioMAEImprove": 0.006811704785239625,
+              "scenarioRankIC": 0.08097593646485754,
+              "coverage20_80": 0.5975412487868004,
+              "intervalWidth": 0.05925625276863446,
+              "icDays": 9,
+              "icStd": 0.11433751527736988,
+              "icTStat": 3.1252421313296015,
+              "icPositiveDayShare": 0.7777777777777778,
+              "icBootstrap95": [
+                null,
+                null
+              ],
+              "spreadDays": 9,
+              "spreadStd": 0.017726624870870372,
+              "spreadTStat": 2.7855741818562105,
+              "realizedReturnStd": 0.05035006401752345,
+              "forecastReturnStd": 0.006144809952295923,
+              "forecastDispersionRatio": 0.12204175053595424,
+              "p90AbsRealizedReturn": 0.07892725858967073,
+              "p90AbsForecastReturn": 0.009416884697318412,
+              "p90MagnitudeRatio": 0.119310930920269,
+              "forecastAbsMedian": 0.000153709001805741,
+              "forecastNonTrivialShare": 0.4684568100938208,
+              "dailyMAEEdge": {
+                "days": 9,
+                "mean": 0.00022431516651844207,
+                "positiveDayShare": 0.7777777777777778,
+                "bootstrap90": [
+                  -0.0001929888723758217,
+                  0.0008003744347060516
+                ],
+                "blockLength": 2
+              }
+            }
+          }
+        ],
+        "positiveRankBlocks": 4,
+        "positiveMAEBlocks": 4,
+        "tolerableRankBlocks": 4,
+        "tolerableMAEBlocks": 4,
+        "checks": {
+          "overallPositiveSkill": true,
+          "fourBlockStability": true,
+          "literalWalkForwardReplay": true,
+          "preBlindCalibrationMaturity": true
+        },
+        "policy": "No user-facing price is valid unless this fixed sealed holdout, literal walk-forward replay, distribution calibration, ranking skill, PBO/generalization and maturity embargo all pass. Forward live snapshots remain the strongest genuinely unseen evidence."
+      }
+    }
+  },
+  "policy": "A numerical forecast may be published only when all five horizons pass the fixed 90-100% sealed holdout for the current training run. The holdout labels cannot participate in model-family selection, expert promotion, meta fitting or calibration. This is a model-blind evaluation partition, not a claim that those historical dates were never inspected during earlier V12 development. Literal maturity-aware walk-forward replay and all other model-risk gates must also pass."
+}

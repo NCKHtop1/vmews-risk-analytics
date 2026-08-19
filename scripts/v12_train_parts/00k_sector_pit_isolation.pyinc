@@ -1,0 +1,72 @@
+# Current sector taxonomy is descriptive reference only. It must never enter historical numerical features.
+# This wrapper enriches the current reference map from VCI while forcing all historical event features to
+# abstain from sector membership until an independently dated as-of membership archive exists.
+
+_seed_build_sector_map=build_sector_map
+_pit_prepare_articles=prepare_articles
+_PITBaseEvidenceFeatureStore=EvidenceFeatureStore
+
+
+def _sector_reference_from_rows(rows):
+    """Choose one stable current ICB label per symbol, preferring level 2 then 1/3/4."""
+    best={};priority={2:0,1:1,3:2,4:3}
+    for r in rows or []:
+        try:lvl=int(r.get('icb_level'))
+        except Exception:lvl=99
+        s=str(r.get('symbol') or '').upper().strip();sec=str(r.get('icb_name') or r.get('icb_code') or '').strip()
+        if not s or not sec:continue
+        rank=priority.get(lvl,9);old=best.get(s)
+        if old is None or rank<old[0]:best[s]=(rank,sec,lvl)
+    return {s:v[1] for s,v in best.items()}
+
+
+def build_sector_map(market_scan):
+    seed=_seed_build_sector_map(market_scan);live={};error=None;rows_n=0
+    try:
+        from vnstock import Listing
+        df=Listing(source='VCI').symbols_by_industries(show_log=False)
+        rows=df.to_dict('records') if hasattr(df,'to_dict') else []
+        rows_n=len(rows);live=_sector_reference_from_rows(rows)
+    except SystemExit as exc:
+        error=f'SystemExit: {exc}'[:400]
+    except Exception as exc:
+        error=f'{type(exc).__name__}: {exc}'[:400]
+    out=dict(seed);out.update(live)
+    build_sector_map.last_audit={
+        'policy':'CURRENT_REFERENCE_ONLY_NOT_HISTORICAL_ML',
+        'provider':'VCI Listing.symbols_by_industries',
+        'providerStatus':'PASS' if live else 'FALLBACK_SEED_ONLY',
+        'providerRows':rows_n,
+        'providerSymbols':len(live),
+        'seedSymbols':len(seed),
+        'mergedSymbols':len(out),
+        'providerError':error,
+    }
+    return out
+build_sector_map.last_audit={}
+
+
+def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
+    # Deliberately discard current taxonomy for historical article/event calculations.
+    # The underlying event engine sees no dated sector membership and therefore uses OTHER/market fallback.
+    return _pit_prepare_articles(sentiment,price_store,{},index_rows)
+
+
+class EvidenceFeatureStore(_PITBaseEvidenceFeatureStore):
+    def __init__(self,articles_by_symbol,outcomes,sector_map):
+        self.current_reference_sector_map=dict(sector_map or {})
+        # Historical feature store receives no current sector classification.
+        super().__init__(articles_by_symbol,outcomes,{})
+
+
+# Replace the earlier sector-audit merge wrapper so audit coverage uses current descriptive reference,
+# while the actual historical feature merge uses the PIT-isolated EvidenceFeatureStore above.
+def merge_evidence(panel,latest,evidence,flow):
+    ref=getattr(evidence,'current_reference_sector_map',{}) or {}
+    sec=_audit_sector_reference(panel,latest,ref)
+    sec['historicalEventSectorGroupingEnabled']=False
+    sec['historicalNumericalTaxonomyMode']='ABSTAIN_NO_ASOF_ARCHIVE'
+    sec['currentReferenceSourceAudit']=dict(getattr(build_sector_map,'last_audit',{}) or {})
+    sec['policy']='Current ICB reference is audited only as present-day descriptive metadata. Historical event and numerical ML features receive an empty sector map until an independently dated as-of membership archive exists.'
+    V12_SECTOR_AUDIT.update(sec)
+    return _merge_evidence_before_sector_audit(panel,latest,evidence,flow)

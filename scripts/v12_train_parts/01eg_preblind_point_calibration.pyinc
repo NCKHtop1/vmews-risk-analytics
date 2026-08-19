@@ -1,0 +1,153 @@
+# Point-price calibration for a zero-inflated return distribution.
+#
+# The monotone conditional q50 is a valid scenario median, but for stocks with a material
+# unchanged-price mass it can map a broad range of informative direct-return scores to exactly
+# zero. Do not repair that by inflating sealed outputs. Choose the released point map entirely
+# inside the maturity-purged pre-blind 85-90% block, while keeping q20/q80 as the calibrated
+# uncertainty interval. The 90-100% block is never supplied here and remains independent.
+_point_base_quantile_calibrate=_preblind_shrink_base_calibrate
+_point_base_apply=_preblind_shrink_base_apply
+
+def _point_candidate_metrics(y,p):
+    yy=np.asarray(y,float);pp=np.asarray(p,float);good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good]
+    if not len(yy):return {'n':0,'mae':float('inf'),'maeSE':float('inf'),'baselineMAE':float('inf'),'maeEdge':-float('inf'),'forecastStd':0.0,'realizedStd':0.0,'dispersionRatio':0.0,'nonTrivialShare':0.0}
+    loss=np.abs(yy-pp);mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0;base=float(np.mean(np.abs(yy)));fs=float(np.std(pp));rs=float(np.std(yy))
+    return {'n':int(len(yy)),'mae':mae,'maeSE':se,'baselineMAE':base,'maeEdge':base-mae,'forecastStd':fs,'realizedStd':rs,'dispersionRatio':fs/(rs or 1e-12),'nonTrivialShare':float(np.mean(np.abs(pp)>=.001))}
+
+def _candidate_stability(y,p,blocks=3):
+    """Pre-blind contiguous-block stability audit for point-family selection."""
+    yy=np.asarray(y,float);pp=np.asarray(p,float);good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good]
+    if not len(yy):return {'blocks':0,'positiveEdgeBlocks':0,'stable':False,'worstEdge':-float('inf'),'medianEdge':-float('inf'),'downsideTolerance':0.0,'blockMetrics':[]}
+    idx=[z for z in np.array_split(np.arange(len(yy)),min(int(blocks),len(yy))) if len(z)]
+    bm=[_point_candidate_metrics(yy[z],pp[z]) for z in idx]
+    edges=np.asarray([m['maeEdge'] for m in bm],float);pos=int(np.sum(edges>0));need=max(1,int(math.ceil(2*len(bm)/3)))
+    median_edge=float(np.median(edges));worst=float(np.min(edges));downside=max(1e-5,0.25*abs(median_edge))
+    stable=bool(pos>=need and worst>=-downside)
+    return {'blocks':int(len(bm)),'positiveEdgeBlocks':pos,'requiredPositiveBlocks':need,'stable':stable,'worstEdge':worst,'medianEdge':median_edge,'downsideTolerance':float(downside),'blockMetrics':bm}
+
+def _choose_point_family(candidates,y):
+    """MAE-first, stability-aware pre-blind selector; dispersion is only a near-tie breaker."""
+    assessed=[]
+    for name,pred in candidates:
+        m=_point_candidate_metrics(y,pred);s=_candidate_stability(y,pred,3);assessed.append((name,m,s))
+    positive=[z for z in assessed if z[1]['maeEdge']>0 and z[2]['stable']]
+    pool=positive if positive else [z for z in assessed if z[1]['maeEdge']>0]
+    if not pool:pool=assessed
+    best=min(pool,key=lambda z:(z[1]['mae'],-z[2]['positiveEdgeBlocks'],-z[1]['nonTrivialShare']))
+    # Full #20 showed that a whole one-standard-error band is too permissive for a point-map
+    # family: a higher-dispersion map can be materially worse in MAE yet still enter that band.
+    # Keep magnitude as a tie-breaker only when MAE is genuinely near-identical on pre-blind B.
+    tight_tol=min(5e-5,max(1e-6,0.10*float(best[1]['maeSE'])))
+    near=[z for z in pool if z[1]['mae']<=best[1]['mae']+tight_tol+1e-15]
+    chosen=max(near,key=lambda z:(z[2]['positiveEdgeBlocks'],z[1]['nonTrivialShare'],z[1]['dispersionRatio'],-z[1]['mae']))
+    audit={
+      'selectionRule':'PREBLIND_STABILITY_THEN_MAE; dispersion only within tight MAE equivalence',
+      'tightMAETolerance':float(tight_tol),'bestMAEFamily':best[0],'selectedFamily':chosen[0],
+      'candidateMetrics':{name:m for name,m,_ in assessed},
+      'candidateStability':{name:s for name,_,s in assessed},
+      'stablePositiveFamilies':[name for name,m,s in assessed if m['maeEdge']>0 and s['stable']],
+      'sealedLabelsUsed':0
+    }
+    return chosen[0],audit
+
+def _weighted_pava(values,weights):
+    """Weighted increasing PAVA; returns one fitted value per original point."""
+    vals=[float(x) for x in values];w=[float(x) for x in weights];blocks=[]
+    for i,(v,ww) in enumerate(zip(vals,w)):
+        blocks.append([i,i,v,ww])
+        while len(blocks)>=2 and blocks[-2][2]>blocks[-1][2]:
+            r=blocks.pop();l=blocks.pop();tw=l[3]+r[3];mv=(l[2]*l[3]+r[2]*r[3])/max(tw,1e-12)
+            blocks.append([l[0],r[1],mv,tw])
+    out=np.empty(len(vals),float)
+    for a,b,v,_ in blocks:out[a:b+1]=v
+    return out
+
+def _fit_binned_monotone_median(score,y,bins=15):
+    """Robust 1-D score->return median map, fit without any sealed labels."""
+    s=np.asarray(score,float);yy=np.asarray(y,float);good=np.isfinite(s)&np.isfinite(yy);s=s[good];yy=yy[good]
+    if len(s)<max(120,bins*8):return None
+    order=np.argsort(s,kind='mergesort');s=s[order];yy=yy[order]
+    groups=[g for g in np.array_split(np.arange(len(s)),min(int(bins),max(3,len(s)//20))) if len(g)]
+    x=np.asarray([np.median(s[g]) for g in groups],float)
+    z=np.asarray([np.median(yy[g]) for g in groups],float)
+    w=np.asarray([len(g) for g in groups],float)
+    # Collapse duplicate score knots before PAVA so interpolation is well-defined.
+    ux=[];uz=[];uw=[]
+    for xx,zz,ww in zip(x,z,w):
+        if ux and abs(xx-ux[-1])<=1e-14:
+            tw=uw[-1]+ww;uz[-1]=(uz[-1]*uw[-1]+zz*ww)/tw;uw[-1]=tw
+        else:ux.append(float(xx));uz.append(float(zz));uw.append(float(ww))
+    if len(ux)<3:return None
+    fit=_weighted_pava(uz,uw)
+    return {'x':[float(v) for v in ux],'y':[float(v) for v in fit],'bins':int(len(ux)),'fitRows':int(len(s)),'target':'BINNED_MONOTONE_CONDITIONAL_MEDIAN'}
+
+def _predict_binned_monotone(model,score):
+    s=np.asarray(score,float)
+    if not model:return np.full(len(s),np.nan)
+    return np.interp(s,np.asarray(model['x'],float),np.asarray(model['y'],float),left=float(model['y'][0]),right=float(model['y'][-1]))
+
+def calibrate(cal_y,cal_score,conform_y,conform_score):
+    # Fit only the scenario-quantile/isotonic layer on 80-85%. Its conformal adjustment is
+    # intentionally ignored and recomputed below on a disjoint final pre-blind slice.
+    layer,iso,_=_point_base_quantile_calibrate(cal_y,cal_score,conform_y,conform_score)
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);n=len(cy)
+    if n<300:
+        lo0,med0,hi0=layer.predict(cs);g,fit_n,audit=_select_return_shrink(cy,med0)
+        layer.returnShrink=float(g);layer.shrinkSelectionN=int(fit_n);layer.shrinkSelectionAudit=audit
+        layer.pointMode='Q50';layer.pointScoreScale=1.0;layer.pointBinnedMedian=None
+        layer.pointSelectionAudit={'method':'INSUFFICIENT_PREBLIND_ROWS_Q50','n':int(n),'selectedFamily':'Q50','sealedLabelsUsed':0}
+        lo=lo0*g;hi=hi0*g;nonconf=np.maximum.reduce([lo-cy,cy-hi,np.zeros(len(cy))]) if n else np.asarray([],float)
+    else:
+        # Three disjoint slices inside 85-90%:
+        # A) fit candidate maps/scales, B) select family, C) conformal widening.
+        a=max(1,n//3);b=max(a+1,2*n//3)
+        lo0,med0,hi0=layer.predict(cs)
+        q50_scale,q_n,q_audit=_select_return_shrink(cy[:a],med0[:a])
+        score_scale,s_n,s_audit=_select_return_shrink(cy[:a],cs[:a])
+        median_map=_fit_binned_monotone_median(cs[:a],cy[:a],15)
+
+        q_lo=lo0[a:b]*q50_scale;q_hi=hi0[a:b]*q50_scale
+        q_point=med0[a:b]*q50_scale
+        direct=np.clip(cs[a:b]*score_scale,np.minimum(q_lo,q_hi),np.maximum(q_lo,q_hi))
+        mapped=_predict_binned_monotone(median_map,cs[a:b])
+        mapped=np.clip(mapped,np.minimum(q_lo,q_hi),np.maximum(q_lo,q_hi))
+        candidates=[('Q50',q_point),('DIRECT_SCORE',direct)]
+        if median_map is not None:candidates.append(('BINNED_MONOTONE_MEDIAN',mapped))
+        mode,choice_audit=_choose_point_family(candidates,cy[a:b])
+        metrics=choice_audit['candidateMetrics']
+        best_name=choice_audit['bestMAEFamily']
+        best_metric=metrics[best_name]
+        layer.returnShrink=float(q50_scale);layer.shrinkSelectionN=int(q_n);layer.shrinkSelectionAudit=q_audit
+        layer.pointMode=mode;layer.pointScoreScale=float(score_scale);layer.pointBinnedMedian=median_map
+        layer.pointSelectionAudit={
+          'method':'THREE_WAY_PREBLIND_POINT_FAMILY_SELECTION',
+          'selectionFitRows':int(a),'selectionValidationRows':int(b-a),'conformalRows':int(n-b),
+          'selectionRule':choice_audit['selectionRule'],'tightMAETolerance':choice_audit['tightMAETolerance'],
+          'bestMAEFamily':best_name,'bestMAE':best_metric['mae'],'selectedFamily':mode,
+          'candidateMetrics':metrics,'candidateStability':choice_audit['candidateStability'],
+          'stablePositiveFamilies':choice_audit['stablePositiveFamilies'],
+          'q50ScaleAudit':q_audit,'directScoreScaleAudit':s_audit,
+          'binnedMedianAudit':median_map,'sealedLabelsUsed':0,
+          'reason':'point-family choice is MAE-first and contiguous-block stability-aware entirely inside pre-blind validation; dispersion can break only a genuinely tight MAE tie; sealed gates remain unchanged'
+        }
+        lo=lo0[b:]*q50_scale;hi=hi0[b:]*q50_scale;yy=cy[b:]
+        nonconf=np.maximum.reduce([lo-yy,yy-hi,np.zeros(len(yy))]) if len(yy) else np.asarray([],float)
+
+    target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)))
+    qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0
+    layer.conformalTarget=target;layer.conformalN=int(len(nonconf));layer.calibrationSplitPolicy='80-85% monotone quantile/isotonic; 85-90% split into candidate-fit, point-family validation and conformal widening; all point selection is pre-blind; 90-100% remains sealed.'
+    return layer,iso,max(0.0,qadj)
+
+def apply_calibration(score,scen,iso,qadj):
+    if isinstance(scen,_QuantileLayer) and hasattr(scen,'pointMode'):
+        ss=np.asarray(score,float);p=np.asarray(iso.predict(ss),float);lo0,q50,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=lo0*g;hi=hi0*g
+        mode=getattr(scen,'pointMode','Q50')
+        if mode=='DIRECT_SCORE':
+            point=np.clip(ss*float(getattr(scen,'pointScoreScale',1.0)),np.minimum(lo,hi),np.maximum(lo,hi))
+        elif mode=='BINNED_MONOTONE_MEDIAN':
+            point=_predict_binned_monotone(getattr(scen,'pointBinnedMedian',None),ss)
+            point=np.clip(point,np.minimum(lo,hi),np.maximum(lo,hi))
+        else:point=q50*g
+        lo=lo-float(qadj);hi=hi+float(qadj);ns=np.full(len(point),int(scen.n),dtype=int)
+        return p,np.asarray(point,float),np.asarray(lo,float),np.asarray(hi,float),ns
+    return _point_base_apply(score,scen,iso,qadj)

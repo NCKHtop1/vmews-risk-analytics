@@ -1,0 +1,43 @@
+name: Forecast V12 browser UX smoke
+on:
+  push:
+    branches: [forecast-v12-hardening]
+    paths:
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-backtest-v12.json'
+      - 'data/data-audit-v12.json'
+      - 'data/phase-gates-v12.json'
+permissions:
+  contents: read
+jobs:
+  browser:
+    if: ${{ contains(github.event.head_commit.message || '', '[v12-hard-data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve validated static application
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/v12-http.log 2>&1 &
+          echo $! >/tmp/v12-http.pid
+          for i in {1..20}; do curl -fsS http://127.0.0.1:8000/forecast-final.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/v12-http.log
+          exit 1
+      - name: Real-browser desktop mobile hover navigation smoke
+        run: node scripts/v12_browser_smoke.mjs
+      - name: Upload UX screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-browser-smoke-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            v12-browser-desktop.png
+            v12-browser-mobile.png

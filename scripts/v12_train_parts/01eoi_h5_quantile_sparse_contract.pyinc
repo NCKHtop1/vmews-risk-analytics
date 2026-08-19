@@ -1,0 +1,30 @@
+# Fail-closed structural contract for the final H5 quantile-scaled sparse-tail challenger.
+# This guard is part of the assembled production train stack; it changes no authority threshold.
+from pathlib import Path as _V11Path
+_v11_src=_V11Path('scripts/v12_train_parts/01eoh_fit_locked_h5_quantile_sparse_tail.pyinc').read_text(encoding='utf-8')
+for _v11_token in (
+    'FIT_LOCKED_H5_QUANTILE_SPARSE_TAIL_V11',
+    'XSEC_QUANTILE_SPARSE_TAIL_FIT_LOCKED_H5',
+    '_FITLOCK_H5_QTAIL_THRESHOLDS=(0.50,0.65,0.80)',
+    '_FITLOCK_H5_QTAIL_SCALES=(0.25,0.50,0.75,1.00)',
+    'FIT_LOCKED_Q20_Q80',
+    'EXACT_NO_CHANGE_ZERO_RETURN',
+    'TOTAL_POINT_FORECAST',
+    '80-85% ONLY',
+    'EARLY WHOLE-DATE 85-90% ONLY',
+    '90-100% is never supplied',
+    '_gate_floor(h)',
+    'preblindConfirmed',
+    'sealedLabelsUsed',
+):
+    if _v11_token not in _v11_src:raise RuntimeError(('H5 V11 contract token missing',_v11_token))
+if "if int(h)!=5" not in _v11_src:raise RuntimeError('H5 V11 must be horizon-5 only')
+if "if str(audit.get('selectedFamily'))!='Q50'" not in _v11_src:raise RuntimeError('H5 V11 must not replace an earlier independently confirmed family')
+if "validation=_nested_eval(cy[iv],pred,cd[iv],5,bootstrap=True)" not in _v11_src:raise RuntimeError('H5 V11 independent 85-90 validation contract missing')
+if "if validation.get('preblindConfirmed') is True" not in _v11_src:raise RuntimeError('H5 V11 may promote only after preblind confirmation')
+if "z['magnitudePass'] and z['robustMAEPass']" not in _v11_src:raise RuntimeError('H5 V11 must require both unchanged magnitude and robust MAE evidence')
+if "middleForecast':'EXACT_NO_CHANGE_ZERO_RETURN'" not in _v11_src:raise RuntimeError('H5 V11 middle-rank no-change contract missing')
+# Authority floor remains whatever the shared final gate declares; no local H5 threshold override.
+_fd11,_fp11=_gate_floor(5)
+if not (float(_fd11)>0 and float(_fp11)>0):raise RuntimeError('H5 V11 requires positive shared authority magnitude floors')
+del _v11_src,_v11_token,_fd11,_fp11,_V11Path

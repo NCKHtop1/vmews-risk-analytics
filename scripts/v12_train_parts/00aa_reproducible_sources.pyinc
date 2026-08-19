@@ -1,0 +1,26 @@
+# Research-mode reproducibility override.
+# Acquisition and modelling are deliberately separated:
+# 1) an audited VNStock-first resolver captures one dataset once;
+# 2) all model fitting/replay reads the immutable fingerprinted snapshot only.
+from v12_research_sources import (
+    build_price_store as _repro_build_price_store,
+    get_index_history as _repro_get_index_history,
+    source_audit_summary as _repro_source_audit_summary,
+)
+
+build_price_store = _repro_build_price_store
+get_index_history = _repro_get_index_history
+source_audit_summary = _repro_source_audit_summary
+
+print(
+    json.dumps(
+        {
+            "v12ResearchSourceMode": "IMMUTABLE_FROZEN_SNAPSHOT",
+            "runtimeProviderSwitching": False,
+            "runtimeNetworkPriceFetch": False,
+            "fingerprintRequired": True,
+        },
+        ensure_ascii=False,
+    ),
+    flush=True,
+)

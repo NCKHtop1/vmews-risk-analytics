@@ -1,0 +1,253 @@
+name: V12 immutable production release gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'v12-release-trigger.txt'
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-final-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Assert nine-phase research and immutable-source acceptance
+        run: |
+          python - <<'PY'
+          import gzip,hashlib,json,pathlib
+          g=json.load(open('data/phase-gates-v12.json',encoding='utf-8'))
+          m=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
+          b=json.load(open('data/benchmark-gate-v12.json',encoding='utf-8'))
+          a=json.load(open('data/active-flow-gate-v12.json',encoding='utf-8'))
+          aa=json.load(open('data/active-flow-audit-v12.json',encoding='utf-8'))
+          s=json.load(open('data/sector-gate-v12.json',encoding='utf-8'))
+          n=json.load(open('data/nested-selection-gate-v12.json',encoding='utf-8'))
+          blind=json.load(open('data/blind-holdout-gate-v12.json',encoding='utf-8'))
+          e=json.load(open('data/embargo-gate-v12.json',encoding='utf-8'))
+          probe=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          fm=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'))
+          frozen=pathlib.Path('data/v12-frozen-source.json.gz').read_bytes()
+          assert g.get('status')=='PASS',g
+          assert all((g.get('phases') or {}).get(str(i),{}).get('status')=='PASS' for i in range(1,10)),g.get('phases')
+          assert b.get('status')=='PASS' and b.get('benchmark')=='VNINDEX',b
+          assert (b.get('checks') or {}).get('noRawReturnFallbackWhenBenchmarkMissing') is True,b
+          assert a.get('status')=='PASS' and a.get('mode') in {'CERTIFIED','ABSTAIN'},a
+          assert aa.get('status') in {'PASS','ABSTAIN'},aa
+          assert s.get('status')=='PASS',s
+          sec=s.get('sectorAudit') or {}
+          assert sec.get('status')=='ABSTAIN',sec
+          assert sec.get('certified') is False and sec.get('pointInTimeEligible') is False,sec
+          assert sec.get('numericalFeatureEnabled') is False,sec
+          assert n.get('status')=='PASS',n
+          assert blind.get('status')=='PASS',blind
+          assert all((blind.get('checks') or {}).get(f'T+{h}') is True for h in range(1,6)),blind.get('checks')
+          assert (blind.get('checks') or {}).get('backtestCarriesSealedHoldoutEvidence') is True,blind.get('checks')
+          assert e.get('status')=='PASS',e
+          assert m.get('promotion',{}).get('status')=='PASS',m.get('promotion')
+          assert m.get('promotion',{}).get('directPriceHorizons')==[1,2,3,4,5],m.get('promotion')
+          for h in range(1,6):
+              hz=(m.get('horizons') or {}).get(str(h),{})
+              assert (hz.get('gates') or {}).get('blindHoldout') is True,(h,hz.get('gates'))
+              assert (((hz.get('walkForwardReplay') or {}).get('fixedBlindHoldout') or {}).get('status'))=='PASS',(h,hz.get('walkForwardReplay'))
+          assert probe.get('status')=='PASS',probe
+          assert probe.get('mode')=='IMMUTABLE_FROZEN_SNAPSHOT',probe
+          assert probe.get('runtimeNetworkPriceFetch') is False,probe
+          assert probe.get('runtimeProviderSwitching') is False,probe
+          assert all((probe.get('sourceGates') or {}).values()),probe.get('sourceGates')
+          snap=probe.get('snapshot') or {}
+          frozen_sha=hashlib.sha256(frozen).hexdigest()
+          assert frozen_sha==fm.get('snapshotFileSha256')==snap.get('snapshotFileSha256'),(frozen_sha,fm.get('snapshotFileSha256'),snap.get('snapshotFileSha256'))
+          assert fm.get('currentSourceCoverageRatio',0)>=.98,fm
+          assert fm.get('deepHistory',0)>=360 and fm.get('modelEligible',0)>=360,fm
+          assert fm.get('corporateActionVerifiedRatio',0)>=.98,fm
+          assert fm.get('crossSourceMADP95',1) <= .003,fm
+          assert fm.get('corporateActionGateCohort')=='CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION',fm
+          z=json.loads(gzip.decompress(frozen).decode('utf-8'))
+          assert z.get('version')=='VMEWS-FROZEN-SOURCE-12.1.0',z.get('version')
+          print('NINE-PHASE + IMMUTABLE FROZEN SOURCE + VNINDEX + FLOW + BLIND + EMBARGO PASS',frozen_sha)
+          PY
+      - name: Create immutable model manifest 1.6
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          from datetime import datetime,timezone
+          files=[
+            'forecast-final.html','forecast-final-v12.js','forecast-polish-v12.js',
+            'data/v12-frozen-source.json.gz','data/v12-frozen-source-manifest.json','data/v12-source-probe.json','data/vnindex-v12.json',
+            'data/forecast-model-v12.json','data/forecast-current-v12.json','data/forecast-dashboard-v12.json','data/forecast-backtest-v12.json',
+            'data/data-audit-v12.json','data/event-intelligence-v12.json','data/flow-v12.json','data/flow-audit-v12.json',
+            'data/phase-gates-v12.json','data/benchmark-gate-v12.json','data/active-flow-audit-v12.json','data/active-flow-gate-v12.json',
+            'data/sector-gate-v12.json','data/nested-selection-gate-v12.json','data/blind-holdout-gate-v12.json','data/embargo-gate-v12.json'
+          ]
+          rows={}
+          for name in files:
+              p=pathlib.Path(name); assert p.exists(),name; b=p.read_bytes(); rows[name]={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)}
+          model=json.load(open('data/forecast-model-v12.json',encoding='utf-8'))
+          dash=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'))
+          gates=json.load(open('data/phase-gates-v12.json',encoding='utf-8'))
+          benchmark=json.load(open('data/benchmark-gate-v12.json',encoding='utf-8'))
+          active=json.load(open('data/active-flow-gate-v12.json',encoding='utf-8'))
+          sector=json.load(open('data/sector-gate-v12.json',encoding='utf-8'))
+          nested=json.load(open('data/nested-selection-gate-v12.json',encoding='utf-8'))
+          blind=json.load(open('data/blind-holdout-gate-v12.json',encoding='utf-8'))
+          embargo=json.load(open('data/embargo-gate-v12.json',encoding='utf-8'))
+          probe=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          fm=json.load(open('data/v12-frozen-source-manifest.json',encoding='utf-8'))
+          snap=probe.get('snapshot') or {}
+          z={
+            'version':'VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0',
+            'generatedAt':datetime.now(timezone.utc).isoformat(),
+            'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'modelVersion':model.get('version'),'asOf':dash.get('asOf'),'promotion':model.get('promotion'),
+            'sourceContract':{
+              'mode':probe.get('mode'),'status':probe.get('status'),
+              'runtimeNetworkPriceFetch':probe.get('runtimeNetworkPriceFetch'),
+              'runtimeProviderSwitching':probe.get('runtimeProviderSwitching'),
+              'snapshotFileSha256':snap.get('snapshotFileSha256'),
+              'inputManifestSha256':snap.get('inputManifestSha256'),
+              'sourceManifestVersion':fm.get('version'),
+              'currentSourceCoverageRatio':fm.get('currentSourceCoverageRatio'),
+              'deepHistory':fm.get('deepHistory'),'modelEligible':fm.get('modelEligible'),
+              'corporateActionVerifiedRatio':fm.get('corporateActionVerifiedRatio'),
+              'corporateActionGateCohort':fm.get('corporateActionGateCohort'),
+              'crossSourceMADP95':fm.get('crossSourceMADP95')
+            },
+            'phaseGateVersion':gates.get('version'),
+            'benchmarkGate':{'version':benchmark.get('version'),'benchmark':benchmark.get('benchmark'),'status':benchmark.get('status'),'h5Coverage':benchmark.get('benchmarkH5Coverage')},
+            'activeFlowGate':{'version':active.get('version'),'mode':active.get('mode'),'status':active.get('status')},
+            'sectorGate':{'version':sector.get('version'),'status':sector.get('status'),'mode':(sector.get('sectorAudit') or {}).get('status')},
+            'nestedSelectionGate':{'version':nested.get('version'),'status':nested.get('status')},
+            'blindHoldoutGate':{'version':blind.get('version'),'status':blind.get('status')},
+            'embargoGate':{'version':embargo.get('version'),'status':embargo.get('status')},
+            'files':rows,
+            'policy':'All production UI/model/data and immutable frozen-source evidence are content-hashed. Runtime price-network fetch and provider switching are forbidden. Release CDN is pinned to the release commit SHA; /main/ is not a production identity. Missing benchmark/active-flow/PIT-sector evidence abstains rather than fabricating a numerical signal. T+1..T+5 require blind holdout, nested pre-audit selection, maturity-aware walk-forward, PBO/generalization, distribution and embargo gates.'
+          }
+          assert z['sourceContract']['runtimeNetworkPriceFetch'] is False
+          assert z['sourceContract']['runtimeProviderSwitching'] is False
+          pathlib.Path('data/forecast-release-v12.json').write_text(json.dumps(z,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps(z,ensure_ascii=False,indent=2))
+          PY
+      - name: Install Chromium smoke runtime
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --silent playwright@1.55.0
+          timeout 8m npx playwright install chromium >/dev/null
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage();await page.setContent('<title>V12 Chromium precheck</title>');if((await page.title())!=='V12 Chromium precheck')throw Error('chromium precheck title mismatch');await browser.close();console.log('CHROMIUM INSTALL + LAUNCH PRECHECK PASS')})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+      - name: Provider-outage local browser smoke
+        shell: bash
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/v12-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 2
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();return route.abort('blockedbyclient')});await page.goto('http://127.0.0.1:8765/forecast-final.html?symbol=FPT',{waitUntil:'networkidle',timeout:30000});await page.waitForFunction(()=>document.querySelector('#decision')?.textContent&&!document.querySelector('#decision').textContent.includes('—')&&document.querySelectorAll('#methodProof .proofCard').length===4,null,{timeout:20000});const r=await page.evaluate(()=>({decision:document.querySelector('#decision')?.textContent,t1:document.querySelector('#t1')?.textContent,t3:document.querySelector('#t3')?.textContent,t5:document.querySelector('#t5')?.textContent,pup:document.querySelector('#pup')?.textContent,status:document.querySelector('#status')?.textContent,cw:document.querySelector('#chart')?.width,ch:document.querySelector('#chart')?.height,bt:document.querySelector('#btRows')?.textContent,detail:document.querySelector('#btDetail')?.textContent,proof:document.querySelector('#methodProof')?.textContent}));if(!r.decision||['LOCKED','Loading'].some(x=>r.decision.includes(x)))throw Error(JSON.stringify(r));for(const k of ['t1','t3','t5'])if(!r[k]||r[k]==='LOCKED'||r[k]==='—')throw Error('invalid '+k+' '+JSON.stringify(r));if(!(r.cw>500&&r.ch>300))throw Error('chart not rendered '+JSON.stringify(r));if(!r.bt||!r.bt.includes('FPT'))throw Error('backtest drilldown missing '+JSON.stringify(r));if(!r.detail||(!r.detail.includes('Actual raw')&&!r.detail.includes('Giá thực tế')))throw Error('historical detail missing '+JSON.stringify(r));if(!r.proof||!r.proof.includes('0 dòng'))throw Error('no-look-ahead proof missing '+JSON.stringify(r));if(errors.length)throw Error(errors.join('\n'));console.log('PROVIDER OUTAGE BROWSER PASS',r);await browser.close()})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+          V12_BROWSER_URL='http://127.0.0.1:8765/forecast-final.html?symbol=FPT' node scripts/v12_browser_smoke.mjs
+      - name: Commit immutable release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_SHA=$(python - <<'PY'
+          import json
+          print(json.load(open('data/forecast-release-v12.json',encoding='utf-8'))['sourceCommit'])
+          PY
+          )
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git fetch origin forecast-v12-methodfix
+          REMOTE_SHA=$(git rev-parse origin/forecast-v12-methodfix)
+          test "$REMOTE_SHA" = "$SOURCE_SHA" || { echo "BRANCH ADVANCED DURING RELEASE: source=$SOURCE_SHA remote=$REMOTE_SHA; refusing to rebase immutable manifest"; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/forecast-release-v12.json
+          git commit -m 'Seal VMEWS Forecast V12 immutable production manifest 1.6 [v12-release]'
+          RELEASE_SHA=$(git rev-parse HEAD)
+          test "$(git rev-parse ${RELEASE_SHA}^)" = "$SOURCE_SHA"
+          git push origin HEAD:forecast-v12-methodfix
+          echo "RELEASE_SHA=$RELEASE_SHA" >> "$GITHUB_ENV"
+      - name: Commit-pinned CDN integrity and HTTP smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${RELEASE_SHA}"
+          rm -rf /tmp/v12-cdn && mkdir -p /tmp/v12-cdn
+          python - <<'PY' > /tmp/v12-manifest-files.txt
+          import json
+          r=json.load(open('data/forecast-release-v12.json',encoding='utf-8'))
+          for p in r.get('files',{}): print(p)
+          PY
+          while IFS= read -r path; do
+            test -n "$path" || continue
+            out="/tmp/v12-cdn/$path"; mkdir -p "$(dirname "$out")"; ok=0
+            for i in 1 2 3 4 5 6; do
+              if curl -LfsS --connect-timeout 10 --max-time 45 "$BASE/$path" -o "$out"; then ok=1; break; fi
+              sleep $((i*5))
+            done
+            test "$ok" = 1 || { echo "CDN FAIL $path"; exit 1; }
+            test -s "$out"
+            echo "CDN PASS $path $(wc -c < "$out") bytes"
+          done < /tmp/v12-manifest-files.txt
+          out="/tmp/v12-cdn/data/forecast-release-v12.json"; mkdir -p "$(dirname "$out")"; ok=0
+          for i in 1 2 3 4 5 6; do
+            if curl -LfsS --connect-timeout 10 --max-time 45 "$BASE/data/forecast-release-v12.json" -o "$out"; then ok=1; break; fi
+            sleep $((i*5))
+          done
+          test "$ok" = 1 || { echo "CDN FAIL data/forecast-release-v12.json"; exit 1; }
+          python - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          root=pathlib.Path('/tmp/v12-cdn'); r=json.load(open(root/'data/forecast-release-v12.json',encoding='utf-8')); release=os.environ['RELEASE_SHA']; parent=subprocess.check_output(['git','rev-parse',release+'^'],text=True).strip()
+          assert r['sourceCommit']==parent,(r['sourceCommit'],parent,release)
+          for name,meta in r['files'].items():
+              b=(root/name).read_bytes(); assert len(b)==int(meta['bytes']),(name,len(b),meta['bytes']); assert hashlib.sha256(b).hexdigest()==meta['sha256'],name
+          g=json.load(open(root/'data/phase-gates-v12.json')); m=json.load(open(root/'data/forecast-model-v12.json')); b=json.load(open(root/'data/benchmark-gate-v12.json')); a=json.load(open(root/'data/active-flow-gate-v12.json')); s=json.load(open(root/'data/sector-gate-v12.json')); n=json.load(open(root/'data/nested-selection-gate-v12.json')); blind=json.load(open(root/'data/blind-holdout-gate-v12.json')); e=json.load(open(root/'data/embargo-gate-v12.json')); probe=json.load(open(root/'data/v12-source-probe.json')); fm=json.load(open(root/'data/v12-frozen-source-manifest.json'))
+          assert g['status']=='PASS'; assert m['promotion']['status']=='PASS'; assert b['status']=='PASS'; assert b['benchmark']=='VNINDEX'; assert a['status']=='PASS'; assert s['status']=='PASS'; assert n['status']=='PASS'; assert blind['status']=='PASS'; assert e['status']=='PASS'
+          assert probe['status']=='PASS' and probe['mode']=='IMMUTABLE_FROZEN_SNAPSHOT'
+          assert probe['runtimeNetworkPriceFetch'] is False and probe['runtimeProviderSwitching'] is False
+          assert fm['currentSourceCoverageRatio']>=.98 and fm['modelEligible']>=360 and fm['corporateActionVerifiedRatio']>=.98 and fm['crossSourceMADP95']<=.003
+          assert r['version']=='VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0'
+          required={'data/v12-frozen-source.json.gz','data/v12-frozen-source-manifest.json','data/v12-source-probe.json','data/vnindex-v12.json','data/active-flow-audit-v12.json','forecast-polish-v12.js'}
+          assert required.issubset(r['files']),required-set(r['files'])
+          sc=r.get('sourceContract') or {};assert sc.get('runtimeNetworkPriceFetch') is False and sc.get('runtimeProviderSwitching') is False,sc
+          print('PINNED CDN HASH + FROZEN SOURCE + DATA PASS',release,'files',len(r['files']))
+          PY
+          grep -q 'VMEWS Forecast V12' /tmp/v12-cdn/forecast-final.html
+      - name: Commit-pinned CDN Chromium desktop/mobile smoke
+        run: |
+          V12_BROWSER_URL="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${RELEASE_SHA}/forecast-final.html?symbol=FPT" node scripts/v12_browser_smoke.mjs
+      - name: Write release evidence summary
+        if: success()
+        run: |
+          printf '{"status":"PASS","manifestVersion":"1.6.0","releaseSha":"%s","cdn":"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/%s/forecast-final.html"}\n' "$RELEASE_SHA" "$RELEASE_SHA" > v12-release-result.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-final-release-evidence-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            data/forecast-release-v12.json
+            data/v12-frozen-source-manifest.json
+            data/v12-source-probe.json
+            data/vnindex-v12.json
+            data/benchmark-gate-v12.json
+            data/active-flow-audit-v12.json
+            data/active-flow-gate-v12.json
+            data/sector-gate-v12.json
+            data/nested-selection-gate-v12.json
+            data/blind-holdout-gate-v12.json
+            data/embargo-gate-v12.json
+            v12-browser-desktop.png
+            v12-browser-mobile.png
+            v12-release-result.json
+            /tmp/v12-http.log

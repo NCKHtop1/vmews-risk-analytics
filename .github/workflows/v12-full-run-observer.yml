@@ -1,0 +1,58 @@
+name: V12 exact Full run observer
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_train_parts/**'
+      - '.github/workflows/v12-methodfix-syntax.yml'
+      - 'v12-methodfix-trigger.txt'
+      - '.github/workflows/v12-full-run-observer.yml'
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+jobs:
+  observe:
+    if: ${{ !contains(github.event.head_commit.message, '[no-full]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - name: Wait for exact-head Full run and publish conclusion
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.sha }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=pending -f context='V12 observable full gate' \
+            -f description='Waiting for exact-head Full after Fast PASS'
+          run_id=''; run_url=''; status=''; conclusion=''
+          for i in $(seq 1 300); do
+            row="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow v12-methodfix-full.yml --branch "${BRANCH_NAME}" --commit "${HEAD_SHA}" --limit 10 --json databaseId,status,conclusion,url,headSha --jq 'map(select(.headSha == env.HEAD_SHA)) | .[0] // empty' 2>/dev/null || true)"
+            if [ -n "${row}" ]; then
+              run_id="$(printf '%s' "${row}" | jq -r '.databaseId // empty')"
+              run_url="$(printf '%s' "${row}" | jq -r '.url // empty')"
+              status="$(printf '%s' "${row}" | jq -r '.status // empty')"
+              conclusion="$(printf '%s' "${row}" | jq -r '.conclusion // empty')"
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+                -f state=pending -f context='V12 observable full gate' \
+                -f "description=V12 Full run ${run_id}: ${status}" -f "target_url=${run_url}" >/dev/null
+              echo "Exact Full run ${run_id}: status=${status} conclusion=${conclusion}"
+              if [ "${status}" = 'completed' ]; then break; fi
+            fi
+            sleep 15
+          done
+          state=error
+          desc='V12 exact Full run not resolved'
+          if [ -n "${run_id}" ] && [ "${status}" = 'completed' ]; then
+            state=failure
+            desc="V12 exact Full ${conclusion} run ${run_id}"
+            if [ "${conclusion}" = 'success' ]; then state=success; fi
+            if [ "${conclusion}" = 'cancelled' ]; then state=error; fi
+          fi
+          args=(--method POST "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" -f "state=${state}" -f context='V12 observable full gate' -f "description=${desc}")
+          if [ -n "${run_url}" ]; then args+=(-f "target_url=${run_url}"); fi
+          gh api "${args[@]}"
+          echo "Published ${state}: ${desc}; url=${run_url}"
+          [ "${state}" = 'success' ]

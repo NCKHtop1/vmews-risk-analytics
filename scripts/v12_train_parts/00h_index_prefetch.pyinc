@@ -1,0 +1,21 @@
+_raw_build_price_store_before_index_prefetch=build_price_store
+_raw_get_index_history_before_prefetch=get_index_history
+_INDEX_PREFETCH_CACHE={}
+
+def _prefetch_index_once(symbol='VNINDEX'):
+    key=str(symbol).upper()
+    if key not in _INDEX_PREFETCH_CACHE:
+        rows,audit=_raw_get_index_history_before_prefetch(key)
+        _INDEX_PREFETCH_CACHE[key]=(rows,{**audit,'prefetchedBeforeUniverse':True})
+        print(json.dumps({'v12IndexPrefetch':{'symbol':key,'route':audit.get('route'),'rows':len(rows)}},ensure_ascii=False),flush=True)
+    return _INDEX_PREFETCH_CACHE[key]
+
+def build_price_store(symbols):
+    # Benchmark is a mandatory PIT input. Fetch it before 400+ equity calls can exhaust a guest VNStock minute quota.
+    _prefetch_index_once('VNINDEX')
+    return _raw_build_price_store_before_index_prefetch(symbols)
+
+def get_index_history(symbol='VNINDEX',years=8):
+    key=str(symbol).upper()
+    if key=='VNINDEX':return _prefetch_index_once(key)
+    return _raw_get_index_history_before_prefetch(symbol,years)

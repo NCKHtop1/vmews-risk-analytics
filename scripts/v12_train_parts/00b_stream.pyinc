@@ -1,0 +1,23 @@
+_entity_filtered_prepare_articles=prepare_articles
+
+def prepare_articles(sentiment,price_store,sector_map,index_rows=None):
+    stream_by_id={}
+    for z in (sentiment or {}).get('symbols',{}).values():
+        for x in z.get('items') or []:
+            if x.get('id') is not None:stream_by_id[x.get('id')]=str(x.get('stream') or 'MAIN').upper()
+    articles,outcomes=_entity_filtered_prepare_articles(sentiment,price_store,sector_map,index_rows)
+    for rows in articles.values():
+        for x in rows:
+            stream=stream_by_id.get(x.get('id'),'MAIN');x['stream']=stream
+            if stream=='OFFICIAL' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='OFFICIAL'
+            elif stream=='RUMOR' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='RUMOR_UNVERIFIED'
+    for x in outcomes:
+        stream=stream_by_id.get(x.get('id'),'MAIN');x['stream']=stream
+        if stream=='OFFICIAL' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='OFFICIAL'
+        elif stream=='RUMOR' and x.get('sourceClass')=='MAINSTREAM':x['sourceClass']='RUMOR_UNVERIFIED'
+    counts={}
+    for rows in articles.values():
+        for x in rows:counts[x.get('stream','MAIN')]=counts.get(x.get('stream','MAIN'),0)+1
+    ENTITY_AUDIT['streamCoverage']=counts
+    print(json.dumps({'v12EvidenceStreams':counts},ensure_ascii=False),flush=True)
+    return articles,outcomes

@@ -1,0 +1,74 @@
+# V12 artifact JSON normalization.
+# Full-data training can legitimately produce NumPy scalar values inside nested
+# audit dictionaries (for example np.int64 counts).  Python's stock JSON
+# encoder does not serialize those objects, so normalize only representation
+# types here without changing any model value, gate, threshold or missingness.
+from datetime import date as _v12_date
+
+
+def clean_json(x):
+    if isinstance(x, np.generic):
+        x = x.item()
+    if x is None or isinstance(x, (str, bool, int)):
+        return x
+    if isinstance(x, float):
+        return x if math.isfinite(x) else None
+    if isinstance(x, np.ndarray):
+        return clean_json(x.tolist())
+    if isinstance(x, dict):
+        out = {}
+        for key, value in x.items():
+            if isinstance(key, np.generic):
+                key = key.item()
+            if isinstance(key, pathlib.Path):
+                key = str(key)
+            elif isinstance(key, (datetime, _v12_date)):
+                key = key.isoformat()
+            elif isinstance(key, float) and not math.isfinite(key):
+                key = str(key)
+            elif key is None:
+                key = "null"
+            elif not isinstance(key, str):
+                # JSON object keys are strings on disk.  Canonicalizing them
+                # here avoids mixed Python key types and keeps sort/hash output
+                # deterministic without changing any value carried by a key.
+                key = str(key)
+            out[key] = clean_json(value)
+        return out
+    if isinstance(x, (list, tuple)):
+        return [clean_json(v) for v in x]
+    if isinstance(x, set):
+        # Deterministic order keeps release artifact bytes reproducible.
+        return [clean_json(v) for v in sorted(x, key=repr)]
+    if isinstance(x, pathlib.Path):
+        return str(x)
+    if isinstance(x, (datetime, _v12_date)):
+        return x.isoformat()
+    return x
+
+
+# Regression for the exact failure observed in the full V12 run:
+# "Object of type int64 is not JSON serializable".  This executes both in the
+# fast assembled-code gate and in full training, so the artifact writer cannot
+# silently regress back to a NumPy-scalar serialization failure.
+_v12_json_probe = {
+    "count": np.int64(7),
+    "nested": {
+        "score": np.float32(1.25),
+        "missing": np.float64(np.nan),
+        "flag": np.bool_(True),
+    },
+    "array": np.asarray([1, 2, 3], dtype=np.int64),
+    "tuple": (np.int64(4), np.float64(0.5)),
+    np.int64(9): "numpy-key",
+}
+_v12_json_probe_clean = clean_json(_v12_json_probe)
+_v12_json_probe_blob = json.dumps(
+    _v12_json_probe_clean, ensure_ascii=False, allow_nan=False, sort_keys=True
+)
+assert '"count": 7' in _v12_json_probe_blob, _v12_json_probe_blob
+assert '"missing": null' in _v12_json_probe_blob, _v12_json_probe_blob
+assert _v12_json_probe_clean["nested"]["flag"] is True, _v12_json_probe_clean
+assert _v12_json_probe_clean["array"] == [1, 2, 3], _v12_json_probe_clean
+assert _v12_json_probe_clean["9"] == "numpy-key", _v12_json_probe_clean
+del _v12_json_probe, _v12_json_probe_clean, _v12_json_probe_blob

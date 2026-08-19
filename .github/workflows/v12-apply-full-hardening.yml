@@ -1,0 +1,42 @@
+name: V12 apply full hardening
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths: ['v12-apply-full-hardening-trigger.txt']
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-apply-full-hardening
+  cancel-in-progress: true
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Pin patch source
+        run: echo "V12_PATCH_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Apply exact full-workflow hardening
+        run: |
+          python -m py_compile scripts/v12_patch_full_hardening.py scripts/v12_forecast_output_sanity.py
+          python scripts/v12_patch_full_hardening.py
+          grep -F "VMEWS-V12-SEED-PROVENANCE-1.0.0" .github/workflows/v12-methodfix-full.yml
+          grep -F "Label-free current forecast structural and collapse sanity gate" .github/workflows/v12-methodfix-full.yml
+          grep -F "data/active-flow-audit-v12.json" .github/workflows/v12-methodfix-full.yml
+          grep -F "data/vnindex-v12.json" .github/workflows/v12-methodfix-full.yml
+          grep -F "VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1" .github/workflows/v12-methodfix-full.yml
+      - name: Publish hardened full workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin forecast-v12-methodfix
+          test "$(git rev-parse origin/forecast-v12-methodfix)" = "$V12_PATCH_SOURCE_SHA" || { echo 'BRANCH ADVANCED; refusing stale workflow patch'; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/v12-methodfix-full.yml
+          git commit -m 'Harden V12 full seed provenance and forecast sanity [no-full]'
+          git push origin HEAD:forecast-v12-methodfix

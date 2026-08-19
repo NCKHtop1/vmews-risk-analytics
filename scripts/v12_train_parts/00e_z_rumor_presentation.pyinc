@@ -1,0 +1,18 @@
+_RumorPresentationBaseStore=EvidenceFeatureStore
+
+class EvidenceFeatureStore(_RumorPresentationBaseStore):
+    def current_intelligence(self,symbol,date,limit=10):
+        out=super().current_intelligence(symbol,date,limit)
+        claims=[]
+        for raw in out.get('rumorClaims') or []:
+            x=dict(raw);truth=str(x.get('truthState') or 'UNVERIFIED').upper();clar=str(x.get('clarificationState') or '').upper();title=x.get('resolutionTitle')
+            if truth=='UNVERIFIED' and clar=='CLARIFIED':
+                x['resolutionType']='OFFICIAL_CLARIFICATION_NOT_TRUTH_RESOLUTION'
+                x['resolutionTitle']=f'Thông tin làm rõ chính thức — tin đồn vẫn CHƯA XÁC MINH đúng/sai: {title}' if title else 'Thông tin làm rõ chính thức — tin đồn vẫn CHƯA XÁC MINH đúng/sai.'
+            elif truth in {'CONFIRMED','DENIED'}:
+                x['resolutionType']='TRUTH_RESOLUTION'
+            else:
+                x['resolutionType']='NONE'
+            claims.append(x)
+        out['rumorClaims']=claims
+        return out

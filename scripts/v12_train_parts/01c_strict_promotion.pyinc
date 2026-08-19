@@ -1,0 +1,76 @@
+from scipy.stats import norm as _strict_norm
+
+def _meta_score_on_block(expert_pred,names,train_mask,test_mask,y):
+    model,M=fit_meta(expert_pred,names,train_mask,y)
+    good=test_mask&np.all(np.isfinite(M),axis=1)&np.isfinite(y)
+    idx=np.where(good)[0]
+    return idx,model.predict(M[good])
+
+def _daily_ic_series(y,pred,D):
+    out={}
+    for d in sorted(set(D)):
+        q=np.where(D==d)[0]
+        if len(q)<12:continue
+        yy=y[q];pp=pred[q]
+        if np.nanstd(yy)<=1e-12 or np.nanstd(pp)<=1e-12:continue
+        z=spearmanr(yy,pp).statistic
+        if z is not None and finite(z):out[d]=float(z)
+    return out
+
+def _hac_mean_test(diff,max_lag=None):
+    x=np.asarray(diff,float);n=len(x)
+    if n<8:return 0.0,1.0,None,0
+    mu=float(np.mean(x));u=x-mu;lag=int(max_lag if max_lag is not None else max(1,min(5,round(n**.25))))
+    gamma0=float(np.dot(u,u)/n);lrv=gamma0
+    for k in range(1,min(lag,n-1)+1):
+        gamma=float(np.dot(u[k:],u[:-k])/n);weight=1.0-k/(lag+1.0);lrv+=2.0*weight*gamma
+    lrv=max(lrv,1e-16);se=math.sqrt(lrv/n);z=mu/se if se>0 else (1e9 if mu>0 else -1e9);p=float(_strict_norm.sf(z));return float(z),p,float(se),lag
+
+def _moving_block_bootstrap_mean(diff,reps=1600):
+    x=np.asarray(diff,float);n=len(x)
+    if n<8:return [None,None],0
+    block=max(2,min(6,int(round(n**.33))));starts=np.arange(0,max(1,n-block+1));rng=np.random.default_rng(9127+n);boots=[]
+    for _ in range(reps):
+        draw=[]
+        while len(draw)<n:
+            s=int(rng.choice(starts));draw.extend(x[s:s+block].tolist())
+        boots.append(float(np.mean(draw[:n])))
+    return [float(np.quantile(boots,.05)),float(np.quantile(boots,.95))],block
+
+def _incremental_ic_test(y,base_pred,candidate_pred,D):
+    a=_daily_ic_series(y,base_pred,D);b=_daily_ic_series(y,candidate_pred,D);days=sorted(set(a)&set(b));diff=np.asarray([b[d]-a[d] for d in days],float)
+    if len(diff)<15:return {'days':len(diff),'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None],'test':'HAC_NEWey_WEST_ONE_SIDED','hacZ':None,'hacSE':None,'hacLag':0,'blockLength':0}
+    mean=float(np.mean(diff));z,p,se,lag=_hac_mean_test(diff);ci,block=_moving_block_bootstrap_mean(diff)
+    return {'days':len(diff),'meanDeltaIC':mean,'pValue':p,'bootstrap90':ci,'test':'HAC_NEWey_WEST_ONE_SIDED','hacZ':z,'hacSE':se,'hacLag':lag,'bootstrap':'MOVING_BLOCK','blockLength':block}
+
+def _core_regime_decision(expert_pred,y,D,train,test):
+    """Admit REGIME only if it adds pre-blind incremental OOS value over NUMERICAL.
+
+    The 70-80% chronological window is already reserved for architecture promotion and is strictly
+    before calibration/sealed audit. This prevents a weak regime learner from being forced into every
+    horizon merely because it is a named core family. No 80-100% label can affect this decision.
+    """
+    base=['NUMERICAL'];candidate=['NUMERICAL','REGIME']
+    base_metrics,_=meta_eval(expert_pred,base,train,test,y,D);cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D)
+    bidx,bpred=_meta_score_on_block(expert_pred,base,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y)
+    common=np.intersect1d(bidx,cidx,assume_unique=False);bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)};bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float)
+    inc=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]}
+    di=float(cand_metrics['ic']-base_metrics['ic']);dm=float(cand_metrics['maeImprove']-base_metrics['maeImprove']);ds=float(cand_metrics['spread']-base_metrics['spread']);ci=inc.get('bootstrap90') or [None,None]
+    statistical=bool(inc.get('days',0)>=15 and inc.get('meanDeltaIC',0)>0 and inc.get('pValue',1)<0.05 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0)
+    promote=bool(statistical and di>0.001 and dm>0.0 and ds>=-0.00005)
+    audit={'promoted':promote,'selectionWindow':'70%-80% origins; labels mature before 80% lock','reference':['NUMERICAL'],'candidate':['NUMERICAL','REGIME'],'deltaIC':di,'deltaMAEImprove':dm,'deltaSpread':ds,'incrementalICTest':inc,'rule':'REGIME joins the core only with positive pre-blind incremental IC, MAE skill and non-degrading spread; sealed 80-100% is never consulted.','candidateMetrics':cand_metrics,'referenceMetrics':base_metrics}
+    return (candidate if promote else base),(cand_metrics if promote else base_metrics),audit
+
+def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
+    n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];train=(D<cut70)&np.isfinite(y);test=(D>=cut70)&(D<cut80)&np.isfinite(y)
+    active,base_metrics,core_audit=_core_regime_decision(expert_pred,y,D,train,test);decisions={'REGIME_CORE':core_audit}
+    for name in ['EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']:
+        candidate=active+[name];cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D);di=cand_metrics['ic']-base_metrics['ic'];dm=cand_metrics['maeImprove']-base_metrics['maeImprove'];ds=cand_metrics['spread']-base_metrics['spread'];activity_mask,activity_count,activity,minimum_rows=_expert_activity(X,name);active_in_test=int(np.sum(activity_mask&test));enough=activity_count>=minimum_rows and active_in_test>=max(50,min(250,minimum_rows//10 if minimum_rows else 0))
+        bidx,bpred=_meta_score_on_block(expert_pred,active,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y)
+        common=np.intersect1d(bidx,cidx,assume_unique=False);bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)};bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float);inc=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]}
+        # Four optional expert families are evaluated. Bonferroni one-sided alpha=1.25%; HAC + moving-block bootstrap guard time dependence.
+        ci=inc.get('bootstrap90') or [None,None];statistical=inc.get('days',0)>=15 and inc.get('meanDeltaIC',0)>0 and inc.get('pValue',1)<0.0125 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0
+        promote=bool(enough and statistical and di>0.001 and dm>0.0 and ds>=-0.00005)
+        decisions[name]={'promoted':promote,'evidenceRows':activity_count,'activityCoverage':activity,'evidenceRowsSelectionWindow':active_in_test,'minimumEvidenceRows':minimum_rows,'evidenceGatePassed':bool(enough),'deltaIC':di,'deltaMAEImprove':dm,'deltaSpread':ds,'multipleTesting':'Bonferroni one-sided alpha=0.0125 across four optional experts; Newey-West HAC mean-delta-IC test + moving-block bootstrap','incrementalICTest':inc,'candidate':cand_metrics,'reference':base_metrics}
+        if promote:active.append(name);base_metrics=cand_metrics
+    return active,decisions

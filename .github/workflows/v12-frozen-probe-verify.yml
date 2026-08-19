@@ -1,0 +1,56 @@
+name: V12 certified frozen source probe verify
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths: ['v12-frozen-probe-verify-trigger.txt']
+permissions:
+  contents: write
+concurrency:
+  group: vmews-v12-frozen-probe-verify
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      V12_RESEARCH_SOURCE_MODE: 'FROZEN'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Pin probe source
+        run: echo "V12_PROBE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-v12.txt
+      - run: pip install --disable-pip-version-check -q -r requirements-v12.txt
+      - name: Certified frozen/no-network source probe
+        run: |
+          python -m py_compile scripts/v12_frozen_source_probe.py scripts/v12_research_sources.py
+          PYTHONPATH=scripts python scripts/v12_frozen_source_probe.py
+          python - <<'PY'
+          import json
+          z=json.load(open('data/v12-source-probe.json',encoding='utf-8'))
+          assert z['status']=='PASS',z
+          assert z['version']=='VMEWS-V12-FROZEN-SOURCE-PROBE-1.1.0',z
+          assert z['runtimeNetworkPriceFetch'] is False and z['runtimeProviderSwitching'] is False,z
+          assert all((z.get('sourceGates') or {}).values()),z.get('sourceGates')
+          s=z.get('snapshot') or {}
+          assert s.get('certificationVersion')=='VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1',s
+          assert s.get('corporateActionGateCohort')=='CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION',s
+          assert int(s.get('corporateActionVerifiedCount') or 0)/int(s.get('corporateActionGateDenominator') or 1)>=.98,s
+          print('V12 CERTIFIED FROZEN PROBE PASS',s)
+          PY
+      - name: Publish probe evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin forecast-v12-methodfix
+          test "$(git rev-parse origin/forecast-v12-methodfix)" = "$V12_PROBE_SOURCE_SHA" || { echo 'BRANCH ADVANCED; refusing stale probe evidence'; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/v12-source-probe.json
+          git commit -m 'Publish certified frozen V12 source probe [no-full]'
+          git push origin HEAD:forecast-v12-methodfix

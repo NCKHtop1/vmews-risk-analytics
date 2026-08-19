@@ -1,0 +1,8 @@
+_audit_metrics_before_daily_contract=audit_metrics
+
+def audit_metrics(y,score,p,med,lo,hi,D):
+    z=_audit_metrics_before_daily_contract(y,score,p,med,lo,hi,D)
+    rs=rank_stats(y,score,D)
+    for key in ('icDays','icStd','icTStat','icPositiveDayShare','icBootstrap95','spreadDays','spreadStd','spreadTStat'):
+        z[key]=rs.get(key)
+    return z

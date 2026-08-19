@@ -1,0 +1,56 @@
+from v12_universe import current_hose_symbols
+from v12_research_sources import frozen_universe_candidates, frozen_source_probe
+HISTORICAL_ONLY=set();CURRENT_HOSE=set();UNIVERSE_AUDIT={};CURRENT_SHORT_ROUTE_AUDIT={}
+_raw_build_price_store=build_price_store
+_raw_base_panel=base_panel
+_entity_source_audit_summary=source_audit_summary
+
+def manifest_symbols():
+    global CURRENT_HOSE
+    CURRENT_HOSE=set(current_hose_symbols());candidates,discovery=frozen_universe_candidates();candidate_symbols=sorted(candidates)
+    frozen_current_count=int(discovery.get('currentHOSE') or len(CURRENT_HOSE))
+    if frozen_current_count!=len(CURRENT_HOSE):raise RuntimeError(f'Frozen/current HOSE universe count mismatch: frozen={frozen_current_count} local={len(CURRENT_HOSE)}')
+    UNIVERSE_AUDIT.clear();UNIVERSE_AUDIT.update({'version':'VMEWS-UNIVERSE-AUDIT-12.3.0','policy':'Current HOSE plus only frozen delisted STOCK candidates whose retained VCI product_grp_id explicitly mapped them to former HSX/STO at source-capture time. Historical-only members require >=520 fingerprint-verified real observations and a stale terminal date; they enter training/backtest only and never current forecasts. Current-route availability is read from the immutable frozen source and is audited separately from >=520-row training eligibility; model fitting performs no live price-provider or short-history route probe.','currentHOSE':len(CURRENT_HOSE),'discovery':discovery,'candidateMetadata':{s:candidates[s] for s in candidate_symbols},'candidateCount':len(candidate_symbols)})
+    return sorted(CURRENT_HOSE|set(candidate_symbols))
+
+def _probe_current_short_route(symbol,modal_cut):
+    """Read current route availability only from the immutable frozen source.
+
+    This function intentionally performs no VNStock, Yahoo, cache, or other network/provider
+    request. Real fresh frozen histories can certify route availability while remaining
+    excluded from model training when they are short or quality-ineligible.
+    """
+    fresh_cut=(datetime.fromisoformat(modal_cut).date()-__import__('datetime').timedelta(days=20)).isoformat()
+    try:probe=frozen_source_probe(symbol)
+    except Exception as e:return {'symbol':symbol,'routeAvailable':False,'trainingEligible':False,'attempts':[{'stage':'FROZEN_CURRENT_ROUTE_PROBE','error':f'{type(e).__name__}: {e}'[:400]}]}
+    rows=int(probe.get('rows') or 0);end=str(probe.get('end') or '')[:10]
+    base={'symbol':symbol,'route':'FROZEN_CURRENT_SOURCE_PROBE','rows':rows,'start':probe.get('start'),'end':end or None,'trainingEligible':False,'minimumTrainingRows':probe.get('minimumTrainingRows',520),'provider':probe.get('provider'),'sourceRoute':probe.get('route'),'sha256':probe.get('sha256'),'snapshotAsOf':probe.get('snapshotAsOf'),'ineligibleReasons':probe.get('ineligibleReasons') or [],'attempts':[{'stage':'FROZEN_CURRENT_ROUTE_PROBE','routeAvailable':probe.get('routeAvailable'),'rows':rows,'end':end or None,'sha256':probe.get('sha256')}],'policy':'Current route availability is certified only from fingerprint-verified frozen real OHLCV; no runtime provider/network fallback is permitted.'}
+    if probe.get('routeAvailable') and rows>=60 and end and end>=fresh_cut:
+        base['routeAvailable']=True;return base
+    base['routeAvailable']=False;base['reason']='frozen_history_too_short_or_stale' if probe.get('routeAvailable') else 'frozen_source_unavailable';return base
+
+def build_price_store(symbols):
+    store,audits,failures=_raw_build_price_store(symbols);historical_fetch_failures={s:failures.pop(s) for s in list(failures) if s not in CURRENT_HOSE};current_ends=[rows[-1]['date'] for s,rows in store.items() if s in CURRENT_HOSE and rows];modal_cut=max(set(current_ends),key=current_ends.count) if current_ends else max(current_ends,default='9999-12-31');cutoff=(datetime.fromisoformat(modal_cut).date()-__import__('datetime').timedelta(days=20)).isoformat() if modal_cut!='9999-12-31' else modal_cut;historical={};rejected={}
+    for s in list(store):
+        if s in CURRENT_HOSE:continue
+        rows=store[s];meta=(UNIVERSE_AUDIT.get('candidateMetadata') or {}).get(s,{})
+        if len(rows)>=520 and rows[-1]['date']<cutoff and meta.get('formerProductGroup')=='STO' and meta.get('formerExchange')=='HOSE':historical[s]={'rows':len(rows),'start':rows[0]['date'],'end':rows[-1]['date'],'metadata':meta,'priceRoute':audits.get(s,{}).get('route')}
+        else:rejected[s]={'rows':len(rows),'end':rows[-1]['date'] if rows else None,'metadata':meta};store.pop(s,None);audits.pop(s,None)
+    HISTORICAL_ONLY.clear();HISTORICAL_ONLY.update(historical)
+    training_passed=sum(s in audits for s in CURRENT_HOSE);training_ineligible={s:failures.get(s) for s in CURRENT_HOSE if s in failures}
+    CURRENT_SHORT_ROUTE_AUDIT.clear()
+    for s in sorted(training_ineligible):
+        probe=_probe_current_short_route(s,modal_cut)
+        if probe.get('routeAvailable'):CURRENT_SHORT_ROUTE_AUDIT[s]=probe
+    route_available=training_passed+len(CURRENT_SHORT_ROUTE_AUDIT);route_unavailable={s:training_ineligible.get(s) for s in CURRENT_HOSE if s not in audits and s not in CURRENT_SHORT_ROUTE_AUDIT}
+    UNIVERSE_AUDIT.update({'currentMarketCutoff':modal_cut,'historicalStaleBefore':cutoff,'historicalUniverseFrozen':True,'runtimeNetworkRouteProbe':False,'currentPassed':training_passed,'currentTrainingEligible':training_passed,'currentTrainingIneligible':len(training_ineligible),'currentRoutePassed':route_available,'currentRouteFailed':len(route_unavailable),'currentCoverage':route_available/max(1,len(CURRENT_HOSE)),'currentShortHistoryRoutePassed':len(CURRENT_SHORT_ROUTE_AUDIT),'currentShortHistoryRoutes':dict(CURRENT_SHORT_ROUTE_AUDIT),'currentRouteFailures':route_unavailable,'currentFailures':training_ineligible,'historicalOnlyCount':len(historical),'historicalOnly':historical,'rejectedCandidateCount':len(rejected),'rejectedCandidates':rejected,'historicalFetchFailures':historical_fetch_failures})
+    print(json.dumps({'v12Universe':{'currentReference':len(CURRENT_HOSE),'currentTrainingEligible':training_passed,'currentRoutePassed':route_available,'currentRouteCoverage':UNIVERSE_AUDIT['currentCoverage'],'currentShortHistoryRoutePassed':len(CURRENT_SHORT_ROUTE_AUDIT),'historicalOnly':len(HISTORICAL_ONLY),'staleBefore':cutoff,'runtimeNetworkRouteProbe':False,'symbols':sorted(HISTORICAL_ONLY)}},ensure_ascii=False),flush=True);return store,audits,failures
+
+def base_panel(price_store):
+    panel,latest,rows_by_symbol=_raw_base_panel(price_store)
+    for s in list(latest):
+        if s in HISTORICAL_ONLY:latest.pop(s,None)
+    return panel,latest,rows_by_symbol
+
+def source_audit_summary(audits,failures):
+    out=_entity_source_audit_summary(audits,failures);out['universeAudit']=dict(UNIVERSE_AUDIT);out['currentSymbolsPassed']=UNIVERSE_AUDIT.get('currentTrainingEligible');out['currentSymbolsFailed']=UNIVERSE_AUDIT.get('currentTrainingIneligible');out['currentRouteSymbolsAvailable']=UNIVERSE_AUDIT.get('currentRoutePassed');out['currentRouteSymbolsUnavailable']=UNIVERSE_AUDIT.get('currentRouteFailed');out['currentRouteCoverageRatio']=UNIVERSE_AUDIT.get('currentCoverage');out['currentShortHistoryRouteAudits']=dict(CURRENT_SHORT_ROUTE_AUDIT);out['historicalOnlySymbols']=sorted(HISTORICAL_ONLY);return out

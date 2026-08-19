@@ -1,0 +1,163 @@
+{
+  "version": "VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0",
+  "generatedAt": "2026-08-19T17:17:34.884070+00:00",
+  "sourceCommit": "55b6f4c2d54a436ff1b9ca8bd666ecbd6d6a1701",
+  "modelVersion": "VMEWS-FORECAST-12.0.0",
+  "asOf": "2026-08-18",
+  "promotion": {
+    "status": "PASS",
+    "directPriceHorizons": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "directionHorizons": [
+      1,
+      2
+    ],
+    "exactTargetPrice": false,
+    "calibratedScenarioPrice": true,
+    "rule": "All five direct price horizons must pass positive-skill ranking + quantile scenario + CSCV/PBO + embargoed literal walk-forward generalization gates. Probability-up is rendered only when the independent positive-Brier direction gate also passes."
+  },
+  "sourceContract": {
+    "mode": "IMMUTABLE_FROZEN_SNAPSHOT",
+    "status": "PASS",
+    "runtimeNetworkPriceFetch": false,
+    "runtimeProviderSwitching": false,
+    "snapshotFileSha256": "b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762",
+    "inputManifestSha256": "4f5dd3ca0f795d4f3340fa835660a0652945148ddf06c82d4d3643d753e19fa2",
+    "sourceManifestVersion": "VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0",
+    "currentSourceCoverageRatio": 1.0,
+    "deepHistory": 377,
+    "modelEligible": 377,
+    "corporateActionVerifiedRatio": 1.0,
+    "corporateActionGateCohort": "CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION",
+    "crossSourceMADP95": 8.335845664713543e-06
+  },
+  "phaseGateVersion": "VMEWS-PHASE-GATES-12.6.0",
+  "benchmarkGate": {
+    "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.3.0",
+    "benchmark": "VNINDEX",
+    "status": "PASS",
+    "h5Coverage": 0.9849462365591398
+  },
+  "activeFlowGate": {
+    "version": "VMEWS-ACTIVE-FLOW-GATE-12.0.0",
+    "mode": "ABSTAIN",
+    "status": "PASS"
+  },
+  "sectorGate": {
+    "version": "VMEWS-SECTOR-PIT-GATE-12.1.0",
+    "status": "PASS",
+    "mode": "ABSTAIN"
+  },
+  "nestedSelectionGate": {
+    "version": "VMEWS-NESTED-SELECTION-GATE-12.1.0",
+    "status": "PASS"
+  },
+  "blindHoldoutGate": {
+    "version": "VMEWS-FIXED-SEALED-HOLDOUT-GATE-12.1.0",
+    "status": "PASS"
+  },
+  "embargoGate": {
+    "version": "VMEWS-EMBARGO-GATE-12.1.1",
+    "status": "PASS"
+  },
+  "files": {
+    "forecast-final.html": {
+      "sha256": "2a82ba85792dc08923b3d177c3cb48eb3238d2c66e93fd3246308e095ccc3cd9",
+      "bytes": 16618
+    },
+    "forecast-final-v12.js": {
+      "sha256": "e918e8fa558b21b9f138dea3854d925983b7b58c81d1085ad619a96b8ef4fd53",
+      "bytes": 20439
+    },
+    "forecast-polish-v12.js": {
+      "sha256": "781d7c128eb0a6674dc8720be34289b3b41e925152bcc18497093d542f11cc2c",
+      "bytes": 19228
+    },
+    "data/v12-frozen-source.json.gz": {
+      "sha256": "b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762",
+      "bytes": 11778404
+    },
+    "data/v12-frozen-source-manifest.json": {
+      "sha256": "0d55675331e93c3473ae31901e489b2ea7f2f7ed420c9ea9374de07942d7bc55",
+      "bytes": 150637
+    },
+    "data/v12-source-probe.json": {
+      "sha256": "c017642705fb461dc1da3177450897f7b002b2dad09f2cd8c4b0d1f74cdc5d65",
+      "bytes": 20799
+    },
+    "data/vnindex-v12.json": {
+      "sha256": "b425fe991576b7126d0eedd9a751de54183ccff15c95b6ef9d799e0f83602382",
+      "bytes": 244494
+    },
+    "data/forecast-model-v12.json": {
+      "sha256": "88e6116ca1442db3fdc2c395259b540ba16d5635a5ab5e7ea9f6beac8bcc7d18",
+      "bytes": 485552
+    },
+    "data/forecast-current-v12.json": {
+      "sha256": "1d04e1a4b804c9ae56bebf5cc4e22dc3fada4c88f01d303f2c516f9194280b81",
+      "bytes": 2082871
+    },
+    "data/forecast-dashboard-v12.json": {
+      "sha256": "0369e76c33e782f58a0960e17278961d740c959f9de39cdf8d7c314d28c26404",
+      "bytes": 7126444
+    },
+    "data/forecast-backtest-v12.json": {
+      "sha256": "ddee36c7e00475b63b70eb4650c1858f8f33c405a156b39f136cb0c5a1f494d0",
+      "bytes": 6707875
+    },
+    "data/data-audit-v12.json": {
+      "sha256": "158b327ab7a6c5edaa0211cc14a406a274086edd3aea64e5cf2e989bfe0599ac",
+      "bytes": 2502447
+    },
+    "data/event-intelligence-v12.json": {
+      "sha256": "0ff303a4f0094c93e11e4c6754d765cfe81ae071354fd281ed98c57ab5cc9300",
+      "bytes": 32214304
+    },
+    "data/flow-v12.json": {
+      "sha256": "afdb2bf7bfd5c46f38329fd69bc88eeb39b4676187141926941d0fc67fb04c24",
+      "bytes": 40014422
+    },
+    "data/flow-audit-v12.json": {
+      "sha256": "9e94cd6c824cd6c5aee5e8070cd4079542a9c1e8409a6a23e4b139b043330cd1",
+      "bytes": 164498
+    },
+    "data/phase-gates-v12.json": {
+      "sha256": "263c4ffbbbd194200b70ae138a1838c0933e71c832d1d7be0dbb435a6d587796",
+      "bytes": 1055
+    },
+    "data/benchmark-gate-v12.json": {
+      "sha256": "1fe59a0598bdb1f27c2668434ed05fd6b116387c6ecb49f0c8dcb263052130dd",
+      "bytes": 3421
+    },
+    "data/active-flow-audit-v12.json": {
+      "sha256": "edbce59c6107d486dca2365ade804ddd9a51aa618d5d27a775a53c61baf07db0",
+      "bytes": 1564
+    },
+    "data/active-flow-gate-v12.json": {
+      "sha256": "0a416de059038d278a8f115a18f23179d9c2205269af4501070edd93d18d3301",
+      "bytes": 2230
+    },
+    "data/sector-gate-v12.json": {
+      "sha256": "d85d866d92c7375e56706f6bdb4dbda49e3e3715bf88a5d59727eebb2fc61743",
+      "bytes": 2795
+    },
+    "data/nested-selection-gate-v12.json": {
+      "sha256": "44babc1a6306493ca4a689b476c90d1f59d9fd3a93b8e7fb2934b20fe94e0d7c",
+      "bytes": 14403
+    },
+    "data/blind-holdout-gate-v12.json": {
+      "sha256": "eb373d26f9f727c752106e095c4e39c1c7b186abdcfb41cbe68eb1f1077e4d1d",
+      "bytes": 59781
+    },
+    "data/embargo-gate-v12.json": {
+      "sha256": "a1ef2daec3a3c72b3255cffca4627ceb94282481937bde40485b812264e79ef4",
+      "bytes": 10391
+    }
+  },
+  "policy": "All production UI/model/data and immutable frozen-source evidence are content-hashed. Runtime price-network fetch and provider switching are forbidden. Release CDN is pinned to the release commit SHA; /main/ is not a production identity. Missing benchmark/active-flow/PIT-sector evidence abstains rather than fabricating a numerical signal. T+1..T+5 require blind holdout, nested pre-audit selection, maturity-aware walk-forward, PBO/generalization, distribution and embargo gates."
+}

@@ -1,0 +1,7 @@
+OOF_CAPTURE={}
+_raw_expert_oof_for_capture=expert_oof
+
+def expert_oof(X,y,D,dates,h,idx_by_expert):
+    result,selection=_raw_expert_oof_for_capture(X,y,D,dates,h,idx_by_expert)
+    OOF_CAPTURE[int(h)]={'predictions':{k:np.array(v,copy=True) for k,v in result.items()},'selection':selection}
+    return result,selection

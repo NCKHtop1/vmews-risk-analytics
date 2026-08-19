@@ -1,0 +1,21 @@
+SECTOR_REFERENCE_FIELDS=['sectorRet1','sectorRet5','sectorRet20','sectorBreadth1','sectorBreadth5','sectorBreadth20','sectorDisp20','sectorRel1','sectorRel5','sectorRel20']
+V12_SECTOR_AUDIT={}
+
+def _audit_sector_reference(panel,latest,sector_map):
+    global V12_SECTOR_AUDIT
+    panel_symbols=set(x['symbol'] for x in panel);mapped_panel=set(s for s in panel_symbols if str(sector_map.get(s) or '').strip());groups=defaultdict(list)
+    for s in mapped_panel:groups[str(sector_map[s])].append(s)
+    usable=set(s for g in groups.values() if len(g)>=3 for s in g)
+    current_symbols=set(latest);mapped_current=set(s for s in current_symbols if str(sector_map.get(s) or '').strip());usable_current=set(s for s in mapped_current if s in usable)
+    V12_SECTOR_AUDIT={'version':'VMEWS-SECTOR-PIT-AUDIT-12.1.0','status':'ABSTAIN','certified':False,'pointInTimeEligible':False,'numericalFeatureEnabled':False,'source':'VCI/VNStock current ICB/reference taxonomy via market-scan seed','referenceMapSymbols':len(sector_map),'panelSymbols':len(panel_symbols),'mappedPanelSymbols':len(mapped_panel),'mappedPanelSymbolCoverage':len(mapped_panel)/max(1,len(panel_symbols)),'usableGroupsMin3':sum(len(g)>=3 for g in groups.values()),'usableMappedSymbols':len(usable),'currentSymbols':len(current_symbols),'mappedCurrentSymbols':len(mapped_current),'currentReferenceCoverage':len(mapped_current)/max(1,len(current_symbols)),'currentUsableReferenceCoverage':len(usable_current)/max(1,len(current_symbols)),'historicalMembershipArchiveAvailable':False,'candidateFields':SECTOR_REFERENCE_FIELDS,'policy':'Current ICB/sector reference may be shown as current context, but it is not backfilled into historical ML features. Historical numerical sector features require an independently dated as-of membership archive. Current-2026 taxonomy must never be projected backward and labeled PIT.','reason':'VNStock/VCI reference methods expose current industry membership but the audited interface has no as-of/date parameter or historical membership series. Using the current taxonomy for 2018-2025 would create classification look-ahead.'}
+    print(json.dumps({'v12SectorPIT':V12_SECTOR_AUDIT},ensure_ascii=False),flush=True)
+    return V12_SECTOR_AUDIT
+
+_merge_evidence_before_sector_audit=merge_evidence
+def merge_evidence(panel,latest,evidence,flow):
+    _audit_sector_reference(panel,latest,evidence.sector_map)
+    return _merge_evidence_before_sector_audit(panel,latest,evidence,flow)
+
+_source_audit_summary_before_sector=source_audit_summary
+def source_audit_summary(price_audits,failures):
+    z=_source_audit_summary_before_sector(price_audits,failures);z['sectorPIT']=dict(V12_SECTOR_AUDIT);return z

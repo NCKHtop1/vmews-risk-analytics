@@ -1,0 +1,149 @@
+# Cross-sectional point calibration for direct-horizon returns.
+#
+# The V12 direct meta score carries strong same-origin cross-sectional ordering, while a pooled
+# one-dimensional score->return map can either over-shrink that ordinal information or inherit
+# stale market drift.  This wrapper decomposes the released point estimate into:
+#   1) an optional common market component inferred only from the same-origin score distribution,
+#   2) a zero-median within-origin rank residual whose positive scale is fitted pre-blind.
+#
+# Candidate fitting uses the first third of the maturity-purged 85-90% block; family selection
+# uses the second third; the final third remains reserved by the underlying calibration stack for
+# conformal interval widening.  No 90-100% sealed label is supplied to this layer.
+_xsec_calibrate_before = calibrate
+_xsec_apply_before = apply_calibration
+
+
+def _xsec_rank_signal(score, origin_dates):
+    """Permutation-invariant centered percentile rank computed independently inside each T0 date."""
+    s=np.asarray(score,float);d=np.asarray(origin_dates,dtype=object)
+    if len(s)!=len(d):raise RuntimeError(f'xsec rank alignment mismatch: {len(s)} != {len(d)}')
+    out=np.zeros(len(s),float);ds=d.astype(str)
+    for day in sorted(set(ds)):
+        idx=np.where(ds==day)[0];v=s[idx];good=np.isfinite(v)
+        if good.sum()<2:continue
+        vv=v[good];vals,inv,counts=np.unique(vv,return_inverse=True,return_counts=True)
+        cum=np.cumsum(counts);start=cum-counts;avg=(start+cum-1)/2.0
+        r=avg[inv];u=2.0*((r+.5)/max(1,len(vv)))-1.0
+        z=np.zeros(len(v),float);z[good]=u;out[idx]=z
+    return out
+
+
+def _xsec_date_median(score, origin_dates):
+    s=np.asarray(score,float);d=np.asarray(origin_dates,dtype=object)
+    if len(s)!=len(d):raise RuntimeError('xsec date median alignment mismatch')
+    out=np.zeros(len(s),float);ds=d.astype(str)
+    for day in sorted(set(ds)):
+        idx=np.where(ds==day)[0];v=s[idx];good=np.isfinite(v)
+        med=float(np.median(v[good])) if good.any() else 0.0;out[idx]=med
+    return out
+
+
+def _xsec_positive_scale(y,base,x):
+    yy=np.asarray(y,float);bb=np.asarray(base,float);xx=np.asarray(x,float)
+    good=np.isfinite(yy)&np.isfinite(bb)&np.isfinite(xx);yy=yy[good];bb=bb[good];xx=xx[good]
+    if len(yy)<240 or float(np.std(xx))<1e-10:return None
+    target=yy-bb;ratio=float(np.std(target)/max(np.std(xx),1e-10));upper=float(min(.20,max(.003,3.0*ratio)))
+    g1=np.linspace(0.0,min(.03,upper),81)
+    g2=np.geomspace(max(.001,min(.03,upper)),upper,48) if upper>.03 else np.asarray([],float)
+    grid=np.unique(np.concatenate([g1,g2,np.asarray([0.0],float)]));rows=[]
+    for g in grid:
+        pred=bb+float(g)*xx;loss=np.abs(yy-pred);mae=float(np.mean(loss));se=float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0
+        rows.append((float(g),mae,se,float(np.std(pred)),float(np.mean(np.abs(float(g)*xx)>=.001))))
+    best=min(rows,key=lambda z:(z[1],abs(z[0])))
+    return {'scale':float(best[0]),'fitRows':int(len(yy)),'fitMAE':float(best[1]),'fitMAESE':float(best[2]),'forecastStd':float(best[3]),'nonTrivialResidualShare':float(best[4]),'gridMin':float(np.min(grid)),'gridMax':float(np.max(grid)),'gridN':int(len(grid)),'objective':'PREBLIND_L1_BASE_PLUS_WITHIN_DATE_RANK_RESIDUAL','sealedLabelsUsed':0}
+
+
+def _xsec_market_rank_fit(y,score,origin_dates,center):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(ss);yy=yy[good];ss=ss[good];dd=dd[good]
+    if len(yy)<240:return None
+    ds=dd.astype(str);days=sorted(set(ds))
+    if len(days)<8:return None
+    xday=[];yday=[]
+    for day in days:
+        idx=np.where(ds==day)[0]
+        if len(idx)<20:continue
+        xday.append(float(np.median(ss[idx]))-float(center));yday.append(float(np.median(yy[idx])))
+    xday=np.asarray(xday,float);yday=np.asarray(yday,float)
+    if len(xday)<8 or float(np.std(xday))<1e-10:return None
+    ratio=float(np.std(yday)/max(np.std(xday),1e-10));upper=float(min(40.0,max(1.0,3.0*ratio)))
+    grid=np.unique(np.concatenate([np.linspace(0.0,min(3.0,upper),61),np.geomspace(max(.10,min(3.0,upper)),upper,48) if upper>3.0 else np.asarray([],float)]))
+    rows=[]
+    for g in grid:
+        pred=float(g)*xday;loss=np.abs(yday-pred);rows.append((float(g),float(np.mean(loss))))
+    slope=min(rows,key=lambda z:(z[1],abs(z[0])))[0]
+    market=float(slope)*(_xsec_date_median(ss,dd)-float(center))
+    rank=_xsec_rank_signal(ss,dd)
+    residual=_xsec_positive_scale(yy,market,rank)
+    if residual is None:return None
+    return {'center':float(center),'marketSlope':float(slope),'residualScale':float(residual['scale']),'fitRows':int(len(yy)),'fitDates':int(len(xday)),'dateMedianMAE':float(min(z[1] for z in rows)),'residualFit':residual,'objective':'PREBLIND_DATE_MEDIAN_MARKET_PLUS_WITHIN_DATE_RANK_RESIDUAL','sealedLabelsUsed':0}
+
+
+def _xsec_apply_model(model,score,origin_dates):
+    ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);rank=_xsec_rank_signal(ss,dd)
+    if not model:return np.full(len(ss),np.nan)
+    if model.get('kind')=='BASE_PLUS_RANK':raise RuntimeError('BASE_PLUS_RANK requires an incumbent point')
+    center=float(model.get('center',0.0));market=float(model.get('marketSlope',0.0))*(_xsec_date_median(ss,dd)-center)
+    return market+float(model.get('residualScale',0.0))*rank
+
+
+def _xsec_date_block_stability(y,incumbent,challenger,origin_dates,blocks=3):
+    yy=np.asarray(y,float);aa=np.asarray(incumbent,float);bb=np.asarray(challenger,float);dd=np.asarray(origin_dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(aa)&np.isfinite(bb);yy=yy[good];aa=aa[good];bb=bb[good];dd=dd[good]
+    days=np.asarray(sorted(set(dd.astype(str))),dtype=object);parts=[np.asarray(z,dtype=object) for z in np.array_split(days,min(int(blocks),len(days))) if len(z)];rows=[]
+    for part in parts:
+        m=np.isin(dd.astype(str),part);edge=float(np.mean(np.abs(yy[m]-aa[m])-np.abs(yy[m]-bb[m]))) if m.any() else -float('inf');rows.append({'start':str(part[0]),'end':str(part[-1]),'n':int(m.sum()),'maeEdge':edge})
+    pos=sum(float(z['maeEdge'])>0 for z in rows);need=max(1,int(math.ceil(2*len(rows)/3))) if rows else 1;edges=[float(z['maeEdge']) for z in rows] or [-float('inf')];med=float(np.median(edges));down=max(1e-5,.25*abs(med));stable=bool(len(rows)>=2 and pos>=need and min(edges)>=-down)
+    return {'blocks':rows,'positiveBlocks':int(pos),'requiredPositiveBlocks':int(need),'medianEdge':med,'worstEdge':float(min(edges)),'downsideTolerance':float(down),'stable':stable,'sealedLabelsUsed':0}
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_xsec_calibrate_before(cal_y,cal_score,conform_y,conform_score)
+    if not isinstance(layer,_QuantileLayer) or cal_dates is None or conform_dates is None:return layer,iso,qadj
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object);n=len(cy)
+    if n<300 or len(cd)!=n:return layer,iso,qadj
+    a=max(1,n//3);b=max(a+1,2*n//3)
+    _,baseA,loA,hiA,_=_xsec_apply_before(cs[:a],layer,iso,0.0)
+    _,baseB,loB,hiB,_=_xsec_apply_before(cs[a:b],layer,iso,0.0)
+    rankA=_xsec_rank_signal(cs[:a],cd[:a]);rankB=_xsec_rank_signal(cs[a:b],cd[a:b])
+    base_rank_fit=_xsec_positive_scale(cy[:a],baseA,rankA)
+    base_name='BASE_'+str(getattr(layer,'pointMode','Q50'));candidates=[(base_name,baseB,None)]
+    if base_rank_fit is not None:
+        p=baseB+float(base_rank_fit['scale'])*rankB;p=_clip_between(p,loB,hiB)
+        candidates.append(('XSEC_BASE_PLUS_RANK',p,{'kind':'BASE_PLUS_RANK','residualScale':float(base_rank_fit['scale']),'fit':base_rank_fit}))
+    center=_isotonic_half_center(iso,np.asarray(cal_score,float)) if '_isotonic_half_center' in globals() else float(np.median(np.asarray(cal_score,float)))
+    mr=_xsec_market_rank_fit(cy[:a],cs[:a],cd[:a],center)
+    if mr is not None:
+        model={'kind':'MARKET_PLUS_RANK',**mr};p=_xsec_apply_model(model,cs[a:b],cd[a:b]);p=_clip_between(p,loB,hiB);candidates.append(('XSEC_MARKET_PLUS_RANK',p,model))
+    if len(candidates)<=1:return layer,iso,qadj
+    assessed=[]
+    for name,pred,model in candidates:
+        m=_point_candidate_metrics(cy[a:b],pred);paired=_paired_challenger_audit(cy[a:b],baseB,pred) if name!=base_name else {'pass':True,'lower90':0.0,'pairedMAEEdge':0.0,'sealedLabelsUsed':0};stable=_xsec_date_block_stability(cy[a:b],baseB,pred,cd[a:b],3) if name!=base_name else {'stable':True,'sealedLabelsUsed':0};assessed.append({'name':name,'pred':pred,'model':model,'metrics':m,'paired':paired,'dateStability':stable})
+    incumbent=assessed[0];eligible=[z for z in assessed[1:] if z['metrics'].get('maeEdge',-99)>incumbent['metrics'].get('maeEdge',-99) and z['paired'].get('pass') is True and z['dateStability'].get('stable') is True]
+    chosen=min(eligible,key=lambda z:(z['metrics']['mae'],-z['metrics']['dispersionRatio'])) if eligible else incumbent
+    original_mode=str(getattr(layer,'pointMode','Q50'));prior=getattr(layer,'pointSelectionAudit',None)
+    if chosen is not incumbent:
+        layer.pointMode=chosen['name'];layer.pointXsecModel=chosen['model']
+    layer.pointSelectionAudit={'method':'PREBLIND_SAME_ORIGIN_CROSS_SECTIONAL_POINT_CHALLENGE','fitRows':int(a),'selectionRows':int(b-a),'conformalRows':int(n-b),'baseFamily':original_mode,'selectedFamily':str(getattr(layer,'pointMode',original_mode)),'challengerSelected':bool(chosen is not incumbent),'sameOriginOnly':True,'originDatesExplicit':True,'sealedLabelsUsed':0,'candidates':{z['name']:{'metrics':z['metrics'],'paired':z['paired'],'dateStability':z['dateStability'],'model':z['model']} for z in assessed},'priorPointSelectionAudit':prior,'reason':'common-return and cross-sectional-alpha components are estimated only from maturity-purged pre-blind data; within-date ranks use only contemporaneous scores; replacement requires paired MAE evidence and chronological date-block stability'}
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode not in {'XSEC_BASE_PLUS_RANK','XSEC_MARKET_PLUS_RANK'} or origin_dates is None:return _xsec_apply_before(score,scen,iso,qadj)
+    ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p,base,lo0,hi0,ns=_xsec_apply_before(ss,scen,iso,0.0);model=getattr(scen,'pointXsecModel',None) or {}
+    if mode=='XSEC_BASE_PLUS_RANK':point=np.asarray(base,float)+float(model.get('residualScale',0.0))*_xsec_rank_signal(ss,dd)
+    else:point=_xsec_apply_model(model,ss,dd)
+    point=_clip_between(point,lo0,hi0);lo=np.asarray(lo0,float)-float(qadj);hi=np.asarray(hi0,float)+float(qadj)
+    return np.asarray(p,float),np.asarray(point,float),lo,hi,np.asarray(ns)
+
+
+def _xsec_selftest():
+    s=np.asarray([.3,.1,.2,.2,2.,1.,3.],float);d=np.asarray(['A']*4+['B']*3,dtype=object);r=_xsec_rank_signal(s,d)
+    perm=np.asarray([3,0,2,1,6,4,5]);rp=_xsec_rank_signal(s[perm],d[perm]);back=np.empty_like(rp);back[perm]=rp
+    if not np.allclose(r,back):raise RuntimeError('xsec rank permutation-invariance regression')
+    s2=np.concatenate([s,[99.,98.]]);d2=np.concatenate([d,['C','C']]);r2=_xsec_rank_signal(s2,d2)
+    if not np.allclose(r,r2[:len(r)]):raise RuntimeError('xsec rank future-date independence regression')
+    for day in ('A','B'):
+        if abs(float(np.mean(r[d==day])))>1e-12:raise RuntimeError('xsec rank must be zero-mean within date')
+_xsec_selftest()

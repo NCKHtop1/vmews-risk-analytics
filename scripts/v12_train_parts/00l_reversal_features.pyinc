@@ -1,0 +1,49 @@
+# Price-only reversal/shock features. Every input exists at origin T0. These features therefore
+# add state resolution without adding a new data source or a future timestamp. They remain inside
+# NUMERICAL, so pre-blind model selection and the sealed gates still decide whether they survive.
+REVERSAL_FEATURES=[
+    'stretch20Vol','stretch10Vol','snapback1v5','snapback2v10',
+    'volRegimeShift','rangeRegimeShift','oversoldPressure','overboughtPressure',
+    'reboundSignature','breakdownSignature','trendCompression','volumeShockInteraction'
+]
+
+def _clip_v12(x,lo=-8.0,hi=8.0):
+    try:
+        v=float(x)
+        if not math.isfinite(v):return 0.0
+        return max(lo,min(hi,v))
+    except Exception:return 0.0
+
+def _reversal_state(r):
+    r1=_clip_v12(r.get('ret1'),-1,1);r2=_clip_v12(r.get('ret2'),-1,1);r5=_clip_v12(r.get('ret5'),-1,1);r10=_clip_v12(r.get('ret10'),-1,1);r20=_clip_v12(r.get('ret20'),-1,1)
+    v5=max(1e-5,abs(_clip_v12(r.get('vol5'),0,2)));v20=max(1e-5,abs(_clip_v12(r.get('vol20'),0,2)))
+    rg1=max(0.0,abs(_clip_v12(r.get('range1'),0,2)));rg5=max(1e-5,abs(_clip_v12(r.get('range5'),0,2)))
+    # stock_features stores RSI as 0..1 (the risk layer uses <= .35 as weak), not 0..100.
+    rsi=_clip_v12(r.get('rsi14',.5),0,1);vz=_clip_v12(r.get('volumeZ'),-8,8);t5=_clip_v12(r.get('trend5'),-2,2);t20=_clip_v12(r.get('trend20'),-2,2)
+    oversold=max(0.0,(.45-rsi)/.45);overbought=max(0.0,(rsi-.55)/.45)
+    return {
+      'stretch20Vol':_clip_v12(-r20/(v20*math.sqrt(20.0)+1e-6),-6,6),
+      'stretch10Vol':_clip_v12(-r10/(v20*math.sqrt(10.0)+1e-6),-6,6),
+      'snapback1v5':_clip_v12(r1-r5/5.0,-.25,.25),
+      'snapback2v10':_clip_v12(r2-r10/5.0,-.35,.35),
+      'volRegimeShift':_clip_v12(v5/v20-1.0,-3,5),
+      'rangeRegimeShift':_clip_v12(rg1/rg5-1.0,-3,5),
+      'oversoldPressure':_clip_v12(oversold*max(0.0,-r20)*10.0,0,5),
+      'overboughtPressure':_clip_v12(overbought*max(0.0,r20)*10.0,0,5),
+      'reboundSignature':_clip_v12(max(0.0,-r20)*max(0.0,r1)*100.0,0,5),
+      'breakdownSignature':_clip_v12(max(0.0,r20)*max(0.0,-r1)*100.0,0,5),
+      'trendCompression':_clip_v12(t5-t20,-2,2),
+      'volumeShockInteraction':_clip_v12(vz*(r1-r5/5.0),-2,2),
+    }
+
+_base_panel_before_reversal=base_panel
+def base_panel(price_store):
+    panel,latest,rows_by_symbol=_base_panel_before_reversal(price_store)
+    for r in panel:r.update(_reversal_state(r))
+    for z in latest.values():
+        f=z.get('feature') or z
+        f.update(_reversal_state(f))
+    return panel,latest,rows_by_symbol
+
+EXPERTS['NUMERICAL']=list(dict.fromkeys(list(EXPERTS['NUMERICAL'])+REVERSAL_FEATURES))
+FEATURES=list(dict.fromkeys(list(FEATURES)+REVERSAL_FEATURES))
