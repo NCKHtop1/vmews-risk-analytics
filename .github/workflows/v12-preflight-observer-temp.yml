@@ -1,0 +1,36 @@
+name: V12 browser preflight observer temp
+on:
+  push:
+    branches: [v12-release-observer-20260819]
+    paths:
+      - '.github/workflows/v12-preflight-observer-temp.yml'
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Observe lightweight browser preflight
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_SHA: 4e33a2544be089c3d0ad84cfdb9d12d78b0f1d09
+          TARGET_BRANCH: v12-release-observer-20260819
+        run: |
+          set -euo pipefail
+          run_id=''; run_url=''; status=''; conclusion=''
+          for i in $(seq 1 70); do
+            row="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow v12-browser-install-preflight.yml --branch "${TARGET_BRANCH}" --commit "${TARGET_SHA}" --limit 10 --json databaseId,status,conclusion,url,headSha --jq 'map(select(.headSha == env.TARGET_SHA)) | .[0] // empty' 2>/dev/null || true)"
+            if [ -n "$row" ]; then
+              run_id="$(printf '%s' "$row" | jq -r '.databaseId // empty')"; run_url="$(printf '%s' "$row" | jq -r '.url // empty')"; status="$(printf '%s' "$row" | jq -r '.status // empty')"; conclusion="$(printf '%s' "$row" | jq -r '.conclusion // empty')"
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" -f state=pending -f context='V12 browser install preflight observer' -f "description=preflight ${run_id}: ${status}" -f "target_url=${run_url}" >/dev/null
+              echo "preflight ${run_id}: ${status}/${conclusion}"
+              [ "$status" = completed ] && break
+            fi
+            sleep 10
+          done
+          state=error; desc='preflight unresolved'
+          if [ -n "$run_id" ] && [ "$status" = completed ]; then state=failure; desc="preflight ${conclusion} run ${run_id}"; [ "$conclusion" = success ] && state=success; fi
+          args=(--method POST "repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" -f "state=${state}" -f context='V12 browser install preflight observer' -f "description=${desc}"); [ -n "$run_url" ] && args+=(-f "target_url=${run_url}"); gh api "${args[@]}"; [ "$state" = success ]
