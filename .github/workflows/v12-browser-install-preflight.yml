@@ -1,0 +1,38 @@
+name: V12 browser install preflight
+on:
+  push:
+    branches: [v12-release-observer-20260819]
+    paths:
+      - '.github/workflows/v12-browser-install-preflight.yml'
+permissions:
+  contents: read
+  statuses: write
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Playwright package and Chromium without apt dependency provisioning
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --silent playwright@1.55.0
+          npx playwright install chromium
+      - name: Launch Chromium
+        run: |
+          node - <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const b=await chromium.launch({headless:true});const p=await b.newPage();await p.setContent('<title>V12 preflight</title><h1>PASS</h1>');console.log(await p.title(),await p.locator('h1').innerText());await b.close()})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+      - name: Publish preflight success status
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" -f state=success -f context='V12 browser install preflight' -f description='Playwright Chromium install+launch PASS'
+      - name: Publish preflight failure status
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" -f state=failure -f context='V12 browser install preflight' -f description='Playwright Chromium install+launch FAIL'
