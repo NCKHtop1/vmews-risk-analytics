@@ -4,5 +4,7 @@
   "runAttempt": 1,
   "sourceSha": "fcbc9b91a8543c88c127fcb36b0d8b6ad0787bde",
   "workflow": "V12 current scientific diagnostic",
-  "status": "STARTED"
+  "prepareResult": "success",
+  "horizonAggregateResult": "success",
+  "status": "SUCCESS"
 }
