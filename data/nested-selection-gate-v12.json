@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-NESTED-SELECTION-GATE-12.1.0",
-  "generatedAt": "2026-08-19T11:29:03.630799+00:00",
+  "generatedAt": "2026-08-19T16:28:28.301191+00:00",
   "status": "PASS",
   "allowedModelKinds": [
     "LGBM",
@@ -67,7 +67,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.9999905008798396
+          "pValue": 0.9999485197225831
         },
         "FLOW": {
           "status": "PASS",
@@ -75,7 +75,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.9214194466528577
+          "pValue": 0.45030919026917504
         },
         "FUNDAMENTAL_EVENT": {
           "status": "PASS",
@@ -83,7 +83,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.04993969234396878
+          "pValue": 0.2109014006137035
         },
         "RUMOR": {
           "status": "PASS",
@@ -331,7 +331,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.8324550731536895
+          "pValue": 0.9050683552251094
         },
         "FLOW": {
           "status": "PASS",
@@ -339,7 +339,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.7472877830924958
+          "pValue": 0.7554816739546724
         },
         "FUNDAMENTAL_EVENT": {
           "status": "PASS",
@@ -347,7 +347,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.19315635114956475
+          "pValue": 0.3672451810215842
         },
         "RUMOR": {
           "status": "PASS",
@@ -419,7 +419,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.9308761318547982
+          "pValue": 0.9078501433803565
         },
         "FLOW": {
           "status": "PASS",
@@ -427,7 +427,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.7073201777811421
+          "pValue": 0.775378034132733
         },
         "FUNDAMENTAL_EVENT": {
           "status": "PASS",
@@ -435,7 +435,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.7596538414269278
+          "pValue": 0.5431606450373666
         },
         "RUMOR": {
           "status": "PASS",
@@ -443,7 +443,7 @@
           "modelKindSelectionLock": "2024-06-18",
           "testStart": "2024-06-18",
           "testEndExclusive": "2025-03-07",
-          "pValue": 0.4289334460287846
+          "pValue": 0.2456460004811104
         }
       },
       "commonKindLock": true
