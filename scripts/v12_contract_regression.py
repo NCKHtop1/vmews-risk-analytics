@@ -90,11 +90,20 @@ for token in ('SAME_ORIGIN_RAW_META_SCORE_IQR','_FITLOCK_STATE_GAMMAS=(0.0,0.5,1
 assert "if str(audit.get('selectedFamily'))!='Q50'" in state_v7
 assert "validationData':'EARLY WHOLE-DATE 85-90% ONLY'" in state_v7
 
-# Prior nested selector remains source-documented for provenance but is superseded by fit-locked
-# production layers. Robust expert family and maturity contract remain unchanged.
-nested=Path('scripts/v12_train_parts/01eo_nested_origin_cv_point.pyinc').read_text(encoding='utf-8')
-assert 'NESTED_EXPANDING_ORIGIN_CV_MBB_V3' in nested
+# The expert-kind selector and its explicit acceptance gate must agree on exactly the same
+# predeclared robust family. LGBM_L1 is conditional-median LightGBM, not an after-the-fact new
+# challenger: it is selected alongside RIDGE/LGBM only on maturity-purged 50-70% OOF. The nested
+# gate additionally requires the exact 50-70/70-80 split, maturity purge and non-empty selection.
 robust_src=Path('scripts/v12_train_parts/01zz_robust_model_family.pyinc').read_text(encoding='utf-8')
 assert "('RIDGE','LGBM','LGBM_L1')" in robust_src
 assert 'LABEL_MATURITY_DATE' in robust_src and '50%-70%' in robust_src
-print('V12 ACCEPTANCE + EMBARGO + V5/V6/V7 FIT-LOCK + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
+nested_gate=Path('scripts/v12_nested_selection_acceptance.py').read_text(encoding='utf-8')
+for token in ("ALLOWED_MODEL_KINDS={'RIDGE','LGBM','LGBM_L1'}","'50%-70%' in str(c.get('selectionWindow')","'70%-80%' in str(c.get('incrementalOOSReserved')","c.get('labelMaturityPurged') is True","int(c.get('selectionRows') or 0)>0"):
+    assert token in nested_gate,('nested robust-family gate token',token)
+assert "c.get('kind') in {'RIDGE','LGBM'}" not in nested_gate
+
+# Prior nested point selector remains source-documented for provenance but is superseded by
+# fit-locked production layers; it is not used to tune the sealed holdout.
+nested=Path('scripts/v12_train_parts/01eo_nested_origin_cv_point.pyinc').read_text(encoding='utf-8')
+assert 'NESTED_EXPANDING_ORIGIN_CV_MBB_V3' in nested
+print('V12 ACCEPTANCE + EMBARGO + V5/V6/V7 FIT-LOCK + ROBUST NESTED FAMILY + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
