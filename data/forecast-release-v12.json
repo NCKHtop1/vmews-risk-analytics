@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0",
-  "generatedAt": "2026-08-19T11:37:20.506603+00:00",
-  "sourceCommit": "04969c102fdb683859975d60968fdcc26c42e07c",
+  "generatedAt": "2026-08-19T17:17:34.884070+00:00",
+  "sourceCommit": "55b6f4c2d54a436ff1b9ca8bd666ecbd6d6a1701",
   "modelVersion": "VMEWS-FORECAST-12.0.0",
   "asOf": "2026-08-18",
   "promotion": {
@@ -87,7 +87,7 @@
       "bytes": 150637
     },
     "data/v12-source-probe.json": {
-      "sha256": "7d561df0fd89e7eab906ca2cb893b601c643666b3eb61c7564ddf7ed78ff52a4",
+      "sha256": "c017642705fb461dc1da3177450897f7b002b2dad09f2cd8c4b0d1f74cdc5d65",
       "bytes": 20799
     },
     "data/vnindex-v12.json": {
@@ -95,27 +95,27 @@
       "bytes": 244494
     },
     "data/forecast-model-v12.json": {
-      "sha256": "2b87991446b201dfed0e7a1294c066a460797344d6524ffbf70cee43f8327c88",
-      "bytes": 446753
+      "sha256": "88e6116ca1442db3fdc2c395259b540ba16d5635a5ab5e7ea9f6beac8bcc7d18",
+      "bytes": 485552
     },
     "data/forecast-current-v12.json": {
-      "sha256": "78194ae04a1e726d2ff92d716ee187facc6e0564db2c9e1c3a3570f2a004e29c",
-      "bytes": 2108167
+      "sha256": "1d04e1a4b804c9ae56bebf5cc4e22dc3fada4c88f01d303f2c516f9194280b81",
+      "bytes": 2082871
     },
     "data/forecast-dashboard-v12.json": {
-      "sha256": "6aa391a0ee7682f9a6a6af7775b2b644f58632b84fc4d50bc097c7bc0abf4d86",
-      "bytes": 7151706
+      "sha256": "0369e76c33e782f58a0960e17278961d740c959f9de39cdf8d7c314d28c26404",
+      "bytes": 7126444
     },
     "data/forecast-backtest-v12.json": {
-      "sha256": "6323c0d454361372310b750c00c9a041decdc1b735b32274d2f457c81d8ba0ba",
-      "bytes": 6702704
+      "sha256": "ddee36c7e00475b63b70eb4650c1858f8f33c405a156b39f136cb0c5a1f494d0",
+      "bytes": 6707875
     },
     "data/data-audit-v12.json": {
-      "sha256": "06e7c7f4a76a585e7a02876485ee417d7b15055958979eaac02589ebff03afe0",
+      "sha256": "158b327ab7a6c5edaa0211cc14a406a274086edd3aea64e5cf2e989bfe0599ac",
       "bytes": 2502447
     },
     "data/event-intelligence-v12.json": {
-      "sha256": "ee380571d38f3c18dbc10733908df46017838f2ce2e65730b048ee9d76120516",
+      "sha256": "0ff303a4f0094c93e11e4c6754d765cfe81ae071354fd281ed98c57ab5cc9300",
       "bytes": 32214304
     },
     "data/flow-v12.json": {
@@ -127,11 +127,11 @@
       "bytes": 164498
     },
     "data/phase-gates-v12.json": {
-      "sha256": "9336652bf020299de3d7225e43d2fd765801035a9e4502d91100749f8b699ba5",
+      "sha256": "263c4ffbbbd194200b70ae138a1838c0933e71c832d1d7be0dbb435a6d587796",
       "bytes": 1055
     },
     "data/benchmark-gate-v12.json": {
-      "sha256": "cd176ab398d905de675fa2e2ce41039b8433bee37269d85f13a1ce1760ede6a1",
+      "sha256": "1fe59a0598bdb1f27c2668434ed05fd6b116387c6ecb49f0c8dcb263052130dd",
       "bytes": 3421
     },
     "data/active-flow-audit-v12.json": {
@@ -139,23 +139,23 @@
       "bytes": 1564
     },
     "data/active-flow-gate-v12.json": {
-      "sha256": "caeb51213d0a6e3ef255fe3ef90096e083770a0ea542f406e131a83cd72aa1d1",
+      "sha256": "0a416de059038d278a8f115a18f23179d9c2205269af4501070edd93d18d3301",
       "bytes": 2230
     },
     "data/sector-gate-v12.json": {
-      "sha256": "cb4909c696b6700a3e3efe87a4183d6f6d5929b5258657aea9eac8bf66c9ef80",
+      "sha256": "d85d866d92c7375e56706f6bdb4dbda49e3e3715bf88a5d59727eebb2fc61743",
       "bytes": 2795
     },
     "data/nested-selection-gate-v12.json": {
-      "sha256": "bd3c868c0421026dae5226b8bf40295ee3a0772fedf89c2e62287bbd1561c279",
-      "bytes": 14405
+      "sha256": "44babc1a6306493ca4a689b476c90d1f59d9fd3a93b8e7fb2934b20fe94e0d7c",
+      "bytes": 14403
     },
     "data/blind-holdout-gate-v12.json": {
-      "sha256": "bbb3f1e06273974cea05241c17ba9319877e02a49d4b0e8d6ad6521062368491",
-      "bytes": 59664
+      "sha256": "eb373d26f9f727c752106e095c4e39c1c7b186abdcfb41cbe68eb1f1077e4d1d",
+      "bytes": 59781
     },
     "data/embargo-gate-v12.json": {
-      "sha256": "f5e432e0b177290ff6d65f2d8e68368014d7ff02c49c1fa9799a4546fbcb8475",
+      "sha256": "a1ef2daec3a3c72b3255cffca4627ceb94282481937bde40485b812264e79ef4",
       "bytes": 10391
     }
   },
