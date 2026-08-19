@@ -1,0 +1,23 @@
+# Lightweight production-path self-test for the six-argument chronological calibration API.
+# It uses synthetic pre-blind data only and verifies the audit contract plus application path.
+def _gate_fullpath_selftest():
+    rng=np.random.default_rng(1701);nfit=720;ncon=720
+    fs=rng.normal(size=nfit);fy=.010*fs+rng.normal(scale=.018,size=nfit)
+    cs=rng.normal(size=ncon);cy=.010*cs+rng.normal(scale=.018,size=ncon)
+    fd=np.asarray(sum(([f'2025-01-{1+i:02d}']*60 for i in range(12)),[]),dtype=object)
+    cd=np.asarray(sum(([f'2025-02-{1+i:02d}']*90 for i in range(8)),[]),dtype=object)
+    old_h=globals().get('V12_ACTIVE_HORIZON',None);globals()['V12_ACTIVE_HORIZON']=3
+    try:
+        layer,iso,qadj=calibrate(fy,fs,cy,cs,fd,cd)
+        audit=getattr(layer,'pointSelectionAudit',{}) or {}
+        if audit.get('method')!='CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1':raise RuntimeError('gate fullpath audit method regression')
+        if audit.get('selectionBaseline')!='NO_CHANGE_ZERO_RETURN' or audit.get('sealedLabelsUsed')!=0:raise RuntimeError('gate fullpath baseline/sealed regression')
+        if audit.get('dateDisjoint') is not True or audit.get('rowOrderIndependent') is not True:raise RuntimeError('gate fullpath chronology regression')
+        p,med,lo,hi,n=apply_calibration(cs[:180],layer,iso,qadj,cd[:180])
+        if not (len(p)==len(med)==len(lo)==len(hi)==len(n)==180):raise RuntimeError('gate fullpath output length regression')
+        if not (np.all(np.isfinite(p)) and np.all(np.isfinite(med)) and np.all(np.isfinite(lo)) and np.all(np.isfinite(hi))):raise RuntimeError('gate fullpath finite regression')
+        if not np.all(lo<=med) or not np.all(med<=hi):raise RuntimeError('gate fullpath interval ordering regression')
+    finally:
+        if old_h is None:globals().pop('V12_ACTIVE_HORIZON',None)
+        else:globals()['V12_ACTIVE_HORIZON']=old_h
+_gate_fullpath_selftest()
