@@ -1,6 +1,6 @@
 """Deterministic merge of five already-fitted V12 horizon artifacts; no refit."""
 from __future__ import annotations
-import argparse,copy,hashlib,json,pathlib
+import argparse,copy,hashlib,json,math,pathlib
 from datetime import datetime,timezone
 HORIZONS=(1,2,3,4,5); REQUIRED=("forecast-model-v12.json","forecast-current-v12.json","forecast-dashboard-v12.json","forecast-backtest-v12.json","data-audit-v12.json","event-intelligence-v12.json"); ASSEMBLY_VERSION="VMEWS-V12-HORIZON-ASSEMBLY-1.0.0"
 EV_FIELDS=("priceAfter","benchmarkReturn","benchmarkAvailable","benchmarkTargetDate","abnormalReturn","cumulativeAbnormalReturn","matureDate")
@@ -10,6 +10,7 @@ def _canon(x):return json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(
 def _sha(x):return hashlib.sha256(x if isinstance(x,bytes) else _canon(x)).hexdigest()
 def _load(p):return json.loads(pathlib.Path(p).read_text(encoding="utf-8"))
 def _write(p,x):p=pathlib.Path(p);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(x,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
+def _finite(x):return isinstance(x,(int,float)) and math.isfinite(float(x))
 def _strip(x):
     if isinstance(x,dict):return {k:_strip(v) for k,v in x.items() if k not in {"generatedAt","createdAt","updatedAt"}}
     if isinstance(x,list):return [_strip(v) for v in x]
@@ -69,6 +70,21 @@ def _event_top(e):
     for k in EV_H5:s.pop(k,None)
     out["summaryCommon"]=s;return _strip(out)
 def _event_row(r):return {k:_strip(v) for k,v in r.items() if k not in EV_FIELDS}
+def _rebuild_daily_ar_from_merged_car(row):
+    """Daily AR is derived only after all exact-maturity CAR horizons have been merged.
+
+    In isolated Hh jobs only arH is guaranteed to have passed through the exact VNINDEX maturity
+    correction.  A partial's ar(H-1) can therefore still carry legacy pre-wrapper semantics and
+    must never be used as the authority for merged daily AR.  Reconstructing here makes the
+    additive log-return identity explicit: AR1=CAR1; ARh=CARh-CAR(h-1).  Missing adjacent CAR
+    abstains rather than silently differencing across a gap.
+    """
+    car=row.get("cumulativeAbnormalReturn") or {};dar={}
+    for h in HORIZONS:
+        key=str(h);cur=car.get(key);prev=0.0 if h==1 else car.get(str(h-1))
+        dar[key]=float(cur)-float(prev) if _finite(cur) and _finite(prev) else None
+    row["abnormalReturn"]=dar
+    return row
 def _merge_events(P):
     first=P[1]["event-intelligence-v12.json"];top=_event_top(first);rr=first.get("records") or [];keys=[r.get("eventKey") for r in rr]
     if not rr or any(not k for k in keys) or len(keys)!=len(set(keys)):raise RuntimeError("event-intelligence reference has missing/duplicate eventKey")
@@ -81,13 +97,14 @@ def _merge_events(P):
     for i,ref in enumerate(rr):
         row=copy.deepcopy(ref)
         for f in EV_FIELDS:
+            if f=="abnormalReturn":continue
             z={}
             for h in HORIZONS:
                 for k,v in (P[h]["event-intelligence-v12.json"]["records"][i].get(f) or {}).items():
                     if k in z and z[k]!=v:raise RuntimeError(f"event-intelligence conflicting {f}[{k}] for eventKey={keys[i]}")
                     z[k]=copy.deepcopy(v)
             row[f]=z
-        merged.append(row)
+        _rebuild_daily_ar_from_merged_car(row);merged.append(row)
     out["records"]=merged;return out
 def _load_partial(root,h):
     d=pathlib.Path(root)/f"h{h}";missing=[x for x in REQUIRED if not (d/x).exists()]
