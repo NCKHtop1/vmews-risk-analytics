@@ -1,79 +1,190 @@
-# Gate-aligned chronological point selection. 90-100% remains sealed/evaluation-only.
-# Parameters: maturity-purged 80-85%; family selection: whole dates in early 85-90%;
-# conformal widening: late 85-90%. No-change, not Q50, is the scientific point baseline.
-_gate_before_calibrate=calibrate
-_gate_before_apply=apply_calibration
+# V12 point calibration V2: gate-aligned, exact-maturity, multi-regime rolling-origin selection.
+#
+# Scientific contract:
+# - 80-85% origins: scenario quantile/isotonic fit and expanding rolling-origin point-family OOS.
+# - safe early whole origin dates of 85-90%: one additional external pre-blind OOS fold and
+#   point-family parameter refit only after the family is frozen.
+# - late whole origin dates of 85-90%: conformal widening only.
+# - 90-100%: sealed evaluation only; its labels are never read by calibration/selection.
+# - final gates/thresholds are unchanged. Candidate magnitude is evaluated, never fabricated.
+#
+# The selector is aligned to the final point gate: equal-date MAE edge versus no-change,
+# moving-block lower-90 evidence, temporal breadth, ranking and the existing horizon magnitude
+# floors. XSEC_RANK_ONLY is zero-centered within each origin date and has no market-drift intercept.
+_v2_before_calibrate=calibrate
+_v2_before_apply=apply_calibration
+_V12_PRIMARY_PREBLIND_CALIBRATION=None
 
-def _gate_h():return max(1,min(5,int(globals().get('V12_ACTIVE_HORIZON',1))))
-def _gate_floor(h):return ({1:.05,2:.07,3:.08,4:.09,5:.10}[int(h)],{1:.04,2:.05,3:.06,4:.07,5:.08}[int(h)])
-def _gate_p90(y,p):
-    y=np.asarray(y,float);p=np.asarray(p,float);g=np.isfinite(y)&np.isfinite(p);y=y[g];p=p[g]
-    return float(np.quantile(np.abs(p),.9)/max(float(np.quantile(np.abs(y),.9)),1e-12)) if len(y)>1 else 0.0
 
-def _gate_origin_one_se(score,y,h):
-    """Zero-intercept L1 scale; one-SE rule prevents a statistically needless collapse to ~0."""
-    s=np.asarray(score,float);y=np.asarray(y,float);g=np.isfinite(s)&np.isfinite(y);s=s[g];y=y[g]
-    if len(s)<240 or float(np.std(s))<1e-10:return None
-    sm=float(np.median(s));ym=float(np.median(y));smad=float(np.median(np.abs(s-sm))*1.4826);ymad=float(np.median(np.abs(y-ym))*1.4826);ratio=float(ymad/max(smad,1e-8));upper=float(min(30.,max(2.,2.5*ratio)));a=np.linspace(.05,min(2.,upper),40);b=np.geomspace(max(.1,min(2.,upper)),upper,44) if upper>2 else np.asarray([],float);grid=np.unique(np.r_[a,b,1.]);rows=[]
-    for q in grid:
-        p=float(q)*s;loss=np.abs(y-p);rows.append((float(q),float(np.mean(loss)),float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.))
-    best=min(rows,key=lambda z:(z[1],abs(z[0]-1.)));fd,fp=_gate_floor(h);target=max(fd*float(np.std(y))/max(float(np.std(s)),1e-10),fp*float(np.quantile(np.abs(y),.9))/max(float(np.quantile(np.abs(s),.9)),1e-10));target=float(np.clip(target,grid.min(),grid.max()));ok=[z for z in rows if z[1]<=best[1]+max(best[2],1e-12)];pick=min(ok,key=lambda z:(abs(z[0]-target),z[1]));return {'intercept':0.,'slope':pick[0],'fitRows':int(len(y)),'fitMAE':pick[1],'bestMAE':best[1],'bestMAESE':best[2],'oneSEAdmissibleN':len(ok),'magnitudeTargetSlope':target,'scoreStd':float(np.std(s)),'realizedStd':float(np.std(y)),'robustScaleRatio':ratio,'slopeGridMin':float(grid.min()),'slopeGridMax':float(grid.max()),'slopeGridN':len(grid),'objective':'PREBLIND_L1_ONE_SE_ZERO_INTERCEPT','horizon':int(h),'sealedLabelsUsed':0}
+def _v2_h():return max(1,min(5,int(globals().get('V12_ACTIVE_HORIZON',1))))
+def _v2_floor(h):return ({1:.05,2:.07,3:.08,4:.09,5:.10}[int(h)],{1:.04,2:.05,3:.06,4:.07,5:.08}[int(h)])
 
-def _gate_rank_one_se(y,r,h):
-    y=np.asarray(y,float);r=np.asarray(r,float);g=np.isfinite(y)&np.isfinite(r);y=y[g];r=r[g]
-    if len(y)<240 or float(np.std(r))<1e-10:return None
-    ratio=float(np.std(y)/max(np.std(r),1e-10));upper=float(min(.20,max(.003,3.*ratio)));a=np.linspace(0.,min(.03,upper),81);b=np.geomspace(max(.001,min(.03,upper)),upper,48) if upper>.03 else np.asarray([],float);grid=np.unique(np.r_[a,b,0.]);rows=[]
-    for q in grid:
-        p=float(q)*r;loss=np.abs(y-p);rows.append((float(q),float(np.mean(loss)),float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.))
-    best=min(rows,key=lambda z:(z[1],z[0]));fd,fp=_gate_floor(h);target=max(fd*float(np.std(y))/max(float(np.std(r)),1e-10),fp*float(np.quantile(np.abs(y),.9))/max(float(np.quantile(np.abs(r),.9)),1e-10));target=float(np.clip(target,grid.min(),grid.max()));ok=[z for z in rows if z[1]<=best[1]+max(best[2],1e-12)];pick=min(ok,key=lambda z:(abs(z[0]-target),z[1]));return {'kind':'ZERO_PLUS_RANK','residualScale':pick[0],'fitRows':int(len(y)),'fitMAE':pick[1],'bestMAE':best[1],'bestMAESE':best[2],'oneSEAdmissibleN':len(ok),'magnitudeTargetScale':target,'gridMin':float(grid.min()),'gridMax':float(grid.max()),'gridN':len(grid),'objective':'PREBLIND_L1_ONE_SE_ZERO_CENTERED_WITHIN_DATE_RANK','horizon':int(h),'sealedLabelsUsed':0}
 
-def _gate_rec(name,y,p,d,h,model=None):
-    y=np.asarray(y,float);p=np.asarray(p,float);d=np.asarray(d,dtype=object);m=_point_candidate_metrics(y,p);m['p90MagnitudeRatio']=_gate_p90(y,p);fd,fp=_gate_floor(h);pair=_paired_challenger_audit(y,np.zeros(len(y)),p);stab=_xsec_date_block_stability(y,np.zeros(len(y)),p,d,4);pos=bool(m.get('maeEdge',-99)>0);mag=bool(m.get('dispersionRatio',0)>=fd and m['p90MagnitudeRatio']>=fp);stable=bool(stab.get('stable') is True);adm=bool(pos and mag and stable);return {'name':name,'pred':p,'metrics':m,'pairedVsNoChange':pair,'dateStabilityVsNoChange':stab,'model':model,'preblindPositiveMAEEdge':pos,'preblindMagnitudeAdmissible':mag,'preblindTemporalStable':stable,'preblindAdmissible':adm,'preblindStrongEvidence':bool(adm and pair.get('pass') is True),'minimumDispersionRatio':fd,'minimumP90MagnitudeRatio':fp}
+def _v2_date_split(cal_dates,conform_dates,conform_maturity):
+    fd=np.asarray(cal_dates,dtype=object).astype(str);vd=np.asarray(conform_dates,dtype=object).astype(str);mm=np.asarray(conform_maturity,dtype=object).astype(str)
+    if len(vd)!=len(mm):raise RuntimeError('V2 conformal maturity alignment mismatch')
+    fit_days=np.asarray(sorted(set(fd)),dtype=object);u=np.asarray(sorted(set(vd)),dtype=object)
+    if len(fit_days)<12 or len(u)<6:return None
+    cut=max(3,min(len(u)-3,len(u)//2));val_days=u[:cut];conf_days=u[cut:];conf_start=str(conf_days[0])
+    if str(fit_days[-1])>=str(val_days[0]) or str(val_days[-1])>=conf_start:raise RuntimeError('V2 origin-date chronology overlap')
+    safe=[]
+    for day in val_days:
+        q=np.where(vd==str(day))[0]
+        if len(q) and bool(np.all(mm[q]<conf_start)):safe.append(str(day))
+    val_days=np.asarray(safe,dtype=object)
+    if len(val_days)<2:return None
+    iv=np.where(np.isin(vd,val_days))[0];ic=np.where(np.isin(vd,conf_days))[0]
+    if not len(iv) or not len(ic):return None
+    return {'fitDays':fit_days,'validationDays':val_days,'conformalDays':conf_days,'validationIndex':iv,'conformalIndex':ic}
+
+
+def _v2_fit_quantile(y,score):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);g=np.isfinite(yy)&np.isfinite(ss);yy=yy[g];ss=ss[g]
+    if len(yy)<240 or float(np.std(ss))<1e-12:raise RuntimeError(f'V2 point fit too small/degenerate: n={len(yy)}')
+    x=ss.reshape(-1,1);models={};methods=[]
+    for a in (.2,.5,.8):m,method=_fit_quantile_model(a,x,yy);models[a]=m;methods.append(method)
+    layer=_QuantileLayer(models,methods[0] if len(set(methods))==1 else '+'.join(sorted(set(methods))),len(yy),float(np.min(ss)),float(np.max(ss)))
+    iso=IsotonicRegression(y_min=.02,y_max=.98,out_of_bounds='clip');iso.fit(ss,(yy>0).astype(float));return layer,iso
+
+
+def _v2_rank_scale(y,score,dates):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object);g=np.isfinite(yy)&np.isfinite(ss);yy=yy[g];ss=ss[g];dd=dd[g]
+    if len(yy)<240:return None
+    r=_xsec_rank_signal(ss,dd)
+    if float(np.std(r))<1e-10:return None
+    ratio=float(np.std(yy)/max(np.std(r),1e-10));upper=float(min(.20,max(.004,2.5*ratio)));grid=np.unique(np.r_[np.linspace(0.,min(.04,upper),81),np.geomspace(max(.001,min(.04,upper)),upper,48) if upper>.04 else np.asarray([],float)]);days=sorted(set(dd.astype(str)));rows=[]
+    for scale in grid:
+        p=float(scale)*r;loss=[]
+        for day in days:
+            q=dd.astype(str)==day
+            if int(np.sum(q))>=12:loss.append(float(np.mean(np.abs(yy[q]-p[q]))))
+        if loss:rows.append((float(scale),float(np.mean(loss))))
+    if not rows:return None
+    best=min(rows,key=lambda z:(z[1],z[0]));return {'kind':'RANK_ONLY','scale':best[0],'fitRows':int(len(yy)),'fitDates':int(len(days)),'equalDateMAE':best[1],'gridMin':float(np.min(grid)),'gridMax':float(np.max(grid)),'gridN':int(len(grid)),'objective':'PREBLIND_EQUAL_DATE_L1_WITHIN_ORIGIN_RANK','marketDriftIntercept':False,'sealedLabelsUsed':0}
+
+
+def _v2_bundle(y,score,dates):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object);layer,iso=_v2_fit_quantile(yy,ss);_,q50,_=layer.predict(ss);qs,qn,qa=_select_return_shrink(yy,q50);ds,dn,da=_select_return_shrink(yy,ss);median=_fit_binned_monotone_median(ss,yy,15);aff=_fit_robust_affine_score(ss,yy);origin=_fit_robust_origin_scale(ss,yy);rank=_xsec_rank_signal(ss,dd);rf=_xsec_positive_scale(yy,np.asarray(q50,float)*qs,rank);center=_isotonic_half_center(iso,ss) if '_isotonic_half_center' in globals() else float(np.median(ss));mf=_xsec_market_rank_fit(yy,ss,dd,center);ro=_v2_rank_scale(yy,ss,dd)
+    return {'layer':layer,'iso':iso,'qscale':float(qs),'qN':int(qn),'qAudit':qa,'scoreScale':float(ds),'scoreN':int(dn),'scoreAudit':da,'median':median,'affine':aff,'origin':origin,'rankFit':rf,'marketFit':mf,'rankOnly':ro,'fitRows':int(len(yy)),'fitDates':int(len(set(dd.astype(str))))}
+
+
+def _v2_predictions(b,score,dates):
+    ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object);lo0,q50,hi0=b['layer'].predict(ss);g=float(b['qscale']);lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g;out={'Q50':np.asarray(q50,float)*g,'DIRECT_SCORE':_clip_between(ss*float(b['scoreScale']),lo,hi)}
+    if b.get('median') is not None:out['BINNED_MONOTONE_MEDIAN']=_clip_between(_predict_binned_monotone(b['median'],ss),lo,hi)
+    if b.get('affine') is not None:out['ROBUST_AFFINE_SCORE']=_clip_between(_affine_predict(b['affine'],ss),lo,hi)
+    if b.get('origin') is not None:out['ROBUST_ORIGIN_SCALE']=_clip_between(_affine_predict(b['origin'],ss),lo,hi)
+    rank=_xsec_rank_signal(ss,dd)
+    if b.get('rankFit') is not None:out['XSEC_BASE_PLUS_RANK']=_clip_between(out['Q50']+float(b['rankFit']['scale'])*rank,lo,hi)
+    if b.get('marketFit') is not None:out['XSEC_MARKET_PLUS_RANK']=_clip_between(_xsec_apply_model({'kind':'MARKET_PLUS_RANK',**b['marketFit']},ss,dd),lo,hi)
+    if b.get('rankOnly') is not None:out['XSEC_RANK_ONLY']=_clip_between(float(b['rankOnly']['scale'])*rank,lo,hi)
+    return out
+
+
+def _v2_daily_edge(y,pred,dates):
+    yy=np.asarray(y,float);pp=np.asarray(pred,float);dd=np.asarray(dates,dtype=object);g=np.isfinite(yy)&np.isfinite(pp);yy=yy[g];pp=pp[g];dd=dd[g];vals=[]
+    for day in sorted(set(dd.astype(str))):
+        q=dd.astype(str)==day
+        if int(np.sum(q))>=12:vals.append(float(np.mean(np.abs(yy[q])-np.abs(yy[q]-pp[q]))))
+    if not vals:return {'days':0,'mean':0.,'positiveDayShare':0.,'bootstrap90':[None,None],'blockLength':0}
+    a=np.asarray(vals,float);ci,block=_moving_block_bootstrap_mean(a,reps=1600) if '_moving_block_bootstrap_mean' in globals() else ([None,None],0)
+    return {'days':int(len(a)),'mean':float(np.mean(a)),'positiveDayShare':float(np.mean(a>0)),'bootstrap90':ci,'blockLength':int(block)}
+
+
+def _v2_metric(y,pred,dates,h):
+    yy=np.asarray(y,float);pp=np.asarray(pred,float);dd=np.asarray(dates,dtype=object);m=_point_candidate_metrics(yy,pp);rs=rank_stats(yy,pp,dd);daily=_v2_daily_edge(yy,pp,dd);p90a=float(np.quantile(np.abs(yy),.90)) if len(yy) else 0.;p90p=float(np.quantile(np.abs(pp),.90)) if len(pp) else 0.;fd,fp=_v2_floor(h);ci=daily.get('bootstrap90') or [None,None];p90r=p90p/(p90a or 1e-12);gate=bool(daily.get('days',0)>=20 and daily.get('mean',0)>0 and daily.get('positiveDayShare',0)>=.50 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0 and float(m.get('dispersionRatio') or 0)>=fd and p90r>=fp and float(rs.get('ic') or 0)>.01)
+    return {**m,'dailyMAEEdge':daily,'rankIC':float(rs.get('ic') or 0),'p90MagnitudeRatio':p90r,'minimumDispersionRatio':fd,'minimumP90MagnitudeRatio':fp,'gateAlignedPass':gate,'sealedLabelsUsed':0}
+
+
+def _v2_folds(fit_days,external_days):
+    fd=np.asarray(fit_days,dtype=object)
+    if len(fd)<12:return []
+    init=max(6,min(len(fd)-6,len(fd)//3));parts=[np.asarray(x,dtype=object) for x in np.array_split(fd[init:],3) if len(x)];out=[{'kind':'INTERNAL_80_85','validationDays':x} for x in parts]
+    if len(external_days):out.append({'kind':'EXTERNAL_EARLY_85_90','validationDays':np.asarray(external_days,dtype=object)})
+    return out
+
+
+def _v2_select(fy,fs,fd,fm,cy,cs,cd,split,h):
+    folds=_v2_folds(split['fitDays'],split['validationDays']);fm=np.asarray(fm,dtype=object).astype(str)
+    if len(folds)<3 or len(fm)!=len(fy):raise RuntimeError('V2 rolling-fold/maturity contract unavailable')
+    agg={};fa=[]
+    for f in folds:
+        start=str(f['validationDays'][0])
+        if f['kind']=='INTERNAL_80_85':tr=(fd.astype(str)<start)&(fm<start);va=np.isin(fd.astype(str),f['validationDays'].astype(str));ty,ts,td=fy[tr],fs[tr],fd[tr];vy,vs,vd=fy[va],fs[va],fd[va]
+        else:tr=np.ones(len(fy),dtype=bool);va=np.isin(cd.astype(str),f['validationDays'].astype(str));ty,ts,td=fy,fs,fd;vy,vs,vd=cy[va],cs[va],cd[va]
+        maxmat=str(max(fm[tr])) if np.any(tr) else None
+        if maxmat is not None and maxmat>=start:raise RuntimeError(f'V2 maturity leak: {maxmat} >= {start}')
+        b=_v2_bundle(ty,ts,td);preds=_v2_predictions(b,vs,vd);fa.append({'kind':f['kind'],'trainOriginEnd':str(max(td.astype(str))) if len(td) else None,'maxTrainLabelMaturity':maxmat,'validationDateRange':[str(f['validationDays'][0]),str(f['validationDays'][-1])],'trainRows':int(len(ty)),'validationRows':int(len(vy)),'exactMaturityPurged':True,'futureLabelsUsed':0,'families':sorted(preds)})
+        for name,p in preds.items():z=agg.setdefault(name,{'y':[],'p':[],'d':[],'n':0});z['y'].append(np.asarray(vy,float));z['p'].append(np.asarray(p,float));z['d'].append(np.asarray(vd,dtype=object));z['n']+=1
+    metrics={name:_v2_metric(np.concatenate(z['y']),np.concatenate(z['p']),np.concatenate(z['d']),h) for name,z in agg.items() if z['n']==len(folds)}
+    if 'Q50' not in metrics:raise RuntimeError('V2 selector lost Q50 incumbent')
+    eligible=[n for n,m in metrics.items() if m.get('gateAlignedPass') is True];complexity={'Q50':0,'XSEC_RANK_ONLY':1,'ROBUST_ORIGIN_SCALE':2,'BINNED_MONOTONE_MEDIAN':3,'DIRECT_SCORE':4,'XSEC_BASE_PLUS_RANK':5,'XSEC_MARKET_PLUS_RANK':6,'ROBUST_AFFINE_SCORE':7}
+    def key(n):
+        ci=metrics[n]['dailyMAEEdge'].get('bootstrap90') or [None,None];lower=float(ci[0]) if isinstance(ci[0],(int,float)) and finite(ci[0]) else -1e9;return (lower,float(metrics[n]['dailyMAEEdge'].get('mean') or -1e9),float(metrics[n].get('rankIC') or -1e9),-complexity.get(n,99))
+    chosen=max(eligible,key=key) if eligible else max(metrics,key=key);return chosen,metrics,fa,eligible
+
+
+def _v2_refit_point(base,mode,y,score,dates):
+    b=dict(base);yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object)
+    if mode=='DIRECT_SCORE':g,n,a=_select_return_shrink(yy,ss);b.update(scoreScale=float(g),scoreN=int(n),scoreAudit=a)
+    elif mode=='BINNED_MONOTONE_MEDIAN':b['median']=_fit_binned_monotone_median(ss,yy,15)
+    elif mode=='ROBUST_AFFINE_SCORE':b['affine']=_fit_robust_affine_score(ss,yy)
+    elif mode=='ROBUST_ORIGIN_SCALE':b['origin']=_fit_robust_origin_scale(ss,yy)
+    elif mode=='XSEC_BASE_PLUS_RANK':_,q50,_=base['layer'].predict(ss);b['rankFit']=_xsec_positive_scale(yy,np.asarray(q50,float)*float(base['qscale']),_xsec_rank_signal(ss,dd))
+    elif mode=='XSEC_MARKET_PLUS_RANK':b['marketFit']=_xsec_market_rank_fit(yy,ss,dd,_isotonic_half_center(base['iso'],ss) if '_isotonic_half_center' in globals() else float(np.median(ss)))
+    elif mode=='XSEC_RANK_ONLY':b['rankOnly']=_v2_rank_scale(yy,ss,dd)
+    return b
+
+
+def _v2_install(layer,b,mode):
+    layer.returnShrink=float(b['qscale']);layer.shrinkSelectionN=int(b['qN']);layer.shrinkSelectionAudit=b['qAudit'];layer.pointMode=str(mode);layer.pointScoreScale=float(b['scoreScale']);layer.pointBinnedMedian=b.get('median');layer.pointAffineModel=None;layer.pointDeadband=0.;layer.pointXsecModel=None;layer.pointRankOnlyModel=None
+    if mode=='ROBUST_AFFINE_SCORE':layer.pointAffineModel=b.get('affine')
+    elif mode=='ROBUST_ORIGIN_SCALE':layer.pointAffineModel=b.get('origin')
+    elif mode=='XSEC_BASE_PLUS_RANK':
+        rf=b.get('rankFit');
+        if rf is None:raise RuntimeError('V2 XSEC_BASE_PLUS_RANK refit failed')
+        layer.pointXsecModel={'kind':'BASE_PLUS_RANK','residualScale':float(rf['scale']),'fit':rf}
+    elif mode=='XSEC_MARKET_PLUS_RANK':
+        mf=b.get('marketFit');
+        if mf is None:raise RuntimeError('V2 XSEC_MARKET_PLUS_RANK refit failed')
+        layer.pointXsecModel={'kind':'MARKET_PLUS_RANK',**mf}
+    elif mode=='XSEC_RANK_ONLY':
+        if b.get('rankOnly') is None:raise RuntimeError('V2 XSEC_RANK_ONLY refit failed')
+        layer.pointRankOnlyModel=b['rankOnly']
+    return layer
+
 
 def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
-    if cal_dates is None or conform_dates is None:return _gate_before_calibrate(cal_y,cal_score,conform_y,conform_score)
-    layer,iso,_=_point_base_quantile_calibrate(cal_y,cal_score,conform_y,conform_score)
-    if not isinstance(layer,_QuantileLayer):return layer,iso,0.
-    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object);cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
-    if len(fy)!=len(fs) or len(fy)!=len(fd) or len(cy)!=len(cs) or len(cy)!=len(cd):raise RuntimeError('gate-aligned chronology alignment mismatch')
-    sp=_chrono_date_split(fd,cd)
-    if sp is None or len(fy)<300 or len(cy)<300:raise RuntimeError('gate-aligned chronology requires >=300 fit/conform rows and >=4 distinct conform dates')
-    h=_gate_h();iv=sp['validationIndex'];ic=sp['conformalIndex'];loF,qF,hiF=layer.predict(fs);loV,qV,hiV=layer.predict(cs[iv]);qs,qn,qa=_select_return_shrink(fy,qF);ss,sn,sa=_select_return_shrink(fy,fs);median=_fit_binned_monotone_median(fs,fy,15);aff=_fit_robust_affine_score(fs,fy);origin=_fit_robust_origin_scale(fs,fy);origin1=_gate_origin_one_se(fs,fy,h);layer.returnShrink=float(qs);layer.shrinkSelectionN=int(qn);layer.shrinkSelectionAudit=qa;layer.pointMode='Q50';layer.pointScoreScale=float(ss);layer.pointBinnedMedian=median;layer.pointAffineModel=None;layer.pointDeadband=0.;layer.pointXsecModel=None;loV=np.asarray(loV,float)*qs;hiV=np.asarray(hiV,float)*qs;qpoint=np.asarray(qV,float)*qs
-    R=[_gate_rec('Q50',cy[iv],qpoint,cd[iv],h)];R.append(_gate_rec('DIRECT_SCORE',cy[iv],_clip_between(cs[iv]*ss,loV,hiV),cd[iv],h))
-    if median is not None:R.append(_gate_rec('BINNED_MONOTONE_MEDIAN',cy[iv],_clip_between(_predict_binned_monotone(median,cs[iv]),loV,hiV),cd[iv],h,median))
-    if aff is not None:R.append(_gate_rec('ROBUST_AFFINE_SCORE',cy[iv],_clip_between(_affine_predict(aff,cs[iv]),loV,hiV),cd[iv],h,aff))
-    if origin is not None:R.append(_gate_rec('ROBUST_ORIGIN_SCALE',cy[iv],_clip_between(_affine_predict(origin,cs[iv]),loV,hiV),cd[iv],h,origin))
-    if origin1 is not None:R.append(_gate_rec('ROBUST_ORIGIN_SCALE_1SE',cy[iv],_clip_between(_affine_predict(origin1,cs[iv]),loV,hiV),cd[iv],h,origin1))
-    rf=_xsec_rank_signal(fs,fd);rv=_xsec_rank_signal(cs[iv],cd[iv]);basefit=_xsec_positive_scale(fy,np.asarray(qF,float)*qs,rf)
-    if basefit is not None:
-        model={'kind':'BASE_PLUS_RANK','residualScale':float(basefit['scale']),'fit':basefit};R.append(_gate_rec('XSEC_BASE_PLUS_RANK',cy[iv],_clip_between(qpoint+model['residualScale']*rv,loV,hiV),cd[iv],h,model))
-    center=_isotonic_half_center(iso,fs) if '_isotonic_half_center' in globals() else float(np.median(fs));mf=_xsec_market_rank_fit(fy,fs,fd,center)
-    if mf is not None:
-        model={'kind':'MARKET_PLUS_RANK',**mf};R.append(_gate_rec('XSEC_MARKET_PLUS_RANK',cy[iv],_clip_between(_xsec_apply_model(model,cs[iv],cd[iv]),loV,hiV),cd[iv],h,model))
-    zf=_xsec_positive_scale(fy,np.zeros(len(fy)),rf)
-    if zf is not None:
-        model={'kind':'ZERO_PLUS_RANK','residualScale':float(zf['scale']),'fit':zf};R.append(_gate_rec('XSEC_ZERO_PLUS_RANK',cy[iv],_clip_between(model['residualScale']*rv,loV,hiV),cd[iv],h,model))
-    z1=_gate_rank_one_se(fy,rf,h)
-    if z1 is not None:R.append(_gate_rec('XSEC_ZERO_PLUS_RANK_1SE',cy[iv],_clip_between(float(z1['residualScale'])*rv,loV,hiV),cd[iv],h,z1))
-    strong=[z for z in R if z['preblindStrongEvidence']];adm=[z for z in R if z['preblindAdmissible']];pool=strong or adm
-    if pool:chosen=min(pool,key=lambda z:(z['metrics']['mae'],-z['pairedVsNoChange'].get('lower90',-99),-z['metrics'].get('dispersionRatio',0)))
-    else:chosen=min(([z for z in R if z['preblindMagnitudeAdmissible']] or R),key=lambda z:(z['metrics']['mae'],-z['metrics'].get('dispersionRatio',0)))
-    mode=chosen['name'];layer.pointMode=mode
-    if mode in {'ROBUST_AFFINE_SCORE','ROBUST_ORIGIN_SCALE','ROBUST_ORIGIN_SCALE_1SE'}:layer.pointAffineModel=chosen['model']
-    elif mode.startswith('XSEC_'):layer.pointXsecModel=chosen['model']
-    loC,_,hiC=layer.predict(cs[ic]);loC=np.asarray(loC,float)*qs;hiC=np.asarray(hiC,float)*qs;yy=cy[ic];nc=np.maximum.reduce([loC-yy,yy-hiC,np.zeros(len(yy))]) if len(yy) else np.asarray([],float);target=.60;ql=min(1.,math.ceil((len(nc)+1)*target)/max(1,len(nc)));qadj=float(np.quantile(nc,ql,method='higher')) if len(nc) else 0.;layer.conformalTarget=target;layer.conformalN=int(len(nc));layer.calibrationSplitPolicy='80-85% fits monotone quantile/isotonic and all point-family parameters; early origin dates of maturity-purged 85-90% select the gate-aligned point family against no-change; late origin dates of 85-90% compute conformal widening; 90-100% remains sealed.';layer.pointSelectionAudit={'method':'CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1','revision':'GATE_ALIGNED_NO_CHANGE_MAGNITUDE_ONE_SE_V2','splitPolicy':'FIT_80_85__VALIDATE_EARLY_85_90_BY_ORIGIN_DATE__CONFORM_LATE_85_90_BY_ORIGIN_DATE','horizon':h,'fitRows':len(fy),'validationRows':len(iv),'conformalRows':len(ic),'fitDates':len(sp['fitDays']),'validationDates':len(sp['validationDays']),'conformalDates':len(sp['conformalDays']),'fitDateRange':[str(sp['fitDays'][0]),str(sp['fitDays'][-1])],'validationDateRange':[str(sp['validationDays'][0]),str(sp['validationDays'][-1])],'conformalDateRange':[str(sp['conformalDays'][0]),str(sp['conformalDays'][-1])],'dateDisjoint':True,'rowOrderIndependent':True,'sealedLabelsUsed':0,'selectionBaseline':'NO_CHANGE_ZERO_RETURN','selectedFamily':mode,'selectedPreblindAdmissible':bool(chosen['preblindAdmissible']),'selectedPreblindStrongEvidence':bool(chosen['preblindStrongEvidence']),'q50ScaleAudit':qa,'directScoreScaleAudit':sa,'magnitudeFloors':{'dispersionRatio':_gate_floor(h)[0],'p90MagnitudeRatio':_gate_floor(h)[1]},'candidates':{z['name']:{k:v for k,v in z.items() if k not in {'pred','name'}} for z in R},'reason':'selection uses disjoint pre-blind whole-date validation against no-change, temporal stability and the pre-existing magnitude authority floor. One-SE regularization can prefer a non-degenerate zero-centered scale only inside a pre-blind MAE-indistinguishable set. Sealed 90-100% labels are never supplied.'};return layer,iso,max(0.,qadj)
+    global _V12_PRIMARY_PREBLIND_CALIBRATION
+    if cal_dates is None or conform_dates is None:return _v2_before_calibrate(cal_y,cal_score,conform_y,conform_score)
+    supplied=np.asarray(conform_dates,dtype=object).astype(str);d90=str(globals().get('V12_CURRENT_SEALED_START') or '')
+    # Return before converting either label argument: sealed calibration labels remain unread.
+    if d90 and len(supplied) and bool(np.any(supplied>=d90)):
+        if _V12_PRIMARY_PREBLIND_CALIBRATION is None:raise RuntimeError('V2 sealed calibration attempted before pre-blind cache')
+        layer,iso,qadj=_V12_PRIMARY_PREBLIND_CALIBRATION;a=getattr(layer,'pointSelectionAudit',None)
+        if isinstance(a,dict):a['deploymentCalibrationReuse']='FROZEN_PREBLIND_LAYER_NO_SEALED_LABEL_READ';a['sealedLabelsUsed']=0
+        return layer,iso,qadj
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object);cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object);fm=np.asarray(globals().get('V12_PRIMARY_CAL_A_MATURITY') if globals().get('V12_PRIMARY_CAL_A_MATURITY') is not None else [],dtype=object);cm=np.asarray(globals().get('V12_PRIMARY_CAL_B_MATURITY') if globals().get('V12_PRIMARY_CAL_B_MATURITY') is not None else [],dtype=object)
+    if len(fm)!=len(fy) or len(cm)!=len(cy):raise RuntimeError(f'V2 exact maturity arrays misaligned: fit={len(fm)}/{len(fy)} conform={len(cm)}/{len(cy)}')
+    split=_v2_date_split(fd,cd,cm)
+    if split is None or len(fy)<300 or len(cy)<300:raise RuntimeError('V2 requires adequate maturity-purged rows and whole origin dates')
+    h=_v2_h();mode,metrics,folds,eligible=_v2_select(fy,fs,fd,fm,cy,cs,cd,split,h);iv=split['validationIndex'];ic=split['conformalIndex'];base=_v2_bundle(fy,fs,fd);refit_y=np.concatenate([fy,cy[iv]]);refit_s=np.concatenate([fs,cs[iv]]);refit_d=np.concatenate([fd,cd[iv]]);b=_v2_refit_point(base,mode,refit_y,refit_s,refit_d);layer=base['layer'];iso=base['iso'];_v2_install(layer,b,mode)
+    loC,_,hiC=layer.predict(cs[ic]);g=float(base['qscale']);loC=np.asarray(loC,float)*g;hiC=np.asarray(hiC,float)*g;yy=cy[ic];nc=np.maximum.reduce([loC-yy,yy-hiC,np.zeros(len(yy))]) if len(yy) else np.asarray([],float);target=.60;ql=min(1.,math.ceil((len(nc)+1)*target)/max(1,len(nc)));qadj=float(np.quantile(nc,ql,method='higher')) if len(nc) else 0.
+    layer.conformalTarget=target;layer.conformalN=int(len(nc));layer.calibrationSplitPolicy='80-85% scenario calibration + exact-maturity expanding rolling-origin point-family evaluation; safe early whole 85-90% dates external-validate/refit the frozen point family; late whole 85-90% dates conformal-only; 90-100% remains sealed.';layer.pointSelectionAudit={'method':'CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V2','selectionEngine':'EXACT_MATURITY_PURGED_EXPANDING_ROLLING_ORIGIN__DAILY_MAE_MOVING_BLOCK__GATE_ALIGNED','selectionBaseline':'NO_CHANGE_ZERO_RETURN','objectiveAlignment':'equal-date MAE edge + moving-block lower90 + ranking + unchanged horizon magnitude floors','horizon':h,'fitRows':int(len(fy)),'externalValidationRows':int(len(iv)),'pointRefitRows':int(len(refit_y)),'conformalRows':int(len(ic)),'fitDates':int(len(split['fitDays'])),'validationDates':int(len(split['validationDays'])),'conformalDates':int(len(split['conformalDays'])),'fitDateRange':[str(split['fitDays'][0]),str(split['fitDays'][-1])],'validationDateRange':[str(split['validationDays'][0]),str(split['validationDays'][-1])],'conformalDateRange':[str(split['conformalDays'][0]),str(split['conformalDays'][-1])],'dateDisjoint':True,'rowOrderIndependent':True,'wholeOriginValidationDatesOnly':True,'exactLabelMaturityPurged':True,'rollingFolds':folds,'candidateMetrics':metrics,'eligibleGateAlignedFamilies':eligible,'selectedFamily':str(mode),'selectedFamilyPreblindGateAlignedPass':bool(mode in eligible),'scenarioFitRows':int(base['fitRows']),'scenarioFitDates':int(base['fitDates']),'scenarioRefitOnValidation':False,'rankOnlyCandidate':{'sameOriginOnly':True,'zeroMedianByConstruction':True,'positiveScaleOnly':True,'marketDriftIntercept':False},'q50ScaleAudit':base['qAudit'],'directScoreScaleAudit':b['scoreAudit'],'sealedLabelsUsed':0,'reason':'family selection is aligned with the final point gate over multiple exact-maturity chronological OOS regimes; no sealed label, gate relaxation or magnitude forcing is used'}
+    result=(layer,iso,max(0.,qadj))
+    if bool(globals().get('V12_PRIMARY_CALIBRATION_PENDING',False)):_V12_PRIMARY_PREBLIND_CALIBRATION=result;globals()['V12_PRIMARY_CALIBRATION_PENDING']=False
+    return result
+
 
 def apply_calibration(score,scen,iso,qadj,origin_dates=None):
     mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
-    if mode=='ROBUST_ORIGIN_SCALE_1SE':
-        s=np.asarray(score,float);p=np.asarray(iso.predict(s),float);lo0,_,hi0=scen.predict(s);g=float(getattr(scen,'returnShrink',1.));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g;point=_clip_between(_affine_predict(getattr(scen,'pointAffineModel',None),s),lo,hi);return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
-    if mode in {'XSEC_ZERO_PLUS_RANK','XSEC_ZERO_PLUS_RANK_1SE'}:
-        if origin_dates is None:return _gate_before_apply(score,scen,iso,qadj,origin_dates)
-        s=np.asarray(score,float);d=np.asarray(origin_dates,dtype=object);p,_,lo,hi,n=_gate_before_apply(s,scen,iso,0.,d);model=getattr(scen,'pointXsecModel',None) or {};point=_clip_between(float(model.get('residualScale',0.))*_xsec_rank_signal(s,d),lo,hi);return np.asarray(p,float),np.asarray(point,float),np.asarray(lo,float)-float(qadj),np.asarray(hi,float)+float(qadj),np.asarray(n)
-    return _gate_before_apply(score,scen,iso,qadj,origin_dates)
+    if mode!='XSEC_RANK_ONLY':return _v2_before_apply(score,scen,iso,qadj,origin_dates)
+    if origin_dates is None:raise RuntimeError('V2 XSEC_RANK_ONLY requires explicit same-origin dates')
+    s=np.asarray(score,float);d=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(s),float);lo0,_,hi0=scen.predict(s);g=float(getattr(scen,'returnShrink',1.));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g;rank=_xsec_rank_signal(s,d);point=float((getattr(scen,'pointRankOnlyModel',None) or {}).get('scale',0.))*rank;point=_clip_between(point,lo,hi);return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
 
-def _gate_selftest():
-    days=np.asarray(sum(([f'2026-01-{d:02d}']*80 for d in range(1,9)),[]),dtype=object);r=np.tile(np.linspace(-1,1,80),8);y=.012*r;bad=_gate_rec('BAD',y,np.zeros(len(y)),days,1);good=_gate_rec('GOOD',y,.010*r,days,1)
-    if bad['preblindMagnitudeAdmissible'] is not False or good['preblindAdmissible'] is not True:raise RuntimeError('gate-aligned point selection selftest failed')
-    if (_gate_rank_one_se(y,r,1) or {}).get('sealedLabelsUsed')!=0:raise RuntimeError('gate-aligned one-SE selftest failed')
-_gate_selftest()
+
+def _v2_selftest():
+    s=np.asarray([.1,.2,.3,.4,1.,2.,3.,4.],float);d=np.asarray(['A']*4+['B']*4,dtype=object);r=_xsec_rank_signal(s,d)
+    if abs(float(np.mean(r[d=='A'])))>1e-12 or abs(float(np.mean(r[d=='B'])))>1e-12:raise RuntimeError('V2 rank-only zero-center regression')
+    perm=np.asarray([3,1,0,2,7,4,6,5]);rp=_xsec_rank_signal(s[perm],d[perm]);back=np.empty_like(rp);back[perm]=rp
+    if not np.allclose(r,back):raise RuntimeError('V2 rank-only row-order regression')
+_v2_selftest()
