@@ -10,4 +10,6 @@ H5 sole-expert ablation: NO_EXPERT_PRESEALED_NULL fit on 80%-85%, conformed on 8
 No authority threshold lowering; no sealed selection; no forecast-value tuning in the contract fix
 Benchmark contract: exact-maturity VNINDEX + adjacent-CAR daily AR; frozen source fail-closed
 Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0
-Release requirement: all research/auxiliary gates + provider-outage browser smoke + commit-pinned CDN integrity must PASS
+Release CI fix: replace Playwright --with-deps OS provisioning with bounded Chromium-only install plus real launch precheck; all provider-outage/CDN/browser assertions retained
+Release workflow fix commit: 6bbada41547ee93470209bf216f792fd7653cddc
+Release requirement: all research/auxiliary gates + provider-outage browser smoke + commit-pinned CDN integrity + desktop/mobile browser smoke must PASS
