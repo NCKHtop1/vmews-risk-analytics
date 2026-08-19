@@ -1,6 +1,7 @@
 # Exact-head dispatch marker for the fit-locked V12 final candidate.
 # No runtime logic. Parent tree contains immutable-source-only runtime, exact-maturity OOF with
 # robust L1 family, fit-locked monotone tail-rank point shape/scale selected only on 80-85%,
+# scale selection requiring positive moving-origin-date block-bootstrap lower-90 MAE evidence,
 # independent early-85-90 whole-date validation, late-preblind conformal-only calibration,
 # deterministic five-horizon assembly including benchmarkAlignment.byHorizon, factual entity/
 # rumor audit restoration, venue-aware source acceptance, explicit sparse-regime abstention,
