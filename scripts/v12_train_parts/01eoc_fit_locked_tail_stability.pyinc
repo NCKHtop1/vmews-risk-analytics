@@ -1,0 +1,129 @@
+# Stability-regularised extension of the final fit-locked tail-rank selector.
+#
+# Why this exists:
+#   * 01eob correctly keeps all point-shape/scale fitting inside maturity-purged 80-85%,
+#     confirms the locked point model on independent early whole-date 85-90%, keeps late 85-90%
+#     conformal-only, and never supplies 90-100% labels to selection.
+#   * In the observed 80-85% fit audit, the one-SE rule repeatedly preferred p=1 merely because
+#     it treated a lower tail exponent as the simpler model. For sign(rank)*abs(rank)^p that
+#     interpretation is backwards: larger p SHRINKS the noisy middle ranks more aggressively
+#     toward zero and concentrates magnitude in the high-confidence tails. It is therefore a
+#     regularisation parameter, not added model degrees of freedom.
+#
+# This layer preserves every chronology/gate contract and changes only the 80-85% family rule:
+#   1) extend the small prespecified monotone concentration grid only after the previous optimum
+#      repeatedly sat at the p=3 search boundary: p in {1,1.5,2,3,4,6};
+#   2) retain only candidates inside the pooled-MAE one-standard-error admissible set;
+#   3) among that statistically indistinguishable set, select the candidate with the strongest
+#      moving-origin-date-block lower-90 MAE edge, then mean daily edge / positive-date share;
+#   4) independent early 85-90 confirmation in 01eob is STILL mandatory before release;
+#   5) unchanged authority magnitude, walk-forward, blind-holdout and final promotion gates apply.
+#
+# No sealed labels are read here. This file is intentionally later than 01eob so the production
+# calibrate() defined there resolves this strengthened _fitlock_family() dynamically.
+
+_FITLOCK_CORE_POWERS=(1.0,1.5,2.0,3.0)
+_FITLOCK_POWERS=_FITLOCK_CORE_POWERS+(4.0,6.0)
+
+
+def _fitlock_daily_lcb(fit):
+    d=(fit or {}).get('fitDailyMAEEdge') or {}
+    ci=d.get('bootstrap90') or [None,None]
+    lo=ci[0] if len(ci) else None
+    if isinstance(lo,(int,float)) and math.isfinite(float(lo)):
+        return float(lo)
+    return -float('inf')
+
+
+def _fitlock_stability_key(row):
+    """Higher is better; every quantity is computed only on the maturity-purged 80-85% fit block."""
+    f=(row or {}).get('fit') or {};d=f.get('fitDailyMAEEdge') or {}
+    return (
+        _fitlock_daily_lcb(f),
+        float(d.get('mean',-float('inf'))),
+        float(d.get('positiveDayShare',0.0)),
+        -float(f.get('fitMAE',float('inf'))),
+        float(row.get('power',0.0)),
+    )
+
+
+def _fitlock_family(y,score,dates,h):
+    rows=[]
+    for power in _FITLOCK_POWERS:
+        sig=_fitlock_tail_signal(score,dates,power);fit=_fitlock_scale(y,sig,dates,h)
+        if not fit or fit.get('status')!='PASS':
+            rows.append({'power':float(power),'fit':fit,'eligible':False});continue
+        rows.append({'power':float(power),'fit':fit,'eligible':True})
+    eligible=[z for z in rows if z.get('eligible')]
+    if not eligible:
+        return None,{
+            'status':'ABSTAIN',
+            'reason':'no prespecified monotone tail-rank concentration has an L1-admissible robust magnitude scale',
+            'powers':rows,'sealedLabelsUsed':0,
+            'selectionObjective':'FIT_80_85_ONE_SE_THEN_ORIGIN_DATE_BLOCK_LOWER90',
+        }
+
+    # Pooled row MAE defines the one-SE admissible family only. Inside that statistically
+    # indistinguishable set, chronology is the primary regulariser: prefer the candidate whose
+    # daily MAE edge has the strongest moving-block lower confidence bound. This directly targets
+    # temporal robustness without looking at 85-90 or the sealed 90-100 block.
+    best=min(eligible,key=lambda z:(z['fit']['fitMAE'],z['power']))
+    limit=float(best['fit']['fitMAE']+max(best['fit']['fitMAESE'],1e-12))
+    near=[z for z in eligible if z['fit']['fitMAE']<=limit]
+    chosen=max(near,key=_fitlock_stability_key)
+
+    model={
+        'kind':'FIT_LOCKED_TAIL_RANK',
+        'power':float(chosen['power']),
+        'residualScale':float(chosen['fit']['scale']),
+        'fitAudit':chosen['fit'],
+        'familySelection':'ONE_SE_POOLED_MAE_THEN_MOVING_ORIGIN_DATE_LOWER90',
+    }
+    return model,{
+        'status':'PASS',
+        'selectionBlock':'80-85% ONLY',
+        'selectedPower':float(chosen['power']),
+        'selectedScale':float(chosen['fit']['scale']),
+        'selectedDailyLower90':_fitlock_daily_lcb(chosen['fit']),
+        'selectedDailyMeanEdge':float((chosen['fit'].get('fitDailyMAEEdge') or {}).get('mean',0.0)),
+        'selectedPositiveDayShare':float((chosen['fit'].get('fitDailyMAEEdge') or {}).get('positiveDayShare',0.0)),
+        'bestFitPower':float(best['power']),
+        'bestFitMAE':float(best['fit']['fitMAE']),
+        'familyOneSELimit':limit,
+        'oneSECandidatePowers':[float(z['power']) for z in near],
+        'eligiblePowers':int(len(eligible)),
+        'candidatePowers':[float(x) for x in _FITLOCK_POWERS],
+        'powers':rows,
+        'selectionObjective':'FIT_80_85_ONE_SE_THEN_ORIGIN_DATE_BLOCK_LOWER90',
+        'regularisationInterpretation':'larger tail power shrinks middle ranks more strongly toward zero; it is tail concentration, not extra model degrees of freedom',
+        'searchBoundaryRationale':'p=3 was the prior upper boundary; extension to p=4,6 tests stronger middle-rank shrinkage while preserving the same one-dimensional monotone family',
+        'sealedLabelsUsed':0,
+    }
+
+
+_fitlock_stability_before_calibrate=calibrate
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_fitlock_stability_before_calibrate(
+        cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates
+    )
+    if isinstance(layer,_QuantileLayer):
+        audit=getattr(layer,'pointSelectionAudit',None)
+        if isinstance(audit,dict) and audit.get('method')=='CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1':
+            audit['revision']='FIT_LOCKED_TAIL_RANK_DATE_STABILITY_V5'
+            audit['fitFamilySelection']='ONE_SE_POOLED_MAE_THEN_MOVING_ORIGIN_DATE_LOWER90'
+            audit['fitCandidatePowers']=[float(x) for x in _FITLOCK_POWERS]
+            audit['tailPowerInterpretation']='higher p is stronger shrinkage of middle ranks, while preserving monotone same-origin ordering'
+            audit['independentValidationStillSelectionFree']=True
+            audit['sealedLabelsUsed']=0
+    return layer,iso,qadj
+
+
+# Cheap deterministic guard: the stability key must prefer stronger date evidence even when the
+# pooled fit MAE difference is tiny; this test does not fit on any research labels.
+_fitlock_mock_a={'power':1.0,'fit':{'fitMAE':0.01000,'fitDailyMAEEdge':{'bootstrap90':[-0.00002,0.00005],'mean':0.00001,'positiveDayShare':0.55}}}
+_fitlock_mock_b={'power':3.0,'fit':{'fitMAE':0.01001,'fitDailyMAEEdge':{'bootstrap90':[0.00001,0.00006],'mean':0.00002,'positiveDayShare':0.70}}}
+if not (_fitlock_stability_key(_fitlock_mock_b)>_fitlock_stability_key(_fitlock_mock_a)):
+    raise RuntimeError('fit-locked tail stability selector regression failed')
+del _fitlock_mock_a,_fitlock_mock_b
