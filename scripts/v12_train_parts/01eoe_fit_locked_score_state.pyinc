@@ -1,0 +1,169 @@
+# PIT score-state challenger for the final fit-locked tail-rank point model.
+#
+# Motivation from PRE-BLIND diagnostics only:
+#   The V6 selector can occasionally retain Q50 when a fit-locked tail-rank challenger has
+#   positive whole-date MAE evidence on independent early 85-90% but misses the unchanged
+#   dispersion floor by a small amount. Raising a constant scale is not justified when the
+#   80-85% L1 optimum prefers a smaller scale. Instead, allow the magnitude of the zero-mean
+#   cross-sectional tail signal to adapt to a label-free state observed at the same origin T0.
+#
+# State proxy:
+#   robust same-origin dispersion of the RAW meta score (IQR). This is available when forecasts
+#   are made, requires no future price/label, and does not create a market-direction bet. The
+#   already zero-centred tail-rank vector is multiplied by one scalar per origin date, preserving
+#   exact same-origin zero mean. The scalar is normalized by the median score dispersion measured
+#   only on the 80-85% fit block and robustly clipped.
+#
+# Governance:
+#   * V6 remains authoritative when it already confirms a tail-rank point model.
+#   * This challenger runs only when V6 abstains to Q50.
+#   * power, state exponent gamma, reference dispersion and return scale are selected on 80-85%.
+#   * gamma is a small prespecified grid {0,.5,1}; gamma=0 is the non-adaptive control.
+#   * early whole-date 85-90% remains independent pass/fail validation and never tunes parameters.
+#   * late 85-90% remains conformal-only; 90-100% is never supplied to this selector.
+#   * all existing magnitude, walk-forward, blind-holdout and promotion gates remain unchanged.
+
+_FITLOCK_STATE_GAMMAS=(0.0,0.5,1.0)
+_FITLOCK_STATE_CLIP=(0.75,1.35)
+
+
+def _fitlock_score_dispersion(score,dates):
+    s=np.asarray(score,float);d=np.asarray(dates,dtype=object).astype(str);out=np.full(len(s),np.nan,float);daily=[]
+    for day in sorted(set(d)):
+        idx=np.where(d==day)[0];z=s[idx];z=z[np.isfinite(z)]
+        if len(z)>=20:
+            q25,q75=np.quantile(z,[.25,.75]);v=float(max(q75-q25,1e-12));daily.append(v);out[idx]=v
+    return out,np.asarray(daily,float)
+
+
+def _fitlock_state_signal(score,dates,power,gamma,reference=None):
+    base=_fitlock_tail_signal(score,dates,power);disp,daily=_fitlock_score_dispersion(score,dates)
+    if reference is None:
+        finite=daily[np.isfinite(daily)&(daily>1e-12)]
+        reference=float(np.median(finite)) if len(finite) else 1.0
+    reference=float(max(reference,1e-12));ratio=np.where(np.isfinite(disp),disp/reference,1.0)
+    ratio=np.clip(ratio,float(_FITLOCK_STATE_CLIP[0]),float(_FITLOCK_STATE_CLIP[1]))
+    mult=np.power(ratio,float(gamma));sig=np.asarray(base,float)*mult
+    # Multiplying every member of one origin date by the same state scalar preserves zero mean.
+    dd=np.asarray(dates,dtype=object).astype(str)
+    for day in sorted(set(dd)):
+        idx=np.where(dd==day)[0]
+        if len(idx) and abs(float(np.mean(sig[idx])))>1e-10:
+            sig[idx]-=float(np.mean(sig[idx]))
+    return np.asarray(sig,float),reference,{
+        'referenceScoreIQR':reference,
+        'gamma':float(gamma),
+        'clip':[float(_FITLOCK_STATE_CLIP[0]),float(_FITLOCK_STATE_CLIP[1])],
+        'originDatesWithDispersion':int(len(daily)),
+        'medianObservedScoreIQR':float(np.median(daily)) if len(daily) else None,
+        'labelFreeAtOrigin':True,
+    }
+
+
+def _fitlock_state_key(row):
+    f=(row or {}).get('fit') or {};daily=f.get('fitDailyMAEEdge') or {};ci=daily.get('bootstrap90') or [None,None]
+    lo=ci[0] if len(ci) and isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -float('inf')
+    # Prefer temporal lower-bound evidence. For indistinguishable evidence, prefer less state
+    # adaptation (smaller gamma), then the stronger tail concentration already justified in V5.
+    return (
+        float(lo),float(daily.get('mean',-float('inf'))),float(daily.get('positiveDayShare',0.0)),
+        -float(f.get('fitMAE',float('inf'))),-float(row.get('gamma',0.0)),float(row.get('power',0.0))
+    )
+
+
+def _fitlock_state_family(y,score,dates,h):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object)
+    _,daily=_fitlock_score_dispersion(ss,dd);finite=daily[np.isfinite(daily)&(daily>1e-12)]
+    if len(finite)<4:
+        return None,{'status':'ABSTAIN','reason':'too few origin dates with finite raw-score dispersion','sealedLabelsUsed':0}
+    reference=float(np.median(finite));rows=[]
+    for gamma in _FITLOCK_STATE_GAMMAS:
+        for power in _FITLOCK_POWERS:
+            sig,_,state=_fitlock_state_signal(ss,dd,power,gamma,reference)
+            fit=_fitlock_scale(yy,sig,dd,h)
+            ok=bool(fit and fit.get('status')=='PASS')
+            rows.append({'power':float(power),'gamma':float(gamma),'state':state,'fit':fit,'eligible':ok})
+    eligible=[z for z in rows if z.get('eligible')]
+    if not eligible:
+        return None,{'status':'ABSTAIN','reason':'no state-normalized tail candidate has an L1-admissible robust magnitude scale','candidates':rows,'sealedLabelsUsed':0}
+    best=min(eligible,key=lambda z:(float(z['fit']['fitMAE']),float(z['gamma']),float(z['power'])))
+    limit=float(best['fit']['fitMAE']+max(best['fit']['fitMAESE'],1e-12));near=[z for z in eligible if float(z['fit']['fitMAE'])<=limit]
+    chosen=max(near,key=_fitlock_state_key)
+    model={
+        'kind':'FIT_LOCKED_TAIL_RANK_SCORE_STATE','power':float(chosen['power']),
+        'regimeGamma':float(chosen['gamma']),'scoreDispersionReference':reference,
+        'stateClip':[float(_FITLOCK_STATE_CLIP[0]),float(_FITLOCK_STATE_CLIP[1])],
+        'residualScale':float(chosen['fit']['scale']),'fitAudit':chosen['fit'],'stateAudit':chosen['state'],
+    }
+    return model,{
+        'status':'PASS','selectionBlock':'80-85% ONLY','selectedPower':float(chosen['power']),
+        'selectedGamma':float(chosen['gamma']),'selectedScale':float(chosen['fit']['scale']),
+        'scoreDispersionReference':reference,'bestFitMAE':float(best['fit']['fitMAE']),
+        'bestFitPower':float(best['power']),'bestFitGamma':float(best['gamma']),'familyOneSELimit':limit,
+        'oneSECandidates':int(len(near)),'eligibleCandidates':int(len(eligible)),'candidates':rows,
+        'selectionObjective':'FIT_80_85_ONE_SE_THEN_MOVING_ORIGIN_DATE_MAE_STABILITY',
+        'stateVariable':'SAME_ORIGIN_RAW_META_SCORE_IQR','stateLabelsUsed':0,'sealedLabelsUsed':0,
+    }
+
+
+_fitlock_state_before_calibrate=calibrate
+_fitlock_state_before_apply=apply_calibration
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_fitlock_state_before_calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates)
+    if cal_dates is None or conform_dates is None or not isinstance(layer,_QuantileLayer):return layer,iso,qadj
+    audit=getattr(layer,'pointSelectionAudit',None)
+    if not isinstance(audit,dict):return layer,iso,qadj
+    # Never replace an already independently confirmed V6 point model.
+    if str(audit.get('selectedFamily'))!='Q50':
+        audit['scoreStateChallenger']={'status':'NOT_INVOKED','reason':'V6 point family already independently confirmed','sealedLabelsUsed':0}
+        return layer,iso,qadj
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object)
+    cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
+    sp=_chrono_date_split(fd,cd)
+    if sp is None:return layer,iso,qadj
+    h=_gate_h();iv=sp['validationIndex'];model,fit_audit=_fitlock_state_family(fy,fs,fd,h)
+    validation=None
+    if model is not None and len(iv):
+        loV,_,hiV=layer.predict(cs[iv]);g=float(getattr(layer,'returnShrink',1.0));loV=np.asarray(loV,float)*g;hiV=np.asarray(hiV,float)*g
+        sigV,_,stateV=_fitlock_state_signal(cs[iv],cd[iv],model['power'],model['regimeGamma'],model['scoreDispersionReference'])
+        predV=_clip_between(float(model['residualScale'])*sigV,loV,hiV)
+        validation=_nested_eval(cy[iv],predV,cd[iv],h,bootstrap=True);validation['scoreStateAudit']=stateV
+        if validation.get('preblindConfirmed') is True:
+            layer.pointMode='XSEC_TAIL_RANK_SCORE_STATE_FIT_LOCKED';layer.pointXsecModel=model
+            audit['selectedFamily']='XSEC_TAIL_RANK_SCORE_STATE_FIT_LOCKED';audit['selectedPreblindConfirmed']=True
+            audit['familyFitAudit']=fit_audit;audit['lockedModel']=model;audit['independentValidationAudit']=validation
+            audit['reason']='V6 abstained; a label-free same-origin raw-score-dispersion challenger was fit/locked on 80-85% and independently passed unchanged whole-date 85-90% MAE plus magnitude gates'
+    audit['scoreStateChallenger']={
+        'status':'PASS' if validation and validation.get('preblindConfirmed') is True else 'REJECTED_PREBLIND',
+        'fitAudit':fit_audit,'independentValidationAudit':validation,
+        'selectionData':'80-85% ONLY','validationData':'EARLY WHOLE-DATE 85-90% ONLY',
+        'stateVariable':'SAME_ORIGIN_RAW_META_SCORE_IQR','futureLabelRequirement':False,'sealedLabelsUsed':0,
+    }
+    audit['revision']='FIT_LOCKED_TAIL_RANK_SCORE_STATE_V7';audit['sealedLabelsUsed']=0
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode=='XSEC_TAIL_RANK_SCORE_STATE_FIT_LOCKED':
+        if origin_dates is None:return _fitlock_state_before_apply(score,scen,iso,qadj,origin_dates)
+        ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(ss),float)
+        lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+        model=getattr(scen,'pointXsecModel',None) or {}
+        sig,_,_=_fitlock_state_signal(ss,dd,float(model.get('power',1.0)),float(model.get('regimeGamma',0.0)),float(model.get('scoreDispersionReference',1.0)))
+        point=_clip_between(float(model.get('residualScale',0.0))*sig,lo,hi)
+        return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
+    return _fitlock_state_before_apply(score,scen,iso,qadj,origin_dates)
+
+
+# Deterministic structural test: a same-day multiplier must preserve exact cross-sectional zero
+# mean and gamma=0 must reduce to the existing V6 tail signal.
+_v7_days=np.asarray(['A']*40+['B']*40,dtype=object);_v7_score=np.r_[np.linspace(-1,1,40),np.linspace(-2,2,40)]
+_v7_base=_fitlock_tail_signal(_v7_score,_v7_days,3.0);_v7_sig,_v7_ref,_v7_audit=_fitlock_state_signal(_v7_score,_v7_days,3.0,0.0,None)
+if float(np.max(np.abs(_v7_base-_v7_sig)))>1e-10:raise RuntimeError('score-state gamma=0 control must equal V6 tail signal')
+for _v7_day in ('A','B'):
+    _v7_i=np.where(_v7_days==_v7_day)[0]
+    if abs(float(np.mean(_v7_sig[_v7_i])))>1e-10:raise RuntimeError('score-state tail signal must remain zero mean by origin date')
+del _v7_days,_v7_score,_v7_base,_v7_sig,_v7_ref,_v7_audit,_v7_day,_v7_i
