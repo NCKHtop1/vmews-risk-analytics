@@ -1,0 +1,19 @@
+# Restore the robust conditional-median expert family under the final exact-maturity OOF wrapper.
+# 01.py defines LGBM_L1/HGB_L1, but 01z's later maturity-aware expert_oof override accidentally
+# narrowed the admissible family back to RIDGE/LGBM. This final override restores LGBM_L1 while
+# retaining the exact same 50-70% model-kind lock, symbol-specific label-maturity purge and 80%
+# prediction lock. No sealed or calibration label is used for model-family selection.
+
+def expert_oof(X,y,D,dates,h,idx_by_expert):
+    result={};selection={};Maturity=label_maturity_array(h);n=len(dates);kind_lock_date=dates[int(.70*n)];prediction_lock_date=dates[int(.80*n)];kind_lock=np.isfinite(y)&(Maturity<kind_lock_date)&(D<kind_lock_date);prediction_lock=np.isfinite(y)&(Maturity<prediction_lock_date)&(D<prediction_lock_date)
+    for name,fi in idx_by_expert.items():
+        best=None;best_pred=None
+        for kind in ('RIDGE','LGBM','LGBM_L1'):
+            pred=np.full(len(y),np.nan)
+            for fold in OOF_FOLDS:
+                ii,pp,_=fit_predict(X,y,D,dates,fi,fold,h,kind);pred[ii]=pp
+            mask=np.isfinite(pred)&kind_lock;m=reg_metrics(y[mask],pred[mask],D[mask]);row={'kind':kind,**m,'objective':m['ic']+.12*m['maeImprove']+.10*m['spread'],'selectionLockDate':str(kind_lock_date),'predictionAvailabilityEndExclusive':str(prediction_lock_date),'selectionWindow':'OOF origins 50%-70% only; labels must mature before 70% lock','incrementalOOSReserved':'70%-80% origins are excluded from Ridge/LightGBM/L1 kind selection','labelMaturityPurged':True,'selectionRows':int(mask.sum())}
+            if best is None or row['objective']>best['objective']:best=row;best_pred=np.array(pred,copy=True)
+        best_pred[~prediction_lock]=np.nan;result[name]=best_pred;selection[name]=best
+    OOF_CAPTURE[int(h)]={'predictions':{k:np.array(v,copy=True) for k,v in result.items()},'selection':selection,'kindSelectionLockDate':str(kind_lock_date),'predictionAvailabilityEndExclusive':str(prediction_lock_date),'purgeMethod':'LABEL_MATURITY_DATE','nestedSelectionPolicy':'Model kind RIDGE/LGBM/LGBM_L1 is selected only on 50%-70% chronological OOF with exact label maturity. Optional-expert incremental OOS remains reserved for 70%-80% and cannot influence model-kind choice.'}
+    return result,selection
