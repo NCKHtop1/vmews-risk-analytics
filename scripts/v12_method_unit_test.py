@@ -26,13 +26,11 @@ saudit=getattr(layer,'shrinkSelectionAudit',{}) or {};assert saudit.get('gridMin
 ysh=rng.normal(scale=.012,size=1200);msh=2.0*ysh+rng.normal(scale=.002,size=1200);g,gn,ga=ns['_select_return_shrink'](ysh,msh)
 assert gn==1200 and .05<=g<.8,(g,ga)
 assert ga['selectedMAE']<ga['baseMAE'],ga
-# Regression for the former .25 binding floor: strong over-magnification must be able to
-# select a strictly-positive shrink below .25 using only synthetic/pre-blind rows.
 ysh2=rng.normal(scale=.012,size=1200);msh2=8.0*ysh2+rng.normal(scale=.002,size=1200);g2,gn2,ga2=ns['_select_return_shrink'](ysh2,msh2)
 assert gn2==1200 and .05<=g2<.25,(g2,ga2)
 assert ga2['selectedMAE']<ga2['baseMAE'] and ga2['gridMin']==.05 and ga2['gridN']==39,ga2
 
-# Exact maturity purge: panel origins can be sampled every 5 sessions, but labels are purged by their real maturity date, never by origin ordinal distance.
+# Exact maturity purge: labels are admitted by real symbol-specific maturity date.
 dates=np.asarray([f'2025-{1+(i//28):02d}-{1+(i%28):02d}' for i in range(196)],dtype=object)
 D=np.repeat(dates,3)
 def mature_for_h(h):
@@ -57,15 +55,29 @@ dates3=np.asarray([f'{2020+i//240:04d}-{1+(i//20)%12:02d}-{1+i%20:02d}' for i in
 D3=np.repeat(dates3,25);latent=rng.normal(size=len(D3));y3=.03*latent+rng.normal(scale=.03,size=len(D3));ep={'NUMERICAL':latent+rng.normal(scale=.7,size=len(D3)),'REGIME':.4*latent+rng.normal(size=len(D3)),'EVENT':rng.normal(size=len(D3)),'FLOW':rng.normal(size=len(D3)),'FUNDAMENTAL_EVENT':rng.normal(size=len(D3)),'RUMOR':rng.normal(size=len(D3))};pbo=ns['_pbo_metric'](ep,y3,D3,['NUMERICAL','REGIME']);assert pbo['splits']>=30 and pbo['candidateCount']==3 and 0<=pbo['pbo']<=1,pbo
 assert pbo['candidatePolicy']=='ADMISSIBLE_SELECTION_PATH' and set(pbo['rejectedOptionalExcluded'])=={'EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR'},pbo
 
-# Current-route availability is explicitly separate from >=520-row model eligibility.
+# Current-route availability is explicitly separate from >=520-row model eligibility and is
+# certified from the immutable frozen source only. Runtime provider/network fallback is forbidden.
 assert callable(ns.get('_probe_current_short_route'))
 source=pathlib.Path(ROOT/'v12_train_parts'/'00c_universe.pyinc').read_text(encoding='utf-8')
-for token in ('currentTrainingEligible','currentRoutePassed','currentShortHistoryRoutePassed','trainingEligible'):
+for token in ('currentTrainingEligible','currentRoutePassed','currentShortHistoryRoutePassed','trainingEligible','currentCoverage','FROZEN_CURRENT_SOURCE_PROBE','runtimeNetworkRouteProbe'):
     assert token in source,token
-assert 'len(rows)>=60' in source and 'currentCoverage' in source
+assert 'rows>=60' in source
+assert 'VNSTOCK_CURRENT_SHORT_HISTORY' not in source and 'CACHE_CURRENT_SHORT_HISTORY' not in source
+probe=ns['_probe_current_short_route'];old_frozen_probe=ns['frozen_source_probe']
+try:
+    ns['frozen_source_probe']=lambda symbol:{'rows':80,'start':'2026-05-01','end':'2026-08-14','routeAvailable':True,'minimumTrainingRows':520,'provider':'FROZEN','route':'IMMUTABLE_FROZEN_SNAPSHOT','sha256':'a'*64,'snapshotAsOf':'2026-08-18','ineligibleReasons':['short_for_training']}
+    q=probe('NEW','2026-08-18');assert q['routeAvailable'] and q['route']=='FROZEN_CURRENT_SOURCE_PROBE' and not q['trainingEligible'] and q['rows']==80,q
+    ns['frozen_source_probe']=lambda symbol:{'rows':59,'start':'2026-07-01','end':'2026-08-14','routeAvailable':True,'minimumTrainingRows':520,'provider':'FROZEN','route':'IMMUTABLE_FROZEN_SNAPSHOT','sha256':'b'*64,'snapshotAsOf':'2026-08-18','ineligibleReasons':['short_for_route']}
+    q2=probe('SHORT','2026-08-18');assert not q2['routeAvailable'] and q2['reason']=='frozen_history_too_short_or_stale',q2
+    ns['frozen_source_probe']=lambda symbol:{'rows':80,'start':'2026-01-01','end':'2026-06-01','routeAvailable':True,'minimumTrainingRows':520,'provider':'FROZEN','route':'IMMUTABLE_FROZEN_SNAPSHOT','sha256':'c'*64,'snapshotAsOf':'2026-08-18','ineligibleReasons':['stale']}
+    q3=probe('STALE','2026-08-18');assert not q3['routeAvailable'] and q3['reason']=='frozen_history_too_short_or_stale',q3
+    def _fail_frozen(symbol):raise RuntimeError('forced frozen probe failure')
+    ns['frozen_source_probe']=_fail_frozen
+    q4=probe('MISS','2026-08-18');assert not q4['routeAvailable'] and q4['attempts'][0]['stage']=='FROZEN_CURRENT_ROUTE_PROBE' and 'RuntimeError' in q4['attempts'][0]['error'],q4
+finally:
+    ns['frozen_source_probe']=old_frozen_probe
 
-# Current sector taxonomy is descriptive-only. Historical numerical event features must be invariant
-# to the current taxonomy, while the current reference builder may enrich coverage from VCI.
+# Current sector taxonomy is descriptive-only; historical numerical event features are invariant.
 sector_rows=[
     {'symbol':'AAA','icb_level':1,'icb_name':'Industrials'},
     {'symbol':'AAA','icb_level':2,'icb_name':'Capital Goods'},
@@ -95,38 +107,7 @@ sa=ns['EvidenceFeatureStore'](arts,outcomes,{'AAA':'TECH'});sb=ns['EvidenceFeatu
 assert sa.sector_map=={} and sb.sector_map=={} and sa.current_reference_sector_map['AAA']=='TECH' and sb.current_reference_sector_map['AAA']=='BANK'
 fa=sa.features('AAA',edates[20]);fb=sb.features('AAA',edates[20]);keys=ns['EVENT_FEATURES']+ns['RUMOR_FEATURES'];assert all(abs(float(fa[k])-float(fb[k]))<1e-15 for k in keys),(fa,fb)
 
-# Exercise VNStock short-history, provider quota SystemExit, and cached-history fallback.
-# A provider-level sys.exit must become route evidence, never terminate the training process.
-ds=ns['_v12ds'];probe=ns['_probe_current_short_route'];old_norm=ds._normalize_df;old_throttle=ds._throttle_vnstock;old_yahoo=ds.yahoo_history;old_cached=ds.cached_history
-old_vnstock=sys.modules.get('vnstock');old_vnstock_ui=sys.modules.get('vnstock.ui')
-rows80=[{'date':'2026-08-14','open':10000.0,'high':10000.0,'low':10000.0,'close':10000.0,'volume':1.0} for _ in range(80)]
-class _FakeMarket:
-    def equity(self,symbol):return self
-    def ohlcv(self,**kwargs):return object()
-fake_pkg=types.ModuleType('vnstock');fake_ui=types.ModuleType('vnstock.ui');fake_ui.Market=_FakeMarket;fake_pkg.ui=fake_ui
-sys.modules['vnstock']=fake_pkg;sys.modules['vnstock.ui']=fake_ui
-try:
-    ds._throttle_vnstock=lambda:None
-    ds._normalize_df=lambda df,symbol,provider:(list(rows80),1.0)
-    q=probe('NEW','2026-08-14');assert q['routeAvailable'] and q['route']=='VNSTOCK_CURRENT_SHORT_HISTORY' and not q['trainingEligible'],q
-    class _QuotaExitMarket:
-        def __init__(self):raise SystemExit('forced provider quota termination')
-    fake_ui.Market=_QuotaExitMarket
-    def _fail_yahoo(symbol):raise RuntimeError('forced Yahoo probe failure')
-    ds.yahoo_history=_fail_yahoo;ds.cached_history=lambda symbol:(list(rows80),{'provider':'mock-cache'})
-    q2=probe('NEW','2026-08-14');assert q2['routeAvailable'] and q2['route']=='CACHE_CURRENT_SHORT_HISTORY' and not q2['trainingEligible'],q2
-    assert q2['attempts'][0]['stage']=='VNSTOCK_CURRENT_ROUTE_PROBE' and 'SystemExit' in q2['attempts'][0]['error'],q2
-finally:
-    ds._normalize_df=old_norm;ds._throttle_vnstock=old_throttle;ds.yahoo_history=old_yahoo;ds.cached_history=old_cached
-    if old_vnstock is None:sys.modules.pop('vnstock',None)
-    else:sys.modules['vnstock']=old_vnstock
-    if old_vnstock_ui is None:sys.modules.pop('vnstock.ui',None)
-    else:sys.modules['vnstock.ui']=old_vnstock_ui
-
 # Rumor claim functions must distinguish similar claims and denial/confirmation state.
 a=ns['_claim_tokens']('FPT tin đồn mua lại công ty ABC');b=ns['_claim_tokens']('FPT được cho là mua lại ABC');c=ns['_claim_tokens']('VCB tăng lãi suất tiền gửi');assert ns['_claim_sim'](a,b)>ns['_claim_sim'](a,c);assert ns['_truth_label']('Công ty chính thức xác nhận thương vụ')=='CONFIRMED';assert ns['_truth_label']('Doanh nghiệp phủ nhận tin đồn')=='DENIED'
 
-# Final-fast provenance marker only; no model/test logic change.
-# Exact-head dispatch marker after one-SE pre-blind shrink fast PASS; no model/test logic change.
-# Exact-head dispatch marker after embargo zero-counter regression fast PASS; no model/test logic change.
-print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','sectorPITIsolation':'PASS','shortRouteRuntime':'PASS','providerSystemExitFallback':'PASS','preblindShrinkFloorRegression':'PASS'})
+print('V12 METHOD RUNTIME UNIT PASS',{'parts':len(parts),'quantile':getattr(layer,'method',None),'returnShrink':float(layer.returnShrink),'qadj':float(qadj),'maturityPurge':'PASS','incrementalIC':inc,'pboSplits':pbo['splits'],'pbo':pbo['pbo'],'pboCandidates':pbo['candidateCount'],'routeEligibilityContract':'PASS','frozenCurrentRouteRuntime':'PASS','runtimeProviderSwitching':'FORBIDDEN','sectorPITIsolation':'PASS','preblindShrinkFloorRegression':'PASS'})
