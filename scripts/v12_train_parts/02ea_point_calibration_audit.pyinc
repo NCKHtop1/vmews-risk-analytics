@@ -1,34 +1,25 @@
-# Make the released point-return method explicit in the model artifact.  The scenario interval
-# remains q20/q80 + conformal calibration, while expectedReturn may be a pre-blind-selected
-# monotone/cross-sectional point family rather than q50 when that family wins the independent
-# validation slice.  This audit is part of the exact-head fast/full validation contract.
-_fit_horizon_before_point_audit = fit_horizon
+# Make the released point-return method explicit in the model artifact. Scenario intervals remain
+# pre-blind q20/q80 + conformal; the expected-return point map is independently selected pre-blind.
+_fit_horizon_before_point_audit=fit_horizon
 
 
 def fit_horizon(X,y,D,dates,h,idx_by_expert):
-    z=_fit_horizon_before_point_audit(X,y,D,dates,h,idx_by_expert)
-    layer=z.get('scenarioCalibration');audit=z.setdefault('distributionAudit',{})
-    mode=str(getattr(layer,'pointMode','Q50')) if layer is not None else 'Q50'
-    audit['pointMode']=mode
-    audit['pointSelectionAudit']=getattr(layer,'pointSelectionAudit',None) if layer is not None else None
-    if layer is not None and getattr(layer,'pointAffineModel',None) is not None:
-        audit['pointAffineModel']=getattr(layer,'pointAffineModel')
-        audit['pointDeadband']=float(getattr(layer,'pointDeadband',0.0))
-    if layer is not None and getattr(layer,'pointXsecModel',None) is not None:
-        audit['pointXsecModel']=getattr(layer,'pointXsecModel')
+    z=_fit_horizon_before_point_audit(X,y,D,dates,h,idx_by_expert);layer=z.get('scenarioCalibration');audit=z.setdefault('distributionAudit',{});mode=str(getattr(layer,'pointMode','Q50')) if layer is not None else 'Q50';audit['pointMode']=mode;audit['pointSelectionAudit']=getattr(layer,'pointSelectionAudit',None) if layer is not None else None
+    if layer is not None and getattr(layer,'pointAffineModel',None) is not None:audit['pointAffineModel']=getattr(layer,'pointAffineModel');audit['pointDeadband']=float(getattr(layer,'pointDeadband',0.0))
+    if layer is not None and getattr(layer,'pointXsecModel',None) is not None:audit['pointXsecModel']=getattr(layer,'pointXsecModel')
+    if layer is not None and getattr(layer,'pointRankOnlyModel',None) is not None:audit['pointRankOnlyModel']=getattr(layer,'pointRankOnlyModel')
     definitions={
       'Q50':'conditional q50 after strictly pre-blind scale calibration',
       'DIRECT_SCORE':'direct meta-return score after strictly pre-blind positive scale calibration',
       'BINNED_MONOTONE_MEDIAN':'pre-blind binned monotone conditional-median map of the direct return score',
-      'ROBUST_AFFINE_SCORE':'pre-blind robust positive-slope affine calibration of the direct return score, selected on a disjoint pre-blind validation slice',
-      'ROBUST_AFFINE_DEADBAND':'pre-blind robust positive-slope affine calibration with a monotone zero dead-band, selected on a disjoint pre-blind validation slice',
+      'ROBUST_AFFINE_SCORE':'pre-blind robust positive-slope affine calibration of the direct return score',
+      'ROBUST_AFFINE_DEADBAND':'pre-blind robust positive-slope affine calibration with a monotone zero dead-band',
       'ROBUST_ORIGIN_SCALE':'pre-blind zero-intercept positive scale of the direct return score',
       'ISOTONIC_CENTER_SCALE':'pre-blind positive scale anchored at the score where calibrated P(up)=50%',
       'ISOTONIC_CENTER_MAGNITUDE':'pre-blind magnitude-preserving positive scale anchored at calibrated P(up)=50%',
-      'XSEC_BASE_PLUS_RANK':'incumbent pre-blind point estimate plus a zero-median same-origin cross-sectional rank residual fitted and selected pre-blind',
-      'XSEC_MARKET_PLUS_RANK':'same-origin date-median market component plus zero-median cross-sectional rank residual, both fitted and selected strictly pre-blind'
+      'XSEC_BASE_PLUS_RANK':'pre-blind point estimate plus a zero-median same-origin cross-sectional rank residual',
+      'XSEC_MARKET_PLUS_RANK':'same-origin date-median market component plus zero-median cross-sectional rank residual',
+      'XSEC_RANK_ONLY':'same-origin zero-median cross-sectional rank point estimate with a positive scale selected by exact-maturity purged rolling-origin daily MAE evidence; no market-drift intercept'
     }
-    audit['expectedReturnDefinition']=definitions.get(mode,'pre-blind selected monotone calibration of the direct return score')
-    audit['priceConversion']='raw close * exp(pre-blind calibrated expected log return)'
-    audit['pointSelectionSealedLabelsUsed']=0
+    audit['expectedReturnDefinition']=definitions.get(mode,'pre-blind selected monotone calibration of the direct return score');audit['priceConversion']='raw close * exp(pre-blind calibrated expected log return)';audit['pointSelectionSealedLabelsUsed']=0
     return z
