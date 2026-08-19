@@ -139,7 +139,11 @@ jobs:
         run: |
           npm init -y >/dev/null 2>&1
           npm install --silent playwright@1.55.0
-          npx playwright install --with-deps chromium >/dev/null
+          timeout 8m npx playwright install chromium >/dev/null
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage();await page.setContent('<title>V12 Chromium precheck</title>');if((await page.title())!=='V12 Chromium precheck')throw Error('chromium precheck title mismatch');await browser.close();console.log('CHROMIUM INSTALL + LAUNCH PRECHECK PASS')})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
       - name: Provider-outage local browser smoke
         shell: bash
         run: |
