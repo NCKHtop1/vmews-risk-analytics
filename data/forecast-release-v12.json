@@ -1,9 +1,9 @@
 {
-  "version": "VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.5.0",
-  "generatedAt": "2026-08-16T01:08:11.942252+00:00",
-  "sourceCommit": "66353edc10d9e90a4e127de227d61c084adaea21",
+  "version": "VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0",
+  "generatedAt": "2026-08-19T11:37:20.506603+00:00",
+  "sourceCommit": "04969c102fdb683859975d60968fdcc26c42e07c",
   "modelVersion": "VMEWS-FORECAST-12.0.0",
-  "asOf": "2026-08-14",
+  "asOf": "2026-08-18",
   "promotion": {
     "status": "PASS",
     "directPriceHorizons": [
@@ -15,19 +15,33 @@
     ],
     "directionHorizons": [
       1,
-      2,
-      3
+      2
     ],
     "exactTargetPrice": false,
     "calibratedScenarioPrice": true,
     "rule": "All five direct price horizons must pass positive-skill ranking + quantile scenario + CSCV/PBO + embargoed literal walk-forward generalization gates. Probability-up is rendered only when the independent positive-Brier direction gate also passes."
   },
+  "sourceContract": {
+    "mode": "IMMUTABLE_FROZEN_SNAPSHOT",
+    "status": "PASS",
+    "runtimeNetworkPriceFetch": false,
+    "runtimeProviderSwitching": false,
+    "snapshotFileSha256": "b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762",
+    "inputManifestSha256": "4f5dd3ca0f795d4f3340fa835660a0652945148ddf06c82d4d3643d753e19fa2",
+    "sourceManifestVersion": "VMEWS-FROZEN-SOURCE-MANIFEST-12.1.0",
+    "currentSourceCoverageRatio": 1.0,
+    "deepHistory": 377,
+    "modelEligible": 377,
+    "corporateActionVerifiedRatio": 1.0,
+    "corporateActionGateCohort": "CURRENT_HOSE_ORIGINAL_DEEP_HISTORY_BEFORE_CONTINUITY_TRUNCATION",
+    "crossSourceMADP95": 8.335845664713543e-06
+  },
   "phaseGateVersion": "VMEWS-PHASE-GATES-12.6.0",
   "benchmarkGate": {
-    "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.2.0",
+    "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.3.0",
     "benchmark": "VNINDEX",
     "status": "PASS",
-    "h5Coverage": 0.9915009621552278
+    "h5Coverage": 0.9849462365591398
   },
   "activeFlowGate": {
     "version": "VMEWS-ACTIVE-FLOW-GATE-12.0.0",
@@ -40,7 +54,7 @@
     "mode": "ABSTAIN"
   },
   "nestedSelectionGate": {
-    "version": "VMEWS-NESTED-SELECTION-GATE-12.0.0",
+    "version": "VMEWS-NESTED-SELECTION-GATE-12.1.0",
     "status": "PASS"
   },
   "blindHoldoutGate": {
@@ -57,36 +71,52 @@
       "bytes": 16618
     },
     "forecast-final-v12.js": {
-      "sha256": "034856c2e791f21c08d4469a00e2d8f6ccc9ff04d4d03f1861aa46e245b6a320",
-      "bytes": 20305
+      "sha256": "e918e8fa558b21b9f138dea3854d925983b7b58c81d1085ad619a96b8ef4fd53",
+      "bytes": 20439
     },
     "forecast-polish-v12.js": {
-      "sha256": "193bedb03ba98c9f74766ac0fa039950b5e6a1e286d767a60b8e66d851a52b2b",
-      "bytes": 8635
+      "sha256": "781d7c128eb0a6674dc8720be34289b3b41e925152bcc18497093d542f11cc2c",
+      "bytes": 19228
+    },
+    "data/v12-frozen-source.json.gz": {
+      "sha256": "b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762",
+      "bytes": 11778404
+    },
+    "data/v12-frozen-source-manifest.json": {
+      "sha256": "0d55675331e93c3473ae31901e489b2ea7f2f7ed420c9ea9374de07942d7bc55",
+      "bytes": 150637
+    },
+    "data/v12-source-probe.json": {
+      "sha256": "7d561df0fd89e7eab906ca2cb893b601c643666b3eb61c7564ddf7ed78ff52a4",
+      "bytes": 20799
+    },
+    "data/vnindex-v12.json": {
+      "sha256": "b425fe991576b7126d0eedd9a751de54183ccff15c95b6ef9d799e0f83602382",
+      "bytes": 244494
     },
     "data/forecast-model-v12.json": {
-      "sha256": "e1ad4b75a8cf140f1b172d67dbe0d3d81a1d3bf469d0d14fc7459a32d9dfa78b",
-      "bytes": 181628
+      "sha256": "2b87991446b201dfed0e7a1294c066a460797344d6524ffbf70cee43f8327c88",
+      "bytes": 446753
     },
     "data/forecast-current-v12.json": {
-      "sha256": "673bbed7a03b30c9b329e54f142fa06f124a1228109bef17bebde32ffcfc6d00",
-      "bytes": 2170167
+      "sha256": "78194ae04a1e726d2ff92d716ee187facc6e0564db2c9e1c3a3570f2a004e29c",
+      "bytes": 2108167
     },
     "data/forecast-dashboard-v12.json": {
-      "sha256": "7f17b3daf80e391f00d62e652f98bcf4a6063fdde8831b6f3a25276708b7d084",
-      "bytes": 7393210
+      "sha256": "6aa391a0ee7682f9a6a6af7775b2b644f58632b84fc4d50bc097c7bc0abf4d86",
+      "bytes": 7151706
     },
     "data/forecast-backtest-v12.json": {
-      "sha256": "e0a4f9b1c2469ec8aed047db6717cad69d79b50160564471c81fce3b4c27709f",
-      "bytes": 6445004
+      "sha256": "6323c0d454361372310b750c00c9a041decdc1b735b32274d2f457c81d8ba0ba",
+      "bytes": 6702704
     },
     "data/data-audit-v12.json": {
-      "sha256": "ef65eb4d30fa42ab5fc1d7c18f1b625d6d403f7e488265f9e84cf5cb8d1cd7f8",
-      "bytes": 643781
+      "sha256": "06e7c7f4a76a585e7a02876485ee417d7b15055958979eaac02589ebff03afe0",
+      "bytes": 2502447
     },
     "data/event-intelligence-v12.json": {
-      "sha256": "49d963b552875d77c04881445991e2a45b58ca0668e187798d07e6c1686ff44b",
-      "bytes": 32455672
+      "sha256": "ee380571d38f3c18dbc10733908df46017838f2ce2e65730b048ee9d76120516",
+      "bytes": 32214304
     },
     "data/flow-v12.json": {
       "sha256": "afdb2bf7bfd5c46f38329fd69bc88eeb39b4676187141926941d0fc67fb04c24",
@@ -97,37 +127,37 @@
       "bytes": 164498
     },
     "data/phase-gates-v12.json": {
-      "sha256": "111408bba4aeccbbb147aac757befb79fa3b8f6ac0f5bee1e1a2c18adfdaa8a6",
+      "sha256": "9336652bf020299de3d7225e43d2fd765801035a9e4502d91100749f8b699ba5",
       "bytes": 1055
     },
     "data/benchmark-gate-v12.json": {
-      "sha256": "5b28d9adb7f858b038fb5f2fc759286ace5d7cc7e12f2a8a9db645799127aed1",
-      "bytes": 1581
+      "sha256": "cd176ab398d905de675fa2e2ce41039b8433bee37269d85f13a1ce1760ede6a1",
+      "bytes": 3421
     },
     "data/active-flow-audit-v12.json": {
       "sha256": "edbce59c6107d486dca2365ade804ddd9a51aa618d5d27a775a53c61baf07db0",
       "bytes": 1564
     },
     "data/active-flow-gate-v12.json": {
-      "sha256": "039241ab5c8f7fde529246d80eb8af5b0a7740f3ae758fe0731f659fc2f0338e",
+      "sha256": "caeb51213d0a6e3ef255fe3ef90096e083770a0ea542f406e131a83cd72aa1d1",
       "bytes": 2230
     },
     "data/sector-gate-v12.json": {
-      "sha256": "447d8f5c1dfa39ea636fd94d473d7fd22a747889b62b2aad522f37f9eab28491",
-      "bytes": 2810
+      "sha256": "cb4909c696b6700a3e3efe87a4183d6f6d5929b5258657aea9eac8bf66c9ef80",
+      "bytes": 2795
     },
     "data/nested-selection-gate-v12.json": {
-      "sha256": "d117b7e35264a513e19ffc5559069cf6aaf488153fe4fa8e9821342f53a3f3f1",
-      "bytes": 13073
+      "sha256": "bd3c868c0421026dae5226b8bf40295ee3a0772fedf89c2e62287bbd1561c279",
+      "bytes": 14405
     },
     "data/blind-holdout-gate-v12.json": {
-      "sha256": "b5ccbe38c5158c6e63f405b204e262e6806fa9cbbe9e6679bdd131d23cf78717",
-      "bytes": 40459
+      "sha256": "bbb3f1e06273974cea05241c17ba9319877e02a49d4b0e8d6ad6521062368491",
+      "bytes": 59664
     },
     "data/embargo-gate-v12.json": {
-      "sha256": "ed9532819b73870ef79b6220c7fb24b95e64bee9431f400a879ec2f2cb5f4560",
+      "sha256": "f5e432e0b177290ff6d65f2d8e68368014d7ff02c49c1fa9799a4546fbcb8475",
       "bytes": 10391
     }
   },
-  "policy": "All production UI/model/data assets are content-hashed. Release CDN must be pinned to the release commit SHA; /main/ is not a production identity. Event-study abnormal returns are VNINDEX-relative only; missing benchmark observations abstain. Current sector taxonomy is descriptive only unless PIT-certified. No numerical price is released unless all T+1..T+5 horizons pass frozen 90-100% blind holdout, nested pre-audit model selection, maturity-aware walk-forward replay, PBO/generalization, distribution and embargo gates."
+  "policy": "All production UI/model/data and immutable frozen-source evidence are content-hashed. Runtime price-network fetch and provider switching are forbidden. Release CDN is pinned to the release commit SHA; /main/ is not a production identity. Missing benchmark/active-flow/PIT-sector evidence abstains rather than fabricating a numerical signal. T+1..T+5 require blind holdout, nested pre-audit selection, maturity-aware walk-forward, PBO/generalization, distribution and embargo gates."
 }
