@@ -1,4 +1,4 @@
-trigger=2026-08-16T23:27:30+07:00
-reason=run-audited-one-time-vnstock-first-source-capture-then-freeze-input
-fast_gate=31958480789
-freeze_pipeline=e49b3b236744c1e54707d94f77d3e65e56b492ea
+trigger=2026-08-19T15:36:00+07:00
+reason=retrigger-exact-fast-after-observable-run-status-hardening
+previous_fast_gate=31958480789
+frozen_source_commit=e49b3b236744c1e54707d94f77d3e65e56b492ea
