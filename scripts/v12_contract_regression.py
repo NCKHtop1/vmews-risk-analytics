@@ -95,6 +95,22 @@ for token in ('SAME_ORIGIN_RAW_META_SCORE_IQR','_FITLOCK_STATE_GAMMAS=(0.0,0.5,1
 assert "if str(audit.get('selectedFamily'))!='Q50'" in state_v7
 assert "validationData':'EARLY WHOLE-DATE 85-90% ONLY'" in state_v7
 
+# V9 is a horizon-specific structural challenger, not a gate relaxation. H5 alone may decompose
+# the point return into one same-origin common component plus the already zero-mean tail residual
+# after V8/V7 abstain. Every parameter is locked on 80-85%; early whole-date 85-90 can only reject
+# or confirm; the sealed 90-100 block is absent. Crucially the unchanged magnitude floors apply to
+# the TOTAL point forecast, so the alpha residual is not incorrectly required to carry market beta.
+h5_v9=Path('scripts/v12_train_parts/01eof_h5_market_tail.pyinc').read_text(encoding='utf-8')
+for token in ('H5_MARKET_PLUS_TAIL_FIT_LOCKED','FIT_LOCKED_H5_MARKET_PLUS_TAIL_V9','SAME_ORIGIN_RAW_META_SCORE_MEDIAN','magnitudeConstraintScope','TOTAL_POINT_FORECAST','80-85% ONLY','EARLY WHOLE-DATE 85-90% ONLY','preblindConfirmed','sealedLabelsUsed'):
+    assert token in h5_v9,('V9 H5 market-tail token',token)
+assert "if int(h)!=5" in h5_v9
+assert "if str(audit.get('selectedFamily'))!='Q50'" in h5_v9
+assert "validation=_nested_eval(cy[iv],predV,cd[iv],5,bootstrap=True)" in h5_v9
+assert "if validation.get('preblindConfirmed') is True" in h5_v9
+assert "dispersionRatio']>=fd" in h5_v9 and "p90MagnitudeRatio']>=fp" in h5_v9
+assert "_gate_floor(5)" in h5_v9
+assert "90-100% is never supplied" in h5_v9
+
 # The expert-kind selector and its explicit acceptance gate must agree on exactly the same
 # predeclared robust family. LGBM_L1 is conditional-median LightGBM, not an after-the-fact new
 # challenger: it is selected alongside RIDGE/LGBM only on maturity-purged 50-70% OOF. The nested
@@ -111,4 +127,4 @@ assert "c.get('kind') in {'RIDGE','LGBM'}" not in nested_gate
 # fit-locked production layers; it is not used to tune the sealed holdout.
 nested=Path('scripts/v12_train_parts/01eo_nested_origin_cv_point.pyinc').read_text(encoding='utf-8')
 assert 'NESTED_EXPANDING_ORIGIN_CV_MBB_V3' in nested
-print('V12 ACCEPTANCE + EMBARGO + V5/V8/V7 FIT-LOCK + ROBUST NESTED FAMILY + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
+print('V12 ACCEPTANCE + EMBARGO + V5/V8/V7/V9 FIT-LOCK + ROBUST NESTED FAMILY + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
