@@ -1,0 +1,106 @@
+# H5 core-expert admission under the same nested pre-blind chronology used for optional experts.
+#
+# The original selector hard-coded NUMERICAL+REGIME as the core for every horizon. That makes
+# REGIME exempt from the incremental OOS admission test required of every optional information
+# block, even though its value can be horizon-dependent. For T+5 only, NUMERICAL is the baseline
+# and REGIME must prove incremental value on the disjoint 70-80% origin window before it may enter
+# the meta model. Model-kind selection remains locked on 50-70%; 80-90% remains calibration;
+# 90-100% is never supplied here. Final authority gates are unchanged.
+
+_select_active_experts_before_h5_core = select_active_experts
+
+
+def _h5_core_daily_mae_test(y, base_pred, cand_pred, dates, h, reps=1200):
+    yy=np.asarray(y,float);bp=np.asarray(base_pred,float);cp=np.asarray(cand_pred,float);dd=np.asarray(dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(bp)&np.isfinite(cp);yy=yy[good];bp=bp[good];cp=cp[good];dd=dd[good]
+    vals=[]
+    for day in sorted(set(dd.astype(str))):
+        q=np.where(dd.astype(str)==day)[0]
+        if len(q)<12:continue
+        # Positive means adding REGIME reduces MAE versus the NUMERICAL-only meta model.
+        vals.append(float(np.mean(np.abs(yy[q]-bp[q])-np.abs(yy[q]-cp[q]))))
+    if not vals:
+        return {'days':0,'meanDeltaMAE':0.0,'positiveDayShare':0.0,'bootstrap90':[None,None],'blockLength':0,'sealedLabelsUsed':0}
+    a=np.asarray(vals,float);block=max(1,min(len(a),int(round(len(a)**(1/3)))+1));rng=np.random.default_rng(7411+int(h)*193+len(a)*17);boots=[]
+    starts=np.arange(len(a))
+    for _ in range(int(reps)):
+        draw=[]
+        while len(draw)<len(a):
+            s=int(rng.choice(starts))
+            for j in range(block):draw.append(float(a[(s+j)%len(a)]))
+        boots.append(float(np.mean(draw[:len(a)])))
+    return {
+        'days':int(len(a)),
+        'meanDeltaMAE':float(np.mean(a)),
+        'positiveDayShare':float(np.mean(a>0)),
+        'bootstrap90':[float(np.quantile(boots,.05)),float(np.quantile(boots,.95))],
+        'blockLength':int(block),
+        'sealedLabelsUsed':0,
+    }
+
+
+def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
+    h=max(1,int(globals().get('V12_ACTIVE_HORIZON',1)))
+    if h!=5:
+        return _select_active_experts_before_h5_core(expert_pred,y,D,dates,X,idx_by_expert)
+
+    Maturity=label_maturity_array(h);n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];valid=np.isfinite(y)
+    train=valid&(Maturity<cut70);test=valid&(D>=cut70)&(D<cut80)&(Maturity<cut80)
+
+    baseline=['NUMERICAL'];candidate=['NUMERICAL','REGIME']
+    base_metrics,_=meta_eval(expert_pred,baseline,train,test,y,D)
+    cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D)
+    bidx,bpred=_meta_score_on_block(expert_pred,baseline,train,test,y)
+    cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y)
+    common=np.intersect1d(bidx,cidx,assume_unique=False)
+    bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)}
+    bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float)
+    ic_test=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]}
+    mae_test=_h5_core_daily_mae_test(y[common],bp,cp,D[common],h) if len(common) else {'days':0,'meanDeltaMAE':0.0,'positiveDayShare':0.0,'bootstrap90':[None,None],'blockLength':0,'sealedLabelsUsed':0}
+    mae_ci=mae_test.get('bootstrap90') or [None,None];mae_lo=mae_ci[0] if len(mae_ci) else None
+    delta_ic=float(cand_metrics['ic']-base_metrics['ic']);delta_mae=float(cand_metrics['maeImprove']-base_metrics['maeImprove']);delta_spread=float(cand_metrics['spread']-base_metrics['spread'])
+    promote_regime=bool(
+        len(common)>=500 and mae_test.get('days',0)>=15 and
+        isinstance(mae_lo,(int,float)) and finite(mae_lo) and float(mae_lo)>0.0 and
+        float(mae_test.get('positiveDayShare',0.0))>=0.50 and
+        delta_mae>0.0 and delta_ic>=0.0 and delta_spread>=-0.00005
+    )
+    active=list(candidate if promote_regime else baseline)
+    decisions={
+        'REGIME_CORE':{
+            'promoted':promote_regime,
+            'policy':'H5_NUMERICAL_BASELINE__REGIME_REQUIRES_DISJOINT_70_80_INCREMENTAL_OOS_ADMISSION',
+            'modelKindSelectionLock':str(cut70),
+            'selectionTrainLabelMaturityBefore':str(cut70),
+            'selectionTestOriginStart':str(cut70),
+            'selectionTestOriginEndExclusive':str(cut80),
+            'selectionOutcomeMaturityBefore':str(cut80),
+            'purgeMethod':'LABEL_MATURITY_DATE',
+            'baselineExperts':baseline,
+            'candidateExperts':candidate,
+            'deltaIC':delta_ic,
+            'deltaMAEImprove':delta_mae,
+            'deltaSpread':delta_spread,
+            'incrementalICTest':ic_test,
+            'pairedDailyMAETest':mae_test,
+            'admissionRule':'positive 70-80% paired daily MAE lower-90, >=50% positive dates, positive pooled MAE improvement, non-negative delta Rank IC, and no material spread loss',
+            'baseline':base_metrics,
+            'candidate':cand_metrics,
+            'sealedLabelsUsed':0,
+        }
+    }
+    base_metrics=cand_metrics if promote_regime else base_metrics
+
+    # Optional information blocks retain the existing exact-maturity, multiple-testing-controlled
+    # 70-80% admission protocol, but are evaluated relative to the scientifically admitted H5 core.
+    for name in ['EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']:
+        trial=active+[name];cand_metrics,_=meta_eval(expert_pred,trial,train,test,y,D);di=cand_metrics['ic']-base_metrics['ic'];dm=cand_metrics['maeImprove']-base_metrics['maeImprove'];ds=cand_metrics['spread']-base_metrics['spread'];activity_mask,activity_count,activity,minimum_rows=_expert_activity(X,name);active_in_test=int(np.sum(activity_mask&test));enough=activity_count>=minimum_rows and active_in_test>=max(50,min(250,minimum_rows//10 if minimum_rows else 0))
+        bidx,bpred=_meta_score_on_block(expert_pred,active,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,trial,train,test,y);common=np.intersect1d(bidx,cidx,assume_unique=False);bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)};bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float);inc=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]};ci=inc.get('bootstrap90') or [None,None];statistical=inc.get('days',0)>=15 and inc.get('meanDeltaIC',0)>0 and inc.get('pValue',1)<0.0125 and isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0;promote=bool(enough and statistical and di>0.001 and dm>0.0 and ds>=-0.00005)
+        decisions[name]={'promoted':promote,'evidenceRows':activity_count,'activityCoverage':activity,'evidenceRowsSelectionWindow':active_in_test,'minimumEvidenceRows':minimum_rows,'evidenceGatePassed':bool(enough),'deltaIC':di,'deltaMAEImprove':dm,'deltaSpread':ds,'modelKindSelectionLock':str(cut70),'selectionTrainLabelMaturityBefore':str(cut70),'selectionTestOriginStart':str(cut70),'selectionTestOriginEndExclusive':str(cut80),'selectionOutcomeMaturityBefore':str(cut80),'purgeMethod':'LABEL_MATURITY_DATE','nestedSelection':'RIDGE/LGBM/LGBM_L1 kind locked before this 70%-80% incremental test window','multipleTesting':'Bonferroni one-sided alpha=0.0125 across four optional experts; Newey-West HAC mean-delta-IC test + moving-block bootstrap','incrementalICTest':inc,'candidate':cand_metrics,'reference':base_metrics,'sealedLabelsUsed':0}
+        if promote:active.append(name);base_metrics=cand_metrics
+    return active,decisions
+
+
+# Static/runtime guard: H5 core selection must be chronology-locked and sealed-free.
+if '90-100%' in (select_active_experts.__doc__ or ''):
+    raise RuntimeError('unexpected H5 core selector docstring contract drift')
