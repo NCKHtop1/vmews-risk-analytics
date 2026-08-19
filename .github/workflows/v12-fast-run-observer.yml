@@ -1,0 +1,57 @@
+name: V12 exact Fast run observer
+on:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - 'scripts/v12_train_parts/**'
+      - 'scripts/v12_contract_regression.py'
+      - 'scripts/v12_method_unit_test.py'
+      - 'scripts/v12_core_regime_unit.py'
+      - 'scripts/v12_quantile_monotone_unit.py'
+      - 'scripts/v12_benchmark_unit.py'
+      - 'scripts/v12_entity_test.py'
+      - 'v12-source-freeze-trigger.txt'
+      - '.github/workflows/v12-methodfix-syntax.yml'
+      - '.github/workflows/v12-fast-run-observer.yml'
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - name: Locate exact-head Fast run, wait, and publish result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.sha }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          run_id=''; run_url=''; status=''; conclusion=''
+          for i in $(seq 1 48); do
+            row="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow v12-methodfix-syntax.yml --branch "${BRANCH_NAME}" --commit "${HEAD_SHA}" --limit 5 --json databaseId,status,conclusion,url,headSha --jq 'map(select(.headSha == env.HEAD_SHA)) | .[0] // empty' 2>/dev/null || true)"
+            if [ -n "${row}" ]; then
+              run_id="$(printf '%s' "${row}" | jq -r '.databaseId // empty')"
+              run_url="$(printf '%s' "${row}" | jq -r '.url // empty')"
+              status="$(printf '%s' "${row}" | jq -r '.status // empty')"
+              conclusion="$(printf '%s' "${row}" | jq -r '.conclusion // empty')"
+              echo "Exact Fast run ${run_id}: status=${status} conclusion=${conclusion}"
+              if [ "${status}" = 'completed' ]; then break; fi
+            fi
+            sleep 15
+          done
+          state=error
+          desc='V12 exact Fast run not resolved'
+          if [ -n "${run_id}" ] && [ "${status}" = 'completed' ]; then
+            state=failure
+            desc="V12 exact Fast ${conclusion} run ${run_id}"
+            if [ "${conclusion}" = 'success' ]; then state=success; fi
+            if [ "${conclusion}" = 'cancelled' ]; then state=error; fi
+          fi
+          args=(--method POST "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" -f "state=${state}" -f context='V12 observable fast gate' -f "description=${desc}")
+          if [ -n "${run_url}" ]; then args+=(-f "target_url=${run_url}"); fi
+          gh api "${args[@]}"
+          echo "Published ${state}: ${desc}; url=${run_url}"
+          [ "${state}" = 'success' ]
