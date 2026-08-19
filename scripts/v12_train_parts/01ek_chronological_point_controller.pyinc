@@ -1,29 +1,52 @@
-# Chronology-correct final controller for V12 point calibration.
+# Gate-aligned chronological point controller for V12.
 #
-# Earlier point wrappers split the symbol-major panel by row position, so their nominal A/B/C
-# slices contained overlapping origin dates. This final wrapper intentionally bypasses those
-# selectors and rebuilds the released point calibration from the pure 80-85% quantile layer:
-#   * 80-85%: fit point-family parameters;
-#   * early 85-90% origin dates: select the family;
-#   * late 85-90% origin dates: conformal widening only;
-#   * 90-100%: never supplied here.
-# No gate threshold is changed.
+# Root cause addressed here:
+#   The prior controller selected a point family from one short 85-90% validation slice using
+#   row-weighted MAE / paired row SE, while the release gate judges a point forecast by daily
+#   MAE edge with moving-block uncertainty plus non-collapse magnitude.  A family could therefore
+#   win the selector and still fail the actual scientific gate under a later regime.
+#
+# This controller aligns selection and evaluation without touching the sealed 90-100% block:
+#   * maturity-purged 80-85% supplies expanding rolling-origin fit/validation folds;
+#   * early whole origin dates of 85-90% are an additional external pre-blind validation fold;
+#   * family choice uses daily MAE edge vs no-change, moving-block lower-90 evidence, ranking,
+#     and the same horizon-aware magnitude floors used by the release gate;
+#   * after family choice, parameters are refit on all point-selection dates only;
+#   * late whole origin dates of 85-90% remain conformal-only;
+#   * 90-100% labels are never read, selected on, or calibrated on.
+#
+# A same-origin rank-only family is included because V12's direct score has strong cross-sectional
+# rank skill while common-return drift can be unstable.  Its point forecast is zero-median within
+# each origin date and its positive scale is learned pre-blind; it cannot manufacture a market
+# drift intercept or use future-date information.
 _chrono_apply_before = apply_calibration
+_V12_PRIMARY_PREBLIND_CALIBRATION = None
+
+
+def _chrono_horizon():
+    return max(1, int(globals().get('V12_ACTIVE_HORIZON', 1)))
+
+
+def _chrono_magnitude_floor(h):
+    return (
+        {1:.05, 2:.07, 3:.08, 4:.09, 5:.10}.get(int(h), .08),
+        {1:.04, 2:.05, 3:.06, 4:.07, 5:.08}.get(int(h), .06),
+    )
+
 
 def _chrono_date_split(cal_dates, conform_dates):
     fd=np.asarray(cal_dates,dtype=object).astype(str)
     vd=np.asarray(conform_dates,dtype=object).astype(str)
+    fit_days=np.asarray(sorted(set(fd)),dtype=object)
     u=np.asarray(sorted(set(vd)),dtype=object)
-    if len(u)<4:
+    if len(fit_days)<8 or len(u)<4:
         return None
     cut=max(2,min(len(u)-2,len(u)//2))
     val_days=u[:cut];conf_days=u[cut:]
     iv=np.where(np.isin(vd,val_days))[0];ic=np.where(np.isin(vd,conf_days))[0]
     if not len(iv) or not len(ic):
         return None
-    fit_days=np.asarray(sorted(set(fd)),dtype=object)
-    # Windows must be truly chronological and date-disjoint. Do not silently revert to row slices.
-    if len(fit_days) and str(fit_days[-1])>=str(val_days[0]):
+    if str(fit_days[-1])>=str(val_days[0]):
         raise RuntimeError(f'calibration chronology overlap: fitEnd={fit_days[-1]} validationStart={val_days[0]}')
     if str(val_days[-1])>=str(conf_days[0]):
         raise RuntimeError(f'calibration chronology overlap: validationEnd={val_days[-1]} conformalStart={conf_days[0]}')
@@ -32,25 +55,268 @@ def _chrono_date_split(cal_dates, conform_dates):
         'fitDays':fit_days,'validationDays':val_days,'conformalDays':conf_days
     }
 
-def _chrono_date_stability(y,incumbent,challenger,dates):
-    return _xsec_date_block_stability(y,incumbent,challenger,dates,3)
 
-def _chrono_candidate_record(name,y,pred,incumbent,dates,model=None):
-    metrics=_point_candidate_metrics(y,pred)
-    if name=='Q50':
-        paired={'n':int(metrics.get('n',0)),'pairedMAEEdge':0.0,'pairedSE':0.0,'lower90':0.0,'pass':True,'sealedLabelsUsed':0}
-        stable={'stable':True,'sealedLabelsUsed':0,'reference':'INCUMBENT'}
+def _chrono_fit_quantile(y,score):
+    yy=np.asarray(y,float);ss=np.asarray(score,float)
+    good=np.isfinite(yy)&np.isfinite(ss);yy=yy[good];ss=ss[good]
+    if len(yy)<300 or float(np.std(ss))<1e-12:
+        raise RuntimeError(f'rolling point calibration fit too small/degenerate: n={len(yy)}')
+    x=ss.reshape(-1,1);models={};methods=[]
+    for a in (.2,.5,.8):
+        m,method=_fit_quantile_model(a,x,yy);models[a]=m;methods.append(method)
+    layer=_QuantileLayer(
+        models,
+        methods[0] if len(set(methods))==1 else '+'.join(sorted(set(methods))),
+        len(yy),float(np.min(ss)),float(np.max(ss))
+    )
+    iso=IsotonicRegression(y_min=.02,y_max=.98,out_of_bounds='clip')
+    iso.fit(ss,(yy>0).astype(float))
+    return layer,iso
+
+
+def _chrono_daily_rank_scale(y,score,dates):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(ss);yy=yy[good];ss=ss[good];dd=dd[good]
+    if len(yy)<300:return None
+    rr=_xsec_rank_signal(ss,dd)
+    if float(np.std(rr))<1e-10:return None
+    ratio=float(np.std(yy)/max(np.std(rr),1e-10))
+    upper=float(min(.20,max(.004,2.5*ratio)))
+    grid=np.unique(np.concatenate([
+        np.linspace(0.0,min(.04,upper),81),
+        np.geomspace(max(.001,min(.04,upper)),upper,48) if upper>.04 else np.asarray([],float)
+    ]))
+    days=sorted(set(dd.astype(str)));rows=[]
+    for g in grid:
+        pp=float(g)*rr
+        dl=[]
+        for day in days:
+            q=np.where(dd.astype(str)==day)[0]
+            if len(q)<12:continue
+            dl.append(float(np.mean(np.abs(yy[q]-pp[q]))))
+        if not dl:continue
+        rows.append((float(g),float(np.mean(dl)),float(np.std(pp))))
+    if not rows:return None
+    best=min(rows,key=lambda z:(z[1],z[0]))
+    return {
+        'kind':'RANK_ONLY','scale':float(best[0]),'fitRows':int(len(yy)),
+        'fitDates':int(len(days)),'equalDateMAE':float(best[1]),
+        'forecastStd':float(best[2]),'gridMin':float(np.min(grid)),
+        'gridMax':float(np.max(grid)),'gridN':int(len(grid)),
+        'objective':'PREBLIND_EQUAL_DATE_L1_WITHIN_ORIGIN_RANK',
+        'sealedLabelsUsed':0
+    }
+
+
+def _chrono_fit_bundle(y,score,dates):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object)
+    layer,iso=_chrono_fit_quantile(yy,ss)
+    lo,q50,hi=layer.predict(ss)
+    qscale,q_n,q_audit=_select_return_shrink(yy,q50)
+    score_scale,s_n,s_audit=_select_return_shrink(yy,ss)
+    median_map=_fit_binned_monotone_median(ss,yy,15)
+    affine=_fit_robust_affine_score(ss,yy)
+    origin_scale=_fit_robust_origin_scale(ss,yy)
+    rank=_xsec_rank_signal(ss,dd)
+    rank_fit=_xsec_positive_scale(yy,np.asarray(q50,float)*qscale,rank)
+    center=_isotonic_half_center(iso,ss) if '_isotonic_half_center' in globals() else float(np.median(ss))
+    market_fit=_xsec_market_rank_fit(yy,ss,dd,center)
+    rank_only=_chrono_daily_rank_scale(yy,ss,dd)
+    return {
+        'layer':layer,'iso':iso,'qscale':float(qscale),'qN':int(q_n),'qAudit':q_audit,
+        'scoreScale':float(score_scale),'scoreN':int(s_n),'scoreAudit':s_audit,
+        'medianMap':median_map,'affine':affine,'originScale':origin_scale,
+        'rankFit':rank_fit,'marketFit':market_fit,'rankOnly':rank_only,
+        'fitRows':int(len(yy)),'fitDates':int(len(set(dd.astype(str))))
+    }
+
+
+def _chrono_bundle_predictions(bundle,score,dates):
+    ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object)
+    layer=bundle['layer'];lo0,q50,hi0=layer.predict(ss);g=float(bundle['qscale'])
+    lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+    out={'Q50':np.asarray(q50,float)*g}
+    out['DIRECT_SCORE']=_clip_between(ss*float(bundle['scoreScale']),lo,hi)
+    if bundle.get('medianMap') is not None:
+        out['BINNED_MONOTONE_MEDIAN']=_clip_between(_predict_binned_monotone(bundle['medianMap'],ss),lo,hi)
+    if bundle.get('affine') is not None:
+        out['ROBUST_AFFINE_SCORE']=_clip_between(_affine_predict(bundle['affine'],ss),lo,hi)
+    if bundle.get('originScale') is not None:
+        out['ROBUST_ORIGIN_SCALE']=_clip_between(_affine_predict(bundle['originScale'],ss),lo,hi)
+    rank=_xsec_rank_signal(ss,dd)
+    if bundle.get('rankFit') is not None:
+        p=out['Q50']+float(bundle['rankFit']['scale'])*rank
+        out['XSEC_BASE_PLUS_RANK']=_clip_between(p,lo,hi)
+    if bundle.get('marketFit') is not None:
+        model={'kind':'MARKET_PLUS_RANK',**bundle['marketFit']}
+        out['XSEC_MARKET_PLUS_RANK']=_clip_between(_xsec_apply_model(model,ss,dd),lo,hi)
+    if bundle.get('rankOnly') is not None:
+        p=float(bundle['rankOnly']['scale'])*rank
+        out['XSEC_RANK_ONLY']=_clip_between(p,lo,hi)
+    return out
+
+
+def _chrono_daily_edge(y,pred,dates):
+    yy=np.asarray(y,float);pp=np.asarray(pred,float);dd=np.asarray(dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(pp);yy=yy[good];pp=pp[good];dd=dd[good]
+    vals=[]
+    for day in sorted(set(dd.astype(str))):
+        q=np.where(dd.astype(str)==day)[0]
+        if len(q)<12:continue
+        vals.append(float(np.mean(np.abs(yy[q])-np.abs(yy[q]-pp[q]))))
+    if not vals:
+        return {'days':0,'mean':0.0,'positiveDayShare':0.0,'bootstrap90':[None,None],'blockLength':0}
+    a=np.asarray(vals,float)
+    if '_moving_block_bootstrap_mean' in globals():
+        ci,block=_moving_block_bootstrap_mean(a,reps=1400)
     else:
-        paired=_paired_challenger_audit(y,incumbent,pred)
-        stable=_chrono_date_stability(y,incumbent,pred,dates)
-    return {'name':name,'pred':np.asarray(pred,float),'metrics':metrics,'paired':paired,'dateStability':stable,'model':model}
+        n=len(a);block=max(1,int(round(n**(1/3))))
+        rng=np.random.default_rng(12873+n);boots=[]
+        for _ in range(1400):
+            z=[]
+            while len(z)<n:
+                start=int(rng.integers(0,n))
+                z.extend(a[(start+np.arange(block))%n].tolist())
+            boots.append(float(np.mean(z[:n])))
+        ci=[float(np.quantile(boots,.05)),float(np.quantile(boots,.95))]
+    return {
+        'days':int(len(a)),'mean':float(np.mean(a)),
+        'positiveDayShare':float(np.mean(a>0)),
+        'bootstrap90':[float(ci[0]),float(ci[1])],
+        'blockLength':int(block)
+    }
+
+
+def _chrono_oos_metric(y,pred,dates,h):
+    yy=np.asarray(y,float);pp=np.asarray(pred,float);dd=np.asarray(dates,dtype=object)
+    m=_point_candidate_metrics(yy,pp);rs=rank_stats(yy,pp,dd);daily=_chrono_daily_edge(yy,pp,dd)
+    p90a=float(np.quantile(np.abs(yy),.90)) if len(yy) else 0.0
+    p90p=float(np.quantile(np.abs(pp),.90)) if len(pp) else 0.0
+    min_disp,min_p90=_chrono_magnitude_floor(h)
+    ci=daily.get('bootstrap90') or [None,None]
+    gate=bool(
+        daily.get('days',0)>=20 and daily.get('mean',0)>0 and
+        daily.get('positiveDayShare',0)>=.50 and
+        isinstance(ci[0],(int,float)) and finite(ci[0]) and float(ci[0])>0 and
+        float(m.get('dispersionRatio') or 0)>=min_disp and
+        (p90p/(p90a or 1e-12))>=min_p90 and
+        float(rs.get('ic') or 0)>.01
+    )
+    return {
+        **m,'dailyMAEEdge':daily,'rankIC':float(rs.get('ic') or 0),
+        'p90MagnitudeRatio':p90p/(p90a or 1e-12),
+        'minimumDispersionRatio':float(min_disp),'minimumP90MagnitudeRatio':float(min_p90),
+        'gateAlignedPass':gate,'sealedLabelsUsed':0
+    }
+
+
+def _chrono_rolling_folds(fit_days,external_days):
+    fd=np.asarray(fit_days,dtype=object)
+    if len(fd)<12:return []
+    init=max(6,min(len(fd)-6,len(fd)//3))
+    remaining=fd[init:]
+    parts=[np.asarray(x,dtype=object) for x in np.array_split(remaining,3) if len(x)]
+    folds=[]
+    for part in parts:
+        train=fd[fd<part[0]]
+        if len(train)>=6:
+            folds.append({'trainDays':train,'validationDays':part,'kind':'INTERNAL_80_85'})
+    if len(external_days):
+        folds.append({'trainDays':fd,'validationDays':np.asarray(external_days,dtype=object),'kind':'EXTERNAL_EARLY_85_90'})
+    return folds
+
+
+def _chrono_select_family(fy,fs,fd,cy,cs,cd,split):
+    fit_days=split['fitDays'];external_days=split['validationDays']
+    folds=_chrono_rolling_folds(fit_days,external_days)
+    if len(folds)<3:raise RuntimeError('insufficient rolling-origin point-selection folds')
+    agg={};fold_audit=[]
+    for f in folds:
+        if f['kind']=='INTERNAL_80_85':
+            tr=np.isin(fd.astype(str),f['trainDays'].astype(str))
+            va=np.isin(fd.astype(str),f['validationDays'].astype(str))
+            ty,ts,td=fy[tr],fs[tr],fd[tr];vy,vs,vd=fy[va],fs[va],fd[va]
+        else:
+            ty,ts,td=fy,fs,fd
+            va=np.isin(cd.astype(str),f['validationDays'].astype(str))
+            vy,vs,vd=cy[va],cs[va],cd[va]
+        bundle=_chrono_fit_bundle(ty,ts,td)
+        preds=_chrono_bundle_predictions(bundle,vs,vd)
+        fold_audit.append({
+            'kind':f['kind'],
+            'trainDateRange':[str(f['trainDays'][0]),str(f['trainDays'][-1])],
+            'validationDateRange':[str(f['validationDays'][0]),str(f['validationDays'][-1])],
+            'trainRows':int(len(ty)),'validationRows':int(len(vy)),
+            'families':sorted(preds)
+        })
+        for name,p in preds.items():
+            z=agg.setdefault(name,{'y':[],'p':[],'d':[],'folds':0})
+            z['y'].append(np.asarray(vy,float));z['p'].append(np.asarray(p,float));z['d'].append(np.asarray(vd,dtype=object));z['folds']+=1
+    metrics={}
+    for name,z in agg.items():
+        if z['folds']!=len(folds):continue
+        yy=np.concatenate(z['y']);pp=np.concatenate(z['p']);dd=np.concatenate(z['d'])
+        metrics[name]=_chrono_oos_metric(yy,pp,dd,_chrono_horizon())
+    if 'Q50' not in metrics:raise RuntimeError('rolling point selector lost Q50 incumbent')
+    eligible=[name for name,m in metrics.items() if m.get('gateAlignedPass') is True]
+    complexity={'Q50':0,'XSEC_RANK_ONLY':1,'ROBUST_ORIGIN_SCALE':2,'BINNED_MONOTONE_MEDIAN':3,
+                'DIRECT_SCORE':4,'XSEC_BASE_PLUS_RANK':5,'XSEC_MARKET_PLUS_RANK':6,'ROBUST_AFFINE_SCORE':7}
+    if eligible:
+        chosen=max(
+            eligible,
+            key=lambda n:(
+                float((metrics[n]['dailyMAEEdge']['bootstrap90'] or [-1e9])[0]),
+                float(metrics[n]['dailyMAEEdge']['mean']),
+                float(metrics[n]['rankIC']),
+                -complexity.get(n,99)
+            )
+        )
+    else:
+        chosen=max(
+            metrics,
+            key=lambda n:(
+                -1e9 if not isinstance((metrics[n]['dailyMAEEdge']['bootstrap90'] or [None])[0],(int,float))
+                else float(metrics[n]['dailyMAEEdge']['bootstrap90'][0]),
+                float(metrics[n]['dailyMAEEdge']['mean']),
+                float(metrics[n]['rankIC']),
+                -complexity.get(n,99)
+            )
+        )
+    return chosen,metrics,fold_audit,eligible
+
+
+def _chrono_install_family(layer,bundle,mode):
+    layer.returnShrink=float(bundle['qscale']);layer.shrinkSelectionN=int(bundle['qN']);layer.shrinkSelectionAudit=bundle['qAudit']
+    layer.pointMode=str(mode);layer.pointScoreScale=float(bundle['scoreScale']);layer.pointBinnedMedian=bundle.get('medianMap')
+    layer.pointAffineModel=None;layer.pointDeadband=0.0;layer.pointXsecModel=None;layer.pointRankOnlyModel=None
+    if mode=='ROBUST_AFFINE_SCORE':layer.pointAffineModel=bundle.get('affine')
+    elif mode=='ROBUST_ORIGIN_SCALE':layer.pointAffineModel=bundle.get('originScale')
+    elif mode=='XSEC_BASE_PLUS_RANK':
+        rf=bundle.get('rankFit');layer.pointXsecModel={'kind':'BASE_PLUS_RANK','residualScale':float(rf['scale']),'fit':rf}
+    elif mode=='XSEC_MARKET_PLUS_RANK':
+        mf=bundle.get('marketFit');layer.pointXsecModel={'kind':'MARKET_PLUS_RANK',**mf}
+    elif mode=='XSEC_RANK_ONLY':
+        layer.pointRankOnlyModel=bundle.get('rankOnly')
+    return layer
+
 
 def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
-    # _point_base_quantile_calibrate points to the pure quantile/isotonic layer from before
-    # return-shrink / point-family wrappers; its provisional qadj is ignored and rebuilt below.
-    layer,iso,_=_point_base_quantile_calibrate(cal_y,cal_score,conform_y,conform_score)
-    if not isinstance(layer,_QuantileLayer) or cal_dates is None or conform_dates is None:
+    global _V12_PRIMARY_PREBLIND_CALIBRATION
+    if cal_dates is None or conform_dates is None:
+        layer,iso,_=_point_base_quantile_calibrate(cal_y,cal_score,conform_y,conform_score)
         return layer,iso,0.0
+
+    d90=str(globals().get('V12_CURRENT_SEALED_START') or '')
+    supplied=np.asarray(conform_dates,dtype=object).astype(str)
+    if d90 and len(supplied) and bool(np.any(supplied>=d90)):
+        if _V12_PRIMARY_PREBLIND_CALIBRATION is None:
+            raise RuntimeError('sealed-label calibration attempted before primary pre-blind calibration was cached')
+        layer,iso,qadj=_V12_PRIMARY_PREBLIND_CALIBRATION
+        audit=getattr(layer,'pointSelectionAudit',None)
+        if isinstance(audit,dict):
+            audit['deploymentCalibrationReuse']='FROZEN_PREBLIND_LAYER_NO_SEALED_LABEL_READ'
+            audit['sealedLabelsUsed']=0
+        return layer,iso,qadj
 
     fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object)
     cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
@@ -58,109 +324,91 @@ def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dat
         raise RuntimeError('chronological calibration alignment mismatch')
     split=_chrono_date_split(fd,cd)
     if split is None or len(fy)<300 or len(cy)<300:
-        raise RuntimeError('chronological calibration requires >=300 fit/conform rows and >=4 distinct conform origin dates')
+        raise RuntimeError('chronological rolling calibration requires >=300 rows and adequate whole origin dates')
 
+    mode,metrics,folds,eligible=_chrono_select_family(fy,fs,fd,cy,cs,cd,split)
     iv=split['validationIndex'];ic=split['conformalIndex']
-    loF,q50F,hiF=layer.predict(fs)
-    loV,q50V,hiV=layer.predict(cs[iv])
+    refit_y=np.concatenate([fy,cy[iv]])
+    refit_s=np.concatenate([fs,cs[iv]])
+    refit_d=np.concatenate([fd,cd[iv]])
+    bundle=_chrono_fit_bundle(refit_y,refit_s,refit_d)
+    layer=bundle['layer'];iso=bundle['iso'];_chrono_install_family(layer,bundle,mode)
 
-    # All point-family parameters are fitted on 80-85% only.
-    q50_scale,q_n,q_audit=_select_return_shrink(fy,q50F)
-    score_scale,s_n,s_audit=_select_return_shrink(fy,fs)
-    median_map=_fit_binned_monotone_median(fs,fy,15)
-    affine=_fit_robust_affine_score(fs,fy)
-    origin_scale=_fit_robust_origin_scale(fs,fy)
-
-    layer.returnShrink=float(q50_scale)
-    layer.shrinkSelectionN=int(q_n)
-    layer.shrinkSelectionAudit=q_audit
-    layer.pointMode='Q50'
-    layer.pointScoreScale=float(score_scale)
-    layer.pointBinnedMedian=median_map
-    layer.pointAffineModel=None
-    layer.pointDeadband=0.0
-    layer.pointXsecModel=None
-
-    loV=np.asarray(loV,float)*q50_scale;hiV=np.asarray(hiV,float)*q50_scale
-    qpoint=np.asarray(q50V,float)*q50_scale
-    records=[_chrono_candidate_record('Q50',cy[iv],qpoint,qpoint,cd[iv])]
-
-    direct=_clip_between(cs[iv]*score_scale,loV,hiV)
-    records.append(_chrono_candidate_record('DIRECT_SCORE',cy[iv],direct,qpoint,cd[iv]))
-    if median_map is not None:
-        mapped=_clip_between(_predict_binned_monotone(median_map,cs[iv]),loV,hiV)
-        records.append(_chrono_candidate_record('BINNED_MONOTONE_MEDIAN',cy[iv],mapped,qpoint,cd[iv],median_map))
-    if affine is not None:
-        ap=_clip_between(_affine_predict(affine,cs[iv]),loV,hiV)
-        records.append(_chrono_candidate_record('ROBUST_AFFINE_SCORE',cy[iv],ap,qpoint,cd[iv],affine))
-    if origin_scale is not None:
-        op=_clip_between(_affine_predict(origin_scale,cs[iv]),loV,hiV)
-        records.append(_chrono_candidate_record('ROBUST_ORIGIN_SCALE',cy[iv],op,qpoint,cd[iv],origin_scale))
-
-    # Same-origin rank residual is also fitted on 80-85%; validation remains strictly later.
-    rankF=_xsec_rank_signal(fs,fd);rankV=_xsec_rank_signal(cs[iv],cd[iv])
-    rank_fit=_xsec_positive_scale(fy,np.asarray(q50F,float)*q50_scale,rankF)
-    if rank_fit is not None:
-        rp=_clip_between(qpoint+float(rank_fit['scale'])*rankV,loV,hiV)
-        model={'kind':'BASE_PLUS_RANK','residualScale':float(rank_fit['scale']),'fit':rank_fit}
-        records.append(_chrono_candidate_record('XSEC_BASE_PLUS_RANK',cy[iv],rp,qpoint,cd[iv],model))
-
-    center=_isotonic_half_center(iso,fs) if '_isotonic_half_center' in globals() else float(np.median(fs))
-    market_fit=_xsec_market_rank_fit(fy,fs,fd,center)
-    if market_fit is not None:
-        model={'kind':'MARKET_PLUS_RANK',**market_fit}
-        mp=_clip_between(_xsec_apply_model(model,cs[iv],cd[iv]),loV,hiV)
-        records.append(_chrono_candidate_record('XSEC_MARKET_PLUS_RANK',cy[iv],mp,qpoint,cd[iv],model))
-
-    incumbent=records[0]
-    # A challenger must improve held-out MAE, pass the paired one-sided 90% guard, and remain
-    # stable across chronological date blocks. If none does, retain Q50; no magnitude forcing.
-    eligible=[z for z in records[1:]
-              if z['metrics'].get('mae',float('inf'))<incumbent['metrics'].get('mae',float('inf'))
-              and z['paired'].get('pass') is True and z['dateStability'].get('stable') is True]
-    chosen=min(eligible,key=lambda z:(z['metrics']['mae'],-z['metrics']['nonTrivialShare'],-z['metrics']['dispersionRatio'])) if eligible else incumbent
-    mode=chosen['name'];layer.pointMode=mode
-    if mode in {'ROBUST_AFFINE_SCORE','ROBUST_ORIGIN_SCALE'}:
-        layer.pointAffineModel=chosen['model']
-    elif mode=='XSEC_BASE_PLUS_RANK':
-        layer.pointXsecModel=chosen['model']
-    elif mode=='XSEC_MARKET_PLUS_RANK':
-        layer.pointXsecModel=chosen['model']
-
-    # Conformal interval widening is computed only on the later, date-disjoint 85-90% slice.
-    loC,_,hiC=layer.predict(cs[ic]);loC=np.asarray(loC,float)*q50_scale;hiC=np.asarray(hiC,float)*q50_scale
+    loC,_,hiC=layer.predict(cs[ic]);g=float(bundle['qscale'])
+    loC=np.asarray(loC,float)*g;hiC=np.asarray(hiC,float)*g
     yy=cy[ic];nonconf=np.maximum.reduce([loC-yy,yy-hiC,np.zeros(len(yy))]) if len(yy) else np.asarray([],float)
     target=.60;qlevel=min(1.0,math.ceil((len(nonconf)+1)*target)/max(1,len(nonconf)))
     qadj=float(np.quantile(nonconf,qlevel,method='higher')) if len(nonconf) else 0.0
     layer.conformalTarget=target;layer.conformalN=int(len(nonconf))
-    layer.calibrationSplitPolicy='80-85% fits monotone quantile/isotonic and all point-family parameters; early origin dates of maturity-purged 85-90% select the point family; late origin dates of 85-90% compute conformal widening; 90-100% remains sealed.'
+    layer.calibrationSplitPolicy=(
+        'maturity-purged 80-85% expanding rolling-origin point-family evaluation plus early whole '
+        '85-90% external validation; selected family is refit on all pre-conformal selection dates; '
+        'late whole 85-90% dates are conformal-only; 90-100% remains sealed.'
+    )
     layer.pointSelectionAudit={
-        'method':'CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1',
-        'splitPolicy':'FIT_80_85__VALIDATE_EARLY_85_90_BY_ORIGIN_DATE__CONFORM_LATE_85_90_BY_ORIGIN_DATE',
-        'fitRows':int(len(fy)),'validationRows':int(len(iv)),'conformalRows':int(len(ic)),
-        'fitDates':int(len(split['fitDays'])),'validationDates':int(len(split['validationDays'])),'conformalDates':int(len(split['conformalDays'])),
-        'fitDateRange':[str(split['fitDays'][0]),str(split['fitDays'][-1])] if len(split['fitDays']) else None,
-        'validationDateRange':[str(split['validationDays'][0]),str(split['validationDays'][-1])],
+        'method':'CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V2',
+        'selectionEngine':'PURGED_EXPANDING_ROLLING_ORIGIN__DAILY_MAE_MOVING_BLOCK__GATE_ALIGNED',
+        'objectiveAlignment':'same daily MAE edge / moving-block evidence and horizon magnitude floors as final point-price gate',
+        'fitRows':int(len(fy)),'externalValidationRows':int(len(iv)),'refitRows':int(len(refit_y)),
+        'conformalRows':int(len(ic)),'fitDates':int(len(split['fitDays'])),
+        'externalValidationDates':int(len(split['validationDays'])),'conformalDates':int(len(split['conformalDays'])),
+        'fitDateRange':[str(split['fitDays'][0]),str(split['fitDays'][-1])],
+        'externalValidationDateRange':[str(split['validationDays'][0]),str(split['validationDays'][-1])],
         'conformalDateRange':[str(split['conformalDays'][0]),str(split['conformalDays'][-1])],
-        'dateDisjoint':True,'rowOrderIndependent':True,'sealedLabelsUsed':0,
-        'selectedFamily':mode,'challengerSelected':bool(mode!='Q50'),
-        'q50ScaleAudit':q_audit,'directScoreScaleAudit':s_audit,
-        'candidates':{z['name']:{'metrics':z['metrics'],'pairedVsQ50':z['paired'],'dateStabilityVsQ50':z['dateStability'],'model':z['model']} for z in records},
-        'reason':'corrects the prior symbol-major row-slice bug; selection is by chronological origin-date blocks and challengers cannot replace Q50 without held-out paired MAE plus date-stability evidence'
+        'dateDisjoint':True,'rowOrderIndependent':True,'wholeOriginDatesOnly':True,
+        'rollingFolds':folds,'candidateMetrics':metrics,'eligibleGateAlignedFamilies':eligible,
+        'selectedFamily':str(mode),'selectedFamilyPreblindGateAlignedPass':bool(mode in eligible),
+        'rankOnlyCandidate':{
+            'sameOriginOnly':True,'zeroMedianByConstruction':True,'positiveScaleOnly':True,
+            'marketDriftIntercept':False
+        },
+        'q50ScaleAudit':bundle['qAudit'],'directScoreScaleAudit':bundle['scoreAudit'],
+        'sealedLabelsUsed':0,
+        'reason':'aligns family selection with the final daily bootstrap/magnitude gate and evaluates families over multiple chronological origin-date folds instead of one short row-weighted validation regime'
     }
-    return layer,iso,max(0.0,qadj)
+    result=(layer,iso,max(0.0,qadj))
+    if bool(globals().get('V12_PRIMARY_CALIBRATION_PENDING',False)):
+        _V12_PRIMARY_PREBLIND_CALIBRATION=result
+        globals()['V12_PRIMARY_CALIBRATION_PENDING']=False
+    return result
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode!='XSEC_RANK_ONLY':
+        return _chrono_apply_before(score,scen,iso,qadj,origin_dates)
+    if origin_dates is None:
+        raise RuntimeError('XSEC_RANK_ONLY requires explicit same-origin dates')
+    ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object)
+    p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss)
+    g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g
+    model=getattr(scen,'pointRankOnlyModel',None) or {};rank=_xsec_rank_signal(ss,dd)
+    point=float(model.get('scale',0.0))*rank;point=_clip_between(point,lo,hi)
+    lo=lo-float(qadj);hi=hi+float(qadj);ns=np.full(len(point),int(scen.n),dtype=int)
+    return p,np.asarray(point,float),lo,hi,ns
+
 
 def _chrono_split_selftest():
-    # Symbol-major ordering: each symbol contributes the same dates in sequence. A row split
-    # would mix dates; the chronology helper must return whole dates regardless of row order.
-    cal=np.asarray(['2026-01-01','2026-01-02']*3,dtype=object)
-    con=np.asarray(['2026-01-03','2026-01-04','2026-01-05','2026-01-06']*3,dtype=object)
+    cal=np.asarray(['2026-01-01','2026-01-02','2026-01-03','2026-01-04','2026-01-05','2026-01-06','2026-01-07','2026-01-08']*3,dtype=object)
+    con=np.asarray(['2026-01-09','2026-01-10','2026-01-11','2026-01-12']*3,dtype=object)
     z=_chrono_date_split(cal,con)
     if z is None:raise RuntimeError('chronology split selftest produced no split')
     vd=set(con[z['validationIndex']].astype(str));cd=set(con[z['conformalIndex']].astype(str))
-    if vd & cd:raise RuntimeError('chronology split selftest date overlap')
-    if max(vd)>=min(cd):raise RuntimeError('chronology split selftest not chronological')
+    if vd & cd or max(vd)>=min(cd):raise RuntimeError('chronology split selftest overlap/order failure')
     for day in vd:
         if int(np.sum(con[z['validationIndex']].astype(str)==day))!=int(np.sum(con.astype(str)==day)):
             raise RuntimeError('chronology split selftest fragmented validation date')
+
+
+def _chrono_rank_only_selftest():
+    s=np.asarray([.1,.2,.3,.4,1.,2.,3.,4.],float)
+    d=np.asarray(['A']*4+['B']*4,dtype=object)
+    r=_xsec_rank_signal(s,d)
+    if abs(float(np.mean(r[d=='A'])))>1e-12 or abs(float(np.mean(r[d=='B'])))>1e-12:
+        raise RuntimeError('rank-only point family must be zero-mean within each origin date')
+    perm=np.asarray([3,1,0,2,7,4,6,5]);rp=_xsec_rank_signal(s[perm],d[perm]);back=np.empty_like(rp);back[perm]=rp
+    if not np.allclose(r,back):raise RuntimeError('rank-only point family row-order regression')
+
+
 _chrono_split_selftest()
+_chrono_rank_only_selftest()
