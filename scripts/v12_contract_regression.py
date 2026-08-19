@@ -45,14 +45,26 @@ for token in ('icDays','icPositiveDayShare','icBootstrap95','spreadTStat'):asser
 
 # Deterministic five-horizon assembly owns every common invariant but explicitly merges the exact
 # benchmark-alignment counters by horizon because T+h stock maturity/benchmark target dates are
-# genuinely different. No unrelated data-audit difference may pass.
+# genuinely different. Derived daily AR is NOT authoritative inside an isolated shard: after the
+# five exact CAR horizons are merged it must be rebuilt as AR1=CAR1, ARh=CARh-CAR(h-1), with an
+# explicit abstention across any missing adjacent CAR. No unrelated data-audit difference may pass.
 merge_src=Path('scripts/v12_merge_horizon_partials.py').read_text(encoding='utf-8')
-for token in ('_validate_feature_contract','_merge_features','_merge_experts','_merge_events','_data_audit_common','_merge_data_audit','benchmark-alignment-contract','HORIZON_SPECIFIC_EXACT_STOCK_MATURITY','scientificSemanticsChanged'):
+for token in ('_validate_feature_contract','_merge_features','_merge_experts','_merge_events','_data_audit_common','_merge_data_audit','benchmark-alignment-contract','HORIZON_SPECIFIC_EXACT_STOCK_MATURITY','scientificSemanticsChanged','_rebuild_daily_ar_from_merged_car','if f=="abnormalReturn":continue','ARh=CARh-CAR(h-1)'):
     assert token in merge_src,('merge contract token',token)
 from v12_merge_horizon_partials_test import main as merge_regression_main
 merge_regression_main()
 
-# The final production point selector is FIT-LOCKED. Power and scale are chosen exclusively from
+# Frozen research VNINDEX is an audited immutable route, not a live/cache exception. Acceptance
+# requires exact agreement with the independent source probe (route/rows/span/fingerprint), PASS
+# immutable mode, no runtime network fetch/provider switching, and certified SHA-256 snapshot IDs.
+benchmark_gate=Path('scripts/v12_benchmark_acceptance.py').read_text(encoding='utf-8')
+for token in ('VNSTOCK_INDEX_FROZEN_SNAPSHOT','valid_frozen_route','IMMUTABLE_FROZEN_SNAPSHOT','runtimeProviderSwitching','inputFingerprintSha256','snapshotFileSha256','inputManifestSha256','same_index','live_route or cache_ok or frozen_ok','dailyARUsesAdjacentCAROnly'):
+    assert token in benchmark_gate,('benchmark frozen/AR contract token',token)
+assert "idx.get('route')=='VNSTOCK_INDEX_FROZEN_SNAPSHOT'" in benchmark_gate
+assert "z.get('status')=='PASS'" in benchmark_gate
+assert "idx.get('runtimeNetworkPriceFetch') is False" in benchmark_gate
+
+# The base production point selector is FIT-LOCKED. Power and scale are chosen exclusively from
 # maturity-purged 80-85%. Early whole-date 85-90 is independent confirmation of the unchanged
 # locked model; late 85-90 is conformal-only; 90-100 is sealed and absent from selection.
 fitlock=Path('scripts/v12_train_parts/01eob_fit_locked_tail_rank.pyinc').read_text(encoding='utf-8')
@@ -61,10 +73,28 @@ for token in ('CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1','FIT_LOCKED_TAIL_RA
 assert '_FITLOCK_POWERS=(1.0,1.5,2.0,3.0)' in fitlock
 assert "validation=_nested_eval(cy[iv],predV,cd[iv],h,bootstrap=True)" in fitlock
 assert "if validation.get('preblindConfirmed') is True" in fitlock
-# Prior nested selector remains source-documented for provenance but is superseded by 01eob.
+
+# V5/V6/V7 strengthen only the pre-blind point mapping. V5 expands monotone tail concentration
+# and selects by whole-date stability; V6 selects scale inside the existing one-SE L1/magnitude
+# admissible set by fit-date stability; V7 is a label-free same-origin score-dispersion challenger
+# invoked only after V6 abstains. Independent 85-90 can only confirm/reject; sealed use remains 0.
+tail_v5=Path('scripts/v12_train_parts/01eoc_fit_locked_tail_stability.pyinc').read_text(encoding='utf-8')
+for token in ('_FITLOCK_CORE_POWERS','(4.0,6.0)','FIT_80_85_ONE_SE_THEN_ORIGIN_DATE_BLOCK_LOWER90','sealedLabelsUsed'):
+    assert token in tail_v5,('V5 tail stability token',token)
+scale_v6=Path('scripts/v12_train_parts/01eod_fit_locked_scale_stability.pyinc').read_text(encoding='utf-8')
+for token in ('80-85% ONLY','WHOLE_ORIGIN_DATE_MAE_STABILITY','independentValidationUsedForScaleSelection','sealedLabelsUsed'):
+    assert token in scale_v6,('V6 scale stability token',token)
+state_v7=Path('scripts/v12_train_parts/01eoe_fit_locked_score_state.pyinc').read_text(encoding='utf-8')
+for token in ('SAME_ORIGIN_RAW_META_SCORE_IQR','_FITLOCK_STATE_GAMMAS=(0.0,0.5,1.0)','futureLabelRequirement','V6 point family already independently confirmed','preblindConfirmed','sealedLabelsUsed'):
+    assert token in state_v7,('V7 score-state token',token)
+assert "if str(audit.get('selectedFamily'))!='Q50'" in state_v7
+assert "validationData':'EARLY WHOLE-DATE 85-90% ONLY'" in state_v7
+
+# Prior nested selector remains source-documented for provenance but is superseded by fit-locked
+# production layers. Robust expert family and maturity contract remain unchanged.
 nested=Path('scripts/v12_train_parts/01eo_nested_origin_cv_point.pyinc').read_text(encoding='utf-8')
 assert 'NESTED_EXPANDING_ORIGIN_CV_MBB_V3' in nested
 robust_src=Path('scripts/v12_train_parts/01zz_robust_model_family.pyinc').read_text(encoding='utf-8')
 assert "('RIDGE','LGBM','LGBM_L1')" in robust_src
 assert 'LABEL_MATURITY_DATE' in robust_src and '50%-70%' in robust_src
-print('V12 ACCEPTANCE + EMBARGO + FIT-LOCK TAIL-RANK + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
+print('V12 ACCEPTANCE + EMBARGO + V5/V6/V7 FIT-LOCK + FROZEN VNINDEX + FIVE-HORIZON ASSEMBLY CONTRACT REGRESSION PASS')
