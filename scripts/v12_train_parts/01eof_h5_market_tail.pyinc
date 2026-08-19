@@ -1,0 +1,141 @@
+# H5 common-market + cross-sectional tail challenger.
+#
+# Scientific motivation:
+#   * H5 retains useful same-origin ordinal signal, but a zero-mean rank residual alone is not
+#     required to explain the full five-session return magnitude.
+#   * V8 correctly abstains when forcing that residual alone to satisfy the total-return magnitude
+#     floor would destroy robust 80-85% MAE skill.
+#   * For H5 only, decompose the point forecast into (i) a common component inferred from the
+#     same-origin median raw meta score and (ii) a zero-mean tail-rank residual.
+#
+# Governance / chronology:
+#   * all parameters below are fit and locked on maturity-purged 80-85% only;
+#   * early whole origin dates of 85-90% are independent pass/fail confirmation only;
+#   * late 85-90% remains conformal-only;
+#   * 90-100% is never supplied to fitting/selection;
+#   * H1-H4 are untouched; this challenger runs only for H5 when V8/V7 retain Q50;
+#   * unchanged authority magnitude floors are applied to the TOTAL point forecast, not to the
+#     zero-mean residual component in isolation;
+#   * no authority threshold is changed.
+
+_h5_market_tail_before_calibrate=calibrate
+_h5_market_tail_before_apply=apply_calibration
+
+
+def _h5_market_tail_daily_rows(y,pred,dates):
+    yy=np.asarray(y,float);pp=np.asarray(pred,float);dd=np.asarray(dates,dtype=object).astype(str)
+    out=[]
+    for day in sorted(set(dd)):
+        idx=np.where(dd==day)[0]
+        if len(idx)<20:continue
+        edge=float(np.mean(np.abs(yy[idx])-np.abs(yy[idx]-pp[idx])))
+        out.append((str(day),edge))
+    return out
+
+
+def _h5_market_component_fit(y,score,dates):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object).astype(str)
+    good=np.isfinite(yy)&np.isfinite(ss);yy=yy[good];ss=ss[good];dd=dd[good]
+    days=[];xday=[];yday=[]
+    center=float(np.median(ss)) if len(ss) else 0.0
+    for day in sorted(set(dd)):
+        idx=np.where(dd==day)[0]
+        if len(idx)<20:continue
+        days.append(str(day));xday.append(float(np.median(ss[idx]))-center);yday.append(float(np.median(yy[idx])))
+    xday=np.asarray(xday,float);yday=np.asarray(yday,float)
+    if len(xday)<8 or float(np.std(xday))<1e-12:
+        return None,{'status':'ABSTAIN','reason':'insufficient whole-date variation in fit-block median meta score','fitDates':int(len(xday)),'sealedLabelsUsed':0}
+    ratio=float(np.std(yday)/max(np.std(xday),1e-12));upper=float(min(40.0,max(1.0,3.0*ratio)))
+    g1=np.linspace(0.0,min(3.0,upper),61);g2=np.geomspace(max(.10,min(3.0,upper)),upper,48) if upper>3.0 else np.asarray([],float)
+    grid=np.unique(np.r_[g1,g2]);rows=[]
+    for beta in grid:
+        pred=float(beta)*xday;loss=np.abs(yday-pred);edges=np.abs(yday)-loss;ci,block=_fitlock_scale_day_bootstrap(edges,5,reps=800)
+        lo=float(ci[0]) if isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -float('inf')
+        rows.append({'beta':float(beta),'mae':float(np.mean(loss)),'se':float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0,'dailyMeanEdge':float(np.mean(edges)),'dailyPositiveShare':float(np.mean(edges>0)),'dailyBootstrap90':ci,'dailyLower90':lo,'blockLength':int(block)})
+    best=min(rows,key=lambda z:(z['mae'],z['beta']));limit=float(best['mae']+max(best['se'],1e-12));near=[z for z in rows if z['mae']<=limit]
+    # A common component is only one scalar degree of freedom. Within its one-SE envelope prefer
+    # origin-date evidence, with beta=0 naturally remaining the conservative control.
+    chosen=max(near,key=lambda z:(z['dailyLower90'],z['dailyMeanEdge'],z['dailyPositiveShare'],-z['mae'],-z['beta']))
+    model={'center':center,'marketSlope':float(chosen['beta'])}
+    audit={'status':'PASS','fitDates':int(len(xday)),'center':center,'selectedMarketSlope':float(chosen['beta']),'bestMedianMAE':float(best['mae']),'oneSELimit':limit,'oneSECandidates':int(len(near)),'selectedDailyLower90':float(chosen['dailyLower90']),'selectedDailyMeanEdge':float(chosen['dailyMeanEdge']),'selectedPositiveDayShare':float(chosen['dailyPositiveShare']),'selectedDailyBootstrap90':chosen['dailyBootstrap90'],'selectionBlock':'80-85% ONLY','objective':'H5_DATE_MEDIAN_MARKET_ONE_SE_THEN_BLOCK_BOOTSTRAP_LCB','sealedLabelsUsed':0}
+    return model,audit
+
+
+def _h5_market_point(score,dates,market_model):
+    ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object)
+    center=float((market_model or {}).get('center',0.0));beta=float((market_model or {}).get('marketSlope',0.0))
+    return beta*(_xsec_date_median(ss,dd)-center)
+
+
+def _h5_market_tail_family(y,score,dates,lo,hi):
+    yy=np.asarray(y,float);ss=np.asarray(score,float);dd=np.asarray(dates,dtype=object);lo=np.asarray(lo,float);hi=np.asarray(hi,float)
+    good=np.isfinite(yy)&np.isfinite(ss)&np.isfinite(lo)&np.isfinite(hi);yy=yy[good];ss=ss[good];dd=dd[good];lo=lo[good];hi=hi[good]
+    market_model,market_audit=_h5_market_component_fit(yy,ss,dd)
+    if market_model is None:return None,{'status':'ABSTAIN','reason':'H5 common component unavailable','marketAudit':market_audit,'sealedLabelsUsed':0}
+    market=_h5_market_point(ss,dd,market_model);fd,fp=_gate_floor(5);rows=[]
+    for power in _FITLOCK_POWERS:
+        tail=_fitlock_tail_signal(ss,dd,power);resid=yy-market;ratio=float(np.std(resid)/max(np.std(tail),1e-12));upper=float(min(.30,max(.04,2.0*ratio)))
+        g1=np.linspace(0.0,min(.05,upper),101);g2=np.geomspace(max(.001,min(.05,upper)),upper,64) if upper>.05 else np.asarray([],float);grid=np.unique(np.r_[g1,g2])
+        cand=[]
+        for scale in grid:
+            pred=_clip_between(market+float(scale)*tail,lo,hi);loss=np.abs(yy-pred);daily=_h5_market_tail_daily_rows(yy,pred,dd);edges=np.asarray([z[1] for z in daily],float)
+            ci,block=_fitlock_scale_day_bootstrap(edges,5,reps=800);lower=float(ci[0]) if isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -float('inf')
+            disp=float(np.std(pred)/max(np.std(yy),1e-12));p90=float(np.quantile(np.abs(pred),.9)/max(np.quantile(np.abs(yy),.9),1e-12))
+            cand.append({'scale':float(scale),'mae':float(np.mean(loss)),'se':float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0,'dispersionRatio':disp,'p90MagnitudeRatio':p90,'dailyMeanEdge':float(np.mean(edges)) if len(edges) else -float('inf'),'dailyPositiveShare':float(np.mean(edges>0)) if len(edges) else 0.0,'dailyBootstrap90':ci,'dailyLower90':lower,'dailyDays':int(len(edges)),'dailyBlockLength':int(block)})
+        best=min(cand,key=lambda z:(z['mae'],z['scale']));limit=float(best['mae']+max(best['se'],1e-12));eligible=[z for z in cand if z['mae']<=limit and z['dispersionRatio']>=fd and z['p90MagnitudeRatio']>=fp];robust=[z for z in eligible if z['dailyLower90']>0 and z['dailyPositiveShare']>=.50]
+        chosen=max(robust,key=lambda z:(z['dailyLower90'],z['dailyMeanEdge'],z['dailyPositiveShare'],-z['mae'],-z['scale'])) if robust else None
+        rows.append({'power':float(power),'bestMAE':float(best['mae']),'oneSELimit':limit,'eligibleTotalMagnitudeN':int(len(eligible)),'robustPositiveN':int(len(robust)),'selected':chosen})
+    viable=[z for z in rows if isinstance(z.get('selected'),dict)]
+    if not viable:return None,{'status':'ABSTAIN','reason':'no H5 market-plus-tail candidate has one-SE total-magnitude admissibility plus positive moving-date MAE LCB on 80-85%','marketAudit':market_audit,'powers':rows,'sealedLabelsUsed':0}
+    chosen=max(viable,key=lambda z:(z['selected']['dailyLower90'],z['selected']['dailyMeanEdge'],z['selected']['dailyPositiveShare'],-z['selected']['mae'],z['power']))
+    z=chosen['selected'];model={'kind':'H5_MARKET_PLUS_TAIL_FIT_LOCKED','center':float(market_model['center']),'marketSlope':float(market_model['marketSlope']),'power':float(chosen['power']),'residualScale':float(z['scale'])}
+    audit={'status':'PASS','selectionBlock':'80-85% ONLY','selectedPower':float(chosen['power']),'selectedResidualScale':float(z['scale']),'marketAudit':market_audit,'selectedFitMAE':float(z['mae']),'selectedDispersionRatio':float(z['dispersionRatio']),'selectedP90MagnitudeRatio':float(z['p90MagnitudeRatio']),'selectedDailyLower90':float(z['dailyLower90']),'selectedDailyMeanEdge':float(z['dailyMeanEdge']),'selectedPositiveDayShare':float(z['dailyPositiveShare']),'selectedDailyBootstrap90':z['dailyBootstrap90'],'powers':rows,'objective':'H5_FIT_LOCKED_COMMON_MARKET_PLUS_TAIL_TOTAL_FORECAST_LCB','magnitudeConstraintScope':'TOTAL_POINT_FORECAST','independentValidationUsedForSelection':False,'sealedLabelsUsed':0}
+    return model,audit
+
+
+def _h5_market_tail_predict(score,dates,model):
+    market=_h5_market_point(score,dates,model);tail=_fitlock_tail_signal(score,dates,float((model or {}).get('power',1.0)))
+    return np.asarray(market,float)+float((model or {}).get('residualScale',0.0))*np.asarray(tail,float)
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_h5_market_tail_before_calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates)
+    if cal_dates is None or conform_dates is None or not isinstance(layer,_QuantileLayer):return layer,iso,qadj
+    audit=getattr(layer,'pointSelectionAudit',None)
+    if not isinstance(audit,dict):return layer,iso,qadj
+    h=_gate_h()
+    if int(h)!=5:
+        audit['h5MarketTailChallenger']={'status':'NOT_APPLICABLE','horizon':int(h),'sealedLabelsUsed':0};return layer,iso,qadj
+    if str(audit.get('selectedFamily'))!='Q50':
+        audit['h5MarketTailChallenger']={'status':'NOT_INVOKED','reason':'existing fit-locked point family already independently confirmed','sealedLabelsUsed':0};return layer,iso,qadj
+    fy=np.asarray(cal_y,float);fs=np.asarray(cal_score,float);fd=np.asarray(cal_dates,dtype=object);cy=np.asarray(conform_y,float);cs=np.asarray(conform_score,float);cd=np.asarray(conform_dates,dtype=object)
+    sp=_chrono_date_split(fd,cd)
+    if sp is None:return layer,iso,qadj
+    iv=sp['validationIndex'];g=float(getattr(layer,'returnShrink',1.0));loF,_,hiF=layer.predict(fs);loF=np.asarray(loF,float)*g;hiF=np.asarray(hiF,float)*g
+    model,fit_audit=_h5_market_tail_family(fy,fs,fd,loF,hiF);validation=None
+    if model is not None and len(iv):
+        loV,_,hiV=layer.predict(cs[iv]);loV=np.asarray(loV,float)*g;hiV=np.asarray(hiV,float)*g;predV=_clip_between(_h5_market_tail_predict(cs[iv],cd[iv],model),loV,hiV)
+        validation=_nested_eval(cy[iv],predV,cd[iv],5,bootstrap=True)
+        if validation.get('preblindConfirmed') is True:
+            layer.pointMode='H5_MARKET_PLUS_TAIL_FIT_LOCKED';layer.pointXsecModel=model;audit['selectedFamily']='H5_MARKET_PLUS_TAIL_FIT_LOCKED';audit['selectedPreblindConfirmed']=True;audit['familyFitAudit']=fit_audit;audit['lockedModel']=model;audit['independentValidationAudit']=validation;audit['reason']='H5 zero-mean residual alone abstained; a fit-locked common-market plus tail residual decomposition passed robust 80-85% total-point evidence and independent unchanged 85-90% confirmation'
+    audit['h5MarketTailChallenger']={'status':'PASS' if validation and validation.get('preblindConfirmed') is True else 'REJECTED_PREBLIND','fitAudit':fit_audit,'independentValidationAudit':validation,'selectionData':'80-85% ONLY','validationData':'EARLY WHOLE-DATE 85-90% ONLY','commonStateVariable':'SAME_ORIGIN_RAW_META_SCORE_MEDIAN','magnitudeConstraintScope':'TOTAL_POINT_FORECAST','sealedLabelsUsed':0}
+    audit['revision']='FIT_LOCKED_H5_MARKET_PLUS_TAIL_V9';audit['sealedLabelsUsed']=0
+    return layer,iso,qadj
+
+
+def apply_calibration(score,scen,iso,qadj,origin_dates=None):
+    mode=str(getattr(scen,'pointMode','')) if isinstance(scen,_QuantileLayer) else ''
+    if mode!='H5_MARKET_PLUS_TAIL_FIT_LOCKED':return _h5_market_tail_before_apply(score,scen,iso,qadj,origin_dates)
+    if origin_dates is None:return _h5_market_tail_before_apply(score,scen,iso,qadj,origin_dates)
+    ss=np.asarray(score,float);dd=np.asarray(origin_dates,dtype=object);p=np.asarray(iso.predict(ss),float);lo0,_,hi0=scen.predict(ss);g=float(getattr(scen,'returnShrink',1.0));lo=np.asarray(lo0,float)*g;hi=np.asarray(hi0,float)*g;model=getattr(scen,'pointXsecModel',None) or {};point=_clip_between(_h5_market_tail_predict(ss,dd,model),lo,hi)
+    return p,np.asarray(point,float),lo-float(qadj),hi+float(qadj),np.full(len(point),int(scen.n),dtype=int)
+
+
+# Structural guard: the tail residual must preserve same-origin zero mean while the common term is
+# identical for every member of the same origin date. No research labels are touched here.
+_v9_d=np.asarray(['A']*40+['B']*40,dtype=object);_v9_s=np.r_[np.linspace(-1,1,40)+.2,np.linspace(-2,2,40)-.3];_v9_m={'center':0.0,'marketSlope':.5,'power':3.0,'residualScale':.01};_v9_tail=_fitlock_tail_signal(_v9_s,_v9_d,3.0);_v9_market=_h5_market_point(_v9_s,_v9_d,_v9_m)
+for _v9_day in ('A','B'):
+    _v9_i=np.where(_v9_d==_v9_day)[0]
+    if abs(float(np.mean(_v9_tail[_v9_i])))>1e-10:raise RuntimeError('H5 market-tail residual must remain zero mean by origin date')
+    if float(np.max(_v9_market[_v9_i])-np.min(_v9_market[_v9_i]))>1e-12:raise RuntimeError('H5 market component must be common within origin date')
+del _v9_d,_v9_s,_v9_m,_v9_tail,_v9_market,_v9_day,_v9_i
