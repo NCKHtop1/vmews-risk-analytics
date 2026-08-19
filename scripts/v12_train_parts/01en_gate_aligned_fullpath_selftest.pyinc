@@ -1,23 +1,33 @@
-# Lightweight production-path self-test for the six-argument chronological calibration API.
-# It uses synthetic pre-blind data only and verifies the audit contract plus application path.
+# Lightweight production-path self-test for the six-argument V2 chronological calibration API.
+# Synthetic pre-blind labels only; exact maturity arrays are supplied explicitly and no sealed
+# label can affect family selection/calibration.
 def _gate_fullpath_selftest():
     rng=np.random.default_rng(1701);nfit=720;ncon=720
     fs=rng.normal(size=nfit);fy=.010*fs+rng.normal(scale=.018,size=nfit)
     cs=rng.normal(size=ncon);cy=.010*cs+rng.normal(scale=.018,size=ncon)
     fd=np.asarray(sum(([f'2025-01-{1+i:02d}']*60 for i in range(12)),[]),dtype=object)
     cd=np.asarray(sum(([f'2025-02-{1+i:02d}']*90 for i in range(8)),[]),dtype=object)
-    old_h=globals().get('V12_ACTIVE_HORIZON',None);globals()['V12_ACTIVE_HORIZON']=3
+    old={k:globals().get(k,None) for k in ('V12_ACTIVE_HORIZON','V12_PRIMARY_CAL_A_MATURITY','V12_PRIMARY_CAL_B_MATURITY','V12_CURRENT_SEALED_START','V12_PRIMARY_CALIBRATION_PENDING','_V12_PRIMARY_PREBLIND_CALIBRATION')}
+    globals()['V12_ACTIVE_HORIZON']=3
+    globals()['V12_PRIMARY_CAL_A_MATURITY']=np.asarray(fd,dtype=object)
+    globals()['V12_PRIMARY_CAL_B_MATURITY']=np.asarray(cd,dtype=object)
+    globals()['V12_CURRENT_SEALED_START']='2025-03-01'
+    globals()['V12_PRIMARY_CALIBRATION_PENDING']=True
+    globals()['_V12_PRIMARY_PREBLIND_CALIBRATION']=None
     try:
         layer,iso,qadj=calibrate(fy,fs,cy,cs,fd,cd)
         audit=getattr(layer,'pointSelectionAudit',{}) or {}
-        if audit.get('method')!='CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1':raise RuntimeError('gate fullpath audit method regression')
-        if audit.get('selectionBaseline')!='NO_CHANGE_ZERO_RETURN' or audit.get('sealedLabelsUsed')!=0:raise RuntimeError('gate fullpath baseline/sealed regression')
-        if audit.get('dateDisjoint') is not True or audit.get('rowOrderIndependent') is not True:raise RuntimeError('gate fullpath chronology regression')
+        if audit.get('method')!='CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V2':raise RuntimeError('gate fullpath V2 audit method regression')
+        if audit.get('selectionBaseline')!='NO_CHANGE_ZERO_RETURN' or audit.get('sealedLabelsUsed')!=0:raise RuntimeError('gate fullpath V2 baseline/sealed regression')
+        if audit.get('dateDisjoint') is not True or audit.get('rowOrderIndependent') is not True or audit.get('exactLabelMaturityPurged') is not True:raise RuntimeError('gate fullpath V2 chronology/maturity regression')
+        if len(audit.get('rollingFolds') or [])<3:raise RuntimeError('gate fullpath V2 rolling-fold regression')
+        if any(int(x.get('futureLabelsUsed') or 0)!=0 for x in (audit.get('rollingFolds') or [])):raise RuntimeError('gate fullpath V2 future-label regression')
         p,med,lo,hi,n=apply_calibration(cs[:180],layer,iso,qadj,cd[:180])
-        if not (len(p)==len(med)==len(lo)==len(hi)==len(n)==180):raise RuntimeError('gate fullpath output length regression')
-        if not (np.all(np.isfinite(p)) and np.all(np.isfinite(med)) and np.all(np.isfinite(lo)) and np.all(np.isfinite(hi))):raise RuntimeError('gate fullpath finite regression')
-        if not np.all(lo<=med) or not np.all(med<=hi):raise RuntimeError('gate fullpath interval ordering regression')
+        if not (len(p)==len(med)==len(lo)==len(hi)==len(n)==180):raise RuntimeError('gate fullpath V2 output length regression')
+        if not (np.all(np.isfinite(p)) and np.all(np.isfinite(med)) and np.all(np.isfinite(lo)) and np.all(np.isfinite(hi))):raise RuntimeError('gate fullpath V2 finite regression')
+        if not np.all(lo<=med) or not np.all(med<=hi):raise RuntimeError('gate fullpath V2 interval ordering regression')
     finally:
-        if old_h is None:globals().pop('V12_ACTIVE_HORIZON',None)
-        else:globals()['V12_ACTIVE_HORIZON']=old_h
+        for k,v in old.items():
+            if v is None:globals().pop(k,None)
+            else:globals()[k]=v
 _gate_fullpath_selftest()
