@@ -1,0 +1,99 @@
+name: V12 H5 conditional-core contract patch
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v12-methodfix]
+    paths:
+      - '.github/workflows/v12-h5-conditional-core-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: forecast-v12-methodfix
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch H5 conditional core contract and auditable sole-expert ablation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          acceptance = Path('scripts/v12_acceptance.py')
+          s = acceptance.read_text(encoding='utf-8')
+          old = "check(5,f'T+{h} mandatory numerical+regime experts active','NUMERICAL' in active and 'REGIME' in active,active);"
+          new = """core=prom.get('REGIME_CORE') or {}
+              if h==5:
+                  if 'REGIME' in active:
+                      regime_contract=core.get('promoted') is True and core.get('sealedLabelsUsed')==0
+                  else:
+                      regime_contract=(core.get('promoted') is False and core.get('sealedLabelsUsed')==0 and core.get('reference')==['NUMERICAL'] and core.get('candidate')==['NUMERICAL','REGIME'] and '70%-80%' in str(core.get('selectionWindow') or ''))
+              else:regime_contract='REGIME' in active
+              check(5,f'T+{h} numerical core and audited regime admission contract','NUMERICAL' in active and regime_contract,{'active':active,'REGIME_CORE':core});"""
+          if old not in s:
+              raise SystemExit('acceptance Phase-5 anchor not found')
+          s = s.replace(old, new, 1)
+
+          old7 = "check(7,f'T+{h} ablation exists for every active expert',all(x in abl for x in (z.get('activeExperts') or [])),abl.keys())"
+          new7 = """check(7,f'T+{h} ablation exists for every active expert',all(x in abl for x in (z.get('activeExperts') or [])),abl.keys())
+              if len(z.get('activeExperts') or [])==1:
+                  only=(z.get('activeExperts') or [None])[0];az=abl.get(only) or {};check(7,f'T+{h} sole-expert ablation is pre-sealed null baseline',az.get('baseline')=='NO_EXPERT_PRESEALED_NULL' and az.get('selectionLabelsUsed')==0 and az.get('usedForSelection') is False and az.get('baselineCalibrationWindow')=='80%-85%' and az.get('baselineConformalWindow')=='85%-90%',az)"""
+          if old7 not in s:
+              raise SystemExit('acceptance Phase-7 anchor not found')
+          s = s.replace(old7, new7, 1)
+          acceptance.write_text(s, encoding='utf-8')
+
+          train = Path('scripts/v12_train_parts/02.pyinc')
+          t = train.read_text(encoding='utf-8')
+          old2 = "if not reduced:continue"
+          new2 = """if not reduced:
+                  # A one-expert stack still needs a real ablation.  The counterfactual is a
+                  # no-expert/null forecast whose probability, median and interval are learned
+                  # only from the pre-sealed 80-85% calibration block and conformed on 85-90%.
+                  # The sealed 90-100% labels are used only to audit the already-locked null,
+                  # never to select an expert or tune this baseline.
+                  ref=y[idx_calA];conform=y[idx_calB]
+                  p0=float(np.mean(ref>0));rscore=np.zeros(len(idx_audit),dtype=float);rp=np.full(len(idx_audit),min(.98,max(.02,p0)),dtype=float)
+                  rmed0=float(np.median(ref));rlo0=float(np.quantile(ref,.20));rhi0=float(np.quantile(ref,.80))
+                  rnon=np.maximum.reduce([rlo0-conform,conform-rhi0,np.zeros(len(conform))]);rql=min(1.0,math.ceil((len(rnon)+1)*.60)/max(1,len(rnon)));rq=float(np.quantile(rnon,rql,method='higher')) if len(rnon) else 0.
+                  rmed=np.full(len(idx_audit),rmed0,dtype=float);rlo=np.full(len(idx_audit),rlo0-rq,dtype=float);rhi=np.full(len(idx_audit),rhi0+rq,dtype=float)
+                  rz=audit_metrics(y[idx_audit],rscore,rp,rmed,rlo,rhi,D[idx_audit]);rz['rankIC']=0.;rz['spread']=0.;rz['scenarioRankIC']=0.
+                  ablation[drop]={'baseline':'NO_EXPERT_PRESEALED_NULL','baselineCalibrationWindow':'80%-85%','baselineConformalWindow':'85%-90%','selectionLabelsUsed':0,'sealedAuditLabelsUsed':int(len(idx_audit)),'usedForSelection':False,'without':rz,'deltaRankIC':sealed['rankIC']-rz['rankIC'],'deltaMAEImprove':sealed['scenarioMAEImprove']-rz['scenarioMAEImprove'],'deltaBrierSkill':sealed['brierSkill']-rz['brierSkill']}
+                  continue"""
+          if old2 not in t:
+              raise SystemExit('sole-expert ablation anchor not found')
+          t = t.replace(old2, new2, 1)
+          train.write_text(t, encoding='utf-8')
+
+          compile(acceptance.read_text(encoding='utf-8'), str(acceptance), 'exec')
+          parts=sorted((Path('scripts')/'v12_train_parts').glob('*.pyinc'))
+          compile('\n'.join(p.read_text(encoding='utf-8') for p in parts),'v12-nine-phase-assembled.py','exec')
+
+          a=acceptance.read_text(encoding='utf-8')
+          q=train.read_text(encoding='utf-8')
+          assert 'numerical core and audited regime admission contract' in a
+          assert 'sole-expert ablation is pre-sealed null baseline' in a
+          assert 'NO_EXPERT_PRESEALED_NULL' in q
+          assert "sealedAuditLabelsUsed" in q and "usedForSelection':False" in q
+          print('H5 CONDITIONAL CORE + SOLE-EXPERT ABLATION PATCH COMPILES')
+          PY
+          git diff --check
+      - name: Commit patch and trigger exact Full
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'h5-conditional-core-null-ablation %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > v12-methodfix-trigger.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/v12_acceptance.py scripts/v12_train_parts/02.pyinc v12-methodfix-trigger.txt
+          git commit -m 'fix(v12): align H5 acceptance with pre-blind expert admission'
+          git push origin HEAD:forecast-v12-methodfix
