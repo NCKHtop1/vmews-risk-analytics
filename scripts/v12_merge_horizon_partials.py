@@ -49,6 +49,21 @@ def _merge_experts(P):
 def _current_common(c):return {"version":c.get("version"),"symbols":{s:_strip({k:v for k,v in r.items() if k!="horizons"}) for s,r in sorted((c.get("symbols") or {}).items())}}
 def _dash_common(d):return _strip({k:d.get(k) for k in ("version","modelVersion","asOf","charts","dataAuditSummary")})
 def _back_common(b):return _strip({"version":b.get("version"),"design":b.get("design")})
+def _benchmark_alignment(a):return copy.deepcopy(((a.get("entityFilter") or {}).get("benchmarkAlignment") or {}))
+def _benchmark_alignment_common(z):return {k:z.get(k) for k in ("method","joinKey","missingPolicy")}
+def _data_audit_common(a):
+    z=copy.deepcopy(a);entity=z.get("entityFilter")
+    if isinstance(entity,dict):entity.pop("benchmarkAlignment",None)
+    return _strip(z)
+def _merge_data_audit(P):
+    out=copy.deepcopy(P[1]["data-audit-v12.json"]);align={};ref=None
+    for h in HORIZONS:
+        z=_benchmark_alignment(P[h]["data-audit-v12.json"]);common=_benchmark_alignment_common(z)
+        if ref is None:ref=common
+        else:_same("benchmark-alignment-contract",ref,common,h)
+        align[str(h)]=z
+    entity=out.setdefault("entityFilter",{});entity["benchmarkAlignment"]={**(ref or {}),"scope":"HORIZON_SPECIFIC_EXACT_STOCK_MATURITY","byHorizon":align,"mergedWithoutAggregation":True}
+    return out
 def _event_top(e):
     out={k:v for k,v in e.items() if k not in {"generatedAt","records","summary"}};s=dict(e.get("summary") or {})
     for k in EV_H5:s.pop(k,None)
@@ -89,9 +104,9 @@ def _source(outdir):
     if z.get("status")!="PASS" or z.get("mode")!="IMMUTABLE_FROZEN_SNAPSHOT" or z.get("runtimeNetworkPriceFetch") is not False or z.get("runtimeProviderSwitching") is not False or len(sha)!=64:raise RuntimeError(f"source probe is not immutable PASS: {z}")
     return {"snapshotFileSha256":sha,"inputManifestSha256":snap.get("inputManifestSha256"),"asOf":snap.get("asOf")}
 def merge_partials(partials_root,outdir):
-    P={h:_load_partial(partials_root,h) for h in HORIZONS};first=P[1];mr=_model_common(first["forecast-model-v12.json"]);fr=_feature_common(first["forecast-model-v12.json"]);cr=_current_common(first["forecast-current-v12.json"]);dr=_strip(first["data-audit-v12.json"]);br=_back_common(first["forecast-backtest-v12.json"]);ar=_dash_common(first["forecast-dashboard-v12.json"]);fps={}
+    P={h:_load_partial(partials_root,h) for h in HORIZONS};first=P[1];mr=_model_common(first["forecast-model-v12.json"]);fr=_feature_common(first["forecast-model-v12.json"]);cr=_current_common(first["forecast-current-v12.json"]);dr=_data_audit_common(first["data-audit-v12.json"]);br=_back_common(first["forecast-backtest-v12.json"]);ar=_dash_common(first["forecast-dashboard-v12.json"]);fps={}
     for h,p in P.items():
-        _same("model-common",mr,_model_common(p["forecast-model-v12.json"]),h);_same("model-feature-common",fr,_feature_common(p["forecast-model-v12.json"]),h);_same("current-common",cr,_current_common(p["forecast-current-v12.json"]),h);_same("data-audit",dr,_strip(p["data-audit-v12.json"]),h);_same("backtest-common",br,_back_common(p["forecast-backtest-v12.json"]),h);_same("dashboard-common",ar,_dash_common(p["forecast-dashboard-v12.json"]),h);fps[str(h)]={n:_sha(_strip(o)) for n,o in sorted(p.items())}
+        _same("model-common",mr,_model_common(p["forecast-model-v12.json"]),h);_same("model-feature-common",fr,_feature_common(p["forecast-model-v12.json"]),h);_same("current-common",cr,_current_common(p["forecast-current-v12.json"]),h);_same("data-audit-common",dr,_data_audit_common(p["data-audit-v12.json"]),h);_same("backtest-common",br,_back_common(p["forecast-backtest-v12.json"]),h);_same("dashboard-common",ar,_dash_common(p["forecast-dashboard-v12.json"]),h);fps[str(h)]={n:_sha(_strip(o)) for n,o in sorted(p.items())}
     model=copy.deepcopy(first["forecast-model-v12.json"]);model["createdAt"]=_now();model["featureNames"]=_merge_features(P);model["experts"]=_merge_experts(P);model["horizons"]={str(h):copy.deepcopy(P[h]["forecast-model-v12.json"]["horizons"][str(h)]) for h in HORIZONS};ph=[h for h in HORIZONS if model["horizons"][str(h)].get("priceStatus")=="PASS"];dh=[h for h in HORIZONS if model["horizons"][str(h)].get("directionStatus")=="PASS"];model["promotion"]={"status":"PASS" if ph==list(HORIZONS) else "REVIEW","directPriceHorizons":ph,"directionHorizons":dh,"exactTargetPrice":False,"calibratedScenarioPrice":True,"rule":"All five direct price horizons must pass positive-skill ranking + quantile scenario + CSCV/PBO + embargoed literal walk-forward generalization gates. Probability-up is rendered only when the independent positive-Brier direction gate also passes."};model.setdefault("governance",{})["priceSourcePolicy"]="Certified immutable frozen-source snapshot; runtime network price fetch and provider switching disabled";model["execution"]={"version":ASSEMBLY_VERSION,"mode":"FIVE_ISOLATED_DIRECT_HORIZON_JOBS_THEN_DETERMINISTIC_MERGE","scientificSemanticsChanged":False,"horizons":list(HORIZONS),"partialFingerprints":fps}
     current=copy.deepcopy(first["forecast-current-v12.json"]);current["generatedAt"]=_now();symbols=set(current.get("symbols") or {})
     for h in HORIZONS:
@@ -99,7 +114,7 @@ def merge_partials(partials_root,outdir):
     for s in sorted(symbols):current["symbols"][s]["horizons"]={str(h):copy.deepcopy(P[h]["forecast-current-v12.json"]["symbols"][s]["horizons"][str(h)]) for h in HORIZONS}
     back=copy.deepcopy(first["forecast-backtest-v12.json"]);back["generatedAt"]=_now();back["horizons"]={str(h):copy.deepcopy(P[h]["forecast-backtest-v12.json"]["horizons"][str(h)]) for h in HORIZONS};back["cases"]={str(h):copy.deepcopy(P[h]["forecast-backtest-v12.json"]["cases"][str(h)]) for h in HORIZONS};back["execution"]={"version":ASSEMBLY_VERSION,"scientificSemanticsChanged":False}
     dash=copy.deepcopy(P[5]["forecast-dashboard-v12.json"]);dash["generatedAt"]=_now();dash["promotion"]=copy.deepcopy(model["promotion"]);dash["symbols"]=copy.deepcopy(current["symbols"]);dash["execution"]={"version":ASSEMBLY_VERSION,"scientificSemanticsChanged":False}
-    audit=copy.deepcopy(first["data-audit-v12.json"]);audit["fullExecution"]={"version":ASSEMBLY_VERSION,"mode":"PARALLEL_HORIZON_ORCHESTRATION_ONLY","scientificSemanticsChanged":False};events=_merge_events(P);outdir=pathlib.Path(outdir);src=_source(outdir)
+    audit=_merge_data_audit(P);audit["fullExecution"]={"version":ASSEMBLY_VERSION,"mode":"PARALLEL_HORIZON_ORCHESTRATION_ONLY","scientificSemanticsChanged":False};events=_merge_events(P);outdir=pathlib.Path(outdir);src=_source(outdir)
     if src:model["execution"]["frozenSource"]=src;back["execution"]["frozenSource"]=src;dash["execution"]["frozenSource"]=src;audit["fullExecution"]["frozenSource"]=src
     outputs={"forecast-model-v12.json":model,"forecast-current-v12.json":current,"forecast-dashboard-v12.json":dash,"forecast-backtest-v12.json":back,"data-audit-v12.json":audit,"event-intelligence-v12.json":events}
     for n,o in outputs.items():_write(outdir/n,o)
