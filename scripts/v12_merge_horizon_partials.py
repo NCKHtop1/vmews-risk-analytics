@@ -1,338 +1,109 @@
-"""Deterministically merge five isolated V12 horizon runs.
-
-The five horizon jobs execute the exact same assembled scientific code with only
-V12_ONLY_HORIZON changed.  This merger performs no fitting, calibration, gate
-selection, or prediction transformation.  It only validates common provenance,
-joins the already-computed T+1..T+5 artifacts, and reconstructs the same final
-JSON contract expected by the acceptance and release stages.
-"""
+"""Deterministic merge of five already-fitted V12 horizon artifacts; no refit."""
 from __future__ import annotations
-
-import argparse
-import copy
-import hashlib
-import json
-import pathlib
-from datetime import datetime, timezone
-
-HORIZONS = (1, 2, 3, 4, 5)
-REQUIRED = (
-    "forecast-model-v12.json",
-    "forecast-current-v12.json",
-    "forecast-dashboard-v12.json",
-    "forecast-backtest-v12.json",
-    "data-audit-v12.json",
-    "event-intelligence-v12.json",
-)
-ASSEMBLY_VERSION = "VMEWS-V12-HORIZON-ASSEMBLY-1.0.0"
-
-
-def _now():
-    return datetime.now(timezone.utc).isoformat()
-
-
-def _canonical(value):
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("utf-8")
-
-
-def _sha(value):
-    return hashlib.sha256(value if isinstance(value, bytes) else _canonical(value)).hexdigest()
-
-
-def _load(path):
-    return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
-
-
-def _write(path, value):
-    path = pathlib.Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False),
-        encoding="utf-8",
-    )
-
-
-def _strip_volatile(value):
-    """Remove only wall-clock metadata; never remove scientific/provenance fields."""
-    if isinstance(value, dict):
-        return {
-            k: _strip_volatile(v)
-            for k, v in value.items()
-            if k not in {"generatedAt", "createdAt", "updatedAt"}
-        }
-    if isinstance(value, list):
-        return [_strip_volatile(v) for v in value]
-    return value
-
-
-def _model_common(model):
-    keys = (
-        "version",
-        "target",
-        "featureNames",
-        "experts",
-        "universe",
-        "governance",
-        "dataSources",
-    )
-    return _strip_volatile({k: model.get(k) for k in keys})
-
-
-def _current_common(current):
-    out = {
-        "version": current.get("version"),
-        "symbols": {},
-    }
-    for symbol, row in sorted((current.get("symbols") or {}).items()):
-        z = {k: v for k, v in row.items() if k != "horizons"}
-        out["symbols"][symbol] = _strip_volatile(z)
+import argparse,copy,hashlib,json,pathlib
+from datetime import datetime,timezone
+HORIZONS=(1,2,3,4,5); REQUIRED=("forecast-model-v12.json","forecast-current-v12.json","forecast-dashboard-v12.json","forecast-backtest-v12.json","data-audit-v12.json","event-intelligence-v12.json"); ASSEMBLY_VERSION="VMEWS-V12-HORIZON-ASSEMBLY-1.0.0"
+EV_FIELDS=("priceAfter","benchmarkReturn","benchmarkAvailable","benchmarkTargetDate","abnormalReturn","cumulativeAbnormalReturn","matureDate")
+EV_H5=("maturedH5Records","benchmarkH5Available","benchmarkH5Coverage")
+def _now():return datetime.now(timezone.utc).isoformat()
+def _canon(x):return json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(",",":"),allow_nan=False).encode()
+def _sha(x):return hashlib.sha256(x if isinstance(x,bytes) else _canon(x)).hexdigest()
+def _load(p):return json.loads(pathlib.Path(p).read_text(encoding="utf-8"))
+def _write(p,x):p=pathlib.Path(p);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(x,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
+def _strip(x):
+    if isinstance(x,dict):return {k:_strip(v) for k,v in x.items() if k not in {"generatedAt","createdAt","updatedAt"}}
+    if isinstance(x,list):return [_strip(v) for v in x]
+    return x
+def _same(label,a,b,h):
+    if _sha(a)!=_sha(b):raise RuntimeError(f"cross-horizon invariant mismatch for {label}: h1={_sha(a)} h{h}={_sha(b)}")
+def _evnames(h):return tuple(f"eventPrior{x}{int(h)}" for x in ("AR","Hit","N","Uncertainty"))
+ALL_EV=set(x for h in HORIZONS for x in _evnames(h)); COMMON5={"eventPriorAR5","eventPriorHit5","eventPriorN5"}
+def _model_common(m):return _strip({k:m.get(k) for k in ("version","target","universe","governance","dataSources")})
+def _feature_common(m):
+    e=copy.deepcopy(m.get("experts") or {});e["EVENT"]=[x for x in e.get("EVENT",[]) if x not in ALL_EV]
+    return {"featureNames":[x for x in (m.get("featureNames") or []) if x not in ALL_EV],"experts":e}
+def _validate_feature_contract(m,h):
+    exp=set(_evnames(h))|COMMON5; f={x for x in (m.get("featureNames") or []) if x in ALL_EV};e={x for x in ((m.get("experts") or {}).get("EVENT") or []) if x in ALL_EV}
+    if f!=exp or e!=exp:raise RuntimeError(f"horizon {h} event-prior feature contract mismatch: featureNames={sorted(f)} EVENT={sorted(e)} expected={sorted(exp)}")
+def _ordered(xs):
+    out=[];seen=set()
+    for x in xs:
+        if x not in seen:seen.add(x);out.append(x)
     return out
-
-
-def _dashboard_common(dashboard):
-    # Lists depend on H5 and are therefore intentionally not a cross-horizon invariant.
-    return _strip_volatile({
-        "version": dashboard.get("version"),
-        "modelVersion": dashboard.get("modelVersion"),
-        "asOf": dashboard.get("asOf"),
-        "charts": dashboard.get("charts"),
-        "dataAuditSummary": dashboard.get("dataAuditSummary"),
-    })
-
-
-def _backtest_common(backtest):
-    return _strip_volatile({
-        "version": backtest.get("version"),
-        "design": backtest.get("design"),
-    })
-
-
-def _assert_same(label, reference, candidate, horizon):
-    a = _sha(reference)
-    b = _sha(candidate)
-    if a != b:
-        raise RuntimeError(
-            f"cross-horizon invariant mismatch for {label}: h1={a} h{horizon}={b}"
-        )
-
-
-def _partial_dir(root, horizon):
-    return pathlib.Path(root) / f"h{int(horizon)}"
-
-
-def _load_partial(root, horizon):
-    folder = _partial_dir(root, horizon)
-    missing = [name for name in REQUIRED if not (folder / name).exists()]
-    if missing:
-        raise RuntimeError(f"horizon {horizon} partial missing files: {missing}")
-    out = {name: _load(folder / name) for name in REQUIRED}
-    model_h = sorted((out["forecast-model-v12.json"].get("horizons") or {}).keys())
-    if model_h != [str(horizon)]:
-        raise RuntimeError(f"horizon {horizon} model partial contains horizons {model_h}")
-    backtest_h = sorted((out["forecast-backtest-v12.json"].get("horizons") or {}).keys())
-    case_h = sorted((out["forecast-backtest-v12.json"].get("cases") or {}).keys())
-    if backtest_h != [str(horizon)] or case_h != [str(horizon)]:
-        raise RuntimeError(
-            f"horizon {horizon} backtest partial malformed: horizons={backtest_h} cases={case_h}"
-        )
-    symbols = out["forecast-current-v12.json"].get("symbols") or {}
-    if not symbols:
-        raise RuntimeError(f"horizon {horizon} current partial has no symbols")
-    bad = [
-        s for s, row in symbols.items()
-        if sorted((row.get("horizons") or {}).keys()) != [str(horizon)]
-    ]
-    if bad:
-        raise RuntimeError(f"horizon {horizon} current partial malformed for symbols {bad[:10]}")
-    return out
-
-
-def _source_identity(outdir):
-    probe_path = pathlib.Path(outdir) / "v12-source-probe.json"
-    if not probe_path.exists():
-        return None
-    probe = _load(probe_path)
-    if probe.get("status") != "PASS" or probe.get("mode") != "IMMUTABLE_FROZEN_SNAPSHOT":
-        raise RuntimeError(f"source probe is not immutable PASS: {probe}")
-    if probe.get("runtimeNetworkPriceFetch") is not False:
-        raise RuntimeError("source probe reports runtimeNetworkPriceFetch != false")
-    if probe.get("runtimeProviderSwitching") is not False:
-        raise RuntimeError("source probe reports runtimeProviderSwitching != false")
-    snap = probe.get("snapshot") or {}
-    sha = str(snap.get("snapshotFileSha256") or "")
-    if len(sha) != 64:
-        raise RuntimeError(f"invalid frozen source snapshot sha: {sha!r}")
-    return {
-        "snapshotFileSha256": sha,
-        "inputManifestSha256": snap.get("inputManifestSha256"),
-        "asOf": snap.get("asOf"),
-    }
-
-
-def merge_partials(partials_root, outdir):
-    partials = {h: _load_partial(partials_root, h) for h in HORIZONS}
-    first = partials[1]
-
-    model_ref = _model_common(first["forecast-model-v12.json"])
-    current_ref = _current_common(first["forecast-current-v12.json"])
-    data_ref = _strip_volatile(first["data-audit-v12.json"])
-    event_ref = _strip_volatile(first["event-intelligence-v12.json"])
-    backtest_ref = _backtest_common(first["forecast-backtest-v12.json"])
-    dashboard_ref = _dashboard_common(first["forecast-dashboard-v12.json"])
-
-    fingerprints = {}
-    for h, part in partials.items():
-        _assert_same("model-common", model_ref, _model_common(part["forecast-model-v12.json"]), h)
-        _assert_same("current-common", current_ref, _current_common(part["forecast-current-v12.json"]), h)
-        _assert_same("data-audit", data_ref, _strip_volatile(part["data-audit-v12.json"]), h)
-        _assert_same("event-intelligence", event_ref, _strip_volatile(part["event-intelligence-v12.json"]), h)
-        _assert_same("backtest-common", backtest_ref, _backtest_common(part["forecast-backtest-v12.json"]), h)
-        _assert_same("dashboard-common", dashboard_ref, _dashboard_common(part["forecast-dashboard-v12.json"]), h)
-        fingerprints[str(h)] = {
-            name: _sha(_strip_volatile(obj))
-            for name, obj in sorted(part.items())
-        }
-
-    model = copy.deepcopy(first["forecast-model-v12.json"])
-    model["createdAt"] = _now()
-    model["horizons"] = {
-        str(h): copy.deepcopy(partials[h]["forecast-model-v12.json"]["horizons"][str(h)])
-        for h in HORIZONS
-    }
-    price_h = [
-        h for h in HORIZONS
-        if model["horizons"][str(h)].get("priceStatus") == "PASS"
-    ]
-    direction_h = [
-        h for h in HORIZONS
-        if model["horizons"][str(h)].get("directionStatus") == "PASS"
-    ]
-    model["promotion"] = {
-        "status": "PASS" if price_h == list(HORIZONS) else "REVIEW",
-        "directPriceHorizons": price_h,
-        "directionHorizons": direction_h,
-        "exactTargetPrice": False,
-        "calibratedScenarioPrice": True,
-        "rule": "All five direct price horizons must pass positive-skill ranking + quantile scenario + CSCV/PBO + embargoed literal walk-forward generalization gates. Probability-up is rendered only when the independent positive-Brier direction gate also passes.",
-    }
-    # Correct stale legacy metadata only; runtime source semantics were already frozen/no-network.
-    model.setdefault("governance", {})["priceSourcePolicy"] = (
-        "Certified immutable frozen-source snapshot; runtime network price fetch and provider switching disabled"
-    )
-    model["execution"] = {
-        "version": ASSEMBLY_VERSION,
-        "mode": "FIVE_ISOLATED_DIRECT_HORIZON_JOBS_THEN_DETERMINISTIC_MERGE",
-        "scientificSemanticsChanged": False,
-        "horizons": list(HORIZONS),
-        "partialFingerprints": fingerprints,
-    }
-
-    current = copy.deepcopy(first["forecast-current-v12.json"])
-    current["generatedAt"] = _now()
-    symbol_set = set(current.get("symbols") or {})
+def _merge_features(P):
+    first=list(P[1]["forecast-model-v12.json"].get("featureNames") or []);dyn=set(_evnames(1))-COMMON5;pos=[i for i,x in enumerate(first) if x in dyn]
+    if not pos:raise RuntimeError("h1 featureNames missing horizon event-prior block")
+    a,b=min(pos),max(pos)+1
+    if any(x not in dyn for x in first[a:b]):raise RuntimeError("h1 horizon event-prior block is not contiguous")
+    prefix=first[:a];suffix=[x for x in first[b:] if x not in ALL_EV];insert=[];seen=set(prefix)
     for h in HORIZONS:
-        other = partials[h]["forecast-current-v12.json"].get("symbols") or {}
-        if set(other) != symbol_set:
-            raise RuntimeError(
-                f"current symbol set mismatch at h{h}: {len(other)} vs {len(symbol_set)}"
-            )
-    for symbol in sorted(symbol_set):
-        current["symbols"][symbol]["horizons"] = {
-            str(h): copy.deepcopy(
-                partials[h]["forecast-current-v12.json"]["symbols"][symbol]["horizons"][str(h)]
-            )
-            for h in HORIZONS
-        }
+        names=set(P[h]["forecast-model-v12.json"].get("featureNames") or [])
+        for x in _evnames(h):
+            if x in names and x not in seen:insert.append(x);seen.add(x)
+    return _ordered(prefix+insert+suffix)
+def _merge_experts(P):
+    e=copy.deepcopy(P[1]["forecast-model-v12.json"].get("experts") or {});all_event=[]
+    for h in HORIZONS:all_event+=((P[h]["forecast-model-v12.json"].get("experts") or {}).get("EVENT") or [])
+    e["EVENT"]=_ordered(all_event);return e
 
-    backtest = copy.deepcopy(first["forecast-backtest-v12.json"])
-    backtest["generatedAt"] = _now()
-    backtest["horizons"] = {
-        str(h): copy.deepcopy(partials[h]["forecast-backtest-v12.json"]["horizons"][str(h)])
-        for h in HORIZONS
-    }
-    backtest["cases"] = {
-        str(h): copy.deepcopy(partials[h]["forecast-backtest-v12.json"]["cases"][str(h)])
-        for h in HORIZONS
-    }
-    backtest["execution"] = {
-        "version": ASSEMBLY_VERSION,
-        "scientificSemanticsChanged": False,
-    }
-
-    # H5 partial is the only partial whose watch/yellow/red lists contain the intended
-    # five-session ranking inputs.  Reuse those deterministic lists and replace the
-    # symbol payload/promotion with the five-horizon merged objects.
-    dashboard = copy.deepcopy(partials[5]["forecast-dashboard-v12.json"])
-    dashboard["generatedAt"] = _now()
-    dashboard["promotion"] = copy.deepcopy(model["promotion"])
-    dashboard["symbols"] = copy.deepcopy(current["symbols"])
-    dashboard["execution"] = {
-        "version": ASSEMBLY_VERSION,
-        "scientificSemanticsChanged": False,
-    }
-
-    data_audit = copy.deepcopy(first["data-audit-v12.json"])
-    data_audit["fullExecution"] = {
-        "version": ASSEMBLY_VERSION,
-        "mode": "PARALLEL_HORIZON_ORCHESTRATION_ONLY",
-        "scientificSemanticsChanged": False,
-    }
-    event_db = copy.deepcopy(first["event-intelligence-v12.json"])
-
-    outdir = pathlib.Path(outdir)
-    source = _source_identity(outdir)
-    if source:
-        model["execution"]["frozenSource"] = source
-        backtest["execution"]["frozenSource"] = source
-        dashboard["execution"]["frozenSource"] = source
-        data_audit["fullExecution"]["frozenSource"] = source
-
-    outputs = {
-        "forecast-model-v12.json": model,
-        "forecast-current-v12.json": current,
-        "forecast-dashboard-v12.json": dashboard,
-        "forecast-backtest-v12.json": backtest,
-        "data-audit-v12.json": data_audit,
-        "event-intelligence-v12.json": event_db,
-    }
-    for name, obj in outputs.items():
-        _write(outdir / name, obj)
-
-    assembly = {
-        "version": ASSEMBLY_VERSION,
-        "generatedAt": _now(),
-        "status": "PASS",
-        "scientificSemanticsChanged": False,
-        "horizons": list(HORIZONS),
-        "priceHorizonsPassed": price_h,
-        "directionHorizonsPassed": direction_h,
-        "promotion": model["promotion"]["status"],
-        "symbols": len(symbol_set),
-        "partialFingerprints": fingerprints,
-        "frozenSource": source,
-        "outputSha256": {
-            name: _sha(pathlib.Path(outdir / name).read_bytes())
-            for name in REQUIRED
-        },
-    }
-    _write(outdir / "v12-horizon-assembly.json", assembly)
-    print(json.dumps({"v12HorizonAssembly": assembly}, ensure_ascii=False), flush=True)
-    return assembly
-
-
+def _current_common(c):return {"version":c.get("version"),"symbols":{s:_strip({k:v for k,v in r.items() if k!="horizons"}) for s,r in sorted((c.get("symbols") or {}).items())}}
+def _dash_common(d):return _strip({k:d.get(k) for k in ("version","modelVersion","asOf","charts","dataAuditSummary")})
+def _back_common(b):return _strip({"version":b.get("version"),"design":b.get("design")})
+def _event_top(e):
+    out={k:v for k,v in e.items() if k not in {"generatedAt","records","summary"}};s=dict(e.get("summary") or {})
+    for k in EV_H5:s.pop(k,None)
+    out["summaryCommon"]=s;return _strip(out)
+def _event_row(r):return {k:_strip(v) for k,v in r.items() if k not in EV_FIELDS}
+def _merge_events(P):
+    first=P[1]["event-intelligence-v12.json"];top=_event_top(first);rr=first.get("records") or [];keys=[r.get("eventKey") for r in rr]
+    if not rr or any(not k for k in keys) or len(keys)!=len(set(keys)):raise RuntimeError("event-intelligence reference has missing/duplicate eventKey")
+    for h in HORIZONS:
+        e=P[h]["event-intelligence-v12.json"] ; _same("event-intelligence-common",top,_event_top(e),h);r=e.get("records") or []
+        if [x.get("eventKey") for x in r]!=keys:raise RuntimeError(f"event-intelligence eventKey/order mismatch at h{h}")
+        for i,(a,b) in enumerate(zip(rr,r)):
+            if _sha(_event_row(a))!=_sha(_event_row(b)):raise RuntimeError(f"event-intelligence common record mismatch at h{h} eventKey={keys[i]}")
+    out=copy.deepcopy(P[5]["event-intelligence-v12.json"]);out["generatedAt"]=_now();merged=[]
+    for i,ref in enumerate(rr):
+        row=copy.deepcopy(ref)
+        for f in EV_FIELDS:
+            z={}
+            for h in HORIZONS:
+                for k,v in (P[h]["event-intelligence-v12.json"]["records"][i].get(f) or {}).items():
+                    if k in z and z[k]!=v:raise RuntimeError(f"event-intelligence conflicting {f}[{k}] for eventKey={keys[i]}")
+                    z[k]=copy.deepcopy(v)
+            row[f]=z
+        merged.append(row)
+    out["records"]=merged;return out
+def _load_partial(root,h):
+    d=pathlib.Path(root)/f"h{h}";missing=[x for x in REQUIRED if not (d/x).exists()]
+    if missing:raise RuntimeError(f"horizon {h} partial missing files: {missing}")
+    z={n:_load(d/n) for n in REQUIRED};mh=sorted((z["forecast-model-v12.json"].get("horizons") or {}).keys());bh=sorted((z["forecast-backtest-v12.json"].get("horizons") or {}).keys());ch=sorted((z["forecast-backtest-v12.json"].get("cases") or {}).keys())
+    if mh!=[str(h)] or bh!=[str(h)] or ch!=[str(h)]:raise RuntimeError(f"horizon {h} partial malformed: model={mh} backtest={bh} cases={ch}")
+    _validate_feature_contract(z["forecast-model-v12.json"],h);sy=z["forecast-current-v12.json"].get("symbols") or {}
+    if not sy or any(sorted((r.get("horizons") or {}).keys())!=[str(h)] for r in sy.values()):raise RuntimeError(f"horizon {h} current partial malformed")
+    return z
+def _source(outdir):
+    p=pathlib.Path(outdir)/"v12-source-probe.json"
+    if not p.exists():return None
+    z=_load(p);snap=z.get("snapshot") or {};sha=str(snap.get("snapshotFileSha256") or "")
+    if z.get("status")!="PASS" or z.get("mode")!="IMMUTABLE_FROZEN_SNAPSHOT" or z.get("runtimeNetworkPriceFetch") is not False or z.get("runtimeProviderSwitching") is not False or len(sha)!=64:raise RuntimeError(f"source probe is not immutable PASS: {z}")
+    return {"snapshotFileSha256":sha,"inputManifestSha256":snap.get("inputManifestSha256"),"asOf":snap.get("asOf")}
+def merge_partials(partials_root,outdir):
+    P={h:_load_partial(partials_root,h) for h in HORIZONS};first=P[1];mr=_model_common(first["forecast-model-v12.json"]);fr=_feature_common(first["forecast-model-v12.json"]);cr=_current_common(first["forecast-current-v12.json"]);dr=_strip(first["data-audit-v12.json"]);br=_back_common(first["forecast-backtest-v12.json"]);ar=_dash_common(first["forecast-dashboard-v12.json"]);fps={}
+    for h,p in P.items():
+        _same("model-common",mr,_model_common(p["forecast-model-v12.json"]),h);_same("model-feature-common",fr,_feature_common(p["forecast-model-v12.json"]),h);_same("current-common",cr,_current_common(p["forecast-current-v12.json"]),h);_same("data-audit",dr,_strip(p["data-audit-v12.json"]),h);_same("backtest-common",br,_back_common(p["forecast-backtest-v12.json"]),h);_same("dashboard-common",ar,_dash_common(p["forecast-dashboard-v12.json"]),h);fps[str(h)]={n:_sha(_strip(o)) for n,o in sorted(p.items())}
+    model=copy.deepcopy(first["forecast-model-v12.json"]);model["createdAt"]=_now();model["featureNames"]=_merge_features(P);model["experts"]=_merge_experts(P);model["horizons"]={str(h):copy.deepcopy(P[h]["forecast-model-v12.json"]["horizons"][str(h)]) for h in HORIZONS};ph=[h for h in HORIZONS if model["horizons"][str(h)].get("priceStatus")=="PASS"];dh=[h for h in HORIZONS if model["horizons"][str(h)].get("directionStatus")=="PASS"];model["promotion"]={"status":"PASS" if ph==list(HORIZONS) else "REVIEW","directPriceHorizons":ph,"directionHorizons":dh,"exactTargetPrice":False,"calibratedScenarioPrice":True,"rule":"All five direct price horizons must pass positive-skill ranking + quantile scenario + CSCV/PBO + embargoed literal walk-forward generalization gates. Probability-up is rendered only when the independent positive-Brier direction gate also passes."};model.setdefault("governance",{})["priceSourcePolicy"]="Certified immutable frozen-source snapshot; runtime network price fetch and provider switching disabled";model["execution"]={"version":ASSEMBLY_VERSION,"mode":"FIVE_ISOLATED_DIRECT_HORIZON_JOBS_THEN_DETERMINISTIC_MERGE","scientificSemanticsChanged":False,"horizons":list(HORIZONS),"partialFingerprints":fps}
+    current=copy.deepcopy(first["forecast-current-v12.json"]);current["generatedAt"]=_now();symbols=set(current.get("symbols") or {})
+    for h in HORIZONS:
+        if set((P[h]["forecast-current-v12.json"].get("symbols") or {}))!=symbols:raise RuntimeError(f"current symbol set mismatch at h{h}")
+    for s in sorted(symbols):current["symbols"][s]["horizons"]={str(h):copy.deepcopy(P[h]["forecast-current-v12.json"]["symbols"][s]["horizons"][str(h)]) for h in HORIZONS}
+    back=copy.deepcopy(first["forecast-backtest-v12.json"]);back["generatedAt"]=_now();back["horizons"]={str(h):copy.deepcopy(P[h]["forecast-backtest-v12.json"]["horizons"][str(h)]) for h in HORIZONS};back["cases"]={str(h):copy.deepcopy(P[h]["forecast-backtest-v12.json"]["cases"][str(h)]) for h in HORIZONS};back["execution"]={"version":ASSEMBLY_VERSION,"scientificSemanticsChanged":False}
+    dash=copy.deepcopy(P[5]["forecast-dashboard-v12.json"]);dash["generatedAt"]=_now();dash["promotion"]=copy.deepcopy(model["promotion"]);dash["symbols"]=copy.deepcopy(current["symbols"]);dash["execution"]={"version":ASSEMBLY_VERSION,"scientificSemanticsChanged":False}
+    audit=copy.deepcopy(first["data-audit-v12.json"]);audit["fullExecution"]={"version":ASSEMBLY_VERSION,"mode":"PARALLEL_HORIZON_ORCHESTRATION_ONLY","scientificSemanticsChanged":False};events=_merge_events(P);outdir=pathlib.Path(outdir);src=_source(outdir)
+    if src:model["execution"]["frozenSource"]=src;back["execution"]["frozenSource"]=src;dash["execution"]["frozenSource"]=src;audit["fullExecution"]["frozenSource"]=src
+    outputs={"forecast-model-v12.json":model,"forecast-current-v12.json":current,"forecast-dashboard-v12.json":dash,"forecast-backtest-v12.json":back,"data-audit-v12.json":audit,"event-intelligence-v12.json":events}
+    for n,o in outputs.items():_write(outdir/n,o)
+    z={"version":ASSEMBLY_VERSION,"generatedAt":_now(),"status":"PASS","scientificSemanticsChanged":False,"horizons":list(HORIZONS),"priceHorizonsPassed":ph,"directionHorizonsPassed":dh,"promotion":model["promotion"]["status"],"symbols":len(symbols),"partialFingerprints":fps,"frozenSource":src,"outputSha256":{n:_sha((outdir/n).read_bytes()) for n in REQUIRED}};_write(outdir/"v12-horizon-assembly.json",z);print(json.dumps({"v12HorizonAssembly":z},ensure_ascii=False),flush=True);return z
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--partials-root", required=True)
-    parser.add_argument("--outdir", default="data")
-    args = parser.parse_args()
-    merge_partials(args.partials_root, args.outdir)
-
-
-if __name__ == "__main__":
-    main()
+    p=argparse.ArgumentParser();p.add_argument("--partials-root",required=True);p.add_argument("--outdir",default="data");a=p.parse_args();merge_partials(a.partials_root,a.outdir)
+if __name__=="__main__":main()
