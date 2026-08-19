@@ -1,5 +1,6 @@
 name: Forecast V12 exact-SHA CDN browser smoke
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -10,6 +11,7 @@ on:
       - 'data/forecast-backtest-v12.json'
       - 'data/data-audit-v12.json'
       - 'data/phase-gates-v12.json'
+      - '.github/workflows/forecast-v12-cdn-browser-smoke.yml'
 permissions:
   contents: read
 jobs:
@@ -23,7 +25,11 @@ jobs:
       - name: Install Playwright Chromium
         run: |
           npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
+          timeout 8m npx playwright install chromium >/dev/null
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const b=await chromium.launch({headless:true});const p=await b.newPage();await p.setContent('<title>V12 exact SHA precheck</title>');if((await p.title())!=='V12 exact SHA precheck')throw Error('precheck failed');await b.close();console.log('CHROMIUM PRECHECK PASS')})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
       - name: Wait for immutable CDN edge
         run: sleep 10
       - name: Browser-test exact immutable CDN commit
