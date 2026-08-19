@@ -8,6 +8,23 @@ def audit_metrics(y,score,p,med,lo,hi,D):
 def interval_masks(D,dates):
     n=len(dates);d80=dates[int(.80*n)];d85=dates[int(.85*n)];d90=dates[int(.90*n)];return {"calA":(D>=d80)&(D<d85),"calB":(D>=d85)&(D<d90),"audit":D>=d90}
 def combine_pred(pred_dict,names):return np.column_stack([pred_dict[n] for n in names])
+def _sole_expert_null_ablation(y,D,idx_calA,idx_calB,idx_audit,sealed):
+    """Audit a one-expert stack against a locked no-expert baseline without sealed tuning.
+
+    Removing the only active expert leaves no cross-sectional score.  The scientifically meaningful
+    counterfactual is therefore an unconditional pre-sealed distribution: location/quantiles and
+    base-rate probability are estimated on 80-85%, interval conformity is fixed on 85-90%, and
+    90-100% is used only once for the final audit.  A constant null has no ranking information, so
+    Rank IC, top-bottom spread and scenario Rank IC are defined as zero rather than inheriting an
+    arbitrary row-order spread from argsort on tied scores.
+    """
+    ref=np.asarray(y[idx_calA],float);conform=np.asarray(y[idx_calB],float);audit_y=np.asarray(y[idx_audit],float)
+    if len(ref)<100 or len(conform)<100 or len(audit_y)<100:raise RuntimeError(f"sole-expert null ablation windows too small: {len(ref)}/{len(conform)}/{len(audit_y)}")
+    p0=min(.98,max(.02,float(np.mean(ref>0))));med0=float(np.median(ref));lo0=float(np.quantile(ref,.20));hi0=float(np.quantile(ref,.80))
+    nonconf=np.maximum.reduce([lo0-conform,conform-hi0,np.zeros(len(conform))]);qlevel=min(1.0,math.ceil((len(nonconf)+1)*.60)/max(1,len(nonconf)));qadj=float(np.quantile(nonconf,qlevel,method="higher")) if len(nonconf) else 0.
+    score=np.zeros(len(audit_y),dtype=float);p=np.full(len(audit_y),p0,dtype=float);med=np.full(len(audit_y),med0,dtype=float);lo=np.full(len(audit_y),lo0-qadj,dtype=float);hi=np.full(len(audit_y),hi0+qadj,dtype=float)
+    z=audit_metrics(audit_y,score,p,med,lo,hi,D[idx_audit]);z["rankIC"]=0.;z["spread"]=0.;z["scenarioRankIC"]=0.
+    return {"baseline":"NO_EXPERT_PRESEALED_NULL","baselineMethod":"UNCONDITIONAL_80_85_PLUS_CONFORMAL_85_90","baselineCalibrationWindow":"80%-85%","baselineConformalWindow":"85%-90%","sealedAuditWindow":"90%-100%","baselineCalibrationRows":int(len(ref)),"baselineConformalRows":int(len(conform)),"selectionLabelsUsed":0,"sealedLabelsUsedForSelection":0,"sealedAuditLabelsUsed":int(len(audit_y)),"usedForSelection":False,"without":z,"deltaRankIC":sealed["rankIC"]-z["rankIC"],"deltaMAEImprove":sealed["scenarioMAEImprove"]-z["scenarioMAEImprove"],"deltaBrierSkill":sealed["brierSkill"]-z["brierSkill"]}
 def fit_horizon(X,y,D,dates,h,idx_by_expert):
     oof,choice=expert_oof(X,y,D,dates,h,idx_by_expert);active,selection=select_active_experts(oof,y,D,dates,X,idx_by_expert);kinds={k:v["kind"] for k,v in choice.items()};audit_experts=fit_experts_at_cut(X,y,D,dates,h,idx_by_expert,kinds,.80);masks=interval_masks(D,dates);idx_calA=np.where(masks["calA"]&np.isfinite(y))[0];idx_calB=np.where(masks["calB"]&np.isfinite(y))[0];idx_audit=np.where(masks["audit"]&np.isfinite(y))[0];oof_mask=np.all(np.isfinite(combine_pred(oof,active)),axis=1)&np.isfinite(y);meta,_=fit_meta(oof,active,oof_mask,y)
     def score_indices(indices,models=audit_experts,meta_model=meta):
@@ -16,7 +33,8 @@ def fit_horizon(X,y,D,dates,h,idx_by_expert):
     ablation={}
     for drop in active:
         reduced=[x for x in active if x!=drop]
-        if not reduced:continue
+        if not reduced:
+            ablation[drop]=_sole_expert_null_ablation(y,D,idx_calA,idx_calB,idx_audit,sealed);continue
         rm,_=fit_meta(oof,reduced,oof_mask,y);ca=rm.predict(combine_pred(calA_ep,reduced));cb=rm.predict(combine_pred(calB_ep,reduced));au=rm.predict(combine_pred(audit_ep,reduced));rsc,riso,rq=calibrate(y[idx_calA],ca,y[idx_calB],cb,D[idx_calA],D[idx_calB]);rp,rmed,rlo,rhi,_=apply_calibration(au,rsc,riso,rq,D[idx_audit]);rz=audit_metrics(y[idx_audit],au,rp,rmed,rlo,rhi,D[idx_audit]);ablation[drop]={"without":rz,"deltaRankIC":sealed["rankIC"]-rz["rankIC"],"deltaMAEImprove":sealed["scenarioMAEImprove"]-rz["scenarioMAEImprove"],"deltaBrierSkill":sealed["brierSkill"]-rz["brierSkill"]}
     deploy_pred={k:np.array(v,copy=True) for k,v in oof.items()};idx_80_90=np.where((masks["calA"]|masks["calB"])&np.isfinite(y))[0];p80=predict_experts(audit_experts,X,idx_80_90)
     for name in deploy_pred:deploy_pred[name][idx_80_90]=p80[name]
