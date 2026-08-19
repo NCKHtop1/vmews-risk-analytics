@@ -11,18 +11,21 @@ def build(root,corrupt=None):
         current={'version':'VMEWS-CURRENT-12.0.0','generatedAt':f'2026-08-18T00:00:0{h}Z','symbols':{'FPT':{'symbol':'FPT','date':'2026-08-18','close':100.,'modelClose':100.,'technical':40.,'market':{'mret1':.1},'riskStatus':'GREEN','riskFlags':0,'evidence':{'n':1},'flow':{'foreignAvailable':1.},'horizons':{str(h):{'expectedReturn':.01*h,'expectedPrice':100+h}}}}}
         dash={'version':'VMEWS-DASHBOARD-12.4.0','generatedAt':f'2026-08-18T00:00:0{h}Z','modelVersion':'VMEWS-FORECAST-12.0.0','asOf':'2026-08-18','promotion':model['promotion'],'symbols':current['symbols'],'charts':{'FPT':[{'date':'2026-08-18','close':100.}]},'lists':{'watch':[{'symbol':'FPT'}] if h==5 else [],'yellow':[],'red':[]},'dataAuditSummary':{'currentSymbolsPassed':1}}
         back={'version':'VMEWS-BACKTEST-12.4.0','generatedAt':f'2026-08-18T00:00:0{h}Z','design':'same-design','horizons':{str(h):{'priceStatus':'PASS'}},'cases':{str(h):[{'symbol':'FPT','predictedReturn':.01*h}]}}
-        audit={'version':'AUDIT','generatedAt':f'2026-08-18T00:00:0{h}Z','routes':{'FROZEN':2 if corrupt=='data' and h==3 else 1}}
+        align={'method':'VNINDEX_ORIGIN_TO_EXACT_STOCK_MATURITY_DATE','joinKey':'TICKER_NEWS_ID','correctedOutcomes':1000-10*h,'missingBenchmarkOutcomes':10*h,'stockMaturityDifferentFromOrdinalIndexH':20*h,'missingPolicy':'ABSTAIN_NOT_RAW_RETURN'}
+        if corrupt=='align_contract' and h==3:align['missingPolicy']='BAD_POLICY'
+        audit={'version':'AUDIT','generatedAt':f'2026-08-18T00:00:0{h}Z','routes':{'FROZEN':2 if corrupt=='data' and h==3 else 1},'entityFilter':{'input':100,'rejected':2,'benchmarkAlignment':align}}
         records=[]
         for n,key in enumerate(['FPT::evt1','FPT::evt2']):records.append({'eventKey':key,'ticker':'FPT','availableDate':f'2026-08-{10+n:02d}','preReturn2':.01,'priceAfter':{str(h):100+h+n},'benchmarkReturn':{str(h):.001*h},'benchmarkAvailable':{str(h):True},'benchmarkTargetDate':{str(h):f'2026-08-{10+n+h:02d}'},'abnormalReturn':{str(h):.002*h},'cumulativeAbnormalReturn':{str(h):.003*h},'matureDate':{str(h):f'2026-08-{10+n+h:02d}'}})
         event={'version':'EVENT','generatedAt':f'2026-08-18T00:00:0{h}Z','pointInTimePolicy':'PIT','summary':{'records':2,'symbols':1,'maturedH5Records':2 if h==5 else 0,'benchmarkH5Available':2 if h==5 else 0,'benchmarkH5Coverage':1. if h==5 else 0.},'records':records}
         for name,obj in [('forecast-model-v12.json',model),('forecast-current-v12.json',current),('forecast-dashboard-v12.json',dash),('forecast-backtest-v12.json',back),('data-audit-v12.json',audit),('event-intelligence-v12.json',event)]:dump(d/name,obj)
 def main():
     with tempfile.TemporaryDirectory() as td:
-        r=pathlib.Path(td);build(r/'partials');z=merge_partials(r/'partials',r/'out');assert z['status']=='PASS' and z['promotion']=='PASS';m=json.load(open(r/'out'/'forecast-model-v12.json'));e=json.load(open(r/'out'/'event-intelligence-v12.json'));assert sorted(m['horizons'])==['1','2','3','4','5'];assert m['promotion']['directPriceHorizons']==[1,2,3,4,5]
+        r=pathlib.Path(td);build(r/'partials');z=merge_partials(r/'partials',r/'out');assert z['status']=='PASS' and z['promotion']=='PASS';m=json.load(open(r/'out'/'forecast-model-v12.json'));e=json.load(open(r/'out'/'event-intelligence-v12.json'));a=json.load(open(r/'out'/'data-audit-v12.json'));assert sorted(m['horizons'])==['1','2','3','4','5'];assert m['promotion']['directPriceHorizons']==[1,2,3,4,5]
         for h in range(1,6):
             for x in (f'eventPriorAR{h}',f'eventPriorHit{h}',f'eventPriorN{h}',f'eventPriorUncertainty{h}'):assert x in m['featureNames'] and x in m['experts']['EVENT']
         for f in ('priceAfter','benchmarkReturn','benchmarkAvailable','benchmarkTargetDate','abnormalReturn','cumulativeAbnormalReturn','matureDate'):assert sorted(e['records'][0][f])==['1','2','3','4','5']
-    for kind,token in [('data','data-audit'),('feature','model-feature-common')]:
+        ba=a['entityFilter']['benchmarkAlignment'];assert ba['scope']=='HORIZON_SPECIFIC_EXACT_STOCK_MATURITY' and sorted(ba['byHorizon'])==['1','2','3','4','5'];assert ba['byHorizon']['1']['correctedOutcomes']!=ba['byHorizon']['5']['correctedOutcomes']
+    for kind,token in [('data','data-audit-common'),('feature','model-feature-common'),('align_contract','benchmark-alignment-contract')]:
         with tempfile.TemporaryDirectory() as td:
             r=pathlib.Path(td);build(r/'partials',kind)
             try:merge_partials(r/'partials',r/'out')
