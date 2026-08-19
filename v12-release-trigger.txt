@@ -1,10 +1,13 @@
-Retrigger immutable V12.1 release after successful nine-phase V7 price-model validation.
-Validated Full scientific source: 4aa03a3b6b56e5eb7cd2ea9041c929aa2548355c
-Persisted validated model/data commit: 21a9b80cf5df837cb47d3a3267e4e6b92b0c4cb4
+Release immutable V12 after successful H5 conditional-core scientific fix and exact Full validation.
+Validated Full scientific source: b14f8726dfea6badc62f89341cd839a3598978a2
+Persisted validated model/data commit: 4fa1e5ac6cebfa7b9bb516b3bf1ca886bca47c6d
+Full run: 32274502365
+Nine-phase acceptance: 1601/1601 PASS; phases 1-9 PASS
 Price horizons PASS: T+1,T+2,T+3,T+4,T+5
-Direction probability horizons PASS: T+1,T+2 only; T+3..T+5 remain REVIEW and must not be promoted.
-Benchmark contract: exact-maturity VNINDEX + adjacent-CAR daily AR; frozen source fail-closed.
-Nested model family: RIDGE/LGBM/LGBM_L1 with 50%-70% kind lock and 70%-80% incremental reserve.
-Sealed holdout: 90%-100% evaluation only; zero labels used for selection/calibration.
+Direction probability: preserve independently validated horizons only; do not infer validation from price PASS
+H5 core policy: REGIME admitted only by maturity-purged pre-sealed 70%-80% incremental evidence; sealed labels used for admission = 0
+H5 sole-expert ablation: NO_EXPERT_PRESEALED_NULL fit on 80%-85%, conformed on 85%-90%, audited only on sealed 90%-100%
+No authority threshold lowering; no sealed selection; no forecast-value tuning in the contract fix
+Benchmark contract: exact-maturity VNINDEX + adjacent-CAR daily AR; frozen source fail-closed
 Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0
-Release requirement: provider-outage browser smoke + commit-pinned CDN integrity must PASS.
+Release requirement: all research/auxiliary gates + provider-outage browser smoke + commit-pinned CDN integrity must PASS
