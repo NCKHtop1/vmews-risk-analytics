@@ -25,7 +25,15 @@ def expert_oof(X,y,D,dates,h,idx_by_expert):
     return result,selection
 
 def select_active_experts(expert_pred,y,D,dates,X,idx_by_expert):
-    h=max(1,int(globals().get('V12_ACTIVE_HORIZON',1)));Maturity=label_maturity_array(h);n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];valid=np.isfinite(y);train=valid&(Maturity<cut70);test=valid&(D>=cut70)&(D<cut80)&(Maturity<cut80);active=['NUMERICAL','REGIME'];base_metrics,_=meta_eval(expert_pred,active,train,test,y,D);decisions={}
+    h=max(1,int(globals().get('V12_ACTIVE_HORIZON',1)));Maturity=label_maturity_array(h);n=len(dates);cut70,cut80=dates[int(.70*n)],dates[int(.80*n)];valid=np.isfinite(y);train=valid&(Maturity<cut70);test=valid&(D>=cut70)&(D<cut80)&(Maturity<cut80)
+    # H5 only: stop exempting REGIME from the same reserved pre-blind architecture gate that
+    # protects optional information blocks.  The helper is defined earlier by 01c and already has
+    # deterministic HAC + moving-block-bootstrap unit coverage.  H1-H4 keep the previously frozen
+    # NUMERICAL+REGIME core so this method fix cannot regress their already-passing price horizons.
+    if h==5:
+        active,base_metrics,core_audit=_core_regime_decision(expert_pred,y,D,train,test);decisions={'REGIME_CORE':{**core_audit,'modelKindSelectionLock':str(cut70),'selectionTrainLabelMaturityBefore':str(cut70),'selectionTestOriginStart':str(cut70),'selectionTestOriginEndExclusive':str(cut80),'selectionOutcomeMaturityBefore':str(cut80),'purgeMethod':'LABEL_MATURITY_DATE','horizon':5,'sealedLabelsUsed':0,'integration':'FINAL_EXACT_MATURITY_OVERRIDE'}}
+    else:
+        active=['NUMERICAL','REGIME'];base_metrics,_=meta_eval(expert_pred,active,train,test,y,D);decisions={}
     for name in ['EVENT','FLOW','FUNDAMENTAL_EVENT','RUMOR']:
         candidate=active+[name];cand_metrics,_=meta_eval(expert_pred,candidate,train,test,y,D);di=cand_metrics['ic']-base_metrics['ic'];dm=cand_metrics['maeImprove']-base_metrics['maeImprove'];ds=cand_metrics['spread']-base_metrics['spread'];activity_mask,activity_count,activity,minimum_rows=_expert_activity(X,name);active_in_test=int(np.sum(activity_mask&test));enough=activity_count>=minimum_rows and active_in_test>=max(50,min(250,minimum_rows//10 if minimum_rows else 0))
         bidx,bpred=_meta_score_on_block(expert_pred,active,train,test,y);cidx,cpred=_meta_score_on_block(expert_pred,candidate,train,test,y);common=np.intersect1d(bidx,cidx,assume_unique=False);bmap={int(k):v for k,v in zip(bidx,bpred)};cmap={int(k):v for k,v in zip(cidx,cpred)};bp=np.asarray([bmap[int(k)] for k in common],float);cp=np.asarray([cmap[int(k)] for k in common],float);inc=_incremental_ic_test(y[common],bp,cp,D[common]) if len(common) else {'days':0,'meanDeltaIC':0.0,'pValue':1.0,'bootstrap90':[None,None]}
