@@ -1,6 +1,6 @@
-trigger=2026-08-19T09:20:00+07:00
+trigger=2026-08-19T09:36:00+07:00
 full_architecture=VMEWS-V12-HORIZON-ASSEMBLY-1.0.0
-full_code_parent=5afd65fa234c6edacada253673268c091c791ebf
+full_code_parent=272dcc4dd0feaad37893d1cd21e4f074b7e158b0
 source_parent=043151455cc7e14530da6a5e2089d8432389d0ee
 source_publish=010f0c8b999800353fb1905f41b1b1e411b57752
 source_policy=VMEWS-V12-VNSTOCK-SHARDED-RESUMABLE-1.0.0
@@ -8,4 +8,4 @@ source_certification=VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1
 source_certification_mode=OFFLINE_RECOMPUTED_FROM_COMMITTED_SNAPSHOT_AUDITS_NO_NETWORK
 snapshot_sha256=b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762
 execution=FIVE_ISOLATED_DIRECT_HORIZON_JOBS_MAX_PARALLEL_5_THEN_DETERMINISTIC_FAIL_SAFE_MERGE
-reason=chronology-correct-origin-date-calibration-controller;remove-unsupported-lightgbm-quantile-monotone-call;preserve-strict-science-gates;sealed-90-100-untouched
+reason=chronology-correct-origin-date-calibration-controller;four-arg-unit-compat-without-fabricated-dates;remove-unsupported-lightgbm-quantile-monotone-call;preserve-strict-science-gates;sealed-90-100-untouched
