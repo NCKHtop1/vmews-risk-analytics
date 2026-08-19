@@ -16,7 +16,7 @@ jobs:
       - name: Observe release run for locked trigger SHA
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TARGET_SHA: 0e7d5cba770acc0cd1420a5fb919fb6f7b809f5e
+          TARGET_SHA: 55b6f4c2d54a436ff1b9ca8bd666ecbd6d6a1701
           TARGET_BRANCH: forecast-v12-methodfix
         shell: bash
         run: |
