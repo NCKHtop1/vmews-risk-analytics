@@ -1,8 +1,10 @@
-Retrigger immutable V12.1 release after pinned-CDN Cloudflare telemetry handling fix.
-Validated Full source: 554aa0b036fd419d92547e1042982ec29044d6eb
-Persisted model/data commit: eabba5e7ee185954a31ee864c069c3ae37b3acfd
-Responsive production UI fix: 2c592bd1fe79cc8d79ae7561451421696c9c0024
-Pinned-CDN browser integrity smoke fix: 7a680b5e12ca6472d930ec5d6cb2e15ea19774ed
-Prior release candidate manifest commit: 98a23b31140ebff6aaa1cf84ece7b9f1674cee4b (superseded after CDN smoke failure)
-Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.5.0
-UI assets: forecast-final.html + forecast-polish-v12.js
+Retrigger immutable V12.1 release after successful nine-phase V7 price-model validation.
+Validated Full scientific source: 4aa03a3b6b56e5eb7cd2ea9041c929aa2548355c
+Persisted validated model/data commit: 21a9b80cf5df837cb47d3a3267e4e6b92b0c4cb4
+Price horizons PASS: T+1,T+2,T+3,T+4,T+5
+Direction probability horizons PASS: T+1,T+2 only; T+3..T+5 remain REVIEW and must not be promoted.
+Benchmark contract: exact-maturity VNINDEX + adjacent-CAR daily AR; frozen source fail-closed.
+Nested model family: RIDGE/LGBM/LGBM_L1 with 50%-70% kind lock and 70%-80% incremental reserve.
+Sealed holdout: 90%-100% evaluation only; zero labels used for selection/calibration.
+Manifest target: VMEWS-FORECAST-V12-IMMUTABLE-MANIFEST-1.6.0
+Release requirement: provider-outage browser smoke + commit-pinned CDN integrity must PASS.
