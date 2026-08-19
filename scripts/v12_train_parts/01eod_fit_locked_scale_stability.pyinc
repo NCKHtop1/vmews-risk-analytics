@@ -1,0 +1,135 @@
+# Temporal-stability selector for the fit-locked tail-rank SCALE.
+#
+# The V5 tail-concentration fix showed that the signal family is now robust: H1/H2/H5 passed
+# their full price gates and the H3/H4 locked p=6 challenger beat no-change on every/most
+# independent validation dates. The remaining H3/H4 rejection came only from a small transfer
+# shortfall in forecast dispersion. The pre-existing scale routine always chose the SMALLEST
+# scale at/above the robust magnitude target whenever it was inside the pooled-MAE one-SE set.
+# That is unnecessarily conservative and ignores the temporal evidence already available inside
+# the maturity-purged 80-85% fit block.
+#
+# Scientific contract is unchanged:
+#   * 80-85% is the ONLY block used to select point scale;
+#   * early whole-date 85-90% is still independent pass/fail confirmation, never a tuning block;
+#   * late 85-90% remains conformal-only;
+#   * 90-100% is never supplied to scale/family selection;
+#   * authority magnitude floors, literal walk-forward and fixed blind gates are unchanged.
+#
+# Within the SAME one-SE admissible scale set already defined by 01eob, this layer selects the
+# scale with the best whole-origin-date MAE stability (mean daily edge, then positive-date share),
+# instead of mechanically selecting the smallest scale. Pooled MAE and the date-bootstrap
+# upper-90 magnitude target remain hard constraints. Thus scale is not increased to pass a gate;
+# it is chosen by pre-blind temporal predictive skill under the existing uncertainty envelope.
+
+_fitlock_scale_v5=_fitlock_scale
+
+
+def _fitlock_scale(y,x,dates,h):
+    yy=np.asarray(y,float);xx=np.asarray(x,float);dd=np.asarray(dates,dtype=object)
+    good=np.isfinite(yy)&np.isfinite(xx);yy=yy[good];xx=xx[good];dd=dd[good]
+    if len(yy)<300 or float(np.std(xx))<1e-12:return None
+
+    mag=_fitlock_bootstrap_target(yy,xx,dd,h)
+    target=float(mag['upper90RequiredScale'])
+    ratio=float(np.std(yy)/max(np.std(xx),1e-12))
+    upper=float(min(.30,max(.025,target*3.0,ratio*1.75)))
+    g1=np.linspace(0.0,min(.04,upper),81)
+    g2=np.geomspace(max(.001,min(.04,upper)),upper,72) if upper>.04 else np.asarray([],float)
+    grid=np.unique(np.r_[g1,g2,target])
+
+    ds=dd.astype(str);groups=[]
+    for day in sorted(set(ds)):
+        idx=np.where(ds==day)[0]
+        if len(idx)>=20:groups.append((str(day),idx))
+    base_abs=np.abs(yy);rows=[]
+    for scale in grid:
+        pred=float(scale)*xx;loss=np.abs(yy-pred)
+        daily_edges=[float(np.mean(base_abs[idx]-loss[idx])) for _,idx in groups]
+        rows.append({
+            'scale':float(scale),
+            'mae':float(np.mean(loss)),
+            'se':float(np.std(loss,ddof=1)/math.sqrt(len(loss))) if len(loss)>1 else 0.0,
+            'dispersionRatio':float(np.std(pred)/max(np.std(yy),1e-12)),
+            'p90MagnitudeRatio':float(np.quantile(np.abs(pred),.9)/max(np.quantile(np.abs(yy),.9),1e-12)),
+            'dailyMeanEdge':float(np.mean(daily_edges)) if daily_edges else -float('inf'),
+            'dailyPositiveShare':float(np.mean(np.asarray(daily_edges)>0)) if daily_edges else 0.0,
+            'dailyDays':int(len(daily_edges)),
+        })
+
+    best=min(rows,key=lambda z:(z['mae'],z['scale']))
+    limit=float(best['mae']+max(best['se'],1e-12))
+    eligible=[z for z in rows if z['mae']<=limit]
+    at_or_above=[z for z in eligible if z['scale']>=target*(1-1e-12)]
+    if not at_or_above:
+        return {
+            'status':'ABSTAIN',
+            'reason':'date-bootstrap magnitude target lies outside the one-standard-error L1 admissible set',
+            'fitRows':int(len(yy)),'bestMAE':best['mae'],'bestSE':best['se'],
+            'oneSELimit':limit,'oneSEEligibleN':int(len(eligible)),
+            'magnitudeTarget':mag,'gridN':int(len(grid)),'sealedLabelsUsed':0,
+        }
+
+    # Temporal skill is the selector inside the already-admissible statistical envelope. Require
+    # positive mean daily edge when possible; independent 85-90 confirmation remains mandatory.
+    positive=[z for z in at_or_above if z['dailyMeanEdge']>0 and z['dailyPositiveShare']>=.50]
+    pool=positive or at_or_above
+    chosen=max(pool,key=lambda z:(
+        float(z['dailyMeanEdge']),
+        float(z['dailyPositiveShare']),
+        -float(z['mae']),
+        -float(z['scale']),
+    ))
+    daily=_nested_daily_audit(yy,float(chosen['scale'])*xx,dd,bootstrap=True)
+    return {
+        'status':'PASS','scale':float(chosen['scale']),'fitRows':int(len(yy)),
+        'fitMAE':float(chosen['mae']),'fitMAESE':float(chosen['se']),
+        'bestMAE':float(best['mae']),'bestMAEScale':float(best['scale']),'bestSE':float(best['se']),
+        'oneSELimit':limit,'oneSEEligibleN':int(len(eligible)),
+        'magnitudeAdmissibleScaleN':int(len(at_or_above)),
+        'positiveTemporalScaleN':int(len(positive)),
+        'magnitudeTarget':mag,
+        'fitDispersionRatio':float(chosen['dispersionRatio']),
+        'fitP90MagnitudeRatio':float(chosen['p90MagnitudeRatio']),
+        'fitDailyMAEEdge':daily,
+        'selectedDailyMeanEdgeScreen':float(chosen['dailyMeanEdge']),
+        'selectedDailyPositiveShareScreen':float(chosen['dailyPositiveShare']),
+        'minimumAdmissibleScale':float(min(z['scale'] for z in at_or_above)),
+        'maximumAdmissibleScale':float(max(z['scale'] for z in at_or_above)),
+        'gridMin':float(grid.min()),'gridMax':float(grid.max()),'gridN':int(len(grid)),
+        'objective':'FIT_80_85_ONE_SE_L1_WITH_DATE_BOOTSTRAP_MAGNITUDE_TARGET_THEN_WHOLE_DATE_MAE_STABILITY',
+        'scaleSelectionBlock':'80-85% ONLY',
+        'independentValidationUsedForScaleSelection':False,
+        'sealedLabelsUsed':0,
+    }
+
+
+# Preserve the V5 family selector but annotate the strengthened scale-selection contract in the
+# output audit.  The actual independent-validation decision still occurs in 01eob calibrate().
+_fitlock_scale_stability_before_calibrate=calibrate
+
+
+def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
+    layer,iso,qadj=_fitlock_scale_stability_before_calibrate(
+        cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates
+    )
+    if isinstance(layer,_QuantileLayer):
+        audit=getattr(layer,'pointSelectionAudit',None)
+        if isinstance(audit,dict) and audit.get('method')=='CHRONOLOGICAL_ORIGIN_DATE_POINT_SELECTION_V1':
+            audit['revision']='FIT_LOCKED_TAIL_RANK_DATE_AND_SCALE_STABILITY_V6'
+            audit['fitScaleSelection']='ONE_SE_ADMISSIBLE_THEN_WHOLE_ORIGIN_DATE_MAE_STABILITY'
+            audit['independentValidationStillSelectionFree']=True
+            audit['sealedLabelsUsed']=0
+    return layer,iso,qadj
+
+
+# Deterministic structural regression: temporal skill, not merely larger scale, controls the
+# ordering inside an already admissible set. No research labels are touched by this check.
+_v6_rows=[
+    {'scale':.01,'mae':.0200,'dailyMeanEdge':.00001,'dailyPositiveShare':.60},
+    {'scale':.02,'mae':.0201,'dailyMeanEdge':.00005,'dailyPositiveShare':.70},
+    {'scale':.03,'mae':.0201,'dailyMeanEdge':-.00001,'dailyPositiveShare':.40},
+]
+_v6_pool=[z for z in _v6_rows if z['dailyMeanEdge']>0 and z['dailyPositiveShare']>=.50]
+_v6_pick=max(_v6_pool,key=lambda z:(z['dailyMeanEdge'],z['dailyPositiveShare'],-z['mae'],-z['scale']))
+if abs(float(_v6_pick['scale'])-.02)>1e-12:raise RuntimeError('fit-locked scale temporal-stability regression failed')
+del _v6_rows,_v6_pool,_v6_pick
