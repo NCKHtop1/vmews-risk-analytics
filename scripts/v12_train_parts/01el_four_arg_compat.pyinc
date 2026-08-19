@@ -1,28 +1,12 @@
 # Compatibility shim for synthetic/legacy four-argument calibration callers.
+#
 # Production V12 fit_horizon always supplies explicit cal_dates/conform_dates and therefore
-# continues through the strict chronology-aware controller. Four-argument unit tests do not
-# have origin dates; preserve the pure monotone quantile/isotonic behavior for those callers
-# rather than fabricating dates or weakening the production chronology contract.
+# continues through the strict chronology-aware controller from 01ek. Four-argument unit tests
+# have no origin-date information; preserve the exact pre-existing (pre-XSEC) calibration stack
+# for those callers instead of inventing dates or weakening the production chronology contract.
 _chrono_strict_calibrate = calibrate
 
 def calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates=None,conform_dates=None):
     if cal_dates is None or conform_dates is None:
-        layer,iso,qadj=_point_base_quantile_calibrate(cal_y,cal_score,conform_y,conform_score)
-        if isinstance(layer,_QuantileLayer):
-            layer.returnShrink=1.0
-            layer.shrinkSelectionN=0
-            layer.shrinkSelectionAudit={'method':'FOUR_ARG_COMPAT_IDENTITY','sealedLabelsUsed':0}
-            layer.pointMode='Q50'
-            layer.pointScoreScale=1.0
-            layer.pointBinnedMedian=None
-            layer.pointAffineModel=None
-            layer.pointDeadband=0.0
-            layer.pointXsecModel=None
-            layer.pointSelectionAudit={
-                'method':'FOUR_ARG_SYNTHETIC_COMPAT',
-                'selectedFamily':'Q50',
-                'sealedLabelsUsed':0,
-                'reason':'origin dates were not supplied; production chronology selection is intentionally not emulated'
-            }
-        return layer,iso,qadj
+        return _xsec_calibrate_before(cal_y,cal_score,conform_y,conform_score)
     return _chrono_strict_calibrate(cal_y,cal_score,conform_y,conform_score,cal_dates,conform_dates)
