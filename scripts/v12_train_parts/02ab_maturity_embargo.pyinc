@@ -1,14 +1,19 @@
 V12_CURRENT_SEALED_START=None
 V12_PRIMARY_CALIBRATION_PENDING=False
+V12_PRIMARY_CAL_A_MATURITY=None
+V12_PRIMARY_CAL_B_MATURITY=None
 
 def interval_masks(D,dates):
-    global V12_CURRENT_SEALED_START,V12_PRIMARY_CALIBRATION_PENDING
+    global V12_CURRENT_SEALED_START,V12_PRIMARY_CALIBRATION_PENDING,V12_PRIMARY_CAL_A_MATURITY,V12_PRIMARY_CAL_B_MATURITY
     h=max(1,int(globals().get('V12_ACTIVE_HORIZON',1)));Maturity=label_maturity_array(h);n=len(dates);d80=dates[int(.80*n)];d85=dates[int(.85*n)];d90=dates[int(.90*n)]
-    # Expose the exact sealed boundary to the calibration controller so any later deployment
-    # refit can reuse the frozen pre-blind calibration instead of reading 90-100% labels.
+    calA=(D>=d80)&(D<d85)&(Maturity<d85)
+    calB=(D>=d85)&(D<d90)&(Maturity<d90)
+    # Preserve row-aligned exact symbol-specific label maturity for the primary calibration call.
+    # The rolling point selector uses this to purge every internal fold by actual T+h maturity,
+    # never by an ordinal h-day approximation. The arrays match np.where(calA/calB) order.
+    V12_PRIMARY_CAL_A_MATURITY=np.asarray(Maturity[calA],dtype=object)
+    V12_PRIMARY_CAL_B_MATURITY=np.asarray(Maturity[calB],dtype=object)
+    # Expose the exact sealed boundary so the later deployment-calibration call can reuse the
+    # frozen pre-blind layer instead of reading any 90-100% calibration labels.
     V12_CURRENT_SEALED_START=str(d90);V12_PRIMARY_CALIBRATION_PENDING=True
-    return {
-        'calA':(D>=d80)&(D<d85)&(Maturity<d85),
-        'calB':(D>=d85)&(D<d90)&(Maturity<d90),
-        'audit':D>=d90,
-    }
+    return {'calA':calA,'calB':calB,'audit':D>=d90}
