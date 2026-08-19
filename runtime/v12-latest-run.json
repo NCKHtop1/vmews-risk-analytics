@@ -1,10 +1,8 @@
 {
   "version": "VMEWS-V12-RUNTIME-STATE-1.0.0",
-  "runId": 32206157160,
+  "runId": 32206535738,
   "runAttempt": 1,
-  "sourceSha": "6fa3f1549de503c87fcaa78f53d84469941e8a89",
+  "sourceSha": "fcbc9b91a8543c88c127fcb36b0d8b6ad0787bde",
   "workflow": "V12 current scientific diagnostic",
-  "prepareResult": "success",
-  "horizonAggregateResult": "failure",
-  "status": "FAIL"
+  "status": "STARTED"
 }
