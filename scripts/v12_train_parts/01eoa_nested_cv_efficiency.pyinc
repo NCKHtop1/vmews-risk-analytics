@@ -1,0 +1,51 @@
+# Runtime-efficient implementation of the nested selector defined in 01eo.
+# The statistical contract is unchanged.  Grid candidates are screened using exact MAE/daily
+# edges and magnitude constraints; moving-block bootstrap is then run only for the shortlisted
+# candidates that can actually be selected.  This avoids O(grid * bootstrap) work inside every
+# horizon/ablation calibration while preserving the same pre-blind evidence hierarchy.
+
+def _nested_daily_audit(y,pred,dates,bootstrap=True):
+    rows=_nested_daily_edges(y,pred,dates);edges=[float(x['maeEdge']) for x in rows]
+    if bootstrap:ci,block=_nested_mbb90(edges,reps=900)
+    else:ci,block=[None,None],0
+    return {'days':int(len(rows)),'mean':float(np.mean(edges)) if edges else 0.0,'positiveDayShare':float(np.mean(np.asarray(edges)>0)) if edges else 0.0,'bootstrap90':ci,'blockLength':int(block),'rows':rows,'sealedLabelsUsed':0}
+
+
+def _nested_eval(y,pred,dates,h,bootstrap=True):
+    m=_point_candidate_metrics(y,pred);m['p90MagnitudeRatio']=_gate_p90(y,pred);daily=_nested_daily_audit(y,pred,dates,bootstrap=bootstrap);pair=_paired_challenger_audit(y,np.zeros(len(np.asarray(y))),pred);fd,fp=_gate_floor(h)
+    mag=bool(m.get('dispersionRatio',0)>=fd and m.get('p90MagnitudeRatio',0)>=fp);positive=bool(m.get('maeEdge',-99)>0 and daily.get('mean',0)>0 and daily.get('positiveDayShare',0)>=.50);ci=daily.get('bootstrap90') or [None,None];daily90=bool(isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) and float(ci[0])>0)
+    if int(daily.get('days',0))>=8:confirmed=bool(bootstrap and positive and daily90)
+    else:confirmed=bool(positive and pair.get('pass') is True and daily.get('positiveDayShare',0)>=2/3)
+    return {'metrics':m,'dailyMAEEdge':daily,'pairedVsNoChange':pair,'magnitudeAdmissible':mag,'positiveSkill':positive,'preblindConfirmed':bool(confirmed and mag),'minimumDispersionRatio':fd,'minimumP90MagnitudeRatio':fp,'sealedLabelsUsed':0}
+
+
+def _nested_scale_records(y,rank,dates,lo,hi,grid,h,bootstrap=False):
+    rows=[];rr=np.asarray(rank,float)
+    for scale in grid:
+        pred=_clip_between(float(scale)*rr,lo,hi);ev=_nested_eval(y,pred,dates,h,bootstrap=bootstrap);rows.append({'scale':float(scale),'pred':pred,'evaluation':ev})
+    return rows
+
+
+def _nested_choose_scale(y,rank,dates,lo,hi,grid,h):
+    # Cheap exact screen over the full fixed grid.
+    rows=_nested_scale_records(y,rank,dates,lo,hi,grid,h,bootstrap=False);admiss=[z for z in rows if z['evaluation']['magnitudeAdmissible'] and z['evaluation']['positiveSkill']]
+    if not admiss:return None,{'status':'ABSTAIN','reason':'no scale has positive pre-blind skill while satisfying unchanged magnitude floors','gridN':len(rows),'sealedLabelsUsed':0}
+    def light_key(z):
+        ev=z['evaluation'];return (-int(ev['preblindConfirmed']),-float(ev['dailyMAEEdge'].get('mean',0)),-float(ev['metrics'].get('maeEdge',-99)),float(ev['metrics'].get('mae',1e9)),float(z['scale']))
+    ranked=sorted(admiss,key=light_key)
+    # For <8 tune dates the paired guard + positive-date share is the prespecified confirmation
+    # rule, so a bootstrap cannot change admissibility.  For >=8 dates, bootstrap only the best
+    # twelve exact-screen candidates and choose by lower confidence bound.
+    days=len(_nested_daily_edges(y,rank,dates))
+    if days>=8:
+        full=[]
+        for z in ranked[:12]:
+            ev=_nested_eval(y,z['pred'],dates,h,bootstrap=True);full.append({'scale':z['scale'],'pred':z['pred'],'evaluation':ev})
+        strong=[z for z in full if z['evaluation']['preblindConfirmed']];pool=strong or full
+    else:
+        full=ranked[:12];strong=[z for z in full if z['evaluation']['preblindConfirmed']];pool=strong or full
+    def full_key(z):
+        ev=z['evaluation'];ci=ev['dailyMAEEdge'].get('bootstrap90') or [None,None];lower=float(ci[0]) if isinstance(ci[0],(int,float)) and math.isfinite(float(ci[0])) else -1e9
+        return (-int(ev['preblindConfirmed']),-lower,-float(ev['dailyMAEEdge'].get('mean',0)),-float(ev['metrics'].get('maeEdge',-99)),float(z['scale']))
+    chosen=min(pool,key=full_key);summary={'status':'PASS' if chosen['evaluation']['preblindConfirmed'] else 'PROVISIONAL','selectedScale':float(chosen['scale']),'selectedEvaluation':chosen['evaluation'],'confirmedCandidateCount':int(len(strong)),'positiveMagnitudeCandidateCount':int(len(admiss)),'gridN':int(len(rows)),'bootstrapCandidateCount':int(len(full) if days>=8 else 0),'topCandidates':[{'scale':float(z['scale']),'evaluation':z['evaluation']} for z in sorted(full,key=full_key)[:12]],'sealedLabelsUsed':0,'selectionComputation':'EXACT_GRID_SCREEN_THEN_SHORTLISTED_MOVING_BLOCK_BOOTSTRAP'}
+    return chosen,summary
