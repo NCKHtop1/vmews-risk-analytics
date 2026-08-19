@@ -1,0 +1,48 @@
+name: V12 immutable release observer temp
+on:
+  push:
+    branches: [v12-release-observer-20260819]
+    paths:
+      - '.github/workflows/v12-release-observer-temp.yml'
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Observe release run for locked trigger SHA
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_SHA: 0e7d5cba770acc0cd1420a5fb919fb6f7b809f5e
+          TARGET_BRANCH: forecast-v12-methodfix
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id=''; run_url=''; status=''; conclusion=''
+          for i in $(seq 1 100); do
+            row="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow v12-release-final.yml --branch "${TARGET_BRANCH}" --commit "${TARGET_SHA}" --limit 10 --json databaseId,status,conclusion,url,headSha --jq 'map(select(.headSha == env.TARGET_SHA)) | .[0] // empty' 2>/dev/null || true)"
+            if [ -n "${row}" ]; then
+              run_id="$(printf '%s' "${row}" | jq -r '.databaseId // empty')"
+              run_url="$(printf '%s' "${row}" | jq -r '.url // empty')"
+              status="$(printf '%s' "${row}" | jq -r '.status // empty')"
+              conclusion="$(printf '%s' "${row}" | jq -r '.conclusion // empty')"
+              desc="V12 release ${run_id}: ${status}"
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" -f state=pending -f context='V12 observable release gate' -f "description=${desc}" -f "target_url=${run_url}" >/dev/null
+              echo "release run ${run_id} status=${status} conclusion=${conclusion}"
+              if [ "${status}" = completed ]; then break; fi
+            fi
+            sleep 10
+          done
+          state=error; desc='V12 release run not resolved'
+          if [ -n "${run_id}" ] && [ "${status}" = completed ]; then
+            state=failure; desc="V12 release ${conclusion} run ${run_id}"
+            if [ "${conclusion}" = success ]; then state=success; fi
+            if [ "${conclusion}" = cancelled ]; then state=error; fi
+          fi
+          args=(--method POST "repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" -f "state=${state}" -f context='V12 observable release gate' -f "description=${desc}")
+          if [ -n "${run_url}" ]; then args+=(-f "target_url=${run_url}"); fi
+          gh api "${args[@]}"
+          [ "${state}" = success ]
