@@ -1,6 +1,6 @@
 {
-  "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.2.0",
-  "generatedAt": "2026-08-15T22:52:07.794482+00:00",
+  "version": "VMEWS-VNINDEX-BENCHMARK-GATE-12.3.0",
+  "generatedAt": "2026-08-19T11:29:03.378388+00:00",
   "status": "PASS",
   "benchmark": "VNINDEX",
   "checks": {
@@ -20,20 +20,60 @@
     "policyExplicitlyAbstainsOnMissingBenchmark": true
   },
   "indexAudit": {
-    "route": "VNSTOCK_INDEX_PRIMARY",
+    "route": "VNSTOCK_INDEX_FROZEN_SNAPSHOT",
     "provider": "Vnstock Market.index OHLCV",
     "rows": 1997,
-    "unitNormalization": "native",
+    "researchFrozen": true,
+    "runtimeNetworkPriceFetch": false,
+    "sourceGeneratedAt": "2026-08-14T16:04:35.247596+00:00",
+    "inputStartDate": "2018-08-16",
+    "inputEndDate": "2026-08-14",
+    "inputFingerprintSha256": "c79b13d7569fb0b11558a290d23c48f12fb1c87aec5093e812b3ad68191d8764",
     "prefetchedBeforeUniverse": true
   },
   "cacheFallbackAudit": null,
-  "maturedH5Records": 12472,
+  "frozenSourceAudit": {
+    "sourceProbeVersion": "VMEWS-V12-FROZEN-SOURCE-PROBE-1.1.0",
+    "sourceProbeStatus": "PASS",
+    "snapshot": {
+      "version": "VMEWS-FROZEN-SOURCE-12.1.0",
+      "asOf": "2026-08-18",
+      "snapshotFileSha256": "b318d9b60f2632743169e2e68d25a7de13bbedf3d7479e5dc138670585d5b762",
+      "inputManifestSha256": "4f5dd3ca0f795d4f3340fa835660a0652945148ddf06c82d4d3643d753e19fa2",
+      "certificationVersion": "VMEWS-FROZEN-SOURCE-CERTIFICATION-12.1.1",
+      "certificationMode": "OFFLINE_RECOMPUTED_FROM_COMMITTED_SNAPSHOT_AUDITS_NO_NETWORK"
+    },
+    "probeIndex": {
+      "ok": true,
+      "rows": 1997,
+      "start": "2018-08-16",
+      "end": "2026-08-14",
+      "route": "VNSTOCK_INDEX_FROZEN_SNAPSHOT",
+      "researchFrozen": true,
+      "runtimeNetworkPriceFetch": false,
+      "inputFingerprintSha256": "c79b13d7569fb0b11558a290d23c48f12fb1c87aec5093e812b3ad68191d8764"
+    },
+    "indexAudit": {
+      "route": "VNSTOCK_INDEX_FROZEN_SNAPSHOT",
+      "provider": "Vnstock Market.index OHLCV",
+      "rows": 1997,
+      "researchFrozen": true,
+      "runtimeNetworkPriceFetch": false,
+      "sourceGeneratedAt": "2026-08-14T16:04:35.247596+00:00",
+      "inputStartDate": "2018-08-16",
+      "inputEndDate": "2026-08-14",
+      "inputFingerprintSha256": "c79b13d7569fb0b11558a290d23c48f12fb1c87aec5093e812b3ad68191d8764",
+      "prefetchedBeforeUniverse": true
+    },
+    "sameIndexContract": true
+  },
+  "maturedH5Records": 12555,
   "benchmarkH5Available": 12366,
-  "benchmarkH5Coverage": 0.9915009621552278,
+  "benchmarkH5Coverage": 0.9849462365591398,
   "identityFailures": [],
   "semanticFailures": [],
   "targetAlignmentFailures": [],
   "preEventFailures": [],
   "dailyARFailures": [],
-  "policy": "Event identity is ticker+newsId. Abnormal returns are VNINDEX-relative from event origin to the exact stock maturity date. Missing post/pre benchmark observations abstain; raw stock returns are never substituted or relabelled as abnormal returns. Audited VNINDEX cache is accepted only when its integrity contract matches the training index audit."
+  "policy": "Event identity is ticker+newsId. Abnormal returns are VNINDEX-relative from event origin to the exact stock maturity date. Missing post/pre benchmark observations abstain; raw stock returns are never substituted or relabelled as abnormal returns. Live/cache routes remain audited; immutable research-frozen VNINDEX is accepted only when the merged index audit exactly agrees with the PASS network-free, provider-switch-free frozen-source probe and certified snapshot hashes."
 }

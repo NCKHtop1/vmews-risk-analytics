@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-SECTOR-PIT-GATE-12.1.0",
-  "generatedAt": "2026-08-15T22:52:07.967830+00:00",
+  "generatedAt": "2026-08-19T11:29:03.577402+00:00",
   "status": "PASS",
   "checks": {
     "auditExists": true,
@@ -25,12 +25,12 @@
     "panelSymbols": 379,
     "mappedPanelSymbols": 379,
     "mappedPanelSymbolCoverage": 1.0,
-    "usableGroupsMin3": 17,
-    "usableMappedSymbols": 377,
+    "usableGroupsMin3": 18,
+    "usableMappedSymbols": 379,
     "currentSymbols": 377,
     "mappedCurrentSymbols": 377,
     "currentReferenceCoverage": 1.0,
-    "currentUsableReferenceCoverage": 0.9946949602122016,
+    "currentUsableReferenceCoverage": 1.0,
     "historicalMembershipArchiveAvailable": false,
     "candidateFields": [
       "sectorRet1",
