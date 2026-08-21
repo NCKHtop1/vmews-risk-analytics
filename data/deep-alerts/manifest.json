@@ -1,25 +1,15 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-08-20T23:49:31.973237+00:00",
-  "marketModelDate": "2026-08-20",
-  "requested": 24,
-  "reused": 24,
-  "fetched": 0,
-  "cached": 24,
+  "generatedAt": "2026-08-21T10:12:49.576201+00:00",
+  "marketModelDate": "2026-08-21",
+  "requested": 21,
+  "reused": 19,
+  "fetched": 2,
+  "cached": 21,
   "symbols": {
-    "ACC": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-11",
-      "source": "Yahoo Finance"
-    },
-    "VDP": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-19",
-      "source": "Yahoo Finance"
-    },
-    "TOS": {
-      "rows": 1117,
-      "modelAsOf": "2026-08-11",
+    "BOT": {
+      "rows": 1609,
+      "modelAsOf": "2026-08-07",
       "source": "Vnstock"
     },
     "NTL": {
@@ -27,9 +17,34 @@
       "modelAsOf": "2026-08-14",
       "source": "Yahoo Finance"
     },
-    "HBC": {
+    "VDP": {
       "rows": 1800,
-      "modelAsOf": "2026-08-12",
+      "modelAsOf": "2026-08-19",
+      "source": "Yahoo Finance"
+    },
+    "ACC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-11",
+      "source": "Yahoo Finance"
+    },
+    "GTD": {
+      "rows": 483,
+      "modelAsOf": "2026-08-07",
+      "source": "Vnstock"
+    },
+    "POM": {
+      "rows": 1537,
+      "modelAsOf": "2026-08-07",
+      "source": "Vnstock"
+    },
+    "AAH": {
+      "rows": 641,
+      "modelAsOf": "2026-08-11",
+      "source": "Vnstock"
+    },
+    "CTP": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
       "source": "Vnstock"
     },
     "HUT": {
@@ -37,34 +52,14 @@
       "modelAsOf": "2026-08-14",
       "source": "Vnstock"
     },
-    "APS": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-18",
-      "source": "Vnstock"
-    },
-    "EVG": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-11",
-      "source": "Yahoo Finance"
-    },
-    "AAH": {
-      "rows": 641,
+    "F88": {
+      "rows": 251,
       "modelAsOf": "2026-08-11",
       "source": "Vnstock"
     },
     "HGM": {
       "rows": 799,
       "modelAsOf": "2026-08-13",
-      "source": "Vnstock"
-    },
-    "DTD": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-14",
-      "source": "Vnstock"
-    },
-    "API": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-18",
       "source": "Vnstock"
     },
     "FOC": {
@@ -77,85 +72,72 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "NHA": {
-      "rows": 1454,
-      "modelAsOf": "2026-08-18",
-      "source": "Yahoo Finance"
-    },
-    "GEE": {
-      "rows": 520,
+    "VMS": {
+      "rows": 1055,
       "modelAsOf": "2026-08-11",
-      "source": "Yahoo Finance"
+      "source": "Vnstock"
     },
     "AMV": {
       "rows": 1695,
       "modelAsOf": "2026-08-12",
       "source": "Vnstock"
     },
-    "DDV": {
-      "rows": 1779,
+    "TOS": {
+      "rows": 1117,
       "modelAsOf": "2026-08-11",
       "source": "Vnstock"
     },
-    "VMS": {
-      "rows": 1055,
-      "modelAsOf": "2026-08-11",
-      "source": "Vnstock"
-    },
-    "TVC": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-20",
-      "source": "Vnstock"
-    },
-    "C4G": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-11",
-      "source": "Vnstock"
-    },
-    "IDJ": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-12",
-      "source": "Vnstock"
-    },
-    "PNJ": {
+    "EVG": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "NRC": {
+    "NDN": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
       "source": "Vnstock"
+    },
+    "TTF": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-11",
+      "source": "Yahoo Finance"
+    },
+    "CKG": {
+      "rows": 1664,
+      "modelAsOf": "2026-08-21",
+      "source": "Yahoo Finance"
+    },
+    "TPC": {
+      "rows": 2588,
+      "modelAsOf": "2026-08-21",
+      "source": "Yahoo Finance"
     }
   },
   "errors": [],
   "redSymbols": [
-    "ACC",
-    "VDP",
-    "TOS"
+    "BOT",
+    "NTL"
   ],
   "yellowSymbols": [
-    "NTL",
-    "HBC",
-    "HUT",
-    "APS",
-    "EVG",
+    "VDP",
+    "ACC",
+    "GTD",
+    "POM",
     "AAH",
+    "CTP",
+    "HUT",
+    "F88",
     "HGM",
-    "DTD",
-    "API",
+    "CKG",
+    "TPC",
     "FOC",
     "FIR",
-    "NHA",
-    "GEE",
-    "AMV",
-    "DDV",
     "VMS",
-    "TVC",
-    "C4G",
-    "IDJ",
-    "PNJ",
-    "NRC"
+    "AMV",
+    "TOS",
+    "EVG",
+    "NDN",
+    "TTF"
   ],
   "missingRed": [],
   "missingAlerts": [],
