@@ -125,10 +125,10 @@
     const positive = state.universe.length;
     const top = state.universe[0];
     const cards = [
-      { label: "HOSE đủ dữ liệu", value: symbols.length, format: value => `${Math.round(value)}`, detail: "snapshot CURRENT đã kiểm định", tone: "" },
-      { label: "T+5 nghiêng tăng", value: positive, format: value => `${Math.round(value)}`, detail: `${symbols.length - positive} mã còn lại / không tăng`, tone: "up" },
+      { label: "Cổ phiếu được theo dõi", value: symbols.length, format: value => `${Math.round(value)}`, detail: "toàn sàn HOSE", tone: "" },
+      { label: "Nghiêng tăng T+5", value: positive, format: value => `${Math.round(value)}`, detail: `${symbols.length - positive} mã còn lại`, tone: "up" },
       { label: "Phiên gần nhất", value: advancing, format: value => `${Math.round(value)} ↑`, detail: `${falling} giảm · ${symbols.length - advancing - falling} đi ngang`, tone: "" },
-      { label: "Upside cao nhất", value: (top?.upside || 0) * 100, format: value => `+${value.toFixed(2)}%`, detail: top ? `${top.symbol} · ${money(top.target)} đ T+5` : "Chưa có forecast hợp lệ", tone: "up" },
+      { label: "Tăng nổi bật nhất", value: (top?.upside || 0) * 100, format: value => `+${value.toFixed(2)}%`, detail: top ? `${top.symbol} · trọng tâm ${money(top.target)}` : "Chưa có dữ liệu", tone: "up" },
     ];
 
     $("#marketPulse").innerHTML = cards.map((card, index) => `<article class="pulseCard"><span>${escapeHTML(card.label)}</span><strong class="${card.tone}" data-pulse="${index}">—</strong><small>${escapeHTML(card.detail)}</small><i class="pulseTrace" aria-hidden="true"></i></article>`).join("");
@@ -172,8 +172,8 @@
 
     deck.innerHTML = state.rows.map((row, index) => {
       const illiquid = row.tradedValue20 < 1e9;
-      const probability = row.directionValidated ? percent(row.probUp, 1) : "REVIEW";
-      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo tăng ${percent(row.upside, 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>quality</small></span></div><div class="signalReturn"><strong>+${percent(row.upside, 2)}</strong><span>UPSIDE DỰ BÁO · T+5</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá EOD thực tế của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalFacts"><span>P↑ ${probability}</span><span>${row.newsCount} tin / 5P</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">⚠ Thanh khoản bình quân 20 phiên thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
+      const probability = row.directionValidated ? percent(row.probUp, 1) : "—";
+      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo tăng ${percent(row.upside, 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong>+${percent(row.upside, 2)}</strong><span>TRỌNG TÂM T+5</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts"><span>P↑ ${probability}</span><span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
     $("#leaderDots").innerHTML = state.rows.map((row, index) => `<button type="button" class="leaderDot" data-dot="${index}" aria-label="Xem ${escapeHTML(row.symbol)}" title="${escapeHTML(row.symbol)}"></button>`).join("");
@@ -254,13 +254,13 @@
   function contributionsMarkup(row) {
     const entries = Object.entries(row.forecast.expertContributions || {}).sort((left, right) => Math.abs(number(right[1]) || 0) - Math.abs(number(left[1]) || 0));
     const maximum = Math.max(...entries.map(([, value]) => Math.abs(number(value) || 0)), .00001);
-    if (!entries.length) return '<div class="detailEmpty">Không có contribution đủ điều kiện.</div>';
+    if (!entries.length) return '<div class="detailEmpty">Chưa có yếu tố đủ nổi bật.</div>';
     return entries.map(([name, value]) => `<div class="factorRow"><span>${escapeHTML(expertNames[name] || name)}</span><div class="factorTrack"><i class="${number(value) < 0 ? "factorDown" : "factorUp"}" style="width:${Math.abs(number(value) || 0) / maximum * 100}%"></i></div><strong class="${number(value) < 0 ? "factorNegative" : "factorPositive"}">${signed(value, 2)}</strong></div>`).join("");
   }
 
   function newsMarkup(row) {
     const recent = (row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item)).slice(0, 2);
-    if (!recent.length) return '<p class="detailEmpty">Không có bài trong 5 phiên gần nhất vừa đạt point-in-time vừa xác minh đúng mã/doanh nghiệp.</p>';
+    if (!recent.length) return '<p class="detailEmpty">Chưa có tin mới đáng chú ý.</p>';
     return recent.map(item => `<article class="detailNewsItem"><span>${escapeHTML(item.publisher || item.source || "Nguồn đã đối chiếu")} · ${escapeHTML(shortDate(item.availableDate || item.publishedAt || item.date))}</span><strong>${escapeHTML(item.title || "Sự kiện chưa có tiêu đề")}</strong></article>`).join("");
   }
 
@@ -281,13 +281,13 @@
     const warnings = [];
     if (row.tradedValue20 < 1e9) warnings.push("Thanh khoản dưới 1 tỷ đồng/phiên");
     if (row.risk !== "GREEN") warnings.push(`Trạng thái ${row.risk}`);
-    if (!row.directionValidated) warnings.push("Xác suất hướng chưa PASS");
+    if (!row.directionValidated) warnings.push("Chưa đủ cơ sở cho xác suất hướng");
     else if (row.probUp < .5) warnings.push("P(tăng) dưới 50%");
     if (!row.flowFresh) warnings.push("Dòng tiền tổ chức chưa mới");
     if (!row.newsCount) warnings.push("Không có tin trong 5 phiên");
-    else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item))) warnings.push("Chưa có headline gần đây khớp đúng doanh nghiệp");
+    else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item))) warnings.push("Chưa có tin gần đây khớp doanh nghiệp");
 
-    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">SIGNAL BREAKDOWN / ${escapeHTML(row.symbol)}</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Mở phân tích đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">ĐÓNG GÓP THỰC TỪ MÔ HÌNH · T+5</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG KỊCH BẢN Q20 — Q80</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "REVIEW"}</b><small>${row.directionValidated ? "direction validation PASS" : "không hiển thị xác suất chưa validate"}</small></article><article><span>Rủi ro về Q20</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>kịch bản thấp so với EOD</small></article><article><span>GTGD 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cổ phiếu/phiên</small></article><article><span>Biến động ngày</span><b>${percent(row.volatility, 1)}</b><small>${escapeHTML(flowStatus)} · foreign ${flow.foreignAvailable ? "có" : "thiếu"}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN ĐÃ KIỂM TRA POINT-IN-TIME · ${row.newsCount} / 5 PHIÊN</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>ĐIỂM CẦN LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : '<div class="signalWarnings clear"><span>KIỂM TRA CHẤT LƯỢNG</span><i>Thanh khoản, rủi ro và xác suất đã được hiển thị minh bạch.</i></div>'}<div class="qualityFootnote">Điểm ${row.quality}/100 là thước đo tổng hợp về xác suất đã kiểm định, thanh khoản 20 phiên, độ rộng Q20–Q80, tin tức, rủi ro và độ mới dòng tiền; không phải xác suất sinh lời.</div>`;
+    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+5</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Xem đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">CÁC YẾU TỐ CHÍNH</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG GIÁ T+5</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "—"}</b></article><article><span>Biên dưới</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>${money(row.q20)}</small></article><article><span>Thanh khoản 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cp/phiên</small></article><article><span>Biến động ngày</span><b>${percent(row.volatility, 1)}</b><small>${escapeHTML(flowStatus)}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN GẦN ĐÂY · ${row.newsCount} BÀI</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : ""}`;
   }
 
   function select(index, manual = false) {
@@ -382,7 +382,7 @@
       if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");
       state.universe = buildLeaderboard(state.base, { all: true });
       state.rows = state.universe.slice(0, 10);
-      $("#snapshotDate").textContent = `AS-OF ${state.base.dash.asOf || "—"}`;
+      $("#snapshotDate").textContent = state.base.dash.asOf || "—";
       updateClock();
       window.setInterval(() => { if (!document.hidden) updateClock(); }, 1000);
       renderPulse();
