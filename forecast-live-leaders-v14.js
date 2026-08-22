@@ -15,6 +15,14 @@
     NUMERICAL: "Giá / kỹ thuật", REGIME: "Trạng thái thị trường", VOLATILITY: "Biến động thực tế",
     SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức",
   };
+  const issuerAliases = {
+    VCB: ["vietcombank"], BID: ["bidv"], CTG: ["vietinbank"], TCB: ["techcombank"],
+    MBB: ["mb bank", "mbbank", "ngân hàng quân đội"], VPB: ["vpbank"], TPB: ["tpbank"],
+    STB: ["sacombank"], HDB: ["hdbank"], VNM: ["vinamilk"], HPG: ["hòa phát", "hoà phát", "hoa phat"],
+    VIC: ["vingroup"], VHM: ["vinhomes"], VRE: ["vincom retail"], VJC: ["vietjet"],
+    SAB: ["sabeco"], MSN: ["masan"], PLX: ["petrolimex"], GAS: ["pv gas", "pvgas"],
+    MWG: ["thế giới di động"], BCM: ["becamex"], NLG: ["nam long"], DIG: ["dic corp", "dic group"],
+  };
   const state = { base: null, universe: [], rows: [], index: 0, filter: "all", paused: reducedMotion, timer: 0 };
 
   function valueLabel(value) {
@@ -135,6 +143,17 @@
     return row.risk === "GREEN" ? "riskGreen" : row.risk === "RED" ? "riskRed" : "riskWatch";
   }
 
+  function issuerNewsMatches(row, item) {
+    const title = String(item?.title || "");
+    const lower = title.toLocaleLowerCase("vi-VN");
+    if (row.symbol === "GTA" && /\bgta\s*(?:\d+|[ivx]{1,4})\b|\bgameplay\b|\brockstar\b|\btake[\s-]?two\b|\bplaystation\b|\bxbox\b/i.test(title)) return false;
+    if (row.symbol === "VSI" && /smart\s+indexing|\bvps\b.{0,55}\bvsi\b|\bvsi\b.{0,55}\bvps\b/i.test(title)) return false;
+    if (row.symbol === "ASP" && /\basp\s+shipping\b/i.test(title) && !/dầu\s+khí\s+an\s+pha/i.test(title)) return false;
+    if (row.symbol === "FPT" && /\bfpt\s+(retail|long\s+châu|online)\b|chứng\s+khoán\s+fpt/i.test(title)) return false;
+    const exact = new RegExp(`(^|[^A-Za-z0-9])${row.symbol}([^A-Za-z0-9]|$)`, "i").test(title);
+    return exact || (issuerAliases[row.symbol] || []).some(alias => lower.includes(alias));
+  }
+
   function renderCards() {
     const deck = $("#signalDeck");
     if (!state.rows.length) {
@@ -147,7 +166,7 @@
 
     deck.innerHTML = state.rows.map((row, index) => {
       const illiquid = row.tradedValue20 < 1e9;
-      const probability = row.directionValidated ? percent(row.probUp, 0) : "REVIEW";
+      const probability = row.directionValidated ? percent(row.probUp, 1) : "REVIEW";
       return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo tăng ${percent(row.upside, 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>quality</small></span></div><div class="signalReturn"><strong>+${percent(row.upside, 2)}</strong><span>UPSIDE DỰ BÁO · T+5</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá EOD thực tế của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalFacts"><span>P↑ ${probability}</span><span>${row.newsCount} tin / 5P</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">⚠ Thanh khoản bình quân 20 phiên thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
@@ -234,8 +253,8 @@
   }
 
   function newsMarkup(row) {
-    const recent = (row.snapshot.evidence?.recent || []).slice(0, 2);
-    if (!recent.length) return '<p class="detailEmpty">Không có bài đủ điều kiện PIT trong danh sách sự kiện gần nhất.</p>';
+    const recent = (row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item)).slice(0, 2);
+    if (!recent.length) return '<p class="detailEmpty">Không có bài vừa đạt point-in-time vừa xác minh đúng mã/doanh nghiệp; không dùng bài trùng từ khóa.</p>';
     return recent.map(item => `<article class="detailNewsItem"><span>${escapeHTML(item.publisher || item.source || "Nguồn đã đối chiếu")} · ${escapeHTML(shortDate(item.availableDate || item.publishedAt || item.date))}</span><strong>${escapeHTML(item.title || "Sự kiện chưa có tiêu đề")}</strong></article>`).join("");
   }
 
@@ -260,6 +279,7 @@
     else if (row.probUp < .5) warnings.push("P(tăng) dưới 50%");
     if (!row.flowFresh) warnings.push("Dòng tiền tổ chức chưa mới");
     if (!row.newsCount) warnings.push("Không có tin trong 5 phiên");
+    else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item))) warnings.push("Chưa có headline khớp đúng doanh nghiệp");
 
     $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">SIGNAL BREAKDOWN / ${escapeHTML(row.symbol)}</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Mở phân tích đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">ĐÓNG GÓP THỰC TỪ MÔ HÌNH · T+5</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG KỊCH BẢN Q20 — Q80</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "REVIEW"}</b><small>${row.directionValidated ? "direction validation PASS" : "không hiển thị xác suất chưa validate"}</small></article><article><span>Rủi ro về Q20</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>kịch bản thấp so với EOD</small></article><article><span>GTGD 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cổ phiếu/phiên</small></article><article><span>Biến động ngày</span><b>${percent(row.volatility, 1)}</b><small>${escapeHTML(flowStatus)} · foreign ${flow.foreignAvailable ? "có" : "thiếu"}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN ĐÃ KIỂM TRA POINT-IN-TIME · ${row.newsCount} / 5 PHIÊN</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>ĐIỂM CẦN LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : '<div class="signalWarnings clear"><span>KIỂM TRA CHẤT LƯỢNG</span><i>Thanh khoản, rủi ro và xác suất đã được hiển thị minh bạch.</i></div>'}<div class="qualityFootnote">Điểm ${row.quality}/100 là thước đo tổng hợp về xác suất đã kiểm định, thanh khoản 20 phiên, độ rộng Q20–Q80, tin tức, rủi ro và độ mới dòng tiền; không phải xác suất sinh lời.</div>`;
   }
