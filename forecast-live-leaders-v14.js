@@ -154,6 +154,12 @@
     return exact || (issuerAliases[row.symbol] || []).some(alias => lower.includes(alias));
   }
 
+  function belongsToLastFiveSessions(row, item) {
+    const tradingDates = row.history.slice(-5).map(session => String(session.date || "").slice(0, 10)).filter(Boolean);
+    const available = String(item?.availableDate || item?.publishedAt || "").slice(0, 10);
+    return Boolean(available && tradingDates.length && available >= tradingDates[0] && available <= tradingDates.at(-1));
+  }
+
   function renderCards() {
     const deck = $("#signalDeck");
     if (!state.rows.length) {
@@ -253,8 +259,8 @@
   }
 
   function newsMarkup(row) {
-    const recent = (row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item)).slice(0, 2);
-    if (!recent.length) return '<p class="detailEmpty">Không có bài vừa đạt point-in-time vừa xác minh đúng mã/doanh nghiệp; không dùng bài trùng từ khóa.</p>';
+    const recent = (row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item)).slice(0, 2);
+    if (!recent.length) return '<p class="detailEmpty">Không có bài trong 5 phiên gần nhất vừa đạt point-in-time vừa xác minh đúng mã/doanh nghiệp.</p>';
     return recent.map(item => `<article class="detailNewsItem"><span>${escapeHTML(item.publisher || item.source || "Nguồn đã đối chiếu")} · ${escapeHTML(shortDate(item.availableDate || item.publishedAt || item.date))}</span><strong>${escapeHTML(item.title || "Sự kiện chưa có tiêu đề")}</strong></article>`).join("");
   }
 
@@ -279,7 +285,7 @@
     else if (row.probUp < .5) warnings.push("P(tăng) dưới 50%");
     if (!row.flowFresh) warnings.push("Dòng tiền tổ chức chưa mới");
     if (!row.newsCount) warnings.push("Không có tin trong 5 phiên");
-    else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item))) warnings.push("Chưa có headline khớp đúng doanh nghiệp");
+    else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item))) warnings.push("Chưa có headline gần đây khớp đúng doanh nghiệp");
 
     $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">SIGNAL BREAKDOWN / ${escapeHTML(row.symbol)}</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Mở phân tích đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">ĐÓNG GÓP THỰC TỪ MÔ HÌNH · T+5</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG KỊCH BẢN Q20 — Q80</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "REVIEW"}</b><small>${row.directionValidated ? "direction validation PASS" : "không hiển thị xác suất chưa validate"}</small></article><article><span>Rủi ro về Q20</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>kịch bản thấp so với EOD</small></article><article><span>GTGD 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cổ phiếu/phiên</small></article><article><span>Biến động ngày</span><b>${percent(row.volatility, 1)}</b><small>${escapeHTML(flowStatus)} · foreign ${flow.foreignAvailable ? "có" : "thiếu"}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN ĐÃ KIỂM TRA POINT-IN-TIME · ${row.newsCount} / 5 PHIÊN</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>ĐIỂM CẦN LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : '<div class="signalWarnings clear"><span>KIỂM TRA CHẤT LƯỢNG</span><i>Thanh khoản, rủi ro và xác suất đã được hiển thị minh bạch.</i></div>'}<div class="qualityFootnote">Điểm ${row.quality}/100 là thước đo tổng hợp về xác suất đã kiểm định, thanh khoản 20 phiên, độ rộng Q20–Q80, tin tức, rủi ro và độ mới dòng tiền; không phải xác suất sinh lời.</div>`;
   }
