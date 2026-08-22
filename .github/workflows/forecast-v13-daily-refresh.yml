@@ -1,0 +1,42 @@
+name: Forecast V13 daily market refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 10 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forecast-v13-daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  update-validated-forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-v12.txt
+      - name: Install direct-forecast dependencies
+        run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn
+      - name: Refresh public EOD and publish only validated T+1 to T+5 forecasts
+        run: python scripts/forecast_v13_market_model.py --fast --publish
+      - name: Reject stale, invalid-grid, flat or unvalidated forecasts
+        run: python scripts/forecast_v13_market_model_test.py
+      - name: Persist the validated market snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          if git diff --cached --quiet; then
+            echo "No market-session change detected."
+            exit 0
+          fi
+          git commit -m "Refresh validated V13 Vietnam equity EOD forecast [data-only]"
+          git push
