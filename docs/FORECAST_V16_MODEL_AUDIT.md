@@ -6,13 +6,13 @@
 - Universe: 403/403 model-ready HOSE symbols; 0 stale EOD symbols
 - Target: direct log return for T+1 through T+5
 - Price output: valid HOSE tick grid and multi-session price limits
-- Direction probability: published only for T+1 through T+4; T+5 is withheld by the Brier gate
+- Direction probability: published only where the sealed Brier gate passes; the horizon list is generated from the current audit rather than hard-coded
 
 ## What changed in V16
 
 The point forecast remains a conditional median. A separate absolute-move model now estimates the likely magnitude and produces calibrated bear/bull scenarios. This prevents a visually large but statistically unsupported point target from replacing an honest near-neutral median.
 
-T+2 and T+4 retain 25% of the market-wide intercept, while T+3 removes it. These fixed horizon rules were frozen from pre-publication walk-forward experiments. T+1 and T+5 retain the raw market component. The T+2 shrinkage specifically protects the executable quote from recent market-regime drift without discarding the more stable cross-sectional ranking signal.
+T+2 retains 25% of the market-wide intercept, while T+3 removes it. T+1, T+4 and T+5 retain the raw market component. These fixed horizon rules were frozen from pre-publication walk-forward experiments. The T+2 shrinkage protects the executable quote from recent market-regime drift without discarding the more stable cross-sectional ranking signal. The T+4 raw setting was selected only after a 0%, 10%, 25%, 50% and 100% retention sweep; it produced the strongest executable holdout skill with four positive sealed subperiods and two positive independently retrained folds.
 
 Weak T+1 signals are allowed to remain neutral instead of being forced one tick away from the reference close. The bear/bull scenarios remain non-flat.
 

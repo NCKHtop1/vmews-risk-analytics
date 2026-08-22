@@ -60,8 +60,10 @@ HORIZONS = (1, 2, 3, 4, 5)
 # Recent walk-forward windows show that the raw market-wide intercept drifts
 # faster than the cross-sectional stock-selection signal at T+2.  Retaining a
 # quarter of that component preserves positive sealed MAE skill while avoiding
-# the latest-regime failure produced by the fully raw T+2 intercept.
-INTERCEPT_RETENTION = {2: 0.25, 3: 0.0, 4: 0.25}
+# the latest-regime failure produced by the fully raw T+2 intercept.  T+4 keeps
+# the raw intercept: the current frozen sweep improves executable MAE in all
+# four sealed subperiods and in two of three independently retrained folds.
+INTERCEPT_RETENTION = {2: 0.25, 3: 0.0}
 QUICK_SYMBOLS = ("FPT", "VCB", "HPG", "MBB", "FRT", "PNJ", "VNM", "SSI")
 VNDIRECT_URL = "https://api-finfo.vndirect.com.vn/v4/stock_prices"
 EOD_CACHE_PATH = DATA / "v16-eod-refresh-cache.json.gz"

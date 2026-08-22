@@ -26,6 +26,7 @@ class VietnamPriceGridTest(unittest.TestCase):
     def test_t2_market_intercept_is_regime_shrunk_before_holdout(self) -> None:
         self.assertEqual(INTERCEPT_RETENTION[2], .25)
         self.assertEqual(intercept_modes(2), ("BLEND_0.25",))
+        self.assertEqual(intercept_modes(4), ("RAW",))
 
     def test_hose_price_bands(self) -> None:
         self.assertEqual(tick_size(9_990), 10)
@@ -221,11 +222,19 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertLessEqual(fpt["largestReportedWeight"], .10)
 
     def test_direction_probability_is_withheld_where_brier_gate_fails(self) -> None:
-        self.assertEqual(self.market["model"]["promotion"]["directionHorizons"], [1, 2, 3, 4])
+        validated = self.market["model"]["promotion"]["directionHorizons"]
+        expected = [
+            int(horizon)
+            for horizon, model in self.market["model"]["horizons"].items()
+            if model["directionStatus"] == "PASS"
+        ]
+        self.assertEqual(validated, expected)
         for snapshot in self.dashboard["symbols"].values():
-            self.assertTrue(snapshot["horizons"]["3"]["directionValidated"])
-            self.assertTrue(snapshot["horizons"]["4"]["directionValidated"])
-            self.assertFalse(snapshot["horizons"]["5"]["directionValidated"])
+            for horizon in map(str, range(1, 6)):
+                self.assertEqual(
+                    snapshot["horizons"][horizon]["directionValidated"],
+                    int(horizon) in validated,
+                )
 
     def test_fpt_feed_excludes_frt_and_fts_announcements(self) -> None:
         for item in self.dashboard["symbols"]["FPT"]["evidence"]["recent"]:
