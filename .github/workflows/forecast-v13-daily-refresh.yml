@@ -1,4 +1,4 @@
-name: Forecast V13 daily market refresh
+name: Forecast V14 full-HOSE market and news audit
 
 on:
   workflow_dispatch:
@@ -9,13 +9,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-v13-daily-refresh
+  group: forecast-v14-daily-refresh
   cancel-in-progress: false
 
 jobs:
   update-validated-forecast:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,18 +25,25 @@ jobs:
           cache-dependency-path: requirements-v12.txt
       - name: Install direct-forecast dependencies
         run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn
-      - name: Refresh public EOD and publish only validated T+1 to T+5 forecasts
-        run: python scripts/forecast_v13_market_model.py --fast --publish
-      - name: Reject stale, invalid-grid, flat or unvalidated forecasts
-        run: python scripts/forecast_v13_market_model_test.py
+      - name: Refresh point-in-time news for the full current HOSE universe
+        run: |
+          python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
+      - name: Refresh every HOSE EOD and publish only independently validated forecasts
+        env:
+          V14_EOD_WORKERS: "8"
+        run: python scripts/forecast_v13_market_model.py --fast --refresh-symbols ALL --publish
+      - name: Reject issuer mixups, future news, invalid HOSE ticks and failed backtests
+        run: |
+          python scripts/forecast_v13_market_model_test.py
+          python scripts/forecast_v14_frontend_contract_test.py
       - name: Persist the validated market snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/research-news-v10.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0
           fi
-          git commit -m "Refresh validated V13 Vietnam equity EOD forecast [data-only]"
+          git commit -m "Refresh validated V14 all-HOSE EOD, event and flow forecast [data-only]"
           git push
