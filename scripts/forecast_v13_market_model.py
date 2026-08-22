@@ -564,8 +564,12 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     # Freeze a conservative short-horizon amplitude before any holdout labels
     # are consulted; the exchange tick still guarantees a meaningful quote.
     if horizon == 1:
-        scale_max = min(scale_max, .70)
-        floors = tuple(floor for floor in floors if floor <= .12)
+        scale_max = min(scale_max, .85)
+        # A large volatility floor manufactures direction on weak T+1
+        # signals.  Its rounded quotes lose to the zero-change benchmark even
+        # when the continuous regressor appears to pass.  Keep only floors
+        # whose exchange-executable calibration is economically defensible.
+        floors = tuple(floor for floor in floors if floor <= .04)
     for multiplier in np.linspace(scale_min, scale_max, 30):
         for floor in floors:
             point = shape_prediction(cal_raw, cal_vol, cal_probability, float(multiplier), floor)
@@ -656,7 +660,8 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         "selection": "ONE_STANDARD_ERROR_PREFER_ECONOMIC_DISPERSION",
         "scale": scale,
         "convictionFloor": conviction_floor,
-        "shortHorizonScaleCeiling": .70 if horizon == 1 else None,
+        "shortHorizonScaleCeiling": .85 if horizon == 1 else None,
+        "shortHorizonFloorCeiling": .04 if horizon == 1 else None,
         "bestMAE": best["mae"],
         "selectedMAE": selected["mae"],
         "quantile20": quantile_low,

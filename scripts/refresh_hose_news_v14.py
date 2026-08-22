@@ -73,7 +73,7 @@ def fetch_symbol(symbol: str, universe: set[str]) -> tuple[str, list[dict[str, o
     url = f"https://news.google.com/rss/search?q={query}&hl=vi&gl=VN&ceid=VN:vi"
     try:
         request = Request(url, headers={"User-Agent": "Mozilla/5.0 VMEWS-HOSE-News/14.0"})
-        with urlopen(request, timeout=11) as response:
+        with urlopen(request, timeout=float(os.environ.get("V14_NEWS_TIMEOUT", "7"))) as response:
             root = ET.fromstring(response.read())
         items: list[dict[str, object]] = []
         for element in root.findall(".//item")[:18]:
@@ -96,11 +96,29 @@ def main() -> None:
     failures: dict[str, str] = {}
     succeeded = 0
     new_articles = 0
-    workers = min(int(os.environ.get("V14_NEWS_WORKERS", "12")), len(symbols))
+    workers = min(int(os.environ.get("V14_NEWS_WORKERS", "20")), len(symbols))
+
+    # Google News may temporarily rate-limit an entire runner address after a
+    # full-market sweep.  Three independent liquid-symbol probes distinguish a
+    # provider outage from an issuer with no headlines and prevent 404 doomed
+    # eleven-second requests; the caller retains the previous verified archive.
+    probe_symbols = [symbol for symbol in ("FPT", "VCB", "HPG") if symbol in symbols]
+    probe_results: dict[str, tuple[str, list[dict[str, object]], str | None]] = {}
+    if len(probe_symbols) >= 2:
+        with ThreadPoolExecutor(max_workers=len(probe_symbols)) as probes:
+            for future in as_completed(probes.submit(fetch_symbol, symbol, universe) for symbol in probe_symbols):
+                outcome = future.result()
+                probe_results[outcome[0]] = outcome
+        if all(outcome[2] is not None for outcome in probe_results.values()):
+            reasons = ", ".join(f"{symbol}: {outcome[2]}" for symbol, outcome in probe_results.items())
+            raise RuntimeError(f"HOSE news publisher preflight unavailable; existing archive preserved ({reasons})")
 
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        for future in as_completed(pool.submit(fetch_symbol, symbol, universe) for symbol in symbols):
-            symbol, items, error = future.result()
+        pending = [symbol for symbol in symbols if symbol not in probe_results]
+        futures = [pool.submit(fetch_symbol, symbol, universe) for symbol in pending]
+        outcomes = list(probe_results.values())
+        outcomes.extend(future.result() for future in as_completed(futures))
+        for symbol, items, error in outcomes:
             if error:
                 failures[symbol] = error
                 continue

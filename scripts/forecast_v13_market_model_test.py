@@ -99,8 +99,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertLess(embargo["calibrationLatestMaturity"], embargo["holdoutStarts"])
             if horizon == "1":
                 calibration = self.market["model"]["horizons"][horizon]["calibration"]
-                self.assertLessEqual(calibration["scale"], .70)
-                self.assertEqual(calibration["shortHorizonScaleCeiling"], .70)
+                self.assertLessEqual(calibration["scale"], .85)
+                self.assertLessEqual(calibration["convictionFloor"], .04)
+                self.assertEqual(calibration["shortHorizonScaleCeiling"], .85)
+                self.assertEqual(calibration["shortHorizonFloorCeiling"], .04)
 
     def test_every_quote_is_executable_and_nonflat(self) -> None:
         checked = 0
