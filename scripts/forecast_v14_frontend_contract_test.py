@@ -46,6 +46,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "pup", "risk", "drivers", "chart", "forecastCards", "methodProof",
             "eventImpact", "eventImpactMeta", "news", "rumors", "sourceAudit",
             "tabs", "metrics", "btRows", "btDetail", "ablation",
+            "heroCanvas", "heroSpark", "sparkSymbol", "symbolSuggestions",
+            "marketTape", "tapeTrack", "chartOverlay", "chartPulse", "backToTop",
+            "overview", "forecast", "validation", "events", "backtest",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -56,6 +59,34 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("Equity", self.html)
         self.assertIn("Kịch bản xác suất", self.html)
         self.assertIn("Tin ra, giá phản ứng thế nào", self.html)
+
+    def test_motion_is_responsive_accessible_and_reducible(self) -> None:
+        css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
+        motion = (ROOT / "forecast-portfolio-v14.js").read_text(encoding="utf-8")
+        self.assertIn("prefers-reduced-motion", css)
+        self.assertIn("prefers-reduced-motion", motion)
+        self.assertIn("requestAnimationFrame", motion)
+        self.assertIn("document.hidden", motion)
+        self.assertIn("IntersectionObserver", motion)
+        self.assertIn("aria-live=\"polite\"", self.html)
+        self.assertIn("focus-visible", css)
+
+    def test_tape_and_sparkline_use_real_snapshot_values(self) -> None:
+        motion = (ROOT / "forecast-portfolio-v14.js").read_text(encoding="utf-8")
+        self.assertIn("base.dash.symbols", motion)
+        self.assertIn("base.dash.charts", motion)
+        self.assertIn("snapshot.close", motion)
+        self.assertIn("rawClose", motion)
+        self.assertIn("EOD", self.html)
+
+    def test_forecast_chart_supports_real_history_ranges(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        self.assertIn('data-range="30"', self.html)
+        self.assertIn('data-range="65"', self.html)
+        self.assertIn('data-range="125"', self.html)
+        self.assertIn("chartRange", app)
+        self.assertIn("chartOverlay", app)
+        self.assertIn("quadraticCurveTo", app)
 
 
 if __name__ == "__main__":
