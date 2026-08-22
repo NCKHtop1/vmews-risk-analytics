@@ -557,6 +557,15 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     scale_min = float(os.environ.get("V13_SCALE_MIN", ".20"))
     scale_max = float(os.environ.get("V13_SCALE_MAX", "2.0"))
     floors = (0.0, .04, .08, .12, .16, .20, .25)
+    # Next-session returns are materially less stable than multi-session
+    # targets.  Choosing the largest prediction inside the one-standard-error
+    # envelope can therefore overfit an unusually directional calibration
+    # regime and make the *executable* T+1 forecast worse than no change.
+    # Freeze a conservative short-horizon amplitude before any holdout labels
+    # are consulted; the exchange tick still guarantees a meaningful quote.
+    if horizon == 1:
+        scale_max = min(scale_max, .70)
+        floors = tuple(floor for floor in floors if floor <= .12)
     for multiplier in np.linspace(scale_min, scale_max, 30):
         for floor in floors:
             point = shape_prediction(cal_raw, cal_vol, cal_probability, float(multiplier), floor)
@@ -647,6 +656,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         "selection": "ONE_STANDARD_ERROR_PREFER_ECONOMIC_DISPERSION",
         "scale": scale,
         "convictionFloor": conviction_floor,
+        "shortHorizonScaleCeiling": .70 if horizon == 1 else None,
         "bestMAE": best["mae"],
         "selectedMAE": selected["mae"],
         "quantile20": quantile_low,
@@ -672,6 +682,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         scale=round(scale, 3),
         convictionFloor=conviction_floor,
         maeSkill=round(hold_metrics["maeSkill"], 4),
+        executableMAESkill=round(hold_metrics["executableMAESkill"], 4),
         rankIC=round(hold_metrics["rankIC"], 4),
         dispersion=round(hold_metrics["dispersionRatio"], 3),
         medianMovePct=round(100 * hold_metrics["medianForecastAbs"], 3),
@@ -737,7 +748,10 @@ def tradable_forecast(
     # Larger unconditional-volatility floors looked realistic visually but
     # failed the executable out-of-sample MAE gate, especially at T+1.  Keep
     # the calibrated floor inside the historically validated range instead.
-    scenario_fraction = .095 + .008 * max(horizon - 1, 0)
+    # T+1 is particularly sensitive to forced large moves: applying the same
+    # scenario floor as T+3...T+5 made fresh executable-price holdouts fail.
+    # Keep its volatility floor modest while preserving at least one HOSE tick.
+    scenario_fraction = .065 if horizon == 1 else .095 + .008 * (horizon - 1)
     conviction = 1.0 + min(abs(probability - .5) * .75, .12)
     minimum_move = max(
         tick,
