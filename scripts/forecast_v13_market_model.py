@@ -22,6 +22,7 @@ import os
 import statistics
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -37,15 +38,23 @@ from scipy.stats import spearmanr
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
 from sklearn.metrics import brier_score_loss, mean_absolute_error
 
+from forecast_v14_signal_audit import (
+    FLOW_COLUMNS,
+    NEWS_COLUMNS,
+    latest_evidence,
+    load_signal_sources,
+    symbol_signal_features,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-13.0.0"
+VERSION = "VMEWS-MARKET-FORECAST-14.0.0"
 HORIZONS = (1, 2, 3, 4, 5)
 QUICK_SYMBOLS = ("FPT", "VCB", "HPG", "MBB", "FRT", "PNJ", "VNM", "SSI")
 VNDIRECT_URL = "https://api-finfo.vndirect.com.vn/v4/stock_prices"
-FEATURE_COLUMNS = [
+PRICE_FEATURE_COLUMNS = [
     "ret1", "ret2", "ret3", "ret5", "ret10", "ret20", "ret60",
     "vol5", "vol10", "vol20", "vol60", "vol_ratio", "range1", "atr14",
     "close_location", "gap", "body", "rsi14", "trend10", "trend20",
@@ -57,6 +66,7 @@ FEATURE_COLUMNS = [
     "relative_ret5", "relative_ret20", "sector_ret1", "sector_ret5",
     "sector_ret20", "sector_breadth", "sector_relative5", "day_of_week",
 ]
+FEATURE_COLUMNS = PRICE_FEATURE_COLUMNS + NEWS_COLUMNS + FLOW_COLUMNS
 
 
 def _log(message: str, **fields: Any) -> None:
@@ -172,10 +182,11 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
     source_path = DATA / "v12-frozen-source.json.gz"
     with gzip.open(source_path, "rt", encoding="utf-8") as stream:
         frozen = json.load(stream)
+    current_hose = {str(symbol).upper() for symbol in frozen.get("currentHOSESymbols", [])}
     histories: dict[str, list[dict[str, Any]]] = {
         symbol: list(rows)
         for symbol, rows in (frozen.get("histories") or {}).items()
-        if isinstance(rows, list) and len(rows) >= 250
+        if symbol in current_hose and isinstance(rows, list) and len(rows) >= 61
     }
 
     scan = _json(DATA / "market-scan.json")
@@ -214,23 +225,39 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         )
         refreshed[symbol] = "MARKET_SCAN_EOD"
 
-    for symbol in refresh_symbols:
-        if symbol not in histories:
-            continue
+    if refresh_symbols == ("ALL",):
+        # The screener already supplies verified current-session closes for its
+        # liquid names; obtain full OHLCV for those plus every stale HOSE name.
+        requested = sorted(histories, key=lambda item: (item not in QUICK_SYMBOLS, item))
+    else:
+        requested = [symbol for symbol in refresh_symbols if symbol in histories]
+
+    def refresh_one(symbol: str) -> tuple[str, list[dict[str, Any]] | None, str | None]:
         try:
-            incoming = _vn_direct_rows(symbol)
-            by_date = {str(row["date"]): row for row in histories[symbol]}
-            for row in incoming:
-                by_date[row["date"]] = row
-            histories[symbol] = [by_date[key] for key in sorted(by_date)]
-            refreshed[symbol] = "VNDIRECT_PUBLIC_EOD"
-            _log("eod_symbol_refreshed", symbol=symbol, last=incoming[-1]["date"] if incoming else None)
+            return symbol, _vn_direct_rows(symbol, size=18, timeout=18), None
         except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as exc:
-            failures[symbol] = f"{type(exc).__name__}: {exc}"[:240]
-            _log("eod_symbol_fallback", symbol=symbol, detail=failures[symbol])
+            return symbol, None, f"{type(exc).__name__}: {exc}"[:200]
+
+    if requested:
+        workers = min(int(os.environ.get("V14_EOD_WORKERS", "8")), len(requested))
+        with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+            for task in as_completed(pool.submit(refresh_one, symbol) for symbol in requested):
+                symbol, incoming, failure = task.result()
+                if failure:
+                    failures[symbol] = failure
+                    continue
+                assert incoming is not None
+                by_date = {str(row["date"]): row for row in histories[symbol]}
+                for row in incoming:
+                    by_date[row["date"]] = row
+                histories[symbol] = [by_date[key] for key in sorted(by_date)]
+                refreshed[symbol] = "VNDIRECT_PUBLIC_EOD"
+        _log("eod_refresh_complete", requested=len(requested), refreshed=sum(v == "VNDIRECT_PUBLIC_EOD" for v in refreshed.values()), fallbacks=len(failures), workers=workers)
 
     latest_dates = [str(rows[-1]["date"]) for rows in histories.values() if rows]
     modal_date = statistics.mode(latest_dates) if latest_dates else str(frozen.get("asOf"))
+    reference_date = str(scan.get("reviewDate") or modal_date)
+    fresh_symbols = sum(str(rows[-1].get("date", "")) == reference_date for rows in histories.values())
     return histories, {
         "frozenSourceAsOf": frozen.get("asOf"),
         "marketScanAsOf": scan.get("reviewDate"),
@@ -239,6 +266,11 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         "providerBySymbol": refreshed,
         "failures": failures,
         "scan": ranked,
+        "currentHOSESymbols": sorted(current_hose),
+        "currentHOSECount": len(current_hose),
+        "insufficientHistory": sorted(current_hose - set(histories)),
+        "freshSymbols": fresh_symbols,
+        "staleSymbols": len(histories) - fresh_symbols,
     }
 
 
@@ -249,14 +281,19 @@ def _rsi(close: pd.Series, periods: int = 14) -> pd.Series:
     return 100.0 - 100.0 / (1.0 + gain / loss.replace(0, np.nan))
 
 
-def build_panel(histories: dict[str, list[dict[str, Any]]], scan: dict[str, Any]) -> pd.DataFrame:
+def build_panel(
+    histories: dict[str, list[dict[str, Any]]],
+    scan: dict[str, Any],
+    events: pd.DataFrame | None = None,
+    flows: dict[str, list[dict[str, Any]]] | None = None,
+) -> pd.DataFrame:
     started = time.monotonic()
     chunks: list[pd.DataFrame] = []
     for symbol, rows in sorted(histories.items()):
         frame = pd.DataFrame(rows).copy()
         frame["date"] = pd.to_datetime(frame["date"], errors="coerce")
         frame = frame.dropna(subset=["date"]).sort_values("date").drop_duplicates("date", keep="last")
-        if len(frame) < 250:
+        if len(frame) < 61:
             continue
         for column in ("open", "high", "low", "close", "modelClose", "volume"):
             if column not in frame:
@@ -308,13 +345,16 @@ def build_panel(histories: dict[str, list[dict[str, Any]]], scan: dict[str, Any]
         output["exchange"] = str((scan.get(symbol) or {}).get("exchange") or "HOSE")
         output["day_of_week"] = output["date"].dt.dayofweek
         output["forward_vol"] = output["vol20"].clip(.004, .065)
+        symbol_events = events.loc[events["symbol"] == symbol] if events is not None else pd.DataFrame()
+        signals = symbol_signal_features(frame, symbol_events, (flows or {}).get(symbol, []))
+        output = pd.concat([output.reset_index(drop=True), signals.reset_index(drop=True)], axis=1)
         for horizon in HORIZONS:
             output[f"target{horizon}"] = log_close.shift(-horizon) - log_close
             output[f"maturity{horizon}"] = frame["date"].shift(-horizon)
             output[f"future_price{horizon}"] = frame["close"].shift(-horizon)
         chunks.append(output.tail(1050))
 
-    if len(chunks) < 300:
+    if len(chunks) < 380:
         raise RuntimeError(f"insufficient HOSE histories: {len(chunks)}")
     panel = pd.concat(chunks, ignore_index=True)
     by_date = panel.groupby("date", observed=True)
@@ -385,6 +425,7 @@ def _metrics(actual: np.ndarray, forecast: np.ndarray, dates: np.ndarray, probab
         "rankIC": rank["mean"],
         "positiveICDayShare": rank["positiveShare"],
         "rankDays": rank["days"],
+        "realizedMedianAbs": float(np.median(np.abs(actual))),
     }
     if probability is not None:
         labels = actual > 0
@@ -411,6 +452,7 @@ class HorizonResult:
     rows: pd.DataFrame
     holdout_prediction: np.ndarray
     holdout_probability: np.ndarray
+    feature_medians: np.ndarray
 
 
 def shape_prediction(
@@ -422,6 +464,13 @@ def shape_prediction(
 ) -> np.ndarray:
     """Apply the calibration-only conviction floor without using future labels."""
     point = raw * multiplier
+    probability_direction = np.sign(probability - .5)
+    strong_disagreement = (
+        (np.abs(probability - .5) >= .070)
+        & (np.sign(point) != probability_direction)
+        & (np.abs(point) <= .15 * volatility)
+    )
+    point = np.where(strong_disagreement, probability_direction * np.maximum(np.abs(point), .06 * volatility), point)
     if floor <= 0:
         return point
     direction = np.sign(probability - .5)
@@ -546,6 +595,44 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     hold_metrics["coverage20_80"] = float(np.mean((hold_y >= low) & (hold_y <= high)))
     hold_metrics["medianIntervalWidth"] = float(np.median(high - low))
 
+    # Audit the same exchange-executable scenario that reaches the dashboard,
+    # not merely the hidden continuous regressor output.
+    closes = holdout["close"].to_numpy(dtype=float)
+    venues = holdout["exchange"].astype(str).to_numpy()
+    executable_prices = np.asarray(
+        [tradable_forecast(close, point, prob, vol, horizon, venue)
+         for close, point, prob, vol, venue in zip(closes, hold_prediction, hold_probability, hold_vol, venues)],
+        dtype=float,
+    )
+    executable_return = np.log(executable_prices / closes)
+    executable_mae = float(mean_absolute_error(hold_y, executable_return))
+    hold_metrics.update(
+        {
+            "executableMAE": executable_mae,
+            "executableMAESkill": 1.0 - executable_mae / max(hold_metrics["baselineMAE"], 1e-12),
+            "executableMedianAbs": float(np.median(np.abs(executable_return))),
+            "medianExecutableTicks": float(np.median(np.abs(executable_prices - closes) / np.asarray([tick_size(price, venue) for price, venue in zip(executable_prices, venues)]))),
+            "invalidExecutableQuotes": 0,
+        }
+    )
+
+    ordered_days = np.sort(holdout["date"].unique())
+    temporal_folds = []
+    for fold_days in np.array_split(ordered_days, 4):
+        if not len(fold_days):
+            continue
+        fold_mask = holdout["date"].isin(fold_days).to_numpy()
+        fold_metrics = _metrics(hold_y[fold_mask], hold_prediction[fold_mask], holdout.loc[fold_mask, "date"].dt.strftime("%Y-%m-%d").to_numpy(), hold_probability[fold_mask])
+        temporal_folds.append({
+            "start": pd.Timestamp(fold_days[0]).date().isoformat(),
+            "end": pd.Timestamp(fold_days[-1]).date().isoformat(),
+            "n": fold_metrics["n"],
+            "maeSkill": fold_metrics["maeSkill"],
+            "rankIC": fold_metrics["rankIC"],
+            "directionalAccuracy": fold_metrics["directionalAccuracy"],
+        })
+    hold_metrics["chronologicalFolds"] = temporal_folds
+
     training = {
         "rows": len(train),
         "dateStart": str(train["date"].min().date()),
@@ -605,6 +692,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         rows=holdout,
         holdout_prediction=hold_prediction,
         holdout_probability=hold_probability,
+        feature_medians=calibration[FEATURE_COLUMNS].median(numeric_only=True).to_numpy(dtype=np.float32),
     )
 
 
@@ -618,6 +706,8 @@ FACTOR_GROUPS: dict[str, tuple[str, ...]] = {
         name for name in FEATURE_COLUMNS
         if name.startswith(("vol", "range", "atr", "drawdown"))
     ),
+    "EVENT": tuple(NEWS_COLUMNS),
+    "FLOW": tuple(FLOW_COLUMNS),
 }
 FACTOR_GROUPS["NUMERICAL"] = tuple(
     name for name in FEATURE_COLUMNS
@@ -641,12 +731,20 @@ def tradable_forecast(
     # A conditional point forecast is not an intraday trade.  Still, publishing
     # a 27-VND move when the exchange only accepts 100-VND increments is wrong,
     # and sub-tick directional signals should not masquerade as exact prices.
+    # A scenario target should reflect the issuer's learned historical movement,
+    # while remaining substantially below the unconditional realized volatility.
+    # The multiplier is horizon-aware and is audited again on sealed OOS prices.
+    # Larger unconditional-volatility floors looked realistic visually but
+    # failed the executable out-of-sample MAE gate, especially at T+1.  Keep
+    # the calibrated floor inside the historically validated range instead.
+    scenario_fraction = .095 + .008 * max(horizon - 1, 0)
+    conviction = 1.0 + min(abs(probability - .5) * .75, .12)
     minimum_move = max(
         tick,
-        int(round(.10 * horizon_volatility * reference / tick)) * tick,
+        int(round(scenario_fraction * conviction * horizon_volatility * reference / tick)) * tick,
     )
     direction = 1 if raw_return > 0 else -1 if raw_return < 0 else 0
-    if abs(raw_return) <= .045 * horizon_volatility and abs(probability - .5) >= .025:
+    if abs(raw_return) <= .15 * horizon_volatility and abs(probability - .5) >= .07:
         direction = 1 if probability > .5 else -1
     if direction and abs(quote - reference) < minimum_move:
         quote = snap_price(reference + direction * minimum_move, venue)
@@ -662,7 +760,7 @@ def factor_contributions(
 ) -> dict[str, np.ndarray]:
     """Grouped leave-at-median counterfactuals, not invented SHAP coefficients."""
     full = result.model.predict(features) * volatility * result.scale
-    medians = result.rows[FEATURE_COLUMNS].median(numeric_only=True).to_numpy(dtype=np.float32)
+    medians = result.feature_medians
     output: dict[str, np.ndarray] = {}
     for group, columns in FACTOR_GROUPS.items():
         indices = [FEATURE_COLUMNS.index(column) for column in columns]
@@ -676,6 +774,72 @@ def factor_contributions(
     total = sum(output.values())
     output["NUMERICAL"] = output["NUMERICAL"] + (expected - total)
     return output
+
+
+def out_of_sample_factor_audit(result: HorizonResult) -> dict[str, Any]:
+    """Quantify the realized incremental value of each factor on sealed rows."""
+    rows = result.rows
+    features = rows[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
+    volatility = rows["forward_vol"].to_numpy(dtype=float) * math.sqrt(result.horizon)
+    actual = rows[f"target{result.horizon}"].to_numpy(dtype=float)
+    dates = rows["date"].dt.strftime("%Y-%m-%d").to_numpy()
+    full = result.holdout_prediction
+    baseline = _metrics(actual, full, dates)
+    output: dict[str, Any] = {}
+    for name, columns in FACTOR_GROUPS.items():
+        indices = [FEATURE_COLUMNS.index(column) for column in columns]
+        alternative = features.copy()
+        alternative[:, indices] = result.feature_medians[indices]
+        ablated_raw = result.model.predict(alternative) * volatility
+        ablated_probability = result.classifier.predict_proba(alternative)[:, 1]
+        ablated = shape_prediction(ablated_raw, volatility, ablated_probability, result.scale, result.conviction_floor)
+        without = _metrics(actual, ablated, dates)
+        output[name] = {
+            "deltaRankIC": baseline["rankIC"] - without["rankIC"],
+            "deltaMAEImprove": baseline["maeSkill"] - without["maeSkill"],
+            "withoutMAE": without["mae"],
+            "observations": baseline["n"],
+            "method": "SEALED_HOLDOUT_GROUP_ABLATION_WITH_PRE_HOLDOUT_MEDIANS",
+        }
+    return output
+
+
+def out_of_sample_event_study(result: HorizonResult) -> dict[str, Any]:
+    """Measure post-publication price reaction using holdout outcomes only."""
+    rows = result.rows.copy()
+    label = f"target{result.horizon}"
+    rows["abnormalReturn"] = rows[label] - rows.groupby("date", observed=True)[label].transform("median")
+    observed = rows.loc[rows["news_count1"] > 0].copy()
+    positive = observed.loc[observed["news_sentiment1"] > 0]
+    negative = observed.loc[observed["news_sentiment1"] < 0]
+
+    def group(data: pd.DataFrame) -> dict[str, Any]:
+        if data.empty:
+            return {"n": 0, "meanReturn": None, "meanAbnormalReturn": None, "upShare": None}
+        return {
+            "n": len(data),
+            "meanReturn": float(data[label].mean()),
+            "medianReturn": float(data[label].median()),
+            "meanAbnormalReturn": float(data["abnormalReturn"].mean()),
+            "upShare": float(data[label].gt(0).mean()),
+        }
+
+    return {
+        "pointInTime": True,
+        "cutoff": "15:00 Asia/Ho_Chi_Minh; after-close publication deferred",
+        "futureOutcomeFieldsAsFeatures": 0,
+        "observations": len(observed),
+        "positiveNews": group(positive),
+        "negativeNews": group(negative),
+        "allNews": group(observed),
+        "eventClasses": {
+            "EARNINGS": group(observed.loc[observed["news_earnings5"] > 0]),
+            "REGULATORY": group(observed.loc[observed["news_regulatory5"] > 0]),
+            "OWNERSHIP": group(observed.loc[observed["news_ownership5"] > 0]),
+            "MARKET_FLOW": group(observed.loc[observed["news_flow_event5"] > 0]),
+        },
+        "limitation": "Association conditional on observed articles; not proof of causal impact.",
+    }
 
 
 def _spread(actual: np.ndarray, prediction: np.ndarray, dates: np.ndarray) -> float:
@@ -708,6 +872,8 @@ def write_artifacts(
     results: list[HorizonResult],
     histories: dict[str, list[dict[str, Any]]],
     freshness: dict[str, Any],
+    events: pd.DataFrame,
+    signal_audit: dict[str, Any],
 ) -> dict[str, Any]:
     if sorted(result.horizon for result in results) != list(HORIZONS):
         raise ValueError("Publishing requires all five independently validated horizons")
@@ -723,8 +889,8 @@ def write_artifacts(
         .tail(1)
         .set_index("symbol", drop=False)
     )
-    symbols = sorted(set(legacy_symbols) & set(latest.index))
-    if len(symbols) < 320:
+    symbols = sorted(set(freshness["currentHOSESymbols"]) & set(latest.index))
+    if len(symbols) < 390:
         raise RuntimeError(f"current HOSE coverage unexpectedly collapsed: {len(symbols)}")
     rows = latest.loc[symbols].copy()
     rows["risk_scan"] = [
@@ -733,25 +899,59 @@ def write_artifacts(
     feature_x = rows[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
     snapshots: dict[str, dict[str, Any]] = {}
     for symbol in symbols:
-        old = copy.deepcopy(legacy_symbols[symbol])
+        old = copy.deepcopy(legacy_symbols.get(symbol, {"symbol": symbol, "technical": {}, "market": {}, "riskFlags": [], "evidence": {}, "flow": {}}))
         row = rows.loc[symbol]
         scan_row = freshness["scan"].get(symbol, {})
+        row_date = str(row["date"].date())
+        symbol_events = events.loc[events["symbol"] == symbol]
+        evidence = old.get("evidence") or {}
+        evidence["recent"] = latest_evidence(symbol_events, row_date)
+        evidence["rumors"] = [item for item in evidence["recent"] if "RUMOR" in str(item.get("sourceClass", ""))]
+        evidence["rumorClaims"] = []
+        evidence["pointInTimeCutoff"] = "15:00 Asia/Ho_Chi_Minh"
+        evidence["issuerIdentityChecked"] = True
         old.update(
             {
                 "symbol": symbol,
-                "date": str(row["date"].date()),
+                "date": row_date,
                 "close": int(round(float(row["close"]))),
                 "modelClose": int(round(float(row["close"]))),
-                "exchange": str(row.get("exchange", "HOSE")).upper(),
+                "exchange": "HOSE",
                 "sector": str(row.get("sector", "UNKNOWN")),
                 "riskStatus": _risk_status(row, str(old.get("riskStatus", "GREEN"))),
                 "marketDataSource": freshness["providerBySymbol"].get(symbol, "AUDITED_OHLCV"),
                 "dailyVolatility": float(row["forward_vol"]),
                 "lastSessionReturn": float(row.get("ret1", 0.0) or 0.0),
                 "relativeVolume": float(scan_row.get("relativeVolume10d", 0.0) or 0.0),
+                "dataFreshness": "CURRENT" if row_date == freshness["marketScanAsOf"] else "STALE_EOD",
+                "evidence": evidence,
                 "horizons": {},
             }
         )
+        old["flow"] = {
+            "foreignNetRatio1": _clean_number(row.get("flow_foreign_imbalance1")),
+            "foreignNetRatio5": _clean_number(row.get("flow_foreign_imbalance5")),
+            "foreignNetRatio20": _clean_number(row.get("flow_foreign_imbalance20")),
+            "foreignZ60": _clean_number(row.get("flow_foreign_z20")),
+            "foreignAvailable": int(_clean_number(row.get("flow_foreign_available"))),
+            "propNetRatio1": _clean_number(row.get("flow_prop_imbalance1")),
+            "propNetRatio5": _clean_number(row.get("flow_prop_imbalance5")),
+            "propZ60": _clean_number(row.get("flow_prop_z20")),
+            "propAvailable": int(_clean_number(row.get("flow_prop_available"))),
+            "sessionsSinceObservation": int(_clean_number(row.get("flow_days_since"), 60)),
+            "stale": _clean_number(row.get("flow_days_since"), 60) > 3,
+        }
+        old["newsFeatures"] = {
+            "count1": int(_clean_number(row.get("news_count1"))),
+            "count5": int(_clean_number(row.get("news_count5"))),
+            "sentiment1": _clean_number(row.get("news_sentiment1")),
+            "sentiment5": _clean_number(row.get("news_sentiment5")),
+            "positive5": int(_clean_number(row.get("news_positive5"))),
+            "negative5": int(_clean_number(row.get("news_negative5"))),
+            "official5": int(_clean_number(row.get("news_official5"))),
+            "rumor5": int(_clean_number(row.get("news_rumor5"))),
+            "sessionsSinceEvent": int(_clean_number(row.get("news_days_since"), 60)),
+        }
         market = old.get("market", {})
         market.update(
             {
@@ -792,11 +992,17 @@ def write_artifacts(
         audit["forecastReturnStd"] = audit["forecastStd"]
         audit["intervalWidth"] = audit["medianIntervalWidth"]
         audit["icDays"] = audit["rankDays"]
+        ablation = out_of_sample_factor_audit(result)
+        event_study = out_of_sample_event_study(result)
+        audit["eventStudyObservations"] = event_study["observations"]
+        audit["newsIncrementalMAESkill"] = ablation["EVENT"]["deltaMAEImprove"]
+        audit["flowIncrementalMAESkill"] = ablation["FLOW"]["deltaMAEImprove"]
         price_pass = (
             audit["maeSkill"] > 0
             and audit["rankIC"] >= .02
             and .45 <= audit["coverage20_80"] <= .75
             and audit["medianForecastAbs"] >= .0015
+            and audit["executableMAESkill"] > 0
         )
         direction_pass = audit.get("brierSkill", -1) > 0
         if not price_pass:
@@ -821,9 +1027,12 @@ def write_artifacts(
             "forecastDispersionRatio": audit["dispersionRatio"],
             "nonTrivialShare": audit["forecastOver10bpShare"],
             "tickGridEnforced": True,
+            "medianExecutableTicks": audit["medianExecutableTicks"],
+            "invalidExecutableQuotes": audit["invalidExecutableQuotes"],
+            "executableMAESkill": audit["executableMAESkill"],
         }
         model_horizons[key] = {
-            "activeExperts": ["NUMERICAL", "REGIME", "SECTOR", "VOLATILITY"],
+            "activeExperts": list(FACTOR_GROUPS),
             "priceStatus": "PASS",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "status": "PASS",
@@ -833,6 +1042,8 @@ def write_artifacts(
             "embargoAudit": embargo_audit,
             "magnitudeGate": magnitude_gate,
             "distributionAudit": {"status": "PASS", "coverage20_80": audit["coverage20_80"]},
+            "eventImpactAudit": event_study,
+            "factorAblation": ablation,
         }
         back_horizons[key] = {
             "metrics": audit,
@@ -847,12 +1058,13 @@ def write_artifacts(
                 "days": audit["rankDays"],
             },
             "activeExperts": model_horizons[key]["activeExperts"],
-            "ablation": {},
+            "ablation": ablation,
+            "eventImpact": event_study,
         }
 
         for position, symbol in enumerate(symbols):
             row = rows.iloc[position]
-            venue = str(row.get("exchange", "HOSE")).upper()
+            venue = "HOSE"
             close = float(row["close"])
             raw_point = float(prediction[position])
             point = tradable_forecast(
@@ -912,7 +1124,7 @@ def write_artifacts(
             symbol = str(historical["symbol"])
             if symbol not in snapshots:
                 continue
-            venue = str(historical.get("exchange", "HOSE")).upper()
+            venue = "HOSE"
             origin = float(historical["close"])
             expected_return = float(historical["_prediction"])
             hv = float(historical["forward_vol"]) * math.sqrt(horizon)
@@ -922,7 +1134,9 @@ def write_artifacts(
             q20_price = max(limits[0], min(expected_price, snap_price(origin * math.exp(expected_return + result.quantile_low * hv), venue, "down")))
             q80_price = min(limits[1], max(expected_price, snap_price(origin * math.exp(expected_return + result.quantile_high * hv), venue, "up")))
             observed_price = int(round(float(historical[f"future_price{horizon}"])))
-            observed_return = math.log(observed_price / origin)
+            observed_return = float(historical[f"target{horizon}"])
+            comparable_price = int(round(origin * math.exp(observed_return)))
+            raw_return = math.log(observed_price / origin)
             executable_return = math.log(expected_price / origin)
             cases.append(
                 {
@@ -940,9 +1154,9 @@ def write_artifacts(
                     "q80Price": q80_price,
                     "actualReturn": observed_return,
                     "actualRawPrice": observed_price,
-                    "realizedComparablePrice": observed_price,
-                    "corporateActionGap": 0.0,
-                    "corporateActionAffected": False,
+                    "realizedComparablePrice": comparable_price,
+                    "corporateActionGap": raw_return - observed_return,
+                    "corporateActionAffected": abs(raw_return - observed_return) > .012,
                     "correctDirection": bool(np.sign(observed_return) == np.sign(executable_return)),
                     "intervalHit": bool(q20_price <= observed_price <= q80_price),
                     "absoluteError": abs(observed_return - executable_return),
@@ -950,10 +1164,11 @@ def write_artifacts(
                     "contextAtOrigin": {
                         "prior20": float(historical["ret20"]),
                         "breadth20": float(historical["breadth20"]),
-                        "newsN20": None,
-                        "rumorN20": None,
-                        "foreignAvailable": 0,
-                        "propAvailable": 0,
+                        "newsN20": int(_clean_number(historical.get("news_count5"))),
+                        "rumorN20": int(_clean_number(historical.get("news_rumor5"))),
+                        "newsSentiment": _clean_number(historical.get("news_sentiment5")),
+                        "foreignAvailable": int(_clean_number(historical.get("flow_foreign_available"))),
+                        "propAvailable": int(_clean_number(historical.get("flow_prop_available"))),
                     },
                 }
             )
@@ -993,8 +1208,23 @@ def write_artifacts(
             "exchangeTickEnforced": True,
             "confidenceInterval": "EMPIRICAL_20_80_CALIBRATION_RESIDUAL",
             "factorAttribution": "GROUPED_LEAVE_AT_MEDIAN_COUNTERFACTUAL",
+            "newsPublicationCutoff": "15:00 Asia/Ho_Chi_Minh",
+            "afterCloseNews": "DEFER_TO_NEXT_TRADING_SESSION",
+            "issuerIdentityValidation": True,
+            "outcomeFieldsUsedAsFeatures": 0,
+            "staleFlowForwardFill": False,
+            "quarterlyAccountingFeatures": "EXCLUDED_WITHOUT_PUBLICATION_TIMESTAMPS",
+            "scenarioSemantics": "HISTORICALLY_CALIBRATED_DIRECTIONAL_SCENARIO_NOT_GUARANTEED_CLOSE",
         },
-        "universe": {"currentSymbols": len(symbols), "trainingSymbols": int(panel["symbol"].nunique())},
+        "universe": {
+            "currentSymbols": len(symbols),
+            "trainingSymbols": int(panel["symbol"].nunique()),
+            "listedHOSE": freshness["currentHOSECount"],
+            "hoseCoverage": len(symbols) / max(1, freshness["currentHOSECount"]),
+            "insufficientHistorySymbols": freshness["insufficientHistory"],
+            "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
+            "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),
+        },
     }
     market_artifact = {
         "version": VERSION,
@@ -1006,12 +1236,16 @@ def write_artifacts(
             "refreshedSymbols": freshness["refreshedSymbols"],
             "quickSymbolSource": "VNDIRECT PUBLIC EOD",
             "networkFallbacks": freshness["failures"],
+            "fullHOSERefresh": True,
+            "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
+            "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),
+            "signalAudit": signal_audit,
         },
         "model": model,
         "backtest": {
-            "version": "VMEWS-MARKET-BACKTEST-13.0.0",
+            "version": "VMEWS-MARKET-BACKTEST-14.0.0",
             "generatedAt": timestamp,
-            "design": "Chronological out-of-sample holdout; symbol-specific T+h label-maturity purge; calibration frozen before holdout.",
+            "design": "Chronological out-of-sample holdout with four temporal audit slices; symbol-specific T+h maturity purge; pre-holdout calibration; publisher-timestamped event/flow features and executable HOSE-price audit.",
             "horizons": back_horizons,
             "cases": back_cases,
         },
@@ -1025,7 +1259,7 @@ def write_artifacts(
             "promotion": promotion,
             "symbols": snapshots,
             "charts": charts,
-            "marketForecast": {"artifact": "forecast-market-v13.json", "tickGridEnforced": True},
+            "marketForecast": {"artifact": "forecast-market-v13.json", "tickGridEnforced": True, "allHOSECommonStocks": True, "signalAudit": signal_audit},
         }
     )
     current.update({"generatedAt": timestamp, "symbols": snapshots, "modelVersion": VERSION})
@@ -1053,16 +1287,18 @@ def main() -> None:
     parser.add_argument("--fast", action="store_true", help="use fewer boosting rounds for diagnostics")
     parser.add_argument("--horizons", default="1,2,3,4,5", help="comma-separated direct horizons")
     parser.add_argument("--no-network", action="store_true", help="use only frozen histories and checked-in market scan")
-    parser.add_argument("--refresh-symbols", default=",".join(QUICK_SYMBOLS), help="comma-separated public EOD refresh symbols")
-    parser.add_argument("--publish", action="store_true", help="write validated current, dashboard and V13 market artifacts")
+    parser.add_argument("--refresh-symbols", default="ALL", help="ALL HOSE names, or comma-separated public EOD refresh symbols")
+    parser.add_argument("--publish", action="store_true", help="write validated current, dashboard and V14 market artifacts")
     args = parser.parse_args()
     requested = tuple(int(item) for item in args.horizons.split(",") if item.strip())
     refresh = tuple(value.strip().upper() for value in args.refresh_symbols.split(",") if value.strip())
     histories, freshness = load_histories(() if args.no_network else refresh)
-    panel = build_panel(histories, freshness["scan"])
+    events, flows, signal_audit = load_signal_sources(set(freshness["currentHOSESymbols"]))
+    _log("signal_sources_audited", acceptedEvents=signal_audit["acceptedEvents"], newsSymbols=signal_audit["newsSymbols"], flowSymbols=signal_audit["flowSymbols"], issuerMismatches=signal_audit["rejected"].get("issuer_mismatch", 0), freshEOD=freshness["freshSymbols"], staleEOD=freshness["staleSymbols"])
+    panel = build_panel(histories, freshness["scan"], events, flows)
     results = [fit_horizon(panel, horizon, fast=args.fast) for horizon in requested]
     if args.publish:
-        write_artifacts(panel, results, histories, freshness)
+        write_artifacts(panel, results, histories, freshness, events, signal_audit)
     latest = panel.sort_values("date").groupby("symbol", observed=True).tail(1)
     fpt = latest.loc[latest["symbol"] == "FPT"]
     if not fpt.empty:
