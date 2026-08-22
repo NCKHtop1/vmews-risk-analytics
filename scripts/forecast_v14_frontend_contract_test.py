@@ -44,11 +44,11 @@ class ForecastFrontendContractTest(unittest.TestCase):
     def test_market_event_and_backtest_controls_are_present(self) -> None:
         required = {
             "symbol", "go", "status", "modelBadge", "close", "t1", "t3", "t5",
-            "pup", "risk", "drivers", "chart", "forecastCards", "methodProof",
+            "pup", "risk", "range5", "drivers", "chart", "forecastCards", "methodProof",
             "eventImpact", "eventImpactMeta", "news", "rumors", "sourceAudit",
             "tabs", "metrics", "btRows", "btDetail", "ablation",
             "heroCanvas", "heroSpark", "sparkSymbol", "symbolSuggestions",
-            "marketTape", "tapeTrack", "chartOverlay", "chartPulse", "backToTop",
+            "marketTape", "tapeTrack", "chartOverlay", "backToTop", "symbolSelector",
             "overview", "forecast", "validation", "events", "backtest",
             "leaders", "leadersTitle", "snapshotDate", "vnClock", "marketPulse",
             "signalDeck", "leaderDots", "leaderDetail", "carouselPosition",
@@ -60,9 +60,11 @@ class ForecastFrontendContractTest(unittest.TestCase):
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
-        self.assertIn("Equity", self.html)
-        self.assertIn("Kịch bản xác suất", self.html)
-        self.assertIn("Tin ra, giá phản ứng thế nào", self.html)
+        self.assertIn("Market <span>movers.</span>", self.html)
+        self.assertIn("Trọng tâm T+5", self.html)
+        self.assertIn("Phản ứng sau sự kiện", self.html)
+        self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
+        self.assertNotIn("bước giá", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
@@ -81,7 +83,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("base.dash.charts", motion)
         self.assertIn("snapshot.close", motion)
         self.assertIn("rawClose", motion)
-        self.assertIn("EOD", self.html)
+        self.assertIn("DỮ LIỆU MỚI NHẤT", self.html)
 
     def test_forecast_chart_supports_real_history_ranges(self) -> None:
         app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
@@ -119,7 +121,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("forecast.q20Price", leaders)
         self.assertIn("forecast.q80Price", leaders)
         self.assertIn("row.tradedValue20 < 1e9", leaders)
-        self.assertIn("không phải xác suất sinh lời", leaders)
+        self.assertIn("signalBand", leaders)
+        self.assertIn("VÙNG GIÁ", leaders)
 
     def test_rotating_cards_support_keyboard_touch_filters_and_reduced_motion(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")

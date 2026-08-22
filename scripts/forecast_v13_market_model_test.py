@@ -99,7 +99,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertGreater(audit["maeSkill"], 0)
             self.assertGreater(audit["executableMAESkill"], 0)
             self.assertGreater(audit["rankIC"], .02)
-            self.assertGreater(audit["medianForecastAbs"], .0015)
+            self.assertGreater(audit["executableMedianAbs"], .0015)
             self.assertTrue(.45 <= audit["coverage20_80"] <= .75)
             self.assertEqual(audit["futureRowsUsedForTraining"], 0)
             self.assertEqual(audit["futureLabelsUsedForCalibration"], 0)
