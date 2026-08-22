@@ -157,3 +157,293 @@ tbody tr:hover { background: #151912; }
 @media (prefers-reduced-motion: reduce) {
   .sectionReveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* V14.1: restrained portfolio motion without hiding market evidence. */
+:root {
+  --ease-silk: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.16, 1, .3, 1);
+  --header-height: 70px;
+  --nav-height: 46px;
+  --pointer-x: 72%;
+  --pointer-y: 12%;
+}
+
+html { scroll-padding-top: calc(var(--header-height) + var(--nav-height) + 18px); }
+body {
+  position: relative;
+  background-image:
+    linear-gradient(rgba(244, 245, 239, .014) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 245, 239, .014) 1px, transparent 1px),
+    radial-gradient(ellipse at 82% -9%, rgba(168, 235, 101, .085), transparent 44%);
+}
+body::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background: radial-gradient(640px circle at var(--pointer-x) var(--pointer-y), rgba(168, 235, 101, .055), transparent 72%);
+  content: "";
+  pointer-events: none;
+  transition: opacity .5s var(--ease-silk);
+}
+
+.portfolioProgress {
+  height: 2px;
+  box-shadow: 0 0 18px rgba(168, 235, 101, .54);
+  transition: width 180ms linear;
+}
+
+.top {
+  min-height: var(--header-height);
+  background: rgba(9, 10, 8, .72);
+  backdrop-filter: blur(24px) saturate(155%);
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  transition: background .35s var(--ease-silk), box-shadow .35s var(--ease-silk);
+}
+.top.scrolled { background: rgba(9, 10, 8, .92); box-shadow: 0 12px 36px rgba(0, 0, 0, .22); }
+.brandDot { animation: statusPulse 2.5s ease-in-out infinite; }
+.badge { border-radius: 99px; padding: 7px 12px; }
+
+.sectionNav {
+  position: sticky;
+  z-index: 25;
+  top: var(--header-height);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: var(--nav-height);
+  padding-inline: max(28px, calc((100vw - 1520px) / 2));
+  border-bottom: 1px solid rgba(235, 239, 226, .075);
+  background: rgba(9, 10, 8, .76);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.sectionNav a {
+  position: relative;
+  padding: 7px 12px;
+  border-radius: 8px;
+  color: #93988d;
+  font-size: 11px;
+  text-decoration: none;
+  transition: background .24s var(--ease-silk), color .24s var(--ease-silk), transform .24s var(--ease-silk);
+}
+.sectionNav a:hover { color: #eef2e8; background: rgba(168, 235, 101, .055); transform: translateY(-1px); }
+.sectionNav a.active { color: #baf181; background: rgba(168, 235, 101, .09); }
+.sectionNavHint { margin-left: auto; color: #74796f; font: 10px var(--mono); }
+.sectionNavHint kbd { padding: 2px 6px; border: 1px solid #373b34; border-radius: 5px; color: #c2c9b9; }
+
+.wrap { padding-top: 32px; }
+.hero {
+  position: relative;
+  min-height: 370px;
+  gap: 58px;
+  padding: 25px 4px 49px;
+  isolation: isolate;
+}
+.heroCanvas {
+  position: absolute;
+  z-index: -1;
+  inset: -8px 0 12px;
+  width: 100%;
+  height: calc(100% - 4px);
+  opacity: .72;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse at 68% 47%, #000 8%, rgba(0, 0, 0, .82) 33%, transparent 74%);
+  mask-image: radial-gradient(ellipse at 68% 47%, #000 8%, rgba(0, 0, 0, .82) 33%, transparent 74%);
+}
+.heroContent { align-self: center; }
+.heroIndex { margin-bottom: 18px; }
+.hero h1 { margin-block: 14px 16px; font-size: clamp(62px, 9vw, 116px); letter-spacing: -.082em; }
+.heroLine { display: inline-block; }
+.hero h1 em {
+  color: #a8eb65;
+  background: linear-gradient(115deg, #a8eb65, #d1ffac 52%, #98dc56 88%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.heroContent > *, .searchWrap > * { animation: heroEnter .84s var(--ease-spring) both; }
+.heroContent > :nth-child(2) { animation-delay: 75ms; }
+.heroContent > :nth-child(3) { animation-delay: 145ms; }
+.heroContent > :nth-child(4) { animation-delay: 205ms; }
+.searchWrap > :nth-child(1) { animation-delay: 110ms; }
+.searchWrap > :nth-child(2) { animation-delay: 165ms; }
+.searchWrap > :nth-child(3) { animation-delay: 205ms; }
+.searchWrap > :nth-child(4) { animation-delay: 245ms; }
+.searchWrap > :nth-child(5) { animation-delay: 290ms; }
+.heroSignal i, .livePill i, .chartPulse i, .marketTapeLabel i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a8eb65;
+  box-shadow: 0 0 12px rgba(168, 235, 101, .62);
+  animation: statusPulse 2.2s ease-in-out infinite;
+}
+
+.searchWrap { width: min(100%, 392px); min-width: 360px; gap: 11px; align-self: center; }
+.searchHeading { display: flex; justify-content: space-between; width: 100%; color: #999e93; font: 9px var(--mono); letter-spacing: .08em; }
+.livePill { display: inline-flex; align-items: center; gap: 7px; color: #a7cd8b; }
+.search { gap: 9px; }
+.search input { height: 51px; flex: 1; min-width: 0; border-radius: 11px; background: rgba(13, 15, 12, .84); padding-inline: 15px; font-size: 16px; }
+.btn { display: inline-flex; align-items: center; gap: 13px; height: 51px; border-radius: 11px; padding-inline: 17px; transition: transform .32s var(--ease-spring), background .25s, box-shadow .32s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(168, 235, 101, .2); }
+.btn span:last-child { transition: transform .3s var(--ease-silk); }
+.btn:hover span:last-child { transform: translate(2px, -2px); }
+.status { width: 100%; font-size: 10px; }
+.quick { width: 100%; justify-content: flex-start; gap: 7px; }
+.quick button { border-radius: 7px; padding: 6px 10px; transition: transform .25s var(--ease-spring), border-color .2s, color .2s, background .2s; }
+.quick button:hover, .quick button.active { border-color: rgba(168, 235, 101, .53); background: rgba(168, 235, 101, .075); color: #d8f4c1; transform: translateY(-2px); }
+.heroSparkCard { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 64px; padding: 10px 13px; border: 1px solid rgba(156, 173, 139, .16); border-radius: 11px; background: rgba(13, 15, 12, .54); }
+.heroSparkCard > div { display: grid; gap: 4px; }
+.heroSparkCard span { color: #8c9187; font: 9px var(--mono); }
+.heroSparkCard b { color: #e6ecdF; font-size: 13px; letter-spacing: .045em; }
+#heroSpark { width: 185px; height: 44px; }
+
+.marketTape { display: flex; align-items: center; gap: 19px; min-height: 56px; overflow: hidden; margin: 0 0 22px; padding: 0 14px; border: 1px solid rgba(149, 166, 131, .13); border-radius: 13px; background: rgba(15, 17, 14, .76); }
+.marketTapeLabel { position: relative; z-index: 1; display: inline-flex; flex: none; align-items: center; gap: 8px; color: #c3cabe; font: 10px var(--mono); }
+.marketTapeViewport { flex: 1; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+.marketTapeTrack { display: flex; width: max-content; align-items: center; gap: 34px; animation: marketMarquee 34s linear infinite; }
+.marketTape:hover .marketTapeTrack, .marketTape:focus-within .marketTapeTrack { animation-play-state: paused; }
+.tapeQuote { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; color: #a9aea4; font: 10px var(--mono); }
+.tapeQuote b { color: #e5e9df; font-weight: 600; }
+.tapeQuote .up { color: #a8eb65; }
+.tapeQuote .down { color: #e38b84; }
+
+.grid2, .three { gap: 18px; }
+.panel {
+  overflow: hidden;
+  border-color: rgba(162, 170, 152, .145);
+  border-radius: 17px;
+  background:
+    radial-gradient(410px circle at var(--surface-x, 50%) var(--surface-y, -80px), rgba(168, 235, 101, .055), transparent 66%),
+    linear-gradient(150deg, rgba(20, 22, 18, .9), rgba(12, 14, 11, .96) 76%);
+  padding: 22px;
+  transition: border-color .42s var(--ease-silk), box-shadow .42s var(--ease-silk), transform .42s var(--ease-silk);
+}
+.panel:hover { border-color: rgba(168, 235, 101, .22); }
+.panel:before { height: 1px; background: linear-gradient(90deg, transparent, rgba(168, 235, 101, .27), transparent); opacity: .8; }
+.panel h2 { font-size: 20px; }
+.stats { gap: 9px; }
+.stat, .metric, .driver, .forecastCard, .sourceCard, .proofCard, .newsItem, .btDetail {
+  border-color: rgba(170, 176, 161, .13);
+  border-radius: 11px;
+  background: rgba(11, 13, 10, .75);
+  transition: border-color .3s var(--ease-silk), background .3s var(--ease-silk), transform .36s var(--ease-spring), box-shadow .36s var(--ease-silk);
+}
+.stat:hover, .metric:hover, .driver:hover, .forecastCard:hover, .sourceCard:hover, .proofCard:hover, .newsItem:hover {
+  border-color: rgba(168, 235, 101, .34);
+  background: rgba(18, 23, 15, .86);
+  transform: translateY(-3px);
+  box-shadow: 0 13px 31px rgba(0, 0, 0, .18);
+}
+.stat b, .forecastCard strong, .metric b, .proofCard b { font-variant-numeric: tabular-nums; }
+.driverBar { height: 5px; }
+.driverBar i { transform-origin: left center; animation: barReveal .82s var(--ease-spring) both; }
+.driver:nth-child(2) .driverBar i { animation-delay: 65ms; }
+.driver:nth-child(3) .driverBar i { animation-delay: 125ms; }
+.driver:nth-child(4) .driverBar i { animation-delay: 185ms; }
+
+.mainChart { margin-top: 20px; }
+.chartTools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 13px; }
+.chartPulse { display: inline-flex; align-items: center; gap: 7px; color: #939a8c; font: 9px var(--mono); }
+.chartRanges { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid #292e26; border-radius: 9px; background: #0b0d0a; }
+.chartRanges button { min-width: 38px; padding: 6px 8px; border: 0; border-radius: 6px; background: transparent; color: #989d93; cursor: pointer; font: 10px var(--mono); transition: color .22s, background .22s; }
+.chartRanges button.active { background: rgba(168, 235, 101, .14); color: #bef087; }
+.chartRanges button:hover { color: #eef4e8; }
+.chartWrap { height: 480px; margin-top: 13px; border-color: rgba(175, 183, 166, .11); border-radius: 13px; background: radial-gradient(ellipse at 85% 10%, rgba(168, 235, 101, .048), transparent 52%), #0a0c09; }
+#chart, #chartOverlay { position: absolute; inset: 0; width: 100%; height: 100%; }
+.chartOverlay { z-index: 2; pointer-events: none; }
+.tooltip { z-index: 4; min-width: 235px; border-color: rgba(168, 235, 101, .3); border-radius: 12px; background: rgba(12, 14, 11, .95); backdrop-filter: blur(16px); }
+.legend { gap: 20px; margin-top: 14px; }
+.legend i { width: 8px; height: 8px; }
+.forecastCards { gap: 11px; margin-top: 16px; }
+.forecastCard { position: relative; min-height: 131px; overflow: hidden; padding: 13px; }
+.forecastCard::after { position: absolute; right: 10px; bottom: 9px; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle, rgba(168, 235, 101, .13), transparent 70%); content: ""; opacity: 0; transition: opacity .3s; }
+.forecastCard:hover::after, .forecastCard.active::after { opacity: 1; }
+.forecastCard.active { border-color: rgba(168, 235, 101, .64); background: linear-gradient(155deg, rgba(28, 39, 21, .89), rgba(13, 16, 11, .96)); }
+.forecastCard strong { margin-top: 5px; font-size: 24px; letter-spacing: -.045em; }
+.forecastCard.active strong { color: #c6f394; }
+
+.proof, .bt { margin-top: 20px; }
+.proofGrid { gap: 11px; }
+.proofCard { padding: 14px; }
+.proofCard b { font-size: 19px; }
+.three { margin-top: 20px; }
+.newsItem { padding: 12px; }
+.chip { border-radius: 6px; }
+.stream::-webkit-scrollbar, .tableWrap::-webkit-scrollbar { width: 5px; height: 5px; }
+.tabs button { border-radius: 8px; }
+.tableWrap { border-radius: 11px; }
+th { background: #10130f; }
+tbody tr { transition: background .2s, color .2s; }
+.researchWorkbench .taBox, .researchWorkbench .contextBox { border-radius: 12px !important; }
+.researchWorkbench .taReadout article, .researchWorkbench .contextCard { border-radius: 9px !important; }
+.researchWorkbench .taChart { border-radius: 10px !important; }
+.researchWorkbench .taControls label { border-radius: 7px !important; }
+
+.sectionReveal { opacity: 0; transform: translateY(29px) scale(.992); filter: blur(4px); transition: opacity .76s var(--ease-spring), transform .88s var(--ease-spring), filter .72s var(--ease-spring), border-color .3s; }
+.sectionReveal.inView { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+.sectionReveal.inView .proofCard, .sectionReveal.inView .sourceCard { animation: cardEnter .55s var(--ease-spring) both; }
+.sectionReveal.inView .proofCard:nth-child(2), .sectionReveal.inView .sourceCard:nth-child(2) { animation-delay: 65ms; }
+.sectionReveal.inView .proofCard:nth-child(3), .sectionReveal.inView .sourceCard:nth-child(3) { animation-delay: 120ms; }
+.sectionReveal.inView .proofCard:nth-child(4), .sectionReveal.inView .sourceCard:nth-child(4) { animation-delay: 175ms; }
+
+.backToTop { position: fixed; z-index: 34; right: 23px; bottom: 22px; width: 42px; height: 42px; border: 1px solid rgba(168, 235, 101, .35); border-radius: 12px; background: rgba(16, 19, 14, .91); color: #c2f290; cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity .28s, visibility .28s, transform .32s var(--ease-spring), background .22s; backdrop-filter: blur(10px); }
+.backToTop.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+.backToTop:hover { background: #a8eb65; color: #11140e; transform: translateY(-3px); }
+
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid #a8eb65; outline-offset: 3px; }
+
+@keyframes heroEnter { from { opacity: 0; filter: blur(7px); transform: translateY(18px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+@keyframes cardEnter { from { opacity: .25; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes statusPulse { 0%, 100% { opacity: .62; transform: scale(.88); } 50% { opacity: 1; transform: scale(1.2); } }
+@keyframes barReveal { from { transform: scaleX(.06); opacity: .25; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes marketMarquee { to { transform: translateX(-50%); } }
+
+@media (max-width: 1160px) {
+  .hero { min-height: 335px; gap: 24px; }
+  .hero h1 { font-size: clamp(58px, 8.4vw, 91px); }
+  .searchWrap { min-width: 325px; }
+}
+@media (max-width: 780px) {
+  :root { --header-height: 62px; --nav-height: 43px; }
+  .top { min-height: var(--header-height); padding-inline: 14px; }
+  .sectionNav { gap: 2px; overflow-x: auto; padding-inline: 10px; scrollbar-width: none; }
+  .sectionNav::-webkit-scrollbar { display: none; }
+  .sectionNav a { flex: none; padding-inline: 9px; font-size: 10px; }
+  .sectionNavHint { display: none; }
+  .wrap { padding: 25px 13px 39px; }
+  .hero { min-height: 0; gap: 26px; padding: 22px 2px 27px; }
+  .hero h1 { font-size: clamp(66px, 13vw, 93px); }
+  .heroCanvas { inset: 0; width: 100%; height: 72%; opacity: .48; }
+  .searchWrap { width: 100%; min-width: 0; }
+  .marketTape { min-height: 49px; gap: 10px; margin-bottom: 16px; padding-inline: 9px; }
+  .marketTapeLabel { font-size: 9px; }
+  .marketTapeTrack { gap: 21px; }
+  .panel { border-radius: 14px; padding: 17px; }
+  .grid2, .three { gap: 13px; }
+  .chartTools { width: 100%; justify-content: space-between; }
+  .chartWrap { height: 370px; }
+  .forecastCards { gap: 8px; }
+  .forecastCard { min-height: 122px; }
+  .forecastCard strong { font-size: 20px; }
+  .legend { gap: 9px 13px; font-size: 9px; }
+  .backToTop { right: 13px; bottom: 14px; width: 39px; height: 39px; }
+}
+@media (max-width: 430px) {
+  .brand { gap: 8px; font-size: 10px; }
+  .badge { max-width: 155px; overflow: hidden; text-overflow: ellipsis; font-size: 8px; }
+  .hero h1 { font-size: 65px; }
+  .livePill { font-size: 8px; }
+  .heroSparkCard { height: 59px; }
+  #heroSpark { width: 150px; }
+  .chartPulse { font-size: 8px; }
+  .chartRanges button { min-width: 32px; }
+  .chartWrap { height: 345px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .heroCanvas { display: none; }
+  .sectionReveal { opacity: 1; filter: none; transform: none; }
+  .marketTapeTrack { animation: none; }
+}

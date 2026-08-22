@@ -6,7 +6,7 @@ const price=x=>finite(x)?(+x).toLocaleString("vi-VN",{maximumFractionDigits:0}):
 const num=(x,d=2)=>finite(x)?(+x).toFixed(d):"—";
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const CDN_PATH=location.pathname.split("/").filter(Boolean),ROOT=location.hostname==="cdn.githubraw.com"&&CDN_PATH.length>=3?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/main/data`:"./data",CDN_REVISION=Math.floor(Date.now()/300000);
-let BASE=null,BASE_PROMISE=null,last=null,btH=5,hoverPoints=[];
+let BASE=null,BASE_PROMISE=null,last=null,btH=5,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 
 async function json(name){const r=await fetch(`${ROOT}/${name}?refresh=${CDN_REVISION}`,{cache:"no-store"});if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);return r.json()}
 async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})();return BASE_PROMISE}
@@ -25,11 +25,124 @@ function decision(z){const q=h(z,5);if(!validatedPrice(q))return{label:"FORECAST
 
 function renderDrivers(z,horizon=5){const q=h(z,horizon),box=$("#drivers");box.replaceChildren();setText("#driverTitle",`T+${horizon} expert contribution`);setText("#expertMeta",`Active: ${(q.activeExperts||[]).map(expertLabel).join(" · ")||"—"} · price ${q.priceValidated?"PASS":"REVIEW"} · direction ${q.directionValidated?"PASS":"REVIEW"}`);if(!validatedPrice(q)){box.innerHTML='<div class="empty">Horizon chưa vượt price-validation gate; contribution không được dùng để diễn giải một mức giá chưa hợp lệ.</div>';return}const c=q.expertContributions||{},pred=q.expertPredictions||{},entries=Object.entries(c).sort((a,b)=>Math.abs(+b[1])-Math.abs(+a[1])),max=Math.max(...entries.map(x=>Math.abs(+x[1]||0)),1e-6);for(const[name,val]of entries){const e=document.createElement("article");e.className="driver";e.innerHTML=`<span>${esc(expertLabel(name))}</span><b class="${driverTone(+val)}">${+val>=0?"+":""}${pct(val)}</b><small>Expert output ${+pred[name]>=0?"+":""}${pct(pred[name])}</small><div class="driverBar ${driverTone(+val)}"><i style="width:${Math.min(100,Math.abs(+val)/max*100)}%"></i></div>`;box.append(e)}if(!entries.length)box.innerHTML='<div class="empty">Không có expert contribution đủ điều kiện.</div>'}
 
-function renderForecastCards(z){const box=$("#forecastCards");box.replaceChildren();for(let n=1;n<=5;n++){const q=h(z,n),e=document.createElement("article");e.className="forecastCard"+(n===5?" active":"");if(!validatedPrice(q)){e.innerHTML=`<span>T+${n}</span><strong>Chưa validate</strong><small>Price gate chưa PASS</small>`}else{const d=(+q.expectedPrice/+z.close)-1,date=q.targetDate?new Date(`${q.targetDate}T00:00:00`).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"}):"";e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${price(q.expectedPrice)}</strong><small>${d>=0?"▲ +":"▼ "}${pct(d,2)} so với hiện tại</small><small>Q20–Q80: ${price(q.q20Price)} – ${price(q.q80Price)}</small><small>P↑ ${pupText(q,0)} · bước giá ${price(q.tickSize||100)} đ</small>`}e.onclick=()=>{document.querySelectorAll(".forecastCard").forEach(x=>x.classList.remove("active"));e.classList.add("active");renderDrivers(z,n)};box.append(e)}}
+function renderForecastCards(z){const box=$("#forecastCards");box.replaceChildren();for(let n=1;n<=5;n++){const q=h(z,n),e=document.createElement("article");e.className="forecastCard"+(n===5?" active":"");e.setAttribute("role","button");e.tabIndex=0;e.setAttribute("aria-label",`Xem phân tích kỳ T+${n}`);if(!validatedPrice(q)){e.innerHTML=`<span>T+${n}</span><strong>Chưa validate</strong><small>Price gate chưa PASS</small>`}else{const d=(+q.expectedPrice/+z.close)-1,date=q.targetDate?new Date(`${q.targetDate}T00:00:00`).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"}):"";e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${price(q.expectedPrice)}</strong><small>${d>=0?"▲ +":"▼ "}${pct(d,2)} so với hiện tại</small><small>Q20–Q80: ${price(q.q20Price)} – ${price(q.q80Price)}</small><small>P↑ ${pupText(q,0)} · bước giá ${price(q.tickSize||100)} đ</small>`}const activate=()=>{document.querySelectorAll(".forecastCard").forEach(x=>x.classList.remove("active"));e.classList.add("active");renderDrivers(z,n);if(last){renderEventImpact(last.B,z,n);draw(last.sym,last.z,last.B.dash.charts?.[last.sym]||[],false)}};e.onclick=activate;e.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();activate()}};box.append(e)}}
 
-function draw(sym,z,history){const cv=$("#chart"),wrap=cv.parentElement,rect=wrap.getBoundingClientRect(),D=devicePixelRatio||1,W=Math.max(720,rect.width),H=Math.max(390,rect.height);cv.width=W*D;cv.height=H*D;cv.style.width=rect.width+"px";cv.style.height=rect.height+"px";const c=cv.getContext("2d");c.setTransform(D,0,0,D,0,0);c.clearRect(0,0,W,H);const P={l:72,r:36,t:30,b:58},hist=(history||[]).slice(-125);if(hist.length<30)return;const cur=+z.close,fc=[];for(let n=1;n<=5;n++){const q=h(z,n);if(validatedPrice(q))fc.push({n,price:+q.expectedPrice,lo:+q.q20Price,hi:+q.q80Price,p:+q.probUp,dir:validatedDirection(q),ret:+q.expectedReturn,active:q.activeExperts||[],contrib:q.expertContributions||{},calN:q.calibrationN})}const vals=hist.map(x=>+x.close).concat(fc.flatMap(x=>[x.lo,x.price,x.hi]),[cur]);let mn=Math.min(...vals),mx=Math.max(...vals),pad=(mx-mn)*.08||1;mn-=pad;mx+=pad;const histW=(W-P.l-P.r)*.73,forecastW=(W-P.l-P.r)-histW,xHist=i=>P.l+i*histW/(hist.length-1),xF=n=>P.l+histW+forecastW*n/5,y=v=>P.t+(mx-v)/(mx-mn)*(H-P.t-P.b);c.font="11px Inter,Arial";c.lineWidth=1;c.strokeStyle="#17313e";c.fillStyle="#7f939d";for(let i=0;i<5;i++){const yy=P.t+i*(H-P.t-P.b)/4;c.beginPath();c.moveTo(P.l,yy);c.lineTo(W-P.r,yy);c.stroke();c.fillText(price(mx-i*(mx-mn)/4),7,yy+4)}c.beginPath();c.strokeStyle="#dce8ed";c.lineWidth=1.8;hist.forEach((r,i)=>i?c.lineTo(xHist(i),y(+r.close)):c.moveTo(xHist(i),y(+r.close)));c.stroke();const cy=y(cur);c.save();c.setLineDash([4,5]);c.strokeStyle="#e77b7b";c.beginPath();c.moveTo(P.l,cy);c.lineTo(W-P.r,cy);c.stroke();c.restore();c.fillStyle="#e77b7b";c.fillText(`Current ${price(cur)}`,W-P.r-112,cy-7);const splitX=P.l+histW;c.save();c.setLineDash([2,5]);c.strokeStyle="#315566";c.beginPath();c.moveTo(splitX,P.t);c.lineTo(splitX,H-P.b);c.stroke();c.restore();c.fillStyle="#718994";c.fillText("HISTORICAL",splitX-78,P.t+12);c.fillText("DIRECT T+h",splitX+10,P.t+12);hoverPoints=hist.map((r,i)=>({kind:"history",x:xHist(i),y:y(+r.close),data:r}));for(const q of fc){const xx=xF(q.n),yy=y(q.price),lo=y(q.lo),hi=y(q.hi),delta=q.price/cur-1;c.strokeStyle="#e8b65c";c.lineWidth=2;c.beginPath();c.moveTo(xx,lo);c.lineTo(xx,hi);c.stroke();c.beginPath();c.moveTo(xx-5,lo);c.lineTo(xx+5,lo);c.moveTo(xx-5,hi);c.lineTo(xx+5,hi);c.stroke();c.fillStyle="#65c8d0";c.beginPath();c.arc(xx,yy,5.5,0,Math.PI*2);c.fill();c.fillStyle="#dce8ed";c.font="600 11px Inter,Arial";c.fillText(`T+${q.n}`,xx-11,H-20);const labelAbove=hi-P.t>38,labelY=labelAbove?hi-12:Math.min(H-P.b-12,lo+22);c.save();c.font="600 10px Inter,Arial";c.textAlign="center";c.fillStyle=q.price>=cur?"#78c89b":"#e77b7b";if(W>900)c.fillText(`${price(q.price)} · ${delta>=0?"+":""}${pct(delta)}`,xx,labelY);else c.fillText(`${delta>=0?"+":""}${pct(delta)}`,xx,labelY);c.restore();hoverPoints.push({kind:"forecast",x:xx,y:yy,data:q})}c.fillStyle="#6d828d";c.font="10px Inter,Arial";c.fillText(hist[0].date,P.l,H-20);c.fillText(hist.at(-1).date,P.l+histW-68,H-20)}
+function traceCurve(context,points){if(!points.length)return;context.moveTo(points[0].x,points[0].y);if(points.length===1)return;for(let index=1;index<points.length-1;index++){const point=points[index],next=points[index+1];context.quadraticCurveTo(point.x,point.y,(point.x+next.x)/2,(point.y+next.y)/2)}const final=points.at(-1);context.lineTo(final.x,final.y)}
+
+function draw(sym,z,history,animate=true){
+  const canvas=$("#chart"),overlay=$("#chartOverlay"),rectangle=canvas.parentElement.getBoundingClientRect();
+  const density=Math.min(devicePixelRatio||1,2),width=Math.max(280,rectangle.width),height=Math.max(300,rectangle.height);
+  for(const surface of [canvas,overlay].filter(Boolean)){surface.width=Math.round(width*density);surface.height=Math.round(height*density);surface.style.width=`${rectangle.width}px`;surface.style.height=`${rectangle.height}px`}
+  const context=canvas.getContext("2d");context.setTransform(density,0,0,density,0,0);
+  if(overlay){const layer=overlay.getContext("2d");layer.setTransform(density,0,0,density,0,0);layer.clearRect(0,0,width,height)}
+  const compact=width<650,padding={left:compact?55:73,right:compact?15:35,top:39,bottom:52};
+  const hist=(history||[]).slice(-chartRange);if(hist.length<2)return;
+  const current=+z.close,forecasts=[];
+  for(let n=1;n<=5;n++){const item=h(z,n);if(validatedPrice(item))forecasts.push({n,price:+item.expectedPrice,lo:+item.q20Price,hi:+item.q80Price,p:+item.probUp,dir:validatedDirection(item),ret:+item.expectedReturn,active:item.activeExperts||[],contrib:item.expertContributions||{},calN:item.calibrationN})}
+  const values=hist.map(item=>+item.close).concat(forecasts.flatMap(item=>[item.lo,item.price,item.hi]),[current]);
+  let minimum=Math.min(...values),maximum=Math.max(...values);const gutter=(maximum-minimum)*.11||1;minimum-=gutter;maximum+=gutter;
+  const innerWidth=width-padding.left-padding.right,historyWidth=innerWidth*(compact?.62:.69),forecastWidth=innerWidth-historyWidth;
+  const xHistory=index=>padding.left+index*historyWidth/(hist.length-1),xForecast=index=>padding.left+historyWidth+forecastWidth*index/5;
+  const y=value=>padding.top+(maximum-value)/(maximum-minimum)*(height-padding.top-padding.bottom);
+  const split=padding.left+historyWidth,currentY=y(current),floorY=height-padding.bottom;
+  const historic=hist.map((item,index)=>({x:xHistory(index),y:y(+item.close)}));
+  const future=[{x:split,y:currentY},...forecasts.map(item=>({x:xForecast(item.n),y:y(item.price)}))];
+  const activeCard=Array.from(document.querySelectorAll(".forecastCard")).findIndex(card=>card.classList.contains("active"))+1||5;
+  hoverPoints=hist.map((item,index)=>({kind:"history",x:xHistory(index),y:y(+item.close),data:item}));
+  hoverPoints.push(...forecasts.map(item=>({kind:"forecast",x:xForecast(item.n),y:y(item.price),data:item})));
+  chartBounds={left:padding.left,right:width-padding.right,top:padding.top,bottom:floorY,width,height,density};
+  canvas.dataset.range=String(chartRange);
+
+  function paint(progress){
+    context.clearRect(0,0,width,height);
+    const forecastBackground=context.createLinearGradient(split,0,width,0);forecastBackground.addColorStop(0,"rgba(168,235,101,.018)");forecastBackground.addColorStop(1,"rgba(168,235,101,.068)");
+    context.fillStyle=forecastBackground;context.fillRect(split,padding.top,width-padding.right-split,floorY-padding.top);
+
+    context.font=`${compact?9:10}px SFMono-Regular,Consolas,monospace`;
+    for(let index=0;index<5;index++){
+      const row=padding.top+index*(floorY-padding.top)/4;
+      context.strokeStyle="rgba(182,193,170,.105)";context.lineWidth=1;context.setLineDash([3,7]);context.beginPath();context.moveTo(padding.left,row);context.lineTo(width-padding.right,row);context.stroke();context.setLineDash([]);
+      context.fillStyle="#8a9284";context.fillText(price(maximum-index*(maximum-minimum)/4),7,row+4);
+    }
+
+    context.save();context.beginPath();context.rect(padding.left,padding.top,innerWidth*progress+5,floorY-padding.top+2);context.clip();
+    const historicGradient=context.createLinearGradient(0,padding.top,0,floorY);historicGradient.addColorStop(0,"rgba(201,216,187,.18)");historicGradient.addColorStop(1,"rgba(201,216,187,.008)");
+    context.beginPath();traceCurve(context,historic);context.lineTo(split,floorY);context.lineTo(padding.left,floorY);context.closePath();context.fillStyle=historicGradient;context.fill();
+    context.beginPath();traceCurve(context,historic);context.strokeStyle="#d9dfd0";context.lineWidth=2.05;context.lineCap="round";context.lineJoin="round";context.stroke();
+
+    if(forecasts.length){
+      const ceiling=[{x:split,y:currentY},...forecasts.map(item=>({x:xForecast(item.n),y:y(item.hi)}))],floor=[{x:split,y:currentY},...forecasts.map(item=>({x:xForecast(item.n),y:y(item.lo)}))];
+      context.beginPath();traceCurve(context,ceiling);for(let index=floor.length-1;index>=0;index--)context.lineTo(floor[index].x,floor[index].y);context.closePath();
+      const intervalGradient=context.createLinearGradient(0,padding.top,0,floorY);intervalGradient.addColorStop(0,"rgba(168,235,101,.20)");intervalGradient.addColorStop(.5,"rgba(168,235,101,.09)");intervalGradient.addColorStop(1,"rgba(168,235,101,.025)");context.fillStyle=intervalGradient;context.fill();
+      for(const edge of [ceiling,floor]){context.beginPath();traceCurve(context,edge);context.setLineDash([4,5]);context.strokeStyle="rgba(168,235,101,.31)";context.lineWidth=.95;context.stroke();context.setLineDash([])}
+      context.save();context.shadowColor="rgba(168,235,101,.53)";context.shadowBlur=12;context.beginPath();traceCurve(context,future);context.strokeStyle="#a8eb65";context.lineWidth=2.55;context.stroke();context.restore();
+    }
+    context.restore();
+
+    context.setLineDash([4,6]);context.strokeStyle="rgba(187,168,239,.54)";context.lineWidth=1;context.beginPath();context.moveTo(padding.left,currentY);context.lineTo(width-padding.right,currentY);context.stroke();context.setLineDash([]);
+    context.fillStyle="#bba8ef";context.textAlign="right";context.fillText(`${compact?"T0":"GIÁ T0"} ${price(current)}`,width-padding.right-4,Math.max(padding.top+13,currentY-8));context.textAlign="left";
+
+    context.setLineDash([3,6]);context.strokeStyle="rgba(199,214,188,.29)";context.beginPath();context.moveTo(split,padding.top);context.lineTo(split,floorY);context.stroke();context.setLineDash([]);
+    context.fillStyle="#858c7e";context.font=`${compact?8:9}px SFMono-Regular,Consolas,monospace`;
+    if(!compact)context.fillText("LỊCH SỬ",Math.max(padding.left,split-67),padding.top-14);
+    context.fillStyle="#b7df94";context.fillText(compact?"DỰ BÁO":"KỊCH BẢN T+1 → T+5",split+7,padding.top-14);
+
+    for(const item of forecasts){
+      const pointX=xForecast(item.n),pointY=y(item.price),selected=item.n===activeCard;
+      if(progress*innerWidth<pointX-padding.left-8)continue;
+      context.strokeStyle=selected?"rgba(168,235,101,.43)":"rgba(168,235,101,.19)";context.lineWidth=selected?1.4:1;context.beginPath();context.moveTo(pointX,y(item.hi));context.lineTo(pointX,y(item.lo));context.stroke();
+      if(selected){context.fillStyle="rgba(168,235,101,.17)";context.beginPath();context.arc(pointX,pointY,11,0,Math.PI*2);context.fill()}
+      context.fillStyle=selected?"#d6ffa9":"#a8eb65";context.beginPath();context.arc(pointX,pointY,selected?5.1:3.8,0,Math.PI*2);context.fill();
+      context.fillStyle=selected?"#dbf6c4":"#a5ab9f";context.font=`${selected?"600 ":""}${compact?9:10}px SFMono-Regular,Consolas,monospace`;context.textAlign="center";context.fillText(`T+${item.n}`,pointX,height-20);context.textAlign="left";
+    }
+
+    context.fillStyle="#777f72";context.font=`${compact?8:9}px SFMono-Regular,Consolas,monospace`;context.fillText(hist[0].date,padding.left,height-20);
+    if(!compact)context.fillText(hist.at(-1).date,Math.max(padding.left+88,split-79),height-20);
+  }
+
+  if(chartFrame){cancelAnimationFrame(chartFrame);chartFrame=0}
+  if(!animate||window.matchMedia("(prefers-reduced-motion: reduce)").matches){paint(1);return}
+  let started=0;const duration=780;
+  const step=timestamp=>{if(!started)started=timestamp;const linear=Math.min(1,(timestamp-started)/duration),smooth=1-Math.pow(1-linear,3);paint(smooth);if(linear<1)chartFrame=requestAnimationFrame(step);else chartFrame=0};
+  chartFrame=requestAnimationFrame(step);
+}
 function tooltipHTML(p){if(p.kind==="history"){const d=p.data;return`<strong>${esc(d.date)}</strong><hr><div class="tooltipRow"><span>Adjusted close</span><b>${price(d.close)}</b></div><div class="tooltipRow"><span>Raw close</span><b>${price(d.rawClose)}</b></div><div class="tooltipRow"><span>Volume</span><b>${finite(d.volume)?(+d.volume).toLocaleString("vi-VN"):"—"}</b></div>`}const q=p.data,cs=Object.entries(q.contrib||{}).sort((a,b)=>Math.abs(+b[1])-Math.abs(+a[1])).slice(0,6);return`<strong>T+${q.n} direct forecast</strong><hr><div class="tooltipRow"><span>Giá dự kiến</span><b>${price(q.price)}</b></div><div class="tooltipRow"><span>Expected return</span><b>${q.ret>=0?"+":""}${pct(q.ret)}</b></div><div class="tooltipRow"><span>P(tăng)</span><b>${q.dir?pct(q.p,0):"Direction gate REVIEW"}</b></div><div class="tooltipRow"><span>Q20–Q80</span><b>${price(q.lo)} – ${price(q.hi)}</b></div><div class="tooltipRow"><span>Calibration n</span><b>${q.calN??"—"}</b></div><hr>${cs.map(([k,v])=>`<div class="tooltipRow"><span>${esc(expertLabel(k))}</span><b class="${driverTone(+v)}">${+v>=0?"+":""}${pct(v)}</b></div>`).join("")}`}
-function bindChartHover(){const cv=$("#chart"),tip=$("#tooltip");cv.onmousemove=e=>{if(!hoverPoints.length)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,dist=1e9;for(const p of hoverPoints){const d=Math.hypot(p.x-mx,p.y-my);if(d<dist){dist=d;best=p}}if(!best||dist>45){tip.style.display="none";return}tip.innerHTML=tooltipHTML(best);tip.style.display="block";tip.style.left=Math.min(r.width-340,Math.max(8,mx+15))+"px";tip.style.top=Math.min(r.height-235,Math.max(8,my-20))+"px"};cv.onmouseleave=()=>tip.style.display="none"}
+function bindChartHover(){
+  const canvas=$("#chart"),overlay=$("#chartOverlay"),tooltip=$("#tooltip");
+  let pending=0;
+
+  function clear(){tooltip.style.display="none";if(!overlay||!chartBounds)return;const context=overlay.getContext("2d");context.clearRect(0,0,chartBounds.width,chartBounds.height)}
+
+  canvas.onmousemove=event=>{
+    if(!hoverPoints.length||!chartBounds)return;
+    const rectangle=canvas.getBoundingClientRect(),mouseX=event.clientX-rectangle.left,mouseY=event.clientY-rectangle.top;
+    if(pending)cancelAnimationFrame(pending);
+    pending=requestAnimationFrame(()=>{
+      pending=0;
+      let selected=null,score=Infinity;
+      for(const point of hoverPoints){const distance=Math.abs(point.x-mouseX)+(point.kind==="forecast"?Math.abs(point.y-mouseY)*.12:0);if(distance<score){score=distance;selected=point}}
+      if(!selected||score>Math.max(30,rectangle.width*.042)){clear();return}
+
+      if(overlay){
+        const context=overlay.getContext("2d");context.clearRect(0,0,chartBounds.width,chartBounds.height);
+        context.setLineDash([3,5]);context.strokeStyle="rgba(205,244,169,.46)";context.beginPath();context.moveTo(selected.x,chartBounds.top);context.lineTo(selected.x,chartBounds.bottom);context.stroke();context.setLineDash([]);
+        context.fillStyle="rgba(168,235,101,.18)";context.beginPath();context.arc(selected.x,selected.y,10,0,Math.PI*2);context.fill();
+        context.fillStyle="#caff9c";context.beginPath();context.arc(selected.x,selected.y,4,0,Math.PI*2);context.fill();
+      }
+
+      tooltip.innerHTML=tooltipHTML(selected);tooltip.style.display="block";
+      const tooltipWidth=Math.min(340,Math.max(235,tooltip.offsetWidth||250)),tooltipHeight=Math.max(110,tooltip.offsetHeight||170);
+      const side=selected.x>rectangle.width*.66?selected.x-tooltipWidth-15:selected.x+16;
+      tooltip.style.left=`${Math.max(8,Math.min(rectangle.width-tooltipWidth-8,side))}px`;
+      tooltip.style.top=`${Math.max(8,Math.min(rectangle.height-tooltipHeight-8,mouseY-34))}px`;
+    });
+  };
+  canvas.onmouseleave=()=>{if(pending)cancelAnimationFrame(pending);pending=0;clear()};
+
+  for(const button of document.querySelectorAll(".chartRanges button")){
+    button.addEventListener("click",()=>{chartRange=Math.max(20,Math.min(125,+button.dataset.range||65));document.querySelectorAll(".chartRanges button").forEach(item=>item.classList.toggle("active",item===button));if(last)draw(last.sym,last.z,last.B.dash.charts?.[last.sym]||[],true)})
+  }
+}
 
 function renderNews(z){const box=$("#news");box.replaceChildren();const a=z?.evidence?.recent||[];for(const x of a.slice(0,12)){const e=document.createElement(x.link?"a":"div");e.className="newsItem";if(x.link){e.href=x.link;e.target="_blank";e.rel="noopener"}e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher)} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(x.event||"OTHER")}</span><span class="chip">${esc(x.label||"NEU")}</span><span class="chip">${esc(x.sourceClass||x.stream||"MAIN")}</span><span class="chip">materiality ${num(x.materiality)}</span><span class="chip">novelty ${num(x.novelty)}</span></div>`;box.append(e)}if(!a.length)box.innerHTML='<div class="empty">Không có event mới trong cửa sổ PIT hiện tại. “Không có tin” không bị quy đổi thành neutral sentiment.</div>'}
 function renderRumors(z){const box=$("#rumors");box.replaceChildren();const claims=z?.evidence?.rumorClaims||[];if(claims.length){for(const x of claims.slice(0,10)){const e=document.createElement("div");e.className="newsItem rumorItem";const state=x.truthState||"UNVERIFIED",resolved=x.resolutionDate?` · resolution ${esc(x.resolutionDate)}`:"";e.innerHTML=`<b>${esc(x.title||x.claimId)}</b><small>${esc(x.firstDate||"")} → ${esc(x.lastDate||x.firstDate||"")} · ${esc(state)}${resolved}</small><div class="chips"><span class="chip">${x.items??1} mentions</span><span class="chip">${x.sources??1} sources</span><span class="chip">velocity ${num(x.velocity)}</span><span class="chip">diversity ${num(x.sourceDiversity)}</span><span class="chip">pre-2 ${finite(x.preMove2)?pct(x.preMove2):"—"}</span><span class="chip">pre-vol ${num(x.preVolumeLead)}</span></div>${x.resolutionTitle?`<small>Xác minh: ${esc(x.resolutionTitle)}</small>`:""}`;box.append(e)}return}const a=z?.evidence?.rumors||[];for(const x of a.slice(0,10)){const e=document.createElement(x.link?"a":"div");e.className="newsItem rumorItem";if(x.link){e.href=x.link;e.target="_blank";e.rel="noopener"}e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher)} · ${esc(x.publishedAt||"")}</small><div class="chips"><span class="chip">${esc(x.state||"UNVERIFIED")}</span><span class="chip">pre-2 ${finite(x.preMove2)?pct(x.preMove2):"—"}</span><span class="chip">pre-5 ${finite(x.preMove5)?pct(x.preMove5):"—"}</span></div>`;box.append(e)}if(!a.length)box.innerHTML='<div class="empty">Không có rumor claim đủ điều kiện trong cửa sổ hiện tại. Missing rumor không được coi là neutral signal.</div>'}

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>VMEWS Forecast V14 · HOSE Market Intelligence</title>
+<title>VMEWS Forecast V14.1 · HOSE Market Intelligence</title>
 <meta name="description" content="Dự báo toàn bộ cổ phiếu HOSE T+1 đến T+5 bằng dữ liệu giá, tin tức point-in-time, dòng tiền và kiểm định ngoài mẫu.">
 <style>
 :root{--bg:#061018;--bg2:#08151f;--panel:rgba(12,26,37,.88);--panel2:#0a1721;--line:#193747;--line2:#285365;--text:#edf5f7;--muted:#8da4ae;--muted2:#6f8792;--cyan:#6ed3d8;--green:#73d2a0;--amber:#f0bd63;--red:#ed8080;--violet:#baa2ef;--shadow:0 20px 55px rgba(0,0,0,.24);--radius:16px;--ease:cubic-bezier(.2,.8,.2,1)}
@@ -17,7 +17,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 .bt{margin-top:16px}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:1px solid var(--line);background:#081722;border-radius:8px;padding:7px 11px;cursor:pointer;color:#aebec5;transition:.18s var(--ease)}.tabs button:hover{border-color:#3a697d}.tabs button.active{border-color:var(--cyan);color:white;background:#10313f}.metrics{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:12px 0}.metric b{font-size:14px}.tableWrap{overflow:auto;border:1px solid rgba(27,59,73,.9);border-radius:11px;background:rgba(6,18,27,.32)}.tableWrap::-webkit-scrollbar{height:7px}.tableWrap::-webkit-scrollbar-thumb{background:#1d3e4d;border-radius:99px}table{width:100%;border-collapse:collapse;min-width:1180px;font-size:11px}th,td{padding:9px 10px;border-bottom:1px solid rgba(23,52,65,.8);text-align:right;white-space:nowrap}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}th{position:sticky;top:0;background:#0b1b25;color:#91a7b0;font-weight:650;z-index:2}tbody tr{cursor:pointer;transition:background .16s}tbody tr:hover{background:#0d2431}.good{color:var(--green)}.bad{color:var(--red)}.ablation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.sourceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}.sourceCard b{display:block;font-size:13px}.btDetail{margin-top:12px;border:1px solid rgba(27,59,73,.9);background:rgba(6,19,28,.68);border-radius:11px;padding:14px}.footer{max-width:1500px;margin:0 auto;padding:4px 24px 34px;color:#607983;font-size:10.5px;display:flex;justify-content:space-between;gap:18px}.footer strong{color:#8198a2;font-weight:650}.uiReady .panel{animation:rise .38s var(--ease) both}.uiReady .mainChart{animation-delay:.04s}.uiReady .proof{animation-delay:.08s}.uiReady .three{animation-delay:.10s}.uiReady .bt{animation-delay:.13s}@keyframes rise{from{opacity:.72;transform:translateY(5px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @media(max-width:1160px){.grid2,.three{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(4,1fr)}.proofGrid{grid-template-columns:repeat(2,1fr)}.sourceGrid{grid-template-columns:repeat(4,1fr)}}@media(max-width:780px){.top{padding:0 14px}.topMeta .optional{display:none}.wrap{padding:18px 14px 32px}.hero{grid-template-columns:1fr;gap:15px}.searchWrap{align-items:stretch;min-width:0}.search{justify-content:stretch}.search input{flex:1;width:auto}.quick{justify-content:flex-start}.stats{grid-template-columns:repeat(2,1fr)}.drivers{grid-template-columns:1fr}.forecastCards{grid-template-columns:1fr 1fr}.chartWrap{height:420px}.metrics,.ablation,.sourceGrid,.proofGrid{grid-template-columns:1fr 1fr}.panelHead{flex-direction:column}.panelHead .meta{text-align:left;max-width:none}.footer{flex-direction:column}.hero h1{font-size:33px}}@media(max-width:430px){.forecastCards,.metrics,.sourceGrid,.proofGrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.panel{padding:15px}.chartWrap{height:400px}.brand{font-size:11px}.badge{font-size:10px;padding:6px 8px}}
 </style>
-<link rel="stylesheet" href="./forecast-portfolio-v14.css?release=14.0">
+<link rel="stylesheet" href="./forecast-portfolio-v14.css?release=14.1">
 </head>
 <body>
 <div class="portfolioProgress" aria-hidden="true"></div>
@@ -25,22 +25,35 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <div class="brand"><span class="brandDot"></span>VMEWS <span class="brandSlash">/</span> MARKET INTELLIGENCE</div>
   <div class="topMeta"><span id="modelBadge" class="badge">Đang tải mô hình…</span><span class="optional">HOSE · POINT-IN-TIME · V14</span></div>
 </header>
+<nav class="sectionNav" aria-label="Điều hướng dashboard">
+  <a href="#overview" class="active">Tổng quan</a>
+  <a href="#forecast">Biểu đồ</a>
+  <a href="#validation">Kiểm định</a>
+  <a href="#events">Tin tức</a>
+  <a href="#backtest">Backtest</a>
+  <span class="sectionNavHint"><kbd>/</kbd> tìm mã</span>
+</nav>
 <main class="wrap">
-  <section class="hero">
-    <div>
+  <section class="hero" id="hero">
+    <canvas id="heroCanvas" class="heroCanvas" aria-hidden="true"></canvas>
+    <div class="heroContent">
       <span class="heroIndex">01 / VIETNAM EQUITY RESEARCH</span>
-      <h1>Equity<br><em>forecast.</em></h1>
+      <h1><span class="heroLine">Equity</span><br><em class="heroLine">forecast.</em></h1>
       <div class="sub">Giá · Tin tức point-in-time · Dòng tiền · Kiểm định ngoài mẫu.</div>
       <div class="heroSignal"><i></i><span>HOSE common stocks · T+1 → T+5 · exchange-valid price grid</span></div>
     </div>
     <div class="searchWrap">
-      <div class="search"><input id="symbol" value="FPT" maxlength="8" autocomplete="off" aria-label="Mã cổ phiếu"><button id="go" class="btn">Phân tích</button></div>
-      <div id="status" class="status">Đang tải dữ liệu thị trường…</div>
+      <div class="searchHeading"><span>CHỌN MÃ CỔ PHIẾU</span><span class="livePill"><i></i> EOD ĐÃ KIỂM ĐỊNH</span></div>
+      <div class="search"><input id="symbol" value="FPT" maxlength="8" autocomplete="off" list="symbolSuggestions" aria-label="Mã cổ phiếu"><datalist id="symbolSuggestions"></datalist><button id="go" class="btn"><span>Phân tích</span><span aria-hidden="true">↗</span></button></div>
+      <div id="status" class="status" aria-live="polite">Đang tải dữ liệu thị trường…</div>
       <div id="quick" class="quick"></div>
+      <div class="heroSparkCard" aria-hidden="true"><div><span>LỊCH SỬ GIÁ</span><b id="sparkSymbol">FPT</b></div><canvas id="heroSpark"></canvas></div>
     </div>
   </section>
 
-  <section class="grid2">
+  <section class="marketTape" id="marketTape" aria-label="Giá đóng cửa các cổ phiếu HOSE"><span class="marketTapeLabel"><i></i> HOSE · EOD</span><div class="marketTapeViewport"><div id="tapeTrack" class="marketTapeTrack"></div></div></section>
+
+  <section class="grid2" id="overview">
     <div class="panel">
       <div class="eyebrow">Model view</div>
       <h2 id="decision" class="decision neutral">—</h2>
@@ -60,30 +73,30 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     </div>
   </section>
 
-  <section class="panel mainChart">
-    <div class="panelHead"><div><div class="eyebrow">Horizon forecast</div><h2 id="chartTitle">—</h2></div><div class="meta">Giá dự kiến và vùng dự báo Q20–Q80</div></div>
-    <div class="chartWrap"><canvas id="chart"></canvas><div id="tooltip" class="tooltip"></div></div>
-    <div class="legend"><span><i style="background:#dce8ed"></i>Giá lịch sử</span><span><i style="background:#65c8d0"></i>Dự báo từng horizon</span><span><i style="background:#e8b65c"></i>Vùng Q20–Q80</span><span><i style="background:#e77b7b"></i>Giá tại T0</span></div>
+  <section class="panel mainChart" id="forecast">
+    <div class="panelHead"><div><div class="eyebrow">Horizon forecast</div><h2 id="chartTitle">—</h2></div><div class="chartTools"><span id="chartPulse" class="chartPulse"><i></i> SNAPSHOT KIỂM ĐỊNH</span><div class="chartRanges" role="group" aria-label="Khoảng lịch sử biểu đồ"><button type="button" data-range="30">1T</button><button type="button" data-range="65" class="active">3T</button><button type="button" data-range="125">6T</button></div></div></div>
+    <div class="chartWrap"><canvas id="chart" aria-label="Biểu đồ giá lịch sử và kịch bản dự báo T+1 đến T+5"></canvas><canvas id="chartOverlay" class="chartOverlay" aria-hidden="true"></canvas><div id="tooltip" class="tooltip"></div></div>
+    <div class="legend"><span><i style="background:#c9d1bc"></i>Giá lịch sử</span><span><i style="background:#a8eb65"></i>Dự báo T+1 → T+5</span><span><i style="background:#82956d"></i>Vùng xác suất Q20–Q80</span><span><i style="background:#b1a1e8"></i>Giá tại T0</span></div>
     <div id="forecastCards" class="forecastCards"></div>
   </section>
 
-  <section class="panel proof">
+  <section class="panel proof" id="validation">
     <div class="panelHead"><div><div class="eyebrow">02 / Model validation</div><h2>Kiểm toán mô hình</h2></div><div class="proofIntro">Kiểm định độc lập theo thời gian, đánh giá cả giá dự báo thực sự có thể đặt lệnh.</div></div>
     <div id="methodProof" class="proofGrid"><div class="empty">Đang tải bằng chứng kiểm định…</div></div>
   </section>
 
-  <section class="panel proof" id="eventImpactPanel">
+  <section class="panel proof" id="eventImpactPanel" data-section="events">
     <div class="panelHead"><div><div class="eyebrow">03 / Publication → price response</div><h2>Tin ra, giá phản ứng thế nào?</h2></div><div id="eventImpactMeta" class="proofIntro">Chỉ sử dụng tin xuất hiện trước thời điểm dự báo; đo phản ứng giá trên tập ngoài mẫu.</div></div>
     <div id="eventImpact" class="proofGrid"><div class="empty">Đang đối chiếu sự kiện và giá thực tế…</div></div>
   </section>
 
-  <section class="three">
+  <section class="three" id="events">
     <div class="panel"><div class="eyebrow">Event intelligence</div><h2>Tin & sự kiện</h2><div id="news" class="stream"></div></div>
     <div class="panel"><div class="eyebrow">Rumor intelligence</div><h2>Lan truyền & xác minh</h2><div id="rumors" class="stream"></div></div>
     <div class="panel"><div class="eyebrow">Data quality</div><h2>Nguồn & độ phủ</h2><div id="sourceAudit" class="sourceGrid"></div></div>
   </section>
 
-  <section class="panel bt">
+  <section class="panel bt" id="backtest">
     <div class="panelHead"><div><div class="eyebrow">Out-of-sample replay</div><h2>Backtest: dự báo tại T0 và kết quả thực tế sau đó</h2></div><div id="btMeta" class="meta">—</div></div>
     <div id="tabs" class="tabs"></div>
     <div id="metrics" class="metrics"></div>
@@ -93,8 +106,9 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   </section>
 </main>
 <footer class="footer"><span><strong>VMEWS Forecast V14</strong> · HOSE market intelligence</span><span>Kịch bản xác suất, không phải cam kết giá hoặc khuyến nghị đầu tư.</span></footer>
-<script src="./forecast-final-v12.js?release=14.0"></script>
-<script src="./forecast-polish-v12.js?release=14.0"></script>
-<script src="./forecast-portfolio-v14.js?release=14.0"></script>
+<button id="backToTop" class="backToTop" type="button" aria-label="Cuộn về đầu trang">↑</button>
+<script src="./forecast-final-v12.js?release=14.1"></script>
+<script src="./forecast-polish-v12.js?release=14.1"></script>
+<script src="./forecast-portfolio-v14.js?release=14.1"></script>
 </body>
 </html>
