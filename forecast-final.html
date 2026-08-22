@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>VMEWS Forecast V13 · Vietnam Equity Quant Research</title>
-<meta name="description" content="Dự báo cổ phiếu Việt Nam T+1 đến T+5: dữ liệu EOD mới nhất, biến động thực tế, đúng bước giá sàn và kiểm định ngoài mẫu.">
+<title>VMEWS Forecast V14 · HOSE Market Intelligence</title>
+<meta name="description" content="Dự báo toàn bộ cổ phiếu HOSE T+1 đến T+5 bằng dữ liệu giá, tin tức point-in-time, dòng tiền và kiểm định ngoài mẫu.">
 <style>
 :root{--bg:#061018;--bg2:#08151f;--panel:rgba(12,26,37,.88);--panel2:#0a1721;--line:#193747;--line2:#285365;--text:#edf5f7;--muted:#8da4ae;--muted2:#6f8792;--cyan:#6ed3d8;--green:#73d2a0;--amber:#f0bd63;--red:#ed8080;--violet:#baa2ef;--shadow:0 20px 55px rgba(0,0,0,.24);--radius:16px;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;min-height:100vh;color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(900px 480px at 14% -6%,rgba(110,211,216,.09),transparent 62%),radial-gradient(700px 430px at 90% 4%,rgba(186,162,239,.055),transparent 65%),linear-gradient(180deg,#061018 0%,#07121a 58%,#061018 100%)}
@@ -17,19 +17,21 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 .bt{margin-top:16px}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:1px solid var(--line);background:#081722;border-radius:8px;padding:7px 11px;cursor:pointer;color:#aebec5;transition:.18s var(--ease)}.tabs button:hover{border-color:#3a697d}.tabs button.active{border-color:var(--cyan);color:white;background:#10313f}.metrics{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:12px 0}.metric b{font-size:14px}.tableWrap{overflow:auto;border:1px solid rgba(27,59,73,.9);border-radius:11px;background:rgba(6,18,27,.32)}.tableWrap::-webkit-scrollbar{height:7px}.tableWrap::-webkit-scrollbar-thumb{background:#1d3e4d;border-radius:99px}table{width:100%;border-collapse:collapse;min-width:1180px;font-size:11px}th,td{padding:9px 10px;border-bottom:1px solid rgba(23,52,65,.8);text-align:right;white-space:nowrap}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}th{position:sticky;top:0;background:#0b1b25;color:#91a7b0;font-weight:650;z-index:2}tbody tr{cursor:pointer;transition:background .16s}tbody tr:hover{background:#0d2431}.good{color:var(--green)}.bad{color:var(--red)}.ablation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.sourceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}.sourceCard b{display:block;font-size:13px}.btDetail{margin-top:12px;border:1px solid rgba(27,59,73,.9);background:rgba(6,19,28,.68);border-radius:11px;padding:14px}.footer{max-width:1500px;margin:0 auto;padding:4px 24px 34px;color:#607983;font-size:10.5px;display:flex;justify-content:space-between;gap:18px}.footer strong{color:#8198a2;font-weight:650}.uiReady .panel{animation:rise .38s var(--ease) both}.uiReady .mainChart{animation-delay:.04s}.uiReady .proof{animation-delay:.08s}.uiReady .three{animation-delay:.10s}.uiReady .bt{animation-delay:.13s}@keyframes rise{from{opacity:.72;transform:translateY(5px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @media(max-width:1160px){.grid2,.three{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(4,1fr)}.proofGrid{grid-template-columns:repeat(2,1fr)}.sourceGrid{grid-template-columns:repeat(4,1fr)}}@media(max-width:780px){.top{padding:0 14px}.topMeta .optional{display:none}.wrap{padding:18px 14px 32px}.hero{grid-template-columns:1fr;gap:15px}.searchWrap{align-items:stretch;min-width:0}.search{justify-content:stretch}.search input{flex:1;width:auto}.quick{justify-content:flex-start}.stats{grid-template-columns:repeat(2,1fr)}.drivers{grid-template-columns:1fr}.forecastCards{grid-template-columns:1fr 1fr}.chartWrap{height:420px}.metrics,.ablation,.sourceGrid,.proofGrid{grid-template-columns:1fr 1fr}.panelHead{flex-direction:column}.panelHead .meta{text-align:left;max-width:none}.footer{flex-direction:column}.hero h1{font-size:33px}}@media(max-width:430px){.forecastCards,.metrics,.sourceGrid,.proofGrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.panel{padding:15px}.chartWrap{height:400px}.brand{font-size:11px}.badge{font-size:10px;padding:6px 8px}}
 </style>
+<link rel="stylesheet" href="./forecast-portfolio-v14.css?release=14.0">
 </head>
 <body>
+<div class="portfolioProgress" aria-hidden="true"></div>
 <header class="top">
-  <div class="brand"><span class="brandDot"></span>VMEWS FORECAST V13</div>
-  <div class="topMeta"><span id="modelBadge" class="badge">Đang tải mô hình…</span><span class="optional">LIVE EOD · DIRECT RETURN · TICK-VALIDATED</span></div>
+  <div class="brand"><span class="brandDot"></span>VMEWS <span class="brandSlash">/</span> MARKET INTELLIGENCE</div>
+  <div class="topMeta"><span id="modelBadge" class="badge">Đang tải mô hình…</span><span class="optional">HOSE · POINT-IN-TIME · V14</span></div>
 </header>
 <main class="wrap">
   <section class="hero">
     <div>
-      <div class="eyebrow">Vietnam equity quantitative research</div>
-      <h1>Dự báo giá T+1 → T+5</h1>
-      <div class="sub">Mô hình dự báo trực tiếp theo biến động thực tế, động lượng, trạng thái thị trường và luân chuyển ngành.</div>
-      <div class="heroSignal"><i></i><span>EOD mới nhất · bước giá giao dịch hợp lệ · kiểm định out-of-sample</span></div>
+      <span class="heroIndex">01 / VIETNAM EQUITY RESEARCH</span>
+      <h1>Equity<br><em>forecast.</em></h1>
+      <div class="sub">Giá · Tin tức point-in-time · Dòng tiền · Kiểm định ngoài mẫu.</div>
+      <div class="heroSignal"><i></i><span>HOSE common stocks · T+1 → T+5 · exchange-valid price grid</span></div>
     </div>
     <div class="searchWrap">
       <div class="search"><input id="symbol" value="FPT" maxlength="8" autocomplete="off" aria-label="Mã cổ phiếu"><button id="go" class="btn">Phân tích</button></div>
@@ -66,8 +68,13 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   </section>
 
   <section class="panel proof">
-    <div class="panelHead"><div><div class="eyebrow">Model validation</div><h2>Kiểm định không nhìn trước tương lai</h2></div><div class="proofIntro">Các chỉ số dưới đây được đọc trực tiếp từ gate của bản model đang hiển thị.</div></div>
+    <div class="panelHead"><div><div class="eyebrow">02 / Model validation</div><h2>Kiểm toán mô hình</h2></div><div class="proofIntro">Kiểm định độc lập theo thời gian, đánh giá cả giá dự báo thực sự có thể đặt lệnh.</div></div>
     <div id="methodProof" class="proofGrid"><div class="empty">Đang tải bằng chứng kiểm định…</div></div>
+  </section>
+
+  <section class="panel proof" id="eventImpactPanel">
+    <div class="panelHead"><div><div class="eyebrow">03 / Publication → price response</div><h2>Tin ra, giá phản ứng thế nào?</h2></div><div id="eventImpactMeta" class="proofIntro">Chỉ sử dụng tin xuất hiện trước thời điểm dự báo; đo phản ứng giá trên tập ngoài mẫu.</div></div>
+    <div id="eventImpact" class="proofGrid"><div class="empty">Đang đối chiếu sự kiện và giá thực tế…</div></div>
   </section>
 
   <section class="three">
@@ -85,8 +92,9 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <div id="ablation" class="ablation"></div>
   </section>
 </main>
-<footer class="footer"><span><strong>VMEWS Forecast V13</strong> · Vietnam equity quantitative research</span><span>Dữ liệu EOD làm mới sau phiên · Không phải khuyến nghị đầu tư.</span></footer>
-<script src="./forecast-final-v12.js?release=13.1"></script>
-<script src="./forecast-polish-v12.js?release=13.1"></script>
+<footer class="footer"><span><strong>VMEWS Forecast V14</strong> · HOSE market intelligence</span><span>Kịch bản xác suất, không phải cam kết giá hoặc khuyến nghị đầu tư.</span></footer>
+<script src="./forecast-final-v12.js?release=14.0"></script>
+<script src="./forecast-polish-v12.js?release=14.0"></script>
+<script src="./forecast-portfolio-v14.js?release=14.0"></script>
 </body>
 </html>
