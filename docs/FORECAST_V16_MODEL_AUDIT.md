@@ -6,7 +6,7 @@
 - Universe: 403/403 model-ready HOSE symbols; 0 stale EOD symbols
 - Target: direct log return for T+1 through T+5
 - Price output: valid HOSE tick grid and multi-session price limits
-- Direction probability: published only where the sealed Brier gate passes; the horizon list is generated from the current audit rather than hard-coded
+- Direction probability: PASS for T+1 through T+3; T+4 and T+5 are withheld by the current sealed Brier gate
 
 ## What changed in V16
 
@@ -20,11 +20,11 @@ Weak T+1 signals are allowed to remain neutral instead of being forced one tick 
 
 | Horizon | Executable MAE skill | Rank IC | Absolute-move skill | Q20–Q80 coverage | Walk-forward executable skill | Positive WF folds |
 |---|---:|---:|---:|---:|---:|---:|
-| T+1 | 0.47% | 18.08% | 4.86% | 61.5% | 1.17% | 3/3 |
-| T+2 | 1.36% | 16.06% | 3.67% | 61.3% | 0.81% | 3/3 |
-| T+3 | 0.87% | 14.80% | 2.74% | 60.9% | 0.04% | 2/3 |
-| T+4 | 0.54% | 13.16% | 0.93% | 60.8% | 0.20% | 2/3 |
-| T+5 | 1.43% | 13.24% | 2.08% | 60.9% | 0.33% | 2/3 |
+| T+1 | 0.49% | 18.18% | 4.59% | 61.7% | 0.95% | 3/3 |
+| T+2 | 1.21% | 16.77% | 3.88% | 61.7% | 0.34% | 2/3 |
+| T+3 | 0.82% | 14.57% | 3.45% | 60.9% | 0.14% | 2/3 |
+| T+4 | 0.92% | 11.75% | 2.07% | 61.0% | 0.27% | 2/3 |
+| T+5 | 1.61% | 11.46% | 2.60% | 61.1% | 0.45% | 2/3 |
 
 Every walk-forward fold retrains from scratch with a maturity-purged training set and a pre-test calibration window. No future row or future label is used in training or calibration.
 
