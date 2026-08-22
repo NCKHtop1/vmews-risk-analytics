@@ -111,6 +111,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("avgVolume20 * close", leaders)
         self.assertIn("snapshot.newsFeatures", leaders)
         self.assertIn("snapshot.evidence?.recent", leaders)
+        self.assertIn("issuerNewsMatches(row, item)", leaders)
+        self.assertIn("gameplay", leaders)
         self.assertIn("snapshot.flow", leaders)
         self.assertIn("forecast.expertContributions", leaders)
         self.assertIn("forecast.q20Price", leaders)
