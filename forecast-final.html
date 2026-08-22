@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>VMEWS Forecast V14.1 · HOSE Market Intelligence</title>
+<title>VMEWS Forecast V14.2 · Live HOSE Signal Intelligence</title>
 <meta name="description" content="Dự báo toàn bộ cổ phiếu HOSE T+1 đến T+5 bằng dữ liệu giá, tin tức point-in-time, dòng tiền và kiểm định ngoài mẫu.">
 <style>
 :root{--bg:#061018;--bg2:#08151f;--panel:rgba(12,26,37,.88);--panel2:#0a1721;--line:#193747;--line2:#285365;--text:#edf5f7;--muted:#8da4ae;--muted2:#6f8792;--cyan:#6ed3d8;--green:#73d2a0;--amber:#f0bd63;--red:#ed8080;--violet:#baa2ef;--shadow:0 20px 55px rgba(0,0,0,.24);--radius:16px;--ease:cubic-bezier(.2,.8,.2,1)}
@@ -17,7 +17,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 .bt{margin-top:16px}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:1px solid var(--line);background:#081722;border-radius:8px;padding:7px 11px;cursor:pointer;color:#aebec5;transition:.18s var(--ease)}.tabs button:hover{border-color:#3a697d}.tabs button.active{border-color:var(--cyan);color:white;background:#10313f}.metrics{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:12px 0}.metric b{font-size:14px}.tableWrap{overflow:auto;border:1px solid rgba(27,59,73,.9);border-radius:11px;background:rgba(6,18,27,.32)}.tableWrap::-webkit-scrollbar{height:7px}.tableWrap::-webkit-scrollbar-thumb{background:#1d3e4d;border-radius:99px}table{width:100%;border-collapse:collapse;min-width:1180px;font-size:11px}th,td{padding:9px 10px;border-bottom:1px solid rgba(23,52,65,.8);text-align:right;white-space:nowrap}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}th{position:sticky;top:0;background:#0b1b25;color:#91a7b0;font-weight:650;z-index:2}tbody tr{cursor:pointer;transition:background .16s}tbody tr:hover{background:#0d2431}.good{color:var(--green)}.bad{color:var(--red)}.ablation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.sourceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}.sourceCard b{display:block;font-size:13px}.btDetail{margin-top:12px;border:1px solid rgba(27,59,73,.9);background:rgba(6,19,28,.68);border-radius:11px;padding:14px}.footer{max-width:1500px;margin:0 auto;padding:4px 24px 34px;color:#607983;font-size:10.5px;display:flex;justify-content:space-between;gap:18px}.footer strong{color:#8198a2;font-weight:650}.uiReady .panel{animation:rise .38s var(--ease) both}.uiReady .mainChart{animation-delay:.04s}.uiReady .proof{animation-delay:.08s}.uiReady .three{animation-delay:.10s}.uiReady .bt{animation-delay:.13s}@keyframes rise{from{opacity:.72;transform:translateY(5px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @media(max-width:1160px){.grid2,.three{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(4,1fr)}.proofGrid{grid-template-columns:repeat(2,1fr)}.sourceGrid{grid-template-columns:repeat(4,1fr)}}@media(max-width:780px){.top{padding:0 14px}.topMeta .optional{display:none}.wrap{padding:18px 14px 32px}.hero{grid-template-columns:1fr;gap:15px}.searchWrap{align-items:stretch;min-width:0}.search{justify-content:stretch}.search input{flex:1;width:auto}.quick{justify-content:flex-start}.stats{grid-template-columns:repeat(2,1fr)}.drivers{grid-template-columns:1fr}.forecastCards{grid-template-columns:1fr 1fr}.chartWrap{height:420px}.metrics,.ablation,.sourceGrid,.proofGrid{grid-template-columns:1fr 1fr}.panelHead{flex-direction:column}.panelHead .meta{text-align:left;max-width:none}.footer{flex-direction:column}.hero h1{font-size:33px}}@media(max-width:430px){.forecastCards,.metrics,.sourceGrid,.proofGrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.panel{padding:15px}.chartWrap{height:400px}.brand{font-size:11px}.badge{font-size:10px;padding:6px 8px}}
 </style>
-<link rel="stylesheet" href="./forecast-portfolio-v14.css?release=14.1">
+<link rel="stylesheet" href="./forecast-portfolio-v14.css?release=14.2">
 </head>
 <body>
 <div class="portfolioProgress" aria-hidden="true"></div>
@@ -26,6 +26,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <div class="topMeta"><span id="modelBadge" class="badge">Đang tải mô hình…</span><span class="optional">HOSE · POINT-IN-TIME · V14</span></div>
 </header>
 <nav class="sectionNav" aria-label="Điều hướng dashboard">
+  <a href="#leaders">Top 10</a>
   <a href="#overview" class="active">Tổng quan</a>
   <a href="#forecast">Biểu đồ</a>
   <a href="#validation">Kiểm định</a>
@@ -52,6 +53,23 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   </section>
 
   <section class="marketTape" id="marketTape" aria-label="Giá đóng cửa các cổ phiếu HOSE"><span class="marketTapeLabel"><i></i> HOSE · EOD</span><div class="marketTapeViewport"><div id="tapeTrack" class="marketTapeTrack"></div></div></section>
+
+  <section class="panel marketCommand" id="leaders" aria-labelledby="leadersTitle">
+    <div class="commandAtmosphere" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="leadersHeader">
+      <div><span class="commandIndex">02 / FIVE-SESSION SIGNAL SCANNER</span><h2 id="leadersTitle">Market <span>movers.</span></h2><p>10 mã HOSE có mức tăng dự báo T+5 cao nhất, xếp theo giá mục tiêu có thể đặt lệnh.</p></div>
+      <div class="commandStatus"><span class="snapshotBadge"><i></i> EOD · SNAPSHOT KIỂM ĐỊNH</span><strong id="snapshotDate">ĐANG TẢI</strong><span id="vnClock" aria-live="off">GIỜ VIỆT NAM —</span></div>
+    </div>
+    <div id="marketPulse" class="marketPulseGrid" aria-label="Tổng quan tín hiệu toàn sàn HOSE"><div class="pulsePlaceholder">Đang quét snapshot HOSE đã kiểm định…</div></div>
+    <div class="leaderToolbar">
+      <div class="leaderFilters" role="group" aria-label="Bộ lọc chất lượng tín hiệu"><button type="button" class="filterChip active" data-filter="all" aria-pressed="true">Toàn sàn</button><button type="button" class="filterChip" data-filter="liquid" aria-pressed="false">Thanh khoản ≥ 1 tỷ</button><button type="button" class="filterChip" data-filter="green" aria-pressed="false">Rủi ro GREEN</button></div>
+      <div class="carouselControls"><button id="carouselPrev" class="carouselArrow" type="button" aria-label="Xem mã trước">←</button><span id="carouselPosition">00 / 10</span><button id="carouselNext" class="carouselArrow" type="button" aria-label="Xem mã tiếp theo">→</button><button id="carouselAutoplay" class="carouselPlay" type="button" aria-label="Tạm dừng carousel" aria-pressed="false">❚❚</button></div>
+    </div>
+    <div id="signalDeck" class="signalDeck" role="region" aria-roledescription="carousel" aria-label="10 cổ phiếu HOSE có upside dự báo T+5 cao nhất" tabindex="0"><div class="deckEmpty">Đang xây dựng bảng xếp hạng từ snapshot thật…</div></div>
+    <div id="leaderDots" class="leaderDots" role="group" aria-label="Chọn mã trong bảng xếp hạng"></div>
+    <section id="leaderDetail" class="leaderDetail" aria-live="polite"><div class="deckEmpty">Đang phân tích cơ sở mô hình, tin tức và rủi ro…</div></section>
+    <p class="rankingDisclosure">Xếp hạng theo (giá dự báo T+5 / giá đóng cửa EOD − 1); chỉ nhận forecast HOSE vượt price-validation, đúng bước giá và dữ liệu CURRENT. Chuyển động giao diện không đại diện cho giá khớp lệnh theo thời gian thực.</p>
+  </section>
 
   <section class="grid2" id="overview">
     <div class="panel">
@@ -107,8 +125,9 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 </main>
 <footer class="footer"><span><strong>VMEWS Forecast V14</strong> · HOSE market intelligence</span><span>Kịch bản xác suất, không phải cam kết giá hoặc khuyến nghị đầu tư.</span></footer>
 <button id="backToTop" class="backToTop" type="button" aria-label="Cuộn về đầu trang">↑</button>
-<script src="./forecast-final-v12.js?release=14.1"></script>
-<script src="./forecast-polish-v12.js?release=14.1"></script>
-<script src="./forecast-portfolio-v14.js?release=14.1"></script>
+<script src="./forecast-final-v12.js?release=14.2"></script>
+<script src="./forecast-polish-v12.js?release=14.2"></script>
+<script src="./forecast-portfolio-v14.js?release=14.2"></script>
+<script src="./forecast-live-leaders-v14.js?release=14.2"></script>
 </body>
 </html>
