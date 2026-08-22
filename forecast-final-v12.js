@@ -5,7 +5,7 @@ const pct=(x,d=1)=>finite(x)?`${(+x*100).toFixed(d)}%`:"—";
 const price=x=>finite(x)?(+x).toLocaleString("vi-VN",{maximumFractionDigits:0}):"—";
 const num=(x,d=2)=>finite(x)?(+x).toFixed(d):"—";
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const ROOT="./data",CDN_REVISION=Math.floor(Date.now()/300000);
+const CDN_PATH=location.pathname.split("/").filter(Boolean),ROOT=location.hostname==="cdn.githubraw.com"&&CDN_PATH.length>=3?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/main/data`:"./data",CDN_REVISION=Math.floor(Date.now()/300000);
 let BASE=null,BASE_PROMISE=null,last=null,btH=5,hoverPoints=[];
 
 async function json(name){const r=await fetch(`${ROOT}/${name}?refresh=${CDN_REVISION}`,{cache:"no-store"});if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);return r.json()}
