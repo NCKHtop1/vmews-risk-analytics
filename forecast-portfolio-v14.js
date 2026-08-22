@@ -56,6 +56,13 @@
     root.style.setProperty("--scroll-progress", `${Math.min(100, scrollY / maximum * 100)}%`);
     top?.classList.toggle("scrolled", scrollY > 22);
     backToTop?.classList.toggle("visible", scrollY > innerHeight * .7);
+    if (scrollY < 40 && navigation.length) {
+      navigation.forEach((link, index) => {
+        link.classList.toggle("active", index === 0);
+        if (index === 0) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    }
   }
 
   addEventListener("scroll", () => {
