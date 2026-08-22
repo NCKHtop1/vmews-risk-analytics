@@ -55,6 +55,16 @@ class PointInTimeSignalTest(unittest.TestCase):
         self.assertTrue(security_match("FPT", "FPT: Doanh thu dịch vụ CNTT tăng trưởng", universe))
         self.assertTrue(security_match("FPT", "Dragon Capital tăng tỷ trọng PNJ và FPT", universe))
 
+    def test_unrelated_ticker_collisions_and_missing_issuer_are_rejected(self) -> None:
+        universe = {"GTA", "ASP", "VSI", "VCB", "PNJ", "FPT"}
+        self.assertFalse(security_match("GTA", 'GTA 6 vừa lộ gameplay, Take-Two đã "bay màu" 2 tỷ USD', universe, require_explicit=True))
+        self.assertFalse(security_match("ASP", "Western Digital Corp (WDC) cổ phiếu giảm 6,69%", universe, require_explicit=True))
+        self.assertFalse(security_match("VSI", "Khi đầu tư chứng khoán đặt trong kế hoạch tích lũy dài hạn", universe, require_explicit=True))
+        self.assertTrue(security_match("GTA", "Cổ phiếu GTA: Công ty Gỗ Thuận An báo lợi nhuận tăng", universe, require_explicit=True))
+        self.assertTrue(security_match("VCB", "Vietcombank công bố kế hoạch chia cổ tức", universe, require_explicit=True))
+        self.assertTrue(security_match("PNJ", "PNJ: Sức mua trang sức tăng trưởng", universe, require_explicit=True))
+        self.assertTrue(security_match("ASP", "Doanh nghiệp công bố kết quả kinh doanh", universe, require_explicit=False))
+
 
 class PublishedMarketForecastTest(unittest.TestCase):
     @classmethod

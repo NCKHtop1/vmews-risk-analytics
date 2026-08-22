@@ -53,6 +53,38 @@ NEGATIVE_TERMS = (
     "mất giá", "bốc hơi", "phá sản", "thanh tra", "tin đồn",
 )
 
+# Well-known issuer names permit exact company identification when Vietnamese
+# headlines omit the exchange ticker. Generic sectors or market keywords do not.
+ISSUER_ALIASES: dict[str, tuple[str, ...]] = {
+    "VCB": ("vietcombank",),
+    "BID": ("bidv",),
+    "CTG": ("vietinbank",),
+    "TCB": ("techcombank",),
+    "MBB": ("mb bank", "mbbank", "ngân hàng quân đội"),
+    "VPB": ("vpbank",),
+    "TPB": ("tpbank",),
+    "STB": ("sacombank",),
+    "HDB": ("hdbank",),
+    "EIB": ("eximbank",),
+    "SSB": ("seabank",),
+    "LPB": ("lpbank", "lienvietpostbank"),
+    "VNM": ("vinamilk",),
+    "HPG": ("hòa phát", "hoa phat"),
+    "VIC": ("vingroup",),
+    "VHM": ("vinhomes",),
+    "VRE": ("vincom retail",),
+    "VJC": ("vietjet",),
+    "SAB": ("sabeco",),
+    "MSN": ("masan",),
+    "PLX": ("petrolimex",),
+    "GAS": ("pv gas", "pvgas", "khí việt nam"),
+    "MWG": ("thế giới di động", "the gioi di dong"),
+    "PNJ": ("vàng bạc đá quý phú nhuận",),
+    "BVH": ("tập đoàn bảo việt", "bao viet holdings"),
+    "VND": ("vndirect",),
+    "VCI": ("vietcap", "chứng khoán bản việt"),
+}
+
 
 def _number(value: Any, default: float = 0.0) -> float:
     try:
@@ -90,8 +122,8 @@ def effective_trading_session(timestamp: datetime) -> str:
     return session.isoformat()
 
 
-def security_match(symbol: str, title: str, universe: set[str]) -> bool:
-    """Reject subsidiary/affiliate articles incorrectly bucketed under a parent."""
+def security_match(symbol: str, title: str, universe: set[str], *, require_explicit: bool = False) -> bool:
+    """Verify ticker/issuer identity without discarding linked historical events."""
     symbol = symbol.upper()
     text = str(title or "")
     explicit = [
@@ -113,8 +145,24 @@ def security_match(symbol: str, title: str, universe: set[str]) -> bool:
     for pattern, other in aliases.get(symbol, ()):
         if re.search(pattern, text, flags=re.IGNORECASE) and other != symbol:
             return False
-    # Articles without an exact ticker can be issuer announcements already
-    # linked by the audited historical archive; keep those records.
+
+    # Grand Theft Auto news can satisfy a Google query for the HOSE ticker GTA
+    # while referring exclusively to the videogame franchise / Take-Two.
+    if symbol == "GTA" and re.search(
+        r"\bgta\s*(?:\d+|[ivx]{1,4})\b|\bgameplay\b|\brockstar\b|\btake[\s-]?two\b|\bplaystation\b|\bxbox\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+
+    if require_explicit:
+        exact_ticker = re.search(rf"(?<![A-Za-z0-9]){re.escape(symbol)}(?![A-Za-z0-9])", text, flags=re.IGNORECASE)
+        issuer_name = any(alias in text.casefold() for alias in ISSUER_ALIASES.get(symbol, ()))
+        if not exact_ticker and not issuer_name:
+            return False
+
+    # Historical archive rows have independently curated issuer assignments and
+    # may omit both the ticker and brand; only new scraped headlines are strict.
     return True
 
 
@@ -172,7 +220,7 @@ def load_signal_sources(universe: set[str]) -> tuple[pd.DataFrame, dict[str, lis
         if not title:
             rejected["missing_title"] += 1
             return
-        if not security_match(symbol, title, universe):
+        if not security_match(symbol, title, universe, require_explicit=not historical):
             rejected["issuer_mismatch"] += 1
             return
         timestamp = publication_timestamp(item.get("publishedAt") or item.get("published"))

@@ -78,7 +78,7 @@ def fetch_symbol(symbol: str, universe: set[str]) -> tuple[str, list[dict[str, o
         items: list[dict[str, object]] = []
         for element in root.findall(".//item")[:18]:
             parsed = article(symbol, element)
-            if parsed and security_match(symbol, str(parsed["title"]), universe):
+            if parsed and security_match(symbol, str(parsed["title"]), universe, require_explicit=True):
                 items.append(parsed)
         return symbol, items, None
     except Exception as exc:  # One failing publisher must not abort the universe.
@@ -127,7 +127,7 @@ def main() -> None:
             seen: set[str] = set()
             for row in items + prior:
                 identity = re.sub(r"\W+", " ", str(row.get("title") or "").casefold()).strip()
-                if not identity or identity in seen or not security_match(symbol, str(row.get("title") or ""), universe):
+                if not identity or identity in seen or not security_match(symbol, str(row.get("title") or ""), universe, require_explicit=True):
                     continue
                 seen.add(identity)
                 combined.append(row)

@@ -36,6 +36,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
     def test_every_referenced_local_asset_exists(self) -> None:
         self.assertIn("forecast-portfolio-v14.css", self.document.assets)
         self.assertIn("forecast-portfolio-v14.js", self.document.assets)
+        self.assertIn("forecast-live-leaders-v14.js", self.document.assets)
         for asset in self.document.assets:
             with self.subTest(asset=asset):
                 self.assertTrue((ROOT / asset).is_file())
@@ -49,6 +50,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "heroCanvas", "heroSpark", "sparkSymbol", "symbolSuggestions",
             "marketTape", "tapeTrack", "chartOverlay", "chartPulse", "backToTop",
             "overview", "forecast", "validation", "events", "backtest",
+            "leaders", "leadersTitle", "snapshotDate", "vnClock", "marketPulse",
+            "signalDeck", "leaderDots", "leaderDetail", "carouselPosition",
+            "carouselPrev", "carouselNext", "carouselAutoplay",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -87,6 +91,52 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("chartRange", app)
         self.assertIn("chartOverlay", app)
         self.assertIn("quadraticCurveTo", app)
+
+    def test_leaderboard_uses_validated_current_hose_forecasts(self) -> None:
+        leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        self.assertIn('snapshot.exchange !== "HOSE"', leaders)
+        self.assertIn('snapshot.dataFreshness !== "CURRENT"', leaders)
+        self.assertIn("forecast.priceValidated !== true", leaders)
+        self.assertIn('forecast.validationStatus !== "PASS"', leaders)
+        self.assertIn("target % tickSize !== 0", leaders)
+        self.assertIn("upside: target / close - 1", leaders)
+        self.assertIn("right.upside - left.upside", leaders)
+        self.assertIn("rows.slice(0, 10)", leaders)
+        self.assertNotIn("Math.random", leaders)
+
+    def test_signal_quality_uses_real_liquidity_news_risk_and_uncertainty(self) -> None:
+        leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        self.assertIn("histories[symbol]", leaders)
+        self.assertIn("session.volume", leaders)
+        self.assertIn("avgVolume20 * close", leaders)
+        self.assertIn("snapshot.newsFeatures", leaders)
+        self.assertIn("snapshot.evidence?.recent", leaders)
+        self.assertIn("snapshot.flow", leaders)
+        self.assertIn("forecast.expertContributions", leaders)
+        self.assertIn("forecast.q20Price", leaders)
+        self.assertIn("forecast.q80Price", leaders)
+        self.assertIn("row.tradedValue20 < 1e9", leaders)
+        self.assertIn("không phải xác suất sinh lời", leaders)
+
+    def test_rotating_cards_support_keyboard_touch_filters_and_reduced_motion(self) -> None:
+        leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
+        self.assertIn("perspective: 1400px", css)
+        self.assertIn("rotateY(var(--deck-rotate", css)
+        self.assertIn("prefers-reduced-motion", leaders)
+        self.assertIn("document.hidden", leaders)
+        self.assertIn("ArrowLeft", leaders)
+        self.assertIn("pointerup", leaders)
+        self.assertIn('data-filter="liquid"', self.html)
+        self.assertIn('data-filter="green"', self.html)
+        self.assertIn('aria-roledescription="carousel"', self.html)
+
+    def test_leaderboard_can_open_existing_symbol_analysis(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        self.assertIn("window.__VMEWS_RENDER_SYMBOL__=renderSymbol", app)
+        self.assertIn("window.__VMEWS_RENDER_SYMBOL__(symbol)", leaders)
+        self.assertIn("snapshot", self.html.lower())
 
 
 if __name__ == "__main__":
