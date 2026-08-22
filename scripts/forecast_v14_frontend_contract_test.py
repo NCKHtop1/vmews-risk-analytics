@@ -123,6 +123,19 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("row.tradedValue20 < 1e9", leaders)
         self.assertIn("signalBand", leaders)
         self.assertIn("VÙNG GIÁ", leaders)
+        self.assertIn("fundContext", leaders)
+        self.assertIn("Quỹ nắm giữ", leaders)
+
+    def test_v16_ui_distinguishes_point_range_and_expected_magnitude(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        polish = (ROOT / "forecast-polish-v12.js").read_text(encoding="utf-8")
+        self.assertIn("expectedAbsReturn", app)
+        self.assertIn("bearScenarioPrice", app)
+        self.assertIn("bullScenarioPrice", app)
+        self.assertIn("Dự báo biên độ", app)
+        self.assertIn("Danh mục quỹ", app)
+        self.assertIn("fundContext", polish)
+        self.assertIn("chưa dùng để fit model", polish)
 
     def test_rotating_cards_support_keyboard_touch_filters_and_reduced_motion(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")

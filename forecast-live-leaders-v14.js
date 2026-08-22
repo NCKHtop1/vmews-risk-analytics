@@ -13,7 +13,7 @@
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
   const expertNames = {
     NUMERICAL: "Giá / kỹ thuật", REGIME: "Trạng thái thị trường", VOLATILITY: "Biến động thực tế",
-    SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức",
+    SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức", FUND: "Danh mục quỹ",
   };
   const issuerAliases = {
     VCB: ["vietcombank"], BID: ["bidv"], CTG: ["vietinbank"], TCB: ["techcombank"],
@@ -68,6 +68,7 @@
       const tradedValue20 = avgVolume20 * close;
       const news = snapshot.newsFeatures || {};
       const flow = snapshot.flow || {};
+      const fund = snapshot.fundContext || {};
       const row = {
         symbol,
         snapshot,
@@ -87,6 +88,10 @@
         officialNews: number(news.official5) || 0,
         flowFresh: flow.stale !== true && (flow.foreignAvailable || flow.propAvailable),
         flowAge: number(flow.sessionsSinceObservation),
+        fundAvailable: fund.available === true,
+        fundCount: number(fund.fundCount) || 0,
+        fundWeight: number(fund.averageReportedWeight),
+        fundModelEligible: fund.modelEligible === true,
         risk: snapshot.riskStatus || "UNKNOWN",
         sector: snapshot.sector && snapshot.sector !== "UNKNOWN" ? snapshot.sector : "Chưa phân loại ngành",
         volatility: number(snapshot.dailyVolatility),
@@ -252,7 +257,7 @@
   }
 
   function contributionsMarkup(row) {
-    const entries = Object.entries(row.forecast.expertContributions || {}).sort((left, right) => Math.abs(number(right[1]) || 0) - Math.abs(number(left[1]) || 0));
+    const entries = Object.entries(row.forecast.expertContributions || {}).filter(([, value]) => Math.abs(number(value) || 0) > 1e-7).sort((left, right) => Math.abs(number(right[1]) || 0) - Math.abs(number(left[1]) || 0));
     const maximum = Math.max(...entries.map(([, value]) => Math.abs(number(value) || 0)), .00001);
     if (!entries.length) return '<div class="detailEmpty">Chưa có yếu tố đủ nổi bật.</div>';
     return entries.map(([name, value]) => `<div class="factorRow"><span>${escapeHTML(expertNames[name] || name)}</span><div class="factorTrack"><i class="${number(value) < 0 ? "factorDown" : "factorUp"}" style="width:${Math.abs(number(value) || 0) / maximum * 100}%"></i></div><strong class="${number(value) < 0 ? "factorNegative" : "factorPositive"}">${signed(value, 2)}</strong></div>`).join("");
@@ -284,10 +289,11 @@
     if (!row.directionValidated) warnings.push("Chưa đủ cơ sở cho xác suất hướng");
     else if (row.probUp < .5) warnings.push("P(tăng) dưới 50%");
     if (!row.flowFresh) warnings.push("Dòng tiền tổ chức chưa mới");
+    if (row.fundAvailable && !row.fundModelEligible) warnings.push("Dữ liệu quỹ đang tích lũy lịch sử kiểm định");
     if (!row.newsCount) warnings.push("Không có tin trong 5 phiên");
     else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item))) warnings.push("Chưa có tin gần đây khớp doanh nghiệp");
 
-    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+5</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Xem đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">CÁC YẾU TỐ CHÍNH</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG GIÁ T+5</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "—"}</b></article><article><span>Biên dưới</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>${money(row.q20)}</small></article><article><span>Thanh khoản 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cp/phiên</small></article><article><span>Biến động ngày</span><b>${percent(row.volatility, 1)}</b><small>${escapeHTML(flowStatus)}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN GẦN ĐÂY · ${row.newsCount} BÀI</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : ""}`;
+    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+5</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Xem đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">CÁC YẾU TỐ CHÍNH</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG GIÁ T+5</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "—"}</b></article><article><span>Biên dưới</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>${money(row.q20)}</small></article><article><span>Thanh khoản 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cp/phiên</small></article><article><span>Quỹ nắm giữ</span><b>${row.fundAvailable ? `${row.fundCount} quỹ` : "—"}</b><small>${row.fundAvailable && row.fundWeight !== null ? `Bình quân ${percent(row.fundWeight, 1)}/quỹ` : escapeHTML(flowStatus)}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN GẦN ĐÂY · ${row.newsCount} BÀI</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : ""}`;
   }
 
   function select(index, manual = false) {

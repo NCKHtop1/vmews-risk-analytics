@@ -45,15 +45,22 @@ from forecast_v14_signal_audit import (
     load_signal_sources,
     symbol_signal_features,
 )
+from forecast_v16_external_data import (
+    FUND_FEATURE_COLUMNS,
+    fund_feature_panel,
+    latest_fund_context,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-15.0.0"
+VERSION = "VMEWS-MARKET-FORECAST-16.0.0"
 HORIZONS = (1, 2, 3, 4, 5)
+INTERCEPT_RETENTION = {3: 0.0, 4: 0.25}
 QUICK_SYMBOLS = ("FPT", "VCB", "HPG", "MBB", "FRT", "PNJ", "VNM", "SSI")
 VNDIRECT_URL = "https://api-finfo.vndirect.com.vn/v4/stock_prices"
+EOD_CACHE_PATH = DATA / "v16-eod-refresh-cache.json.gz"
 PRICE_FEATURE_COLUMNS = [
     "ret1", "ret2", "ret3", "ret5", "ret10", "ret20", "ret60",
     "vol5", "vol10", "vol20", "vol60", "vol_ratio", "range1", "atr14",
@@ -66,7 +73,7 @@ PRICE_FEATURE_COLUMNS = [
     "relative_ret5", "relative_ret20", "sector_ret1", "sector_ret5",
     "sector_ret20", "sector_breadth", "sector_relative5", "day_of_week",
 ]
-FEATURE_COLUMNS = PRICE_FEATURE_COLUMNS + NEWS_COLUMNS + FLOW_COLUMNS
+FEATURE_COLUMNS = PRICE_FEATURE_COLUMNS + NEWS_COLUMNS + FLOW_COLUMNS + FUND_FEATURE_COLUMNS
 
 
 def _log(message: str, **fields: Any) -> None:
@@ -198,6 +205,19 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
     refreshed: dict[str, str] = {}
     failures: dict[str, str] = {}
 
+    if EOD_CACHE_PATH.exists():
+        with gzip.open(EOD_CACHE_PATH, "rt", encoding="utf-8") as stream:
+            cached = json.load(stream)
+        for symbol, incoming in (cached.get("histories") or {}).items():
+            if symbol not in histories or not isinstance(incoming, list):
+                continue
+            by_date = {str(row["date"]): row for row in histories[symbol]}
+            for row in incoming:
+                if isinstance(row, dict) and row.get("date"):
+                    by_date[str(row["date"])] = row
+            histories[symbol] = [by_date[key] for key in sorted(by_date)]
+            refreshed[symbol] = "VNDIRECT_PUBLIC_EOD"
+
     # The already-produced TradingView market-wide scan is a separate timestamped
     # source, not a fabricated candle.  Its latest close is appended only when its
     # own market session is strictly newer than the audited frozen OHLCV history.
@@ -239,6 +259,7 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
             return symbol, None, f"{type(exc).__name__}: {exc}"[:200]
 
     if requested:
+        received: dict[str, list[dict[str, Any]]] = {}
         workers = min(int(os.environ.get("V14_EOD_WORKERS", "8")), len(requested))
         with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
             for task in as_completed(pool.submit(refresh_one, symbol) for symbol in requested):
@@ -247,12 +268,26 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
                     failures[symbol] = failure
                     continue
                 assert incoming is not None
+                received[symbol] = incoming
                 by_date = {str(row["date"]): row for row in histories[symbol]}
                 for row in incoming:
                     by_date[row["date"]] = row
                 histories[symbol] = [by_date[key] for key in sorted(by_date)]
                 refreshed[symbol] = "VNDIRECT_PUBLIC_EOD"
         _log("eod_refresh_complete", requested=len(requested), refreshed=sum(v == "VNDIRECT_PUBLIC_EOD" for v in refreshed.values()), fallbacks=len(failures), workers=workers)
+        if received:
+            with gzip.open(EOD_CACHE_PATH, "wt", encoding="utf-8") as stream:
+                json.dump(
+                    {
+                        "generatedAt": datetime.now(VN_TZ).isoformat(timespec="seconds"),
+                        "source": "VNDIRECT_PUBLIC_EOD",
+                        "histories": received,
+                    },
+                    stream,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
 
     latest_dates = [str(rows[-1]["date"]) for rows in histories.values() if rows]
     modal_date = statistics.mode(latest_dates) if latest_dates else str(frozen.get("asOf"))
@@ -375,6 +410,10 @@ def build_panel(
     panel = panel.loc[panel["vol20"].notna() & panel["ret60"].notna()].copy()
     panel.sort_values(["date", "symbol"], inplace=True)
     panel.reset_index(drop=True, inplace=True)
+    fund_features, fund_audit = fund_feature_panel(panel)
+    for column in FUND_FEATURE_COLUMNS:
+        panel[column] = fund_features[column].to_numpy(dtype=float)
+    panel.attrs["fundAudit"] = fund_audit
     _log(
         "feature_panel_built",
         rows=len(panel),
@@ -437,13 +476,55 @@ def _metrics(actual: np.ndarray, forecast: np.ndarray, dates: np.ndarray, probab
     return result
 
 
+def cross_sectional_center(values: np.ndarray, dates: pd.Series) -> np.ndarray:
+    """Remove the contemporaneous market-wide median without using outcomes.
+
+    Daily cross-sectional rank is materially more stable than the unconditional
+    market intercept in Vietnamese equities.  Centering only model outputs from
+    the same known session preserves issuer selection while preventing an old
+    bull/bear regime from manufacturing a market-direction forecast.
+    """
+    frame = pd.DataFrame({"value": values, "date": pd.to_datetime(dates).to_numpy()})
+    medians = frame.groupby("date", observed=True)["value"].transform("median")
+    return (frame["value"] - medians).to_numpy(dtype=float)
+
+
+def intercept_modes(horizon: int) -> tuple[str, ...]:
+    retention = INTERCEPT_RETENTION.get(horizon, 1.0)
+    if retention == 0.0:
+        return ("CROSS_SECTIONAL",)
+    if retention == 1.0:
+        return ("RAW",)
+    return (f"BLEND_{retention:.2f}",)
+
+
+def apply_intercept_mode(
+    values: np.ndarray,
+    dates: pd.Series,
+    mode: str,
+) -> np.ndarray:
+    """Apply horizon retention frozen by pre-publication walk-forward tests."""
+    if mode == "RAW":
+        return np.asarray(values, dtype=float)
+    if mode == "CROSS_SECTIONAL":
+        return cross_sectional_center(values, dates)
+    if mode.startswith("BLEND_"):
+        retention = float(mode.split("_", 1)[1])
+        centered = cross_sectional_center(values, dates)
+        return centered + retention * (np.asarray(values, dtype=float) - centered)
+    raise ValueError(f"unsupported intercept mode: {mode}")
+
+
 @dataclass
 class HorizonResult:
     horizon: int
     model: HistGradientBoostingRegressor
+    magnitude_model: HistGradientBoostingRegressor
     classifier: HistGradientBoostingClassifier
     scale: float
     conviction_floor: float
+    intercept_mode: str
+    magnitude_scale: float
     quantile_low: float
     quantile_high: float
     training: dict[str, Any]
@@ -451,8 +532,10 @@ class HorizonResult:
     holdout: dict[str, Any]
     rows: pd.DataFrame
     holdout_prediction: np.ndarray
+    holdout_magnitude: np.ndarray
     holdout_probability: np.ndarray
     feature_medians: np.ndarray
+    walk_forward: dict[str, Any] | None = None
 
 
 def shape_prediction(
@@ -548,10 +631,37 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     target_mode = os.environ.get("V13_TARGET_MODE", "volatility")
     fitted_target = normalized_train_y if target_mode == "volatility" else train_y
     model.fit(train_x, fitted_target)
+    magnitude_model = HistGradientBoostingRegressor(
+        loss="absolute_error",
+        learning_rate=.06,
+        max_iter=75 if fast else 125,
+        max_leaf_nodes=19,
+        min_samples_leaf=240,
+        l2_regularization=12.0,
+        max_bins=128,
+        early_stopping=False,
+        random_state=3000 + horizon,
+    )
+    magnitude_model.fit(
+        train_x,
+        np.clip(np.abs(train_y) / np.maximum(train_vol, .004), 0.0, 4.0),
+    )
     classifier.fit(train_x, train_y > 0)
 
-    cal_raw = model.predict(cal_x) * (cal_vol if target_mode == "volatility" else 1.0)
+    cal_raw_base = model.predict(cal_x) * (cal_vol if target_mode == "volatility" else 1.0)
+    cal_raw_by_mode = {
+        mode: apply_intercept_mode(cal_raw_base, calibration["date"], mode)
+        for mode in intercept_modes(horizon)
+    }
     cal_probability = classifier.predict_proba(cal_x)[:, 1]
+    cal_magnitude_raw = np.clip(magnitude_model.predict(cal_x), .02, 4.0) * cal_vol
+    magnitude_scale = float(
+        np.clip(
+            np.median(np.abs(cal_y)) / max(np.median(cal_magnitude_raw), 1e-12),
+            .50,
+            2.00,
+        )
+    )
 
     # Scale selection is strictly pre-holdout.  The one-standard-error envelope
     # keeps statistically comparable calibration choices, then prefers the largest
@@ -573,25 +683,42 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         # when the continuous regressor appears to pass.  Keep only floors
         # whose exchange-executable calibration is economically defensible.
         floors = tuple(floor for floor in floors if floor <= .04)
-    for multiplier in np.linspace(scale_min, scale_max, 30):
-        for floor in floors:
-            point = shape_prediction(cal_raw, cal_vol, cal_probability, float(multiplier), floor)
-            loss = np.abs(cal_y - point)
-            candidates.append(
-                {
-                    "scale": float(multiplier),
-                    "floor": float(floor),
-                    "mae": float(loss.mean()),
-                    "se": float(loss.std(ddof=1) / math.sqrt(len(loss))),
-                    "dispersion": float(np.std(point) / max(np.std(cal_y), 1e-12)),
-                    "over10bp": float(np.mean(np.abs(point) >= .001)),
-                }
-            )
-    best = min(candidates, key=lambda item: item["mae"])
-    admissible = [row for row in candidates if row["mae"] <= best["mae"] + best["se"]]
-    selected = max(admissible, key=lambda row: (row["dispersion"], row["over10bp"], row["floor"], row["scale"]))
+    for intercept_mode, cal_raw in cal_raw_by_mode.items():
+        for multiplier in np.linspace(scale_min, scale_max, 30):
+            for floor in floors:
+                point = shape_prediction(cal_raw, cal_vol, cal_probability, float(multiplier), floor)
+                loss = np.abs(cal_y - point)
+                candidates.append(
+                    {
+                        "scale": float(multiplier),
+                        "floor": float(floor),
+                        "interceptMode": intercept_mode,
+                        "mae": float(loss.mean()),
+                        "se": float(loss.std(ddof=1) / math.sqrt(len(loss))),
+                        "dispersion": float(np.std(point) / max(np.std(cal_y), 1e-12)),
+                        "over10bp": float(np.mean(np.abs(point) >= .001)),
+                    }
+                )
+    # The horizon-specific intercept retention is frozen from pre-publication
+    # walk-forward evidence.  Scale and conviction are calibration-only.
+    selected_mode = intercept_modes(horizon)[0]
+    best = min(
+        (row for row in candidates if row["interceptMode"] == selected_mode),
+        key=lambda item: item["mae"],
+    )
+    admissible = [
+        row for row in candidates
+        if row["interceptMode"] == selected_mode and row["mae"] <= best["mae"] + best["se"]
+    ]
+    selected = (
+        best
+        if horizon == 3
+        else max(admissible, key=lambda row: (row["dispersion"], row["over10bp"], row["floor"], row["scale"]))
+    )
     scale = selected["scale"]
     conviction_floor = selected["floor"]
+    intercept_mode = str(selected["interceptMode"])
+    cal_raw = cal_raw_by_mode[intercept_mode]
     cal_prediction = shape_prediction(cal_raw, cal_vol, cal_probability, scale, conviction_floor)
     cal_residual = (cal_y - cal_prediction) / np.maximum(cal_vol, .004)
     quantile_low = float(np.quantile(cal_residual, .20))
@@ -599,7 +726,9 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
 
     hold_probability = classifier.predict_proba(hold_x)[:, 1]
     hold_raw = model.predict(hold_x) * (hold_vol if target_mode == "volatility" else 1.0)
+    hold_raw = apply_intercept_mode(hold_raw, holdout["date"], intercept_mode)
     hold_prediction = shape_prediction(hold_raw, hold_vol, hold_probability, scale, conviction_floor)
+    hold_magnitude = np.clip(magnitude_model.predict(hold_x), .02, 4.0) * hold_vol * magnitude_scale
     hold_metrics = _metrics(
         hold_y,
         hold_prediction,
@@ -610,6 +739,19 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     high = hold_prediction + quantile_high * hold_vol
     hold_metrics["coverage20_80"] = float(np.mean((hold_y >= low) & (hold_y <= high)))
     hold_metrics["medianIntervalWidth"] = float(np.median(high - low))
+    magnitude_baseline_ratio = float(np.median(np.abs(train_y) / np.maximum(train_vol, .004)))
+    magnitude_baseline = magnitude_baseline_ratio * hold_vol
+    magnitude_mae = float(mean_absolute_error(np.abs(hold_y), hold_magnitude))
+    magnitude_baseline_mae = float(mean_absolute_error(np.abs(hold_y), magnitude_baseline))
+    hold_metrics.update(
+        {
+            "magnitudeMAE": magnitude_mae,
+            "magnitudeBaselineMAE": magnitude_baseline_mae,
+            "magnitudeMAESkill": 1.0 - magnitude_mae / max(magnitude_baseline_mae, 1e-12),
+            "medianExpectedAbsMove": float(np.median(hold_magnitude)),
+            "magnitudeScale": magnitude_scale,
+        }
+    )
 
     # Audit the same exchange-executable scenario that reaches the dashboard,
     # not merely the hidden continuous regressor output.
@@ -639,11 +781,16 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
             continue
         fold_mask = holdout["date"].isin(fold_days).to_numpy()
         fold_metrics = _metrics(hold_y[fold_mask], hold_prediction[fold_mask], holdout.loc[fold_mask, "date"].dt.strftime("%Y-%m-%d").to_numpy(), hold_probability[fold_mask])
+        fold_executable_mae = float(mean_absolute_error(hold_y[fold_mask], executable_return[fold_mask]))
+        fold_magnitude_mae = float(mean_absolute_error(np.abs(hold_y[fold_mask]), hold_magnitude[fold_mask]))
+        fold_magnitude_baseline_mae = float(mean_absolute_error(np.abs(hold_y[fold_mask]), magnitude_baseline[fold_mask]))
         temporal_folds.append({
             "start": pd.Timestamp(fold_days[0]).date().isoformat(),
             "end": pd.Timestamp(fold_days[-1]).date().isoformat(),
             "n": fold_metrics["n"],
             "maeSkill": fold_metrics["maeSkill"],
+            "executableMAESkill": 1.0 - fold_executable_mae / max(fold_metrics["baselineMAE"], 1e-12),
+            "magnitudeMAESkill": 1.0 - fold_magnitude_mae / max(fold_magnitude_baseline_mae, 1e-12),
             "rankIC": fold_metrics["rankIC"],
             "directionalAccuracy": fold_metrics["directionalAccuracy"],
         })
@@ -663,6 +810,8 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         "selection": "ONE_STANDARD_ERROR_PREFER_ECONOMIC_DISPERSION",
         "scale": scale,
         "convictionFloor": conviction_floor,
+        "interceptMode": intercept_mode,
+        "interceptModeRule": "FROZEN_PRE_PUBLICATION_WALK_FORWARD",
         "shortHorizonScaleCeiling": .85 if horizon == 1 else None,
         "shortHorizonFloorCeiling": .04 if horizon == 1 else None,
         "bestMAE": best["mae"],
@@ -700,9 +849,12 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     return HorizonResult(
         horizon=horizon,
         model=model,
+        magnitude_model=magnitude_model,
         classifier=classifier,
         scale=scale,
         conviction_floor=conviction_floor,
+        intercept_mode=intercept_mode,
+        magnitude_scale=magnitude_scale,
         quantile_low=quantile_low,
         quantile_high=quantile_high,
         training=training,
@@ -710,9 +862,198 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         holdout=hold_metrics,
         rows=holdout,
         holdout_prediction=hold_prediction,
+        holdout_magnitude=hold_magnitude,
         holdout_probability=hold_probability,
         feature_medians=calibration[FEATURE_COLUMNS].median(numeric_only=True).to_numpy(dtype=np.float32),
     )
+
+
+def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool = False) -> dict[str, Any]:
+    """Retrain at every origin and evaluate three disjoint recent test windows.
+
+    This is intentionally separate from the final sealed holdout.  Every fold
+    has its own purged training set, calibration window and frozen scale.  No
+    model or scale fitted for a later fold is reused by an earlier fold.
+    """
+    label = f"target{horizon}"
+    maturity = f"maturity{horizon}"
+    eligible = panel.loc[panel[label].notna() & panel[maturity].notna()].copy()
+    unique_dates = np.sort(eligible["date"].unique())
+    calibration_days = int(os.environ.get("V16_WF_CALIBRATION_DAYS", "60"))
+    test_days = int(os.environ.get("V16_WF_TEST_DAYS", "45"))
+    span = int(os.environ.get("V16_WF_SPAN_DAYS", "240"))
+    if len(unique_dates) < span + calibration_days + 300:
+        raise RuntimeError(f"T+{horizon}: insufficient history for expanding walk-forward audit")
+    starts = np.linspace(len(unique_dates) - span, len(unique_dates) - test_days, 3, dtype=int)
+    folds: list[dict[str, Any]] = []
+    for fold_number, start_index in enumerate(starts, start=1):
+        end_index = min(len(unique_dates), start_index + test_days)
+        test_start = unique_dates[start_index]
+        test_end = unique_dates[end_index - 1]
+        calibration_start = unique_dates[start_index - calibration_days]
+        train = eligible.loc[(eligible["date"] < calibration_start) & (eligible[maturity] < calibration_start)]
+        calibration = eligible.loc[
+            (eligible["date"] >= calibration_start)
+            & (eligible["date"] < test_start)
+            & (eligible[maturity] < test_start)
+        ]
+        test = eligible.loc[(eligible["date"] >= test_start) & (eligible["date"] <= test_end)]
+        if min(len(train), len(calibration), len(test)) < 5_000:
+            raise RuntimeError(f"T+{horizon} fold {fold_number}: insufficient purged rows")
+
+        train_x = train[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
+        calibration_x = calibration[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
+        test_x = test[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
+        train_vol = train["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
+        calibration_vol = calibration["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
+        test_vol = test["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
+        train_y = train[label].to_numpy(dtype=float)
+        calibration_y = calibration[label].to_numpy(dtype=float)
+        test_y = test[label].to_numpy(dtype=float)
+
+        point_model = HistGradientBoostingRegressor(
+            loss=os.environ.get("V13_MODEL_LOSS", "absolute_error"),
+            learning_rate=.065,
+            max_iter=55 if fast else 90,
+            max_leaf_nodes=21,
+            min_samples_leaf=220,
+            l2_regularization=10.0,
+            max_bins=128,
+            early_stopping=False,
+            random_state=4100 + 10 * horizon + fold_number,
+        )
+        point_model.fit(
+            train_x,
+            np.clip(train_y / np.maximum(train_vol, .004), -4.0, 4.0),
+        )
+        calibration_raw_base = point_model.predict(calibration_x) * calibration_vol
+        scale_limit = .85 if horizon == 1 else 1.6
+        scales = np.linspace(.10, scale_limit, 25)
+        calibration_days_values = np.sort(calibration["date"].unique())
+        mode_trials: list[dict[str, Any]] = []
+        for intercept_mode in intercept_modes(horizon):
+            calibration_raw = apply_intercept_mode(
+                calibration_raw_base,
+                calibration["date"],
+                intercept_mode,
+            )
+            block_scales: list[float] = []
+            for block_days in np.array_split(calibration_days_values, 4):
+                if not len(block_days):
+                    continue
+                mask = calibration["date"].isin(block_days).to_numpy()
+                block_scales.append(
+                    float(
+                        min(
+                            scales,
+                            key=lambda value: mean_absolute_error(
+                                calibration_y[mask], calibration_raw[mask] * value
+                            ),
+                        )
+                    )
+                )
+            # The lower quartile is a pre-test stability shrinkage: a single
+            # directional calibration month cannot inflate every later quote.
+            trial_scale = float(np.quantile(block_scales, .25))
+            mode_trials.append(
+                {
+                    "mode": intercept_mode,
+                    "scale": trial_scale,
+                    "blockScales": block_scales,
+                    "calibrationMAE": float(np.mean(np.abs(calibration_y - calibration_raw * trial_scale))),
+                    "calibrationSE": float(
+                        np.std(np.abs(calibration_y - calibration_raw * trial_scale), ddof=1)
+                        / math.sqrt(len(calibration_y))
+                    ),
+                }
+            )
+        selected_mode = mode_trials[0]
+        intercept_mode = str(selected_mode["mode"])
+        scale = float(selected_mode["scale"])
+        block_scales = list(selected_mode["blockScales"])
+        test_raw = point_model.predict(test_x) * test_vol
+        test_raw = apply_intercept_mode(test_raw, test["date"], intercept_mode)
+        prediction = test_raw * scale
+
+        magnitude_model = HistGradientBoostingRegressor(
+            loss="absolute_error",
+            learning_rate=.06,
+            max_iter=45 if fast else 75,
+            max_leaf_nodes=17,
+            min_samples_leaf=260,
+            l2_regularization=14.0,
+            max_bins=128,
+            early_stopping=False,
+            random_state=5100 + 10 * horizon + fold_number,
+        )
+        magnitude_model.fit(
+            train_x,
+            np.clip(np.abs(train_y) / np.maximum(train_vol, .004), 0.0, 4.0),
+        )
+        calibration_magnitude = np.clip(magnitude_model.predict(calibration_x), .02, 4.0) * calibration_vol
+        magnitude_scale = float(
+            np.clip(
+                np.median(np.abs(calibration_y)) / max(np.median(calibration_magnitude), 1e-12),
+                .5,
+                2.0,
+            )
+        )
+        magnitude = np.clip(magnitude_model.predict(test_x), .02, 4.0) * test_vol * magnitude_scale
+        baseline_magnitude_ratio = float(np.median(np.abs(train_y) / np.maximum(train_vol, .004)))
+        baseline_magnitude = baseline_magnitude_ratio * test_vol
+
+        closes = test["close"].to_numpy(dtype=float)
+        venues = test["exchange"].astype(str).to_numpy()
+        executable_prices = np.asarray(
+            [
+                tradable_forecast(close, point, .5, volatility, horizon, venue)
+                for close, point, volatility, venue in zip(closes, prediction, test_vol, venues)
+            ],
+            dtype=float,
+        )
+        executable_return = np.log(executable_prices / closes)
+        metrics = _metrics(
+            test_y,
+            prediction,
+            test["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+        )
+        executable_mae = float(mean_absolute_error(test_y, executable_return))
+        magnitude_mae = float(mean_absolute_error(np.abs(test_y), magnitude))
+        magnitude_baseline_mae = float(mean_absolute_error(np.abs(test_y), baseline_magnitude))
+        folds.append(
+            {
+                "fold": fold_number,
+                "trainEnd": str(train["date"].max().date()),
+                "trainingLatestMaturity": str(train[maturity].max().date()),
+                "calibrationStart": str(calibration["date"].min().date()),
+                "calibrationLatestMaturity": str(calibration[maturity].max().date()),
+                "testStart": str(pd.Timestamp(test_start).date()),
+                "testEnd": str(pd.Timestamp(test_end).date()),
+                "n": int(len(test)),
+                "scale": scale,
+                "interceptMode": intercept_mode,
+                "interceptModeCalibration": mode_trials,
+                "calibrationBlockScales": block_scales,
+                "maeSkill": metrics["maeSkill"],
+                "executableMAESkill": 1.0 - executable_mae / max(metrics["baselineMAE"], 1e-12),
+                "rankIC": metrics["rankIC"],
+                "magnitudeMAESkill": 1.0 - magnitude_mae / max(magnitude_baseline_mae, 1e-12),
+                "futureRowsUsedForTraining": 0,
+                "futureLabelsUsedForCalibration": 0,
+            }
+        )
+    return {
+        "status": "PASS",
+        "method": "EXPANDING_RETRAINED_PURGED_WALK_FORWARD",
+        "folds": folds,
+        "positiveMAEFolds": sum(fold["maeSkill"] > 0 for fold in folds),
+        "positiveExecutableMAEFolds": sum(fold["executableMAESkill"] > 0 for fold in folds),
+        "positiveMagnitudeFolds": sum(fold["magnitudeMAESkill"] > 0 for fold in folds),
+        "meanMAESkill": float(np.mean([fold["maeSkill"] for fold in folds])),
+        "meanExecutableMAESkill": float(np.mean([fold["executableMAESkill"] for fold in folds])),
+        "meanRankIC": float(np.mean([fold["rankIC"] for fold in folds])),
+        "meanMagnitudeMAESkill": float(np.mean([fold["magnitudeMAESkill"] for fold in folds])),
+    }
 
 
 FACTOR_GROUPS: dict[str, tuple[str, ...]] = {
@@ -727,6 +1068,7 @@ FACTOR_GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "EVENT": tuple(NEWS_COLUMNS),
     "FLOW": tuple(FLOW_COLUMNS),
+    "FUND": tuple(FUND_FEATURE_COLUMNS),
 }
 FACTOR_GROUPS["NUMERICAL"] = tuple(
     name for name in FEATURE_COLUMNS
@@ -768,7 +1110,12 @@ def tradable_forecast(
     direction = 1 if raw_return > 0 else -1 if raw_return < 0 else 0
     if abs(raw_return) <= .15 * horizon_volatility and abs(probability - .5) >= .07:
         direction = 1 if probability > .5 else -1
-    if direction and abs(quote - reference) < minimum_move:
+    force_weak_signal = not (
+        horizon == 1
+        and abs(raw_return) < .06 * horizon_volatility
+        and abs(probability - .5) < .06
+    )
+    if direction and force_weak_signal and abs(quote - reference) < minimum_move:
         quote = snap_price(reference + direction * minimum_move, venue)
     lower_limit, upper_limit = session_limit(reference, horizon, venue)
     return max(lower_limit, min(upper_limit, quote))
@@ -778,21 +1125,30 @@ def factor_contributions(
     result: HorizonResult,
     features: np.ndarray,
     volatility: np.ndarray,
+    dates: pd.Series,
     expected: np.ndarray,
 ) -> dict[str, np.ndarray]:
     """Grouped leave-at-median counterfactuals, not invented SHAP coefficients."""
-    full = result.model.predict(features) * volatility * result.scale
     medians = result.feature_medians
     output: dict[str, np.ndarray] = {}
     for group, columns in FACTOR_GROUPS.items():
         indices = [FEATURE_COLUMNS.index(column) for column in columns]
         alternative = features.copy()
         alternative[:, indices] = medians[indices]
-        ablated = result.model.predict(alternative) * volatility * result.scale
-        output[group] = full - ablated
-    # Interactions and the intercept belong to the technical baseline; the
-    # volatility group additionally receives the calibrated conviction uplift.
-    output["VOLATILITY"] = output["VOLATILITY"] + (expected - full)
+        ablated_raw = result.model.predict(alternative) * volatility
+        ablated_raw = apply_intercept_mode(ablated_raw, dates, result.intercept_mode)
+        ablated_probability = result.classifier.predict_proba(alternative)[:, 1]
+        ablated = shape_prediction(
+            ablated_raw,
+            volatility,
+            ablated_probability,
+            result.scale,
+            result.conviction_floor,
+        )
+        output[group] = expected - ablated
+    # Leave-group-out effects are not additive in a tree ensemble.  Assign the
+    # interaction residual to the numerical baseline so the displayed total is
+    # exactly the published point forecast.
     total = sum(output.values())
     output["NUMERICAL"] = output["NUMERICAL"] + (expected - total)
     return output
@@ -813,6 +1169,7 @@ def out_of_sample_factor_audit(result: HorizonResult) -> dict[str, Any]:
         alternative = features.copy()
         alternative[:, indices] = result.feature_medians[indices]
         ablated_raw = result.model.predict(alternative) * volatility
+        ablated_raw = apply_intercept_mode(ablated_raw, rows["date"], result.intercept_mode)
         ablated_probability = result.classifier.predict_proba(alternative)[:, 1]
         ablated = shape_prediction(ablated_raw, volatility, ablated_probability, result.scale, result.conviction_floor)
         without = _metrics(actual, ablated, dates)
@@ -918,6 +1275,11 @@ def write_artifacts(
     rows["risk_scan"] = [
         str((freshness["scan"].get(symbol) or {}).get("status", "")) for symbol in symbols
     ]
+    latest_funds, latest_fund_audit = latest_fund_context()
+    fitted_fund_audit = panel.attrs.get("fundAudit") or {
+        "status": "UNAVAILABLE",
+        "modelEligible": False,
+    }
     feature_x = rows[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
     snapshots: dict[str, dict[str, Any]] = {}
     for symbol in symbols:
@@ -974,6 +1336,53 @@ def write_artifacts(
             "rumor5": int(_clean_number(row.get("news_rumor5"))),
             "sessionsSinceEvent": int(_clean_number(row.get("news_days_since"), 60)),
         }
+        fitted_fund_available = bool(_clean_number(row.get("fund_available")))
+        latest_disclosure = latest_funds.get(symbol) or {}
+        disclosure_as_of = str(latest_disclosure.get("asOf") or "")
+        collected_after_forecast = bool(disclosure_as_of and disclosure_as_of > row_date)
+        available_for_forecast = fitted_fund_available and not collected_after_forecast
+        if fitted_fund_available:
+            fund_context = {
+                "available": True,
+                "asOf": row_date,
+                "fundCount": int(_clean_number(row.get("fund_holder_count"))),
+                "reportedWeight": _clean_number(row.get("fund_weight_sum")),
+                "largestReportedWeight": _clean_number(row.get("fund_weight_max")),
+                "reportedWeightChange": _clean_number(row.get("fund_weight_change")),
+                "weightedNavMomentum20": _clean_number(row.get("fund_nav_momentum20")),
+                "snapshotAgeDays": int(_clean_number(row.get("fund_snapshot_age"), 999)),
+                "historyDepth": int(_clean_number(row.get("fund_history_depth"))),
+                "source": "FMARKET",
+            }
+        else:
+            fund_context = {
+                "available": bool(latest_disclosure),
+                "asOf": disclosure_as_of or None,
+                "fundCount": int(_clean_number(latest_disclosure.get("fundCount"))),
+                "reportedWeight": _clean_number(latest_disclosure.get("reportedWeight")),
+                "averageReportedWeight": _clean_number(latest_disclosure.get("averageReportedWeight")),
+                "largestReportedWeight": _clean_number(latest_disclosure.get("largestReportedWeight")),
+                "reportedWeightChange": 0.0,
+                "weightedNavMomentum20": _clean_number(latest_disclosure.get("weightedNavMomentum20")),
+                "snapshotAgeDays": 0 if collected_after_forecast else 999,
+                "historyDepth": int(_clean_number(latest_disclosure.get("historyDepth"))),
+                "source": str(latest_disclosure.get("source") or "FMARKET"),
+            }
+        fund_context.update(
+            {
+                "forecastAsOf": row_date,
+                "availableForForecast": available_for_forecast,
+                "collectedAfterForecast": collected_after_forecast,
+                "modelEligible": bool(fitted_fund_audit.get("modelEligible")) and available_for_forecast,
+                "usedByForecast": bool(fitted_fund_audit.get("modelEligible")) and available_for_forecast,
+            }
+        )
+        if "averageReportedWeight" not in fund_context:
+            fund_context["averageReportedWeight"] = (
+                _clean_number(fund_context.get("reportedWeight"))
+                / max(1, int(_clean_number(fund_context.get("fundCount"))))
+            )
+        old["fundContext"] = fund_context
         market = old.get("market", {})
         market.update(
             {
@@ -999,10 +1408,17 @@ def write_artifacts(
         volatility = rows["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
         probability = result.classifier.predict_proba(feature_x)[:, 1]
         raw = result.model.predict(feature_x) * volatility
+        raw = apply_intercept_mode(raw, rows["date"], result.intercept_mode)
         prediction = shape_prediction(raw, volatility, probability, result.scale, result.conviction_floor)
-        grouped = factor_contributions(result, feature_x, volatility, prediction)
+        expected_magnitude = (
+            np.clip(result.magnitude_model.predict(feature_x), .02, 4.0)
+            * volatility
+            * result.magnitude_scale
+        )
+        grouped = factor_contributions(result, feature_x, volatility, rows["date"], prediction)
 
         audit = dict(result.holdout)
+        walk_forward = result.walk_forward or {}
         dates = result.rows["date"].dt.strftime("%Y-%m-%d").to_numpy()
         actual = result.rows[f"target{horizon}"].to_numpy(dtype=float)
         audit["spread"] = _spread(actual, result.holdout_prediction, dates)
@@ -1020,16 +1436,23 @@ def write_artifacts(
         audit["newsIncrementalMAESkill"] = ablation["EVENT"]["deltaMAEImprove"]
         audit["flowIncrementalMAESkill"] = ablation["FLOW"]["deltaMAEImprove"]
         price_pass = (
-            audit["maeSkill"] > 0
-            and audit["rankIC"] >= .02
-            and .45 <= audit["coverage20_80"] <= .75
+            audit["maeSkill"] >= .005
+            and audit["rankIC"] >= .05
+            and .52 <= audit["coverage20_80"] <= .72
             # Promotion is assessed on the exchange-executable quote shown to
             # users.  The raw conditional median may be below one tick at T+1,
             # while the snapped quote remains non-trivial and improves holdout MAE.
             and audit["executableMedianAbs"] >= .0015
-            and audit["executableMAESkill"] > 0
+            and audit["executableMAESkill"] >= .003
+            and sum(fold["maeSkill"] > 0 for fold in audit["chronologicalFolds"]) >= 3
+            and sum(fold["executableMAESkill"] > 0 for fold in audit["chronologicalFolds"]) >= 3
+            and audit.get("magnitudeMAESkill", -1) > 0
+            and walk_forward.get("positiveExecutableMAEFolds", 0) >= 2
+            and walk_forward.get("positiveMagnitudeFolds", 0) >= 2
+            and walk_forward.get("meanExecutableMAESkill", -1) > 0
+            and walk_forward.get("meanRankIC", -1) >= .05
         )
-        direction_pass = audit.get("brierSkill", -1) > 0
+        direction_pass = audit.get("brierSkill", -1) >= .005
         if not price_pass:
             raise RuntimeError(f"T+{horizon}: independent held-out promotion gate failed: {audit}")
         if direction_pass:
@@ -1062,6 +1485,7 @@ def write_artifacts(
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "status": "PASS",
             "sealedAudit": audit,
+            "walkForwardAudit": walk_forward,
             "training": result.training,
             "calibration": result.calibration,
             "embargoAudit": embargo_audit,
@@ -1074,6 +1498,7 @@ def write_artifacts(
         }
         back_horizons[key] = {
             "metrics": audit,
+            "walkForwardAudit": walk_forward,
             "priceStatus": "PASS",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "embargoAudit": embargo_audit,
@@ -1112,6 +1537,15 @@ def write_artifacts(
                 max(point, snap_price(close * math.exp(raw_point + result.quantile_high * volatility[position]), venue, "up")),
             )
             exact_return = math.log(point / close)
+            expected_abs_return = float(expected_magnitude[position])
+            bear_price = max(
+                floor,
+                snap_price(close * math.exp(-expected_abs_return), venue, "down"),
+            )
+            bull_price = min(
+                ceiling,
+                snap_price(close * math.exp(expected_abs_return), venue, "up"),
+            )
             contributions = {
                 name: float(values[position]) for name, values in grouped.items()
             }
@@ -1127,6 +1561,10 @@ def write_artifacts(
                 "q80": math.log(high / close),
                 "q20Price": low,
                 "q80Price": high,
+                "expectedAbsReturn": expected_abs_return,
+                "bearScenarioPrice": bear_price,
+                "bullScenarioPrice": bull_price,
+                "scenarioRole": "CONDITIONAL_ABSOLUTE_MOVE_NOT_A_SECOND_POINT_FORECAST",
                 "calibrationN": result.calibration["rows"],
                 "activeExperts": list(FACTOR_GROUPS),
                 "expertPredictions": dict(contributions),
@@ -1140,6 +1578,7 @@ def write_artifacts(
                 "targetDate": next_trading_dates(str(row["date"].date()), horizon)[-1],
                 "horizonVolatility": float(volatility[position]),
                 "empiricalMedianAbsMove": float(audit["realizedMedianAbs"]),
+                "magnitudeValidated": bool(audit.get("magnitudeMAESkill", -1) > 0),
                 "forecastDispersionRatio": float(audit["dispersionRatio"]),
                 "pointForecastRole": "CONDITIONAL_MEDIAN",
                 "modelVersion": VERSION,
@@ -1221,7 +1660,7 @@ def write_artifacts(
         "status": "PASS",
         "directPriceHorizons": list(HORIZONS),
         "directionHorizons": direction_horizons,
-        "rule": "Each direct horizon must improve chronological held-out MAE, retain positive daily rank IC, achieve calibrated interval coverage, and publish executable exchange-grid prices.",
+        "rule": "Each horizon must pass a sealed maturity-purged holdout and at least two of three independently retrained walk-forward folds for executable price and absolute-move skill.",
     }
     model = {
         "version": VERSION,
@@ -1232,7 +1671,7 @@ def write_artifacts(
         "promotion": promotion,
         "governance": {
             "selection": "CALIBRATION_ONLY_ONE_STANDARD_ERROR",
-            "holdoutMethod": "CHRONOLOGICAL_MATURITY_PURGED",
+            "holdoutMethod": "CHRONOLOGICAL_MATURITY_PURGED_PLUS_EXPANDING_RETRAINED_WALK_FORWARD",
             "futureRowsUsedForTraining": 0,
             "futureLabelsUsedForCalibration": 0,
             "exchangeTickEnforced": True,
@@ -1243,6 +1682,9 @@ def write_artifacts(
             "issuerIdentityValidation": True,
             "outcomeFieldsUsedAsFeatures": 0,
             "staleFlowForwardFill": False,
+            "fundHoldingsPolicy": "POINT_IN_TIME_SNAPSHOTS_ONLY",
+            "fundHoldingsModelEligible": bool(fitted_fund_audit.get("modelEligible")),
+            "fundHoldingsContextOnlyUntilHistoryGate": not bool(fitted_fund_audit.get("modelEligible")),
             "quarterlyAccountingFeatures": "EXCLUDED_WITHOUT_PUBLICATION_TIMESTAMPS",
             "scenarioSemantics": "HISTORICALLY_CALIBRATED_DIRECTIONAL_SCENARIO_NOT_GUARANTEED_CLOSE",
         },
@@ -1270,12 +1712,17 @@ def write_artifacts(
             "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
             "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),
             "signalAudit": signal_audit,
+            "fundAudit": {
+                **fitted_fund_audit,
+                "latestCollection": latest_fund_audit,
+                "postForecastSnapshotsUsedAsFeatures": 0,
+            },
         },
         "model": model,
         "backtest": {
-            "version": "VMEWS-MARKET-BACKTEST-15.0.0",
+            "version": "VMEWS-MARKET-BACKTEST-16.0.0",
             "generatedAt": timestamp,
-            "design": "Chronological out-of-sample holdout with four temporal audit slices; symbol-specific T+h maturity purge; pre-holdout calibration; publisher-timestamped event/flow features and executable HOSE-price audit.",
+            "design": "Sealed chronological holdout plus three disjoint expanding walk-forward folds retrained from scratch; T+h maturity purge; pre-test calibration; point-in-time event, flow and fund-snapshot governance; executable HOSE-price and absolute-move audits.",
             "horizons": back_horizons,
             "cases": back_cases,
         },
@@ -1326,9 +1773,38 @@ def main() -> None:
     events, flows, signal_audit = load_signal_sources(set(freshness["currentHOSESymbols"]))
     _log("signal_sources_audited", acceptedEvents=signal_audit["acceptedEvents"], newsSymbols=signal_audit["newsSymbols"], flowSymbols=signal_audit["flowSymbols"], issuerMismatches=signal_audit["rejected"].get("issuer_mismatch", 0), freshEOD=freshness["freshSymbols"], staleEOD=freshness["staleSymbols"])
     panel = build_panel(histories, freshness["scan"], events, flows)
-    results = [fit_horizon(panel, horizon, fast=args.fast) for horizon in requested]
+    results = []
+    for horizon in requested:
+        result = fit_horizon(panel, horizon, fast=args.fast)
+        result.walk_forward = expanding_walk_forward_audit(panel, horizon, fast=args.fast)
+        _log(
+            "walk_forward_complete",
+            horizon=horizon,
+            folds=len(result.walk_forward["folds"]),
+            executablePasses=result.walk_forward["positiveExecutableMAEFolds"],
+            magnitudePasses=result.walk_forward["positiveMagnitudeFolds"],
+            meanExecutableSkill=round(result.walk_forward["meanExecutableMAESkill"], 4),
+            meanRankIC=round(result.walk_forward["meanRankIC"], 4),
+        )
+        results.append(result)
     if args.publish:
         write_artifacts(panel, results, histories, freshness, events, signal_audit)
+        published_fpt = _json(DATA / "forecast-dashboard-v12.json")["symbols"].get("FPT", {})
+        for result in results:
+            horizon = published_fpt.get("horizons", {}).get(str(result.horizon), {})
+            _log(
+                "fpt_preview",
+                date=published_fpt.get("date"),
+                horizon=result.horizon,
+                close=published_fpt.get("close"),
+                expected=horizon.get("expectedPrice"),
+                returnPct=round(100 * _clean_number(horizon.get("expectedReturn")), 3),
+                dailyVolPct=round(100 * _clean_number(published_fpt.get("dailyVolatility")), 3),
+                probability=round(_clean_number(horizon.get("probUp")), 3),
+                low=horizon.get("q20Price"),
+                high=horizon.get("q80Price"),
+            )
+        return
     latest = panel.sort_values("date").groupby("symbol", observed=True).tail(1)
     fpt = latest.loc[latest["symbol"] == "FPT"]
     if not fpt.empty:

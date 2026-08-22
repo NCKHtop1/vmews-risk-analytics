@@ -90,21 +90,35 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_all_horizons_are_independently_validated(self) -> None:
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-16.0.0")
         self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
         self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
         for horizon in map(str, range(1, 6)):
             audit = self.market["model"]["horizons"][horizon]["sealedAudit"]
             embargo = self.market["model"]["horizons"][horizon]["embargoAudit"]
             self.assertGreaterEqual(audit["n"], 30_000)
-            self.assertGreater(audit["maeSkill"], 0)
-            self.assertGreater(audit["executableMAESkill"], 0)
-            self.assertGreater(audit["rankIC"], .02)
+            walk = self.market["model"]["horizons"][horizon]["walkForwardAudit"]
+            self.assertGreaterEqual(audit["maeSkill"], .005)
+            self.assertGreaterEqual(audit["executableMAESkill"], .003)
+            self.assertGreaterEqual(audit["rankIC"], .05)
             self.assertGreater(audit["executableMedianAbs"], .0015)
-            self.assertTrue(.45 <= audit["coverage20_80"] <= .75)
+            self.assertTrue(.52 <= audit["coverage20_80"] <= .72)
+            self.assertGreater(audit["magnitudeMAESkill"], 0)
             self.assertEqual(audit["futureRowsUsedForTraining"], 0)
             self.assertEqual(audit["futureLabelsUsedForCalibration"], 0)
             self.assertEqual(audit["invalidExecutableQuotes"], 0)
             self.assertEqual(len(audit["chronologicalFolds"]), 4)
+            self.assertEqual(walk["status"], "PASS")
+            self.assertEqual(len(walk["folds"]), 3)
+            self.assertGreaterEqual(walk["positiveExecutableMAEFolds"], 2)
+            self.assertGreaterEqual(walk["positiveMagnitudeFolds"], 2)
+            self.assertGreater(walk["meanExecutableMAESkill"], 0)
+            self.assertGreaterEqual(walk["meanRankIC"], .05)
+            for fold in walk["folds"]:
+                self.assertEqual(fold["futureRowsUsedForTraining"], 0)
+                self.assertEqual(fold["futureLabelsUsedForCalibration"], 0)
+                self.assertLess(fold["trainingLatestMaturity"], fold["calibrationStart"])
+                self.assertLess(fold["calibrationLatestMaturity"], fold["testStart"])
             self.assertLess(embargo["trainingLatestMaturity"], embargo["calibrationStarts"])
             self.assertLess(embargo["calibrationLatestMaturity"], embargo["holdoutStarts"])
             if horizon == "1":
@@ -114,8 +128,9 @@ class PublishedMarketForecastTest(unittest.TestCase):
                 self.assertEqual(calibration["shortHorizonScaleCeiling"], .85)
                 self.assertEqual(calibration["shortHorizonFloorCeiling"], .04)
 
-    def test_every_quote_is_executable_and_nonflat(self) -> None:
+    def test_every_quote_is_executable_with_nonflat_move_scenarios(self) -> None:
         checked = 0
+        neutral_points = 0
         for symbol, snapshot in self.dashboard["symbols"].items():
             close = snapshot["close"]
             exchange = snapshot.get("exchange", "HOSE")
@@ -127,7 +142,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
                     self.assertEqual(point % tick_size(point, exchange), 0)
                     self.assertEqual(low % tick_size(low, exchange), 0)
                     self.assertEqual(high % tick_size(high, exchange), 0)
-                    self.assertNotEqual(point, close)
+                    neutral_points += int(point == close)
                     self.assertLessEqual(low, point)
                     self.assertLessEqual(point, high)
                     floor, ceiling = session_limit(close, int(key), exchange)
@@ -139,8 +154,19 @@ class PublishedMarketForecastTest(unittest.TestCase):
                         forecast["expectedReturn"],
                         places=12,
                     )
+                    self.assertGreater(forecast["expectedAbsReturn"], 0)
+                    self.assertTrue(forecast["magnitudeValidated"])
+                    self.assertLessEqual(forecast["bearScenarioPrice"], close)
+                    self.assertGreaterEqual(forecast["bullScenarioPrice"], close)
+                    self.assertTrue(
+                        forecast["bearScenarioPrice"] < close
+                        or forecast["bullScenarioPrice"] > close
+                    )
+                    self.assertGreaterEqual(forecast["bearScenarioPrice"], floor)
+                    self.assertLessEqual(forecast["bullScenarioPrice"], ceiling)
                     checked += 1
         self.assertGreaterEqual(checked, 2000)
+        self.assertLessEqual(neutral_points / checked, .05)
 
     def test_fpt_no_longer_publishes_invalid_27_vnd_change(self) -> None:
         fpt = self.dashboard["symbols"]["FPT"]
@@ -164,6 +190,32 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertIn("FLOW", horizon["activeExperts"])
             self.assertGreater(horizon["eventImpactAudit"]["observations"], 100)
             self.assertEqual(horizon["eventImpactAudit"]["futureOutcomeFieldsAsFeatures"], 0)
+
+    def test_fund_holdings_are_context_only_until_point_in_time_history_exists(self) -> None:
+        features = set(self.market["model"]["featureNames"])
+        self.assertIn("fund_holder_count", features)
+        self.assertIn("fund_weight_sum", features)
+        audit = self.market["sources"]["fundAudit"]
+        self.assertEqual(audit["status"], "CONTEXT_ONLY")
+        self.assertEqual(audit["snapshotCount"], 1)
+        self.assertFalse(audit["modelEligible"])
+        self.assertEqual(audit["postForecastSnapshotsUsedAsFeatures"], 0)
+        self.assertEqual(audit["latestCollection"]["holdingRows"], 369)
+        fpt = self.dashboard["symbols"]["FPT"]["fundContext"]
+        self.assertTrue(fpt["available"])
+        self.assertTrue(fpt["collectedAfterForecast"])
+        self.assertFalse(fpt["availableForForecast"])
+        self.assertFalse(fpt["usedByForecast"])
+        self.assertEqual(fpt["fundCount"], 17)
+        self.assertAlmostEqual(fpt["averageReportedWeight"], .042094117647058824)
+        self.assertLessEqual(fpt["largestReportedWeight"], .10)
+
+    def test_direction_probability_is_withheld_where_brier_gate_fails(self) -> None:
+        self.assertEqual(self.market["model"]["promotion"]["directionHorizons"], [1, 2, 3, 4])
+        for snapshot in self.dashboard["symbols"].values():
+            self.assertTrue(snapshot["horizons"]["3"]["directionValidated"])
+            self.assertTrue(snapshot["horizons"]["4"]["directionValidated"])
+            self.assertFalse(snapshot["horizons"]["5"]["directionValidated"])
 
     def test_fpt_feed_excludes_frt_and_fts_announcements(self) -> None:
         for item in self.dashboard["symbols"]["FPT"]["evidence"]["recent"]:

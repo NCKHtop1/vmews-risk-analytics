@@ -1,7 +1,17 @@
-name: Forecast V14 full-HOSE market and news audit
+name: Forecast V16 full-HOSE price, news, flow and fund audit
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - "scripts/forecast_v13_market_model.py"
+      - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v14_frontend_contract_test.py"
+      - "scripts/forecast_v16_external_data.py"
+      - "scripts/forecast_v16_external_data_test.py"
   schedule:
     - cron: "30 10 * * 1-5"
 
@@ -28,6 +38,10 @@ jobs:
       - name: Refresh point-in-time news for the full current HOSE universe
         run: |
           python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
+      - name: Archive disclosed fund holdings and NAV context
+        env:
+          FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
+        run: python scripts/forecast_v16_external_data.py --collect-funds
       - name: Refresh every HOSE EOD and publish only independently validated forecasts
         env:
           V14_EOD_WORKERS: "8"
@@ -36,14 +50,15 @@ jobs:
         run: |
           python scripts/forecast_v13_market_model_test.py
           python scripts/forecast_v14_frontend_contract_test.py
+          python scripts/forecast_v16_external_data_test.py
       - name: Persist the validated market snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/research-news-v10.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/research-news-v10.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0
           fi
-          git commit -m "Refresh validated V14 all-HOSE EOD, event and flow forecast [data-only]"
+          git commit -m "Refresh validated V16 all-HOSE EOD, event, flow and fund forecast [data-only]"
           git push
