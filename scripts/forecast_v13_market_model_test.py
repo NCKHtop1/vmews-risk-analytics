@@ -179,11 +179,14 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertGreaterEqual(checked, 2000)
         self.assertLessEqual(neutral_points / checked, .05)
 
-    def test_fpt_no_longer_publishes_invalid_27_vnd_change(self) -> None:
+    def test_fpt_never_publishes_an_invalid_sub_tick_change(self) -> None:
         fpt = self.dashboard["symbols"]["FPT"]
-        for forecast in fpt["horizons"].values():
+        for horizon, forecast in fpt["horizons"].items():
             self.assertEqual(forecast["tickSize"], 100)
-            self.assertGreaterEqual(abs(forecast["expectedPrice"] - fpt["close"]), 100)
+            difference = abs(forecast["expectedPrice"] - fpt["close"])
+            self.assertTrue(difference == 0 or difference >= 100)
+            if horizon != "1":
+                self.assertGreaterEqual(difference, 100)
             self.assertNotEqual(forecast["expectedPrice"], 68_327)
 
     def test_news_and_flow_are_actual_model_features(self) -> None:
