@@ -12,7 +12,7 @@
 
 The point forecast remains a conditional median. A separate absolute-move model now estimates the likely magnitude and produces calibrated bear/bull scenarios. This prevents a visually large but statistically unsupported point target from replacing an honest near-neutral median.
 
-T+3 removes the unstable market-wide intercept. T+4 retains 25% of it. These fixed horizon rules were frozen from pre-publication walk-forward experiments. T+1, T+2 and T+5 retain the raw market component.
+T+2 and T+4 retain 25% of the market-wide intercept, while T+3 removes it. These fixed horizon rules were frozen from pre-publication walk-forward experiments. T+1 and T+5 retain the raw market component. The T+2 shrinkage specifically protects the executable quote from recent market-regime drift without discarding the more stable cross-sectional ranking signal.
 
 Weak T+1 signals are allowed to remain neutral instead of being forced one tick away from the reference close. The bear/bull scenarios remain non-flat.
 

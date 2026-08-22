@@ -12,11 +12,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from forecast_v13_market_model import session_limit, snap_price, tick_size  # noqa: E402
+from forecast_v13_market_model import (  # noqa: E402
+    INTERCEPT_RETENTION,
+    intercept_modes,
+    session_limit,
+    snap_price,
+    tick_size,
+)
 from forecast_v14_signal_audit import effective_trading_session, publication_timestamp, security_match  # noqa: E402
 
 
 class VietnamPriceGridTest(unittest.TestCase):
+    def test_t2_market_intercept_is_regime_shrunk_before_holdout(self) -> None:
+        self.assertEqual(INTERCEPT_RETENTION[2], .25)
+        self.assertEqual(intercept_modes(2), ("BLEND_0.25",))
+
     def test_hose_price_bands(self) -> None:
         self.assertEqual(tick_size(9_990), 10)
         self.assertEqual(tick_size(10_000), 50)
