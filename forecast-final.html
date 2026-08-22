@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>VMEWS Forecast V12 · Quant Research</title>
-<meta name="description" content="VMEWS Forecast V12 — dự báo giá T+1 đến T+5, bằng chứng point-in-time và kiểm định out-of-sample cho cổ phiếu Việt Nam.">
+<title>VMEWS Forecast V13 · Vietnam Equity Quant Research</title>
+<meta name="description" content="Dự báo cổ phiếu Việt Nam T+1 đến T+5: dữ liệu EOD mới nhất, biến động thực tế, đúng bước giá sàn và kiểm định ngoài mẫu.">
 <style>
 :root{--bg:#061018;--bg2:#08151f;--panel:rgba(12,26,37,.88);--panel2:#0a1721;--line:#193747;--line2:#285365;--text:#edf5f7;--muted:#8da4ae;--muted2:#6f8792;--cyan:#6ed3d8;--green:#73d2a0;--amber:#f0bd63;--red:#ed8080;--violet:#baa2ef;--shadow:0 20px 55px rgba(0,0,0,.24);--radius:16px;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;min-height:100vh;color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(900px 480px at 14% -6%,rgba(110,211,216,.09),transparent 62%),radial-gradient(700px 430px at 90% 4%,rgba(186,162,239,.055),transparent 65%),linear-gradient(180deg,#061018 0%,#07121a 58%,#061018 100%)}
@@ -20,20 +20,20 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 </head>
 <body>
 <header class="top">
-  <div class="brand"><span class="brandDot"></span>VMEWS FORECAST V12</div>
-  <div class="topMeta"><span id="modelBadge" class="badge">Đang tải mô hình…</span><span class="optional">PIT · OOF STACKING · SEALED AUDIT</span></div>
+  <div class="brand"><span class="brandDot"></span>VMEWS FORECAST V13</div>
+  <div class="topMeta"><span id="modelBadge" class="badge">Đang tải mô hình…</span><span class="optional">LIVE EOD · DIRECT RETURN · TICK-VALIDATED</span></div>
 </header>
 <main class="wrap">
   <section class="hero">
     <div>
       <div class="eyebrow">Vietnam equity quantitative research</div>
       <h1>Dự báo giá T+1 → T+5</h1>
-      <div class="sub">Tổng hợp tín hiệu giá, trạng thái thị trường và bằng chứng theo thời điểm trong một snapshot đã kiểm định.</div>
-      <div class="heroSignal"><i></i><span>Research snapshot · dữ liệu EOD · kiểm định out-of-sample</span></div>
+      <div class="sub">Mô hình dự báo trực tiếp theo biến động thực tế, động lượng, trạng thái thị trường và luân chuyển ngành.</div>
+      <div class="heroSignal"><i></i><span>EOD mới nhất · bước giá giao dịch hợp lệ · kiểm định out-of-sample</span></div>
     </div>
     <div class="searchWrap">
       <div class="search"><input id="symbol" value="FPT" maxlength="8" autocomplete="off" aria-label="Mã cổ phiếu"><button id="go" class="btn">Phân tích</button></div>
-      <div id="status" class="status">Đang tải snapshot…</div>
+      <div id="status" class="status">Đang tải dữ liệu thị trường…</div>
       <div id="quick" class="quick"></div>
     </div>
   </section>
@@ -85,7 +85,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <div id="ablation" class="ablation"></div>
   </section>
 </main>
-<footer class="footer"><span><strong>VMEWS Forecast V12</strong> · EOD quantitative research snapshot</span><span>Dữ liệu, dự báo và kiểm định được khóa theo phiên bản phát hành.</span></footer>
+<footer class="footer"><span><strong>VMEWS Forecast V13</strong> · Vietnam equity quantitative research</span><span>Dữ liệu EOD làm mới sau phiên · Không phải khuyến nghị đầu tư.</span></footer>
 <script src="./forecast-final-v12.js"></script>
 <script src="./forecast-polish-v12.js"></script>
 </body>
