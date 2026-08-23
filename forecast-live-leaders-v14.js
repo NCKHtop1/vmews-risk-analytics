@@ -13,8 +13,15 @@
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
   const expertNames = {
     NUMERICAL: "Giá / kỹ thuật", REGIME: "Trạng thái thị trường", VOLATILITY: "Biến động thực tế",
-    SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức", FUND: "Danh mục quỹ", FUNDAMENTAL: "Tài chính doanh nghiệp",
+    SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức", FUND: "Danh mục quỹ", FUNDAMENTAL: "Tài chính doanh nghiệp", RUMOR: "Tín hiệu cộng đồng",
   };
+  // HOSE's July 2026 review became effective on 03/08/2026: MCH and
+  // TCX replaced PLX and TPB.  Dashboard metadata remains authoritative.
+  const currentVN30 = Object.freeze([
+    "ACB", "BID", "BSR", "CTG", "FPT", "GAS", "GVR", "HDB", "HPG", "LPB",
+    "MBB", "MCH", "MSN", "MWG", "SAB", "SHB", "SSB", "SSI", "STB", "TCB",
+    "TCX", "VCB", "VHM", "VIB", "VIC", "VJC", "VNM", "VPB", "VPL", "VRE",
+  ]);
   const issuerAliases = {
     VCB: ["vietcombank"], BID: ["bidv"], CTG: ["vietinbank"], TCB: ["techcombank"],
     MBB: ["mb bank", "mbbank", "ngân hàng quân đội"], VPB: ["vpbank"], TPB: ["tpbank"],
@@ -51,6 +58,8 @@
   function buildLeaderboard(base, options = {}) {
     const snapshots = base?.dash?.symbols || {};
     const histories = base?.dash?.charts || {};
+    const disclosed = base?.dash?.lists?.vn30?.symbols;
+    const members = new Set(Array.isArray(disclosed) && disclosed.length === 30 ? disclosed : currentVN30);
     const rows = [];
 
     for (const [symbol, snapshot] of Object.entries(snapshots)) {
@@ -58,7 +67,7 @@
       const close = number(snapshot.close);
       const target = number(forecast.expectedPrice);
       const tickSize = number(forecast.tickSize);
-      if (snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
+      if (!members.has(symbol) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
           || forecast.priceValidated !== true || forecast.validationStatus !== "PASS"
           || !close || !target || target <= close || !tickSize || target % tickSize !== 0) continue;
 
@@ -109,6 +118,7 @@
   }
 
   window.__VMEWS_BUILD_LEADERBOARD__ = buildLeaderboard;
+  window.__VMEWS_VN30_MEMBERS__ = currentVN30;
 
   function animateValue(element, target, format) {
     if (!element) return;
@@ -128,10 +138,12 @@
     const advancing = symbols.filter(snapshot => number(snapshot.lastSessionReturn) > 0).length;
     const falling = symbols.filter(snapshot => number(snapshot.lastSessionReturn) < 0).length;
     const positive = state.universe.length;
+    const members = state.base?.dash?.lists?.vn30?.symbols || currentVN30;
+    const covered = members.filter(symbol => symbols.some(snapshot => snapshot.symbol === symbol)).length;
     const top = state.universe[0];
     const cards = [
       { label: "Cổ phiếu được theo dõi", value: symbols.length, format: value => `${Math.round(value)}`, detail: "toàn sàn HOSE", tone: "" },
-      { label: "Nghiêng tăng T+5", value: positive, format: value => `${Math.round(value)}`, detail: `${symbols.length - positive} mã còn lại`, tone: "up" },
+      { label: "VN30 dự báo tăng", value: positive, format: value => `${Math.round(value)} / ${covered}`, detail: `${Math.max(covered - positive, 0)} mã chưa có tín hiệu tăng`, tone: "up" },
       { label: "Phiên gần nhất", value: advancing, format: value => `${Math.round(value)} ↑`, detail: `${falling} giảm · ${symbols.length - advancing - falling} đi ngang`, tone: "" },
       { label: "Tăng nổi bật nhất", value: (top?.upside || 0) * 100, format: value => `+${value.toFixed(2)}%`, detail: top ? `${top.symbol} · trọng tâm ${money(top.target)}` : "Chưa có dữ liệu", tone: "up" },
     ];
@@ -168,7 +180,7 @@
   function renderCards() {
     const deck = $("#signalDeck");
     if (!state.rows.length) {
-      deck.innerHTML = '<div class="deckEmpty">Không có forecast tăng đáp ứng bộ lọc đang chọn.</div>';
+      deck.innerHTML = '<div class="deckEmpty">Chưa có cổ phiếu VN30 tăng giá phù hợp bộ lọc.</div>';
       $("#leaderDots").replaceChildren();
       $("#leaderDetail").innerHTML = '<div class="deckEmpty">Hãy đổi bộ lọc để tiếp tục kiểm tra tín hiệu.</div>';
       $("#carouselPosition").textContent = "00 / 00";
@@ -178,7 +190,7 @@
     deck.innerHTML = state.rows.map((row, index) => {
       const illiquid = row.tradedValue20 < 1e9;
       const probability = row.directionValidated ? percent(row.probUp, 1) : "—";
-      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo tăng ${percent(row.upside, 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong>+${percent(row.upside, 2)}</strong><span>TRỌNG TÂM T+5</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts"><span>P↑ ${probability}</span><span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
+      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo tăng ${percent(row.upside, 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / VN30</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong>+${percent(row.upside, 2)}</strong><span>TRIỂN VỌNG 5 PHIÊN</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
     $("#leaderDots").innerHTML = state.rows.map((row, index) => `<button type="button" class="leaderDot" data-dot="${index}" aria-label="Xem ${escapeHTML(row.symbol)}" title="${escapeHTML(row.symbol)}"></button>`).join("");

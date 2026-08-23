@@ -57,6 +57,7 @@ from forecast_v17_live_intelligence import (
     fund_decision_contexts,
     typed_flow_summary,
 )
+from forecast_v18_market_intelligence import rumor_intelligence, vn30_metadata
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1339,6 +1340,11 @@ def write_artifacts(
     live_news, live_news_audit = decision_news_contexts(
         events, freshness["forecastAsOf"], timestamp
     )
+    live_rumors, live_rumor_audit = rumor_intelligence(
+        events, histories, freshness["forecastAsOf"], timestamp
+    )
+    index_metadata = vn30_metadata(freshness["forecastAsOf"])
+    index_members = set(index_metadata["symbols"])
     fitted_fund_audit = panel.attrs.get("fundAudit") or {
         "status": "UNAVAILABLE",
         "modelEligible": False,
@@ -1354,7 +1360,14 @@ def write_artifacts(
         evidence = old.get("evidence") or {}
         evidence["recent"] = latest_evidence(symbol_events, row_date)
         evidence["rumors"] = [item for item in evidence["recent"] if "RUMOR" in str(item.get("sourceClass", ""))]
-        evidence["rumorClaims"] = []
+        rumor_context = live_rumors.get(symbol) or {}
+        evidence["rumorClaims"] = copy.deepcopy(rumor_context.get("claims") or [])
+        evidence["rumorAudit"] = {
+            "status": "ACTIVE" if rumor_context.get("claims") else "NO_QUALITY_CLAIMS",
+            "qualifiedClaims": int(rumor_context.get("claimCount") or 0),
+            "minimumIndependentSources": 2,
+            "source": copy.deepcopy(live_rumor_audit.get("source") or {}),
+        }
         evidence["pointInTimeCutoff"] = "15:00 Asia/Ho_Chi_Minh"
         evidence["issuerIdentityChecked"] = True
         decision_events = live_news.get(symbol) or {}
@@ -1383,6 +1396,7 @@ def write_artifacts(
                 "lastSessionReturn": float(row.get("ret1", 0.0) or 0.0),
                 "relativeVolume": float(scan_row.get("relativeVolume10d", 0.0) or 0.0),
                 "dataFreshness": "CURRENT" if row_date == freshness["marketScanAsOf"] else "STALE_EOD",
+                "indexMembership": ["VN30"] if symbol in index_members else [],
                 "evidence": evidence,
                 "horizons": {},
             }
@@ -1418,6 +1432,9 @@ def write_artifacts(
         }
         old["decisionNews"] = copy.deepcopy(
             decision_events or {"available": False, "count": 0, "usedByForecast": False}
+        )
+        old["rumorContext"] = copy.deepcopy(
+            rumor_context or {"claimCount": 0, "usedByForecast": False, "inferenceEligible": False}
         )
         live_disclosure = live_funds.get(symbol)
         latest_disclosure = latest_funds.get(symbol) or {}
@@ -1500,10 +1517,11 @@ def write_artifacts(
                 float(rows.iloc[position]["forward_vol"]),
                 horizon,
                 news=snapshots[symbol]["decisionNews"],
+                rumor=snapshots[symbol]["rumorContext"],
             )
             for position, symbol in enumerate(symbols)
         ]
-        for name in ("FUND", "FLOW", "FUNDAMENTAL", "EVENT"):
+        for name in ("FUND", "FLOW", "FUNDAMENTAL", "EVENT", "RUMOR"):
             adjustment = np.asarray(
                 [prior["components"][name] for prior in live_priors], dtype=float
             )
@@ -1512,12 +1530,13 @@ def write_artifacts(
             [prior["totalReturn"] for prior in live_priors], dtype=float
         )
         prediction = core_prediction + live_adjustment
-        active_experts = [*FACTOR_GROUPS, "FUNDAMENTAL"]
+        active_experts = [*FACTOR_GROUPS, "FUNDAMENTAL", "RUMOR"]
         live_evidence_audit = {
             "status": "ACTIVE",
             "fundSymbols": sum(bool(snapshots[s]["fundContext"].get("usedByForecast")) for s in symbols),
             "financialSymbols": sum(bool(snapshots[s]["fundamentalContext"].get("usedByForecast")) for s in symbols),
             "postCloseNewsSymbols": sum(bool(snapshots[s]["decisionNews"].get("usedByForecast")) for s in symbols),
+            "corroboratedRumorSymbols": sum(bool(snapshots[s]["rumorContext"].get("usedByForecast")) for s in symbols),
             "flowSymbols": sum(
                 bool((snapshots[s]["flow"].get("foreign") or {}).get("available"))
                 or bool((snapshots[s]["flow"].get("proprietary") or {}).get("available"))
@@ -1795,6 +1814,7 @@ def write_artifacts(
             "newsPublicationCutoff": "15:00 Asia/Ho_Chi_Minh",
             "afterCloseNews": "OBSERVED_AT_DECISION; EFFECTIVE_NEXT_TRADING_SESSION",
             "issuerIdentityValidation": True,
+            "rumorPolicy": "DATED_MATERIAL_CLAIM; TWO_INDEPENDENT_SOURCES; NO_SYNTHETIC_COMMUNITY_DATA",
             "outcomeFieldsUsedAsFeatures": 0,
             "staleFlowForwardFill": False,
             "fundHoldingsPolicy": "DECISION_TIMESTAMP_DISCLOSURES; NO_HISTORICAL_BACKFILL",
@@ -1845,6 +1865,8 @@ def write_artifacts(
             },
             "financialAudit": live_financial_audit,
             "decisionNewsAudit": live_news_audit,
+            "rumorAudit": live_rumor_audit,
+            "vn30": index_metadata,
         },
         "model": model,
         "backtest": {
@@ -1864,6 +1886,7 @@ def write_artifacts(
             "promotion": promotion,
             "symbols": snapshots,
             "charts": charts,
+            "lists": {**(dashboard.get("lists") or {}), "vn30": index_metadata},
             "marketForecast": {
                 "artifact": "forecast-market-v13.json",
                 "tickGridEnforced": True,
@@ -1873,6 +1896,8 @@ def write_artifacts(
                 "fundInferenceSymbols": len(live_funds),
                 "financialInferenceSymbols": len(live_financials),
                 "postCloseNewsSymbols": len(live_news),
+                "qualifiedRumorSymbols": len(live_rumors),
+                "vn30EffectiveDate": index_metadata["effectiveDate"],
             },
         }
     )

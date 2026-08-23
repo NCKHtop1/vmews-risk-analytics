@@ -8,7 +8,7 @@
   const factorNames = {
     NUMERICAL: "giá và kỹ thuật", REGIME: "trạng thái thị trường", VOLATILITY: "biến động",
     SECTOR: "luân chuyển ngành", EVENT: "tin tức", FLOW: "dòng tiền tổ chức",
-    FUND: "danh mục quỹ", FUNDAMENTAL: "tài chính doanh nghiệp",
+    FUND: "danh mục quỹ", FUNDAMENTAL: "tài chính doanh nghiệp", RUMOR: "thông tin cộng đồng đã đối chiếu",
   };
   const state = { opened: false, busy: false, messages: [], context: null };
 
@@ -46,13 +46,17 @@
     }
     const fund = snapshot.fundContext || {};
     const finances = snapshot.fundamentalContext || {};
-    const top = Object.values(base.dash.symbols || {})
+    const ranked = typeof window.__VMEWS_BUILD_LEADERBOARD__ === "function"
+      ? window.__VMEWS_BUILD_LEADERBOARD__(base)
+      : Object.values(base.dash.symbols || {}).filter(row => (base.dash.lists?.vn30?.symbols || window.__VMEWS_VN30_MEMBERS__ || []).includes(row.symbol));
+    const top = ranked
       .map(row => ({
-        symbol: row.symbol, close: row.close, forecast: row.horizons?.["5"]?.expectedPrice,
-        return: row.horizons?.["5"]?.expectedReturn,
-        validated: row.horizons?.["5"]?.priceValidated === true,
+        symbol: row.symbol, close: row.close,
+        forecast: row.target || row.horizons?.["5"]?.expectedPrice,
+        return: row.upside ?? row.horizons?.["5"]?.expectedReturn,
+        validated: row.forecast?.priceValidated === true || row.horizons?.["5"]?.priceValidated === true,
       }))
-      .filter(row => row.validated && row.close > 0 && row.forecast > 0)
+      .filter(row => row.validated && row.close > 0 && row.forecast > row.close)
       .sort((left, right) => right.return - left.return)
       .slice(0, 10)
       .map(({ validated, ...row }) => row);
@@ -81,6 +85,11 @@
       news: (snapshot.evidence?.decisionRecent || snapshot.evidence?.recent || []).slice(0, 6).map(item => ({
         title: item.title, publisher: item.publisher, date: item.publishedAt || item.availableDate,
         label: item.label, event: item.event,
+      })),
+      communitySignals: (snapshot.evidence?.rumorClaims || []).slice(0, 5).map(claim => ({
+        title: claim.title, state: claim.verificationState, truthState: claim.truthState,
+        quality: claim.qualityScore, independentSources: claim.sources,
+        publisherNames: (claim.sourceDetails || []).map(source => source.name),
       })),
       validation: {
         priceValidated: modelAudit.priceStatus === "PASS",
@@ -150,7 +159,7 @@
     const knowledge = knowledgeAnswer(question);
     if (knowledge) lines.push(knowledge);
     if (/top|xếp hạng|tăng mạnh|so sánh/.test(question)) {
-      lines.push("Các mã có mức dự báo T+5 cao nhất hiện tại:");
+      lines.push("Các mã VN30 có mức dự báo tăng T+5 cao nhất hiện tại:");
       for (const [index, row] of context.topMovers.slice(0, 7).entries()) {
         lines.push(`${index + 1}. ${row.symbol}: ${money(row.close)} → ${money(row.forecast)} (${pct(row.return)}).`);
       }
@@ -174,6 +183,9 @@
     const drivers = primaryDrivers(five);
     if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push(`Các yếu tố tác động mạnh nhất: ${drivers.join("; ")}.`);
     if (context.news.length && /tin|đầy đủ|phân tích/.test(question)) lines.push(`Tin gần đây: ${context.news.slice(0, 2).map(item => item.title).join("; ")}.`);
+    if (context.communitySignals.length && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ/.test(question)) {
+      lines.push(`Tín hiệu cộng đồng đã đối chiếu: ${context.communitySignals.map(item => `${item.title} (${item.independentSources} nguồn, ${item.quality}/100)`).join("; ")}. Chưa xem là thông tin chính thức khi doanh nghiệp chưa xác nhận.`);
+    }
     if (/rủi ro|lưu ý|an toàn|đầy đủ|phân tích/.test(question)) lines.push(`Trạng thái rủi ro: ${context.riskStatus || "chưa xác định"}. ${context.validation.directionValidated ? "Xác suất hướng đã qua kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`);
     return lines.join("\n");
   }
@@ -237,6 +249,7 @@
     $("#solutionAiPanel").setAttribute("aria-hidden", "false");
     $("#solutionAiLauncher").setAttribute("aria-expanded", "true");
     try { updateContextBar(await buildContext()); } catch { /* dashboard is still loading */ }
+    void checkConnection(true);
     $("#solutionAiInput").focus();
   }
 
@@ -247,21 +260,35 @@
     $("#solutionAiLauncher").setAttribute("aria-expanded", "false");
   }
 
-  function configure() {
-    const value = window.prompt("Nhập địa chỉ backend SoluTION.AI đã cấu hình Gemini. Không nhập API key.", endpoint());
-    if (value === null) return;
-    const address = value.trim();
+  async function checkConnection(silent = false) {
+    const address = endpoint();
+    const label = $("#solutionAiConnectionState");
     if (!address) {
-      localStorage.removeItem("vmews_solution_ai_endpoint");
-      setStatus("Phân tích từ dữ liệu hiện có");
-      return;
+      if (label) label.textContent = "Chưa có kết nối Google.";
+      return false;
     }
     try {
-      const url = new URL(address, location.origin);
-      if (url.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(url.hostname)) throw new Error("Cần sử dụng kết nối HTTPS.");
-      localStorage.setItem("vmews_solution_ai_endpoint", url.toString());
-      setStatus("Đã thiết lập backend AI");
-    } catch (error) { window.alert(error?.message || "Địa chỉ backend không hợp lệ."); }
+      const response = await fetch(address, { method: "GET", mode: "cors", cache: "no-store" });
+      const connection = await response.json().catch(() => ({}));
+      if (response.ok && connection.ready === true && connection.provider === "Gemini") {
+        if (label) label.textContent = "Gemini đã sẵn sàng.";
+        setStatus("Gemini · đã kết nối");
+        return true;
+      }
+      if (label) label.textContent = "Đăng nhập Google để hoàn tất kích hoạt.";
+      if (!silent) setStatus("Đang chờ kết nối Gemini");
+    } catch {
+      if (label) label.textContent = "Kết nối Google chưa sẵn sàng.";
+      if (!silent) setStatus("Phân tích từ dữ liệu hiện có");
+    }
+    return false;
+  }
+
+  function configure() {
+    const panel = $("#solutionAiConnect");
+    if (!panel) return;
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) void checkConnection();
   }
 
   function init() {
@@ -269,6 +296,7 @@
     for (const selector of ["#solutionAiLauncher", "#solutionAiTop", "#solutionAiNav"]) $(selector)?.addEventListener("click", open);
     $("#solutionAiClose").addEventListener("click", close);
     $("#solutionAiSettings").addEventListener("click", configure);
+    $("#solutionAiRetry")?.addEventListener("click", () => { void checkConnection(); });
     $("#solutionAiForm").addEventListener("submit", event => { event.preventDefault(); ask($("#solutionAiInput").value); });
     $("#solutionAiInput").addEventListener("keydown", event => {
       if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); ask(event.currentTarget.value); }
@@ -282,6 +310,7 @@
       try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
     });
     window.__SOLUTION_AI_BUILD_CONTEXT__ = buildContext;
+    window.__SOLUTION_AI_CHECK_CONNECTION__ = checkConnection;
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

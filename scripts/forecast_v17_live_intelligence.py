@@ -23,7 +23,7 @@ DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
 FUND_PATH = DATA / "fund-holdings-history-v16.json"
 FINANCIAL_PATH = DATA / "current-context-v12.json"
-OVERLAY_FACTORS = ("FUND", "FLOW", "FUNDAMENTAL", "EVENT")
+OVERLAY_FACTORS = ("FUND", "FLOW", "FUNDAMENTAL", "EVENT", "RUMOR")
 
 
 def _number(value: Any, default: float = 0.0) -> float:
@@ -473,6 +473,7 @@ def decision_prior(
     horizon: int,
     *,
     news: dict[str, Any] | None = None,
+    rumor: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create a small explicit prior, capped as a fraction of issuer volatility."""
     horizon_volatility = max(.004, _number(daily_volatility, .004)) * math.sqrt(max(1, horizon))
@@ -505,6 +506,16 @@ def decision_prior(
             * (.062 + .009 * min(horizon, 5))
             * _number(news.get("signalScore"))
             * _number(news.get("confidence"))
+        )
+    # Only newly observed, independently corroborated material claims can
+    # affect the live decision.  Claims already present before the last close
+    # are part of fitted NEWS_COLUMNS and must not be counted a second time.
+    if rumor and rumor.get("inferenceEligible"):
+        components["RUMOR"] = (
+            horizon_volatility
+            * (.025 + .005 * min(horizon, 5))
+            * _number(rumor.get("signalScore"))
+            * _number(rumor.get("confidence"))
         )
     maximum = min(.012, horizon_volatility * .22)
     raw = sum(components.values())

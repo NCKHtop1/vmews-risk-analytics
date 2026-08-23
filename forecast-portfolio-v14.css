@@ -866,3 +866,178 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .solutionAiOrb { animation: none; }
   .solutionAiPanel, .solutionAiLauncher { transition: none; }
 }
+
+/* V18: VN30-first identity, measured live motion and transparent community evidence. */
+.marketCommand {
+  isolation: isolate;
+  border-color: rgba(162, 209, 112, .19);
+  background:
+    radial-gradient(ellipse at 49% 42%, rgba(166, 222, 113, .115), transparent 41%),
+    radial-gradient(ellipse at 88% 9%, rgba(160, 208, 126, .065), transparent 31%),
+    linear-gradient(147deg, #11140f 0%, #0a0c09 58%, #090a08 100%);
+}
+.leadersHeader h2 {
+  max-width: 870px;
+  font-size: clamp(41px, 5.35vw, 75px);
+  font-weight: 580;
+  line-height: 1.04;
+  letter-spacing: -.075em;
+  text-wrap: balance;
+}
+.leadersHeader h2 > span {
+  color: #a8eb65;
+  background: linear-gradient(110deg, #d8ffad 4%, #a8eb65 55%, #80bc52 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.leadersHeader p { max-width: 530px; color: #aab0a3; letter-spacing: -.01em; }
+.commandIndex { letter-spacing: .17em; }
+.marketPulseGrid article {
+  border-color: rgba(172, 183, 163, .11);
+  background: linear-gradient(145deg, rgba(16, 19, 14, .82), rgba(11, 13, 10, .62));
+}
+.signalDeck::before {
+  position: absolute;
+  z-index: 0;
+  right: 15%;
+  bottom: 35px;
+  left: 15%;
+  height: 2px;
+  background: radial-gradient(ellipse, rgba(168, 235, 101, .4), transparent 69%);
+  filter: blur(11px);
+  content: "";
+  pointer-events: none;
+}
+.signalCard {
+  overflow: hidden;
+  border-color: rgba(130, 149, 113, .19);
+  background: linear-gradient(155deg, rgba(23, 26, 20, .96), rgba(11, 13, 10, .98) 74%);
+  box-shadow: 0 25px 74px rgba(0, 0, 0, .27);
+  will-change: transform, opacity;
+}
+.signalCard.selected {
+  border-color: rgba(165, 228, 100, .62);
+  box-shadow: 0 31px 98px rgba(0, 0, 0, .36), 0 0 65px rgba(130, 193, 82, .085);
+}
+.signalCard::after {
+  position: absolute;
+  top: 0;
+  right: 13%;
+  left: 13%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180, 238, 125, .51), transparent);
+  content: "";
+  pointer-events: none;
+}
+.signalReturn strong { letter-spacing: -.085em; font-variant-numeric: tabular-nums; }
+.qualityOrbit { filter: drop-shadow(0 0 11px rgba(160, 222, 112, .11)); }
+.cardAction { transition: border-color .2s ease, background-color .2s ease, color .2s ease; }
+
+.rumorPanel { position: relative; overflow: hidden; }
+.rumorPanel::before {
+  position: absolute;
+  top: -90px;
+  right: -60px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(164, 232, 106, .072), transparent 68%);
+  content: "";
+  pointer-events: none;
+}
+.rumorPanel .stream { display: grid; gap: 10px; }
+.rumorPanel .stream > article {
+  position: relative;
+  padding: 14px 15px 13px;
+  border: 1px solid #30352c;
+  border-radius: 4px;
+  background: rgba(13, 15, 12, .81);
+}
+.rumorTopline { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.rumorBadge {
+  padding: 4px 6px;
+  border: 1px solid rgba(162, 226, 104, .22);
+  border-radius: 2px;
+  color: #b5ed87;
+  font: 8px var(--mono);
+  letter-spacing: .065em;
+}
+.rumorPanel .rumorStateDENIED .rumorBadge { border-color: #854d46; color: #f29e91; }
+.rumorPanel .rumorStateCONFIRMED .rumorBadge { border-color: #639748; color: #c5ff9f; }
+.rumorQuality { color: #dfe9d4; font: 12px var(--mono); font-variant-numeric: tabular-nums; }
+.rumorQuality i { color: #838a7d; font-size: 9px; font-style: normal; }
+.rumorQualityTrack { height: 2px; margin: 10px 0 11px; background: #252a22; }
+.rumorQualityTrack > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #668d48, #a8eb65);
+  box-shadow: 0 0 8px rgba(168, 235, 101, .37);
+}
+.rumorPanel .chips { gap: 6px; }
+.rumorPanel .chip { border-color: #343a30; font-size: 9px; }
+.rumorFireant { border-color: #725337 !important; color: #f0bb81; }
+.rumorSources, .rumorResolution { display: block; margin-top: 9px; color: #a6ab9f; line-height: 1.55; }
+.rumorResolution { color: #c7d5bc; }
+.rumorQuiet { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 0 7px; }
+.rumorQuiet strong { font-size: 13px; font-weight: 520; }
+.rumorQuiet small { color: #969c90; font-size: 11px; }
+.rumorQuietOrbit {
+  position: relative;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 3px;
+  place-items: center;
+  border: 1px solid rgba(168, 235, 101, .29);
+  border-radius: 50%;
+}
+.rumorQuietOrbit > i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a8eb65;
+  box-shadow: 0 0 13px rgba(168, 235, 101, .6);
+  animation: solutionOrb 2.6s ease-in-out infinite alternate;
+}
+
+.solutionAiConnect {
+  margin: 11px 14px 0;
+  padding: 13px;
+  border: 1px solid #37432e;
+  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(26, 33, 21, .9), rgba(16, 18, 14, .97));
+}
+.solutionAiConnect[hidden] { display: none; }
+.aiConnectionLabel { display: block; margin-bottom: 7px; color: #a8eb65; font: 8px var(--mono); letter-spacing: .12em; }
+.solutionAiConnect > strong { display: block; font-size: 12px; font-weight: 590; }
+.solutionAiConnect > p { margin: 7px 0 11px; color: #aeb4a5; font-size: 10px; line-height: 1.6; }
+.solutionAiConnect > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.solutionAiConnect a, .solutionAiConnect button {
+  display: inline-flex;
+  min-height: 31px;
+  align-items: center;
+  padding: 0 9px;
+  border: 1px solid #3b4534;
+  border-radius: 2px;
+  background: #12160f;
+  color: #e6eadf;
+  font: 9px var(--mono);
+  text-decoration: none;
+  cursor: pointer;
+}
+.solutionAiConnect a { border-color: #91be64; background: #a8eb65; color: #12160f; }
+.solutionAiConnect > small { display: block; margin-top: 10px; color: #a1a799; font-size: 9px; }
+
+@media (max-width: 780px) {
+  .leadersHeader h2 { max-width: 100%; font-size: clamp(37px, 8.8vw, 60px); }
+  .leadersHeader p { font-size: 12px; }
+  .solutionAiConnect { margin-inline: 10px; padding: 11px; }
+}
+@media (max-width: 430px) {
+  .leadersHeader h2 { font-size: clamp(34px, 10.3vw, 43px); }
+  .commandIndex { font-size: 8px; letter-spacing: .105em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rumorQuietOrbit > i { animation: none; }
+  .signalCard, .cardAction { transition: none; }
+}

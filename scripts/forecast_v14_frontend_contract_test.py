@@ -56,6 +56,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "carouselPrev", "carouselNext", "carouselAutoplay",
             "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
             "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
+            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -63,7 +64,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
-        self.assertIn("Dẫn dắt <span>thị trường.</span>", self.html)
+        self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
+        self.assertIn("VN30 · 5 PHIÊN TỚI", self.html)
         self.assertIn("Trọng tâm T+5", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
@@ -97,13 +99,18 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("chartOverlay", app)
         self.assertIn("quadraticCurveTo", app)
 
-    def test_leaderboard_uses_validated_current_hose_forecasts(self) -> None:
+    def test_leaderboard_uses_only_validated_positive_vn30_forecasts(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        self.assertIn("base?.dash?.lists?.vn30?.symbols", leaders)
+        self.assertIn("!members.has(symbol)", leaders)
+        self.assertIn('"MCH"', leaders)
+        self.assertIn('"TCX"', leaders)
         self.assertIn('snapshot.exchange !== "HOSE"', leaders)
         self.assertIn('snapshot.dataFreshness !== "CURRENT"', leaders)
         self.assertIn("forecast.priceValidated !== true", leaders)
         self.assertIn('forecast.validationStatus !== "PASS"', leaders)
         self.assertIn("target % tickSize !== 0", leaders)
+        self.assertIn("target <= close", leaders)
         self.assertIn("upside: target / close - 1", leaders)
         self.assertIn("right.upside - left.upside", leaders)
         self.assertIn("rows.slice(0, 10)", leaders)
@@ -149,9 +156,21 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("window.__VMEWS_LOAD_BASE__", assistant)
         self.assertIn("expertContributions", assistant)
         self.assertIn("directionValidated", assistant)
-        self.assertIn("Không nhập API key", assistant)
+        self.assertIn("__VMEWS_BUILD_LEADERBOARD__", assistant)
+        self.assertIn("solutionAiConnect", assistant)
+        self.assertIn("https://aistudio.google.com/app/apikey", self.html)
+        self.assertIn("https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai", self.html)
+        self.assertNotIn("window.prompt", assistant)
         self.assertNotIn("GEMINI_API_KEY", assistant)
         self.assertIn("process.env.GEMINI_API_KEY", backend)
+
+    def test_community_evidence_is_corroborated_without_fabricated_fireant_access(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        self.assertIn("rumorClaims", app)
+        self.assertIn("nguồn độc lập", app)
+        self.assertIn("rumorFireant", app)
+        self.assertIn("ĐÃ ĐỐI CHIẾU", app)
+        self.assertNotIn("Chưa ghi nhận thông tin lan truyền đủ điều kiện để theo dõi.", app)
 
     def test_rotating_cards_support_keyboard_touch_filters_and_reduced_motion(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")

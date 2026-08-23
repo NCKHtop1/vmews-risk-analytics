@@ -1,4 +1,4 @@
-name: Forecast V17 full-HOSE price, news, flow, funds and financial audit
+name: Forecast V18 HOSE audit, VN30 leaders and verified market intelligence
 
 on:
   workflow_dispatch:
@@ -14,6 +14,9 @@ on:
       - "scripts/forecast_v16_external_data_test.py"
       - "scripts/forecast_v17_live_intelligence.py"
       - "scripts/forecast_v17_live_intelligence_test.py"
+      - "scripts/forecast_v18_market_intelligence.py"
+      - "scripts/forecast_v18_market_intelligence_test.py"
+      - "scripts/forecast_v18_frontend_runtime_test.mjs"
       - "scripts/solution_ai_v17_test.mjs"
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
@@ -43,6 +46,11 @@ jobs:
       - name: Refresh point-in-time news for the full current HOSE universe
         run: |
           python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
+      - name: Collect attributed public FireAnt market intelligence for the dated VN30 basket
+        env:
+          V18_FIREANT_TIMEOUT: "4"
+        run: |
+          python scripts/forecast_v18_market_intelligence.py --collect-fireant || echo "No verified public FireAnt feed was available; private community content will not be fabricated."
       - name: Archive disclosed fund holdings and NAV context
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
@@ -57,15 +65,16 @@ jobs:
           python scripts/forecast_v14_frontend_contract_test.py
           python scripts/forecast_v16_external_data_test.py
           python scripts/forecast_v17_live_intelligence_test.py
-          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          python scripts/forecast_v18_market_intelligence_test.py
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
       - name: Persist the validated market snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/research-news-v10.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/research-news-v10.json data/fireant-intelligence-v18.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0
           fi
-          git commit -m "Refresh validated V17 all-HOSE forecast with live fund, flow and financial evidence [data-only]"
+          git commit -m "Refresh validated HOSE forecast, dated VN30 leaders and verified market intelligence [data-only]"
           git push

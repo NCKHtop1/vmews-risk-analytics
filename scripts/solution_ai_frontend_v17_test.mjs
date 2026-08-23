@@ -66,6 +66,10 @@ test("browser context includes observed holdings/news but withholds unvalidated 
   };
   const window = {
     __VMEWS_LOAD_BASE__: async () => dashboard(),
+    __VMEWS_BUILD_LEADERBOARD__: base => [{
+      symbol: "FPT", close: 72000, target: 73000, upside: .0138,
+      forecast: base.dash.symbols.FPT.horizons["5"],
+    }],
     addEventListener() {},
   };
   const context = vm.createContext({
@@ -82,4 +86,7 @@ test("browser context includes observed holdings/news but withholds unvalidated 
   assert.equal(evidence.horizons["T+5"].probabilityUp, null);
   assert.equal(evidence.horizons["T+5"].liveEvidence.FUND, .002);
   assert.equal(evidence.validation.fundPriorIndependentlyBacktested, false);
+  assert.equal(evidence.topMovers.length, 1);
+  assert.equal(evidence.topMovers[0].symbol, "FPT");
+  assert.ok(evidence.topMovers[0].forecast > evidence.topMovers[0].close);
 });
