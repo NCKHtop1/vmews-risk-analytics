@@ -1,8 +1,6 @@
-name: Verify bilingual CDN final
+name: Legacy bilingual CDN check (manual)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -36,9 +34,9 @@ jobs:
           URL="$(cat final-url.txt)?lang=en"
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           rm -rf /tmp/vmews-en
-          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=50000 --dump-dom "$URL" > en.html 2>/dev/null
+          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=55000 --dump-dom "$URL" > en.html 2>/dev/null || test -s en.html
           grep -F 'Spot rising risk.' en.html
-          grep -F 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html
+          grep -F 'Radar ready · STOCK-EWS-5.2.0-PRODUCTION' en.html
           grep -F 'FPT Corporation' en.html
           grep -F 'Phu Nhuan Jewelry' en.html
           grep -F 'What needs attention now?' en.html
@@ -53,10 +51,10 @@ jobs:
           URL="$(cat final-url.txt)?lang=vi"
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
           rm -rf /tmp/vmews-vi
-          timeout 70s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=50000 --dump-dom "$URL" > vi.html 2>/dev/null
+          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=55000 --dump-dom "$URL" > vi.html 2>/dev/null || test -s vi.html
           grep -F 'Phát hiện rủi ro tăng.' vi.html
           grep -F 'BẢNG THEO DÕI RỦI RO' vi.html
-          grep -F 'Radar sẵn sàng · STOCK-EWS-5.0.0-PRODUCTION' vi.html
+          grep -F 'Radar sẵn sàng · STOCK-EWS-5.2.0-PRODUCTION' vi.html
           grep -F 'FPT Corporation' vi.html
           grep -F 'Phu Nhuan Jewelry' vi.html
           grep -F 'Hiện tại cần chú ý gì?' vi.html

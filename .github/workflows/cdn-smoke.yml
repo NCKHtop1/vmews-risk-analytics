@@ -1,87 +1,93 @@
-name: Verify VMEWS Browser Final
+name: Verify VMEWS Forecast V16 Vietnamese CDN
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-  workflow_dispatch:
+    paths:
+      - "forecast-final.html"
+      - "forecast-final-v12.js"
+      - "forecast-live-leaders-v14.js"
+      - "forecast-polish-v12.js"
+      - "forecast-portfolio-v14.css"
+      - "data/forecast-current-v12.json"
+      - "data/forecast-dashboard-v12.json"
+      - "data/forecast-market-v13.json"
+      - ".github/workflows/cdn-smoke.yml"
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 10
     steps:
-      - name: Set immutable final URL
-        shell: bash
-        run: |
-          URL='https://htmlpreview.github.io/?https://github.com/NCKHtop1/vmews-risk-analytics/blob/f1b1d9cd155a17dfc5ba2fdcb002cf2a90aa8e20/final.html'
-          echo "$URL" > final-url.txt
-          echo "$URL"
+      - uses: actions/checkout@v4
 
-      - name: Verify backend scan directly
+      - name: Wait for exact-SHA CDN assets
         shell: bash
         run: |
+          set -euo pipefail
+          ROOT="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          for attempt in $(seq 1 24); do
+            if curl -fsSL --max-time 25 "$ROOT/forecast-final.html" -o /tmp/forecast-final.html \
+              && curl -fsSL --max-time 25 "$ROOT/forecast-final-v12.js" -o /tmp/forecast-final-v12.js \
+              && curl -fsSL --max-time 25 "$ROOT/data/forecast-current-v12.json" -o /tmp/forecast-current-v12.json \
+              && curl -fsSL --max-time 25 "$ROOT/data/forecast-dashboard-v12.json" -o /tmp/forecast-dashboard-v12.json \
+              && curl -fsSL --max-time 25 "$ROOT/data/forecast-market-v13.json" -o /tmp/forecast-market-v13.json; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Exact-SHA CDN assets were not ready in time."
+          exit 1
+
+      - name: Verify Vietnamese UI and V16 publication contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'lang="vi"' /tmp/forecast-final.html
+          grep -Fq 'Market movers' /tmp/forecast-final.html
+          grep -Fq 'forecast-final-v12.js' /tmp/forecast-final.html
+          node --check /tmp/forecast-final-v12.js
           python - <<'PY'
-          import json,time,urllib.request
-          u='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time()))
-          req=urllib.request.Request(u,headers={'User-Agent':'VMEWS-browser-smoke/1.0','Cache-Control':'no-cache'})
-          with urllib.request.urlopen(req,timeout=60) as r:p=json.loads(r.read().decode())
-          rows=p.get('ranking') or []
-          assert p.get('version')=='STOCK-EWS-5.0.0-PRODUCTION',p
-          assert len(rows)>=1,p
-          print('BACKEND_RANKING',[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in rows])
+          import json
+          import os
+
+          current = json.load(open('/tmp/forecast-current-v12.json', encoding='utf-8'))
+          dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
+          market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
+
+          expected = 'VMEWS-MARKET-FORECAST-16.0.0'
+          assert current.get('modelVersion') == expected, current.get('modelVersion')
+          assert dashboard.get('modelVersion') == expected, dashboard.get('modelVersion')
+          assert market.get('version') == expected, market.get('version')
+
+          symbols = dashboard.get('symbols') or {}
+          assert len(symbols) == 403, len(symbols)
+          assert dashboard.get('promotion', {}).get('status') == 'PASS', dashboard.get('promotion')
+          assert dashboard['promotion'].get('directPriceHorizons') == [1, 2, 3, 4, 5]
+          assert dashboard['promotion'].get('directionHorizons') == [1, 2, 3]
+
+          model = market.get('model') or {}
+          universe = model.get('universe') or {}
+          assert universe.get('currentSymbols') == 403, universe
+          assert universe.get('freshSymbols') == 403, universe
+          assert universe.get('staleSymbols') == 0, universe
+
+          for horizon in map(str, range(1, 6)):
+              audit = model['horizons'][horizon]
+              assert audit.get('priceStatus') == 'PASS', (horizon, audit.get('priceStatus'))
+              assert audit.get('walkForwardAudit', {}).get('status') == 'PASS', horizon
+              assert audit.get('magnitudeGate', {}).get('status') == 'PASS', horizon
+              assert audit.get('magnitudeGate', {}).get('invalidExecutableQuotes') == 0, horizon
+
+          fpt = symbols['FPT']
+          assert fpt.get('date') == dashboard.get('asOf'), (fpt.get('date'), dashboard.get('asOf'))
+          assert fpt['horizons']['1']['expectedPrice'] > 0
+          assert fpt['horizons']['5']['q20Price'] < fpt['horizons']['5']['q80Price']
+
+          print('V16 VI CDN PASS', dashboard['asOf'], 'symbols', len(symbols))
+          print('FINAL_URL', f"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/{os.environ['GITHUB_SHA']}/forecast-final.html?symbol=FPT")
           PY
-
-      - name: Render immutable final page in Chrome
-        shell: bash
-        run: |
-          URL=$(cat final-url.txt)
-          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
-          if [ -z "$CHROME" ]; then echo 'Chrome/Chromium not found'; exit 1; fi
-          "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=70000 --dump-dom "$URL" > dom.html
-          echo '--- RADAR STATUS ---'
-          grep -o 'Risk radar ready[^<]*' dom.html | head -1 || true
-          grep -F 'Risk radar ready · STOCK-EWS-5.0.0-PRODUCTION' dom.html
-          grep -F 'FPT Corporation' dom.html
-          grep -F 'Phu Nhuan Jewelry' dom.html
-          if grep -F 'At least ~200 completed sessions are required' dom.html; then echo 'Old runtime error visible'; exit 1; fi
-          if grep -F 'No usable securities returned for this request.' dom.html; then echo 'No model rows visible'; exit 1; fi
-          echo 'BROWSER DOM PASS'
-
-      - name: Capture verified evidence
-        shell: bash
-        run: |
-          python - <<'PY'
-          import json,time,urllib.request
-          url=open('final-url.txt').read().strip()
-          api='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time()))
-          req=urllib.request.Request(api,headers={'User-Agent':'VMEWS-browser-smoke/1.0','Cache-Control':'no-cache'})
-          with urllib.request.urlopen(req,timeout=60) as r:p=json.loads(r.read().decode())
-          rows=[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in p.get('ranking',[])]
-          body=f'''# VMEWS BROWSER FINAL PASS\n\n- Final URL: {url}\n- API version: `{p.get('version')}`\n- Scanned: `{p.get('scanned')}`\n- Ranking: `{rows}`\n- Errors: `{p.get('errors')}`\n- Chrome DOM: `Risk radar ready` + FPT + PNJ verified\n- Old ~200-session error visible: `NO`\n'''
-          open('browser-pass.md','w',encoding='utf-8').write(body)
-          print(body)
-          PY
-
-      - name: Publish PASS evidence
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BROWSER FINAL PASS ${GITHUB_SHA::7}" --body-file browser-pass.md
-
-  report:
-    if: always()
-    needs: verify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Publish failure marker
-        if: needs.verify.result != 'success'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RESULT: ${{ needs.verify.result }}
-        run: |
-          gh issue create --repo "$GITHUB_REPOSITORY" \
-            --title "VMEWS BROWSER VERIFY FAILED ${GITHUB_SHA::7}" \
-            --body "End-to-end browser verification result: $RESULT. Do not use this URL as final."

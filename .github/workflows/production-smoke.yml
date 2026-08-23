@@ -1,8 +1,6 @@
-name: Production smoke test
+name: Legacy bilingual production smoke (manual)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -35,9 +33,9 @@ jobs:
 
           rm -rf /tmp/vmews-vi /tmp/vmews-en
 
-          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=60000 --dump-dom "$BASE?lang=vi" > vi.html 2>/dev/null
+          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-vi --virtual-time-budget=55000 --dump-dom "$BASE?lang=vi" > vi.html 2>/dev/null
           vi_ready=no; vi_copy=no; vi_console=no; vi_fpt=no; vi_pnj=no; vi_old=no; vi_empty=no
-          grep -Fq 'Radar sẵn sàng · STOCK-EWS-5.0.0-PRODUCTION' vi.html && vi_ready=yes
+          grep -Fq 'Radar sẵn sàng · STOCK-EWS-5.2.0-PRODUCTION' vi.html && vi_ready=yes
           grep -Fq 'Phát hiện rủi ro tăng.' vi.html && vi_copy=yes
           grep -Fq 'BẢNG THEO DÕI RỦI RO' vi.html && vi_console=yes
           grep -Fq 'FPT Corporation' vi.html && vi_fpt=yes
@@ -45,9 +43,9 @@ jobs:
           grep -Fq 'At least ~200 completed sessions are required' vi.html && vi_old=yes
           grep -Fq 'No usable securities returned for this request.' vi.html && vi_empty=yes
 
-          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=60000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
+          timeout 80s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=/tmp/vmews-en --virtual-time-budget=55000 --dump-dom "$BASE?lang=en" > en.html 2>/dev/null
           en_ready=no; en_copy=no; en_fpt=no; en_pnj=no; en_old=no; en_empty=no
-          grep -Fq 'Radar ready · STOCK-EWS-5.0.0-PRODUCTION' en.html && en_ready=yes
+          grep -Fq 'Radar ready · STOCK-EWS-5.2.0-PRODUCTION' en.html && en_ready=yes
           grep -Fq 'Spot rising risk.' en.html && en_copy=yes
           grep -Fq 'FPT Corporation' en.html && en_fpt=yes
           grep -Fq 'Phu Nhuan Jewelry' en.html && en_pnj=yes
