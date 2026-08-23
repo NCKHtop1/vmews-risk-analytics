@@ -81,4 +81,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.verify.result }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BROWSER VERIFY FAILED ${GITHUB_SHA::7}" --body "End-to-end browser verification result: $RESULT. Do not use this URL as final."
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "VMEWS BROWSER VERIFY FAILED ${GITHUB_SHA::7}" \
+            --body "End-to-end browser verification result: $RESULT. Do not use this URL as final."

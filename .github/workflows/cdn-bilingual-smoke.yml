@@ -93,4 +93,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.verify.result }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS BILINGUAL CDN VERIFY FAILED ${GITHUB_SHA::7}" --body "Bilingual CDN verification result: $RESULT. Do not use this commit as final."
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "VMEWS BILINGUAL CDN VERIFY FAILED ${GITHUB_SHA::7}" \
+            --body "Bilingual CDN verification result: $RESULT. Do not use this commit as final."
