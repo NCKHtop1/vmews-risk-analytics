@@ -15,7 +15,32 @@
   const GOOGLE_SEARCH_TOOL = { type: "google_search" };
   const URL_CONTEXT_TOOL = { type: "url_context" };
   const SESSION_KEY = "vmews_solution_ai_browser_session";
-  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "" };
+  const ANALYSIS_SCHEMA = {
+    type: "object",
+    properties: {
+      direct_answer: { type: "string" },
+      model_read: { type: "string" },
+      external_evidence: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            finding: { type: "string" },
+            effect: { type: "string", enum: ["SUPPORTS", "CONTRADICTS", "NEUTRAL", "UNCERTAIN"] },
+            why_it_matters: { type: "string" },
+            confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] },
+          },
+          required: ["finding", "effect", "why_it_matters", "confidence"],
+        },
+      },
+      integrated_outlook: { type: "string" },
+      risks: { type: "array", items: { type: "string" } },
+      watch_next: { type: "array", items: { type: "string" } },
+      limitations: { type: "array", items: { type: "string" } },
+    },
+    required: ["direct_answer", "model_read", "external_evidence", "integrated_outlook", "risks", "watch_next", "limitations"],
+  };
+  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [] };
 
   function sessionSecret() {
     if (state.directKey) return state.directKey;
@@ -51,7 +76,7 @@
     return details || `Kết nối Gemini chưa sẵn sàng (${status}).`;
   }
 
-  function availableModel(payload) {
+  function availableModels(payload) {
     const models = (payload.models || [])
       .filter(item => {
         const name = String(item.name || "").replace(/^models\//, "");
@@ -62,11 +87,17 @@
           && (supported.length === 0 || supported.includes("generateContent") || supported.includes("generate_content"));
       })
       .map(item => String(item.name).replace(/^models\//, ""));
+    const ordered = [];
     for (const preferred of ["gemini-3.7-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3-flash", "gemini-2.5-flash"]) {
       const selected = models.find(model => model === preferred) || models.find(model => model.startsWith(`${preferred}-`));
-      if (selected) return selected;
+      if (selected && !ordered.includes(selected)) ordered.push(selected);
     }
-    return models[0] || "";
+    for (const model of models) if (!ordered.includes(model)) ordered.push(model);
+    return ordered;
+  }
+
+  function availableModel(payload) {
+    return availableModels(payload)[0] || "";
   }
 
   async function validateGemini(secret) {
@@ -76,7 +107,8 @@
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(providerMessage(response.status, payload.error?.message));
-    const model = availableModel(payload);
+    state.modelCandidates = availableModels(payload);
+    const model = state.modelCandidates[0] || availableModel(payload);
     if (!model) throw new Error("Dự án Google chưa có mô hình Gemini Flash khả dụng.");
     return model;
   }
@@ -86,6 +118,9 @@
       "Bạn là SoluTION.AI, trợ lý AI nghiên cứu độc lập; có thể trao đổi linh hoạt về tài chính, kinh tế, doanh nghiệp, công nghệ và mọi câu hỏi kiến thức hợp pháp.",
       "Luôn trả lời bằng tiếng Việt, đi thẳng vào đúng câu hỏi, có lập luận và đủ chiều sâu; không sử dụng một khuôn trả lời cố định.",
       "Yêu cầu mới nhất của người dùng quan trọng hơn mã cổ phiếu đang mở hoặc dữ liệu tham chiếu; câu hỏi chung không được tự ý biến thành phân tích cổ phiếu.",
+      "Nếu người dùng nhắc đến kết quả phân tích, forecast, mô hình, dự báo, dữ liệu đang xem, tác động hoặc yêu cầu kết hợp thông tin, hãy coi snapshot của mã đang xem là trục chính và mọi nghiên cứu bên ngoài là lớp bằng chứng bổ sung.",
+      "Với câu hỏi bám forecast, câu đầu tiên phải trả lời trực tiếp cho mã đang xem; sau đó mới giải thích đường dự báo T+1 đến T+5, yếu tố mô hình, bằng chứng bên ngoài ủng hộ/mâu thuẫn và rủi ro cần theo dõi.",
+      "Không được trả lời bằng bài giảng phương pháp chung khi đã có snapshot cụ thể. Mỗi đoạn phải gắn với câu hỏi, một dữ kiện mô hình hoặc một bằng chứng có nguồn.",
       "Chủ động dùng Google Search để tìm thông tin hiện hành và URL Context để đọc sâu website, bài báo, nguồn chính thức hoặc liên kết người dùng gửi khi cần.",
       "Khi câu hỏi cần thông tin bên ngoài, hãy tự lập kế hoạch nghiên cứu: xác định dữ kiện cần kiểm tra, tìm theo nhiều góc, mở nguồn phù hợp, đối chiếu thời điểm và chỉ sau đó mới tổng hợp.",
       "Với nhận định có thể ảnh hưởng quyết định đầu tư, ưu tiên ít nhất hai nguồn độc lập nếu có; nếu mới chỉ có một nguồn hoặc nguồn cộng đồng thì phải nói rõ mức độ xác minh.",
@@ -93,12 +128,15 @@
       "So sánh thời điểm đăng, phân biệt dữ kiện với suy luận, nêu nguồn phù hợp; ưu tiên công bố doanh nghiệp, cơ quan quản lý, tổ chức nghiên cứu và báo chí đáng tin cậy.",
       "Không khẳng định đã tìm kiếm hoặc đã đọc một trang nếu công cụ chưa thực hiện; không coi tiêu đề, nguồn cộng đồng hoặc tin đồn chưa kiểm chứng là sự thật.",
       "Giá, dự báo, giao dịch quỹ, dòng tiền và chỉ tiêu của mô hình phải lấy đúng từ dữ liệu được cung cấp; không tự tạo giá hoặc thay đổi kết quả dự báo.",
+      "Nguồn mới không tự động trở thành đầu vào mô hình và không được sửa số dự báo đã niêm phong; chỉ dùng để giải thích, kiểm tra tính phù hợp hoặc xây dựng kịch bản ủng hộ/mâu thuẫn/chưa rõ.",
+      "Khi dữ liệu có T+1 đến T+5, không được rút gọn toàn bộ thành một mức T+5 nếu người dùng yêu cầu phân tích đầy đủ hoặc tổng hợp forecast.",
       "Phân biệt rõ dữ liệu mô hình hiện có với thông tin vừa tìm kiếm; ghi nguồn và thời điểm đối với dữ kiện bên ngoài, ưu tiên công bố doanh nghiệp, cơ quan quản lý và báo chí đáng tin cậy.",
       "Nếu nguồn mới có thời điểm khác snapshot dự báo, giải thích chênh lệch thời gian; không trình bày thông tin chưa kiểm chứng như dữ kiện hoặc tự ý thay đổi dự báo.",
       "Câu hỏi kiến thức, vĩ mô hoặc lĩnh vực khác không nhắc lại giá, quỹ hay danh sách cổ phiếu nếu người dùng không yêu cầu liên hệ.",
       "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
       "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",
       "Nếu xác suất hướng chưa được kiểm định thì không đưa ra xác suất tăng.",
+      "Điểm rủi ro, điểm chất lượng nguồn hoặc trạng thái GREEN/YELLOW/RED không phải xác suất và không được diễn giải như xác suất.",
       "Danh sách nổi bật chỉ gồm thành viên VN30 hiện hành có dự báo T+5 tăng.",
       "Tin cộng đồng chưa có công bố xác nhận chỉ là thông tin đang đối chiếu.",
       "Tách dự báo trung tâm, vùng giá, các yếu tố tác động và rủi ro; không cam kết lợi nhuận.",
@@ -162,7 +200,8 @@
         publishedAt: item?.publishedAt || item?.date || null,
         channel: item?.channel || "OPEN_WEB",
       };
-      source.quality = Math.round((sourceTrust(source) * .5 + sourceFreshness(source.publishedAt) * .25 + sourceRelevance(source, question) * .25) * 100);
+      source.relevance = sourceRelevance(source, question);
+      source.quality = Math.round((sourceTrust(source) * .5 + sourceFreshness(source.publishedAt) * .25 + source.relevance * .25) * 100);
       return source;
     }).filter(Boolean).sort((left, right) => right.quality - left.quality);
   }
@@ -187,19 +226,28 @@
       .filter(Boolean))].slice(0, 5);
     const selected = context?.symbol || "";
     const mentionsSelected = Boolean(selected && new RegExp(`(^|[^A-Za-z0-9])${selected}([^A-Za-z0-9]|$)`, "i").test(text));
-    const stockQuestion = mentionsSelected || /mã đang xem|mã này|cổ phiếu này|cổ phiếu đang xem|danh mục quỹ|quỹ đang|khối ngoại|tự doanh|vùng giá|dự báo t\s*\+|top vn30|mã vn30/i.test(text);
+    const explicitStockQuestion = mentionsSelected || /mã đang xem|mã này|cổ phiếu này|cổ phiếu đang xem|danh mục quỹ|quỹ đang|khối ngoại|tự doanh|vùng giá|dự báo t\s*\+|top vn30|mã vn30/i.test(text);
+    const forecastReference = /forecast|mô hình dự báo|kết quả (?:phân tích|dự báo)|tình hình dự báo|dữ liệu (?:forecast|dự báo|đang xem)|đường dự báo|các kỳ dự báo|tác động (?:đến|vào).*dự báo|kết hợp.*(?:dự báo|kết quả phân tích)|đánh giá.*(?:dự báo|kết quả phân tích)/i.test(text);
+    const followUpReference = /^(?:ngoài ra|bổ sung|xem lại|phân tích tiếp|kết hợp|đánh giá lại)|thông tin (?:trên|vừa nêu)|kết quả (?:trên|này)|các yếu tố (?:trên|này)|vậy (?:thì|còn)|quay (?:lại|về)/i.test(text);
+    const recentConversation = state.messages.slice(-8).map(item => String(item.content || "")).join(" ");
+    const priorForecastThread = Boolean(selected && (new RegExp(`(^|[^A-Za-z0-9])${selected}([^A-Za-z0-9]|$)`, "i").test(recentConversation) || /dự báo t\s*\+|vùng giá|dữ liệu vmews|forecast/i.test(recentConversation)));
+    const standaloneQuestion = /(?:chỉ|riêng) (?:nói|phân tích|xem).*(?:chung|vĩ mô|khái niệm)|không (?:cần|muốn).*(?:liên hệ|gắn|nhắc).*(?:mã|cổ phiếu|forecast|dự báo)/i.test(text);
+    const stockQuestion = !standaloneQuestion && (explicitStockQuestion || forecastReference || (followUpReference && priorForecastThread));
     const currentQuestion = urls.length > 0 || /mới nhất|tin mới|thông tin mới|hiện nay|hiện tại|hôm nay|gần đây|cập nhật|thời sự|vĩ mô|kinh tế|lãi suất|lạm phát|tỷ giá|chính sách|triển vọng ngành|tìm kiếm|tra cứu|nghiên cứu|nguồn mở|open source|website|bài báo|đọc link|đọc trang|phân tích đầy đủ|đối chiếu|xác minh/i.test(text);
+    const wantsSynthesis = /kết hợp|tổng hợp|bổ sung|mở rộng|khai thác sâu|bên ngoài|nguồn công khai|nguồn mở|đối chiếu|xác minh/i.test(text);
     const macroQuestion = /vĩ mô|kinh tế|lãi suất|lạm phát|tỷ giá|fed|ngân hàng nhà nước|chính sách|thương mại|thuế quan/i.test(text);
     const snapshotOnly = /chỉ (?:dùng|phân tích|xem).*(?:dữ liệu|mô hình)|không (?:tìm|tra cứu).*(?:web|bên ngoài|nguồn mở)/i.test(text);
     const evergreenQuestion = /là gì|cách tính|công thức|giải thích khái niệm|phân biệt/i.test(text) && !currentQuestion;
-    const shouldSearch = !snapshotOnly && (currentQuestion || (!stockQuestion && !evergreenQuestion && text.length >= 12));
+    const shouldSearch = !snapshotOnly && (currentQuestion || (stockQuestion && wantsSynthesis) || (!stockQuestion && !evergreenQuestion && text.length >= 12));
     return {
-      scope: stockQuestion ? "CỔ PHIẾU VÀ THỊ TRƯỜNG" : macroQuestion ? "VĨ MÔ VÀ KINH TẾ" : urls.length ? "ĐỌC NGUỒN CÔNG KHAI" : "CÂU HỎI TỰ DO",
+      scope: stockQuestion && shouldSearch ? "FORECAST VÀ BẰNG CHỨNG BÊN NGOÀI" : stockQuestion ? "CỔ PHIẾU VÀ THỊ TRƯỜNG" : macroQuestion ? "VĨ MÔ VÀ KINH TẾ" : urls.length ? "ĐỌC NGUỒN CÔNG KHAI" : "CÂU HỎI TỰ DO",
       useSnapshot: stockQuestion,
       shouldSearch,
-      mode: urls.length ? "READ_URLS" : shouldSearch ? "OPEN_RESEARCH" : stockQuestion ? "MODEL_SNAPSHOT" : "KNOWLEDGE",
+      mode: urls.length ? "READ_URLS" : stockQuestion && shouldSearch ? "FORECAST_RESEARCH" : shouldSearch ? "OPEN_RESEARCH" : stockQuestion ? "MODEL_SNAPSHOT" : "KNOWLEDGE",
       urls,
       symbol: stockQuestion ? selected : null,
+      anchored: stockQuestion,
+      followUp: followUpReference && priorForecastThread,
     };
   }
 
@@ -234,7 +282,10 @@
       const options = { method: "GET", mode: "cors", cache: "no-store" };
       if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") options.signal = AbortSignal.timeout(6500);
       const response = await fetch(address.href, options);
-      if (!response.ok) return rankOpenSources(embedded, question).slice(0, 10);
+      if (!response.ok) {
+        const fallback = rankOpenSources(embedded, question);
+        return (intent.useSnapshot ? fallback : fallback.filter(source => source.relevance > 0)).slice(0, 10);
+      }
       const payload = await response.json().catch(() => ({}));
       discovered = (Array.isArray(payload.articles) ? payload.articles : [])
         .map(item => {
@@ -244,7 +295,8 @@
         })
         .filter(Boolean);
     } catch { /* integrated dashboard sources remain available */ }
-    return rankOpenSources([...embedded, ...discovered], question).slice(0, 10);
+    const ranked = rankOpenSources([...embedded, ...discovered], question);
+    return (intent.useSnapshot ? ranked : ranked.filter(source => source.relevance > 0)).slice(0, 10);
   }
 
   function researchPrompt(question, context, intent, openSources) {
@@ -266,7 +318,14 @@
     if (intent.shouldSearch) sections.push("KỶ LUẬT NGHIÊN CỨU:", "Tách dữ kiện và suy luận; ưu tiên nguồn chính thức; đối chiếu ít nhất hai nguồn độc lập cho nhận định quan trọng khi có thể; ghi rõ nếu chỉ có một nguồn hoặc Google Search không trả về bằng chứng.");
     if (openSources.length) sections.push("NGUỒN MỞ VỪA THU THẬP — CẦN KIỂM CHỨNG TRƯỚC KHI KẾT LUẬN:", JSON.stringify(openSources));
     if (knownSources.length) sections.push("LIÊN KẾT CÔNG KHAI CÓ THỂ ĐỌC SÂU:", JSON.stringify(knownSources));
-    if (intent.useSnapshot) sections.push("DỮ LIỆU DỰ BÁO ĐÃ KIỂM ĐỊNH — CHỈ SỬ DỤNG PHẦN LIÊN QUAN:", JSON.stringify(context));
+    if (intent.useSnapshot) sections.push(
+      "MỤC TIÊU KHÓA — KHÔNG ĐƯỢC ĐI LỆCH:",
+      `Trả lời câu hỏi cho ${context.symbol} dựa trên snapshot VMEWS trước, rồi tích hợp nguồn ngoài. Không viết bài hướng dẫn chung. Nguồn mới chỉ đánh giá là ỦNG HỘ, MÂU THUẪN, TRUNG TÍNH hoặc CHƯA RÕ đối với forecast; tuyệt đối không tự sửa số dự báo.`,
+      "HỢP ĐỒNG TRẢ LỜI:",
+      `1) Mở đầu bằng kết luận trực tiếp cho ${context.symbol}; 2) đọc đường T+1 đến T+5 và vùng bất định; 3) nối từng bằng chứng mới với tác động lên luận điểm forecast; 4) nêu rủi ro, điều cần theo dõi và độ trễ dữ liệu; 5) không đưa khuyến nghị mua/bán.`,
+      "DỮ LIỆU DỰ BÁO ĐÃ KIỂM ĐỊNH — CHỈ SỬ DỤNG PHẦN LIÊN QUAN:",
+      JSON.stringify(context),
+    );
     else sections.push("GHI CHÚ:", "Người dùng không yêu cầu phân tích mã cổ phiếu đang mở; không tự đưa giá, danh mục quỹ hoặc dự báo mã đó vào câu trả lời.");
     if (state.messages.length) sections.push("LỊCH SỬ TRAO ĐỔI GẦN NHẤT:", JSON.stringify(state.messages.slice(-8)));
     return sections.join("\n");
@@ -338,6 +397,47 @@
     return finish(text);
   }
 
+  function parseStructuredAnswer(value) {
+    const text = String(value || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    if (!text.startsWith("{")) return null;
+    try {
+      const payload = JSON.parse(text);
+      return payload && typeof payload === "object" ? payload : null;
+    } catch { return null; }
+  }
+
+  function formatStructuredAnswer(payload) {
+    if (!payload) return "";
+    const lines = [];
+    if (payload.direct_answer) lines.push("### Kết luận trực tiếp", String(payload.direct_answer));
+    if (payload.model_read) lines.push("### Đọc kết quả mô hình", String(payload.model_read));
+    const evidence = Array.isArray(payload.external_evidence) ? payload.external_evidence : [];
+    if (evidence.length) {
+      const labels = { SUPPORTS: "ỦNG HỘ", CONTRADICTS: "MÂU THUẪN", NEUTRAL: "TRUNG TÍNH", UNCERTAIN: "CHƯA RÕ" };
+      lines.push("### Bằng chứng bên ngoài đối với forecast");
+      for (const item of evidence.slice(0, 8)) {
+        const label = labels[item.effect] || labels.UNCERTAIN;
+        const confidence = ({ HIGH: "cao", MEDIUM: "vừa", LOW: "thấp" })[item.confidence] || "chưa rõ";
+        lines.push(`- **${label}:** ${item.finding || "Chưa có mô tả"}${item.why_it_matters ? ` — ${item.why_it_matters}` : ""} *(độ tin cậy ${confidence})*`);
+      }
+    }
+    if (payload.integrated_outlook) lines.push("### Tổng hợp", String(payload.integrated_outlook));
+    const appendList = (title, values) => {
+      if (!Array.isArray(values) || !values.length) return;
+      lines.push(`### ${title}`, ...values.slice(0, 7).map(value => `- ${String(value)}`));
+    };
+    appendList("Rủi ro cần lưu ý", payload.risks);
+    appendList("Điều cần theo dõi tiếp", payload.watch_next);
+    appendList("Giới hạn dữ liệu", payload.limitations);
+    return lines.join("\n");
+  }
+
+  function responseFormat(model) {
+    return /^gemini-3(?:\.|-|$)/i.test(String(model || ""))
+      ? { type: "text", mime_type: "application/json", schema: ANALYSIS_SCHEMA }
+      : null;
+  }
+
   async function directAnalysis(question, context, secret, intent = researchIntent(question, context)) {
     const model = state.model || await validateGemini(secret);
     state.model = model;
@@ -349,12 +449,14 @@
     };
     const interactionBody = tools => ({
       model, input, system_instruction: systemInstruction(), store: false,
+      generation_config: { max_output_tokens: 2600, temperature: .18, ...(intent.useSnapshot ? { thinking_level: "high" } : {}) },
       ...(tools.length ? { tools: tools.map(type => type === "google_search" ? GOOGLE_SEARCH_TOOL : URL_CONTEXT_TOOL) } : {}),
+      ...(responseFormat(model) ? { response_format: responseFormat(model) } : {}),
     });
     const compatibleBody = search => ({
       systemInstruction: { parts: [{ text: systemInstruction() }] },
       contents: [{ role: "user", parts: [{ text: input }] }],
-      generationConfig: { maxOutputTokens: 1800 },
+      generationConfig: { maxOutputTokens: 2600, temperature: .18 },
       ...(search ? { tools: [{ googleSearch: {} }] } : {}),
     });
     let searchLimited = false;
@@ -387,6 +489,8 @@
     if (!response.ok) throw new Error(providerMessage(response.status, payload.error?.message));
     const result = providerAnswer(payload);
     if (!result.text) throw new Error("Gemini chưa trả về nội dung phân tích.");
+    const structured = parseStructuredAnswer(result.text);
+    if (structured) result.text = formatStructuredAnswer(structured);
     const known = new Set(result.sources.map(item => item.url));
     for (const source of openSources) {
       if (known.has(source.url) || result.sources.length >= 8) continue;
@@ -409,6 +513,28 @@
     };
   }
 
+  function technicalContext(history) {
+    const rows = (history || []).filter(item => number(item?.rawClose ?? item?.close) !== null).slice(-65);
+    const closes = rows.map(item => number(item.rawClose ?? item.close));
+    if (closes.length < 5) return null;
+    const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    const returns = closes.slice(1).map((value, index) => Math.log(value / closes[index])).filter(Number.isFinite);
+    const variance = returns.length > 1 ? returns.reduce((sum, value) => sum + (value - average(returns)) ** 2, 0) / (returns.length - 1) : null;
+    const current = closes.at(-1);
+    const change = sessions => closes.length > sessions && closes.at(-(sessions + 1)) > 0 ? current / closes.at(-(sessions + 1)) - 1 : null;
+    const last20 = closes.slice(-20);
+    return {
+      observationCount: closes.length,
+      from: rows[0]?.date || null,
+      to: rows.at(-1)?.date || null,
+      return5: change(5), return20: change(20),
+      sma20: average(last20), sma50: average(closes.slice(-50)),
+      high20: Math.max(...last20), low20: Math.min(...last20),
+      realizedVolatility20Annualized: variance === null ? null : Math.sqrt(variance) * Math.sqrt(252),
+      priceSeriesUsesRawMarketClose: true,
+    };
+  }
+
   async function buildContext() {
     const base = await window.__VMEWS_LOAD_BASE__();
     const symbol = String($("#symbol")?.value || new URLSearchParams(location.search).get("symbol") || "FPT").trim().toUpperCase();
@@ -417,13 +543,24 @@
     const horizons = {};
     for (const [key, forecast] of Object.entries(snapshot.horizons || {})) {
       if (forecast.priceValidated !== true) continue;
+      const audit = base.model.horizons?.[String(key)] || {};
       horizons[`T+${key}`] = {
         price: forecast.expectedPrice, expectedReturn: forecast.expectedReturn,
         lowerPrice: forecast.q20Price, upperPrice: forecast.q80Price,
         probabilityUp: forecast.directionValidated === true ? forecast.probUp : null,
+        directionValidated: forecast.directionValidated === true,
         factors: forecast.expertContributions || {},
         liveEvidence: forecast.liveEvidence?.components || {},
         targetDate: forecast.targetDate,
+        validation: {
+          priceStatus: audit.priceStatus || null,
+          directionStatus: audit.directionStatus || null,
+          holdoutRows: audit.sealedAudit?.n ?? null,
+          rankIC: audit.sealedAudit?.rankIC ?? null,
+          executableMAESkill: audit.sealedAudit?.executableMAESkill ?? null,
+          intervalCoverage20_80: audit.sealedAudit?.coverage20_80 ?? null,
+          brierSkill: audit.sealedAudit?.brierSkill ?? null,
+        },
       };
     }
     const fund = snapshot.fundContext || {};
@@ -443,10 +580,13 @@
       .slice(0, 10)
       .map(({ validated, ...row }) => row);
     const modelAudit = base.model.horizons?.["5"] || {};
+    const chartHistory = base.dash.charts?.[symbol] || [];
     return {
       brand: "SoluTION.AI", symbol, asOf: snapshot.date, decisionAt: base.dash.marketForecast?.decisionAt,
       close: snapshot.close, sector: snapshot.sector, riskStatus: snapshot.riskStatus,
+      dataFreshness: snapshot.dataFreshness || null,
       dailyVolatility: snapshot.dailyVolatility, horizons,
+      technical: technicalContext(chartHistory),
       fund: fund.available ? {
         fundCount: fund.fundCount, averageWeight: fund.averageReportedWeight,
         navMomentum20: fund.weightedNavMomentum20, usedByForecast: fund.usedByForecast === true,
@@ -464,12 +604,12 @@
         revenueGrowth: finances.revenueQoQ, ratios: finances.ratios,
         usedByForecast: finances.usedByForecast === true,
       } : null,
-      news: (snapshot.evidence?.decisionRecent || snapshot.evidence?.recent || []).slice(0, 6).map(item => ({
+      news: (snapshot.evidence?.decisionRecent || snapshot.evidence?.recent || []).slice(0, 10).map(item => ({
         title: item.title, publisher: item.publisher, date: item.publishedAt || item.availableDate,
         label: item.label, event: item.event,
         url: safeSource(item.url || item.link || item.sourceUrl)?.url || null,
       })),
-      communitySignals: (snapshot.evidence?.rumorClaims || []).slice(0, 5).map(claim => ({
+      communitySignals: (snapshot.evidence?.rumorClaims || []).slice(0, 8).map(claim => ({
         title: claim.title, state: claim.verificationState, truthState: claim.truthState,
         quality: claim.qualityScore, independentSources: claim.sources,
         publisherNames: (claim.sourceDetails || []).map(source => source.name),
@@ -479,12 +619,12 @@
           publishedAt: source.publishedAt || source.date || null,
         })),
       })),
-      communityMonitoring: (snapshot.evidence?.communityWatchlist || []).slice(0, 6).map(item => ({
+      communityMonitoring: (snapshot.evidence?.communityWatchlist || []).slice(0, 8).map(item => ({
         title: item.title, publisher: item.publisher, publishedAt: item.publishedAt,
         state: item.verificationState || "PENDING", quality: item.qualityScore,
         url: safeSource(item.url || item.link || item.sourceUrl)?.url || null,
       })),
-      marketContext: (window.__VMEWS_COMMUNITY_LIVE__?.marketContext || []).slice(0, 6).map(item => ({
+      marketContext: (window.__VMEWS_COMMUNITY_LIVE__?.marketContext || []).slice(0, 8).map(item => ({
         title: item.title, publisher: item.publisher, publishedAt: item.publishedAt, theme: item.theme,
         url: safeSource(item.url || item.link || item.sourceUrl)?.url || null,
       })),
@@ -494,6 +634,10 @@
         directionValidated: modelAudit.directionStatus === "PASS",
         holdoutRows: modelAudit.sealedAudit?.n,
         executableSkill: modelAudit.sealedAudit?.executableMAESkill,
+        rankIC: modelAudit.sealedAudit?.rankIC,
+        intervalCoverage20_80: modelAudit.sealedAudit?.coverage20_80,
+        modelPromotionStatus: base.model.promotion?.status || null,
+        phaseGateStatus: base.gates?.status || null,
         fundPriorIndependentlyBacktested: base.model.governance?.livePriorIndependentlyBacktested === true,
       },
       topMovers: top,
@@ -559,12 +703,14 @@
       return block;
     };
     for (const rawLine of String(body || "").replace(/\r/g, "").split("\n")) {
-      const line = rawLine.trim();
+      const line = rawLine.trim().replace(/\\\|/g, "|");
       if (!line) { list = null; listType = ""; continue; }
+      if (/^(?:-{3,}|_{3,}|\*{3,})$/.test(line) || /^\|?\s*:?-{3,}/.test(line)) { list = null; listType = ""; continue; }
       const heading = line.match(/^#{1,4}\s+(.+)$/);
       const bullet = line.match(/^[-+*]\s+(.+)$/);
       const numbered = line.match(/^\d+[.)]\s+(.+)$/);
       const quote = line.match(/^>\s?(.+)$/);
+      const tableCells = line.includes("|") ? line.replace(/^\||\|$/g, "").split("|").map(cell => cell.trim()).filter(Boolean) : [];
       if (heading) {
         list = null; listType = "";
         appendBlock("h3", heading[1]);
@@ -581,6 +727,9 @@
       } else if (quote) {
         list = null; listType = "";
         appendBlock("p", quote[1], "aiQuote");
+      } else if (tableCells.length >= 2) {
+        list = null; listType = "";
+        appendBlock("p", tableCells.join(" · "), "aiTableRow");
       } else {
         list = null; listType = "";
         appendBlock("p", line);
@@ -642,42 +791,125 @@
     return "";
   }
 
+  function forecastPath(context) {
+    return Object.entries(context?.horizons || {})
+      .sort((left, right) => Number(left[0].replace("T+", "")) - Number(right[0].replace("T+", "")))
+      .map(([label, horizon]) => `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** ${money(horizon.price)} (${pct(horizon.expectedReturn)}), vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, P↑ ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`);
+  }
+
   function localAnalysis(input, context) {
-    const question = input.toLowerCase();
+    const question = String(input || "").toLowerCase();
     const five = context.horizons["T+5"];
     const lines = [];
     const knowledge = knowledgeAnswer(question);
-    if (knowledge) lines.push(knowledge);
+    const detailed = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|mô hình|phân tích|đánh giá|bổ sung/.test(question);
+    const fundQuestion = /quỹ|danh mục|nắm giữ/.test(question);
+    const flowQuestion = /dòng tiền|ngoại|tự doanh/.test(question);
+
     if (/top|xếp hạng|tăng mạnh|so sánh/.test(question)) {
-      lines.push("Các mã VN30 có mức dự báo tăng T+5 cao nhất hiện tại:");
+      lines.push("### Xếp hạng VN30", "Các mã VN30 có mức dự báo tăng T+5 cao nhất hiện tại:");
       for (const [index, row] of context.topMovers.slice(0, 7).entries()) {
         lines.push(`${index + 1}. ${row.symbol}: ${money(row.close)} → ${money(row.forecast)} (${pct(row.return)}).`);
       }
       return lines.join("\n");
     }
-    if (five) lines.push(`${context.symbol}: giá hiện tại ${money(context.close)}; dự báo T+5 ${money(five.price)} (${pct(five.expectedReturn)}), vùng giá ${money(five.lowerPrice)}–${money(five.upperPrice)}.`);
-    if (/quỹ|danh mục|nắm giữ/.test(question) || !knowledge) {
+    if (knowledge && !detailed && !fundQuestion && !flowQuestion) return knowledge;
+
+    if (five) {
+      const stance = five.expectedReturn > .003 ? "nghiêng tăng" : five.expectedReturn < -.003 ? "nghiêng giảm" : "gần như đi ngang";
+      lines.push(
+        `### Kết luận cho ${context.symbol}`,
+        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là forecast đã niêm phong tại snapshot ${context.asOf || "chưa rõ ngày"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,
+      );
+    }
+
+    if (detailed) {
+      const path = forecastPath(context);
+      if (path.length) lines.push("### Đường dự báo T+1 đến T+5", ...path);
+      const tech = context.technical;
+      if (tech) {
+        const location = number(tech.sma20) !== null && number(context.close) !== null
+          ? (context.close >= tech.sma20 ? "trên" : "dưới") : "quanh";
+        lines.push("### Giá và kỹ thuật từ dữ liệu thật", `Giá hiện ${location} SMA20 ${money(tech.sma20)}; SMA50 ${money(tech.sma50)}; biến động 5 phiên ${pct(tech.return5)} và 20 phiên ${pct(tech.return20)}. Biên 20 phiên là ${money(tech.low20)}–${money(tech.high20)}; chuỗi dùng giá đóng cửa thị trường, không làm mượt hay thay đổi dữ liệu.`);
+      }
+    }
+
+    if (fundQuestion || detailed) {
       if (context.fund) {
         const contribution = five?.liveEvidence?.FUND;
-        lines.push(`Danh mục quỹ: ${context.fund.fundCount} quỹ đang nắm giữ, tỷ trọng bình quân ${(context.fund.averageWeight * 100).toFixed(2)}% mỗi quỹ; NAV 20 phiên ${pct(context.fund.navMomentum20)}${number(contribution) === null ? "" : `; tác động vào dự báo T+5 ${pct(contribution)}`}.`);
-        if (/quỹ|danh mục|nắm giữ/.test(question)) lines.push(`Các quỹ có tỷ trọng cao: ${context.fund.holders.slice(0, 5).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ")}.`);
-      } else if (/quỹ|danh mục|nắm giữ/.test(question)) lines.push("Mã này chưa có công bố danh mục quỹ đủ điều kiện để đưa vào dự báo.");
+        lines.push("### Quỹ và dòng tiền", `Có ${context.fund.fundCount} quỹ đang nắm giữ, tỷ trọng bình quân ${(context.fund.averageWeight * 100).toFixed(2)}% trong từng danh mục quỹ; NAV 20 phiên ${pct(context.fund.navMomentum20)}${number(contribution) === null ? "" : `; đóng góp đã ghi nhận vào forecast T+5 ${pct(contribution)}`}. Tỷ trọng này không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua trong phiên.`);
+        if (fundQuestion) lines.push(`Các tỷ trọng cao nhất: ${context.fund.holders.slice(0, 5).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ")}.`);
+      } else if (fundQuestion) lines.push("Mã này chưa có công bố danh mục quỹ đủ điều kiện để đưa vào forecast.");
     }
-    if (/dòng tiền|ngoại|tự doanh|đầy đủ|phân tích/.test(question)) {
-      if (context.flow.foreign) lines.push(`Khối ngoại ${context.flow.foreign.latestDate}: ròng ${money(context.flow.foreign.net1)} đồng; cộng dồn 5 quan sát ${money(context.flow.foreign.net5)} đồng.`);
-      if (context.flow.proprietary) lines.push(`Tự doanh ${context.flow.proprietary.latestDate}: ròng ${money(context.flow.proprietary.net1)} đồng; cộng dồn 5 quan sát ${money(context.flow.proprietary.net5)} đồng.`);
+
+    if (flowQuestion || detailed) {
+      const flowLines = [];
+      if (context.flow.foreign) flowLines.push(`Khối ngoại ${context.flow.foreign.latestDate}: ròng ${money(context.flow.foreign.net1)} đồng; 5 quan sát ${money(context.flow.foreign.net5)} đồng${context.flow.foreign.ageSessions ? `; trễ ${context.flow.foreign.ageSessions} phiên` : ""}.`);
+      if (context.flow.proprietary) flowLines.push(`Tự doanh ${context.flow.proprietary.latestDate}: ròng ${money(context.flow.proprietary.net1)} đồng; 5 quan sát ${money(context.flow.proprietary.net5)} đồng${context.flow.proprietary.ageSessions ? `; trễ ${context.flow.proprietary.ageSessions} phiên` : ""}.`);
+      if (flowLines.length) lines.push(...flowLines);
     }
-    if (context.financial && /tài chính|lợi nhuận|định giá|đầy đủ|phân tích/.test(question)) {
-      lines.push(`Tài chính doanh nghiệp: tăng trưởng lợi nhuận ${pct(context.financial.profitGrowth)}, tăng trưởng doanh thu ${pct(context.financial.revenueGrowth)} so với quý trước.`);
+
+    if (context.financial && /tài chính|lợi nhuận|định giá|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) {
+      lines.push("### Nền tảng doanh nghiệp", `Kỳ ${context.financial.incomePeriod || "gần nhất"}: lợi nhuận thay đổi ${pct(context.financial.profitGrowth)} và doanh thu ${pct(context.financial.revenueGrowth)} so với quý trước. Chỉ tiêu này cần đọc cùng tính mùa vụ và kỳ công bố, không tự suy ra xu hướng dài hạn từ một quý.`);
     }
+
     const drivers = primaryDrivers(five);
-    if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push(`Các yếu tố tác động mạnh nhất: ${drivers.join("; ")}.`);
-    if (context.news.length && /tin|đầy đủ|phân tích/.test(question)) lines.push(`Tin gần đây: ${context.news.slice(0, 2).map(item => item.title).join("; ")}.`);
-    if (context.communitySignals.length && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ/.test(question)) {
-      lines.push(`Tín hiệu cộng đồng đã đối chiếu: ${context.communitySignals.map(item => `${item.title} (${item.independentSources} nguồn, ${item.quality}/100)`).join("; ")}. Chưa xem là thông tin chính thức khi doanh nghiệp chưa xác nhận.`);
+    if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push("### Yếu tố mô hình", `Các đóng góp lớn nhất tại T+5: ${drivers.join("; ")}.`);
+    if (context.news.length && /tin|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) lines.push("### Tin đã có trong snapshot", ...context.news.slice(0, 4).map(item => `- ${item.title} — ${item.publisher || "chưa rõ nguồn"}${item.date ? `, ${item.date}` : ""}.`));
+
+    if ((context.communitySignals.length || context.communityMonitoring.length) && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ|phân tích|kết hợp|forecast/.test(question)) {
+      lines.push("### Tín hiệu cộng đồng");
+      for (const item of context.communitySignals.slice(0, 4)) lines.push(`- ${item.title} — ${item.independentSources || 0} nguồn độc lập, chất lượng ${item.quality || 0}/100, trạng thái ${item.truthState || item.state || "đang xác minh"}.`);
+      if (!context.communitySignals.length && context.communityMonitoring.length) lines.push(`Có ${context.communityMonitoring.length} tín hiệu đang theo dõi; chưa đủ điều kiện tác động forecast.`);
+      lines.push("Nguồn cộng đồng chỉ được dùng làm tín hiệu cần kiểm tra; không được coi là công bố chính thức.");
     }
-    if (/rủi ro|lưu ý|an toàn|đầy đủ|phân tích/.test(question)) lines.push(`Trạng thái rủi ro: ${context.riskStatus || "chưa xác định"}. ${context.validation.directionValidated ? "Xác suất hướng đã qua kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`);
+
+    if (/rủi ro|lưu ý|an toàn|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) {
+      lines.push(
+        "### Kiểm định và giới hạn",
+        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; price gate ${context.validation.priceValidated ? "PASS" : "chưa PASS"}; promotion ${context.validation.modelPromotionStatus || "chưa rõ"}; mẫu holdout T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Xác suất hướng đã qua gate kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`,
+        `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Forecast là phân bố bất định, không phải cam kết giá hoặc khuyến nghị mua/bán.`,
+      );
+    }
     return lines.join("\n");
+  }
+
+  function enforceAnswerFocus(answer, question, context, intent) {
+    const text = String(answer || "").trim();
+    if (!intent.useSnapshot) return text;
+    const hasSymbol = new RegExp(`(^|[^A-Za-z0-9])${context.symbol}([^A-Za-z0-9]|$)`, "i").test(text);
+    const hasForecast = /T\+1|T\+5|forecast|dự báo|vùng (?:giá|bất định)/i.test(text);
+    const hasModelNumber = Object.values(context.horizons || {}).some(item => text.includes(money(item.price)));
+    const genericEssay = /khung phân tích tích hợp|quy trình đa chiều|nguyên tắc kết hợp thông tin|để đánh giá toàn diện.*cần tiếp cận|phương pháp và khung phân tích/i.test(text);
+    if (genericEssay || [hasSymbol, hasForecast, hasModelNumber].filter(Boolean).length < 2) return localAnalysis(question, context);
+    const needsFullPath = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|các kỳ|T\+1.*T\+5/i.test(question);
+    const missingPrices = Object.values(context.horizons || {}).filter(item => !text.includes(money(item.price)));
+    if (needsFullPath && missingPrices.length) {
+      return [
+        `### Snapshot forecast ${context.symbol} · nguồn số liệu chuẩn`,
+        ...forecastPath(context),
+        "Các con số trên lấy trực tiếp từ VMEWS; phần phân tích bên dưới không được thay đổi forecast đã niêm phong.",
+        text,
+      ].join("\n");
+    }
+    return text;
+  }
+
+  function sourceFallback(question, context, intent, sources, reason = "") {
+    const lines = [];
+    if (intent.useSnapshot) lines.push(localAnalysis(question, context));
+    else lines.push("### Trạng thái nghiên cứu", "Tôi chưa thể đọc sâu và tổng hợp nguồn web bằng Gemini ở lượt này nên không đưa ra kết luận vĩ mô như thể đã xác minh đầy đủ.");
+    if (sources.length) {
+      lines.push(
+        "### Nguồn công khai đã thu thập để đối chiếu",
+        ...sources.slice(0, 6).map(item => `- ${item.title}${item.publisher ? ` — ${item.publisher}` : ""}${item.publishedAt ? `, ${item.publishedAt}` : ""}.`),
+        intent.useSnapshot
+          ? "Các nguồn trên chưa tự động tác động forecast; cần đọc nội dung và xác minh trước khi dùng để ủng hộ hoặc phản biện luận điểm mô hình."
+          : "Danh sách trên là đầu mối nghiên cứu, chưa phải kết luận đã xác minh.",
+      );
+    }
+    if (reason) lines.push("### Giới hạn phiên", reason);
+    return lines.filter(Boolean).join("\n");
   }
 
   async function remoteAnalysis(input, context, address) {
@@ -715,8 +947,9 @@
         if (intent.shouldSearch) setStatus("Đang tìm nguồn công khai…");
         try {
           const result = await directAnalysis(question, context, secret, intent);
-          answer = result.text;
+          answer = enforceAnswerFocus(result.text, question, context, intent);
           sources = result.sources;
+          if (intent.useSnapshot) meta.push(`Forecast ${context.symbol}`);
           if (result.searched) meta.push("Google Search");
           if (result.readUrls) meta.push("Đã đọc website");
           if (result.openSourceCount) meta.push(`${result.openSourceCount} nguồn mở`);
@@ -734,12 +967,16 @@
         } catch (error) {
           const connection = $("#solutionAiConnectionState");
           if (connection) connection.textContent = error?.message || "Gemini tạm thời không phản hồi.";
-          setStatus("Gemini chưa phản hồi");
-          throw new Error(error?.message || "Gemini chưa thể phân tích; hãy kiểm tra kết nối rồi thử lại.");
+          const fallbackSources = await collectOpenSources(question, intent, context).catch(() => []);
+          answer = sourceFallback(question, context, intent, fallbackSources, error?.message || "Gemini tạm thời không phản hồi.");
+          sources = fallbackSources;
+          meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nghiên cứu dự phòng", "Gemini gián đoạn"];
+          if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
+          setStatus(intent.useSnapshot ? "VMEWS · phân tích dự phòng" : "Nguồn mở · chờ Gemini đọc sâu");
         }
       } else if (address) {
         try {
-          answer = await remoteAnalysis(question, context, address);
+          answer = enforceAnswerFocus(await remoteAnalysis(question, context, address), question, context, intent);
           meta = ["Gemini", "Dữ liệu VMEWS"];
           setStatus("Gemini · phân tích theo dữ liệu thực");
         } catch {
@@ -748,11 +985,15 @@
           setStatus("Phân tích từ dữ liệu hiện có");
         }
       } else {
+        const openSources = intent.shouldSearch ? await collectOpenSources(question, intent, context).catch(() => []) : [];
         answer = intent.useSnapshot || knowledgeAnswer(question.toLowerCase())
           ? localAnalysis(question, context)
-          : "Hãy kết nối Gemini bằng nút ↗ để tôi có thể trả lời linh hoạt, tìm nguồn công khai và phân tích câu hỏi này.";
-        meta = intent.useSnapshot ? ["Dữ liệu VMEWS", "Không dùng web"] : [];
-        setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu hiện có" : "Kết nối Gemini để nghiên cứu tự do");
+          : sourceFallback(question, context, intent, openSources, "Kết nối Gemini để đọc sâu và tổng hợp nội dung các nguồn.");
+        sources = openSources;
+        meta = intent.useSnapshot ? [`Forecast ${context.symbol}`, "Dữ liệu VMEWS"] : ["Nghiên cứu dự phòng"];
+        if (openSources.length) meta.push(`${openSources.length} nguồn chờ đối chiếu`);
+        if (!openSources.length) meta.push("Không dùng web");
+        setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Kết nối Gemini để đọc sâu nguồn mở");
       }
       waiting.remove();
       message("assistant", answer, "", sources, meta);

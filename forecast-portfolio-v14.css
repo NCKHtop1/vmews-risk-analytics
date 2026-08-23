@@ -128,6 +128,8 @@ th { background: #11130f; color: #a2a699; }
 tbody tr:hover { background: #151912; }
 .footer { color: #82867c; }
 .footer strong { color: #cbd0c5; }
+.footer a { color: #9fc77c; text-decoration-color: #50633f; text-underline-offset: 3px; }
+.footer a:hover { color: #d7ffb3; }
 
 .researchWorkbench .taBox, .researchWorkbench .contextBox,
 .researchWorkbench .taReadout article, .researchWorkbench .contextCard {
@@ -828,6 +830,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .aiMessage code { padding: 2px 4px; border: 1px solid #343c2f; border-radius: 2px; background: #0a0d09; color: #c8edaa; font: 10px var(--mono); }
 .aiMessage p a, .aiMessage li a { color: #bde692; text-decoration-color: #638047; text-underline-offset: 2px; }
 .aiQuote { padding-left: 10px; border-left: 2px solid #658a49; color: #cad8bf !important; }
+.aiTableRow { padding: 7px 8px; border-left: 2px solid #435437; background: #0d100b; color: #d6dfcf !important; font-family: var(--mono); font-size: 10px !important; }
 .aiResearchTrace { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 .aiResearchTrace span { padding: 4px 6px; border: 1px solid #33402d; border-radius: 99px; background: #0d110b; color: #aeca98; font: 8px var(--mono); }
 .aiSources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; padding-top: 10px; border-top: 1px solid #292f25; }
@@ -863,9 +866,12 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .fundHoldingList article > strong { color: #a8eb65; font: 10px var(--mono); }
 .researchWorkbench .taBox, .researchWorkbench .contextBox { border-color: #30352d; background: #0e100d; }
 .researchWorkbench .contextCard, .researchWorkbench .taReadout article { border-color: #30362c; background: #11130f; }
-.researchWorkbench .taControls label { border-color: #353a31; background: #10120e; }
+.researchWorkbench .taControls label { border-color: #353a31; background: #10120e; transition: border-color .18s ease, background .18s ease, color .18s ease; }
+.researchWorkbench .taControls label:has(input:checked) { border-color: #557642; background: linear-gradient(145deg, #182114, #11160e); color: #cef5a9; }
 .researchWorkbench .taControls input { accent-color: #a8eb65; }
-.researchWorkbench .taChart { background: #0b0d0a; }
+.researchWorkbench .taChart { position: relative; border: 1px solid rgba(115, 158, 93, .13); background: radial-gradient(ellipse at 82% 6%, rgba(133, 225, 83, .075), transparent 48%), linear-gradient(180deg, #0b0f09, #080b07); box-shadow: inset 0 1px rgba(205, 255, 171, .025); }
+.researchWorkbench .taChart::after { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(110deg, transparent 34%, rgba(164, 239, 105, .018) 52%, transparent 69%); content: ""; pointer-events: none; }
+.researchWorkbench .taChart canvas { position: relative; z-index: 1; display: block; }
 .researchWorkbench .ctxGood { color: #a8eb65; }
 
 @media (max-width: 780px) {
