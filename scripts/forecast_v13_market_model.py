@@ -50,12 +50,19 @@ from forecast_v16_external_data import (
     fund_feature_panel,
     latest_fund_context,
 )
+from forecast_v17_live_intelligence import (
+    decision_news_contexts,
+    decision_prior,
+    financial_decision_contexts,
+    fund_decision_contexts,
+    typed_flow_summary,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-16.0.0"
+VERSION = "VMEWS-MARKET-FORECAST-17.0.0"
 HORIZONS = (1, 2, 3, 4, 5)
 # Recent walk-forward windows show that the raw market-wide intercept drifts
 # faster than the cross-sectional stock-selection signal at T+2.  Retaining a
@@ -251,6 +258,46 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         )
         refreshed[symbol] = "MARKET_SCAN_EOD"
 
+    # The last successful independently validated publication is itself a
+    # timestamped observed EOD source. Recover its actual latest close when a
+    # frozen archive or screener omits a less-liquid current-session symbol;
+    # never manufacture a quote or silently roll an older session forward.
+    published_path = DATA / "forecast-dashboard-v12.json"
+    if published_path.exists():
+        published = _json(published_path)
+        published_as_of = str(published.get("asOf") or "")
+        if (
+            (published.get("promotion") or {}).get("status") == "PASS"
+            and published_as_of == str(scan.get("reviewDate") or "")
+        ):
+            for symbol, history in histories.items():
+                observed = (published.get("symbols") or {}).get(symbol) or {}
+                if (
+                    str(observed.get("date") or "") != published_as_of
+                    or observed.get("dataFreshness") != "CURRENT"
+                    or published_as_of <= str(history[-1].get("date") or "")
+                ):
+                    continue
+                close = _clean_number(observed.get("close"))
+                if close <= 0:
+                    continue
+                chart = (published.get("charts") or {}).get(symbol) or []
+                last_chart = chart[-1] if chart else {}
+                volume = _clean_number(last_chart.get("volume")) if str(last_chart.get("date") or "") == published_as_of else 0.0
+                history.append({
+                    "date": published_as_of,
+                    "open": close,
+                    "high": close,
+                    "low": close,
+                    "close": close,
+                    "modelClose": _clean_number(observed.get("modelClose"), close),
+                    "volume": volume,
+                    "provider": "Prior independently validated VMEWS EOD publication",
+                    "exchange": str(observed.get("exchange") or "HOSE"),
+                    "ohlcUnavailable": True,
+                })
+                refreshed[symbol] = "PREVIOUS_VALIDATED_EOD"
+
     if refresh_symbols == ("ALL",):
         # The screener already supplies verified current-session closes for its
         # liquid names; obtain full OHLCV for those plus every stale HOSE name.
@@ -417,8 +464,10 @@ def build_panel(
     panel.sort_values(["date", "symbol"], inplace=True)
     panel.reset_index(drop=True, inplace=True)
     fund_features, fund_audit = fund_feature_panel(panel)
+    training_eligible = bool(fund_audit.get("modelEligible"))
     for column in FUND_FEATURE_COLUMNS:
-        panel[column] = fund_features[column].to_numpy(dtype=float)
+        panel[column] = fund_features[column].to_numpy(dtype=float) if training_eligible else 0.0
+    fund_audit["trainingFeaturesMasked"] = not training_eligible
     panel.attrs["fundAudit"] = fund_audit
     _log(
         "feature_panel_built",
@@ -1258,6 +1307,7 @@ def write_artifacts(
     histories: dict[str, list[dict[str, Any]]],
     freshness: dict[str, Any],
     events: pd.DataFrame,
+    flows: dict[str, list[dict[str, Any]]],
     signal_audit: dict[str, Any],
 ) -> dict[str, Any]:
     if sorted(result.horizon for result in results) != list(HORIZONS):
@@ -1282,6 +1332,13 @@ def write_artifacts(
         str((freshness["scan"].get(symbol) or {}).get("status", "")) for symbol in symbols
     ]
     latest_funds, latest_fund_audit = latest_fund_context()
+    live_funds, live_fund_audit = fund_decision_contexts(
+        set(symbols), freshness["forecastAsOf"], timestamp
+    )
+    live_financials, live_financial_audit = financial_decision_contexts(set(symbols), timestamp)
+    live_news, live_news_audit = decision_news_contexts(
+        events, freshness["forecastAsOf"], timestamp
+    )
     fitted_fund_audit = panel.attrs.get("fundAudit") or {
         "status": "UNAVAILABLE",
         "modelEligible": False,
@@ -1300,6 +1357,18 @@ def write_artifacts(
         evidence["rumorClaims"] = []
         evidence["pointInTimeCutoff"] = "15:00 Asia/Ho_Chi_Minh"
         evidence["issuerIdentityChecked"] = True
+        decision_events = live_news.get(symbol) or {}
+        combined_news = [*(decision_events.get("items") or []), *evidence["recent"]]
+        seen_headlines: set[str] = set()
+        evidence["decisionRecent"] = []
+        for item in combined_news:
+            identity = str(item.get("title") or "").strip().casefold()
+            if not identity or identity in seen_headlines:
+                continue
+            seen_headlines.add(identity)
+            evidence["decisionRecent"].append(item)
+            if len(evidence["decisionRecent"]) >= 12:
+                break
         old.update(
             {
                 "symbol": symbol,
@@ -1330,6 +1399,8 @@ def write_artifacts(
             "propAvailable": int(_clean_number(row.get("flow_prop_available"))),
             "sessionsSinceObservation": int(_clean_number(row.get("flow_days_since"), 60)),
             "stale": _clean_number(row.get("flow_days_since"), 60) > 3,
+            "foreign": typed_flow_summary(flows.get(symbol, []), "foreign", row_date),
+            "proprietary": typed_flow_summary(flows.get(symbol, []), "proprietary", row_date),
         }
         old["newsFeatures"] = {
             "count1": int(_clean_number(row.get("news_count1"))),
@@ -1341,26 +1412,24 @@ def write_artifacts(
             "official5": int(_clean_number(row.get("news_official5"))),
             "rumor5": int(_clean_number(row.get("news_rumor5"))),
             "sessionsSinceEvent": int(_clean_number(row.get("news_days_since"), 60)),
+            "pendingDecisionEvents": int(decision_events.get("count") or 0),
+            "pendingPositive": int(decision_events.get("positive") or 0),
+            "pendingNegative": int(decision_events.get("negative") or 0),
         }
-        fitted_fund_available = bool(_clean_number(row.get("fund_available")))
+        old["decisionNews"] = copy.deepcopy(
+            decision_events or {"available": False, "count": 0, "usedByForecast": False}
+        )
+        live_disclosure = live_funds.get(symbol)
         latest_disclosure = latest_funds.get(symbol) or {}
-        disclosure_as_of = str(latest_disclosure.get("asOf") or "")
-        collected_after_forecast = bool(disclosure_as_of and disclosure_as_of > row_date)
-        available_for_forecast = fitted_fund_available and not collected_after_forecast
-        if fitted_fund_available:
-            fund_context = {
-                "available": True,
-                "asOf": row_date,
-                "fundCount": int(_clean_number(row.get("fund_holder_count"))),
-                "reportedWeight": _clean_number(row.get("fund_weight_sum")),
-                "largestReportedWeight": _clean_number(row.get("fund_weight_max")),
-                "reportedWeightChange": _clean_number(row.get("fund_weight_change")),
-                "weightedNavMomentum20": _clean_number(row.get("fund_nav_momentum20")),
-                "snapshotAgeDays": int(_clean_number(row.get("fund_snapshot_age"), 999)),
-                "historyDepth": int(_clean_number(row.get("fund_history_depth"))),
-                "source": "FMARKET",
-            }
+        if live_disclosure:
+            fund_context = copy.deepcopy(live_disclosure)
+            fund_context.update({
+                "modelEligible": bool(fitted_fund_audit.get("modelEligible")),
+                "usedByForecast": True,
+                "availableForForecast": True,
+            })
         else:
+            disclosure_as_of = str(latest_disclosure.get("asOf") or "")
             fund_context = {
                 "available": bool(latest_disclosure),
                 "asOf": disclosure_as_of or None,
@@ -1370,25 +1439,22 @@ def write_artifacts(
                 "largestReportedWeight": _clean_number(latest_disclosure.get("largestReportedWeight")),
                 "reportedWeightChange": 0.0,
                 "weightedNavMomentum20": _clean_number(latest_disclosure.get("weightedNavMomentum20")),
-                "snapshotAgeDays": 0 if collected_after_forecast else 999,
+                "snapshotAgeDays": 999,
                 "historyDepth": int(_clean_number(latest_disclosure.get("historyDepth"))),
                 "source": str(latest_disclosure.get("source") or "FMARKET"),
-            }
-        fund_context.update(
-            {
                 "forecastAsOf": row_date,
-                "availableForForecast": available_for_forecast,
-                "collectedAfterForecast": collected_after_forecast,
-                "modelEligible": bool(fitted_fund_audit.get("modelEligible")) and available_for_forecast,
-                "usedByForecast": bool(fitted_fund_audit.get("modelEligible")) and available_for_forecast,
+                "availableForForecast": False,
+                "collectedAfterForecast": bool(disclosure_as_of and disclosure_as_of > row_date),
+                "modelEligible": False,
+                "inferenceEligible": False,
+                "usedByForecast": False,
+                "holdings": [],
             }
-        )
-        if "averageReportedWeight" not in fund_context:
-            fund_context["averageReportedWeight"] = (
-                _clean_number(fund_context.get("reportedWeight"))
-                / max(1, int(_clean_number(fund_context.get("fundCount"))))
-            )
         old["fundContext"] = fund_context
+        old["fundamentalContext"] = copy.deepcopy(
+            live_financials.get(symbol)
+            or {"available": False, "usedByForecast": False, "inferenceEligible": False}
+        )
         market = old.get("market", {})
         market.update(
             {
@@ -1415,13 +1481,52 @@ def write_artifacts(
         probability = result.classifier.predict_proba(feature_x)[:, 1]
         raw = result.model.predict(feature_x) * volatility
         raw = apply_intercept_mode(raw, rows["date"], result.intercept_mode)
-        prediction = shape_prediction(raw, volatility, probability, result.scale, result.conviction_floor)
+        core_prediction = shape_prediction(
+            raw, volatility, probability, result.scale, result.conviction_floor
+        )
         expected_magnitude = (
             np.clip(result.magnitude_model.predict(feature_x), .02, 4.0)
             * volatility
             * result.magnitude_scale
         )
-        grouped = factor_contributions(result, feature_x, volatility, rows["date"], prediction)
+        grouped = factor_contributions(
+            result, feature_x, volatility, rows["date"], core_prediction
+        )
+        live_priors = [
+            decision_prior(
+                snapshots[symbol]["fundContext"],
+                snapshots[symbol]["flow"],
+                snapshots[symbol]["fundamentalContext"],
+                float(rows.iloc[position]["forward_vol"]),
+                horizon,
+                news=snapshots[symbol]["decisionNews"],
+            )
+            for position, symbol in enumerate(symbols)
+        ]
+        for name in ("FUND", "FLOW", "FUNDAMENTAL", "EVENT"):
+            adjustment = np.asarray(
+                [prior["components"][name] for prior in live_priors], dtype=float
+            )
+            grouped[name] = grouped.get(name, np.zeros_like(adjustment)) + adjustment
+        live_adjustment = np.asarray(
+            [prior["totalReturn"] for prior in live_priors], dtype=float
+        )
+        prediction = core_prediction + live_adjustment
+        active_experts = [*FACTOR_GROUPS, "FUNDAMENTAL"]
+        live_evidence_audit = {
+            "status": "ACTIVE",
+            "fundSymbols": sum(bool(snapshots[s]["fundContext"].get("usedByForecast")) for s in symbols),
+            "financialSymbols": sum(bool(snapshots[s]["fundamentalContext"].get("usedByForecast")) for s in symbols),
+            "postCloseNewsSymbols": sum(bool(snapshots[s]["decisionNews"].get("usedByForecast")) for s in symbols),
+            "flowSymbols": sum(
+                bool((snapshots[s]["flow"].get("foreign") or {}).get("available"))
+                or bool((snapshots[s]["flow"].get("proprietary") or {}).get("available"))
+                for s in symbols
+            ),
+            "maxAbsPrior": float(np.max(np.abs(live_adjustment))) if len(live_adjustment) else 0.0,
+            "independentlyBacktested": False,
+            "historicalBackfillRows": 0,
+        }
 
         audit = dict(result.holdout)
         walk_forward = result.walk_forward or {}
@@ -1486,7 +1591,7 @@ def write_artifacts(
             "executableMAESkill": audit["executableMAESkill"],
         }
         model_horizons[key] = {
-            "activeExperts": list(FACTOR_GROUPS),
+            "activeExperts": active_experts,
             "priceStatus": "PASS",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "status": "PASS",
@@ -1501,6 +1606,7 @@ def write_artifacts(
             "forecastLoss": os.environ.get("V13_MODEL_LOSS", "absolute_error"),
             "eventImpactAudit": event_study,
             "factorAblation": ablation,
+            "liveEvidenceAudit": live_evidence_audit,
         }
         back_horizons[key] = {
             "metrics": audit,
@@ -1572,10 +1678,13 @@ def write_artifacts(
                 "bullScenarioPrice": bull_price,
                 "scenarioRole": "CONDITIONAL_ABSOLUTE_MOVE_NOT_A_SECOND_POINT_FORECAST",
                 "calibrationN": result.calibration["rows"],
-                "activeExperts": list(FACTOR_GROUPS),
+                "activeExperts": active_experts,
                 "expertPredictions": dict(contributions),
                 "expertContributions": dict(contributions),
-                "factorMethod": "GROUPED_LEAVE_AT_CALIBRATION_MEDIAN_COUNTERFACTUAL",
+                "factorMethod": "GROUPED_COUNTERFACTUAL_PLUS_BOUNDED_DECISION_PRIOR",
+                "validatedCoreReturn": float(core_prediction[position]),
+                "liveAdjustmentReturn": float(live_adjustment[position]),
+                "liveEvidence": live_priors[position],
                 "priceValidated": True,
                 "directionValidated": direction_pass,
                 "validationStatus": "PASS",
@@ -1684,14 +1793,19 @@ def write_artifacts(
             "confidenceInterval": "EMPIRICAL_20_80_CALIBRATION_RESIDUAL",
             "factorAttribution": "GROUPED_LEAVE_AT_MEDIAN_COUNTERFACTUAL",
             "newsPublicationCutoff": "15:00 Asia/Ho_Chi_Minh",
-            "afterCloseNews": "DEFER_TO_NEXT_TRADING_SESSION",
+            "afterCloseNews": "OBSERVED_AT_DECISION; EFFECTIVE_NEXT_TRADING_SESSION",
             "issuerIdentityValidation": True,
             "outcomeFieldsUsedAsFeatures": 0,
             "staleFlowForwardFill": False,
-            "fundHoldingsPolicy": "POINT_IN_TIME_SNAPSHOTS_ONLY",
+            "fundHoldingsPolicy": "DECISION_TIMESTAMP_DISCLOSURES; NO_HISTORICAL_BACKFILL",
             "fundHoldingsModelEligible": bool(fitted_fund_audit.get("modelEligible")),
-            "fundHoldingsContextOnlyUntilHistoryGate": not bool(fitted_fund_audit.get("modelEligible")),
-            "quarterlyAccountingFeatures": "EXCLUDED_WITHOUT_PUBLICATION_TIMESTAMPS",
+            "fundHoldingsInferenceEligible": bool(live_fund_audit.get("inferenceEligible")),
+            "fundHoldingsContextOnlyUntilHistoryGate": not bool(live_fund_audit.get("inferenceEligible")),
+            "fundHoldingsTrainingFeaturesMasked": bool(fitted_fund_audit.get("trainingFeaturesMasked")),
+            "decisionTimestamp": timestamp,
+            "livePriorPolicy": "POINT_IN_TIME_OBSERVED; VOLATILITY_CAPPED; NO_HISTORICAL_BACKFILL",
+            "livePriorIndependentlyBacktested": False,
+            "quarterlyAccountingFeatures": "OBSERVED_CURRENT_DECISION_PRIOR_ONLY; NO_HISTORICAL_BACKFILL",
             "scenarioSemantics": "HISTORICALLY_CALIBRATED_DIRECTIONAL_SCENARIO_NOT_GUARANTEED_CLOSE",
         },
         "universe": {
@@ -1720,13 +1834,21 @@ def write_artifacts(
             "signalAudit": signal_audit,
             "fundAudit": {
                 **fitted_fund_audit,
+                "status": "ACTIVE_DECISION_PRIOR" if live_funds else fitted_fund_audit.get("status", "UNAVAILABLE"),
+                "fittedStatus": fitted_fund_audit.get("status", "UNAVAILABLE"),
+                "inferenceEligible": bool(live_fund_audit.get("inferenceEligible")),
+                "usedByForecastSymbols": len(live_funds),
                 "latestCollection": latest_fund_audit,
+                "decisionAudit": live_fund_audit,
                 "postForecastSnapshotsUsedAsFeatures": 0,
+                "postCloseDisclosuresUsedAtDecision": live_fund_audit.get("postCloseSymbols", 0),
             },
+            "financialAudit": live_financial_audit,
+            "decisionNewsAudit": live_news_audit,
         },
         "model": model,
         "backtest": {
-            "version": "VMEWS-MARKET-BACKTEST-16.0.0",
+            "version": "VMEWS-MARKET-BACKTEST-17.0.0",
             "generatedAt": timestamp,
             "design": "Sealed chronological holdout plus three disjoint expanding walk-forward folds retrained from scratch; T+h maturity purge; pre-test calibration; point-in-time event, flow and fund-snapshot governance; executable HOSE-price and absolute-move audits.",
             "horizons": back_horizons,
@@ -1742,7 +1864,16 @@ def write_artifacts(
             "promotion": promotion,
             "symbols": snapshots,
             "charts": charts,
-            "marketForecast": {"artifact": "forecast-market-v13.json", "tickGridEnforced": True, "allHOSECommonStocks": True, "signalAudit": signal_audit},
+            "marketForecast": {
+                "artifact": "forecast-market-v13.json",
+                "tickGridEnforced": True,
+                "allHOSECommonStocks": True,
+                "signalAudit": signal_audit,
+                "decisionAt": timestamp,
+                "fundInferenceSymbols": len(live_funds),
+                "financialInferenceSymbols": len(live_financials),
+                "postCloseNewsSymbols": len(live_news),
+            },
         }
     )
     current.update({"generatedAt": timestamp, "symbols": snapshots, "modelVersion": VERSION})
@@ -1794,7 +1925,7 @@ def main() -> None:
         )
         results.append(result)
     if args.publish:
-        write_artifacts(panel, results, histories, freshness, events, signal_audit)
+        write_artifacts(panel, results, histories, freshness, events, flows, signal_audit)
         published_fpt = _json(DATA / "forecast-dashboard-v12.json")["symbols"].get("FPT", {})
         for result in results:
             horizon = published_fpt.get("horizons", {}).get(str(result.horizon), {})

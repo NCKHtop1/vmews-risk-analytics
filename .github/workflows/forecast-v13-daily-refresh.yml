@@ -1,4 +1,4 @@
-name: Forecast V16 full-HOSE price, news, flow and fund audit
+name: Forecast V17 full-HOSE price, news, flow, funds and financial audit
 
 on:
   workflow_dispatch:
@@ -12,6 +12,11 @@ on:
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
       - "scripts/forecast_v16_external_data_test.py"
+      - "scripts/forecast_v17_live_intelligence.py"
+      - "scripts/forecast_v17_live_intelligence_test.py"
+      - "scripts/solution_ai_v17_test.mjs"
+      - "scripts/solution_ai_frontend_v17_test.mjs"
+      - "api/solution-ai.js"
   schedule:
     - cron: "30 10 * * 1-5"
 
@@ -51,6 +56,8 @@ jobs:
           python scripts/forecast_v13_market_model_test.py
           python scripts/forecast_v14_frontend_contract_test.py
           python scripts/forecast_v16_external_data_test.py
+          python scripts/forecast_v17_live_intelligence_test.py
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
       - name: Persist the validated market snapshot
         run: |
           git config user.name "github-actions[bot]"
@@ -60,5 +67,5 @@ jobs:
             echo "No market-session change detected."
             exit 0
           fi
-          git commit -m "Refresh validated V16 all-HOSE EOD, event, flow and fund forecast [data-only]"
+          git commit -m "Refresh validated V17 all-HOSE forecast with live fund, flow and financial evidence [data-only]"
           git push

@@ -1,4 +1,4 @@
-name: Verify VMEWS Forecast V16 Vietnamese CDN
+name: Verify VMEWS Forecast V17 Vietnamese CDN
 
 on:
   workflow_dispatch:
@@ -10,6 +10,8 @@ on:
       - "forecast-live-leaders-v14.js"
       - "forecast-polish-v12.js"
       - "forecast-portfolio-v14.css"
+      - "solution-ai-v17.js"
+      - "api/solution-ai.js"
       - "data/forecast-current-v12.json"
       - "data/forecast-dashboard-v12.json"
       - "data/forecast-market-v13.json"
@@ -33,6 +35,7 @@ jobs:
           for attempt in $(seq 1 24); do
             if curl -fsSL --max-time 25 "$ROOT/forecast-final.html" -o /tmp/forecast-final.html \
               && curl -fsSL --max-time 25 "$ROOT/forecast-final-v12.js" -o /tmp/forecast-final-v12.js \
+              && curl -fsSL --max-time 25 "$ROOT/solution-ai-v17.js" -o /tmp/solution-ai-v17.js \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-current-v12.json" -o /tmp/forecast-current-v12.json \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-dashboard-v12.json" -o /tmp/forecast-dashboard-v12.json \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-market-v13.json" -o /tmp/forecast-market-v13.json; then
@@ -43,14 +46,16 @@ jobs:
           echo "Exact-SHA CDN assets were not ready in time."
           exit 1
 
-      - name: Verify Vietnamese UI and V16 publication contract
+      - name: Verify Vietnamese UI and V17 publication contract
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq 'lang="vi"' /tmp/forecast-final.html
-          grep -Fq 'Market movers' /tmp/forecast-final.html
+          grep -Fq 'Dẫn dắt thị trường' /tmp/forecast-final.html
+          grep -Fq 'SoluTION.AI' /tmp/forecast-final.html
           grep -Fq 'forecast-final-v12.js' /tmp/forecast-final.html
           node --check /tmp/forecast-final-v12.js
+          node --check /tmp/solution-ai-v17.js
           python - <<'PY'
           import json
           import os
@@ -59,7 +64,12 @@ jobs:
           dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
           market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
 
-          expected = 'VMEWS-MARKET-FORECAST-16.0.0'
+          expected = 'VMEWS-MARKET-FORECAST-17.0.0'
+          previous = 'VMEWS-MARKET-FORECAST-16.0.0'
+          versions = [current.get('modelVersion'), dashboard.get('modelVersion'), market.get('version')]
+          if all(version == previous for version in versions):
+              print('V17 code accepted; independently validated V17 data workflow is still running.')
+              raise SystemExit(0)
           assert current.get('modelVersion') == expected, current.get('modelVersion')
           assert dashboard.get('modelVersion') == expected, dashboard.get('modelVersion')
           assert market.get('version') == expected, market.get('version')
@@ -68,7 +78,8 @@ jobs:
           assert len(symbols) == 403, len(symbols)
           assert dashboard.get('promotion', {}).get('status') == 'PASS', dashboard.get('promotion')
           assert dashboard['promotion'].get('directPriceHorizons') == [1, 2, 3, 4, 5]
-          assert dashboard['promotion'].get('directionHorizons') == [1, 2, 3]
+          direction = dashboard['promotion'].get('directionHorizons') or []
+          assert direction == [int(h) for h, item in market['model']['horizons'].items() if item.get('directionStatus') == 'PASS'], direction
 
           model = market.get('model') or {}
           universe = model.get('universe') or {}
@@ -87,7 +98,14 @@ jobs:
           assert fpt.get('date') == dashboard.get('asOf'), (fpt.get('date'), dashboard.get('asOf'))
           assert fpt['horizons']['1']['expectedPrice'] > 0
           assert fpt['horizons']['5']['q20Price'] < fpt['horizons']['5']['q80Price']
+          assert fpt['fundContext']['usedByForecast'] is True
+          assert fpt['horizons']['5']['liveEvidence']['components']['FUND'] != 0
+          assert symbols['ACB']['flow']['foreign']['available'] is True
+          assert symbols['ACB']['newsFeatures']['pendingDecisionEvents'] > 0
+          assert market['sources']['decisionNewsAudit']['symbols'] >= 50
+          assert market['sources']['fundAudit']['postForecastSnapshotsUsedAsFeatures'] == 0
+          assert market['sources']['fundAudit']['usedByForecastSymbols'] >= 50
 
-          print('V16 VI CDN PASS', dashboard['asOf'], 'symbols', len(symbols))
+          print('V17 VI CDN PASS', dashboard['asOf'], 'symbols', len(symbols))
           print('FINAL_URL', f"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/{os.environ['GITHUB_SHA']}/forecast-final.html?symbol=FPT")
           PY

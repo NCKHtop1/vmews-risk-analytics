@@ -90,6 +90,8 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(set(self.dashboard["symbols"]), set(self.current["symbols"]))
         universe = self.market["model"]["universe"]
         self.assertGreaterEqual(universe["hoseCoverage"], .99)
+        self.assertEqual(universe["freshSymbols"], universe["currentSymbols"])
+        self.assertEqual(universe["staleSymbols"], 0)
         self.assertEqual(universe["currentSymbols"] + len(universe["insufficientHistorySymbols"]), universe["listedHOSE"])
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
         fpt = self.dashboard["symbols"]["FPT"]
@@ -101,7 +103,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_all_horizons_are_independently_validated(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-16.0.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-17.0.0")
         self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
         self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
         for horizon in map(str, range(1, 6)):
@@ -205,24 +207,60 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertGreater(horizon["eventImpactAudit"]["observations"], 100)
             self.assertEqual(horizon["eventImpactAudit"]["futureOutcomeFieldsAsFeatures"], 0)
 
-    def test_fund_holdings_are_context_only_until_point_in_time_history_exists(self) -> None:
+    def test_fund_holdings_affect_decision_without_historical_backfill(self) -> None:
         features = set(self.market["model"]["featureNames"])
         self.assertIn("fund_holder_count", features)
         self.assertIn("fund_weight_sum", features)
         audit = self.market["sources"]["fundAudit"]
-        self.assertEqual(audit["status"], "CONTEXT_ONLY")
+        self.assertEqual(audit["status"], "ACTIVE_DECISION_PRIOR")
         self.assertEqual(audit["snapshotCount"], 1)
         self.assertFalse(audit["modelEligible"])
+        self.assertTrue(audit["inferenceEligible"])
+        self.assertTrue(audit["trainingFeaturesMasked"])
+        self.assertGreaterEqual(audit["usedByForecastSymbols"], 50)
         self.assertEqual(audit["postForecastSnapshotsUsedAsFeatures"], 0)
-        self.assertEqual(audit["latestCollection"]["holdingRows"], 369)
-        fpt = self.dashboard["symbols"]["FPT"]["fundContext"]
+        self.assertGreaterEqual(audit["latestCollection"]["holdingRows"], 300)
+        fpt_snapshot = self.dashboard["symbols"]["FPT"]
+        fpt = fpt_snapshot["fundContext"]
         self.assertTrue(fpt["available"])
         self.assertTrue(fpt["collectedAfterForecast"])
-        self.assertFalse(fpt["availableForForecast"])
-        self.assertFalse(fpt["usedByForecast"])
+        self.assertTrue(fpt["availableForForecast"])
+        self.assertTrue(fpt["usedByForecast"])
         self.assertEqual(fpt["fundCount"], 17)
         self.assertAlmostEqual(fpt["averageReportedWeight"], .042094117647058824)
         self.assertLessEqual(fpt["largestReportedWeight"], .10)
+        self.assertEqual(len(fpt["holdings"]), 17)
+        for horizon in fpt_snapshot["horizons"].values():
+            self.assertNotEqual(horizon["liveEvidence"]["components"]["FUND"], 0)
+            self.assertAlmostEqual(
+                sum(horizon["liveEvidence"]["components"].values()),
+                horizon["liveAdjustmentReturn"],
+            )
+        self.assertEqual(audit["decisionAudit"]["historicalBackfillRows"], 0)
+
+    def test_archived_institutional_flow_and_financial_evidence_are_available(self) -> None:
+        acb = self.dashboard["symbols"]["ACB"]
+        self.assertTrue(acb["flow"]["foreign"]["available"])
+        self.assertTrue(acb["flow"]["proprietary"]["available"])
+        self.assertLess(acb["flow"]["proprietary"]["net1"], -1_000_000_000)
+        fpt = self.dashboard["symbols"]["FPT"]
+        self.assertTrue(fpt["fundamentalContext"]["available"])
+        self.assertTrue(fpt["fundamentalContext"]["usedByForecast"])
+        self.assertNotEqual(fpt["horizons"]["5"]["expertContributions"]["FUNDAMENTAL"], 0)
+
+    def test_after_close_news_influences_next_session_without_future_leakage(self) -> None:
+        audit = self.market["sources"]["decisionNewsAudit"]
+        self.assertGreaterEqual(audit["symbols"], 50)
+        self.assertGreaterEqual(audit["articles"], 100)
+        self.assertEqual(audit["historicalBackfillRows"], 0)
+        acb = self.dashboard["symbols"]["ACB"]
+        self.assertGreater(acb["newsFeatures"]["pendingDecisionEvents"], 0)
+        self.assertTrue(any(item.get("decisionTimeEligible") for item in acb["evidence"]["decisionRecent"]))
+        mbb = self.dashboard["symbols"]["MBB"]
+        self.assertNotEqual(mbb["horizons"]["5"]["liveEvidence"]["components"]["EVENT"], 0)
+        decision = datetime.fromisoformat(self.market["model"]["governance"]["decisionTimestamp"])
+        for item in acb["decisionNews"]["items"]:
+            self.assertLessEqual(datetime.fromisoformat(item["publishedAt"]), decision)
 
     def test_direction_probability_is_withheld_where_brier_gate_fails(self) -> None:
         validated = self.market["model"]["promotion"]["directionHorizons"]

@@ -37,6 +37,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("forecast-portfolio-v14.css", self.document.assets)
         self.assertIn("forecast-portfolio-v14.js", self.document.assets)
         self.assertIn("forecast-live-leaders-v14.js", self.document.assets)
+        self.assertIn("solution-ai-v17.js", self.document.assets)
         for asset in self.document.assets:
             with self.subTest(asset=asset):
                 self.assertTrue((ROOT / asset).is_file())
@@ -53,6 +54,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "leaders", "leadersTitle", "snapshotDate", "vnClock", "marketPulse",
             "signalDeck", "leaderDots", "leaderDetail", "carouselPosition",
             "carouselPrev", "carouselNext", "carouselAutoplay",
+            "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
+            "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -60,7 +63,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
-        self.assertIn("Market <span>movers.</span>", self.html)
+        self.assertIn("Dẫn dắt <span>thị trường.</span>", self.html)
         self.assertIn("Trọng tâm T+5", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
@@ -126,7 +129,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("fundContext", leaders)
         self.assertIn("Quỹ nắm giữ", leaders)
 
-    def test_v16_ui_distinguishes_point_range_and_expected_magnitude(self) -> None:
+    def test_v17_ui_distinguishes_point_range_and_live_fund_evidence(self) -> None:
         app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
         polish = (ROOT / "forecast-polish-v12.js").read_text(encoding="utf-8")
         self.assertIn("expectedAbsReturn", app)
@@ -135,7 +138,20 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("Dự báo biên độ", app)
         self.assertIn("Danh mục quỹ", app)
         self.assertIn("fundContext", polish)
-        self.assertIn("chưa dùng để fit model", polish)
+        self.assertIn("Tác động T+5", polish)
+        self.assertIn("fund.holdings", (ROOT / "solution-ai-v17.js").read_text(encoding="utf-8"))
+        self.assertNotIn("chưa dùng để fit model", polish)
+
+    def test_solution_ai_is_grounded_and_does_not_expose_a_provider_secret(self) -> None:
+        assistant = (ROOT / "solution-ai-v17.js").read_text(encoding="utf-8")
+        backend = (ROOT / "api/solution-ai.js").read_text(encoding="utf-8")
+        self.assertIn("SoluTION.AI", self.html)
+        self.assertIn("window.__VMEWS_LOAD_BASE__", assistant)
+        self.assertIn("expertContributions", assistant)
+        self.assertIn("directionValidated", assistant)
+        self.assertIn("Không nhập API key", assistant)
+        self.assertNotIn("GEMINI_API_KEY", assistant)
+        self.assertIn("process.env.GEMINI_API_KEY", backend)
 
     def test_rotating_cards_support_keyboard_touch_filters_and_reduced_motion(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")

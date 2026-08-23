@@ -13,7 +13,7 @@
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
   const expertNames = {
     NUMERICAL: "Giá / kỹ thuật", REGIME: "Trạng thái thị trường", VOLATILITY: "Biến động thực tế",
-    SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức", FUND: "Danh mục quỹ",
+    SECTOR: "Luân chuyển ngành", EVENT: "Tin tức / sự kiện", FLOW: "Dòng tiền tổ chức", FUND: "Danh mục quỹ", FUNDAMENTAL: "Tài chính doanh nghiệp",
   };
   const issuerAliases = {
     VCB: ["vietcombank"], BID: ["bidv"], CTG: ["vietinbank"], TCB: ["techcombank"],
@@ -84,14 +84,14 @@
         intervalWidth: (number(forecast.q80Price) - number(forecast.q20Price)) / close,
         avgVolume20,
         tradedValue20,
-        newsCount: number(news.count5) || 0,
+        newsCount: (number(news.count5) || 0) + (number(news.pendingDecisionEvents) || 0),
         officialNews: number(news.official5) || 0,
         flowFresh: flow.stale !== true && (flow.foreignAvailable || flow.propAvailable),
         flowAge: number(flow.sessionsSinceObservation),
         fundAvailable: fund.available === true,
         fundCount: number(fund.fundCount) || 0,
         fundWeight: number(fund.averageReportedWeight),
-        fundModelEligible: fund.modelEligible === true,
+        fundModelEligible: fund.usedByForecast === true,
         risk: snapshot.riskStatus || "UNKNOWN",
         sector: snapshot.sector && snapshot.sector !== "UNKNOWN" ? snapshot.sector : "Chưa phân loại ngành",
         volatility: number(snapshot.dailyVolatility),
@@ -141,7 +141,7 @@
   }
 
   function riskLabel(row) {
-    return row.risk === "GREEN" ? "GREEN" : row.risk === "RED" ? "RED · RỦI RO" : `${row.risk} · THEO DÕI`;
+    return row.risk === "GREEN" ? "RỦI RO THẤP" : row.risk === "RED" ? "RỦI RO CAO" : "CẦN THEO DÕI";
   }
 
   function riskClass(row) {
@@ -264,7 +264,7 @@
   }
 
   function newsMarkup(row) {
-    const recent = (row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item)).slice(0, 2);
+    const recent = (row.snapshot.evidence?.decisionRecent || row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item) && (item.decisionTimeEligible || belongsToLastFiveSessions(row, item))).slice(0, 2);
     if (!recent.length) return '<p class="detailEmpty">Chưa có tin mới đáng chú ý.</p>';
     return recent.map(item => `<article class="detailNewsItem"><span>${escapeHTML(item.publisher || item.source || "Nguồn đã đối chiếu")} · ${escapeHTML(shortDate(item.availableDate || item.publishedAt || item.date))}</span><strong>${escapeHTML(item.title || "Sự kiện chưa có tiêu đề")}</strong></article>`).join("");
   }
@@ -289,9 +289,9 @@
     if (!row.directionValidated) warnings.push("Chưa đủ cơ sở cho xác suất hướng");
     else if (row.probUp < .5) warnings.push("P(tăng) dưới 50%");
     if (!row.flowFresh) warnings.push("Dòng tiền tổ chức chưa mới");
-    if (row.fundAvailable && !row.fundModelEligible) warnings.push("Dữ liệu quỹ đang tích lũy lịch sử kiểm định");
+    if (row.fundAvailable && !row.fundModelEligible) warnings.push("Dữ liệu quỹ chưa đủ điều kiện sử dụng");
     if (!row.newsCount) warnings.push("Không có tin trong 5 phiên");
-    else if (!(row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && belongsToLastFiveSessions(row, item))) warnings.push("Chưa có tin gần đây khớp doanh nghiệp");
+    else if (!(row.snapshot.evidence?.decisionRecent || row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && (item.decisionTimeEligible || belongsToLastFiveSessions(row, item)))) warnings.push("Chưa có tin gần đây khớp doanh nghiệp");
 
     $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+5</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Xem đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">CÁC YẾU TỐ CHÍNH</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG GIÁ T+5</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+5</span><b>${row.directionValidated ? percent(row.probUp, 1) : "—"}</b></article><article><span>Biên dưới</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>${money(row.q20)}</small></article><article><span>Thanh khoản 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cp/phiên</small></article><article><span>Quỹ nắm giữ</span><b>${row.fundAvailable ? `${row.fundCount} quỹ` : "—"}</b><small>${row.fundAvailable && row.fundWeight !== null ? `Bình quân ${percent(row.fundWeight, 1)}/quỹ` : escapeHTML(flowStatus)}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN GẦN ĐÂY · ${row.newsCount} BÀI</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : ""}`;
   }
