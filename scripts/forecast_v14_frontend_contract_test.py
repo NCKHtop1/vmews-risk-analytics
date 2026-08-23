@@ -56,7 +56,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "carouselPrev", "carouselNext", "carouselAutoplay",
             "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
             "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
-            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry",
+            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiKey", "solutionAiDisconnect",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -159,7 +159,12 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("__VMEWS_BUILD_LEADERBOARD__", assistant)
         self.assertIn("solutionAiConnect", assistant)
         self.assertIn("https://aistudio.google.com/app/apikey", self.html)
-        self.assertIn("https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai", self.html)
+        self.assertIn('id="solutionAiKey" type="password"', self.html)
+        self.assertIn("sessionStorage", assistant)
+        self.assertIn("https://generativelanguage.googleapis.com/v1beta", assistant)
+        self.assertIn('"x-goog-api-key": secret', assistant)
+        self.assertNotIn("vmews-risk-analytics-sojd.vercel.app", self.html)
+        self.assertNotIn("localStorage.setItem(SESSION_KEY", assistant)
         self.assertNotIn("window.prompt", assistant)
         self.assertNotIn("GEMINI_API_KEY", assistant)
         self.assertIn("process.env.GEMINI_API_KEY", backend)

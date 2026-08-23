@@ -1012,6 +1012,21 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .solutionAiConnect > strong { display: block; font-size: 12px; font-weight: 590; }
 .solutionAiConnect > p { margin: 7px 0 11px; color: #aeb4a5; font-size: 10px; line-height: 1.6; }
 .solutionAiConnect > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.aiSecretField { display: grid; gap: 7px; margin: 0 0 11px; }
+.aiSecretField > span { color: #a1a799; font: 8px var(--mono); letter-spacing: .08em; }
+.aiSecretField > input {
+  min-height: 37px;
+  padding: 0 11px;
+  border: 1px solid #39432f;
+  border-radius: 3px;
+  background: rgba(8, 11, 7, .78);
+  color: #eef2e8;
+  font: 11px var(--mono);
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.aiSecretField > input:focus { border-color: #91be64; box-shadow: 0 0 0 3px rgba(168, 235, 101, .09); }
+.aiSecretField > input::placeholder { color: #72786b; }
 .solutionAiConnect a, .solutionAiConnect button {
   display: inline-flex;
   min-height: 31px;
@@ -1025,7 +1040,9 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   text-decoration: none;
   cursor: pointer;
 }
-.solutionAiConnect a { border-color: #91be64; background: #a8eb65; color: #12160f; }
+.solutionAiConnect .aiConnectPrimary { border-color: #91be64; background: #a8eb65; color: #12160f; }
+.solutionAiConnect a { color: #c5d4b8; }
+.solutionAiConnect button[hidden] { display: none; }
 .solutionAiConnect > small { display: block; margin-top: 10px; color: #a1a799; font-size: 9px; }
 
 @media (max-width: 780px) {
