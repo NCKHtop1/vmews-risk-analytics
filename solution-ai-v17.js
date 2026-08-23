@@ -855,7 +855,7 @@
 
     const drivers = primaryDrivers(five);
     if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push("### Yếu tố mô hình", `Các đóng góp lớn nhất tại T+5: ${drivers.join("; ")}.`);
-    if (context.news.length && /tin|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) lines.push("### Tin đã có trong snapshot", ...context.news.slice(0, 4).map(item => `- ${item.title} — ${item.publisher || "chưa rõ nguồn"}${item.date ? `, ${item.date}` : ""}.`));
+    if (context.news.length && /tin|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) lines.push("### Tin trong dữ liệu hiện có", ...context.news.slice(0, 4).map(item => `- ${item.title} — ${item.publisher || "chưa rõ nguồn"}${item.date ? `, ${item.date}` : ""}.`));
 
     if ((context.communitySignals.length || context.communityMonitoring.length) && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ|phân tích|kết hợp|forecast/.test(question)) {
       lines.push("### Tín hiệu cộng đồng");

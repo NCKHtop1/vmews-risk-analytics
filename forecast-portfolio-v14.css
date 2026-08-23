@@ -869,7 +869,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .researchWorkbench .taControls label { border-color: #353a31; background: #10120e; transition: border-color .18s ease, background .18s ease, color .18s ease; }
 .researchWorkbench .taControls label:has(input:checked) { border-color: #557642; background: linear-gradient(145deg, #182114, #11160e); color: #cef5a9; }
 .researchWorkbench .taControls input { accent-color: #a8eb65; }
-.researchWorkbench .taChart { position: relative; border: 1px solid rgba(115, 158, 93, .13); background: radial-gradient(ellipse at 82% 6%, rgba(133, 225, 83, .075), transparent 48%), linear-gradient(180deg, #0b0f09, #080b07); box-shadow: inset 0 1px rgba(205, 255, 171, .025); }
+.researchWorkbench .taChart { position: relative; border: 1px solid rgba(115, 158, 93, .13); background: radial-gradient(ellipse at 82% 6%, rgba(133, 225, 83, .075), transparent 48%), linear-gradient(180deg, #0b0f09, #080b07) !important; box-shadow: inset 0 1px rgba(205, 255, 171, .025); }
 .researchWorkbench .taChart::after { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(110deg, transparent 34%, rgba(164, 239, 105, .018) 52%, transparent 69%); content: ""; pointer-events: none; }
 .researchWorkbench .taChart canvas { position: relative; z-index: 1; display: block; }
 .researchWorkbench .ctxGood { color: #a8eb65; }
