@@ -44,7 +44,7 @@ function dashboard() {
     },
     flow: { foreign: { available: true, latestDate: "2026-08-14", ageSessions: 5, net1: 10, net5: 40 } },
     fundamentalContext: { available: true, profitQoQ: .2, revenueQoQ: .1, ratios: { pe: { value: 14 } } },
-    evidence: { decisionRecent: [{ title: "FPT công bố tăng trưởng", publisher: "Nguồn chính thức", label: "POS" }] },
+    evidence: { decisionRecent: [{ title: "FPT công bố tăng trưởng", publisher: "Nguồn chính thức", label: "POS", link: "https://fpt.com/vi/nha-dau-tu" }] },
   };
   return {
     dash: { symbols: { FPT: fpt }, marketForecast: { decisionAt: "2026-08-23T10:00:00+07:00" } },
@@ -104,6 +104,7 @@ test("browser context includes observed holdings/news but withholds unvalidated 
   assert.equal(evidence.fund.fundCount, 17);
   assert.equal(evidence.fund.holders[0].code, "ALPHA");
   assert.equal(evidence.news[0].title, "FPT công bố tăng trưởng");
+  assert.equal(evidence.news[0].url, "https://fpt.com/vi/nha-dau-tu");
   assert.equal(evidence.horizons["T+5"].probabilityUp, null);
   assert.equal(evidence.horizons["T+5"].liveEvidence.FUND, .002);
   assert.equal(evidence.validation.fundPriorIndependentlyBacktested, false);
@@ -162,12 +163,14 @@ test("direct Gemini receives audited context and guardrails without exposing the
   const payload = JSON.parse(requests[1].options.body);
   assert.equal(payload.model, "gemini-3.5-flash");
   assert.equal(payload.store, false);
-  assert.deepEqual(payload.tools, [{ type: "google_search" }]);
+  assert.deepEqual(payload.tools, [{ type: "google_search" }, { type: "url_context" }]);
+  assert.ok(payload.input.indexOf("Danh mục quỹ FPT ảnh hưởng thế nào?") < payload.input.indexOf('"fundCount":17'));
   assert.match(payload.input, /"fundCount":17/);
   assert.match(payload.input, /"probabilityUp":null/);
   assert.match(payload.system_instruction, /không tự tạo giá/);
   assert.match(payload.system_instruction, /xác suất hướng chưa được kiểm định/);
   assert.match(payload.system_instruction, /Google Search/);
+  assert.match(payload.system_instruction, /URL Context/);
   assert.match(payload.system_instruction, /vĩ mô/);
   assert.equal(payload.input.includes(secret), false);
   assert.equal(requests[1].url.includes(secret), false);
@@ -180,6 +183,9 @@ test("current Gemini interaction steps expose grounded answers and safe source l
     requests.push({ url, options });
     if (url.includes("/models?")) {
       return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.7-flash", supportedGenerationMethods: ["generateContent"] }] }) };
+    }
+    if (url.includes("api.gdeltproject.org")) {
+      return { ok: true, status: 200, json: async () => ({ articles: [] }) };
     }
     return {
       ok: true, status: 200,
@@ -211,37 +217,139 @@ test("current Gemini interaction steps expose grounded answers and safe source l
   assert.equal(references.children.length, 1);
   assert.equal(references.children[0].href, "https://fpt.com/vi/nha-dau-tu");
   assert.equal(references.children[0].rel, "noopener noreferrer");
-  assert.match(nodes.get("#solutionAiStatus").textContent, /tìm kiếm web/);
-  assert.equal(requests.length, 2);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /nghiên cứu web/);
+  assert.equal(requests.length, 3);
+  assert.equal(requests[1].options.headers, undefined);
 });
 
-test("unavailable Google Search retries Gemini without grounding instead of reverting to canned text", async () => {
+test("unavailable Google Search falls back to URL Context and open sources without canned text", async () => {
   const requests = [];
+  const secret = "AQ.synthetic-search-retry-secret-123456789";
   const { nodes } = await setup(async (url, options) => {
     requests.push({ url, options });
     if (url.includes("/models?")) {
       return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.5-flash", supportedGenerationMethods: ["generateContent"] }] }) };
     }
+    if (url.includes("api.gdeltproject.org")) {
+      return { ok: true, status: 200, json: async () => ({ articles: [{
+        title: "Kinh tế Việt Nam và điều hành lãi suất", url: "https://example.org/viet-nam-lai-suat", domain: "example.org", seendate: "20260822T110000Z",
+      }] }) };
+    }
     const payload = JSON.parse(options.body);
-    if (payload.tools) {
+    if (payload.tools?.some(tool => tool.type === "google_search")) {
       return { ok: false, status: 403, json: async () => ({ error: { message: "Google Search requires billing" } }) };
     }
-    return { ok: true, status: 200, json: async () => ({ steps: [{ type: "model_output", content: [{ type: "text", text: "Phân tích Gemini vẫn hoạt động từ dữ liệu mô hình." }] }] }) };
+    return { ok: true, status: 200, json: async () => ({ steps: [
+      { type: "url_context_result", result: [{ url: "https://example.org/viet-nam-lai-suat" }] },
+      { type: "model_output", content: [{ type: "text", text: "Lãi suất và triển vọng kinh tế được đối chiếu từ nguồn công khai." }] },
+    ] }) };
   });
-  nodes.get("#solutionAiKey").value = "AQ.synthetic-search-retry-secret-123456789";
+  nodes.get("#solutionAiKey").value = secret;
   await nodes.get("#solutionAiRetry").listeners.get("click")();
   nodes.get("#solutionAiInput").value = "Đánh giá vĩ mô hiện nay";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
   await new Promise(resolve => setImmediate(resolve));
 
-  assert.equal(requests.length, 3);
-  assert.ok(JSON.parse(requests[1].options.body).tools);
-  assert.equal(JSON.parse(requests[2].options.body).tools, undefined);
-  assert.match(nodes.get("#solutionAiConnectionState").textContent, /tìm kiếm web chưa khả dụng/);
-  assert.match(nodes.get("#solutionAiStatus").textContent, /phân tích dữ liệu và kiến thức/);
+  assert.equal(requests.length, 4);
+  assert.match(requests[1].url, /api\.gdeltproject\.org/);
+  assert.equal(requests[1].options.headers, undefined);
+  assert.equal(requests[1].url.includes(secret), false);
+  assert.deepEqual(JSON.parse(requests[2].options.body).tools, [{ type: "google_search" }, { type: "url_context" }]);
+  assert.deepEqual(JSON.parse(requests[3].options.body).tools, [{ type: "url_context" }]);
+  assert.match(JSON.parse(requests[3].options.body).input, /Kinh tế Việt Nam và điều hành lãi suất/);
+  assert.doesNotMatch(JSON.parse(requests[3].options.body).input, /"fundCount":17/);
+  assert.match(nodes.get("#solutionAiConnectionState").textContent, /nguồn mở/);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /nghiên cứu web/);
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
-  assert.ok(answer.children.some(child => /Gemini vẫn hoạt động/.test(child.textContent)));
+  assert.ok(answer.children.some(child => /triển vọng kinh tế/.test(child.textContent)));
+  const references = answer.children.find(child => child.className === "aiSources");
+  assert.equal(references.children[0].href, "https://example.org/viet-nam-lai-suat");
+});
+
+test("general questions reach Gemini without dragging the open stock snapshot into the prompt", async () => {
+  const requests = [];
+  const { nodes } = await setup(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("/models?")) {
+      return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.7-flash", supportedGenerationMethods: ["generateContent"] }] }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ output_text: "Machine learning học từ dữ liệu; deep learning sử dụng mạng nơ-ron nhiều lớp." }) };
+  });
+  nodes.get("#solutionAiKey").value = "AQ.synthetic-general-purpose-secret-123456789";
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = "Machine learning khác deep learning thế nào?";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.equal(requests.length, 2);
+  const payload = JSON.parse(requests[1].options.body);
+  assert.match(payload.input, /Machine learning khác deep learning thế nào/);
+  assert.match(payload.input, /CÂU HỎI TỰ DO/);
+  assert.doesNotMatch(payload.input, /"fundCount"|"horizons"|"close":72000/);
+  const answer = nodes.get("#solutionAiMessages").children.at(-1);
+  assert.ok(answer.children.some(child => /mạng nơ-ron/.test(child.textContent)));
+});
+
+test("a supplied public URL is offered to Gemini URL Context with no API key sent to open news", async () => {
+  const requests = [];
+  const secret = "AQ.synthetic-explicit-url-secret-123456789";
+  const article = "https://example.org/research/fpt-results";
+  const { nodes } = await setup(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("/models?")) return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.7-flash" }] }) };
+    if (url.includes("api.gdeltproject.org")) return { ok: true, status: 200, json: async () => ({ articles: [] }) };
+    return { ok: true, status: 200, json: async () => ({ steps: [
+      { type: "url_context_result", result: [{ url: article }] },
+      { type: "model_output", content: [{ type: "text", text: "Bài viết cần được đối chiếu với công bố của doanh nghiệp." }] },
+    ] }) };
+  });
+  nodes.get("#solutionAiKey").value = secret;
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = `Đọc và phân tích nguồn này: ${article}`;
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+
+  const openNews = requests.find(request => request.url.includes("api.gdeltproject.org"));
+  assert.equal(openNews.options.headers, undefined);
+  assert.equal(openNews.url.includes(secret), false);
+  const provider = requests.find(request => request.url.endsWith("/interactions"));
+  const payload = JSON.parse(provider.options.body);
+  assert.match(payload.input, /https:\/\/example\.org\/research\/fpt-results/);
+  assert.ok(payload.tools.some(tool => tool.type === "url_context"));
+});
+
+test("a Gemini provider outage is shown honestly instead of repeating a canned FPT forecast", async () => {
+  const { nodes } = await setup(async (url) => {
+    if (url.includes("/models?")) return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.7-flash" }] }) };
+    return { ok: false, status: 503, json: async () => ({ error: { message: "provider unavailable" } }) };
+  });
+  nodes.get("#solutionAiKey").value = "AQ.synthetic-provider-outage-secret-123456789";
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = "Phân tích danh mục quỹ FPT";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+
+  const answer = nodes.get("#solutionAiMessages").children.at(-1);
+  assert.match(answer.className, /aiError/);
+  assert.ok(answer.children.some(child => /tạm thời gián đoạn/.test(child.textContent)));
+  assert.ok(answer.children.every(child => !/giá hiện tại 72\.000/.test(child.textContent)));
+  assert.match(nodes.get("#solutionAiStatus").textContent, /chưa phản hồi/);
+});
+
+test("questions requiring outside information request a real Gemini connection instead of canned analysis", async () => {
+  const { nodes } = await setup();
+  nodes.get("#solutionAiInput").value = "Tình hình kinh tế vĩ mô hiện nay như thế nào?";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+
+  const answer = nodes.get("#solutionAiMessages").children.at(-1);
+  assert.ok(answer.children.some(child => /kết nối Gemini/.test(child.textContent)));
+  assert.ok(answer.children.every(child => !/17 quỹ đang nắm giữ/.test(child.textContent)));
 });
 
 test("rejected Gemini key is never stored", async () => {
