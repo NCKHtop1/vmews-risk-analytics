@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T13:03:23.715039+00:00",
+  "generatedAt": "2026-08-23T18:49:21.064178+00:00",
   "windowDays": 540,
   "method": "full-universe Google News RSS; ticker-first grouped publisher and official-source queries; recency, relevance, source-quality, event taxonomy and fuzzy deduplication",
   "symbols": {
@@ -69,17 +69,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"FPT\" cổ phiếu"
-      },
-      {
-        "title": "Sinh viên FPT nghiên cứu mô hình tăng tốc thu thập dữ liệu nông nghiệp - VnExpress",
-        "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQejI0SDhsU1Y4UHV3TmlEbUk1WnFIZFpJN2VfdU45d0UxLTRMWTFhclB6UEU5U2ZGcGpzNHU1b1A5TUVRekN6aEVzUmk4ZzhJUkZCcVNjQmFPc1RUT3pvOXhuQUZkNXowZjNPX2dkQWhkQkZ5dTZ2cVlTYklFS3JuNzc3c25kTk5jR1hxbnpPUk4zYUxYTFhtRlFrU3hLUUtnenpONzFEanU?oc=5",
-        "published": "Wed, 19 Aug 2026 01:00:00 GMT",
-        "publisher": "VnExpress",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"FPT\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Cổ phiếu FPT được khối tự doanh gom mạnh nhất phiên đầu tuần - Chungta",
@@ -326,6 +315,28 @@
     ],
     "PNJ": [
       {
+        "title": "PNJ được 'giải oan', chuyên gia đánh giá gì? - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNWi1abXMtcU83NGpicUhzblp2RnZHZl9yMGl4RHZZZkMzQkRyV1lidEhHUk5kd3JuSkZBMTltUG5vb1BRVFN2NTlQcVY3T19ZQnFFYTBESWdBMWZSRnZuYTYxLWhqNmtPX3BoaHAxcGJNZXZXdXhNdUVyRW82SGM3em5B?oc=5",
+        "published": "Sun, 23 Aug 2026 15:05:01 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"PNJ\" cổ phiếu"
+      },
+      {
+        "title": "Lý do Tổng Giám đốc PNJ mua 1 triệu cổ phiếu công ty - Tin tức 24h",
+        "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOTXdQeHlUMlVuV0RrWXZZNXNYZjUtN1lfaVR4eDRGYlhVanRBWjhZaGlkRm5pU3ZMekZXWm1CMnBNZkprZ29Wa0NvcFY0UkU0VUxSWFBhS0VrQmpnN1ZOLUFOSGx6UDZXd21TZWhJQ1RNcEY0bmIxRFZNa3BoVXFlRVc4N3ZVV2FXZEJwbkJ6Q2J4dlZFTHZMMmhneWhWMWYyQTNFeHd5RQ?oc=5",
+        "published": "Sun, 23 Aug 2026 09:00:00 GMT",
+        "publisher": "Tin tức 24h",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"PNJ\" cổ phiếu"
+      },
+      {
         "title": "Vì sao tổng giám đốc PNJ mua 1 triệu cổ phiếu công ty? - Docnhanh.vn",
         "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNT0xWYl9Mc2xaU01LY3JCLU8tRlROUFZxSi1iUjJzVlFvR01ZYXFwa0lLRWRnRDVVSFdUalBtOTRqUmR3eVEzOG1HQlhXTnRpOUhadEg4MEdUcXhiRWZkOWZBb0stcEhxZFVndlU0Ni1pT3otVERVZklJQ1dXakt0UTc5VXVueDBsZUhRS0s2bHR1NUV0V0kzQjB6RQ?oc=5",
         "published": "Sun, 23 Aug 2026 08:31:00 GMT",
@@ -345,7 +356,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Điểm nóng chuyển động quỹ tuần 17-21/08: Tổ chức ngoại xây vị thế cổ đông lớn tại PNJ - Vietstock",
@@ -356,7 +367,7 @@
         "event": "Ownership / governance",
         "materiality": 0.96,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "PNJ: Báo cáo cập nhật 21/08/2026 - VietstockFinance",
@@ -436,10 +447,10 @@
         "query": "\"PNJ\" cổ phiếu"
       },
       {
-        "title": "Cập nhật nhanh PNJ – N/A - VietstockFinance",
-        "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9QdG1OcWJtM2cxZ3FTdk5lcGtVa0RwUzNNVlF3dDNzOGV2OVN6YVkwcXFsMUVpQm5FSy0xbmlSc2psN3JrNWhiTFJ2YzZNRU54aTRUamVSSkMxNFU?oc=5",
-        "published": "Fri, 21 Aug 2026 07:00:00 GMT",
-        "publisher": "VietstockFinance",
+        "title": "Xác định kim cương lậu không vào PNJ, cổ phiếu lập tức 'cháy hàng' - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPNFlZSDhhNm4xOG10RHhLdXR5MTZkT1M5dUxYcDI1ZTRFSUJzQlBGNG4zbzczSENqVzJSc2dtVS1pSzR3aU0xMURkcC1WUU4yREZ4TmNDWmxKYjRmUkZ5YVVReHlrUFh5aTlBX1EtS3N0V3BUc3drWDRndmZXQkJteEJLVVJPS1Y0a0lsaFNLODFwdXdnbWhaWXRfQ1JWdUdySFhLNXZB?oc=5",
+        "published": "Fri, 21 Aug 2026 06:10:00 GMT",
+        "publisher": "CafeF",
         "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
@@ -447,21 +458,10 @@
         "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "24 quỹ rời PNJ trong một tháng, ai đã mua hàng chục triệu cổ phiếu bán ra? - Báo Tuổi Trẻ",
-        "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPZzdmbXQwaENGUFNBRUFXX0JJVDZ3Tk82azMzRGVrTDlhOF9tRHZpN083Tm1OazRsNE5yNTE2T2JqYmNvbUR5dm1jTDZZRW5hUzBzY0tNbnVBMm8wQXpkVnZ6dndXSENoWllYVWtmMTRYOTdTa3dnUjdlRWQzWWNnV0hzUmNFdFc3R2VBejVWY01QeEJsa1l3QWwtcTRVZGZ3QjBQc1BQODNfZDBUbWtyRDMtZlU?oc=5",
-        "published": "Fri, 21 Aug 2026 06:26:00 GMT",
+        "title": "Cổ phiếu PNJ tăng kịch trần sau thông tin mới về vụ buôn lậu kim cương - Báo Tuổi Trẻ",
+        "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPMkd4dEVSbTB4a3RGdWY1Sm1MRlVfZDJaWDZKdV9pTzRfMjYtQkxtTFdyR2dOU1pOZ3lmOG4tYVJ2REVkSVVmaUdlWlBIVVkyTndWd2pyOWFkcTBTb2MwYURVbkdmZUZKZkxBTFpQVTNDTXM5cnN0bGNma05ldHpuSXJmRlZiam5Fci1jMlZsQWpseGpwM3k1dE1uNFpJOGNJYlV4UnJqRE5YQ3ZwZ0ZKSzN3?oc=5",
+        "published": "Fri, 21 Aug 2026 05:31:00 GMT",
         "publisher": "Báo Tuổi Trẻ",
-        "sourceQuality": 0.9,
-        "event": "Ownership / governance",
-        "materiality": 0.71,
-        "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
-      },
-      {
-        "title": "Xác định kim cương lậu không vào PNJ, cổ phiếu lập tức 'cháy hàng' - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPNFlZSDhhNm4xOG10RHhLdXR5MTZkT1M5dUxYcDI1ZTRFSUJzQlBGNG4zbzczSENqVzJSc2dtVS1pSzR3aU0xMURkcC1WUU4yREZ4TmNDWmxKYjRmUkZ5YVVReHlrUFh5aTlBX1EtS3N0V3BUc3drWDRndmZXQkJteEJLVVJPS1Y0a0lsaFNLODFwdXdnbWhaWXRfQ1JWdUdySFhLNXZB?oc=5",
-        "published": "Fri, 21 Aug 2026 06:10:00 GMT",
-        "publisher": "CafeF",
         "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
@@ -488,7 +488,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "PNJ tím lịm và đã ‘thở phào’? - CafeF",
@@ -499,7 +499,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Giao dịch chứng khoán phiên sáng 21/8: PNJ bất ngờ nổi sóng - Tin nhanh chứng khoán",
@@ -546,15 +546,15 @@
         "query": "\"PNJ\" cổ phiếu"
       },
       {
-        "title": "Công an công bố kết quả giám định kim cương của PNJ, cổ phiếu tăng “bốc đầu” - CafeBiz",
-        "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOWndvSnY2ZVB2SHVBTHVmNDZ1ZVhTcXZvMnBCUG1pa2RwSXl3WDdzUDlpZ3h4V29ONEVFQ2REUFRKTm1rSS1xOHNVbEZhMEVoMUtEMWZuc0dxa0JVZVdMcDVfSk5BWl8xdXpXZk5OSkU5dlB1Q1R6NUNtT3FYVU1zOGZKZW9CWGdocWl5NjRidWo2V2hVOWZqQzhRbDNXaVU2dHUyd3d1T01tZDBqV0ZtOXFRNWRQdw?oc=5",
-        "published": "Fri, 21 Aug 2026 03:26:00 GMT",
-        "publisher": "CafeBiz",
-        "sourceQuality": 0.65,
+        "title": "Công an công bố kết quả giám định kim cương của PNJ, cổ phiếu tăng “bốc đầu” - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPZE5TYVVULV9EeWJkV1dielAwRVFxWWQ5Zllpa19CRVhyRXBBWlpSTFhSTTFhWFZTQzZmR21LZXFuUTl6NHBnSi05QUxZckpPLVZ6RWVJLXladTlhSWxZMno4NTMzdDEwNldObVRLQ0x1WnFsWnk1WW1rM2JXa05xOUxfZ2ROQXBqMEdhTUNsR08wZzVCUzF0SDl4dm1QNnpOSk5wOEwtbS1Ob1lELWg3dm9xNA?oc=5",
+        "published": "Fri, 21 Aug 2026 03:07:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "PNJ: Báo cáo về ngày trở thành cổ đông lớn của nhóm NĐTNN CLQ T.Rowe - Vietstock",
@@ -566,6 +566,17 @@
         "materiality": 0.78,
         "relevance": 1.0,
         "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "PNJ ‘liêm’ trong vụ buôn lậu kim cương, cổ phiếu tăng kịch trần - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOM1pOTVpUc1NTRG1qTDZETEJYZWtUcXNZbXNPT0NfTEI5N3lZQkRxMjZ0ZVhVUE5XWjV5anZibHY4TWJkbnFEV3BDT3RNVVdTRG8xNFktbUFpaXBITHhUeWdLeUlRVEdKRkNzRzhfVTJsR2l5QWMzeU1rRWdJZlNod3ZPZFdrZzRXdGp3MmNXRzNsNUZJQmlLT0Z0bXk?oc=5",
+        "published": "Fri, 21 Aug 2026 02:50:01 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"PNJ\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Cổ phiếu PNJ cháy hàng sau kết luận của cơ quan điều tra - Nhadautu.vn",
@@ -587,7 +598,7 @@
         "event": "Regulatory / legal",
         "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Cổ phiếu PNJ tăng 'nóng' - Kenh14.vn",
@@ -631,7 +642,7 @@
         "event": "Ownership / governance",
         "materiality": 0.96,
         "relevance": 1.0,
-        "query": "\"PNJ\" cổ phiếu"
+        "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Quỹ ngoại T. Rowe Price Associates Inc quay lại làm cổ đông lớn của PNJ - VnEconomy",
@@ -733,6 +744,17 @@
         "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
+        "title": "Xuất hiện cổ đông lớn mới tại PNJ trước thềm đại hội bất thường - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOQmlTaXFXbGw2eDBvNE5TNlhXM2tIMlZvbEQwV09hamF5LTZSRF9fcDgwZzg1UWRwcUF5bGg3cURyNXFXSTQtVGh2MjZMZmJxeXdLRzlFQ0E1c2hBaTFrR3pyQXo3MFlJbzZxNm9mMi1zbTJrRmQ3akh1b0xGR25WajZCRGUwbTNqZnNIdU5BQVczSXJscDhpWVJEN2tibDR5?oc=5",
+        "published": "Wed, 19 Aug 2026 03:35:01 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.78,
+        "relevance": 1.0,
+        "query": "\"PNJ\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "Tổng Giám đốc PNJ hoàn tất mua 1 triệu cổ phiếu - Vietstock",
         "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQSG5IUmkwRWRQY1ZhVjFONlI3bHlpZ0RJR01RaEt4UFhwZ2lEQ214a2VBTjRlMmVoQmpUcUpGNnlMWWVKSmpjWDdBaFF1Qmp3NGhweFBoZnVsMENqdlRqRHptMWxoQVp2dlR3bnVEWV9EZHZJZWdKS25MMnN5UFZ3MWVsS3pHTHpTQkYwMzB3SE5fS0F1U19J?oc=5",
         "published": "Tue, 18 Aug 2026 10:24:50 GMT",
@@ -797,6 +819,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"PNJ\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "Cổ phiếu PNJ liên tục tăng trần - VnExpress",
+        "link": "https://news.google.com/rss/articles/CBMidEFVX3lxTE4tN3FmNDJBREtlRS1wYVRpTS1RaHl6enc4Skd6R25odjdhZEVITldIN3o4TEtKUzQ3WUVHMlc2dW15VlNDc0JYN2lPcEJpZDltaTl5R3hSSlk1TlNtSXBGV2FMY1hLX1kwWUR0b1ZiMTdJck5E?oc=5",
+        "published": "Tue, 04 Aug 2026 07:00:00 GMT",
+        "publisher": "VnExpress",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"PNJ\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       }
     ],
     "VCB": [
@@ -878,6 +911,17 @@
         "query": "\"VCB\" cổ phiếu"
       },
       {
+        "title": "Cổ phiếu VCB nâng đỡ nhưng VN-Index vẫn giảm gần 9 điểm - Chứng khoán DNSE",
+        "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNX0xqNnh5M0NUTksybTVkS3g4bGpSS0NucW1uMGRRalBjQmNoTFNVS0xuYUpMX2ZPMWJrSU90WTBkbVVQT1N4WFYxaWcwSC1MNk4wYm5URmNNWEdRd1V1QjlKUmYxTnp0U3lZcjhrWTFtZmtfQmN2U2NsTzRmSHU3RnFQTmNLNWozRXZwczFhcExiemJ6SWFTNkdwYWVKTThEN3VaQi1n?oc=5",
+        "published": "Fri, 31 Jul 2026 07:00:00 GMT",
+        "publisher": "Chứng khoán DNSE",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VCB\" cổ phiếu"
+      },
+      {
         "title": "Cổ phiếu VCB, BID và CTG đồng loạt tăng mạnh sau khi công bố kết quả kinh doanh - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQa0dSUnpTeGNhRkhTbEdKSThYZHFqOEhtNkZaWFczcG5tYVdfUnVNcHl3ZFB3WVFjVHZKd3hod1p5YmNtOGMtYklHOHlmd2xzVXJ1YVNhM3ZTMDRzZnVCcHdKQkhwZmN3UFBCTDNmNDVFTC15MFZPNHhTQ1o5aXpUSk5qdF8xZEktRXJ1LWpvNzJJRm1nZUJOTm40dW50V3A0UTZfeVNKalU1TnJfTW54Qkx1Smk?oc=5",
         "published": "Fri, 31 Jul 2026 07:00:00 GMT",
@@ -885,17 +929,6 @@
         "sourceQuality": 0.65,
         "event": "Earnings",
         "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"VCB\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu VCB nâng đỡ nhưng VN-Index vẫn giảm gần 9 điểm - Tạp chí Tài chính Doanh nghiệp",
-        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNUlNyRVZYWmZlckZMUENrbjVTbUpyalloU3NTS2RCWGcxbWRjcmJQX1d4dkk3enJXbXZXSW5xaFVPOHVUYWV3ZjBHYXRyTWtDSXZqQUZTaThpaUtzR0pwU0F4U3pXSlhYMjFsZHhoV3N1UzYzblFoRm83LUs2Q3d3QmtYQlBtNG15VU51andSQU9aekwwZmgtYnFzQmRlNjBIdnVSZw?oc=5",
-        "published": "Fri, 31 Jul 2026 07:00:00 GMT",
-        "publisher": "Tạp chí Tài chính Doanh nghiệp",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"VCB\" cổ phiếu"
       },
@@ -1520,17 +1553,6 @@
         "query": "\"CTG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "VietinBank Tower sắp về tay \"doanh nghiệp bất động sản hàng đầu trong nước\"? - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPUmpmMmNlTXhja2lrRWFYUzNUM044cWJsNm9SN2FTQ09iRHExaGxjaXg4WHgyZUI4Wjh3cmFJdUs4TlBjTHRSbHB2Y3g2UlpTVXhuejJTRnJMQUx5ZndrRm1mbFkycEFTY3lKM1p3a0pfb1pZbkkwbkF4SXB3UlFwZmlxRWdCV1VxTjVVWkNKSEFkTk9waFJ5bDJlWnBlT0N4TGV0ckxTUm1RbDVNNWdMcE5Jem1zdmZuUVZr?oc=5",
-        "published": "Sun, 16 Aug 2026 15:27:27 GMT",
-        "publisher": "Vietstock",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 0.9,
-        "query": "\"CTG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
         "title": "Cổ phiếu CTG - NÂNG TỶ LỆ SỞ HỮU NHÀ NƯỚC - CÓ NÊN MUA? Bóc tách BCTC Q2/2026 - 24HMoney",
         "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPRmNMMkw5dVJHVENrYTMtSWtrYjJIS285dFM2alRMeHQ0YXlBbVQ4ZzdxamFPVjdSYnlfVVhWUnU3dzdOS2gzSThuTHJSdEUzblpZTjJ1M2Q3V0lmVElwSkVoSVdoSUdZOWwtdW5NdnNyTU1qOFBiNHlLVDlOckNhejJ3ZlhkU1dZQlpFZ0h5TmpSS3BmTDJLZnVWeVdwRlFvSWpwWS1lSWFSZG1fOW50ejlrS1U?oc=5",
         "published": "Tue, 11 Aug 2026 09:53:20 GMT",
@@ -1597,10 +1619,10 @@
         "query": "\"CTG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "Cổ phiếu CTG được định giá lại nhờ đâu? - diendandoanhnghiep.vn",
-        "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPVFowczNyQXNnMnJ0X2ZmN2RYaEJwVk0tSDRaSERUNkM0MHBWaXRZMUNRZWQwSzRaczRqVWpBYXVfdW9GSFBhZmFQUGxzT0E0QVFoVVBmSVhabHdYNllsT1Jja2VfbXZwOTZMTlczeDF0SkV4dWFWVHlZZkRsTU43VWxMbHN0LXR0T1E?oc=5",
-        "published": "Tue, 14 Jul 2026 07:00:00 GMT",
-        "publisher": "diendandoanhnghiep.vn",
+        "title": "Vì sao cổ phiếu ngân hàng VCB, CTG, BID, VPB, EIB, HDB, VIB lao dốc vào sáng nay? - nguonluc.com.vn",
+        "link": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPTHlmZF9LN0JZYU1zcnUwZUVFV2dhSjI3YlVlaWZkZlBmdDNnQ0hVX3FWZ0Q1SmtuV2FwZDFwaWxmbUNyUFBWWFZIZTlSS2g0bUhDN0Y2TXhGZmFIYnA3V1UtTmdPTnFSdGdKQ1J5d3dqWnhxNXVXV0JTV2VKNmh4WldpcHJlXzVYaU9fU0tfWU9rRDg3UjQtcTZ0cGlDbDFmenpVT24tRzZ6RkNiSWMw?oc=5",
+        "published": "Wed, 22 Jul 2026 07:00:00 GMT",
+        "publisher": "nguonluc.com.vn",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
@@ -1608,13 +1630,13 @@
         "query": "\"CTG\" cổ phiếu"
       },
       {
-        "title": "CTG: Ngày GDKHQ trả cổ tức năm 2025 bằng tiền (4,5%) - Tin nhanh chứng khoán",
-        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxQR3FSdmc2OEpjTVY2NEVtdjU5THE5TUhmNW8xSllKT2FTMFBDQUFRMWNlbkJQZ2g2X0JSUk0tcDR4ME5tRjZlTy1fZ2EzY2o3aEZiejU5dVdQdk5fQUJDSmtkU3NnNkpBY19pMmliM1pGdVU4bVpxbndzNlpTb2ZUakFvYXNKVm9IX0MzcEItLVdLRndzV1lwbDBmZEMtQdIBmgFBVV95cUxOVDlWNC1UVzBucEc1cWVjc2RhOVRNby1Cc0p1d0lnUGQ4U29HV1RyWlNLNHdMNTNUYlZGemRqUk85N2JJV2tuMXJCcm1NX2R1SGVyRDBrT0xnLUdpdEVXbHNCb0lVRWdCZEEwQ3BMVTY2U3pRTUdQc1RvYnFjQ3dCN0Fhb3pJbHZ5M19YRmtPdnpqMEUwMkJZYXpB?oc=5",
-        "published": "Mon, 13 Jul 2026 07:00:00 GMT",
-        "publisher": "Tin nhanh chứng khoán",
+        "title": "Cổ phiếu CTG được định giá lại nhờ đâu? - diendandoanhnghiep.vn",
+        "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPVFowczNyQXNnMnJ0X2ZmN2RYaEJwVk0tSDRaSERUNkM0MHBWaXRZMUNRZWQwSzRaczRqVWpBYXVfdW9GSFBhZmFQUGxzT0E0QVFoVVBmSVhabHdYNllsT1Jja2VfbXZwOTZMTlczeDF0SkV4dWFWVHlZZkRsTU43VWxMbHN0LXR0T1E?oc=5",
+        "published": "Tue, 14 Jul 2026 07:00:00 GMT",
+        "publisher": "diendandoanhnghiep.vn",
         "sourceQuality": 0.65,
-        "event": "Capital / corporate action",
-        "materiality": 0.78,
+        "event": "General",
+        "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"CTG\" cổ phiếu"
       },
@@ -1639,17 +1661,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"CTG\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu đáng chú ý ngày 7/7: CTG, FPT, FMC - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNNFlSeHNYQmFnOHpQb0ZaQVVubVdCcW9rNkN5U0tMcVU4NTJxS19mZkMxMHBvdDRPWXdxMk4tdXRLNm5lRl9QV195RTdrNm5JcWdoZVg3YnIyOGJFcDJ2OXA4YzFWNHdBU0lsMDVpekxDUUN3eXVOT1YyNG9Hdy1uQmpR?oc=5",
-        "published": "Mon, 06 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"CTG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "VietinBank (CTG) tiếp tục đăng ký bán sạch cổ phần tại Cảng Sài Gòn - nguoiquansat.vn",
@@ -1773,6 +1784,17 @@
         "query": "\"CTG\" cổ phiếu (site:hsx.vn OR site:hnx.vn OR site:ssc.gov.vn)"
       },
       {
+        "title": "VietinBank thông qua Hợp đồng bảo hiểm trách nhiệm công cộng với VBI - HNX",
+        "link": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxNd3g1VTVfYnI5RDRYdGFpeDBabHZXMWtLdjlKeDJxTEZWRUo3TzEyak1fRzBOdGhrNE5HazdFQXlIMHVFMFFaTGlGWEJqZmlySndkRnBka1VfV09tUUt1YVFVMzdrel9rWVIxZTU4dVd5YWRmUUROZnE1cWIzRzZkeDhJcmtCb2ZNRUgxRGdSTDVKZ0E0eWY5d29SeXh0UHlrM0JoU2RnbHpkMzQwVllXa0dtZG9kZHFQNmZyOS0wY21YbTZWMEkzS2VXdUJwazFuYVNTb2tpVDBUdDdYLUJ6X1B3?oc=5",
+        "published": "Mon, 17 Nov 2025 08:00:00 GMT",
+        "publisher": "HNX",
+        "sourceQuality": 1.0,
+        "event": "Operations / M&A",
+        "materiality": 0.53,
+        "relevance": 0.9,
+        "query": "\"CTG\" cổ phiếu (site:hsx.vn OR site:hnx.vn OR site:ssc.gov.vn)"
+      },
+      {
         "title": "Tháng 10: BID, CTG và TCB bị loại khỏi danh sách có vốn hóa trên 10 tỷ USD - VnEconomy",
         "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxOVW9vbUVBa3BBbTA4ZlM0cVdGTXp5MGdZOUdxOTV3Vm1KRVNPendRaUliNjFjVGlQRVBsMVNZU2xWNDFLcVJGVTVpZFJ0dlo0aFIwbU5PM1FacFU3UV9lNlVNOUlJY0NjZllrQ3ZjbHlBM1EtR3hfVEptd2lyYk5Fb1B0eHVYcGlEX0JqZ21Ic20ycFdLX1FWMlc4WWMyZw?oc=5",
         "published": "Thu, 06 Nov 2025 08:00:00 GMT",
@@ -1808,6 +1830,17 @@
         "query": "\"MBB\" cổ phiếu"
       },
       {
+        "title": "MBB: Khuyến nghị MUA với giá mục tiêu 25,700 đồng/cổ phiếu - VietstockFinance",
+        "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNdkFMTHZHMUdEOE9ibHFHWS14RzZIVGtpVDAxRW92bDVLdDFWRVpZUzZYUFFPcFNUbC1sRUJlcFpha0t6bm42eUdQWG1ENjc0TTRibmZKZHUxaE9JRGNXZEcwUUFyQnYwUGIzOUx0enlaYXZybXczWnF0UFVLcExLOFNWemhHZl9kX1oyRXZ3cW1pTGQ2NUVNb2pZMGdhYUFBYXVZWUhfYjdkcjlaUU84dTRpTGhKWmZvcDM2WlFudC1Ldk0?oc=5",
+        "published": "Fri, 21 Aug 2026 19:19:36 GMT",
+        "publisher": "VietstockFinance",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"MBB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
         "title": "Viettel chi gần 1.200 tỷ đồng mua cổ phiếu MBB, vốn điều lệ MB sắp vượt mốc 100.000 tỷ đồng - Thời báo Tài chính Việt Nam",
         "link": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNTDZGZDlvRHlQdVVSQ1ZGQnozVnFCRXU2SkhXOEVKeXYwMkNHNWNlNnJXRm4zMldtbkItalhYMzdLdDc0QkFacF9iSEZSWGVDUFIxakJqNzNtMlEwNjVVcjF0cjFCUzlPY2d2cmFaUGd3bWo2ZEhDcXFDQlFpMnZpdmEwSjB5OU50emhsZUFSNHNUbnlTWWhISzFWci1LLW9JWFUxZk90b3ZlelJIN1hrMzM0RjVfS2dtTDY4UHVaT1JzanR4XzdFRWIxWWNPY2xLWEE?oc=5",
         "published": "Fri, 21 Aug 2026 15:45:55 GMT",
@@ -1828,28 +1861,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"MBB\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu MBB được dự báo còn dư địa tăng 20%, cổ đông chiến lược duy nhất trong nước có động thái mới - Tạp chí Kinh tế chứng khoán Việt Nam",
-        "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQM0I5VGc0TWhkaXI3SGxEYjM4c2xSaHhrTVg3WTdTNkNuWDJQdUR5YVJpNTQ5YU9DdnF0WnQ5RmZSd0tUNENlRWVrRnRkazB1ZlZNemE5Ymg3S1JQeVYzRlp3bDVEcWVPWnVPNTl0U21aQXRpYjlvbEkwd0h2bkx2aWw0TzVOWmtnOEJhcHFkSTlURVQzdkl6UVZ5NnlyaEdXZ0tGOHJLbkg0TXA4R2pXQXQ4Uk5TY0Zzb3M5UnNWbDBIaUlhY1E?oc=5",
-        "published": "Fri, 21 Aug 2026 11:00:00 GMT",
-        "publisher": "Tạp chí Kinh tế chứng khoán Việt Nam",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"MBB\" cổ phiếu"
-      },
-      {
-        "title": "MBB: Khuyến nghị MUA với giá mục tiêu 21,000 đồng/cổ phiếu - VietstockFinance",
-        "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOY1c5RFFDZzh3VWUybmR1clczUDRyc24tSWdQMXAwbnpqUWg5aW9ZZlVBSVpPMldlOWVhWXlYM0htQ0JheXpxOV9DYjlVYktzbXlBRExoUFp3dEhIVU5zaVlIdm8tVWJoQURMNW1IQUZBQkRRNHlKU09TZXY1ZDBHYll5Szg5VC1BLWF1Y2N0REdBckd4Q21xNjJnenN4V2FmaXlfNzlYN0lhbVlnbmpiNmZrTm0zdUgzWDBmLXNTRWdfRjA?oc=5",
-        "published": "Fri, 21 Aug 2026 10:27:39 GMT",
-        "publisher": "VietstockFinance",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"MBB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Tập đoàn Viettel sắp chi gần 1.200 tỷ mua cổ phiếu MBB - Tạp chí Doanh nghiệp & Kinh tế xanh",
@@ -1874,10 +1885,10 @@
         "query": "\"MBB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "Viettel sắp rót gần 1.200 tỷ đồng mua thêm cổ phiếu MBB - Người Đưa Tin",
-        "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPQlBGdnVyQzVfUFZGYVd5eVFacllFRkkzVGt4OXNCcXV5Zmtua0RsSlpocTI3RnMtOWlXdThyQjZxWVFnZ0hsN3JOeE43ejRGaFlaVHM4OHBHanRrUVdvUVRWbVVXUVBQVmpxbEVOU0JqQmxlVkZ4cjRJQnlqckNDZm5WX2V4ZWZ4S3lVT09adE53WGFrbUIzZ0l1WjZIdE1feXdwR21aWQ?oc=5",
+        "title": "Viettel sắp rót gần 1.200 tỷ đồng mua thêm cổ phiếu MBB - Chứng khoán DNSE",
+        "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPZWdaWXQyZElGRVl1dUZBNkVucUFvWjZyZ1FtWUJUQkN4d3paUUdnTFpnWmpUNm1iNnlmSU9VYVgtdnkxR1NWZ2J0REY4enAweDk3YVpGUE1OZF9La01oQVBBZlMyQ2E1czBrdXlPcTd1OWhTSFFJVEpmZmw3LXBHcGhocF9PeU9kVTlQRi14NzY4ZGRKY1pyZjJwTklxOXBhdVpZ?oc=5",
         "published": "Fri, 21 Aug 2026 09:10:00 GMT",
-        "publisher": "Người Đưa Tin",
+        "publisher": "Chứng khoán DNSE",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
@@ -2039,17 +2050,6 @@
         "query": "\"MBB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "MBB - Nhiều khả năng vượt kế hoạch - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOM1lkNlZmeW1OY2NYRGp1U0stV1NLVzhXNFdtSTZ3aGxoajd2bG1GbVF4NGpGLVhtTkZqSU5nY0lPbkFVNXlLR1lLS2V3TEVjX1pKY3l1X1lSZko4MUd0WHNCSXd5clFVd3d4UGxhd1hOOE9lLXAwcDl1TGF0MWF4TFFmRXNtMEltcEdYSFI5WFdoZ2daNjltNw?oc=5",
-        "published": "Fri, 14 Aug 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"MBB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
         "title": "Cổ phiếu đáng chú ý ngày 12/8: BSR, FRT, MBB - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPQzBPazdINHFPMGtsVG1fd3A2T3FqUWUyVTVfdFBFZ0htWjZvT3RmcVV0T1kzeTMyN3JBNk1fQ0F3cXl0dE5qSVIzMXZYWTMzdTdMR295VUZDWDJUZXZSUmZSWHVWbnNIaTB5OEVBdlcweGJjazh2cnZjQmxpbUVZWTR1NA?oc=5",
         "published": "Wed, 12 Aug 2026 07:00:00 GMT",
@@ -2116,6 +2116,17 @@
         "query": "\"MBB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
+        "title": "MBB: Nghị quyết HĐQT triển khai phương án phát hành quyền mua cho CĐHH và thông qua hồ sơ đăng ký chào bán thêm cổ phiếu ra công chúng - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMingJBVV95cUxOQXlVSzZIUnBjQ09wVE9oWUlabXM2REo1M1ZlOHpVaGxZWllpVFcxd0dkb09SNUxHTlF3X3JaQnpoQUxmT1U0M3N3eTdFa1RXUmozR3NSTktqZTJoLUphX191TFZGOFFSeUNJV2JoVXhrSzA2U3QxZXhEMndWRGhDT3BPbnFkMmZVdV81S29TV0ZBNFNkOUJ2ZnlrLU0wSzhUbXdVWnk0cHF3alRQRVBCT1J0OTlBWnp6bjRNaXRWeEVWXzA4VWF3b0lyQTBNRURpcE1oY1UtQXAxeDNvNjhTUF8wSzc5Szg3c0VlMjNpWDdfNW0xZDBOWDJMcmZjYzdkNWprUnlhNTJVWUVEcEwzS0tlMTNrRE5PVm9GOW9R?oc=5",
+        "published": "Mon, 06 Jul 2026 07:00:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "Capital / corporate action",
+        "materiality": 0.96,
+        "relevance": 1.0,
+        "query": "\"MBB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
         "title": "MBB: Bà Nguyễn Thị Thủy - Thành viên Ban điều hành đã bán 240.000 cp - CafeF",
         "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQMVF2T2VCZG9XalJvVWZJOVZZWUtCMmNwYU1WQWxwVTZwSFF4S0JPZnpla0lqUHo0dXhUTFk5bkdPYV9XUk5HV2EtNmxMVVRKOHdsN2YwbDBLOTZhelJOU0k5WVRFRmlzRFQwMHhXd1RuWlJSWTQzNGdCYkZsd1lpUkJUMU9sMHZkRDl3VXFzaVJudTJxdkpDU0FvYVktM0RFNF81RUpXb0c?oc=5",
         "published": "Tue, 14 Oct 2025 07:00:00 GMT",
@@ -2151,6 +2162,17 @@
     ],
     "TCB": [
       {
+        "title": "Vì sao nhiều tên tuổi quen mặt như MWG, TCB, REE...không được vào rổ nâng hạng của FTSE? - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQRm9jR0xoc3NOSHRER0JuLWtsS2Vqckk4MVpQMVpWS2JQRTNvOTVhV1VTR0tOWGpjWG9qenMzRzhFdDNDM2ZSUXJYaHlzblBXMUpFZWpuM1BUYVEzNi02a0ZuTjR4VWNoOTNQUGJib2dnTldldlZpNC1heXFGT1c5X0NxNGxGVi1HdVhvU1owNnRkSE00ejVmdjhjZXpqRk1wbnIwUWgxRWZnUHotaFpYMEpNbUNZbkpPZEVBb3pyYw?oc=5",
+        "published": "Sun, 23 Aug 2026 17:01:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"TCB\" cổ phiếu"
+      },
+      {
         "title": "Cổ phiếu TCB - Có nên mua? DỰ PHÓNG LỢI NHUẬN cuối năm 2026 & cả năm 2027 là bao nhiêu? - 24HMoney",
         "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE55YXdVUWE3VFNnWENYU2RwNmNaLXBMNk81U2lSbXJtbkltOXJ4bHMyMkxUUjVSSnh2cEYtVUY1NWJRcDdIaEtoRVV4SVdIZVRVT3FqWmVB?oc=5",
         "published": "Sun, 23 Aug 2026 01:34:46 GMT",
@@ -2162,10 +2184,10 @@
         "query": "\"TCB\" cổ phiếu"
       },
       {
-        "title": "TCB: Nghị quyết HĐQT về việc phê duyệt giao dịch cấp hạn mức thẻ tín dụng cho khách hàng là Người có liên quan của Người nội bộ - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMigAJBVV95cUxPSEJRYWJHQXRuTTBYUXphTUpzcFpWNUlLVkxIdnlzczVMUGpfb1FDMExjZTNZREFZMEVHVFdXamdrX1hCc0t6Qnpmc251eG1sdFlCYkgyUE5SMDkzSXhKcEk3aDJKMVFkRlhVUlJLUzkySVZYMlAxZEluSE9qbjkzbU1PN25xak44RjlVMFF2TnZTOXhtcjhKakFmSG41NEp3SlZFbXI5Q3VjT050SEFkQ1ZDd1haN0JKYlA4Q3pReFI5ZWNHS1BIY1V3eVFqejY1RGZJLU5yWENYMWdDZ0RPdEd1RzdSN1BRQjBjcm0tekNNTDU4REd0WE1sN1Q0V3ZL?oc=5",
-        "published": "Wed, 19 Aug 2026 10:09:17 GMT",
-        "publisher": "Vietstock",
+        "title": "TCB: Nghị quyết HĐQT về việc phê duyệt giao dịch cấp hạn mức thẻ tín dụng cho khách hàng là Người có liên quan của Người nội bộ - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMilAJBVV95cUxNWE90Z3RuVHMwQ1UxX3pMd0xhRFlUelZiMDBNUDhiRUZybmE2NExtcC1ya3Y3akVxdGdzSnJabWdNUExKQ3ZFNHZHRnY4NXJ0Vlp0YnlxczlzUXlYVll1TjZkdmRCN1laZXcwSGExaFc3dDEtVVNaY3VwaWFNZ05DaktPSl8xcExKRjdJR2RyWUR6TXh4SjJCdGpGTW5JRDRVOWE1N0o5QWZlS2FYY2l1aHM5TnFqLTRKYnhCRG1vUHhHZ2h3X05mZEtXc0prRFdkZl9CYm5jZ3BuWEhyMTh0M280UDh5ZFBSWU9lMmRuSzZZQ0FVOGFzcHQ3ZU1ES3Rvc09kQ2NlNnctNDFBaDVXTzUwMGY?oc=5",
+        "published": "Wed, 19 Aug 2026 10:09:00 GMT",
+        "publisher": "CafeF",
         "sourceQuality": 0.9,
         "event": "Financing / leverage",
         "materiality": 0.53,
@@ -2182,28 +2204,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"TCB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
-        "title": "FTS: Quyết định về việc vay vốn Techcombank - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNbjlESEFtbXl6ZkVwQ3l0VTM2aUxvVTZpcHFFd3FRQ056ODNmSWo3V1BKNzF0cHZMV3B4RTdaZEExUTVjVVRlM2J6MlVUcnNRSVhicHNaVU5ZaVJrUFh1VVM4bW5uRktjNXBpVFc1ajNoZVl6OHdldUJvQVo5ZDNCMW9hOGFUejVPMzJTVm5OWFY?oc=5",
-        "published": "Tue, 18 Aug 2026 10:46:05 GMT",
-        "publisher": "Vietstock",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 0.9,
-        "query": "\"TCB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
-        "title": "Tự doanh bán ròng hơn 400 tỷ, TCB bị xả mạnh nhất - VietnamBiz",
-        "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOeDJoTVNpMEdKalplR2pCMFhfWVl5T3B0NHAxUkxDZGdabTJfNlAyTzI0TVc0Tk9CeFdzNjhlQmRVdWZPYTlWaEFqMlpnOG1QVXZjT0pyM1d5UEtDa3pXUXhxTFlnMjZDNzd3ZlF5eDNueDFQcWY1aGhFZzdtWlpaV3R2ZDlLUlZVQXBnallCSTRkbDdaZHc?oc=5",
-        "published": "Tue, 18 Aug 2026 10:30:00 GMT",
-        "publisher": "VietnamBiz",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"TCB\" cổ phiếu"
       },
       {
         "title": "TCB: BCTC 6 tháng đầu năm 2026 - Vietstock",
@@ -2280,24 +2280,24 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"TCB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
-        "title": "Cổ phiếu đáng chú ý ngày 11/8: TCB, GAS, VGC - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPSklrOEFhd0dCRnNINFBaTGQ3akFvTnk4bl9jX3I0eXAwLTZxeGtERjQ0NERzUHdnREN2ZDZ3d0NtbWpiTDRYVHpoMU1ySDRCeTM5a1UwUm5uYVRsY3BIQlloSTVXLWwzS2cwNE5GcW9BS3BOOGVSeFdLN2FDODRacDNUVQ?oc=5",
-        "published": "Mon, 10 Aug 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"TCB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"TCB\" cổ phiếu"
       },
       {
         "title": "TCB cùng nhóm cổ phiếu doanh nghiệp Nhà nước 'kéo' VN-Index tăng gần 9 điểm - VietnamFinance",
         "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPNnBicU9QRHB5aFJLUDlwV1JhbGZ3eVBmbTVSVWJoek1nbXJheml5UGhFcTFLb2NGYjFoTXNwc3BrdkZLUnNwdms2UXJvdWFwR3d1a1NSVEIyeUVHV3o4T0ZkWUhLM0o1OUpuQjFxMHNlajB0enIyVWtabkNsb09XT3dVQVVoVDZpQ1Y3enpXZU1MMkNBYzNaZzE4Z2wyQmZQRkpBMjB2OFFIcEZtWEI1a1BR?oc=5",
         "published": "Mon, 10 Aug 2026 07:00:00 GMT",
         "publisher": "VietnamFinance",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"TCB\" cổ phiếu"
+      },
+      {
+        "title": "Cổ phiếu đáng chú ý ngày 11/8: TCB, GAS, VGC - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPSklrOEFhd0dCRnNINFBaTGQ3akFvTnk4bl9jX3I0eXAwLTZxeGtERjQ0NERzUHdnREN2ZDZ3d0NtbWpiTDRYVHpoMU1ySDRCeTM5a1UwUm5uYVRsY3BIQlloSTVXLWwzS2cwNE5GcW9BS3BOOGVSeFdLN2FDODRacDNUVQ?oc=5",
+        "published": "Mon, 10 Aug 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
@@ -2349,15 +2349,15 @@
         "query": "\"TCB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "TCB: Nghị quyết HĐQT phê duyệt ký hợp đồng với CTCP One Mount Group - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOVjRPQ2FtRmtjcHYwOV9LNFdBUjEwWVF5aUw2SF9JRGlJUkdkWUNMemlrTHMzeUVxNl9TV1MzNVlJU0syQTBhb0EzTTI1akhUOTlhckM2VEJxY3FzOHh4SVliLUx0bEdBRzEyNUJqTnZ6b1J3S2lJUjBuZTI2VTRsMnhwMk9TcUh4Z0RST0s1RUlvZjc5QTV4bWFwMXMtSVEyZENqdHdmSEw3N0U?oc=5",
-        "published": "Wed, 22 Jul 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "Operations / M&A",
-        "materiality": 0.53,
+        "title": "Khuyến nghị cổ phiếu HVN và TCB: Góc nhìn từ chuyên gia - bnews.vn",
+        "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNalFFMkFzVFYwaTRXUF9fLXphZ3RSeHB5S3VWeDhtMTduSXZEQ1FXNUlLRWN5ckJJSTFEdjRZOVlLV1pNaVpvanNrUGFQMjl6U0k1Q2ZzZGh0NGpqNmlIZDkyZEp3aFdmcWZMSEh4VVFQcEZxSmFDblNzMEtoUVJab0JkcWIxU092UkFF?oc=5",
+        "published": "Fri, 24 Jul 2026 07:00:00 GMT",
+        "publisher": "bnews.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"TCB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"TCB\" cổ phiếu"
       },
       {
         "title": "Cổ phiếu TCB được định giá 44.240 đồng - Báo Sức Khỏe và Đời Sống",
@@ -2380,6 +2380,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"TCB\" cổ phiếu"
+      },
+      {
+        "title": "Cổ phiếu đáng chú ý ngày 25/5: PVT, TCB, SAB - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOdVc2OGZnemlObFNUYmpUakxJNlZQaDd2a1hxR21PZDJWU1RDY3g3SmtqNDk0aERDUXVMMDl1SnA2d1VpZE5jTDVlXzdmS3lGcEMtem9BcVZYdzlXT21kMEVSak4yZ01CYkpKUXZTQnoxa2VUcmZra3R6N2w1b1h2alhmMA?oc=5",
+        "published": "Sun, 24 May 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"TCB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Phát hành 4,3 tỷ cổ phiếu, Techcombank (TCB) dự kiến dẫn đầu hệ thống về quy mô vốn điều lệ - Báo Pháp Luật Việt Nam",
@@ -2557,6 +2568,17 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
+        "query": "\"VPB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "Hơn 1.600 tỷ đồng chờ giải ngân: VPB thành tâm điểm nhóm ngân hàng hậu nâng hạng - Vietnam.vn",
+        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOc29fTXdCQ3FVSHc4QXlSOGVPNUtueTFGeFVtRTFfRHVKVDFTUDVJRVZTbTV4OEcwamR3SnVYcjFtMGlPdTZoTHZRRVlGODVUVlVodFBnR0twZkI5blZob2tRN2RJT2JFcjJDLUdRckFZYjlKdldKSF94S3RJRGx2NnBJTmtnTF9WXzRiNTJvZ2hRRVBmQVNfcjNMUGdpd3NJbldsSA?oc=5",
+        "published": "Wed, 19 Aug 2026 04:58:57 GMT",
+        "publisher": "Vietnam.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
         "query": "\"VPB\" cổ phiếu"
       },
       {
@@ -2569,6 +2591,39 @@
         "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"VPB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "Nhận định cổ phiếu MWG, REE, VPB: Khuyến nghị và giá mục tiêu - bnews.vn",
+        "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPcHhFZDViNU5wUmpoWWF2LUQzbzBkd3VSb3l3Tjd3Z2U5THBCVHpaVWhZV0I2RFFCLTFtbklpaUhKVHR2eW1GdHR0d0dMR3pUZDdkUjBacG9LV25ORE03Mk55TVVBZk5BdjYwZlVlX2hkRVEycWxXZ05DOFRlR0c1Mk5iZWhRUDJvLVVCdVlrMm4?oc=5",
+        "published": "Thu, 13 Aug 2026 01:21:00 GMT",
+        "publisher": "bnews.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VPB\" cổ phiếu"
+      },
+      {
+        "title": "Lợi nhuận lập đỉnh, cổ phiếu VPBank được giới phân tích đánh giá “hấp dẫn” - Fili.vn",
+        "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNdlQzZ1hrWU5QZm9UZmttcTFER2NSX09BZGIta1lXYmhfempaVndMMjJSXzh3QTRHYjlWcTFBcWJCQTBacVhFUjNFRW9jN1VrMi1Oc0tteU1uZzRLX2s1Y05LbGw4SzBHd1BjQnowNm54cU9TRGtBd254M0FZSzhJR2RBV2pubVRFMXhZcVRfV1FsQU1BOFY1NDYtX3Z6TUVRZ242WnczaEZ1TWR4UjB4Sg?oc=5",
+        "published": "Mon, 10 Aug 2026 07:00:00 GMT",
+        "publisher": "Fili.vn",
+        "sourceQuality": 0.65,
+        "event": "Earnings",
+        "materiality": 0.53,
+        "relevance": 0.9,
+        "query": "\"VPB\" cổ phiếu"
+      },
+      {
+        "title": "Một số cổ phiếu cần quan tâm 7/8: Cơ hội tiềm năng với FPT và VPB - VOV.VN",
+        "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQa21nOFFpX0NPTFdSX3pmcDg3NFFnS2RNUWxiUzRyWjdQNERpODVPXzB3N0w2T2Vhc1Rfd0FfOUlEVG9nUlRGWGphMEltU2FIX2l0aE9hcF84TUthU2hZYmxBWVM3dTJ1Q2hfelVoT3N0eEZBY2JMRU05MVZlcW5RMWdPVHRWYW1UU3IweDEzUm83T1QxbGxLZ0JTV1dUcnRQX1k0RDNmREI?oc=5",
+        "published": "Fri, 07 Aug 2026 07:00:00 GMT",
+        "publisher": "VOV.VN",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VPB\" cổ phiếu"
       },
       {
         "title": "Cổ phiếu đáng chú ý ngày 6/8: GAS, VPB được đánh giá tích cực, PC1 đối mặt nhiều rủi ro - thuonghieucongluan.com.vn",
@@ -2604,14 +2659,25 @@
         "query": "\"VPB\" cổ phiếu"
       },
       {
-        "title": "Vững vàng trước biến động, VPBank (VPB) duy trì tăng trưởng mạnh mẽ nửa đầu năm 2026 - Tạp chí Công Thương",
-        "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOY2dTXzJlSlhxckthZlYyLXVsVmFFNE9hZS1xRjBmVjY5Q3ZkMGFFVmxwdkNWY05Fei1lVlNMbk9vWFZoOHRZT3lhaWQtUzNNWTl5bkpma0UtdUV2amxQS0Z4U1JRVlJTTWhucWowOWNqTGxocGpWSEJ5TVZXZlk5QUlCc0NneGFaU0JpZllQZWJKcEhZQ1F4LTR5Q1gycXlKWGsxdW1UZXZlQ3ZIaWh2VHlIcEJfTWQyRDhTMVozUmQ?oc=5",
-        "published": "Fri, 17 Jul 2026 07:06:00 GMT",
-        "publisher": "Tạp chí Công Thương",
+        "title": "Một cá nhân 9X nắm giữ gần 100 triệu cổ phiếu VPBank, giá trị ước tính gần 2.400 tỷ - Chứng khoán DNSE",
+        "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNOHpKVWJHYmVHVUM3YmxoaGxHT3ppR3VlcGRBWFVJYVUtRC1jdV9MaEVpbklNc0hDOUtCb29QS0QwZ3k3aEo2ZkhtRUZUQnhEdWFHLV9fdFN5TnRFZ1l1c1dJZkF3NjNRUGJaYS0yTTJqb2ItcE5rd3dnZ3MtZnRXWkg0cm1aU3J0aTluX0d3VEI4ejVQdnVET2syQ0pNdTRhRDRkbEZFaXM5R0lZcW1nNjVEQVBqdGZ0SmJrYXVPZG1pM1UwRW1BcA?oc=5",
+        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
+        "publisher": "Chứng khoán DNSE",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
-        "relevance": 1.0,
+        "relevance": 0.9,
+        "query": "\"VPB\" cổ phiếu"
+      },
+      {
+        "title": "VPBank sửa đổi phương án phát hành hơn 2 tỷ cổ phiếu - Chứng khoán DNSE",
+        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPd2RBRDVLZE5udlpHMjB5S1FycXlyMnNMeGlzRWVGMUM4MVVhcWhiUHhuWWl1aC1pNVR1RV9KTTdLWG9rY0I1aURobDNLNzVVWlRoSURHT0YtZHhUUEJ2MTRwYXZFVzlBR0I3SnhEVmFNTU1xSGM1RjBTM1hsTHBhRGNMRjBmM25kTHRvQ0JkQjlHbEx3RncwbjdDQWlJT2Q0cFE?oc=5",
+        "published": "Sat, 25 Jul 2026 07:00:00 GMT",
+        "publisher": "Chứng khoán DNSE",
+        "sourceQuality": 0.65,
+        "event": "Capital / corporate action",
+        "materiality": 0.78,
+        "relevance": 0.9,
         "query": "\"VPB\" cổ phiếu"
       },
       {
@@ -2641,17 +2707,6 @@
         "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNR241emlVc2RIRDU4RTRfQkdnSkx5aW13Qy02eFhQdjV3UG5zSXFrYnlDc0FaV3Z3X3FYYmJ2NVZoaGxxYzVqcl9qQ283NUlTV3NWaUtXekI0N1lFeWJDTVotN1FsN2otYnRIUU5yX3lxQ1ZTejh5WVJmZnppN1VqNXI4S0hBMUIwU1lpeXJ2cTRja1U?oc=5",
         "published": "Thu, 25 Jun 2026 07:00:00 GMT",
         "publisher": "bnews.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
-        "title": "Cập nhật cổ phiếu VPB – Những thông tin chính tại EV26: Kết quả nhìn chung đúng hướng - dautucophieu.net",
-        "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOYzdScnhSZGN4OGJxWm1uVWdibEV3VFQyT1hLTFBDa2tuVVZJa1lpSGhpWGdvbXRhRkROcWVFckRUb09wTXM1ODV6MDVtN25XOXNFZVVjQ083bDBaSGU5UEs5NmFxRmoyaG1nZmE3Vl9lbjB5c0pTSGlnal96WjFmTFRydE80UE9wR0ozT2NLVGJLLVZhY2ZNVUlIUUllTDVzNDZFM1ZlS0xMY2Rz?oc=5",
-        "published": "Thu, 25 Jun 2026 07:00:00 GMT",
-        "publisher": "dautucophieu.net",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
@@ -2692,17 +2747,6 @@
         "query": "\"VPB\" cổ phiếu"
       },
       {
-        "title": "Thành viên HĐQT VPBank đăng ký mua 30 triệu cổ phiếu VPB - Báo Pháp Luật Việt Nam",
-        "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOaHVPeVA3WWJITTViYnNvS2pPTDR1emxJS2tZOHJLcWFTa0tudTRFSWRwb3BNelREd2pnTXFlRzJSb01JcnRacU1ySzU2dk5Ec19SYVpyVEVnOTBqdU5Kc0M0Y0VrOW5nM3VDcGFocThYczNhVk9BZUR5UnVldnhlZXVFdkQycjhLVkhfeUFrQkhKV0JfRUFMMlN3?oc=5",
-        "published": "Thu, 07 May 2026 05:07:29 GMT",
-        "publisher": "Báo Pháp Luật Việt Nam",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
         "title": "Bà Phạm Thị Nhung đăng ký mua 30 triệu cổ phiếu VPBank - VnEconomy",
         "link": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPZENDSGRxZzF4MDktZ3VhTXVjNXUxVF9UNGduajM1WUNBenFmYktuR3hScnNsNGJPUy1UWWZ3NlBQSEJCM2l0NmI4YlRJQ25ManFrUnN3b3d3U09nenlvbThONFBSSjE0N0Y0NFY5Zm5NRVBsaXFVdnVPUXg5UUNjY1lrbEdJdw?oc=5",
         "published": "Wed, 06 May 2026 07:00:00 GMT",
@@ -2714,66 +2758,11 @@
         "query": "\"VPB\" cổ phiếu"
       },
       {
-        "title": "Thành viên HĐQT VPBank muốn mua gom 30 triệu cổ phiếu VPB - Chứng khoán DNSE",
-        "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQcnNiczVUSkMzSGVfSTYzRlVudGVxaTJVYmRVbzZnQWllbUdNbzlOYzhxU2x3bjV4VFJVbzdENUY0LXJ5cXBqWXJsZk1qMGgyVm5fLXdsOUd3T09qRFZGbVRUODhwNmE3VGJ1RnpISFJVRV9yVmNtQ1dWNVNkeTEtVGxvM05BSFhITXl2dVFlcVBpU0tIc2t5MXpjcWN1R2tlbzItQWNhaG4?oc=5",
-        "published": "Tue, 05 May 2026 07:00:00 GMT",
-        "publisher": "Chứng khoán DNSE",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
         "title": "Sếp VPBank muốn mua 30 triệu cổ phiếu VPB, giá trị 840 tỷ đồng - CafeF",
         "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPbDRlN1N0V3ZuakRmUmg2WldETlBlbkF5eUU0R1lZckhfM0lXamlTYlNZbE9lNm80Qk5jM053ZTJVTFlIR0xnUVU0QVdGbjREXy1JZ1I0bERURGRWZ0dIVWdVYkxYQ1h5RF9QYWFSMHlwUUFrYTZ0cnM2V244SUtnZ09kSTl1S0RaZ0wxb3VVdmVjNkt3OVlkX2Jlb1JKclFMQS1V?oc=5",
         "published": "Tue, 05 May 2026 07:00:00 GMT",
         "publisher": "CafeF",
         "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
-        "title": "Một số cổ phiếu đáng chú ý ngày 28/4: VPB, PVS, DPM - thuonghieucongluan.com.vn",
-        "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQbkdTaEVLUThYanVncWdfUlpKbWNRRU1WZnhjdEFvS0VWZlVaOUdyblBBcC1fakJpbnl1TjNGX0VWTVlTT1o5X1o0ZTNMMkZwWWFuVkVqY0dWYkljc3BFd0JKMUFBY0d1Wng3b1BQcHpwZVV3SGROVTV1bktaMGV6SXFDNjFNTV9LWFJqN0k5bC1CcTRkMG1walM0Yw?oc=5",
-        "published": "Tue, 28 Apr 2026 07:00:00 GMT",
-        "publisher": "thuonghieucongluan.com.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
-        "title": "VPBank tăng vốn điều lệ lên 106.200 tỷ đồng trong năm 2026 - VnEconomy",
-        "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNVnU1ZlZHM0JkSlFKYTRmdmVCaVFwVlh5SWc5cDU1aThsNlBjZ2NlNzhfeURiejI3R29Ib09xaFcxZ25BT2ZKeTV3RmlIZHZXVzJxYzRkT2ZlMXJmS1BxUnZzN3o2TDVnM0N4ZXJ6YnMzZEktTXRiUHM2ZlJXN2FIcHpBeTFpMG9UQ1E?oc=5",
-        "published": "Mon, 20 Apr 2026 07:00:00 GMT",
-        "publisher": "VnEconomy",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 0.9,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
-        "title": "Kỳ vọng hạn mức tín dụng 35%, cổ phiếu VPB được định giá lại - diendandoanhnghiep.vn",
-        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQb21BWE5jaHA1S3B6bE5zUC1WVUJKUHd5Tk9ubkRqX1dlVkpKWG00amVTa3QtSThKYmZPcmRiWkl4TnlwaUFxbDY3Q2lmNzl2c19pb056N2dDcU14SWdVQWRocGR5ZUdzNFJwR1Q3RVRGZHZkak9zakVIWjhMOEVwM1ZkWmJIdHdYM3E0LW1YdVlQb3dHdEd1bERhbXFFcVVxbnE0Rw?oc=5",
-        "published": "Thu, 02 Apr 2026 07:00:00 GMT",
-        "publisher": "diendandoanhnghiep.vn",
-        "sourceQuality": 0.65,
-        "event": "Financing / leverage",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"VPB\" cổ phiếu"
-      },
-      {
-        "title": "Tái định giá cổ phiếu VPB sau thương vụ IPO VPBankS - baochinhphu.vn",
-        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxQTWZHemRvekN6OEJldFQ4M3kwWXR2SFVnMHdyLUtWYUFoR1NSRjhiaXdjOGhjc0JFaUxUTGkzRUQ5dXRBWWlxa0tQZzctZ3dLVW9rTWFTTXdBUXIxWVFHamxaRHF4WWJ6RDY2ejlJMDJEX3NwQ2RSVVl1MXBvN0hzRksyaWNJbEMzT016czhkYmY4OVM3U1EyQ3M4aU9zQQ?oc=5",
-        "published": "Wed, 19 Nov 2025 08:00:00 GMT",
-        "publisher": "baochinhphu.vn",
-        "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
@@ -3071,7 +3060,7 @@
     "HDB": [
       {
         "title": "HDB: Thông báo thay đổi địa điểm Phòng GD Nhơn Trạch - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxONldoUFA0U0wwcTlaTHo0QkFFcHZTRFowSFdUdTM2NXRkN3FOVXNabjFuczJRVzFsaTBIcWhNRzhpaEthVkNHaWFRSUw5dlQ4SHNXSmF1X3I3NVpkMTdnRVZxSHVBdElrd0wwWnFueEJFdzRYUy1HR3ZmMi12TVU5bXVOai1DUTkycFU1UHZkUVZIU05FSlVRN3RhUTU?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPTy00cG85S3RwMVZLRk9ob1pVWG55c1YzbUtQanJJVFdtQkZNZ0JidnppeHNzVG1wUk5MYy1DcE8xUFBlWjVlY1RjOGlsZ2tWMWhmUUM2Zk13SlZITzhFdlYyeENRSGxOd0NHSnktOUF0UV9xRWNJLURybDIycDQxS3dkY0lPMzdDYXpaUDl1bGFnUDlHV3o0UG9jcEM?oc=5",
         "published": "Sat, 22 Aug 2026 09:05:39 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
@@ -3103,6 +3092,17 @@
         "query": "\"HDB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
+        "title": "Hồ sơ doanh nghiệp HDB - Ngân hàng TMCP Phát triển Thành phố Hồ Chí Minh - HDBank (HDB - HOSE) - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBZenp2bkVTRWdlTXV5S0xQN2FHeklKMVFNQUlzVDdISUFsVTZ2TDdzN1JkZHY2aDlOVTVRcEM3bzYxN1VoQnVia2RTN3JJZ08wbXEtRXYzZjRoVFk?oc=5",
+        "published": "Fri, 21 Aug 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"HDB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "HDBank thông qua phương án trả cổ tức 25% bằng cổ phiếu, tăng vốn thêm 44% - baodautu",
         "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOUUJKVjdmc2lCblVScEp1djhqNW9VYmgtdVB3Z0NZWmJHTFZhUEpZdWk0b0F0d1l4QmtKaUdLeVJ2SGdZT2dZWVZhYVVQcGtGNnkteWM2N2F4dnY1T3FJT2haa1lEV3BqUlBQZ0x2ZURkOGdRTVF0NU1kdGpMdmlLSE9ZTXFBZm12bTlwLUVvNGt0ekF5MWlFaUZxUXRSUFh1N1hxWEpOaw?oc=5",
         "published": "Fri, 21 Aug 2026 02:37:00 GMT",
@@ -3112,6 +3112,17 @@
         "materiality": 0.78,
         "relevance": 0.9,
         "query": "\"HDB\" cổ phiếu"
+      },
+      {
+        "title": "HDB: Đính chính ĐHĐCĐ số 17 ngày 17/08/2026 - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOM3ZLa0psQVcycnNHSEJnMFBjUTNiN3dnQWVSc2lHbXpHMEZ1LTAwTlI1MnNIeEI1ZVB0Ykx5TWdLZldINmlxajJfMWl0alpsNnRmRjlPeGdiUGQtQWJPWXlIblF0V01EUS1HOVRlQ2pDaV95dEtZSy1MOHVxVXpsR1ZKYXFEanJZ?oc=5",
+        "published": "Thu, 20 Aug 2026 03:16:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"HDB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Xuất hiện loạt thỏa thuận gần 1.400 tỷ đồng cổ phiếu HDB - VietnamBiz",
@@ -3137,7 +3148,7 @@
       },
       {
         "title": "HDB: Nghị quyết và Biên bản kiểm phiếu bằng hình thức lấy ý kiến cổ đông bằng văn bản - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPbHVtaUlod1kwSEp3RnpLOUlIcHFWQzVGLWhVT2NzcTZ2TjFJOFYzZ25mRGtsbFEtWnlrbE9OOExSd0Yxa2cxdm8yWVFOUV9jdVJFQ0w1dE9ta0VMeFc3am1pSl9rdUZ3Rzc0NnRwYmZOM3VBMU9Nam5FYlVBaHBQS0FBRVhLQ1pqV2ZnbWUzcjRTSVowV01BeGdFMkFWY2U5YVNoVGpYX0lOUDBlc3ZXc1QwQm1JeU9ZQjItWTAyd2ZmTW5rZG5BZQ?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxOcU1kMkw1dW0zRkpFMlA3b1pUMTA5LWtXQUV2MS13c3NWQ0h2OFczXzJ4eGx5QkpqN2lmMXJtZldMdTBMMV9vUlowTmlzaTlfTEYtVXZ6SDNNNERZczdCZlljZUJ2VlVKSmc0VHpOdjNGelEyazdPbGhlSGREU0puRlBXOXZwZE8yTEY3dEszS29UTHRrRE9POGowRURrS1ROZW5WVExIaDd2bFREZzVUS2xLZy11TEVqeVp0T2N4Y05aZHF4aTE4Mg?oc=5",
         "published": "Mon, 17 Aug 2026 10:13:26 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
@@ -3148,7 +3159,7 @@
       },
       {
         "title": "HDB: Đính chính ĐHĐCĐ số 17 ngày 17/08/2026 - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOek5sT2ZwWE9XTVQ4d1VZdTZTXzVWOXRBdlpDNVVqQjYwM3p0aUVyM3NnNGhQQWtIcms5QmluR1VuNEUxRFBMODhoUllmc0xya3JSdmNGMk9GRFRRRERkUzdjalRNcF9uNGFZOGVqYzBLWUhkWmE4d0pNZVpFLUxFeEhBejVfNFpkVEZNa0hoQXk?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQNW9KODlZaXdxZFQyZnlGTE54a1h2R2c5U1g5ZXFZRXZXNmk4cmhpQUtJb3lnU3pNWldQRDEtclI1UzNaZlR3MS1YUHNkbEtfelZPLUJFQVJwQkFoT0F5RHdlRm5SbnRWTHUyVV9sb3g3bU84VVo5czVyeElsd0p0RVphcld1NzVIY2Z1SmY2cFI?oc=5",
         "published": "Mon, 17 Aug 2026 07:00:00 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
@@ -3268,6 +3279,17 @@
         "query": "\"HDB\" cổ phiếu"
       },
       {
+        "title": "Khối ngoại mua ròng hàng trăm tỷ đồng cổ phiếu HDB của HDBank từ đầu tháng 7/2026 - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQN3h1ZmVFNkstbHpLdnRXWmZFM3RXenFqekdxSzJndTR1Uk1HYmFtM3R0UE1mWjhKQWNVcXF1QzAxWnk4NEJkNW1XekNWOEc4THhEaW82WEVOOTRqRkZjV0pzdFdQNlQzYUJxdXhHNURPb05OYmxlYTZYcDVlaXE0eGJ6d1ZkVWRtd1o2Tl9lcEJ0OVd1bUE4UFA0VVV3cmZnbXctbWJHVXVqNVd3cjVBQUxWa24wZWxP?oc=5",
+        "published": "Fri, 17 Jul 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"HDB\" cổ phiếu"
+      },
+      {
         "title": "Cổ phiếu ngân hàng hồi phục ngoạn mục phiên 16/7: HDB, STB, ACB dẫn đầu tăng giá - CafeF",
         "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQMWNsNTRMNEtJbThKZnVfcFlsWkZrcVpHVkNyNUJueHl6ekFuNERvR2szRmJKRDN5bkxwWGM1ckE0WmpzSFpRd3hBNGtReklQUlZob3ZJckpwOXJ0SEJJLVpUMHkxRHdzejJUVk9CVktZMUkxeXMyb1BCWkVlQ3BSdHhuRlJPYjNudndEd01BOUF2aEROc25ZZTJvZC16MWxEQ3E0MVh4aS1maVZ2S19yM1dqS3hNYUd5?oc=5",
         "published": "Thu, 16 Jul 2026 07:00:00 GMT",
@@ -3288,17 +3310,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"HDB\" cổ phiếu"
-      },
-      {
-        "title": "Khối ngoại mạnh tay mua ròng hàng trăm tỷ đồng tại HDB và VPB - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPMTllUkRnamFwa0YyTWhKUnJwcVhnbmxaVGxuQXpaWVd6RGRzbDZCQzl4TG5JcW9fN3RZbXhHZlBncWY0VjA1SWRJZ09RVk1PRm9kRVFUMWNYQjI4R3lQaXFDZU8tLTJWRVpRVWV2cjlrTEF3ZWNrYkUwTVRUNjBENHd5QmQxMW1UeWU0ajJMcDExZVBSd3RDR3ZYTnBPUQ?oc=5",
-        "published": "Wed, 01 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"HDB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Cổ phiếu đáng chú ý ngày 30/6: VCG, HDB, KDH, - nguoiquansat.vn",
@@ -3468,17 +3479,6 @@
         "query": "\"STB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "Tối ưu tài khoản thanh toán với sản phẩm Sinh Lời Tài Lộc của SACOMBANK - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPcXBJVDFrUmNNQTdvTU54U0ZNRTd1VWIyeFFkZS0taUNoemxNU0J0U3RiSFptTWVVUWoyRmFyNHd5MUtMeWtvV3hZOHJkdk9RUzhrUFRDeWFQakN4V1djRWo4czN2X1R4M0M2VzJ3MHlQeVJQTDFTUFhTR3RkZHhyVm9Va0dsS2hSTXRjOV9Oa0RHczlXdmtrS0Nyb0lKNnFZMjNSZWR2Y1dVYTBlUThTSGt1d2p5aEU?oc=5",
-        "published": "Fri, 21 Aug 2026 09:45:19 GMT",
-        "publisher": "Vietstock",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 0.9,
-        "query": "\"STB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
         "title": "STB - Lợi nhuận tiếp tục chịu áp lực từ chi phí dự phòng - CafeF",
         "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOSUFDTUdVR2JUeDNlaklrSFZ1VGV1WVdUdE4yT3ZoSTFJNDg5Y09ySnRLOFZDaE82eDNicXE1T2dUcWxCNk96TDQtcnNBbzBrMTQySnIzRk5yQUl4c1l2LU5idEk5dEpvUlc2MGFJa1ItRHJKZFBELW9hUnk2MFF5TDh2QkJ6N0xBTzNVNkZ3dmMtOVVLdzNVODZmaXFTSEwtOWlzWGUybi1pMmhfS2t4ME84STUydw?oc=5",
         "published": "Wed, 19 Aug 2026 19:07:52 GMT",
@@ -3486,6 +3486,17 @@
         "sourceQuality": 0.9,
         "event": "Earnings",
         "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"STB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "CW STB/5M/SSI/C/EU/Cash-11 HOSE: CSTB2107 - VietstockFinance",
+        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPbjNpSzU3bkRBMjNMbFg0cHQ5dGROMUZrSUZ4U1pwTzlyZXctQU9MSzlsYXpaTmJ5V1hwdEkxT09KQ3BnNWNRclRhVG5pUG5Ocnpuc3Yzc1YtQTdHMVhwRXVEQ2piNGtxUlNBbTJkcXRmN0w2RzE2VTJwckhhT0dDVjNOZkI0UGpzcUF5ZkRnZjR5b1VFUFpIcy1uS3BPUQ?oc=5",
+        "published": "Wed, 19 Aug 2026 10:00:05 GMT",
+        "publisher": "VietstockFinance",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"STB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
@@ -3538,6 +3549,17 @@
         "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNVllhNXVhdnE0aGRocEdKOWc1czhDQjc1Sm9PdW8zX2xfNGlaaVp2X0lPMXd3dUtwYi1LeVBtcEQwRjJDVEVxSG9ZSDNrWGZuakpHcm9oZy1CRDlrZG5DWDNjd0o3YkRUaHU0VTNJUk5SNTYtWVphaVJUSWhhZmNzYlJKOXVoelo0WEpzTHdzbmVRd1FyTzdyNDd3?oc=5",
         "published": "Thu, 16 Jul 2026 07:00:00 GMT",
         "publisher": "bnews.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"STB\" cổ phiếu"
+      },
+      {
+        "title": "Cổ phiếu đáng chú ý ngày 16/7: STB, MWG, PHR - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNVnFTSUFRWjBiUl9zMWtiTzI2by0wbFIwY25uQmtIZWE3eFQ1REtManBkN1dEX2gyelowS18wdEJKaktNVjRZUzZOUERRdWpCSzBQU3B1TGI4OFZFUzRDbWI5LVFpbVE4SFhzQU91Q3NxUGhVVnJ3QXlKVlRZV0s4cy1fNA?oc=5",
+        "published": "Wed, 15 Jul 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
@@ -3671,17 +3693,6 @@
         "published": "Tue, 21 Apr 2026 07:00:00 GMT",
         "publisher": "CafeF",
         "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"STB\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu STB tăng hơn 5% sau thông tin ông Nguyễn Đức Thuỵ ứng cử vào HĐQT Sacombank - Chứng khoán DNSE",
-        "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPTWRLR3BKZVhJb1ZHazFCMWFxVTV0T0JjUVlURnRxeHZWSzVNakZHbDg5YnBmSzlMa2JxdGJONDN4STd5d1FsdlpiVDBRQzhuNXUxTk15Q2QzU0J3Znh4TE9VN0ZJQUZxb0h1Y09RTFl2SjBkdm9UOTZXcFlfTGdnSDNDQnBNWUEzTTd3UVRPdFRyOGFnZmhTOHFhZlpCdmlPZ19kdU1NUWczU0c2TGdJQjc4b3cyS1paOTFnUU8tZTROSXpHN1VSdA?oc=5",
-        "published": "Tue, 21 Apr 2026 07:00:00 GMT",
-        "publisher": "Chứng khoán DNSE",
-        "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
@@ -3844,6 +3855,17 @@
         "query": "\"TPB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
+        "title": "TPB - Tăng trưởng tín dụng và NIM dẫn dắt lợi nhuận trước thuế Q2/26 vượt kỳ vọng - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxOaml0dXJOVGV4ckp3Uy0wczE3SVM3YkFIdjJYMmNyNU1PN212NzB1NmE1bWRLRHlnSUUzaTZzV09HMWpTU3NQeFFRb1JkbDIzRU9zdi1TaXpSYVAzcElnaVI4YUlhQUVVZVpIbnBJdy1sVnNnWVNhSThzNHVfemItejk5SmlUbXRKTVF0SkFqU0JlczVVa1ZJUVU5OG9hQ1EzajMzU2hELU5WdDczaExvblFqVnE2YWo5b2lDNjRBM2NUam4xM2pyMG9NZlo4N2pKZDNGY2FB?oc=5",
+        "published": "Mon, 17 Aug 2026 10:23:52 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "Earnings",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"TPB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
         "title": "MB, MSB, TPB… sắp phát hành hàng tỷ cổ phiếu - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOVWo4cFNTaGdLNy1sY3kydU9YbTEtbWpFY2N5bFZrTjlWbUE3cDFnRGZFV3BlbHpEQ0ZKc2ZiT2FRNmNmelBpZTBuRjFQVzVDVWlqejNuby1ybUg3SlBlNXE0S1VRY1BWUDBQLWZLUEFmd1R6NDdwZnZCUlctS0dWelBjRQ?oc=5",
         "published": "Mon, 17 Aug 2026 06:53:01 GMT",
@@ -3852,7 +3874,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"TPB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"TPB\" cổ phiếu"
       },
       {
         "title": "TPBank sắp phát hành hơn 416 triệu cp trả cổ tức, nâng vốn điều lệ lên gần 31,901 tỷ - Vietstock",
@@ -3885,7 +3907,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 0.9,
-        "query": "\"TPB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"TPB\" cổ phiếu"
       },
       {
         "title": "Báo cáo cập nhật KQKD Quý II – TPB - CafeF",
@@ -3901,24 +3923,13 @@
       {
         "title": "TPBank dự kiến phát hành hơn 416 triệu cổ phiếu trả cổ tức - Chứng khoán DNSE",
         "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPT0g4Q2s0Nlk5UFBNUXJjUkNFdGN0cHFJOW5ieHpCMVVwWkJ3U3gycFJMa2VGQmo5UHlVTTV4eXJaM3B1VXk2TENMQWZTMTJhd3JWNFhLYi0wM21ZMGFXYWVTUGdMRjlKbGtJZ3pTZWpwX1RrLXFTeGRLeUlBeDFOZmVOOGtFdU5ZbU9ZSTBaLUhqTE9tTF9fVVZTYnRQd0tKRlp5ZFJ6SzVKQQ?oc=5",
-        "published": "Fri, 14 Aug 2026 02:48:00 GMT",
+        "published": "Fri, 14 Aug 2026 07:00:00 GMT",
         "publisher": "Chứng khoán DNSE",
         "sourceQuality": 0.65,
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 0.9,
         "query": "\"TPB\" cổ phiếu"
-      },
-      {
-        "title": "TPB - Tăng trưởng tín dụng và NIM dẫn dắt lợi nhuận trước thuế Q2/26 vượt kỳ vọng - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxOaml0dXJOVGV4ckp3Uy0wczE3SVM3YkFIdjJYMmNyNU1PN212NzB1NmE1bWRLRHlnSUUzaTZzV09HMWpTU3NQeFFRb1JkbDIzRU9zdi1TaXpSYVAzcElnaVI4YUlhQUVVZVpIbnBJdy1sVnNnWVNhSThzNHVfemItejk5SmlUbXRKTVF0SkFqU0JlczVVa1ZJUVU5OG9hQ1EzajMzU2hELU5WdDczaExvblFqVnE2YWo5b2lDNjRBM2NUam4xM2pyMG9NZlo4N2pKZDNGY2FB?oc=5",
-        "published": "Thu, 13 Aug 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "Earnings",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"TPB\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "TPBank (TPB) báo lãi hơn 4.480 tỷ đồng sau 6 tháng, tín dụng đạt gần 94% kế hoạch năm - nguoiquansat.vn",
@@ -3973,7 +3984,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"TPB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"TPB\" cổ phiếu"
       },
       {
         "title": "Mirea Asset nâng kỳ vọng TPBank, dự báo lãi năm 2026 tăng gần 11% - Mekong ASEAN",
@@ -4127,7 +4138,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"TPB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"TPB\" cổ phiếu"
       },
       {
         "title": "TPBank lấy ý kiến cổ đông mua thêm cổ phần để TPS trở thành công ty con, chiếm tỷ lệ 51% - VnEconomy",
@@ -4175,6 +4186,17 @@
       }
     ],
     "VIB": [
+      {
+        "title": "VIB sắp thưởng cổ phiếu cho cổ đông và 890 nhân viên - Nhịp sống kinh doanh",
+        "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNblU0cnpvUkdXOGlCdmYxUWRGMXdEa0QyQmRlMDVsZHJaZkN6eEhOMUhab0F3UGJ3TFBjdUxxbFdLQV9IQjRFT3F5Y09hMWVwNjlVSlB3cnhxRDJIOURyekdGSjh5OWI3S1NOR3hvLWVrY3p0SW03WDNWMEtJVnhjRG04Y3J0TUJhYmkydmpnX2hYUGlmRWc?oc=5",
+        "published": "Sat, 22 Aug 2026 07:13:19 GMT",
+        "publisher": "Nhịp sống kinh doanh",
+        "sourceQuality": 0.65,
+        "event": "Capital / corporate action",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"VIB\" cổ phiếu"
+      },
       {
         "title": "VIB sắp thưởng cổ phiếu cho cổ đông và 890 nhân viên - Tạp chí Doanh nghiệp & Kinh tế xanh",
         "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPRFF0emJjUVZJcEpJT0JBNjhGSnRvOUVsREVGakZ5YmQ3WWNxSEtFNC1oWW53M0Uxd3llRGFWaE5ENkZ1Z2QwSGdWZ1pBMkVNdEt2a2hwS0FHU1VJX0ZZTEFaVGxEcVdZeUVLeVJXTko5NWxRYXdNN1B5ejFoSkdxbDhMb2Uxb0psWnE5MV95QzVVZTRpeEVvMHlRc2ctdw?oc=5",
@@ -4374,17 +4396,6 @@
         "query": "\"VIB\" cổ phiếu"
       },
       {
-        "title": "VIB sắp tăng vốn vượt 37.000 tỷ đồng từ phát hành cổ phiếu thưởng - Mekong ASEAN",
-        "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQZHlaT0xCV3FjZzRSTWU0endxOS1xbnNkVGlueDIwTDZMQXBack5UVHRPWkFmVmdhN3FMN1k0ZTBZTE9SbGRTV1BELTlYX3NaM0ZCRzhpcEY4dWtzTDFWR0M0aGNSZjN1QV83RkhiNFJfM3kwS1NCTGxkcFMyTUZURTZlN0RuMTdPemIyQTVGMGdTYVBVN0Z1VU5ET29EUDA?oc=5",
-        "published": "Tue, 11 Aug 2026 07:00:00 GMT",
-        "publisher": "Mekong ASEAN",
-        "sourceQuality": 0.65,
-        "event": "Capital / corporate action",
-        "materiality": 0.78,
-        "relevance": 1.0,
-        "query": "\"VIB\" cổ phiếu"
-      },
-      {
         "title": "VIB chốt ngày phát hành hơn 323 triệu cổ phiếu thưởng - Chứng khoán DNSE",
         "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQLUsyX051cEZZbV9ld25RNE4wVE9yWXFadDJCc1l5a280S0VaQTlid0ZmcnF3ZTNielE3VTNrZUFxZllKV3h4TVV4dUdEZWV4SUxhMk9yRlhndW9sOG5YVU9qbGtIa1hUYzVlOG9NUWVmYUlidGU0SWdKeDhSY1huX3ZWX1lORTZoMjA3QlB6bWRxNEN0ZGZGTHp2Wk5DYk5WUEJF?oc=5",
         "published": "Tue, 11 Aug 2026 07:00:00 GMT",
@@ -4502,6 +4513,17 @@
         "sourceQuality": 0.65,
         "event": "Ownership / governance",
         "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"VIB\" cổ phiếu"
+      },
+      {
+        "title": "VIB chốt ngày trả cổ tức bằng tiền tỷ lệ 9% - Chứng khoán DNSE",
+        "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQQlA5bEt0Mzk3aW5CWGNueWZWUFZ6T01FWlNObUFkTFdzQ1R5bF9QRmFEZjNiZ0taN1AyaHNjWUNHdF9HYVZWLUJhejU5N08yVng5ZWVncEg3Z190ci1CTXBYNHpuSDFhT1gyajQ1SjhkdTZZdkwyNERFVlpvRi0xUkJEWlVLWTBGa2pvZWp6dlhwdTNp?oc=5",
+        "published": "Sun, 26 Apr 2026 07:00:00 GMT",
+        "publisher": "Chứng khoán DNSE",
+        "sourceQuality": 0.65,
+        "event": "Capital / corporate action",
+        "materiality": 0.78,
         "relevance": 1.0,
         "query": "\"VIB\" cổ phiếu"
       },
@@ -4972,6 +4994,17 @@
     ],
     "HPG": [
       {
+        "title": "Cổ phiếu đáng chú ý ngày 24/8: HPG, POW, KDH - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNVXQxX0t4RW5VemV0RE9zSWdqMW5XWFRWbi1wQnFiQkRFUnB4N3MzU1BzcmZVXzIzLWpLYl9TRXZSWU5qT0xYS2Y5azZHOG0ydlVFRlFPX1FsZEtsZVhEdXdmdTRFaTlLVWgzcDk5TW5rV0ZYam5tSW5EeWFHS3lMcnR0Yw?oc=5",
+        "published": "Sun, 23 Aug 2026 15:07:01 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"HPG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "HPG: Khuyến nghị MUA với giá mục tiêu 32,700 đồng/cổ phiếu - VietstockFinance",
         "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNbWJtTEc3dkZRalR1UWtlQUxuZWtSQ2dEdWhzd2dsQWdNeVVTQkxTemZnd3hXTFNqWXYwYk5sNlZGY2k2S21VejJzNnJDTHYtNk9ac0FaM0daSVJpa2lFM2s5a19yc2NBT2UycHJtVUtjZVVYc2ZQRkJlOWJ3d0tEZGMzNGdTZS03ckR3REdkUlRNbjB6UG81Tnh4dzY5M29SeHhRWUpXamFaYTFDNHZYM1lWMktRbjJ3VmR0UUlXVUhBWlU?oc=5",
         "published": "Fri, 21 Aug 2026 19:04:06 GMT",
@@ -5035,7 +5068,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"HPG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"HPG\" cổ phiếu"
       },
       {
         "title": "Một số cổ phiếu cần quan tâm 5/8: Cơ hội đầu tư tiềm năng với HPG và MBB - VOV.VN",
@@ -5045,17 +5078,6 @@
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"HPG\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu 5/8: HPG hưởng lợi chu kỳ thép, BMP giữ lợi thế biên lợi nhuận - thuonghieucongluan.com.vn",
-        "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPQ0lua2c1OGNob2xZMzFHNmxuVDJ5SE41LTdkS3pDOE9xZTBOenR4enJoMmVFd3p3ZlM4MGFuM3oyMG55VmFSYXEza0NfX29Ic2RIMkVOYmFXT3J1TV9RWU1Hc3d4d1Q1R1R6OGZ0ZzZIcjBhcWtGNWlhdHdCSFNPVG95SnI3X1ZTN3JNUnhnUTdvMnNlX0w2a2tLQkxSQVV2SFpPa29wNktGNXVvLXNacFFrd3pjQ2M?oc=5",
-        "published": "Wed, 05 Aug 2026 07:00:00 GMT",
-        "publisher": "thuonghieucongluan.com.vn",
-        "sourceQuality": 0.65,
-        "event": "Earnings",
-        "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"HPG\" cổ phiếu"
       },
@@ -5071,13 +5093,13 @@
         "query": "\"HPG\" cổ phiếu"
       },
       {
-        "title": "Cổ phiếu đáng chú ý ngày 4/8: GVR, IDC, HPG đón loạt động lực tăng trưởng - thuonghieucongluan.com.vn",
-        "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNM2xjVndWRmdqWUN3LVVTbjc5alc3VE1DTmZSbTAzbnZ1RkFkcU9sZ0xrdk5NeXdwNlJrOWVHc3ZZeFNWTUVlZ09YcTFERmZVUFJTMkg5QjN6V1NUSXFZT0t1VzY2SDVZa3dLdjlSN2ZLY1pqOUlsczZjblFOSVNzZ0dfejUzdEx1ek9Gcnk1UzA0TUhKNUZPZFZiRzduZXlfX0V0YldNLXk2UmZvUm9SUW5WNkxqZUVl?oc=5",
-        "published": "Tue, 04 Aug 2026 07:00:00 GMT",
+        "title": "Cổ phiếu 5/8: HPG hưởng lợi chu kỳ thép, BMP giữ lợi thế biên lợi nhuận - thuonghieucongluan.com.vn",
+        "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPQ0lua2c1OGNob2xZMzFHNmxuVDJ5SE41LTdkS3pDOE9xZTBOenR4enJoMmVFd3p3ZlM4MGFuM3oyMG55VmFSYXEza0NfX29Ic2RIMkVOYmFXT3J1TV9RWU1Hc3d4d1Q1R1R6OGZ0ZzZIcjBhcWtGNWlhdHdCSFNPVG95SnI3X1ZTN3JNUnhnUTdvMnNlX0w2a2tLQkxSQVV2SFpPa29wNktGNXVvLXNacFFrd3pjQ2M?oc=5",
+        "published": "Wed, 05 Aug 2026 07:00:00 GMT",
         "publisher": "thuonghieucongluan.com.vn",
         "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
+        "event": "Earnings",
+        "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"HPG\" cổ phiếu"
       },
@@ -5290,7 +5312,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "Tìm kiếm: DGC rời diện cảnh báo - Vietstock",
@@ -5312,7 +5334,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "Hoá chất Đức Giang đón tin tích cực, cổ phiếu DGC được gỡ cảnh báo - thuonghieucongluan.com.vn",
@@ -5334,7 +5356,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "HOSE gỡ cảnh báo với cổ phiếu DGC - VietnamBiz",
@@ -5367,7 +5389,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "Hồ sơ doanh nghiệp DGC - Công ty Cổ phần Tập đoàn Hóa chất Đức Giang (DGC - HOSE) - nguoiquansat.vn",
@@ -5393,25 +5415,25 @@
       },
       {
         "title": "DGC: Quyết định về việc đưa cổ phiếu ra khỏi diện cảnh báo - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQVFJLU1FXTWVhbmlRMjdrTDd6aTMwWENiYnhBblpISVgybzROdC03WDBVSGN5RDV4REpjSXczT2k2bHlIdllpNHd2MWN6TGpTRVdsb01fRzU3MXpDWXFoQU0xYWN5cm5DRl9lalVROFhtTHBhQ3dfUTZpc3A3eFNYNEU4d2xaQ1Njcjlla2tFVWx6LXZQZGFiX0F0b3kyZDlJaUVVTg?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPcjFUOVFuT1FFNmloY1E0VU5oVHEwbVMwa0ZsWnM3bnN4Wm1xSE5GS29iRHZrMUJSMVgwY0k3REREQlh2bHgyNDVKbUNBSmRPRHpGUi0zTnZpRWllRkNGNENIVXpWT2tfUlFuUmZwOFlfaUZNUXBFNm5TSmxqYUVPaG5GbEhmMTJWdU9JUDVab3cyQ1FfZWQ1cXBoOWFDQ3NHVW4ycA?oc=5",
         "published": "Fri, 21 Aug 2026 06:31:08 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "DGC: Thông báo về tình trạng chứng khoán của cổ phiếu - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPMVZGY3BXTXp5d0pHTW12MVUwQWZmbGlEWGoyLWtUN0ZLWjBzaGZ1cEhDRmsxaGJLTDBCWmU2RUR0cF9sd3d2enhobUl3LWd6Y1JycUF5QWJOSGhzYTBFQ3JTVTZaeHgwcnZYZEZVUE1ieXk1c043cTVDbmRKbG1Ya01kTGtEd3hTWV9BQVYzNnpUNkFUUWxYeklfV01Tdw?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPNFR2SmFacGFZYVpHQ3Q1Q196d2hlTF81VVp0MHFXYV93RlhPblV6ZUNfOXVoRkd3QjRSeVF3Y1hXZGFjb1RJZlg1UzhrQ2gyTGp0eFJ3TXR6Y1F6SVZoVzRrLU1xd0JHWVZpZklESzBHaW9PY1BFM00tb3E1R0tXc0EwdGthUS00WEpwUVZ2eW0zdXNxS3ZadDhWdU9sdw?oc=5",
         "published": "Fri, 21 Aug 2026 06:30:00 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "DGC: Giấy chứng nhận đăng ký doanh nghiệp thay đổi lần thứ 27 - Vietstock",
@@ -5466,7 +5488,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "Hóa chất Đức Giang (DGC): Một nhóm cổ đông phủ quyết loạt tờ trình quan trọng tại ĐHCĐ - nguoiquansat.vn",
@@ -5477,7 +5499,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "Hóa chất Đức Giang (DGC) lại có biến: Miễn nhiệm Tổng Giám đốc Lưu Bách Đạt, bổ nhiệm 2 Phó Tổng mới - nguoiquansat.vn",
@@ -5510,18 +5532,18 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
-        "title": "ĐHĐCĐ Hoá chất Đức Giang (DGC): Sau khởi tố, gia đình ông Đào Hữu Huyền đã nộp khắc phục hậu quả 331 tỷ đồng - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOa2NIM0tUYlRWUXo5cVZxaHBYV21tXzRxcVpBOS1YdlZaM29nVU9mMG5Vd3NBRnJ2cTFKM2ZrYjRrMHVsUVhZUkp0MVpGVVBXY0ZENlNQaUt3R3VMZjhFQ2h2TUt3QWdDMEtOaEpVeXJQZjhDbmxwczZKdkdXcGhRU3hMbmV4WXJnb3ZwTi1GNWVKSllmLVdvR2xTdFA3cWc0RU5PRDFkRFVsVC12OXUxNUYyZ1ZyZnEwOWc2TGV5bUM0Q1ZXeTdhRzA0UDRsX3ZoNWhMNXFwZw?oc=5",
+        "title": "Chủ tịch Hóa chất Đức Giang (DGC): Giá cổ phiếu đã xuống thấp hơn nhiều so với giá trị thực, mong cổ đông chia sẻ cùng với công ty - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMi-gFBVV95cUxNSG1FRVdJb0UyRnBlb1lLaGt0Z3EwNDBOVDYzeTc3MHdRQVNtM3dYT3JaRFEyUW1YanZPeVB4ZHBMZERsUlo2TG01YlUtSGt2S2hTZkJzUmZUWlF5VjBRZ3BTcDBTdENtRExEUDVZeTlfeWNaVlZPYkdKLWk2MWRsczBMWTBQaWVTaUExQVhMS0J0aXZGTUxFTC1DSkZBS3pGU0VBeklfYkY4ZmFfajJPVUJzNXBjalRwOTgzT2FSckoxZEd0SEkydkMtLVB2dFVUUmRFR1RWbTBRQnFQSVUxZ1I1cDA2WnpnZjlIb3BnXy1PSUJDX0QtMmVR?oc=5",
         "published": "Thu, 13 Aug 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "Regulatory / legal",
-        "materiality": 0.78,
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "Chủ tịch Hóa chất Đức Giang: Cổ phiếu DGC hiện đã xuống thấp hơn nhiều so với giá trị thực - nguoiquansat.vn",
@@ -5546,15 +5568,15 @@
         "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "Chủ tịch Hóa chất Đức Giang (DGC): Giá cổ phiếu đã xuống thấp hơn nhiều so với giá trị thực, mong cổ đông chia sẻ cùng với công ty - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMi-gFBVV95cUxNSG1FRVdJb0UyRnBlb1lLaGt0Z3EwNDBOVDYzeTc3MHdRQVNtM3dYT3JaRFEyUW1YanZPeVB4ZHBMZERsUlo2TG01YlUtSGt2S2hTZkJzUmZUWlF5VjBRZ3BTcDBTdENtRExEUDVZeTlfeWNaVlZPYkdKLWk2MWRsczBMWTBQaWVTaUExQVhMS0J0aXZGTUxFTC1DSkZBS3pGU0VBeklfYkY4ZmFfajJPVUJzNXBjalRwOTgzT2FSckoxZEd0SEkydkMtLVB2dFVUUmRFR1RWbTBRQnFQSVUxZ1I1cDA2WnpnZjlIb3BnXy1PSUJDX0QtMmVR?oc=5",
+        "title": "ĐHĐCĐ Hoá chất Đức Giang (DGC): Sau khởi tố, gia đình ông Đào Hữu Huyền đã nộp khắc phục hậu quả 331 tỷ đồng - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOa2NIM0tUYlRWUXo5cVZxaHBYV21tXzRxcVpBOS1YdlZaM29nVU9mMG5Vd3NBRnJ2cTFKM2ZrYjRrMHVsUVhZUkp0MVpGVVBXY0ZENlNQaUt3R3VMZjhFQ2h2TUt3QWdDMEtOaEpVeXJQZjhDbmxwczZKdkdXcGhRU3hMbmV4WXJnb3ZwTi1GNWVKSllmLVdvR2xTdFA3cWc0RU5PRDFkRFVsVC12OXUxNUYyZ1ZyZnEwOWc2TGV5bUM0Q1ZXeTdhRzA0UDRsX3ZoNWhMNXFwZw?oc=5",
         "published": "Thu, 13 Aug 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "Ownership / governance",
-        "materiality": 0.53,
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "Regulatory / legal",
+        "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu"
+        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Hóa chất Đức Giang (DGC) đối mặt sức ép lớn trong nửa cuối năm, lợi nhuận 2026 có thể lao dốc 43% - nguoiquansat.vn",
@@ -5576,18 +5598,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
-        "title": "HoSE cắt margin 56 cổ phiếu: DGC, HPA, LDG... vẫn góp mặt - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNWWs0aS10NkM5QzFXZkt0MmpoVmZraG5ubEhocXZ3NFVURGRLVnY4aUtXN0R3RTNRSm9RM2pSNnBJWHFSdUw3NkFvLXNOb05FY3hESU5yaXZSNWg4Ulc1ZTJibUhudFRGM2N3eWtLNXBXUWlxZ2o3anhTVEJTOWVlaFFtR1NBLWhOS1VqcUtrVEk?oc=5",
-        "published": "Thu, 06 Aug 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DGC\" cổ phiếu"
       },
       {
         "title": "DGC tăng trần, cổ phiếu của Điện Máy Xanh chào sàn may mắn - Mekong ASEAN",
@@ -5599,6 +5610,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"DGC\" cổ phiếu"
+      },
+      {
+        "title": "HoSE cắt margin 56 cổ phiếu: DGC, HPA, LDG... vẫn góp mặt - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNWWs0aS10NkM5QzFXZkt0MmpoVmZraG5ubEhocXZ3NFVURGRLVnY4aUtXN0R3RTNRSm9RM2pSNnBJWHFSdUw3NkFvLXNOb05FY3hESU5yaXZSNWg4Ulc1ZTJibUhudFRGM2N3eWtLNXBXUWlxZ2o3anhTVEJTOWVlaFFtR1NBLWhOS1VqcUtrVEk?oc=5",
+        "published": "Thu, 06 Aug 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"DGC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Công ty chủ lực của Hóa chất Đức Giang (DGC) đề cử một kỹ sư sinh năm 1989 vào HĐQT - nguoiquansat.vn",
@@ -5700,6 +5722,17 @@
         "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"GVR\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "GVR: Tập đoàn Công nghiệp Cao su Việt Nam | Tổng quan - 24HMoney",
+        "link": "https://news.google.com/rss/articles/CBMiQ0FVX3lxTE9IMHNqT25LZ0FRNGVsaDlJaHE5dmNZUjRuSHVDU1VjWHZMQTBUeDFXZ1N0Um9pclRudzJWRHR0a2V0bXM?oc=5",
+        "published": "Fri, 21 Aug 2026 07:00:00 GMT",
+        "publisher": "24HMoney",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"GVR\" cổ phiếu"
       },
       {
         "title": "GVR: Quyết định của HĐQT về việc thành lập Chi nhánh Khu Công nghiệp VRG Tây Ninh - Vietstock",
@@ -5886,7 +5919,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"GVR\" cổ phiếu"
+        "query": "\"GVR\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "GVR không bị hủy tư cách công ty đại chúng dù chưa đạt chuẩn - Vietstock",
@@ -6056,17 +6089,6 @@
         "query": "\"MSN\" cổ phiếu"
       },
       {
-        "title": "Báo cáo cập nhật KQKD Quý 2/2026 – MSN - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNUHo2Y0dPTWpiYkpGVGJ1LWVEb3l0aUVadzA4TE81a0tDQkdHWTVhNlpaY2VSR0t5Z3ZBUFhRSVcwUndKVnJIQnp3M0R0Tmd3QTJrRGJDajYxNE9UY09oWUJaVFU4M2hZSEtzdjB0Mmw1T01Tb1FraklXVHp6eGJ5dm1wY1NiODhWWGZWUUpVVHU5OFJXcDB1Q1Nob0g?oc=5",
-        "published": "Wed, 19 Aug 2026 04:35:52 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"MSN\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
         "title": "Đằng sau mức giá mục tiêu 110.000 đồng của MSN, MSR đang nổi lên như động cơ tăng trưởng mới - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNVFJ1ZEpHTzh3MG43Q014Zlg5QmNGU1gyaW9MWWZ3RXJnaWdDaXI5cmNzU0poNUFGc0JrVlR6ZS1OckVDMjdycnU3b3ZhN2tCS2liZC1kY21wZDVzTDAyUHdlMTF4aGhGZTFsOHg2ZWZBRzlkM2NWTE01REJmdWRqWE0wMnQ1a05SUmNyME4zdUF5OWVwNExnSGhKQTVQR1U4LWh2ODdmSjREazRHdHFLblk3ZDF5WGdGN0NTQXdaM1hqcnBscVE?oc=5",
         "published": "Mon, 17 Aug 2026 03:39:01 GMT",
@@ -6133,6 +6155,17 @@
         "query": "\"MSN\" cổ phiếu"
       },
       {
+        "title": "Gần 1.100 tỷ đồng tiền ngoại nhập cuộc, trợ giúp cổ phiếu FPT, HPG, MBB, MSN, PNJ bứt phá - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNblBSSHZvdURoWEFsVFV6WUJnNHdNTHFXVklmeXU4dnZaNEt6ejR1QlNxckZoYmZNZll2dG55aHJWQnJDMWhEMXR0Y09yc1l2azI5RVFEc1JZTkRxb0hBYlVjRDdCVTQ3X0hEVTJ2RE9fQ2RMZE1CSFp3X3B0ZlpyRXJKaUJRT05JTmVaSV94aDB6bXB1aDdTUUVzc243Vjdnak45enNmanV0bzhHUXFfSEhIdlRkU090UWRJbg?oc=5",
+        "published": "Mon, 03 Aug 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"MSN\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "Cổ phiếu đáng chú ý ngày 3/8: MSN, VIB, PVD - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQV3p4dmpSOF9MQTJIMElOekxldlV5SllRNktEMjlHNlYwLTQ2S1dJY0xvRW1QaEZ2X2Y1aUlGeWVBQWZndjBKNndFa0VUOTdTaXhqQU1JQ1dhVnY3U2JjSVNtcTNQeXl0MklhSi1kQkpnNUVoNkg3X3RFMXg4V2dPOWlB?oc=5",
         "published": "Sun, 02 Aug 2026 07:00:00 GMT",
@@ -6142,6 +6175,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"MSN\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
+        "title": "MSN báo lãi quý II cao nhất lịch sử, vì sao cổ phiếu vẫn chưa bứt phá? - MoneyF",
+        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOZ0pmTHJCRUlFbjJJZUxzSlpaeUxRNUEtb1pjV3RkRWwweXBSczI3UlYyYW84RDJoMXNJSGVTYzd5ajBIcGI5WW1GMm1rWkRiNzZCUms5SG9NN1R5NHpvYmRKNWl2eEVfanN1SEwyRVA0OVVwRTVDTmlwNzdHVko5MnFQcw?oc=5",
+        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
+        "publisher": "MoneyF",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"MSN\" cổ phiếu"
       },
       {
         "title": "Động thái \"nóng\" từ hệ sinh thái Masan: MSN tăng 40% kế hoạch lợi nhuận vượt 10.000 tỷ, sếp Masan Consumer muốn mua số cổ phiếu gần 400 tỷ - CafeF",
@@ -6210,17 +6254,6 @@
         "query": "\"MSN\" cổ phiếu"
       },
       {
-        "title": "MSN lọt top 3 cổ phiếu được khối ngoại mua ròng mạnh nhất từ đầu năm: Điều gì đang diễn ra? - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbEQyTVh6V2NRbkswa29JS3k3dUxEcjNrTDB5OXJPYWd2RUFFQmZLXzYtS1h3cFEtcFpMTE9reUJEenlYSVQyMnZHZXZNWVdNQ0s2OE5DeG9OSjdtdjZqM1ltNXJuU3ppT0dTQnBZY0JJRlBYcXN5RXlSMW8taE9MbEtlNmh2SHlXT3ctcHcwVXROR2ZHdTU4eUV6d3FJS1pMT1RWTWltMXBvRWtlZWhYUUVGRGd2N0lXQjhvenJTS1JuWmt2Vm4xYw?oc=5",
-        "published": "Tue, 14 Apr 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"MSN\" cổ phiếu"
-      },
-      {
         "title": "Masan (MSN): Tổng giám đốc vừa mua vào hơn 4 triệu cổ phiếu - Tin nhanh chứng khoán",
         "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPOVhESVhwd1pUazZpUlpWTHQ1YzVLWnpUVl9RRnZ6U1NYMGRwSUx4ajhKdF9FbGpqNVI5VmNLT2U3OWlEWWFRLThTMjl5am45LTNINS1iaHZlNC1Fc2R5dE5rajMxMHNaZkZRb3NZRENDSmVlVW9mOVhUT2pIWm9mdU1Cc0hlSFRKTmlmb05HaXJqaEk4VlZ5cDlOTnQ4Z2dRWmhQbUxldE5mUdIBpgFBVV95cUxPSGpDdkRNOEI4UGFydVZ2R096d21TSmh4TVR4cWZiTkxqekZXamdKRUhzT3ZfN2NJYnhYbDhzRWdqNi1oMGVDdDJhX0RqUXFPeC14Q195aktkZ2F3MU1tTm9TS2ltYzBPR3BHRV9ONkFOS0tGTmpGRnZUdkJCWExjaDE5ZE9JODExTWNKR3hia3h3WVJhLWp3QXM4WmJWOXA1X0xxa3Jn?oc=5",
         "published": "Tue, 14 Apr 2026 07:00:00 GMT",
@@ -6232,11 +6265,11 @@
         "query": "\"MSN\" cổ phiếu"
       },
       {
-        "title": "CEO Masan mua 4 triệu cổ phiếu MSN - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNQVJZeFNqTFFhR0YzaEtQNmdzQjE2OHlfcWlQY2FhV1Q0M1l5UVpyWHZzOGFrSVQ0RThWV3Rkb2pLZ1ZYMTlMSGFManRCWkk4TEVUNzE5TG12UU52ZEI1bnhyZE9hVGhOb1ZXVnV0QUdrV3FVSDluaEg3UTJtaXJod3dGc0hZeGIzREw3MVJkZXl0eWZDTXcw?oc=5",
-        "published": "Tue, 14 Apr 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
+        "title": "Vì sao MSN lọt top cổ phiếu được khối ngoại mua ròng mạnh nhất thị trường từ đầu năm đến nay? - Tin nhanh chứng khoán",
+        "link": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxPRHBjRmJlZlYwR1M1NmI3bDRNVG5UNnViSmM2LWN3b1hNa1JjTzVCaENEVjAxdWRPcmdua0FGeDBVNWdCcEx1azY1S1hqblVHSm16VWdxLVQxVUdHRFlHTTNKVVBvZUMtSzdYTU14cTNKSzdzRXd3SWNtOUxZRlNGd3hxZHB1RGFGNWZzVWpHUmRWV2ZXaXBGSVFNSFlsODQtZE5rbllPeTE5SVpnQkhyeW5ja2Fxd2dlTFNPQ1JYMUxkcHI0a1oyaWlBNV9aOWpqcVlTLUljYWppQdIB1gFBVV95cUxQY19fU3JFVGIyQkFpRWpTSUJpUWJYTnUtVHFYcUxCS2w3eFNXcTVzanhndG8yVHYwbDZPSWs4bEtudXdlUzdSWXljSlJBWThhd1R1QnZHaERKUzFDLU5PUzlOakdCWVV2Znk0WGttMnhBcE44RDkwekxTM3pYMElhSWVXN2xQV2tYSzNpNXVyc3dDYXJDUE16b21CSXFRX01HZlhra2NRSnJBeFpneFRRMkZha0hrejFTOUF0S2I5N0k4WVEzVzRIaFNsa1BOa1pzYXhib2J3?oc=5",
+        "published": "Mon, 13 Apr 2026 07:00:00 GMT",
+        "publisher": "Tin nhanh chứng khoán",
+        "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
@@ -6278,9 +6311,20 @@
     ],
     "MWG": [
       {
-        "title": "MWG: Khuyến nghị MUA với giá mục tiêu 99,999 đồng/cổ phiếu - VietstockFinance",
-        "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNOFRVVXFjRWRVZGFyNm5OUndyNFVwMjZzX0dJaVhvVHpTRE95bXdNTDVaVlk3Q284alFmOTBFdHhYTlhjUlVXTWhIRDUxNVh0dE5faU93dGwwcWY0RjdVc29DY1kzQTJERkJMTGFRUnJWZzZCMWZNS2tHWVMtbnFvWGlDX01OSUd3YW1ISVdQMEMybzBKbTlVMTlRUkhqVmlJdjhKb01wdkxGQk5SNHNWR3F3?oc=5",
-        "published": "Sat, 22 Aug 2026 02:40:56 GMT",
+        "title": "Vì sao nhiều tên tuổi quen mặt như MWG, TCB, REE...không được vào rổ nâng hạng của FTSE? - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQRm9jR0xoc3NOSHRER0JuLWtsS2Vqckk4MVpQMVpWS2JQRTNvOTVhV1VTR0tOWGpjWG9qenMzRzhFdDNDM2ZSUXJYaHlzblBXMUpFZWpuM1BUYVEzNi02a0ZuTjR4VWNoOTNQUGJib2dnTldldlZpNC1heXFGT1c5X0NxNGxGVi1HdVhvU1owNnRkSE00ejVmdjhjZXpqRk1wbnIwUWgxRWZnUHotaFpYMEpNbUNZbkpPZEVBb3pyYw?oc=5",
+        "published": "Sun, 23 Aug 2026 17:01:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"MWG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "MWG: Khuyến nghị MUA với giá mục tiêu 140,000 đồng/cổ phiếu - VietstockFinance",
+        "link": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQT2xrQmJ3dUNid25aWEE1b2t0MGQzdXZZRzVnYXF4NElWdER2ZWI0bThKN21vQUJKUVk3aWdOQWk4Rm9EaER4ZXRXUUJrNHJQdTZWdkUxRXZ2ZG95dmlwbUVfVnNnTTMxeWpwOUZNRnVpQ2tZcWQtLUZwWUZ4OURzTWZsOURibFB3RmN4dmZzaGV1STljclI0N0ZNUnhwZ1d6WVFfOFBxTElRQXZwaXphQk5CNzdwYXFEUDYtU3FMMFN5OUJv?oc=5",
+        "published": "Sun, 23 Aug 2026 03:48:42 GMT",
         "publisher": "VietstockFinance",
         "sourceQuality": 0.9,
         "event": "General",
@@ -6374,7 +6418,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu"
+        "query": "\"MWG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Chủ tịch Thế giới Di động (MWG) Nguyễn Đức Tài đã mua vào 1 triệu cổ phiếu - Tin nhanh chứng khoán",
@@ -6396,7 +6440,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu"
+        "query": "\"MWG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Khuyến nghị cổ phiếu: Mua FPT, tăng tỷ trọng MWG, khả quan ACB - bnews.vn",
@@ -6440,12 +6484,12 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu"
+        "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Hơn 2.600 nhân viên nghỉ việc, Thế Giới Di Động (MWG) gom lại cổ phiếu với giá rẻ hơn 7 lần thị trường - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxQVjVtaWwyQVItVUJsazE0TTNSMEVKaE93ZWF6VnJOdzV6Ujk1WWFjdURCa1daNDZOcHMtcmVqQ1Rya25aTjRWM19LVXk4OVRCR3cya3hIUktORU41eVBNZ0h2Z3NaMTI3bmJaX2VxVjE1NnBtZ1J6ZThxb1BBYXBZelhvUS1wdlpDRU44LUQxdVl6cnExaXA5dGtmTFJqM3Vjc19zc3dxYnNURkRhUTVSTjVfeFdJYk9JcEpyY1M3b2U5VVptSXNXbDlwWjI4a1A2?oc=5",
-        "published": "Sat, 15 Aug 2026 12:53:01 GMT",
+        "published": "Sat, 15 Aug 2026 07:00:00 GMT",
         "publisher": "nguoiquansat.vn",
         "sourceQuality": 0.65,
         "event": "General",
@@ -6476,17 +6520,6 @@
         "query": "\"MWG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "Thế giới Di động (MWG) sẽ không mua cổ phiếu quỹ trong năm 2026 - Tin nhanh chứng khoán",
-        "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOWWZRYWdoU1U0SlFpQ1RkYlA4TG9FWTZmLUNsZFFSQUtqLXhUT0JLbktaZU1Jd3BsZlhHODhxb1IwVHdVTGNyU2k0WGx6aDFHQy1aQXpSVFBlRmNNb0ROMF9CUFdNa3BITWE4eElBbS1TSjZXaWpPdkw0MTF3MWoxcW9PQXFFZkc1Tk1QbmV3TEhESHE3MTdhaGljM0tISlZpZHFmdU03OWU1c28xbURObNIBrAFBVV95cUxPaVQ4Nm1tVFB6NXBMRExVVEdHNW5FWXBBZGZ1VmtTNWhDa3dnODNnczFoRVlnR1liRWxqWTY5T3VRandnSzREdXNKRm5BdnU4T1NHVy0yZ2V5YmQ5SV9fdi03M3ZQOTM1Z0VHdUhsVEhCMWg2ZWVaam8yMTlCVFkyOHBicVBFQ3JrS3FtTE9NY1EwenJhS1hOclRUcG5nVjh3bXJ6bzdURXVYT0h1?oc=5",
-        "published": "Tue, 04 Aug 2026 07:00:00 GMT",
-        "publisher": "Tin nhanh chứng khoán",
-        "sourceQuality": 0.65,
-        "event": "Ownership / governance",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu"
-      },
-      {
         "title": "Tổng Giám đốc MWG nói về 'núi tiền' 64.000 tỷ đồng, tự tin lợi nhuận về đích sớm 2-3 tháng - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNajJHZ3FvRF93c19EUlhFR3lYQ21LOG93U3g1Nm40MW8ySS1yRTFxM3REUTFBYWVKN2s1VE05TFkxSHRwNElhcEY3ZlV2MThaRGphVFBDRFdFdEEtODJTZWJsaF8yOXhTbXlaR3NESG42YnJFR0ZWWDN4VUZjaDc3eUtQcEd3YVhOZnJIaXhoT0JlN2hzQlYtZHZuM1RDckhtOW5Nc0E2WEpqWFFMZFh3a2NObzdJNjlaZVhnbmVLQkE?oc=5",
         "published": "Tue, 04 Aug 2026 07:00:00 GMT",
@@ -6498,6 +6531,17 @@
         "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
+        "title": "Thế giới Di động (MWG) sẽ không mua cổ phiếu quỹ trong năm 2026 - Tin nhanh chứng khoán",
+        "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOWWZRYWdoU1U0SlFpQ1RkYlA4TG9FWTZmLUNsZFFSQUtqLXhUT0JLbktaZU1Jd3BsZlhHODhxb1IwVHdVTGNyU2k0WGx6aDFHQy1aQXpSVFBlRmNNb0ROMF9CUFdNa3BITWE4eElBbS1TSjZXaWpPdkw0MTF3MWoxcW9PQXFFZkc1Tk1QbmV3TEhESHE3MTdhaGljM0tISlZpZHFmdU03OWU1c28xbURObNIBrAFBVV95cUxPaVQ4Nm1tVFB6NXBMRExVVEdHNW5FWXBBZGZ1VmtTNWhDa3dnODNnczFoRVlnR1liRWxqWTY5T3VRandnSzREdXNKRm5BdnU4T1NHVy0yZ2V5YmQ5SV9fdi03M3ZQOTM1Z0VHdUhsVEhCMWg2ZWVaam8yMTlCVFkyOHBicVBFQ3JrS3FtTE9NY1EwenJhS1hOclRUcG5nVjh3bXJ6bzdURXVYT0h1?oc=5",
+        "published": "Tue, 04 Aug 2026 07:00:00 GMT",
+        "publisher": "Tin nhanh chứng khoán",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"MWG\" cổ phiếu"
+      },
+      {
         "title": "Cổ phiếu đáng chú ý ngày 30/7: FPT, MWG, VGC - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNeGFiaTZ6c3lrdkI1ZXo5RjZ6Zk5lRUtTeGJLbjBwMkNEUG0zRmJpaFp2YkY2SUNnN3N3QS1DTjB4SUZWZUhjWi1XQWlVUFE0TXRlOGIxeXFubl9hVGU4UV94aHhBWW01Y1REanBWNjdBSDFzNjFPZkM4MUZTWEd6WkpxYw?oc=5",
         "published": "Thu, 30 Jul 2026 07:00:00 GMT",
@@ -6505,6 +6549,28 @@
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
+        "title": "Chủ tịch Nguyễn Đức Tài đăng ký mua 1 triệu cổ phiếu MWG - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQU1YwZEV4N2ZrV1JKVF9xWlhFUmI2aF90ZzhfQ01WdXlVUk9HVzMzWlNmVnJ5MEpUWlh2YzBpemJBMGxaYTdWZFE0WWZUclRlalVUenU5QnVScjdsMXZfUWt3Ql9NVVJEUld1bGVyMWNlV3BHOWUwLWlWaWlQRGRNZ0xSN05BZDVEOFVKbHF1X0R2NWpIYm5J?oc=5",
+        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
+        "title": "4 lần bắt đáy cổ phiếu MWG của Chủ tịch Thế giới Di động - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPcHNfX0pXWVZGSFFZc3oxcWRHNDRLcTNMNGhwMWpsalNjR3F6MWNmT3NQbDR0RmM1ZjJaUVY3Sy1jWjVKZjd4WDY1QXhsSmlrTE5iRDNadjNTc3RqU2pwNmQ3cWtTRmlvcU5BWjIzdHNyc0ZUSUJZSnhrODZfWV9RMTJ0RTVFMlFYRW5KSDBTeEppcWExMEww?oc=5",
+        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
@@ -6529,39 +6595,6 @@
         "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"MWG\" cổ phiếu"
-      },
-      {
-        "title": "Ông Nguyễn Đức Tài muốn gom 1 triệu cổ phiếu MWG - Znews",
-        "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOQ2R4Z3J3aEhRRXZxZENmRGxLMzI3LVhQRDNPb0FGNGE0N1QwT3d2dGZCaGQtZS1LYVktV2RWV29RdVhYblA1NVNYS3Z6MVE5amRhVnZjZW9LZUF3YWpxM3ZBLVg3cTJWbjlHanRGellFZHZFZWRwOE1sLUtwWGpIQy13YUdYeDIydlE?oc=5",
-        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
-        "publisher": "Znews",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu"
-      },
-      {
-        "title": "Chủ tịch Nguyễn Đức Tài đăng ký mua 1 triệu cổ phiếu MWG - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQU1YwZEV4N2ZrV1JKVF9xWlhFUmI2aF90ZzhfQ01WdXlVUk9HVzMzWlNmVnJ5MEpUWlh2YzBpemJBMGxaYTdWZFE0WWZUclRlalVUenU5QnVScjdsMXZfUWt3Ql9NVVJEUld1bGVyMWNlV3BHOWUwLWlWaWlQRGRNZ0xSN05BZDVEOFVKbHF1X0R2NWpIYm5J?oc=5",
-        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "Ownership / governance",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
-        "title": "4 lần bắt đáy cổ phiếu MWG của Chủ tịch Thế giới Di động - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPcHNfX0pXWVZGSFFZc3oxcWRHNDRLcTNMNGhwMWpsalNjR3F6MWNmT3NQbDR0RmM1ZjJaUVY3Sy1jWjVKZjd4WDY1QXhsSmlrTE5iRDNadjNTc3RqU2pwNmQ3cWtTRmlvcU5BWjIzdHNyc0ZUSUJZSnhrODZfWV9RMTJ0RTVFMlFYRW5KSDBTeEppcWExMEww?oc=5",
-        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "Ownership / governance",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"MWG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Ông Nguyễn Đức Tài đăng ký mua cổ phiếu MWG - CafeF",
@@ -6604,6 +6637,17 @@
         "sourceQuality": 0.65,
         "event": "Capital / corporate action",
         "materiality": 0.78,
+        "relevance": 1.0,
+        "query": "\"MWG\" cổ phiếu"
+      },
+      {
+        "title": "Một số cổ phiếu cần quan tâm 17/7: Cơ hội đầu tư tiềm năng với MWG và VNM - VOV.VN",
+        "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPVF9mUkRlNE8zMG04bnBkcG16cHg4aEE1cjFGa0I0QnFZYklUQ2ZwelQ4aFI0ZUlTbmpzRHlTWVBhME1DQ2sxUWtON0VLaUdSOFZRbnIxSTgyUWdzV2l2WVdjTHNZWXdHZkxwTnBDRTM3VW1PaXZ6UDF3eHdwOTdvMXVJOTlzQ1RDSGFVVk5pNWpRTFpqM3dFcm1TTVYybU42Z011WVJ5NzZPaFp6dFVtazdUSQ?oc=5",
+        "published": "Fri, 17 Jul 2026 07:00:00 GMT",
+        "publisher": "VOV.VN",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"MWG\" cổ phiếu"
       },
@@ -6659,17 +6703,6 @@
         "published": "Fri, 21 Aug 2026 02:02:00 GMT",
         "publisher": "bnews.vn",
         "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VNM\" cổ phiếu"
-      },
-      {
-        "title": "VNM:Công ty Cổ phần Sữa Việt Nam (HOSE) - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE1Bc3FNeGVNMWUyMnlaLU55Z3FYUVp3TUdWbjc4SHlhX1NqTlRYd19aQ3hYbHdiaTFFdzJNdDYxclVxTHE0LU1qU19SV1NRZTZHdDQ4aWJ5VlVBZzEt?oc=5",
-        "published": "Thu, 20 Aug 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
@@ -6928,7 +6961,29 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"VIC\" cổ phiếu"
+        "query": "\"VIC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "VIC: Nghị quyết HĐQT về việc phê duyệt Bộ hồ sơ chào bán trái phiếu ra thị trường quốc tế nộp cho UBCKNN - Vietstock",
+        "link": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxOLWhoS294Rk1CUFk5MFBXemlmTFJDaUNXOXVXazNHcFMtVDR5WEoyZWxTeTNnRXhNaWxMRUNxNVpkQlRiWXdTUkVBQXFVYS1FbDRudFVQRmszVjhPUGFZWTNpbENkZXl5bjdvdDNmbXhqMTZTQk5Ra2NmMFB4ZXZzRWVDUGtnMnBMUGhEWFlpMWN2Qi1YMFRuSURLektPVUIzLWlmRE1pRkRZUXNDZGh2bmZlLV9ueEM4Z3pnZXBTUERudHh4dVZhX1c5ekFjdjk0SWlEd1VUZDkzLTl0RGxYU293?oc=5",
+        "published": "Fri, 21 Aug 2026 10:42:46 GMT",
+        "publisher": "Vietstock",
+        "sourceQuality": 0.9,
+        "event": "Financing / leverage",
+        "materiality": 0.78,
+        "relevance": 1.0,
+        "query": "\"VIC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "VIC: Báo cáo cập nhật KQKD Q2/2026 - VietstockFinance",
+        "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNQ1JuN1U5X09mdS1oQlBvN05Pd0ZteHRHYkdwRVFYUGplQTdsb1ZXeElXOTdoTzdzWlRQNXZzSVFCNTJoNFA0MWdBcHpJZ2ZzSTBydWRsanFremNRemtoYVQ3RWU2cXktQVN4cWdmMEJPT0VpckVhUmVPYW5yaWpHTzNlaTgySGJLSDRFQ1V2N1FkOGc?oc=5",
+        "published": "Fri, 21 Aug 2026 04:22:08 GMT",
+        "publisher": "VietstockFinance",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VIC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Dòng vốn 1,32 tỷ USD chờ phân bổ qua 4 đợt nâng hạng thị trường, cổ phiếu VIC dự kiến hưởng lợi lớn nhất - Báo Pháp Luật Việt Nam",
@@ -6975,6 +7030,17 @@
         "query": "\"VIC\" cổ phiếu"
       },
       {
+        "title": "Nhịp đập Thị trường 20/08: Lực bán dần gia tăng, VIC gánh chỉ số - Vietstock",
+        "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQRnhfWXZ3VUlkSzRPbUhGWTJja1AwZFZXVWhlenNEWXNUT2hZLUJYN1lLYnVNOWFrQ0ZhQ2ExT25uWFZpbUJCSVo0cGc5am1aemdMS2FWWG4ycjQ2R1RNNGJMbjQ3SU1mUHpScWs2QzdnSEpzWkdLaV80a2N3aTIwUFJPemUyRmF5bVdZQVpsV1gybW5rWTNwMlVlVlFnREN6LUkxOGJ4dUdaX2s?oc=5",
+        "published": "Thu, 20 Aug 2026 04:57:00 GMT",
+        "publisher": "Vietstock",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VIC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
         "title": "Khối ngoại bán ròng phiên thứ 4 liên tiếp, VIC tiếp tục chịu áp lực lớn - Thời báo Tài chính Việt Nam",
         "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOWFNHRzVpLUJZUmdFZWdtTElHX2lEdERFQlBRRURQbHBBUTV5MG1waTgwVnVxYjAtcFFfY1B3UENBSEdRX25FbVpEemtWUVhZdWxhd1hGdVZRWmNlVUQtbU9JdWN2bFJ1Yl9rcnptVkxfNmJjT3paZjIyUnlid2U0Vi1SNWtCcGp0NVcxN0sxamQxdFRZUmxmLW1sS3Q2T19xWG92aF9vZmlqMnhaSnRiZGlZUjQwb2c?oc=5",
         "published": "Tue, 18 Aug 2026 13:29:10 GMT",
@@ -6984,6 +7050,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"VIC\" cổ phiếu"
+      },
+      {
+        "title": "VIC124004: Công bố thông tin về việc thay đổi mẫu con dấu Tập đoàn Vingroup - Vietstock",
+        "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV1hvVFgtaXJCWmpnUEVfaVdheVZJZUctRXhIenViZFVBT21LUXMtUlZWNjkzRnE2YjNOaDJTS0w3TnJvLWt6cHZES3lwYURUZ0w3Szlkd0hOLTI0NGc3aE5aRG9NanI0V1VvMEhHUFc1X3RzQVE1LVpZUWNiRmM4QUItdnFuNFhjS0tNRGRsZ2x6TlphendUWTM0RmVVVjFYS1NzZWQ2aGxnNV9ucXVXbmdrU1c2eVJWX2hZ?oc=5",
+        "published": "Mon, 17 Aug 2026 10:32:00 GMT",
+        "publisher": "Vietstock",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 0.9,
+        "query": "\"VIC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Vingroup lọt top 5 công ty có vốn hóa lớn nhất Đông Nam Á - Cổng thông tin điện tử tỉnh Hà Tĩnh",
@@ -7006,6 +7083,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"VIC\" cổ phiếu"
+      },
+      {
+        "title": "TẬP ĐOÀN VINGROUP - CTCP (Mã: VIC) - VietstockFinance",
+        "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1ZTVM3c2lpVWhPbEIwV2pxVHUtUmxPVkhCTEtZNGp1dFpfT01rQnY1NTc0ZjJOcjR0MjEwU0dBTGRMSUktRl9BSFhLQlkxVHdaUjVlbGh0RlRYT1U?oc=5",
+        "published": "Fri, 07 Aug 2026 07:00:00 GMT",
+        "publisher": "VietstockFinance",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VIC\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Sau VIC, VHM cũng tăng mạnh ngay ngày chia cổ phiếu, kịch bản cũ đang lặp lại? - nguoiquansat.vn",
@@ -7035,17 +7123,6 @@
         "published": "Fri, 31 Jul 2026 07:00:00 GMT",
         "publisher": "CafeF",
         "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VIC\" cổ phiếu"
-      },
-      {
-        "title": "Một doanh nghiệp sàn HoSE bán hết danh mục, dồn tiền mua 1 triệu cổ phiếu Vingroup (VIC) - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxOSksxa01aYlc0YWl5ZnRhSVhhZzRNekZwWjNSaE13dlpwZ3VXRUEtYzZTeGhaTzdlbVN5b2V0YVBJaEY0ZFpSTk1DTXJvMzhxMGpuM25aRGhQcEs2bTJHWTF2RFNsOTFWbGtXQnN4eDFUSTdFbkI4TzgtRGZMN19jc3o1Ync5Zm55TlV5UmhKdGduWklmMERLa2tnRHJxU0hLd2JFaXQwUVJDR0JfLTdla2E1WHRwTjBlVmFaMXZ3?oc=5",
-        "published": "Fri, 31 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
@@ -7104,6 +7181,17 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 0.9,
+        "query": "\"VIC\" cổ phiếu"
+      },
+      {
+        "title": "Thị trường chứng khoán tăng điểm nhờ điểm tựa cổ phiếu VIC - Laodong.vn",
+        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNN21VcF93ZWZRWTdxU2dhMnphcDhwVmtGTmFlZGpMS3loQ0pJT0h1VXlsdlQxVkFndlFjcVVyNjhONk9WakN1NkNTeDZMYmp1TV9fSHZSRVJTc3d5RDFoVG54c0FrZ000aExHNzhZWDhVekNwWjY2SG4tbU5kVVZwMHROcmlrLU9RcmlMUFhWWlNqSXhLOVU2U3pGLVN1R3JVTlE?oc=5",
+        "published": "Fri, 26 Jun 2026 07:00:00 GMT",
+        "publisher": "Laodong.vn",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
         "query": "\"VIC\" cổ phiếu"
       },
       {
@@ -7172,7 +7260,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 0.9,
-        "query": "\"VHM\" cổ phiếu"
+        "query": "\"VHM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "VHM: Khuyến nghị MUA với giá mục tiêu 89,300 đồng/cổ phiếu - VietstockFinance",
@@ -7194,7 +7282,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 1.0,
-        "query": "\"VHM\" cổ phiếu"
+        "query": "\"VHM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "VHM: Nghị quyết HĐQT thông qua việc tăng vốn điều lệ sau đợt phát hành cổ phiếu để trả cổ tức - Vietstock",
@@ -7205,7 +7293,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 1.0,
-        "query": "\"VHM\" cổ phiếu"
+        "query": "\"VHM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Cổ phiếu đáng chú ý ngày 19/8: GAS, CTG, VHM - bnews.vn",
@@ -7340,17 +7428,6 @@
         "query": "\"VHM\" cổ phiếu"
       },
       {
-        "title": "Vingroup muốn chuyển quyền sở hữu hơn 4,8 triệu cổ phiếu VHM - thitruongtaichinhtiente.vn",
-        "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPVldweEpGMVpLUjI1ckFpVTlrU2cyd1pGU2UzR3pQNUMtWHRfbW5iMXhKQnB1Y1ZUVHI3SGVEWUZaZmV0Tm1fQkQwOVhwdGxSVUhjeEdvQ19PclpNc3RMS0xUV18xZmloVW9ORnJiXzhFUWpQLXpyam53amh3VUo3WmRxUDRwYl9abU85X2RITzZKZ3RiMnNjMEhGeDUzUmxJMFdteXVpQmJGZw?oc=5",
-        "published": "Mon, 20 Jul 2026 07:00:00 GMT",
-        "publisher": "thitruongtaichinhtiente.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VHM\" cổ phiếu"
-      },
-      {
         "title": "VHM: Tập đoàn VINGROUP-CTCP đăng ký chuyển quyền sở hữu 4.806.290 cp - CafeF",
         "link": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQZkhJczRQWEQ0UFZXUGk2VnlYTkVSbzZzNWhZTHJ3c01DcW9mS1V2eTQ0ZjM4QVFlQjF5M2xzUkpQRVBnekNtRkktVnpjbkpXUXMyNWhpYTFWZzFuZ1FyTzNtV2N3Nml5UGdNcWNjUGpUQjh2Z2tWY21PMkV6WXdaZjh2SXZaSF9EQ3ZPT1hkTWdPNnNYT2Q0WG44aTFaUXNJNmRiOHJBUDRWelJ5c2dGMGF0NlpOZkxiM1BZYnRQRFpfdw?oc=5",
         "published": "Mon, 20 Jul 2026 07:00:00 GMT",
@@ -7360,6 +7437,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"VHM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "Vingroup muốn chuyển quyền sở hữu hơn 4,8 triệu cổ phiếu VHM - thitruongtaichinhtiente.vn",
+        "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPVldweEpGMVpLUjI1ckFpVTlrU2cyd1pGU2UzR3pQNUMtWHRfbW5iMXhKQnB1Y1ZUVHI3SGVEWUZaZmV0Tm1fQkQwOVhwdGxSVUhjeEdvQ19PclpNc3RMS0xUV18xZmloVW9ORnJiXzhFUWpQLXpyam53amh3VUo3WmRxUDRwYl9abU85X2RITzZKZ3RiMnNjMEhGeDUzUmxJMFdteXVpQmJGZw?oc=5",
+        "published": "Mon, 20 Jul 2026 07:00:00 GMT",
+        "publisher": "thitruongtaichinhtiente.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VHM\" cổ phiếu"
       },
       {
         "title": "Vinhomes chốt ngày trả cổ tức bằng cổ phiếu tỷ lệ 100% - Mekong ASEAN",
@@ -7507,17 +7595,6 @@
         "query": "\"VRE\" cổ phiếu"
       },
       {
-        "title": "VRE: Link công bố tài liệu lấy ý kiến cổ đông bằng văn bản - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNR1d5T3BZWmFNc1hDS2N5ajZRU2lteWhva0F4bWUwcnZKVFREbWktckNsSE9pOGpFLXRrSzYxYjNHU2tRTkJoN1pyUzNNVEtwbGY3QW5XM1BWakVsUm9RbTdVc1Zqa3RuaWZObTVRNE1heTVNc1lFa3RvUHZGTy1peThQcTg1eV9scGt4ZVNoU0E2Q3pXdjRNUFFrVjRxR2c?oc=5",
-        "published": "Mon, 06 Jul 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VRE\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
         "title": "VHM, VIC, VRE dẫn đầu nhóm cổ phiếu khuếch đại biến động thị trường - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPVks4T2VxTks5el9ocVRFTWJObnlrNFRUNWRCTVAyTjV6VjlobWRCbUs0RmJkSVZmOW5JNW9LcHc3Q0g4VUdlY0RkNlh5TjdVLW9TZ3NLR3dRNmNiSDJWRUxqVHlSTnc4eDNoNEwwN3pFU0dMMXB5N1dVRUhadFZOM0hHYVpjSW52QlpEdlBJSnBkcC00dHd3aldyUkthUUpGQjNR?oc=5",
         "published": "Tue, 30 Jun 2026 07:00:00 GMT",
@@ -7650,17 +7727,6 @@
         "query": "\"VRE\" cổ phiếu"
       },
       {
-        "title": "Cổ phiếu đáng chú ý ngày 29/4: VRE, SAB, HDB - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNMExodHV6c2xzamxWa2l4d3Q0MEMxTmFpd01wMFBVanNfZ2M4Um56T2I0THNXUkNzN2VjdE1Rb19teGFpaDhSTEdHemdVb1lKYlBoVEVia1ViT0toeWEtYjNTTklyaGlXWUJkUlpwN3k3QzUwUWVPWHVIZWJpV2FqeThzRQ?oc=5",
-        "published": "Tue, 28 Apr 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VRE\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
         "title": "Vincom Retail nối lại việc chia cổ tức bằng tiền mặt sau 6 năm - Mekong ASEAN",
         "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQMEl1MExRLVlZWHJfUmJ6ckt4TmtZeGZrSF9YTDBvdGY4QjBiVUZldDJFOTk3RnVZeklnRm5vN09PYkxkOG9FWXJGZ2NfQVUyd0RGbW1pU1IzN2syeTl6Qy16bmtLbXg3RFhmcGtvRzFqRXhnMWxsV1dmY0hMMHhtQW44VEhoRUY3bTViUXNBRklxMDR2bzVUU3VPSXU?oc=5",
         "published": "Tue, 21 Apr 2026 07:00:00 GMT",
@@ -7690,6 +7756,17 @@
         "sourceQuality": 0.65,
         "event": "Earnings",
         "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"VRE\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
+        "title": "Vincom Retail (VRE) tất toán lô trái phiếu 2.000 tỷ đồng - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQTDRYak93YjcwUUxtOWx3eHRoR0YyaTlJMXBEb1VFekpkbzh4TEFadVdNbFhmQjM1NkZtRTMzbGFoNmlnUUdkWTNpb042Z0tkV1VLc0hFWnhyTzFGVS1MU1F1Vm9tVGlfZ1ZHbi1zcE1aaWxJSUEzYm5IZDNYVTdRb0FFYXRGR2MtdWh3YXZtcXlKeGl2?oc=5",
+        "published": "Tue, 27 Jan 2026 08:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "Financing / leverage",
+        "materiality": 0.78,
         "relevance": 1.0,
         "query": "\"VRE\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       }
@@ -7828,17 +7905,6 @@
         "query": "\"BCM\" cổ phiếu"
       },
       {
-        "title": "Cổ phiếu đáng chú ý ngày 29/6: ACB, BCM, TPB - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPT3JBTkhNTGF2NmJzU3B2UlVhUXk3eEs2TzBFQU1pTEJiaHk0eVRSMmgtemQ1a1U0OWZKSVZUYlMzMUg2WldPZ1pscmtJVEF4NFhrWmpwUnBmQUN5OEZmN3NUT3Q3bVptd2Zqei0yWlpodVAzTEc2a0t4OTlyVW5aRGRDdw?oc=5",
-        "published": "Sun, 28 Jun 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"BCM\" cổ phiếu"
-      },
-      {
         "title": "ĐHĐCĐ BCM: Lợi nhuận 6 tháng ước hơn 290 tỷ, tháng 7 báo cáo đề xuất về ĐSTĐC Bàu Bàng - Chơn Thành - Cái Mép - Vietstock",
         "link": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxNYV9nd0ZXVTlYX1VyVWlTVzF2eFh1RFpWSGd5c0t6emozWE80d1ZlNms0YTQ3ODJ3OGNWZmpESEFlZGZ6Umw4STNQendXZG1YSE9wZDdOR2ItOXVDa25Pdl9La3ZFTXZkbnZ5X2dyTEVydHFwSEVMVjY3VXdPM0tza0ZFNDN2WW9HV0tabUN2ZUhOU0hBb2V4M1ZnVnQ2RDdCdWdDemh3NmRBV3pLR1lUUmZDTENmTUROSnMwRWtFd3VpUVVFcnY3b2RKYW9PQjhPSl8yblFTM2RJTlFseXhwOUR3?oc=5",
         "published": "Thu, 25 Jun 2026 07:00:00 GMT",
@@ -7859,6 +7925,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"BCM\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
+        "title": "Bài toán đáp ứng điều kiện niêm yết của BCM - 24HMoney",
+        "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQTnZWU1RpdkFNMlpKN2ZPcW9vWnpyR0ItamM4blZ3S0hmamlkRTBsN1VnMklfeWh0OXhvYkczWGRWNC14YTNVblhiamZZRWcwdmRDdkhjU1hra3A2NXR2TzZxOE44LVptNlNXVDlGNUp3LUFiZzl2LU1yREVHcFBqY1VuZjc2TnhJMjVRMkxB?oc=5",
+        "published": "Tue, 16 Jun 2026 07:00:00 GMT",
+        "publisher": "24HMoney",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"BCM\" cổ phiếu"
       },
       {
         "title": "Lợi nhuận giảm mạnh nhưng vẫn được khuyến nghị mua: Điều gì đang diễn ra với 'ông lớn' Becamex (BCM)? - nguoiquansat.vn",
@@ -8105,6 +8182,28 @@
     ],
     "KDH": [
       {
+        "title": "Cổ phiếu đáng chú ý ngày 24/8: HPG, POW, KDH - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNVXQxX0t4RW5VemV0RE9zSWdqMW5XWFRWbi1wQnFiQkRFUnB4N3MzU1BzcmZVXzIzLWpLYl9TRXZSWU5qT0xYS2Y5azZHOG0ydlVFRlFPX1FsZEtsZVhEdXdmdTRFaTlLVWgzcDk5TW5rV0ZYam5tSW5EeWFHS3lMcnR0Yw?oc=5",
+        "published": "Sun, 23 Aug 2026 15:07:01 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"KDH\" cổ phiếu"
+      },
+      {
+        "title": "Gia tăng chuyển nhượng vốn, Nhà Khang Điền (KDH) được dự báo lãi vượt 1.500 tỷ, cổ phiếu kỳ vọng tăng 28% - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxONHF6Y0ozRmRXeklDSHQ1bHJHMlNsM3lsOU1nbVRpeVotZFZUWHBtOUVtaHJtSXhFSjFKZFlqR0I0TGVyNkZaZVhSaFpQUjlXa1gtUmk5eE9XMUY5cWRyazhFZ2hiUDRRaVFuVDY4Q2xFYUlERXhxd3dKTVltLW0zaGxmY0d3Q2sxVkxORFlGaHNQa0VKdHZFRUdmWnE3eFJPb0hraFJCSzF4SmRnWXozc0Q2MmN5SThEdzNSSXZ6Qmh5U0laeHA2OHJQeWk1YVVockE?oc=5",
+        "published": "Sun, 23 Aug 2026 13:47:01 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"KDH\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "KDH: Báo cáo thay đổi về sở hữu của nhóm nhà đầu tư nước ngoài có liên quan là cổ đông lớn - Vietstock",
         "link": "https://news.google.com/rss/articles/CBMid0FVX3lxTFBmT3pBd2M5LVlvaVZiMEZRWWcyZ0RWdUdnVHJXTHpZbWRuSHgtV1JaalNkRTR4eWVqOXhESDVORHhKOUEyRFhHSUduQkV3b045azNyZlVoY3NWRWNpRXhRSVFYcVpWMnZEQlJ2VGptX1ZyTGtCQV9J?oc=5",
         "published": "Sat, 22 Aug 2026 11:52:03 GMT",
@@ -8303,17 +8402,6 @@
         "query": "\"KDH\" cổ phiếu"
       },
       {
-        "title": "Con trai Phó chủ tịch Khang Điền đăng ký mua 20 triệu cổ phiếu KDH - VietnamFinance",
-        "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNVEJ6dkhwTjJ3VTUxM1ZhR0VESmZYelpjYjFaLWhVeEhhb1U4SUJQSzNZeUhSeWY2NHZTUVVvS0RsV0RwdEJrRW9XNjE2Z3N6eFNJLW5MV3lOMDNRclhyY25vOWc1MjlEcWZ6VzNyLW1VeG1JVUFSWUVlNUlCWGRZUkpycWpyT1dEMGhiTXVyRWxFYWtoRjBka0tnWjl0TVFBdDZsRGh1d2o?oc=5",
-        "published": "Mon, 20 Jul 2026 07:00:00 GMT",
-        "publisher": "VietnamFinance",
-        "sourceQuality": 0.65,
-        "event": "Ownership / governance",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"KDH\" cổ phiếu"
-      },
-      {
         "title": "Cổ phiếu đáng chú ý ngày 30/6: VCG, HDB, KDH, - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNa3R4OWY5SmdueFZ4Q0J1dzZ4ZS1CVk1iVkhTSG9la05WNmFLWXJkM19EMU9BUG4tQWdJdjBsNVBWZHlTVFpSSk96dHpfN2NmdDNZeEg5VTdiLXc5NUxJRjBXRzdGb1NiZndUSFhibXZiT1g1QkMyMDVOdzhKYUpJREgzNA?oc=5",
         "published": "Mon, 29 Jun 2026 07:00:00 GMT",
@@ -8402,17 +8490,6 @@
         "query": "\"KDH\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "Cổ phiếu đáng chú ý ngày 16/4: KDH, TLG, PVD - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNX09kNlBTVDFQOVhjZ190RTVScXhnbGNnVzZSTTlDVjhTX09wMTJPTDRXZzVoYmU1b3k0OUxnNWZ0YlBYSndLWXFPNmMzb1M0UmRSUWtWaENDOEQtRmRGNGNKSVFNaG5QRzJCNERyQXJWMWNpVXRfeGh6NW1xSlpEd1F2Zw?oc=5",
-        "published": "Wed, 15 Apr 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"KDH\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
         "title": "Cổ phiếu KDH của Nhà Khang Điền có thể bị loại khỏi rổ VN-Diamond - VnEconomy",
         "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQbDNWSHphSnBoVzBib0ZDT2lvdXRyVG9Rdml6aEM5eHk4N3BBVG9NOXk0VTVRdTJQczJad1loTjVzakN3X2JQMjBqM0VmVU9mWWdpVGU3R3N4cWM5V2J3S3N5WWxTOF9ObkdNalRxbl84a0wyaEczczhMbHFfc2NKRUJMR0NVSFFsZkE2VWFfdm1TQXRk?oc=5",
         "published": "Tue, 14 Apr 2026 07:00:00 GMT",
@@ -8433,17 +8510,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"KDH\" cổ phiếu"
-      },
-      {
-        "title": "Quỹ Vietnam Investment Property Limited bán ra 7,5 triệu cổ phiếu KDH - VnEconomy",
-        "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOMGJiWVFBN1MzNldDT0pQMUxtSFFZMDZvdkFNNkwxMUVpNzZMdW93RTRSNDZqcjFra2xWcDlzX2dseFpheFJsRU9oSm9kVEJESUJNOFFFVnFfN0NZT3d5MkJUSFZRV1owTXFpS0FiQ2poNUkyYW9NVGI0ekxuUDllOW9zNHZrcHpkcG4tbFc4dFpxSnBzZDVTZQ?oc=5",
-        "published": "Fri, 20 Mar 2026 07:00:00 GMT",
-        "publisher": "VnEconomy",
-        "sourceQuality": 0.9,
-        "event": "Ownership / governance",
-        "materiality": 0.71,
-        "relevance": 1.0,
-        "query": "\"KDH\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Công ty con của KDH đầu tư 2.552 tỷ đồng mua 99% cổ phần An Lập - VnEconomy",
@@ -8599,7 +8665,7 @@
         "event": "Earnings",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"KBC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"KBC\" cổ phiếu"
       },
       {
         "title": "Cổ phiếu đáng chú ý ngày 12/8: TNG, DGW, KBC và VNM có gì đáng kỳ vọng? - thuonghieucongluan.com.vn",
@@ -8635,13 +8701,13 @@
         "query": "\"KBC\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "Nhóm công ty liên quan ông Đặng Thành Tâm dồn dập gom cổ phiếu KBC, sắp có thêm thương vụ trăm tỷ đồng - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPMU9XOEhVUGRNZXN3VVdqcDktc0lXNmZWRVc0UjNLaXRMdllVZUh5R3R3U0ExSU9YX2xDRVRLcExTZ182UHFRSVotVlRUR2RQZ3FhVHk1VUU1ZWNObnJMY2F2bE96cWoyb2VqX1c5cnhfOXAxZlVldDNDMkpFSUliVjU2Xy1rYU9oc1kzSURNWjdMclJoLWpyV0lUT1lRM0ZCZ3dWN21ESnc3U2I3QmpfMU4tdnhNSjVLSVBkMmhlcG05Zi1sRzd3bHRGbDNTSExpSWRR?oc=5",
-        "published": "Fri, 24 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
+        "title": "KBC báo lãi quý 2 giảm hơn 91%, chờ doanh thu từ 170 ha khu công nghiệp - Mekong ASEAN",
+        "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxORWdpTUxOMUZCOHNEQmVPRWxLTC1OVlNGdmhLa2ZicmlkZGNFQVNjdjRWN2VpOVFIbUJ6TVNObnc2aXRuazVydzRwT25ZQ0I3T0IzTkFBSUpxRGJUNmVkczlnMGI1aVBKMGdOdkNLM3NxMVpvYWFzeVNMc0JxR2tuRTU1UHQzSjY3U21XX3Uzemt0WjZ4VE9uVGFFZFYxYUx0XzFHWWdR?oc=5",
+        "published": "Fri, 31 Jul 2026 07:00:00 GMT",
+        "publisher": "Mekong ASEAN",
         "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
+        "event": "Earnings",
+        "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"KBC\" cổ phiếu"
       },
@@ -8909,14 +8975,25 @@
         "event": "Earnings",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"PDR\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"PDR\" cổ phiếu"
       },
       {
         "title": "Chủ tịch Phát Đạt đăng ký mua 20 triệu cổ phiếu PDR - Chứng khoán DNSE",
         "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQaXlsX25GaEdCOThiVTZCM0wxdTJITW44R0lGeDltbGFyb0JYRmtqSGVYcndaVnBEWFYzY1VROHc2blpCajc4MVl4UUdkZE1DSUJhS3hGZ0pKNk11MXhjemQwdGhBM3dDZG43dVpzX0p5dFpJeVo3eURHREJmWlNtRXJnX0ZtaUsya3p3MGkwOFRFbHhYNkVGNlNFcVFWeDBI?oc=5",
-        "published": "Wed, 29 Jul 2026 02:15:00 GMT",
+        "published": "Wed, 29 Jul 2026 07:00:00 GMT",
         "publisher": "Chứng khoán DNSE",
         "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"PDR\" cổ phiếu"
+      },
+      {
+        "title": "Chủ tịch Nguyễn Văn Đạt đăng ký mua 20 triệu cổ phiếu PDR - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxQSmZNNS1sMXFMTHpocWpTZzlLTE1mQ3BveUtWMEJUY3JpM2t0alBIQU93SXZuRWZxRG5kY1B6bmhxUDJhM3BuREVzQnJVc2NMZEFuR25ZRHlaWVFiS1l0N3dhbjN0aWRqa0M1VjZWanpDR0tUY1N3UW8wVFBBbllEQm1xRVNybUx3dnlDalRGdm9OdEtsVURUV2pSamdrdw?oc=5",
+        "published": "Tue, 28 Jul 2026 07:00:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
@@ -8931,18 +9008,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"PDR\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
-        "title": "Chủ tịch Nguyễn Văn Đạt đăng ký mua 20 triệu cổ phiếu PDR - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxQSmZNNS1sMXFMTHpocWpTZzlLTE1mQ3BveUtWMEJUY3JpM2t0alBIQU93SXZuRWZxRG5kY1B6bmhxUDJhM3BuREVzQnJVc2NMZEFuR25ZRHlaWVFiS1l0N3dhbjN0aWRqa0M1VjZWanpDR0tUY1N3UW8wVFBBbllEQm1xRVNybUx3dnlDalRGdm9OdEtsVURUV2pSamdrdw?oc=5",
-        "published": "Tue, 28 Jul 2026 07:00:00 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "Ownership / governance",
-        "materiality": 0.53,
-        "relevance": 1.0,
-        "query": "\"PDR\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"PDR\" cổ phiếu"
       },
       {
         "title": "PDR: Thông báo thay đổi nhân sự - CafeF",
@@ -9140,7 +9206,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"PDR\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"PDR\" cổ phiếu"
       },
       {
         "title": "Chủ tịch Phát Đạt đăng ký mua 3 triệu cổ phiếu PDR - CafeF",
@@ -9185,6 +9251,17 @@
         "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"PDR\" cổ phiếu"
+      },
+      {
+        "title": "Lộ diện đối tác nước ngoài nhận chuyển nhượng Thuận An 1 của PDR? - Vietstock",
+        "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOZGw4dWFkaTQyZ0gxYWJRSmpTUVEyQndibTRpQURqMUhVbHZOVXVNcEM3TDMyb3A0LUFTQzAtMkpqaldMTDZkcHNfblNQY1NsaW9xTmpuZWVrREp5ZndHUDdVbmU5VVdJRXU4cUdnSnFrWGxZUnhWUlNheFhfVFY0aGp5RnloQjBuSFFqbldKUm9kSTA4QnB6X2hrUVctZXVtaHcwUVdrWWlGMXZUU3c?oc=5",
+        "published": "Mon, 02 Feb 2026 08:00:00 GMT",
+        "publisher": "Vietstock",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"PDR\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "PDR: Thông báo giao dịch cổ phiếu của Người nội bộ Trương Ngọc Dũng, Trần Thị Thùy Trang, Nguyễn Tấn Danh - CafeF",
@@ -9307,7 +9384,18 @@
         "event": "Financing / leverage",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"DXG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DXG\" cổ phiếu"
+      },
+      {
+        "title": "VN-Index mất thêm 36 điểm, DXG ngược dòng tăng mạnh - Mekong ASEAN",
+        "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOUzNpcXlhcEw1NmNqWnJlaURBMUhzYTh1NElmV2UxcUNHTUk5TnFocFMwWUlUQ2w2QjZEN3hlUlk1TnY1c0NodlM4b25VbGh3bFlscFdLd2FJTnE5VjBRUFFFdXg3Wm9fNGNXRThJQ3IycVJiajFzcW13cGU3WE5hV2Y3ZXZORV9nMHNQbnRuUQ?oc=5",
+        "published": "Fri, 14 Aug 2026 09:21:18 GMT",
+        "publisher": "Mekong ASEAN",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"DXG\" cổ phiếu"
       },
       {
         "title": "DXG: Nghị quyết HĐQT số 19 ngày 07/08/2026 - Vietstock",
@@ -9341,6 +9429,17 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"DXG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
+        "title": "Chi phí tăng cao khiến lợi nhuận DXG giảm sâu - Mekong ASEAN",
+        "link": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOZW85TWcweTJRVG1BVDloMEdhbk9oc1FGQUplRnpHVmtCM2tHbEplWV9jSHJsVS1waTVjMlFrRlRzd1hNNFc3YzNPTGxKRzhwX2h4TThmbmJpc2dkVk11cEpoN2FYQ1lTbjRWbzZwTzhCZFpTbHRoM29FRjhGZnZnVjBOdXlPUQ?oc=5",
+        "published": "Sat, 01 Aug 2026 07:00:00 GMT",
+        "publisher": "Mekong ASEAN",
+        "sourceQuality": 0.65,
+        "event": "Earnings",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"DXG\" cổ phiếu"
       },
       {
         "title": "DXG cập nhật kết quả kinh doanh đáng chú ý trong quý II/2026 - nguoiquansat.vn",
@@ -9516,7 +9615,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"DXG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DXG\" cổ phiếu"
       },
       {
         "title": "Đất Xanh thay tên, cổ phiếu DXG có đổi vận? - Chứng khoán DNSE",
@@ -9572,17 +9671,6 @@
         "materiality": 0.78,
         "relevance": 1.0,
         "query": "\"DXG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
-        "title": "Đất Xanh (DXG) muốn đổi tên công ty - Tin nhanh chứng khoán",
-        "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPcUZyWFBtMkdudWp3d09iRlBlc1N1aURVdDk4eWRkdHVyMm1iaDhKLWF6aFNwbjJNRUI4WFliWm85dzdvQ2oteHVJRW02UkFGVll6Ql80VEhvUlpBV2xuSjNfZWpNb2F6U1BnRjN3b2JzRWc2amtRcU5yOG8xZ0dXT0RXUk1DTHFEalZF0gGHAUFVX3lxTFB6clA1c0V5RjFzcTQyZlF6OEpKU2tyRWJqZFhYU0RELVgwc0I0SGhKbnphRW9feExjU1I2VC1nMml6X3lwdGgyR3NUVnFmOXpoMHgwRTNvQ2NVcVBURkwxa0lRRkdfZDhUZkxvenVMTk84ejduVi1ZX3ZrVUF2V2lra3BNc0dOTQ?oc=5",
-        "published": "Tue, 07 Apr 2026 07:00:00 GMT",
-        "publisher": "Tin nhanh chứng khoán",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"DXG\" cổ phiếu"
       },
       {
         "title": "Nhóm quỹ Dragon Capital vừa bán ra gần 2,3 triệu cổ phiếu Đất Xanh (DXG) - Tin nhanh chứng khoán",
@@ -9925,7 +10013,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"NLG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"NLG\" cổ phiếu"
       },
       {
         "title": "Cổ phiếu NLG tăng mạnh nhất nhóm bất động sản, tiền ngoại trở lại VHM - nguoiquansat.vn",
@@ -9966,17 +10054,6 @@
         "published": "Mon, 04 May 2026 07:00:00 GMT",
         "publisher": "Báo Tuổi Trẻ",
         "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"NLG\" cổ phiếu"
-      },
-      {
-        "title": "\"Nữ hoàng cá tra\" đầu tư cổ phiếu DXG, NLG… đang lỗ 10 tỷ đồng - Báo Dân trí",
-        "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQYkFZaEs0QktudEVOaFBHVXltMVFHdzRWWk9VNV9JOEs3SXluejRHX3pIVmNuczBvc3FNaVhQYVVkak1CTDhMSFFyNXYyc3YwUUR1bWstN1B2WW4yWWd5ZmNmdGpHa1JpZm9RTnNiTUNTak52VjAyeHVEb25nbS1RUjJQMTQwM2xxa0RuaUFfczkzb2J1NF93TzY5Rmd1eC05WHBPcDRrdW9lc0xabU0wY2dHUQ?oc=5",
-        "published": "Thu, 30 Apr 2026 07:00:00 GMT",
-        "publisher": "Báo Dân trí",
-        "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
@@ -10115,17 +10192,6 @@
         "query": "\"NLG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "Sắp thực hiện quyền mua, Chủ tịch NLG bán ra 3 triệu cổ phiếu - VnEconomy",
-        "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQNlZFWXpYV0o4VFkwdHEzbGlwMjdtWTlrZVJPOWdxbkVpZG9uRDVNamZ6b2lFZnRrQ0hlc2NZcjNKbW1uSkxKVVdQMUNYdmxHcEQtTUlHUGhTMmlfWktZMzdPM0Q2LVVYTDl3bWVwMno0THF2bmFOamZYS3pRbXg1c3c2ajJucEpJSTJrNTFn?oc=5",
-        "published": "Sun, 12 Oct 2025 07:00:00 GMT",
-        "publisher": "VnEconomy",
-        "sourceQuality": 0.9,
-        "event": "Ownership / governance",
-        "materiality": 0.71,
-        "relevance": 1.0,
-        "query": "\"NLG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
         "title": "NLG: Công ty cổ phần Đầu tư Nam Long (HOSE) - CafeF",
         "link": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBjN1NBaGtxTmNKS1h1ZXBUZzMzc0RFQlNfYUhESFlmQ3psR3VMZzdfbW96TjkxanZqWlZXVW1aM1hRNXc4dTZhalpoWXZKdEhtYlVrcVhEdmtqVnJodUl6Wmh1Umd6c2lfamJxaE1TUkZITnAtYllzbQ?oc=5",
         "published": "Thu, 02 Oct 2025 07:00:00 GMT",
@@ -10158,7 +10224,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "DIG: 8.9.2026, ngày GDKHQ trả cổ tức năm 2025 bằng cổ phiếu (tỷ lệ 100:6) - CafeF",
@@ -10191,7 +10257,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "DIC Corp chốt ngày phát hành gần 48 triệu cổ phiếu trả cổ tức, gia đình Chủ tịch nhận thêm 2,5 triệu đơn vị - cafeland.vn",
@@ -10224,7 +10290,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "DIC Corp (DIG) chốt quyền phân bổ gần 48 triệu cổ phiếu trả cổ tức - 24HMoney",
@@ -10257,7 +10323,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 0.9,
-        "query": "\"DIG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "DIG chốt danh sách cổ đông trả cổ tức bằng cổ phiếu - Mekong ASEAN",
@@ -10272,14 +10338,14 @@
       },
       {
         "title": "DIG: Thông báo phát hành cổ phiếu để trả cổ tức năm 2025 - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOM2tId0VxODd0cVlFZ1lpWWRHaVRLdlY5cmRWa29EY2ttMlQ0VUJjbXN4bkhIUTFhb0xnOTBxWkZnQlZFS3d3OFpwVFkxQi11ZmJnd1BTSE1JOG8yY0w5b002LWMtMHhkZm1yM1hYTExickpvN1Q2bUk4dlFzcGJCTHJjbGo3THEtZ2V3dW92c2tOVmVXMDJpOGtMcnB4QjgxZGc?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNX04yQWVDSmRCbGYtdTJ3dlRMSWJPRVMwZGdJZF9CaTdlSG1pMnFjR0ZsYlVZd2c0MUFMSlVpMGJ6bVVBZVBzUFU2V2t5QW9BR2JVSU5JNDdjbVdDeWQzVUJUWWxCajNxOXZVeUNORXdxa09CQU9rcjhvVFZGZldrSk5mX2l2T2JPSmJjbm5wU0RPRU1vZ2JBYmo4cWdHX29iZnc?oc=5",
         "published": "Mon, 17 Aug 2026 10:54:58 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "DIG: Quyết định của HĐQT về ngày đăng ký cuối cùng để thực hiện quyền nhận cổ tức năm 2025 bằng cổ phiếu - Vietstock",
@@ -10381,17 +10447,6 @@
         "query": "\"DIG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "DIC Corp (DIG) báo lãi 'hai chữ số', cổ phiếu tiếp tục bị công ty chứng khoán bán giải chấp - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNbmI2V3oxVS1qTVpnNmhFZFRGMkwtLVVHemdnM1dFb1lrTUpQaHJLd1kxTjlieTdVQWpWRzBhWlZLVHZWVmFXZ0NfYm8xYmdBdW1aTmd6QTlTOFhnSXBzSHlCUWQwY2lpU0pzc3JjQVQ3ZlNENnFvQ0dNRjBkVW5JWTBJSmp2cTJISGZrbzFqdndEcjFnR3drVk5MZ0hKaTZaSTMwQm1SOC1jSndvb2ZWaTMyVzZwS0VEdzRvNUNFQQ?oc=5",
-        "published": "Thu, 30 Jul 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
         "title": "DIC Corp (DIG) thoát lỗ quý II/2026 nhờ hoạt động tài chính - Tin nhanh chứng khoán",
         "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPWUQ5TFFEUzRWUnNiRjc0VEkyMDBXVkMzNkJsVUh2U1dSRDMtWm5FWUxWZkpGdEhIX1ZkVUFiN1NTSlRRanRHN05nTGpCVlVkRmlLb012cXVxRXZwcHVsaFo0TERVQjNCNUROWHgtdXNoLWlYWDdENGhEQWtjVXQ5Z2pJUHVUUmI3LWh5ZFVuVGVtU2s2WkF2eGNKOXk0ZXRIc3c1Rm5kbF9JUdIBpgFBVV95cUxNQmlFejlScmlvUEJEcnVmemhfbnRxSnBYUThKZGFGRXhGSEdCXzZtekk4YmpQOEdGS2Iya3BIMDlWTGszbXVrazFvNzNKTGl1M0lTamJjSml4WVBGa1FBNVcyTGJBcDZMWUR2UFRlVDBMUUg1YU9hNnVTMklYN2huTUhlSmpzeDUyZ0FLc0JJeVRjZWFnbGJOVHh1UTQ4ZW9KSmswQkZB?oc=5",
         "published": "Thu, 30 Jul 2026 07:00:00 GMT",
@@ -10403,6 +10458,17 @@
         "query": "\"DIG\" cổ phiếu"
       },
       {
+        "title": "DIC Corp (DIG) báo lãi 'hai chữ số', cổ phiếu tiếp tục bị công ty chứng khoán bán giải chấp - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNbmI2V3oxVS1qTVpnNmhFZFRGMkwtLVVHemdnM1dFb1lrTUpQaHJLd1kxTjlieTdVQWpWRzBhWlZLVHZWVmFXZ0NfYm8xYmdBdW1aTmd6QTlTOFhnSXBzSHlCUWQwY2lpU0pzc3JjQVQ3ZlNENnFvQ0dNRjBkVW5JWTBJSmp2cTJISGZrbzFqdndEcjFnR3drVk5MZ0hKaTZaSTMwQm1SOC1jSndvb2ZWaTMyVzZwS0VEdzRvNUNFQQ?oc=5",
+        "published": "Thu, 30 Jul 2026 07:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"DIG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "VCI muốn bán giải chấp gần 337.000 cổ phiếu DIG - VnEconomy",
         "link": "https://news.google.com/rss/articles/CBMie0FVX3lxTFB2cU9vbTNPZWVkMnZtcmxjbVd3bnBveGhNVWE3akZ6Yi1mTnVnSWtMal96dFpHZkRvSUN6WFBVTGk5QndmQ0NRdzlfeFRNUXNyYVg5Wk1Td1NlMHpBZHBQMWtIQ1hqczlBb3g0S2lWaHZHOXhGYk5FTDhpWQ?oc=5",
         "published": "Wed, 29 Jul 2026 07:00:00 GMT",
@@ -10411,7 +10477,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "Cổ phiếu DIG 'ngoi lên' từ dưới mệnh giá, PNJ tiếp tục tím trần - nguoiquansat.vn",
@@ -10455,7 +10521,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.78,
         "relevance": 1.0,
-        "query": "\"DIG\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"DIG\" cổ phiếu"
       },
       {
         "title": "MBS bán giải chấp 2,2 triệu cổ phiếu DIG của DIC Corp - VnEconomy",
@@ -10537,6 +10603,17 @@
     ],
     "GAS": [
       {
+        "title": "GAS: PetroVietnam Gas Joint Stock Corporation - PV Gas - VietstockFinance",
+        "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOQ2cwREFwXzZoOGlfRGdMeHRJajNCVkN4aXNWVUpweUI5WkEzTzN1QzBvcHh5TFVqQ1JLOUhMN2FZT1Y1ekR2aEtFTVptVlRJNjZPYWJtcjNRWnJtZE9BcmtibnZUekMtM0NJaWtJdUQ2LWhSQXY1a0RLcS0tb1RsWDhyd2FnQTMzeEFwUkZqSjMyRDg?oc=5",
+        "published": "Sun, 23 Aug 2026 00:59:52 GMT",
+        "publisher": "VietstockFinance",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"GAS\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
         "title": "GAS tăng tốc lợi nhuận, nhưng còn phụ thuộc giá dầu - Tạp chí Kinh tế - Tài chính Online",
         "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQVnF6Z3VGMVpNUzN2YURwcy0tS3JGbE0yRHdaTXkyQ2s5bDJWMWtkMzlLUGZnUWdTMnpla0Q1a2cxRmpXWXhTaUIwWEZ6akZxeUFKRkdueS1WNnBYcVNJd0lyYVY3aHR4dGdIMmI3bndPOGJncW1WY2R2eFdsN0M3TTg4S2hOMVB6anFyQWN3VlZ0ZkRIZllWSlln?oc=5",
         "published": "Sat, 22 Aug 2026 09:49:14 GMT",
@@ -10546,17 +10623,6 @@
         "materiality": 0.53,
         "relevance": 1.0,
         "query": "\"GAS\" cổ phiếu"
-      },
-      {
-        "title": "GAS: PetroVietnam Gas Joint Stock Corporation - PV Gas - VietstockFinance",
-        "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxQZ3ZlSjJHZjdQNENzODk5Zkk4QzdmaW1pUTQ4ZzR0Q196dE13N3o3MW9udWJUa2x6bHg2Sk9GSzRSV29lMVQyUjM0Z0ctQWpTVHRJTEdWT1IycGhQTEp6dkhybkhtWDhIODYzblVXREVBTHJfQ1dQUHlQRzdzU3ktZDd3eUVvYUFhQk85OXVjdVVoTVE?oc=5",
-        "published": "Sat, 22 Aug 2026 05:53:00 GMT",
-        "publisher": "VietstockFinance",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"GAS\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Cổ phiếu Oil & Gas hàng đầu của Goldman Sachs: Hiệu quả vốn cao trong bối cảnh vĩ mô biến động - Investing.com Việt Nam",
@@ -10662,17 +10728,6 @@
         "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOYmI3MldjVFU5QUtrajBIYk5hV0JUWU1nR2E3a0RsTXMtVjRnUjN2MFltbTFfTnBJWlBvWWt6U01ObS1IUnBzenFfdGVWZ3dsaEhIR1hUMGh6T3RUT2NGODJMbEtRV1dsUjJtcVN3eE5tQlJVelJsTjExWWtKMVNKb1dQSWNzSHVJQXlz?oc=5",
         "published": "Sun, 16 Aug 2026 23:59:01 GMT",
         "publisher": "Vietstock",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"GAS\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
-        "title": "GAS: Báo cáo cập nhật ĐHCĐ 2026 - VietstockFinance",
-        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPSktsR0ZnOVc0b3dHSFVaYlJqUUw2dE5uTURmdWw1Yjl6S2k0Y3NMRXhLQUF3WEdfbG9iaEJQYk1WMVJvWXlLYXhOTlBoTEkzUU9uX05ybFUzMWxPejRJOS1LY1lBajhwazgwNFNsZFpnQjlrVWZqbXVzSTFXLUlWNUszVjFNaTJjd0ZLTmRiWDN3VXdOZ3lRcUVRb3ZvcmNTM1E?oc=5",
-        "published": "Sun, 16 Aug 2026 14:07:38 GMT",
-        "publisher": "VietstockFinance",
         "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
@@ -10832,17 +10887,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"GAS\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu GAS tăng trần, nguy cơ mất tư cách công ty đại chúng - VnBusiness",
-        "link": "https://news.google.com/rss/articles/CBMizwFBVV95cUxQTnVIMm00d1A2eDFVODZGajdsRHZuazZ0QXp1SG9lYUZ2TlFucUJDWGYzTjFmejIzTGNFUmlPaFVDTlNRa3UxakxmTnp4TGlGckxPcTRZd2lNT2lXWHB5SmJKT1QxSE1QRVJDUFFVTi14Qm5zZVFQVHZObWhTOXBxVnNVUzZBX19KSk9Jalk4d2phQXEyMzdLQWZGWnA5TnZia3F6YWp4TjhhSTBmQzJGZ0k1S0dualBicllJWHdLWmxTd0tlOURHSG1PVVVBcjQ?oc=5",
-        "published": "Tue, 06 Jan 2026 08:00:00 GMT",
-        "publisher": "VnBusiness",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"GAS\" cổ phiếu"
       }
     ],
     "PLX": [
@@ -10935,6 +10979,28 @@
         "query": "\"PLX\" cổ phiếu"
       },
       {
+        "title": "PLX: Petrolimex chào bán hơn 23 triệu cổ phiếu quỹ - Chi tiết bài viết - Vietcap Trading",
+        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNWkJLUnpjdjB5dzNRaU9mTmxpUWpqXzNNSkl0Sm1yU3dua0NNT3JJeWtVaGRKelo2WDJOZk1yNjZ4X2hYLWQwTk9jV096SVJPUTlqb1VDdTJSY2xWYWM4M014OEVReGRVYWtBVlVGeTZyUklIWU5OSjJVdU8tMVpiM0kyclBCSkZFYi1MY2F4WHNLMUdnc2JwWWZwek03UEFSSGc?oc=5",
+        "published": "Tue, 18 Aug 2026 02:26:00 GMT",
+        "publisher": "Vietcap Trading",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"PLX\" cổ phiếu"
+      },
+      {
+        "title": "Petrolimex chốt thời gian bán toàn bộ 23 triệu cổ phiếu quỹ, trị giá gần 830 tỷ đồng - MoneyF",
+        "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPTXZpSkNJUXZUdW1RcWtLNHlwNE5uTFdTa2dieGpSdFRueWdVSzRZR1pTMjdUVnZoVlQzN19FUmhncnYxNl9sTE0tV3NjTzlWaElidktVUWxYWHJ0RExCeXJ3eVowWHlWekJkVERaamcwLUlGY2RwM2M3STk0ckJISURn?oc=5",
+        "published": "Tue, 18 Aug 2026 01:49:00 GMT",
+        "publisher": "MoneyF",
+        "sourceQuality": 0.65,
+        "event": "Ownership / governance",
+        "materiality": 0.53,
+        "relevance": 0.9,
+        "query": "\"PLX\" cổ phiếu"
+      },
+      {
         "title": "Petrolimex (PLX) đăng ký bán toàn bộ 23,3 triệu cổ phiếu quỹ nhằm đáp ứng điều kiện công ty đại chúng - Báo Pháp Luật Việt Nam",
         "link": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxNdkVyd3pfMTN4dHlFMXpqMHhNOWdDUzMyRTlqbEc1VU9tQmRndy1TaHJDY1dnaFVnaFVWVkhITUZXYV9FX3pjSXVwSjJxS040TWRDSlF3M3NaX2dnWWs4M21XMlRaVF8zdFZJVW4yYXA1UGc4QXJUcnRleHc3R3NPYnMyaWtTQ1JyN0hLUlJiTVk0bUVIQlVtVWxVeDVyMU1tdnBsQk80Q0lyN2RvSUExQ3ZfekRjTWJteURJV3VJa0NQYzJnOWdQeFR3Wno2WjdIemw4?oc=5",
         "published": "Tue, 18 Aug 2026 01:28:00 GMT",
@@ -10965,7 +11031,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 0.9,
-        "query": "\"PLX\" cổ phiếu"
+        "query": "\"PLX\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "PLX chốt thời gian bán gần 23,3 triệu cổ phiếu quỹ - VnEconomy",
@@ -11009,7 +11075,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"PLX\" cổ phiếu"
+        "query": "\"PLX\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "PLX: Thông báo giao dịch bán cổ phiếu quỹ - CafeF",
@@ -11045,11 +11111,11 @@
         "query": "\"PLX\" cổ phiếu"
       },
       {
-        "title": "Petrolimex (PLX) bất ngờ điều chỉnh phương án bán cổ phiếu quỹ - 24HMoney",
-        "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQazRMc01SUGxEdFlqUHM1VVNMNF9WeFUxMU1yY2NpMm5FTElUZjJLTUVKN09qV1pRa0IyZE95akdhZnZWMWNfckhUNHAyVFo5WTB2dy0zTnJiQnZqTVdmeDR0WXdkX0pXN3VZWFoxaGVLbkUwVWljS0xzZVpkcUVIdVFsMVVJMFpiVE5ERkF4NURwLWpWXzlFNVZYTjktZXJ3bXVz?oc=5",
-        "published": "Mon, 10 Aug 2026 07:28:22 GMT",
-        "publisher": "24HMoney",
-        "sourceQuality": 0.65,
+        "title": "Petrolimex bất ngờ điều chỉnh phương án bán cổ phiếu quỹ PLX - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQemE1WnFlZGw2QWVTeG5FQnVva2hFZHdVaUdMakx6RGZMQ090aG41VzlfX3V6WmttWTluQTFVbk5BZVNQMUJxQ28wVWNNX2tKX3dyLUdwVHJIcl9TaWptMHhmaWtERXNsRU5mQ0FxRTVlbERzSlBpYVhjUy01RTlHbkZyTjlibWVmd01nUUlvc3V4R1kyVFZpajZxOU9rQ2tkQ0E?oc=5",
+        "published": "Mon, 10 Aug 2026 07:00:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
@@ -11213,7 +11279,7 @@
       },
       {
         "title": "VJC: Nghị quyết HĐQT về việc góp vốn thành lập Công ty Cổ phần International Technical Services - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNNGw5S3FXczdSV19ybGNMZ1RwSGhrN1RXdk9wMWN0YTVzOE9XZWItbTJHZEdZNEl6NU9PR0FkRXNMT19PQkxOMDd6eVF6bHNXeG0xU1FPaHI0MUVoOWwtMDc2eWFhX3pjRThiMW1Qc0tXZWlZOVFuSk5EX1NyX1E2UzFZQ3ZRWnUzVDYwUnFzQTJQREdwMjBuSGx6MXZpd3FLaFB1M3NRdnB1UzhuUVdRQlFVTXpVLUdEVHRHeEdUbnlqSHdTeG9UUmpONWQwOXlvR1NvYnlB?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQTXVBc3IxSVlESFJ2SzQ1ZkRLZjlqYVM5UURNek56MjFNUFAzSHBid1dJR3NsTkdJN25wNEVnUHpHc0Mzclg1MkpqbDA2ajVUM2x6anJod1hFYUdGQjUwNkdqVWcxOFQ2VWJubnBUSmpXVXBGbGxlZnktQTliampwdHhMZXNmRmNiSnpCaG1VcjlubVVRY2hvZENIRl8xcDRuZWVGakFzNUZEdjBpSjRYWWg1ZDlDeklQSzNoSllTZ3VEaDVPS09pY3ozM1pEWGVWOVBiWTBB?oc=5",
         "published": "Wed, 19 Aug 2026 10:34:27 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
@@ -11775,17 +11841,6 @@
         "query": "\"SAB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
-        "title": "Cổ phiếu đáng chú ý ngày 29/4: VRE, SAB, HDB - nguoiquansat.vn",
-        "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNMExodHV6c2xzamxWa2l4d3Q0MEMxTmFpd01wMFBVanNfZ2M4Um56T2I0THNXUkNzN2VjdE1Rb19teGFpaDhSTEdHemdVb1lKYlBoVEVia1ViT0toeWEtYjNTTklyaGlXWUJkUlpwN3k3QzUwUWVPWHVIZWJpV2FqeThzRQ?oc=5",
-        "published": "Tue, 28 Apr 2026 07:00:00 GMT",
-        "publisher": "nguoiquansat.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"SAB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
         "title": "Cổ phiếu bia Sabeco tăng kịch trần sau tin kết quả quý đầu năm - Báo Dân trí",
         "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQclVJRzRkbFVxVTJsUkF1NEN0U3h2X1pqeFRHOUROWUM4bjNPLWFrNnlHQlkxVGl0VC1mT0F1VUN0eFZobS1tYTRpTlBTQmVabWVFeDIyZExsejVPS3NJQjRJRFROTVBpdWtaYmxZSF9WZlR1MUx2aU9weHlaTUx2cE1wV3NzUGZlWDd1dTFnbnAybnU5US15b2VpNXFuRzFqTkowc2dTeHBiNWh2WTc5UGtwQVZfS3Fz?oc=5",
         "published": "Thu, 23 Apr 2026 07:00:00 GMT",
@@ -11852,6 +11907,17 @@
         "query": "\"SAB\" cổ phiếu"
       },
       {
+        "title": "LHG, BCM, SAB: Cổ phiếu miệt mài giảm dù lợi nhuận tăng, thị trường lo ngại điều gì? - nguoiquansat.vn",
+        "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPOXVQaHN5T3E4R1JEN0ZsTEJjb09JVnNCOE1aSmNXQVpYUFZFRXRJSmp6SWs4dGFueTRiMFk0WHUwVUdRWGFuWEl0Q2E0MDBGVkh6anF4eEhib0g5cWtyWkJjRzdEZ1dzVWJYNVpxOXV5S3I0Y09WaVVNMFpNWndXOFdOT3FVaHdQMUZVUUczRDY3azI3NkI0RkVkLThGQi1CNzVEXzVBbWFucVBTU1MtdndnNnZNQQ?oc=5",
+        "published": "Tue, 16 Dec 2025 08:00:00 GMT",
+        "publisher": "nguoiquansat.vn",
+        "sourceQuality": 0.65,
+        "event": "Earnings",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"SAB\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+      },
+      {
         "title": "SAB: Lịch sử giá cổ phiếu - Tổng CTCP Bia - Rượu - Nước giải khát Sài Gòn - CafeF",
         "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE43bUh4N3VDOUV5U3d4NlZUQnVoYmNKYjZnd0lsemlieW1WNFF0UVplZk1uNUpiZVQ5N1lfWnV3SkJ6UUtUWUswVU9uWFhSc2NJVGEzMmdHMFotWHhtZ2xLcw?oc=5",
         "published": "Sat, 13 Dec 2025 11:48:18 GMT",
@@ -11903,6 +11969,17 @@
         "sourceQuality": 0.65,
         "event": "Capital / corporate action",
         "materiality": 0.78,
+        "relevance": 1.0,
+        "query": "\"SAB\" cổ phiếu"
+      },
+      {
+        "title": "SAB: Tổng CTCP Bia - Rượu - Nước giải khát Sài Gòn (HOSE) - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNeWdRZkJYV2ZaZXZCdUJHSW1JWlBoRHZ2UVY4SEZpZjFpY3Y1TkxueTc3WHBXQW53cDkzSjhzR1NrTm5HV0J2WkxHXzYxMUdRcmxvT1JrWjlRZG9JZ1pQYUpKN1haQWdzSy1oUnBMbzZWQ3puZnpIQ0tBUnZwajA2TXlZTWlnQQ?oc=5",
+        "published": "Thu, 02 Oct 2025 07:00:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"SAB\" cổ phiếu"
       },
@@ -11972,7 +12049,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"SSI\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"SSI\" cổ phiếu"
       },
       {
         "title": "SSI Research dự báo dòng vốn 1,5 tỷ USD từ FTSE phân bổ vào 27 cổ phiếu Việt Nam - VietnamBiz",
@@ -12053,14 +12130,14 @@
       },
       {
         "title": "Sếp SSI dự chi 100 tỷ đồng gom cổ phiếu - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxOV1c0dC0wVl9DbS1ITGlWR1Z1OEQ0VE53WVlqc1JMQ0JzZFQ0Z191Z1hGS1o5Y0lqT2N1bk1jRFdMWUJyM0NONVV6MEVxOXFTVi1sYlJnZTkyZEFzejMyWFgza2czOTJnYnNyRFQycVY1X0ZILUQxUnJhejRzTzByZnRpVGdlcE1uV3NhLQ?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNWTVuS0s2bUw1d3k3bF9LNHBkMlBQTUZhd2dxMnpyeFAyZDNsdkFMY09jT1NLSkhFSXdVNUZtamF4ems5QWs0M3p2NUtxUzVERjRkLUhrVmJuNERJTUZMV3N6aEJQbU95R2xXSVNpNm93bnBrZFh4SnlVblh6WHhuV1pFUmF0eW1pcEt5bQ?oc=5",
         "published": "Fri, 21 Aug 2026 05:18:07 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"SSI\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"SSI\" cổ phiếu"
       },
       {
         "title": "Lãnh đạo SSI dự chi gần trăm tỷ đồng mua cổ phiếu - VietnamFinance",
@@ -12104,7 +12181,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"SSI\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
+        "query": "\"SSI\" cổ phiếu"
       },
       {
         "title": "Một thành viên HĐQT SSI đăng ký mua 5 triệu cổ phiếu - An ninh Tiền tệ",
@@ -12148,7 +12225,7 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"SSI\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+        "query": "\"SSI\" cổ phiếu"
       },
       {
         "title": "SSI đón sóng nâng hạng, lãnh đạo đăng ký mua ngay 5 triệu cổ phiếu - nguoiquansat.vn",
@@ -12171,17 +12248,6 @@
         "materiality": 0.35,
         "relevance": 1.0,
         "query": "\"SSI\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
-        "title": "Khuyến nghị cổ phiếu ACB, BSR, PVD mới nhất từ SSI, MBS, BSC - bnews.vn",
-        "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPSlZiQXRfbGw3aVQ1VVdzT0Fwemlwa3k1UnNBMjdRaUR2RnAwbXVYVGlmU3Q5VUgwb3NZd1A4N29fa29pbGFDWUZiRDcwdUpFa0dQdHduNm5ORlVnVzhfdjJodW9URnpiRDBkQ2RNc2tTcUFDX3FJVkgwaFMtNm9CcDBPd2JfM3c5UFRkazdB?oc=5",
-        "published": "Thu, 20 Aug 2026 01:52:00 GMT",
-        "publisher": "bnews.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"SSI\" cổ phiếu"
       },
       {
         "title": "SSI Research: VPB là cổ phiếu ngân hàng hưởng lợi lớn nhất từ nâng hạng - VnExpress",
@@ -12340,17 +12406,6 @@
         "query": "\"VCI\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
-        "title": "VCI - Cập nhật KQKD Q2.2026 - CafeF",
-        "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM2JQVEVWR01ObXN1QXIxM2RFYVlXeld2WnNKZmJmcnFMRjQtcE9KS25pY0VCMVJvSE5scTFHNm1aN2tTamp0ZFBLSFNxS1gxc05KNDdraXlERi16OHVBd1hrWkVLYnBtWFg2WVpaWFhCdDR2OHpwUDdzbTlyNGFDeWlTMlZGVGZES3ZqaWJB?oc=5",
-        "published": "Mon, 17 Aug 2026 10:25:29 GMT",
-        "publisher": "CafeF",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VCI\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
-      },
-      {
         "title": "Vietcap (VCI) rót gần 390 tỷ đồng vào doanh nghiệp đứng sau chuỗi F&B Katinat, Phê La, Dì Mai... - nguoiquansat.vn",
         "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOVm1ZVkR6YldVXzVTc2lMdm1vS3hLcDdsQTN4Wko1dE9jeFVlcmtyU3NNZ1FpbGRGRkpQb09rS2kzQVREZWFGb3JmMmt1bUxoWEFuZFZHd3BiZ05TOTYycUdCelBjckRIU1laRHVfbUNUN2VNdGlhUVg1S2YtU3ExQXVwMVVEbG1oandVUVctcmxhaFJlRzlTWDBnaC1zTlRtQlZJWEVmSGlxWUd4T0poNHBvMVJQeFM4OTZTcERaeTJfdU0?oc=5",
         "published": "Mon, 17 Aug 2026 07:42:19 GMT",
@@ -12476,17 +12531,6 @@
         "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNaml0VmVpdUZKT2ZYUlFxRVgtaGtTX0xERmdfWWlFd2JvNEE0WS15NHRjTTh6Tl9ZRHhoWVVlLW9SYlJLTmFmMS1URDdCd0lXMUp0aHN5ZmZGN2VWcDFCZlFucnFXenVMV0FpVjNzeVd2ZUJXSDNVbDlHRmdNN1JkMGR5TW9qWTctSzA5V29TaUFhUU03TjFDNlFGRm91U0cyV19nSVE2LTl0cEZpSkFnVGhkczBWZw?oc=5",
         "published": "Tue, 28 Jul 2026 07:00:00 GMT",
         "publisher": "Fili.vn",
-        "sourceQuality": 0.65,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"VCI\" cổ phiếu"
-      },
-      {
-        "title": "Cổ phiếu chứng khoán và bất động sản hồi phục, VCI 'cháy hàng' - Mekong ASEAN",
-        "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPN3VPVlF4Sy1jU3loTnA5dWJNXzNjZVZRTjdPdkR1ZTZURUhnWVRHVGlUZkpsRkI0R0hfVHE2YnJ6ZHg3UmU2NHNsNEpVSG1GcHJEOHdGLVlIeksxUmNKVTcxNTFHSjFzeVhLSEREWEdtZ1RCaVpXU0Rrdkw4WVJVWlM1cUZrN2JSa1YwNEczRExxY3AxTnRydC1nRGc?oc=5",
-        "published": "Tue, 28 Jul 2026 07:00:00 GMT",
-        "publisher": "Mekong ASEAN",
         "sourceQuality": 0.65,
         "event": "General",
         "materiality": 0.35,
@@ -12659,6 +12703,28 @@
         "query": "\"VCI\" cổ phiếu"
       },
       {
+        "title": "VCAM không bán được 300.000 cổ phiếu VCI do giá chưa phù hợp - VnEconomy",
+        "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNekg5czJSX2IxQUUyVFo5TkNZbVoyQTN3SGdmTnhRbWo5cXRpRGlvbmxtZFhFd2tvdGJ4akhpZzU3MUJOVUFLUmNmS05GQmkteXlXSlNUbHAwS3lRV29fRExBUm1ZQXg0WThFQnBqZDlOZXNTanVQTUp3UkRUTVYxOFpoYmpLdjU0ekdsdw?oc=5",
+        "published": "Mon, 26 Jan 2026 08:00:00 GMT",
+        "publisher": "VnEconomy",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VCI\" cổ phiếu"
+      },
+      {
+        "title": "VCI: Công ty Cổ phần Chứng khoán VIETCAP (HOSE) - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9Ha1A1SnU0MDJhY0VDNnVzenFzUE1CcHNUcnIyV0tyNGlrQktKTzZBOWxvVl90V19YbFRWbE53R3pWVWtVWUpncWJBUTFYNzl1VThya2M1UzRiSGsyR0xBX2s4NXRkZlpjSGJLTEZBbENtS2RCcUNseTFzQkN6UQ?oc=5",
+        "published": "Thu, 02 Oct 2025 07:00:00 GMT",
+        "publisher": "CafeF",
+        "sourceQuality": 0.9,
+        "event": "General",
+        "materiality": 0.35,
+        "relevance": 1.0,
+        "query": "\"VCI\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
         "title": "VCI: Ông Đinh Quang Hoàn - Thành viên HĐQT đăng ký mua 200.520 cp - CafeF",
         "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQUURRRloyUXJsT1RCeFBFTkJDRHdqUzRtYXBqODZRUEVsY21FcXRISmpDSmVIa3VNY2NWSk1TVkN4YXpTbjRjT1J3SkVEX2t1QVJrVmlFNlhSTk1wQThGZ3lIUHg0TGxVcEtKX293UlJPWGpoQTlxWmNrYk41eDJmSGhySVFaZnNKVjlKckVPMkRUV3NELWhrV09nalFvNlE4TlRqQw?oc=5",
         "published": "Tue, 17 Jun 2025 07:00:00 GMT",
@@ -12672,17 +12738,6 @@
     ],
     "HCM": [
       {
-        "title": "HCM City infrastructure development - VnEconomy",
-        "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5sZ1ZIVWxxNVBfTS1pb0VsUUxFb0Nvb3N5V19sOXlfUEY3QTNLZ0d0OFAxOEFCR3hXeHRjUV93UDliWmNiYUhPVzdlN0JVb2hwWWxhcExkal94SEFjT3R2dDhvdWkwSnhsVVF6cA?oc=5",
-        "published": "Sat, 22 Aug 2026 20:36:03 GMT",
-        "publisher": "VnEconomy",
-        "sourceQuality": 0.9,
-        "event": "General",
-        "materiality": 0.35,
-        "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
-      },
-      {
         "title": "HCM: Báo cáo kết quả thực hiện quyền mua cổ phiếu của người nội bộ Nguyễn Thị Hoàng Lan - Vietstock",
         "link": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOUEFkU09QOUI3ODJpdmhfM2w4QVE4NWF1amttM1VleFJZRTNhSFRBbVhCY2M3Vm1lU2tGa3pGYWVPSm03bjZrQzZ4RWV6RDk2Tnl0T3J6NGtjSmUxRXhMYVU2WXVlVDVOTUVGTkZBMXdidHhLVmVsMHVNSzJSRFA1NnJzRnVhdGdHcGdKb1R0dVhOS2toWkcwamN4NEdWRkRpVlVtQldkR2hLU1ViYXhIbGdwVGdvV2QwYktMemZKTFBnRWozZGRLTGlKUQ?oc=5",
         "published": "Fri, 21 Aug 2026 09:50:26 GMT",
@@ -12691,7 +12746,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu"
+        "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "Tìm kiếm: HCM VIF - Vietstock",
@@ -12724,7 +12779,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu"
+        "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của người nội bộ Lê Anh Quân - Vietstock",
@@ -12768,7 +12823,7 @@
         "event": "Capital / corporate action",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu"
+        "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của Người nội bộ - Nguyễn Quốc Huân (Johan Nyvene) | Notice of excercising purchase rights of internal person - Mr. Nguyen Quoc Huan (Johan Nyvene) - Vietstock",
@@ -12823,7 +12878,7 @@
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu"
+        "query": "\"HCM\" cổ phiếu (site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)"
       },
       {
         "title": "Dragon Capital dự chi hơn 850 tỷ đồng mua thêm 85 triệu cổ phiếu HCM - Nhịp sống kinh doanh",
@@ -12856,22 +12911,11 @@
         "event": "Capital / corporate action",
         "materiality": 0.96,
         "relevance": 0.9,
-        "query": "\"HCM\" cổ phiếu"
-      },
-      {
-        "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của Người nội bộ - Trinh Hoai Giang | Notice of excercising purchase rights of internal person - Mr. Trinh Hoai Giang - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMiqgJBVV95cUxQVWZtYWZIeDBIaVJRaE5WOUxFXzFLOUVDc0hxbVhFNjhsQmNoTmRYaVg5MUFvZWdoV0VKRVFUeEZVOXhiNnQ0QWxkeE9VclhGN2NLQjFPUmhHUnpMUzNwWi1WUWs4UXpLQmhIeXNuU0Q3ZnNPVVl6Qktzb3Rvd2QxUFVqOGFnbEZHQkdLLXRsSHE0SDF6WUhpNlJFbm9UQXlSNkxUaUhxMEFuRW54bWxwU09BZHJfdnpNT0ZyWUxsY0dkdV9zUUtHaXBFZW56RC0yWVhRWnR1cVlmTXNWcTNCTUttbjJhQWo3MjdXX2RYQ1BlU2Y5SlJxVGlpaU9YX043LURsM3lRT1R6UUtnbXl5TXIwaFQxNWY3d2dKdkN3ZmFVM3I0Y2RnSFJ3?oc=5",
-        "published": "Mon, 17 Aug 2026 17:00:00 GMT",
-        "publisher": "Vietstock",
-        "sourceQuality": 0.9,
-        "event": "Capital / corporate action",
-        "materiality": 0.53,
-        "relevance": 1.0,
         "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của Người nội bộ - Nguyễn Thị Hoàng Lan | Notice of excercising purchase rights of internal person - Ms. Nguyen Thi Hoang Lan - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMitAJBVV95cUxQVDIxenRraS1la0NIUGNjTGhYLXRfYVRwUG1yenkwN3Nudm5FVjYxZ2tKOEpOWUxmRU9XZW9hSGEtMEhuNlRveHNsUWpjY2I0LWRYNjVabzFaQkIxMS1XWlV3SHRrNEx5d2hZX3FuQWdENmFFSEo5eWN5cGhyeXNfQXhpUVhYbzhyRGRWVDlSWm9mcDBXX3FiRHlZU0R0YkNBVkhTd2RYTTE2MnBURlVOZ3pkNWduTE4zaFB1dWkxMlkwN1JRTUpPWG8xTk5GYXhBQzdIb0tqZ0w0UlBaal9KOXRNbUhKbUtjY2tfUUk3a05GOWFJMndvRVoxS29VTERUaWl4YlpwSkFWenBhTVhncmtxb21CZVdIbzV4U2QwYkNEOU5sSTFrV3lPMUp3MnhLeXFZQQ?oc=5",
+        "link": "https://news.google.com/rss/articles/CBMitAJBVV95cUxNZHp0aWJyLUhaYXMxWm5wMnROWVlOYjVkcnk5aG5NVjhQZ2hfeVZVOUhpN1hxLVNSUTRCOVVzaGxtMko0N05GZkVkXzdlR2h6dGFuenVHaV9Cb19qUG5rOWJLQXdsWGNfak1LZmllVkExNENLZG1rWGdtRmpzUWVJbVVsRXVaM1ZneVZzUjFuejBOZlVxT2paaVViSzFnQmFmVmluYTE5MkZjejh4ekZuWUh6MmR6V1hZYW1Tc3lWbjdyNTU4d3JLcTdOV0hST1NtVEhlMnJ2VmJ4YTFfZjF0akp1UTA5dWp6NjAtckVZYXhxRVlTUVZ1cXVHdkhHMXV0ZG83aEwxWUdnMno5ZlA3cDJ3c2FkbDhIdGc0ME9sVmJIS014U3pQLXd4QlhLWnloYnhZQQ?oc=5",
         "published": "Mon, 17 Aug 2026 17:00:00 GMT",
         "publisher": "Vietstock",
         "sourceQuality": 0.9,
@@ -12903,15 +12947,15 @@
         "query": "\"HCM\" cổ phiếu"
       },
       {
-        "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của tổ chức có liên quan của Người nội bộ Dragon Capital Markets Limited (DC) - Vietstock",
-        "link": "https://news.google.com/rss/articles/CBMi9gFBVV95cUxQdm1VQUdYUlh3eXlCZGVlaVZSeEp2VmVIcUNIQ3Z4enF3a2JuS0laN2F6SjNPMWpQYjBCSzRrUkc1M0kwSHRRdTFSU2p5V2lYdU9mTVVUenhOclNnanYxQXQzbExQSTZ4TzIyTl84ZmxDWTl5dmIwMUVoYTMwRFZ0ZWZzeEV5eXlDVGo5MjZlNlpFbFN6RlRnUTZpU1pyckpVU2VRMFB0alNuckJpNkdzdkYzQ29xUkFSb2dCSWZTOF9HdzJSUi1vOWVDdl9sVURhOGE2V253bXR1ZFZhdG5HRlk0NDAyT28wMUFiMDh3aEpUcHJLZ0E?oc=5",
-        "published": "Mon, 17 Aug 2026 09:48:28 GMT",
-        "publisher": "Vietstock",
+        "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của tổ chức có liên quan của Người nội bộ Dragon Capital Markets Limited (DC) - CafeF",
+        "link": "https://news.google.com/rss/articles/CBMiigJBVV95cUxOdXh2RHJRU3MzbmQ1NHo2QlVpM2FxTWhaYnU0SDhBeU82VEN1Q0ZvN0hpQVI0VmlIQ2RqdDBRTWJKbXIzNDZHRmZIT1NyLWdjdUVXR3VYdm5tdFpoX2JXd05ReE56OFdhckh1Q00wVTZsNGl2WVhxR1lvUmlMZEZYb2ROU0JVSWhCbndiQTN6SUl1MVYyUHRzTTQzeElrUzBheWJXQ3Z6ZGNpOTFVbzBGWFN2SnZoa2xhT3liSTNtcnpITHA2Z3QzUjRzS3dTSVlISEZLUE9QX0FIMWlvd1RnT3JXaFg2VjVneTN1bGhERUxZSmw2TTdGeWlNU1RNb1JTN2hCdHNwUVpVUQ?oc=5",
+        "published": "Mon, 17 Aug 2026 09:48:00 GMT",
+        "publisher": "CafeF",
         "sourceQuality": 0.9,
         "event": "Ownership / governance",
         "materiality": 0.53,
         "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu"
+        "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "'Ông trùm' nắm 9 lô đất hơn 96.000 m2 tại Thủ Thiêm: Cổ phiếu có biến lớn khi TP.HCM tái đấu giá đất - CafeF",
@@ -12922,7 +12966,18 @@
         "event": "General",
         "materiality": 0.35,
         "relevance": 1.0,
-        "query": "\"HCM\" cổ phiếu"
+        "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
+      },
+      {
+        "title": "HCM: Thông báo giao dịch quyền mua CP của người nội bộ Lê Anh Minh, Thân Thị Thu Dung - Vietstock",
+        "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQSEctU251NmFaRzNJem1KN2d6ekczTEVTcXBrWGs2dFUtVUpvbk1jd3BFSGhQTHp1N0Y1TXN0blpmc2xxVV9QUWoxXzRQcWVPdnVmVkw2dUdpUG5uaDRFUG5Lcy16X1dRamtOX1lRcXVjUldhY0JXbHVCY0dZSXNjWGdiWllScm0zTXBqWWpzcWNpa2R0d0FaVVFxSklmZ3BPc3NlTTNSMnB0TDE3Zy13Y1k4THNNNjBWUVMwaVo4Qm5OVWU4aEVF?oc=5",
+        "published": "Mon, 17 Aug 2026 08:15:36 GMT",
+        "publisher": "Vietstock",
+        "sourceQuality": 0.9,
+        "event": "Capital / corporate action",
+        "materiality": 0.53,
+        "relevance": 1.0,
+        "query": "\"HCM\" cổ phiếu (site:cafef.vn OR site:vietstock.vn)"
       },
       {
         "title": "HCM: Thông báo thực hiện quyền mua cổ phiếu của Tổ chức có liên quan của người nội bộ - Dragon Capital Limited | Notice of excercising purchase rights of affiliated organization of internal person - Dragon Capital Limited - Vietstock",
@@ -13128,25 +13183,25 @@
     "FPT": {
       "collected": 100,
       "windowed": 90,
-      "relevant": 29,
-      "unique": 29,
-      "used": 29,
-      "recent90": 29,
-      "recent180": 29,
+      "relevant": 28,
+      "unique": 28,
+      "used": 28,
+      "recent90": 28,
+      "recent180": 28,
       "material": 6,
-      "publishers": 19,
+      "publishers": 18,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "PNJ": {
       "collected": 100,
-      "windowed": 84,
-      "relevant": 55,
-      "unique": 43,
-      "used": 43,
-      "recent90": 43,
-      "recent180": 43,
-      "material": 18,
+      "windowed": 83,
+      "relevant": 59,
+      "unique": 47,
+      "used": 47,
+      "recent90": 47,
+      "recent180": 47,
+      "material": 19,
       "publishers": 18,
       "official": 0,
       "coverageGrade": "STRONG"
@@ -13166,7 +13221,7 @@
     },
     "BID": {
       "collected": 100,
-      "windowed": 79,
+      "windowed": 78,
       "relevant": 34,
       "unique": 29,
       "used": 29,
@@ -13179,59 +13234,59 @@
     },
     "CTG": {
       "collected": 100,
-      "windowed": 84,
-      "relevant": 42,
-      "unique": 38,
-      "used": 38,
-      "recent90": 33,
-      "recent180": 34,
+      "windowed": 85,
+      "relevant": 41,
+      "unique": 37,
+      "used": 37,
+      "recent90": 31,
+      "recent180": 32,
       "material": 12,
-      "publishers": 15,
-      "official": 3,
+      "publishers": 16,
+      "official": 4,
       "coverageGrade": "STRONG"
     },
     "MBB": {
       "collected": 100,
-      "windowed": 77,
-      "relevant": 35,
-      "unique": 33,
-      "used": 33,
-      "recent90": 30,
-      "recent180": 30,
-      "material": 8,
-      "publishers": 14,
+      "windowed": 76,
+      "relevant": 36,
+      "unique": 32,
+      "used": 32,
+      "recent90": 29,
+      "recent180": 29,
+      "material": 9,
+      "publishers": 13,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "TCB": {
       "collected": 100,
-      "windowed": 78,
-      "relevant": 39,
+      "windowed": 77,
+      "relevant": 38,
       "unique": 31,
       "used": 31,
-      "recent90": 21,
+      "recent90": 20,
       "recent180": 30,
-      "material": 10,
-      "publishers": 15,
+      "material": 9,
+      "publishers": 14,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "VPB": {
       "collected": 100,
       "windowed": 75,
-      "relevant": 28,
-      "unique": 26,
-      "used": 26,
-      "recent90": 15,
-      "recent180": 25,
-      "material": 7,
-      "publishers": 15,
+      "relevant": 27,
+      "unique": 24,
+      "used": 24,
+      "recent90": 19,
+      "recent180": 24,
+      "material": 8,
+      "publishers": 14,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "ACB": {
       "collected": 100,
-      "windowed": 67,
+      "windowed": 69,
       "relevant": 32,
       "unique": 26,
       "used": 26,
@@ -13244,12 +13299,12 @@
     },
     "HDB": {
       "collected": 100,
-      "windowed": 74,
-      "relevant": 40,
-      "unique": 35,
-      "used": 35,
-      "recent90": 25,
-      "recent180": 30,
+      "windowed": 73,
+      "relevant": 41,
+      "unique": 37,
+      "used": 37,
+      "recent90": 27,
+      "recent180": 32,
       "material": 15,
       "publishers": 18,
       "official": 0,
@@ -13261,7 +13316,7 @@
       "relevant": 31,
       "unique": 30,
       "used": 30,
-      "recent90": 10,
+      "recent90": 11,
       "recent180": 25,
       "material": 5,
       "publishers": 16,
@@ -13283,14 +13338,14 @@
     },
     "VIB": {
       "collected": 100,
-      "windowed": 66,
-      "relevant": 47,
-      "unique": 38,
-      "used": 38,
+      "windowed": 64,
+      "relevant": 46,
+      "unique": 39,
+      "used": 39,
       "recent90": 29,
-      "recent180": 36,
-      "material": 26,
-      "publishers": 17,
+      "recent180": 37,
+      "material": 27,
+      "publishers": 18,
       "official": 0,
       "coverageGrade": "STRONG"
     },
@@ -13309,7 +13364,7 @@
     },
     "HPG": {
       "collected": 100,
-      "windowed": 74,
+      "windowed": 73,
       "relevant": 28,
       "unique": 24,
       "used": 24,
@@ -13335,24 +13390,24 @@
     },
     "GVR": {
       "collected": 100,
-      "windowed": 69,
-      "relevant": 33,
-      "unique": 29,
-      "used": 29,
-      "recent90": 21,
-      "recent180": 24,
+      "windowed": 67,
+      "relevant": 34,
+      "unique": 30,
+      "used": 30,
+      "recent90": 22,
+      "recent180": 25,
       "material": 5,
-      "publishers": 13,
+      "publishers": 14,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "MSN": {
       "collected": 100,
-      "windowed": 69,
+      "windowed": 70,
       "relevant": 30,
       "unique": 24,
       "used": 24,
-      "recent90": 16,
+      "recent90": 17,
       "recent180": 24,
       "material": 9,
       "publishers": 11,
@@ -13361,25 +13416,25 @@
     },
     "MWG": {
       "collected": 100,
-      "windowed": 76,
-      "relevant": 45,
-      "unique": 31,
-      "used": 31,
-      "recent90": 30,
-      "recent180": 30,
+      "windowed": 75,
+      "relevant": 46,
+      "unique": 32,
+      "used": 32,
+      "recent90": 31,
+      "recent180": 31,
       "material": 16,
-      "publishers": 14,
+      "publishers": 13,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "VNM": {
       "collected": 100,
       "windowed": 72,
-      "relevant": 31,
-      "unique": 27,
-      "used": 27,
-      "recent90": 25,
-      "recent180": 25,
+      "relevant": 30,
+      "unique": 26,
+      "used": 26,
+      "recent90": 24,
+      "recent180": 24,
       "material": 7,
       "publishers": 15,
       "official": 0,
@@ -13387,20 +13442,20 @@
     },
     "VIC": {
       "collected": 100,
-      "windowed": 89,
-      "relevant": 20,
-      "unique": 20,
-      "used": 20,
-      "recent90": 19,
-      "recent180": 20,
-      "material": 0,
-      "publishers": 13,
+      "windowed": 75,
+      "relevant": 26,
+      "unique": 25,
+      "used": 25,
+      "recent90": 24,
+      "recent180": 25,
+      "material": 1,
+      "publishers": 15,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "VHM": {
       "collected": 100,
-      "windowed": 83,
+      "windowed": 84,
       "relevant": 28,
       "unique": 21,
       "used": 21,
@@ -13414,19 +13469,19 @@
     "VRE": {
       "collected": 100,
       "windowed": 74,
-      "relevant": 32,
-      "unique": 29,
-      "used": 29,
-      "recent90": 22,
-      "recent180": 29,
-      "material": 6,
+      "relevant": 31,
+      "unique": 28,
+      "used": 28,
+      "recent90": 21,
+      "recent180": 27,
+      "material": 7,
       "publishers": 12,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "BCM": {
       "collected": 100,
-      "windowed": 76,
+      "windowed": 77,
       "relevant": 40,
       "unique": 37,
       "used": 37,
@@ -13439,14 +13494,14 @@
     },
     "KDH": {
       "collected": 100,
-      "windowed": 76,
-      "relevant": 40,
-      "unique": 34,
-      "used": 34,
-      "recent90": 23,
-      "recent180": 31,
-      "material": 15,
-      "publishers": 16,
+      "windowed": 75,
+      "relevant": 41,
+      "unique": 33,
+      "used": 33,
+      "recent90": 24,
+      "recent180": 30,
+      "material": 13,
+      "publishers": 15,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
@@ -13458,53 +13513,53 @@
       "used": 36,
       "recent90": 28,
       "recent180": 32,
-      "material": 11,
+      "material": 12,
       "publishers": 14,
       "official": 0,
       "coverageGrade": "STRONG"
     },
     "PDR": {
       "collected": 100,
-      "windowed": 86,
-      "relevant": 41,
-      "unique": 36,
-      "used": 36,
+      "windowed": 85,
+      "relevant": 42,
+      "unique": 37,
+      "used": 37,
       "recent90": 13,
       "recent180": 28,
       "material": 21,
-      "publishers": 15,
+      "publishers": 16,
       "official": 0,
       "coverageGrade": "STRONG"
     },
     "DXG": {
       "collected": 100,
-      "windowed": 83,
+      "windowed": 85,
       "relevant": 40,
-      "unique": 35,
-      "used": 35,
-      "recent90": 17,
-      "recent180": 30,
-      "material": 21,
+      "unique": 36,
+      "used": 36,
+      "recent90": 19,
+      "recent180": 31,
+      "material": 22,
       "publishers": 13,
       "official": 0,
       "coverageGrade": "STRONG"
     },
     "NLG": {
       "collected": 100,
-      "windowed": 88,
-      "relevant": 51,
-      "unique": 44,
-      "used": 44,
+      "windowed": 87,
+      "relevant": 50,
+      "unique": 42,
+      "used": 42,
       "recent90": 26,
-      "recent180": 38,
-      "material": 20,
-      "publishers": 15,
+      "recent180": 37,
+      "material": 19,
+      "publishers": 14,
       "official": 0,
       "coverageGrade": "STRONG"
     },
     "DIG": {
       "collected": 100,
-      "windowed": 84,
+      "windowed": 82,
       "relevant": 45,
       "unique": 35,
       "used": 35,
@@ -13517,12 +13572,12 @@
     },
     "GAS": {
       "collected": 100,
-      "windowed": 79,
-      "relevant": 32,
-      "unique": 28,
-      "used": 28,
-      "recent90": 20,
-      "recent180": 25,
+      "windowed": 78,
+      "relevant": 30,
+      "unique": 26,
+      "used": 26,
+      "recent90": 19,
+      "recent180": 24,
       "material": 5,
       "publishers": 17,
       "official": 0,
@@ -13530,20 +13585,20 @@
     },
     "PLX": {
       "collected": 100,
-      "windowed": 83,
+      "windowed": 82,
       "relevant": 38,
-      "unique": 32,
-      "used": 32,
-      "recent90": 26,
-      "recent180": 30,
-      "material": 21,
-      "publishers": 15,
+      "unique": 34,
+      "used": 34,
+      "recent90": 28,
+      "recent180": 32,
+      "material": 23,
+      "publishers": 16,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "VJC": {
       "collected": 100,
-      "windowed": 65,
+      "windowed": 64,
       "relevant": 39,
       "unique": 34,
       "used": 34,
@@ -13556,27 +13611,27 @@
     },
     "SAB": {
       "collected": 100,
-      "windowed": 69,
+      "windowed": 68,
       "relevant": 39,
-      "unique": 35,
-      "used": 35,
+      "unique": 36,
+      "used": 36,
       "recent90": 12,
-      "recent180": 25,
-      "material": 15,
+      "recent180": 24,
+      "material": 16,
       "publishers": 17,
       "official": 0,
       "coverageGrade": "STRONG"
     },
     "SSI": {
       "collected": 100,
-      "windowed": 84,
+      "windowed": 83,
       "relevant": 37,
-      "unique": 31,
-      "used": 31,
-      "recent90": 28,
-      "recent180": 29,
+      "unique": 30,
+      "used": 30,
+      "recent90": 27,
+      "recent180": 28,
       "material": 8,
-      "publishers": 18,
+      "publishers": 17,
       "official": 1,
       "coverageGrade": "MODERATE"
     },
@@ -13586,21 +13641,21 @@
       "relevant": 37,
       "unique": 33,
       "used": 33,
-      "recent90": 23,
-      "recent180": 32,
+      "recent90": 21,
+      "recent180": 30,
       "material": 11,
-      "publishers": 15,
+      "publishers": 14,
       "official": 0,
       "coverageGrade": "MODERATE"
     },
     "HCM": {
       "collected": 100,
       "windowed": 85,
-      "relevant": 54,
-      "unique": 41,
-      "used": 41,
-      "recent90": 37,
-      "recent180": 40,
+      "relevant": 52,
+      "unique": 40,
+      "used": 40,
+      "recent90": 36,
+      "recent180": 39,
       "material": 27,
       "publishers": 13,
       "official": 2,
