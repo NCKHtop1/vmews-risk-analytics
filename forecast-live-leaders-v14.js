@@ -392,6 +392,16 @@
         state.rows.forEach((row, index) => drawSparkline($(`[data-spark="${index}"]`), row.history));
       });
     }, { passive: true });
+    window.addEventListener("vmews:community-updated", event => {
+      if (!event.detail?.forecastUpdates || !state.base) return;
+      const selected = state.rows[state.index]?.symbol;
+      state.universe = buildLeaderboard(state.base, { all: true });
+      state.rows = buildLeaderboard(state.base, { filter: state.filter });
+      state.index = Math.max(0, state.rows.findIndex(row => row.symbol === selected));
+      renderPulse();
+      renderCards();
+      scheduleRotation();
+    });
   }
 
   async function init() {

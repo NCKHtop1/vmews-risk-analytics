@@ -30,6 +30,14 @@ function limited(request) {
 }
 
 function responseText(payload) {
+  const current = (payload.steps || [])
+    .filter(step => step.type === "model_output")
+    .flatMap(step => step.content || [])
+    .map(item => item.text || "")
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+  if (current) return current;
   if (typeof payload.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
   for (const output of payload.outputs || []) {
     if (typeof output.text === "string" && output.text.trim()) return output.text.trim();
@@ -49,7 +57,8 @@ function systemInstruction() {
   return [
     `Bạn là ${BRAND}, trợ lý phân tích chứng khoán Việt Nam.`,
     "Luôn trả lời bằng tiếng Việt, rõ ràng, chuyên nghiệp, ngắn gọn nhưng đủ cơ sở.",
-    "Chỉ sử dụng dữ liệu được cung cấp trong ngữ cảnh; không tự tạo giá, tin tức, giao dịch quỹ hoặc chỉ tiêu tài chính.",
+    "Giá dự báo, dòng tiền, danh mục quỹ và chỉ tiêu mô hình phải lấy đúng từ ngữ cảnh; không tự tạo giá hoặc thay đổi dự báo.",
+    "Được dùng Google Search để tìm thông tin mới về doanh nghiệp, vĩ mô, ngành và kiến thức tài chính; nêu nguồn và thời điểm, phân biệt với snapshot dự báo.",
     "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
     "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",
     "Nếu xác suất hướng không được kiểm định thì không đưa ra xác suất tăng.",
@@ -76,7 +85,7 @@ async function callGemini(question, context, history, secret) {
   };
   const interaction = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     ...common,
-    body: JSON.stringify({ model: MODEL, input, system_instruction: systemInstruction(), store: false }),
+    body: JSON.stringify({ model: MODEL, input, system_instruction: systemInstruction(), store: false, tools: [{ type: "google_search" }] }),
     signal: AbortSignal.timeout(24_000),
   });
   if (interaction.ok) return responseText(await interaction.json());

@@ -818,6 +818,10 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .aiUser .aiRole { color: #aeb4a7; }
 .aiMessage p { margin: 0 0 7px; color: #e5e6de; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
 .aiMessage p:last-child { margin-bottom: 0; }
+.aiSources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; padding-top: 10px; border-top: 1px solid #292f25; }
+.aiSources a { max-width: 100%; overflow: hidden; padding: 5px 8px; border: 1px solid #384332; border-radius: 2px; color: #c0dda9; font: 9px var(--mono); text-decoration: none; text-overflow: ellipsis; white-space: nowrap; transition: border-color .18s ease, color .18s ease; }
+.aiSources a::before { content: "↗ "; color: #a8eb65; }
+.aiSources a:hover { border-color: #819f64; color: #edffe1; }
 .aiThinking { opacity: .72; }
 .aiError { border-color: #70403c; }
 .solutionAiSuggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 15px 12px; }
@@ -964,6 +968,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 }
 .rumorPanel .rumorStateDENIED .rumorBadge { border-color: #854d46; color: #f29e91; }
 .rumorPanel .rumorStateCONFIRMED .rumorBadge { border-color: #639748; color: #c5ff9f; }
+.rumorPanel .rumorStatePENDING .rumorBadge { border-color: #566147; color: #d2e3b9; }
+.rumorPanel .rumorStatePENDING { border-left-color: #72865c; background: linear-gradient(135deg, rgba(27, 33, 23, .85), rgba(13, 15, 12, .81)); }
 .rumorQuality { color: #dfe9d4; font: 12px var(--mono); font-variant-numeric: tabular-nums; }
 .rumorQuality i { color: #838a7d; font-size: 9px; font-style: normal; }
 .rumorQualityTrack { height: 2px; margin: 10px 0 11px; background: #252a22; }
@@ -976,6 +982,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .rumorPanel .chips { gap: 6px; }
 .rumorPanel .chip { border-color: #343a30; font-size: 9px; }
 .rumorFireant { border-color: #725337 !important; color: #f0bb81; }
+.rumor24h { border-color: #496151 !important; color: #aee5bc; }
 .rumorSources, .rumorResolution { display: block; margin-top: 9px; color: #a6ab9f; line-height: 1.55; }
 .rumorResolution { color: #c7d5bc; }
 .rumorQuiet { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 0 7px; }

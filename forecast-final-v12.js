@@ -148,12 +148,12 @@ function renderNews(z){const box=$("#news");box.replaceChildren();const a=z?.evi
 function renderRumors(z){
   const box=$("#rumors");
   box.replaceChildren();
-  const claims=z?.evidence?.rumorClaims||[],audit=z?.evidence?.rumorAudit||{},source=audit.source||{};
-  if(!claims.length){
-    box.innerHTML=`<div class="rumorQuiet"><span class="rumorQuietOrbit" aria-hidden="true"><i></i></span><strong>Chưa có tín hiệu cần xác minh.</strong><small>${source.articles>0?"Đang theo dõi FireAnt và các nguồn công bố.":"Đang theo dõi nguồn công khai và thông tin doanh nghiệp."}</small></div>`;
+  const claims=z?.evidence?.rumorClaims||[],watchlist=z?.evidence?.communityWatchlist||[],audit=z?.evidence?.rumorAudit||{},source=audit.source||{};
+  if(!claims.length&&!watchlist.length){
+    box.innerHTML=`<div class="rumorQuiet"><span class="rumorQuietOrbit" aria-hidden="true"><i></i></span><strong>Chưa có tín hiệu mới.</strong><small>${source.articles>0?"FireAnt · 24HMoney · nguồn công bố":"Đang cập nhật nguồn công khai."}</small></div>`;
     return;
   }
-  const stateLabel={CONFIRMED:"ĐÃ XÁC NHẬN",DENIED:"ĐÃ BÁC BỎ",CORROBORATED:"ĐÃ ĐỐI CHIẾU",UNVERIFIED:"ĐANG XÁC MINH"};
+  const stateLabel={CONFIRMED:"ĐÃ XÁC NHẬN",DENIED:"ĐÃ BÁC BỎ",CORROBORATED:"ĐÃ ĐỐI CHIẾU",UNVERIFIED:"ĐANG XÁC MINH",PENDING:"ĐANG ĐỐI CHIẾU"};
   for(const claim of claims.slice(0,8)){
     const item=document.createElement("article");
     const state=claim.truthState==="CONFIRMED"||claim.truthState==="DENIED"?claim.truthState:claim.verificationState||"UNVERIFIED";
@@ -162,12 +162,22 @@ function renderRumors(z){
     const uniqueSources=[...new Set(sources)].slice(0,3);
     const sentiment=finite(claim.sentimentScore)&&Math.abs(+claim.sentimentScore)>.05?(+claim.sentimentScore>0?"NGHIÊNG TÍCH CỰC":"NGHIÊNG TIÊU CỰC"):"CHƯA RÕ CHIỀU";
     item.className=`newsItem rumorItem rumorState${state}`;
-    item.innerHTML=`<div class="rumorTopline"><span class="rumorBadge">${esc(stateLabel[state]||stateLabel.UNVERIFIED)}</span><span class="rumorQuality">${quality}<i>/100</i></span></div><b>${esc(claim.title||claim.claimId)}</b><small>${esc(claim.firstDate||"")}${claim.lastDate&&claim.lastDate!==claim.firstDate?` → ${esc(claim.lastDate)}`:""}</small><div class="rumorQualityTrack"><i style="width:${quality}%"></i></div><div class="chips"><span class="chip">${claim.sources||1} nguồn độc lập</span><span class="chip">${claim.items||1} lượt ghi nhận</span><span class="chip">${esc(sentiment)}</span>${claim.fireantMentions?'<span class="chip rumorFireant">FireAnt</span>':""}</div>${uniqueSources.length?`<small class="rumorSources">${esc(uniqueSources.join(" · "))}</small>`:""}${claim.resolutionTitle?`<small class="rumorResolution">Công bố đối chiếu: ${esc(claim.resolutionTitle)}</small>`:""}`;
+    item.innerHTML=`<div class="rumorTopline"><span class="rumorBadge">${esc(stateLabel[state]||stateLabel.UNVERIFIED)}</span><span class="rumorQuality">${quality}<i>/100</i></span></div><b>${esc(claim.title||claim.claimId)}</b><small>${esc(claim.firstDate||"")}${claim.lastDate&&claim.lastDate!==claim.firstDate?` → ${esc(claim.lastDate)}`:""}</small><div class="rumorQualityTrack"><i style="width:${quality}%"></i></div><div class="chips"><span class="chip">${claim.sources||1} nguồn độc lập</span><span class="chip">${claim.items||1} lượt ghi nhận</span><span class="chip">${esc(sentiment)}</span>${claim.fireantMentions?'<span class="chip rumorFireant">FireAnt</span>':""}${claim.money24hMentions?'<span class="chip rumor24h">24HMoney</span>':""}</div>${uniqueSources.length?`<small class="rumorSources">${esc(uniqueSources.join(" · "))}</small>`:""}${claim.resolutionTitle?`<small class="rumorResolution">Công bố đối chiếu: ${esc(claim.resolutionTitle)}</small>`:""}`;
+    box.append(item);
+  }
+  const shown=new Set(claims.map(claim=>String(claim.title||"").trim().toLocaleLowerCase("vi")));
+  for(const signal of watchlist.slice(0,Math.max(2,8-claims.length))){
+    const title=String(signal.title||"").trim();
+    if(!title||shown.has(title.toLocaleLowerCase("vi")))continue;
+    shown.add(title.toLocaleLowerCase("vi"));
+    const item=document.createElement("article"),quality=Math.max(0,Math.min(100,Number(signal.qualityScore)||0));
+    item.className="newsItem rumorItem rumorStatePENDING";
+    item.innerHTML=`<div class="rumorTopline"><span class="rumorBadge">${stateLabel.PENDING}</span><span class="rumorQuality">${quality}<i>/100</i></span></div><b>${esc(title)}</b><small>${esc(signal.publisher||"")} · ${esc(String(signal.publishedAt||"").replace("T"," ").slice(0,16))}</small><div class="chips"><span class="chip">1 nguồn</span>${signal.fireant?'<span class="chip rumorFireant">FireAnt</span>':""}${signal.money24h?'<span class="chip rumor24h">24HMoney</span>':""}</div>`;
     box.append(item);
   }
 }
 
-function renderSource(B,sym){const box=$("#sourceAudit");box.replaceChildren();const z=B.dash.symbols?.[sym]||{},u=B.model.universe||{},signal=B.market?.sources?.signalAudit||{},fundAudit=B.market?.sources?.fundAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{},lastFlow=[foreign.latestDate,prop.latestDate].filter(Boolean).sort().at(-1),rows=[["Giá thị trường",z.date||"—",z.dataFreshness==="CURRENT"?"Đã cập nhật":"Cần cập nhật"],["Độ phủ HOSE",`${u.currentSymbols??"—"} mã`,finite(u.hoseCoverage)?pct(u.hoseCoverage,1):"—"],["Tin đã đối chiếu",`${(+signal.acceptedEvents||0).toLocaleString("vi-VN")} bài`,`${signal.newsSymbols??"—"} mã cổ phiếu`],["Dòng tiền tổ chức",lastFlow||"CHƯA CÓ",lastFlow?"Khối ngoại & tự doanh":"Đang cập nhật"],["Danh mục quỹ",fund.available?`${fund.fundCount||0} quỹ`:"CHƯA CÓ",fund.available?`${pct(fund.averageReportedWeight,1)}/quỹ · ${fund.usedByForecast?"đang tác động dự báo":"chờ công bố hợp lệ"}`:`${fundAudit.snapshotCount||0} kỳ công bố`],["Tài chính doanh nghiệp",z.fundamentalContext?.available?"ĐÃ TÍCH HỢP":"CHƯA CÓ",z.fundamentalContext?.available?"Kết quả kinh doanh & định giá":"Đang mở rộng nguồn"],["Tín hiệu cộng đồng",`${z.rumorContext?.claimCount||0} tín hiệu`,rumorAudit.source?.articles?`FireAnt · ${rumorAudit.source.articles} bài công khai`:"Đối chiếu nhiều nguồn độc lập"],["Rổ VN30",B.dash.lists?.vn30?.symbols?.includes(sym)?"THÀNH VIÊN":"NGOÀI RỔ",B.dash.lists?.vn30?.effectiveDate||"03/08/2026"]];for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}}
+function renderSource(B,sym){const box=$("#sourceAudit");box.replaceChildren();const z=B.dash.symbols?.[sym]||{},u=B.model.universe||{},signal=B.market?.sources?.signalAudit||{},fundAudit=B.market?.sources?.fundAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{},lastFlow=[foreign.latestDate,prop.latestDate].filter(Boolean).sort().at(-1),tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0),communitySource=rumorAudit.source?.publishers?.join(" · ")||"FireAnt · 24HMoney",rows=[["Giá thị trường",z.date||"—",z.dataFreshness==="CURRENT"?"Đã cập nhật":"Cần cập nhật"],["Độ phủ HOSE",`${u.currentSymbols??"—"} mã`,finite(u.hoseCoverage)?pct(u.hoseCoverage,1):"—"],["Tin đã đối chiếu",`${(+signal.acceptedEvents||0).toLocaleString("vi-VN")} bài`,`${signal.newsSymbols??"—"} mã cổ phiếu`],["Dòng tiền tổ chức",lastFlow||"CHƯA CÓ",lastFlow?"Khối ngoại & tự doanh":"Đang cập nhật"],["Danh mục quỹ",fund.available?`${fund.fundCount||0} quỹ`:"CHƯA CÓ",fund.available?`${pct(fund.averageReportedWeight,1)}/quỹ · ${fund.usedByForecast?"đang tác động dự báo":"chờ công bố hợp lệ"}`:`${fundAudit.snapshotCount||0} kỳ công bố`],["Tài chính doanh nghiệp",z.fundamentalContext?.available?"ĐÃ TÍCH HỢP":"CHƯA CÓ",z.fundamentalContext?.available?"Kết quả kinh doanh & định giá":"Đang mở rộng nguồn"],["Tín hiệu cộng đồng",`${tracked} tín hiệu`,rumorAudit.source?.articles?`${communitySource} · ${rumorAudit.source.articles} bài`:communitySource],["Rổ VN30",B.dash.lists?.vn30?.symbols?.includes(sym)?"THÀNH VIÊN":"NGOÀI RỔ",B.dash.lists?.vn30?.effectiveDate||"03/08/2026"]];for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}}
 
 function renderEventImpact(B,z,horizon=5){const box=$("#eventImpact");if(!box)return;const hAudit=B.model.horizons?.[String(horizon)]||{},study=hAudit.eventImpactAudit||{},news=study.positiveNews||{},negative=study.negativeNews||{},feature=z.newsFeatures||{},signed=v=>finite(v)?`${+v>=0?"+":""}${pct(v,2)}`:"—";setText("#eventImpactMeta",`T+${horizon} · ${(study.observations||0).toLocaleString("vi-VN")} quan sát`);box.innerHTML=`<article class="proofCard"><span>Sau tin tích cực</span><b class="${(+news.meanAbnormalReturn)>=0?"good":"bad"}">${signed(news.meanAbnormalReturn)}</b><small>${news.n||0} quan sát</small></article><article class="proofCard"><span>Sau tin tiêu cực</span><b class="${(+negative.meanAbnormalReturn)>=0?"good":"bad"}">${signed(negative.meanAbnormalReturn)}</b><small>${negative.n||0} quan sát</small></article><article class="proofCard"><span>Tin của ${esc(z.symbol||"")} · 5 phiên</span><b>${feature.count5||0} bài</b><small>${feature.positive5||0} tích cực · ${feature.negative5||0} tiêu cực</small></article><article class="proofCard"><span>Nguồn chính thức</span><b>${feature.official5||0} bài</b><small>trong 5 phiên gần nhất</small></article>`}
 
@@ -178,9 +188,44 @@ function renderBacktestDetail(x,horizon){const box=$("#btDetail");if(!box)return
 function renderSummary(B,sym,z){const d=decision(z),de=$("#decision");de.textContent=d.label;de.className=`decision ${d.tone}`;setText("#summary",d.text);setText("#close",price(z.close));for(const n of [1,3,5]){const q=h(z,n);setText(`#t${n}`,validatedPrice(q)?price(q.expectedPrice):"—")}const q5=h(z,5);setText("#range5",validatedPrice(q5)?`${price(q5.q20Price)} – ${price(q5.q80Price)}`:"—");setText("#pup",validatedDirection(q5)?pct(q5.probUp,0):"—");setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",`${sym} · ${price(z.close)} → T+1…T+5`);setText("#modelBadge",`HOSE · ${B.dash.asOf||z.date||"—"}`)}
 function quickButtons(B){const box=$("#quick");box.replaceChildren();for(const s of ["FPT","VCB","HPG","MBB","FRT","PNJ","VNM","SSI"]){if(!B.dash.symbols?.[s])continue;const b=document.createElement("button");b.textContent=s;b.onclick=()=>{$("#symbol").value=s;renderSymbol(s)};box.append(b)}}
 function rerender(B,sym,z){last={B,sym,z};renderSummary(B,sym,z);renderForecastCards(z);renderDrivers(z,5);draw(sym,z,B.dash.charts?.[sym]||[]);renderNews(z);renderRumors(z);renderSource(B,sym);renderBacktest(B,sym,btH);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:z}}))}
+function applyCommunity(B,payload){
+  if(!payload||payload.asOf!==B.dash.asOf||!payload.generatedAt)return false;
+  const timestamp=Date.parse(payload.generatedAt),previous=Date.parse(window.__VMEWS_COMMUNITY_LIVE__?.generatedAt||"");
+  if(!Number.isFinite(timestamp)||(Number.isFinite(previous)&&timestamp<=previous)||timestamp>Date.now()+300000)return false;
+  window.__VMEWS_COMMUNITY_LIVE__=payload;
+  const source=B.market?.sources?.rumorAudit?.source;
+  if(source){source.publishers=payload.publishers||source.publishers;source.publisherCounts=payload.publisherCounts||source.publisherCounts;source.articles=Object.values(payload.publisherCounts||{}).reduce((sum,value)=>sum+(+value||0),0)||source.articles;source.collectedAt=payload.generatedAt}
+  let forecasts=0;
+  for(const[symbol,update]of Object.entries(payload.symbols||{})){
+    const snapshot=B.dash.symbols?.[symbol];
+    if(!snapshot)continue;
+    snapshot.evidence=snapshot.evidence||{};
+    snapshot.evidence.communityWatchlist=Array.isArray(update.watchlist)?update.watchlist:[];
+    if(Array.isArray(update.claims)&&update.claims.length)snapshot.evidence.rumorClaims=update.claims;
+    if(update.rumorContext&&Object.keys(update.rumorContext).length)snapshot.rumorContext=update.rumorContext;
+    if(snapshot.evidence.rumorAudit){snapshot.evidence.rumorAudit.source=source||snapshot.evidence.rumorAudit.source;snapshot.evidence.rumorAudit.qualifiedClaims=snapshot.evidence.rumorClaims?.length||0}
+    for(const[key,adjustment]of Object.entries(update.horizons||{})){
+      const horizon=snapshot.horizons?.[key];
+      if(!horizon||horizon.priceValidated!==true||!Number.isFinite(+adjustment.expectedPrice)||(+adjustment.expectedPrice)%(+adjustment.tickSize||1)!==0)continue;
+      Object.assign(horizon,adjustment);
+      forecasts++;
+    }
+  }
+  if(last?.B===B)rerender(B,last.sym,B.dash.symbols[last.sym]);
+  window.dispatchEvent(new CustomEvent("vmews:community-updated",{detail:{generatedAt:payload.generatedAt,forecastUpdates:forecasts}}));
+  return true;
+}
+async function refreshCommunity(B){
+  try{
+    const revision=Math.floor(Date.now()/90000),response=await fetch(`${ROOT}/community-intelligence-live-v19.json?refresh=${revision}`,{cache:"no-store"});
+    if(!response.ok)return false;
+    return applyCommunity(B,await response.json());
+  }catch{return false}
+}
+window.__VMEWS_APPLY_COMMUNITY_LIVE__=applyCommunity;
 async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);rerender(B,sym,z);setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);history.replaceState(null,"",`?symbol=${encodeURIComponent(sym)}`)}
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
-async function init(){try{const B=await loadBase();assertProduction(B);quickButtons(B);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}}
+async function init(){try{const B=await loadBase();assertProduction(B);quickButtons(B);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}}
 function showError(e){console.error(e);setText("#status",String(e?.message||e));const d=$("#decision");if(d){d.textContent="FORECAST LOCKED";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 document.addEventListener("DOMContentLoaded",init);
 })();

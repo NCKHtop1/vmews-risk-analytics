@@ -1,0 +1,49 @@
+name: Forecast V19 live FireAnt and 24HMoney intelligence
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 2-8 * * 1-5"
+    - cron: "0,30 1,9-15 * * 1-5"
+    - cron: "0,30 1-15 * * 0,6"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forecast-v14-daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh-public-market-intelligence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-v12.txt
+      - name: Install lightweight signal-validation dependencies
+        run: pip install --disable-pip-version-check -q numpy pandas
+      - name: Collect public FireAnt and 24HMoney sources
+        env:
+          V18_FIREANT_TIMEOUT: "4"
+          V19_SOCIAL_TIMEOUT: "8"
+        run: python scripts/forecast_v18_market_intelligence.py --collect-community
+      - name: Validate issuer identity, source independence and HOSE execution grid
+        run: python scripts/forecast_v18_market_intelligence_test.py
+      - name: Publish only bounded point-in-time community signals
+        run: python scripts/forecast_v18_market_intelligence.py --publish-live
+      - name: Persist the current public-source overlay
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/fireant-intelligence-v18.json data/research-news-v10.json data/community-intelligence-live-v19.json
+          if git diff --cached --quiet; then
+            echo "No public market-intelligence change detected."
+            exit 0
+          fi
+          git commit -m "Refresh FireAnt, 24HMoney and bounded live market intelligence [data-only]"
+          git push

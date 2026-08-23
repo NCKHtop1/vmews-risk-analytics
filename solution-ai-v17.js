@@ -82,7 +82,11 @@
     return [
       "Bạn là SoluTION.AI, trợ lý phân tích chứng khoán Việt Nam.",
       "Luôn trả lời bằng tiếng Việt, rõ ràng, chuyên nghiệp, ngắn gọn nhưng đủ cơ sở.",
-      "Chỉ sử dụng dữ liệu được cung cấp; không tự tạo giá, tin tức, giao dịch quỹ hoặc chỉ tiêu tài chính.",
+      "Giá, dự báo, giao dịch quỹ, dòng tiền và chỉ tiêu của mô hình phải lấy đúng từ dữ liệu được cung cấp; không tự tạo giá hoặc thay đổi kết quả dự báo.",
+      "Được chủ động dùng Google Search để tìm thông tin bên ngoài về vĩ mô, doanh nghiệp, ngành, chính sách, tin mới và kiến thức tài chính khi câu hỏi cần thông tin hiện hành.",
+      "Phân biệt rõ dữ liệu mô hình hiện có với thông tin vừa tìm kiếm; ghi nguồn và thời điểm đối với dữ kiện bên ngoài, ưu tiên công bố doanh nghiệp, cơ quan quản lý và báo chí đáng tin cậy.",
+      "Nếu nguồn mới có thời điểm khác snapshot dự báo, giải thích chênh lệch thời gian; không trình bày thông tin chưa kiểm chứng như dữ kiện hoặc tự ý thay đổi dự báo.",
+      "Trả lời đúng trọng tâm câu hỏi; câu hỏi kiến thức hoặc vĩ mô không bắt buộc nhắc lại giá và danh mục quỹ của cổ phiếu đang xem.",
       "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
       "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",
       "Nếu xác suất hướng chưa được kiểm định thì không đưa ra xác suất tăng.",
@@ -93,20 +97,63 @@
     ].join("\n");
   }
 
+  function safeSource(url, title = "") {
+    try {
+      const address = new URL(String(url || ""));
+      if (!/^https?:$/.test(address.protocol)) return null;
+      return { url: address.href, title: String(title || address.hostname).trim().slice(0, 140) };
+    } catch { return null; }
+  }
+
   function providerAnswer(payload) {
-    if (typeof payload.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
-    for (const output of payload.outputs || []) {
-      if (typeof output.text === "string" && output.text.trim()) return output.text.trim();
-      for (const item of output.content || []) {
-        if (typeof item.text === "string" && item.text.trim()) return item.text.trim();
+    const paragraphs = [];
+    const sources = [];
+    const known = new Set();
+    let searched = false;
+    const addSource = (url, title) => {
+      const source = safeSource(url, title);
+      if (source && !known.has(source.url)) {
+        known.add(source.url);
+        sources.push(source);
+      }
+    };
+    for (const step of payload.steps || []) {
+      if (step.type === "google_search_call" || step.type === "google_search_result") searched = true;
+      if (step.type !== "model_output") continue;
+      for (const item of step.content || []) {
+        if (typeof item.text === "string" && item.text.trim()) paragraphs.push(item.text.trim());
+        for (const annotation of item.annotations || []) {
+          if (annotation.type === "url_citation") addSource(annotation.url, annotation.title);
+        }
       }
     }
-    return (payload.candidates || [])
+    for (const candidate of payload.candidates || []) {
+      for (const chunk of candidate.groundingMetadata?.groundingChunks || []) {
+        if (chunk.web?.uri) addSource(chunk.web.uri, chunk.web.title);
+      }
+      if (candidate.groundingMetadata?.webSearchQueries?.length) searched = true;
+    }
+    if (paragraphs.length) return { text: paragraphs.join("\n\n"), sources: sources.slice(0, 6), searched };
+    if (typeof payload.output_text === "string" && payload.output_text.trim()) {
+      return { text: payload.output_text.trim(), sources: sources.slice(0, 6), searched };
+    }
+    for (const output of payload.outputs || []) {
+      if (typeof output.text === "string" && output.text.trim()) {
+        return { text: output.text.trim(), sources: sources.slice(0, 6), searched };
+      }
+      for (const item of output.content || []) {
+        if (typeof item.text === "string" && item.text.trim()) {
+          return { text: item.text.trim(), sources: sources.slice(0, 6), searched };
+        }
+      }
+    }
+    const text = (payload.candidates || [])
       .flatMap(candidate => candidate.content?.parts || [])
       .map(part => part.text || "")
       .filter(Boolean)
       .join("\n")
       .trim();
+    return { text, sources: sources.slice(0, 6), searched: searched || sources.length > 0 };
   }
 
   async function directAnalysis(question, context, secret) {
@@ -121,25 +168,42 @@
       method: "POST", mode: "cors", cache: "no-store",
       headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
     };
-    let response = await fetch(`${GOOGLE_AI_ORIGIN}/interactions`, {
-      ...common,
-      body: JSON.stringify({ model, input, system_instruction: systemInstruction(), store: false }),
+    const interactionBody = search => ({
+      model, input, system_instruction: systemInstruction(), store: false,
+      ...(search ? { tools: [{ type: "google_search" }] } : {}),
     });
+    const compatibleBody = search => ({
+      systemInstruction: { parts: [{ text: systemInstruction() }] },
+      contents: [{ role: "user", parts: [{ text: input }] }],
+      generationConfig: { maxOutputTokens: 1800 },
+      ...(search ? { tools: [{ googleSearch: {} }] } : {}),
+    });
+    let searchLimited = false;
+    let response = await fetch(`${GOOGLE_AI_ORIGIN}/interactions`, {
+      ...common, body: JSON.stringify(interactionBody(true)),
+    });
+    if ([400, 403, 429].includes(response.status)) {
+      searchLimited = true;
+      response = await fetch(`${GOOGLE_AI_ORIGIN}/interactions`, {
+        ...common, body: JSON.stringify(interactionBody(false)),
+      });
+    }
     if ([400, 404, 405].includes(response.status)) {
       response = await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
-        ...common,
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemInstruction() }] },
-          contents: [{ role: "user", parts: [{ text: input }] }],
-          generationConfig: { maxOutputTokens: 1200 },
-        }),
+        ...common, body: JSON.stringify(compatibleBody(!searchLimited)),
       });
+      if (!searchLimited && [400, 403, 429].includes(response.status)) {
+        searchLimited = true;
+        response = await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
+          ...common, body: JSON.stringify(compatibleBody(false)),
+        });
+      }
     }
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(providerMessage(response.status, payload.error?.message));
-    const answer = providerAnswer(payload);
-    if (!answer) throw new Error("Gemini chưa trả về nội dung phân tích.");
-    return answer;
+    const result = providerAnswer(payload);
+    if (!result.text) throw new Error("Gemini chưa trả về nội dung phân tích.");
+    return { ...result, searchLimited };
   }
 
   function flowContext(source) {
@@ -214,6 +278,14 @@
         quality: claim.qualityScore, independentSources: claim.sources,
         publisherNames: (claim.sourceDetails || []).map(source => source.name),
       })),
+      communityMonitoring: (snapshot.evidence?.communityWatchlist || []).slice(0, 6).map(item => ({
+        title: item.title, publisher: item.publisher, publishedAt: item.publishedAt,
+        state: item.verificationState || "PENDING", quality: item.qualityScore,
+      })),
+      marketContext: (window.__VMEWS_COMMUNITY_LIVE__?.marketContext || []).slice(0, 6).map(item => ({
+        title: item.title, publisher: item.publisher, publishedAt: item.publishedAt, theme: item.theme,
+      })),
+      communityUpdatedAt: window.__VMEWS_COMMUNITY_LIVE__?.generatedAt || null,
       validation: {
         priceValidated: modelAudit.priceStatus === "PASS",
         directionValidated: modelAudit.directionStatus === "PASS",
@@ -241,7 +313,7 @@
     if (status) status.textContent = text;
   }
 
-  function message(role, body, tone = "") {
+  function message(role, body, tone = "", sources = []) {
     const item = document.createElement("article");
     item.className = `aiMessage ${role === "user" ? "aiUser" : "aiAssistant"}${tone ? ` ${tone}` : ""}`;
     const label = document.createElement("span");
@@ -253,6 +325,21 @@
       const line = document.createElement("p");
       line.textContent = paragraph;
       item.append(line);
+    }
+    if (role !== "user" && sources.length) {
+      const references = document.createElement("div");
+      references.className = "aiSources";
+      for (const source of sources.slice(0, 6)) {
+        const safe = safeSource(source.url, source.title);
+        if (!safe) continue;
+        const link = document.createElement("a");
+        link.href = safe.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = safe.title;
+        references.append(link);
+      }
+      if (references.children.length) item.append(references);
     }
     $("#solutionAiMessages").append(item);
     item.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -341,10 +428,19 @@
       const secret = sessionSecret();
       const address = secret ? "" : endpoint();
       let answer;
+      let sources = [];
       if (secret) {
         try {
-          answer = await directAnalysis(question, context, secret);
-          setStatus("Gemini · phân tích theo dữ liệu thực");
+          const result = await directAnalysis(question, context, secret);
+          answer = result.text;
+          sources = result.sources;
+          setStatus(result.searched || sources.length
+            ? "Gemini · dữ liệu mô hình + tìm kiếm web"
+            : "Gemini · phân tích dữ liệu và kiến thức");
+          if (result.searchLimited) {
+            const connection = $("#solutionAiConnectionState");
+            if (connection) connection.textContent = "Gemini đang hoạt động; tìm kiếm web chưa khả dụng với hạn mức hoặc quyền của dự án Google.";
+          }
         } catch (error) {
           answer = localAnalysis(question, context);
           const connection = $("#solutionAiConnectionState");
@@ -364,7 +460,7 @@
         setStatus("Phân tích từ dữ liệu hiện có");
       }
       waiting.remove();
-      message("assistant", answer);
+      message("assistant", answer, "", sources);
       state.messages.push({ role: "user", content: question }, { role: "assistant", content: answer });
     } catch (error) {
       waiting.remove();
@@ -501,6 +597,9 @@
     });
     document.addEventListener("keydown", event => { if (event.key === "Escape" && state.opened) close(); });
     window.addEventListener("vmews:symbol-changed", async () => {
+      try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
+    });
+    window.addEventListener("vmews:community-updated", async () => {
       try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
     });
     window.__SOLUTION_AI_BUILD_CONTEXT__ = buildContext;

@@ -11,6 +11,17 @@ async function loadLeaderboard() {
   return window;
 }
 
+async function loadMarketDashboard() {
+  const source = await readFile(new URL("../forecast-final-v12.js", import.meta.url), "utf8");
+  const emitted = [];
+  const document = { addEventListener() {}, querySelector() { return null; } };
+  const window = { dispatchEvent(event) { emitted.push(event); } };
+  class BrowserEvent { constructor(type, options) { this.type = type; this.detail = options?.detail; } }
+  const location = { pathname: "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html", hostname: "cdn.githubraw.com" };
+  vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, console }));
+  return { window, emitted };
+}
+
 function snapshot(symbol, close, target, overrides = {}) {
   return {
     symbol, close, exchange: "HOSE", dataFreshness: "CURRENT", riskStatus: "GREEN", dailyVolatility: .024,
@@ -73,4 +84,45 @@ test("carousel returns at most ten independently validated positive VN30 forecas
   assert.equal(rows.length, 10);
   assert.ok(rows.every((row, index) => index === 0 || rows[index - 1].upside >= row.upside));
   assert.equal(window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true }).length, 30);
+});
+
+test("live community overlay updates only the matching audited snapshot and valid HOSE quotes", async () => {
+  const { window, emitted } = await loadMarketDashboard();
+  const market = {
+    dash: { asOf: "2026-08-21", symbols: { FPT: {
+      evidence: { rumorAudit: { source: {} } }, rumorContext: {},
+      horizons: { "5": { priceValidated: true, expectedPrice: 72_000, expectedReturn: 0 } },
+    } } },
+    market: { sources: { rumorAudit: { source: { articles: 0 } } } },
+  };
+  const update = {
+    asOf: "2026-08-21", generatedAt: new Date().toISOString(),
+    publishers: ["FireAnt", "24HMoney"], publisherCounts: { FireAnt: 6, "24HMoney": 4 },
+    symbols: { FPT: {
+      watchlist: [{ title: "FPT dự kiến ký hợp đồng", verificationState: "PENDING" }],
+      claims: [], rumorContext: {},
+      horizons: { "5": { expectedPrice: 72_300, expectedReturn: .0041, tickSize: 100 } },
+    } },
+  };
+
+  assert.equal(window.__VMEWS_APPLY_COMMUNITY_LIVE__(market, update), true);
+  assert.equal(market.dash.symbols.FPT.horizons["5"].expectedPrice, 72_300);
+  assert.equal(market.dash.symbols.FPT.evidence.communityWatchlist[0].verificationState, "PENDING");
+  assert.equal(market.market.sources.rumorAudit.source.articles, 10);
+  assert.equal(emitted.at(-1).type, "vmews:community-updated");
+  assert.equal(emitted.at(-1).detail.forecastUpdates, 1);
+});
+
+test("a different snapshot or an invalid sub-tick update can never replace the forecast", async () => {
+  const { window } = await loadMarketDashboard();
+  const market = { dash: { asOf: "2026-08-21", symbols: { FPT: { evidence: {}, horizons: { "5": { priceValidated: true, expectedPrice: 72_000 } } } } } };
+  const invalidDate = { asOf: "2026-08-20", generatedAt: new Date().toISOString(), symbols: {} };
+  assert.equal(window.__VMEWS_APPLY_COMMUNITY_LIVE__(market, invalidDate), false);
+
+  const invalidTick = {
+    asOf: "2026-08-21", generatedAt: new Date().toISOString(),
+    symbols: { FPT: { watchlist: [], claims: [], horizons: { "5": { expectedPrice: 72_327, tickSize: 100 } } } },
+  };
+  assert.equal(window.__VMEWS_APPLY_COMMUNITY_LIVE__(market, invalidTick), true);
+  assert.equal(market.dash.symbols.FPT.horizons["5"].expectedPrice, 72_000);
 });

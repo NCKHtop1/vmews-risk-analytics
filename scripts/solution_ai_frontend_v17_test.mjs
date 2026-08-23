@@ -162,13 +162,86 @@ test("direct Gemini receives audited context and guardrails without exposing the
   const payload = JSON.parse(requests[1].options.body);
   assert.equal(payload.model, "gemini-3.5-flash");
   assert.equal(payload.store, false);
+  assert.deepEqual(payload.tools, [{ type: "google_search" }]);
   assert.match(payload.input, /"fundCount":17/);
   assert.match(payload.input, /"probabilityUp":null/);
   assert.match(payload.system_instruction, /không tự tạo giá/);
   assert.match(payload.system_instruction, /xác suất hướng chưa được kiểm định/);
+  assert.match(payload.system_instruction, /Google Search/);
+  assert.match(payload.system_instruction, /vĩ mô/);
   assert.equal(payload.input.includes(secret), false);
   assert.equal(requests[1].url.includes(secret), false);
   assert.match(nodes.get("#solutionAiStatus").textContent, /Gemini/);
+});
+
+test("current Gemini interaction steps expose grounded answers and safe source links", async () => {
+  const requests = [];
+  const { nodes } = await setup(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("/models?")) {
+      return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.7-flash", supportedGenerationMethods: ["generateContent"] }] }) };
+    }
+    return {
+      ok: true, status: 200,
+      json: async () => ({
+        steps: [
+          { type: "google_search_call", arguments: { queries: ["FPT triển vọng vĩ mô 2026"] } },
+          { type: "google_search_result", result: [{}] },
+          { type: "model_output", content: [{
+            type: "text", text: "Lãi suất, nhu cầu chuyển đổi số và tỷ giá đang tác động đến FPT.",
+            annotations: [
+              { type: "url_citation", url: "https://fpt.com/vi/nha-dau-tu", title: "Công bố FPT" },
+              { type: "url_citation", url: "javascript:alert(1)", title: "unsafe" },
+            ],
+          }] },
+        ],
+      }),
+    };
+  });
+  nodes.get("#solutionAiKey").value = "AQ.synthetic-search-grounding-secret-123456789";
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = "Tình hình vĩ mô và triển vọng ngành của FPT ra sao?";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+
+  const answer = nodes.get("#solutionAiMessages").children.at(-1);
+  assert.ok(answer.children.some(child => /chuyển đổi số/.test(child.textContent)));
+  const references = answer.children.find(child => child.className === "aiSources");
+  assert.equal(references.children.length, 1);
+  assert.equal(references.children[0].href, "https://fpt.com/vi/nha-dau-tu");
+  assert.equal(references.children[0].rel, "noopener noreferrer");
+  assert.match(nodes.get("#solutionAiStatus").textContent, /tìm kiếm web/);
+  assert.equal(requests.length, 2);
+});
+
+test("unavailable Google Search retries Gemini without grounding instead of reverting to canned text", async () => {
+  const requests = [];
+  const { nodes } = await setup(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("/models?")) {
+      return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.5-flash", supportedGenerationMethods: ["generateContent"] }] }) };
+    }
+    const payload = JSON.parse(options.body);
+    if (payload.tools) {
+      return { ok: false, status: 403, json: async () => ({ error: { message: "Google Search requires billing" } }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ steps: [{ type: "model_output", content: [{ type: "text", text: "Phân tích Gemini vẫn hoạt động từ dữ liệu mô hình." }] }] }) };
+  });
+  nodes.get("#solutionAiKey").value = "AQ.synthetic-search-retry-secret-123456789";
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = "Đánh giá vĩ mô hiện nay";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.equal(requests.length, 3);
+  assert.ok(JSON.parse(requests[1].options.body).tools);
+  assert.equal(JSON.parse(requests[2].options.body).tools, undefined);
+  assert.match(nodes.get("#solutionAiConnectionState").textContent, /tìm kiếm web chưa khả dụng/);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /phân tích dữ liệu và kiến thức/);
+  const answer = nodes.get("#solutionAiMessages").children.at(-1);
+  assert.ok(answer.children.some(child => /Gemini vẫn hoạt động/.test(child.textContent)));
 });
 
 test("rejected Gemini key is never stored", async () => {

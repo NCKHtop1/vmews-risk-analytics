@@ -1,4 +1,4 @@
-name: Forecast V18 HOSE audit, VN30 leaders and verified market intelligence
+name: Forecast V19 HOSE audit, VN30 leaders and live market intelligence
 
 on:
   workflow_dispatch:
@@ -46,11 +46,12 @@ jobs:
       - name: Refresh point-in-time news for the full current HOSE universe
         run: |
           python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
-      - name: Collect attributed public FireAnt market intelligence for the dated VN30 basket
+      - name: Collect verified public FireAnt and 24HMoney market intelligence
         env:
           V18_FIREANT_TIMEOUT: "4"
+          V19_SOCIAL_TIMEOUT: "8"
         run: |
-          python scripts/forecast_v18_market_intelligence.py --collect-fireant || echo "No verified public FireAnt feed was available; private community content will not be fabricated."
+          python scripts/forecast_v18_market_intelligence.py --collect-community || echo "Public publisher feeds were unavailable; private community content will not be fabricated."
       - name: Archive disclosed fund holdings and NAV context
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
@@ -59,6 +60,8 @@ jobs:
         env:
           V14_EOD_WORKERS: "8"
         run: python scripts/forecast_v13_market_model.py --fast --refresh-symbols ALL --publish
+      - name: Publish bounded live community overlay against the audited snapshot
+        run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Reject issuer mixups, future news, invalid HOSE ticks and failed backtests
         run: |
           python scripts/forecast_v13_market_model_test.py
@@ -71,7 +74,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/research-news-v10.json data/fireant-intelligence-v18.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0

@@ -57,7 +57,7 @@ from forecast_v17_live_intelligence import (
     fund_decision_contexts,
     typed_flow_summary,
 )
-from forecast_v18_market_intelligence import rumor_intelligence, vn30_metadata
+from forecast_v18_market_intelligence import community_events, community_watchlist, rumor_intelligence, vn30_metadata
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1340,9 +1340,11 @@ def write_artifacts(
     live_news, live_news_audit = decision_news_contexts(
         events, freshness["forecastAsOf"], timestamp
     )
+    community_input = community_events(events)
     live_rumors, live_rumor_audit = rumor_intelligence(
-        events, histories, freshness["forecastAsOf"], timestamp
+        community_input, histories, freshness["forecastAsOf"], timestamp
     )
+    live_watchlists = community_watchlist(community_input, histories, timestamp)
     index_metadata = vn30_metadata(freshness["forecastAsOf"])
     index_members = set(index_metadata["symbols"])
     fitted_fund_audit = panel.attrs.get("fundAudit") or {
@@ -1362,6 +1364,7 @@ def write_artifacts(
         evidence["rumors"] = [item for item in evidence["recent"] if "RUMOR" in str(item.get("sourceClass", ""))]
         rumor_context = live_rumors.get(symbol) or {}
         evidence["rumorClaims"] = copy.deepcopy(rumor_context.get("claims") or [])
+        evidence["communityWatchlist"] = copy.deepcopy(live_watchlists.get(symbol) or [])
         evidence["rumorAudit"] = {
             "status": "ACTIVE" if rumor_context.get("claims") else "NO_QUALITY_CLAIMS",
             "qualifiedClaims": int(rumor_context.get("claimCount") or 0),
