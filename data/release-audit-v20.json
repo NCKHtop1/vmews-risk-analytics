@@ -6,17 +6,17 @@
     "symbols": 403,
     "forecasts": 2015,
     "flowRows": 347690,
-    "headlines": 15578,
+    "headlines": 15595,
     "headlineSources": {
       "community-claims": 6,
       "community-watchlist": 163,
       "dashboard-communityWatchlist": 224,
-      "dashboard-decisionNews": 17,
+      "dashboard-decisionNews": 18,
       "dashboard-decisionRecent": 4066,
       "dashboard-recent": 4065,
-      "fireant": 261,
+      "fireant": 262,
       "research-news": 1175,
-      "research-news-v10": 5601
+      "research-news-v10": 5616
     }
   },
   "price": {
@@ -58,22 +58,22 @@
       "directionStatus": "PASS",
       "pointDirectionStatus": "REVIEW",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.006990492508956035,
+      "meanNetRealizedReturn": 0.0069904925089560345,
       "positiveChronologicalFolds": 4
     },
     "2": {
       "executableMAESkill": 0.007768076107430244,
-      "magnitudeMAESkill": 0.038088087628018075,
+      "magnitudeMAESkill": 0.0380880876280183,
       "directionalAccuracy": 0.5373720570227121,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.001806065487752839,
+      "meanNetRealizedReturn": 0.0018060654877528383,
       "positiveChronologicalFolds": 3
     },
     "3": {
       "executableMAESkill": 0.011110471632583052,
-      "magnitudeMAESkill": 0.030400881568917626,
+      "magnitudeMAESkill": 0.030400881568917404,
       "directionalAccuracy": 0.5608122763257781,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
@@ -83,12 +83,12 @@
     },
     "4": {
       "executableMAESkill": 0.008983391814750274,
-      "magnitudeMAESkill": 0.01968794933145812,
+      "magnitudeMAESkill": 0.01968794933145801,
       "directionalAccuracy": 0.5618128512093818,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": -0.0004069879843048608,
+      "meanNetRealizedReturn": -0.0004069879843048605,
       "positiveChronologicalFolds": 1
     },
     "5": {
@@ -98,7 +98,7 @@
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": -0.0009432230642263618,
+      "meanNetRealizedReturn": -0.000943223064226362,
       "positiveChronologicalFolds": 1
     }
   },
