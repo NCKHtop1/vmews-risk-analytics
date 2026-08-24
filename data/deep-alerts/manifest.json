@@ -1,20 +1,15 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-08-24T10:23:11.255227+00:00",
+  "generatedAt": "2026-08-24T23:45:41.286983+00:00",
   "marketModelDate": "2026-08-24",
-  "requested": 13,
+  "requested": 14,
   "reused": 13,
-  "fetched": 0,
-  "cached": 13,
+  "fetched": 1,
+  "cached": 14,
   "symbols": {
     "F88": {
       "rows": 251,
       "modelAsOf": "2026-08-11",
-      "source": "Vnstock"
-    },
-    "BOT": {
-      "rows": 1609,
-      "modelAsOf": "2026-08-07",
       "source": "Vnstock"
     },
     "TTF": {
@@ -22,13 +17,13 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "GTD": {
-      "rows": 483,
+    "BOT": {
+      "rows": 1609,
       "modelAsOf": "2026-08-07",
       "source": "Vnstock"
     },
-    "POM": {
-      "rows": 1537,
+    "GTD": {
+      "rows": 483,
       "modelAsOf": "2026-08-07",
       "source": "Vnstock"
     },
@@ -71,25 +66,36 @@
       "rows": 799,
       "modelAsOf": "2026-08-13",
       "source": "Vnstock"
+    },
+    "POM": {
+      "rows": 1537,
+      "modelAsOf": "2026-08-07",
+      "source": "Vnstock"
+    },
+    "BGE": {
+      "rows": 266,
+      "modelAsOf": "2026-08-21",
+      "source": "Vnstock"
     }
   },
   "errors": [],
   "redSymbols": [
     "F88",
-    "BOT",
-    "TTF"
+    "TTF",
+    "BOT"
   ],
   "yellowSymbols": [
     "GTD",
-    "POM",
     "AAH",
     "BKG",
     "FIR",
+    "BGE",
     "HUT",
     "ACC",
     "VMS",
     "FOC",
-    "HGM"
+    "HGM",
+    "POM"
   ],
   "missingRed": [],
   "missingAlerts": [],
