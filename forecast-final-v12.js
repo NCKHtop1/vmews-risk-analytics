@@ -5,13 +5,14 @@ const pct=(x,d=1)=>finite(x)?`${(+x*100).toFixed(d)}%`:"—";
 const price=x=>finite(x)?(+x).toLocaleString("vi-VN",{maximumFractionDigits:0}):"—";
 const num=(x,d=2)=>finite(x)?(+x).toFixed(d):"—";
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const CDN_PATH=location.pathname.split("/").filter(Boolean),ROOT=location.hostname==="cdn.githubraw.com"&&CDN_PATH.length>=3?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/main/data`:"./data",CDN_REVISION=Math.floor(Date.now()/300000);
+const CDN_PATH=location.pathname.split("/").filter(Boolean),CDN_REF=location.hostname==="cdn.githubraw.com"&&CDN_PATH.length>=4?CDN_PATH[2]:"",ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeURIComponent(CDN_REF)}/data`:"./data",CDN_REVISION=Math.floor(Date.now()/300000);
 let BASE=null,BASE_PROMISE=null,last=null,btH=5,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 
 async function json(name){const r=await fetch(`${ROOT}/${name}?refresh=${CDN_REVISION}`,{cache:"no-store"});if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);return r.json()}
 async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})();return BASE_PROMISE}
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
+window.__VMEWS_ASSET_REF__=CDN_REF||"LOCAL_DEPLOYMENT";
 function assertProduction(B){if(B.gates?.status!=="PASS")throw Error("Bộ kiểm soát dữ liệu chưa đạt; dự báo đang tạm khóa.");if(B.model?.promotion?.status!=="PASS")throw Error("Mô hình chưa vượt điều kiện phát hành; dự báo đang tạm khóa.")}
 function h(z,n){return z?.horizons?.[String(n)]||{}}
 function validatedPrice(q){return q?.priceValidated===true&&finite(q.expectedPrice)&&finite(q.q20Price)&&finite(q.q80Price)}
