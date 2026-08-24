@@ -81,12 +81,8 @@ jobs:
           dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
           market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
 
-          expected = 'VMEWS-MARKET-FORECAST-17.0.0'
-          previous = 'VMEWS-MARKET-FORECAST-16.0.0'
+          expected = 'VMEWS-MARKET-FORECAST-20.1.0'
           versions = [current.get('modelVersion'), dashboard.get('modelVersion'), market.get('version')]
-          if all(version == previous for version in versions):
-              print('V17 code accepted; independently validated V17 data workflow is still running.')
-              raise SystemExit(0)
           assert current.get('modelVersion') == expected, current.get('modelVersion')
           assert dashboard.get('modelVersion') == expected, dashboard.get('modelVersion')
           assert market.get('version') == expected, market.get('version')
@@ -144,7 +140,7 @@ jobs:
               assert positive, 'No validated positive VN30 forecasts'
               print('VN30 positive', len(positive), 'verified claims', market['sources']['rumorAudit']['qualifiedClaims'])
           else:
-              print('V18 interface accepted; independently validated VN30 data workflow is still running.')
+              print('V20.2 interface accepted; independently validated VN30 data workflow is still running.')
 
           print('SoluTION.AI VI CDN PASS', dashboard['asOf'], 'symbols', len(symbols))
           print('FINAL_URL', f"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/{os.environ['GITHUB_SHA']}/forecast-final.html?symbol=FPT")
