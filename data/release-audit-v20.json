@@ -1,0 +1,114 @@
+{
+  "version": "VMEWS-RELEASE-AUDIT-20.0.0",
+  "asOf": "2026-08-24",
+  "status": "PASS",
+  "scope": {
+    "symbols": 403,
+    "forecasts": 2015,
+    "flowRows": 347456,
+    "headlines": 15540,
+    "headlineSources": {
+      "community-claims": 6,
+      "community-watchlist": 163,
+      "dashboard-communityWatchlist": 224,
+      "dashboard-decisionNews": 12,
+      "dashboard-decisionRecent": 4065,
+      "dashboard-recent": 4064,
+      "fireant": 259,
+      "research-news": 1175,
+      "research-news-v10": 5572
+    }
+  },
+  "price": {
+    "marketSources": {
+      "VNDIRECT_PUBLIC_EOD": 403
+    },
+    "staleSymbols": 0,
+    "chartMismatches": 0,
+    "flatPointForecasts": 33
+  },
+  "flow": {
+    "completedSession": "2026-08-24",
+    "requestSuccessCoverage": 1.0,
+    "foreignLatest": "2026-08-21",
+    "proprietaryLatest": "2026-08-21",
+    "foreignCurrentSymbols": 235,
+    "proprietaryCurrentSymbols": 42,
+    "staleDecisionPriorViolations": 0
+  },
+  "news": {
+    "issuerMismatches": 0,
+    "weakExplicitIdentity": 0
+  },
+  "ai": {
+    "publicSecretsFound": 0,
+    "serverProviderChain": [
+      "Gemini",
+      "OpenAI",
+      "Groq",
+      "xAI",
+      "OpenRouter"
+    ]
+  },
+  "horizons": {
+    "1": {
+      "executableMAESkill": 0.005710551980583678,
+      "magnitudeMAESkill": 0.04657365261797353,
+      "directionalAccuracy": 0.512713003279041,
+      "directionStatus": "PASS",
+      "pointDirectionStatus": "REVIEW",
+      "afterCostStatus": "PASS",
+      "meanNetRealizedReturn": 0.007488306461929966,
+      "positiveChronologicalFolds": 4
+    },
+    "2": {
+      "executableMAESkill": 0.009332285246876793,
+      "magnitudeMAESkill": 0.03646606016892129,
+      "directionalAccuracy": 0.540019819778295,
+      "directionStatus": "PASS",
+      "pointDirectionStatus": "PASS",
+      "afterCostStatus": "PASS",
+      "meanNetRealizedReturn": 0.0021712734111852096,
+      "positiveChronologicalFolds": 3
+    },
+    "3": {
+      "executableMAESkill": 0.00863911856909838,
+      "magnitudeMAESkill": 0.02975177417860486,
+      "directionalAccuracy": 0.5589865613930725,
+      "directionStatus": "PASS",
+      "pointDirectionStatus": "PASS",
+      "afterCostStatus": "PASS",
+      "meanNetRealizedReturn": 3.8285607922922726e-05,
+      "positiveChronologicalFolds": 3
+    },
+    "4": {
+      "executableMAESkill": 0.007604823788542436,
+      "magnitudeMAESkill": 0.013663851305812491,
+      "directionalAccuracy": 0.5611359006693181,
+      "directionStatus": "PASS",
+      "pointDirectionStatus": "PASS",
+      "afterCostStatus": "REVIEW",
+      "meanNetRealizedReturn": -0.0006801337641363759,
+      "positiveChronologicalFolds": 1
+    },
+    "5": {
+      "executableMAESkill": 0.016224787374817695,
+      "magnitudeMAESkill": 0.030557320984888503,
+      "directionalAccuracy": 0.5725055219437242,
+      "directionStatus": "REVIEW",
+      "pointDirectionStatus": "PASS",
+      "afterCostStatus": "REVIEW",
+      "meanNetRealizedReturn": -4.086101327737254e-05,
+      "positiveChronologicalFolds": 1
+    }
+  },
+  "blockers": [],
+  "warnings": [],
+  "limitations": [
+    "Central forecasts estimate conditional expected return; expected absolute move and bear/bull scenarios are separate unsigned quantities.",
+    "A direction probability is displayed only for horizons whose sealed Brier-skill gate passes.",
+    "After-cost evidence is a fixed long-only diagnostic, not a portfolio backtest; REVIEW horizons remain watch-only.",
+    "Missing institutional-flow rows remain unavailable; genuine stale observations stay visible but cannot drive the current decision prior.",
+    "AI provider failover improves availability but cannot guarantee an external provider quota or the truth of an unverified source."
+  ]
+}
