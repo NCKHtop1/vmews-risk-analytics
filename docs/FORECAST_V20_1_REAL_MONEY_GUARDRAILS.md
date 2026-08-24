@@ -30,7 +30,7 @@ Nguồn lịch sử đóng băng hiện có ghi nhận 404/404 mã HOSE tại th
 ## Hàng rào phát hành V20.1
 
 - Dừng phát hành nếu giá T0 cũ, độ phủ HOSE giảm hoặc biểu đồ không khớp báo giá.
-- Dừng phát hành nếu độ phủ đối chiếu giá cùng phiên thấp hơn ngưỡng hoặc có mã sai khác quá dung sai.
+- Dừng phát hành nếu đối chiếu không bao phủ ít nhất 98% số mã có mặt đồng thời ở hai nguồn, nếu phần giao nhau thấp hơn 55% toàn bộ HOSE, hoặc nếu có mã sai khác quá dung sai.
 - Dừng phát hành nếu bất kỳ giá trung tâm, vùng giá hoặc kịch bản nào nằm ngoài biên phiên hay sai bước giá.
 - Dừng phát hành nếu tổng đóng góp của mô hình không khớp lợi suất trung tâm.
 - Dừng phát hành nếu dữ liệu trực tiếp chưa kiểm định làm thay đổi giá trung tâm.

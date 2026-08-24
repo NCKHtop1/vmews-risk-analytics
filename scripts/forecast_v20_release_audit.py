@@ -120,6 +120,16 @@ def run_audit() -> dict[str, Any]:
         float(price_cross_source.get("coverage") or 0) >= float(price_cross_source.get("requiredCoverage") or 1),
         "current-price cross-source coverage is below its required minimum",
     )
+    require(
+        float(price_cross_source.get("eligibleCoverage") or 0)
+        >= float(price_cross_source.get("requiredEligibleCoverage") or 1),
+        "current-price comparison missed one or more eligible reference quotes",
+    )
+    require(
+        float(price_cross_source.get("universeCoverage") or 0)
+        >= float(price_cross_source.get("requiredUniverseCoverage") or 1),
+        "current-price independent reference coverage is too narrow across HOSE",
+    )
     require(int(price_cross_source.get("mismatchCount") or 0) == 0, "current-price sources disagree beyond exchange-aware tolerance")
 
     quote_count = 0

@@ -209,6 +209,8 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
         price_audit = self.market["sources"]["priceCrossSource"]
         self.assertEqual(price_audit["status"], "PASS")
+        self.assertGreaterEqual(price_audit["eligibleCoverage"], price_audit["requiredEligibleCoverage"])
+        self.assertGreaterEqual(price_audit["universeCoverage"], price_audit["requiredUniverseCoverage"])
         self.assertGreaterEqual(price_audit["coverage"], price_audit["requiredCoverage"])
         self.assertEqual(price_audit["mismatchCount"], 0)
         fpt = self.dashboard["symbols"]["FPT"]

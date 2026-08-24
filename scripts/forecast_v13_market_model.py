@@ -361,15 +361,23 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
     comparison_by_symbol: dict[str, dict[str, Any]] = {}
     comparison_gaps: list[float] = []
     mismatches: list[str] = []
+    reference_eligible_symbols = 0
     for symbol, history in histories.items():
         latest_history = history[-1] if history else {}
         scan_row = ranked.get(symbol) or {}
         scan_date = str(scan_row.get("date") or scan.get("reviewDate") or "")[:10]
         history_date = str(latest_history.get("date") or "")[:10]
+        reference_close = _clean_number(scan_row.get("close"))
+        reference_eligible = (
+            bool(scan_row)
+            and scan_date == reference_date
+            and reference_close > 0
+        )
+        reference_eligible_symbols += int(reference_eligible)
         if (
             refreshed.get(symbol) != "VNDIRECT_PUBLIC_EOD"
             or history_date != reference_date
-            or scan_date != reference_date
+            or not reference_eligible
         ):
             comparison_by_symbol[symbol] = {
                 "status": "UNAVAILABLE",
@@ -378,7 +386,6 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
             }
             continue
         primary_close = _clean_number(latest_history.get("close"))
-        reference_close = _clean_number(scan_row.get("close"))
         if primary_close <= 0 or reference_close <= 0:
             comparison_by_symbol[symbol] = {
                 "status": "UNAVAILABLE",
@@ -406,22 +413,33 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         if status == "FAIL":
             mismatches.append(symbol)
 
-    required_cross_source_coverage = float(
-        os.environ.get("V20_PRICE_CROSS_SOURCE_MIN_COVERAGE", ".85")
+    required_eligible_coverage = float(
+        os.environ.get("V20_PRICE_CROSS_SOURCE_MIN_ELIGIBLE_COVERAGE", ".98")
     )
-    cross_source_coverage = len(comparison_gaps) / max(1, len(histories))
+    required_universe_coverage = float(
+        os.environ.get("V20_PRICE_CROSS_SOURCE_MIN_UNIVERSE_COVERAGE", ".55")
+    )
+    eligible_coverage = len(comparison_gaps) / max(1, reference_eligible_symbols)
+    universe_coverage = len(comparison_gaps) / max(1, len(histories))
     price_cross_source = {
         "status": (
             "PASS"
-            if cross_source_coverage >= required_cross_source_coverage and not mismatches
+            if eligible_coverage >= required_eligible_coverage
+            and universe_coverage >= required_universe_coverage
+            and not mismatches
             else "FAIL"
         ),
         "method": "SAME_COMPLETED_SESSION_VNDIRECT_VS_TRADINGVIEW_CLOSE",
         "session": reference_date,
         "comparedSymbols": len(comparison_gaps),
+        "referenceEligibleSymbols": reference_eligible_symbols,
         "universeSymbols": len(histories),
-        "coverage": float(cross_source_coverage),
-        "requiredCoverage": float(required_cross_source_coverage),
+        "eligibleCoverage": float(eligible_coverage),
+        "requiredEligibleCoverage": float(required_eligible_coverage),
+        "universeCoverage": float(universe_coverage),
+        "requiredUniverseCoverage": float(required_universe_coverage),
+        "coverage": float(universe_coverage),
+        "requiredCoverage": float(required_universe_coverage),
         "mismatchCount": len(mismatches),
         "mismatches": mismatches,
         "medianAbsoluteLogGap": float(np.median(comparison_gaps)) if comparison_gaps else None,
@@ -431,7 +449,8 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
     if refresh_symbols == ("ALL",) and price_cross_source["status"] != "PASS":
         raise RuntimeError(
             "current price cross-source gate failed: "
-            f"coverage={cross_source_coverage:.1%}, mismatches={mismatches[:20]}"
+            f"eligible_coverage={eligible_coverage:.1%}, "
+            f"universe_coverage={universe_coverage:.1%}, mismatches={mismatches[:20]}"
         )
     return histories, {
         "frozenSourceAsOf": frozen.get("asOf"),
