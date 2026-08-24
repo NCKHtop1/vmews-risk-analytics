@@ -1,22 +1,22 @@
 {
-  "version": "VMEWS-RELEASE-AUDIT-20.0.0",
+  "version": "VMEWS-RELEASE-AUDIT-20.1.0",
   "asOf": "2026-08-24",
   "status": "PASS",
   "scope": {
     "symbols": 403,
     "forecasts": 2015,
     "flowRows": 347690,
-    "headlines": 15595,
+    "headlines": 15706,
     "headlineSources": {
-      "community-claims": 6,
-      "community-watchlist": 163,
-      "dashboard-communityWatchlist": 224,
-      "dashboard-decisionNews": 18,
-      "dashboard-decisionRecent": 4066,
-      "dashboard-recent": 4065,
-      "fireant": 262,
-      "research-news": 1175,
-      "research-news-v10": 5616
+      "community-claims": 7,
+      "community-watchlist": 165,
+      "dashboard-communityWatchlist": 226,
+      "dashboard-decisionNews": 81,
+      "dashboard-decisionRecent": 4068,
+      "dashboard-recent": 4066,
+      "fireant": 270,
+      "research-news": 1148,
+      "research-news-v10": 5675
     }
   },
   "price": {
@@ -25,7 +25,25 @@
     },
     "staleSymbols": 0,
     "chartMismatches": 0,
-    "flatPointForecasts": 37
+    "flatPointForecasts": 38,
+    "crossSource": {
+      "status": "PASS",
+      "method": "SAME_COMPLETED_SESSION_VNDIRECT_VS_TRADINGVIEW_CLOSE",
+      "session": "2026-08-24",
+      "comparedSymbols": 232,
+      "referenceEligibleSymbols": 232,
+      "universeSymbols": 403,
+      "eligibleCoverage": 1.0,
+      "requiredEligibleCoverage": 0.98,
+      "universeCoverage": 0.575682382133995,
+      "requiredUniverseCoverage": 0.55,
+      "coverage": 0.575682382133995,
+      "requiredCoverage": 0.55,
+      "mismatchCount": 0,
+      "mismatches": [],
+      "medianAbsoluteLogGap": 0.0,
+      "p95AbsoluteLogGap": 0.0
+    }
   },
   "flow": {
     "completedSession": "2026-08-24",
@@ -52,53 +70,53 @@
   },
   "horizons": {
     "1": {
-      "executableMAESkill": 0.003936841892017706,
-      "magnitudeMAESkill": 0.04635448193949365,
-      "directionalAccuracy": 0.5121249703142728,
+      "executableMAESkill": 0.003950095537282428,
+      "magnitudeMAESkill": 0.04627472313150571,
+      "directionalAccuracy": 0.5121507163777408,
       "directionStatus": "PASS",
       "pointDirectionStatus": "REVIEW",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0069904925089560345,
+      "meanNetRealizedReturn": 0.00699425650464315,
       "positiveChronologicalFolds": 4
     },
     "2": {
-      "executableMAESkill": 0.007768076107430244,
-      "magnitudeMAESkill": 0.0380880876280183,
-      "directionalAccuracy": 0.5373720570227121,
+      "executableMAESkill": 0.007827887644342058,
+      "magnitudeMAESkill": 0.03801768417603468,
+      "directionalAccuracy": 0.5373810183901673,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0018060654877528383,
+      "meanNetRealizedReturn": 0.0018179407906186106,
       "positiveChronologicalFolds": 3
     },
     "3": {
-      "executableMAESkill": 0.011110471632583052,
-      "magnitudeMAESkill": 0.030400881568917404,
-      "directionalAccuracy": 0.5608122763257781,
+      "executableMAESkill": 0.011062277152234512,
+      "magnitudeMAESkill": 0.030292785504751896,
+      "directionalAccuracy": 0.5608294930875576,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0010859749004121558,
+      "meanNetRealizedReturn": 0.0010760034352302447,
       "positiveChronologicalFolds": 3
     },
     "4": {
-      "executableMAESkill": 0.008983391814750274,
-      "magnitudeMAESkill": 0.01968794933145801,
-      "directionalAccuracy": 0.5618128512093818,
+      "executableMAESkill": 0.008957116527804065,
+      "magnitudeMAESkill": 0.019656582806620415,
+      "directionalAccuracy": 0.5619212821577777,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": -0.0004069879843048605,
+      "meanNetRealizedReturn": -0.0004424728012121321,
       "positiveChronologicalFolds": 1
     },
     "5": {
-      "executableMAESkill": 0.015717906811867688,
-      "magnitudeMAESkill": 0.021706537281719673,
-      "directionalAccuracy": 0.5722070844686649,
+      "executableMAESkill": 0.01575861084975927,
+      "magnitudeMAESkill": 0.021642023367577257,
+      "directionalAccuracy": 0.5723569107723069,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": -0.000943223064226362,
+      "meanNetRealizedReturn": -0.0009536387642710022,
       "positiveChronologicalFolds": 1
     }
   },
@@ -108,7 +126,8 @@
     "Central forecasts estimate conditional expected return; expected absolute move and bear/bull scenarios are separate unsigned quantities.",
     "A direction probability is displayed only for horizons whose sealed Brier-skill gate passes.",
     "After-cost evidence is a fixed long-only diagnostic, not a portfolio backtest; REVIEW horizons remain watch-only.",
-    "Missing institutional-flow rows remain unavailable; genuine stale observations stay visible but cannot drive the current decision prior.",
+    "Decision-time fund, flow, accounting, event and community inputs are context scenarios only; they do not alter the sealed central forecast until independently backtested.",
+    "Missing institutional-flow rows remain unavailable; genuine stale observations stay visible but cannot drive the current context scenario.",
     "AI provider failover improves availability but cannot guarantee an external provider quota or the truth of an unverified source."
   ]
 }

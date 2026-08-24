@@ -1,34 +1,71 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-08-24T11:05:21.641237+00:00",
+  "generatedAt": "2026-08-24T15:35:45.405674+00:00",
   "universeSymbols": 403,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1175,
-      "kept": 1175,
-      "rejected": 0,
-      "rejectedBySymbol": {}
+      "checked": 1170,
+      "kept": 1148,
+      "rejected": 22,
+      "rejectedBySymbol": {
+        "FPT": [
+          "FPT Retail (FRT): Lợi nhuận bán niên sau soát xét tăng trưởng 123% so với cùng kỳ - Tin nhanh chứng khoán",
+          "FPT Online sắp trả cổ tức tiền tỷ lệ 100% - Vietstock"
+        ],
+        "VPB": [
+          "PET: Nghị quyết HĐQT về việc bảo lãnh cho POTS được cấp hạn mức tín dụng tại VPB - Vietstock"
+        ],
+        "BCM": [
+          "Becamex Group dự kiến chia cổ tức năm 2026 tỷ lệ 10% - CafeF",
+          "Becamex muốn giảm tỷ lệ vốn Nhà nước từ 95% xuống 65% - Mekong ASEAN",
+          "Từ thất bại tăng vốn đến áp lực giảm sở hữu Nhà nước tại Becamex - Nhadautu.vn",
+          "Becamex Group đề xuất giảm tỉ lệ sở hữu nhà nước về mức 65% - Laodong.vn",
+          "Becamex tạm hoãn thương vụ bán cổ phiếu lịch sử - VnExpress"
+        ],
+        "NLG": [
+          "CTCP ĐẦU TƯ NAM LONG - VietstockFinance",
+          "Nam Long trả cổ tức tiền mặt - Mekong ASEAN",
+          "Chủ tịch Nam Long lý giải 'giá cổ phiếu 5 năm chưa đột phá' - VnExpress"
+        ],
+        "DIG": [
+          "DIC Corp chốt ngày phát hành gần 48 triệu cổ phiếu trả cổ tức, gia đình Chủ tịch nhận thêm 2,5 triệu đơn vị - cafeland.vn",
+          "DIC Corp chốt quyền phân bổ gần 48 triệu cổ phiếu trả cổ tức - CafeF",
+          "DIC Corp trả cổ tức bằng cổ phiếu tỷ lệ 6% - CafeF",
+          "Gia đình Chủ tịch DIC Corp bị giải chấp thêm 8,1 triệu cổ phiếu - thuonghieucongluan.com.vn"
+        ],
+        "SSI": [
+          "BASKET OF COMPONENT SECURITIES AND CASH TO EXCHANGE FOR AN ETF CREATION UNIT - HSX"
+        ],
+        "HCM": [
+          "Thị giá lập đỉnh, sếp Chứng khoán HSC đăng ký bán hơn 1/3 lượng cổ phiếu đang nắm giữ - MoneyF",
+          "HSC chốt ngày phát hành 22 triệu cổ phiếu ESOP - CafeF",
+          "Chứng khoán HSC phát hành 22 triệu cổ phiếu ESOP giá 10.000 đồng/cp - Mekong ASEAN",
+          "Chứng khoán HSC chốt ngày chào bán 270 triệu cổ phiếu - Mekong ASEAN",
+          "HSC chốt ngày chào bán cổ phiếu và trả cổ tức tiền mặt cho cổ đông - CafeF",
+          "HSC muốn huy động gần 5.000 tỷ đồng qua phát hành cổ phiếu - Mekong ASEAN"
+        ]
+      }
     },
     "research-news-v10.json": {
-      "checked": 5616,
-      "kept": 5616,
+      "checked": 5675,
+      "kept": 5675,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 262,
-      "kept": 262,
+      "checked": 270,
+      "kept": 270,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "community-intelligence-live-v19.json": {
-      "checked": 169,
-      "kept": 169,
+      "checked": 171,
+      "kept": 171,
       "rejected": 0,
       "rejectedBySymbol": {}
     }
   },
-  "rejected": 0,
+  "rejected": 22,
   "policy": "Leading/explicit competing issuer identity is rejected across all current artifacts; legitimate multi-issuer headlines remain eligible for each named ticker."
 }
