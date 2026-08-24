@@ -56,8 +56,10 @@ class FundDecisionTimeTest(unittest.TestCase):
         self.assertEqual(audit["postCloseSymbols"], 2)
         self.assertEqual(audit["historicalBackfillRows"], 0)
         self.assertTrue(contexts["FPT"]["collectedAfterForecast"])
-        self.assertTrue(contexts["FPT"]["availableForForecast"])
-        self.assertTrue(contexts["FPT"]["usedByForecast"])
+        self.assertFalse(contexts["FPT"]["availableForForecast"])
+        self.assertTrue(contexts["FPT"]["availableForScenario"])
+        self.assertTrue(contexts["FPT"]["scenarioEligible"])
+        self.assertFalse(contexts["FPT"]["usedByForecast"])
         self.assertFalse(contexts["FPT"]["fitEligible"])
         self.assertEqual(contexts["FPT"]["fundCount"], 2)
         self.assertGreater(contexts["FPT"]["signalScore"], contexts["ACB"]["signalScore"])
@@ -143,7 +145,8 @@ class AfterCloseNewsTest(unittest.TestCase):
         contexts, audit = decision_news_contexts(events, "2026-08-21", "2026-08-23T10:00:00+07:00")
         self.assertEqual(audit["articles"], 1)
         self.assertEqual(audit["nextSession"], "2026-08-24")
-        self.assertTrue(contexts["ACB"]["usedByForecast"])
+        self.assertTrue(contexts["ACB"]["scenarioEligible"])
+        self.assertFalse(contexts["ACB"]["usedByForecast"])
         self.assertGreater(contexts["ACB"]["signalScore"], 0)
         prior = decision_prior(None, None, None, .025, 5, news=contexts["ACB"])
         self.assertGreater(prior["components"]["EVENT"], 0)
@@ -159,7 +162,7 @@ class AfterCloseNewsTest(unittest.TestCase):
 
 
 class DecisionPriorBoundsTest(unittest.TestCase):
-    def test_valid_fund_signal_really_changes_the_price_return(self) -> None:
+    def test_valid_fund_signal_creates_a_context_scenario_only(self) -> None:
         prior = decision_prior(
             {"inferenceEligible": True, "signalScore": .72, "confidence": .75},
             {},
@@ -170,6 +173,8 @@ class DecisionPriorBoundsTest(unittest.TestCase):
         self.assertEqual(prior["status"], "ACTIVE")
         self.assertGreater(prior["components"]["FUND"], 0)
         self.assertGreater(prior["totalReturn"], 0)
+        self.assertFalse(prior["centralForecastEligible"])
+        self.assertIn("NOT_APPLIED_TO_CENTRAL_FORECAST", prior["policy"])
 
     def test_prior_cannot_exceed_the_issuer_volatility_cap(self) -> None:
         prior = decision_prior(
@@ -182,6 +187,7 @@ class DecisionPriorBoundsTest(unittest.TestCase):
         self.assertLessEqual(abs(prior["totalReturn"]), prior["maximumAbsoluteReturn"] + 1e-12)
         self.assertLessEqual(prior["maximumAbsoluteReturn"], .012)
         self.assertFalse(prior["independentlyBacktested"])
+        self.assertFalse(prior["centralForecastEligible"])
 
 
 if __name__ == "__main__":

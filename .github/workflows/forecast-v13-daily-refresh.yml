@@ -1,12 +1,31 @@
-name: Forecast V19 HOSE audit, VN30 leaders and live market intelligence
+name: Forecast V20.1 immutable-price audit and market intelligence
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - "forecast-final.html"
+      - "forecast-final-v12.js"
+      - "solution-ai-v17.js"
+      - "scripts/forecast_v13_market_model.py"
+      - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v17_live_intelligence.py"
+      - "scripts/forecast_v17_live_intelligence_test.py"
+      - "scripts/forecast_v18_market_intelligence.py"
+      - "scripts/forecast_v18_market_intelligence_test.py"
+      - "scripts/forecast_v18_frontend_runtime_test.mjs"
+      - "scripts/forecast_v20_release_audit.py"
+      - "scripts/solution_ai_frontend_v17_test.mjs"
+      - "api/solution-ai.js"
   push:
     branches:
       - main
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - "forecast-final.html"
+      - "forecast-final-v12.js"
+      - "solution-ai-v17.js"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v14_signal_audit.py"
@@ -87,6 +106,7 @@ jobs:
           node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/forecast_v20_release_audit.py
       - name: Persist the validated market snapshot
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -207,16 +207,23 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(universe["staleSymbols"], 0)
         self.assertEqual(universe["currentSymbols"] + len(universe["insufficientHistorySymbols"]), universe["listedHOSE"])
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
+        price_audit = self.market["sources"]["priceCrossSource"]
+        self.assertEqual(price_audit["status"], "PASS")
+        self.assertGreaterEqual(price_audit["eligibleCoverage"], price_audit["requiredEligibleCoverage"])
+        self.assertGreaterEqual(price_audit["universeCoverage"], price_audit["requiredUniverseCoverage"])
+        self.assertGreaterEqual(price_audit["coverage"], price_audit["requiredCoverage"])
+        self.assertEqual(price_audit["mismatchCount"], 0)
         fpt = self.dashboard["symbols"]["FPT"]
         self.assertGreaterEqual(fpt["date"], self.dashboard["asOf"])
         self.assertGreater(fpt["close"], 0)
         self.assertIn(fpt["marketDataSource"], {"VNDIRECT_PUBLIC_EOD", "MARKET_SCAN_EOD", "PREVIOUS_VALIDATED_EOD"})
+        self.assertEqual(fpt["priceSourceAgreement"]["status"], "PASS")
         chart_fpt = self.dashboard["charts"]["FPT"][-1]
         self.assertEqual(fpt["date"], chart_fpt["date"])
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_all_horizons_are_independently_validated(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-20.0.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-20.1.0")
         self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
         self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
         for horizon in map(str, range(1, 6)):
@@ -329,18 +336,19 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertGreater(horizon["eventImpactAudit"]["observations"], 100)
             self.assertEqual(horizon["eventImpactAudit"]["futureOutcomeFieldsAsFeatures"], 0)
 
-    def test_fund_holdings_affect_decision_without_historical_backfill(self) -> None:
+    def test_fund_holdings_are_scenario_context_without_moving_central_price(self) -> None:
         features = set(self.market["model"]["featureNames"])
         self.assertIn("fund_holder_count", features)
         self.assertIn("fund_weight_sum", features)
         audit = self.market["sources"]["fundAudit"]
-        self.assertEqual(audit["status"], "ACTIVE_DECISION_PRIOR")
+        self.assertEqual(audit["status"], "CONTEXT_SCENARIO_ONLY")
         self.assertGreaterEqual(audit["snapshotCount"], 1)
         self.assertLess(audit["snapshotCount"], 4)
         self.assertFalse(audit["modelEligible"])
         self.assertTrue(audit["inferenceEligible"])
         self.assertTrue(audit["trainingFeaturesMasked"])
-        self.assertGreaterEqual(audit["usedByForecastSymbols"], 50)
+        self.assertGreaterEqual(audit["scenarioEligibleSymbols"], 50)
+        self.assertEqual(audit["usedByForecastSymbols"], 0)
         self.assertEqual(audit["postForecastSnapshotsUsedAsFeatures"], 0)
         self.assertGreaterEqual(audit["latestCollection"]["holdingRows"], 300)
         fpt_snapshot = self.dashboard["symbols"]["FPT"]
@@ -350,8 +358,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
             fpt["collectedAfterForecast"],
             str(fpt["asOf"]) > str(fpt_snapshot["date"]),
         )
-        self.assertTrue(fpt["availableForForecast"])
-        self.assertTrue(fpt["usedByForecast"])
+        self.assertFalse(fpt["availableForForecast"])
+        self.assertTrue(fpt["availableForScenario"])
+        self.assertTrue(fpt["scenarioEligible"])
+        self.assertFalse(fpt["usedByForecast"])
         self.assertEqual(fpt["fundCount"], 17)
         self.assertAlmostEqual(fpt["averageReportedWeight"], .042094117647058824)
         self.assertLessEqual(fpt["largestReportedWeight"], .10)
@@ -360,7 +370,13 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertNotEqual(horizon["liveEvidence"]["components"]["FUND"], 0)
             self.assertAlmostEqual(
                 sum(horizon["liveEvidence"]["components"].values()),
-                horizon["liveAdjustmentReturn"],
+                horizon["scenarioAdjustmentReturn"],
+            )
+            self.assertEqual(horizon["liveAdjustmentReturn"], 0.0)
+            self.assertFalse(horizon["liveAdjustmentAppliedToCentralForecast"])
+            self.assertAlmostEqual(
+                sum(horizon["expertContributions"].values()),
+                horizon["expectedReturn"],
             )
         self.assertEqual(audit["decisionAudit"]["historicalBackfillRows"], 0)
 
@@ -372,8 +388,21 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(acb["flow"]["proprietary"]["sourceUnit"], "billion_VND")
         fpt = self.dashboard["symbols"]["FPT"]
         self.assertTrue(fpt["fundamentalContext"]["available"])
-        self.assertTrue(fpt["fundamentalContext"]["usedByForecast"])
-        self.assertNotEqual(fpt["horizons"]["5"]["expertContributions"]["FUNDAMENTAL"], 0)
+        self.assertTrue(fpt["fundamentalContext"]["scenarioEligible"])
+        self.assertFalse(fpt["fundamentalContext"]["usedByForecast"])
+        self.assertNotEqual(fpt["horizons"]["5"]["liveEvidence"]["components"]["FUNDAMENTAL"], 0)
+        self.assertFalse(fpt["horizons"]["5"]["liveAdjustmentAppliedToCentralForecast"])
+
+    def test_unvalidated_live_context_is_never_used_by_the_central_forecast(self) -> None:
+        governance = self.market["model"]["governance"]
+        self.assertFalse(governance["livePriorIndependentlyBacktested"])
+        self.assertFalse(governance["centralForecastUsesUnvalidatedPrior"])
+        self.assertTrue(governance["fundHoldingsContextOnlyUntilHistoryGate"])
+        self.assertIn("NOT_APPLIED_TO_CENTRAL_FORECAST", governance["livePriorPolicy"])
+        for snapshot in self.dashboard["symbols"].values():
+            for horizon in snapshot["horizons"].values():
+                self.assertFalse(horizon["liveAdjustmentAppliedToCentralForecast"])
+                self.assertEqual(horizon["liveAdjustmentReturn"], 0.0)
 
     def test_after_close_news_influences_next_session_without_future_leakage(self) -> None:
         audit = self.market["sources"]["decisionNewsAudit"]
