@@ -5,6 +5,11 @@ on:
     paths:
       - 'forecast-final.html'
       - 'forecast-final-v12.js'
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-market-v13.json'
+      - 'data/release-audit-v20.json'
+      - 'data/phase-gates-v12.json'
       - 'scripts/forecast_v18_frontend_runtime_test.mjs'
       - '.github/workflows/forecast-v12-cdn-smoke.yml'
   push:
