@@ -77,7 +77,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=20.0", self.html)
+        self.assertIn("release=20.1", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
@@ -107,6 +107,14 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("chartRange", app)
         self.assertIn("chartOverlay", app)
         self.assertIn("quadraticCurveTo", app)
+
+    def test_query_symbol_updates_every_visible_and_ai_context_selector(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        input_sync = app.index('$("#symbol").value=sym')
+        spark_sync = app.index('setText("#sparkSymbol",sym)')
+        render = app.index("rerender(B,sym,z)", input_sync)
+        self.assertLess(input_sync, render)
+        self.assertLess(spark_sync, render)
 
     def test_leaderboard_uses_only_validated_positive_vn30_forecasts(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
