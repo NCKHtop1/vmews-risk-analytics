@@ -18,6 +18,11 @@ on:
       - "scripts/forecast_v18_market_intelligence.py"
       - "scripts/forecast_v18_market_intelligence_test.py"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
+      - "scripts/refresh_institutional_flow_v20.py"
+      - "scripts/refresh_institutional_flow_v20_test.py"
+      - "scripts/forecast_v20_release_audit.py"
+      - "scripts/sanitize_intelligence_v20.py"
+      - "scripts/sanitize_intelligence_v20_test.py"
       - "scripts/solution_ai_v17_test.mjs"
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
@@ -43,7 +48,12 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-v12.txt
       - name: Install direct-forecast dependencies
-        run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn
+        run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl
+      - name: Refresh genuine completed-session foreign and proprietary transactions
+        env:
+          V20_FLOW_WORKERS: "12"
+        run: |
+          python scripts/refresh_institutional_flow_v20.py || echo "Institutional provider unavailable; audited history remains intact and freshness stays explicit."
       - name: Refresh point-in-time news for the full current HOSE universe
         run: |
           python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
@@ -53,6 +63,8 @@ jobs:
           V19_SOCIAL_TIMEOUT: "8"
         run: |
           python scripts/forecast_v18_market_intelligence.py --collect-community || echo "Public publisher feeds were unavailable; private community content will not be fabricated."
+      - name: Remove cross-issuer contamination from every current intelligence artifact
+        run: python scripts/sanitize_intelligence_v20.py
       - name: Archive disclosed fund holdings and NAV context
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
@@ -70,12 +82,15 @@ jobs:
           python scripts/forecast_v16_external_data_test.py
           python scripts/forecast_v17_live_intelligence_test.py
           python scripts/forecast_v18_market_intelligence_test.py
+          python scripts/refresh_institutional_flow_v20_test.py
+          python scripts/sanitize_intelligence_v20_test.py
           node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
+          python scripts/forecast_v20_release_audit.py
       - name: Persist the validated market snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0

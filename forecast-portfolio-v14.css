@@ -1097,6 +1097,23 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .solutionAiConnect.connected > .aiConnectActions > :not(#solutionAiDisconnect) { display: none; }
 .solutionAiActions button.connected { border-color: #66864e; color: #a8eb65; }
 
+.scenarioBoard { margin-top: 16px; padding: 15px 15px 12px; border: 1px solid rgba(136, 174, 114, .28); background: linear-gradient(135deg, rgba(168, 235, 101, .065), rgba(8, 11, 7, .4)); border-radius: 5px; }
+.scenarioHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.scenarioHeading > span { color: #b4c2a7; font: 9px var(--mono); letter-spacing: .06em; }
+.scenarioHeading > strong { color: #caff9c; font: 24px var(--mono); letter-spacing: -.045em; }
+.scenarioOutcomes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 13px; }
+.scenarioOutcomes article { padding: 9px 8px; border: 1px solid rgba(150, 160, 137, .15); background: rgba(8, 11, 7, .5); }
+.scenarioOutcomes span, .scenarioOutcomes b { display: block; }
+.scenarioOutcomes span { color: #a8afa0; font-size: 9px; }
+.scenarioOutcomes b { margin-top: 5px; color: #e8eee2; font: 15px var(--mono); }
+.scenarioBear b { color: #e59e93; }
+.scenarioBull b { color: #caff9c; }
+.scenarioCaveat { margin: 11px 0 0; color: #a9afa3; font-size: 10px; line-height: 1.55; }
+.aiBackendField { margin-top: 13px; }
+.aiBackendActions { align-items: center; }
+.aiBackendActions > small { flex: 1; min-width: 135px; color: #a1a799; font-size: 9px; }
+.solutionAiConnect.connected > .aiBackendActions { display: none; }
+
 @media (max-width: 780px) {
   .leadersHeader h2 { max-width: 100%; font-size: clamp(37px, 8.8vw, 60px); }
   .leadersHeader p { font-size: 12px; }
@@ -1106,6 +1123,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 @media (max-width: 430px) {
   .leadersHeader h2 { font-size: clamp(34px, 10.3vw, 43px); }
   .commandIndex { font-size: 8px; letter-spacing: .105em; }
+  .scenarioHeading { align-items: flex-start; flex-direction: column; }
+  .scenarioOutcomes { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rumorQuietOrbit > i { animation: none; }

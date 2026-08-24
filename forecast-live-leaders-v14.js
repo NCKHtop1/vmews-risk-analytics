@@ -163,10 +163,12 @@
   function issuerNewsMatches(row, item) {
     const title = String(item?.title || "");
     const lower = title.toLocaleLowerCase("vi-VN");
+    const primary = /^\s*(?:(?:HOSE|HSX|HNX|UPCOM)\s*[:/\-]\s*)?\$?([A-Z][A-Z0-9]{2,4})\s*[:\-–|]/i.exec(title);
+    if (primary && primary[1].toUpperCase() !== row.symbol && state.base?.dash?.symbols?.[primary[1].toUpperCase()]) return false;
     if (row.symbol === "GTA" && /\bgta\s*(?:\d+|[ivx]{1,4})\b|\bgameplay\b|\brockstar\b|\btake[\s-]?two\b|\bplaystation\b|\bxbox\b/i.test(title)) return false;
     if (row.symbol === "VSI" && /smart\s+indexing|\bvps\b.{0,55}\bvsi\b|\bvsi\b.{0,55}\bvps\b/i.test(title)) return false;
     if (row.symbol === "ASP" && /\basp\s+shipping\b/i.test(title) && !/dầu\s+khí\s+an\s+pha/i.test(title)) return false;
-    if (row.symbol === "FPT" && /\bfpt\s+(retail|long\s+châu|online)\b|chứng\s+khoán\s+fpt/i.test(title)) return false;
+    if (row.symbol === "FPT" && /\bfpt\s+(retail|long\s+châu|online)\b|chứng\s+khoán\s+fpt|bán\s+lẻ\s+kỹ\s+thuật\s+số\s+fpt/i.test(title)) return false;
     const exact = new RegExp(`(^|[^A-Za-z0-9])${row.symbol}([^A-Za-z0-9]|$)`, "i").test(title);
     return exact || (issuerAliases[row.symbol] || []).some(alias => lower.includes(alias));
   }

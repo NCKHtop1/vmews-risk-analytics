@@ -46,6 +46,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         required = {
             "symbol", "go", "status", "modelBadge", "close", "t1", "t3", "t5",
             "pup", "risk", "range5", "drivers", "chart", "forecastCards", "methodProof",
+            "scenarioBoard", "move5", "bear5", "scenarioCenter5", "bull5", "scenarioCaveat",
             "eventImpact", "eventImpactMeta", "news", "rumors", "sourceAudit",
             "tabs", "metrics", "btRows", "btDetail", "ablation",
             "heroCanvas", "heroSpark", "sparkSymbol", "symbolSuggestions",
@@ -57,6 +58,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
             "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
             "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiKey", "solutionAiDisconnect",
+            "solutionAiBackend", "solutionAiSaveBackend",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -75,8 +77,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=19.3", self.html)
-        self.assertNotIn("release=19.2", self.html)
+        self.assertIn("release=20.0", self.html)
+        self.assertNotIn("release=19.3", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
@@ -149,6 +151,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("expectedAbsReturn", app)
         self.assertIn("bearScenarioPrice", app)
         self.assertIn("bullScenarioPrice", app)
+        self.assertIn("magnitudeCalibrationRatio", app)
+        self.assertIn("Kịch bản hai chiều", app)
         self.assertIn("Dự báo biên độ", app)
         self.assertIn("Danh mục quỹ", app)
         self.assertIn("fundContext", polish)

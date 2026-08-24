@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from forecast_v13_market_model import (  # noqa: E402
     INTERCEPT_RETENTION,
+    cost_aware_long_audit,
     directional_magnitude_blend,
     intercept_modes,
     select_directional_magnitude_blend,
@@ -82,6 +83,19 @@ class VietnamPriceGridTest(unittest.TestCase):
         )
         np.testing.assert_allclose(blended, [.0048, -.0068, .002])
 
+    def test_cost_aware_screen_is_long_only_and_subtracts_declared_costs(self) -> None:
+        audit = cost_aware_long_audit(
+            np.asarray([.010, -.020, .002, .009]),
+            np.asarray([.006, -.030, .002, .008]),
+            np.asarray([.015, .025, .010, .012]),
+            np.asarray(["2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20"]),
+            round_trip_cost_bps=35,
+        )
+        self.assertEqual(audit["observations"], 2)
+        self.assertAlmostEqual(audit["meanNetRealizedReturn"], .006)
+        self.assertFalse(audit["selectionFitOnHoldout"])
+        self.assertFalse(audit["portfolioSimulation"])
+
 
 class PointInTimeSignalTest(unittest.TestCase):
     def test_after_close_and_weekend_news_shift_to_next_session(self) -> None:
@@ -99,7 +113,10 @@ class PointInTimeSignalTest(unittest.TestCase):
         self.assertTrue(security_match("FPT", "Dragon Capital tăng tỷ trọng PNJ và FPT", universe))
 
     def test_unrelated_ticker_collisions_and_missing_issuer_are_rejected(self) -> None:
-        universe = {"GTA", "ASP", "VSI", "VCB", "PNJ", "FPT"}
+        universe = {
+            "GTA", "ASP", "VSI", "VCB", "PNJ", "FPT", "FRT", "FTS",
+            "DGW", "KBC", "HPG", "BID", "BIC", "VPB", "PET",
+        }
         self.assertFalse(security_match("GTA", 'GTA 6 vừa lộ gameplay, Take-Two đã "bay màu" 2 tỷ USD', universe, require_explicit=True))
         self.assertFalse(security_match("ASP", "Western Digital Corp (WDC) cổ phiếu giảm 6,69%", universe, require_explicit=True))
         self.assertFalse(security_match("VSI", "Khi đầu tư chứng khoán đặt trong kế hoạch tích lũy dài hạn", universe, require_explicit=True))
@@ -107,6 +124,13 @@ class PointInTimeSignalTest(unittest.TestCase):
         self.assertTrue(security_match("VCB", "Vietcombank công bố kế hoạch chia cổ tức", universe, require_explicit=True))
         self.assertTrue(security_match("PNJ", "PNJ: Sức mua trang sức tăng trưởng", universe, require_explicit=True))
         self.assertTrue(security_match("ASP", "Doanh nghiệp công bố kết quả kinh doanh", universe, require_explicit=False))
+        self.assertFalse(security_match("FPT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan", universe, require_explicit=True))
+        self.assertFalse(security_match("FPT", "HOSE: FTS - Chứng khoán FPT công bố báo cáo", universe, require_explicit=True))
+        self.assertTrue(security_match("FRT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan", universe, require_explicit=True))
+        self.assertTrue(security_match("FPT", "Dragon Capital tăng tỷ trọng PNJ và FPT", universe, require_explicit=True))
+        self.assertTrue(security_match("HPG", "Digiworld (DGW) đầu tư vào KBC và HPG", universe, require_explicit=True))
+        self.assertTrue(security_match("BID", "BID: hợp đồng bảo hiểm thẻ BIDV (BIC)", universe, require_explicit=True))
+        self.assertFalse(security_match("VPB", "PET: được cấp hạn mức tín dụng tại VPB", universe, require_explicit=True))
 
     def test_event_reaction_prior_uses_only_already_matured_outcomes(self) -> None:
         events = pd.DataFrame(
@@ -159,13 +183,13 @@ class PublishedMarketForecastTest(unittest.TestCase):
         fpt = self.dashboard["symbols"]["FPT"]
         self.assertGreaterEqual(fpt["date"], self.dashboard["asOf"])
         self.assertGreater(fpt["close"], 0)
-        self.assertIn(fpt["marketDataSource"], {"VNDIRECT_PUBLIC_EOD", "MARKET_SCAN_EOD"})
+        self.assertIn(fpt["marketDataSource"], {"VNDIRECT_PUBLIC_EOD", "MARKET_SCAN_EOD", "PREVIOUS_VALIDATED_EOD"})
         chart_fpt = self.dashboard["charts"]["FPT"][-1]
         self.assertEqual(fpt["date"], chart_fpt["date"])
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_all_horizons_are_independently_validated(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-17.2.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-20.0.0")
         self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
         self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
         for horizon in map(str, range(1, 6)):
@@ -317,7 +341,8 @@ class PublishedMarketForecastTest(unittest.TestCase):
         acb = self.dashboard["symbols"]["ACB"]
         self.assertTrue(acb["flow"]["foreign"]["available"])
         self.assertTrue(acb["flow"]["proprietary"]["available"])
-        self.assertLess(acb["flow"]["proprietary"]["net1"], -1_000_000_000)
+        self.assertGreater(abs(acb["flow"]["proprietary"]["net1"]), 1_000_000_000)
+        self.assertEqual(acb["flow"]["proprietary"]["sourceUnit"], "billion_VND")
         fpt = self.dashboard["symbols"]["FPT"]
         self.assertTrue(fpt["fundamentalContext"]["available"])
         self.assertTrue(fpt["fundamentalContext"]["usedByForecast"])
@@ -361,11 +386,36 @@ class PublishedMarketForecastTest(unittest.TestCase):
                     int(horizon) in validated,
                 )
 
+    def test_sign_ranking_and_cost_evidence_never_masquerade_as_a_probability(self) -> None:
+        model = self.market["model"]["horizons"]["5"]
+        audit = model["sealedAudit"]
+        fpt = self.dashboard["symbols"]["FPT"]["horizons"]["5"]
+        self.assertGreater(audit["directionalAccuracy"], .52)
+        self.assertEqual(model["pointDirectionStatus"], "PASS")
+        self.assertTrue(fpt["pointDirectionValidated"])
+        self.assertEqual(fpt["directionValidated"], model["directionStatus"] == "PASS")
+        self.assertAlmostEqual(fpt["historicalDirectionAccuracy"], audit["directionalAccuracy"])
+        self.assertTrue(fpt["crossSectionalRankValidated"])
+        self.assertTrue(0 < fpt["crossSectionalRankPercentile"] <= 1)
+        self.assertEqual(fpt["conditionalValueValidated"], audit["costAwareLongAudit"]["status"] == "PASS")
+        self.assertFalse(audit["costAwareLongAudit"]["selectionFitOnHoldout"])
+
+    def test_fpt_institutional_flow_uses_the_latest_completed_genuine_session(self) -> None:
+        flow = self.dashboard["symbols"]["FPT"]["flow"]
+        self.assertGreaterEqual(flow["foreign"]["latestDate"], "2026-08-21")
+        self.assertGreaterEqual(flow["proprietary"]["latestDate"], "2026-08-21")
+        self.assertFalse(flow["foreign"]["stale"])
+        self.assertFalse(flow["proprietary"]["stale"])
+        self.assertGreater(abs(flow["foreign"]["net1"]), 1_000_000)
+        self.assertGreater(abs(flow["proprietary"]["net1"]), 1_000_000)
+
     def test_fpt_feed_excludes_frt_and_fts_announcements(self) -> None:
         for item in self.dashboard["symbols"]["FPT"]["evidence"]["recent"]:
             self.assertNotIn("FPT Retail (FRT)", item["title"])
             self.assertNotIn("Chứng khoán FPT (FTS)", item["title"])
             self.assertLessEqual(item["availableDate"], self.dashboard["symbols"]["FPT"]["date"])
+        for item in self.dashboard["symbols"]["FPT"]["evidence"].get("decisionRecent", []):
+            self.assertFalse(item["title"].startswith(("FRT:", "FTS:")), item["title"])
 
 
 if __name__ == "__main__":

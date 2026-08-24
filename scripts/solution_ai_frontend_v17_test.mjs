@@ -42,6 +42,7 @@ function dashboard() {
       "5": {
         priceValidated: true, expectedPrice: 73000, expectedReturn: .0138,
         q20Price: 70000, q80Price: 75000, directionValidated: false, probUp: .81,
+        expectedAbsReturn: .021, bearScenarioPrice: 70500, bullScenarioPrice: 73600, magnitudeValidated: true,
         expertContributions: { FUND: .002, EVENT: .001 },
         liveEvidence: { components: { FUND: .002, EVENT: .001 } }, targetDate: "2026-08-28",
       },
@@ -53,7 +54,10 @@ function dashboard() {
     },
     flow: { foreign: { available: true, latestDate: "2026-08-14", ageSessions: 5, net1: 10, net5: 40 } },
     fundamentalContext: { available: true, profitQoQ: .2, revenueQoQ: .1, ratios: { pe: { value: 14 } } },
-    evidence: { decisionRecent: [{ title: "FPT công bố tăng trưởng", publisher: "Nguồn chính thức", label: "POS", link: "https://fpt.com/vi/nha-dau-tu" }] },
+    evidence: { decisionRecent: [
+      { title: "FPT công bố tăng trưởng", publisher: "Nguồn chính thức", label: "POS", link: "https://fpt.com/vi/nha-dau-tu" },
+      { title: "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan", publisher: "Sai mã", label: "POS", link: "https://example.org/frt" },
+    ] },
   };
   return {
     dash: { symbols: { FPT: fpt }, marketForecast: { decisionAt: "2026-08-23T10:00:00+07:00" } },
@@ -64,12 +68,13 @@ function dashboard() {
   };
 }
 
-async function setup(fetch = async () => { throw new Error("Unexpected network request"); }) {
+async function setup(fetch = async () => { throw new Error("Unexpected network request"); }, options = {}) {
   const source = await readFile(new URL("../solution-ai-v17.js", import.meta.url), "utf8");
   const nodes = new Map();
   const listeners = new Map();
   const session = new Map();
   const persistent = [];
+  const stored = new Map(Object.entries(options.storage || {}));
   const document = {
     readyState: "loading",
     querySelector(selector) {
@@ -97,8 +102,8 @@ async function setup(fetch = async () => { throw new Error("Unexpected network r
   const context = vm.createContext({
     window, document, location: { search: "?symbol=FPT", hostname: "cdn.githubraw.com", origin: "https://cdn.githubraw.com" },
     localStorage: {
-      getItem: () => null,
-      setItem: (key, value) => persistent.push([key, value]),
+      getItem: key => stored.get(key) || null,
+      setItem: (key, value) => { stored.set(key, value); persistent.push([key, value]); },
     },
     sessionStorage: {
       getItem: key => session.get(key) || null,
@@ -127,8 +132,12 @@ test("browser context includes observed holdings/news but withholds unvalidated 
   assert.equal(evidence.fund.fundCount, 17);
   assert.equal(evidence.fund.holders[0].code, "ALPHA");
   assert.equal(evidence.news[0].title, "FPT công bố tăng trưởng");
+  assert.equal(evidence.news.length, 1);
   assert.equal(evidence.news[0].url, "https://fpt.com/vi/nha-dau-tu");
   assert.equal(evidence.horizons["T+5"].probabilityUp, null);
+  assert.equal(evidence.horizons["T+5"].expectedAbsReturn, .021);
+  assert.equal(evidence.horizons["T+5"].bearScenarioPrice, 70500);
+  assert.equal(evidence.horizons["T+5"].bullScenarioPrice, 73600);
   assert.equal(evidence.horizons["T+5"].liveEvidence.FUND, .002);
   assert.equal(evidence.validation.fundPriorIndependentlyBacktested, false);
   assert.equal(evidence.topMovers.length, 1);
@@ -399,6 +408,35 @@ test("Gemini automatically continues with an available backup model", async () =
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
   assert.match(textOf(answer), /dự phòng đã tiếp tục/);
   assert.match(nodes.get("#solutionAiStatus").textContent, /Gemini/);
+});
+
+test("Gemini quota exhaustion is not retried repeatedly and transfers safely to the configured backend", async () => {
+  const requests = [];
+  const secret = "AQ.synthetic-quota-circuit-breaker-secret-123456789";
+  const address = "https://ai.example.org/api/solution-ai";
+  const { nodes } = await setup(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("/models?")) return { ok: true, status: 200, json: async () => ({ models: [
+      { name: "models/gemini-3.7-flash" }, { name: "models/gemini-3.5-flash" },
+    ] }) };
+    if (url.endsWith("/interactions")) return { ok: false, status: 429, json: async () => ({ error: { message: "quota exhausted" } }) };
+    assert.equal(url, address);
+    return { ok: true, status: 200, json: async () => ({ provider: "Groq", answer: "FPT có forecast T+5 73.000; nhà cung cấp dự phòng tiếp tục phân tích." }) };
+  }, { storage: { vmews_solution_ai_endpoint: address } });
+  nodes.get("#solutionAiKey").value = secret;
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = "Danh mục quỹ FPT ảnh hưởng thế nào?";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await settle();
+
+  const direct = requests.filter(request => request.url.endsWith("/interactions"));
+  const fallback = requests.filter(request => request.url === address);
+  assert.equal(direct.length, 1);
+  assert.equal(fallback.length, 1);
+  assert.equal(JSON.stringify(fallback[0].options).includes(secret), false);
+  assert.match(textOf(nodes.get("#solutionAiMessages").children.at(-1)), /nhà cung cấp dự phòng/);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /Groq/);
 });
 
 test("questions requiring outside information request a real Gemini connection instead of canned analysis", async () => {

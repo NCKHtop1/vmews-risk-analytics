@@ -99,18 +99,25 @@ class FlowAndFinancialContextTest(unittest.TestCase):
         flow = typed_flow_summary([], "foreign", "2026-08-21")
         self.assertFalse(flow["available"])
         self.assertNotIn("net1", flow)
+        placeholder = typed_flow_summary([
+            {"date": "2026-08-21", "foreignBuyValue": 0, "foreignSellValue": 0, "foreignNetValue": 0}
+        ], "foreign", "2026-08-21")
+        self.assertFalse(placeholder["available"])
+        self.assertNotIn("net1", placeholder)
 
-    def test_stale_flow_retains_real_value_but_has_lower_confidence(self) -> None:
+    def test_stale_flow_retains_real_value_but_cannot_drive_a_decision(self) -> None:
         fresh = {
-            "foreign": {"available": True, "net5": 100, "gross5": 200, "ageSessions": 0},
+            "foreign": {"available": True, "stale": False, "net5": 100, "gross5": 200, "ageSessions": 0},
         }
         stale = {
-            "foreign": {"available": True, "net5": 100, "gross5": 200, "ageSessions": 7},
+            "foreign": {"available": True, "stale": True, "net5": 100, "gross5": 200, "ageSessions": 7},
         }
         score1, confidence1 = flow_decision_signal(fresh)
         score2, confidence2 = flow_decision_signal(stale)
-        self.assertAlmostEqual(score1, score2)
-        self.assertLess(confidence2, confidence1)
+        self.assertNotEqual(score1, 0)
+        self.assertGreater(confidence1, 0)
+        self.assertEqual(score2, 0)
+        self.assertEqual(confidence2, 0)
 
     def test_financial_snapshot_must_exist_before_decision(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

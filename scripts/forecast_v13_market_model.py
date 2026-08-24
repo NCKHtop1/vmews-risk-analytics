@@ -63,7 +63,7 @@ from forecast_v18_market_intelligence import community_events, community_watchli
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-17.2.0"
+VERSION = "VMEWS-MARKET-FORECAST-20.0.0"
 HORIZONS = (1, 2, 3, 4, 5)
 # Recent walk-forward windows show that the raw market-wide intercept drifts
 # faster than the cross-sectional stock-selection signal at T+2.  Retaining a
@@ -530,6 +530,61 @@ def _metrics(actual: np.ndarray, forecast: np.ndarray, dates: np.ndarray, probab
         result["brier"] = brier
         result["brierSkill"] = 1 - brier / max(baseline_brier, 1e-12)
     return result
+
+
+def cost_aware_long_audit(
+    actual: np.ndarray,
+    executable_forecast: np.ndarray,
+    expected_magnitude: np.ndarray,
+    dates: np.ndarray,
+    *,
+    round_trip_cost_bps: float = 35.0,
+) -> dict[str, Any]:
+    """Audit a fixed long-only hurdle without fitting thresholds to holdout.
+
+    This is a conditional diagnostic, not a portfolio backtest: overlapping
+    horizons, capacity, execution timing and user-specific fees remain outside
+    its scope and are disclosed explicitly.
+    """
+    actual = np.asarray(actual, dtype=float)
+    executable = np.asarray(executable_forecast, dtype=float)
+    magnitude = np.asarray(expected_magnitude, dtype=float)
+    session = np.asarray(dates)
+    cost = max(0.0, float(round_trip_cost_bps)) / 10_000.0
+    selected = (executable > cost) & (magnitude > cost)
+    observations = int(selected.sum())
+    if observations == 0:
+        return {
+            "status": "REVIEW", "rule": "FIXED_LONG_ONLY_EXECUTABLE_POINT_ABOVE_COST",
+            "roundTripCostBps": float(round_trip_cost_bps), "observations": 0,
+            "coverage": 0.0, "meanNetRealizedReturn": None, "positiveNetShare": None,
+            "positiveChronologicalFolds": 0, "chronologicalFolds": 0,
+            "selectionFitOnHoldout": False, "portfolioSimulation": False,
+        }
+    realized_net = actual[selected] - cost
+    blocks = []
+    for block in np.array_split(np.sort(np.unique(session)), 4):
+        mask = selected & np.isin(session, block)
+        if mask.any():
+            blocks.append(float(np.mean(actual[mask] - cost)))
+    positive_blocks = sum(value > 0 for value in blocks)
+    credible = observations >= 250 and float(realized_net.mean()) > 0 and positive_blocks >= 3
+    return {
+        "status": "PASS" if credible else "REVIEW",
+        "rule": "FIXED_LONG_ONLY_EXECUTABLE_POINT_ABOVE_COST",
+        "roundTripCostBps": float(round_trip_cost_bps),
+        "observations": observations,
+        "coverage": float(observations / max(1, len(actual))),
+        "meanGrossRealizedReturn": float(np.mean(actual[selected])),
+        "meanNetRealizedReturn": float(realized_net.mean()),
+        "medianNetRealizedReturn": float(np.median(realized_net)),
+        "positiveNetShare": float(np.mean(realized_net > 0)),
+        "positiveChronologicalFolds": positive_blocks,
+        "chronologicalFolds": len(blocks),
+        "selectionFitOnHoldout": False,
+        "portfolioSimulation": False,
+        "limitations": "Overlapping horizons; no portfolio sizing, capacity, slippage distribution or user-specific fees.",
+    }
 
 
 def cross_sectional_center(values: np.ndarray, dates: pd.Series) -> np.ndarray:
@@ -1040,6 +1095,19 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
             "directionalAccuracy": fold_metrics["directionalAccuracy"],
         })
     hold_metrics["chronologicalFolds"] = temporal_folds
+    hold_metrics["magnitudeCalibrationRatio"] = float(
+        hold_metrics["medianExpectedAbsMove"] / max(hold_metrics["realizedMedianAbs"], 1e-12)
+    )
+    hold_metrics["pointToRealizedMoveRatio"] = float(
+        hold_metrics["executableMedianAbs"] / max(hold_metrics["realizedMedianAbs"], 1e-12)
+    )
+    hold_metrics["costAwareLongAudit"] = cost_aware_long_audit(
+        hold_y,
+        executable_return,
+        hold_magnitude,
+        holdout["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+        round_trip_cost_bps=float(os.environ.get("V20_ROUND_TRIP_COST_BPS", "35")),
+    )
 
     training = {
         "rows": len(train),
@@ -1745,6 +1813,7 @@ def write_artifacts(
             [prior["totalReturn"] for prior in live_priors], dtype=float
         )
         prediction = core_prediction + live_adjustment
+        cross_sectional_percentiles = pd.Series(prediction).rank(method="average", pct=True).to_numpy(dtype=float)
         active_experts = [*FACTOR_GROUPS, "FUNDAMENTAL", "RUMOR"]
         live_evidence_audit = {
             "status": "ACTIVE",
@@ -1767,6 +1836,13 @@ def write_artifacts(
         dates = result.rows["date"].dt.strftime("%Y-%m-%d").to_numpy()
         actual = result.rows[f"target{horizon}"].to_numpy(dtype=float)
         audit["spread"] = _spread(actual, result.holdout_prediction, dates)
+        cross_sectional_audit = {
+            "status": "PASS" if audit.get("rankIC", -1) >= .05 and audit.get("positiveICDayShare", 0) >= .65 else "REVIEW",
+            "dailyRankIC": audit.get("rankIC"),
+            "positiveRankDayShare": audit.get("positiveICDayShare"),
+            "topBottomReturnSpread": audit.get("spread"),
+            "semantics": "CROSS_SECTIONAL_RELATIVE_SELECTION; NOT_GUARANTEED_RETURN_OR_SHORTABLE_PORTFOLIO",
+        }
         audit["scenarioMAEImprove"] = audit["maeSkill"]
         audit["scenarioMAE"] = audit["mae"]
         audit["forecastDispersionRatio"] = audit["dispersionRatio"]
@@ -1798,6 +1874,15 @@ def write_artifacts(
             and walk_forward.get("meanRankIC", -1) >= .05
         )
         direction_pass = audit.get("brierSkill", -1) >= .005
+        direction_folds = [
+            fold for fold in audit.get("chronologicalFolds", [])
+            if fold.get("directionalAccuracy") is not None
+        ]
+        point_direction_pass = (
+            float(audit.get("directionalAccuracy") or 0) >= .52
+            and len(direction_folds) >= 3
+            and sum(float(fold["directionalAccuracy"]) > .50 for fold in direction_folds) >= 3
+        )
         if not price_pass:
             raise RuntimeError(f"T+{horizon}: independent held-out promotion gate failed: {audit}")
         if direction_pass:
@@ -1828,6 +1913,8 @@ def write_artifacts(
             "activeExperts": active_experts,
             "priceStatus": "PASS",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
+            "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
+            "pointDirectionSemantics": "HISTORICAL_SIGN_HIT_RATE_IS_NOT_AN_ISSUER_PROBABILITY",
             "status": "PASS",
             "sealedAudit": audit,
             "walkForwardAudit": walk_forward,
@@ -1842,6 +1929,8 @@ def write_artifacts(
                 else "CONDITIONAL_MEDIAN"
             ),
             "directionalMagnitudeBlend": result.calibration["directionalMagnitudeBlend"],
+            "conditionalValueAudit": audit["costAwareLongAudit"],
+            "crossSectionalAudit": cross_sectional_audit,
             "forecastLoss": os.environ.get("V13_MODEL_LOSS", "absolute_error"),
             "eventImpactAudit": event_study,
             "factorAblation": ablation,
@@ -1852,6 +1941,7 @@ def write_artifacts(
             "walkForwardAudit": walk_forward,
             "priceStatus": "PASS",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
+            "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
             "embargoAudit": embargo_audit,
             "distributionAudit": model_horizons[key]["distributionAudit"],
             "magnitudeGate": magnitude_gate,
@@ -1926,6 +2016,16 @@ def write_artifacts(
                 "liveEvidence": live_priors[position],
                 "priceValidated": True,
                 "directionValidated": direction_pass,
+                "pointDirectionValidated": point_direction_pass,
+                "historicalDirectionAccuracy": float(audit.get("directionalAccuracy") or 0),
+                "crossSectionalRankPercentile": float(cross_sectional_percentiles[position]),
+                "crossSectionalRankUniverse": len(symbols),
+                "crossSectionalRankValidated": cross_sectional_audit["status"] == "PASS",
+                "directionEvidence": (
+                    "CALIBRATED_PROBABILITY" if direction_pass else
+                    "VALIDATED_HISTORICAL_SIGN_ONLY" if point_direction_pass else
+                    "INSUFFICIENT_DIRECTION_EVIDENCE"
+                ),
                 "validationStatus": "PASS",
                 "tickSize": tick_size(point, venue),
                 "exchange": venue,
@@ -1933,6 +2033,16 @@ def write_artifacts(
                 "horizonVolatility": float(volatility[position]),
                 "empiricalMedianAbsMove": float(audit["realizedMedianAbs"]),
                 "magnitudeValidated": bool(audit.get("magnitudeMAESkill", -1) > 0),
+                "magnitudeCalibrationRatio": float(audit["magnitudeCalibrationRatio"]),
+                "roundTripCostBps": float(audit["costAwareLongAudit"]["roundTripCostBps"]),
+                "costHurdleCleared": exact_return > audit["costAwareLongAudit"]["roundTripCostBps"] / 10_000,
+                "conditionalValueValidated": audit["costAwareLongAudit"]["status"] == "PASS",
+                "decisionDiscipline": (
+                    "CANDIDATE_REQUIRES_INDEPENDENT_RISK_REVIEW"
+                    if audit["costAwareLongAudit"]["status"] == "PASS"
+                    and exact_return > audit["costAwareLongAudit"]["roundTripCostBps"] / 10_000
+                    else "WATCH_ONLY_NO_VALIDATED_COST_ADJUSTED_EDGE"
+                ),
                 "forecastDispersionRatio": float(audit["dispersionRatio"]),
                 "conditionalMedianReturn": float(conditional_median[position]),
                 "directionalBlendWeight": result.directional_blend_weight,
@@ -2054,6 +2164,8 @@ def write_artifacts(
             "livePriorIndependentlyBacktested": False,
             "quarterlyAccountingFeatures": "OBSERVED_CURRENT_DECISION_PRIOR_ONLY; NO_HISTORICAL_BACKFILL",
             "scenarioSemantics": "HISTORICALLY_CALIBRATED_DIRECTIONAL_SCENARIO_NOT_GUARANTEED_CLOSE",
+            "absoluteMoveSemantics": "PREDICTED_UNSIGNED_MAGNITUDE; DOES_NOT_ASSERT_UP_OR_DOWN_DIRECTION",
+            "costAwarePolicy": "FIXED_35_BPS_DEFAULT_LONG_ONLY_DIAGNOSTIC; NOT_PORTFOLIO_BACKTEST",
         },
         "universe": {
             "currentSymbols": len(symbols),
@@ -2079,6 +2191,10 @@ def write_artifacts(
             "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
             "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),
             "signalAudit": signal_audit,
+            "flowFreshness": {
+                **(_json(DATA / "flow-audit-v12.json").get("summary") if (DATA / "flow-audit-v12.json").exists() else {}),
+                "currentMarketSession": freshness["marketScanAsOf"],
+            },
             "fundAudit": {
                 **fitted_fund_audit,
                 "status": "ACTIVE_DECISION_PRIOR" if live_funds else fitted_fund_audit.get("status", "UNAVAILABLE"),
@@ -2097,7 +2213,7 @@ def write_artifacts(
         },
         "model": model,
         "backtest": {
-            "version": "VMEWS-MARKET-BACKTEST-17.0.0",
+            "version": "VMEWS-MARKET-BACKTEST-20.0.0",
             "generatedAt": timestamp,
             "design": "Sealed chronological holdout plus three disjoint expanding walk-forward folds retrained from scratch; T+h maturity purge; pre-test calibration; point-in-time event, flow and fund-snapshot governance; executable HOSE-price and absolute-move audits.",
             "horizons": back_horizons,

@@ -45,6 +45,14 @@ function base(symbols, roster) {
   };
 }
 
+test("rendered FPT headlines reject an FRT/FTS primary ticker without removing legitimate multi-issuer coverage", async () => {
+  const { window } = await loadMarketDashboard();
+  assert.equal(window.__VMEWS_ISSUER_HEADLINE_MATCHES__("FPT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan"), false);
+  assert.equal(window.__VMEWS_ISSUER_HEADLINE_MATCHES__("FPT", "HOSE: FTS - Chứng khoán FPT công bố báo cáo"), false);
+  assert.equal(window.__VMEWS_ISSUER_HEADLINE_MATCHES__("FPT", "Dragon Capital tăng tỷ trọng PNJ và FPT"), true);
+  assert.equal(window.__VMEWS_ISSUER_HEADLINE_MATCHES__("FRT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan"), true);
+});
+
 test("VN30 carousel rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [

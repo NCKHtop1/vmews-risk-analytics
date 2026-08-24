@@ -175,7 +175,9 @@ def typed_flow_summary(
         for row in rows
         if isinstance(row, dict)
         and str(row.get("date") or "")[:10] <= market_as_of
-        and any(key in row and row.get(key) is not None for key in (net_key, buy_key, sell_key))
+        # An empty provider envelope or an all-zero placeholder is missing
+        # evidence, not a real institutional observation.
+        and any(abs(_number(row.get(key))) > 1e-12 for key in (net_key, buy_key, sell_key))
     ]
     observations.sort(key=lambda row: str(row.get("date") or ""))
     if not observations:
@@ -446,7 +448,13 @@ def flow_decision_signal(flow: dict[str, Any]) -> tuple[float, float]:
     scores: list[tuple[float, float]] = []
     for kind, weight in (("foreign", .67), ("proprietary", .33)):
         details = flow.get(kind) or {}
-        if not details.get("available"):
+        # Keep a stale genuine observation visible for provenance, but never
+        # turn it into a current decision prior after the three-session mask.
+        if (
+            not details.get("available")
+            or details.get("stale")
+            or int(_number(details.get("ageSessions"), 99.0)) > 3
+        ):
             continue
         gross = max(abs(_number(details.get("gross5"))), abs(_number(details.get("net5"))), 1.0)
         imbalance = math.tanh(_number(details.get("net5")) / gross * 2.4)
@@ -460,7 +468,11 @@ def flow_decision_signal(flow: dict[str, Any]) -> tuple[float, float]:
     score = sum(score for score, _ in scores) / sum(
         .67 if kind == "foreign" else .33
         for kind in ("foreign", "proprietary")
-        if (flow.get(kind) or {}).get("available")
+        if (
+            (flow.get(kind) or {}).get("available")
+            and not (flow.get(kind) or {}).get("stale")
+            and int(_number((flow.get(kind) or {}).get("ageSessions"), 99.0)) <= 3
+        )
     )
     return float(np.clip(score, -1.0, 1.0)), float(np.clip(total_weight, 0.0, 1.0))
 

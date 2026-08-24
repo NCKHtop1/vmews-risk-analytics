@@ -40,7 +40,7 @@
     },
     required: ["direct_answer", "model_read", "external_evidence", "integrated_outlook", "risks", "watch_next", "limitations"],
   };
-  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [] };
+  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [], quotaUntil: 0 };
 
   function sessionSecret() {
     if (state.directKey) return state.directKey;
@@ -66,6 +66,22 @@
     const configured = localStorage.getItem("vmews_solution_ai_endpoint")?.trim();
     if (configured || declared) return configured || declared;
     return location.hostname.endsWith("githubraw.com") ? "" : "/api/solution-ai";
+  }
+
+  async function configureBackend() {
+    const field = $("#solutionAiBackend");
+    const label = $("#solutionAiConnectionState");
+    const value = String(field?.value || "").trim();
+    try {
+      const address = new URL(value);
+      if (address.protocol !== "https:" || address.username || address.password || address.search || address.hash) throw new Error("invalid");
+      localStorage.setItem("vmews_solution_ai_endpoint", address.href);
+      if (label) label.textContent = "Đã lưu địa chỉ máy chủ; khóa AI phải được cấu hình phía máy chủ.";
+      return await checkConnection();
+    } catch {
+      if (label) label.textContent = "Địa chỉ máy chủ phải là HTTPS hợp lệ, không chứa khóa hoặc tham số bí mật.";
+      return false;
+    }
   }
 
   function providerMessage(status, details = "") {
@@ -136,6 +152,8 @@
       "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
       "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",
       "Nếu xác suất hướng chưa được kiểm định thì không đưa ra xác suất tăng.",
+      "Biên độ ± là độ lớn không dấu; kịch bản tăng/giảm không phải giá kỳ vọng và không được biến tỷ lệ đúng chiều lịch sử thành xác suất tăng của một mã.",
+      "Sàng lọc sau phí là kiểm định có điều kiện với giả định chi phí, không phải lợi nhuận chắc chắn, backtest danh mục hay khuyến nghị giao dịch.",
       "Điểm rủi ro, điểm chất lượng nguồn hoặc trạng thái GREEN/YELLOW/RED không phải xác suất và không được diễn giải như xác suất.",
       "Danh sách nổi bật chỉ gồm thành viên VN30 hiện hành có dự báo T+5 tăng.",
       "Tin cộng đồng chưa có công bố xác nhận chỉ là thông tin đang đối chiếu.",
@@ -476,7 +494,7 @@
       response = await fetch(`${GOOGLE_AI_ORIGIN}/interactions`, {
         ...common, body: JSON.stringify(interactionBody(tools)),
       });
-      if (response.ok || ![400, 403, 429].includes(response.status)) break;
+      if (response.ok || response.status === 429 || ![400, 403].includes(response.status)) break;
       if (index === 0) {
         if (response.status === 400) attempts.push(["google_search"]);
         attempts.push(["url_context"], []);
@@ -495,7 +513,12 @@
       }
     }
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(providerMessage(response.status, payload.error?.message));
+    if (!response.ok) {
+      const failure = new Error(providerMessage(response.status, payload.error?.message));
+      failure.status = response.status;
+      failure.sources = openSources;
+      throw failure;
+    }
     const result = providerAnswer(payload);
     if (!result.text) throw new Error("Gemini chưa trả về nội dung phân tích.");
     const structured = parseStructuredAnswer(result.text);
@@ -515,6 +538,11 @@
   }
 
   async function resilientDirectAnalysis(question, context, secret, intent) {
+    if (state.quotaUntil > Date.now()) {
+      const limited = new Error("Gemini vừa hết hạn mức; đang ưu tiên máy chủ AI dự phòng và dữ liệu đã kiểm chứng.");
+      limited.status = 429;
+      throw limited;
+    }
     if (!state.modelCandidates.length) state.model = await validateGemini(secret);
     const candidates = [...new Set([state.model, ...state.modelCandidates].filter(Boolean))].slice(0, 3);
     let lastError;
@@ -525,6 +553,10 @@
         return { ...result, modelFallbacks: index };
       } catch (error) {
         lastError = error;
+        if (error?.status === 429) {
+          state.quotaUntil = Date.now() + 60_000;
+          break;
+        }
         if (index + 1 < candidates.length) setStatus("Đang tiếp tục với kết nối dự phòng…");
       }
     }
@@ -561,6 +593,14 @@
     };
   }
 
+  function belongsToIssuer(symbol, item, universe) {
+    const title = String(item?.title || "");
+    const primary = /^\s*(?:(?:HOSE|HSX|HNX|UPCOM)\s*[:/\-]\s*)?\$?([A-Z][A-Z0-9]{2,4})\s*[:\-–|]/i.exec(title);
+    if (primary && primary[1].toUpperCase() !== symbol && universe?.[primary[1].toUpperCase()]) return false;
+    if (symbol === "FPT" && /\bfpt\s+(retail|long\s+châu|online)\b|chứng\s+khoán\s+fpt|bán\s+lẻ\s+kỹ\s+thuật\s+số\s+fpt/i.test(title)) return false;
+    return true;
+  }
+
   async function buildContext() {
     const base = await window.__VMEWS_LOAD_BASE__();
     const symbol = String($("#symbol")?.value || new URLSearchParams(location.search).get("symbol") || "FPT").trim().toUpperCase();
@@ -573,8 +613,19 @@
       horizons[`T+${key}`] = {
         price: forecast.expectedPrice, expectedReturn: forecast.expectedReturn,
         lowerPrice: forecast.q20Price, upperPrice: forecast.q80Price,
+        expectedAbsReturn: number(forecast.expectedAbsReturn),
+        bearScenarioPrice: number(forecast.bearScenarioPrice),
+        bullScenarioPrice: number(forecast.bullScenarioPrice),
+        magnitudeValidated: forecast.magnitudeValidated === true,
         probabilityUp: forecast.directionValidated === true ? forecast.probUp : null,
         directionValidated: forecast.directionValidated === true,
+        pointDirectionValidated: forecast.pointDirectionValidated === true,
+        historicalDirectionAccuracy: number(forecast.historicalDirectionAccuracy),
+        crossSectionalRankPercentile: number(forecast.crossSectionalRankPercentile),
+        crossSectionalRankUniverse: number(forecast.crossSectionalRankUniverse),
+        crossSectionalRankValidated: forecast.crossSectionalRankValidated === true,
+        conditionalValueValidated: forecast.conditionalValueValidated === true,
+        decisionDiscipline: forecast.decisionDiscipline || null,
         factors: forecast.expertContributions || {},
         liveEvidence: forecast.liveEvidence?.components || {},
         targetDate: forecast.targetDate,
@@ -586,6 +637,10 @@
           executableMAESkill: audit.sealedAudit?.executableMAESkill ?? null,
           intervalCoverage20_80: audit.sealedAudit?.coverage20_80 ?? null,
           brierSkill: audit.sealedAudit?.brierSkill ?? null,
+          magnitudeSkill: audit.sealedAudit?.magnitudeMAESkill ?? null,
+          medianExpectedAbsMove: audit.sealedAudit?.medianExpectedAbsMove ?? null,
+          realizedMedianAbsMove: audit.sealedAudit?.realizedMedianAbs ?? null,
+          costAwareLongAudit: audit.sealedAudit?.costAwareLongAudit || null,
         },
       };
     }
@@ -630,7 +685,9 @@
         revenueGrowth: finances.revenueQoQ, ratios: finances.ratios,
         usedByForecast: finances.usedByForecast === true,
       } : null,
-      news: (snapshot.evidence?.decisionRecent || snapshot.evidence?.recent || []).slice(0, 10).map(item => ({
+      news: (snapshot.evidence?.decisionRecent || snapshot.evidence?.recent || [])
+        .filter(item => belongsToIssuer(symbol, item, base.dash.symbols))
+        .slice(0, 10).map(item => ({
         title: item.title, publisher: item.publisher, date: item.publishedAt || item.availableDate,
         label: item.label, event: item.event,
         url: safeSource(item.url || item.link || item.sourceUrl)?.url || null,
@@ -820,7 +877,7 @@
   function forecastPath(context) {
     return Object.entries(context?.horizons || {})
       .sort((left, right) => Number(left[0].replace("T+", "")) - Number(right[0].replace("T+", "")))
-      .map(([label, horizon]) => `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** ${money(horizon.price)} (${pct(horizon.expectedReturn)}), vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, P↑ ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`);
+      .map(([label, horizon]) => `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, P↑ ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`);
   }
 
   function localAnalysis(input, context) {
@@ -847,6 +904,19 @@
         `### Kết luận cho ${context.symbol}`,
         `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là forecast đã niêm phong tại snapshot ${context.asOf || "chưa rõ ngày"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,
       );
+      if (number(five.expectedAbsReturn) !== null) {
+        lines.push(
+          "### Biên độ và hai kịch bản thực tế",
+          `Mô hình biên độ ước tính mức dịch chuyển hai chiều ±${pct(five.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(five.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(five.bullScenarioPrice)}. Giá kỳ vọng ${money(five.price)} là trung tâm có điều kiện, không đồng nghĩa thị trường chỉ biến động đúng mức đó. ${five.directionValidated ? "Xác suất chiều đã vượt kiểm định." : "Chiều tăng/giảm chưa đủ độ tin cậy để công bố xác suất; không được diễn giải kịch bản tăng thành cam kết."}`,
+        );
+      }
+      if (five.conditionalValueValidated === false) {
+        const evidence = five.validation?.costAwareLongAudit;
+        lines.push(
+          "### Kỷ luật sau phí",
+          `Chỉ nên theo dõi và đánh giá rủi ro: mô hình chưa chứng minh lợi thế giao dịch sau chi phí${number(evidence?.meanNetRealizedReturn) === null ? "" : `; trung bình ngoài mẫu sau giả định phí ${((evidence.roundTripCostBps || 0) / 100).toFixed(2)}% là ${pct(evidence.meanNetRealizedReturn, 3)}`}. Đây không phải tín hiệu mua hoặc cam kết lợi nhuận.`,
+        );
+      }
     }
 
     if (detailed) {
@@ -938,17 +1008,17 @@
     return lines.filter(Boolean).join("\n");
   }
 
-  async function remoteAnalysis(input, context, address) {
+  async function remoteAnalysis(input, context, address, sources = []) {
     const response = await fetch(address, {
       method: "POST", mode: "cors", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        question: input, context,
+        question: input, context, sources: sources.slice(0, 8),
         history: state.messages.slice(-8).map(item => ({ role: item.role, content: item.content.slice(0, 2400) })),
       }),
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.answer) throw new Error(payload.message || `Kết nối AI chưa sẵn sàng (${response.status}).`);
-    return payload.answer;
+    return payload;
   }
 
   async function ask(input) {
@@ -965,7 +1035,7 @@
       updateContextBar(context);
       const intent = researchIntent(question, context);
       const secret = sessionSecret();
-      const address = secret ? "" : endpoint();
+      const address = endpoint();
       let answer;
       let sources = [];
       let meta = [];
@@ -994,18 +1064,35 @@
         } catch (error) {
           const connection = $("#solutionAiConnectionState");
           if (connection) connection.textContent = error?.message || "Gemini tạm thời không phản hồi.";
-          const fallbackSources = await collectOpenSources(question, intent, context).catch(() => []);
-          answer = sourceFallback(question, context, intent, fallbackSources, error?.message || "Gemini tạm thời không phản hồi.");
-          sources = fallbackSources;
-          meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nghiên cứu dự phòng", "Gemini gián đoạn"];
-          if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
-          setStatus(intent.useSnapshot ? "VMEWS · phân tích dự phòng" : "Nguồn mở · chờ Gemini đọc sâu");
+          const fallbackSources = Array.isArray(error?.sources) ? error.sources : await collectOpenSources(question, intent, context).catch(() => []);
+          let recovered = null;
+          if (address) {
+            try {
+              setStatus("Gemini gián đoạn · đang chuyển nhà cung cấp…");
+              recovered = await remoteAnalysis(question, context, address, fallbackSources);
+            } catch { /* keep the verified local snapshot and source list available */ }
+          }
+          if (recovered) {
+            answer = enforceAnswerFocus(recovered.answer, question, context, intent);
+            sources = fallbackSources;
+            meta = [recovered.provider || "AI dự phòng", "Gemini gián đoạn", ...(fallbackSources.length ? [`${fallbackSources.length} nguồn mở`] : [])];
+            setStatus(`${recovered.provider || "AI dự phòng"} · đã tự chuyển nhà cung cấp`);
+          } else {
+            answer = sourceFallback(question, context, intent, fallbackSources, error?.message || "Gemini tạm thời không phản hồi.");
+            sources = fallbackSources;
+            meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nghiên cứu dự phòng", "Gemini gián đoạn"];
+            if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
+            setStatus(intent.useSnapshot ? "VMEWS · phân tích dự phòng" : "Nguồn mở · chờ AI đọc sâu");
+          }
         }
       } else if (address) {
         try {
-          answer = enforceAnswerFocus(await remoteAnalysis(question, context, address), question, context, intent);
-          meta = ["Gemini", "Dữ liệu VMEWS"];
-          setStatus("Gemini · phân tích theo dữ liệu thực");
+          const openSources = intent.shouldSearch ? await collectOpenSources(question, intent, context).catch(() => []) : [];
+          const result = await remoteAnalysis(question, context, address, openSources);
+          answer = enforceAnswerFocus(result.answer, question, context, intent);
+          sources = openSources;
+          meta = [result.provider || "AI", "Dữ liệu VMEWS", ...(result.failoverUsed ? ["Nhà cung cấp dự phòng"] : [])];
+          setStatus(`${result.provider || "AI"} · phân tích theo dữ liệu thực`);
         } catch {
           answer = localAnalysis(question, context);
           meta = ["Dữ liệu VMEWS", "Không dùng web"];
@@ -1098,10 +1185,11 @@
     try {
       const response = await fetch(address, { method: "GET", mode: "cors", cache: "no-store" });
       const connection = await response.json().catch(() => ({}));
-      if (response.ok && connection.ready === true && connection.provider === "Gemini") {
+      if (response.ok && connection.ready === true && connection.provider) {
         syncConnectionUi(true);
-        if (label) label.textContent = "Gemini đã sẵn sàng.";
-        setStatus("Gemini · đã kết nối");
+        const backups = connection.failoverAvailable ? ` · ${connection.providers?.length || 2} nhà cung cấp, tự chuyển khi lỗi` : "";
+        if (label) label.textContent = `${connection.provider} đã sẵn sàng${backups}.`;
+        setStatus(`${connection.provider} · đã kết nối${connection.failoverAvailable ? " dự phòng" : ""}`);
         return true;
       }
       if (label) label.textContent = "Đăng nhập Google để hoàn tất kích hoạt.";
@@ -1128,6 +1216,7 @@
       const model = await validateGemini(secret);
       rememberSession(secret);
       state.model = model;
+      state.quotaUntil = 0;
       input.value = "";
       syncConnectionUi(true);
       if (label) label.textContent = `Đã kết nối ${model}; khóa chỉ tồn tại trong tab này.`;
@@ -1174,6 +1263,7 @@
     $("#solutionAiClose").addEventListener("click", close);
     $("#solutionAiSettings").addEventListener("click", configure);
     $("#solutionAiRetry")?.addEventListener("click", () => connectGemini());
+    $("#solutionAiSaveBackend")?.addEventListener("click", () => configureBackend());
     $("#solutionAiDisconnect")?.addEventListener("click", disconnectGemini);
     $("#solutionAiKey")?.addEventListener("keydown", event => {
       if (event.key === "Enter") { event.preventDefault(); void connectGemini(); }

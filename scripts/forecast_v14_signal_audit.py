@@ -128,18 +128,37 @@ def security_match(symbol: str, title: str, universe: set[str], *, require_expli
     """Verify ticker/issuer identity without discarding linked historical events."""
     symbol = symbol.upper()
     text = str(title or "")
+    # A leading security label is authoritative.  Corporate names often embed
+    # another issuer's brand ("FRT: ... FPT"), so a later exact-token match
+    # must not override the publisher's explicit ticker identity.
+    primary = re.match(
+        r"^\s*(?:(?:HOSE|HSX|HNX|UPCOM)\s*[:/\-]\s*)?\$?([A-Z][A-Z0-9]{2,4})\s*[:\-–|]",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if primary and primary.group(1).upper() in universe and primary.group(1).upper() != symbol:
+        return False
     explicit = [
         item.upper()
         for item in re.findall(r"\(([A-Z][A-Z0-9]{2,4})\)", text)
         if item.upper() in universe
     ]
-    if explicit and symbol not in explicit:
+    exact_ticker = re.search(
+        rf"(?<![A-Za-z0-9]){re.escape(symbol)}(?![A-Za-z0-9])",
+        text,
+        flags=re.IGNORECASE,
+    )
+    issuer_name = any(alias in text.casefold() for alias in ISSUER_ALIASES.get(symbol, ()))
+    # Parenthesized tickers are useful evidence, but a multi-issuer headline
+    # can legitimately mention DGW (DGW), KBC and HPG together.  Reject only
+    # when the assigned issuer has no exact ticker or known issuer name at all.
+    if explicit and symbol not in explicit and not exact_ticker and not issuer_name:
         return False
     # Google News commonly routes FPT Retail / FPT Securities to the FPT query;
     # those are FRT and FTS, not the FPT common share being forecast.
     aliases: dict[str, tuple[tuple[str, str], ...]] = {
         "FPT": (
-            (r"\bfpt\s+retail\b|\bfpt\s+long\s+châu\b", "FRT"),
+            (r"\bfpt\s+retail\b|\bfpt\s+long\s+châu\b|\bbán\s+lẻ\s+kỹ\s+thuật\s+số\s+fpt\b", "FRT"),
             (r"\bchứng\s+khoán\s+fpt\b", "FTS"),
             (r"\bfpt\s+online\b", "FOC"),
         ),
@@ -158,8 +177,6 @@ def security_match(symbol: str, title: str, universe: set[str], *, require_expli
         return False
 
     if require_explicit:
-        exact_ticker = re.search(rf"(?<![A-Za-z0-9]){re.escape(symbol)}(?![A-Za-z0-9])", text, flags=re.IGNORECASE)
-        issuer_name = any(alias in text.casefold() for alias in ISSUER_ALIASES.get(symbol, ()))
         if not exact_ticker and not issuer_name:
             return False
 

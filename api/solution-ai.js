@@ -39,6 +39,12 @@ function responseText(payload) {
     .trim();
   if (current) return current;
   if (typeof payload.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
+  const compatible = payload.choices?.[0]?.message?.content;
+  if (typeof compatible === "string" && compatible.trim()) return compatible.trim();
+  if (Array.isArray(compatible)) {
+    const joined = compatible.map(item => item?.text || "").filter(Boolean).join("\n").trim();
+    if (joined) return joined;
+  }
   for (const output of payload.outputs || []) {
     if (typeof output.text === "string" && output.text.trim()) return output.text.trim();
     for (const item of output.content || []) {
@@ -53,6 +59,31 @@ function responseText(payload) {
     .trim();
 }
 
+function configuredProviders() {
+  const available = [
+    { id: "gemini", name: "Gemini", secret: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || MODEL },
+    { id: "openai", name: "OpenAI", secret: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL || "gpt-4o-mini", origin: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1" },
+    { id: "groq", name: "Groq", secret: process.env.GROQ_API_KEY, model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile", origin: "https://api.groq.com/openai/v1" },
+    { id: "xai", name: "xAI", secret: process.env.XAI_API_KEY, model: process.env.XAI_MODEL || "grok-3-mini", origin: "https://api.x.ai/v1" },
+    { id: "openrouter", name: "OpenRouter", secret: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini", origin: "https://openrouter.ai/api/v1" },
+  ].filter(provider => Boolean(provider.secret));
+  const order = String(process.env.SOLUTION_AI_PROVIDER_ORDER || "gemini,openai,groq,xai,openrouter")
+    .split(",").map(item => item.trim().toLowerCase()).filter(Boolean);
+  return available.sort((left, right) => {
+    const a = order.indexOf(left.id), b = order.indexOf(right.id);
+    return (a < 0 ? 100 : a) - (b < 0 ? 100 : b);
+  });
+}
+
+function groundedInput(question, context, history, sources = []) {
+  return [
+    "DỮ LIỆU MÔ HÌNH ĐÃ KIỂM ĐỊNH:", JSON.stringify(context),
+    "NGUỒN CÔNG KHAI ĐÃ THU THẬP (TIÊU ĐỀ KHÔNG PHẢI DỮ KIỆN ĐÃ XÁC MINH):", JSON.stringify(sources),
+    "LỊCH SỬ HỎI ĐÁP GẦN NHẤT:", JSON.stringify(history),
+    "CÂU HỎI CẦN TRẢ LỜI:", question,
+  ].join("\n");
+}
+
 function systemInstruction() {
   return [
     `Bạn là ${BRAND}, trợ lý phân tích chứng khoán Việt Nam.`,
@@ -62,6 +93,8 @@ function systemInstruction() {
     "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
     "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",
     "Nếu xác suất hướng không được kiểm định thì không đưa ra xác suất tăng.",
+    "Biên độ dự kiến là độ lớn hai chiều; tỷ lệ đúng chiều lịch sử không phải xác suất tăng riêng của cổ phiếu và kịch bản không phải cam kết giá.",
+    "Kết quả sàng lọc sau phí chỉ là chẩn đoán có điều kiện, không phải backtest danh mục hoặc lợi nhuận được bảo đảm.",
     "Bảng cổ phiếu nổi bật chỉ gồm thành viên VN30 hiện hành có dự báo T+5 tăng; không đưa mã ngoài rổ vào bảng này.",
     "Tin cộng đồng chưa có công bố xác nhận phải được gọi là thông tin đang đối chiếu, không được khẳng định là sự thật.",
     "Tách dự báo trung tâm, vùng giá, các yếu tố tác động và rủi ro; không cam kết lợi nhuận.",
@@ -70,29 +103,22 @@ function systemInstruction() {
   ].join("\n");
 }
 
-async function callGemini(question, context, history, secret) {
-  const input = [
-    "DỮ LIỆU MÔ HÌNH ĐÃ KIỂM ĐỊNH:",
-    JSON.stringify(context),
-    "LỊCH SỬ HỎI ĐÁP GẦN NHẤT:",
-    JSON.stringify(history),
-    "CÂU HỎI CẦN TRẢ LỜI:",
-    question,
-  ].join("\n");
+async function callGemini(question, context, history, secret, sources = [], model = MODEL) {
+  const input = groundedInput(question, context, history, sources);
   const common = {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
   };
   const interaction = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     ...common,
-    body: JSON.stringify({ model: MODEL, input, system_instruction: systemInstruction(), store: false, tools: [{ type: "google_search" }] }),
+    body: JSON.stringify({ model, input, system_instruction: systemInstruction(), store: false, tools: [{ type: "google_search" }] }),
     signal: AbortSignal.timeout(24_000),
   });
   if (interaction.ok) return responseText(await interaction.json());
   if (![400, 404, 405].includes(interaction.status)) {
     throw new Error(`GEMINI_UPSTREAM_${interaction.status}`);
   }
-  const compatible = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
+  const compatible = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     ...common,
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemInstruction() }] },
@@ -105,6 +131,27 @@ async function callGemini(question, context, history, secret) {
   return responseText(await compatible.json());
 }
 
+async function callCompatible(provider, question, context, history, sources) {
+  const base = String(provider.origin || "").replace(/\/+$/, "");
+  if (!/^https:\/\/[^/]+(?:\/[^?#]*)?$/i.test(base)) throw new Error(`${provider.id.toUpperCase()}_INVALID_ENDPOINT`);
+  const upstream = await fetch(`${base}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${provider.secret}` },
+    body: JSON.stringify({
+      model: provider.model,
+      messages: [
+        { role: "system", content: systemInstruction() },
+        { role: "user", content: groundedInput(question, context, history, sources) },
+      ],
+      temperature: .18,
+      max_tokens: 1800,
+    }),
+    signal: AbortSignal.timeout(24_000),
+  });
+  if (!upstream.ok) throw new Error(`${provider.id.toUpperCase()}_UPSTREAM_${upstream.status}`);
+  return responseText(await upstream.json());
+}
+
 export default async function handler(request, response) {
   response.setHeader("Access-Control-Allow-Origin", allowedOrigins(request));
   response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -112,17 +159,20 @@ export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
 
   if (request.method === "OPTIONS") return response.status(204).end();
+  const providers = configuredProviders();
   if (request.method === "GET") {
+    const primary = providers[0];
     return response.status(200).json({
-      brand: BRAND, ready: Boolean(process.env.GEMINI_API_KEY),
-      provider: "Gemini", model: MODEL,
+      brand: BRAND, ready: Boolean(primary),
+      provider: primary?.name || "Gemini", model: primary?.model || MODEL,
+      providers: providers.map(provider => ({ name: provider.name, model: provider.model })),
+      failoverAvailable: providers.length > 1,
     });
   }
   if (request.method !== "POST") return response.status(405).json({ error: "METHOD_NOT_ALLOWED" });
-  const secret = process.env.GEMINI_API_KEY;
-  if (!secret) {
+  if (!providers.length) {
     return response.status(503).json({
-      error: "AI_NOT_CONFIGURED", message: "SoluTION.AI chưa được kết nối Gemini trên máy chủ.",
+      error: "AI_NOT_CONFIGURED", message: "SoluTION.AI chưa có nhà cung cấp AI nào được cấu hình trên máy chủ.",
     });
   }
   if (limited(request)) return response.status(429).json({ error: "RATE_LIMIT", message: "Vui lòng chờ một phút trước khi tiếp tục." });
@@ -147,15 +197,34 @@ export default async function handler(request, response) {
       content: String(item.content || "").slice(0, 2400),
     }))
     : [];
+  const sources = Array.isArray(payload.sources)
+    ? payload.sources.slice(0, 8).flatMap(item => {
+      const url = String(item?.url || "").slice(0, 800);
+      if (!/^https?:\/\//i.test(url)) return [];
+      return [{ title: String(item.title || "").slice(0, 240), url, publisher: String(item.publisher || "").slice(0, 100), publishedAt: String(item.publishedAt || "").slice(0, 40) }];
+    })
+    : [];
 
-  try {
-    const answer = await callGemini(question, context, history, secret);
-    if (!answer) throw new Error("EMPTY_AI_RESPONSE");
-    return response.status(200).json({ brand: BRAND, provider: "Gemini", model: MODEL, answer });
-  } catch (error) {
-    return response.status(502).json({
-      error: "AI_UPSTREAM_UNAVAILABLE", message: "Kết nối Gemini tạm thời không khả dụng.",
-      reason: String(error?.message || "UNKNOWN").slice(0, 100),
-    });
+  const attempts = [];
+  for (const provider of providers) {
+    try {
+      const answer = provider.id === "gemini"
+        ? await callGemini(question, context, history, provider.secret, sources, provider.model)
+        : await callCompatible(provider, question, context, history, sources);
+      if (!answer) throw new Error("EMPTY_AI_RESPONSE");
+      return response.status(200).json({
+        brand: BRAND, provider: provider.name, model: provider.model, answer,
+        failoverUsed: attempts.length > 0,
+        unavailableProviders: attempts.map(item => item.provider),
+        sourceMode: provider.id === "gemini" ? "NATIVE_WEB_SEARCH" : "SUPPLIED_PUBLIC_EVIDENCE",
+      });
+    } catch (error) {
+      attempts.push({ provider: provider.name, reason: String(error?.message || "UNKNOWN").slice(0, 100) });
+    }
   }
+  return response.status(502).json({
+    error: "AI_UPSTREAM_UNAVAILABLE", message: "Các nhà cung cấp AI đã cấu hình hiện tạm thời không khả dụng.",
+    unavailableProviders: attempts.map(item => item.provider),
+    reason: attempts.map(item => item.reason).join("; ").slice(0, 250),
+  });
 }
