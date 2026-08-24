@@ -9,12 +9,16 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import numpy as np
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from forecast_v13_market_model import (  # noqa: E402
     INTERCEPT_RETENTION,
+    directional_magnitude_blend,
     intercept_modes,
+    select_directional_magnitude_blend,
     session_limit,
     snap_price,
     tick_size,
@@ -49,6 +53,28 @@ class VietnamPriceGridTest(unittest.TestCase):
         self.assertEqual(snap_price(65_050), 65_100)
         self.assertEqual(snap_price(65_070), 65_100)
         self.assertEqual(snap_price(66_127), 66_100)
+
+    def test_directional_magnitude_blend_abstains_without_stable_evidence(self) -> None:
+        actual = np.asarray([.01, -.01] * 80)
+        point = np.zeros_like(actual)
+        probability = np.full_like(actual, .55)
+        magnitude = np.full_like(actual, .012)
+        dates = np.asarray([f"2026-01-{1 + index // 4:02d}" for index in range(len(actual))])
+        audit = select_directional_magnitude_blend(
+            actual, point, probability, magnitude, dates
+        )
+        self.assertEqual(audit["status"], "ABSTAIN")
+        self.assertEqual(audit["weight"], 0.0)
+        self.assertEqual(audit["sealedLabelsUsed"], 0)
+
+    def test_directional_magnitude_blend_requires_confidence_and_is_bounded(self) -> None:
+        point = np.asarray([.001, -.001, .002])
+        probability = np.asarray([.70, .30, .52])
+        magnitude = np.asarray([.02, .03, .04])
+        blended = directional_magnitude_blend(
+            point, probability, magnitude, .20, .10
+        )
+        np.testing.assert_allclose(blended, [.0048, -.0068, .002])
 
 
 class PointInTimeSignalTest(unittest.TestCase):
@@ -103,7 +129,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_all_horizons_are_independently_validated(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-17.0.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-17.1.0")
         self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
         self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
         for horizon in map(str, range(1, 6)):
@@ -127,6 +153,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertGreaterEqual(walk["positiveMagnitudeFolds"], 2)
             self.assertGreater(walk["meanExecutableMAESkill"], 0)
             self.assertGreaterEqual(walk["meanRankIC"], .05)
+            blend = self.market["model"]["horizons"][horizon]["directionalMagnitudeBlend"]
+            self.assertEqual(blend["sealedLabelsUsed"], 0)
+            self.assertIn(blend["status"], {"ACTIVE", "ABSTAIN"})
+            self.assertLessEqual(blend["weight"], .40)
             for fold in walk["folds"]:
                 self.assertEqual(fold["futureRowsUsedForTraining"], 0)
                 self.assertEqual(fold["futureLabelsUsedForCalibration"], 0)

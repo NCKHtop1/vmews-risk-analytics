@@ -63,7 +63,7 @@ from forecast_v18_market_intelligence import community_events, community_watchli
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-17.0.0"
+VERSION = "VMEWS-MARKET-FORECAST-17.1.0"
 HORIZONS = (1, 2, 3, 4, 5)
 # Recent walk-forward windows show that the raw market-wide intercept drifts
 # faster than the cross-sectional stock-selection signal at T+2.  Retaining a
@@ -581,6 +581,8 @@ class HorizonResult:
     conviction_floor: float
     intercept_mode: str
     magnitude_scale: float
+    directional_blend_weight: float
+    directional_blend_threshold: float
     quantile_low: float
     quantile_high: float
     training: dict[str, Any]
@@ -618,6 +620,158 @@ def shape_prediction(
     active = (conviction >= .045) & aligned & (direction != 0)
     minimum_move = floor * volatility * np.clip(.75 + 4.0 * conviction, .90, 1.45)
     return np.where(active, direction * np.maximum(np.abs(point), minimum_move), point)
+
+
+def directional_magnitude_blend(
+    point: np.ndarray,
+    probability: np.ndarray,
+    magnitude: np.ndarray,
+    weight: float,
+    probability_margin: float,
+) -> np.ndarray:
+    """Blend direction and magnitude only where the classifier is decisive.
+
+    The point model estimates a conditional median and is deliberately close to
+    zero for noisy returns.  The magnitude model estimates the likely absolute
+    move.  A small calibration-selected blend can recover useful amplitude, but
+    applying the full magnitude to every row materially worsens out-of-sample
+    error.  A zero weight is therefore a first-class abstention.
+    """
+    point = np.asarray(point, dtype=float)
+    probability = np.asarray(probability, dtype=float)
+    magnitude = np.asarray(magnitude, dtype=float)
+    if weight <= 0:
+        return point.copy()
+    direction = np.where(probability >= .5, 1.0, -1.0)
+    active = np.abs(probability - .5) >= probability_margin
+    directional_target = direction * np.maximum(magnitude, 0.0)
+    return np.where(
+        active,
+        (1.0 - weight) * point + weight * directional_target,
+        point,
+    )
+
+
+def select_directional_magnitude_blend(
+    actual: np.ndarray,
+    point: np.ndarray,
+    probability: np.ndarray,
+    magnitude: np.ndarray,
+    dates: np.ndarray,
+) -> dict[str, Any]:
+    """Select a conservative direction/magnitude blend on calibration only.
+
+    A candidate must improve paired absolute error by more than two standard
+    errors and win in at least three of four chronological blocks.  Among
+    statistically indistinguishable candidates, the smaller blend is retained.
+    The sealed holdout is never consulted here.
+    """
+    actual = np.asarray(actual, dtype=float)
+    point = np.asarray(point, dtype=float)
+    dates = np.asarray(dates)
+    baseline_loss = np.abs(actual - point)
+    unique_dates = np.sort(np.unique(dates))
+    blocks = [block for block in np.array_split(unique_dates, 4) if len(block)]
+    trials: list[dict[str, Any]] = []
+    for margin in (.03, .05, .07, .10, .12, .15):
+        for weight in (.10, .20, .30, .40):
+            candidate = directional_magnitude_blend(
+                point, probability, magnitude, weight, margin
+            )
+            paired_improvement = baseline_loss - np.abs(actual - candidate)
+            standard_error = float(
+                np.std(paired_improvement, ddof=1) / math.sqrt(len(paired_improvement))
+            )
+            block_improvements = [
+                float(np.mean(paired_improvement[np.isin(dates, block)]))
+                for block in blocks
+            ]
+            trials.append(
+                {
+                    "weight": weight,
+                    "probabilityMargin": margin,
+                    "meanPairedMAEImprovement": float(np.mean(paired_improvement)),
+                    "pairedStandardError": standard_error,
+                    "positiveChronologicalBlocks": sum(value > 0 for value in block_improvements),
+                    "chronologicalBlockImprovements": block_improvements,
+                    "medianAbsForecast": float(np.median(np.abs(candidate))),
+                }
+            )
+    eligible = [
+        trial for trial in trials
+        if trial["positiveChronologicalBlocks"] >= 3
+        and trial["meanPairedMAEImprovement"] > 2.0 * trial["pairedStandardError"]
+    ]
+    if not eligible:
+        return {
+            "status": "ABSTAIN",
+            "weight": 0.0,
+            "probabilityMargin": 1.0,
+            "baselineMAE": float(np.mean(baseline_loss)),
+            "selectedMAE": float(np.mean(baseline_loss)),
+            "meanPairedMAEImprovement": 0.0,
+            "pairedStandardError": 0.0,
+            "positiveChronologicalBlocks": 0,
+            "candidateCount": len(trials),
+            "sealedLabelsUsed": 0,
+        }
+    best = max(eligible, key=lambda item: item["meanPairedMAEImprovement"])
+    indistinguishable = [
+        trial for trial in eligible
+        if trial["meanPairedMAEImprovement"]
+        >= best["meanPairedMAEImprovement"] - best["pairedStandardError"]
+    ]
+    selected = min(
+        indistinguishable,
+        key=lambda item: (item["weight"], -item["probabilityMargin"]),
+    )
+    selected_prediction = directional_magnitude_blend(
+        point,
+        probability,
+        magnitude,
+        float(selected["weight"]),
+        float(selected["probabilityMargin"]),
+    )
+    return {
+        "status": "ACTIVE",
+        **selected,
+        "baselineMAE": float(np.mean(baseline_loss)),
+        "selectedMAE": float(np.mean(np.abs(actual - selected_prediction))),
+        "candidateCount": len(trials),
+        "sealedLabelsUsed": 0,
+    }
+
+
+def predict_horizon_core(
+    result: HorizonResult,
+    features: np.ndarray,
+    volatility: np.ndarray,
+    dates: pd.Series | np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Return validated forecast, conditional median, magnitude and P(up)."""
+    probability = result.classifier.predict_proba(features)[:, 1]
+    raw = result.model.predict(features) * volatility
+    raw = apply_intercept_mode(raw, dates, result.intercept_mode)
+    point = shape_prediction(
+        raw,
+        volatility,
+        probability,
+        result.scale,
+        result.conviction_floor,
+    )
+    magnitude = (
+        np.clip(result.magnitude_model.predict(features), .02, 4.0)
+        * volatility
+        * result.magnitude_scale
+    )
+    prediction = directional_magnitude_blend(
+        point,
+        probability,
+        magnitude,
+        result.directional_blend_weight,
+        result.directional_blend_threshold,
+    )
+    return prediction, point, magnitude, probability
 
 
 def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> HorizonResult:
@@ -775,7 +929,26 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     conviction_floor = selected["floor"]
     intercept_mode = str(selected["interceptMode"])
     cal_raw = cal_raw_by_mode[intercept_mode]
-    cal_prediction = shape_prediction(cal_raw, cal_vol, cal_probability, scale, conviction_floor)
+    cal_point_prediction = shape_prediction(
+        cal_raw, cal_vol, cal_probability, scale, conviction_floor
+    )
+    cal_magnitude = cal_magnitude_raw * magnitude_scale
+    directional_blend = select_directional_magnitude_blend(
+        cal_y,
+        cal_point_prediction,
+        cal_probability,
+        cal_magnitude,
+        calibration["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+    )
+    directional_blend_weight = float(directional_blend["weight"])
+    directional_blend_threshold = float(directional_blend["probabilityMargin"])
+    cal_prediction = directional_magnitude_blend(
+        cal_point_prediction,
+        cal_probability,
+        cal_magnitude,
+        directional_blend_weight,
+        directional_blend_threshold,
+    )
     cal_residual = (cal_y - cal_prediction) / np.maximum(cal_vol, .004)
     quantile_low = float(np.quantile(cal_residual, .20))
     quantile_high = float(np.quantile(cal_residual, .80))
@@ -783,8 +956,17 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     hold_probability = classifier.predict_proba(hold_x)[:, 1]
     hold_raw = model.predict(hold_x) * (hold_vol if target_mode == "volatility" else 1.0)
     hold_raw = apply_intercept_mode(hold_raw, holdout["date"], intercept_mode)
-    hold_prediction = shape_prediction(hold_raw, hold_vol, hold_probability, scale, conviction_floor)
+    hold_point_prediction = shape_prediction(
+        hold_raw, hold_vol, hold_probability, scale, conviction_floor
+    )
     hold_magnitude = np.clip(magnitude_model.predict(hold_x), .02, 4.0) * hold_vol * magnitude_scale
+    hold_prediction = directional_magnitude_blend(
+        hold_point_prediction,
+        hold_probability,
+        hold_magnitude,
+        directional_blend_weight,
+        directional_blend_threshold,
+    )
     hold_metrics = _metrics(
         hold_y,
         hold_prediction,
@@ -801,6 +983,13 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     magnitude_baseline_mae = float(mean_absolute_error(np.abs(hold_y), magnitude_baseline))
     hold_metrics.update(
         {
+            "conditionalMedianMAE": float(mean_absolute_error(hold_y, hold_point_prediction)),
+            "directionalBlendMAEImprovement": float(
+                mean_absolute_error(hold_y, hold_point_prediction)
+                - mean_absolute_error(hold_y, hold_prediction)
+            ),
+            "directionalBlendWeight": directional_blend_weight,
+            "directionalBlendProbabilityMargin": directional_blend_threshold,
             "magnitudeMAE": magnitude_mae,
             "magnitudeBaselineMAE": magnitude_baseline_mae,
             "magnitudeMAESkill": 1.0 - magnitude_mae / max(magnitude_baseline_mae, 1e-12),
@@ -872,6 +1061,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         "shortHorizonFloorCeiling": .04 if horizon == 1 else None,
         "bestMAE": best["mae"],
         "selectedMAE": selected["mae"],
+        "directionalMagnitudeBlend": directional_blend,
         "quantile20": quantile_low,
         "quantile80": quantile_high,
         "sealedLabelsUsed": 0,
@@ -911,6 +1101,8 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         conviction_floor=conviction_floor,
         intercept_mode=intercept_mode,
         magnitude_scale=magnitude_scale,
+        directional_blend_weight=directional_blend_weight,
+        directional_blend_threshold=directional_blend_threshold,
         quantile_low=quantile_low,
         quantile_high=quantile_high,
         training=training,
@@ -982,6 +1174,17 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
             train_x,
             np.clip(train_y / np.maximum(train_vol, .004), -4.0, 4.0),
         )
+        direction_model = HistGradientBoostingClassifier(
+            learning_rate=.06,
+            max_iter=55 if fast else 90,
+            max_leaf_nodes=19,
+            min_samples_leaf=240,
+            l2_regularization=12.0,
+            max_bins=128,
+            early_stopping=False,
+            random_state=4600 + 10 * horizon + fold_number,
+        )
+        direction_model.fit(train_x, train_y > 0)
         calibration_raw_base = point_model.predict(calibration_x) * calibration_vol
         scale_limit = .85 if horizon == 1 else 1.6
         scales = np.linspace(.10, scale_limit, 25)
@@ -1027,9 +1230,13 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         intercept_mode = str(selected_mode["mode"])
         scale = float(selected_mode["scale"])
         block_scales = list(selected_mode["blockScales"])
+        calibration_raw = apply_intercept_mode(
+            calibration_raw_base, calibration["date"], intercept_mode
+        )
+        calibration_point = calibration_raw * scale
         test_raw = point_model.predict(test_x) * test_vol
         test_raw = apply_intercept_mode(test_raw, test["date"], intercept_mode)
-        prediction = test_raw * scale
+        test_point = test_raw * scale
 
         magnitude_model = HistGradientBoostingRegressor(
             loss="absolute_error",
@@ -1054,16 +1261,35 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
                 2.0,
             )
         )
+        calibration_magnitude *= magnitude_scale
         magnitude = np.clip(magnitude_model.predict(test_x), .02, 4.0) * test_vol * magnitude_scale
         baseline_magnitude_ratio = float(np.median(np.abs(train_y) / np.maximum(train_vol, .004)))
         baseline_magnitude = baseline_magnitude_ratio * test_vol
+        calibration_probability = direction_model.predict_proba(calibration_x)[:, 1]
+        test_probability = direction_model.predict_proba(test_x)[:, 1]
+        directional_blend = select_directional_magnitude_blend(
+            calibration_y,
+            calibration_point,
+            calibration_probability,
+            calibration_magnitude,
+            calibration["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+        )
+        prediction = directional_magnitude_blend(
+            test_point,
+            test_probability,
+            magnitude,
+            float(directional_blend["weight"]),
+            float(directional_blend["probabilityMargin"]),
+        )
 
         closes = test["close"].to_numpy(dtype=float)
         venues = test["exchange"].astype(str).to_numpy()
         executable_prices = np.asarray(
             [
-                tradable_forecast(close, point, .5, volatility, horizon, venue)
-                for close, point, volatility, venue in zip(closes, prediction, test_vol, venues)
+                tradable_forecast(close, point, probability, volatility, horizon, venue)
+                for close, point, probability, volatility, venue in zip(
+                    closes, prediction, test_probability, test_vol, venues
+                )
             ],
             dtype=float,
         )
@@ -1072,6 +1298,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
             test_y,
             prediction,
             test["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+            test_probability,
         )
         executable_mae = float(mean_absolute_error(test_y, executable_return))
         magnitude_mae = float(mean_absolute_error(np.abs(test_y), magnitude))
@@ -1090,6 +1317,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
                 "interceptMode": intercept_mode,
                 "interceptModeCalibration": mode_trials,
                 "calibrationBlockScales": block_scales,
+                "directionalMagnitudeBlend": directional_blend,
                 "maeSkill": metrics["maeSkill"],
                 "executableMAESkill": 1.0 - executable_mae / max(metrics["baselineMAE"], 1e-12),
                 "rankIC": metrics["rankIC"],
@@ -1191,15 +1419,8 @@ def factor_contributions(
         indices = [FEATURE_COLUMNS.index(column) for column in columns]
         alternative = features.copy()
         alternative[:, indices] = medians[indices]
-        ablated_raw = result.model.predict(alternative) * volatility
-        ablated_raw = apply_intercept_mode(ablated_raw, dates, result.intercept_mode)
-        ablated_probability = result.classifier.predict_proba(alternative)[:, 1]
-        ablated = shape_prediction(
-            ablated_raw,
-            volatility,
-            ablated_probability,
-            result.scale,
-            result.conviction_floor,
+        ablated, _, _, _ = predict_horizon_core(
+            result, alternative, volatility, dates
         )
         output[group] = expected - ablated
     # Leave-group-out effects are not additive in a tree ensemble.  Assign the
@@ -1224,10 +1445,9 @@ def out_of_sample_factor_audit(result: HorizonResult) -> dict[str, Any]:
         indices = [FEATURE_COLUMNS.index(column) for column in columns]
         alternative = features.copy()
         alternative[:, indices] = result.feature_medians[indices]
-        ablated_raw = result.model.predict(alternative) * volatility
-        ablated_raw = apply_intercept_mode(ablated_raw, rows["date"], result.intercept_mode)
-        ablated_probability = result.classifier.predict_proba(alternative)[:, 1]
-        ablated = shape_prediction(ablated_raw, volatility, ablated_probability, result.scale, result.conviction_floor)
+        ablated, _, _, _ = predict_horizon_core(
+            result, alternative, volatility, rows["date"]
+        )
         without = _metrics(actual, ablated, dates)
         output[name] = {
             "deltaRankIC": baseline["rankIC"] - without["rankIC"],
@@ -1498,16 +1718,8 @@ def write_artifacts(
         horizon = result.horizon
         key = str(horizon)
         volatility = rows["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
-        probability = result.classifier.predict_proba(feature_x)[:, 1]
-        raw = result.model.predict(feature_x) * volatility
-        raw = apply_intercept_mode(raw, rows["date"], result.intercept_mode)
-        core_prediction = shape_prediction(
-            raw, volatility, probability, result.scale, result.conviction_floor
-        )
-        expected_magnitude = (
-            np.clip(result.magnitude_model.predict(feature_x), .02, 4.0)
-            * volatility
-            * result.magnitude_scale
+        core_prediction, conditional_median, expected_magnitude, probability = (
+            predict_horizon_core(result, feature_x, volatility, rows["date"])
         )
         grouped = factor_contributions(
             result, feature_x, volatility, rows["date"], core_prediction
@@ -1624,7 +1836,12 @@ def write_artifacts(
             "embargoAudit": embargo_audit,
             "magnitudeGate": magnitude_gate,
             "distributionAudit": {"status": "PASS", "coverage20_80": audit["coverage20_80"]},
-            "pointForecastRole": "CONDITIONAL_MEDIAN",
+            "pointForecastRole": (
+                "VALIDATED_DIRECTION_MAGNITUDE_BLEND"
+                if result.directional_blend_weight > 0
+                else "CONDITIONAL_MEDIAN"
+            ),
+            "directionalMagnitudeBlend": result.calibration["directionalMagnitudeBlend"],
             "forecastLoss": os.environ.get("V13_MODEL_LOSS", "absolute_error"),
             "eventImpactAudit": event_study,
             "factorAblation": ablation,
@@ -1717,7 +1934,14 @@ def write_artifacts(
                 "empiricalMedianAbsMove": float(audit["realizedMedianAbs"]),
                 "magnitudeValidated": bool(audit.get("magnitudeMAESkill", -1) > 0),
                 "forecastDispersionRatio": float(audit["dispersionRatio"]),
-                "pointForecastRole": "CONDITIONAL_MEDIAN",
+                "conditionalMedianReturn": float(conditional_median[position]),
+                "directionalBlendWeight": result.directional_blend_weight,
+                "directionalBlendProbabilityMargin": result.directional_blend_threshold,
+                "pointForecastRole": (
+                    "VALIDATED_DIRECTION_MAGNITUDE_BLEND"
+                    if result.directional_blend_weight > 0
+                    else "CONDITIONAL_MEDIAN"
+                ),
                 "modelVersion": VERSION,
             }
 
@@ -1977,17 +2201,14 @@ def main() -> None:
         for result in results:
             h = result.horizon
             volatility = float(row["forward_vol"]) * math.sqrt(h)
-            normalized = result.model.predict(fpt[FEATURE_COLUMNS].to_numpy(dtype=np.float32))[0]
-            probability = float(result.classifier.predict_proba(fpt[FEATURE_COLUMNS].to_numpy(dtype=np.float32))[0, 1])
-            raw_return = float(
-                shape_prediction(
-                    np.asarray([float(normalized) * volatility]),
-                    np.asarray([volatility]),
-                    np.asarray([probability]),
-                    result.scale,
-                    result.conviction_floor,
-                )[0]
+            core, _, _, probability_values = predict_horizon_core(
+                result,
+                fpt[FEATURE_COLUMNS].to_numpy(dtype=np.float32),
+                np.asarray([volatility]),
+                fpt["date"],
             )
+            probability = float(probability_values[0])
+            raw_return = float(core[0])
             point = tradable_forecast(float(row["close"]), raw_return, probability, volatility, h)
             low = snap_price(float(row["close"]) * math.exp(raw_return + result.quantile_low * volatility))
             high = snap_price(float(row["close"]) * math.exp(raw_return + result.quantile_high * volatility))
