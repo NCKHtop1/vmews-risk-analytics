@@ -141,7 +141,7 @@ test("a different snapshot or an invalid sub-tick update can never replace the f
 
 test("source freshness labels are clear and contain no internal data-engineering jargon", async () => {
   const source = await readFile(new URL("../forecast-final-v12.js", import.meta.url), "utf8");
-  assert.doesNotMatch(source, /không điền giả/i);
+  assert.doesNotMatch(source, new RegExp(["không điền", "giả"].join("\\s+"), "i"));
   assert.doesNotMatch(source, /Object\.assign\(horizon\s*,\s*adjustment\)/);
   assert.doesNotMatch(source, /FORECAST LOCKED/);
   assert.match(source, /Cập nhật chậm/);

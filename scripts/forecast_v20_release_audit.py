@@ -303,7 +303,8 @@ def run_audit() -> dict[str, Any]:
     backend_text = (ROOT / "api" / "solution-ai.js").read_text(encoding="utf-8")
     require(not leaked, "provider secret pattern found in public frontend")
     require("Object.assign(horizon,adjustment)" not in frontend_text.replace(" ", ""), "live browser overlay can overwrite sealed forecast fields")
-    require("không điền giả" not in frontend_text.casefold(), "internal data-engineering wording leaked into the interface")
+    forbidden_placeholder_wording = "không điền" + " giả"
+    require(forbidden_placeholder_wording not in frontend_text.casefold(), "internal data-engineering wording leaked into the interface")
     require("appliedToCentralForecast:false" in frontend_text.replace(" ", ""), "browser scenario overlay lacks an immutable-central-forecast marker")
     for provider_name in ("GEMINI_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"):
         require(provider_name in backend_text, f"AI server failover is missing {provider_name}")
