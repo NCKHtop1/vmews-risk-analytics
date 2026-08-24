@@ -1,22 +1,22 @@
 {
-  "version": "VMEWS-RELEASE-AUDIT-20.1.0",
+  "version": "VMEWS-RELEASE-AUDIT-20.2.0",
   "asOf": "2026-08-24",
   "status": "PASS",
   "scope": {
     "symbols": 403,
     "forecasts": 2015,
     "flowRows": 347690,
-    "headlines": 15706,
+    "headlines": 15719,
     "headlineSources": {
       "community-claims": 7,
-      "community-watchlist": 165,
-      "dashboard-communityWatchlist": 226,
-      "dashboard-decisionNews": 81,
-      "dashboard-decisionRecent": 4068,
+      "community-watchlist": 161,
+      "dashboard-communityWatchlist": 218,
+      "dashboard-decisionNews": 87,
+      "dashboard-decisionRecent": 4069,
       "dashboard-recent": 4066,
       "fireant": 270,
       "research-news": 1148,
-      "research-news-v10": 5675
+      "research-news-v10": 5693
     }
   },
   "price": {
@@ -68,9 +68,13 @@
       "OpenRouter"
     ]
   },
+  "delivery": {
+    "assetDataRefPolicy": "SAME_REF",
+    "mutableMainFallback": false
+  },
   "horizons": {
     "1": {
-      "executableMAESkill": 0.003950095537282428,
+      "executableMAESkill": 0.0039500955372822055,
       "magnitudeMAESkill": 0.04627472313150571,
       "directionalAccuracy": 0.5121507163777408,
       "directionStatus": "PASS",
@@ -86,12 +90,12 @@
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0018179407906186106,
+      "meanNetRealizedReturn": 0.0018179407906186113,
       "positiveChronologicalFolds": 3
     },
     "3": {
       "executableMAESkill": 0.011062277152234512,
-      "magnitudeMAESkill": 0.030292785504751896,
+      "magnitudeMAESkill": 0.030292785504752007,
       "directionalAccuracy": 0.5608294930875576,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
@@ -116,7 +120,7 @@
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": -0.0009536387642710022,
+      "meanNetRealizedReturn": -0.0009536387642710021,
       "positiveChronologicalFolds": 1
     }
   },
