@@ -358,7 +358,8 @@ class PublishedMarketForecastTest(unittest.TestCase):
             fpt["collectedAfterForecast"],
             str(fpt["asOf"]) > str(fpt_snapshot["date"]),
         )
-        self.assertTrue(fpt["availableForForecast"])
+        self.assertFalse(fpt["availableForForecast"])
+        self.assertTrue(fpt["availableForScenario"])
         self.assertTrue(fpt["scenarioEligible"])
         self.assertFalse(fpt["usedByForecast"])
         self.assertEqual(fpt["fundCount"], 17)

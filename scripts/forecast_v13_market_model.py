@@ -1849,7 +1849,8 @@ def write_artifacts(
                 "modelEligible": bool(fitted_fund_audit.get("modelEligible")),
                 "scenarioEligible": True,
                 "usedByForecast": False,
-                "availableForForecast": True,
+                "availableForForecast": False,
+                "availableForScenario": True,
             })
         else:
             disclosure_as_of = str(latest_disclosure.get("asOf") or "")
@@ -1867,6 +1868,7 @@ def write_artifacts(
                 "source": str(latest_disclosure.get("source") or "FMARKET"),
                 "forecastAsOf": row_date,
                 "availableForForecast": False,
+                "availableForScenario": False,
                 "collectedAfterForecast": bool(disclosure_as_of and disclosure_as_of > row_date),
                 "modelEligible": False,
                 "inferenceEligible": False,
