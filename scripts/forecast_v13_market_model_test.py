@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +24,12 @@ from forecast_v13_market_model import (  # noqa: E402
     snap_price,
     tick_size,
 )
-from forecast_v14_signal_audit import effective_trading_session, publication_timestamp, security_match  # noqa: E402
+from forecast_v14_signal_audit import (  # noqa: E402
+    attach_matured_reaction_priors,
+    effective_trading_session,
+    publication_timestamp,
+    security_match,
+)
 
 
 class VietnamPriceGridTest(unittest.TestCase):
@@ -102,6 +108,36 @@ class PointInTimeSignalTest(unittest.TestCase):
         self.assertTrue(security_match("PNJ", "PNJ: Sức mua trang sức tăng trưởng", universe, require_explicit=True))
         self.assertTrue(security_match("ASP", "Doanh nghiệp công bố kết quả kinh doanh", universe, require_explicit=False))
 
+    def test_event_reaction_prior_uses_only_already_matured_outcomes(self) -> None:
+        events = pd.DataFrame(
+            [
+                {
+                    "symbol": "FPT", "date": pd.Timestamp("2026-01-02"),
+                    "publishedAt": "2026-01-02T08:00:00+07:00",
+                    "eventType": "EARNINGS", "label": "POS",
+                    "_matureDate": {"5": "2026-01-09"},
+                    "_cumulativeAbnormalReturn": {"5": .10},
+                },
+                {
+                    "symbol": "FPT", "date": pd.Timestamp("2026-01-08"),
+                    "publishedAt": "2026-01-08T08:00:00+07:00",
+                    "eventType": "EARNINGS", "label": "POS",
+                    "_matureDate": None, "_cumulativeAbnormalReturn": None,
+                },
+                {
+                    "symbol": "FPT", "date": pd.Timestamp("2026-01-12"),
+                    "publishedAt": "2026-01-12T08:00:00+07:00",
+                    "eventType": "EARNINGS", "label": "POS",
+                    "_matureDate": None, "_cumulativeAbnormalReturn": None,
+                },
+            ]
+        )
+        enriched, audit = attach_matured_reaction_priors(events)
+        self.assertEqual(enriched.loc[1, "reactionPrior5"], 0.0)
+        self.assertGreater(enriched.loc[2, "reactionPrior5"], 0.0)
+        self.assertEqual(audit["sameOrFutureEventOutcomesUsed"], 0)
+        self.assertNotIn("_cumulativeAbnormalReturn", enriched.columns)
+
 
 class PublishedMarketForecastTest(unittest.TestCase):
     @classmethod
@@ -129,7 +165,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_all_horizons_are_independently_validated(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-17.1.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-17.2.0")
         self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
         self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
         for horizon in map(str, range(1, 6)):
@@ -225,12 +261,17 @@ class PublishedMarketForecastTest(unittest.TestCase):
         features = set(self.market["model"]["featureNames"])
         self.assertIn("news_sentiment5", features)
         self.assertIn("news_earnings5", features)
+        self.assertIn("news_reaction_prior5", features)
         self.assertIn("flow_foreign_imbalance5", features)
         self.assertIn("flow_prop_available", features)
         self.assertEqual(self.market["model"]["governance"]["outcomeFieldsUsedAsFeatures"], 0)
         signal = self.market["sources"]["signalAudit"]
         self.assertGreater(signal["acceptedEvents"], 12_000)
         self.assertGreater(signal["rejected"].get("issuer_mismatch", 0), 0)
+        reaction = signal["maturedReactionPrior"]
+        self.assertEqual(reaction["status"], "ACTIVE")
+        self.assertGreater(reaction["maturedOutcomes"], 30_000)
+        self.assertEqual(reaction["sameOrFutureEventOutcomesUsed"], 0)
         for horizon in self.market["model"]["horizons"].values():
             self.assertIn("EVENT", horizon["activeExperts"])
             self.assertIn("FLOW", horizon["activeExperts"])

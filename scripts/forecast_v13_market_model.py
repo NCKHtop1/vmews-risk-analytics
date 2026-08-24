@@ -63,7 +63,7 @@ from forecast_v18_market_intelligence import community_events, community_watchli
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-17.1.0"
+VERSION = "VMEWS-MARKET-FORECAST-17.2.0"
 HORIZONS = (1, 2, 3, 4, 5)
 # Recent walk-forward windows show that the raw market-wide intercept drifts
 # faster than the cross-sectional stock-selection signal at T+2.  Retaining a

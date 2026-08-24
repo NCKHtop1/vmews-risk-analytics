@@ -11,7 +11,7 @@ import hashlib
 import json
 import math
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -32,6 +32,8 @@ NEWS_COLUMNS = [
     "news_positive5", "news_negative5", "news_official5", "news_rumor5",
     "news_earnings5", "news_regulatory5", "news_ownership5",
     "news_flow_event5", "news_sentiment_acceleration", "news_days_since",
+    "news_reaction_prior1", "news_reaction_prior3", "news_reaction_prior5",
+    "news_reaction_hit5", "news_reaction_support5",
 ]
 FLOW_COLUMNS = [
     "flow_foreign_imbalance1", "flow_foreign_imbalance5",
@@ -202,6 +204,113 @@ def _title_identity(title: str) -> str:
     return hashlib.sha1(cleaned.encode("utf-8")).hexdigest()
 
 
+def _mapping_value(mapping: Any, horizon: int) -> Any:
+    return mapping.get(str(horizon), mapping.get(horizon)) if isinstance(mapping, dict) else None
+
+
+def attach_matured_reaction_priors(events: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Attach event-reaction priors using outcomes matured before each event.
+
+    Raw future returns remain labels.  At an event timestamp, the feature can
+    only query aggregate abnormal returns whose maturity date is no later than
+    that event's availability date.  Stock-level estimates shrink toward a
+    market event-type/sentiment prior, and sparse histories shrink to zero.
+    """
+    output = events.copy()
+    horizons = (1, 3, 5)
+    tape: list[tuple[pd.Timestamp, int, str, str, str, float]] = []
+    for _, row in output.iterrows():
+        maturity = row.get("_matureDate")
+        abnormal = row.get("_cumulativeAbnormalReturn")
+        for horizon in horizons:
+            mature_value = _mapping_value(maturity, horizon)
+            return_value = _mapping_value(abnormal, horizon)
+            mature_date = pd.to_datetime(mature_value, errors="coerce")
+            realized = _number(return_value, float("nan"))
+            if pd.isna(mature_date) or not math.isfinite(realized):
+                continue
+            tape.append(
+                (
+                    pd.Timestamp(mature_date).normalize(),
+                    horizon,
+                    str(row["symbol"]),
+                    str(row["eventType"]),
+                    str(row["label"]),
+                    float(np.clip(realized, -.30, .30)),
+                )
+            )
+    tape.sort(key=lambda item: item[0])
+    groups: defaultdict[tuple[Any, ...], list[float]] = defaultdict(
+        lambda: [0.0, 0.0, 0.0]
+    )
+
+    def add(key: tuple[Any, ...], value: float) -> None:
+        aggregate = groups[key]
+        aggregate[0] += 1.0
+        aggregate[1] += value
+        aggregate[2] += float(value > 0)
+
+    def query(key: tuple[Any, ...]) -> tuple[int, float, float]:
+        count, total, positives = groups.get(key, [0.0, 0.0, 0.0])
+        count_int = int(count)
+        if not count_int:
+            return 0, 0.0, .5
+        return count_int, float(total / count), float(positives / count)
+
+    prior_columns = {
+        f"reactionPrior{horizon}": np.zeros(len(output), dtype=float)
+        for horizon in horizons
+    }
+    prior_columns.update(
+        {
+            "reactionHit5": np.zeros(len(output), dtype=float),
+            "reactionSupport5": np.zeros(len(output), dtype=float),
+        }
+    )
+    pointer = 0
+    ordered = output.sort_values(["date", "symbol", "publishedAt"]).index
+    for index in ordered:
+        row = output.loc[index]
+        event_date = pd.Timestamp(row["date"]).normalize()
+        while pointer < len(tape) and tape[pointer][0] <= event_date:
+            _, horizon, symbol, event_type, label, realized = tape[pointer]
+            add(("MARKET", horizon, event_type, label), realized)
+            add(("STOCK", horizon, symbol, event_type, label), realized)
+            pointer += 1
+        event_type = str(row["eventType"])
+        label = str(row["label"])
+        symbol = str(row["symbol"])
+        for horizon in horizons:
+            market_n, market_mean, market_hit = query(
+                ("MARKET", horizon, event_type, label)
+            )
+            stock_n, stock_mean, stock_hit = query(
+                ("STOCK", horizon, symbol, event_type, label)
+            )
+            market_weight = market_n / (market_n + 60.0)
+            market_prior = market_weight * market_mean
+            market_hit_prior = market_weight * market_hit + (1.0 - market_weight) * .5
+            stock_weight = stock_n / (stock_n + 8.0)
+            reaction_prior = stock_weight * stock_mean + (1.0 - stock_weight) * market_prior
+            reaction_hit = stock_weight * stock_hit + (1.0 - stock_weight) * market_hit_prior
+            prior_columns[f"reactionPrior{horizon}"][index] = reaction_prior
+            if horizon == 5:
+                prior_columns["reactionHit5"][index] = reaction_hit - .5
+                support = stock_n if stock_n else market_n
+                prior_columns["reactionSupport5"][index] = math.log1p(support) / 6.0
+    for name, values in prior_columns.items():
+        output[name] = values
+    output.drop(columns=["_matureDate", "_cumulativeAbnormalReturn"], inplace=True, errors="ignore")
+    return output, {
+        "status": "ACTIVE" if tape else "UNAVAILABLE",
+        "maturedOutcomes": len(tape),
+        "horizons": list(horizons),
+        "method": "MATURITY_GATED_MARKET_TO_STOCK_SHRINKAGE",
+        "sameOrFutureEventOutcomesUsed": 0,
+        "sectorMembershipUsed": False,
+    }
+
+
 def load_signal_sources(universe: set[str]) -> tuple[pd.DataFrame, dict[str, list[dict[str, Any]]], dict[str, Any]]:
     archive = json.loads((DATA / "event-intelligence-v12.json").read_text(encoding="utf-8"))
     recent = json.loads((DATA / "research-news.json").read_text(encoding="utf-8"))
@@ -257,6 +366,10 @@ def load_signal_sources(universe: set[str]) -> tuple[pd.DataFrame, dict[str, lis
                 "novelty": float(np.clip(_number(item.get("noveltyScore"), 1.0), 0, 1)),
                 "sourceType": source_type,
                 "historical": historical,
+                "_matureDate": item.get("matureDate") if historical else None,
+                "_cumulativeAbnormalReturn": (
+                    item.get("cumulativeAbnormalReturn") if historical else None
+                ),
             }
         )
 
@@ -273,6 +386,8 @@ def load_signal_sources(universe: set[str]) -> tuple[pd.DataFrame, dict[str, lis
     if events.empty:
         raise RuntimeError("no point-in-time, correctly linked HOSE news events")
     events.sort_values(["date", "symbol", "publishedAt"], inplace=True)
+    events.reset_index(drop=True, inplace=True)
+    events, reaction_prior_audit = attach_matured_reaction_priors(events)
     metadata = {
         "newsArchiveVersion": archive.get("version"),
         "newsArchiveGeneratedAt": archive.get("generatedAt"),
@@ -290,6 +405,7 @@ def load_signal_sources(universe: set[str]) -> tuple[pd.DataFrame, dict[str, lis
         "closeCutoff": "15:00 Asia/Ho_Chi_Minh",
         "afterClosePolicy": "NEXT_TRADING_SESSION",
         "outcomeFieldsUsedAsFeatures": 0,
+        "maturedReactionPrior": reaction_prior_audit,
         "archiveLimitation": "Historical publisher timestamps are preserved, but retrospective RSS retrieval cannot prove historical discovery availability.",
         "accountingPolicy": "Quarterly accounting ratios remain excluded without verified publication timestamps.",
     }
@@ -309,6 +425,19 @@ def symbol_signal_features(frame: pd.DataFrame, symbol_events: pd.DataFrame, flo
         event["negative"] = (event["label"] == "NEG").astype(float)
         event["official"] = event["sourceType"].str.contains("OFFICIAL", na=False).astype(float)
         event["rumor"] = event["sourceType"].str.contains("RUMOR", na=False).astype(float)
+        for horizon in (1, 3, 5):
+            event[f"reaction_prior{horizon}_weighted"] = (
+                pd.to_numeric(event[f"reactionPrior{horizon}"], errors="coerce").fillna(0)
+                * event["weight"]
+            )
+        event["reaction_hit5_weighted"] = (
+            pd.to_numeric(event["reactionHit5"], errors="coerce").fillna(0)
+            * event["weight"]
+        )
+        event["reaction_support5_weighted"] = (
+            pd.to_numeric(event["reactionSupport5"], errors="coerce").fillna(0)
+            * event["weight"]
+        )
         for event_type in ("EARNINGS", "REGULATORY", "OWNERSHIP", "MARKET_FLOW"):
             event[event_type.lower()] = (event["eventType"] == event_type).astype(float)
         grouped = event.groupby("date", observed=True).agg(
@@ -326,10 +455,15 @@ def symbol_signal_features(frame: pd.DataFrame, symbol_events: pd.DataFrame, flo
             regulatory=("regulatory", "sum"),
             ownership=("ownership", "sum"),
             market_flow=("market_flow", "sum"),
+            reaction_prior1_weighted=("reaction_prior1_weighted", "sum"),
+            reaction_prior3_weighted=("reaction_prior3_weighted", "sum"),
+            reaction_prior5_weighted=("reaction_prior5_weighted", "sum"),
+            reaction_hit5_weighted=("reaction_hit5_weighted", "sum"),
+            reaction_support5_weighted=("reaction_support5_weighted", "sum"),
         )
         aligned = grouped.reindex(pd.DatetimeIndex(dates), fill_value=0).reset_index(drop=True)
     else:
-        aligned = pd.DataFrame(0.0, index=range(len(frame)), columns=["weighted_sentiment", "weight", "count", "materiality", "credibility", "novelty", "positive", "negative", "official", "rumor", "earnings", "regulatory", "ownership", "market_flow"])
+        aligned = pd.DataFrame(0.0, index=range(len(frame)), columns=["weighted_sentiment", "weight", "count", "materiality", "credibility", "novelty", "positive", "negative", "official", "rumor", "earnings", "regulatory", "ownership", "market_flow", "reaction_prior1_weighted", "reaction_prior3_weighted", "reaction_prior5_weighted", "reaction_hit5_weighted", "reaction_support5_weighted"])
 
     weighted = aligned["weighted_sentiment"].astype(float)
     weights = aligned["weight"].astype(float)
@@ -344,6 +478,32 @@ def symbol_signal_features(frame: pd.DataFrame, symbol_events: pd.DataFrame, flo
     for source, destination in (("positive", "news_positive5"), ("negative", "news_negative5"), ("official", "news_official5"), ("rumor", "news_rumor5"), ("earnings", "news_earnings5"), ("regulatory", "news_regulatory5"), ("ownership", "news_ownership5"), ("market_flow", "news_flow_event5")):
         result[destination] = aligned[source].rolling(5, min_periods=1).sum()
     result["news_sentiment_acceleration"] = result["news_sentiment5"] - result["news_sentiment20"]
+    reaction_weight5 = weights.rolling(5, min_periods=1).sum().replace(0, np.nan)
+    for horizon in (1, 3, 5):
+        result[f"news_reaction_prior{horizon}"] = (
+            aligned[f"reaction_prior{horizon}_weighted"]
+            .rolling(5, min_periods=1)
+            .sum()
+            .div(reaction_weight5)
+            .fillna(0)
+            .clip(-.15, .15)
+        )
+    result["news_reaction_hit5"] = (
+        aligned["reaction_hit5_weighted"]
+        .rolling(5, min_periods=1)
+        .sum()
+        .div(reaction_weight5)
+        .fillna(0)
+        .clip(-.5, .5)
+    )
+    result["news_reaction_support5"] = (
+        aligned["reaction_support5_weighted"]
+        .rolling(5, min_periods=1)
+        .sum()
+        .div(reaction_weight5)
+        .fillna(0)
+        .clip(0, 2)
+    )
     positions = np.arange(len(frame))
     last_event = np.where(aligned["count"].to_numpy() > 0, positions, np.nan)
     last_event = pd.Series(last_event).ffill()

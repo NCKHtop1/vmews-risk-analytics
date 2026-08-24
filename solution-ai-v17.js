@@ -296,7 +296,10 @@
         .filter(Boolean);
     } catch { /* integrated dashboard sources remain available */ }
     const ranked = rankOpenSources([...embedded, ...discovered], question);
-    return (intent.useSnapshot ? ranked : ranked.filter(source => source.relevance > 0)).slice(0, 10);
+    return (intent.useSnapshot
+      ? ranked
+      : ranked.filter(source => source.relevance > 0 || source.channel === "GDELT")
+    ).slice(0, 10);
   }
 
   function researchPrompt(question, context, intent, openSources) {
@@ -327,7 +330,13 @@
       JSON.stringify(context),
     );
     else sections.push("GHI CHÚ:", "Người dùng không yêu cầu phân tích mã cổ phiếu đang mở; không tự đưa giá, danh mục quỹ hoặc dự báo mã đó vào câu trả lời.");
-    if (state.messages.length) sections.push("LỊCH SỬ TRAO ĐỔI GẦN NHẤT:", JSON.stringify(state.messages.slice(-8)));
+    if (state.messages.length) sections.push(
+      "LỊCH SỬ TRAO ĐỔI GẦN NHẤT:",
+      JSON.stringify(state.messages.slice(-10).map(item => ({
+        role: item.role,
+        content: String(item.content || "").slice(0, 2400),
+      }))),
+    );
     return sections.join("\n");
   }
 
@@ -449,14 +458,14 @@
     };
     const interactionBody = tools => ({
       model, input, system_instruction: systemInstruction(), store: false,
-      generation_config: { max_output_tokens: 2600, temperature: .18, ...(intent.useSnapshot ? { thinking_level: "high" } : {}) },
+      generation_config: { max_output_tokens: 4200, temperature: .18, ...((intent.useSnapshot || intent.shouldSearch) ? { thinking_level: "high" } : {}) },
       ...(tools.length ? { tools: tools.map(type => type === "google_search" ? GOOGLE_SEARCH_TOOL : URL_CONTEXT_TOOL) } : {}),
       ...(responseFormat(model) ? { response_format: responseFormat(model) } : {}),
     });
     const compatibleBody = search => ({
       systemInstruction: { parts: [{ text: systemInstruction() }] },
       contents: [{ role: "user", parts: [{ text: input }] }],
-      generationConfig: { maxOutputTokens: 2600, temperature: .18 },
+      generationConfig: { maxOutputTokens: 4200, temperature: .18 },
       ...(search ? { tools: [{ googleSearch: {} }] } : {}),
     });
     let searchLimited = false;
@@ -503,6 +512,23 @@
       openSourceCount: openSources.length,
       highQualitySourceCount: openSources.filter(source => source.quality >= 70).length,
     };
+  }
+
+  async function resilientDirectAnalysis(question, context, secret, intent) {
+    if (!state.modelCandidates.length) state.model = await validateGemini(secret);
+    const candidates = [...new Set([state.model, ...state.modelCandidates].filter(Boolean))].slice(0, 3);
+    let lastError;
+    for (let index = 0; index < candidates.length; index += 1) {
+      state.model = candidates[index];
+      try {
+        const result = await directAnalysis(question, context, secret, intent);
+        return { ...result, modelFallbacks: index };
+      } catch (error) {
+        lastError = error;
+        if (index + 1 < candidates.length) setStatus("Đang tiếp tục với kết nối dự phòng…");
+      }
+    }
+    throw lastError || new Error("Gemini tạm thời chưa phản hồi.");
   }
 
   function flowContext(source) {
@@ -888,7 +914,7 @@
       return [
         `### Snapshot forecast ${context.symbol} · nguồn số liệu chuẩn`,
         ...forecastPath(context),
-        "Các con số trên lấy trực tiếp từ VMEWS; phần phân tích bên dưới không được thay đổi forecast đã niêm phong.",
+        "Đây là đường dự báo hiện tại của VMEWS; phần phân tích bên dưới đối chiếu các yếu tố có thể ủng hộ hoặc làm suy yếu kịch bản này.",
         text,
       ].join("\n");
     }
@@ -946,7 +972,7 @@
       if (secret) {
         if (intent.shouldSearch) setStatus("Đang tìm nguồn công khai…");
         try {
-          const result = await directAnalysis(question, context, secret, intent);
+          const result = await resilientDirectAnalysis(question, context, secret, intent);
           answer = enforceAnswerFocus(result.text, question, context, intent);
           sources = result.sources;
           if (intent.useSnapshot) meta.push(`Forecast ${context.symbol}`);
@@ -954,6 +980,7 @@
           if (result.readUrls) meta.push("Đã đọc website");
           if (result.openSourceCount) meta.push(`${result.openSourceCount} nguồn mở`);
           if (result.highQualitySourceCount) meta.push(`${result.highQualitySourceCount} nguồn chất lượng cao`);
+          if (result.modelFallbacks) meta.push("Đã tự nối lại");
           if (result.searchLimited) meta.push("Google Search giới hạn");
           setStatus(result.searched || result.readUrls || result.openSourceCount
             ? "Gemini · nghiên cứu web và nguồn mở"

@@ -70,6 +70,13 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
         self.assertNotIn("bước giá", self.html)
+        self.assertNotIn("không trả lời chung chung", self.html)
+        self.assertIn(
+            "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
+            self.html,
+        )
+        self.assertIn("release=19.3", self.html)
+        self.assertNotIn("release=19.2", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")

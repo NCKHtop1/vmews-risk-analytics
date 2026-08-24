@@ -7,7 +7,7 @@ class Element {
   constructor(value = "") {
     this.value = value;
     this.listeners = new Map();
-    this.classList = { add() {}, remove() {} };
+    this.classList = { add() {}, remove() {}, toggle() {} };
     this.nodes = new Map();
     this.children = [];
     this.hidden = false;
@@ -20,9 +20,18 @@ class Element {
   }
   setAttribute() {}
   focus() {}
-  append(...children) { this.children.push(...children); }
+  append(...children) {
+    for (const child of children) if (child && typeof child === "object") child.parentElement = this;
+    this.children.push(...children);
+    this.textContent += children.map(child => typeof child === "string" ? child : child?.textContent || "").join("");
+  }
   scrollIntoView() {}
-  remove() { this.removed = true; }
+  remove() {
+    this.removed = true;
+    if (this.parentElement) {
+      this.parentElement.children = this.parentElement.children.filter(child => child !== this);
+    }
+  }
 }
 
 function dashboard() {
@@ -70,6 +79,11 @@ async function setup(fetch = async () => { throw new Error("Unexpected network r
     },
     addEventListener(name, callback) { listeners.set(name, callback); },
     createElement() { return new Element(); },
+    createTextNode(value) {
+      const node = new Element();
+      node.textContent = String(value);
+      return node;
+    },
   };
   const window = {
     __VMEWS_LOAD_BASE__: async () => dashboard(),
@@ -78,6 +92,7 @@ async function setup(fetch = async () => { throw new Error("Unexpected network r
       forecast: base.dash.symbols.FPT.horizons["5"],
     }],
     addEventListener() {},
+    setTimeout() { return 1; },
   };
   const context = vm.createContext({
     window, document, location: { search: "?symbol=FPT", hostname: "cdn.githubraw.com", origin: "https://cdn.githubraw.com" },
@@ -95,6 +110,14 @@ async function setup(fetch = async () => { throw new Error("Unexpected network r
   vm.runInContext(source, context);
   listeners.get("DOMContentLoaded")();
   return { source, nodes, session, persistent, window };
+}
+
+async function settle() {
+  await new Promise(resolve => setTimeout(resolve, 15));
+}
+
+function textOf(node) {
+  return [node?.textContent || "", ...(node?.children || []).map(textOf)].join(" ");
 }
 
 test("browser context includes observed holdings/news but withholds unvalidated probability", async () => {
@@ -156,13 +179,15 @@ test("direct Gemini receives audited context and guardrails without exposing the
   nodes.get("#solutionAiInput").value = "Danh mục quỹ FPT ảnh hưởng thế nào?";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
   assert.equal(requests.length, 2);
   assert.equal(requests[1].url, "https://generativelanguage.googleapis.com/v1beta/interactions");
   const payload = JSON.parse(requests[1].options.body);
   assert.equal(payload.model, "gemini-3.5-flash");
   assert.equal(payload.store, false);
+  assert.equal(payload.generation_config.max_output_tokens, 4200);
+  assert.equal(payload.generation_config.thinking_level, "high");
   assert.deepEqual(payload.tools, [{ type: "google_search" }, { type: "url_context" }]);
   assert.ok(payload.input.indexOf("Danh mục quỹ FPT ảnh hưởng thế nào?") < payload.input.indexOf('"fundCount":17'));
   assert.match(payload.input, /"fundCount":17/);
@@ -194,7 +219,7 @@ test("current Gemini interaction steps expose grounded answers and safe source l
           { type: "google_search_call", arguments: { queries: ["FPT triển vọng vĩ mô 2026"] } },
           { type: "google_search_result", result: [{}] },
           { type: "model_output", content: [{
-            type: "text", text: "Lãi suất, nhu cầu chuyển đổi số và tỷ giá đang tác động đến FPT.",
+            type: "text", text: "FPT có forecast T+5 73.000; lãi suất, nhu cầu chuyển đổi số và tỷ giá là các yếu tố cần đối chiếu.",
             annotations: [
               { type: "url_citation", url: "https://fpt.com/vi/nha-dau-tu", title: "Công bố FPT" },
               { type: "url_citation", url: "javascript:alert(1)", title: "unsafe" },
@@ -209,10 +234,10 @@ test("current Gemini interaction steps expose grounded answers and safe source l
   nodes.get("#solutionAiInput").value = "Tình hình vĩ mô và triển vọng ngành của FPT ra sao?";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
-  assert.ok(answer.children.some(child => /chuyển đổi số/.test(child.textContent)));
+  assert.match(textOf(answer), /chuyển đổi số/);
   const references = answer.children.find(child => child.className === "aiSources");
   assert.equal(references.children.length, 1);
   assert.equal(references.children[0].href, "https://fpt.com/vi/nha-dau-tu");
@@ -249,7 +274,7 @@ test("unavailable Google Search falls back to URL Context and open sources witho
   nodes.get("#solutionAiInput").value = "Đánh giá vĩ mô hiện nay";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
   assert.equal(requests.length, 4);
   assert.match(requests[1].url, /api\.gdeltproject\.org/);
@@ -281,10 +306,11 @@ test("general questions reach Gemini without dragging the open stock snapshot in
   nodes.get("#solutionAiInput").value = "Machine learning khác deep learning thế nào?";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
-  assert.equal(requests.length, 2);
-  const payload = JSON.parse(requests[1].options.body);
+  assert.equal(requests.length, 3);
+  assert.match(requests[1].url, /api\.gdeltproject\.org/);
+  const payload = JSON.parse(requests[2].options.body);
   assert.match(payload.input, /Machine learning khác deep learning thế nào/);
   assert.match(payload.input, /CÂU HỎI TỰ DO/);
   assert.doesNotMatch(payload.input, /"fundCount"|"horizons"|"close":72000/);
@@ -310,7 +336,7 @@ test("a supplied public URL is offered to Gemini URL Context with no API key sen
   nodes.get("#solutionAiInput").value = `Đọc và phân tích nguồn này: ${article}`;
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
   const openNews = requests.find(request => request.url.includes("api.gdeltproject.org"));
   assert.equal(openNews.options.headers, undefined);
@@ -321,7 +347,7 @@ test("a supplied public URL is offered to Gemini URL Context with no API key sen
   assert.ok(payload.tools.some(tool => tool.type === "url_context"));
 });
 
-test("a Gemini provider outage is shown honestly instead of repeating a canned FPT forecast", async () => {
+test("a Gemini provider outage continues with the audited snapshot and says what failed", async () => {
   const { nodes } = await setup(async (url) => {
     if (url.includes("/models?")) return { ok: true, status: 200, json: async () => ({ models: [{ name: "models/gemini-3.7-flash" }] }) };
     return { ok: false, status: 503, json: async () => ({ error: { message: "provider unavailable" } }) };
@@ -331,13 +357,48 @@ test("a Gemini provider outage is shown honestly instead of repeating a canned F
   nodes.get("#solutionAiInput").value = "Phân tích danh mục quỹ FPT";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
-  assert.match(answer.className, /aiError/);
+  assert.match(answer.className, /aiAssistant/);
   assert.ok(answer.children.some(child => /tạm thời gián đoạn/.test(child.textContent)));
-  assert.ok(answer.children.every(child => !/giá hiện tại 72\.000/.test(child.textContent)));
-  assert.match(nodes.get("#solutionAiStatus").textContent, /chưa phản hồi/);
+  assert.ok(answer.children.some(child => /72\.000/.test(child.textContent)));
+  assert.match(nodes.get("#solutionAiStatus").textContent, /dự phòng/);
+});
+
+test("Gemini automatically continues with an available backup model", async () => {
+  const requests = [];
+  const { nodes } = await setup(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("/models?")) {
+      return {
+        ok: true, status: 200,
+        json: async () => ({ models: [
+          { name: "models/gemini-3.7-flash", supportedGenerationMethods: ["generateContent"] },
+          { name: "models/gemini-3.5-flash", supportedGenerationMethods: ["generateContent"] },
+        ] }),
+      };
+    }
+    const payload = JSON.parse(options.body);
+    if (payload.model === "gemini-3.7-flash") {
+      return { ok: false, status: 503, json: async () => ({ error: { message: "temporary" } }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ output_text: "FPT có forecast T+5 73.000; mô hình dự phòng đã tiếp tục phân tích." }) };
+  });
+  nodes.get("#solutionAiKey").value = "AQ.synthetic-model-failover-secret-123456789";
+  await nodes.get("#solutionAiRetry").listeners.get("click")();
+  nodes.get("#solutionAiInput").value = "Danh mục quỹ của mã đang xem tác động thế nào?";
+
+  nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
+  await settle();
+
+  const providerCalls = requests.filter(request => request.url.endsWith("/interactions"));
+  assert.equal(providerCalls.length, 2);
+  assert.equal(JSON.parse(providerCalls[0].options.body).model, "gemini-3.7-flash");
+  assert.equal(JSON.parse(providerCalls[1].options.body).model, "gemini-3.5-flash");
+  const answer = nodes.get("#solutionAiMessages").children.at(-1);
+  assert.match(textOf(answer), /dự phòng đã tiếp tục/);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /Gemini/);
 });
 
 test("questions requiring outside information request a real Gemini connection instead of canned analysis", async () => {
@@ -345,11 +406,11 @@ test("questions requiring outside information request a real Gemini connection i
   nodes.get("#solutionAiInput").value = "Tình hình kinh tế vĩ mô hiện nay như thế nào?";
 
   nodes.get("#solutionAiForm").listeners.get("submit")({ preventDefault() {} });
-  await new Promise(resolve => setImmediate(resolve));
+  await settle();
 
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
-  assert.ok(answer.children.some(child => /kết nối Gemini/.test(child.textContent)));
-  assert.ok(answer.children.every(child => !/17 quỹ đang nắm giữ/.test(child.textContent)));
+  assert.match(textOf(answer), /Kết nối Gemini/);
+  assert.doesNotMatch(textOf(answer), /17 quỹ đang nắm giữ/);
 });
 
 test("rejected Gemini key is never stored", async () => {

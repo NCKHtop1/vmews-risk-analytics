@@ -9,6 +9,7 @@ on:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v14_signal_audit.py"
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
       - "scripts/forecast_v16_external_data_test.py"
