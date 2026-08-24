@@ -53,6 +53,15 @@ test("rendered FPT headlines reject an FRT/FTS primary ticker without removing l
   assert.equal(window.__VMEWS_ISSUER_HEADLINE_MATCHES__("FRT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan"), true);
 });
 
+test("commit-pinned CDN loads data from the same immutable ref", async () => {
+  const { window } = await loadMarketDashboard();
+  assert.equal(window.__VMEWS_ASSET_REF__, "hash");
+  assert.equal(
+    window.__VMEWS_DATA_ROOT__,
+    "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/hash/data",
+  );
+});
+
 test("VN30 carousel rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [
@@ -144,6 +153,8 @@ test("source freshness labels are clear and contain no internal data-engineering
   assert.doesNotMatch(source, new RegExp(["không điền", "giả"].join("\\s+"), "i"));
   assert.doesNotMatch(source, /Object\.assign\(horizon\s*,\s*adjustment\)/);
   assert.doesNotMatch(source, /FORECAST LOCKED/);
+  assert.doesNotMatch(source, /\/main\/data/);
+  assert.match(source, /CDN_PATH\[2\]/);
   assert.match(source, /Cập nhật chậm/);
   assert.match(source, /Đã cập nhật cùng phiên/);
   assert.match(source, /Chưa có dữ liệu từ nguồn/);
