@@ -114,11 +114,14 @@ test("live community overlay updates only the matching audited snapshot and vali
   };
 
   assert.equal(window.__VMEWS_APPLY_COMMUNITY_LIVE__(market, update), true);
-  assert.equal(market.dash.symbols.FPT.horizons["5"].expectedPrice, 72_300);
+  assert.equal(market.dash.symbols.FPT.horizons["5"].expectedPrice, 72_000);
+  assert.equal(market.dash.symbols.FPT.horizons["5"].liveScenarioOverlay.scenarioPrice, 72_300);
+  assert.equal(market.dash.symbols.FPT.horizons["5"].liveScenarioOverlay.appliedToCentralForecast, false);
   assert.equal(market.dash.symbols.FPT.evidence.communityWatchlist[0].verificationState, "PENDING");
   assert.equal(market.market.sources.rumorAudit.source.articles, 10);
   assert.equal(emitted.at(-1).type, "vmews:community-updated");
-  assert.equal(emitted.at(-1).detail.forecastUpdates, 1);
+  assert.equal(emitted.at(-1).detail.forecastUpdates, 0);
+  assert.equal(emitted.at(-1).detail.scenarioUpdates, 1);
 });
 
 test("a different snapshot or an invalid sub-tick update can never replace the forecast", async () => {
@@ -133,4 +136,15 @@ test("a different snapshot or an invalid sub-tick update can never replace the f
   };
   assert.equal(window.__VMEWS_APPLY_COMMUNITY_LIVE__(market, invalidTick), true);
   assert.equal(market.dash.symbols.FPT.horizons["5"].expectedPrice, 72_000);
+  assert.equal(market.dash.symbols.FPT.horizons["5"].liveScenarioOverlay, undefined);
+});
+
+test("source freshness labels are clear and contain no internal data-engineering jargon", async () => {
+  const source = await readFile(new URL("../forecast-final-v12.js", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /không điền giả/i);
+  assert.doesNotMatch(source, /Object\.assign\(horizon\s*,\s*adjustment\)/);
+  assert.doesNotMatch(source, /FORECAST LOCKED/);
+  assert.match(source, /Cập nhật chậm/);
+  assert.match(source, /Đã cập nhật cùng phiên/);
+  assert.match(source, /Chưa có dữ liệu từ nguồn/);
 });

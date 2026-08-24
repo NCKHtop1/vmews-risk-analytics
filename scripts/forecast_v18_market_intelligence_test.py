@@ -110,7 +110,10 @@ class CorroboratedRumorTest(unittest.TestCase):
         ])
         context = output["GAS"]
         self.assertTrue(context["inferenceEligible"])
-        self.assertEqual(audit["decisionPriorSymbols"], 1)
+        self.assertTrue(context["scenarioEligible"])
+        self.assertFalse(context["usedByForecast"])
+        self.assertEqual(audit["scenarioEligibleSymbols"], 1)
+        self.assertEqual(audit["decisionPriorSymbols"], 0)
         prior = decision_prior(None, None, None, .025, 5, rumor=context)
         self.assertGreater(prior["components"]["RUMOR"], 0)
         self.assertLessEqual(abs(prior["totalReturn"]), prior["maximumAbsoluteReturn"])
@@ -135,7 +138,7 @@ class CorroboratedRumorTest(unittest.TestCase):
         self.assertFalse(watchlist["GAS"][0]["usedByForecast"])
         self.assertEqual(self.evaluate(events)[0], {})
 
-    def test_live_adjustment_keeps_hose_grid_and_audited_price_range(self) -> None:
+    def test_live_context_scenario_keeps_hose_grid_without_replacing_central_price(self) -> None:
         output, _ = self.evaluate([
             self.event("GAS dự kiến ký hợp đồng dự án năng lượng tăng trưởng", publisher="FireAnt", published="2026-08-22T09:00:00+07:00"),
             self.event("GAS có thể ký hợp đồng dự án năng lượng tăng trưởng", publisher="24HMoney", published="2026-08-22T10:00:00+07:00"),
@@ -148,11 +151,13 @@ class CorroboratedRumorTest(unittest.TestCase):
         }
         adjustments = _adjusted_horizons(snapshot, output["GAS"], datetime(2026, 8, 23, 10, tzinfo=timezone(timedelta(hours=7))))
         horizon = adjustments["5"]
-        self.assertEqual(horizon["expectedPrice"] % 100, 0)
-        self.assertLessEqual(horizon["q20Price"], horizon["expectedPrice"])
-        self.assertGreaterEqual(horizon["q80Price"], horizon["expectedPrice"])
+        self.assertEqual(horizon["scenarioPrice"] % 100, 0)
+        self.assertLessEqual(horizon["scenarioQ20Price"], horizon["scenarioPrice"])
+        self.assertGreaterEqual(horizon["scenarioQ80Price"], horizon["scenarioPrice"])
         self.assertLessEqual(abs(horizon["liveEvidence"]["totalReturn"]), horizon["liveEvidence"]["maximumAbsoluteReturn"])
         self.assertTrue(horizon["liveAdjustment"]["bounded"])
+        self.assertFalse(horizon["appliedToCentralForecast"])
+        self.assertNotIn("expectedPrice", horizon)
 
 
 class PublicFireAntPublisherTest(unittest.TestCase):

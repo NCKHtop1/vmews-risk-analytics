@@ -670,7 +670,9 @@
       technical: technicalContext(chartHistory),
       fund: fund.available ? {
         fundCount: fund.fundCount, averageWeight: fund.averageReportedWeight,
-        navMomentum20: fund.weightedNavMomentum20, usedByForecast: fund.usedByForecast === true,
+        navMomentum20: fund.weightedNavMomentum20,
+        scenarioEligible: fund.scenarioEligible === true || fund.inferenceEligible === true,
+        usedByForecast: fund.usedByForecast === true,
         disclosedAt: fund.asOf,
         holders: (fund.holdings || []).slice(0, 12).map(item => ({
           name: item.fundName || item.fundCode, code: item.fundCode, weight: item.weight,
@@ -683,6 +685,7 @@
       financial: finances.available ? {
         incomePeriod: finances.incomePeriod, profitGrowth: finances.profitQoQ,
         revenueGrowth: finances.revenueQoQ, ratios: finances.ratios,
+        scenarioEligible: finances.scenarioEligible === true || finances.inferenceEligible === true,
         usedByForecast: finances.usedByForecast === true,
       } : null,
       news: (snapshot.evidence?.decisionRecent || snapshot.evidence?.recent || [])
@@ -722,6 +725,7 @@
         modelPromotionStatus: base.model.promotion?.status || null,
         phaseGateStatus: base.gates?.status || null,
         fundPriorIndependentlyBacktested: base.model.governance?.livePriorIndependentlyBacktested === true,
+        centralForecastUsesUnvalidatedPrior: base.model.governance?.centralForecastUsesUnvalidatedPrior === true,
       },
       topMovers: top,
     };
@@ -877,7 +881,7 @@
   function forecastPath(context) {
     return Object.entries(context?.horizons || {})
       .sort((left, right) => Number(left[0].replace("T+", "")) - Number(right[0].replace("T+", "")))
-      .map(([label, horizon]) => `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, P↑ ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`);
+      .map(([label, horizon]) => `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`);
   }
 
   function localAnalysis(input, context) {
@@ -902,7 +906,7 @@
       const stance = five.expectedReturn > .003 ? "nghiêng tăng" : five.expectedReturn < -.003 ? "nghiêng giảm" : "gần như đi ngang";
       lines.push(
         `### Kết luận cho ${context.symbol}`,
-        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là forecast đã niêm phong tại snapshot ${context.asOf || "chưa rõ ngày"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,
+        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là dự báo đã niêm phong theo dữ liệu ngày ${context.asOf || "chưa rõ"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,
       );
       if (number(five.expectedAbsReturn) !== null) {
         lines.push(
@@ -933,15 +937,15 @@
     if (fundQuestion || detailed) {
       if (context.fund) {
         const contribution = five?.liveEvidence?.FUND;
-        lines.push("### Quỹ và dòng tiền", `Có ${context.fund.fundCount} quỹ đang nắm giữ, tỷ trọng bình quân ${(context.fund.averageWeight * 100).toFixed(2)}% trong từng danh mục quỹ; NAV 20 phiên ${pct(context.fund.navMomentum20)}${number(contribution) === null ? "" : `; đóng góp đã ghi nhận vào forecast T+5 ${pct(contribution)}`}. Tỷ trọng này không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua trong phiên.`);
+        lines.push("### Quỹ và dòng tiền", `Có ${context.fund.fundCount} quỹ đang nắm giữ, tỷ trọng bình quân ${(context.fund.averageWeight * 100).toFixed(2)}% trong từng danh mục quỹ; NAV 20 phiên ${pct(context.fund.navMomentum20)}${number(contribution) === null ? "" : `; mức điều chỉnh trong kịch bản tham khảo T+5 ${pct(contribution)}`}. Dữ liệu quỹ chưa điều chỉnh giá dự báo trung tâm. Tỷ trọng này không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua trong phiên.`);
         if (fundQuestion) lines.push(`Các tỷ trọng cao nhất: ${context.fund.holders.slice(0, 5).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ")}.`);
-      } else if (fundQuestion) lines.push("Mã này chưa có công bố danh mục quỹ đủ điều kiện để đưa vào forecast.");
+      } else if (fundQuestion) lines.push("Mã này chưa có công bố danh mục quỹ đủ lịch sử để đánh giá riêng; giá dự báo trung tâm không bị thay đổi.");
     }
 
     if (flowQuestion || detailed) {
       const flowLines = [];
-      if (context.flow.foreign) flowLines.push(`Khối ngoại ${context.flow.foreign.latestDate}: ròng ${money(context.flow.foreign.net1)} đồng; 5 quan sát ${money(context.flow.foreign.net5)} đồng${context.flow.foreign.ageSessions ? `; trễ ${context.flow.foreign.ageSessions} phiên` : ""}.`);
-      if (context.flow.proprietary) flowLines.push(`Tự doanh ${context.flow.proprietary.latestDate}: ròng ${money(context.flow.proprietary.net1)} đồng; 5 quan sát ${money(context.flow.proprietary.net5)} đồng${context.flow.proprietary.ageSessions ? `; trễ ${context.flow.proprietary.ageSessions} phiên` : ""}.`);
+      if (context.flow.foreign) flowLines.push(`Khối ngoại ${context.flow.foreign.latestDate}: ròng ${money(context.flow.foreign.net1)} đồng; lũy kế 5 phiên ${money(context.flow.foreign.net5)} đồng${context.flow.foreign.ageSessions ? `; cập nhật chậm ${context.flow.foreign.ageSessions} phiên` : ""}.`);
+      if (context.flow.proprietary) flowLines.push(`Tự doanh ${context.flow.proprietary.latestDate}: ròng ${money(context.flow.proprietary.net1)} đồng; lũy kế 5 phiên ${money(context.flow.proprietary.net5)} đồng${context.flow.proprietary.ageSessions ? `; cập nhật chậm ${context.flow.proprietary.ageSessions} phiên` : ""}.`);
       if (flowLines.length) lines.push(...flowLines);
     }
 
@@ -956,14 +960,14 @@
     if ((context.communitySignals.length || context.communityMonitoring.length) && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ|phân tích|kết hợp|forecast/.test(question)) {
       lines.push("### Tín hiệu cộng đồng");
       for (const item of context.communitySignals.slice(0, 4)) lines.push(`- ${item.title} — ${item.independentSources || 0} nguồn độc lập, chất lượng ${item.quality || 0}/100, trạng thái ${item.truthState || item.state || "đang xác minh"}.`);
-      if (!context.communitySignals.length && context.communityMonitoring.length) lines.push(`Có ${context.communityMonitoring.length} tín hiệu đang theo dõi; chưa đủ điều kiện tác động forecast.`);
-      lines.push("Nguồn cộng đồng chỉ được dùng làm tín hiệu cần kiểm tra; không được coi là công bố chính thức.");
+      if (!context.communitySignals.length && context.communityMonitoring.length) lines.push(`Có ${context.communityMonitoring.length} tín hiệu đang theo dõi; các tín hiệu này không điều chỉnh giá dự báo trung tâm.`);
+      lines.push("Nguồn cộng đồng chỉ được dùng làm tín hiệu cần kiểm tra và kịch bản tham khảo; không được coi là công bố chính thức.");
     }
 
     if (/rủi ro|lưu ý|an toàn|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) {
       lines.push(
         "### Kiểm định và giới hạn",
-        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; price gate ${context.validation.priceValidated ? "PASS" : "chưa PASS"}; promotion ${context.validation.modelPromotionStatus || "chưa rõ"}; mẫu holdout T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Xác suất hướng đã qua gate kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`,
+        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Xác suất hướng đã qua kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`,
         `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Forecast là phân bố bất định, không phải cam kết giá hoặc khuyến nghị mua/bán.`,
       );
     }
@@ -1000,7 +1004,7 @@
         "### Nguồn công khai đã thu thập để đối chiếu",
         ...sources.slice(0, 6).map(item => `- ${item.title}${item.publisher ? ` — ${item.publisher}` : ""}${item.publishedAt ? `, ${item.publishedAt}` : ""}.`),
         intent.useSnapshot
-          ? "Các nguồn trên chưa tự động tác động forecast; cần đọc nội dung và xác minh trước khi dùng để ủng hộ hoặc phản biện luận điểm mô hình."
+          ? "Các nguồn trên chưa tự động thay đổi dự báo trung tâm; cần đọc nội dung và xác minh trước khi dùng để ủng hộ hoặc phản biện luận điểm mô hình."
           : "Danh sách trên là đầu mối nghiên cứu, chưa phải kết luận đã xác minh.",
       );
     }

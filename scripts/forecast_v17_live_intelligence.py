@@ -128,7 +128,8 @@ def decision_news_contexts(
             "signalScore": float(signal_score),
             "confidence": confidence,
             "inferenceEligible": True,
-            "usedByForecast": abs(signal_score) > 1e-12,
+            "scenarioEligible": abs(signal_score) > 1e-12,
+            "usedByForecast": False,
             "items": [
                 {
                     "title": str(row.get("title") or ""),
@@ -148,7 +149,7 @@ def decision_news_contexts(
             ],
         }
     return output, {
-        "status": "ACTIVE_DECISION_PRIOR" if output else "UNAVAILABLE",
+        "status": "CONTEXT_SCENARIO_ONLY" if output else "UNAVAILABLE",
         "symbols": len(output),
         "articles": sum(item["count"] for item in output.values()),
         "nextSession": next_session.isoformat(),
@@ -336,7 +337,8 @@ def fund_decision_contexts(
             "modelEligible": len(snapshots) >= 4,
             "fitEligible": len(snapshots) >= 4,
             "inferenceEligible": True,
-            "usedByForecast": True,
+            "scenarioEligible": True,
+            "usedByForecast": False,
             "signalScore": score,
             "confidence": confidence,
             "signalComponents": {
@@ -357,11 +359,11 @@ def fund_decision_contexts(
                 for item in sorted_holdings
             ],
             "source": "FMARKET",
-            "policy": "DECISION_TIMESTAMP_DISCLOSURE_PRIOR; NO_HISTORICAL_BACKFILL",
+            "policy": "DECISION_TIMESTAMP_CONTEXT_SCENARIO; NO_HISTORICAL_BACKFILL; NOT_APPLIED_TO_CENTRAL_FORECAST",
         }
 
     return contexts, {
-        "status": "ACTIVE_DECISION_PRIOR" if contexts else "UNAVAILABLE",
+        "status": "CONTEXT_SCENARIO_ONLY" if contexts else "UNAVAILABLE",
         "snapshotCount": len(snapshots),
         "asOf": latest.get("asOf"),
         "collectedAt": latest.get("generatedAt"),
@@ -424,7 +426,8 @@ def financial_decision_contexts(
             "observedAt": observed.isoformat(timespec="seconds"),
             "observationAgeDays": age,
             "inferenceEligible": True,
-            "usedByForecast": True,
+            "scenarioEligible": True,
+            "usedByForecast": False,
             "signalScore": score,
             "confidence": confidence,
             "signalComponents": {
@@ -433,10 +436,10 @@ def financial_decision_contexts(
                 "profitability": float(quality),
                 "valuation": float(value),
             },
-            "policy": "OBSERVED_CURRENT_FINANCIAL_PRIOR; NO_UNTIMESTAMPED_HISTORICAL_FEATURE",
+            "policy": "OBSERVED_CURRENT_FINANCIAL_SCENARIO; NO_UNTIMESTAMPED_HISTORICAL_FEATURE; NOT_APPLIED_TO_CENTRAL_FORECAST",
         }
     return output, {
-        "status": "ACTIVE_DECISION_PRIOR" if output else "UNAVAILABLE",
+        "status": "CONTEXT_SCENARIO_ONLY" if output else "UNAVAILABLE",
         "symbols": len(output),
         "observedAt": observed.isoformat(timespec="seconds"),
         "historicalBackfillRows": 0,
@@ -487,7 +490,7 @@ def decision_prior(
     news: dict[str, Any] | None = None,
     rumor: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Create a small explicit prior, capped as a fraction of issuer volatility."""
+    """Create a bounded context scenario that never changes the central quote."""
     horizon_volatility = max(.004, _number(daily_volatility, .004)) * math.sqrt(max(1, horizon))
     components = {name: 0.0 for name in OVERLAY_FACTORS}
     if fund and fund.get("inferenceEligible"):
@@ -542,5 +545,6 @@ def decision_prior(
         "maximumAbsoluteReturn": float(maximum),
         "horizonVolatility": float(horizon_volatility),
         "independentlyBacktested": False,
-        "policy": "DECISION_TIME_OBSERVATIONS; VOLATILITY_BOUNDED; NO_HISTORICAL_BACKFILL",
+        "centralForecastEligible": False,
+        "policy": "DECISION_TIME_CONTEXT_SCENARIO; VOLATILITY_BOUNDED; NO_HISTORICAL_BACKFILL; NOT_APPLIED_TO_CENTRAL_FORECAST",
     }

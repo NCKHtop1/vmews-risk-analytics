@@ -361,7 +361,8 @@ def rumor_intelligence(
                 "fireantMentions": sum(claim["fireantMentions"] for claim in claims),
                 "money24hMentions": sum(claim["money24hMentions"] for claim in claims),
                 "inferenceEligible": bool(live),
-                "usedByForecast": bool(live),
+                "scenarioEligible": bool(live),
+                "usedByForecast": False,
                 "signalScore": max(-1.0, min(1.0, signal)),
                 "confidence": confidence,
                 "historicallyBacktested": False,
@@ -388,7 +389,8 @@ def rumor_intelligence(
         "candidateMentions": candidates,
         "qualifiedClaims": sum(item["claimCount"] for item in output.values()),
         "symbols": len(output),
-        "decisionPriorSymbols": sum(item["usedByForecast"] for item in output.values()),
+        "scenarioEligibleSymbols": sum(item["scenarioEligible"] for item in output.values()),
+        "decisionPriorSymbols": 0,
         "source": source,
         "pointInTime": True,
         "minimumIndependentSources": 2,
@@ -726,6 +728,7 @@ def _live_snap(price: float, mode: str = "nearest") -> int:
 
 
 def _adjusted_horizons(snapshot: dict[str, Any], context: dict[str, Any], observed: datetime) -> dict[str, Any]:
+    """Build a context scenario without replacing the sealed central forecast."""
     from forecast_v17_live_intelligence import decision_prior
 
     close = _float(snapshot.get("close"))
@@ -749,14 +752,15 @@ def _adjusted_horizons(snapshot: dict[str, Any], context: dict[str, Any], observ
         for name, amount in prior["components"].items():
             factors[name] = _float(factors.get(name)) + amount - _float((previous.get("components") or {}).get(name))
         output[key] = {
-            "expectedPrice": expected,
-            "expectedReturn": expected / close - 1.0,
-            "q20Price": low,
-            "q80Price": high,
+            "scenarioPrice": expected,
+            "scenarioReturn": expected / close - 1.0,
+            "scenarioQ20Price": low,
+            "scenarioQ80Price": high,
             "tickSize": _live_tick(expected),
             "expertContributions": factors,
             "liveEvidence": prior,
-            "liveAdjustment": {"observedAt": observed.isoformat(timespec="seconds"), "deltaReturn": delta, "bounded": True, "qualifiedClaims": int(context.get("claimCount") or 0)},
+            "appliedToCentralForecast": False,
+            "liveAdjustment": {"observedAt": observed.isoformat(timespec="seconds"), "deltaReturn": delta, "bounded": True, "qualifiedClaims": int(context.get("claimCount") or 0), "scenarioOnly": True},
         }
     return output
 
@@ -791,7 +795,8 @@ def publish_live_overlay() -> dict[str, Any]:
             "watchlist": watchlist,
             "rumorContext": context or snapshot.get("rumorContext") or {},
             "horizons": updates,
-            "forecastUpdated": bool(updates),
+            "scenarioUpdated": bool(updates),
+            "forecastUpdated": False,
         }
     payload = {
         "version": "VMEWS-COMMUNITY-LIVE-19.0.0",
@@ -805,8 +810,9 @@ def publish_live_overlay() -> dict[str, Any]:
         "audit": audit,
         "symbols": output,
         "watchedSymbols": len(output),
-        "forecastUpdatedSymbols": sum(bool(item["forecastUpdated"]) for item in output.values()),
-        "refreshPolicy": "INTRADAY_PUBLIC_SOURCES; ISSUER_MATCH; INDEPENDENT_CORROBORATION; VOLATILITY_BOUNDED; VALID_HOSE_TICKS",
+        "forecastUpdatedSymbols": 0,
+        "scenarioUpdatedSymbols": sum(bool(item["scenarioUpdated"]) for item in output.values()),
+        "refreshPolicy": "INTRADAY_PUBLIC_SOURCES; ISSUER_MATCH; INDEPENDENT_CORROBORATION; VOLATILITY_BOUNDED; VALID_HOSE_TICKS; SCENARIO_ONLY; CENTRAL_FORECAST_IMMUTABLE",
     }
     COMMUNITY_LIVE_PATH.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False), encoding="utf-8")
     return {key: value for key, value in payload.items() if key not in {"symbols", "audit", "marketContext"}}

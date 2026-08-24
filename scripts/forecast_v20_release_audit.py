@@ -106,11 +106,21 @@ def run_audit() -> dict[str, Any]:
     require(as_of == str(market.get("asOf") or "")[:10], "dashboard and market as-of dates differ")
     require(as_of == str((market.get("sources") or {}).get("marketScanAsOf") or "")[:10], "market scan and forecast dates differ")
 
-    expected_version = "VMEWS-MARKET-FORECAST-20.0.0"
-    require(market.get("version") == expected_version, "market artifact is not V20")
+    expected_version = "VMEWS-MARKET-FORECAST-20.1.0"
+    require(market.get("version") == expected_version, "market artifact is not V20.1")
     require(dashboard.get("modelVersion") == expected_version, "dashboard model version differs from market")
     require(current.get("modelVersion") == expected_version, "current model version differs from market")
     require((market.get("model") or {}).get("promotion", {}).get("status") == "PASS", "sealed price promotion is not PASS")
+    governance = (market.get("model") or {}).get("governance") or {}
+    require(governance.get("centralForecastUsesUnvalidatedPrior") is False, "unvalidated live context can alter the central forecast")
+    require(governance.get("livePriorIndependentlyBacktested") is False, "live context audit semantics are inconsistent")
+    price_cross_source = (market.get("sources") or {}).get("priceCrossSource") or {}
+    require(price_cross_source.get("status") == "PASS", "same-session current-price cross-source gate is not PASS")
+    require(
+        float(price_cross_source.get("coverage") or 0) >= float(price_cross_source.get("requiredCoverage") or 1),
+        "current-price cross-source coverage is below its required minimum",
+    )
+    require(int(price_cross_source.get("mismatchCount") or 0) == 0, "current-price sources disagree beyond exchange-aware tolerance")
 
     quote_count = 0
     neutral_points = 0
@@ -170,6 +180,17 @@ def run_audit() -> dict[str, Any]:
             contributions = forecast.get("expertContributions") or {}
             if not math.isclose(sum(float(value) for value in contributions.values()), float(forecast["expectedReturn"]), abs_tol=1e-11):
                 quote_failures.append(f"{symbol}/T+{key}: contribution sum mismatch")
+            scenario_components = ((forecast.get("liveEvidence") or {}).get("components") or {})
+            if forecast.get("liveAdjustmentAppliedToCentralForecast") is not False:
+                quote_failures.append(f"{symbol}/T+{key}: live context can replace the central forecast")
+            if not math.isclose(float(forecast.get("liveAdjustmentReturn") or 0), 0.0, abs_tol=1e-15):
+                quote_failures.append(f"{symbol}/T+{key}: nonzero live adjustment on central forecast")
+            if not math.isclose(
+                sum(float(value) for value in scenario_components.values()),
+                float(forecast.get("scenarioAdjustmentReturn") or 0),
+                abs_tol=1e-11,
+            ):
+                quote_failures.append(f"{symbol}/T+{key}: context scenario attribution mismatch")
             if float(forecast["expectedAbsReturn"]) <= 0 or not forecast.get("magnitudeValidated"):
                 quote_failures.append(f"{symbol}/T+{key}: unsigned magnitude unavailable")
             if forecast.get("crossSectionalRankUniverse") != len(symbols) or not (0 < float(forecast.get("crossSectionalRankPercentile") or 0) <= 1):
@@ -281,6 +302,9 @@ def run_audit() -> dict[str, Any]:
     leaked = re.findall(r"(?:AIza[0-9A-Za-z_-]{20,}|sk-[0-9A-Za-z_-]{20,})", frontend_text)
     backend_text = (ROOT / "api" / "solution-ai.js").read_text(encoding="utf-8")
     require(not leaked, "provider secret pattern found in public frontend")
+    require("Object.assign(horizon,adjustment)" not in frontend_text.replace(" ", ""), "live browser overlay can overwrite sealed forecast fields")
+    require("không điền giả" not in frontend_text.casefold(), "internal data-engineering wording leaked into the interface")
+    require("appliedToCentralForecast:false" in frontend_text.replace(" ", ""), "browser scenario overlay lacks an immutable-central-forecast marker")
     for provider_name in ("GEMINI_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"):
         require(provider_name in backend_text, f"AI server failover is missing {provider_name}")
     require("failoverAvailable" in backend_text and "unavailableProviders" in backend_text, "AI health/failover disclosure is incomplete")
@@ -309,7 +333,7 @@ def run_audit() -> dict[str, Any]:
         }
 
     report = {
-        "version": "VMEWS-RELEASE-AUDIT-20.0.0",
+        "version": "VMEWS-RELEASE-AUDIT-20.1.0",
         "asOf": as_of,
         "status": "PASS" if not blockers else "FAIL",
         "scope": {
@@ -324,6 +348,7 @@ def run_audit() -> dict[str, Any]:
             "staleSymbols": len(stale_price_symbols),
             "chartMismatches": len(chart_mismatches),
             "flatPointForecasts": neutral_points,
+            "crossSource": price_cross_source,
         },
         "flow": {
             "completedSession": latest_completed,
@@ -349,7 +374,8 @@ def run_audit() -> dict[str, Any]:
             "Central forecasts estimate conditional expected return; expected absolute move and bear/bull scenarios are separate unsigned quantities.",
             "A direction probability is displayed only for horizons whose sealed Brier-skill gate passes.",
             "After-cost evidence is a fixed long-only diagnostic, not a portfolio backtest; REVIEW horizons remain watch-only.",
-            "Missing institutional-flow rows remain unavailable; genuine stale observations stay visible but cannot drive the current decision prior.",
+            "Decision-time fund, flow, accounting, event and community inputs are context scenarios only; they do not alter the sealed central forecast until independently backtested.",
+            "Missing institutional-flow rows remain unavailable; genuine stale observations stay visible but cannot drive the current context scenario.",
             "AI provider failover improves availability but cannot guarantee an external provider quota or the truth of an unverified source.",
         ],
     }
