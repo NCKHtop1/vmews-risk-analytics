@@ -6,6 +6,7 @@ import json
 import math
 import sys
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from forecast_v13_market_model import (  # noqa: E402
     session_limit,
     snap_price,
     tick_size,
+    _vn_direct_rows,
 )
 from forecast_v14_signal_audit import (  # noqa: E402
     attach_matured_reaction_priors,
@@ -34,6 +36,31 @@ from forecast_v14_signal_audit import (  # noqa: E402
 
 
 class VietnamPriceGridTest(unittest.TestCase):
+    def test_vndirect_decimal_quotes_are_normalized_to_integer_vnd(self) -> None:
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return None
+
+        payload = {
+            "data": [{
+                "date": "2026-08-24", "open": 32.55, "high": 32.9,
+                "low": 32.45, "close": 32.7, "adClose": 32.7,
+                "nmVolume": 2_715_700, "floor": "HOSE",
+            }]
+        }
+        response = Response()
+        response.read = lambda: json.dumps(payload).encode("utf-8")
+        with patch("forecast_v13_market_model.urlopen", return_value=response):
+            row = _vn_direct_rows("BAF")[0]
+        self.assertEqual(row["open"], 32_550)
+        self.assertEqual(row["high"], 32_900)
+        self.assertEqual(row["low"], 32_450)
+        self.assertEqual(row["close"], 32_700)
+        self.assertIsInstance(row["close"], int)
+
     def test_t2_market_intercept_is_regime_shrunk_before_holdout(self) -> None:
         self.assertEqual(INTERCEPT_RETENTION[2], .25)
         self.assertEqual(intercept_modes(2), ("BLEND_0.25",))

@@ -183,13 +183,19 @@ def _vn_direct_rows(symbol: str, size: int = 14, timeout: int = 14) -> list[dict
         if raw_close <= 0:
             continue
         scale = 1000.0 if raw_close < 1000 else 1.0
+        # VNDIRECT quotes are expressed either in VND or thousands of VND.
+        # Multiplying a decimal quote such as 32.7 by 1,000 can otherwise leak
+        # a binary-float artefact (32700.000000000004) into the public chart.
+        # Executable OHLC prices are whole VND; adjusted closes intentionally
+        # remain continuous because they are used only for model returns.
+        close = int(round(raw_close * scale))
         result.append(
             {
                 "date": str(record.get("date", ""))[:10],
-                "open": _clean_number(record.get("open"), raw_close) * scale,
-                "high": _clean_number(record.get("high"), raw_close) * scale,
-                "low": _clean_number(record.get("low"), raw_close) * scale,
-                "close": raw_close * scale,
+                "open": int(round(_clean_number(record.get("open"), raw_close) * scale)),
+                "high": int(round(_clean_number(record.get("high"), raw_close) * scale)),
+                "low": int(round(_clean_number(record.get("low"), raw_close) * scale)),
+                "close": close,
                 "modelClose": _clean_number(record.get("adClose"), raw_close) * scale,
                 "volume": _clean_number(record.get("nmVolume")),
                 "provider": "VNDIRECT PUBLIC EOD",
@@ -2120,7 +2126,9 @@ def write_artifacts(
             {
                 "date": str(item["date"])[:10],
                 "close": float(item.get("modelClose") or item["close"]),
-                "rawClose": float(item["close"]),
+                # Public/executable prices have an integer-VND contract even
+                # when an upstream JSON float contains representation noise.
+                "rawClose": int(round(float(item["close"]))),
                 "volume": float(item.get("volume") or 0.0),
             }
             for item in histories[symbol][-180:]
