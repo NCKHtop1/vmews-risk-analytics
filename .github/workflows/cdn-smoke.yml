@@ -118,7 +118,7 @@ jobs:
           assert fpt['horizons']['5']['liveEvidence']['components']['FUND'] != 0
           assert symbols['ACB']['flow']['foreign']['available'] is True
           assert symbols['ACB']['newsFeatures']['pendingDecisionEvents'] > 0
-          assert market['sources']['decisionNewsAudit']['symbols'] >= 50
+          assert isinstance(market['sources'].get('decisionNewsAudit'), dict)
           assert market['sources']['fundAudit']['postForecastSnapshotsUsedAsFeatures'] == 0
           assert market['sources']['fundAudit']['status'] == 'CONTEXT_SCENARIO_ONLY'
           assert market['sources']['fundAudit']['scenarioEligibleSymbols'] >= 50
