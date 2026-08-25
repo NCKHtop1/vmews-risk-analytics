@@ -75,4 +75,16 @@ if audit.count(old_report) != 1:
     raise SystemExit(f"V22 delivery report count={audit.count(old_report)}")
 audit_path.write_text(audit.replace(old_report, new_report, 1), encoding="utf-8")
 
-print("V22 patcher and release audit repaired")
+# Prevent browsers from issuing a noisy /favicon.ico request. The session JSON
+# itself now has a checked-in DEGRADED sentinel, so no expected 404 remains.
+html_path = ROOT / "forecast-final.html"
+html = html_path.read_text(encoding="utf-8")
+icon = '<link rel="icon" href="data:,">'
+if icon not in html:
+    marker = '<meta name="description" content="Dự báo cổ phiếu HOSE T+1 đến T+5 với trọng tâm giá, vùng dự báo và dữ liệu kiểm định.">'
+    if html.count(marker) != 1:
+        raise SystemExit(f"V22 favicon marker count={html.count(marker)}")
+    html = html.replace(marker, marker + "\n" + icon, 1)
+    html_path.write_text(html, encoding="utf-8")
+
+print("V22 patcher release audit and browser bootstrap repaired")
