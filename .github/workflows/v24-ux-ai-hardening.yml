@@ -43,6 +43,19 @@ jobs:
           p.write_text(text.replace(old,new,1),encoding='utf-8')
           PY
 
+      - name: Align deep-dive browser sequence with visible UI state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/forecast_v22_browser_e2e.mjs')
+          text=p.read_text(encoding='utf-8')
+          old='''  assert.doesNotMatch(sourceText, /Độ phủ HOSE|Rổ VN30/);\n  const financeCard = page.locator("#sourceAudit .sourceCard", { hasText: "Tài chính doanh nghiệp" }).first();'''
+          new='''  assert.doesNotMatch(sourceText, /Độ phủ HOSE|Rổ VN30/);\n  await page.locator("#solutionAiClose").click();\n  await page.waitForTimeout(250);\n  assert.equal(await page.locator("#solutionAiPanel").isVisible(), false);\n  const financeCard = page.locator("#sourceAudit .sourceCard", { hasText: "Tài chính doanh nghiệp" }).first();'''
+          if old not in text:
+              raise SystemExit('V24 browser deep-dive sequence anchor missing')
+          p.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
+
       - name: Run leakage-safe forecast accuracy audit
         run: |
           python scripts/forecast_v24_accuracy_audit.py
