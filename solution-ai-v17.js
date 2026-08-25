@@ -666,10 +666,12 @@
         return: row.upside ?? row.horizons?.["5"]?.expectedReturn,
       }))
       .filter(row => row.close > 0 && row.forecast > row.close && number(row.return) !== null)
-      .sort((left, right) => right.return - left.return)
       .slice(0, 10);
     const modelAudit = base.model.horizons?.["5"] || {};
     const chartHistory = base.dash.charts?.[symbol] || [];
+    const currentRankIndex = ranked.findIndex(row => String(row?.symbol || "").toUpperCase() === symbol);
+    const currentRankRow = currentRankIndex >= 0 ? ranked[currentRankIndex] : null;
+    const fiveSnapshot = snapshot.horizons?.["5"] || {};
     return {
       brand: "SoluTION.AI", symbol, asOf: snapshot.date, decisionAt: base.dash.marketForecast?.decisionAt,
       close: snapshot.close, sector: snapshot.sector, riskStatus: snapshot.riskStatus,
@@ -735,6 +737,17 @@
         phaseGateStatus: base.gates?.status || null,
         fundPriorIndependentlyBacktested: base.model.governance?.livePriorIndependentlyBacktested === true,
         centralForecastUsesUnvalidatedPrior: base.model.governance?.centralForecastUsesUnvalidatedPrior === true,
+      },
+      marketRanking: {
+        scope: "HOSE",
+        canonicalVisibleRank: currentRankIndex >= 0 ? currentRankIndex + 1 : null,
+        leaderboardRows: ranked.length,
+        isTop10: currentRankIndex >= 0 && currentRankIndex < 10,
+        rankScore: number(currentRankRow?.rankScore),
+        liveUpside: number(currentRankRow?.upside),
+        modelRankPercentile: number(fiveSnapshot.crossSectionalRankPercentile),
+        modelRankUniverse: number(fiveSnapshot.crossSectionalRankUniverse),
+        modelRankValidated: fiveSnapshot.crossSectionalRankValidated === true,
       },
       topMovers: top,
     };
@@ -1251,39 +1264,249 @@
   }
 
 
-  function externalGeminiPrompt() {
-    const context = state.context || {};
-    const compact = {
-      symbol: context.symbol,
-      asOf: context.asOf,
-      close: context.close,
-      horizons: context.horizons,
-      factors: context.factors,
-      riskStatus: context.riskStatus,
-      dataFreshness: context.dataFreshness,
-      validation: context.validation,
-      session: context.session,
+
+  let lastGeminiHandoffText = "";
+  let lastGeminiHandoffContext = null;
+  let handoffUiMounted = false;
+  let handoffCard = null;
+  let handoffStatusNode = null;
+  let handoffDetailNode = null;
+  let handoffPreviewNode = null;
+  let handoffPreviewButton = null;
+
+  function redactHandoffText(value) {
+    return String(value ?? "")
+      .replace(/\bAIza[0-9A-Za-z_-]{20,}\b/g, "[REDACTED_GOOGLE_KEY]")
+      .replace(/\bAQ\.[0-9A-Za-z._-]{16,}\b/g, "[REDACTED_AUTH_KEY]")
+      .replace(/((?:api[_ -]?key|authorization|bearer|token|secret)\s*[:=]?\s*)([A-Za-z0-9._-]{16,})/gi, "$1[REDACTED_SECRET]");
+  }
+
+  function sanitizeForHandoff(value, depth = 0) {
+    if (depth > 8 || value === undefined) return null;
+    if (value === null || typeof value === "number" || typeof value === "boolean") return value;
+    if (typeof value === "string") return redactHandoffText(value).slice(0, 5000);
+    if (Array.isArray(value)) return value.slice(0, 30).map(item => sanitizeForHandoff(item, depth + 1));
+    if (typeof value !== "object") return String(value);
+    const result = {};
+    for (const [key, item] of Object.entries(value)) {
+      if (/(?:api.?key|secret|credential|authorization|access.?token|refresh.?token)/i.test(key)) {
+        result[key] = "[REDACTED]";
+        continue;
+      }
+      result[key] = sanitizeForHandoff(item, depth + 1);
+    }
+    return result;
+  }
+
+  function handoffConversation() {
+    return (state.messages || []).slice(-8).map(message => ({
+      role: message.role === "assistant" ? "assistant" : "user",
+      content: redactHandoffText(message.content).slice(0, 2200),
+    }));
+  }
+
+  function resolveHandoffQuestion(explicitQuestion = "") {
+    const explicit = redactHandoffText(explicitQuestion).trim();
+    if (explicit) return explicit.slice(0, 2200);
+    const draft = redactHandoffText($("#solutionAiInput")?.value || "").trim();
+    if (draft) return draft.slice(0, 2200);
+    const lastUser = [...(state.messages || [])].reverse().find(message => message.role === "user");
+    if (lastUser?.content) return redactHandoffText(lastUser.content).slice(0, 2200);
+    return "Phân tích toàn bộ forecast hiện tại, ưu tiên điều gì đáng chú ý nhất và điều kiện nào làm thay đổi kết luận?";
+  }
+
+  function geminiHandoffPayload(context = state.context || {}, explicitQuestion = "") {
+    const question = resolveHandoffQuestion(explicitQuestion);
+    const liveClose = number(context.session?.liveClose);
+    const mode = liveClose !== null && liveClose > 0 ? "SESSION" : "EOD";
+    const activePrice = mode === "SESSION" ? liveClose : number(context.close);
+    const payload = {
+      handoff: {
+        version: "VMEWS-GEMINI-HANDOFF-23.0",
+        source: "SoluTION.AI",
+        generatedAt: new Date().toISOString(),
+        continuity: "CONTINUE_CURRENT_SESSION",
+        dataMode: mode,
+        rule: "EOD forecast is sealed; session price may only recompute remaining distance to the sealed target.",
+      },
+      userIntent: {
+        currentQuestion: question,
+        recentConversation: handoffConversation(),
+        instruction: "Continue from this exact state. Do not ask the user to re-enter forecast facts already present here.",
+      },
+      forecast: {
+        symbol: context.symbol || null,
+        asOf: context.asOf || null,
+        decisionAt: context.decisionAt || null,
+        sector: context.sector || null,
+        riskStatus: context.riskStatus || null,
+        dataFreshness: context.dataFreshness || null,
+        dailyVolatility: context.dailyVolatility ?? null,
+        sealedCoreClose: number(context.close),
+        activePrice,
+        session: context.session || null,
+        horizons: context.horizons || {},
+        marketRanking: context.marketRanking || null,
+        topHOSECandidates: context.topMovers || [],
+      },
+      evidence: {
+        technical: context.technical || null,
+        flow: context.flow || null,
+        fund: context.fund || null,
+        financial: context.financial || null,
+        issuerNews: context.news || [],
+        communitySignals: context.communitySignals || [],
+        communityMonitoring: context.communityMonitoring || [],
+        marketContext: context.marketContext || [],
+        communityUpdatedAt: context.communityUpdatedAt || null,
+      },
+      validation: context.validation || null,
     };
+    return sanitizeForHandoff(payload);
+  }
+
+  function externalGeminiPrompt(explicitQuestion = "", context = state.context || {}) {
+    const payload = geminiHandoffPayload(context, explicitQuestion);
     return [
-      "Hãy đóng vai nhà phân tích phản biện. Trả lời bằng tiếng Việt, không dùng disclaimer chung.",
-      "Đọc dữ liệu VMEWS dưới đây như snapshot đã niêm phong; không tự sửa số forecast.",
-      "Hãy kết luận theo 5 phần: luận điểm hiện tại; đường T+1→T+5; bằng chứng ủng hộ; bằng chứng mâu thuẫn; điều kiện xác nhận và điều kiện vô hiệu.",
-      JSON.stringify(compact),
+      "SoluTION.AI → Gemini Web | CONTINUATION HANDOFF",
+      "Bạn đang tiếp tục đúng phiên phân tích từ SoluTION.AI. Không yêu cầu người dùng nhập lại dữ liệu đã có trong payload.",
+      "Dữ liệu forecast EOD/core là snapshot đã niêm phong: không tự sửa close, target, interval, probability hay validation.",
+      "Nếu dataMode=SESSION, liveClose chỉ là giá quan sát mới nhất để đánh giá khoảng cách còn lại tới target đã niêm phong; không được biến live price thành một forecast mới.",
+      "Hãy đọc toàn bộ T+1→T+5, ranking HOSE, technical, dòng tiền, quỹ, tài chính, tin doanh nghiệp, tín hiệu cộng đồng và validation trước khi kết luận.",
+      "Ưu tiên trả lời currentQuestion. Nếu câu hỏi rộng, cấu trúc: (1) kết luận hiện tại, (2) đường T+1→T+5, (3) vị thế/ranking thị trường, (4) technical + flow + fund + financial, (5) news/community, (6) độ tin cậy và phần chưa được kiểm định, (7) điều kiện xác nhận và vô hiệu.",
+      "Không dùng disclaimer chung; nói rõ dữ liệu nào là EOD, dữ liệu nào là SESSION và dữ liệu nào thiếu/stale.",
+      "PAYLOAD JSON:",
+      JSON.stringify(payload, null, 2),
     ].join("\n");
   }
 
-  function openGeminiWeb() {
-    const popup = window.open("https://gemini.google.com/app", "_blank", "noopener,noreferrer");
-    const text = externalGeminiPrompt();
+  async function copyHandoffText(text) {
+    const content = String(text || "");
+    if (!content) return false;
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(content);
+        return true;
+      }
+    } catch { /* fall through */ }
+    if (!document?.body || typeof document.createElement !== "function") return false;
+    const textarea = document.createElement("textarea");
+    textarea.value = content;
+    textarea.setAttribute?.("readonly", "");
+    if (textarea.style) textarea.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+    document.body.append?.(textarea);
+    textarea.select?.();
+    let copied = false;
+    try { copied = Boolean(document.execCommand?.("copy")); } catch { copied = false; }
+    textarea.remove?.();
+    return copied;
+  }
+
+  function mountGeminiHandoffUi() {
+    if (handoffUiMounted) return;
+    handoffUiMounted = true;
+    const button = $("#solutionAiGeminiWeb");
+    if (button) {
+      button.textContent = "Tiếp tục trên Gemini Web ↗";
+      button.setAttribute?.("title", "Mang toàn bộ forecast, ranking, dữ liệu phiên và câu hỏi hiện tại sang Gemini Web");
+    }
+    const panel = $("#solutionAiPanel");
+    if (!panel || typeof document.createElement !== "function") return;
+    handoffCard = document.createElement("section");
+    handoffCard.id = "solutionAiHandoffCard";
+    handoffCard.className = "aiHandoffCard";
+    handoffCard.hidden = true;
+    const title = document.createElement("strong");
+    title.textContent = "Phiên Gemini đã được chuẩn bị";
+    handoffStatusNode = document.createElement("span");
+    handoffStatusNode.className = "aiHandoffStatus";
+    handoffDetailNode = document.createElement("small");
+    handoffDetailNode.className = "aiHandoffDetail";
+    const actions = document.createElement("div");
+    actions.className = "aiHandoffActions";
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.textContent = "Sao chép lại";
+    const previewButton = document.createElement("button");
+    previewButton.type = "button";
+    previewButton.textContent = "Xem gói chuyển";
+    handoffPreviewButton = previewButton;
+    handoffPreviewNode = document.createElement("pre");
+    handoffPreviewNode.className = "aiHandoffPreview";
+    handoffPreviewNode.hidden = true;
+    copyButton.addEventListener("click", async () => {
+      const copied = await copyHandoffText(lastGeminiHandoffText);
+      if (handoffStatusNode) handoffStatusNode.textContent = copied ? "Đã sao chép lại — chỉ cần dán vào Gemini." : "Trình duyệt chặn clipboard — mở phần xem gói chuyển để sao chép.";
+    });
+    previewButton.addEventListener("click", () => {
+      if (!handoffPreviewNode) return;
+      handoffPreviewNode.hidden = !handoffPreviewNode.hidden;
+      previewButton.textContent = handoffPreviewNode.hidden ? "Xem gói chuyển" : "Ẩn gói chuyển";
+    });
+    actions.append(copyButton, previewButton);
+    handoffCard.append(title, handoffStatusNode, handoffDetailNode, actions, handoffPreviewNode);
+    const connect = $("#solutionAiConnect");
+    if (connect?.insertAdjacentElement) connect.insertAdjacentElement("afterend", handoffCard);
+    else panel.append?.(handoffCard);
+    if (document.head && !document.getElementById?.("solutionAiHandoffStyle")) {
+      const style = document.createElement("style");
+      style.id = "solutionAiHandoffStyle";
+      style.textContent = `.aiHandoffCard{margin:10px 14px;padding:10px 12px;border:1px solid rgba(90,150,255,.24);border-radius:12px;background:rgba(25,48,82,.36);display:grid;gap:6px}.aiHandoffCard[hidden]{display:none}.aiHandoffStatus{font-size:12px;font-weight:700}.aiHandoffDetail{opacity:.8;line-height:1.45}.aiHandoffActions{display:flex;gap:8px;flex-wrap:wrap}.aiHandoffActions button{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:inherit;border-radius:9px;padding:6px 9px;cursor:pointer}.aiHandoffPreview{max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:4px 0 0;padding:8px;border-radius:9px;background:rgba(0,0,0,.2);font-size:10px;line-height:1.35}@media(max-width:520px){.aiHandoffCard{margin:8px 10px}.aiHandoffActions button{flex:1}}`;
+      document.head.append(style);
+    }
+  }
+
+  function renderGeminiHandoffState(context, text, copied, popupOpened) {
+    mountGeminiHandoffUi();
+    lastGeminiHandoffText = text;
+    lastGeminiHandoffContext = context;
+    if (handoffCard) handoffCard.hidden = false;
+    const mode = number(context?.session?.liveClose) > 0 ? "SESSION" : "EOD";
+    const rank = context?.marketRanking?.canonicalVisibleRank;
+    const rankText = rank ? ` · rank hiển thị #${rank}` : "";
+    if (handoffStatusNode) handoffStatusNode.textContent = copied
+      ? popupOpened ? "Đã sao chép toàn bộ phiên — dán một lần vào Gemini để tiếp tục." : "Đã sao chép toàn bộ phiên; popup bị chặn, bấm lại để mở Gemini."
+      : "Gemini đã mở nhưng clipboard bị chặn — dùng ‘Xem gói chuyển’ để sao chép.";
+    if (handoffDetailNode) handoffDetailNode.textContent = `${context?.symbol || "Mã hiện tại"} · ${mode}${rankText} · T+1→T+5 · technical · flow · quỹ · tài chính · news · validation · hội thoại`;
+    if (handoffPreviewNode) {
+      handoffPreviewNode.textContent = text;
+      handoffPreviewNode.hidden = true;
+    }
+    if (handoffPreviewButton) handoffPreviewButton.textContent = "Xem gói chuyển";
+  }
+
+  async function openGeminiWeb() {
+    const popup = typeof window.open === "function" ? window.open("https://gemini.google.com/app", "_blank", "noopener,noreferrer") : null;
     const label = $("#solutionAiConnectionState");
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
-        if (label) label.textContent = "Đã sao chép ngữ cảnh forecast. Dán vào Gemini Web vừa mở để tiếp tục chat.";
-      }).catch(() => {
-        if (label) label.textContent = "Gemini Web đã mở. Có thể sao chép dữ liệu forecast đang xem và dán vào cuộc chat.";
-      });
-    } else if (label) label.textContent = "Gemini Web đã mở. Có thể sao chép dữ liệu forecast đang xem và dán vào cuộc chat.";
-    return Boolean(popup);
+    const button = $("#solutionAiGeminiWeb");
+    const previousText = button?.textContent || "Tiếp tục trên Gemini Web ↗";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Đang đóng gói phiên…";
+    }
+    try {
+      let context = state.context;
+      try {
+        context = await buildContext();
+        updateContextBar(context);
+      } catch {
+        context = state.context || {};
+      }
+      const text = externalGeminiPrompt("", context);
+      const copied = await copyHandoffText(text);
+      renderGeminiHandoffState(context, text, copied, Boolean(popup));
+      if (label) {
+        label.textContent = copied
+          ? "Đã chuyển đầy đủ forecast + dữ liệu phiên + ranking + bằng chứng + câu hỏi. Sang Gemini và dán một lần để tiếp tục."
+          : "Gemini Web đã mở; clipboard bị chặn. Mở ‘Xem gói chuyển’ ngay bên dưới để sao chép toàn bộ phiên.";
+      }
+      return Boolean(popup);
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = previousText.includes("Gemini") ? "Tiếp tục trên Gemini Web ↗" : previousText;
+      }
+    }
   }
 
   function disconnectGemini() {
@@ -1310,6 +1533,7 @@
 
   function init() {
     if (!$("#solutionAiPanel")) return;
+    mountGeminiHandoffUi();
     for (const selector of ["#solutionAiLauncher", "#solutionAiTop", "#solutionAiNav"]) $(selector)?.addEventListener("click", open);
     $("#solutionAiClose").addEventListener("click", close);
     $("#solutionAiSettings").addEventListener("click", configure);
@@ -1336,6 +1560,9 @@
       try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
     });
     window.__SOLUTION_AI_BUILD_CONTEXT__ = buildContext;
+    window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__ = (question = "", context = state.context || {}) => externalGeminiPrompt(question, context);
+    window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__ = (question = "", context = state.context || {}) => geminiHandoffPayload(context, question);
+    window.__SOLUTION_AI_LAST_GEMINI_HANDOFF__ = () => ({ text: lastGeminiHandoffText, context: lastGeminiHandoffContext });
     window.__SOLUTION_AI_CHECK_CONNECTION__ = checkConnection;
   }
 

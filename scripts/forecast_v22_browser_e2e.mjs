@@ -28,7 +28,24 @@ async function verify(viewport, label) {
   assert.ok(overflow <= 2, `${label}: horizontal overflow ${overflow}px`);
   assert.ok(await page.locator("#solutionAiGeminiWeb").count());
   await page.locator("#solutionAiNav").click();
+  await page.waitForTimeout(350);
   assert.equal(await page.locator("#solutionAiPanel").isVisible(), true);
+  assert.match(await page.locator("#solutionAiGeminiWeb").innerText(), /Tiếp tục trên Gemini Web/);
+  await page.locator("#solutionAiInput").fill("Kiểm tra chuyển phiên đầy đủ sang Gemini");
+  const handoff = await page.evaluate(() => {
+    const contextPromise = window.__SOLUTION_AI_BUILD_CONTEXT__();
+    return contextPromise.then(context => ({
+      payload: window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__("", context),
+      prompt: window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__("", context),
+    }));
+  });
+  assert.equal(handoff.payload.handoff.version, "VMEWS-GEMINI-HANDOFF-23.0");
+  assert.equal(handoff.payload.forecast.symbol, "FPT");
+  assert.ok(Object.keys(handoff.payload.forecast.horizons).length >= 1);
+  assert.ok(Array.isArray(handoff.payload.forecast.topHOSECandidates));
+  assert.match(handoff.payload.userIntent.currentQuestion, /Kiểm tra chuyển phiên/);
+  assert.match(handoff.prompt, /ranking HOSE/);
+  assert.match(handoff.prompt, /validation/);
   if (label === "desktop" && cards > 1) {
     const before = await page.locator("#carouselPosition").innerText();
     await page.waitForTimeout(3400);
@@ -42,4 +59,4 @@ await verify({ width: 1440, height: 1000 }, "desktop");
 await verify({ width: 390, height: 844 }, "mobile");
 await browser.close();
 assert.deepEqual(issues, []);
-console.log("V22 browser E2E PASS");
+console.log("V23 Gemini handoff + V22 browser E2E PASS");

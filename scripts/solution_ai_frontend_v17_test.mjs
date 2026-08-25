@@ -478,3 +478,47 @@ test("disconnect removes the Gemini key and restores local-only analysis", async
   assert.match(nodes.get("#solutionAiConnectionState").textContent, /Đã xóa khóa/);
   assert.match(nodes.get("#solutionAiStatus").textContent, /dữ liệu hiện có/);
 });
+
+test("Gemini Web handoff carries the full EOD decision state and redacts credentials", async () => {
+  const { source, window, nodes } = await setup();
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  nodes.get("#solutionAiInput").value = "Tôi nên chú ý điều gì ở FPT? AIza123456789012345678901234567890";
+  const payload = window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__("", context);
+  const prompt = window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__("", context);
+  assert.equal(payload.handoff.version, "VMEWS-GEMINI-HANDOFF-23.0");
+  assert.equal(payload.handoff.dataMode, "EOD");
+  assert.equal(payload.forecast.symbol, "FPT");
+  assert.equal(payload.forecast.sealedCoreClose, 72000);
+  assert.equal(payload.forecast.marketRanking.canonicalVisibleRank, 1);
+  assert.equal(payload.forecast.topHOSECandidates[0].symbol, "FPT");
+  assert.equal(payload.evidence.fund.fundCount, 17);
+  assert.equal(payload.evidence.flow.foreign.net5, 40);
+  assert.equal(payload.evidence.financial.profitGrowth, .2);
+  assert.equal(payload.evidence.issuerNews[0].title, "FPT công bố tăng trưởng");
+  assert.match(payload.userIntent.currentQuestion, /Tôi nên chú ý/);
+  assert.doesNotMatch(JSON.stringify(payload), /AIza123456789012345678901234567890/);
+  assert.match(prompt, /technical/);
+  assert.match(prompt, /dòng tiền/);
+  assert.match(prompt, /ranking HOSE/);
+  assert.match(prompt, /CONTINUE_CURRENT_SESSION/);
+  assert.match(source, /state\.messages \|\| \[\]/);
+  assert.match(source, /Tiếp tục trên Gemini Web/);
+});
+
+test("Gemini Web handoff distinguishes a fresh SESSION quote from the sealed EOD forecast", async () => {
+  const { window } = await setup();
+  window.__VMEWS_SESSION__ = {
+    status: "PASS", session: "PM", cutoffAt: "2026-08-25T14:30:00+07:00",
+    symbols: [{ symbol: "FPT", quoteCurrent: true, freshForCutoff: true, liveClose: 72500, change: .0069, updateAt: "2026-08-25T14:31:00+07:00", updateMode: "delayed_streaming_900" }],
+  };
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  const payload = window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__("Đánh giá lại khoảng cách tới target", context);
+  assert.equal(payload.handoff.dataMode, "SESSION");
+  assert.equal(payload.forecast.sealedCoreClose, 72000);
+  assert.equal(payload.forecast.activePrice, 72500);
+  assert.equal(payload.forecast.session.liveClose, 72500);
+  assert.equal(payload.forecast.session.sourceMode, "delayed_streaming_900");
+  assert.equal(payload.forecast.horizons["T+5"].price, 73000);
+  assert.ok(Math.abs(payload.forecast.horizons["T+5"].remainingReturnFromSession - (73000 / 72500 - 1)) < 1e-12);
+  assert.match(payload.userIntent.currentQuestion, /khoảng cách tới target/);
+});
