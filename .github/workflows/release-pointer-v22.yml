@@ -1,0 +1,53 @@
+name: V22 immutable asset release pointer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "forecast-final.html"
+      - "forecast-final-v12.js"
+      - "forecast-live-leaders-v14.js"
+      - "forecast-polish-v12.js"
+      - "forecast-portfolio-v14.css"
+      - "forecast-portfolio-v14.js"
+      - "solution-ai-v17.js"
+      - "api/solution-ai.js"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forecast-release-pointer
+  cancel-in-progress: false
+
+jobs:
+  publish-pointer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Point stable main URL to the exact immutable asset commit
+        env:
+          ASSET_REF: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          payload={
+            "version":"VMEWS-RELEASE-POINTER-22.0",
+            "assetRef":os.environ["ASSET_REF"],
+            "generatedAt":datetime.now(timezone.utc).isoformat(),
+            "dataRef":"main",
+            "policy":"IMMUTABLE_ASSETS_LIVE_MAIN_DATA"
+          }
+          Path("data/release-pointer-v22.json").write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/release-pointer-v22.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish V22 immutable asset pointer [data-only]"
+          git pull --rebase origin main
+          git push origin HEAD:main

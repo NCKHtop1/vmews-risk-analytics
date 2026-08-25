@@ -46,13 +46,14 @@ on:
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
   schedule:
+    - cron: "15 9 * * 1-5"
     - cron: "30 10 * * 1-5"
 
 permissions:
   contents: write
 
 concurrency:
-  group: forecast-v14-daily-refresh
+  group: forecast-data-publisher
   cancel-in-progress: false
 
 jobs:
@@ -116,4 +117,5 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh validated HOSE forecast, dated VN30 leaders and verified market intelligence [data-only]"
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main

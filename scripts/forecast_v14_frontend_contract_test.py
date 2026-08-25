@@ -57,8 +57,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "carouselPrev", "carouselNext", "carouselAutoplay",
             "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
             "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
-            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiKey", "solutionAiDisconnect",
-            "solutionAiBackend", "solutionAiSaveBackend",
+            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiGeminiWeb",
+            "solutionAiKey", "solutionAiDisconnect", "solutionAiBackend", "solutionAiSaveBackend",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -67,7 +67,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
         self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
-        self.assertIn("VN30 · 5 PHIÊN TỚI", self.html)
+        self.assertIn("HOSE · 5 PHIÊN TỚI", self.html)
         self.assertIn("Trọng tâm T+5", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
@@ -77,7 +77,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=20.2", self.html)
+        self.assertIn("release=20.4", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
@@ -116,9 +116,10 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertLess(input_sync, render)
         self.assertLess(spark_sync, render)
 
-    def test_leaderboard_uses_only_validated_positive_vn30_forecasts(self) -> None:
+    def test_leaderboard_defaults_to_validated_hose_with_explicit_vn30_scope(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
         self.assertIn("base?.dash?.lists?.vn30?.symbols", leaders)
+        self.assertIn('options.scope === "vn30"', leaders)
         self.assertIn("!members.has(symbol)", leaders)
         self.assertIn('"MCH"', leaders)
         self.assertIn('"TCX"', leaders)
@@ -128,10 +129,25 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn('forecast.validationStatus !== "PASS"', leaders)
         self.assertIn("target % tickSize !== 0", leaders)
         self.assertIn("target <= close", leaders)
+        self.assertIn("includeNonPositive", leaders)
+        self.assertIn("HOSE · TRẠNG THÁI PHÒNG THỦ", leaders)
+        self.assertIn("GIẢM ÍT NHẤT TRÊN HOSE", leaders)
+        self.assertIn("forecast-session-v21.json", leaders)
+        self.assertIn("coreForecastUnchanged", leaders)
+        self.assertIn("payload.coreAsOf", leaders)
         self.assertIn("upside: target / close - 1", leaders)
-        self.assertIn("right.upside - left.upside", leaders)
+        self.assertIn("right.rankScore - left.rankScore", leaders)
+        self.assertIn("__VMEWS_FINAL_LEADERBOARD__", leaders)
+        self.assertIn("release-pointer-v22.json", self.html)
         self.assertIn("rows.slice(0, 10)", leaders)
         self.assertNotIn("Math.random", leaders)
+
+    def test_leaderboard_loads_before_the_full_backtest_bundle(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        self.assertIn("window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase", app)
+        self.assertIn("const JSON_PROMISES=new Map()", app)
+        self.assertIn("window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__", leaders)
 
     def test_signal_quality_uses_real_liquidity_news_risk_and_uncertainty(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
@@ -177,6 +193,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("directionValidated", assistant)
         self.assertIn("__VMEWS_BUILD_LEADERBOARD__", assistant)
         self.assertIn("solutionAiConnect", assistant)
+        self.assertIn("solutionAiGeminiWeb", assistant)
+        self.assertIn("https://gemini.google.com/app", assistant)
+        self.assertIn("Không mở đầu hoặc kết thúc bằng disclaimer chung", assistant)
         self.assertIn("https://aistudio.google.com/app/apikey", self.html)
         self.assertIn('id="solutionAiKey" type="password"', self.html)
         self.assertIn("sessionStorage", assistant)
@@ -215,6 +234,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("document.hidden", leaders)
         self.assertIn("ArrowLeft", leaders)
         self.assertIn("pointerup", leaders)
+        self.assertIn("}, 3000);", leaders)
         self.assertIn('data-filter="liquid"', self.html)
         self.assertIn('data-filter="green"', self.html)
         self.assertIn('aria-roledescription="carousel"', self.html)
