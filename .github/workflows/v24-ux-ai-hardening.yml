@@ -29,6 +29,20 @@ jobs:
       - name: Apply V24 UX and AI patch
         run: python scripts/v24_ux_ai_patch.py
 
+      - name: Preserve full V18 runtime regression suite with V24 wording contract
+        run: |
+          git show df13ae647822476cb726822f220a6331c477fd4c:scripts/forecast_v18_frontend_runtime_test.mjs > scripts/forecast_v18_frontend_runtime_test.mjs
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/forecast_v18_frontend_runtime_test.mjs')
+          text=p.read_text(encoding='utf-8')
+          old='''  assert.match(source, /Cập nhật chậm/);\n  assert.match(source, /Đã cập nhật cùng phiên/);\n  assert.match(source, /Chưa có dữ liệu từ nguồn/);'''
+          new='''  assert.doesNotMatch(source, /Cập nhật chậm|Đã cập nhật cùng phiên|Chưa có dữ liệu từ nguồn|Đang mở rộng nguồn|Bối cảnh tham khảo · chưa điều chỉnh giá trung tâm/);\n  assert.match(source, /Phiên gần nhất/);\n  assert.match(source, /Mở BCTC/);\n  assert.match(source, /Danh mục · tỷ trọng · NAV · biến động/);'''
+          if old not in text:
+              raise SystemExit('V18 wording contract anchor missing')
+          p.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
+
       - name: Run leakage-safe forecast accuracy audit
         run: |
           python scripts/forecast_v24_accuracy_audit.py
@@ -49,6 +63,7 @@ jobs:
           node --check solution-ai-v17.js
           node --check forecast-deep-dive-v24.js
           node --check scripts/solution_ai_frontend_v17_test.mjs
+          node --check scripts/forecast_v18_frontend_runtime_test.mjs
           node --check scripts/forecast_v22_browser_e2e.mjs
 
       - name: SoluTION.AI unit and VM tests
@@ -91,12 +106,12 @@ jobs:
           git checkout -- package.json 2>/dev/null || true
           python - <<'PY'
           from pathlib import Path
-          for name in ['scripts/solution_ai_frontend_v17_test.mjs','scripts/forecast_v22_browser_e2e.mjs']:
+          for name in ['scripts/solution_ai_frontend_v17_test.mjs','scripts/forecast_v18_frontend_runtime_test.mjs','scripts/forecast_v22_browser_e2e.mjs']:
               p=Path(name); p.write_text(p.read_text(encoding='utf-8').rstrip()+"\n",encoding='utf-8')
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add forecast-final.html forecast-final-v12.js solution-ai-v17.js scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v22_browser_e2e.mjs data/forecast-accuracy-v24.json
+          git add forecast-final.html forecast-final-v12.js solution-ai-v17.js scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs scripts/forecast_v22_browser_e2e.mjs data/forecast-accuracy-v24.json
           git add -u scripts/v24_ux_ai_patch.py
           git diff --cached --check
           git commit -m "V24 streamline deep analysis and enrich technical AI"
