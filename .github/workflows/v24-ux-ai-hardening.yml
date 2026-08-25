@@ -50,7 +50,7 @@ jobs:
           p=Path('scripts/forecast_v22_browser_e2e.mjs')
           text=p.read_text(encoding='utf-8')
           old='''  assert.doesNotMatch(sourceText, /Độ phủ HOSE|Rổ VN30/);\n  const financeCard = page.locator("#sourceAudit .sourceCard", { hasText: "Tài chính doanh nghiệp" }).first();'''
-          new='''  assert.doesNotMatch(sourceText, /Độ phủ HOSE|Rổ VN30/);\n  await page.locator("#solutionAiClose").click();\n  await page.waitForTimeout(250);\n  assert.equal(await page.locator("#solutionAiPanel").isVisible(), false);\n  const financeCard = page.locator("#sourceAudit .sourceCard", { hasText: "Tài chính doanh nghiệp" }).first();'''
+          new='''  assert.doesNotMatch(sourceText, /Độ phủ HOSE|Rổ VN30/);\n  await page.locator("#solutionAiClose").click();\n  await page.waitForFunction(() => !document.querySelector("#solutionAiPanel")?.classList.contains("open"));\n  assert.equal(await page.locator("#solutionAiPanel").getAttribute("aria-hidden"), "true");\n  const financeCard = page.locator("#sourceAudit .sourceCard", { hasText: "Tài chính doanh nghiệp" }).first();'''
           if old not in text:
               raise SystemExit('V24 browser deep-dive sequence anchor missing')
           p.write_text(text.replace(old,new,1),encoding='utf-8')
