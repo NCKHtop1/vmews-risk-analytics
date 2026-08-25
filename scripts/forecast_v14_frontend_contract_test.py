@@ -67,7 +67,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
         self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
-        self.assertIn("VN30 · 5 PHIÊN TỚI", self.html)
+        self.assertIn("HOSE · 5 PHIÊN TỚI", self.html)
         self.assertIn("Trọng tâm T+5", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
