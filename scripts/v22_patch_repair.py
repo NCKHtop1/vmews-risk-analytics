@@ -1,7 +1,8 @@
 from pathlib import Path
 
-path = Path(__file__).resolve().with_name("v22_hardening_patch.py")
-text = path.read_text(encoding="utf-8")
+ROOT = Path(__file__).resolve().parents[1]
+patcher = ROOT / "scripts" / "v22_hardening_patch.py"
+text = patcher.read_text(encoding="utf-8")
 
 # Repair the one malformed quoted replacement in the standalone patcher.
 old = """    '}. Đây không phải tín hiệu mua hoặc cam kết lợi nhuận.`,
@@ -44,34 +45,34 @@ new_call = '''regex_once(
 if text.count(old_call) != 1:
     raise SystemExit(f"V22 local AI call repair count={text.count(old_call)}")
 text = text.replace(old_call, new_call, 1)
+patcher.write_text(text, encoding="utf-8")
 
-# Upgrade the permanent release audit to validate the new delivery architecture.
-audit_patch = r'''
-replace_once(
-    "scripts/forecast_v20_release_audit.py",
-    '''    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive data from its own release ref")
-    require("/main/data" not in frontend_text, "commit-pinned CDN still mixes immutable code with mutable main data")''',
-    '''    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive its immutable asset ref")
+# Update the permanent release audit directly. The new policy intentionally
+# pins code/assets to an immutable SHA while reading mutable data from main.
+audit_path = ROOT / "scripts" / "forecast_v20_release_audit.py"
+audit = audit_path.read_text(encoding="utf-8")
+old_delivery_checks = '''    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive data from its own release ref")
+    require("/main/data" not in frontend_text, "commit-pinned CDN still mixes immutable code with mutable main data")'''
+new_delivery_checks = '''    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive its immutable asset ref")
     require("DATA_REF" in frontend_text and "__VMEWS_DATA_REF__" in frontend_text, "frontend does not separate asset and data refs")
     require("release-pointer-v22.json" in frontend_text, "stable main URL lacks an immutable release pointer")
-    require("raw.githubusercontent.com" in frontend_text and "/data`" in frontend_text, "live data root is not explicit")
-    require("<script src=\\\"https://raw.githubusercontent.com" not in frontend_text, "mutable main code is loaded into the immutable asset page")''',
-)
-replace_once(
-    "scripts/forecast_v20_release_audit.py",
-    '''        "delivery": {
+    require("raw.githubusercontent.com" in frontend_text, "live data origin is not explicit")
+    require('<script src="https://raw.githubusercontent.com' not in frontend_text, "mutable main code is loaded into the immutable asset page")'''
+if audit.count(old_delivery_checks) != 1:
+    raise SystemExit(f"V22 delivery audit check count={audit.count(old_delivery_checks)}")
+audit = audit.replace(old_delivery_checks, new_delivery_checks, 1)
+old_report = '''        "delivery": {
             "assetDataRefPolicy": "SAME_REF",
             "mutableMainFallback": False,
-        },''',
-    '''        "delivery": {
+        },'''
+new_report = '''        "delivery": {
             "assetDataRefPolicy": "IMMUTABLE_ASSETS_LIVE_MAIN_DATA",
             "assetPointer": "data/release-pointer-v22.json",
             "liveMainData": True,
             "mutableMainFallback": False,
-        },''',
-)
-'''
-text += "\n" + audit_patch
+        },'''
+if audit.count(old_report) != 1:
+    raise SystemExit(f"V22 delivery report count={audit.count(old_report)}")
+audit_path.write_text(audit.replace(old_report, new_report, 1), encoding="utf-8")
 
-path.write_text(text, encoding="utf-8")
-print("V22 patcher repaired")
+print("V22 patcher and release audit repaired")
