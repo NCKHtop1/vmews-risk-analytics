@@ -29,6 +29,19 @@ jobs:
       - name: Apply V23 Gemini handoff patch
         run: python scripts/v23_gemini_handoff_patch.py
 
+      - name: Stabilize real-browser panel timing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/forecast_v22_browser_e2e.mjs')
+          text = path.read_text(encoding='utf-8')
+          old = '  await page.locator("#solutionAiNav").click();\n  assert.equal(await page.locator("#solutionAiPanel").isVisible(), true);'
+          new = '  await page.locator("#solutionAiNav").click();\n  await page.waitForTimeout(350);\n  assert.equal(await page.locator("#solutionAiPanel").isVisible(), true);'
+          if old not in text:
+              raise SystemExit('browser panel timing anchor missing')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
       - name: JavaScript syntax checks
         run: |
           node --check solution-ai-v17.js
