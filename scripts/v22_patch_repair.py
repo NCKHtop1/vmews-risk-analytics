@@ -35,8 +35,6 @@ if old_block not in text:
 text = text.replace(old_block, new_block, 1)
 
 # The local-AI summary sentence is semantically stable but whitespace-sensitive.
-# Keep the new string prepared by the patcher, but locate the old line with a
-# tightly anchored one-line regex and require exactly one replacement.
 old_call = 'replace_once("solution-ai-v17.js", old_summary, new_summary)'
 new_call = '''regex_once(
     "solution-ai-v17.js",
@@ -46,6 +44,34 @@ new_call = '''regex_once(
 if text.count(old_call) != 1:
     raise SystemExit(f"V22 local AI call repair count={text.count(old_call)}")
 text = text.replace(old_call, new_call, 1)
+
+# Upgrade the permanent release audit to validate the new delivery architecture.
+audit_patch = r'''
+replace_once(
+    "scripts/forecast_v20_release_audit.py",
+    '''    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive data from its own release ref")
+    require("/main/data" not in frontend_text, "commit-pinned CDN still mixes immutable code with mutable main data")''',
+    '''    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive its immutable asset ref")
+    require("DATA_REF" in frontend_text and "__VMEWS_DATA_REF__" in frontend_text, "frontend does not separate asset and data refs")
+    require("release-pointer-v22.json" in frontend_text, "stable main URL lacks an immutable release pointer")
+    require("raw.githubusercontent.com" in frontend_text and "/data`" in frontend_text, "live data root is not explicit")
+    require("<script src=\\\"https://raw.githubusercontent.com" not in frontend_text, "mutable main code is loaded into the immutable asset page")''',
+)
+replace_once(
+    "scripts/forecast_v20_release_audit.py",
+    '''        "delivery": {
+            "assetDataRefPolicy": "SAME_REF",
+            "mutableMainFallback": False,
+        },''',
+    '''        "delivery": {
+            "assetDataRefPolicy": "IMMUTABLE_ASSETS_LIVE_MAIN_DATA",
+            "assetPointer": "data/release-pointer-v22.json",
+            "liveMainData": True,
+            "mutableMainFallback": False,
+        },''',
+)
+'''
+text += "\n" + audit_patch
 
 path.write_text(text, encoding="utf-8")
 print("V22 patcher repaired")
