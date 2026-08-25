@@ -30,7 +30,18 @@ jobs:
           node-version: "24"
 
       - name: Apply guarded V22 hardening patch
-        run: python scripts/v22_hardening_patch.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/v22_patch_repair.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v22_hardening_patch.py')
+          text=p.read_text(encoding='utf-8').replace('` ,','`,')
+          p.write_text(text,encoding='utf-8')
+          PY
+          python -m py_compile scripts/v22_hardening_patch.py
+          python scripts/v22_hardening_patch.py
 
       - name: Run static runtime AI and data regression suites
         shell: bash
@@ -77,7 +88,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/v22-production-hardening.yml scripts/v22_hardening_patch.py
+          git rm .github/workflows/v22-production-hardening.yml scripts/v22_hardening_patch.py scripts/v22_patch_repair.py
           git add -A
           git diff --cached --check
           git commit -m "V22 harden live data ranking CDN delivery and AI UX"
