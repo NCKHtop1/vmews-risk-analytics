@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 8: sanitize current intelligence before release audit.
+# V22 gate revision 9: direct release-audit repair + shallow checkout.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: fix/vn30-defensive-fallback-20260825
-          fetch-depth: 0
+          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:
@@ -34,6 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python -m py_compile scripts/v22_patch_repair.py
           python scripts/v22_patch_repair.py
           python - <<'PY'
           from pathlib import Path
