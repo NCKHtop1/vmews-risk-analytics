@@ -53,7 +53,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-v14-daily-refresh
+  group: forecast-data-publisher
   cancel-in-progress: false
 
 jobs:
@@ -117,4 +117,5 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh validated HOSE forecast, dated VN30 leaders and verified market intelligence [data-only]"
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
