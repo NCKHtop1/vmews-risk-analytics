@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 13: all validation gates are mandatory; force-remove only the temporary patch tooling after PASS.
+# V22 gate revision 14: all validation gates are mandatory; test-only Playwright dependencies are removed before staging.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
@@ -98,6 +98,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf node_modules
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm -f .github/workflows/v22-production-hardening.yml scripts/v22_hardening_patch.py scripts/v22_patch_repair.py
