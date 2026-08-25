@@ -82,6 +82,16 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertEqual(payload["coverage"]["quoted"], 120)
         self.assertEqual(payload["coverage"]["currentQuoteDate"], 0)
 
+
+    def test_rejects_same_day_quotes_that_are_stale_for_the_session_cutoff(self):
+        now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
+        stale = datetime(2026, 8, 25, 10, 30, tzinfo=VN_TZ)
+        payload = build_payload(self.dashboard(), self.frame(now=stale), now)
+        self.assertEqual(payload["status"], "DEGRADED")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 120)
+        self.assertEqual(payload["coverage"]["cutoffFresh"], 0)
+        self.assertLess(payload["coverage"]["cutoffFreshCoverageRatio"], 0.90)
+
     def test_falls_back_to_defensive_ranking_when_live_price_exceeds_all_targets(self):
         now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
         payload = build_payload(self.dashboard(), self.frame(now=now, price_multiplier=1.10), now)

@@ -316,8 +316,11 @@ def run_audit() -> dict[str, Any]:
     forbidden_placeholder_wording = "không điền" + " giả"
     require(forbidden_placeholder_wording not in frontend_text.casefold(), "internal data-engineering wording leaked into the interface")
     require("appliedToCentralForecast:false" in frontend_text.replace(" ", ""), "browser scenario overlay lacks an immutable-central-forecast marker")
-    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive data from its own release ref")
-    require("/main/data" not in frontend_text, "commit-pinned CDN still mixes immutable code with mutable main data")
+    require("CDN_PATH[2]" in frontend_text, "commit-pinned CDN does not derive its immutable asset ref")
+    require("DATA_REF" in frontend_text and "__VMEWS_DATA_REF__" in frontend_text, "frontend does not separate asset and data refs")
+    require("release-pointer-v22.json" in frontend_text, "stable main URL lacks an immutable release pointer")
+    require("raw.githubusercontent.com" in frontend_text, "live data origin is not explicit")
+    require('<script src="https://raw.githubusercontent.com' not in frontend_text, "mutable main code is loaded into the immutable asset page")
     for provider_name in ("GEMINI_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"):
         require(provider_name in backend_text, f"AI server failover is missing {provider_name}")
     require("failoverAvailable" in backend_text and "unavailableProviders" in backend_text, "AI health/failover disclosure is incomplete")
@@ -381,7 +384,9 @@ def run_audit() -> dict[str, Any]:
             "serverProviderChain": ["Gemini", "OpenAI", "Groq", "xAI", "OpenRouter"],
         },
         "delivery": {
-            "assetDataRefPolicy": "SAME_REF",
+            "assetDataRefPolicy": "IMMUTABLE_ASSETS_LIVE_MAIN_DATA",
+            "assetPointer": "data/release-pointer-v22.json",
+            "liveMainData": True,
             "mutableMainFallback": False,
         },
         "horizons": horizon_metrics,

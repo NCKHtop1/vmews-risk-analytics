@@ -104,7 +104,7 @@
       })
       .map(item => String(item.name).replace(/^models\//, ""));
     const ordered = [];
-    for (const preferred of ["gemini-3.7-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3-flash", "gemini-2.5-flash"]) {
+    for (const preferred of ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash"]) {
       const selected = models.find(model => model === preferred) || models.find(model => model.startsWith(`${preferred}-`));
       if (selected && !ordered.includes(selected)) ordered.push(selected);
     }
@@ -135,6 +135,7 @@
       "Luôn trả lời bằng tiếng Việt, đi thẳng vào đúng câu hỏi, có lập luận và đủ chiều sâu; không sử dụng một khuôn trả lời cố định.",
       "Không mở đầu hoặc kết thúc bằng disclaimer chung kiểu lời khuyên/khuyến nghị. Chỉ nêu một giới hạn dữ liệu khi giới hạn đó trực tiếp làm thay đổi kết luận.",
       "Với forecast, ưu tiên cấu trúc tư duy: kết luận hiện tại → bằng chứng mạnh nhất → bằng chứng mâu thuẫn → điều kiện xác nhận → điều kiện vô hiệu; tránh nhắc lại cùng một cảnh báo dưới nhiều cách diễn đạt.",
+      "Nếu có dữ liệu session, phân biệt rõ giá phiên hiện tại với giá đóng cửa EOD đã dùng để niêm phong forecast; chỉ tính lại khoảng cách còn lại tới mục tiêu, tuyệt đối không gọi đó là forecast mới.",
       "Yêu cầu mới nhất của người dùng quan trọng hơn mã cổ phiếu đang mở hoặc dữ liệu tham chiếu; câu hỏi chung không được tự ý biến thành phân tích cổ phiếu.",
       "Nếu người dùng nhắc đến kết quả phân tích, forecast, mô hình, dự báo, dữ liệu đang xem, tác động hoặc yêu cầu kết hợp thông tin, hãy coi snapshot của mã đang xem là trục chính và mọi nghiên cứu bên ngoài là lớp bằng chứng bổ sung.",
       "Với câu hỏi bám forecast, câu đầu tiên phải trả lời trực tiếp cho mã đang xem; sau đó mới giải thích đường dự báo T+1 đến T+5, yếu tố mô hình, bằng chứng bên ngoài ủng hộ/mâu thuẫn và rủi ro cần theo dõi.",
@@ -608,12 +609,14 @@
     const symbol = String($("#symbol")?.value || new URLSearchParams(location.search).get("symbol") || "FPT").trim().toUpperCase();
     const snapshot = base.dash.symbols?.[symbol];
     if (!snapshot) throw new Error(`Chưa có dữ liệu cho ${symbol}.`);
+    const sessionQuote = (window.__VMEWS_SESSION__?.symbols || []).find(item => item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false) || null;
     const horizons = {};
     for (const [key, forecast] of Object.entries(snapshot.horizons || {})) {
       if (forecast.priceValidated !== true) continue;
       const audit = base.model.horizons?.[String(key)] || {};
       horizons[`T+${key}`] = {
         price: forecast.expectedPrice, expectedReturn: forecast.expectedReturn,
+        remainingReturnFromSession: sessionQuote && number(sessionQuote.liveClose) > 0 ? forecast.expectedPrice / number(sessionQuote.liveClose) - 1 : null,
         lowerPrice: forecast.q20Price, upperPrice: forecast.q80Price,
         expectedAbsReturn: number(forecast.expectedAbsReturn),
         bearScenarioPrice: number(forecast.bearScenarioPrice),
@@ -648,20 +651,23 @@
     }
     const fund = snapshot.fundContext || {};
     const finances = snapshot.fundamentalContext || {};
-    const ranked = typeof window.__VMEWS_BUILD_LEADERBOARD__ === "function"
-      ? window.__VMEWS_BUILD_LEADERBOARD__(base)
-      : Object.values(base.dash.symbols || {}).filter(row => (base.dash.lists?.vn30?.symbols || window.__VMEWS_VN30_MEMBERS__ || []).includes(row.symbol));
+    const ranked = window.__VMEWS_LEADERBOARD__?.rows?.length
+      ? window.__VMEWS_LEADERBOARD__.rows
+      : typeof window.__VMEWS_FINAL_LEADERBOARD__ === "function"
+        ? window.__VMEWS_FINAL_LEADERBOARD__(base, window.__VMEWS_SESSION__, { all: true })
+        : typeof window.__VMEWS_BUILD_LEADERBOARD__ === "function"
+          ? window.__VMEWS_BUILD_LEADERBOARD__(base)
+          : [];
     const top = ranked
       .map(row => ({
-        symbol: row.symbol, close: row.close,
+        symbol: row.symbol,
+        close: row.close,
         forecast: row.target || row.horizons?.["5"]?.expectedPrice,
         return: row.upside ?? row.horizons?.["5"]?.expectedReturn,
-        validated: row.forecast?.priceValidated === true || row.horizons?.["5"]?.priceValidated === true,
       }))
-      .filter(row => row.validated && row.close > 0 && row.forecast > row.close)
+      .filter(row => row.close > 0 && row.forecast > row.close && number(row.return) !== null)
       .sort((left, right) => right.return - left.return)
-      .slice(0, 10)
-      .map(({ validated, ...row }) => row);
+      .slice(0, 10);
     const modelAudit = base.model.horizons?.["5"] || {};
     const chartHistory = base.dash.charts?.[symbol] || [];
     return {
@@ -669,6 +675,7 @@
       close: snapshot.close, sector: snapshot.sector, riskStatus: snapshot.riskStatus,
       dataFreshness: snapshot.dataFreshness || null,
       dailyVolatility: snapshot.dailyVolatility, horizons,
+      session: sessionQuote ? { session: window.__VMEWS_SESSION__?.session || null, cutoffAt: window.__VMEWS_SESSION__?.cutoffAt || null, liveClose: number(sessionQuote.liveClose), change: number(sessionQuote.change), updateAt: sessionQuote.updateAt || null, sourceMode: sessionQuote.updateMode || null } : null,
       technical: technicalContext(chartHistory),
       fund: fund.available ? {
         fundCount: fund.fundCount, averageWeight: fund.averageReportedWeight,
@@ -889,6 +896,8 @@
   function localAnalysis(input, context) {
     const question = String(input || "").toLowerCase();
     const five = context.horizons["T+5"];
+    const activeClose = number(context.session?.liveClose) ?? number(context.close);
+    const remainingT5 = five && activeClose > 0 ? five.price / activeClose - 1 : five?.expectedReturn;
     const lines = [];
     const knowledge = knowledgeAnswer(question);
     const detailed = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|mô hình|phân tích|đánh giá|bổ sung/.test(question);
@@ -896,7 +905,7 @@
     const flowQuestion = /dòng tiền|ngoại|tự doanh/.test(question);
 
     if (/top|xếp hạng|tăng mạnh|so sánh/.test(question)) {
-      lines.push("### Xếp hạng VN30", "Các mã VN30 có mức dự báo tăng T+5 cao nhất hiện tại:");
+      lines.push("### Xếp hạng HOSE", "Các mã HOSE có mức dự báo T+5 nổi bật nhất sau khi áp dữ liệu phiên hợp lệ:");
       for (const [index, row] of context.topMovers.slice(0, 7).entries()) {
         lines.push(`${index + 1}. ${row.symbol}: ${money(row.close)} → ${money(row.forecast)} (${pct(row.return)}).`);
       }
@@ -905,10 +914,10 @@
     if (knowledge && !detailed && !fundQuestion && !flowQuestion) return knowledge;
 
     if (five) {
-      const stance = five.expectedReturn > .003 ? "nghiêng tăng" : five.expectedReturn < -.003 ? "nghiêng giảm" : "gần như đi ngang";
+      const stance = remainingT5 > .003 ? "nghiêng tăng" : remainingT5 < -.003 ? "nghiêng giảm" : "gần như đi ngang";
       lines.push(
         `### Kết luận cho ${context.symbol}`,
-        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là dự báo đã niêm phong theo dữ liệu ngày ${context.asOf || "chưa rõ"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,
+        `${context.symbol} đang có đường dự báo ${stance}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm T+5 ${money(five.price)}; khoảng cách còn lại ${pct(remainingT5)} và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Core forecast được niêm phong theo dữ liệu ngày ${context.asOf || "chưa rõ"}; giá phiên chỉ dùng để đo lại khoảng cách tới mục tiêu, không tự sửa mô hình.`,
       );
       if (number(five.expectedAbsReturn) !== null) {
         lines.push(
@@ -920,7 +929,7 @@
         const evidence = five.validation?.costAwareLongAudit;
         lines.push(
           "### Kỷ luật sau phí",
-          `Chỉ nên theo dõi và đánh giá rủi ro: mô hình chưa chứng minh lợi thế giao dịch sau chi phí${number(evidence?.meanNetRealizedReturn) === null ? "" : `; trung bình ngoài mẫu sau giả định phí ${((evidence.roundTripCostBps || 0) / 100).toFixed(2)}% là ${pct(evidence.meanNetRealizedReturn, 3)}`}. Đây không phải tín hiệu mua hoặc cam kết lợi nhuận.`,
+          `Chỉ nên theo dõi và đánh giá rủi ro: mô hình chưa chứng minh lợi thế giao dịch sau chi phí${number(evidence?.meanNetRealizedReturn) === null ? "" : `; trung bình ngoài mẫu sau giả định phí ${((evidence.roundTripCostBps || 0) / 100).toFixed(2)}% là ${pct(evidence.meanNetRealizedReturn, 3)}`}. Khi lợi thế sau phí chưa được xác nhận, trạng thái phù hợp là theo dõi điều kiện xác nhận thay vì suy diễn thêm từ một con số đơn lẻ.`,
         );
       }
     }
@@ -1253,6 +1262,7 @@
       riskStatus: context.riskStatus,
       dataFreshness: context.dataFreshness,
       validation: context.validation,
+      session: context.session,
     };
     return [
       "Hãy đóng vai nhà phân tích phản biện. Trả lời bằng tiếng Việt, không dùng disclaimer chung.",

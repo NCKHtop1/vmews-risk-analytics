@@ -17,7 +17,7 @@ async function loadMarketDashboard(fetch = async () => { throw new Error("Unexpe
   const document = { addEventListener() {}, querySelector() { return null; } };
   const window = { dispatchEvent(event) { emitted.push(event); } };
   class BrowserEvent { constructor(type, options) { this.type = type; this.detail = options?.detail; } }
-  const location = { pathname: "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html", hostname: "cdn.githubraw.com" };
+  const location = { pathname: "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html", hostname: "cdn.githubraw.com", search: "" };
   vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, fetch, console }));
   return { window, emitted };
 }
@@ -28,7 +28,7 @@ function snapshot(symbol, close, target, overrides = {}) {
     horizons: {
       "5": {
         expectedPrice: target, q20Price: close - 1_000, q80Price: close + 2_000,
-        tickSize: 100, priceValidated: true, validationStatus: "PASS", directionValidated: false,
+        tickSize: 100, priceValidated: true, validationStatus: "PASS", directionValidated: false, pointDirectionValidated: true, magnitudeValidated: true,
       },
     },
     ...overrides,
@@ -53,12 +53,13 @@ test("rendered FPT headlines reject an FRT/FTS primary ticker without removing l
   assert.equal(window.__VMEWS_ISSUER_HEADLINE_MATCHES__("FRT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan"), true);
 });
 
-test("commit-pinned CDN loads data from the same immutable ref", async () => {
+test("commit-pinned CDN keeps immutable assets while live data comes from main", async () => {
   const { window } = await loadMarketDashboard();
   assert.equal(window.__VMEWS_ASSET_REF__, "hash");
+  assert.equal(window.__VMEWS_DATA_REF__, "main");
   assert.equal(
     window.__VMEWS_DATA_ROOT__,
-    "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/hash/data",
+    "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data",
   );
 });
 
@@ -93,6 +94,24 @@ test("default leaderboard ranks all validated HOSE names while VN30 remains an e
   const vn30 = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, scope: "vn30" });
   assert.deepEqual(Array.from(allHose, row => row.symbol), ["ASP", "PLX", "MCH", "FPT"]);
   assert.deepEqual(Array.from(vn30, row => row.symbol), ["MCH", "FPT"]);
+});
+
+
+test("session overlay re-filters EOD positives that turn negative at the live cutoff", async () => {
+  const window = await loadLeaderboard();
+  const items = [snapshot("FPT", 72_000, 73_000), snapshot("MCH", 128_000, 130_000)];
+  const session = {
+    symbols: [
+      { symbol: "FPT", liveClose: 74_000, change: .02, quoteCurrent: true, freshForCutoff: true, quality: .55, conviction: -.009 },
+      { symbol: "MCH", liveClose: 129_000, change: .01, quoteCurrent: true, freshForCutoff: true, quality: .70, conviction: .006 },
+    ],
+  };
+  const positive = window.__VMEWS_FINAL_LEADERBOARD__(base(items), session, { all: true });
+  assert.deepEqual(Array.from(positive, row => row.symbol), ["MCH"]);
+  assert.ok(positive.every(row => row.upside > 0));
+  const defensive = window.__VMEWS_FINAL_LEADERBOARD__(base([items[0]]), { symbols: [session.symbols[0]] }, { all: true, includeNonPositive: true });
+  assert.equal(defensive[0].symbol, "FPT");
+  assert.ok(defensive[0].upside < 0);
 });
 
 test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {

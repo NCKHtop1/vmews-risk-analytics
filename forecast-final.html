@@ -6,6 +6,24 @@
 <meta name="color-scheme" content="dark">
 <title>SoluTION.AI define market. · Dự báo cổ phiếu HOSE</title>
 <meta name="description" content="Dự báo cổ phiếu HOSE T+1 đến T+5 với trọng tâm giá, vùng dự báo và dữ liệu kiểm định.">
+<script>
+(()=>{
+  const parts=location.pathname.split("/").filter(Boolean);
+  if(location.hostname!=="cdn.githubraw.com"||parts.length<4||parts[2]!=="main") return;
+  const owner=parts[0],repo=parts[1],file=parts.slice(3).join("/")||"forecast-final.html";
+  const revision=Math.floor(Date.now()/60000);
+  fetch(`https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/main/data/release-pointer-v22.json?refresh=${revision}`,{cache:"no-store"})
+    .then(response=>response.ok?response.json():null)
+    .then(pointer=>{
+      const ref=String(pointer?.assetRef||"").trim();
+      if(!/^[0-9a-f]{40}$/i.test(ref)) return;
+      const target=`https://cdn.githubraw.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${ref}/${file}${location.search}${location.hash}`;
+      if(target!==location.href) location.replace(target);
+    })
+    .catch(()=>{});
+})();
+</script>
+<link rel="icon" href="data:,">
 <style>
 :root{--bg:#061018;--bg2:#08151f;--panel:rgba(12,26,37,.88);--panel2:#0a1721;--line:#193747;--line2:#285365;--text:#edf5f7;--muted:#8da4ae;--muted2:#6f8792;--cyan:#6ed3d8;--green:#73d2a0;--amber:#f0bd63;--red:#ed8080;--violet:#baa2ef;--shadow:0 20px 55px rgba(0,0,0,.24);--radius:16px;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;min-height:100vh;color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(900px 480px at 14% -6%,rgba(110,211,216,.09),transparent 62%),radial-gradient(700px 430px at 90% 4%,rgba(186,162,239,.055),transparent 65%),linear-gradient(180deg,#061018 0%,#07121a 58%,#061018 100%)}
@@ -136,11 +154,11 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <span class="aiConnectionLabel">AI ĐA NHÀ CUNG CẤP · KẾT NỐI AN TOÀN</span>
     <strong>Kết nối Gemini hoặc máy chủ AI dự phòng</strong>
     <p>Gemini có thể tìm kiếm và đọc nguồn công khai. Máy chủ riêng hỗ trợ tự chuyển Gemini, OpenAI, Groq, xAI hoặc OpenRouter khi hết hạn mức.</p>
-    <label class="aiSecretField" for="solutionAiKey"><span>KHÓA GOOGLE AI STUDIO</span><input id="solutionAiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Dán khóa API của bạn"></label>
+    <label class="aiSecretField" for="solutionAiKey"><span>GEMINI AUTH KEY · NÂNG CAO</span><input id="solutionAiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Dán khóa API của bạn"></label>
     <div class="aiConnectActions"><button id="solutionAiGeminiWeb" class="aiConnectPrimary" type="button">Mở Gemini Web ↗</button><button id="solutionAiRetry" type="button">Kết nối bằng API key</button><a id="solutionAiGoogle" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Quản lý key ↗</a><button id="solutionAiDisconnect" type="button" hidden>Ngắt kết nối</button></div>
     <label class="aiSecretField aiBackendField" for="solutionAiBackend"><span>MÁY CHỦ AI DỰ PHÒNG · KHÔNG BẮT BUỘC</span><input id="solutionAiBackend" type="url" autocomplete="off" spellcheck="false" placeholder="https://máy-chủ-của-bạn/api/solution-ai"></label>
     <div class="aiBackendActions"><button id="solutionAiSaveBackend" type="button">Kết nối máy chủ</button><small>Khóa nhà cung cấp chỉ nằm trên máy chủ.</small></div>
-    <small id="solutionAiConnectionState">Ưu tiên Gemini Web nếu chỉ cần chat như bình thường; API key là chế độ nâng cao và chỉ lưu tạm trong tab.</small>
+    <small id="solutionAiConnectionState">Ưu tiên Gemini Web hoặc máy chủ AI. Auth key trên trình duyệt chỉ là chế độ nâng cao và chỉ lưu tạm trong tab.</small>
   </section>
   <div id="solutionAiMessages" class="solutionAiMessages" role="log" aria-live="polite"><article class="aiMessage aiWelcome"><span class="aiRole">SoluTION.AI</span><p>Tôi có thể đọc forecast đang xem, nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã.</p></article></div>
   <div id="solutionAiSuggestions" class="solutionAiSuggestions"><button type="button" data-ai-prompt="Phân tích đầy đủ mã cổ phiếu đang xem, đọc đường forecast T+1 đến T+5, kết hợp thông tin mới nhất từ nguồn công khai và kết luận đúng trọng tâm.">Phân tích tích hợp</button><button type="button" data-ai-prompt="Tìm thông tin mới về kinh tế vĩ mô, lãi suất và các yếu tố đang ảnh hưởng đến thị trường Việt Nam.">Vĩ mô & tin mới</button><button type="button" data-ai-prompt="Danh mục quỹ, dòng tiền và các yếu tố chính đang tác động đến dự báo như thế nào?">Quỹ & dòng tiền</button><button type="button" data-ai-prompt="Tìm và đối chiếu thông tin mới cho mã đang xem; đánh giá từng nguồn đang ủng hộ, mâu thuẫn hay chưa đủ rõ đối với forecast hiện tại.">Đối chiếu nguồn mới</button><button type="button" data-ai-prompt="Đánh giá chất lượng kiểm định, đường T+1 đến T+5, vùng bất định và các giới hạn của forecast mã đang xem.">Kiểm định forecast</button><button type="button" data-ai-prompt="So sánh các mã VN30 có dự báo tăng tốt nhất trong 5 phiên tới.">Top VN30</button></div>

@@ -11,8 +11,9 @@ DASHBOARD = ROOT / "data" / "forecast-dashboard-v12.json"
 OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
 VERSION = "VMEWS-FORECAST-SESSION-21.0"
-MIN_COVERAGE = 0.70
-MIN_CURRENT_COVERAGE = 0.65
+MIN_COVERAGE = 0.90
+MIN_CURRENT_COVERAGE = 0.90
+MIN_CUTOFF_FRESH_COVERAGE = 0.90
 
 
 def num(value, default=None):
@@ -52,6 +53,15 @@ def session_name(now):
     if minutes < 17 * 60 + 30:
         return "PM"
     return "POST_CLOSE"
+
+
+def cutoff_floor(now):
+    session = session_name(now)
+    hour, minute = (11, 15) if session == "AM" else (14, 30)
+    floor = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if floor > now:
+        return now - timedelta(minutes=20)
+    return floor
 
 
 def fetch_quotes():
@@ -100,6 +110,7 @@ def quality_score(snapshot, horizon, remaining_upside, interval_width):
 
 def build_payload(dashboard, frame, now=None):
     now = now or datetime.now(VN_TZ)
+    fresh_floor = cutoff_floor(now)
     core = eligible_core_symbols(dashboard)
     matched = {}
     duplicates = 0
@@ -113,7 +124,10 @@ def build_payload(dashboard, frame, now=None):
         matched[symbol] = row
 
     current_quotes = 0
+    cutoff_fresh_quotes = 0
     dated = []
+    update_modes = []
+    quote_ages = []
     symbols = []
     advancing = falling = flat = 0
     changes = []
@@ -129,7 +143,14 @@ def build_payload(dashboard, frame, now=None):
         if quote_date:
             dated.append(quote_date)
         is_current = quote_date == now.date().isoformat()
+        fresh_for_cutoff = bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
         current_quotes += int(is_current)
+        cutoff_fresh_quotes += int(fresh_for_cutoff)
+        update_mode = str(row.get("update_mode") or "UNKNOWN")
+        update_modes.append(update_mode)
+        quote_age = max(0.0, (now - updated_at).total_seconds() / 60.0) if updated_at else None
+        if quote_age is not None:
+            quote_ages.append(quote_age)
         change_pct = (num(row.get("change"), 0.0) or 0.0) / 100.0
         if change_pct > 0.00005:
             advancing += 1
@@ -158,6 +179,9 @@ def build_payload(dashboard, frame, now=None):
             "sector": str(row.get("sector") or snapshot.get("sector") or ""),
             "updateAt": updated_at.isoformat() if updated_at else None,
             "quoteCurrent": is_current,
+            "freshForCutoff": fresh_for_cutoff,
+            "updateMode": update_mode,
+            "quoteAgeMinutes": round(quote_age, 2) if quote_age is not None else None,
             "coreClose": core_close,
             "coreTargetT5": target,
             "coreUpsideT5": core_upside,
@@ -173,8 +197,15 @@ def build_payload(dashboard, frame, now=None):
     quoted_count = len(symbols)
     coverage = quoted_count / eligible_count if eligible_count else 0.0
     current_coverage = current_quotes / eligible_count if eligible_count else 0.0
+    cutoff_fresh_coverage = cutoff_fresh_quotes / eligible_count if eligible_count else 0.0
     dominant_quote_date = Counter(dated).most_common(1)[0][0] if dated else None
-    status = "PASS" if coverage >= MIN_COVERAGE and current_coverage >= MIN_CURRENT_COVERAGE else "DEGRADED"
+    mode_counts = dict(Counter(update_modes))
+    dominant_mode = Counter(update_modes).most_common(1)[0][0] if update_modes else None
+    status = "PASS" if (
+        coverage >= MIN_COVERAGE
+        and current_coverage >= MIN_CURRENT_COVERAGE
+        and cutoff_fresh_coverage >= MIN_CUTOFF_FRESH_COVERAGE
+    ) else "DEGRADED"
 
     positive = [row for row in symbols if row["coreTargetT5"] > row["liveClose"]]
     positive.sort(key=lambda row: (row["conviction"], row["remainingUpsideT5"], row["quality"]), reverse=True)
@@ -202,7 +233,14 @@ def build_payload(dashboard, frame, now=None):
             "currentQuoteDate": current_quotes,
             "coverageRatio": round(coverage, 6),
             "currentCoverageRatio": round(current_coverage, 6),
+            "cutoffFresh": cutoff_fresh_quotes,
+            "cutoffFreshCoverageRatio": round(cutoff_fresh_coverage, 6),
+            "freshnessFloor": fresh_floor.isoformat(),
             "dominantQuoteDate": dominant_quote_date,
+            "dominantUpdateMode": dominant_mode,
+            "updateModeCounts": mode_counts,
+            "medianQuoteAgeMinutes": round(sorted(quote_ages)[len(quote_ages)//2], 2) if quote_ages else None,
+            "maxQuoteAgeMinutes": round(max(quote_ages), 2) if quote_ages else None,
             "duplicatesIgnored": duplicates,
         },
         "market": {
@@ -218,7 +256,7 @@ def build_payload(dashboard, frame, now=None):
         "governance": [
             "The session layer never treats an incomplete session as a completed EOD model row.",
             "Core T+1 to T+5 targets remain the independently validated sealed forecast until the completed-EOD pipeline publishes a new snapshot.",
-            "A session snapshot is publishable only when quote coverage and same-day quote coverage pass explicit gates; otherwise the prior last-known-good file is retained.",
+            "A session snapshot is publishable only when universe coverage, same-day coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
         ],
     }
 

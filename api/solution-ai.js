@@ -90,6 +90,7 @@ function systemInstruction() {
     "Luôn trả lời bằng tiếng Việt, rõ ràng, chuyên nghiệp, ngắn gọn nhưng đủ cơ sở.",
     "Không chèn disclaimer chung về lời khuyên/khuyến nghị. Chỉ nói giới hạn dữ liệu khi nó trực tiếp ảnh hưởng kết luận; ưu tiên kết luận, bằng chứng, mâu thuẫn, điều kiện xác nhận và điều kiện vô hiệu.",
     "Giá dự báo, dòng tiền, danh mục quỹ và chỉ tiêu mô hình phải lấy đúng từ ngữ cảnh; không tự tạo giá hoặc thay đổi dự báo.",
+    "Nếu ngữ cảnh có session/liveClose, phân biệt nó với coreClose/EOD; chỉ dùng liveClose để tính khoảng cách còn lại tới mục tiêu đã niêm phong.",
     "Được dùng Google Search để tìm thông tin mới về doanh nghiệp, vĩ mô, ngành và kiến thức tài chính; nêu nguồn và thời điểm, phân biệt với snapshot dự báo.",
     "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
     "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",

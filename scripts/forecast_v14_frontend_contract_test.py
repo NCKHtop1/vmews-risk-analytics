@@ -136,7 +136,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("coreForecastUnchanged", leaders)
         self.assertIn("payload.coreAsOf", leaders)
         self.assertIn("upside: target / close - 1", leaders)
-        self.assertIn("right.upside - left.upside", leaders)
+        self.assertIn("right.rankScore - left.rankScore", leaders)
+        self.assertIn("__VMEWS_FINAL_LEADERBOARD__", leaders)
+        self.assertIn("release-pointer-v22.json", self.html)
         self.assertIn("rows.slice(0, 10)", leaders)
         self.assertNotIn("Math.random", leaders)
 

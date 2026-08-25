@@ -1,20 +1,17 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-08-25T11:07:48.848776+00:00",
+  "generatedAt": "2026-08-25T17:04:54.154800+00:00",
   "universeSymbols": 403,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1167,
-      "kept": 1145,
-      "rejected": 22,
+      "checked": 1174,
+      "kept": 1153,
+      "rejected": 21,
       "rejectedBySymbol": {
         "FPT": [
           "FPT Retail (FRT): Lợi nhuận bán niên sau soát xét tăng trưởng 123% so với cùng kỳ - Tin nhanh chứng khoán",
           "FPT Online sắp trả cổ tức tiền tỷ lệ 100% - Vietstock"
-        ],
-        "VPB": [
-          "PET: Nghị quyết HĐQT về việc bảo lãnh cho POTS được cấp hạn mức tín dụng tại VPB - Vietstock"
         ],
         "MSN": [
           "MCH: Công ty Cổ phần Hàng tiêu dùng Masan (HOSE) - CafeF"
@@ -39,7 +36,7 @@
           "Gia đình Chủ tịch DIC Corp bị giải chấp thêm 8,1 triệu cổ phiếu - thuonghieucongluan.com.vn"
         ],
         "SSI": [
-          "BASKET OF COMPONENT SECURITIES AND CASH TO EXCHANGE FOR AN ETF CREATION UNIT - hsx.vn"
+          "BASKET OF COMPONENT SECURITIES AND CASH TO EXCHANGE FOR AN ETF CREATION UNIT - HSX"
         ],
         "HCM": [
           "Lãnh đạo HSC muốn bán cổ phiếu khi giá trên vùng đỉnh lịch sử - CÔNG TY CỔ PHẦN CHỨNG KHOÁN CV",
@@ -52,24 +49,24 @@
       }
     },
     "research-news-v10.json": {
-      "checked": 5878,
-      "kept": 5878,
+      "checked": 5881,
+      "kept": 5881,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 294,
-      "kept": 294,
+      "checked": 297,
+      "kept": 297,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "community-intelligence-live-v19.json": {
-      "checked": 174,
-      "kept": 174,
+      "checked": 176,
+      "kept": 176,
       "rejected": 0,
       "rejectedBySymbol": {}
     }
   },
-  "rejected": 22,
+  "rejected": 21,
   "policy": "Leading/explicit competing issuer identity is rejected across all current artifacts; legitimate multi-issuer headlines remain eligible for each named ticker."
 }
