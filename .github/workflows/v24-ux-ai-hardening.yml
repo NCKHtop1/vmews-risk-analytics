@@ -75,6 +75,9 @@ jobs:
       - name: Runtime contract tests
         run: node --test scripts/forecast_v18_frontend_runtime_test.mjs
 
+      - name: Install session-test dependency
+        run: python -m pip install --disable-pip-version-check pandas
+
       - name: Session overlay tests
         run: python -m unittest scripts/forecast_v21_session_snapshot_test.py
 
