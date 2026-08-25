@@ -46,6 +46,7 @@ on:
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
   schedule:
+    - cron: "15 9 * * 1-5"
     - cron: "30 10 * * 1-5"
 
 permissions:
