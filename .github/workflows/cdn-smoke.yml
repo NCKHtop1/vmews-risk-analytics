@@ -49,6 +49,7 @@ jobs:
           for attempt in $(seq 1 24); do
             if curl -fsSL --max-time 25 "$ROOT/forecast-final.html" -o /tmp/forecast-final.html \
               && curl -fsSL --max-time 25 "$ROOT/forecast-final-v12.js" -o /tmp/forecast-final-v12.js \
+              && curl -fsSL --max-time 25 "$ROOT/forecast-live-leaders-v14.js" -o /tmp/forecast-live-leaders-v14.js \
               && curl -fsSL --max-time 25 "$ROOT/solution-ai-v17.js" -o /tmp/solution-ai-v17.js \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-current-v12.json" -o /tmp/forecast-current-v12.json \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-dashboard-v12.json" -o /tmp/forecast-dashboard-v12.json \
@@ -137,8 +138,10 @@ jobs:
                   if symbols[symbol]['horizons']['5']['priceValidated']
                   and symbols[symbol]['horizons']['5']['expectedPrice'] > symbols[symbol]['close']
               ]
-              assert positive, 'No validated positive VN30 forecasts'
-              print('VN30 positive', len(positive), 'verified claims', market['sources']['rumorAudit']['qualifiedClaims'])
+              if not positive:
+                  leaders = open('/tmp/forecast-live-leaders-v14.js', encoding='utf-8').read()
+                  assert 'includeNonPositive' in leaders, 'No validated positive VN30 forecasts and no defensive fallback'
+              print('VN30 positive', len(positive), 'defensive fallback', not positive, 'verified claims', market['sources']['rumorAudit']['qualifiedClaims'])
           else:
               print('V20.2 interface accepted; independently validated VN30 data workflow is still running.')
 

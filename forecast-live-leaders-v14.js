@@ -30,7 +30,7 @@
     SAB: ["sabeco"], MSN: ["masan"], PLX: ["petrolimex"], GAS: ["pv gas", "pvgas"],
     MWG: ["thế giới di động"], BCM: ["becamex"], NLG: ["nam long"], DIG: ["dic corp", "dic group"],
   };
-  const state = { base: null, universe: [], rows: [], index: 0, filter: "all", paused: reducedMotion, timer: 0 };
+  const state = { base: null, universe: [], candidates: [], rows: [], defensive: false, index: 0, filter: "all", paused: reducedMotion, timer: 0 };
 
   function valueLabel(value) {
     if (!Number.isFinite(value) || value <= 0) return "Chưa có";
@@ -69,7 +69,8 @@
       const tickSize = number(forecast.tickSize);
       if (!members.has(symbol) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
           || forecast.priceValidated !== true || forecast.validationStatus !== "PASS"
-          || !close || !target || target <= close || !tickSize || target % tickSize !== 0) continue;
+          || !close || !target || (!options.includeNonPositive && target <= close)
+          || !tickSize || target % tickSize !== 0) continue;
 
       const sessions = (histories[symbol] || []).slice(-20);
       const volumes = sessions.map(session => number(session.volume)).filter(volume => volume !== null && volume >= 0);
@@ -120,6 +121,22 @@
   window.__VMEWS_BUILD_LEADERBOARD__ = buildLeaderboard;
   window.__VMEWS_VN30_MEMBERS__ = currentVN30;
 
+  function refreshMode() {
+    const defensive = state.defensive;
+    const command = $("#leaders .commandIndex");
+    const summary = $("#leaderSummary");
+    const primaryFilter = $('[data-filter="all"]');
+    const deck = $("#signalDeck");
+    if (command) command.textContent = defensive ? "VN30 · TRẠNG THÁI PHÒNG THỦ" : "VN30 · 5 PHIÊN TỚI";
+    if (summary) summary.textContent = defensive
+      ? "Chưa có mã VN30 dự báo tăng; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro."
+      : "Những cổ phiếu VN30 có triển vọng tăng nổi bật.";
+    if (primaryFilter) primaryFilter.textContent = defensive ? "VN30 phòng thủ" : "VN30 tăng giá";
+    if (deck) deck.setAttribute("aria-label", defensive
+      ? "Các cổ phiếu VN30 có mức giảm dự báo T+5 thấp nhất"
+      : "Các cổ phiếu VN30 có mức tăng dự báo T+5 cao nhất");
+  }
+
   function animateValue(element, target, format) {
     if (!element) return;
     if (reducedMotion) { element.textContent = format(target); return; }
@@ -140,12 +157,13 @@
     const positive = state.universe.length;
     const members = state.base?.dash?.lists?.vn30?.symbols || currentVN30;
     const covered = members.filter(symbol => symbols.some(snapshot => snapshot.symbol === symbol)).length;
-    const top = state.universe[0];
+    const top = state.universe[0] || state.candidates[0];
+    const topIsPositive = Boolean(top && top.upside > 0);
     const cards = [
       { label: "Cổ phiếu được theo dõi", value: symbols.length, format: value => `${Math.round(value)}`, detail: "toàn sàn HOSE", tone: "" },
       { label: "VN30 dự báo tăng", value: positive, format: value => `${Math.round(value)} / ${covered}`, detail: `${Math.max(covered - positive, 0)} mã chưa có tín hiệu tăng`, tone: "up" },
       { label: "Phiên gần nhất", value: advancing, format: value => `${Math.round(value)} ↑`, detail: `${falling} giảm · ${symbols.length - advancing - falling} đi ngang`, tone: "" },
-      { label: "Tăng nổi bật nhất", value: (top?.upside || 0) * 100, format: value => `+${value.toFixed(2)}%`, detail: top ? `${top.symbol} · trọng tâm ${money(top.target)}` : "Chưa có dữ liệu", tone: "up" },
+      { label: topIsPositive ? "Tăng nổi bật nhất" : "Xếp hạng T+5 cao nhất", value: (top?.upside || 0) * 100, format: value => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`, detail: top ? `${top.symbol} · trọng tâm ${money(top.target)}` : "Chưa có dữ liệu", tone: topIsPositive ? "up" : "down" },
     ];
 
     $("#marketPulse").innerHTML = cards.map((card, index) => `<article class="pulseCard"><span>${escapeHTML(card.label)}</span><strong class="${card.tone}" data-pulse="${index}">—</strong><small>${escapeHTML(card.detail)}</small><i class="pulseTrace" aria-hidden="true"></i></article>`).join("");
@@ -182,9 +200,9 @@
   function renderCards() {
     const deck = $("#signalDeck");
     if (!state.rows.length) {
-      deck.innerHTML = '<div class="deckEmpty">Chưa có cổ phiếu VN30 tăng giá phù hợp bộ lọc.</div>';
+      deck.innerHTML = '<div class="deckEmpty">Chưa có cổ phiếu VN30 hợp lệ phù hợp bộ lọc.</div>';
       $("#leaderDots").replaceChildren();
-      $("#leaderDetail").innerHTML = '<div class="deckEmpty">Hãy đổi bộ lọc để tiếp tục kiểm tra tín hiệu.</div>';
+      $("#leaderDetail").innerHTML = '<div class="deckEmpty">Hãy đổi bộ lọc để tiếp tục kiểm tra.</div>';
       $("#carouselPosition").textContent = "00 / 00";
       return;
     }
@@ -192,7 +210,10 @@
     deck.innerHTML = state.rows.map((row, index) => {
       const illiquid = row.tradedValue20 < 1e9;
       const probability = row.directionValidated ? percent(row.probUp, 1) : "—";
-      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo tăng ${percent(row.upside, 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / VN30</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong>+${percent(row.upside, 2)}</strong><span>TRIỂN VỌNG 5 PHIÊN</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
+      const direction = row.upside > 0 ? "tăng" : "giảm";
+      const returnTone = row.upside > 0 ? "signalUp" : "signalDown";
+      const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRONG VN30" : "TRIỂN VỌNG 5 PHIÊN";
+      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / VN30</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.upside, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
     $("#leaderDots").innerHTML = state.rows.map((row, index) => `<button type="button" class="leaderDot" data-dot="${index}" aria-label="Xem ${escapeHTML(row.symbol)}" title="${escapeHTML(row.symbol)}"></button>`).join("");
@@ -229,7 +250,7 @@
       dot.setAttribute("aria-pressed", String(index === state.index));
     });
     $("#carouselPosition").textContent = `${String(state.index + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`;
-    window.__VMEWS_LEADERBOARD__ = { filter: state.filter, selected: state.rows[state.index].symbol, rows: state.rows.map(row => ({ symbol: row.symbol, upside: row.upside, quality: row.quality, tradedValue20: row.tradedValue20, risk: row.risk })) };
+    window.__VMEWS_LEADERBOARD__ = { mode: state.defensive ? "defensive" : "positive", filter: state.filter, selected: state.rows[state.index].symbol, rows: state.rows.map(row => ({ symbol: row.symbol, upside: row.upside, quality: row.quality, tradedValue20: row.tradedValue20, risk: row.risk })) };
   }
 
   function drawSparkline(canvas, history) {
@@ -360,7 +381,7 @@
       if (!filter) return;
       state.filter = filter.dataset.filter;
       state.index = 0;
-      state.rows = buildLeaderboard(state.base, { filter: state.filter });
+      state.rows = buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive });
       document.querySelectorAll("[data-filter]").forEach(button => {
         button.classList.toggle("active", button === filter);
         button.setAttribute("aria-pressed", String(button === filter));
@@ -398,8 +419,11 @@
       if (!event.detail?.forecastUpdates || !state.base) return;
       const selected = state.rows[state.index]?.symbol;
       state.universe = buildLeaderboard(state.base, { all: true });
-      state.rows = buildLeaderboard(state.base, { filter: state.filter });
+      state.candidates = buildLeaderboard(state.base, { all: true, includeNonPositive: true });
+      state.defensive = state.universe.length === 0;
+      state.rows = buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive });
       state.index = Math.max(0, state.rows.findIndex(row => row.symbol === selected));
+      refreshMode();
       renderPulse();
       renderCards();
       scheduleRotation();
@@ -408,11 +432,15 @@
 
   async function init() {
     try {
-      state.base = await window.__VMEWS_LOAD_BASE__();
+      const load = window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__;
+      state.base = await load();
       if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");
       state.universe = buildLeaderboard(state.base, { all: true });
-      state.rows = state.universe.slice(0, 10);
+      state.candidates = buildLeaderboard(state.base, { all: true, includeNonPositive: true });
+      state.defensive = state.universe.length === 0;
+      state.rows = (state.defensive ? state.candidates : state.universe).slice(0, 10);
       $("#snapshotDate").textContent = state.base.dash.asOf || "—";
+      refreshMode();
       updateClock();
       window.setInterval(() => { if (!document.hidden) updateClock(); }, 1000);
       renderPulse();

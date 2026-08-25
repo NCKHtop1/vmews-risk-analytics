@@ -11,14 +11,14 @@ async function loadLeaderboard() {
   return window;
 }
 
-async function loadMarketDashboard() {
+async function loadMarketDashboard(fetch = async () => { throw new Error("Unexpected network request"); }) {
   const source = await readFile(new URL("../forecast-final-v12.js", import.meta.url), "utf8");
   const emitted = [];
   const document = { addEventListener() {}, querySelector() { return null; } };
   const window = { dispatchEvent(event) { emitted.push(event); } };
   class BrowserEvent { constructor(type, options) { this.type = type; this.detail = options?.detail; } }
   const location = { pathname: "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html", hostname: "cdn.githubraw.com" };
-  vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, console }));
+  vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, fetch, console }));
   return { window, emitted };
 }
 
@@ -62,6 +62,25 @@ test("commit-pinned CDN loads data from the same immutable ref", async () => {
   );
 });
 
+test("leader loader fetches only the critical dashboard and gates", async () => {
+  const requested = [];
+  const fetch = async url => {
+    requested.push(String(url));
+    const dashboard = String(url).includes("forecast-dashboard-v12.json");
+    return {
+      ok: true,
+      async json() { return dashboard ? { promotion: { status: "PASS" } } : { status: "PASS" }; },
+    };
+  };
+  const { window } = await loadMarketDashboard(fetch);
+  const result = await window.__VMEWS_LOAD_LEADER_BASE__();
+  assert.equal(result.model.promotion.status, "PASS");
+  assert.deepEqual(requested.map(url => new URL(url).pathname.split("/").at(-1)).sort(), [
+    "forecast-dashboard-v12.json",
+    "phase-gates-v12.json",
+  ]);
+});
+
 test("VN30 carousel rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [
@@ -76,6 +95,20 @@ test("VN30 carousel rejects nonmembers, removed names, downtrends and nonexecuta
   assert.deepEqual(Array.from(rows, row => row.symbol), ["MCH", "FPT"]);
   assert.ok(rows.every(row => row.target > row.close));
   assert.equal(window.__VMEWS_VN30_MEMBERS__.length, 30);
+});
+
+test("VN30 carousel can rank validated defensive names when no positive forecast exists", async () => {
+  const window = await loadLeaderboard();
+  const items = [
+    snapshot("FPT", 72_000, 71_600),
+    snapshot("MCH", 128_000, 127_900),
+    snapshot("TCX", 34_000, 33_800),
+  ];
+  const positive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true });
+  const defensive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, includeNonPositive: true });
+  assert.equal(positive.length, 0);
+  assert.deepEqual(Array.from(defensive, row => row.symbol), ["MCH", "FPT", "TCX"]);
+  assert.ok(defensive.every(row => row.target <= row.close));
 });
 
 test("published dated VN30 roster is authoritative and fewer than ten are never padded", async () => {

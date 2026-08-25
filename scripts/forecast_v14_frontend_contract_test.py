@@ -77,7 +77,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=20.2", self.html)
+        self.assertIn("release=20.4", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
@@ -128,10 +128,20 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn('forecast.validationStatus !== "PASS"', leaders)
         self.assertIn("target % tickSize !== 0", leaders)
         self.assertIn("target <= close", leaders)
+        self.assertIn("includeNonPositive", leaders)
+        self.assertIn("TRẠNG THÁI PHÒNG THỦ", leaders)
+        self.assertIn("GIẢM ÍT NHẤT TRONG VN30", leaders)
         self.assertIn("upside: target / close - 1", leaders)
         self.assertIn("right.upside - left.upside", leaders)
         self.assertIn("rows.slice(0, 10)", leaders)
         self.assertNotIn("Math.random", leaders)
+
+    def test_vn30_leaderboard_loads_before_the_full_backtest_bundle(self) -> None:
+        app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+        leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
+        self.assertIn("window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase", app)
+        self.assertIn("const JSON_PROMISES=new Map()", app)
+        self.assertIn("window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__", leaders)
 
     def test_signal_quality_uses_real_liquidity_news_risk_and_uncertainty(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
