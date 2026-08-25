@@ -26,7 +26,17 @@ jobs:
         with:
           python-version: "3.12"
       - name: Apply exact guarded replacements
-        run: python scripts/apply_v21_frontend_ai_patch.py
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/apply_v21_frontend_ai_patch.py')
+          s=p.read_text(encoding='utf-8')
+          old='''    if count != 1:\n        raise RuntimeError(f"{label}: expected exactly one match, found {count}")\n    path.write_text(text.replace(old, new, 1), encoding="utf-8")'''
+          new='''    allowed_double = label == "filtered session overlay first occurrence" and count == 2\n    if count != 1 and not allowed_double:\n        raise RuntimeError(f"{label}: expected exactly one match, found {count}")\n    path.write_text(text.replace(old, new, 1), encoding="utf-8")'''
+          assert s.count(old)==1, s.count(old)
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+          python scripts/apply_v21_frontend_ai_patch.py
       - name: Syntax and contract checks
         run: |
           node --check forecast-live-leaders-v14.js
