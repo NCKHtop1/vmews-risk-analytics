@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write
 
+# V22 gate revision 4: duplicate-target repair applied.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
