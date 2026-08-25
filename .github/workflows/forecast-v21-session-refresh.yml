@@ -15,8 +15,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-v21-session-overlay
-  cancel-in-progress: true
+  group: forecast-data-publisher
+  cancel-in-progress: false
 
 jobs:
   test-session-overlay:
@@ -64,8 +64,9 @@ jobs:
           assert p['status']=='PASS',p.get('status')
           assert p['coreForecastUnchanged'] is True
           c=p['coverage']
-          assert c['coverageRatio']>=0.70,c
-          assert c['currentCoverageRatio']>=0.65,c
+          assert c['coverageRatio']>=0.90,c
+          assert c['currentCoverageRatio']>=0.90,c
+          assert c['cutoffFreshCoverageRatio']>=0.90,c
           assert len(p.get('leaders') or [])==10,p.get('leaders')
           print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
           PY
