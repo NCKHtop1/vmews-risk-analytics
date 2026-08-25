@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 6: guarded local-AI regex.
+# V22 gate revision 7: invoke session test from scripts path.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
@@ -53,7 +53,8 @@ jobs:
           node --check forecast-live-leaders-v14.js
           node --check solution-ai-v17.js
           node --check api/solution-ai.js
-          python -m unittest scripts.forecast_v14_frontend_contract_test scripts.forecast_v21_session_snapshot_test
+          python -m unittest scripts.forecast_v14_frontend_contract_test
+          python scripts/forecast_v21_session_snapshot_test.py
           node --test scripts/forecast_v18_frontend_runtime_test.mjs scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
           python scripts/forecast_v20_release_audit.py --output /tmp/release-audit-v22.json
           git diff --check
