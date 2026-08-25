@@ -81,7 +81,21 @@ test("leader loader fetches only the critical dashboard and gates", async () => 
   ]);
 });
 
-test("VN30 carousel rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
+test("default leaderboard ranks all validated HOSE names while VN30 remains an explicit scope", async () => {
+  const window = await loadLeaderboard();
+  const items = [
+    snapshot("ASP", 12_000, 16_000),
+    snapshot("PLX", 38_000, 42_000),
+    snapshot("FPT", 72_000, 72_900),
+    snapshot("MCH", 128_000, 130_000),
+  ];
+  const allHose = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true });
+  const vn30 = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, scope: "vn30" });
+  assert.deepEqual(Array.from(allHose, row => row.symbol), ["ASP", "PLX", "MCH", "FPT"]);
+  assert.deepEqual(Array.from(vn30, row => row.symbol), ["MCH", "FPT"]);
+});
+
+test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [
     snapshot("ASP", 12_000, 16_000),
@@ -91,21 +105,21 @@ test("VN30 carousel rejects nonmembers, removed names, downtrends and nonexecuta
     snapshot("TCX", 34_000, 33_900),
     snapshot("VHM", 49_000, 49_327),
   ];
-  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base(items));
+  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { scope: "vn30" });
   assert.deepEqual(Array.from(rows, row => row.symbol), ["MCH", "FPT"]);
   assert.ok(rows.every(row => row.target > row.close));
   assert.equal(window.__VMEWS_VN30_MEMBERS__.length, 30);
 });
 
-test("VN30 carousel can rank validated defensive names when no positive forecast exists", async () => {
+test("VN30 scope can rank validated defensive names when no positive forecast exists", async () => {
   const window = await loadLeaderboard();
   const items = [
     snapshot("FPT", 72_000, 71_600),
     snapshot("MCH", 128_000, 127_900),
     snapshot("TCX", 34_000, 33_800),
   ];
-  const positive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true });
-  const defensive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, includeNonPositive: true });
+  const positive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, scope: "vn30" });
+  const defensive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, scope: "vn30", includeNonPositive: true });
   assert.equal(positive.length, 0);
   assert.deepEqual(Array.from(defensive, row => row.symbol), ["MCH", "FPT", "TCX"]);
   assert.ok(defensive.every(row => row.target <= row.close));
@@ -120,20 +134,20 @@ test("published dated VN30 roster is authoritative and fewer than ten are never 
     snapshot("PLX", 38_000, 39_000),
     snapshot("MCH", 128_000, 132_000),
     snapshot("FPT", 72_000, 71_800),
-  ], oldRoster));
+  ], oldRoster), { scope: "vn30" });
   assert.deepEqual(Array.from(rows, row => row.symbol), ["PLX"]);
   assert.equal(rows.length, 1);
 });
 
-test("carousel returns at most ten independently validated positive VN30 forecasts", async () => {
+test("VN30 scope returns at most ten independently validated positive forecasts", async () => {
   const window = await loadLeaderboard();
   const items = Array.from(window.__VMEWS_VN30_MEMBERS__).map((symbol, index) =>
     snapshot(symbol, 50_000, 50_100 + index * 100)
   );
-  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base(items));
+  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { scope: "vn30" });
   assert.equal(rows.length, 10);
   assert.ok(rows.every((row, index) => index === 0 || rows[index - 1].upside >= row.upside));
-  assert.equal(window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true }).length, 30);
+  assert.equal(window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, scope: "vn30" }).length, 30);
 });
 
 test("live community overlay updates only the matching audited snapshot and valid HOSE quotes", async () => {
