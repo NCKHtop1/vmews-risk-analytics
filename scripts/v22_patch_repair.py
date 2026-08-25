@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 path = Path(__file__).resolve().with_name("v22_hardening_patch.py")
 text = path.read_text(encoding="utf-8")
@@ -14,10 +15,8 @@ if old not in text:
     raise SystemExit("V22 syntax target not found")
 text = text.replace(old, new, 1)
 
-# One small leaderboard statement exists twice in the V21 source. The first one
-# is the filter-click path; the second is intentionally consumed later as part
-# of the larger community-refresh block. Convert only the first patch operation
-# to an exact first-match replacement while preserving a count assertion of 2.
+# One small leaderboard statement exists twice in the V21 source. Convert only
+# the first call; the community-refresh block is handled by the larger patch.
 old_block = '''replace_once(
     "forecast-live-leaders-v14.js",
     '      state.rows = applySessionOverlay(buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive }));',
@@ -35,6 +34,16 @@ write(_path, _text.replace(_old, _new, 1))
 if old_block not in text:
     raise SystemExit("V22 duplicate leaderboard patch target not found")
 text = text.replace(old_block, new_block, 1)
+
+# The original patcher accidentally included one trailing space in the exact
+# local-AI summary target. Replace the two assignments with exact source text.
+summary_pattern = re.compile(r"old_summary = .*?\nnew_summary = .*?\nreplace_once\(\"solution-ai-v17\.js\", old_summary, new_summary\)", re.S)
+summary_replacement = '''old_summary = ''' + "'''" + '''        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là dự báo đã niêm phong theo dữ liệu ngày ${context.asOf || "chưa rõ"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,`''' + "'''" + '''
+new_summary = ''' + "'''" + '''        `${context.symbol} đang có đường dự báo ${stance}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm T+5 ${money(five.price)}; khoảng cách còn lại ${pct(remainingT5)} và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Core forecast được niêm phong theo dữ liệu ngày ${context.asOf || "chưa rõ"}; giá phiên chỉ dùng để đo lại khoảng cách tới mục tiêu, không tự sửa mô hình.`,`''' + "'''" + '''
+replace_once("solution-ai-v17.js", old_summary, new_summary)'''
+text, count = summary_pattern.subn(summary_replacement, text, count=1)
+if count != 1:
+    raise SystemExit(f"V22 local AI summary assignment repair count={count}")
 
 path.write_text(text, encoding="utf-8")
 print("V22 patcher repaired")
