@@ -57,8 +57,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "carouselPrev", "carouselNext", "carouselAutoplay",
             "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
             "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
-            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiKey", "solutionAiDisconnect",
-            "solutionAiBackend", "solutionAiSaveBackend",
+            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiGeminiWeb",
+            "solutionAiKey", "solutionAiDisconnect", "solutionAiBackend", "solutionAiSaveBackend",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -116,9 +116,10 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertLess(input_sync, render)
         self.assertLess(spark_sync, render)
 
-    def test_leaderboard_uses_only_validated_positive_vn30_forecasts(self) -> None:
+    def test_leaderboard_defaults_to_validated_hose_with_explicit_vn30_scope(self) -> None:
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
         self.assertIn("base?.dash?.lists?.vn30?.symbols", leaders)
+        self.assertIn('options.scope === "vn30"', leaders)
         self.assertIn("!members.has(symbol)", leaders)
         self.assertIn('"MCH"', leaders)
         self.assertIn('"TCX"', leaders)
@@ -129,14 +130,17 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("target % tickSize !== 0", leaders)
         self.assertIn("target <= close", leaders)
         self.assertIn("includeNonPositive", leaders)
-        self.assertIn("TRẠNG THÁI PHÒNG THỦ", leaders)
-        self.assertIn("GIẢM ÍT NHẤT TRONG VN30", leaders)
+        self.assertIn("HOSE · TRẠNG THÁI PHÒNG THỦ", leaders)
+        self.assertIn("GIẢM ÍT NHẤT TRÊN HOSE", leaders)
+        self.assertIn("forecast-session-v21.json", leaders)
+        self.assertIn("coreForecastUnchanged", leaders)
+        self.assertIn("payload.coreAsOf", leaders)
         self.assertIn("upside: target / close - 1", leaders)
         self.assertIn("right.upside - left.upside", leaders)
         self.assertIn("rows.slice(0, 10)", leaders)
         self.assertNotIn("Math.random", leaders)
 
-    def test_vn30_leaderboard_loads_before_the_full_backtest_bundle(self) -> None:
+    def test_leaderboard_loads_before_the_full_backtest_bundle(self) -> None:
         app = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
         leaders = (ROOT / "forecast-live-leaders-v14.js").read_text(encoding="utf-8")
         self.assertIn("window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase", app)
@@ -187,6 +191,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("directionValidated", assistant)
         self.assertIn("__VMEWS_BUILD_LEADERBOARD__", assistant)
         self.assertIn("solutionAiConnect", assistant)
+        self.assertIn("solutionAiGeminiWeb", assistant)
+        self.assertIn("https://gemini.google.com/app", assistant)
+        self.assertIn("Không mở đầu hoặc kết thúc bằng disclaimer chung", assistant)
         self.assertIn("https://aistudio.google.com/app/apikey", self.html)
         self.assertIn('id="solutionAiKey" type="password"', self.html)
         self.assertIn("sessionStorage", assistant)
@@ -225,6 +232,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("document.hidden", leaders)
         self.assertIn("ArrowLeft", leaders)
         self.assertIn("pointerup", leaders)
+        self.assertIn("}, 3000);", leaders)
         self.assertIn('data-filter="liquid"', self.html)
         self.assertIn('data-filter="green"', self.html)
         self.assertIn('aria-roledescription="carousel"', self.html)
