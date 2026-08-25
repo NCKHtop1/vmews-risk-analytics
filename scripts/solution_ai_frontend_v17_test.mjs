@@ -60,7 +60,15 @@ function dashboard() {
     ] },
   };
   return {
-    dash: { symbols: { FPT: fpt }, marketForecast: { decisionAt: "2026-08-23T10:00:00+07:00" } },
+    dash: {
+      symbols: { FPT: fpt }, marketForecast: { decisionAt: "2026-08-23T10:00:00+07:00" },
+      charts: { FPT: Array.from({ length: 65 }, (_, index) => ({
+        date: `2026-06-${String(index + 1).padStart(2, "0")}`,
+        rawClose: 68000 + index * 70 + (index % 4) * 45,
+        close: 68000 + index * 70 + (index % 4) * 45,
+        volume: 900000 + index * 12000 + (index % 5) * 40000,
+      })) },
+    },
     model: {
       horizons: { "5": { priceStatus: "PASS", directionStatus: "REVIEW", sealedAudit: { n: 44000 } } },
       governance: { livePriorIndependentlyBacktested: false },
@@ -521,4 +529,33 @@ test("Gemini Web handoff distinguishes a fresh SESSION quote from the sealed EOD
   assert.equal(payload.forecast.horizons["T+5"].price, 73000);
   assert.ok(Math.abs(payload.forecast.horizons["T+5"].remainingReturnFromSession - (73000 / 72500 - 1)) < 1e-12);
   assert.match(payload.userIntent.currentQuestion, /khoảng cách tới target/);
+});
+
+test("technical context carries real RSI MACD OBV and volume evidence", async () => {
+  const { window } = await setup();
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  assert.ok(context.technical.rsi14 >= 0 && context.technical.rsi14 <= 100);
+  assert.equal(Number.isFinite(context.technical.macd), true);
+  assert.equal(Number.isFinite(context.technical.macdHistogram), true);
+  assert.equal(Number.isFinite(context.technical.obv), true);
+  assert.equal(Number.isFinite(context.technical.obvChange5), true);
+  assert.equal(context.technical.volumeSeriesUsesObservedMarketVolume, true);
+  assert.ok(context.technical.volumeRatio20 > 0);
+});
+
+test("financial deep-dive routes to research and local wording stays decision-focused", async () => {
+  const { window, source } = await setup();
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  const intent = window.__SOLUTION_AI_RESEARCH_INTENT__("Đọc BCTC mới nhất, phân tích dòng tiền và nợ vay của FPT", context);
+  assert.equal(intent.useSnapshot, true);
+  assert.equal(intent.shouldSearch, true);
+  assert.equal(intent.mode, "FORECAST_RESEARCH");
+  const fundAnswer = window.__SOLUTION_AI_LOCAL_ANALYSIS__("Phân tích quỹ và danh mục FPT", context);
+  assert.match(fundAnswer, /Quỹ nắm giữ/);
+  assert.doesNotMatch(fundAnswer, /không phải tỷ lệ sở hữu doanh nghiệp|không chứng minh quỹ đang mua|chưa điều chỉnh giá dự báo trung tâm/i);
+  const technical = window.__SOLUTION_AI_LOCAL_ANALYSIS__("Phân tích đầy đủ kỹ thuật FPT", context);
+  assert.match(technical, /RSI14/);
+  assert.match(technical, /OBV/);
+  assert.match(technical, /MACD/);
+  assert.doesNotMatch(source, /Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp/);
 });

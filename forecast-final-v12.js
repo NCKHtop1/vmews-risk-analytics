@@ -186,7 +186,31 @@ function renderRumors(z){
   }
 }
 
-function renderSource(B,sym){const box=$("#sourceAudit");box.replaceChildren();const z=B.dash.symbols?.[sym]||{},u=B.model.universe||{},signal=B.market?.sources?.signalAudit||{},fundAudit=B.market?.sources?.fundAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{},age=item=>item.latestDate?item.stale===true||(+item.ageSessions||0)>0?`Cập nhật chậm ${Math.max(1,+item.ageSessions||0)} phiên`:"Đã cập nhật cùng phiên":"Chưa có dữ liệu từ nguồn",tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0),communitySource=rumorAudit.source?.publishers?.join(" · ")||"FireAnt · 24HMoney",priceDetail=z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu hai nguồn":z.dataFreshness==="CURRENT"?"Đã cập nhật từ nguồn chính":"Cần cập nhật trước khi sử dụng",fundDetail=fund.available?(fund.scenarioEligible===true||fund.inferenceEligible===true?"Bối cảnh tham khảo · chưa điều chỉnh giá trung tâm":"Chưa đủ lịch sử kiểm định"):`${fundAudit.snapshotCount||0} kỳ công bố`,rows=[["Giá thị trường",z.date||"—",priceDetail],["Độ phủ HOSE",`${u.currentSymbols??"—"} mã`,finite(u.hoseCoverage)?pct(u.hoseCoverage,1):"—"],["Tin đã đối chiếu",`${(+signal.acceptedEvents||0).toLocaleString("vi-VN")} bài`,`${signal.newsSymbols??"—"} mã cổ phiếu`],["Dòng tiền khối ngoại",foreign.latestDate||"CHƯA CÓ",age(foreign)],["Dòng tiền tự doanh",prop.latestDate||"CHƯA CÓ",age(prop)],["Danh mục quỹ",fund.available?`${fund.fundCount||0} quỹ`:"CHƯA CÓ",fundDetail],["Tài chính doanh nghiệp",z.fundamentalContext?.available?"ĐÃ GHI NHẬN":"CHƯA CÓ",z.fundamentalContext?.available?"Bối cảnh tham khảo · chưa điều chỉnh giá trung tâm":"Đang mở rộng nguồn"],["Tín hiệu cộng đồng",`${tracked} tín hiệu`,rumorAudit.source?.articles?`${communitySource} · ${rumorAudit.source.articles} bài`:communitySource],["Rổ VN30",B.dash.lists?.vn30?.symbols?.includes(sym)?"THÀNH VIÊN":"NGOÀI RỔ",B.dash.lists?.vn30?.effectiveDate||"03/08/2026"]];for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}}
+function renderSource(B,sym){
+  const box=$("#sourceAudit");box.replaceChildren();
+  const z=B.dash.symbols?.[sym]||{},signal=B.market?.sources?.signalAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},financial=z.fundamentalContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{};
+  const flowValue=item=>item?.available&&finite(item.net1)?`${+item.net1>=0?"+":""}${(+item.net1/1e9).toFixed(1)} tỷ`:"Mở dữ liệu";
+  const flowDetail=item=>item?.available?`${item.latestDate||"Phiên gần nhất"}${finite(item.net5)?` · 5P ${+item.net5>=0?"+":""}${(+item.net5/1e9).toFixed(1)} tỷ`:""}`:"Phiên gần nhất · lũy kế 5/20 phiên";
+  const tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0);
+  const communitySource=rumorAudit.source?.publishers?.join(" · ")||"Nguồn cộng đồng";
+  const priceDetail=z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
+  const fundValue=fund.available?`${fund.fundCount||0} quỹ`:"Mở dữ liệu quỹ";
+  const fundDetail=fund.available&&finite(fund.weightedNavMomentum20)?`NAV 20P ${+fund.weightedNavMomentum20>=0?"+":""}${pct(fund.weightedNavMomentum20,1)}`:"Danh mục · tỷ trọng · NAV · biến động";
+  const financialValue=financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Mở BCTC";
+  const financialBits=[];
+  if(financial.available&&finite(financial.profitQoQ))financialBits.push(`LN QoQ ${+financial.profitQoQ>=0?"+":""}${pct(financial.profitQoQ,1)}`);
+  if(financial.available&&finite(financial.revenueQoQ))financialBits.push(`DT QoQ ${+financial.revenueQoQ>=0?"+":""}${pct(financial.revenueQoQ,1)}`);
+  const rows=[
+    ["Giá thị trường",z.date||"—",priceDetail],
+    ["Tin đã đối chiếu",`${(+signal.acceptedEvents||0).toLocaleString("vi-VN")} bài`,`${signal.newsSymbols??"—"} mã cổ phiếu`],
+    ["Dòng tiền khối ngoại",flowValue(foreign),flowDetail(foreign)],
+    ["Dòng tiền tự doanh",flowValue(prop),flowDetail(prop)],
+    ["Danh mục quỹ",fundValue,fundDetail],
+    ["Tài chính doanh nghiệp",financialValue,financialBits.join(" · ")||"Doanh thu · lợi nhuận · dòng tiền · nợ · định giá"],
+    ["Tín hiệu cộng đồng",`${tracked} tín hiệu`,rumorAudit.source?.articles?`${communitySource} · ${rumorAudit.source.articles} bài`:communitySource],
+  ];
+  for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.dataset.deepTopic=label;e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}
+}
 
 function renderEventImpact(B,z,horizon=5){const box=$("#eventImpact");if(!box)return;const hAudit=B.model.horizons?.[String(horizon)]||{},study=hAudit.eventImpactAudit||{},news=study.positiveNews||{},negative=study.negativeNews||{},feature=z.newsFeatures||{},signed=v=>finite(v)?`${+v>=0?"+":""}${pct(v,2)}`:"—";setText("#eventImpactMeta",`T+${horizon} · ${(study.observations||0).toLocaleString("vi-VN")} quan sát`);box.innerHTML=`<article class="proofCard"><span>Sau tin tích cực</span><b class="${(+news.meanAbnormalReturn)>=0?"good":"bad"}">${signed(news.meanAbnormalReturn)}</b><small>${news.n||0} quan sát</small></article><article class="proofCard"><span>Sau tin tiêu cực</span><b class="${(+negative.meanAbnormalReturn)>=0?"good":"bad"}">${signed(negative.meanAbnormalReturn)}</b><small>${negative.n||0} quan sát</small></article><article class="proofCard"><span>Tin của ${esc(z.symbol||"")} · 5 phiên</span><b>${feature.count5||0} bài</b><small>${feature.positive5||0} tích cực · ${feature.negative5||0} tiêu cực</small></article><article class="proofCard"><span>Nguồn chính thức</span><b>${feature.official5||0} bài</b><small>trong 5 phiên gần nhất</small></article>`}
 

@@ -152,7 +152,7 @@
       "Phân biệt rõ dữ liệu mô hình hiện có với thông tin vừa tìm kiếm; ghi nguồn và thời điểm đối với dữ kiện bên ngoài, ưu tiên công bố doanh nghiệp, cơ quan quản lý và báo chí đáng tin cậy.",
       "Nếu nguồn mới có thời điểm khác snapshot dự báo, giải thích chênh lệch thời gian; không trình bày thông tin chưa kiểm chứng như dữ kiện hoặc tự ý thay đổi dự báo.",
       "Câu hỏi kiến thức, vĩ mô hoặc lĩnh vực khác không nhắc lại giá, quỹ hay danh sách cổ phiếu nếu người dùng không yêu cầu liên hệ.",
-      "Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua.",
+      "Với dữ liệu quỹ, tập trung vào quỹ đang nắm giữ, tỷ trọng trong danh mục, biến động NAV và thay đổi công bố có ý nghĩa; chỉ giải thích định nghĩa khi người dùng hỏi.",
       "Dòng tiền có ngày quan sát: nêu ngày khi dữ liệu chưa mới; không gọi dữ liệu cũ là thời gian thực.",
       "Nếu xác suất hướng chưa được kiểm định thì không đưa ra xác suất tăng.",
       "Biên độ ± là độ lớn không dấu; kịch bản tăng/giảm không phải giá kỳ vọng và không được biến tỷ lệ đúng chiều lịch sử thành xác suất tăng của một mã.",
@@ -247,19 +247,20 @@
       .filter(Boolean))].slice(0, 5);
     const selected = context?.symbol || "";
     const mentionsSelected = Boolean(selected && new RegExp(`(^|[^A-Za-z0-9])${selected}([^A-Za-z0-9]|$)`, "i").test(text));
-    const explicitStockQuestion = mentionsSelected || /mã đang xem|mã này|cổ phiếu này|cổ phiếu đang xem|danh mục quỹ|quỹ đang|khối ngoại|tự doanh|vùng giá|dự báo t\s*\+|top vn30|mã vn30/i.test(text);
+    const explicitStockQuestion = mentionsSelected || /mã đang xem|mã này|cổ phiếu này|cổ phiếu đang xem|danh mục quỹ|quỹ đang|khối ngoại|tự doanh|vùng giá|dự báo t\s*\+|top vn30|mã vn30|tài chính|bctc|báo cáo tài chính|doanh thu|lợi nhuận|dòng tiền|nợ vay|định giá|p\/e|p\/b|roe|rsi|macd|obv|khối lượng|technical|hỗ trợ|kháng cự/i.test(text);
     const forecastReference = /forecast|mô hình dự báo|kết quả (?:phân tích|dự báo)|tình hình dự báo|dữ liệu (?:forecast|dự báo|đang xem)|đường dự báo|các kỳ dự báo|tác động (?:đến|vào).*dự báo|kết hợp.*(?:dự báo|kết quả phân tích)|đánh giá.*(?:dự báo|kết quả phân tích)/i.test(text);
     const followUpReference = /^(?:ngoài ra|bổ sung|xem lại|phân tích tiếp|kết hợp|đánh giá lại)|thông tin (?:trên|vừa nêu)|kết quả (?:trên|này)|các yếu tố (?:trên|này)|vậy (?:thì|còn)|quay (?:lại|về)/i.test(text);
     const recentConversation = state.messages.slice(-8).map(item => String(item.content || "")).join(" ");
     const priorForecastThread = Boolean(selected && (new RegExp(`(^|[^A-Za-z0-9])${selected}([^A-Za-z0-9]|$)`, "i").test(recentConversation) || /dự báo t\s*\+|vùng giá|dữ liệu vmews|forecast/i.test(recentConversation)));
     const standaloneQuestion = /(?:chỉ|riêng) (?:nói|phân tích|xem).*(?:chung|vĩ mô|khái niệm)|không (?:cần|muốn).*(?:liên hệ|gắn|nhắc).*(?:mã|cổ phiếu|forecast|dự báo)/i.test(text);
     const stockQuestion = !standaloneQuestion && (explicitStockQuestion || forecastReference || (followUpReference && priorForecastThread));
-    const currentQuestion = urls.length > 0 || /mới nhất|tin mới|thông tin mới|hiện nay|hiện tại|hôm nay|gần đây|cập nhật|thời sự|vĩ mô|kinh tế|lãi suất|lạm phát|tỷ giá|chính sách|triển vọng ngành|tìm kiếm|tra cứu|nghiên cứu|nguồn mở|open source|website|bài báo|đọc link|đọc trang|phân tích đầy đủ|đối chiếu|xác minh/i.test(text);
+    const currentQuestion = urls.length > 0 || /mới nhất|tin mới|thông tin mới|hiện nay|hiện tại|hôm nay|gần đây|cập nhật|thời sự|vĩ mô|kinh tế|lãi suất|lạm phát|tỷ giá|chính sách|triển vọng ngành|tìm kiếm|tra cứu|nghiên cứu|nguồn mở|open source|website|bài báo|đọc link|đọc trang|phân tích đầy đủ|đối chiếu|xác minh|bctc|báo cáo tài chính|định giá|dòng tiền kinh doanh|nợ vay/i.test(text);
     const wantsSynthesis = /kết hợp|tổng hợp|bổ sung|mở rộng|khai thác sâu|bên ngoài|nguồn công khai|nguồn mở|đối chiếu|xác minh/i.test(text);
     const macroQuestion = /vĩ mô|kinh tế|lãi suất|lạm phát|tỷ giá|fed|ngân hàng nhà nước|chính sách|thương mại|thuế quan/i.test(text);
     const snapshotOnly = /chỉ (?:dùng|phân tích|xem).*(?:dữ liệu|mô hình)|không (?:tìm|tra cứu).*(?:web|bên ngoài|nguồn mở)/i.test(text);
     const evergreenQuestion = /là gì|cách tính|công thức|giải thích khái niệm|phân biệt/i.test(text) && !currentQuestion;
-    const shouldSearch = !snapshotOnly && (currentQuestion || (stockQuestion && wantsSynthesis) || (!stockQuestion && !evergreenQuestion && text.length >= 12));
+    const financialResearch = stockQuestion && /tài chính|bctc|báo cáo tài chính|doanh thu|lợi nhuận|dòng tiền kinh doanh|nợ vay|định giá|p\/e|p\/b|roe/i.test(text);
+    const shouldSearch = !snapshotOnly && (financialResearch || currentQuestion || (stockQuestion && wantsSynthesis) || (!stockQuestion && !evergreenQuestion && text.length >= 12));
     return {
       scope: stockQuestion && shouldSearch ? "FORECAST VÀ BẰNG CHỨNG BÊN NGOÀI" : stockQuestion ? "CỔ PHIẾU VÀ THỊ TRƯỜNG" : macroQuestion ? "VĨ MÔ VÀ KINH TẾ" : urls.length ? "ĐỌC NGUỒN CÔNG KHAI" : "CÂU HỎI TỰ DO",
       useSnapshot: stockQuestion,
@@ -575,15 +576,40 @@
   }
 
   function technicalContext(history) {
-    const rows = (history || []).filter(item => number(item?.rawClose ?? item?.close) !== null).slice(-65);
+    const rows = (history || []).filter(item => number(item?.rawClose ?? item?.close) !== null).slice(-90);
     const closes = rows.map(item => number(item.rawClose ?? item.close));
+    const volumes = rows.map(item => number(item.rawVolume ?? item.volume));
     if (closes.length < 5) return null;
     const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    const change = sessions => closes.length > sessions && closes.at(-(sessions + 1)) > 0 ? closes.at(-1) / closes.at(-(sessions + 1)) - 1 : null;
+    const emaSeries = (values, period) => {
+      if (!values.length) return [];
+      const k = 2 / (period + 1); let current = values[0];
+      return values.map((value, index) => { if (index) current = value * k + current * (1 - k); return current; });
+    };
+    const gains = [], losses = [];
+    for (let index = Math.max(1, closes.length - 14); index < closes.length; index += 1) {
+      const delta = closes[index] - closes[index - 1]; gains.push(Math.max(0, delta)); losses.push(Math.max(0, -delta));
+    }
+    const gain = average(gains) || 0, loss = average(losses) || 0;
+    const rsi14 = !loss ? (gain ? 100 : 50) : 100 - 100 / (1 + gain / loss);
+    const ema12 = emaSeries(closes, 12), ema26 = emaSeries(closes, 26);
+    const macdSeries = closes.map((_, index) => ema12[index] - ema26[index]);
+    const signalSeries = emaSeries(macdSeries, 9);
+    const macd = macdSeries.at(-1), macdSignal = signalSeries.at(-1), macdHistogram = macd - macdSignal;
     const returns = closes.slice(1).map((value, index) => Math.log(value / closes[index])).filter(Number.isFinite);
     const variance = returns.length > 1 ? returns.reduce((sum, value) => sum + (value - average(returns)) ** 2, 0) / (returns.length - 1) : null;
-    const current = closes.at(-1);
-    const change = sessions => closes.length > sessions && closes.at(-(sessions + 1)) > 0 ? current / closes.at(-(sessions + 1)) - 1 : null;
-    const last20 = closes.slice(-20);
+    const last20 = closes.slice(-20), validVolumes = volumes.filter(value => value !== null && value >= 0);
+    let obv = 0; const obvSeries = [0];
+    for (let index = 1; index < closes.length; index += 1) {
+      const volume = volumes[index] ?? 0;
+      if (closes[index] > closes[index - 1]) obv += volume;
+      else if (closes[index] < closes[index - 1]) obv -= volume;
+      obvSeries.push(obv);
+    }
+    const lastVolume20 = volumes.slice(-20).filter(value => value !== null && value > 0);
+    const averageVolume20 = average(lastVolume20);
+    const latestVolume = volumes.at(-1);
     return {
       observationCount: closes.length,
       from: rows[0]?.date || null,
@@ -592,7 +618,16 @@
       sma20: average(last20), sma50: average(closes.slice(-50)),
       high20: Math.max(...last20), low20: Math.min(...last20),
       realizedVolatility20Annualized: variance === null ? null : Math.sqrt(variance) * Math.sqrt(252),
+      rsi14,
+      macd, macdSignal, macdHistogram,
+      obv: validVolumes.length >= 10 ? obv : null,
+      obvChange5: validVolumes.length >= 10 && obvSeries.length > 5 ? obvSeries.at(-1) - obvSeries.at(-6) : null,
+      latestVolume,
+      averageVolume20,
+      volumeRatio20: latestVolume !== null && averageVolume20 ? latestVolume / averageVolume20 : null,
+      volumeObservations: validVolumes.length,
       priceSeriesUsesRawMarketClose: true,
+      volumeSeriesUsesObservedMarketVolume: validVolumes.length >= 10,
     };
   }
 
@@ -954,16 +989,20 @@
       if (tech) {
         const location = number(tech.sma20) !== null && number(context.close) !== null
           ? (context.close >= tech.sma20 ? "trên" : "dưới") : "quanh";
-        lines.push("### Giá và kỹ thuật từ dữ liệu thật", `Giá hiện ${location} SMA20 ${money(tech.sma20)}; SMA50 ${money(tech.sma50)}; biến động 5 phiên ${pct(tech.return5)} và 20 phiên ${pct(tech.return20)}. Biên 20 phiên là ${money(tech.low20)}–${money(tech.high20)}; chuỗi dùng giá đóng cửa thị trường, không làm mượt hay thay đổi dữ liệu.`);
+        const indicators = [`RSI14 ${number(tech.rsi14, 1)}`, `MACD hist ${number(tech.macdHistogram, 1)}`];
+        if (number(tech.obv) !== null) indicators.push(`OBV ${money(tech.obv)}`, `OBV 5P ${number(tech.obvChange5) >= 0 ? "+" : ""}${money(tech.obvChange5)}`);
+        if (number(tech.volumeRatio20) !== null) indicators.push(`KL/20P ${number(tech.volumeRatio20, 2)}x`);
+        lines.push("### Giá, động lượng & khối lượng", `Giá hiện ${location} SMA20 ${money(tech.sma20)}; SMA50 ${money(tech.sma50)}; 5 phiên ${pct(tech.return5)}, 20 phiên ${pct(tech.return20)}; ${indicators.join(" · ")}. Biên 20 phiên ${money(tech.low20)}–${money(tech.high20)}.`);
       }
     }
 
     if (fundQuestion || detailed) {
       if (context.fund) {
         const contribution = five?.liveEvidence?.FUND;
-        lines.push("### Quỹ và dòng tiền", `Có ${context.fund.fundCount} quỹ đang nắm giữ, tỷ trọng bình quân ${(context.fund.averageWeight * 100).toFixed(2)}% trong từng danh mục quỹ; NAV 20 phiên ${pct(context.fund.navMomentum20)}${number(contribution) === null ? "" : `; mức điều chỉnh trong kịch bản tham khảo T+5 ${pct(contribution)}`}. Dữ liệu quỹ chưa điều chỉnh giá dự báo trung tâm. Tỷ trọng này không phải tỷ lệ sở hữu doanh nghiệp và không chứng minh quỹ đang mua trong phiên.`);
+        const topHolders = context.fund.holders.slice(0, 4).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ");
+        lines.push("### Quỹ nắm giữ", `Có ${context.fund.fundCount} quỹ trong dữ liệu hiện có; NAV 20 phiên ${pct(context.fund.navMomentum20)}${topHolders ? `; tỷ trọng nổi bật: ${topHolders}` : ""}${number(contribution) === null ? "" : `; tín hiệu quỹ trong kịch bản T+5 ${pct(contribution)}`}.`);
         if (fundQuestion) lines.push(`Các tỷ trọng cao nhất: ${context.fund.holders.slice(0, 5).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ")}.`);
-      } else if (fundQuestion) lines.push("Mã này chưa có công bố danh mục quỹ đủ lịch sử để đánh giá riêng; giá dự báo trung tâm không bị thay đổi.");
+      } else if (fundQuestion) lines.push("Snapshot hiện tại chưa có đủ chi tiết danh mục quỹ; câu hỏi sâu về quỹ sẽ ưu tiên truy vấn công bố và nguồn công khai mới nhất khi kết nối AI khả dụng.");
     }
 
     if (flowQuestion || detailed) {
@@ -973,8 +1012,11 @@
       if (flowLines.length) lines.push(...flowLines);
     }
 
-    if (context.financial && /tài chính|lợi nhuận|định giá|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) {
-      lines.push("### Nền tảng doanh nghiệp", `Kỳ ${context.financial.incomePeriod || "gần nhất"}: lợi nhuận thay đổi ${pct(context.financial.profitGrowth)} và doanh thu ${pct(context.financial.revenueGrowth)} so với quý trước. Chỉ tiêu này cần đọc cùng tính mùa vụ và kỳ công bố, không tự suy ra xu hướng dài hạn từ một quý.`);
+    if (context.financial && /tài chính|bctc|doanh thu|lợi nhuận|dòng tiền|nợ|định giá|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) {
+      const ratioEntries = Object.entries(context.financial.ratios || {}).slice(0, 5).map(([key, value]) => `${key.toUpperCase()} ${number(value?.value ?? value) === null ? "—" : number(value?.value ?? value, 2)}`).join(" · ");
+      lines.push("### Tài chính doanh nghiệp", `Kỳ ${context.financial.incomePeriod || "gần nhất"}: lợi nhuận ${pct(context.financial.profitGrowth)} QoQ, doanh thu ${pct(context.financial.revenueGrowth)} QoQ${ratioEntries ? ` · ${ratioEntries}` : ""}.`);
+    } else if (!context.financial && /tài chính|bctc|báo cáo tài chính|doanh thu|lợi nhuận|dòng tiền|nợ|định giá|p\/e|p\/b|roe/.test(question)) {
+      lines.push("### Tài chính doanh nghiệp", "Snapshot tích hợp chưa chứa kỳ BCTC đủ chi tiết cho câu hỏi này. SoluTION.AI sẽ ưu tiên truy vấn báo cáo/công bố công khai mới nhất khi kết nối nghiên cứu web khả dụng.");
     }
 
     const drivers = primaryDrivers(five);
@@ -1408,50 +1450,34 @@
     const button = $("#solutionAiGeminiWeb");
     if (button) {
       button.textContent = "Tiếp tục trên Gemini Web ↗";
-      button.setAttribute?.("title", "Mang toàn bộ forecast, ranking, dữ liệu phiên và câu hỏi hiện tại sang Gemini Web");
+      button.setAttribute?.("title", "Mang forecast và câu hỏi hiện tại sang Gemini Web");
     }
     const panel = $("#solutionAiPanel");
     if (!panel || typeof document.createElement !== "function") return;
     handoffCard = document.createElement("section");
     handoffCard.id = "solutionAiHandoffCard";
-    handoffCard.className = "aiHandoffCard";
+    handoffCard.className = "aiHandoffToast";
     handoffCard.hidden = true;
     const title = document.createElement("strong");
-    title.textContent = "Phiên Gemini đã được chuẩn bị";
+    title.textContent = "Đã chuẩn bị phiên Gemini";
     handoffStatusNode = document.createElement("span");
     handoffStatusNode.className = "aiHandoffStatus";
     handoffDetailNode = document.createElement("small");
     handoffDetailNode.className = "aiHandoffDetail";
-    const actions = document.createElement("div");
-    actions.className = "aiHandoffActions";
     const copyButton = document.createElement("button");
     copyButton.type = "button";
+    copyButton.className = "aiHandoffCopy";
     copyButton.textContent = "Sao chép lại";
-    const previewButton = document.createElement("button");
-    previewButton.type = "button";
-    previewButton.textContent = "Xem gói chuyển";
-    handoffPreviewButton = previewButton;
-    handoffPreviewNode = document.createElement("pre");
-    handoffPreviewNode.className = "aiHandoffPreview";
-    handoffPreviewNode.hidden = true;
     copyButton.addEventListener("click", async () => {
       const copied = await copyHandoffText(lastGeminiHandoffText);
-      if (handoffStatusNode) handoffStatusNode.textContent = copied ? "Đã sao chép lại — chỉ cần dán vào Gemini." : "Trình duyệt chặn clipboard — mở phần xem gói chuyển để sao chép.";
+      if (handoffStatusNode) handoffStatusNode.textContent = copied ? "Đã sao chép · dán vào Gemini để tiếp tục." : "Clipboard đang bị chặn.";
     });
-    previewButton.addEventListener("click", () => {
-      if (!handoffPreviewNode) return;
-      handoffPreviewNode.hidden = !handoffPreviewNode.hidden;
-      previewButton.textContent = handoffPreviewNode.hidden ? "Xem gói chuyển" : "Ẩn gói chuyển";
-    });
-    actions.append(copyButton, previewButton);
-    handoffCard.append(title, handoffStatusNode, handoffDetailNode, actions, handoffPreviewNode);
-    const connect = $("#solutionAiConnect");
-    if (connect?.insertAdjacentElement) connect.insertAdjacentElement("afterend", handoffCard);
-    else panel.append?.(handoffCard);
+    handoffCard.append(title, handoffStatusNode, handoffDetailNode, copyButton);
+    panel.append?.(handoffCard);
     if (document.head && !document.getElementById?.("solutionAiHandoffStyle")) {
       const style = document.createElement("style");
       style.id = "solutionAiHandoffStyle";
-      style.textContent = `.aiHandoffCard{margin:10px 14px;padding:10px 12px;border:1px solid rgba(90,150,255,.24);border-radius:12px;background:rgba(25,48,82,.36);display:grid;gap:6px}.aiHandoffCard[hidden]{display:none}.aiHandoffStatus{font-size:12px;font-weight:700}.aiHandoffDetail{opacity:.8;line-height:1.45}.aiHandoffActions{display:flex;gap:8px;flex-wrap:wrap}.aiHandoffActions button{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:inherit;border-radius:9px;padding:6px 9px;cursor:pointer}.aiHandoffPreview{max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:4px 0 0;padding:8px;border-radius:9px;background:rgba(0,0,0,.2);font-size:10px;line-height:1.35}@media(max-width:520px){.aiHandoffCard{margin:8px 10px}.aiHandoffActions button{flex:1}}`;
+      style.textContent = `.aiHandoffToast{position:absolute;z-index:8;top:78px;right:12px;width:min(350px,calc(100% - 24px));padding:10px 11px;border:1px solid rgba(168,235,101,.46);border-radius:11px;background:rgba(10,18,9,.96);box-shadow:0 14px 34px rgba(0,0,0,.34);display:grid;grid-template-columns:1fr auto;gap:3px 9px;align-items:center}.aiHandoffToast[hidden]{display:none}.aiHandoffToast strong{font-size:12px}.aiHandoffStatus,.aiHandoffDetail{grid-column:1/2;font-size:10.5px;line-height:1.35;color:#b9c7b5}.aiHandoffCopy{grid-column:2;grid-row:1/4;border:1px solid rgba(168,235,101,.32);background:rgba(168,235,101,.08);color:#cbedaa;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:10px}@media(max-width:520px){.aiHandoffToast{top:72px;right:8px;width:calc(100% - 16px)}}`;
       document.head.append(style);
     }
   }
@@ -1462,50 +1488,28 @@
     lastGeminiHandoffContext = context;
     if (handoffCard) handoffCard.hidden = false;
     const mode = number(context?.session?.liveClose) > 0 ? "SESSION" : "EOD";
-    const rank = context?.marketRanking?.canonicalVisibleRank;
-    const rankText = rank ? ` · rank hiển thị #${rank}` : "";
     if (handoffStatusNode) handoffStatusNode.textContent = copied
-      ? popupOpened ? "Đã sao chép toàn bộ phiên — dán một lần vào Gemini để tiếp tục." : "Đã sao chép toàn bộ phiên; popup bị chặn, bấm lại để mở Gemini."
-      : "Gemini đã mở nhưng clipboard bị chặn — dùng ‘Xem gói chuyển’ để sao chép.";
-    if (handoffDetailNode) handoffDetailNode.textContent = `${context?.symbol || "Mã hiện tại"} · ${mode}${rankText} · T+1→T+5 · technical · flow · quỹ · tài chính · news · validation · hội thoại`;
-    if (handoffPreviewNode) {
-      handoffPreviewNode.textContent = text;
-      handoffPreviewNode.hidden = true;
-    }
-    if (handoffPreviewButton) handoffPreviewButton.textContent = "Xem gói chuyển";
+      ? "Đã sao chép ngữ cảnh · dán vào Gemini để tiếp tục."
+      : "Gemini đã mở · clipboard đang bị chặn.";
+    if (handoffDetailNode) handoffDetailNode.textContent = `${context?.symbol || "Mã hiện tại"} · ${mode} · T+1→T+5 · dữ liệu cốt lõi`;
+    window.setTimeout?.(() => { if (handoffCard) handoffCard.hidden = true; }, copied ? 5500 : 11000);
   }
 
   async function openGeminiWeb() {
     const popup = typeof window.open === "function" ? window.open("https://gemini.google.com/app", "_blank", "noopener,noreferrer") : null;
     const label = $("#solutionAiConnectionState");
     const button = $("#solutionAiGeminiWeb");
-    const previousText = button?.textContent || "Tiếp tục trên Gemini Web ↗";
-    if (button) {
-      button.disabled = true;
-      button.textContent = "Đang đóng gói phiên…";
-    }
+    if (button) { button.disabled = true; button.textContent = "Đang chuẩn bị…"; }
     try {
       let context = state.context;
-      try {
-        context = await buildContext();
-        updateContextBar(context);
-      } catch {
-        context = state.context || {};
-      }
+      try { context = await buildContext(); updateContextBar(context); } catch { context = state.context || {}; }
       const text = externalGeminiPrompt("", context);
       const copied = await copyHandoffText(text);
       renderGeminiHandoffState(context, text, copied, Boolean(popup));
-      if (label) {
-        label.textContent = copied
-          ? "Đã chuyển đầy đủ forecast + dữ liệu phiên + ranking + bằng chứng + câu hỏi. Sang Gemini và dán một lần để tiếp tục."
-          : "Gemini Web đã mở; clipboard bị chặn. Mở ‘Xem gói chuyển’ ngay bên dưới để sao chép toàn bộ phiên.";
-      }
+      if (label) label.textContent = copied ? "Forecast và câu hỏi hiện tại đã được sao chép sang phiên Gemini." : "Gemini đã mở; trình duyệt đang chặn clipboard.";
       return Boolean(popup);
     } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent = previousText.includes("Gemini") ? "Tiếp tục trên Gemini Web ↗" : previousText;
-      }
+      if (button) { button.disabled = false; button.textContent = "Tiếp tục trên Gemini Web ↗"; }
     }
   }
 
@@ -1560,6 +1564,9 @@
       try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
     });
     window.__SOLUTION_AI_BUILD_CONTEXT__ = buildContext;
+    window.__SOLUTION_AI_ASK__ = async question => { await open(); return ask(question); };
+    window.__SOLUTION_AI_RESEARCH_INTENT__ = (question, context = state.context || {}) => researchIntent(question, context);
+    window.__SOLUTION_AI_LOCAL_ANALYSIS__ = (question, context = state.context || {}) => localAnalysis(question, context);
     window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__ = (question = "", context = state.context || {}) => externalGeminiPrompt(question, context);
     window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__ = (question = "", context = state.context || {}) => geminiHandoffPayload(context, question);
     window.__SOLUTION_AI_LAST_GEMINI_HANDOFF__ = () => ({ text: lastGeminiHandoffText, context: lastGeminiHandoffContext });
