@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 10: normalize generated source formatting.
+# V22 gate revision 11: sentinel session file and inline favicon eliminate expected 404s.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
