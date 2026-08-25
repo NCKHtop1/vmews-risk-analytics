@@ -74,6 +74,12 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json
           git checkout -- package.json 2>/dev/null || true
+          python - <<'PY'
+          from pathlib import Path
+          for name in ['solution-ai-v17.js', 'scripts/solution_ai_frontend_v17_test.mjs', 'scripts/forecast_v22_browser_e2e.mjs']:
+              path = Path(name)
+              path.write_text(path.read_text(encoding='utf-8').rstrip() + '\n', encoding='utf-8')
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add solution-ai-v17.js scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v22_browser_e2e.mjs
