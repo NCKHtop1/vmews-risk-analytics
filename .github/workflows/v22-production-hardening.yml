@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 9: direct release-audit repair + shallow checkout.
+# V22 gate revision 10: normalize generated source formatting.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
@@ -44,6 +44,13 @@ jobs:
           PY
           python -m py_compile scripts/v22_hardening_patch.py
           python scripts/v22_hardening_patch.py
+          python - <<'PY'
+          from pathlib import Path
+          for name in ('solution-ai-v17.js','forecast-live-leaders-v14.js','forecast-final-v12.js','api/solution-ai.js'):
+              p=Path(name)
+              lines=p.read_text(encoding='utf-8').splitlines()
+              p.write_text('\n'.join(line.rstrip() for line in lines)+'\n',encoding='utf-8')
+          PY
 
       - name: Run static runtime AI and data regression suites
         shell: bash
