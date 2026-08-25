@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 7: invoke session test from scripts path.
+# V22 gate revision 8: sanitize current intelligence before release audit.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
@@ -56,6 +56,8 @@ jobs:
           python -m unittest scripts.forecast_v14_frontend_contract_test
           python scripts/forecast_v21_session_snapshot_test.py
           node --test scripts/forecast_v18_frontend_runtime_test.mjs scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          python scripts/sanitize_intelligence_v20.py
+          python scripts/sanitize_intelligence_v20_test.py
           python scripts/forecast_v20_release_audit.py --output /tmp/release-audit-v22.json
           git diff --check
 
