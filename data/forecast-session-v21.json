@@ -1,0 +1,39 @@
+{
+  "version": "VMEWS-FORECAST-SESSION-21.0",
+  "status": "DEGRADED",
+  "generatedAt": null,
+  "session": "UNAVAILABLE",
+  "cutoffAt": null,
+  "coreAsOf": null,
+  "coreForecastUnchanged": true,
+  "scope": "Initial safe sentinel. Replaced only by a session snapshot that passes V22 coverage and cutoff-freshness gates.",
+  "coverage": {
+    "coreEligible": 0,
+    "quoted": 0,
+    "currentQuoteDate": 0,
+    "coverageRatio": 0.0,
+    "currentCoverageRatio": 0.0,
+    "cutoffFresh": 0,
+    "cutoffFreshCoverageRatio": 0.0,
+    "dominantQuoteDate": null,
+    "dominantUpdateMode": null,
+    "updateModeCounts": {},
+    "medianQuoteAgeMinutes": null,
+    "maxQuoteAgeMinutes": null,
+    "duplicatesIgnored": 0
+  },
+  "market": {
+    "advancing": 0,
+    "falling": 0,
+    "flat": 0,
+    "medianChange": null,
+    "positiveCoreTargetFromLive": 0,
+    "defensive": false
+  },
+  "leaders": [],
+  "symbols": [],
+  "governance": [
+    "A missing or degraded session overlay never rewrites the sealed EOD forecast.",
+    "The frontend falls back to the independently validated EOD snapshot until a session overlay passes all freshness gates."
+  ]
+}
