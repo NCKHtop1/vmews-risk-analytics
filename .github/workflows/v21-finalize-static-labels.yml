@@ -1,0 +1,67 @@
+name: Finalize V21 static HOSE labels
+
+on:
+  push:
+    branches:
+      - fix/vn30-defensive-fallback-20260825
+    paths:
+      - ".github/workflows/v21-finalize-static-labels.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/vn30-defensive-fallback-20260825
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Apply exact static label replacements
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          html = Path('forecast-final.html')
+          text = html.read_text(encoding='utf-8')
+          replacements = {
+              'VN30 · 5 PHIÊN TỚI': 'HOSE · 5 PHIÊN TỚI',
+              'Những cổ phiếu VN30 có triển vọng tăng nổi bật.': 'Top 10 toàn HOSE theo forecast T+5 đã kiểm định và dữ liệu mới nhất.',
+              'Bộ lọc cổ phiếu VN30 tăng giá': 'Bộ lọc cổ phiếu HOSE theo forecast',
+              '>VN30 tăng giá</button>': '>HOSE forecast tăng</button>',
+              'Các cổ phiếu VN30 có mức tăng dự báo T+5 cao nhất': 'Các cổ phiếu HOSE có mức tăng dự báo T+5 cao nhất',
+              'Đang xác định tín hiệu tăng trong VN30…': 'Đang xác định tín hiệu trên toàn HOSE…',
+          }
+          for old, new in replacements.items():
+              count = text.count(old)
+              assert count == 1, (old, count)
+              text = text.replace(old, new, 1)
+          html.write_text(text, encoding='utf-8')
+
+          test = Path('scripts/forecast_v14_frontend_contract_test.py')
+          source = test.read_text(encoding='utf-8')
+          old = 'self.assertIn("VN30 · 5 PHIÊN TỚI", self.html)'
+          new = 'self.assertIn("HOSE · 5 PHIÊN TỚI", self.html)'
+          assert source.count(old) == 1, source.count(old)
+          test.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Verify static and runtime contracts
+        run: |
+          grep -Fq 'HOSE · 5 PHIÊN TỚI' forecast-final.html
+          grep -Fq 'Bộ lọc cổ phiếu HOSE theo forecast' forecast-final.html
+          grep -Fq 'Các cổ phiếu HOSE có mức tăng dự báo T+5 cao nhất' forecast-final.html
+          ! grep -Fq 'Đang xác định tín hiệu tăng trong VN30' forecast-final.html
+          python -m unittest scripts.forecast_v14_frontend_contract_test
+          node --test scripts/forecast_v18_frontend_runtime_test.mjs
+      - name: Commit final labels and remove this one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/v21-finalize-static-labels.yml
+          git add forecast-final.html scripts/forecast_v14_frontend_contract_test.py
+          git diff --cached --check
+          git commit -m "Align static dashboard labels with full-HOSE V21 scope"
+          git push origin HEAD:fix/vn30-defensive-fallback-20260825
