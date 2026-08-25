@@ -30,7 +30,7 @@
     SAB: ["sabeco"], MSN: ["masan"], PLX: ["petrolimex"], GAS: ["pv gas", "pvgas"],
     MWG: ["thế giới di động"], BCM: ["becamex"], NLG: ["nam long"], DIG: ["dic corp", "dic group"],
   };
-  const state = { base: null, universe: [], candidates: [], rows: [], defensive: false, index: 0, filter: "all", paused: reducedMotion, timer: 0 };
+  const state = { base: null, session: null, universe: [], candidates: [], rows: [], defensive: false, index: 0, filter: "all", paused: reducedMotion, timer: 0 };
 
   function valueLabel(value) {
     if (!Number.isFinite(value) || value <= 0) return "Chưa có";
@@ -67,7 +67,7 @@
       const close = number(snapshot.close);
       const target = number(forecast.expectedPrice);
       const tickSize = number(forecast.tickSize);
-      if (!members.has(symbol) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
+      if ((options.scope === "vn30" && !members.has(symbol)) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
           || forecast.priceValidated !== true || forecast.validationStatus !== "PASS"
           || !close || !target || (!options.includeNonPositive && target <= close)
           || !tickSize || target % tickSize !== 0) continue;
@@ -121,20 +121,60 @@
   window.__VMEWS_BUILD_LEADERBOARD__ = buildLeaderboard;
   window.__VMEWS_VN30_MEMBERS__ = currentVN30;
 
+
+  async function loadSessionOverlay(base) {
+    try {
+      const root = window.__VMEWS_DATA_ROOT__ || "./data";
+      const revision = Math.floor(Date.now() / 60000);
+      const response = await fetch(`${root}/forecast-session-v21.json?refresh=${revision}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const payload = await response.json();
+      if (payload?.status !== "PASS" || payload?.coreForecastUnchanged !== true) return null;
+      if (String(payload.coreAsOf || "") !== String(base?.dash?.asOf || "")) return null;
+      if (!Array.isArray(payload.symbols) || !payload.symbols.length) return null;
+      return payload;
+    } catch {
+      return null;
+    }
+  }
+
+  function applySessionOverlay(rows) {
+    const session = state.session;
+    if (!session?.symbols?.length) return rows;
+    const live = new Map(session.symbols.filter(item => item.quoteCurrent).map(item => [item.symbol, item]));
+    return rows.map(row => {
+      const quote = live.get(row.symbol);
+      if (!quote || number(quote.liveClose) === null || number(quote.liveClose) <= 0) return row;
+      const next = { ...row, coreClose: row.close, close: number(quote.liveClose), sessionChange: number(quote.change), sessionAt: quote.updateAt };
+      next.upside = next.target / next.close - 1;
+      next.tradedValue20 = next.avgVolume20 * next.close;
+      next.quality = qualityScore(next);
+      return next;
+    }).sort((left, right) => right.upside - left.upside || right.quality - left.quality || left.symbol.localeCompare(right.symbol));
+  }
+
+  function sessionStamp() {
+    if (!state.session?.cutoffAt) return "";
+    const date = new Date(state.session.cutoffAt);
+    if (Number.isNaN(+date)) return "";
+    const time = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Ho_Chi_Minh" }).format(date);
+    return ` · ${state.session.session} ${time}`;
+  }
+
   function refreshMode() {
     const defensive = state.defensive;
     const command = $("#leaders .commandIndex");
     const summary = $("#leaderSummary");
     const primaryFilter = $('[data-filter="all"]');
     const deck = $("#signalDeck");
-    if (command) command.textContent = defensive ? "VN30 · TRẠNG THÁI PHÒNG THỦ" : "VN30 · 5 PHIÊN TỚI";
+    if (command) command.textContent = defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : "HOSE · 5 PHIÊN TỚI";
     if (summary) summary.textContent = defensive
-      ? "Chưa có mã VN30 dự báo tăng; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro."
-      : "Những cổ phiếu VN30 có triển vọng tăng nổi bật.";
-    if (primaryFilter) primaryFilter.textContent = defensive ? "VN30 phòng thủ" : "VN30 tăng giá";
+      ? "Chưa có mã HOSE đủ điều kiện có mục tiêu T+5 cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro."
+      : "Top 10 toàn HOSE theo forecast T+5 đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.";
+    if (primaryFilter) primaryFilter.textContent = defensive ? "HOSE phòng thủ" : "HOSE forecast tăng";
     if (deck) deck.setAttribute("aria-label", defensive
-      ? "Các cổ phiếu VN30 có mức giảm dự báo T+5 thấp nhất"
-      : "Các cổ phiếu VN30 có mức tăng dự báo T+5 cao nhất");
+      ? "Các cổ phiếu HOSE có mức giảm dự báo T+5 thấp nhất"
+      : "Các cổ phiếu HOSE có mức tăng dự báo T+5 cao nhất");
   }
 
   function animateValue(element, target, format) {
@@ -155,13 +195,12 @@
     const advancing = symbols.filter(snapshot => number(snapshot.lastSessionReturn) > 0).length;
     const falling = symbols.filter(snapshot => number(snapshot.lastSessionReturn) < 0).length;
     const positive = state.universe.length;
-    const members = state.base?.dash?.lists?.vn30?.symbols || currentVN30;
-    const covered = members.filter(symbol => symbols.some(snapshot => snapshot.symbol === symbol)).length;
+    const covered = state.candidates.length;
     const top = state.universe[0] || state.candidates[0];
     const topIsPositive = Boolean(top && top.upside > 0);
     const cards = [
       { label: "Cổ phiếu được theo dõi", value: symbols.length, format: value => `${Math.round(value)}`, detail: "toàn sàn HOSE", tone: "" },
-      { label: "VN30 dự báo tăng", value: positive, format: value => `${Math.round(value)} / ${covered}`, detail: `${Math.max(covered - positive, 0)} mã chưa có tín hiệu tăng`, tone: "up" },
+      { label: "HOSE forecast tăng", value: positive, format: value => `${Math.round(value)} / ${covered}`, detail: `${Math.max(covered - positive, 0)} mã chưa có tín hiệu tăng`, tone: "up" },
       { label: "Phiên gần nhất", value: advancing, format: value => `${Math.round(value)} ↑`, detail: `${falling} giảm · ${symbols.length - advancing - falling} đi ngang`, tone: "" },
       { label: topIsPositive ? "Tăng nổi bật nhất" : "Xếp hạng T+5 cao nhất", value: (top?.upside || 0) * 100, format: value => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`, detail: top ? `${top.symbol} · trọng tâm ${money(top.target)}` : "Chưa có dữ liệu", tone: topIsPositive ? "up" : "down" },
     ];
@@ -200,7 +239,7 @@
   function renderCards() {
     const deck = $("#signalDeck");
     if (!state.rows.length) {
-      deck.innerHTML = '<div class="deckEmpty">Chưa có cổ phiếu VN30 hợp lệ phù hợp bộ lọc.</div>';
+      deck.innerHTML = '<div class="deckEmpty">Chưa có cổ phiếu HOSE hợp lệ phù hợp bộ lọc.</div>';
       $("#leaderDots").replaceChildren();
       $("#leaderDetail").innerHTML = '<div class="deckEmpty">Hãy đổi bộ lọc để tiếp tục kiểm tra.</div>';
       $("#carouselPosition").textContent = "00 / 00";
@@ -212,8 +251,8 @@
       const probability = row.directionValidated ? percent(row.probUp, 1) : "—";
       const direction = row.upside > 0 ? "tăng" : "giảm";
       const returnTone = row.upside > 0 ? "signalUp" : "signalDown";
-      const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRONG VN30" : "TRIỂN VỌNG 5 PHIÊN";
-      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / VN30</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.upside, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
+      const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRÊN HOSE" : "TRIỂN VỌNG 5 PHIÊN";
+      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} trong 5 phiên" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.upside, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
     $("#leaderDots").innerHTML = state.rows.map((row, index) => `<button type="button" class="leaderDot" data-dot="${index}" aria-label="Xem ${escapeHTML(row.symbol)}" title="${escapeHTML(row.symbol)}"></button>`).join("");
@@ -344,7 +383,7 @@
     if (state.paused || reducedMotion || state.rows.length < 2) return;
     state.timer = window.setInterval(() => {
       if (!document.hidden && !$("#leaders").matches(":hover, :focus-within")) select(state.index + 1);
-    }, 4600);
+    }, 3000);
   }
 
   function updateClock() {
@@ -381,7 +420,7 @@
       if (!filter) return;
       state.filter = filter.dataset.filter;
       state.index = 0;
-      state.rows = buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive });
+      state.rows = applySessionOverlay(buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive }));
       document.querySelectorAll("[data-filter]").forEach(button => {
         button.classList.toggle("active", button === filter);
         button.setAttribute("aria-pressed", String(button === filter));
@@ -418,10 +457,10 @@
     window.addEventListener("vmews:community-updated", event => {
       if (!event.detail?.forecastUpdates || !state.base) return;
       const selected = state.rows[state.index]?.symbol;
-      state.universe = buildLeaderboard(state.base, { all: true });
-      state.candidates = buildLeaderboard(state.base, { all: true, includeNonPositive: true });
+      state.universe = applySessionOverlay(buildLeaderboard(state.base, { all: true }));
+      state.candidates = applySessionOverlay(buildLeaderboard(state.base, { all: true, includeNonPositive: true }));
       state.defensive = state.universe.length === 0;
-      state.rows = buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive });
+      state.rows = applySessionOverlay(buildLeaderboard(state.base, { filter: state.filter, includeNonPositive: state.defensive }));
       state.index = Math.max(0, state.rows.findIndex(row => row.symbol === selected));
       refreshMode();
       renderPulse();
@@ -435,11 +474,12 @@
       const load = window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__;
       state.base = await load();
       if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");
-      state.universe = buildLeaderboard(state.base, { all: true });
-      state.candidates = buildLeaderboard(state.base, { all: true, includeNonPositive: true });
+      state.session = await loadSessionOverlay(state.base);
+      state.universe = applySessionOverlay(buildLeaderboard(state.base, { all: true }));
+      state.candidates = applySessionOverlay(buildLeaderboard(state.base, { all: true, includeNonPositive: true }));
       state.defensive = state.universe.length === 0;
       state.rows = (state.defensive ? state.candidates : state.universe).slice(0, 10);
-      $("#snapshotDate").textContent = state.base.dash.asOf || "—";
+      $("#snapshotDate").textContent = `${state.base.dash.asOf || "—"}${sessionStamp()}`;
       refreshMode();
       updateClock();
       window.setInterval(() => { if (!document.hidden) updateClock(); }, 1000);

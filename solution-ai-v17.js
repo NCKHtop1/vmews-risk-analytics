@@ -133,6 +133,8 @@
     return [
       "Bạn là SoluTION.AI, trợ lý AI nghiên cứu độc lập; có thể trao đổi linh hoạt về tài chính, kinh tế, doanh nghiệp, công nghệ và mọi câu hỏi kiến thức hợp pháp.",
       "Luôn trả lời bằng tiếng Việt, đi thẳng vào đúng câu hỏi, có lập luận và đủ chiều sâu; không sử dụng một khuôn trả lời cố định.",
+      "Không mở đầu hoặc kết thúc bằng disclaimer chung kiểu lời khuyên/khuyến nghị. Chỉ nêu một giới hạn dữ liệu khi giới hạn đó trực tiếp làm thay đổi kết luận.",
+      "Với forecast, ưu tiên cấu trúc tư duy: kết luận hiện tại → bằng chứng mạnh nhất → bằng chứng mâu thuẫn → điều kiện xác nhận → điều kiện vô hiệu; tránh nhắc lại cùng một cảnh báo dưới nhiều cách diễn đạt.",
       "Yêu cầu mới nhất của người dùng quan trọng hơn mã cổ phiếu đang mở hoặc dữ liệu tham chiếu; câu hỏi chung không được tự ý biến thành phân tích cổ phiếu.",
       "Nếu người dùng nhắc đến kết quả phân tích, forecast, mô hình, dự báo, dữ liệu đang xem, tác động hoặc yêu cầu kết hợp thông tin, hãy coi snapshot của mã đang xem là trục chính và mọi nghiên cứu bên ngoài là lớp bằng chứng bổ sung.",
       "Với câu hỏi bám forecast, câu đầu tiên phải trả lời trực tiếp cho mã đang xem; sau đó mới giải thích đường dự báo T+1 đến T+5, yếu tố mô hình, bằng chứng bên ngoài ủng hộ/mâu thuẫn và rủi ro cần theo dõi.",
@@ -155,7 +157,7 @@
       "Biên độ ± là độ lớn không dấu; kịch bản tăng/giảm không phải giá kỳ vọng và không được biến tỷ lệ đúng chiều lịch sử thành xác suất tăng của một mã.",
       "Sàng lọc sau phí là kiểm định có điều kiện với giả định chi phí, không phải lợi nhuận chắc chắn, backtest danh mục hay khuyến nghị giao dịch.",
       "Điểm rủi ro, điểm chất lượng nguồn hoặc trạng thái GREEN/YELLOW/RED không phải xác suất và không được diễn giải như xác suất.",
-      "Danh sách nổi bật chỉ gồm thành viên VN30 hiện hành có dự báo T+5 tăng.",
+      "Bảng nổi bật mặc định xếp hạng toàn bộ HOSE đủ điều kiện kiểm định; khi người dùng yêu cầu VN30 thì mới giới hạn vào rổ VN30 hiện hành.",
       "Tin cộng đồng chưa có công bố xác nhận chỉ là thông tin đang đối chiếu.",
       "Tách dự báo trung tâm, vùng giá, các yếu tố tác động và rủi ro; không cam kết lợi nhuận.",
       "Trình bày dễ đọc trên điện thoại bằng tiêu đề ngắn, đoạn văn gọn và danh sách khi cần; không để lộ cú pháp Markdown thô trong nội dung.",
@@ -343,7 +345,7 @@
       "MỤC TIÊU KHÓA — KHÔNG ĐƯỢC ĐI LỆCH:",
       `Trả lời câu hỏi cho ${context.symbol} dựa trên snapshot VMEWS trước, rồi tích hợp nguồn ngoài. Không viết bài hướng dẫn chung. Nguồn mới chỉ đánh giá là ỦNG HỘ, MÂU THUẪN, TRUNG TÍNH hoặc CHƯA RÕ đối với forecast; tuyệt đối không tự sửa số dự báo.`,
       "HỢP ĐỒNG TRẢ LỜI:",
-      `1) Mở đầu bằng kết luận trực tiếp cho ${context.symbol}; 2) đọc đường T+1 đến T+5 và vùng bất định; 3) nối từng bằng chứng mới với tác động lên luận điểm forecast; 4) nêu rủi ro, điều cần theo dõi và độ trễ dữ liệu; 5) không đưa khuyến nghị mua/bán.`,
+      `1) Mở đầu bằng kết luận trực tiếp cho ${context.symbol}; 2) đọc đường T+1 đến T+5 và vùng bất định; 3) nối từng bằng chứng mới với tác động lên luận điểm forecast; 4) nêu rủi ro và độ trễ chỉ khi có tác động thực; 5) kết thúc bằng điều kiện xác nhận và điều kiện vô hiệu của luận điểm, không chèn disclaimer chung.`,
       "DỮ LIỆU DỰ BÁO ĐÃ KIỂM ĐỊNH — CHỈ SỬ DỤNG PHẦN LIÊN QUAN:",
       JSON.stringify(context),
     );
@@ -968,7 +970,7 @@
       lines.push(
         "### Kiểm định và giới hạn",
         `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Xác suất hướng đã qua kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`,
-        `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Forecast là phân bố bất định, không phải cam kết giá hoặc khuyến nghị mua/bán.`,
+        `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Đọc vùng bất định cùng điều kiện xác nhận/vô hiệu; nếu dữ liệu còn thiếu, nêu đúng phần thiếu và tác động của nó lên kết luận.`,
       );
     }
     return lines.join("\n");
@@ -1239,6 +1241,41 @@
     }
   }
 
+
+  function externalGeminiPrompt() {
+    const context = state.context || {};
+    const compact = {
+      symbol: context.symbol,
+      asOf: context.asOf,
+      close: context.close,
+      horizons: context.horizons,
+      factors: context.factors,
+      riskStatus: context.riskStatus,
+      dataFreshness: context.dataFreshness,
+      validation: context.validation,
+    };
+    return [
+      "Hãy đóng vai nhà phân tích phản biện. Trả lời bằng tiếng Việt, không dùng disclaimer chung.",
+      "Đọc dữ liệu VMEWS dưới đây như snapshot đã niêm phong; không tự sửa số forecast.",
+      "Hãy kết luận theo 5 phần: luận điểm hiện tại; đường T+1→T+5; bằng chứng ủng hộ; bằng chứng mâu thuẫn; điều kiện xác nhận và điều kiện vô hiệu.",
+      JSON.stringify(compact),
+    ].join("\n");
+  }
+
+  function openGeminiWeb() {
+    const popup = window.open("https://gemini.google.com/app", "_blank", "noopener,noreferrer");
+    const text = externalGeminiPrompt();
+    const label = $("#solutionAiConnectionState");
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        if (label) label.textContent = "Đã sao chép ngữ cảnh forecast. Dán vào Gemini Web vừa mở để tiếp tục chat.";
+      }).catch(() => {
+        if (label) label.textContent = "Gemini Web đã mở. Có thể sao chép dữ liệu forecast đang xem và dán vào cuộc chat.";
+      });
+    } else if (label) label.textContent = "Gemini Web đã mở. Có thể sao chép dữ liệu forecast đang xem và dán vào cuộc chat.";
+    return Boolean(popup);
+  }
+
   function disconnectGemini() {
     forgetSession();
     const input = $("#solutionAiKey");
@@ -1266,6 +1303,7 @@
     for (const selector of ["#solutionAiLauncher", "#solutionAiTop", "#solutionAiNav"]) $(selector)?.addEventListener("click", open);
     $("#solutionAiClose").addEventListener("click", close);
     $("#solutionAiSettings").addEventListener("click", configure);
+    $("#solutionAiGeminiWeb")?.addEventListener("click", openGeminiWeb);
     $("#solutionAiRetry")?.addEventListener("click", () => connectGemini());
     $("#solutionAiSaveBackend")?.addEventListener("click", () => configureBackend());
     $("#solutionAiDisconnect")?.addEventListener("click", disconnectGemini);
