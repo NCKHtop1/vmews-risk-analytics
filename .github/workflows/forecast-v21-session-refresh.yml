@@ -32,7 +32,7 @@ jobs:
         run: python scripts/forecast_v21_session_snapshot_test.py
 
   refresh-session-overlay:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: test-session-overlay
     runs-on: ubuntu-latest
     timeout-minutes: 12
