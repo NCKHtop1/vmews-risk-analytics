@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 5: AI summary target normalized.
+# V22 gate revision 6: guarded local-AI regex.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
