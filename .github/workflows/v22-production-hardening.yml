@@ -11,7 +11,8 @@ on:
 permissions:
   contents: write
 
-# V22 gate revision 14: all validation gates are mandatory; test-only Playwright dependencies are removed before staging.
+# V22 gate revision 15: validate all changes, commit non-workflow production files here,
+# then workflow files are applied separately through the authenticated GitHub connector.
 jobs:
   harden-test-and-commit:
     runs-on: ubuntu-latest
@@ -94,15 +95,21 @@ jobs:
           sleep 2
           node scripts/forecast_v22_browser_e2e.mjs
 
-      - name: Commit validated V22 hardening and remove one-time tooling
+      - name: Commit validated V22 non-workflow production files
         shell: bash
         run: |
           set -euo pipefail
           rm -rf node_modules
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f .github/workflows/v22-production-hardening.yml scripts/v22_hardening_patch.py scripts/v22_patch_repair.py
+          git restore .github/workflows
+          rm -f .github/workflows/release-pointer-v22.yml
+          git rm -f scripts/v22_hardening_patch.py scripts/v22_patch_repair.py
           git add -A
+          if git diff --cached --quiet; then
+            echo "No non-workflow V22 changes to commit."
+            exit 0
+          fi
           git diff --cached --check
           git commit -m "V22 harden live data ranking CDN delivery and AI UX"
           git push origin HEAD:fix/vn30-defensive-fallback-20260825
