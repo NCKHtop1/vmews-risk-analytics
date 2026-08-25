@@ -1,0 +1,59 @@
+name: Repair and rerun V22 hardening gate
+
+on:
+  push:
+    branches:
+      - fix/vn30-defensive-fallback-20260825
+    paths:
+      - ".github/workflows/v22-repair-dispatch.yml"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  repair-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/vn30-defensive-fallback-20260825
+          fetch-depth: 0
+      - name: Repair V22 patcher syntax and enable manual dispatch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/v22-production-hardening.yml')
+          text=p.read_text(encoding='utf-8')
+          old="""              '        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là dự báo đã niêm phong theo dữ liệu ngày ${context.asOf || \"chưa rõ\"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,',
+              '        `${context.symbol} đang có đường dự báo ${stance}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || \"session\"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm T+5 ${money(five.price)}; khoảng cách còn lại ${pct(remainingT5)} và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Core forecast được niêm phong theo dữ liệu ngày ${context.asOf || \"chưa rõ\"}; giá phiên chỉ dùng để đo lại khoảng cách tới mục tiêu, không tự sửa mô hình.`, '
+"""
+          new="""              '''        `${context.symbol} đang có đường dự báo ${stance}: giá đóng cửa ${money(context.close)}, trọng tâm T+5 ${money(five.price)} (${pct(five.expectedReturn)}) và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Đây là dự báo đã niêm phong theo dữ liệu ngày ${context.asOf || \"chưa rõ\"}; thông tin mới chỉ dùng để diễn giải hoặc kiểm tra luận điểm, không tự sửa các con số này.`,''',
+              '''        `${context.symbol} đang có đường dự báo ${stance}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || \"session\"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm T+5 ${money(five.price)}; khoảng cách còn lại ${pct(remainingT5)} và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Core forecast được niêm phong theo dữ liệu ngày ${context.asOf || \"chưa rõ\"}; giá phiên chỉ dùng để đo lại khoảng cách tới mục tiêu, không tự sửa mô hình.`,'''
+"""
+          assert old in text, 'first malformed replacement not found'
+          text=text.replace(old,new,1)
+          old2="""              '}. Đây không phải tín hiệu mua hoặc cam kết lợi nhuận.`,
+              '}. Khi lợi thế sau phí chưa được xác nhận, trạng thái phù hợp là theo dõi điều kiện xác nhận thay vì suy diễn thêm từ một con số đơn lẻ.`,'
+"""
+          new2="""              '''}. Đây không phải tín hiệu mua hoặc cam kết lợi nhuận.`''',
+              '''}. Khi lợi thế sau phí chưa được xác nhận, trạng thái phù hợp là theo dõi điều kiện xác nhận thay vì suy diễn thêm từ một con số đơn lẻ.`'''
+"""
+          assert old2 in text, 'second malformed replacement not found'
+          text=text.replace(old2,new2,1)
+          marker='on:\n  push:\n'
+          assert marker in text and 'workflow_dispatch:' not in text.split('permissions:',1)[0]
+          text=text.replace(marker,'on:\n  workflow_dispatch:\n  push:\n',1)
+          p.write_text(text,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/v22-repair-dispatch.yml
+          git add .github/workflows/v22-production-hardening.yml
+          git diff --cached --check
+          git commit -m "Repair V22 hardening gate and enable dispatch"
+          git push origin HEAD:fix/vn30-defensive-fallback-20260825
+      - name: Dispatch repaired V22 gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run v22-production-hardening.yml --ref fix/vn30-defensive-fallback-20260825
