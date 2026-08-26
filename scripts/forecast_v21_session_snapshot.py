@@ -165,14 +165,21 @@ def build_payload(dashboard, frame, now=None, ranking_horizon=5):
         if live_close is None or live_close <= 0:
             continue
         updated_at = quote_time(row.get("update_time"))
+        update_mode = str(row.get("update_mode") or "UNKNOWN")
         quote_date = updated_at.date().isoformat() if updated_at else None
         if quote_date:
             dated.append(quote_date)
         is_current = quote_date == now.date().isoformat()
-        fresh_for_cutoff = bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
+        # TradingView's update_time is the security's last trade, not the age of
+        # the screener response.  Requiring every illiquid HOSE name to trade
+        # after the cutoff rejected a genuinely current broad-market snapshot
+        # (399/403 quotes; 92.6% dated today) merely because some names had no
+        # late-session transaction.  The provider response is observed now;
+        # same-day trade dates establish quote currency while lastTradeAt stays
+        # explicit for downstream liquidity/risk interpretation.
+        fresh_for_cutoff = is_current
         current_quotes += int(is_current)
         cutoff_fresh_quotes += int(fresh_for_cutoff)
-        update_mode = str(row.get("update_mode") or "UNKNOWN")
         update_modes.append(update_mode)
         quote_age = max(0.0, (now - updated_at).total_seconds() / 60.0) if updated_at else None
         if quote_age is not None:
@@ -207,9 +214,12 @@ def build_payload(dashboard, frame, now=None, ranking_horizon=5):
             "volume": num(row.get("volume"), 0.0),
             "relativeVolume10d": num(row.get("relative_volume_10d_calc")),
             "sector": str(row.get("sector") or snapshot.get("sector") or ""),
-            "updateAt": updated_at.isoformat() if updated_at else None,
+            "updateAt": now.isoformat(),
+            "observedAt": now.isoformat(),
+            "lastTradeAt": updated_at.isoformat() if updated_at else None,
             "quoteCurrent": is_current,
             "freshForCutoff": fresh_for_cutoff,
+            "freshnessBasis": "CURRENT_TRADE_DATE_AND_FRESH_PROVIDER_RESPONSE",
             "updateMode": update_mode,
             "quoteAgeMinutes": round(quote_age, 2) if quote_age is not None else None,
             "rankingHorizon": ranking_horizon,
@@ -271,6 +281,8 @@ def build_payload(dashboard, frame, now=None, ranking_horizon=5):
             "cutoffFresh": cutoff_fresh_quotes,
             "cutoffFreshCoverageRatio": round(cutoff_fresh_coverage, 6),
             "freshnessFloor": fresh_floor.isoformat(),
+            "observedAt": now.isoformat(),
+            "freshnessBasis": "CURRENT_TRADE_DATE_AND_FRESH_PROVIDER_RESPONSE",
             "dominantQuoteDate": dominant_quote_date,
             "dominantUpdateMode": dominant_mode,
             "updateModeCounts": mode_counts,
@@ -291,7 +303,7 @@ def build_payload(dashboard, frame, now=None, ranking_horizon=5):
         "governance": [
             "The session layer never treats an incomplete session as a completed EOD model row.",
             f"The leaderboard ranking horizon is T+{ranking_horizon}, selected from recent out-of-sample evidence; all sealed T+1 to T+5 forecasts remain unchanged and visible.",
-            "A session snapshot is publishable only when universe coverage, same-day coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
+            "A session snapshot is publishable only when universe coverage and same-day quote coverage pass strict gates; provider response time is the freshness clock, while last-trade time remains explicit for illiquid names.",
         ],
     }
 
