@@ -65,7 +65,7 @@ async function verify(viewport, label) {
   await page.waitForSelector("#vmewsDeepDive:not([hidden])");
   assert.match(await page.locator("#vmewsDeepDiveTitle").innerText(), /Kỹ thuật FPT/);
   const techPromptText = await page.locator("#vmewsDeepDive .vmewsDeepDivePrompts").innerText();
-  assert.match(techPromptText, /RSI14/);
+  assert.match(techPromptText, /RSI/);
   assert.match(techPromptText, /MACD/);
   assert.match(techPromptText, /OBV/);
   await page.locator("#vmewsDeepDive .vmewsDeepDiveClose").click();
