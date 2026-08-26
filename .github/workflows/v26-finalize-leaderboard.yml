@@ -1,0 +1,263 @@
+name: V26 finalize audited ranking horizon
+
+on:
+  push:
+    branches:
+      - fix/realtime-session-baseline-v22
+    paths:
+      - ".github/workflows/v26-finalize-leaderboard.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v26-finalize-audited-ranking
+  cancel-in-progress: false
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/realtime-session-baseline-v22
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Patch leaderboard and runtime regression
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          js_path = Path('forecast-live-leaders-v14.js')
+          text = js_path.read_text(encoding='utf-8')
+
+          def replace_once(old, new):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one match, got {count}: {old[:100]!r}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              '  const state = { base: null, session: null, universe: [], candidates: [], rows: [], defensive: false, index: 0, filter: "all", paused: reducedMotion, timer: 0 };',
+              '  const state = { base: null, session: null, rankingPolicy: null, rankingHorizon: 5, universe: [], candidates: [], rows: [], defensive: false, index: 0, filter: "all", paused: reducedMotion, timer: 0 };'
+          )
+
+          marker = '  function buildLeaderboard(base, options = {}) {'
+          policy_code = r'''  function rankingPolicyFromReport(report) {
+            const configured = Number(report?.rankingPolicy?.selectedHorizon);
+            if (Number.isInteger(configured) && configured >= 1 && configured <= 5) {
+              return { ...report.rankingPolicy, selectedHorizon: configured };
+            }
+            const horizons = report?.horizons || {};
+            const evaluations = {};
+            let selected = null;
+            for (let horizon = 5; horizon >= 1; horizon -= 1) {
+              const recent = horizons?.[String(horizon)]?.recent120Dates || {};
+              const n = Number(recent.n || 0);
+              const skill = number(recent.maeSkill);
+              const direction = number(recent.directionalAccuracy);
+              const eligible = n >= 300 && skill !== null && skill > 0 && direction !== null && direction >= .52;
+              evaluations[String(horizon)] = { n, maeSkill: skill, directionalAccuracy: direction, eligible };
+              if (selected === null && eligible) selected = horizon;
+            }
+            let degraded = false;
+            if (selected === null) {
+              degraded = true;
+              const fallback = Object.entries(evaluations)
+                .filter(([, item]) => item.n >= 300 && item.directionalAccuracy !== null && item.directionalAccuracy >= .50)
+                .sort((left, right) => (right[1].maeSkill ?? -1e9) - (left[1].maeSkill ?? -1e9) || right[1].directionalAccuracy - left[1].directionalAccuracy || Number(right[0]) - Number(left[0]));
+              selected = fallback.length ? Number(fallback[0][0]) : 1;
+            }
+            return {
+              selectedHorizon: selected,
+              degraded,
+              criteria: { minimumSamples: 300, minimumMAESkillExclusive: 0, minimumDirectionalAccuracy: .52, window: "recent120Dates" },
+              evaluations,
+              coreForecastChanged: false,
+              reason: `Leaderboard authority T+${selected} from recent out-of-sample audit${degraded ? " (fallback policy)" : ""}.`,
+            };
+          }
+
+          async function loadRankingPolicy() {
+            try {
+              const root = window.__VMEWS_DATA_ROOT__ || "./data";
+              const revision = Math.floor(Date.now() / 300000);
+              const response = await fetch(`${root}/forecast-accuracy-v24.json?refresh=${revision}`, { cache: "no-store" });
+              if (!response.ok) return rankingPolicyFromReport(null);
+              return rankingPolicyFromReport(await response.json());
+            } catch {
+              return rankingPolicyFromReport(null);
+            }
+          }
+
+          window.__VMEWS_RANKING_POLICY_FROM_REPORT__ = rankingPolicyFromReport;
+
+'''
+          if marker not in text:
+              raise SystemExit('buildLeaderboard marker missing')
+          text = text.replace(marker, policy_code + marker, 1)
+
+          replace_once(
+              '    const rows = [];\n\n    for (const [symbol, snapshot] of Object.entries(snapshots)) {\n      const forecast = snapshot?.horizons?.["5"] || {};',
+              '    const rows = [];\n    const rankingHorizon = Number(options.horizon || state.rankingHorizon || 5);\n\n    for (const [symbol, snapshot] of Object.entries(snapshots)) {\n      const forecast = snapshot?.horizons?.[String(rankingHorizon)] || {};'
+          )
+
+          replace_once(
+              '        symbol,\n        snapshot,',
+              '        symbol,\n        horizon: rankingHorizon,\n        modelReturn: number(forecast.alpha),\n        executableReturn: number(forecast.expectedReturn) ?? target / close - 1,\n        snapshot,'
+          )
+
+          replace_once(
+              '      if (!sessionUsableNow(payload)) return null;\n      return payload;',
+              '      if (!sessionUsableNow(payload)) return null;\n      if (number(payload.rankingHorizon) !== null && Number(payload.rankingHorizon) !== Number(state.rankingHorizon)) return null;\n      return payload;'
+          )
+
+          replace_once(
+              '      next.forecastQuality = number(quote.quality) ?? forecastQuality(next);\n      next.rankScore = number(quote.conviction) ?? rankingScore(next);',
+              '      next.forecastQuality = forecastQuality(next);\n      next.rankScore = rankingScore(next);'
+          )
+
+          replace_once(
+              '    let rows = applySessionOverlay(buildLeaderboard(base, { all: true, scope: options.scope, includeNonPositive: true }), session);',
+              '    let rows = applySessionOverlay(buildLeaderboard(base, { all: true, scope: options.scope, includeNonPositive: true, horizon: options.horizon || state.rankingHorizon }), session);'
+          )
+
+          replace_once(
+              '    if (command) command.textContent = defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : "HOSE · 5 PHIÊN TỚI";\n    if (summary) summary.textContent = defensive\n      ? "Chưa có mã HOSE đủ điều kiện có mục tiêu T+5 cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro."\n      : "Top 10 toàn HOSE theo forecast T+5 đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.";\n    if (primaryFilter) primaryFilter.textContent = defensive ? "HOSE phòng thủ" : "HOSE forecast tăng";\n    if (deck) deck.setAttribute("aria-label", defensive\n      ? "Các cổ phiếu HOSE có mức giảm dự báo T+5 thấp nhất"\n      : "Các cổ phiếu HOSE có mức tăng dự báo T+5 cao nhất");',
+              '    const horizon = state.rankingHorizon;\n    if (command) command.textContent = defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : `HOSE · T+${horizon} ĐÃ KIỂM ĐỊNH`;\n    if (summary) summary.textContent = defensive\n      ? `Chưa có mã HOSE đủ điều kiện có mục tiêu T+${horizon} cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro.`\n      : `Top 10 toàn HOSE theo forecast T+${horizon} được recent out-of-sample audit chọn, kết hợp chất lượng tín hiệu và dữ liệu phiên mới nhất.`;\n    if (primaryFilter) primaryFilter.textContent = defensive ? "HOSE phòng thủ" : "HOSE forecast tăng";\n    if (deck) deck.setAttribute("aria-label", defensive\n      ? `Các cổ phiếu HOSE có mức giảm dự báo T+${horizon} thấp nhất`\n      : `Các cổ phiếu HOSE có mức tăng dự báo T+${horizon} cao nhất`);'
+          )
+
+          replace_once(
+              '{ label: topIsPositive ? "Tăng nổi bật nhất" : "Xếp hạng T+5 cao nhất", value:',
+              '{ label: topIsPositive ? "Tăng nổi bật nhất" : `Xếp hạng T+${state.rankingHorizon} cao nhất`, value:'
+          )
+
+          replace_once(
+              '      const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRÊN HOSE" : "TRIỂN VỌNG 5 PHIÊN";\n      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} trong 5 phiên" tabindex="-1">',
+              '      const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRÊN HOSE" : `TRIỂN VỌNG T+${row.horizon}`;\n      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} tới T+${row.horizon}" tabindex="-1">'
+          )
+
+          replace_once(
+              '<div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span>',
+              '<div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}${number(row.modelReturn) !== null ? `<span>Mô hình ${signed(row.modelReturn, 2)}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span>'
+          )
+
+          replace_once(
+              '    window.__VMEWS_LEADERBOARD__ = { mode: state.defensive ? "defensive" : "positive", filter: state.filter, selected: state.rows[state.index].symbol, session: state.session?.session || "EOD", rows: state.rows.map(row => ({ symbol: row.symbol, close: row.close, coreClose: row.coreClose || row.close, target: row.target, upside: row.upside, rankScore: row.rankScore, quality: row.quality, tradedValue20: row.tradedValue20, risk: row.risk, sessionAt: row.sessionAt || null })) };',
+              '    window.__VMEWS_LEADERBOARD__ = { mode: state.defensive ? "defensive" : "positive", filter: state.filter, selected: state.rows[state.index].symbol, session: state.session?.session || "EOD", rankingHorizon: state.rankingHorizon, rankingPolicy: state.rankingPolicy, rows: state.rows.map(row => ({ symbol: row.symbol, horizon: row.horizon, close: row.close, coreClose: row.coreClose || row.close, target: row.target, upside: row.upside, modelReturn: row.modelReturn, executableReturn: row.executableReturn, rankScore: row.rankScore, quality: row.quality, tradedValue20: row.tradedValue20, risk: row.risk, sessionAt: row.sessionAt || null })) };'
+          )
+
+          replace_once(
+              '<div class="corridorLegend"><span><i></i>Hiện tại</span><span><i></i>Mục tiêu T+5</span></div>`;',
+              '<div class="corridorLegend"><span><i></i>Hiện tại</span><span><i></i>Mục tiêu T+${row.horizon}</span></div>`;'
+          )
+
+          replace_once(
+              '    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+5</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div>',
+              '    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+${row.horizon}</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div>'
+          )
+          text = text.replace('<div class="detailLabel">VÙNG GIÁ T+5</div>', '<div class="detailLabel">VÙNG GIÁ T+${row.horizon}</div>', 1)
+          text = text.replace('<article><span>P(tăng) T+5</span>', '<article><span>P(tăng) T+${row.horizon}</span>', 1)
+
+          replace_once(
+              '      if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");\n      state.session = await loadSessionOverlay(state.base);',
+              '      if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");\n      state.rankingPolicy = await loadRankingPolicy();\n      state.rankingHorizon = Number(state.rankingPolicy?.selectedHorizon || 5);\n      window.__VMEWS_RANKING_POLICY__ = state.rankingPolicy;\n      state.session = await loadSessionOverlay(state.base);'
+          )
+
+          if 'snapshot?.horizons?.["5"]' in text:
+              raise SystemExit('Hard-coded T+5 forecast source still present')
+          js_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('scripts/forecast_v18_frontend_runtime_test.mjs')
+          tests = test_path.read_text(encoding='utf-8')
+          marker = '// V26 audited ranking horizon regression'
+          if marker not in tests:
+              tests += r'''
+
+// V26 audited ranking horizon regression
+test("accuracy audit selects the longest eligible recent horizon", async () => {
+  const window = await loadLeaderboard();
+  const recent = (n, maeSkill, directionalAccuracy) => ({ recent120Dates: { n, maeSkill, directionalAccuracy } });
+  const policy = window.__VMEWS_RANKING_POLICY_FROM_REPORT__({ horizons: {
+    "1": recent(1100, -0.001, .56),
+    "2": recent(1100, .009, .58),
+    "3": recent(1100, .009, .55),
+    "4": recent(1100, .005, .546),
+    "5": recent(1100, -.016, .494),
+  } });
+  assert.equal(policy.selectedHorizon, 4);
+  assert.equal(policy.degraded, false);
+  assert.equal(policy.coreForecastChanged, false);
+});
+
+test("leaderboard obeys audited horizon instead of hard-coded T+5", async () => {
+  const window = await loadLeaderboard();
+  const valid = (expectedPrice, alpha) => ({
+    expectedPrice, expectedReturn: expectedPrice / 70_700 - 1, alpha,
+    q20Price: 68_000, q80Price: 74_000, tickSize: 100,
+    priceValidated: true, validationStatus: "PASS", directionValidated: true,
+    pointDirectionValidated: true, magnitudeValidated: true, probUp: .57,
+  });
+  const item = snapshot("FPT", 70_700, 70_800, { horizons: {
+    "4": valid(72_000, .018),
+    "5": valid(70_800, .0014),
+  } });
+  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base([item]), { all: true, horizon: 4 });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].horizon, 4);
+  assert.equal(rows[0].target, 72_000);
+  assert.equal(rows[0].modelReturn, .018);
+  assert.ok(rows[0].upside > .018);
+});
+
+test("session overlay recomputes selected-horizon ranking instead of trusting legacy quote conviction", async () => {
+  const window = await loadLeaderboard();
+  const item = snapshot("FPT", 72_000, 73_000);
+  const session = { symbols: [{
+    symbol: "FPT", liveClose: 72_500, change: .01, quoteCurrent: true, freshForCutoff: true,
+    quality: 0, conviction: -99,
+  }] };
+  const rows = window.__VMEWS_FINAL_LEADERBOARD__(base([item]), session, { all: true });
+  assert.equal(rows.length, 1);
+  assert.notEqual(rows[0].rankScore, -99);
+  assert.ok(rows[0].rankScore > 0);
+});
+'''
+              test_path.write_text(tests, encoding='utf-8')
+          PY
+      - name: Run frontend runtime regression
+        run: node --test scripts/forecast_v18_frontend_runtime_test.mjs
+      - name: Run session snapshot regression
+        run: |
+          python -m pip install -q pandas
+          python scripts/forecast_v21_session_snapshot_test.py
+      - name: Run accuracy audit and price-grid audit
+        run: |
+          python scripts/forecast_v24_accuracy_audit.py --output /tmp/forecast-accuracy-v24.json
+          python scripts/forecast_v26_price_grid_audit.py --output /tmp/forecast-price-grid-audit-v26.json
+          python - <<'PY'
+          import json
+          accuracy=json.load(open('/tmp/forecast-accuracy-v24.json'))
+          grid=json.load(open('/tmp/forecast-price-grid-audit-v26.json'))
+          assert accuracy['rankingPolicy']['selectedHorizon'] == 4, accuracy['rankingPolicy']
+          assert accuracy['rankingPolicy']['coreForecastChanged'] is False
+          assert grid['status'] == 'PASS', grid
+          print(json.dumps({'rankingPolicy': accuracy['rankingPolicy'], 'priceGrid': {k:grid[k] for k in ('status','validatedForecasts','invalidForecasts','tickCounts','oneTickMoveShare','medianMoveTicks','FPTT5','warnings')}}, ensure_ascii=False, indent=2))
+          PY
+      - name: Commit patched leaderboard and regression tests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add forecast-live-leaders-v14.js scripts/forecast_v18_frontend_runtime_test.mjs
+          if git diff --cached --quiet; then
+            echo "No patch required."
+            exit 0
+          fi
+          git commit -m "Use audited ranking horizon in live leaderboard"
+          git push origin HEAD:fix/realtime-session-baseline-v22
