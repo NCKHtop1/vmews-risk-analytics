@@ -559,3 +559,41 @@ test("financial deep-dive routes to research and local wording stays decision-fo
   assert.match(technical, /MACD/);
   assert.doesNotMatch(source, /Tỷ trọng quỹ là tỷ trọng trong danh mục từng quỹ, không phải tỷ lệ sở hữu doanh nghiệp/);
 });
+
+test("single-symbol forecast comparison stays on that symbol instead of routing to HOSE ranking", async () => {
+  const { window, source } = await setup();
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  const t5 = context.horizons["T+5"];
+  context.horizons = {
+    "T+1": { ...t5, price: 72200, expectedReturn: 72200 / context.close - 1, lowerPrice: 70800, upperPrice: 73500, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },
+    "T+2": { ...t5, price: 72450, expectedReturn: 72450 / context.close - 1, lowerPrice: 70600, upperPrice: 74000, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },
+    "T+3": { ...t5, price: 72480, expectedReturn: 72480 / context.close - 1, lowerPrice: 70300, upperPrice: 74400, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },
+    "T+4": { ...t5, price: 72800, expectedReturn: 72800 / context.close - 1, lowerPrice: 70100, upperPrice: 74800, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },
+    "T+5": t5,
+  };
+  const answer = window.__SOLUTION_AI_LOCAL_ANALYSIS__("So sánh đường forecast T+1 đến T+5 của FPT; chỗ nào đang tăng tốc, chững lại hoặc thiếu xác nhận?", context);
+  assert.match(answer, /Đường forecast FPT/);
+  assert.match(answer, /T\+1/);
+  assert.match(answer, /T\+5/);
+  assert.match(answer, /Nhịp forecast/);
+  assert.match(answer, /tăng tốc|giảm tốc|chững lại|giữ nhịp/);
+  assert.doesNotMatch(answer, /Xếp hạng HOSE|Các mã HOSE có mức dự báo/);
+  assert.doesNotMatch(answer, /Xác suất hướng T\+5 chưa đủ độ tin cậy nên không được công bố|Chiều tăng\/giảm chưa đủ độ tin cậy để công bố xác suất/);
+  assert.match(source, /Chỉ trả bảng xếp hạng HOSE\/VN30 khi người dùng hỏi rõ/);
+});
+
+test("ranking still works only for an explicit ranking question", async () => {
+  const { window } = await setup();
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  const answer = window.__SOLUTION_AI_LOCAL_ANALYSIS__("Top 5 HOSE có forecast tăng nổi bật nhất", context);
+  assert.match(answer, /Xếp hạng HOSE/);
+});
+
+test("ordinary forecast analysis does not append generic validation boilerplate", async () => {
+  const { window } = await setup();
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  const answer = window.__SOLUTION_AI_LOCAL_ANALYSIS__("Phân tích forecast FPT và các yếu tố chính", context);
+  assert.doesNotMatch(answer, /Xác suất hướng T\+5 chưa đủ độ tin cậy nên không được công bố/);
+  const validation = window.__SOLUTION_AI_LOCAL_ANALYSIS__("Kiểm định độ tin cậy forecast FPT", context);
+  assert.match(validation, /Gate chiều T\+5|Kiểm định/);
+});

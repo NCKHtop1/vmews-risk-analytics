@@ -38,7 +38,7 @@
       watch_next: { type: "array", items: { type: "string" } },
       limitations: { type: "array", items: { type: "string" } },
     },
-    required: ["direct_answer", "model_read", "external_evidence", "integrated_outlook", "risks", "watch_next", "limitations"],
+    required: ["direct_answer", "model_read", "external_evidence", "integrated_outlook"],
   };
   const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [], quotaUntil: 0 };
 
@@ -158,7 +158,9 @@
       "Biên độ ± là độ lớn không dấu; kịch bản tăng/giảm không phải giá kỳ vọng và không được biến tỷ lệ đúng chiều lịch sử thành xác suất tăng của một mã.",
       "Sàng lọc sau phí là kiểm định có điều kiện với giả định chi phí, không phải lợi nhuận chắc chắn, backtest danh mục hay khuyến nghị giao dịch.",
       "Điểm rủi ro, điểm chất lượng nguồn hoặc trạng thái GREEN/YELLOW/RED không phải xác suất và không được diễn giải như xác suất.",
-      "Bảng nổi bật mặc định xếp hạng toàn bộ HOSE đủ điều kiện kiểm định; khi người dùng yêu cầu VN30 thì mới giới hạn vào rổ VN30 hiện hành.",
+      "Chỉ trả bảng xếp hạng HOSE/VN30 khi người dùng hỏi rõ top, xếp hạng, mã nào hoặc so sánh nhiều mã. Từ “so sánh” trong câu hỏi về đường forecast của một mã tuyệt đối không được hiểu là yêu cầu xếp hạng thị trường.",
+      "Khi người dùng hỏi T+1→T+5, tăng tốc, chững lại hoặc thiếu xác nhận, phải phân tích tuần tự từng nhịp của đúng mã đang xem; không chèn bảng top thị trường nếu không được hỏi.",
+      "Không tự chèn câu mẫu về xác suất, kiểm định hay giới hạn dữ liệu. Chỉ nói phần đó khi người dùng hỏi độ tin cậy/xác suất/kiểm định, hoặc khi một gate cụ thể trực tiếp giải thích vì sao kết luận còn yếu.",
       "Tin cộng đồng chưa có công bố xác nhận chỉ là thông tin đang đối chiếu.",
       "Tách dự báo trung tâm, vùng giá, các yếu tố tác động và rủi ro; không cam kết lợi nhuận.",
       "Trình bày dễ đọc trên điện thoại bằng tiêu đề ngắn, đoạn văn gọn và danh sách khi cần; không để lộ cú pháp Markdown thô trong nội dung.",
@@ -951,8 +953,63 @@
     const detailed = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|mô hình|phân tích|đánh giá|bổ sung/.test(question);
     const fundQuestion = /quỹ|danh mục|nắm giữ/.test(question);
     const flowQuestion = /dòng tiền|ngoại|tự doanh/.test(question);
+    const rankQuestion = /\btop\b\s*\d*|xếp hạng|(?:mã|cổ phiếu)\s+nào.*(?:tăng|dự báo|forecast|nổi bật)|(?:HOSE|VN30).*(?:top|xếp hạng|nổi bật)|so sánh\s+(?:các\s+)?(?:mã|cổ phiếu)/.test(question);
+    const pathQuestion = !rankQuestion && /đường\s+(?:forecast|dự báo)|forecast.*t\+\d|t\+1.*t\+5|từ\s+t\+1|tăng tốc|chững(?:\s+lại)?|thiếu xác nhận|nhịp\s+(?:forecast|dự báo)|so sánh.*(?:forecast|dự báo)/.test(question);
+    const validationQuestion = /kiểm định|độ tin cậy|xác suất|validation|backtest|thiếu xác nhận|đúng chiều|sai số/.test(question);
 
-    if (/top|xếp hạng|tăng mạnh|so sánh/.test(question)) {
+    if (pathQuestion) {
+      const ordered = Object.entries(context.horizons || {})
+        .filter(([label, horizon]) => /^T\+[1-5]$/.test(label) && number(horizon?.price) !== null)
+        .sort((left, right) => Number(left[0].slice(2)) - Number(right[0].slice(2)));
+      if (!ordered.length) return `Chưa có đủ đường forecast T+1→T+5 cho ${context.symbol}.`;
+      const path = ordered.map(([label, horizon], index) => {
+        const prior = index === 0 ? activeClose : number(ordered[index - 1][1]?.price);
+        const price = number(horizon.price);
+        const step = prior > 0 && price !== null ? price / prior - 1 : null;
+        const missing = [];
+        if (horizon.directionValidated === false || horizon.pointDirectionValidated === false) missing.push("chiều");
+        if (horizon.magnitudeValidated === false) missing.push("độ lớn");
+        return { label, horizon, price, step, missing };
+      });
+      lines.push(`### Đường forecast ${context.symbol}`);
+      for (const row of path) {
+        lines.push(`- **${row.label}:** ${money(row.price)} (${pct(row.horizon.expectedReturn)})${row.step === null ? "" : ` · nhịp từ mốc trước ${pct(row.step)}`}${number(row.horizon.lowerPrice) === null || number(row.horizon.upperPrice) === null ? "" : ` · vùng ${money(row.horizon.lowerPrice)}–${money(row.horizon.upperPrice)}`}.`);
+      }
+      const rhythm = [];
+      for (let index = 1; index < path.length; index += 1) {
+        const current = path[index], previous = path[index - 1];
+        if (current.step === null) continue;
+        let stateLabel = "giữ nhịp";
+        if (Math.abs(current.step) < .0015) stateLabel = "chững lại";
+        else if (previous.step !== null && current.step - previous.step > .0015) stateLabel = "tăng tốc";
+        else if (previous.step !== null && current.step - previous.step < -.0015) stateLabel = "giảm tốc";
+        rhythm.push(`- **${previous.label} → ${current.label}: ${stateLabel}** · bước ${pct(current.step)}${previous.step === null ? "" : ` so với ${pct(previous.step)} ở nhịp trước`}.`);
+      }
+      if (rhythm.length) lines.push("### Nhịp forecast", ...rhythm);
+      const missingRows = path.filter(row => row.missing.length);
+      const technical = context.technical || {};
+      const confirmations = [];
+      if (number(technical.rsi14) !== null) confirmations.push(`RSI14 ${Number(technical.rsi14).toFixed(1)}`);
+      if (number(technical.macdHistogram) !== null) confirmations.push(`MACD histogram ${number(technical.macdHistogram) > 0 ? "dương" : number(technical.macdHistogram) < 0 ? "âm" : "trung tính"}`);
+      if (number(technical.obvChange5) !== null) confirmations.push(`OBV 5 phiên ${number(technical.obvChange5) > 0 ? "đi lên" : number(technical.obvChange5) < 0 ? "đi xuống" : "đi ngang"}`);
+      if (number(technical.volumeRatio20) !== null) confirmations.push(`khối lượng ${Number(technical.volumeRatio20).toFixed(2)}× MA20`);
+      lines.push("### Xác nhận hiện tại");
+      if (confirmations.length) lines.push(`- Kỹ thuật: ${confirmations.join(" · ")}.`);
+      if (missingRows.length) {
+        lines.push(`- Gate còn yếu: ${missingRows.map(row => `${row.label} (${row.missing.join(" + ")})`).join("; ")}. Đây là nơi cần thêm xác nhận từ giá/khối lượng/dòng tiền, không phải lý do để bỏ toàn bộ đường forecast.`);
+      } else {
+        lines.push("- Snapshot hiện tại không có kỳ nào bị đánh dấu fail rõ ở gate chiều/độ lớn; trọng tâm là xem các nhịp forecast có được giá, MACD/OBV và dòng tiền xác nhận hay không.");
+      }
+      if (context.flow?.foreign?.available || context.flow?.proprietary?.available) {
+        const flowBits = [];
+        if (context.flow.foreign?.available && number(context.flow.foreign.net5) !== null) flowBits.push(`ngoại 5P ${money(context.flow.foreign.net5)}`);
+        if (context.flow.proprietary?.available && number(context.flow.proprietary.net5) !== null) flowBits.push(`tự doanh 5P ${money(context.flow.proprietary.net5)}`);
+        if (flowBits.length) lines.push(`- Dòng tiền: ${flowBits.join(" · ")}.`);
+      }
+      return lines.join("\n");
+    }
+
+    if (rankQuestion) {
       lines.push("### Xếp hạng HOSE", "Các mã HOSE có mức dự báo T+5 nổi bật nhất sau khi áp dữ liệu phiên hợp lệ:");
       for (const [index, row] of context.topMovers.slice(0, 7).entries()) {
         lines.push(`${index + 1}. ${row.symbol}: ${money(row.close)} → ${money(row.forecast)} (${pct(row.return)}).`);
@@ -970,7 +1027,7 @@
       if (number(five.expectedAbsReturn) !== null) {
         lines.push(
           "### Biên độ và hai kịch bản thực tế",
-          `Mô hình biên độ ước tính mức dịch chuyển hai chiều ±${pct(five.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(five.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(five.bullScenarioPrice)}. Giá kỳ vọng ${money(five.price)} là trung tâm có điều kiện, không đồng nghĩa thị trường chỉ biến động đúng mức đó. ${five.directionValidated ? "Xác suất chiều đã vượt kiểm định." : "Chiều tăng/giảm chưa đủ độ tin cậy để công bố xác suất; không được diễn giải kịch bản tăng thành cam kết."}`,
+          `Mô hình biên độ ước tính mức dịch chuyển hai chiều ±${pct(five.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(five.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(five.bullScenarioPrice)}. Giá kỳ vọng ${money(five.price)} là trung tâm có điều kiện, không đồng nghĩa thị trường chỉ biến động đúng mức đó. ${validationQuestion ? (five.directionValidated ? "Gate chiều T+5 đang PASS." : "Gate chiều T+5 hiện chưa PASS; phần xác nhận hướng vì vậy yếu hơn phần ước lượng biên độ.") : ""}`,
         );
       }
       if (five.conditionalValueValidated === false) {
@@ -1030,10 +1087,10 @@
       lines.push("Nguồn cộng đồng chỉ được dùng làm tín hiệu cần kiểm tra và kịch bản tham khảo; không được coi là công bố chính thức.");
     }
 
-    if (/rủi ro|lưu ý|an toàn|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) {
+    if (validationQuestion) {
       lines.push(
         "### Kiểm định và giới hạn",
-        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Xác suất hướng đã qua kiểm định." : "Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố."}`,
+        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Gate chiều T+5: PASS." : "Gate chiều T+5: chưa PASS; cần đọc cùng kỹ thuật, dòng tiền và vùng bất định thay vì suy diễn thêm một xác suất."}`,
         `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Đọc vùng bất định cùng điều kiện xác nhận/vô hiệu; nếu dữ liệu còn thiếu, nêu đúng phần thiếu và tác động của nó lên kết luận.`,
       );
     }
@@ -1044,17 +1101,23 @@
     const text = String(answer || "").trim();
     if (!intent.useSnapshot) return text;
     const hasSymbol = new RegExp(`(^|[^A-Za-z0-9])${context.symbol}([^A-Za-z0-9]|$)`, "i").test(text);
-    const hasForecast = /T\+1|T\+5|forecast|dự báo|vùng (?:giá|bất định)/i.test(text);
+    const hasForecast = /T\+1|T\+2|T\+3|T\+4|T\+5|forecast|dự báo|vùng (?:giá|bất định)/i.test(text);
     const hasModelNumber = Object.values(context.horizons || {}).some(item => text.includes(money(item.price)));
     const genericEssay = /khung phân tích tích hợp|quy trình đa chiều|nguyên tắc kết hợp thông tin|để đánh giá toàn diện.*cần tiếp cận|phương pháp và khung phân tích/i.test(text);
-    if (genericEssay || [hasSymbol, hasForecast, hasModelNumber].filter(Boolean).length < 2) return localAnalysis(question, context);
-    const needsFullPath = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|các kỳ|T\+1.*T\+5/i.test(question);
-    const missingPrices = Object.values(context.horizons || {}).filter(item => !text.includes(money(item.price)));
+    const forecastQuestion = /forecast|dự báo|T\+\d|target|mục tiêu|vùng giá|tăng tốc|chững|thiếu xác nhận|đường giá/i.test(question);
+    if (genericEssay) return localAnalysis(question, context);
+    if (!forecastQuestion) {
+      // Financial/technical/flow/news deep-dives are allowed to answer their actual question.
+      // Do not throw away good research simply because it does not repeat forecast numbers.
+      return text || localAnalysis(question, context);
+    }
+    if ([hasSymbol, hasForecast, hasModelNumber].filter(Boolean).length < 2) return localAnalysis(question, context);
+    const needsFullPath = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|các kỳ|T\+1.*T\+5|tăng tốc|chững|thiếu xác nhận/i.test(question);
+    const missingPrices = Object.values(context.horizons || {}).filter(item => number(item?.price) !== null && !text.includes(money(item.price)));
     if (needsFullPath && missingPrices.length) {
       return [
-        `### Snapshot forecast ${context.symbol} · nguồn số liệu chuẩn`,
+        `### Snapshot forecast ${context.symbol}`,
         ...forecastPath(context),
-        "Đây là đường dự báo hiện tại của VMEWS; phần phân tích bên dưới đối chiếu các yếu tố có thể ủng hộ hoặc làm suy yếu kịch bản này.",
         text,
       ].join("\n");
     }
