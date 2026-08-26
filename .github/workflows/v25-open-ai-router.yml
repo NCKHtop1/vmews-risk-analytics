@@ -26,6 +26,19 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Repair one-time patch replacement semantics
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v25_ai_open_router_patch.py')
+          text=p.read_text(encoding='utf-8')
+          old="ai, count = re.subn(r'  function enforceAnswerFocus\\(answer, question, context, intent\\) \\{.*?\\n  \\}\\n\\n  function sourceFallback', new_focus + '\\n  function sourceFallback', ai, count=1, flags=re.S)"
+          new="ai, count = re.subn(r'  function enforceAnswerFocus\\(answer, question, context, intent\\) \\{.*?\\n  \\}\\n\\n  function sourceFallback', lambda _: new_focus + '\\n  function sourceFallback', ai, count=1, flags=re.S)"
+          if old not in text:
+              raise SystemExit('V25 replacement repair anchor missing')
+          p.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
+
       - name: Apply V25 AI router patch
         run: python scripts/v25_ai_open_router_patch.py
 
