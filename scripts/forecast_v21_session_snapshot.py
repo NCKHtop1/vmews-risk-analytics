@@ -8,12 +8,15 @@ from datetime import datetime, timedelta, timezone
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DASHBOARD = ROOT / "data" / "forecast-dashboard-v12.json"
+ACCURACY = ROOT / "data" / "forecast-accuracy-v24.json"
 OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-FORECAST-SESSION-21.0"
+VERSION = "VMEWS-FORECAST-SESSION-21.1"
 MIN_COVERAGE = 0.90
 MIN_CURRENT_COVERAGE = 0.90
 MIN_CUTOFF_FRESH_COVERAGE = 0.90
+RANKING_MIN_SAMPLES = 300
+RANKING_MIN_DIRECTION = 0.52
 
 
 def num(value, default=None):
@@ -64,6 +67,22 @@ def cutoff_floor(now):
     return floor
 
 
+def ranking_horizon_from_accuracy(accuracy):
+    configured = int(num((accuracy.get("rankingPolicy") or {}).get("selectedHorizon"), 0) or 0)
+    if 1 <= configured <= 5:
+        return configured
+
+    horizons = accuracy.get("horizons") or {}
+    for horizon in range(5, 0, -1):
+        recent = (horizons.get(str(horizon)) or {}).get("recent120Dates") or {}
+        samples = int(num(recent.get("n"), 0) or 0)
+        skill = num(recent.get("maeSkill"))
+        direction = num(recent.get("directionalAccuracy"))
+        if samples >= RANKING_MIN_SAMPLES and skill is not None and skill > 0 and direction is not None and direction >= RANKING_MIN_DIRECTION:
+            return horizon
+    return 5
+
+
 def fetch_quotes():
     from tradingview_screener import stocks
 
@@ -77,10 +96,11 @@ def fetch_quotes():
     return frame
 
 
-def eligible_core_symbols(dashboard):
+def eligible_core_symbols(dashboard, ranking_horizon=5):
     eligible = {}
+    key = str(ranking_horizon)
     for symbol, snapshot in (dashboard.get("symbols") or {}).items():
-        horizon = (snapshot.get("horizons") or {}).get("5") or {}
+        horizon = (snapshot.get("horizons") or {}).get(key) or {}
         close = num(snapshot.get("close"))
         target = num(horizon.get("expectedPrice"))
         if (
@@ -88,11 +108,13 @@ def eligible_core_symbols(dashboard):
             and snapshot.get("dataFreshness") == "CURRENT"
             and horizon.get("priceValidated") is True
             and horizon.get("validationStatus") == "PASS"
+            and horizon.get("pointDirectionValidated") is True
+            and horizon.get("magnitudeValidated") is True
             and close and target
         ):
             eligible[symbol] = snapshot
     if len(eligible) < 100:
-        raise RuntimeError(f"Validated HOSE core universe unexpectedly small ({len(eligible)})")
+        raise RuntimeError(f"Validated HOSE core universe unexpectedly small for T+{ranking_horizon} ({len(eligible)})")
     return eligible
 
 
@@ -108,10 +130,14 @@ def quality_score(snapshot, horizon, remaining_upside, interval_width):
     return 0.42 * probability_component + 0.38 * interval_component + 0.20 * risk_component
 
 
-def build_payload(dashboard, frame, now=None):
+def build_payload(dashboard, frame, now=None, ranking_horizon=5):
     now = now or datetime.now(VN_TZ)
+    ranking_horizon = int(ranking_horizon)
+    if ranking_horizon < 1 or ranking_horizon > 5:
+        raise ValueError(f"Invalid ranking horizon: {ranking_horizon}")
+    horizon_key = str(ranking_horizon)
     fresh_floor = cutoff_floor(now)
-    core = eligible_core_symbols(dashboard)
+    core = eligible_core_symbols(dashboard, ranking_horizon)
     matched = {}
     duplicates = 0
     for _, row in frame.iterrows():
@@ -160,14 +186,18 @@ def build_payload(dashboard, frame, now=None):
             flat += 1
         changes.append(change_pct)
 
-        horizon = (snapshot.get("horizons") or {}).get("5") or {}
+        horizon = (snapshot.get("horizons") or {}).get(horizon_key) or {}
+        horizon_t5 = (snapshot.get("horizons") or {}).get("5") or horizon
         core_close = num(snapshot.get("close"))
         target = num(horizon.get("expectedPrice"))
+        target_t5 = num(horizon_t5.get("expectedPrice"), target)
         q20 = num(horizon.get("q20Price"))
         q80 = num(horizon.get("q80Price"))
         interval_width = ((q80 - q20) / core_close) if q20 is not None and q80 is not None and core_close else 0.0
         core_upside = target / core_close - 1.0
         remaining_upside = target / live_close - 1.0
+        core_upside_t5 = target_t5 / core_close - 1.0
+        remaining_upside_t5 = target_t5 / live_close - 1.0
         quality = quality_score(snapshot, horizon, max(remaining_upside, 0.0), max(interval_width, 0.0))
         conviction = remaining_upside * (0.68 + 0.32 * quality)
         symbols.append({
@@ -182,10 +212,14 @@ def build_payload(dashboard, frame, now=None):
             "freshForCutoff": fresh_for_cutoff,
             "updateMode": update_mode,
             "quoteAgeMinutes": round(quote_age, 2) if quote_age is not None else None,
+            "rankingHorizon": ranking_horizon,
             "coreClose": core_close,
-            "coreTargetT5": target,
-            "coreUpsideT5": core_upside,
-            "remainingUpsideT5": remaining_upside,
+            "coreTarget": target,
+            "coreUpside": core_upside,
+            "remainingUpside": remaining_upside,
+            "coreTargetT5": target_t5,
+            "coreUpsideT5": core_upside_t5,
+            "remainingUpsideT5": remaining_upside_t5,
             "directionValidated": horizon.get("directionValidated") is True,
             "probUp": num(horizon.get("probUp")),
             "riskStatus": snapshot.get("riskStatus") or "UNKNOWN",
@@ -207,12 +241,12 @@ def build_payload(dashboard, frame, now=None):
         and cutoff_fresh_coverage >= MIN_CUTOFF_FRESH_COVERAGE
     ) else "DEGRADED"
 
-    positive = [row for row in symbols if row["coreTargetT5"] > row["liveClose"]]
-    positive.sort(key=lambda row: (row["conviction"], row["remainingUpsideT5"], row["quality"]), reverse=True)
+    positive = [row for row in symbols if row["coreTarget"] > row["liveClose"]]
+    positive.sort(key=lambda row: (row["conviction"], row["remainingUpside"], row["quality"]), reverse=True)
     defensive = not positive
     leaders = positive[:10] if positive else sorted(
         symbols,
-        key=lambda row: (row["remainingUpsideT5"], row["quality"]),
+        key=lambda row: (row["remainingUpside"], row["quality"]),
         reverse=True,
     )[:10]
 
@@ -226,7 +260,8 @@ def build_payload(dashboard, frame, now=None):
         "cutoffAt": now.isoformat(),
         "coreAsOf": dashboard.get("asOf"),
         "coreForecastUnchanged": True,
-        "scope": "Validated HOSE core universe with current TradingView session quotes; session quotes re-rank remaining distance to the sealed T+5 target but never rewrite the core forecast.",
+        "rankingHorizon": ranking_horizon,
+        "scope": f"Validated HOSE core universe with current TradingView session quotes; session quotes re-rank remaining distance to the sealed T+{ranking_horizon} target selected by recent out-of-sample audit but never rewrite the core forecast.",
         "coverage": {
             "coreEligible": eligible_count,
             "quoted": quoted_count,
@@ -255,7 +290,7 @@ def build_payload(dashboard, frame, now=None):
         "symbols": symbols,
         "governance": [
             "The session layer never treats an incomplete session as a completed EOD model row.",
-            "Core T+1 to T+5 targets remain the independently validated sealed forecast until the completed-EOD pipeline publishes a new snapshot.",
+            f"The leaderboard ranking horizon is T+{ranking_horizon}, selected from recent out-of-sample evidence; all sealed T+1 to T+5 forecasts remain unchanged and visible.",
             "A session snapshot is publishable only when universe coverage, same-day coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
         ],
     }
@@ -266,7 +301,9 @@ def main():
     parser.add_argument("--output", default=str(OUT))
     args = parser.parse_args()
     dashboard = json.loads(DASHBOARD.read_text(encoding="utf-8"))
-    payload = build_payload(dashboard, fetch_quotes())
+    accuracy = json.loads(ACCURACY.read_text(encoding="utf-8")) if ACCURACY.exists() else {}
+    selected_horizon = ranking_horizon_from_accuracy(accuracy)
+    payload = build_payload(dashboard, fetch_quotes(), ranking_horizon=selected_horizon)
     if payload["status"] != "PASS":
         raise RuntimeError(f"Session snapshot rejected by coverage gate: {payload['coverage']}")
     output = pathlib.Path(args.output)
@@ -276,7 +313,7 @@ def main():
     temporary.replace(output)
     print(json.dumps({
         "status": payload["status"], "session": payload["session"], "coreAsOf": payload["coreAsOf"],
-        "coverage": payload["coverage"], "leaders": [row["symbol"] for row in payload["leaders"]],
+        "rankingHorizon": payload["rankingHorizon"], "coverage": payload["coverage"], "leaders": [row["symbol"] for row in payload["leaders"]],
     }, ensure_ascii=False))
 
 
