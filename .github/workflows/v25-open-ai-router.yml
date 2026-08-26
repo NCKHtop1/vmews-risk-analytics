@@ -42,6 +42,19 @@ jobs:
       - name: Apply V25 AI router patch
         run: python scripts/v25_ai_open_router_patch.py
 
+      - name: Keep deep-dive input free-form
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('forecast-deep-dive-v24.js')
+          text=p.read_text(encoding='utf-8')
+          old='if(index===0)inputNode.placeholder=prompt'
+          if old not in text:
+              raise SystemExit('deep-dive placeholder override anchor missing')
+          text=text.replace(old,'if(index===0)inputNode.placeholder="Hỏi tự do về mã đang xem…"',1)
+          p.write_text(text,encoding='utf-8')
+          PY
+
       - name: Align exact forecast-path regression fixture
         run: |
           python - <<'PY'
