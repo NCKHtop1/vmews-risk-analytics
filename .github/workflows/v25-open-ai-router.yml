@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: v25-open-ai-router
+  group: v25-open-ai-router-r5
   cancel-in-progress: false
 
 jobs:
