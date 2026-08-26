@@ -4,12 +4,14 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "5 5 * * 1-5"
-    - cron: "25 8 * * 1-5"
+    - cron: "5 9 * * 1-5"
   pull_request:
     paths:
       - ".github/workflows/forecast-v21-session-refresh.yml"
       - "scripts/forecast_v21_session_snapshot.py"
       - "scripts/forecast_v21_session_snapshot_test.py"
+      - "scripts/forecast_v24_accuracy_audit.py"
+      - "data/forecast-accuracy-v24.json"
 
 permissions:
   contents: write
@@ -28,7 +30,7 @@ jobs:
           python-version: "3.12"
       - name: Install test dependencies
         run: pip install --disable-pip-version-check -q pandas
-      - name: Test coverage, freshness, defensive fallback and core immutability
+      - name: Test coverage, freshness, audited horizon, defensive fallback and core immutability
         run: python scripts/forecast_v21_session_snapshot_test.py
 
   refresh-session-overlay:
@@ -60,15 +62,17 @@ jobs:
           python - <<'PY'
           import json
           p=json.load(open('data/forecast-session-v21.json',encoding='utf-8'))
-          assert p['version']=='VMEWS-FORECAST-SESSION-21.0',p.get('version')
+          assert p['version']=='VMEWS-FORECAST-SESSION-21.1',p.get('version')
           assert p['status']=='PASS',p.get('status')
           assert p['coreForecastUnchanged'] is True
+          assert 1 <= int(p['rankingHorizon']) <= 5,p.get('rankingHorizon')
           c=p['coverage']
           assert c['coverageRatio']>=0.90,c
           assert c['currentCoverageRatio']>=0.90,c
           assert c['cutoffFreshCoverageRatio']>=0.90,c
           assert len(p.get('leaders') or [])==10,p.get('leaders')
-          print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
+          assert all(int(x.get('rankingHorizon',0))==int(p['rankingHorizon']) for x in p['leaders'])
+          print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'rankingHorizon':p['rankingHorizon'],'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
           PY
       - name: Persist only validated session overlay
         if: steps.overlay.outcome == 'success'
