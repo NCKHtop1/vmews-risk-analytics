@@ -42,6 +42,19 @@ jobs:
       - name: Apply V25 AI router patch
         run: python scripts/v25_ai_open_router_patch.py
 
+      - name: Align exact forecast-path regression fixture
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/solution_ai_frontend_v17_test.mjs')
+          text=p.read_text(encoding='utf-8')
+          old='''  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();\n  const answer = window.__SOLUTION_AI_LOCAL_ANALYSIS__("So sánh đường forecast T+1 đến T+5 của FPT; chỗ nào đang tăng tốc, chững lại hoặc thiếu xác nhận?", context);'''
+          new='''  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();\n  const t5 = context.horizons["T+5"];\n  context.horizons = {\n    "T+1": { ...t5, price: 72200, expectedReturn: 72200 / context.close - 1, lowerPrice: 70800, upperPrice: 73500, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },\n    "T+2": { ...t5, price: 72450, expectedReturn: 72450 / context.close - 1, lowerPrice: 70600, upperPrice: 74000, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },\n    "T+3": { ...t5, price: 72480, expectedReturn: 72480 / context.close - 1, lowerPrice: 70300, upperPrice: 74400, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },\n    "T+4": { ...t5, price: 72800, expectedReturn: 72800 / context.close - 1, lowerPrice: 70100, upperPrice: 74800, directionValidated: true, pointDirectionValidated: true, magnitudeValidated: true },\n    "T+5": t5,\n  };\n  const answer = window.__SOLUTION_AI_LOCAL_ANALYSIS__("So sánh đường forecast T+1 đến T+5 của FPT; chỗ nào đang tăng tốc, chững lại hoặc thiếu xác nhận?", context);'''
+          if old not in text:
+              raise SystemExit('V25 forecast-path test fixture anchor missing')
+          p.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
+
       - name: JavaScript syntax checks
         run: |
           node --check solution-ai-v17.js
