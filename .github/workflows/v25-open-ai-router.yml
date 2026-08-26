@@ -1,0 +1,94 @@
+name: V25 open AI router and focused deep-dive
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/v25-open-ai-router.yml"
+      - "scripts/v25_ai_open_router_patch.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v25-open-ai-router
+  cancel-in-progress: false
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Apply V25 AI router patch
+        run: python scripts/v25_ai_open_router_patch.py
+
+      - name: JavaScript syntax checks
+        run: |
+          node --check solution-ai-v17.js
+          node --check api/solution-ai.js
+          node --check forecast-deep-dive-v24.js
+          node --check scripts/solution_ai_frontend_v17_test.mjs
+          node --check scripts/forecast_v22_browser_e2e.mjs
+
+      - name: SoluTION.AI router and backend tests
+        run: node --test scripts/solution_ai_frontend_v17_test.mjs scripts/solution_ai_v17_test.mjs
+
+      - name: Frontend contract tests
+        run: python scripts/forecast_v14_frontend_contract_test.py
+
+      - name: Runtime regression tests
+        run: node --test scripts/forecast_v18_frontend_runtime_test.mjs
+
+      - name: Install session dependency
+        run: python -m pip install --disable-pip-version-check pandas
+
+      - name: Session overlay tests
+        run: PYTHONPATH=scripts python -m unittest scripts/forecast_v21_session_snapshot_test.py
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Chromium desktop and mobile
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/v25-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 2
+          node scripts/forecast_v22_browser_e2e.mjs
+
+      - name: Exact bad-response regression audit
+        run: |
+          ! grep -Fq 'Tỷ trọng này không phải tỷ lệ sở hữu doanh nghiệp' solution-ai-v17.js
+          ! grep -Fq 'Xác suất hướng T+5 chưa đủ độ tin cậy nên không được công bố' solution-ai-v17.js
+          ! grep -Fq 'Chiều tăng/giảm chưa đủ độ tin cậy để công bố xác suất' solution-ai-v17.js
+          grep -Fq 'const rankQuestion' solution-ai-v17.js
+          grep -Fq 'const pathQuestion' solution-ai-v17.js
+          grep -Fq 'Đường forecast' solution-ai-v17.js
+          grep -Fq 'Hỏi tự do về mã đang xem' forecast-deep-dive-v24.js
+
+      - name: Publish V25 production
+        run: |
+          rm -rf node_modules package-lock.json
+          git checkout -- package.json 2>/dev/null || true
+          python - <<'PY'
+          from pathlib import Path
+          for name in ['scripts/solution_ai_frontend_v17_test.mjs','scripts/forecast_v22_browser_e2e.mjs']:
+              p=Path(name); p.write_text(p.read_text(encoding='utf-8').rstrip()+"\n",encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add forecast-final.html solution-ai-v17.js api/solution-ai.js forecast-deep-dive-v24.js scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v22_browser_e2e.mjs
+          git add -u scripts/v25_ai_open_router_patch.py
+          git diff --cached --check
+          git commit -m "V25 open AI routing and reduce deep-dive clutter"
+          git pull --rebase origin main
+          git push origin HEAD:main
