@@ -32,6 +32,19 @@ jobs:
         run: pip install --disable-pip-version-check -q pandas
       - name: Test coverage, freshness, audited horizon, defensive fallback and core immutability
         run: python scripts/forecast_v21_session_snapshot_test.py
+      - name: Rebuild ranking audit and verify its contract
+        run: |
+          python scripts/forecast_v24_accuracy_audit.py --output /tmp/forecast-accuracy-v24.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/forecast-accuracy-v24.json',encoding='utf-8'))
+          assert p['version']=='VMEWS-FORECAST-ACCURACY-AUDIT-24.1',p.get('version')
+          policy=p.get('rankingPolicy') or {}
+          assert 1 <= int(policy.get('selectedHorizon',0)) <= 5,policy
+          assert policy.get('coreForecastChanged') is False,policy
+          assert set((policy.get('evaluations') or {}).keys())=={'1','2','3','4','5'},policy
+          print(json.dumps({'rankingHorizon':policy['selectedHorizon'],'degraded':policy.get('degraded'),'reason':policy.get('reason')},ensure_ascii=False,indent=2))
+          PY
 
   refresh-session-overlay:
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
@@ -47,6 +60,8 @@ jobs:
           python-version: "3.12"
       - name: Install session quote provider
         run: pip install --disable-pip-version-check -q pandas tradingview-screener==3.2.1
+      - name: Refresh leakage-safe ranking authority from the latest sealed backtest
+        run: python scripts/forecast_v24_accuracy_audit.py
       - name: Build guarded session overlay
         id: overlay
         continue-on-error: true
@@ -56,34 +71,38 @@ jobs:
         run: |
           echo "Current session provider failed freshness/coverage gates."
           echo "No forecast-session-v21.json is overwritten; the last validated snapshot remains published."
-      - name: Validate publishable overlay
+      - name: Validate publishable overlay and ranking authority
         if: steps.overlay.outcome == 'success'
         run: |
           python - <<'PY'
           import json
           p=json.load(open('data/forecast-session-v21.json',encoding='utf-8'))
+          a=json.load(open('data/forecast-accuracy-v24.json',encoding='utf-8'))
           assert p['version']=='VMEWS-FORECAST-SESSION-21.1',p.get('version')
+          assert a['version']=='VMEWS-FORECAST-ACCURACY-AUDIT-24.1',a.get('version')
           assert p['status']=='PASS',p.get('status')
           assert p['coreForecastUnchanged'] is True
           assert 1 <= int(p['rankingHorizon']) <= 5,p.get('rankingHorizon')
+          assert int(p['rankingHorizon'])==int(a['rankingPolicy']['selectedHorizon']),(p['rankingHorizon'],a['rankingPolicy'])
+          assert a['rankingPolicy'].get('coreForecastChanged') is False,a['rankingPolicy']
           c=p['coverage']
           assert c['coverageRatio']>=0.90,c
           assert c['currentCoverageRatio']>=0.90,c
           assert c['cutoffFreshCoverageRatio']>=0.90,c
           assert len(p.get('leaders') or [])==10,p.get('leaders')
           assert all(int(x.get('rankingHorizon',0))==int(p['rankingHorizon']) for x in p['leaders'])
-          print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'rankingHorizon':p['rankingHorizon'],'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
+          print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'rankingHorizon':p['rankingHorizon'],'rankingDegraded':a['rankingPolicy'].get('degraded'),'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
           PY
-      - name: Persist only validated session overlay
+      - name: Persist only validated ranking audit and session overlay
         if: steps.overlay.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/forecast-session-v21.json
+          git add data/forecast-accuracy-v24.json data/forecast-session-v21.json
           if git diff --cached --quiet; then
-            echo "No validated session change detected."
+            echo "No validated session or ranking change detected."
             exit 0
           fi
-          git commit -m "Refresh validated forecast session overlay [data-only]"
+          git commit -m "Refresh validated ranking audit and forecast session overlay [data-only]"
           git pull --rebase origin main
           git push origin HEAD:main
