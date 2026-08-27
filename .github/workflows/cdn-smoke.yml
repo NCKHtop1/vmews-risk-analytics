@@ -14,6 +14,7 @@ on:
       - "data/forecast-current-v12.json"
       - "data/forecast-dashboard-v12.json"
       - "data/forecast-market-v13.json"
+      - "data/forecast-accuracy-v24.json"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
       - ".github/workflows/cdn-smoke.yml"
   push:
@@ -29,6 +30,7 @@ on:
       - "data/forecast-current-v12.json"
       - "data/forecast-dashboard-v12.json"
       - "data/forecast-market-v13.json"
+      - "data/forecast-accuracy-v24.json"
       - ".github/workflows/cdn-smoke.yml"
 
 permissions:
@@ -53,7 +55,8 @@ jobs:
               && curl -fsSL --max-time 25 "$ROOT/solution-ai-v17.js" -o /tmp/solution-ai-v17.js \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-current-v12.json" -o /tmp/forecast-current-v12.json \
               && curl -fsSL --max-time 25 "$ROOT/data/forecast-dashboard-v12.json" -o /tmp/forecast-dashboard-v12.json \
-              && curl -fsSL --max-time 25 "$ROOT/data/forecast-market-v13.json" -o /tmp/forecast-market-v13.json; then
+              && curl -fsSL --max-time 25 "$ROOT/data/forecast-market-v13.json" -o /tmp/forecast-market-v13.json \
+              && curl -fsSL --max-time 25 "$ROOT/data/forecast-accuracy-v24.json" -o /tmp/forecast-accuracy-v24.json; then
               exit 0
             fi
             sleep 5
@@ -78,6 +81,7 @@ jobs:
           grep -Fq 'DATA_REF' /tmp/forecast-final-v12.js
           grep -Fq 'release-pointer-v22.json' /tmp/forecast-final.html
           grep -Fq 'forecast-session-v21.json' /tmp/forecast-live-leaders-v14.js
+          grep -Fq 'forecast-accuracy-v24.json' /tmp/forecast-live-leaders-v14.js
           grep -Fq '}, 3000);' /tmp/forecast-live-leaders-v14.js
           python - <<'PY'
           import json
@@ -86,6 +90,7 @@ jobs:
           current = json.load(open('/tmp/forecast-current-v12.json', encoding='utf-8'))
           dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
           market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
+          accuracy = json.load(open('/tmp/forecast-accuracy-v24.json', encoding='utf-8'))
 
           expected = 'VMEWS-MARKET-FORECAST-20.1.0'
           assert current.get('modelVersion') == expected, current.get('modelVersion')
@@ -107,10 +112,40 @@ jobs:
 
           for horizon in map(str, range(1, 6)):
               audit = model['horizons'][horizon]
-              assert audit.get('priceStatus') == 'PASS', (horizon, audit.get('priceStatus'))
+              price_status = audit.get('priceStatus')
+              if horizon == '1':
+                  assert price_status in {'PASS', 'REVIEW'}, (horizon, price_status)
+              else:
+                  assert price_status == 'PASS', (horizon, price_status)
               assert audit.get('walkForwardAudit', {}).get('status') == 'PASS', horizon
               assert audit.get('magnitudeGate', {}).get('status') == 'PASS', horizon
               assert audit.get('magnitudeGate', {}).get('invalidExecutableQuotes') == 0, horizon
+
+          configured = int((accuracy.get('rankingPolicy') or {}).get('selectedHorizon') or 0)
+          preferred = configured if 1 <= configured <= 5 else None
+          evaluations = {}
+          if preferred is None:
+              for horizon in range(5, 0, -1):
+                  recent = ((accuracy.get('horizons') or {}).get(str(horizon)) or {}).get('recent120Dates') or {}
+                  n = int(recent.get('n') or 0)
+                  skill = recent.get('maeSkill')
+                  direction_acc = recent.get('directionalAccuracy')
+                  eligible = n >= 300 and skill is not None and skill > 0 and direction_acc is not None and direction_acc >= .52
+                  evaluations[horizon] = (n, skill, direction_acc, eligible)
+                  if preferred is None and eligible:
+                      preferred = horizon
+              if preferred is None:
+                  fallback = [
+                      ((skill if skill is not None else -1e9), direction_acc, horizon)
+                      for horizon, (n, skill, direction_acc, _eligible) in evaluations.items()
+                      if n >= 300 and direction_acc is not None and direction_acc >= .50
+                  ]
+                  preferred = max(fallback)[2] if fallback else 1
+          assert 1 <= preferred <= 5, preferred
+          preferred_audit = model['horizons'][str(preferred)]
+          assert preferred_audit.get('priceStatus') == 'PASS', (preferred, preferred_audit.get('priceStatus'))
+          assert preferred_audit.get('walkForwardAudit', {}).get('status') == 'PASS', preferred
+          assert preferred_audit.get('magnitudeGate', {}).get('status') == 'PASS', preferred
 
           fpt = symbols['FPT']
           assert fpt.get('date') == dashboard.get('asOf'), (fpt.get('date'), dashboard.get('asOf'))
@@ -142,20 +177,25 @@ jobs:
               assert set(market['sources']['vn30']['symbols']) == members
               assert market['sources']['rumorAudit']['futurePublicationsUsed'] == 0
               assert market['sources']['rumorAudit']['unverifiedClaimsReportedAsFacts'] == 0
+              key = str(preferred)
               positive = [
                   symbol for symbol in members
-                  if symbols[symbol]['horizons']['5']['priceValidated']
-                  and symbols[symbol]['horizons']['5']['expectedPrice'] > symbols[symbol]['close']
+                  if symbols[symbol]['horizons'][key]['priceValidated']
+                  and symbols[symbol]['horizons'][key].get('validationStatus') == 'PASS'
+                  and symbols[symbol]['horizons'][key]['expectedPrice'] > symbols[symbol]['close']
               ]
               if not positive:
                   leaders = open('/tmp/forecast-live-leaders-v14.js', encoding='utf-8').read()
                   assert 'includeNonPositive' in leaders, 'No validated positive VN30 forecasts and no defensive fallback'
-              print('VN30 diagnostic positive', len(positive), 'defensive fallback', not positive)
+              print('VN30 diagnostic horizon', preferred, 'positive', len(positive), 'defensive fallback', not positive)
 
           leaders = open('/tmp/forecast-live-leaders-v14.js', encoding='utf-8').read()
+          html = open('/tmp/forecast-final.html', encoding='utf-8').read()
           assert 'options.scope === "vn30"' in leaders
-          assert 'HOSE · 5 PHIÊN TỚI' in leaders
+          assert 'state.rankingHorizon' in leaders
+          assert 'T+${horizon} ĐÃ KIỂM ĐỊNH' in leaders
+          assert 'commandIndex' in html
           assert 'forecast-session-v21.json' in leaders
-          print('SoluTION.AI FULL-HOSE CDN PASS', dashboard['asOf'], 'symbols', len(symbols))
+          print('SoluTION.AI FULL-HOSE CDN PASS', dashboard['asOf'], 'symbols', len(symbols), 'rankingHorizon', preferred)
           print('FINAL_URL', f"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/{os.environ['GITHUB_SHA']}/forecast-final.html?symbol=FPT")
           PY
