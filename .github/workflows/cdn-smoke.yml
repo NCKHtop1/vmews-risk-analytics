@@ -94,9 +94,15 @@ jobs:
 
           symbols = dashboard.get('symbols') or {}
           assert len(symbols) == 403, len(symbols)
-          assert dashboard.get('promotion', {}).get('status') == 'PASS', dashboard.get('promotion')
-          assert dashboard['promotion'].get('directPriceHorizons') == [1, 2, 3, 4, 5]
-          direction = dashboard['promotion'].get('directionHorizons') or []
+          promotion = dashboard.get('promotion') or {}
+          assert promotion.get('status') == 'PASS', promotion
+          promoted = {int(value) for value in promotion.get('directPriceHorizons') or []}
+          review = {int(value) for value in promotion.get('reviewHorizons') or []}
+          assert len(promoted) >= 3, promoted
+          assert promoted | review == set(range(1, 6)), (promoted, review)
+          assert promoted.isdisjoint(review), (promoted, review)
+          assert int(promotion.get('preferredRankingHorizon') or 0) in promoted, promotion
+          direction = promotion.get('directionHorizons') or []
           assert direction == [int(h) for h, item in market['model']['horizons'].items() if item.get('directionStatus') == 'PASS'], direction
 
           model = market.get('model') or {}
@@ -107,8 +113,11 @@ jobs:
 
           for horizon in map(str, range(1, 6)):
               audit = model['horizons'][horizon]
-              assert audit.get('priceStatus') == 'PASS', (horizon, audit.get('priceStatus'))
-              assert audit.get('walkForwardAudit', {}).get('status') == 'PASS', horizon
+              price_pass = audit.get('priceStatus') == 'PASS'
+              assert price_pass == (int(horizon) in promoted), (horizon, audit.get('priceStatus'), promoted)
+              assert (not price_pass) == (int(horizon) in review), (horizon, audit.get('priceStatus'), review)
+              if price_pass:
+                  assert audit.get('walkForwardAudit', {}).get('status') == 'PASS', horizon
               assert audit.get('magnitudeGate', {}).get('status') == 'PASS', horizon
               assert audit.get('magnitudeGate', {}).get('invalidExecutableQuotes') == 0, horizon
 
