@@ -177,32 +177,55 @@ def _vn_direct_rows(symbol: str, size: int = 14, timeout: int = 14) -> list[dict
     )
     with urlopen(request, timeout=timeout) as response:
         payload = json.load(response)
-    result: list[dict[str, Any]] = []
-    for record in payload.get("data", []):
-        raw_close = _clean_number(record.get("close"))
-        if raw_close <= 0:
-            continue
-        scale = 1000.0 if raw_close < 1000 else 1.0
-        # VNDIRECT quotes are expressed either in VND or thousands of VND.
-        # Multiplying a decimal quote such as 32.7 by 1,000 can otherwise leak
-        # a binary-float artefact (32700.000000000004) into the public chart.
-        # Executable OHLC prices are whole VND; adjusted closes intentionally
-        # remain continuous because they are used only for model returns.
-        close = int(round(raw_close * scale))
-        result.append(
-            {
-                "date": str(record.get("date", ""))[:10],
-                "open": int(round(_clean_number(record.get("open"), raw_close) * scale)),
-                "high": int(round(_clean_number(record.get("high"), raw_close) * scale)),
-                "low": int(round(_clean_number(record.get("low"), raw_close) * scale)),
-                "close": close,
-                "modelClose": _clean_number(record.get("adClose"), raw_close) * scale,
-                "volume": _clean_number(record.get("nmVolume")),
-                "provider": "VNDIRECT PUBLIC EOD",
-                "exchange": str(record.get("floor", "HOSE")),
-            }
-        )
+    result = [_normalise_vndirect_record(record) for record in payload.get("data", [])]
+    result = [row for row in result if row is not None]
     return sorted(result, key=lambda item: item["date"])
+
+
+def _normalise_vndirect_record(record: dict[str, Any]) -> dict[str, Any] | None:
+    raw_close = _clean_number(record.get("close"))
+    if raw_close <= 0:
+        return None
+    scale = 1000.0 if raw_close < 1000 else 1.0
+    # VNDIRECT quotes are expressed either in VND or thousands of VND.
+    # Executable OHLC prices are whole VND; adjusted closes intentionally
+    # remain continuous because they are used only for model returns.
+    close = int(round(raw_close * scale))
+    return {
+        "date": str(record.get("date", ""))[:10],
+        "open": int(round(_clean_number(record.get("open"), raw_close) * scale)),
+        "high": int(round(_clean_number(record.get("high"), raw_close) * scale)),
+        "low": int(round(_clean_number(record.get("low"), raw_close) * scale)),
+        "close": close,
+        "modelClose": _clean_number(record.get("adClose"), raw_close) * scale,
+        "volume": _clean_number(record.get("nmVolume")),
+        "provider": "VNDIRECT PUBLIC EOD",
+        "exchange": str(record.get("floor", "HOSE")),
+    }
+
+
+def _vn_direct_hose_rows(size: int = 9000, timeout: int = 35) -> dict[str, list[dict[str, Any]]]:
+    """Fetch recent HOSE candles in one bounded request, grouped by symbol."""
+    params = urlencode({"sort": "date:desc", "size": size, "q": "floor:HOSE"})
+    request = Request(
+        f"{VNDIRECT_URL}?{params}",
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "VMEWS-Market-Forecast/21.0 (+research; public EOD data)",
+        },
+    )
+    with urlopen(request, timeout=timeout) as response:
+        payload = json.load(response)
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for record in payload.get("data", []):
+        symbol = str(record.get("code") or "").upper().strip()
+        row = _normalise_vndirect_record(record)
+        if symbol and row is not None:
+            grouped.setdefault(symbol, []).append(row)
+    return {
+        symbol: sorted(rows, key=lambda item: item["date"])
+        for symbol, rows in grouped.items()
+    }
 
 
 def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any]]:
@@ -320,21 +343,39 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
 
     if requested:
         received: dict[str, list[dict[str, Any]]] = {}
+        reference_date = str(scan.get("reviewDate") or "")[:10]
+        if refresh_symbols == ("ALL",):
+            try:
+                batched = _vn_direct_hose_rows()
+                for symbol in requested:
+                    incoming = [
+                        row for row in batched.get(symbol, [])
+                        if not reference_date or row["date"] <= reference_date
+                    ]
+                    if incoming:
+                        received[symbol] = incoming
+            except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as exc:
+                failures["__BATCH__"] = f"{type(exc).__name__}: {exc}"[:200]
+
+        missing = [symbol for symbol in requested if symbol not in received]
         workers = min(int(os.environ.get("V14_EOD_WORKERS", "8")), len(requested))
         with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-            for task in as_completed(pool.submit(refresh_one, symbol) for symbol in requested):
+            for task in as_completed(pool.submit(refresh_one, symbol) for symbol in missing):
                 symbol, incoming, failure = task.result()
                 if failure:
                     failures[symbol] = failure
                     continue
                 assert incoming is not None
-                received[symbol] = incoming
-                by_date = {str(row["date"]): row for row in histories[symbol]}
-                for row in incoming:
-                    by_date[row["date"]] = row
-                histories[symbol] = [by_date[key] for key in sorted(by_date)]
-                refreshed[symbol] = "VNDIRECT_PUBLIC_EOD"
-        _log("eod_refresh_complete", requested=len(requested), refreshed=sum(v == "VNDIRECT_PUBLIC_EOD" for v in refreshed.values()), fallbacks=len(failures), workers=workers)
+                bounded = [row for row in incoming if not reference_date or row["date"] <= reference_date]
+                if bounded:
+                    received[symbol] = bounded
+        for symbol, incoming in received.items():
+            by_date = {str(row["date"]): row for row in histories[symbol]}
+            for row in incoming:
+                by_date[row["date"]] = row
+            histories[symbol] = [by_date[key] for key in sorted(by_date)]
+            refreshed[symbol] = "VNDIRECT_PUBLIC_EOD"
+        _log("eod_refresh_complete", requested=len(requested), refreshed=sum(v == "VNDIRECT_PUBLIC_EOD" for v in refreshed.values()), batchRows=sum(map(len, received.values())), fallbacks=len(missing), failures=len(failures), workers=workers)
         if received:
             with gzip.open(EOD_CACHE_PATH, "wt", encoding="utf-8") as stream:
                 json.dump(
@@ -1684,6 +1725,44 @@ def _spread(actual: np.ndarray, prediction: np.ndarray, dates: np.ndarray) -> fl
     return float(np.mean(values)) if values else 0.0
 
 
+def horizon_price_gate(audit: dict[str, Any], walk_forward: dict[str, Any]) -> bool:
+    """Return whether one horizon may be presented as independently validated."""
+    return bool(
+        audit["maeSkill"] >= .005
+        and audit["rankIC"] >= .05
+        and .52 <= audit["coverage20_80"] <= .72
+        and audit["executableMedianAbs"] >= .0015
+        and audit["executableMAESkill"] >= .003
+        and sum(fold["maeSkill"] > 0 for fold in audit["chronologicalFolds"]) >= 3
+        and sum(fold["executableMAESkill"] > 0 for fold in audit["chronologicalFolds"]) >= 3
+        and audit.get("magnitudeMAESkill", -1) > 0
+        and walk_forward.get("positiveExecutableMAEFolds", 0) >= 2
+        and walk_forward.get("positiveMagnitudeFolds", 0) >= 2
+        and walk_forward.get("meanExecutableMAESkill", -1) > 0
+        and walk_forward.get("meanRankIC", -1) >= .05
+    )
+
+
+def preferred_ranking_horizon(model_horizons: dict[str, Any]) -> int:
+    """Choose a medium-horizon rank only from price horizons that passed."""
+    candidates = []
+    for horizon in (3, 4, 5):
+        item = model_horizons.get(str(horizon)) or {}
+        if item.get("priceStatus") != "PASS":
+            continue
+        walk = item.get("walkForwardAudit") or {}
+        candidates.append((float(walk.get("meanRankIC") or -1), -horizon, horizon))
+    if not candidates:
+        candidates = [
+            (float(((item.get("walkForwardAudit") or {}).get("meanRankIC") or -1)), -int(key), int(key))
+            for key, item in model_horizons.items()
+            if item.get("priceStatus") == "PASS"
+        ]
+    if not candidates:
+        raise RuntimeError("No independently validated horizon remains for ranking")
+    return max(candidates)[2]
+
+
 def _risk_status(row: pd.Series, prior: str) -> str:
     scan_status = str(row.get("risk_scan") or prior or "GREEN").upper()
     return scan_status if scan_status in {"GREEN", "WATCH", "YELLOW", "RED"} else prior
@@ -1899,6 +1978,8 @@ def write_artifacts(
     back_horizons: dict[str, Any] = {}
     back_cases: dict[str, list[dict[str, Any]]] = {}
     direction_horizons: list[int] = []
+    validated_horizons: list[int] = []
+    review_horizons: list[int] = []
 
     for result in results:
         horizon = result.horizon
@@ -1974,23 +2055,7 @@ def write_artifacts(
         audit["eventStudyObservations"] = event_study["observations"]
         audit["newsIncrementalMAESkill"] = ablation["EVENT"]["deltaMAEImprove"]
         audit["flowIncrementalMAESkill"] = ablation["FLOW"]["deltaMAEImprove"]
-        price_pass = (
-            audit["maeSkill"] >= .005
-            and audit["rankIC"] >= .05
-            and .52 <= audit["coverage20_80"] <= .72
-            # Promotion is assessed on the exchange-executable quote shown to
-            # users.  The raw conditional median may be below one tick at T+1,
-            # while the snapped quote remains non-trivial and improves holdout MAE.
-            and audit["executableMedianAbs"] >= .0015
-            and audit["executableMAESkill"] >= .003
-            and sum(fold["maeSkill"] > 0 for fold in audit["chronologicalFolds"]) >= 3
-            and sum(fold["executableMAESkill"] > 0 for fold in audit["chronologicalFolds"]) >= 3
-            and audit.get("magnitudeMAESkill", -1) > 0
-            and walk_forward.get("positiveExecutableMAEFolds", 0) >= 2
-            and walk_forward.get("positiveMagnitudeFolds", 0) >= 2
-            and walk_forward.get("meanExecutableMAESkill", -1) > 0
-            and walk_forward.get("meanRankIC", -1) >= .05
-        )
+        price_pass = horizon_price_gate(audit, walk_forward)
         direction_pass = audit.get("brierSkill", -1) >= .005
         direction_folds = [
             fold for fold in audit.get("chronologicalFolds", [])
@@ -2001,8 +2066,7 @@ def write_artifacts(
             and len(direction_folds) >= 3
             and sum(float(fold["directionalAccuracy"]) > .50 for fold in direction_folds) >= 3
         )
-        if not price_pass:
-            raise RuntimeError(f"T+{horizon}: independent held-out promotion gate failed: {audit}")
+        (validated_horizons if price_pass else review_horizons).append(horizon)
         if direction_pass:
             direction_horizons.append(horizon)
 
@@ -2029,11 +2093,11 @@ def write_artifacts(
         }
         model_horizons[key] = {
             "activeExperts": active_experts,
-            "priceStatus": "PASS",
+            "priceStatus": "PASS" if price_pass else "REVIEW",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
             "pointDirectionSemantics": "HISTORICAL_SIGN_HIT_RATE_IS_NOT_AN_ISSUER_PROBABILITY",
-            "status": "PASS",
+            "status": "PASS" if price_pass else "REVIEW",
             "sealedAudit": audit,
             "walkForwardAudit": walk_forward,
             "training": result.training,
@@ -2057,14 +2121,14 @@ def write_artifacts(
         back_horizons[key] = {
             "metrics": audit,
             "walkForwardAudit": walk_forward,
-            "priceStatus": "PASS",
+            "priceStatus": "PASS" if price_pass else "REVIEW",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
             "embargoAudit": embargo_audit,
             "distributionAudit": model_horizons[key]["distributionAudit"],
             "magnitudeGate": magnitude_gate,
             "evaluation": {
-                "status": "PASS",
+                "status": "PASS" if price_pass else "REVIEW",
                 "method": "FROZEN_CHRONOLOGICAL_HOLDOUT",
                 "days": audit["rankDays"],
             },
@@ -2134,7 +2198,7 @@ def write_artifacts(
                 "scenarioAdjustmentReturn": float(scenario_adjustment[position]),
                 "liveAdjustmentAppliedToCentralForecast": False,
                 "liveEvidence": live_priors[position],
-                "priceValidated": True,
+                "priceValidated": price_pass,
                 "directionValidated": direction_pass,
                 "pointDirectionValidated": point_direction_pass,
                 "historicalDirectionAccuracy": float(audit.get("directionalAccuracy") or 0),
@@ -2146,7 +2210,7 @@ def write_artifacts(
                     "VALIDATED_HISTORICAL_SIGN_ONLY" if point_direction_pass else
                     "INSUFFICIENT_DIRECTION_EVIDENCE"
                 ),
-                "validationStatus": "PASS",
+                "validationStatus": "PASS" if price_pass else "REVIEW",
                 "tickSize": tick_size(point, venue),
                 "exchange": venue,
                 "targetDate": next_trading_dates(str(row["date"].date()), horizon)[-1],
@@ -2156,10 +2220,10 @@ def write_artifacts(
                 "magnitudeCalibrationRatio": float(audit["magnitudeCalibrationRatio"]),
                 "roundTripCostBps": float(audit["costAwareLongAudit"]["roundTripCostBps"]),
                 "costHurdleCleared": exact_return > audit["costAwareLongAudit"]["roundTripCostBps"] / 10_000,
-                "conditionalValueValidated": audit["costAwareLongAudit"]["status"] == "PASS",
+                "conditionalValueValidated": price_pass and audit["costAwareLongAudit"]["status"] == "PASS",
                 "decisionDiscipline": (
                     "CANDIDATE_REQUIRES_INDEPENDENT_RISK_REVIEW"
-                    if audit["costAwareLongAudit"]["status"] == "PASS"
+                    if price_pass and audit["costAwareLongAudit"]["status"] == "PASS"
                     and exact_return > audit["costAwareLongAudit"]["roundTripCostBps"] / 10_000
                     else "WATCH_ONLY_NO_VALIDATED_COST_ADJUSTED_EDGE"
                 ),
@@ -2249,11 +2313,16 @@ def write_artifacts(
             if _clean_number(item.get("close")) > 0
         ]
 
+    if len(validated_horizons) < 3 or not set(validated_horizons).intersection({3, 4, 5}):
+        raise RuntimeError(f"Too few independently validated horizons remain: {validated_horizons}")
+    ranking_horizon = preferred_ranking_horizon(model_horizons)
     promotion = {
         "status": "PASS",
-        "directPriceHorizons": list(HORIZONS),
+        "directPriceHorizons": validated_horizons,
+        "reviewHorizons": review_horizons,
+        "preferredRankingHorizon": ranking_horizon,
         "directionHorizons": direction_horizons,
-        "rule": "Each horizon must pass a sealed maturity-purged holdout and at least two of three independently retrained walk-forward folds for executable price and absolute-move skill.",
+        "rule": "Each horizon is promoted or abstained independently. A REVIEW horizon cannot drive ranking or a user decision and cannot block fresh prices for the horizons that passed.",
     }
     model = {
         "version": VERSION,

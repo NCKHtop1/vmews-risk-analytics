@@ -3,6 +3,7 @@ name: Forecast V21 guarded session overlay
 on:
   workflow_dispatch:
   schedule:
+    - cron: "15 0 * * 1-5"
     - cron: "5 5 * * 1-5"
     - cron: "25 8 * * 1-5"
   pull_request:
@@ -46,21 +47,13 @@ jobs:
       - name: Install session quote provider
         run: pip install --disable-pip-version-check -q pandas tradingview-screener==3.2.1
       - name: Build guarded session overlay
-        id: overlay
-        continue-on-error: true
         run: python scripts/forecast_v21_session_snapshot.py
-      - name: Explain retained last-known-good snapshot
-        if: steps.overlay.outcome == 'failure'
-        run: |
-          echo "Current session provider failed freshness/coverage gates."
-          echo "No forecast-session-v21.json is overwritten; the last validated snapshot remains published."
       - name: Validate publishable overlay
-        if: steps.overlay.outcome == 'success'
         run: |
           python - <<'PY'
           import json
           p=json.load(open('data/forecast-session-v21.json',encoding='utf-8'))
-          assert p['version']=='VMEWS-FORECAST-SESSION-21.0',p.get('version')
+          assert p['version']=='VMEWS-FORECAST-SESSION-21.1',p.get('version')
           assert p['status']=='PASS',p.get('status')
           assert p['coreForecastUnchanged'] is True
           c=p['coverage']
@@ -71,7 +64,6 @@ jobs:
           print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
           PY
       - name: Persist only validated session overlay
-        if: steps.overlay.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
