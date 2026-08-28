@@ -59,11 +59,12 @@ def next_trading_dates(origin, sessions=5):
 
 
 def trading_session_age(observed, as_of):
-    """Count recent certified sessions; clearly old evidence is simply stale.
+    """Count exchange sessions between two observations.
 
-    Release freshness only distinguishes recent from stale.  Multi-year archive
-    rows do not need an exact holiday count and must not force us to pretend an
-    uncertified historical holiday calendar is authoritative.
+    Certified years use the official holiday calendar.  Old archive years that
+    are not certified retain weekday-only compatibility solely for an already
+    stale age count; current-session selection and future target publication
+    still require a certified calendar and fail closed.
     """
     if not observed:
         return 99
@@ -71,11 +72,12 @@ def trading_session_age(observed, as_of):
     end = date.fromisoformat(str(as_of)[:10]) if not isinstance(as_of, date) else as_of
     if cursor >= end:
         return 0
-    if (end - cursor).days > 31 and ({cursor.year, end.year} - CERTIFIED_YEARS):
-        return 99
     age = 0
     while cursor < end:
         cursor += timedelta(days=1)
-        if is_trading_day(cursor, require_certified=True):
+        if cursor.weekday() >= 5:
+            continue
+        holidays = HOLIDAYS_BY_YEAR.get(cursor.year)
+        if holidays is None or cursor not in holidays:
             age += 1
     return age
