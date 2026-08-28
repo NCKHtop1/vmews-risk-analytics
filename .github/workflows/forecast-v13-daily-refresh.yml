@@ -14,20 +14,18 @@ on:
       - "scripts/forecast_v28_postclose_bridge_test.py"
       - "scripts/vn_exchange_calendar.py"
       - "scripts/vn_exchange_calendar_test.py"
+      - "scripts/refresh_institutional_flow_v20_v28.py"
+      - "scripts/forecast_v20_release_audit_v28.py"
       - "scripts/forecast_v13_market_model.py"
-      - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
+      - "scripts/forecast_v14_frontend_contract_test.py"
+      - "scripts/forecast_v16_external_data.py"
       - "scripts/forecast_v17_live_intelligence.py"
-      - "scripts/forecast_v17_live_intelligence_test.py"
       - "scripts/forecast_v18_market_intelligence.py"
-      - "scripts/forecast_v18_market_intelligence_test.py"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
-      - "scripts/forecast_v20_release_audit.py"
-      - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
       - "forecast-final.html"
@@ -39,6 +37,8 @@ on:
       - "scripts/forecast_v28_postclose_bridge_test.py"
       - "scripts/vn_exchange_calendar.py"
       - "scripts/vn_exchange_calendar_test.py"
+      - "scripts/refresh_institutional_flow_v20_v28.py"
+      - "scripts/forecast_v20_release_audit_v28.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
@@ -69,7 +69,7 @@ permissions:
 
 concurrency:
   group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update-validated-forecast:
@@ -92,16 +92,14 @@ jobs:
         env:
           V20_FLOW_WORKERS: "12"
         run: |
-          python scripts/refresh_institutional_flow_v20.py || echo "Institutional provider unavailable; audited history remains intact and freshness stays explicit."
+          python scripts/refresh_institutional_flow_v20_v28.py || echo "Institutional provider unavailable; audited history remains intact and freshness stays explicit."
       - name: Refresh point-in-time news for the full current HOSE universe
-        run: |
-          python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
+        run: python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
       - name: Collect verified public FireAnt and 24HMoney market intelligence
         env:
           V18_FIREANT_TIMEOUT: "4"
           V19_SOCIAL_TIMEOUT: "8"
-        run: |
-          python scripts/forecast_v18_market_intelligence.py --collect-community || echo "Public publisher feeds were unavailable; private community content will not be fabricated."
+        run: python scripts/forecast_v18_market_intelligence.py --collect-community || echo "Public publisher feeds were unavailable; private community content will not be fabricated."
       - name: Remove cross-issuer contamination from every current intelligence artifact
         run: python scripts/sanitize_intelligence_v20.py
       - name: Archive disclosed fund holdings and NAV context
@@ -114,10 +112,12 @@ jobs:
         env:
           V14_EOD_WORKERS: "8"
           V28_POSTCLOSE_MIN_COVERAGE: "0.90"
+          V28_POSTCLOSE_MIN_SECONDARY_COVERAGE: "0.90"
+          V28_POSTCLOSE_MAX_LOG_GAP: "0.003"
         run: python scripts/run_forecast_v28_guarded.py --fast --refresh-symbols ALL --publish
       - name: Publish bounded live community overlay against the audited snapshot
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
-      - name: Reject issuer mixups, future news, invalid HOSE ticks and failed backtests
+      - name: Reject issuer mixups, future leakage, holiday errors and failed backtests
         run: |
           python scripts/forecast_v28_postclose_bridge_test.py
           python scripts/vn_exchange_calendar_test.py
@@ -129,21 +129,22 @@ jobs:
           python scripts/refresh_institutional_flow_v20_test.py
           python scripts/sanitize_intelligence_v20_test.py
           node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
-          python scripts/forecast_v20_release_audit.py
+          python scripts/forecast_v20_release_audit_v28.py
       - name: Reject stale completed-session publication
         if: github.event_name != 'pull_request'
         run: |
           python - <<'PY'
-          import json, sys
+          import json,sys
           from datetime import datetime
           from pathlib import Path
-          sys.path.insert(0, 'scripts')
-          from vn_exchange_calendar import VN_TZ, latest_completed_session
-          now=datetime.now(VN_TZ)
-          expected=latest_completed_session(now).isoformat()
+          sys.path.insert(0,'scripts')
+          from vn_exchange_calendar import VN_TZ,latest_completed_session
+          expected=latest_completed_session(datetime.now(VN_TZ)).isoformat()
           d=json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8'))
-          if str(d.get('asOf')) != expected:
-              raise SystemExit(f"STALE FORECAST: dashboard asOf={d.get('asOf')} expected completed session={expected}")
+          if str(d.get('asOf'))!=expected: raise SystemExit(f"STALE FORECAST: dashboard asOf={d.get('asOf')} expected completed session={expected}")
+          market=json.loads(Path('data/forecast-market-v13.json').read_text(encoding='utf-8'))
+          bridge=(market.get('sources') or {}).get('postCloseBridge') or {}
+          if expected==datetime.now(VN_TZ).date().isoformat() and bridge.get('status')!='PASS': raise SystemExit(f"CURRENT SESSION NOT INDEPENDENTLY VERIFIED: {bridge}")
           PY
       - name: Persist the validated market snapshot
         if: github.event_name != 'pull_request'
@@ -151,10 +152,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/v16-eod-refresh-cache.json.gz data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
-          if git diff --cached --quiet; then
-            echo "No market-session change detected."
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo "No market-session change detected."; exit 0; fi
           git commit -m "Refresh validated HOSE forecast, dated VN30 leaders and verified market intelligence [data-only]"
           git pull --rebase origin main
           git push origin HEAD:main
