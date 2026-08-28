@@ -3,8 +3,9 @@ name: Forecast V21 guarded session overlay
 on:
   workflow_dispatch:
   schedule:
+    - cron: "15 0 * * 1-5"
     - cron: "5 5 * * 1-5"
-    - cron: "25 8 * * 1-5"
+    - cron: "5 9 * * 1-5"
   pull_request:
     paths:
       - ".github/workflows/forecast-v21-session-refresh.yml"
@@ -15,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-data-publisher
+  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.workflow || 'main' }}
   cancel-in-progress: false
 
 jobs:
@@ -28,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Install test dependencies
         run: pip install --disable-pip-version-check -q pandas
-      - name: Test coverage, freshness, defensive fallback and core immutability
+      - name: Test coverage, freshness, audited horizon, defensive fallback and core immutability
         run: python scripts/forecast_v21_session_snapshot_test.py
 
   refresh-session-overlay:
@@ -52,7 +53,7 @@ jobs:
       - name: Explain retained last-known-good snapshot
         if: steps.overlay.outcome == 'failure'
         run: |
-          echo "Current session provider failed freshness/coverage gates."
+          echo "Current session provider failed freshness/coverage/ranking gates."
           echo "No forecast-session-v21.json is overwritten; the last validated snapshot remains published."
       - name: Validate publishable overlay
         if: steps.overlay.outcome == 'success'
@@ -60,15 +61,22 @@ jobs:
           python - <<'PY'
           import json
           p=json.load(open('data/forecast-session-v21.json',encoding='utf-8'))
-          assert p['version']=='VMEWS-FORECAST-SESSION-21.0',p.get('version')
+          d=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'))
+          assert p['version']=='VMEWS-FORECAST-SESSION-21.1',p.get('version')
           assert p['status']=='PASS',p.get('status')
           assert p['coreForecastUnchanged'] is True
+          promotion=d.get('promotion') or {}
+          promoted={int(x) for x in promotion.get('directPriceHorizons') or []}
+          preferred=int(promotion.get('preferredRankingHorizon') or 0)
+          assert preferred in promoted,(preferred,promoted)
+          assert int(p.get('rankingHorizon') or 0)==preferred,(p.get('rankingHorizon'),preferred)
           c=p['coverage']
           assert c['coverageRatio']>=0.90,c
           assert c['currentCoverageRatio']>=0.90,c
           assert c['cutoffFreshCoverageRatio']>=0.90,c
           assert len(p.get('leaders') or [])==10,p.get('leaders')
-          print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
+          assert all(int(x.get('rankingHorizon',0))==preferred for x in p.get('leaders') or []),p.get('leaders')
+          print(json.dumps({'session':p['session'],'coreAsOf':p['coreAsOf'],'rankingHorizon':preferred,'coverage':c,'leaders':[x['symbol'] for x in p['leaders']]},ensure_ascii=False,indent=2))
           PY
       - name: Persist only validated session overlay
         if: steps.overlay.outcome == 'success'

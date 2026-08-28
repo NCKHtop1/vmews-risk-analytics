@@ -26,6 +26,9 @@ from forecast_v13_market_model import (  # noqa: E402
     snap_price,
     tick_size,
     _vn_direct_rows,
+    _vn_direct_hose_rows,
+    horizon_price_gate,
+    preferred_ranking_horizon,
 )
 from forecast_v14_signal_audit import (  # noqa: E402
     attach_matured_reaction_priors,
@@ -60,6 +63,27 @@ class VietnamPriceGridTest(unittest.TestCase):
         self.assertEqual(row["low"], 32_450)
         self.assertEqual(row["close"], 32_700)
         self.assertIsInstance(row["close"], int)
+
+    def test_vndirect_bulk_route_groups_hose_quotes_in_one_response(self) -> None:
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return None
+
+        payload = {"data": [
+            {"code": "FPT", "date": "2026-08-26", "close": 72.6, "floor": "HOSE"},
+            {"code": "FPT", "date": "2026-08-25", "close": 70.7, "floor": "HOSE"},
+            {"code": "VCB", "date": "2026-08-26", "close": 61.2, "floor": "HOSE"},
+        ]}
+        response = Response()
+        response.read = lambda: json.dumps(payload).encode("utf-8")
+        with patch("forecast_v13_market_model.urlopen", return_value=response) as mocked:
+            rows = _vn_direct_hose_rows()
+        self.assertEqual(mocked.call_count, 1)
+        self.assertEqual([row["close"] for row in rows["FPT"]], [70_700, 72_600])
+        self.assertEqual(rows["VCB"][-1]["close"], 61_200)
 
     def test_t2_market_intercept_is_regime_shrunk_before_holdout(self) -> None:
         self.assertEqual(INTERCEPT_RETENTION[2], .25)
@@ -222,20 +246,29 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(fpt["date"], chart_fpt["date"])
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
-    def test_all_horizons_are_independently_validated(self) -> None:
+    def test_each_horizon_is_independently_promoted_or_abstained(self) -> None:
         self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-20.1.0")
-        self.assertEqual(self.market["model"]["promotion"]["status"], "PASS")
-        self.assertEqual(self.market["model"]["promotion"]["directPriceHorizons"], [1, 2, 3, 4, 5])
+        promotion = self.market["model"]["promotion"]
+        self.assertEqual(promotion["status"], "PASS")
+        promoted = set(promotion["directPriceHorizons"])
+        review = set(promotion.get("reviewHorizons") or [])
+        self.assertGreaterEqual(len(promoted), 3)
+        self.assertEqual(promoted | review, set(range(1, 6)))
+        self.assertFalse(promoted & review)
+        self.assertIn(promotion["preferredRankingHorizon"], promoted)
+        self.assertEqual(
+            promotion["preferredRankingHorizon"],
+            preferred_ranking_horizon(self.market["model"]["horizons"]),
+        )
         for horizon in map(str, range(1, 6)):
-            audit = self.market["model"]["horizons"][horizon]["sealedAudit"]
-            embargo = self.market["model"]["horizons"][horizon]["embargoAudit"]
+            model = self.market["model"]["horizons"][horizon]
+            audit = model["sealedAudit"]
+            embargo = model["embargoAudit"]
             self.assertGreaterEqual(audit["n"], 30_000)
-            walk = self.market["model"]["horizons"][horizon]["walkForwardAudit"]
-            self.assertGreaterEqual(audit["maeSkill"], .005)
-            self.assertGreaterEqual(audit["executableMAESkill"], .003)
-            self.assertGreaterEqual(audit["rankIC"], .05)
-            self.assertGreater(audit["executableMedianAbs"], .0015)
-            self.assertTrue(.52 <= audit["coverage20_80"] <= .72)
+            walk = model["walkForwardAudit"]
+            passed = int(horizon) in promoted
+            self.assertEqual(model["priceStatus"], "PASS" if passed else "REVIEW")
+            self.assertEqual(horizon_price_gate(audit, walk), passed)
             self.assertGreater(audit["magnitudeMAESkill"], 0)
             self.assertEqual(audit["futureRowsUsedForTraining"], 0)
             self.assertEqual(audit["futureLabelsUsedForCalibration"], 0)
@@ -243,10 +276,16 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertEqual(len(audit["chronologicalFolds"]), 4)
             self.assertEqual(walk["status"], "PASS")
             self.assertEqual(len(walk["folds"]), 3)
-            self.assertGreaterEqual(walk["positiveExecutableMAEFolds"], 2)
-            self.assertGreaterEqual(walk["positiveMagnitudeFolds"], 2)
-            self.assertGreater(walk["meanExecutableMAESkill"], 0)
-            self.assertGreaterEqual(walk["meanRankIC"], .05)
+            if passed:
+                self.assertGreaterEqual(audit["maeSkill"], .005)
+                self.assertGreaterEqual(audit["executableMAESkill"], .003)
+                self.assertGreaterEqual(audit["rankIC"], .05)
+                self.assertGreater(audit["executableMedianAbs"], .0015)
+                self.assertTrue(.52 <= audit["coverage20_80"] <= .72)
+                self.assertGreaterEqual(walk["positiveExecutableMAEFolds"], 2)
+                self.assertGreaterEqual(walk["positiveMagnitudeFolds"], 2)
+                self.assertGreater(walk["meanExecutableMAESkill"], 0)
+                self.assertGreaterEqual(walk["meanRankIC"], .05)
             blend = self.market["model"]["horizons"][horizon]["directionalMagnitudeBlend"]
             self.assertEqual(blend["sealedLabelsUsed"], 0)
             self.assertIn(blend["status"], {"ACTIVE", "ABSTAIN"})
@@ -293,6 +332,9 @@ class PublishedMarketForecastTest(unittest.TestCase):
                     )
                     self.assertGreater(forecast["expectedAbsReturn"], 0)
                     self.assertTrue(forecast["magnitudeValidated"])
+                    price_pass = int(key) in self.market["model"]["promotion"]["directPriceHorizons"]
+                    self.assertEqual(forecast["priceValidated"], price_pass)
+                    self.assertEqual(forecast["validationStatus"], "PASS" if price_pass else "REVIEW")
                     self.assertLessEqual(forecast["bearScenarioPrice"], close)
                     self.assertGreaterEqual(forecast["bullScenarioPrice"], close)
                     self.assertTrue(
@@ -453,7 +495,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertAlmostEqual(fpt["historicalDirectionAccuracy"], audit["directionalAccuracy"])
         self.assertTrue(fpt["crossSectionalRankValidated"])
         self.assertTrue(0 < fpt["crossSectionalRankPercentile"] <= 1)
-        self.assertEqual(fpt["conditionalValueValidated"], audit["costAwareLongAudit"]["status"] == "PASS")
+        self.assertEqual(
+            fpt["conditionalValueValidated"],
+            model["priceStatus"] == "PASS" and audit["costAwareLongAudit"]["status"] == "PASS",
+        )
         self.assertFalse(audit["costAwareLongAudit"]["selectionFitOnHoldout"])
 
     def test_fpt_institutional_flow_uses_the_latest_completed_genuine_session(self) -> None:

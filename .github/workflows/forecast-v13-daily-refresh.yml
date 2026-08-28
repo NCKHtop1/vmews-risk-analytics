@@ -8,8 +8,11 @@ on:
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
+      - "scripts/prepare_forecast_scan_v28.py"
+      - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v13_market_model_test_v28.py"
       - "scripts/forecast_v17_live_intelligence.py"
       - "scripts/forecast_v17_live_intelligence_test.py"
       - "scripts/forecast_v18_market_intelligence.py"
@@ -26,8 +29,11 @@ on:
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
+      - "scripts/prepare_forecast_scan_v28.py"
+      - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v13_market_model_test_v28.py"
       - "scripts/forecast_v14_signal_audit.py"
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
@@ -46,6 +52,7 @@ on:
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
   schedule:
+    - cron: "0 0 * * 1-5"
     - cron: "15 9 * * 1-5"
     - cron: "30 10 * * 1-5"
 
@@ -53,7 +60,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-data-publisher
+  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: false
 
 jobs:
@@ -89,15 +96,17 @@ jobs:
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
         run: python scripts/forecast_v16_external_data.py --collect-funds
+      - name: Bind forecast cross-source audit to latest completed session
+        run: python scripts/prepare_forecast_scan_v28.py
       - name: Refresh every HOSE EOD and publish only independently validated forecasts
         env:
           V14_EOD_WORKERS: "8"
-        run: python scripts/forecast_v13_market_model.py --fast --refresh-symbols ALL --publish
+        run: python scripts/run_forecast_v28_guarded.py --fast --refresh-symbols ALL --publish
       - name: Publish bounded live community overlay against the audited snapshot
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Reject issuer mixups, future news, invalid HOSE ticks and failed backtests
         run: |
-          python scripts/forecast_v13_market_model_test.py
+          python scripts/forecast_v13_market_model_test_v28.py
           python scripts/forecast_v14_frontend_contract_test.py
           python scripts/forecast_v16_external_data_test.py
           python scripts/forecast_v17_live_intelligence_test.py
@@ -111,7 +120,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/v16-eod-refresh-cache.json.gz data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0

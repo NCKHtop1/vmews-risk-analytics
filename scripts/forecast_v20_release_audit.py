@@ -111,6 +111,13 @@ def run_audit() -> dict[str, Any]:
     require(dashboard.get("modelVersion") == expected_version, "dashboard model version differs from market")
     require(current.get("modelVersion") == expected_version, "current model version differs from market")
     require((market.get("model") or {}).get("promotion", {}).get("status") == "PASS", "sealed price promotion is not PASS")
+    promotion = (market.get("model") or {}).get("promotion") or {}
+    promoted_horizons = {int(value) for value in promotion.get("directPriceHorizons") or []}
+    review_horizons = {int(value) for value in promotion.get("reviewHorizons") or []}
+    require(len(promoted_horizons) >= 3, f"too few promoted horizons: {sorted(promoted_horizons)}")
+    require(promoted_horizons | review_horizons == set(range(1, 6)), "promotion/review horizon partition is incomplete")
+    require(promoted_horizons.isdisjoint(review_horizons), "a horizon cannot be both promoted and REVIEW")
+    require(int(promotion.get("preferredRankingHorizon") or 0) in promoted_horizons, "ranking horizon is not independently validated")
     governance = (market.get("model") or {}).get("governance") or {}
     require(governance.get("centralForecastUsesUnvalidatedPrior") is False, "unvalidated live context can alter the central forecast")
     require(governance.get("livePriorIndependentlyBacktested") is False, "live context audit semantics are inconsistent")
@@ -206,14 +213,19 @@ def run_audit() -> dict[str, Any]:
             if forecast.get("crossSectionalRankUniverse") != len(symbols) or not (0 < float(forecast.get("crossSectionalRankPercentile") or 0) <= 1):
                 quote_failures.append(f"{symbol}/T+{key}: invalid cross-sectional rank")
             model_horizon = model_horizons.get(key) or {}
+            price_pass = model_horizon.get("priceStatus") == "PASS"
             direction_pass = model_horizon.get("directionStatus") == "PASS"
             point_pass = model_horizon.get("pointDirectionStatus") == "PASS"
             cost_pass = ((model_horizon.get("sealedAudit") or {}).get("costAwareLongAudit") or {}).get("status") == "PASS"
+            if bool(forecast.get("priceValidated")) != price_pass:
+                quote_failures.append(f"{symbol}/T+{key}: price gate mismatch")
+            if str(forecast.get("validationStatus")) != ("PASS" if price_pass else "REVIEW"):
+                quote_failures.append(f"{symbol}/T+{key}: validation status mismatch")
             if bool(forecast.get("directionValidated")) != direction_pass:
                 quote_failures.append(f"{symbol}/T+{key}: probability gate mismatch")
             if bool(forecast.get("pointDirectionValidated")) != point_pass:
                 quote_failures.append(f"{symbol}/T+{key}: sign gate mismatch")
-            if bool(forecast.get("conditionalValueValidated")) != cost_pass:
+            if bool(forecast.get("conditionalValueValidated")) != (cost_pass and price_pass):
                 quote_failures.append(f"{symbol}/T+{key}: after-cost gate mismatch")
             if not (0 <= float(forecast.get("probUp") or 0) <= 1):
                 quote_failures.append(f"{symbol}/T+{key}: invalid latent probability")
@@ -331,13 +343,17 @@ def run_audit() -> dict[str, Any]:
         sealed = horizon.get("sealedAudit") or {}
         walk = horizon.get("walkForwardAudit") or {}
         cost = sealed.get("costAwareLongAudit") or {}
-        require(horizon.get("priceStatus") == "PASS", f"T+{key} price gate is not PASS")
-        require(float(sealed.get("executableMAESkill") or 0) > 0, f"T+{key} has no executable MAE skill")
+        price_pass = horizon.get("priceStatus") == "PASS"
+        require(price_pass == (int(key) in promoted_horizons), f"T+{key} promotion metadata mismatch")
+        require((not price_pass) == (int(key) in review_horizons), f"T+{key} REVIEW metadata mismatch")
+        if price_pass:
+            require(float(sealed.get("executableMAESkill") or 0) > 0, f"T+{key} has no executable MAE skill")
+            require(int(walk.get("positiveExecutableMAEFolds") or 0) >= 2, f"T+{key} lacks walk-forward price stability")
+            require(int(walk.get("positiveMagnitudeFolds") or 0) >= 2, f"T+{key} lacks walk-forward magnitude stability")
         require(float(sealed.get("magnitudeMAESkill") or 0) > 0, f"T+{key} has no magnitude skill")
-        require(int(walk.get("positiveExecutableMAEFolds") or 0) >= 2, f"T+{key} lacks walk-forward price stability")
-        require(int(walk.get("positiveMagnitudeFolds") or 0) >= 2, f"T+{key} lacks walk-forward magnitude stability")
         require(not cost.get("selectionFitOnHoldout"), f"T+{key} after-cost selection used holdout")
         horizon_metrics[key] = {
+            "priceStatus": horizon.get("priceStatus"),
             "executableMAESkill": sealed.get("executableMAESkill"),
             "magnitudeMAESkill": sealed.get("magnitudeMAESkill"),
             "directionalAccuracy": sealed.get("directionalAccuracy"),

@@ -74,6 +74,38 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertEqual(payload["coverage"]["quoted"], 60)
         self.assertLess(payload["coverage"]["coverageRatio"], 0.70)
 
+    def test_pre_open_accepts_latest_completed_quote_matching_core_date(self):
+        now = datetime(2026, 8, 25, 7, 15, tzinfo=VN_TZ)
+        completed = datetime(2026, 8, 24, 15, 5, tzinfo=VN_TZ)
+        payload = build_payload(self.dashboard(), self.frame(now=completed), now)
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["session"], "PRE_OPEN")
+        self.assertEqual(payload["coverage"]["expectedQuoteDate"], "2026-08-24")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 120)
+        self.assertEqual(payload["coverage"]["cutoffFresh"], 120)
+
+    def test_pre_open_rejects_quote_not_matching_core_date(self):
+        now = datetime(2026, 8, 25, 7, 15, tzinfo=VN_TZ)
+        wrong = datetime(2026, 8, 22, 15, 5, tzinfo=VN_TZ)
+        payload = build_payload(self.dashboard(), self.frame(now=wrong), now)
+        self.assertEqual(payload["status"], "DEGRADED")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 0)
+
+    def test_review_horizon_is_skipped_for_ranking(self):
+        now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
+        dashboard = self.dashboard()
+        dashboard["promotion"] = {
+            "directPriceHorizons": [1, 2, 3, 5],
+            "reviewHorizons": [4],
+            "preferredRankingHorizon": 3,
+        }
+        for snapshot in dashboard["symbols"].values():
+            snapshot["horizons"]["3"] = dict(snapshot["horizons"]["5"])
+        payload = build_payload(dashboard, self.frame(now=now), now)
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["rankingHorizon"], 3)
+        self.assertTrue(all(row["rankingHorizon"] == 3 for row in payload["symbols"]))
+
     def test_rejects_stale_quotes_even_when_symbol_coverage_is_full(self):
         now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
         stale = datetime(2026, 8, 24, 15, 25, tzinfo=VN_TZ)
