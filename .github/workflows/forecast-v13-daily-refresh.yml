@@ -74,7 +74,7 @@ concurrency:
 jobs:
   update-validated-forecast:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -114,7 +114,10 @@ jobs:
           V28_POSTCLOSE_MIN_COVERAGE: "0.90"
           V28_POSTCLOSE_MIN_SECONDARY_COVERAGE: "0.90"
           V28_POSTCLOSE_MAX_LOG_GAP: "0.003"
-        run: python scripts/run_forecast_v28_guarded.py --fast --refresh-symbols ALL --publish
+        run: |
+          EXTRA=""
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then EXTRA="--fast"; fi
+          python scripts/run_forecast_v28_guarded.py $EXTRA --refresh-symbols ALL --publish
       - name: Publish bounded live community overlay against the audited snapshot
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Reject issuer mixups, future leakage, holiday errors and failed backtests
@@ -139,12 +142,12 @@ jobs:
           from pathlib import Path
           sys.path.insert(0,'scripts')
           from vn_exchange_calendar import VN_TZ,latest_completed_session
-          expected=latest_completed_session(datetime.now(VN_TZ)).isoformat()
+          now=datetime.now(VN_TZ); expected=latest_completed_session(now).isoformat()
           d=json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8'))
           if str(d.get('asOf'))!=expected: raise SystemExit(f"STALE FORECAST: dashboard asOf={d.get('asOf')} expected completed session={expected}")
           market=json.loads(Path('data/forecast-market-v13.json').read_text(encoding='utf-8'))
           bridge=(market.get('sources') or {}).get('postCloseBridge') or {}
-          if expected==datetime.now(VN_TZ).date().isoformat() and bridge.get('status')!='PASS': raise SystemExit(f"CURRENT SESSION NOT INDEPENDENTLY VERIFIED: {bridge}")
+          if expected==now.date().isoformat() and bridge.get('status')!='PASS': raise SystemExit(f"CURRENT SESSION NOT INDEPENDENTLY VERIFIED: {bridge}")
           PY
       - name: Persist the validated market snapshot
         if: github.event_name != 'pull_request'
