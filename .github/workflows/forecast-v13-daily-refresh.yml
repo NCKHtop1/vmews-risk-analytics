@@ -58,7 +58,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.workflow || 'main' }}
+  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: false
 
 jobs:
