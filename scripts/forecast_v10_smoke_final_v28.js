@@ -11,4 +11,4 @@ const guarded = "ok(news.version==='VMEWS-NEWS-10.0.0'&&news.universe>=300&&Obje
 if (!source.includes(legacy)) throw new Error('Legacy TC07 contract changed; review wrapper before running');
 source = source.replace(legacy, guarded);
 source = source.replace('news.coverage.FRT,eventStudyEvents', '(news.coverage.FRT||null),eventStudyEvents');
-(0, eval)(source);
+eval(source);
