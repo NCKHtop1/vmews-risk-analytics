@@ -114,6 +114,86 @@ test("session overlay re-filters EOD positives that turn negative at the live cu
   assert.ok(defensive[0].upside < 0);
 });
 
+test("accuracy audit selects the longest eligible recent horizon", async () => {
+  const window = await loadLeaderboard();
+  const recent = (n, maeSkill, directionalAccuracy) => ({ recent120Dates: { n, maeSkill, directionalAccuracy } });
+  const policy = window.__VMEWS_RANKING_POLICY_FROM_REPORT__({ horizons: {
+    "1": recent(1100, -.001, .56),
+    "2": recent(1100, .009, .58),
+    "3": recent(1100, .009, .55),
+    "4": recent(1100, .005, .546),
+    "5": recent(1100, -.016, .494),
+  } });
+  assert.equal(policy.selectedHorizon, 4);
+  assert.equal(policy.degraded, false);
+  assert.equal(policy.coreForecastChanged, false);
+});
+
+test("leaderboard obeys the audited horizon instead of hard-coded T+5", async () => {
+  const window = await loadLeaderboard();
+  const valid = (expectedPrice, alpha) => ({
+    expectedPrice, expectedReturn: expectedPrice / 70_700 - 1, alpha,
+    q20Price: 68_000, q80Price: 74_000, tickSize: 100,
+    priceValidated: true, validationStatus: "PASS", directionValidated: true,
+    pointDirectionValidated: true, magnitudeValidated: true, probUp: .57,
+  });
+  const item = snapshot("FPT", 70_700, 70_800, { horizons: {
+    "4": valid(72_000, .018),
+    "5": valid(70_800, .0014),
+  } });
+  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base([item]), { all: true, horizon: 4 });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].horizon, 4);
+  assert.equal(rows[0].target, 72_000);
+  assert.equal(rows[0].modelReturn, .018);
+});
+
+test("session overlay recomputes selected-horizon rank instead of trusting legacy conviction", async () => {
+  const window = await loadLeaderboard();
+  const item = snapshot("FPT", 72_000, 73_000);
+  const session = { symbols: [{
+    symbol: "FPT", liveClose: 72_500, change: .01, quoteCurrent: true, freshForCutoff: true,
+    quality: 0, conviction: -99,
+  }] };
+  const rows = window.__VMEWS_FINAL_LEADERBOARD__(base([item]), session, { all: true });
+  assert.equal(rows.length, 1);
+  assert.notEqual(rows[0].rankScore, -99);
+  assert.ok(rows[0].rankScore > 0);
+});
+
+test("current market scan is a price-only fallback and cannot partially re-rank HOSE", async () => {
+  const window = await loadLeaderboard();
+  const generatedAt = new Date().toISOString();
+  const reviewDate = generatedAt.slice(0, 10);
+  const items = [snapshot("FPT", 70_700, 73_000), snapshot("MCH", 128_000, 130_000)];
+  const overlay = window.__VMEWS_BUILD_MARKET_SCAN_OVERLAY__(base(items), {
+    generatedAt, reviewDate,
+    ranking: [{ symbol: "FPT", exchange: "HOSE", date: reviewDate, close: 72_600, ret1: .0268, volume: 11_461_932, relativeVolume10d: 1.77, stale: false, updateMode: "delayed_streaming_900" }],
+  });
+  assert.equal(overlay.status, "PASS");
+  assert.equal(overlay.priceOnly, true);
+  assert.equal(overlay.rankingEligible, false);
+  assert.equal(overlay.symbols[0].liveClose, 72_600);
+  const ranked = window.__VMEWS_FINAL_LEADERBOARD__(base(items), overlay, { all: true });
+  assert.equal(ranked.find(row => row.symbol === "FPT").close, 70_700);
+});
+
+test("detail view uses a fresh price overlay without rewriting sealed forecasts", async () => {
+  const { window } = await loadMarketDashboard();
+  const core = snapshot("FPT", 70_700, 73_000);
+  const generatedAt = new Date().toISOString();
+  window.__VMEWS_SESSION__ = {
+    status: "PASS", source: "MARKET_SCAN_EOD_PRICE_OVERLAY", generatedAt, cutoffAt: generatedAt,
+    coreForecastUnchanged: true, priceOnly: true,
+    symbols: [{ symbol: "FPT", liveClose: 72_600, change: .0268, quoteCurrent: true, freshForCutoff: true, observedAt: generatedAt, lastTradeAt: generatedAt.slice(0, 10) }],
+  };
+  const view = window.__VMEWS_WITH_SESSION_PRICE__("FPT", core);
+  assert.equal(view.close, 72_600);
+  assert.equal(view.priceSession.coreClose, 70_700);
+  assert.equal(view.horizons["5"].expectedPrice, 73_000);
+  assert.equal(core.close, 70_700);
+});
+
 test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [

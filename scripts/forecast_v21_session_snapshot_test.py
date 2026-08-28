@@ -27,6 +27,8 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
                         "priceValidated": True,
                         "validationStatus": "PASS",
                         "directionValidated": True,
+                        "pointDirectionValidated": True,
+                        "magnitudeValidated": True,
                         "probUp": 0.52 + (index % 5) / 100,
                     }
                 },
@@ -66,6 +68,8 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         first = payload["symbols"][0]
         self.assertNotEqual(first["liveClose"], first["coreTargetT5"])
         self.assertAlmostEqual(first["coreUpsideT5"], first["coreTargetT5"] / first["coreClose"] - 1.0)
+        self.assertEqual(first["freshnessBasis"], "CURRENT_TRADE_DATE_AND_FRESH_PROVIDER_RESPONSE")
+        self.assertEqual(first["observedAt"], now.isoformat())
 
     def test_rejects_partial_provider_coverage(self):
         now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
@@ -83,14 +87,15 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertEqual(payload["coverage"]["currentQuoteDate"], 0)
 
 
-    def test_rejects_same_day_quotes_that_are_stale_for_the_session_cutoff(self):
+    def test_accepts_same_day_quotes_when_illiquid_names_last_traded_before_cutoff(self):
         now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
-        stale = datetime(2026, 8, 25, 10, 30, tzinfo=VN_TZ)
-        payload = build_payload(self.dashboard(), self.frame(now=stale), now)
-        self.assertEqual(payload["status"], "DEGRADED")
+        last_trade = datetime(2026, 8, 25, 10, 30, tzinfo=VN_TZ)
+        payload = build_payload(self.dashboard(), self.frame(now=last_trade), now)
+        self.assertEqual(payload["status"], "PASS")
         self.assertEqual(payload["coverage"]["currentQuoteDate"], 120)
-        self.assertEqual(payload["coverage"]["cutoffFresh"], 0)
-        self.assertLess(payload["coverage"]["cutoffFreshCoverageRatio"], 0.90)
+        self.assertEqual(payload["coverage"]["cutoffFresh"], 120)
+        self.assertEqual(payload["symbols"][0]["lastTradeAt"], last_trade.isoformat())
+        self.assertEqual(payload["symbols"][0]["updateAt"], now.isoformat())
 
     def test_falls_back_to_defensive_ranking_when_live_price_exceeds_all_targets(self):
         now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)

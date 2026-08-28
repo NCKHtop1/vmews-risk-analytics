@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean, median
 from typing import Any
@@ -129,6 +130,73 @@ def challenger(rows: list[dict[str, Any]], holdout_dates: int = 120, dev_dates: 
     }
 
 
+def ranking_policy(horizons: dict[str, Any]) -> dict[str, Any]:
+    """Select ranking authority without changing any sealed T+1..T+5 forecast.
+
+    The dashboard may still display every horizon.  The leaderboard only uses
+    the longest recent horizon with enough observations, positive MAE skill
+    versus a zero-return baseline and directional accuracy above 52%.
+    """
+    minimum_samples = 300
+    minimum_mae_skill = 0.0
+    minimum_direction = 0.52
+    evaluations: dict[str, Any] = {}
+    selected = None
+
+    for horizon in range(5, 0, -1):
+        recent = (horizons.get(str(horizon)) or {}).get("recent120Dates") or {}
+        n = int(recent.get("n") or 0)
+        skill = finite(recent.get("maeSkill"))
+        direction = finite(recent.get("directionalAccuracy"))
+        reasons = []
+        if n < minimum_samples:
+            reasons.append(f"n<{minimum_samples}")
+        if skill is None or skill <= minimum_mae_skill:
+            reasons.append("maeSkill<=0")
+        if direction is None or direction < minimum_direction:
+            reasons.append(f"direction<{minimum_direction:.2f}")
+        eligible = not reasons
+        evaluations[str(horizon)] = {
+            "n": n,
+            "maeSkill": skill,
+            "directionalAccuracy": direction,
+            "eligible": eligible,
+            "reasons": reasons,
+        }
+        if selected is None and eligible:
+            selected = horizon
+
+    degraded = False
+    if selected is None:
+        degraded = True
+        fallback = []
+        for horizon in range(1, 6):
+            item = evaluations[str(horizon)]
+            if item["n"] >= minimum_samples and item["directionalAccuracy"] is not None and item["directionalAccuracy"] >= 0.50:
+                fallback.append((item["maeSkill"] if item["maeSkill"] is not None else -1e9, item["directionalAccuracy"], horizon))
+        selected = max(fallback)[2] if fallback else 1
+
+    rejected_longer = [f"T+{h}" for h in range(5, selected, -1) if not evaluations[str(h)]["eligible"]]
+    reason = (
+        f"Selected T+{selected} for leaderboard authority from recent out-of-sample evidence."
+        + (f" Longer horizons withheld: {', '.join(rejected_longer)}." if rejected_longer else "")
+        + (" No horizon met the strict gate; fallback policy is active." if degraded else "")
+    )
+    return {
+        "selectedHorizon": selected,
+        "degraded": degraded,
+        "criteria": {
+            "minimumSamples": minimum_samples,
+            "minimumMAESkillExclusive": minimum_mae_skill,
+            "minimumDirectionalAccuracy": minimum_direction,
+            "window": "recent120Dates",
+        },
+        "evaluations": evaluations,
+        "reason": reason,
+        "coreForecastChanged": False,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default=str(DATA / "forecast-backtest-v12.json"))
@@ -136,7 +204,8 @@ def main() -> None:
     args = parser.parse_args()
     backtest = json.loads(Path(args.input).read_text(encoding="utf-8"))
     report: dict[str, Any] = {
-        "version": "VMEWS-FORECAST-ACCURACY-AUDIT-24.0",
+        "version": "VMEWS-FORECAST-ACCURACY-AUDIT-24.1",
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
         "method": "published backtest cases; chronological recent windows; leakage-safe shrinkage challenger",
         "horizons": {},
     }
@@ -151,11 +220,15 @@ def main() -> None:
             "FPTRecent60Dates": metrics(last_dates(symbol_rows, 60)),
             "shrinkageChallenger": challenger(rows),
         }
+    policy = ranking_policy(report["horizons"])
+    report["rankingPolicy"] = policy
     t5 = report["horizons"]["5"]
     report["summary"] = {
         "t5RecentSkill": t5["recent120Dates"].get("maeSkill"),
         "t5RecentDirection": t5["recent120Dates"].get("directionalAccuracy"),
         "t5RecentBias": t5["recent120Dates"].get("signedBias"),
+        "rankingHorizon": policy["selectedHorizon"],
+        "rankingDegraded": policy["degraded"],
         "challengerStatus": t5["shrinkageChallenger"].get("status"),
         "productionChanged": False,
         "note": "This audit does not alter sealed forecast parameters. Promotion requires independent evidence and normal release gates.",
