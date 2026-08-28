@@ -13,7 +13,7 @@ const finite = x => x !== null && x !== undefined && x !== '' && Number.isFinite
 
 // V10 remains a compatibility artifact, not the publication authority. Keep
 // its numerical and UI contracts strict while current full-HOSE news breadth,
-// point-in-time identity and freshness are governed by the V20 release audit.
+// point-in-time issuer taxonomy and freshness are governed by the V20 release audit.
 ok(/^VMEWS-FORECAST-10\./.test(model.version || '') && model.promotion?.status === 'PASS', 'V10 model/promotion');
 ok(model.universe?.symbols >= 250 && model.universe?.rows >= 100000, 'V10 universe');
 
@@ -27,19 +27,19 @@ for (const h of ['3', '5']) {
   ok(z.directionModel?.coef?.length === model.featureNames.length, `V10 direction coef ${h}`);
 }
 
-// Legacy news is checked for structural integrity and issuer-local dedupe only.
-// Do not force an arbitrary ticker/article count after the current pipeline has
-// intentionally removed stale and issuer-mismatched publications.
+// Legacy V10 news is checked only for structural integrity and issuer-local
+// dedupe. Its historical taxonomy predates the current V20 taxonomy and must
+// not masquerade as the current publication gate.
 ok(news && typeof news === 'object' && news.coverage && news.symbols, 'V10 news artifact');
-const sources = new Set(['OFFICIAL', 'MAINSTREAM', 'RUMOR_UNVERIFIED', 'CLARIFICATION']);
-const events = new Set(['REGULATORY', 'EARNINGS', 'OWNERSHIP', 'CORPORATE_ACTION', 'FINANCING', 'OPERATIONS_MA', 'ANALYST', 'GENERAL']);
 let newsItems = 0;
 for (const [sym, items] of Object.entries(news.symbols || {})) {
+  ok(Array.isArray(items), `V10 news rows ${sym}`);
   const titles = items.map(x => String(x.title || '').replace(/\s+/g, ' ').trim().toLowerCase());
   ok(titles.length === new Set(titles).size, `V10 duplicate news ${sym}`);
   for (const x of items) {
     newsItems++;
-    ok(sources.has(x.sourceClass) && events.has(x.event), `V10 news taxonomy ${sym}`);
+    ok(String(x.title || '').trim().length > 0, `V10 news title ${sym}`);
+    ok(String(x.sourceClass || '').trim().length > 0 && String(x.event || '').trim().length > 0, `V10 news classification ${sym}`);
     ok(finite(x.sourceQuality) && +x.sourceQuality >= 0 && +x.sourceQuality <= 1, `V10 news quality ${sym}`);
     ok(finite(x.materiality) && +x.materiality >= 0 && +x.materiality <= 1, `V10 news materiality ${sym}`);
   }
@@ -58,7 +58,7 @@ ok(ui.includes('directionCalibrationBuckets') && ui.includes('alphaCalibrationBu
 
 console.log(JSON.stringify({
   ok: true,
-  compatibility: 'V10 legacy numerical/UI + structural data integrity; V20 owns current publication coverage',
+  compatibility: 'V10 legacy numerical/UI + structural data integrity; V20 owns current publication coverage/taxonomy',
   assertions: passed,
   model: model.version,
   symbols: model.universe.symbols,
