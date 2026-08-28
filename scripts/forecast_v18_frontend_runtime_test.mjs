@@ -114,6 +114,35 @@ test("session overlay re-filters EOD positives that turn negative at the live cu
   assert.ok(defensive[0].upside < 0);
 });
 
+test("detail view uses the validated session close without rewriting the sealed forecast", async () => {
+  const { window } = await loadMarketDashboard();
+  const core = snapshot("FPT", 70_700, 72_100);
+  Object.assign(core.horizons["5"], { q20Price: 69_500, q80Price: 72_100, bearScenarioPrice: 69_000, bullScenarioPrice: 72_100 });
+  const session = {
+    session: "PRE_OPEN", cutoffAt: "2026-08-27T07:54:00+07:00", coreAsOf: "2026-08-26",
+    symbols: [{ symbol: "FPT", liveClose: 72_600, quoteCurrent: true, freshForCutoff: true, updateAt: "2026-08-26T15:05:00+07:00" }],
+  };
+  const view = window.__VMEWS_APPLY_SESSION_VIEW__("FPT", core, session);
+  assert.equal(view.close, 72_600);
+  assert.equal(view.coreClose, 70_700);
+  assert.equal(core.close, 70_700);
+  assert.equal(core.horizons["5"].expectedPrice, 72_100);
+  assert.equal(window.__VMEWS_SESSION_POSITION__(core.horizons["5"], view.close), "ABOVE_BULL");
+});
+
+test("ranking excludes a REVIEW horizon and uses the audited preferred PASS horizon", async () => {
+  const window = await loadLeaderboard();
+  const fpt = snapshot("FPT", 70_700, 72_100);
+  fpt.horizons["3"] = { ...fpt.horizons["5"], expectedPrice: 72_300, q20Price: 70_400, q80Price: 74_200 };
+  fpt.horizons["4"] = { ...fpt.horizons["5"], priceValidated: false, validationStatus: "REVIEW" };
+  const B = base([fpt]);
+  B.model = { promotion: { status: "PASS", directPriceHorizons: [1, 2, 3, 5], reviewHorizons: [4], preferredRankingHorizon: 3 } };
+  const rows = window.__VMEWS_BUILD_LEADERBOARD__(B, { all: true });
+  assert.equal(window.__VMEWS_RANKING_HORIZON__(B), 3);
+  assert.equal(rows[0].horizon, 3);
+  assert.equal(rows[0].target, 72_300);
+});
+
 test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [

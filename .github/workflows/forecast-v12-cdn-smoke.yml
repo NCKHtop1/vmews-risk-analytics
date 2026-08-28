@@ -57,12 +57,18 @@ jobs:
           release=json.load(open('/tmp/release-audit-v20.json'))
           assert g['status']=='PASS',g
           assert g.get('failed')==0,g
-          p=m['promotion']
-          assert p['status']=='PASS',p
-          assert p.get('directPriceHorizons')==[1,2,3,4,5],p
+          assert m['promotion']['status']=='PASS',m['promotion']
           assert len(d.get('symbols',{}))==403,len(d.get('symbols',{}))
           assert market.get('version')=='VMEWS-MARKET-FORECAST-20.1.0',market.get('version')
           assert d.get('modelVersion')==market.get('version'),d.get('modelVersion')
+          p=market['model']['promotion']
+          promoted={int(value) for value in p.get('directPriceHorizons') or []}
+          review={int(value) for value in p.get('reviewHorizons') or []}
+          assert p.get('status')=='PASS',p
+          assert len(promoted)>=3,p
+          assert promoted | review == set(range(1,6)),p
+          assert promoted.isdisjoint(review),p
+          assert int(p.get('preferredRankingHorizon') or 0) in promoted,p
           assert release.get('status')=='PASS',release
           assert release.get('version') in {'VMEWS-RELEASE-AUDIT-20.1.0','VMEWS-RELEASE-AUDIT-20.2.0'},release.get('version')
           assert not release.get('blockers'),release.get('blockers')
@@ -70,8 +76,11 @@ jobs:
           assert release.get('price',{}).get('crossSource',{}).get('status')=='PASS',release.get('price')
           for h in map(str,range(1,6)):
               z=market['model']['horizons'][h]
-              assert z['priceStatus']=='PASS',(h,z.get('priceGates'))
-              assert z.get('walkForwardAudit',{}).get('status')=='PASS',h
+              price_pass=z.get('priceStatus')=='PASS'
+              assert price_pass == (int(h) in promoted),(h,z.get('priceStatus'),promoted)
+              assert (not price_pass) == (int(h) in review),(h,z.get('priceStatus'),review)
+              if price_pass:
+                  assert z.get('walkForwardAudit',{}).get('status')=='PASS',h
               assert z.get('magnitudeGate',{}).get('status')=='PASS',h
               assert z.get('magnitudeGate',{}).get('invalidExecutableQuotes')==0,h
           print('V20.2 IMMUTABLE CDN CONTRACT PASS',market['version'],'symbols',len(d['symbols']))

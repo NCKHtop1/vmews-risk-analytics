@@ -10,7 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 DASHBOARD = ROOT / "data" / "forecast-dashboard-v12.json"
 OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-FORECAST-SESSION-21.0"
+VERSION = "VMEWS-FORECAST-SESSION-21.1"
 MIN_COVERAGE = 0.90
 MIN_CURRENT_COVERAGE = 0.90
 MIN_CUTOFF_FRESH_COVERAGE = 0.90
@@ -48,6 +48,8 @@ def quote_time(value):
 
 def session_name(now):
     minutes = now.hour * 60 + now.minute
+    if minutes < 9 * 60:
+        return "PRE_OPEN"
     if minutes < 12 * 60 + 45:
         return "AM"
     if minutes < 17 * 60 + 30:
@@ -57,6 +59,8 @@ def session_name(now):
 
 def cutoff_floor(now):
     session = session_name(now)
+    if session == "PRE_OPEN":
+        return now
     hour, minute = (11, 15) if session == "AM" else (14, 30)
     floor = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
     if floor > now:
@@ -77,17 +81,30 @@ def fetch_quotes():
     return frame
 
 
-def eligible_core_symbols(dashboard):
+def preferred_core_horizon(dashboard):
+    promotion = dashboard.get("promotion") or {}
+    promoted = {int(value) for value in promotion.get("directPriceHorizons") or []}
+    preferred = int(promotion.get("preferredRankingHorizon") or 5)
+    if preferred in promoted or not promoted:
+        return preferred
+    for horizon in (3, 4, 5, 2, 1):
+        if horizon in promoted:
+            return horizon
+    raise RuntimeError("No validated ranking horizon is available")
+
+
+def eligible_core_symbols(dashboard, horizon=None):
+    horizon = int(horizon or preferred_core_horizon(dashboard))
     eligible = {}
     for symbol, snapshot in (dashboard.get("symbols") or {}).items():
-        horizon = (snapshot.get("horizons") or {}).get("5") or {}
+        forecast = (snapshot.get("horizons") or {}).get(str(horizon)) or {}
         close = num(snapshot.get("close"))
-        target = num(horizon.get("expectedPrice"))
+        target = num(forecast.get("expectedPrice"))
         if (
             snapshot.get("exchange") == "HOSE"
             and snapshot.get("dataFreshness") == "CURRENT"
-            and horizon.get("priceValidated") is True
-            and horizon.get("validationStatus") == "PASS"
+            and forecast.get("priceValidated") is True
+            and forecast.get("validationStatus") == "PASS"
             and close and target
         ):
             eligible[symbol] = snapshot
@@ -110,8 +127,11 @@ def quality_score(snapshot, horizon, remaining_upside, interval_width):
 
 def build_payload(dashboard, frame, now=None):
     now = now or datetime.now(VN_TZ)
+    session = session_name(now)
     fresh_floor = cutoff_floor(now)
-    core = eligible_core_symbols(dashboard)
+    ranking_horizon = preferred_core_horizon(dashboard)
+    core = eligible_core_symbols(dashboard, ranking_horizon)
+    expected_quote_date = str(dashboard.get("asOf") or "")[:10] if session == "PRE_OPEN" else now.date().isoformat()
     matched = {}
     duplicates = 0
     for _, row in frame.iterrows():
@@ -142,8 +162,8 @@ def build_payload(dashboard, frame, now=None):
         quote_date = updated_at.date().isoformat() if updated_at else None
         if quote_date:
             dated.append(quote_date)
-        is_current = quote_date == now.date().isoformat()
-        fresh_for_cutoff = bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
+        is_current = quote_date == expected_quote_date
+        fresh_for_cutoff = is_current if session == "PRE_OPEN" else bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
         current_quotes += int(is_current)
         cutoff_fresh_quotes += int(fresh_for_cutoff)
         update_mode = str(row.get("update_mode") or "UNKNOWN")
@@ -160,7 +180,7 @@ def build_payload(dashboard, frame, now=None):
             flat += 1
         changes.append(change_pct)
 
-        horizon = (snapshot.get("horizons") or {}).get("5") or {}
+        horizon = (snapshot.get("horizons") or {}).get(str(ranking_horizon)) or {}
         core_close = num(snapshot.get("close"))
         target = num(horizon.get("expectedPrice"))
         q20 = num(horizon.get("q20Price"))
@@ -183,6 +203,10 @@ def build_payload(dashboard, frame, now=None):
             "updateMode": update_mode,
             "quoteAgeMinutes": round(quote_age, 2) if quote_age is not None else None,
             "coreClose": core_close,
+            "rankingHorizon": ranking_horizon,
+            "coreTarget": target,
+            "coreUpside": core_upside,
+            "remainingUpside": remaining_upside,
             "coreTargetT5": target,
             "coreUpsideT5": core_upside,
             "remainingUpsideT5": remaining_upside,
@@ -222,11 +246,12 @@ def build_payload(dashboard, frame, now=None):
         "version": VERSION,
         "status": status,
         "generatedAt": now.isoformat(),
-        "session": session_name(now),
+        "session": session,
         "cutoffAt": now.isoformat(),
         "coreAsOf": dashboard.get("asOf"),
         "coreForecastUnchanged": True,
-        "scope": "Validated HOSE core universe with current TradingView session quotes; session quotes re-rank remaining distance to the sealed T+5 target but never rewrite the core forecast.",
+        "rankingHorizon": ranking_horizon,
+        "scope": f"Validated HOSE core universe with TradingView quotes for the expected session; quotes re-rank remaining distance to the sealed T+{ranking_horizon} target but never rewrite the core forecast.",
         "coverage": {
             "coreEligible": eligible_count,
             "quoted": quoted_count,
@@ -236,6 +261,7 @@ def build_payload(dashboard, frame, now=None):
             "cutoffFresh": cutoff_fresh_quotes,
             "cutoffFreshCoverageRatio": round(cutoff_fresh_coverage, 6),
             "freshnessFloor": fresh_floor.isoformat(),
+            "expectedQuoteDate": expected_quote_date,
             "dominantQuoteDate": dominant_quote_date,
             "dominantUpdateMode": dominant_mode,
             "updateModeCounts": mode_counts,
@@ -256,6 +282,7 @@ def build_payload(dashboard, frame, now=None):
         "governance": [
             "The session layer never treats an incomplete session as a completed EOD model row.",
             "Core T+1 to T+5 targets remain the independently validated sealed forecast until the completed-EOD pipeline publishes a new snapshot.",
+            "Before the opening auction, the latest completed-session quote is current only when its date exactly matches the sealed core forecast date.",
             "A session snapshot is publishable only when universe coverage, same-day coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
         ],
     }

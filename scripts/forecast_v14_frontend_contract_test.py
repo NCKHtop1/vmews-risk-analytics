@@ -77,7 +77,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=20.4", self.html)
+        self.assertIn("release=20.5", self.html)
+        self.assertIn("forecast-live-leaders-v14.js?release=21.1", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:

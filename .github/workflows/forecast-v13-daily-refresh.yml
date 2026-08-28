@@ -46,6 +46,7 @@ on:
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
   schedule:
+    - cron: "0 0 * * 1-5"
     - cron: "15 9 * * 1-5"
     - cron: "30 10 * * 1-5"
 
@@ -111,7 +112,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
+          git add data/v16-eod-refresh-cache.json.gz data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then
             echo "No market-session change detected."
             exit 0
