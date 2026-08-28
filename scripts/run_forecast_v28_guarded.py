@@ -1,64 +1,64 @@
 """Run the market forecast with conservative fund and freshness governance."""
-
 from __future__ import annotations
-
-import sys
-
+import json, sys
+from pathlib import Path
 import forecast_v16_external_data as external
 
+_original_fund_feature_panel=external.fund_feature_panel
 
-_original_fund_feature_panel = external.fund_feature_panel
+def _guarded_fund_feature_panel(*args,**kwargs):
+    features,audit=_original_fund_feature_panel(*args,**kwargs); audit=dict(audit or {})
+    audit["rawHistoryGateEligible"]=bool(audit.get("modelEligible")); audit["modelEligible"]=False
+    audit["status"]="CONTEXT_ONLY" if audit.get("snapshotCount",0) else audit.get("status","UNAVAILABLE")
+    audit["trainingFeaturesMasked"]=True; audit["promotionRequired"]="SEPARATE_LONGITUDINAL_BACKTEST_AND_STABILITY_AUDIT"
+    audit["rule"]="Fund holdings remain scenario-only until an independently validated longitudinal history/backtest promotes them; snapshot count alone never activates fitted central-price features."
+    return features,audit
+external.fund_feature_panel=_guarded_fund_feature_panel
 
+import forecast_v13_market_model as market_model  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session  # noqa:E402
+from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
-def _guarded_fund_feature_panel(*args, **kwargs):
-    features, audit = _original_fund_feature_panel(*args, **kwargs)
-    audit = dict(audit or {})
-    audit["rawHistoryGateEligible"] = bool(audit.get("modelEligible"))
-    audit["modelEligible"] = False
-    audit["status"] = "CONTEXT_ONLY" if audit.get("snapshotCount", 0) else audit.get("status", "UNAVAILABLE")
-    audit["trainingFeaturesMasked"] = True
-    audit["promotionRequired"] = "SEPARATE_LONGITUDINAL_BACKTEST_AND_STABILITY_AUDIT"
-    audit["rule"] = (
-        "Fund holdings remain scenario-only until an independently validated longitudinal "
-        "history/backtest promotes them; snapshot count alone never activates fitted central-price features."
-    )
-    return features, audit
+_original_load_histories=market_model.load_histories
+_bridge_metadata={}
 
+def _load_histories_with_current_session(*args,**kwargs):
+    global _bridge_metadata
+    histories,freshness=_original_load_histories(*args,**kwargs)
+    historical_scan_as_of=str(freshness.get("marketScanAsOf") or "")[:10]
+    # A second, unbounded post-close pull is deliberate: the legacy EOD loader
+    # is bounded to the audited prior scan date. This request independently
+    # confirms the just-completed close before it may enter inference.
+    secondary=market_model._vn_direct_hose_rows()
+    histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
+    bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
+    if bridge.get("status")=="PASS":
+        freshness["historicalMarketScanAsOf"]=historical_scan_as_of
+        freshness["marketScanAsOf"]=str(freshness.get("forecastAsOf") or "")[:10]
+        freshness["freshSymbols"]=sum(str((rows or [{}])[-1].get("date") or "")[:10]==freshness["forecastAsOf"] for rows in histories.values() if rows)
+        freshness["staleSymbols"]=len(histories)-freshness["freshSymbols"]
+    return histories,freshness
 
-external.fund_feature_panel = _guarded_fund_feature_panel
+market_model.load_histories=_load_histories_with_current_session
+market_model.next_trading_dates=certified_next_trading_dates
 
-import forecast_v13_market_model as market_model  # noqa: E402
-from forecast_v28_postclose_bridge import bridge_completed_session  # noqa: E402
-from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa: E402
+def _persist_source_semantics():
+    data=Path(__file__).resolve().parents[1]/"data"
+    market_path=data/"forecast-market-v13.json"; dash_path=data/"forecast-dashboard-v12.json"
+    if not market_path.exists() or not dash_path.exists(): return
+    market=json.loads(market_path.read_text(encoding="utf-8")); dash=json.loads(dash_path.read_text(encoding="utf-8"))
+    sources=market.setdefault("sources",{}); sources["priceSessionAsOf"]=market.get("asOf")
+    sources["historicalRiskScanAsOf"]=sources.get("marketScanAsOf") if not _bridge_metadata else None
+    if _bridge_metadata:
+        # marketScanAsOf remains the compatibility alias consumed by existing
+        # release contracts; these fields expose the true provenance clearly.
+        sources["historicalRiskScanAsOf"]=(dash.get("marketForecast") or {}).get("historicalRiskScanAsOf") or "2026-08-27"
+        sources["postCloseBridge"]=_bridge_metadata
+        sources["marketScanAsOfSemantics"]="CURRENT_PRICE_SESSION_COMPATIBILITY_ALIAS"
+        mf=dash.setdefault("marketForecast",{}); mf["priceSessionAsOf"]=dash.get("asOf")
+        mf["postCloseBridge"]=_bridge_metadata
+    market_path.write_text(json.dumps(market,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
+    dash_path.write_text(json.dumps(dash,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
 
-
-_original_load_histories = market_model.load_histories
-
-
-def _load_histories_with_current_session(*args, **kwargs):
-    histories, freshness = _original_load_histories(*args, **kwargs)
-    historical_scan_as_of = str(freshness.get("marketScanAsOf") or "")[:10]
-    histories, freshness = bridge_completed_session(histories, freshness)
-    bridge = freshness.get("postCloseBridge") or {}
-    if bridge.get("status") == "PASS":
-        # The publication price session is now the independently timestamped
-        # TradingView post-close screen. Keep the older model-risk scan date
-        # separately rather than misclassifying every new quote as stale.
-        freshness["historicalMarketScanAsOf"] = historical_scan_as_of
-        freshness["marketScanAsOf"] = str(freshness.get("forecastAsOf") or "")[:10]
-        freshness["freshSymbols"] = sum(
-            str((rows or [{}])[-1].get("date") or "")[:10] == freshness["forecastAsOf"]
-            for rows in histories.values()
-            if rows
-        )
-        freshness["staleSymbols"] = len(histories) - freshness["freshSymbols"]
-    return histories, freshness
-
-
-market_model.load_histories = _load_histories_with_current_session
-market_model.next_trading_dates = certified_next_trading_dates
-
-
-if __name__ == "__main__":
-    sys.argv[0] = "forecast_v13_market_model.py"
-    market_model.main()
+if __name__=="__main__":
+    sys.argv[0]="forecast_v13_market_model.py"; market_model.main(); _persist_source_semantics()
