@@ -12,6 +12,8 @@ on:
       - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v28_postclose_bridge.py"
       - "scripts/forecast_v28_postclose_bridge_test.py"
+      - "scripts/vn_exchange_calendar.py"
+      - "scripts/vn_exchange_calendar_test.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
@@ -35,6 +37,8 @@ on:
       - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v28_postclose_bridge.py"
       - "scripts/forecast_v28_postclose_bridge_test.py"
+      - "scripts/vn_exchange_calendar.py"
+      - "scripts/vn_exchange_calendar_test.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
@@ -80,8 +84,10 @@ jobs:
           cache-dependency-path: requirements-v12.txt
       - name: Install direct-forecast dependencies
         run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener
-      - name: Verify strict current-session freshness bridge
-        run: python scripts/forecast_v28_postclose_bridge_test.py
+      - name: Verify strict current-session freshness and exchange calendar
+        run: |
+          python scripts/forecast_v28_postclose_bridge_test.py
+          python scripts/vn_exchange_calendar_test.py
       - name: Refresh genuine completed-session foreign and proprietary transactions
         env:
           V20_FLOW_WORKERS: "12"
@@ -114,6 +120,7 @@ jobs:
       - name: Reject issuer mixups, future news, invalid HOSE ticks and failed backtests
         run: |
           python scripts/forecast_v28_postclose_bridge_test.py
+          python scripts/vn_exchange_calendar_test.py
           python scripts/forecast_v13_market_model_test_v28.py
           python scripts/forecast_v14_frontend_contract_test.py
           python scripts/forecast_v16_external_data_test.py
@@ -123,19 +130,20 @@ jobs:
           python scripts/sanitize_intelligence_v20_test.py
           node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/forecast_v20_release_audit.py
-      - name: Reject stale post-close publication
+      - name: Reject stale completed-session publication
         if: github.event_name != 'pull_request'
         run: |
           python - <<'PY'
-          import json
-          from datetime import datetime, timedelta, timezone
+          import json, sys
+          from datetime import datetime
           from pathlib import Path
-          vn=timezone(timedelta(hours=7))
-          now=datetime.now(vn)
-          if now.weekday() < 5 and (now.hour, now.minute) >= (15, 5):
-              d=json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8'))
-              if str(d.get('asOf')) != now.date().isoformat():
-                  raise SystemExit(f"STALE FORECAST: dashboard asOf={d.get('asOf')} expected={now.date().isoformat()}")
+          sys.path.insert(0, 'scripts')
+          from vn_exchange_calendar import VN_TZ, latest_completed_session
+          now=datetime.now(VN_TZ)
+          expected=latest_completed_session(now).isoformat()
+          d=json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8'))
+          if str(d.get('asOf')) != expected:
+              raise SystemExit(f"STALE FORECAST: dashboard asOf={d.get('asOf')} expected completed session={expected}")
           PY
       - name: Persist the validated market snapshot
         if: github.event_name != 'pull_request'
