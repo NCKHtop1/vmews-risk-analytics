@@ -29,6 +29,7 @@ external.fund_feature_panel = _guarded_fund_feature_panel
 
 import forecast_v13_market_model as market_model  # noqa: E402
 from forecast_v28_postclose_bridge import bridge_completed_session  # noqa: E402
+from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa: E402
 
 
 _original_load_histories = market_model.load_histories
@@ -36,10 +37,26 @@ _original_load_histories = market_model.load_histories
 
 def _load_histories_with_current_session(*args, **kwargs):
     histories, freshness = _original_load_histories(*args, **kwargs)
-    return bridge_completed_session(histories, freshness)
+    historical_scan_as_of = str(freshness.get("marketScanAsOf") or "")[:10]
+    histories, freshness = bridge_completed_session(histories, freshness)
+    bridge = freshness.get("postCloseBridge") or {}
+    if bridge.get("status") == "PASS":
+        # The publication price session is now the independently timestamped
+        # TradingView post-close screen. Keep the older model-risk scan date
+        # separately rather than misclassifying every new quote as stale.
+        freshness["historicalMarketScanAsOf"] = historical_scan_as_of
+        freshness["marketScanAsOf"] = str(freshness.get("forecastAsOf") or "")[:10]
+        freshness["freshSymbols"] = sum(
+            str((rows or [{}])[-1].get("date") or "")[:10] == freshness["forecastAsOf"]
+            for rows in histories.values()
+            if rows
+        )
+        freshness["staleSymbols"] = len(histories) - freshness["freshSymbols"]
+    return histories, freshness
 
 
 market_model.load_histories = _load_histories_with_current_session
+market_model.next_trading_dates = certified_next_trading_dates
 
 
 if __name__ == "__main__":
