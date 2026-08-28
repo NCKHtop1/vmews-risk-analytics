@@ -8,6 +8,7 @@ on:
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
+      - "scripts/prepare_forecast_scan_v28.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v17_live_intelligence.py"
@@ -26,6 +27,7 @@ on:
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
+      - "scripts/prepare_forecast_scan_v28.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v14_signal_audit.py"
@@ -90,6 +92,8 @@ jobs:
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
         run: python scripts/forecast_v16_external_data.py --collect-funds
+      - name: Bind forecast cross-source audit to latest completed session
+        run: python scripts/prepare_forecast_scan_v28.py
       - name: Refresh every HOSE EOD and publish only independently validated forecasts
         env:
           V14_EOD_WORKERS: "8"
