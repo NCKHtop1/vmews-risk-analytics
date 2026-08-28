@@ -11,6 +11,7 @@ on:
       - "scripts/prepare_forecast_scan_v28.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v13_market_model_test_v28.py"
       - "scripts/forecast_v17_live_intelligence.py"
       - "scripts/forecast_v17_live_intelligence_test.py"
       - "scripts/forecast_v18_market_intelligence.py"
@@ -30,6 +31,7 @@ on:
       - "scripts/prepare_forecast_scan_v28.py"
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
+      - "scripts/forecast_v13_market_model_test_v28.py"
       - "scripts/forecast_v14_signal_audit.py"
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
@@ -102,7 +104,7 @@ jobs:
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Reject issuer mixups, future news, invalid HOSE ticks and failed backtests
         run: |
-          python scripts/forecast_v13_market_model_test.py
+          python scripts/forecast_v13_market_model_test_v28.py
           python scripts/forecast_v14_frontend_contract_test.py
           python scripts/forecast_v16_external_data_test.py
           python scripts/forecast_v17_live_intelligence_test.py
