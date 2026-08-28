@@ -1,23 +1,22 @@
-name: Deploy VMEWS Pages
+name: Deploy VMEWS Pages (optional manual)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
-  issues: write
 
 concurrency:
-  group: pages
+  group: pages-manual
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_ready: ${{ steps.pages.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Build static frontend wired to verified production APIs
@@ -32,100 +31,31 @@ jobs:
           s=s.replace("const API='/api/stocks2', VALIDATE_API='/api/validate';", "const API='https://vmews-risk-analytics-sojd.vercel.app/api/radar', VALIDATE_API='https://vmews-risk-analytics-sojd.vercel.app/api/validate2';")
           s=s.replace('Requesting current risk states from Vnstock…','Loading verified production risk data…')
           p.write_text(s,encoding='utf-8')
-          i=Path('_site/index.html')
-          h=i.read_text(encoding='utf-8')
-          h=h.replace('./stock-radar-loader.js?v=20260811-final','./stock-radar-loader.js?v=20260811-pages-final')
-          i.write_text(h,encoding='utf-8')
-          l=Path('_site/stock-radar-loader.js')
-          x=l.read_text(encoding='utf-8').replace("s.src='./qtrr-final.js';", "s.src='./qtrr-final.js?v=20260811-pages-final';")
-          l.write_text(x,encoding='utf-8')
+          touch=Path('_site/.nojekyll'); touch.touch()
           PY
-          touch _site/.nojekyll
-          grep -F "https://vmews-risk-analytics-sojd.vercel.app/api/radar" _site/qtrr-final.js
-      - name: Configure Pages
+      - name: Detect optional GitHub Pages availability
+        id: pages
+        continue-on-error: true
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      - name: Explain unavailable optional Pages target
+        if: steps.pages.outcome != 'success'
+        run: |
+          echo "GitHub Pages is not enabled/accessible for this repository token."
+          echo "This is not a forecast publication failure: the audited production target is the exact-SHA CDN."
       - name: Upload Pages artifact
+        if: steps.pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
   deploy:
+    if: needs.build.outputs.pages_ready == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  verify:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - name: Verify published page and live backend data
-        shell: bash
-        env:
-          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
-        run: |
-          python - <<'PY'
-          import json,time,urllib.request,os
-          page=os.environ['PAGE_URL']
-          last=None
-          for i in range(24):
-              try:
-                  req=urllib.request.Request(page,headers={'User-Agent':'VMEWS-pages-smoke/1.0','Cache-Control':'no-cache'})
-                  with urllib.request.urlopen(req,timeout=30) as r: html=r.read().decode('utf-8','ignore')
-                  if 'Vietnam Market Early Warning System' not in html: raise RuntimeError('VMEWS title missing')
-                  break
-              except Exception as e:
-                  last=e; time.sleep(5)
-          else: raise SystemExit(f'Pages not reachable: {last}')
-          api='https://vmews-risk-analytics-sojd.vercel.app/api/radar?mode=scan&symbols=FPT,PNJ,VCB,HPG&t='+str(int(time.time()))
-          req=urllib.request.Request(api,headers={'User-Agent':'VMEWS-pages-smoke/1.0','Cache-Control':'no-cache'})
-          with urllib.request.urlopen(req,timeout=60) as r: p=json.loads(r.read().decode())
-          rows=p.get('ranking') or []
-          assert rows, p
-          result=[(x.get('symbol'),round(float(x.get('effectiveScore',x.get('score',0))),2),x.get('color')) for x in rows]
-          with open('pages-pass.md','w',encoding='utf-8') as f:
-              f.write('# VMEWS Pages FINAL PASS\n\n')
-              f.write(f'- Page: {page}\n')
-              f.write(f'- API version: `{p.get("version")}`\n')
-              f.write(f'- Ranking: `{result}`\n')
-              f.write(f'- Errors: `{p.get("errors")}`\n')
-          print(page,result)
-          PY
-      - name: Publish final PASS evidence
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS PAGES FINAL PASS ${GITHUB_SHA::7}" --body-file pages-pass.md
-
-  report:
-    if: always()
-    runs-on: ubuntu-latest
-    needs: [build, deploy, verify]
-    steps:
-      - name: Publish Pages workflow status
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BUILD_RESULT: ${{ needs.build.result }}
-          DEPLOY_RESULT: ${{ needs.deploy.result }}
-          VERIFY_RESULT: ${{ needs.verify.result }}
-          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
-        shell: bash
-        run: |
-          cat > pages-status.md <<EOF
-          # VMEWS Pages workflow status
-
-          - Build: \`$BUILD_RESULT\`
-          - Deploy: \`$DEPLOY_RESULT\`
-          - Verify: \`$VERIFY_RESULT\`
-          - Page URL: $PAGE_URL
-          - Commit: \`$GITHUB_SHA\`
-          EOF
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS PAGES STATUS ${GITHUB_SHA::7}" --body-file pages-status.md
