@@ -1,11 +1,4 @@
-"""Run the market forecast with conservative fund-feature governance.
-
-Fund holdings remain available as decision-time scenario context, but they are
-not allowed into fitted central-price features until a separate longitudinal
-validation explicitly promotes them.  This prevents a handful of recently
-collected snapshots from becoming a training feature merely because a small
-snapshot-count threshold was crossed.
-"""
+"""Run the market forecast with conservative fund and freshness governance."""
 
 from __future__ import annotations
 
@@ -35,6 +28,18 @@ def _guarded_fund_feature_panel(*args, **kwargs):
 external.fund_feature_panel = _guarded_fund_feature_panel
 
 import forecast_v13_market_model as market_model  # noqa: E402
+from forecast_v28_postclose_bridge import bridge_completed_session  # noqa: E402
+
+
+_original_load_histories = market_model.load_histories
+
+
+def _load_histories_with_current_session(*args, **kwargs):
+    histories, freshness = _original_load_histories(*args, **kwargs)
+    return bridge_completed_session(histories, freshness)
+
+
+market_model.load_histories = _load_histories_with_current_session
 
 
 if __name__ == "__main__":
