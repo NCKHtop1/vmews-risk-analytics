@@ -157,5 +157,5 @@ jobs:
           git add data/v16-eod-refresh-cache.json.gz data/flow-v12.json data/flow-audit-v12.json data/release-audit-v20.json data/intelligence-sanitization-v20.json data/research-news.json data/research-news-v10.json data/fireant-intelligence-v18.json data/community-intelligence-live-v19.json data/fund-holdings-history-v16.json data/forecast-dashboard-v12.json data/forecast-current-v12.json data/forecast-market-v13.json
           if git diff --cached --quiet; then echo "No market-session change detected."; exit 0; fi
           git commit -m "Refresh validated HOSE forecast, dated VN30 leaders and verified market intelligence [data-only]"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push origin HEAD:main
