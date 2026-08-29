@@ -177,6 +177,9 @@
       if (String(payload.coreAsOf || "") !== String(base?.dash?.asOf || "")) return null;
       if (!Array.isArray(payload.symbols) || !payload.symbols.length) return null;
       if (number(payload.rankingHorizon) !== rankingHorizon(base)) return null;
+      const alignment = payload.forecastAlignment || {};
+      if (!["PASS", "STALE_CORE"].includes(alignment.status)) return null;
+      if (alignment.rankingEligible !== (alignment.status === "PASS")) return null;
       const coverage = payload.coverage || {};
       if (number(coverage.coverageRatio) < .90 || number(coverage.currentCoverageRatio) < .90 || number(coverage.cutoffFreshCoverageRatio) < .90) return null;
       if (!sessionUsableNow(payload)) return null;
@@ -188,6 +191,7 @@
 
   function applySessionOverlay(rows, session = state.session) {
     if (!session?.symbols?.length) return rows.slice();
+    if (session?.forecastAlignment?.rankingEligible === false) return rows.slice();
     const live = new Map(session.symbols.filter(item => item.quoteCurrent && item.freshForCutoff !== false).map(item => [item.symbol, item]));
     return rows.map(row => {
       const quote = live.get(row.symbol);
@@ -219,7 +223,8 @@
     const date = new Date(state.session.cutoffAt);
     if (Number.isNaN(+date)) return "";
     const time = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Ho_Chi_Minh" }).format(date);
-    return ` · ${state.session.session} ${time}`;
+    const priceOnly = state.session?.forecastAlignment?.rankingEligible === false ? " · GIÁ MỚI, FORECAST CHỜ CẬP NHẬT" : "";
+    return ` · ${state.session.session} ${time}${priceOnly}`;
   }
 
   function refreshMode() {
@@ -230,7 +235,9 @@
     const primaryFilter = $('[data-filter="all"]');
     const deck = $("#signalDeck");
     if (command) command.textContent = defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : `HOSE · T+${horizon}`;
-    if (summary) summary.textContent = defensive
+    if (summary) summary.textContent = state.session?.forecastAlignment?.rankingEligible === false
+      ? "Giá thị trường mới đã được xác thực; bảng xếp hạng giữ nguyên forecast EOD và chờ lõi mô hình cập nhật."
+      : defensive
       ? `Chưa có mã HOSE đủ điều kiện có mục tiêu T+${horizon} cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro.`
       : `Top 10 toàn HOSE theo forecast T+${horizon} đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.`;
     if (primaryFilter) primaryFilter.textContent = defensive ? "HOSE phòng thủ" : "HOSE forecast tăng";

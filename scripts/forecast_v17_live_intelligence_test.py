@@ -97,6 +97,20 @@ class FlowAndFinancialContextTest(unittest.TestCase):
         self.assertEqual(flow["ageSessions"], 6)
         self.assertTrue(flow["stale"])
 
+    def test_flow_age_uses_certified_exchange_holidays(self) -> None:
+        rows = [
+            {
+                "date": "2026-04-24",
+                "foreignBuyValue": 120,
+                "foreignSellValue": 20,
+                "foreignNetValue": 100,
+            }
+        ]
+        flow = typed_flow_summary(rows, "foreign", "2026-04-28")
+        self.assertEqual(flow["latestDate"], "2026-04-24")
+        self.assertEqual(flow["ageSessions"], 1)
+        self.assertFalse(flow["stale"])
+
     def test_missing_flow_is_not_replaced_with_a_zero_observation(self) -> None:
         flow = typed_flow_summary([], "foreign", "2026-08-21")
         self.assertFalse(flow["available"])

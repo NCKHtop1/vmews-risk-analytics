@@ -43,7 +43,9 @@ jobs:
       - name: Archive aligned PIT snapshot and mature 20-session outcomes
         run: python scripts/update_live_model_monitor.py
       - name: Archive immutable V9 T+3/T+5 forecast state
-        run: python scripts/run_forecast_v9_deployable.py --live
+        run: |
+          python scripts/run_forecast_v9_deployable_test.py
+          python scripts/run_forecast_v9_deployable.py --live
       - name: Archive immutable V10.1 T+3/T+5 forecast state
         run: python scripts/run_forecast_v10_live.py
       - name: Validate live-monitor governance
@@ -53,6 +55,7 @@ jobs:
           t=json.load(open('data/live-track/track-record.json',encoding='utf-8'))
           q=json.load(open('data/live-track/integrity.json',encoding='utf-8'))
           f=json.load(open('data/forecast-live/integrity.json',encoding='utf-8'))
+          fa=json.load(open('data/forecast-live/last-attempt.json',encoding='utf-8'))
           e=json.load(open('data/forecast-live/evaluation.json',encoding='utf-8'))
           m=json.load(open('data/forecast-live/manifest.json',encoding='utf-8'))
           v10=json.load(open('data/forecast-live-v10/integrity.json',encoding='utf-8'))
@@ -65,6 +68,9 @@ jobs:
           if q['status']=='PASS':
               assert q['sameCompletedEod'] is True and q['policyAligned'] is True and q['pointInTimeReady'] is True
           assert f['version']=='VMEWS-FORECAST-LIVE-1.0.0' and f['status']=='PASS' and f['timeBasis']=='COMPLETED_EOD_ONLY'
+          assert fa['version']=='VMEWS-FORECAST-LIVE-1.0.0' and fa['status'] in {'PASS','WAITING_OR_REVIEW'}
+          if fa['status']=='WAITING_OR_REVIEW':
+              assert fa['preservesLastValidatedSnapshot'] is True and 'coverage' in fa['reason'].lower(),fa
           assert m['count']>=1 and set(e['summary'])=={'3','5'}
           assert v10['version']=='VMEWS-FORECAST-LIVE-10.0.0' and v10['status']=='PASS'
           assert v10['modelVersion']=='VMEWS-FORECAST-10.1.0' and v10['timeBasis']=='COMPLETED_EOD_ONLY'

@@ -7,7 +7,7 @@ from forecast_v21_session_snapshot import build_payload, VN_TZ
 
 
 class ForecastV21SessionSnapshotTest(unittest.TestCase):
-    def dashboard(self, count=120):
+    def dashboard(self, count=120, as_of="2026-08-24"):
         symbols = {}
         for index in range(count):
             symbol = f"T{index:03d}"
@@ -31,7 +31,7 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
                     }
                 },
             }
-        return {"asOf": "2026-08-24", "symbols": symbols}
+        return {"asOf": as_of, "symbols": symbols}
 
     def frame(self, count=120, now=None, price_multiplier=1.0):
         now = now or datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
@@ -83,13 +83,37 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertEqual(payload["coverage"]["expectedQuoteDate"], "2026-08-24")
         self.assertEqual(payload["coverage"]["currentQuoteDate"], 120)
         self.assertEqual(payload["coverage"]["cutoffFresh"], 120)
+        self.assertEqual(payload["forecastAlignment"]["status"], "PASS")
+        self.assertTrue(payload["forecastAlignment"]["rankingEligible"])
 
-    def test_pre_open_rejects_quote_not_matching_core_date(self):
+    def test_pre_open_rejects_quote_not_matching_latest_completed_session(self):
         now = datetime(2026, 8, 25, 7, 15, tzinfo=VN_TZ)
         wrong = datetime(2026, 8, 22, 15, 5, tzinfo=VN_TZ)
         payload = build_payload(self.dashboard(), self.frame(now=wrong), now)
         self.assertEqual(payload["status"], "DEGRADED")
         self.assertEqual(payload["coverage"]["currentQuoteDate"], 0)
+
+    def test_pre_open_publishes_verified_prices_but_abstains_when_core_is_stale(self):
+        now = datetime(2026, 8, 27, 7, 15, tzinfo=VN_TZ)
+        completed = datetime(2026, 8, 26, 15, 5, tzinfo=VN_TZ)
+        payload = build_payload(self.dashboard(as_of="2026-08-24"), self.frame(now=completed), now)
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["mode"], "PRICE_ONLY_STALE_CORE")
+        self.assertEqual(payload["coverage"]["expectedQuoteDate"], "2026-08-26")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 120)
+        self.assertFalse(payload["forecastAlignment"]["rankingEligible"])
+        self.assertEqual(payload["forecastAlignment"]["expectedCoreAsOf"], "2026-08-26")
+        self.assertEqual(payload["leaders"], [])
+        self.assertTrue(all(row["rankingHorizon"] is None for row in payload["symbols"]))
+
+    def test_holiday_uses_latest_completed_session_for_quotes_and_core(self):
+        now = datetime(2026, 9, 2, 12, 5, tzinfo=VN_TZ)
+        completed = datetime(2026, 8, 28, 15, 5, tzinfo=VN_TZ)
+        payload = build_payload(self.dashboard(as_of="2026-08-28"), self.frame(now=completed), now)
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["session"], "MARKET_CLOSED")
+        self.assertEqual(payload["coverage"]["expectedQuoteDate"], "2026-08-28")
+        self.assertEqual(payload["forecastAlignment"]["status"], "PASS")
 
     def test_review_horizon_is_skipped_for_ranking(self):
         now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
@@ -126,7 +150,7 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
 
     def test_falls_back_to_defensive_ranking_when_live_price_exceeds_all_targets(self):
         now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
-        payload = build_payload(self.dashboard(), self.frame(now=now, price_multiplier=1.10), now)
+        payload = build_payload(self.dashboard(as_of="2026-08-25"), self.frame(now=now, price_multiplier=1.10), now)
         self.assertEqual(payload["status"], "PASS")
         self.assertTrue(payload["market"]["defensive"])
         self.assertEqual(payload["market"]["positiveCoreTargetFromLive"], 0)
