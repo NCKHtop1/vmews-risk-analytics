@@ -33,21 +33,29 @@ class PostCloseBridgeTest(unittest.TestCase):
         self.assertEqual(meta["postCloseBridge"]["secondaryCoverage"],1.0); self.assertEqual(meta["postCloseBridge"]["mismatchCount"],0)
         for s in symbols:
             self.assertEqual(out[s][-1]["date"],"2026-08-28"); self.assertFalse(out[s][-1]["ohlcUnavailable"]); self.assertTrue(out[s][-1]["closeIndependentlyConfirmed"])
+
     def test_rejects_stale_primary_coverage(self):
         symbols=[f"S{i:02d}" for i in range(10)]; freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         with self.assertRaises(RuntimeError): bridge_completed_session(histories(symbols),freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols[:8]),secondary_rows=secondary_for(symbols),min_coverage=.9)
         self.assertEqual(freshness["forecastAsOf"],"2026-08-27")
+
     def test_rejects_second_source_gap_or_disagreement(self):
         symbols=[f"S{i:02d}" for i in range(10)]
         for secondary in (secondary_for(symbols[:8]),secondary_for(symbols,bump="S01")):
             freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
             with self.assertRaises(RuntimeError): bridge_completed_session(histories(symbols),freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary,min_secondary_coverage=.9)
             self.assertEqual(freshness["postCloseBridge"]["status"],"REJECTED_SECOND_SOURCE")
-    def test_does_not_mutate_preopen_or_holiday(self):
+
+    def test_preopen_keeps_already_completed_session(self):
+        symbols=["FPT","VCB"]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
+        out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,8,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9)
+        self.assertEqual(meta["forecastAsOf"],"2026-08-27"); self.assertEqual(meta["postCloseBridge"]["status"],"NOT_APPLICABLE_ALREADY_CURRENT"); self.assertEqual(out["FPT"][-1]["date"],"2026-08-27")
+
+    def test_weekend_and_holiday_bridge_friday_completed_session(self):
         symbols=["FPT","VCB"]
-        for now,status in ((datetime(2026,8,28,8,tzinfo=VN_TZ),"NOT_APPLICABLE"),(datetime(2026,9,2,16,tzinfo=VN_TZ),"NOT_APPLICABLE_HOLIDAY")):
+        for now in (datetime(2026,8,29,9,tzinfo=VN_TZ),datetime(2026,9,2,16,tzinfo=VN_TZ)):
             h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
-            out,meta=bridge_completed_session(h,freshness,now=now,frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9)
-            self.assertEqual(meta["forecastAsOf"],"2026-08-27"); self.assertEqual(meta["postCloseBridge"]["status"],status); self.assertEqual(out["FPT"][-1]["date"],"2026-08-27")
+            out,meta=bridge_completed_session(h,freshness,now=now,frame=frame_for(symbols,"2026-08-28"),secondary_rows=secondary_for(symbols,"2026-08-28"),min_coverage=.9,min_secondary_coverage=.9)
+            self.assertEqual(meta["forecastAsOf"],"2026-08-28"); self.assertEqual(meta["postCloseBridge"]["sessionDate"],"2026-08-28"); self.assertEqual(meta["postCloseBridge"]["status"],"PASS"); self.assertEqual(out["FPT"][-1]["date"],"2026-08-28")
 
 if __name__=="__main__": unittest.main(verbosity=2)
