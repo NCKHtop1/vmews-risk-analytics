@@ -2,6 +2,13 @@ name: Forecast V21 guarded session overlay
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Forecast V20.1 immutable-price audit and market intelligence
+    branches:
+      - main
+    types:
+      - completed
   push:
     branches:
       - main
@@ -40,7 +47,9 @@ jobs:
         run: python scripts/forecast_v21_session_snapshot_test.py
 
   refresh-session-overlay:
-    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main'
+    if: >-
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main' ||
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
     needs: test-session-overlay
     runs-on: ubuntu-latest
     timeout-minutes: 12

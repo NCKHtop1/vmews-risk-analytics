@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 
 import pandas as pd
 
@@ -7,6 +8,13 @@ from forecast_v21_session_snapshot import build_payload, VN_TZ
 
 
 class ForecastV21SessionSnapshotTest(unittest.TestCase):
+    def test_workflow_runs_after_the_full_publisher_even_for_bot_data_commits(self):
+        workflow = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "forecast-v21-session-refresh.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_run:", workflow)
+        self.assertIn("Forecast V20.1 immutable-price audit and market intelligence", workflow)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
+
     def dashboard(self, count=120, as_of="2026-08-24"):
         symbols = {}
         for index in range(count):
