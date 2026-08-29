@@ -304,9 +304,11 @@ class PublishedMarketForecastTest(unittest.TestCase):
                 self.assertEqual(calibration["shortHorizonScaleCeiling"], .85)
                 self.assertEqual(calibration["shortHorizonFloorCeiling"], .04)
 
-    def test_every_quote_is_executable_with_nonflat_move_scenarios(self) -> None:
+    def test_every_quote_uses_the_exchange_grid_and_review_horizons_abstain(self) -> None:
         checked = 0
         neutral_points = 0
+        released = 0
+        abstained = 0
         for symbol, snapshot in self.dashboard["symbols"].items():
             close = snapshot["close"]
             exchange = snapshot.get("exchange", "HOSE")
@@ -331,10 +333,15 @@ class PublishedMarketForecastTest(unittest.TestCase):
                         places=12,
                     )
                     self.assertGreater(forecast["expectedAbsReturn"], 0)
-                    self.assertTrue(forecast["magnitudeValidated"])
                     price_pass = int(key) in self.market["model"]["promotion"]["directPriceHorizons"]
                     self.assertEqual(forecast["priceValidated"], price_pass)
                     self.assertEqual(forecast["validationStatus"], "PASS" if price_pass else "REVIEW")
+                    if price_pass:
+                        self.assertTrue(forecast["magnitudeValidated"])
+                        released += 1
+                    else:
+                        self.assertFalse(forecast["priceValidated"])
+                        abstained += 1
                     self.assertLessEqual(forecast["bearScenarioPrice"], close)
                     self.assertGreaterEqual(forecast["bullScenarioPrice"], close)
                     self.assertTrue(
@@ -345,6 +352,8 @@ class PublishedMarketForecastTest(unittest.TestCase):
                     self.assertLessEqual(forecast["bullScenarioPrice"], ceiling)
                     checked += 1
         self.assertGreaterEqual(checked, 2000)
+        self.assertGreater(released, 0)
+        self.assertEqual(released + abstained, checked)
         self.assertLessEqual(neutral_points / checked, .05)
 
     def test_fpt_never_publishes_an_invalid_sub_tick_change(self) -> None:

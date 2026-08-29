@@ -17,6 +17,7 @@ on:
       - "scripts/refresh_institutional_flow_v20_v28.py"
       - "scripts/forecast_v20_release_audit_v28.py"
       - "scripts/forecast_v13_market_model.py"
+      - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
