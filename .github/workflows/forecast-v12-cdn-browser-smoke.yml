@@ -1,6 +1,17 @@
 name: Forecast V12 exact-SHA CDN browser smoke
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'forecast-final.html'
+      - 'forecast-final-v12.js'
+      - 'data/forecast-model-v12.json'
+      - 'data/forecast-dashboard-v12.json'
+      - 'data/forecast-backtest-v12.json'
+      - 'data/data-audit-v12.json'
+      - 'data/phase-gates-v12.json'
+      - '.github/workflows/forecast-v12-cdn-browser-smoke.yml'
+      - 'scripts/v12_browser_smoke.mjs'
   push:
     branches: [main]
     paths:
@@ -35,7 +46,7 @@ jobs:
         run: sleep 10
       - name: Browser-test exact immutable CDN commit
         env:
-          V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.sha }}/forecast-final.html?symbol=FPT
+          V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final.html?symbol=FPT
         run: node scripts/v12_browser_smoke.mjs
       - name: Upload exact-CDN UX screenshots
         if: always()
