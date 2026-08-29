@@ -12,6 +12,7 @@ on:
       - 'data/data-audit-v12.json'
       - 'data/phase-gates-v12.json'
       - '.github/workflows/forecast-v12-cdn-browser-smoke.yml'
+      - 'scripts/v12_browser_smoke.mjs'
 permissions:
   contents: read
 jobs:

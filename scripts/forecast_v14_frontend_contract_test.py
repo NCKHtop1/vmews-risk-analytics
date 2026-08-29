@@ -65,11 +65,13 @@ class ForecastFrontendContractTest(unittest.TestCase):
     def test_browser_smoke_uses_the_current_visible_method_proof_contract(self) -> None:
         polish = (ROOT / "forecast-polish-v12.js").read_text(encoding="utf-8")
         smoke = (ROOT / "scripts" / "v12_browser_smoke.mjs").read_text(encoding="utf-8")
+        workflow = (ROOT / ".github" / "workflows" / "forecast-v12-cdn-browser-smoke.yml").read_text(encoding="utf-8")
         for label in ("Mẫu kiểm định", "Sai số so với giá không đổi", "IC xếp hạng bình quân", "Độ phủ HOSE"):
             self.assertIn(label, polish)
             self.assertIn(label, smoke)
         self.assertNotIn("Nhìn trước tương lai", smoke)
         self.assertNotIn("Sealed holdout", smoke)
+        self.assertIn("'scripts/v12_browser_smoke.mjs'", workflow)
 
     def test_visual_identity_and_honest_scenario_language(self) -> None:
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
