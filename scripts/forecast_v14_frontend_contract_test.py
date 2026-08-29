@@ -72,6 +72,10 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertNotIn("Nhìn trước tương lai", smoke)
         self.assertNotIn("Sealed holdout", smoke)
         self.assertIn("'scripts/v12_browser_smoke.mjs'", workflow)
+        for label in ("PHÂN TÍCH BỔ SUNG", "Kỹ thuật · Dòng tiền · Tài chính", "Giá thị trường", "Tài chính doanh nghiệp", "Tín hiệu cộng đồng"):
+            self.assertIn(label, smoke)
+        for stale_label in ("TA Studio", "TA setup phù hợp nhất", "Độ phủ HOSE hiện tại", "mẫu OOS="):
+            self.assertNotIn(stale_label, smoke)
 
     def test_visual_identity_and_honest_scenario_language(self) -> None:
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
