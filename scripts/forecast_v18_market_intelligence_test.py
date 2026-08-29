@@ -230,6 +230,11 @@ class IntradayCommunityPublicationTest(unittest.TestCase):
         self.assertIn("--publish-live", workflow)
         self.assertIn("community-intelligence-live-v19.json", workflow)
 
+    def test_daily_publisher_rebases_with_unstaged_generated_artifacts_safely(self) -> None:
+        workflow = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "forecast-v13-daily-refresh.yml").read_text(encoding="utf-8")
+        self.assertIn("git pull --rebase --autostash origin main", workflow)
+        self.assertNotIn("git add data/", workflow.split("git commit", 1)[1])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
