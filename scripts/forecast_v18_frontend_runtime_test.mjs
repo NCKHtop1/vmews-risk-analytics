@@ -130,6 +130,35 @@ test("detail view uses the validated session close without rewriting the sealed 
   assert.equal(window.__VMEWS_SESSION_POSITION__(core.horizons["5"], view.close), "ABOVE_BULL");
 });
 
+test("stale-core session publishes price but cannot re-rank the forecast", async () => {
+  const leaderboard = await loadLeaderboard();
+  const items = [snapshot("FPT", 72_000, 73_000), snapshot("MCH", 128_000, 130_000)];
+  const session = {
+    status: "PASS",
+    forecastAlignment: {
+      status: "STALE_CORE",
+      rankingEligible: false,
+      actualCoreAsOf: "2026-08-26",
+      expectedCoreAsOf: "2026-08-28",
+    },
+    symbols: [
+      { symbol: "FPT", liveClose: 74_000, quoteCurrent: true, freshForCutoff: true },
+      { symbol: "MCH", liveClose: 129_000, quoteCurrent: true, freshForCutoff: true },
+    ],
+  };
+  const ranked = leaderboard.__VMEWS_FINAL_LEADERBOARD__(base(items), session, { all: true, includeNonPositive: true });
+  assert.equal(ranked.find(row => row.symbol === "FPT").close, 72_000);
+  assert.equal(ranked.find(row => row.symbol === "MCH").close, 128_000);
+
+  const { window } = await loadMarketDashboard();
+  const core = snapshot("FPT", 72_000, 73_000);
+  const view = window.__VMEWS_APPLY_SESSION_VIEW__("FPT", core, session);
+  assert.equal(view.close, 74_000);
+  assert.equal(view.coreClose, 72_000);
+  assert.equal(view.liveSession.forecastAligned, false);
+  assert.equal(view.liveSession.expectedCoreAsOf, "2026-08-28");
+});
+
 test("ranking excludes a REVIEW horizon and uses the audited preferred PASS horizon", async () => {
   const window = await loadLeaderboard();
   const fpt = snapshot("FPT", 70_700, 72_100);

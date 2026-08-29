@@ -17,6 +17,8 @@ from typing import Any
 
 import numpy as np
 
+from vn_exchange_calendar import trading_session_age
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -52,14 +54,11 @@ def _date(value: Any) -> date | None:
 
 
 def _business_days_between(previous: str | None, current: str) -> int:
-    start = _date(previous)
-    end = _date(current)
-    if start is None or end is None or start >= end:
-        return 0 if start is not None else 99
-    return sum(
-        (start + timedelta(days=offset)).weekday() < 5
-        for offset in range(1, (end - start).days + 1)
-    )
+    """Use the same certified exchange-session age as the release audit."""
+    try:
+        return trading_session_age(previous, current)
+    except (TypeError, ValueError):
+        return 99
 
 
 def _percentile(value: float, values: list[float]) -> float:

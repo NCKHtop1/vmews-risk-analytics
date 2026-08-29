@@ -6,11 +6,13 @@ import re
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
+from vn_exchange_calendar import is_trading_day, latest_completed_session
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DASHBOARD = ROOT / "data" / "forecast-dashboard-v12.json"
 OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-FORECAST-SESSION-21.1"
+VERSION = "VMEWS-FORECAST-SESSION-21.2"
 MIN_COVERAGE = 0.90
 MIN_CURRENT_COVERAGE = 0.90
 MIN_CUTOFF_FRESH_COVERAGE = 0.90
@@ -47,6 +49,8 @@ def quote_time(value):
 
 
 def session_name(now):
+    if not is_trading_day(now.date(), require_certified=True):
+        return "MARKET_CLOSED"
     minutes = now.hour * 60 + now.minute
     if minutes < 9 * 60:
         return "PRE_OPEN"
@@ -59,7 +63,7 @@ def session_name(now):
 
 def cutoff_floor(now):
     session = session_name(now)
-    if session == "PRE_OPEN":
+    if session in {"PRE_OPEN", "MARKET_CLOSED"}:
         return now
     hour, minute = (11, 15) if session == "AM" else (14, 30)
     floor = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
@@ -131,7 +135,14 @@ def build_payload(dashboard, frame, now=None):
     fresh_floor = cutoff_floor(now)
     ranking_horizon = preferred_core_horizon(dashboard)
     core = eligible_core_symbols(dashboard, ranking_horizon)
-    expected_quote_date = str(dashboard.get("asOf") or "")[:10] if session == "PRE_OPEN" else now.date().isoformat()
+    expected_core_date = latest_completed_session(now).isoformat()
+    expected_quote_date = (
+        expected_core_date
+        if session in {"PRE_OPEN", "MARKET_CLOSED"}
+        else now.date().isoformat()
+    )
+    core_as_of = str(dashboard.get("asOf") or "")[:10]
+    forecast_aligned = core_as_of == expected_core_date
     matched = {}
     duplicates = 0
     for _, row in frame.iterrows():
@@ -163,7 +174,7 @@ def build_payload(dashboard, frame, now=None):
         if quote_date:
             dated.append(quote_date)
         is_current = quote_date == expected_quote_date
-        fresh_for_cutoff = is_current if session == "PRE_OPEN" else bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
+        fresh_for_cutoff = is_current if session in {"PRE_OPEN", "MARKET_CLOSED"} else bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
         current_quotes += int(is_current)
         cutoff_fresh_quotes += int(fresh_for_cutoff)
         update_mode = str(row.get("update_mode") or "UNKNOWN")
@@ -188,8 +199,8 @@ def build_payload(dashboard, frame, now=None):
         interval_width = ((q80 - q20) / core_close) if q20 is not None and q80 is not None and core_close else 0.0
         core_upside = target / core_close - 1.0
         remaining_upside = target / live_close - 1.0
-        quality = quality_score(snapshot, horizon, max(remaining_upside, 0.0), max(interval_width, 0.0))
-        conviction = remaining_upside * (0.68 + 0.32 * quality)
+        quality = quality_score(snapshot, horizon, max(remaining_upside, 0.0), max(interval_width, 0.0)) if forecast_aligned else None
+        conviction = remaining_upside * (0.68 + 0.32 * quality) if quality is not None else None
         symbols.append({
             "symbol": symbol,
             "liveClose": live_close,
@@ -203,7 +214,7 @@ def build_payload(dashboard, frame, now=None):
             "updateMode": update_mode,
             "quoteAgeMinutes": round(quote_age, 2) if quote_age is not None else None,
             "coreClose": core_close,
-            "rankingHorizon": ranking_horizon,
+            "rankingHorizon": ranking_horizon if forecast_aligned else None,
             "coreTarget": target,
             "coreUpside": core_upside,
             "remainingUpside": remaining_upside,
@@ -213,8 +224,8 @@ def build_payload(dashboard, frame, now=None):
             "directionValidated": horizon.get("directionValidated") is True,
             "probUp": num(horizon.get("probUp")),
             "riskStatus": snapshot.get("riskStatus") or "UNKNOWN",
-            "quality": round(quality, 5),
-            "conviction": round(conviction, 8),
+            "quality": round(quality, 5) if quality is not None else None,
+            "conviction": round(conviction, 8) if conviction is not None else None,
         })
 
     eligible_count = len(core)
@@ -231,10 +242,10 @@ def build_payload(dashboard, frame, now=None):
         and cutoff_fresh_coverage >= MIN_CUTOFF_FRESH_COVERAGE
     ) else "DEGRADED"
 
-    positive = [row for row in symbols if row["coreTargetT5"] > row["liveClose"]]
+    positive = [row for row in symbols if forecast_aligned and row["coreTargetT5"] > row["liveClose"]]
     positive.sort(key=lambda row: (row["conviction"], row["remainingUpsideT5"], row["quality"]), reverse=True)
     defensive = not positive
-    leaders = positive[:10] if positive else sorted(
+    leaders = [] if not forecast_aligned else positive[:10] if positive else sorted(
         symbols,
         key=lambda row: (row["remainingUpsideT5"], row["quality"]),
         reverse=True,
@@ -251,7 +262,18 @@ def build_payload(dashboard, frame, now=None):
         "coreAsOf": dashboard.get("asOf"),
         "coreForecastUnchanged": True,
         "rankingHorizon": ranking_horizon,
-        "scope": f"Validated HOSE core universe with TradingView quotes for the expected session; quotes re-rank remaining distance to the sealed T+{ranking_horizon} target but never rewrite the core forecast.",
+        "mode": "FORECAST_ALIGNED" if forecast_aligned else "PRICE_ONLY_STALE_CORE",
+        "scope": (
+            f"Validated HOSE quotes re-rank remaining distance to the sealed T+{ranking_horizon} target without rewriting it."
+            if forecast_aligned
+            else "Validated HOSE quotes remain publishable for price display, while ranking and forecast decisions abstain until the completed-EOD core catches up."
+        ),
+        "forecastAlignment": {
+            "status": "PASS" if forecast_aligned else "STALE_CORE",
+            "rankingEligible": forecast_aligned,
+            "actualCoreAsOf": core_as_of,
+            "expectedCoreAsOf": expected_core_date,
+        },
         "coverage": {
             "coreEligible": eligible_count,
             "quoted": quoted_count,
@@ -282,8 +304,9 @@ def build_payload(dashboard, frame, now=None):
         "governance": [
             "The session layer never treats an incomplete session as a completed EOD model row.",
             "Core T+1 to T+5 targets remain the independently validated sealed forecast until the completed-EOD pipeline publishes a new snapshot.",
-            "Before the opening auction, the latest completed-session quote is current only when its date exactly matches the sealed core forecast date.",
-            "A session snapshot is publishable only when universe coverage, same-day coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
+            "Quote freshness is bound to the certified latest completed or active exchange session, never to a potentially stale core date.",
+            "When the core date lags, verified prices remain visible but forecast ranking and decision labels abstain until the completed-EOD pipeline catches up.",
+            "A session snapshot is publishable only when universe coverage, expected-session coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
         ],
     }
 

@@ -6,6 +6,11 @@ ROOT=Path(os.environ.get('GITHUB_WORKSPACE',Path(__file__).resolve().parents[1])
 LIVE=ROOT/'data/forecast-live';SNAPS=LIVE/'snapshots';TAPES=ROOT/'data/live-track/snapshots'
 VER='VMEWS-FORECAST-LIVE-1.0.0';H=(3,5);MAC={'vixLevel','vixRet20','usdVndRet20','dxyRet20','us10yRet20','brentRet20'}
 
+class CoverageAbstention(RuntimeError):pass
+
+def require_cross_sectional_coverage(count,minimum=8):
+ if count<minimum:raise CoverageAbstention(f'Forecast archive coverage below cross-sectional minimum: {count}/{minimum}')
+
 def load(p,d=None):
  try:return json.loads(Path(p).read_text(encoding='utf-8'))
  except:return {} if d is None else d
@@ -47,7 +52,7 @@ def snapshot():
    c=model['horizons'][str(h)];a=dot(c['alphaModel'],vec(model['featureNames'],z,c));p=sig(dot(c['stockDirectionModel'],vec(model['featureNames'],z,c)));mp=sig(dot(c['marketDirectionModel'],vec(model['marketFeatureNames'],z,c,True)));b=bucket(c.get('calibrationBuckets'),a)
    hz[str(h)]={'alpha':a,'pUp':p,'marketPUp':mp,'bucket':None if not b else {k:b.get(k) for k in ('n','meanReturn','positiveRate','q20','q80')}}
   ss=(sent.get('symbols') or {}).get(s) or {};pred.append({'symbol':s,'close':c0,'risk':{'status':r.get('status'),'score':f(r.get('score'))},'sentiment':{'state':ss.get('state'),'signed':f(ss.get('signed')),'n':int(ss.get('n') or 0)},'forecast':hz})
- if len(pred)<8:raise RuntimeError(f'Forecast archive coverage below cross-sectional minimum: {len(pred)}')
+ require_cross_sectional_coverage(len(pred))
  coverage='FULL' if len(pred)>=30 else 'LIMITED_CURRENT_EOD_CACHE'
  core={'version':VER,'asOf':d,'modelVersion':model['version'],'marketScanVersion':scan.get('version'),'sentimentVersion':sent.get('version'),'symbols':len(pred),'coverageState':coverage,'predictions':pred,'governance':{'futureLabelsPresent':False,'exactPriceTarget':False,'automaticPromotion':False,'sentimentNumericalFeature':False,'foreignFlowNumericalFeature':False,'limitedCoverageDoesNotPromoteEvidence':True}}
  core['snapshotHash']=hashlib.sha256(json.dumps(core,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False).encode()).hexdigest();return {'createdAt':datetime.now(timezone.utc).isoformat(),**core}
@@ -99,7 +104,11 @@ def verify():
   if not p.exists() or hashlib.sha256(p.read_bytes()).hexdigest()!=x['sha256'] or z.get('snapshotHash')!=x.get('snapshotHash') or z.get('governance',{}).get('futureLabelsPresent') is not False:raise RuntimeError(f'Forecast-live integrity failure {p}')
  return {'ok':True,'snapshots':len(m.get('snapshots') or [])}
 def live():
- z=snapshot();st=archive(z);ev=evaluate();dump(LIVE/'evaluation.json',ev);dump(LIVE/'manifest.json',manifest());q={'version':VER,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS','asOf':z['asOf'],'archiveStatus':st,'coverageState':z.get('coverageState'),'symbols':z.get('symbols'),'integrity':verify(),'modelVersion':z['modelVersion'],'sentimentVersion':z.get('sentimentVersion'),'timeBasis':'COMPLETED_EOD_ONLY'};dump(LIVE/'integrity.json',q);print(json.dumps({'integrity':q,'evaluation':ev['summary']},ensure_ascii=False,indent=2))
+ try:z=snapshot()
+ except CoverageAbstention as error:
+  attempt={'version':VER,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'WAITING_OR_REVIEW','reason':str(error),'timeBasis':'COMPLETED_EOD_ONLY','preservesLastValidatedSnapshot':True,'automaticPromotion':False}
+  dump(LIVE/'last-attempt.json',attempt);print(json.dumps({'legacyV9Attempt':attempt},ensure_ascii=False,indent=2));return
+ st=archive(z);ev=evaluate();dump(LIVE/'evaluation.json',ev);dump(LIVE/'manifest.json',manifest());q={'version':VER,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS','asOf':z['asOf'],'archiveStatus':st,'coverageState':z.get('coverageState'),'symbols':z.get('symbols'),'integrity':verify(),'modelVersion':z['modelVersion'],'sentimentVersion':z.get('sentimentVersion'),'timeBasis':'COMPLETED_EOD_ONLY'};dump(LIVE/'integrity.json',q);dump(LIVE/'last-attempt.json',{'version':VER,'generatedAt':q['generatedAt'],'status':'PASS','asOf':z['asOf'],'symbols':z.get('symbols'),'preservesLastValidatedSnapshot':True});print(json.dumps({'integrity':q,'evaluation':ev['summary']},ensure_ascii=False,indent=2))
 
 def train():
  p=Path(__file__).with_name('train_forecast_v9.py');s=p.read_text(encoding='utf-8');s=s.replace("an=A[0]['name'];dn=C[0]['name'];mn=MC[0]['name'];","an='ridge';dn='logit';mn='logit';");s=re.sub(r"\nif __name__=='__main__':train\(os\.environ\.get\('GITHUB_WORKSPACE','\.'\)\)\s*$",'',s);ns={'__name__':'v9_deployable','__file__':str(p)};exec(compile(s,str(p),'exec'),ns);ns['train'](str(ROOT))
