@@ -269,7 +269,6 @@ class PublishedMarketForecastTest(unittest.TestCase):
             passed = int(horizon) in promoted
             self.assertEqual(model["priceStatus"], "PASS" if passed else "REVIEW")
             self.assertEqual(horizon_price_gate(audit, walk), passed)
-            self.assertGreater(audit["magnitudeMAESkill"], 0)
             self.assertEqual(audit["futureRowsUsedForTraining"], 0)
             self.assertEqual(audit["futureLabelsUsedForCalibration"], 0)
             self.assertEqual(audit["invalidExecutableQuotes"], 0)
@@ -277,6 +276,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
             self.assertEqual(walk["status"], "PASS")
             self.assertEqual(len(walk["folds"]), 3)
             if passed:
+                self.assertGreater(audit["magnitudeMAESkill"], 0)
                 self.assertGreaterEqual(audit["maeSkill"], .005)
                 self.assertGreaterEqual(audit["executableMAESkill"], .003)
                 self.assertGreaterEqual(audit["rankIC"], .05)

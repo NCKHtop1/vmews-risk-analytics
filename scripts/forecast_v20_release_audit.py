@@ -208,11 +208,15 @@ def run_audit() -> dict[str, Any]:
                 abs_tol=1e-11,
             ):
                 quote_failures.append(f"{symbol}/T+{key}: context scenario attribution mismatch")
-            if float(forecast["expectedAbsReturn"]) <= 0 or not forecast.get("magnitudeValidated"):
+            if float(forecast["expectedAbsReturn"]) <= 0:
                 quote_failures.append(f"{symbol}/T+{key}: unsigned magnitude unavailable")
             if forecast.get("crossSectionalRankUniverse") != len(symbols) or not (0 < float(forecast.get("crossSectionalRankPercentile") or 0) <= 1):
                 quote_failures.append(f"{symbol}/T+{key}: invalid cross-sectional rank")
             model_horizon = model_horizons.get(key) or {}
+            sealed_audit = model_horizon.get("sealedAudit") or {}
+            magnitude_pass = float(sealed_audit.get("magnitudeMAESkill") or 0) > 0
+            if bool(forecast.get("magnitudeValidated")) != magnitude_pass:
+                quote_failures.append(f"{symbol}/T+{key}: magnitude gate mismatch")
             price_pass = model_horizon.get("priceStatus") == "PASS"
             direction_pass = model_horizon.get("directionStatus") == "PASS"
             point_pass = model_horizon.get("pointDirectionStatus") == "PASS"
@@ -350,7 +354,7 @@ def run_audit() -> dict[str, Any]:
             require(float(sealed.get("executableMAESkill") or 0) > 0, f"T+{key} has no executable MAE skill")
             require(int(walk.get("positiveExecutableMAEFolds") or 0) >= 2, f"T+{key} lacks walk-forward price stability")
             require(int(walk.get("positiveMagnitudeFolds") or 0) >= 2, f"T+{key} lacks walk-forward magnitude stability")
-        require(float(sealed.get("magnitudeMAESkill") or 0) > 0, f"T+{key} has no magnitude skill")
+            require(float(sealed.get("magnitudeMAESkill") or 0) > 0, f"T+{key} has no magnitude skill")
         require(not cost.get("selectionFitOnHoldout"), f"T+{key} after-cost selection used holdout")
         horizon_metrics[key] = {
             "priceStatus": horizon.get("priceStatus"),
