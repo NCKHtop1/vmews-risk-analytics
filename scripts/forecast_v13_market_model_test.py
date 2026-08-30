@@ -27,7 +27,9 @@ from forecast_v13_market_model import (  # noqa: E402
     tick_size,
     _vn_direct_rows,
     _vn_direct_hose_rows,
+    economic_point_gate,
     horizon_price_gate,
+    paired_no_change_audit,
     preferred_ranking_horizon,
 )
 from forecast_v14_signal_audit import (  # noqa: E402
@@ -146,6 +148,41 @@ class VietnamPriceGridTest(unittest.TestCase):
         self.assertAlmostEqual(audit["meanNetRealizedReturn"], .006)
         self.assertFalse(audit["selectionFitOnHoldout"])
         self.assertFalse(audit["portfolioSimulation"])
+
+    def test_paired_point_audit_clusters_uncertainty_by_origin_session(self) -> None:
+        actual = np.asarray([.02, -.01, .01, -.02] * 20)
+        forecast = np.asarray([.01, -.005, .005, -.01] * 20)
+        dates = np.asarray([f"2026-01-{1 + index // 4:02d}" for index in range(80)])
+        audit = paired_no_change_audit(actual, forecast, dates)
+        self.assertGreater(audit["meanImprovement"], 0)
+        self.assertEqual(audit["sessions"], 20)
+        self.assertEqual(audit["positiveChronologicalBlocks"], 4)
+        self.assertIn("CLUSTERED_BY_ORIGIN_SESSION", audit["method"])
+
+    def test_economic_point_gate_rejects_tiny_or_recently_decayed_edges(self) -> None:
+        audit = {
+            "directionalAccuracy": .56,
+            "pointToRealizedMoveRatio": .35,
+            "pairedNoChangeAudit": {
+                "meanImprovement": .0002,
+                "dailyStandardError": .0001,
+                "positiveChronologicalBlocks": 4,
+            },
+            "largeMoveAudit": {"directionalAccuracy": .55},
+            "chronologicalFolds": [
+                {"executableMAESkill": .01, "directionalAccuracy": .54},
+                {"executableMAESkill": .01, "directionalAccuracy": .55},
+                {"executableMAESkill": .01, "directionalAccuracy": .56},
+                {"executableMAESkill": -.001, "directionalAccuracy": .49},
+            ],
+        }
+        walk = {"positiveExecutableMAEFolds": 3, "meanExecutableMAESkill": .01}
+        self.assertFalse(economic_point_gate(audit, walk))
+        audit["chronologicalFolds"][-1] = {
+            "executableMAESkill": .006,
+            "directionalAccuracy": .53,
+        }
+        self.assertTrue(economic_point_gate(audit, walk))
 
 
 class PointInTimeSignalTest(unittest.TestCase):

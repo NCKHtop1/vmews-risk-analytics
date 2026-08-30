@@ -76,6 +76,10 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.sha || github.sha", workflow)
         for label in ("PHÂN TÍCH BỔ SUNG", "Kỹ thuật · Dòng tiền · Tài chính", "Giá thị trường", "Tài chính doanh nghiệp", "Tín hiệu cộng đồng"):
             self.assertIn(label, smoke)
+        for label in ("PHÂN PHỐI · ĐIỂM ĐỘ TIN CẬY THẤP", "ĐỘ TIN CẬY ĐIỂM THẤP", "Vùng Q20–Q80", "Trung vị ", "LOW_CONFIDENCE"):
+            self.assertIn(label, smoke)
+        self.assertNotIn("textContent?.includes('PASS')", smoke)
+        self.assertNotIn("explicit REVIEW", smoke)
         for stale_label in ("TA Studio", "TA setup phù hợp nhất", "Độ phủ HOSE hiện tại", "mẫu OOS="):
             self.assertNotIn(stale_label, smoke)
 
@@ -85,7 +89,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("#090a08", css)
         self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
         self.assertIn("HOSE · 5 PHIÊN TỚI", self.html)
-        self.assertIn("Trọng tâm T+5", self.html)
+        self.assertIn("Vùng Q20–Q80 T+5", self.html)
+        self.assertIn("Trung vị có điều kiện T+5", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
         self.assertNotIn("bước giá", self.html)
@@ -94,7 +99,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=20.7", self.html)
+        self.assertIn("release=34.0", self.html)
         self.assertIn("forecast-live-leaders-v14.js?release=21.2", self.html)
         self.assertNotIn("release=19.3", self.html)
 
@@ -146,6 +151,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn('snapshot.dataFreshness !== "CURRENT"', leaders)
         self.assertIn("forecast.priceValidated !== true", leaders)
         self.assertIn('forecast.validationStatus !== "PASS"', leaders)
+        self.assertIn('forecast.economicPointStatus !== "PASS"', leaders)
         self.assertIn("target % tickSize !== 0", leaders)
         self.assertIn("target <= close", leaders)
         self.assertIn("includeNonPositive", leaders)
@@ -156,8 +162,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("payload.coreAsOf", leaders)
         self.assertIn("payload.forecastAlignment", leaders)
         self.assertIn("rankingEligible", leaders)
-        self.assertIn("Chưa phát hành giá kỳ này", app)
-        self.assertIn('validatedPrice(q)?price(q.expectedPrice):"REVIEW"', app)
+        self.assertIn("ĐỘ TIN CẬY ĐIỂM THẤP", app)
+        self.assertIn("forecastAvailable(q)?`${price(q.q20Price)} – ${price(q.q80Price)}`", app)
+        self.assertIn("PHÂN PHỐI THỬ NGHIỆM · KHÔNG PHẢI TÍN HIỆU", app)
         self.assertIn("upside: target / close - 1", leaders)
         self.assertIn("right.rankScore - left.rankScore", leaders)
         self.assertIn("__VMEWS_FINAL_LEADERBOARD__", leaders)
@@ -199,7 +206,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("bearScenarioPrice", app)
         self.assertIn("bullScenarioPrice", app)
         self.assertIn("magnitudeCalibrationRatio", app)
-        self.assertIn("Kịch bản hai chiều", app)
+        self.assertIn("Kịch bản giảm/tăng", app)
+        self.assertIn("Mức bắt biên độ của điểm", app)
+        self.assertIn("economicPointStatus", app)
         self.assertIn("Dự báo biên độ", app)
         self.assertIn("Danh mục quỹ", app)
         self.assertIn("fundContext", polish)
