@@ -679,6 +679,42 @@ def _metrics(actual: np.ndarray, forecast: np.ndarray, dates: np.ndarray, probab
     return result
 
 
+def paired_no_change_audit(
+    actual: np.ndarray,
+    forecast: np.ndarray,
+    dates: np.ndarray,
+) -> dict[str, Any]:
+    """Measure economic point value with session-clustered uncertainty.
+
+    Rows from the same market session are strongly dependent.  A row-level
+    standard error makes tiny improvements look much more certain than they
+    are, so the promotion statistic is computed from daily mean paired loss
+    differences instead.
+    """
+    actual_values = np.asarray(actual, dtype=float)
+    forecast_values = np.asarray(forecast, dtype=float)
+    session_values = np.asarray(dates)
+    improvement = np.abs(actual_values) - np.abs(actual_values - forecast_values)
+    unique_dates = np.sort(np.unique(session_values))
+    daily = np.asarray(
+        [float(np.mean(improvement[session_values == day])) for day in unique_dates],
+        dtype=float,
+    )
+    blocks = [block for block in np.array_split(unique_dates, 4) if len(block)]
+    block_improvements = [
+        float(np.mean(improvement[np.isin(session_values, block)])) for block in blocks
+    ]
+    return {
+        "method": "PAIRED_ABSOLUTE_ERROR_VS_NO_CHANGE; STANDARD_ERROR_CLUSTERED_BY_ORIGIN_SESSION",
+        "meanImprovement": float(np.mean(improvement)),
+        "dailyStandardError": float(np.std(daily, ddof=1) / math.sqrt(len(daily))) if len(daily) > 1 else 0.0,
+        "positiveSessions": int(np.sum(daily > 0)),
+        "sessions": int(len(daily)),
+        "positiveChronologicalBlocks": sum(value > 0 for value in block_improvements),
+        "chronologicalBlockImprovements": block_improvements,
+    }
+
+
 def cost_aware_long_audit(
     actual: np.ndarray,
     executable_forecast: np.ndarray,
@@ -1248,6 +1284,32 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     hold_metrics["pointToRealizedMoveRatio"] = float(
         hold_metrics["executableMedianAbs"] / max(hold_metrics["realizedMedianAbs"], 1e-12)
     )
+    hold_metrics["pairedNoChangeAudit"] = paired_no_change_audit(
+        hold_y,
+        executable_return,
+        holdout["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+    )
+    tail_threshold = float(np.quantile(np.abs(cal_y), .75))
+    tail_mask = np.abs(hold_y) >= tail_threshold
+    tail_direction = (
+        float(np.mean(np.sign(hold_y[tail_mask]) == np.sign(executable_return[tail_mask])))
+        if tail_mask.any()
+        else None
+    )
+    tail_mae = float(mean_absolute_error(hold_y[tail_mask], executable_return[tail_mask])) if tail_mask.any() else None
+    tail_baseline = float(np.mean(np.abs(hold_y[tail_mask]))) if tail_mask.any() else None
+    hold_metrics["largeMoveAudit"] = {
+        "method": "CALIBRATION_75TH_PERCENTILE_ABSOLUTE_RETURN_THRESHOLD",
+        "threshold": tail_threshold,
+        "observations": int(tail_mask.sum()),
+        "directionalAccuracy": tail_direction,
+        "mae": tail_mae,
+        "baselineMAE": tail_baseline,
+        "maeSkill": None
+        if tail_mae is None or tail_baseline is None
+        else 1.0 - tail_mae / max(tail_baseline, 1e-12),
+        "thresholdSelectedBeforeHoldout": True,
+    }
     hold_metrics["costAwareLongAudit"] = cost_aware_long_audit(
         hold_y,
         executable_return,
@@ -1743,6 +1805,32 @@ def horizon_price_gate(audit: dict[str, Any], walk_forward: dict[str, Any]) -> b
     )
 
 
+def economic_point_gate(audit: dict[str, Any], walk_forward: dict[str, Any]) -> bool:
+    """Require a point forecast to be useful, not merely fractionally better.
+
+    The legacy price gate validates the full forecast object, including rank
+    and interval coverage.  It does not prove that the displayed centre has a
+    dependable sign or economically meaningful amplitude.  This stricter gate
+    is therefore published separately and drives point-specific UI language.
+    """
+    paired = audit.get("pairedNoChangeAudit") or {}
+    large_move = audit.get("largeMoveAudit") or {}
+    folds = audit.get("chronologicalFolds") or []
+    latest_fold = folds[-1] if folds else {}
+    return bool(
+        float(audit.get("directionalAccuracy") or 0.0) >= .52
+        and float(audit.get("pointToRealizedMoveRatio") or 0.0) >= .25
+        and float(paired.get("meanImprovement") or 0.0)
+        > float(paired.get("dailyStandardError") or float("inf"))
+        and int(paired.get("positiveChronologicalBlocks") or 0) >= 3
+        and float(large_move.get("directionalAccuracy") or 0.0) >= .52
+        and float(latest_fold.get("executableMAESkill") or -1.0) > 0
+        and float(latest_fold.get("directionalAccuracy") or 0.0) > .50
+        and int(walk_forward.get("positiveExecutableMAEFolds") or 0) >= 2
+        and float(walk_forward.get("meanExecutableMAESkill") or -1.0) >= .005
+    )
+
+
 def preferred_ranking_horizon(model_horizons: dict[str, Any]) -> int:
     """Choose a medium-horizon rank only from price horizons that passed."""
     candidates = []
@@ -2056,6 +2144,7 @@ def write_artifacts(
         audit["newsIncrementalMAESkill"] = ablation["EVENT"]["deltaMAEImprove"]
         audit["flowIncrementalMAESkill"] = ablation["FLOW"]["deltaMAEImprove"]
         price_pass = horizon_price_gate(audit, walk_forward)
+        economic_point_pass = economic_point_gate(audit, walk_forward)
         direction_pass = audit.get("brierSkill", -1) >= .005
         direction_folds = [
             fold for fold in audit.get("chronologicalFolds", [])
@@ -2096,6 +2185,8 @@ def write_artifacts(
             "priceStatus": "PASS" if price_pass else "REVIEW",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
+            "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
+            "forecastPresentation": "DISTRIBUTION_FIRST_Q20_Q80_WITH_SEPARATE_CONDITIONAL_CENTER",
             "pointDirectionSemantics": "HISTORICAL_SIGN_HIT_RATE_IS_NOT_AN_ISSUER_PROBABILITY",
             "status": "PASS" if price_pass else "REVIEW",
             "sealedAudit": audit,
@@ -2124,6 +2215,7 @@ def write_artifacts(
             "priceStatus": "PASS" if price_pass else "REVIEW",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
+            "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
             "embargoAudit": embargo_audit,
             "distributionAudit": model_horizons[key]["distributionAudit"],
             "magnitudeGate": magnitude_gate,
@@ -2211,6 +2303,8 @@ def write_artifacts(
                     "INSUFFICIENT_DIRECTION_EVIDENCE"
                 ),
                 "validationStatus": "PASS" if price_pass else "REVIEW",
+                "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
+                "forecastPresentation": "DISTRIBUTION_FIRST",
                 "tickSize": tick_size(point, venue),
                 "exchange": venue,
                 "targetDate": next_trading_dates(str(row["date"].date()), horizon)[-1],

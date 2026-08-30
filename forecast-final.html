@@ -93,10 +93,10 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
       <div id="summary" class="summary">—</div>
       <div class="stats">
         <div class="stat"><span>Giá hiện tại</span><b id="close">—</b></div>
-        <div class="stat"><span>Trọng tâm T+1</span><b id="t1">—</b></div>
-        <div class="stat"><span>Trọng tâm T+3</span><b id="t3">—</b></div>
-        <div class="stat"><span>Trọng tâm T+5</span><b id="t5">—</b></div>
-        <div class="stat statRange"><span>Vùng giá T+5</span><b id="range5">—</b></div>
+        <div class="stat"><span>Vùng Q20–Q80 T+1</span><b id="t1">—</b></div>
+        <div class="stat"><span>Vùng Q20–Q80 T+3</span><b id="t3">—</b></div>
+        <div class="stat"><span>Vùng Q20–Q80 T+5</span><b id="t5">—</b></div>
+        <div class="stat statRange"><span>Trung vị có điều kiện T+5</span><b id="range5">—</b></div>
         <div class="stat"><span>Độ tin cậy chiều T+5</span><b id="pup">—</b></div>
         <div class="stat"><span>Trạng thái rủi ro</span><b id="risk">—</b></div>
       </div>
@@ -164,7 +164,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <div id="solutionAiSuggestions" class="solutionAiSuggestions"><button type="button" data-ai-prompt="Phân tích đầy đủ mã cổ phiếu đang xem, đọc đường forecast T+1 đến T+5, kết hợp thông tin mới nhất từ nguồn công khai và kết luận đúng trọng tâm.">Phân tích tích hợp</button><button type="button" data-ai-prompt="Tìm thông tin mới về kinh tế vĩ mô, lãi suất và các yếu tố đang ảnh hưởng đến thị trường Việt Nam.">Vĩ mô & tin mới</button><button type="button" data-ai-prompt="Danh mục quỹ, dòng tiền và các yếu tố chính đang tác động đến dự báo như thế nào?">Quỹ & dòng tiền</button><button type="button" data-ai-prompt="Tìm và đối chiếu thông tin mới cho mã đang xem; đánh giá từng nguồn đang ủng hộ, mâu thuẫn hay chưa đủ rõ đối với forecast hiện tại.">Đối chiếu nguồn mới</button><button type="button" data-ai-prompt="Đánh giá chất lượng kiểm định, đường T+1 đến T+5, vùng bất định và các giới hạn của forecast mã đang xem.">Kiểm định forecast</button><button type="button" data-ai-prompt="So sánh các mã VN30 có dự báo tăng tốt nhất trong 5 phiên tới.">Top VN30</button></div>
   <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, nguồn mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
 </aside>
-<script src="./forecast-final-v12.js?release=20.7"></script>
+<script src="./forecast-final-v12.js?release=34.0"></script>
 <script src="./forecast-polish-v12.js?release=20.0"></script>
 <script src="./forecast-portfolio-v14.js?release=20.0"></script>
 <script src="./forecast-live-leaders-v14.js?release=21.2"></script>

@@ -28,7 +28,7 @@ function snapshot(symbol, close, target, overrides = {}) {
     horizons: {
       "5": {
         expectedPrice: target, q20Price: close - 1_000, q80Price: close + 2_000,
-        tickSize: 100, priceValidated: true, validationStatus: "PASS", directionValidated: false, pointDirectionValidated: true, magnitudeValidated: true,
+        tickSize: 100, priceValidated: true, validationStatus: "PASS", economicPointStatus: "PASS", directionValidated: false, pointDirectionValidated: true, magnitudeValidated: true,
       },
     },
     ...overrides,
