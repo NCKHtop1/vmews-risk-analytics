@@ -1,13 +1,13 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-08-29T11:57:08.919429+00:00",
+  "generatedAt": "2026-08-30T02:59:19.088592+00:00",
   "universeSymbols": 403,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1159,
-      "kept": 1139,
-      "rejected": 20,
+      "checked": 1160,
+      "kept": 1138,
+      "rejected": 22,
       "rejectedBySymbol": {
         "FPT": [
           "Cổ phiếu FPT Retail tăng gần 40% chỉ sau 2 tuần - CafeF"
@@ -35,8 +35,10 @@
           "Nam Long sắp chi hơn 240 tỷ đồng trả cổ tức năm 2025 - CafeF",
           "Chủ tịch Nam Long lý giải 'giá cổ phiếu 5 năm chưa đột phá' - VnExpress",
           "VinaCapital nâng tỷ lệ sở hữu tại Nam Long lên 5,06% - VnEconomy",
+          "Nam Long chào bán thành công 97 triệu cổ phiếu cho cổ đông - Mekong ASEAN",
           "Nam Long chốt ngày chào bán hơn 100 triệu cổ phiếu cho cổ đông hiện hữu - CafeF",
-          "Doanh thu tăng gấp 3 lần, Nam Long vẫn báo lãi quý II/2025 giảm 39% - CafeF"
+          "Doanh thu tăng gấp 3 lần, Nam Long vẫn báo lãi quý II/2025 giảm 39% - CafeF",
+          "Cổ đông Singapore muốn thoái vốn tại Nam Long - CafeF"
         ],
         "DIG": [
           "DIC Corp chấm dứt hoạt động một chi nhánh - CafeF",
@@ -48,24 +50,24 @@
       }
     },
     "research-news-v10.json": {
-      "checked": 6760,
-      "kept": 6760,
+      "checked": 6865,
+      "kept": 6865,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 405,
-      "kept": 405,
+      "checked": 412,
+      "kept": 412,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "community-intelligence-live-v19.json": {
-      "checked": 186,
-      "kept": 186,
+      "checked": 181,
+      "kept": 181,
       "rejected": 0,
       "rejectedBySymbol": {}
     }
   },
-  "rejected": 20,
+  "rejected": 22,
   "policy": "Leading/explicit competing issuer identity is rejected across all current artifacts; legitimate multi-issuer headlines remain eligible for each named ticker."
 }
