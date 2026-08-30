@@ -76,6 +76,10 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.sha || github.sha", workflow)
         for label in ("PHÂN TÍCH BỔ SUNG", "Kỹ thuật · Dòng tiền · Tài chính", "Giá thị trường", "Tài chính doanh nghiệp", "Tín hiệu cộng đồng"):
             self.assertIn(label, smoke)
+        for label in ("PHÂN PHỐI · ĐIỂM ĐỘ TIN CẬY THẤP", "ĐỘ TIN CẬY ĐIỂM THẤP", "Vùng Q20–Q80", "Trung vị ", "LOW_CONFIDENCE"):
+            self.assertIn(label, smoke)
+        self.assertNotIn("textContent?.includes('PASS')", smoke)
+        self.assertNotIn("explicit REVIEW", smoke)
         for stale_label in ("TA Studio", "TA setup phù hợp nhất", "Độ phủ HOSE hiện tại", "mẫu OOS="):
             self.assertNotIn(stale_label, smoke)
 
