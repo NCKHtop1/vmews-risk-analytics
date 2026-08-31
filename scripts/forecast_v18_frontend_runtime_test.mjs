@@ -172,6 +172,20 @@ test("ranking excludes a REVIEW horizon and uses the audited preferred PASS hori
   assert.equal(rows[0].target, 72_300);
 });
 
+test("detail view selects the audited horizon and exposes one exact up-or-down point forecast", async () => {
+  const { window } = await loadMarketDashboard();
+  const fpt = snapshot("FPT", 73_200, 72_700);
+  fpt.horizons["1"] = { ...fpt.horizons["5"], expectedPrice: 73_000, q20Price: 71_900, q80Price: 74_100 };
+  fpt.horizons["3"] = { ...fpt.horizons["5"], expectedPrice: 72_900, q20Price: 71_100, q80Price: 74_800 };
+  const B = base([fpt]);
+  B.model = { promotion: { status: "PASS", directPriceHorizons: [1, 2, 3], reviewHorizons: [4, 5], preferredRankingHorizon: 3 } };
+  assert.equal(window.__VMEWS_PRIMARY_HORIZON__(B, fpt), 3);
+  const point = window.__VMEWS_POINT_MOVE__(fpt.horizons["3"], fpt.close);
+  assert.equal(point.direction, "GIẢM");
+  assert.equal(point.delta, -300);
+  assert.equal(point.target, 72_900);
+});
+
 test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
   const window = await loadLeaderboard();
   const items = [

@@ -58,7 +58,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
             "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
             "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiGeminiWeb",
-            "solutionAiKey", "solutionAiDisconnect", "solutionAiBackend", "solutionAiSaveBackend",
+            "solutionAiKey", "solutionAiDisconnect",
         }
         self.assertFalse(required - self.document.ids)
 
@@ -76,10 +76,10 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.sha || github.sha", workflow)
         for label in ("PHÂN TÍCH BỔ SUNG", "Kỹ thuật · Dòng tiền · Tài chính", "Giá thị trường", "Tài chính doanh nghiệp", "Tín hiệu cộng đồng"):
             self.assertIn(label, smoke)
-        for label in ("PHÂN PHỐI · ĐIỂM ĐỘ TIN CẬY THẤP", "ĐỘ TIN CẬY ĐIỂM THẤP", "Vùng Q20–Q80", "Trung vị ", "LOW_CONFIDENCE"):
+        for label in ("Giá dự báo của mô hình", "Vùng tham khảo", "TĂNG", "GIẢM"):
             self.assertIn(label, smoke)
-        self.assertNotIn("textContent?.includes('PASS')", smoke)
-        self.assertNotIn("explicit REVIEW", smoke)
+        for forbidden in ("ĐIỂM ĐÃ QUA GATE", "ĐỘ TIN CẬY ĐIỂM THẤP", "không phải chênh vài trăm đồng"):
+            self.assertIn(forbidden, smoke)
         for stale_label in ("TA Studio", "TA setup phù hợp nhất", "Độ phủ HOSE hiện tại", "mẫu OOS="):
             self.assertNotIn(stale_label, smoke)
 
@@ -88,9 +88,11 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
         self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
-        self.assertIn("HOSE · 5 PHIÊN TỚI", self.html)
-        self.assertIn("Vùng Q20–Q80 T+5", self.html)
-        self.assertIn("Trung vị có điều kiện T+5", self.html)
+        self.assertIn("HOSE · KỲ DỰ BÁO ĐƯỢC CHỌN", self.html)
+        self.assertIn("Tâm điểm HOSE", self.html)
+        self.assertNotIn("Tâm điểm VN30", self.html)
+        self.assertIn("Giá dự báo T+5", self.html)
+        self.assertIn("Mức dự báo T+5", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
         self.assertNotIn("bước giá", self.html)
@@ -99,9 +101,24 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("release=34.0", self.html)
+        self.assertIn("forecast-final-v12.js?release=36.0", self.html)
+        self.assertIn("solution-ai-v17.js?release=36.0", self.html)
         self.assertIn("forecast-live-leaders-v14.js?release=21.2", self.html)
         self.assertNotIn("release=19.3", self.html)
+
+    def test_internal_statuses_and_nonexistent_backend_are_not_user_facing(self) -> None:
+        assets = "\n".join(
+            (ROOT / name).read_text(encoding="utf-8")
+            for name in ("forecast-final.html", "forecast-final-v12.js", "solution-ai-v17.js")
+        )
+        for forbidden in (
+            "ĐIỂM ĐÃ QUA GATE", "ĐIỂM QUA GATE", "ĐIỂM ĐỘ TIN CẬY THẤP",
+            "không phải chênh vài trăm đồng", "MÁY CHỦ AI DỰ PHÒNG",
+            "máy-chủ-của-bạn", "solutionAiBackend", "solutionAiSaveBackend",
+            "vmews_solution_ai_endpoint",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, assets)
 
     def test_motion_is_responsive_accessible_and_reducible(self) -> None:
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
@@ -162,9 +179,11 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("payload.coreAsOf", leaders)
         self.assertIn("payload.forecastAlignment", leaders)
         self.assertIn("rankingEligible", leaders)
-        self.assertIn("ĐỘ TIN CẬY ĐIỂM THẤP", app)
-        self.assertIn("forecastAvailable(q)?`${price(q.q20Price)} – ${price(q.q80Price)}`", app)
-        self.assertIn("PHÂN PHỐI THỬ NGHIỆM · KHÔNG PHẢI TÍN HIỆU", app)
+        self.assertIn("function primaryHorizon(B,z=null)", app)
+        self.assertIn("function pointMove(q,close)", app)
+        self.assertIn("Giá dự báo của mô hình", app)
+        self.assertNotIn("ĐỘ TIN CẬY ĐIỂM THẤP", app)
+        self.assertNotIn("PHÂN PHỐI THỬ NGHIỆM · KHÔNG PHẢI TÍN HIỆU", app)
         self.assertIn("upside: target / close - 1", leaders)
         self.assertIn("right.rankScore - left.rankScore", leaders)
         self.assertIn("__VMEWS_FINAL_LEADERBOARD__", leaders)

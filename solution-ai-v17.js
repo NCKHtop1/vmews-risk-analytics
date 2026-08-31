@@ -61,29 +61,6 @@
     catch { /* an in-memory key has already been cleared */ }
   }
 
-  function endpoint() {
-    const declared = $('meta[name="solution-ai-endpoint"]')?.content?.trim();
-    const configured = localStorage.getItem("vmews_solution_ai_endpoint")?.trim();
-    if (configured || declared) return configured || declared;
-    return location.hostname.endsWith("githubraw.com") ? "" : "/api/solution-ai";
-  }
-
-  async function configureBackend() {
-    const field = $("#solutionAiBackend");
-    const label = $("#solutionAiConnectionState");
-    const value = String(field?.value || "").trim();
-    try {
-      const address = new URL(value);
-      if (address.protocol !== "https:" || address.username || address.password || address.search || address.hash) throw new Error("invalid");
-      localStorage.setItem("vmews_solution_ai_endpoint", address.href);
-      if (label) label.textContent = "Đã lưu địa chỉ máy chủ; khóa AI phải được cấu hình phía máy chủ.";
-      return await checkConnection();
-    } catch {
-      if (label) label.textContent = "Địa chỉ máy chủ phải là HTTPS hợp lệ, không chứa khóa hoặc tham số bí mật.";
-      return false;
-    }
-  }
-
   function providerMessage(status, details = "") {
     if (status === 401 || status === 403) return "Khóa Google không hợp lệ, đã bị thu hồi hoặc chưa có quyền sử dụng Gemini.";
     if (status === 429) return "Google Gemini đã hết hạn mức hoặc cần kiểm tra giới hạn sử dụng.";
@@ -545,7 +522,7 @@
 
   async function resilientDirectAnalysis(question, context, secret, intent) {
     if (state.quotaUntil > Date.now()) {
-      const limited = new Error("Gemini vừa hết hạn mức; đang ưu tiên máy chủ AI dự phòng và dữ liệu đã kiểm chứng.");
+      const limited = new Error("Gemini vừa hết hạn mức; đang trả kết quả từ dữ liệu forecast đã tải.");
       limited.status = 429;
       throw limited;
     }
@@ -563,7 +540,7 @@
           state.quotaUntil = Date.now() + 60_000;
           break;
         }
-        if (index + 1 < candidates.length) setStatus("Đang tiếp tục với kết nối dự phòng…");
+        if (index + 1 < candidates.length) setStatus("Đang thử lại bằng mô hình Gemini khác…");
       }
     }
     throw lastError || new Error("Gemini tạm thời chưa phản hồi.");
@@ -1141,19 +1118,6 @@
     return lines.filter(Boolean).join("\n");
   }
 
-  async function remoteAnalysis(input, context, address, sources = []) {
-    const response = await fetch(address, {
-      method: "POST", mode: "cors", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        question: input, context, sources: sources.slice(0, 8),
-        history: state.messages.slice(-8).map(item => ({ role: item.role, content: item.content.slice(0, 2400) })),
-      }),
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok || !payload.answer) throw new Error(payload.message || `Kết nối AI chưa sẵn sàng (${response.status}).`);
-    return payload;
-  }
-
   async function ask(input) {
     const question = String(input || "").trim().slice(0, 1800);
     if (!question || state.busy) return;
@@ -1168,7 +1132,6 @@
       updateContextBar(context);
       const intent = researchIntent(question, context);
       const secret = sessionSecret();
-      const address = endpoint();
       let answer;
       let sources = [];
       let meta = [];
@@ -1198,38 +1161,11 @@
           const connection = $("#solutionAiConnectionState");
           if (connection) connection.textContent = error?.message || "Gemini tạm thời không phản hồi.";
           const fallbackSources = Array.isArray(error?.sources) ? error.sources : await collectOpenSources(question, intent, context).catch(() => []);
-          let recovered = null;
-          if (address) {
-            try {
-              setStatus("Gemini gián đoạn · đang chuyển nhà cung cấp…");
-              recovered = await remoteAnalysis(question, context, address, fallbackSources);
-            } catch { /* keep the verified local snapshot and source list available */ }
-          }
-          if (recovered) {
-            answer = enforceAnswerFocus(recovered.answer, question, context, intent);
-            sources = fallbackSources;
-            meta = [recovered.provider || "AI dự phòng", "Gemini gián đoạn", ...(fallbackSources.length ? [`${fallbackSources.length} nguồn mở`] : [])];
-            setStatus(`${recovered.provider || "AI dự phòng"} · đã tự chuyển nhà cung cấp`);
-          } else {
-            answer = sourceFallback(question, context, intent, fallbackSources, error?.message || "Gemini tạm thời không phản hồi.");
-            sources = fallbackSources;
-            meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nghiên cứu dự phòng", "Gemini gián đoạn"];
-            if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
-            setStatus(intent.useSnapshot ? "VMEWS · phân tích dự phòng" : "Nguồn mở · chờ AI đọc sâu");
-          }
-        }
-      } else if (address) {
-        try {
-          const openSources = intent.shouldSearch ? await collectOpenSources(question, intent, context).catch(() => []) : [];
-          const result = await remoteAnalysis(question, context, address, openSources);
-          answer = enforceAnswerFocus(result.answer, question, context, intent);
-          sources = openSources;
-          meta = [result.provider || "AI", "Dữ liệu VMEWS", ...(result.failoverUsed ? ["Nhà cung cấp dự phòng"] : [])];
-          setStatus(`${result.provider || "AI"} · phân tích theo dữ liệu thực`);
-        } catch {
-          answer = localAnalysis(question, context);
-          meta = ["Dữ liệu VMEWS", "Không dùng web"];
-          setStatus("Phân tích từ dữ liệu hiện có");
+          answer = sourceFallback(question, context, intent, fallbackSources, error?.message || "Gemini tạm thời không phản hồi.");
+          sources = fallbackSources;
+          meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nguồn công khai", "Gemini gián đoạn"];
+          if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
+          setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Nguồn mở · chờ Gemini đọc sâu");
         }
       } else {
         const openSources = intent.shouldSearch ? await collectOpenSources(question, intent, context).catch(() => []) : [];
@@ -1237,7 +1173,7 @@
           ? localAnalysis(question, context)
           : sourceFallback(question, context, intent, openSources, "Kết nối Gemini để đọc sâu và tổng hợp nội dung các nguồn.");
         sources = openSources;
-        meta = intent.useSnapshot ? [`Forecast ${context.symbol}`, "Dữ liệu VMEWS"] : ["Nghiên cứu dự phòng"];
+        meta = intent.useSnapshot ? [`Forecast ${context.symbol}`, "Dữ liệu VMEWS"] : ["Nguồn công khai"];
         if (openSources.length) meta.push(`${openSources.length} nguồn chờ đối chiếu`);
         if (!openSources.length) meta.push("Không dùng web");
         setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Kết nối Gemini để đọc sâu nguồn mở");
@@ -1292,7 +1228,6 @@
 
   async function checkConnection(silent = false) {
     const label = $("#solutionAiConnectionState");
-    const disconnect = $("#solutionAiDisconnect");
     const secret = sessionSecret();
     if (secret) {
       try {
@@ -1309,28 +1244,8 @@
       }
     }
     syncConnectionUi(false);
-    const address = endpoint();
-    if (!address) {
-      if (label) label.textContent = "Khóa chỉ lưu tạm trong tab này; không ghi lên GitHub.";
-      if (!silent) setStatus("Nhập khóa Google để kết nối Gemini");
-      return false;
-    }
-    try {
-      const response = await fetch(address, { method: "GET", mode: "cors", cache: "no-store" });
-      const connection = await response.json().catch(() => ({}));
-      if (response.ok && connection.ready === true && connection.provider) {
-        syncConnectionUi(true);
-        const backups = connection.failoverAvailable ? ` · ${connection.providers?.length || 2} nhà cung cấp, tự chuyển khi lỗi` : "";
-        if (label) label.textContent = `${connection.provider} đã sẵn sàng${backups}.`;
-        setStatus(`${connection.provider} · đã kết nối${connection.failoverAvailable ? " dự phòng" : ""}`);
-        return true;
-      }
-      if (label) label.textContent = "Đăng nhập Google để hoàn tất kích hoạt.";
-      if (!silent) setStatus("Đang chờ kết nối Gemini");
-    } catch {
-      if (label) label.textContent = "Kết nối Google chưa sẵn sàng.";
-      if (!silent) setStatus("Phân tích từ dữ liệu hiện có");
-    }
+    if (label) label.textContent = "Khóa API chỉ tồn tại trong tab hiện tại và không được ghi vào mã nguồn.";
+    if (!silent) setStatus("Mở Gemini Web hoặc nhập khóa Google");
     return false;
   }
 
@@ -1606,7 +1521,6 @@
     $("#solutionAiSettings").addEventListener("click", configure);
     $("#solutionAiGeminiWeb")?.addEventListener("click", openGeminiWeb);
     $("#solutionAiRetry")?.addEventListener("click", () => connectGemini());
-    $("#solutionAiSaveBackend")?.addEventListener("click", () => configureBackend());
     $("#solutionAiDisconnect")?.addEventListener("click", disconnectGemini);
     $("#solutionAiKey")?.addEventListener("keydown", event => {
       if (event.key === "Enter") { event.preventDefault(); void connectGemini(); }
