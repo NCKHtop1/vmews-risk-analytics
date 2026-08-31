@@ -1,34 +1,76 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-08-31T03:07:31.990599+00:00",
+  "generatedAt": "2026-08-31T14:50:33.866988+00:00",
   "universeSymbols": 403,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1134,
-      "kept": 1134,
-      "rejected": 0,
-      "rejectedBySymbol": {}
+      "checked": 1147,
+      "kept": 1122,
+      "rejected": 25,
+      "rejectedBySymbol": {
+        "FPT": [
+          "Cổ phiếu FPT Retail tăng gần 40% chỉ sau 2 tuần - CafeF"
+        ],
+        "ACB": [
+          "AGR: Nghị quyết HĐQT về việc phê duyệt tăng hạn mức tín dụng tại ACB - Vietstock",
+          "AGR: Agriseco công bố Nghị quyết HĐQT về việc phê duyệt tăng hạn mức tín dụng tại ACB/Agriseco discloses the Board of Directors’ Resolution on the Approval of Increasing Credit Limit at ACB - Vietstock"
+        ],
+        "MWG": [
+          "SSI: Cổ phiếu Thế Giới Di Động (MWG) còn dư địa tăng hơn 40% - nguoiquansat.vn"
+        ],
+        "BCM": [
+          "Tìm kiếm: Becamex Group - Vietstock",
+          "Becamex chi 1.455 tỷ đồng đầu tư thêm một khu công nghiệp - CafeF",
+          "Becamex Group dự kiến chia cổ tức năm 2026 tỷ lệ 10% - CafeF",
+          "Từ thất bại tăng vốn đến áp lực giảm sở hữu Nhà nước tại Becamex - Nhadautu.vn",
+          "Becamex muốn giảm tỷ lệ vốn Nhà nước từ 95% xuống 65% - Mekong ASEAN",
+          "Becamex tạm hoãn thương vụ bán cổ phiếu lịch sử - VnExpress"
+        ],
+        "DXG": [
+          "Phó Tổng Giám đốc Đất Xanh Group muốn thoái sạch vốn - CafeF"
+        ],
+        "NLG": [
+          "Nam Long sắp chi hơn 240 tỷ đồng trả cổ tức năm 2025 - CafeF",
+          "Nam Long trả cổ tức tiền mặt - Mekong ASEAN",
+          "Chủ tịch Nam Long lý giải 'giá cổ phiếu 5 năm chưa đột phá' - VnExpress",
+          "VinaCapital nâng tỷ lệ sở hữu tại Nam Long lên 5,06% - VnEconomy",
+          "Nam Long chốt ngày chào bán hơn 100 triệu cổ phiếu cho cổ đông hiện hữu - CafeF",
+          "Doanh thu tăng gấp 3 lần, Nam Long vẫn báo lãi quý II/2025 giảm 39% - CafeF",
+          "Cổ đông Singapore muốn thoái vốn tại Nam Long - CafeF",
+          "Cổ đông ngoại muốn thoái toàn bộ vốn tại Nam Long - VnExpress"
+        ],
+        "DIG": [
+          "DIC Corp chốt quyền phân bổ gần 48 triệu cổ phiếu trả cổ tức - CafeF",
+          "DIC Corp trả cổ tức bằng cổ phiếu tỷ lệ 6% - CafeF",
+          "Gia đình Chủ tịch DIC Corp tiếp tục bị bán giải chấp cổ phiếu - VnExpress"
+        ],
+        "HCM": [
+          "BFC: Thông báo Quyết định của Thuế TP.HCM về việc xử phạt vi phạm hành chính về thuế - Vietstock",
+          "TPC: Thông báo nhận được Quyết định của Thuế TP.HCM về kết luận kiểm tra thuế niên độ năm 2024 và 2025 - Vietstock",
+          "Chứng khoán HSC chốt ngày chào bán 270 triệu cổ phiếu - Mekong ASEAN"
+        ]
+      }
     },
     "research-news-v10.json": {
-      "checked": 6995,
-      "kept": 6995,
+      "checked": 7065,
+      "kept": 7065,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 420,
-      "kept": 420,
+      "checked": 422,
+      "kept": 422,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "community-intelligence-live-v19.json": {
-      "checked": 177,
-      "kept": 177,
+      "checked": 179,
+      "kept": 179,
       "rejected": 0,
       "rejectedBySymbol": {}
     }
   },
-  "rejected": 0,
+  "rejected": 25,
   "policy": "Leading/explicit competing issuer identity is rejected across all current artifacts; legitimate multi-issuer headlines remain eligible for each named ticker."
 }
