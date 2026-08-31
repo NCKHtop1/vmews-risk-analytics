@@ -1,72 +1,34 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-08-31T02:14:57.433360+00:00",
+  "generatedAt": "2026-08-31T03:07:31.990599+00:00",
   "universeSymbols": 403,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1157,
+      "checked": 1134,
       "kept": 1134,
-      "rejected": 23,
-      "rejectedBySymbol": {
-        "FPT": [
-          "Cổ phiếu FPT Retail tăng gần 40% chỉ sau 2 tuần - CafeF"
-        ],
-        "ACB": [
-          "AGR: Nghị quyết HĐQT về việc phê duyệt tăng hạn mức tín dụng tại ACB - Vietstock",
-          "AGR: Agriseco công bố Nghị quyết HĐQT về việc phê duyệt tăng hạn mức tín dụng tại ACB/Agriseco discloses the Board of Directors’ Resolution on the Approval of Increasing Credit Limit at ACB - Vietstock"
-        ],
-        "MWG": [
-          "SSI: Cổ phiếu Thế Giới Di Động (MWG) còn dư địa tăng hơn 40% - nguoiquansat.vn"
-        ],
-        "BCM": [
-          "Tìm kiếm: Becamex Group - Vietstock",
-          "Becamex chi 1.455 tỷ đồng đầu tư thêm một khu công nghiệp - CafeF",
-          "Becamex Group dự kiến chia cổ tức năm 2026 tỷ lệ 10% - CafeF",
-          "Từ thất bại tăng vốn đến áp lực giảm sở hữu Nhà nước tại Becamex - Nhadautu.vn",
-          "Becamex muốn giảm tỷ lệ vốn Nhà nước từ 95% xuống 65% - Mekong ASEAN",
-          "Becamex tạm hoãn thương vụ bán cổ phiếu lịch sử - VnExpress"
-        ],
-        "NLG": [
-          "Nam Long trả cổ tức tiền mặt - Mekong ASEAN",
-          "Nam Long sắp chi hơn 240 tỷ đồng trả cổ tức năm 2025 - CafeF",
-          "Chủ tịch Nam Long lý giải 'giá cổ phiếu 5 năm chưa đột phá' - VnExpress",
-          "VinaCapital nâng tỷ lệ sở hữu tại Nam Long lên 5,06% - VnEconomy",
-          "Nam Long chốt ngày chào bán hơn 100 triệu cổ phiếu cho cổ đông hiện hữu - CafeF",
-          "Doanh thu tăng gấp 3 lần, Nam Long vẫn báo lãi quý II/2025 giảm 39% - CafeF",
-          "Cổ đông ngoại muốn thoái toàn bộ vốn tại Nam Long - VnExpress"
-        ],
-        "DIG": [
-          "DIC Corp chốt quyền phân bổ gần 48 triệu cổ phiếu trả cổ tức - CafeF",
-          "DIC Corp trả cổ tức bằng cổ phiếu tỷ lệ 6% - CafeF",
-          "Gia đình Chủ tịch DIC Corp tiếp tục bị bán giải chấp cổ phiếu - VnExpress"
-        ],
-        "HCM": [
-          "BFC: Thông báo Quyết định của Thuế TP.HCM về việc xử phạt vi phạm hành chính về thuế - Vietstock",
-          "TPC: Thông báo nhận được Quyết định của Thuế TP.HCM về kết luận kiểm tra thuế niên độ năm 2024 và 2025 - Vietstock",
-          "Thị giá lập đỉnh, sếp Chứng khoán HSC đăng ký bán hơn 1/3 lượng cổ phiếu đang nắm giữ - MoneyF"
-        ]
-      }
+      "rejected": 0,
+      "rejectedBySymbol": {}
     },
     "research-news-v10.json": {
-      "checked": 6978,
-      "kept": 6978,
+      "checked": 6995,
+      "kept": 6995,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 419,
-      "kept": 419,
+      "checked": 420,
+      "kept": 420,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "community-intelligence-live-v19.json": {
-      "checked": 184,
-      "kept": 184,
+      "checked": 177,
+      "kept": 177,
       "rejected": 0,
       "rejectedBySymbol": {}
     }
   },
-  "rejected": 23,
+  "rejected": 0,
   "policy": "Leading/explicit competing issuer identity is rejected across all current artifacts; legitimate multi-issuer headlines remain eligible for each named ticker."
 }
