@@ -31,6 +31,7 @@ from forecast_v13_market_model import (  # noqa: E402
     horizon_price_gate,
     paired_no_change_audit,
     preferred_ranking_horizon,
+    production_boosting_rounds,
 )
 from forecast_v14_signal_audit import (  # noqa: E402
     attach_matured_reaction_priors,
@@ -41,6 +42,22 @@ from forecast_v14_signal_audit import (  # noqa: E402
 
 
 class VietnamPriceGridTest(unittest.TestCase):
+    def test_pr_and_production_use_identical_frozen_complexity(self) -> None:
+        production = production_boosting_rounds(False)
+        pull_request = production_boosting_rounds(True)
+        self.assertEqual(pull_request, production)
+        self.assertEqual(
+            production,
+            {
+                "point": 90,
+                "classifier": 65,
+                "magnitude": 75,
+                "walk_point": 55,
+                "walk_classifier": 55,
+                "walk_magnitude": 45,
+            },
+        )
+
     def test_vndirect_decimal_quotes_are_normalized_to_integer_vnd(self) -> None:
         class Response:
             def __enter__(self):
