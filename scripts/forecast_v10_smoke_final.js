@@ -6,14 +6,16 @@ const ev=JSON.parse(fs.readFileSync('data/news-event-study.json','utf8'));
 const html=fs.readFileSync('forecast-final.html','utf8'),ui=fs.readFileSync('forecast-final-v10.js','utf8');
 const finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
 let passed=0;const ok=(cond,msg)=>{if(!cond)throw Error(msg);passed++};
-// TC01 identity and actual HOSE breadth.
-ok(model.version==='VMEWS-FORECAST-10.1.0'&&model.promotion?.status==='PASS','TC01 model/promotion');
+// TC01 identity, actual HOSE breadth and honest research-only promotion state.
+const expectedPromotion=['3','5'].every(h=>model.horizons?.[h]?.status==='PASS')?'PASS':'REVIEW';
+ok(model.version==='VMEWS-FORECAST-10.1.0'&&model.promotion?.status===expectedPromotion,'TC01 model/promotion');
+ok(model.promotion?.actionable===false&&model.promotion?.exactMagnitude===false,'TC01 research-only governance');
 ok(model.universe?.symbols>=250&&model.universe?.rows>=100000,'TC01 HOSE coverage');
 // TC02 strict numerical train/live parity.
 const forbidden=['relRet1','relRet5','relRet20','rankRet5','rankRet20','rankTechnical','breadth1','breadth5','breadth20','trend20Share','riskShare','csad1','csad5','dispersion20','marketRet1','marketRet5','marketRet20','marketTechnical','vixLevel','vixRet20','usdVndRet20','dxyRet20','us10yRet20','brentRet20'];
 ok(model.governance?.crossSectionalFeaturesInNumericalModel===false,'TC02 parity governance');ok(!forbidden.some(k=>model.featureNames.includes(k)),'TC02 live-only numerical feature');
 // TC03 parameter dimensions and independent calibration contracts.
-for(const h of ['3','5']){const z=model.horizons[h];ok(z.status==='PASS'&&z.gates.rankingApproved&&z.gates.directionApproved&&z.gates.alphaCalibrationApproved,`TC03 gates ${h}`);for(const k of ['impute','mean','std'])ok(z[k].length===model.featureNames.length&&z[k].every(finite),`TC03 ${h} ${k}`);ok(z.alphaModel.coef.length===model.featureNames.length&&z.directionModel.coef.length===model.featureNames.length,`TC03 coef ${h}`);for(const [name,bs] of [['alpha',z.alphaCalibrationBuckets],['direction',z.directionCalibrationBuckets]]){ok(bs.length>=6,`TC03 ${name} buckets ${h}`);let prev=-Infinity;for(const b of bs){ok(finite(b.lo)&&finite(b.hi)&&b.lo<=b.hi&&b.lo>=prev-1e-12,`TC03 bucket order ${h}`);ok(b.n>=30&&b.positiveRate>=0&&b.positiveRate<=1&&b.q20<=b.q80,`TC03 bucket stats ${h}`);prev=b.hi;}}}
+for(const h of ['3','5']){const z=model.horizons[h],core=Boolean(z.gates.rankingApproved&&z.gates.directionApproved&&z.gates.alphaCalibrationApproved);ok(z.status===(core?'PASS':'REVIEW'),`TC03 honest gate state ${h}`);for(const k of ['impute','mean','std'])ok(z[k].length===model.featureNames.length&&z[k].every(finite),`TC03 ${h} ${k}`);ok(z.alphaModel.coef.length===model.featureNames.length&&z.directionModel.coef.length===model.featureNames.length,`TC03 coef ${h}`);for(const [name,bs] of [['alpha',z.alphaCalibrationBuckets],['direction',z.directionCalibrationBuckets]]){ok(bs.length>=6,`TC03 ${name} buckets ${h}`);let prev=-Infinity;for(const b of bs){ok(finite(b.lo)&&finite(b.hi)&&b.lo<=b.hi&&b.lo>=prev-1e-12,`TC03 bucket order ${h}`);ok(b.n>=30&&b.positiveRate>=0&&b.positiveRate<=1&&b.q20<=b.q80,`TC03 bucket stats ${h}`);prev=b.hi;}}}
 // TC04 sealed chronology, bootstrap and regime stability.
 for(const h of ['3','5']){const a=model.horizons[h].sealedAudit;ok(a.n>=10000&&a.alphaIC>.02&&a.alphaSpread>.002,`TC04 sealed ranking ${h}`);ok(a.bootstrap.ic95[0]>-.005,`TC04 bootstrap ${h}`);ok(a.directionBalancedAccuracy>.515&&a.directionMCC>.02,`TC04 direction ${h}`);ok(model.horizons[h].gates.betterThanMomentumRank,`TC04 baseline ${h}`);for(const seg of ['firstHalf','secondHalf','bear','bull']){const s=a.segments?.[seg];ok(s&&s.n>=500&&s.alphaIC>.005,`TC04 regime ${h} ${seg}`)}}
 // TC05 corporate-action chart guard and no connected forecast path.

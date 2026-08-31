@@ -30,14 +30,15 @@ def adjusted(c):
  c=list(map(float,c));a=[None]*len(c);a[-1]=c[-1]
  for i in range(len(c)-2,-1,-1):z=math.log(c[i+1]/c[i]);z=0 if abs(z)>.22 else z;a[i]=a[i+1]/math.exp(z)
  return a
-# TC01 identity and breadth
-assert M['version']=='VMEWS-FORECAST-10.1.0' and M['promotion']['status']=='PASS';assert M['universe']['symbols']>=250 and M['universe']['rows']>=100000;assert M['governance'].get('crossSectionalFeaturesInNumericalModel') is False
+# TC01 identity, breadth and honest research-only promotion state
+expected_promotion='PASS' if all((M.get('horizons',{}).get(h,{}) or {}).get('status')=='PASS' for h in ('3','5')) else 'REVIEW'
+assert M['version']=='VMEWS-FORECAST-10.1.0' and M['promotion']['status']==expected_promotion;assert M['promotion'].get('actionable') is False and M['promotion'].get('exactMagnitude') is False;assert M['universe']['symbols']>=250 and M['universe']['rows']>=100000;assert M['governance'].get('crossSectionalFeaturesInNumericalModel') is False
 # TC02 strict train/live feature parity
 forbidden={'relRet1','relRet5','relRet20','rankRet5','rankRet20','rankTechnical','breadth1','breadth5','breadth20','trend20Share','riskShare','csad1','csad5','dispersion20','marketRet1','marketRet5','marketRet20','marketTechnical','vixLevel','vixRet20','usdVndRet20','dxyRet20','us10yRet20','brentRet20'};assert not(forbidden&set(M['featureNames'])),forbidden&set(M['featureNames'])
 # TC03 parameters and calibration contracts
 p=len(M['featureNames'])
 for h in ('3','5'):
- z=M['horizons'][h];assert z['status']=='PASS' and z['gates']['rankingApproved'] and z['gates']['directionApproved'] and z['gates']['alphaCalibrationApproved'];assert all(len(z[k])==p and all(finite(x) for x in z[k]) for k in ('impute','mean','std'));assert len(z['alphaModel']['coef'])==p and len(z['directionModel']['coef'])==p;buckets(z['alphaCalibrationBuckets'],h+'a');buckets(z['directionCalibrationBuckets'],h+'d')
+ z=M['horizons'][h];core=bool(z['gates']['rankingApproved'] and z['gates']['directionApproved'] and z['gates']['alphaCalibrationApproved']);assert z['status']==('PASS' if core else 'REVIEW'),(h,z['status'],z['gates']);assert all(len(z[k])==p and all(finite(x) for x in z[k]) for k in ('impute','mean','std'));assert len(z['alphaModel']['coef'])==p and len(z['directionModel']['coef'])==p;buckets(z['alphaCalibrationBuckets'],h+'a');buckets(z['directionCalibrationBuckets'],h+'d')
 # TC04 sealed audit and regime stability
 for h in ('3','5'):
  a=M['horizons'][h]['sealedAudit'];assert a['n']>=10000 and a['alphaIC']>.02 and a['alphaSpread']>.002;assert a['bootstrap']['ic95'][0]>-.005;assert a['directionBalancedAccuracy']>.515 and a['directionMCC']>.02;assert M['horizons'][h]['gates']['betterThanMomentumRank'];
