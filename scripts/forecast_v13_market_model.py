@@ -65,6 +65,33 @@ DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
 VERSION = "VMEWS-MARKET-FORECAST-20.1.0"
 HORIZONS = (1, 2, 3, 4, 5)
+
+# One frozen complexity profile is used by pull-request verification and by
+# production publication.  The previous ``fast`` branch used fewer boosting
+# rounds than production; that let a PR pass with a regularized model while the
+# post-merge job silently trained a materially different, over-fitted model.
+# Keep the lower-complexity profile that has already passed the sealed holdout
+# and walk-forward gates, and make the legacy flag a compatibility alias only.
+PRODUCTION_BOOSTING_ROUNDS = {
+    "point": 90,
+    "classifier": 65,
+    "magnitude": 75,
+    "walk_point": 55,
+    "walk_classifier": 55,
+    "walk_magnitude": 45,
+}
+
+
+def production_boosting_rounds(fast: bool = False) -> dict[str, int]:
+    """Return the immutable PR/production model-complexity contract.
+
+    ``fast`` remains accepted so older callers do not break, but it must never
+    change the statistical model that is promoted by CI and later published.
+    """
+    del fast
+    return dict(PRODUCTION_BOOSTING_ROUNDS)
+
+
 # Recent walk-forward windows show that the raw market-wide intercept drifts
 # faster than the cross-sectional stock-selection signal at T+2.  Retaining a
 # quarter of that component preserves positive sealed MAE skill while avoiding
@@ -1014,6 +1041,7 @@ def predict_horizon_core(
 
 def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> HorizonResult:
     started = time.monotonic()
+    rounds = production_boosting_rounds(fast)
     label = f"target{horizon}"
     maturity = f"maturity{horizon}"
     eligible = panel.loc[panel[label].notna() & panel[maturity].notna()].copy()
@@ -1058,7 +1086,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     model = HistGradientBoostingRegressor(
         loss=requested_loss,
         learning_rate=.065,
-        max_iter=90 if fast else 155,
+        max_iter=rounds["point"],
         max_leaf_nodes=23,
         min_samples_leaf=int(os.environ.get("V13_MIN_LEAF", "180")),
         l2_regularization=float(os.environ.get("V13_L2", "8.0")),
@@ -1068,7 +1096,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     )
     classifier = HistGradientBoostingClassifier(
         learning_rate=.06,
-        max_iter=65 if fast else 105,
+        max_iter=rounds["classifier"],
         max_leaf_nodes=19,
         min_samples_leaf=220,
         l2_regularization=10.0,
@@ -1082,7 +1110,7 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     magnitude_model = HistGradientBoostingRegressor(
         loss="absolute_error",
         learning_rate=.06,
-        max_iter=75 if fast else 125,
+        max_iter=rounds["magnitude"],
         max_leaf_nodes=19,
         min_samples_leaf=240,
         l2_regularization=12.0,
@@ -1400,6 +1428,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
     has its own purged training set, calibration window and frozen scale.  No
     model or scale fitted for a later fold is reused by an earlier fold.
     """
+    rounds = production_boosting_rounds(fast)
     label = f"target{horizon}"
     maturity = f"maturity{horizon}"
     eligible = panel.loc[panel[label].notna() & panel[maturity].notna()].copy()
@@ -1439,7 +1468,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         point_model = HistGradientBoostingRegressor(
             loss=os.environ.get("V13_MODEL_LOSS", "absolute_error"),
             learning_rate=.065,
-            max_iter=55 if fast else 90,
+            max_iter=rounds["walk_point"],
             max_leaf_nodes=21,
             min_samples_leaf=220,
             l2_regularization=10.0,
@@ -1453,7 +1482,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         )
         direction_model = HistGradientBoostingClassifier(
             learning_rate=.06,
-            max_iter=55 if fast else 90,
+            max_iter=rounds["walk_classifier"],
             max_leaf_nodes=19,
             min_samples_leaf=240,
             l2_regularization=12.0,
@@ -1518,7 +1547,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         magnitude_model = HistGradientBoostingRegressor(
             loss="absolute_error",
             learning_rate=.06,
-            max_iter=45 if fast else 75,
+            max_iter=rounds["walk_magnitude"],
             max_leaf_nodes=17,
             min_samples_leaf=260,
             l2_regularization=14.0,
@@ -2427,6 +2456,9 @@ def write_artifacts(
         "promotion": promotion,
         "governance": {
             "selection": "CALIBRATION_ONLY_ONE_STANDARD_ERROR",
+            "trainingProfile": "FROZEN_REGULARIZED_PR_PRODUCTION_PARITY",
+            "boostingRounds": PRODUCTION_BOOSTING_ROUNDS,
+            "legacyFastFlagChangesModel": False,
             "holdoutMethod": "CHRONOLOGICAL_MATURITY_PURGED_PLUS_EXPANDING_RETRAINED_WALK_FORWARD",
             "futureRowsUsedForTraining": 0,
             "futureLabelsUsedForCalibration": 0,
@@ -2560,7 +2592,11 @@ def write_artifacts(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--fast", action="store_true", help="use fewer boosting rounds for diagnostics")
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="deprecated compatibility alias; PR and production use the same frozen regularized profile",
+    )
     parser.add_argument("--horizons", default="1,2,3,4,5", help="comma-separated direct horizons")
     parser.add_argument("--no-network", action="store_true", help="use only frozen histories and checked-in market scan")
     parser.add_argument("--refresh-symbols", default="ALL", help="ALL HOSE names, or comma-separated public EOD refresh symbols")

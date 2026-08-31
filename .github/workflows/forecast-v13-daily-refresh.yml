@@ -118,10 +118,7 @@ jobs:
           V28_POSTCLOSE_MIN_COVERAGE: "0.90"
           V28_POSTCLOSE_MIN_SECONDARY_COVERAGE: "0.90"
           V28_POSTCLOSE_MAX_LOG_GAP: "0.003"
-        run: |
-          EXTRA=""
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then EXTRA="--fast"; fi
-          python scripts/run_forecast_v28_guarded.py $EXTRA --refresh-symbols ALL --publish
+        run: python scripts/run_forecast_v28_guarded.py --refresh-symbols ALL --publish
       - name: Publish bounded live community overlay against the audited snapshot
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Reject issuer mixups, future leakage, holiday errors and failed backtests
