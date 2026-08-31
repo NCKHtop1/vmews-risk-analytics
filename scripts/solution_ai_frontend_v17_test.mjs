@@ -380,7 +380,7 @@ test("a Gemini provider outage continues with the audited snapshot and says what
   assert.match(answer.className, /aiAssistant/);
   assert.ok(answer.children.some(child => /tạm thời gián đoạn/.test(child.textContent)));
   assert.ok(answer.children.some(child => /72\.000/.test(child.textContent)));
-  assert.match(nodes.get("#solutionAiStatus").textContent, /dự phòng/);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /dữ liệu forecast/);
 });
 
 test("Gemini automatically continues with an available backup model", async () => {
@@ -418,19 +418,17 @@ test("Gemini automatically continues with an available backup model", async () =
   assert.match(nodes.get("#solutionAiStatus").textContent, /Gemini/);
 });
 
-test("Gemini quota exhaustion is not retried repeatedly and transfers safely to the configured backend", async () => {
+test("Gemini quota exhaustion is not retried repeatedly and falls back to the loaded forecast", async () => {
   const requests = [];
   const secret = "AQ.synthetic-quota-circuit-breaker-secret-123456789";
-  const address = "https://ai.example.org/api/solution-ai";
   const { nodes } = await setup(async (url, options) => {
     requests.push({ url, options });
     if (url.includes("/models?")) return { ok: true, status: 200, json: async () => ({ models: [
       { name: "models/gemini-3.7-flash" }, { name: "models/gemini-3.5-flash" },
     ] }) };
     if (url.endsWith("/interactions")) return { ok: false, status: 429, json: async () => ({ error: { message: "quota exhausted" } }) };
-    assert.equal(url, address);
-    return { ok: true, status: 200, json: async () => ({ provider: "Groq", answer: "FPT có forecast T+5 73.000; nhà cung cấp dự phòng tiếp tục phân tích." }) };
-  }, { storage: { vmews_solution_ai_endpoint: address } });
+    throw new Error(`unexpected request ${url}`);
+  });
   nodes.get("#solutionAiKey").value = secret;
   await nodes.get("#solutionAiRetry").listeners.get("click")();
   nodes.get("#solutionAiInput").value = "Danh mục quỹ FPT ảnh hưởng thế nào?";
@@ -439,12 +437,10 @@ test("Gemini quota exhaustion is not retried repeatedly and transfers safely to 
   await settle();
 
   const direct = requests.filter(request => request.url.endsWith("/interactions"));
-  const fallback = requests.filter(request => request.url === address);
   assert.equal(direct.length, 1);
-  assert.equal(fallback.length, 1);
-  assert.equal(JSON.stringify(fallback[0].options).includes(secret), false);
-  assert.match(textOf(nodes.get("#solutionAiMessages").children.at(-1)), /nhà cung cấp dự phòng/);
-  assert.match(nodes.get("#solutionAiStatus").textContent, /Groq/);
+  assert.match(textOf(nodes.get("#solutionAiMessages").children.at(-1)), /FPT|forecast/i);
+  assert.doesNotMatch(textOf(nodes.get("#solutionAiMessages").children.at(-1)), /máy chủ|nhà cung cấp dự phòng/i);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /dữ liệu forecast/);
 });
 
 test("questions requiring outside information request a real Gemini connection instead of canned analysis", async () => {
