@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-09-01T04:01:30.721695+00:00",
+  "generatedAt": "2026-09-01T14:57:18.296301+00:00",
   "status": "PASS",
   "reasons": [],
   "marketModelDate": "2026-08-28",
@@ -10,7 +10,7 @@
   "policyAligned": true,
   "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
   "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
-  "marketContextDate": "2026-08-27",
+  "marketContextDate": "2026-08-28",
   "marketContextStatus": "EXCLUDED_UNAVAILABLE",
   "marketContextImputed": false,
   "pointInTimeReady": true,
@@ -20,7 +20,7 @@
   "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
   "revision": {
     "existingHash": "f064c9fc65515be972dac6d41d33df4618513e1b420511c749498be14499eefc",
-    "newHash": "fad89c23d13b1728af4a5c4a7534f9b6d55c0ca76519782d542154231e07ae6e",
+    "newHash": "aa1f0c8d824973606089c070715393c5ef7ff2087a9f0276a891e05be9d5569c",
     "modelDate": "2026-08-28"
   }
 }
