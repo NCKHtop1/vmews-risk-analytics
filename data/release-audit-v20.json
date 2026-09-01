@@ -6,17 +6,17 @@
     "symbols": 403,
     "forecasts": 2015,
     "flowRows": 348611,
-    "headlines": 17969,
+    "headlines": 18157,
     "headlineSources": {
       "community-claims": 8,
-      "community-watchlist": 156,
-      "dashboard-communityWatchlist": 204,
-      "dashboard-decisionNews": 294,
-      "dashboard-decisionRecent": 4244,
-      "dashboard-recent": 4230,
-      "fireant": 425,
+      "community-watchlist": 159,
+      "dashboard-communityWatchlist": 213,
+      "dashboard-decisionNews": 306,
+      "dashboard-decisionRecent": 4251,
+      "dashboard-recent": 4232,
+      "fireant": 428,
       "research-news": 1145,
-      "research-news-v10": 7263
+      "research-news-v10": 7415
     }
   },
   "price": {
@@ -47,7 +47,7 @@
     "currentSessionBridge": {
       "status": "NOT_APPLICABLE_ALREADY_CURRENT",
       "sessionDate": "2026-08-28",
-      "observedAt": "2026-09-01T09:34:47+07:00",
+      "observedAt": "2026-09-01T21:10:49+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.0,
@@ -119,7 +119,7 @@
     "3": {
       "priceStatus": "PASS",
       "executableMAESkill": 0.010248220868476321,
-      "magnitudeMAESkill": 0.03251256760863497,
+      "magnitudeMAESkill": 0.032512749303280186,
       "directionalAccuracy": 0.5430123967914187,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
@@ -130,7 +130,7 @@
     "4": {
       "priceStatus": "REVIEW",
       "executableMAESkill": 0.01223310198817884,
-      "magnitudeMAESkill": 0.008756751092070747,
+      "magnitudeMAESkill": 0.008756567395230563,
       "directionalAccuracy": 0.564617469508439,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
@@ -140,9 +140,9 @@
     },
     "5": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.008466009647970285,
-      "magnitudeMAESkill": 0.013783745152671445,
-      "directionalAccuracy": 0.5641117307783975,
+      "executableMAESkill": 0.008463546464908767,
+      "magnitudeMAESkill": 0.013783456916463654,
+      "directionalAccuracy": 0.5640982864224601,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
