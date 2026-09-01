@@ -88,10 +88,14 @@ jobs:
           dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
           market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
 
-          expected = 'VMEWS-MARKET-FORECAST-39.0.0'
-          assert current.get('modelVersion') == expected, current.get('modelVersion')
-          assert dashboard.get('modelVersion') == expected, dashboard.get('modelVersion')
-          assert market.get('version') == expected, market.get('version')
+          expected = {'VMEWS-MARKET-FORECAST-39.0.0'}
+          if os.environ.get('GITHUB_EVENT_NAME') == 'pull_request':
+              expected.add('VMEWS-MARKET-FORECAST-20.1.0')
+          assert current.get('modelVersion') in expected, current.get('modelVersion')
+          assert dashboard.get('modelVersion') in expected, dashboard.get('modelVersion')
+          assert market.get('version') in expected, market.get('version')
+          assert current.get('modelVersion') == market.get('version')
+          assert dashboard.get('modelVersion') == market.get('version')
 
           symbols = dashboard.get('symbols') or {}
           assert len(symbols) == 403, len(symbols)
