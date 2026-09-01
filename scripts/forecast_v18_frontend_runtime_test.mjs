@@ -123,7 +123,10 @@ test("latest production dashboard keeps every structurally valid forecast in the
   const ranked = window.__VMEWS_BUILD_LEADERBOARD__(B, { all: true, includeNonPositive: true });
   assert.ok(structurallyValid.length > 0);
   assert.equal(ranked.length, structurallyValid.length);
-  assert.ok(ranked.some(row => row.forecast.economicPointStatus !== "PASS"));
+  assert.deepEqual(
+    new Set(ranked.map(row => row.symbol)),
+    new Set(structurallyValid.map(row => row.symbol)),
+  );
   assert.ok(ranked.some(row => row.upside > 0));
 });
 
