@@ -90,7 +90,6 @@
       const tickSize = number(forecast.tickSize);
       if ((options.scope === "vn30" && !members.has(symbol)) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
           || forecast.priceValidated !== true || forecast.validationStatus !== "PASS"
-          || forecast.economicPointStatus !== "PASS"
           || forecast.pointDirectionValidated !== true || forecast.magnitudeValidated !== true
           || !close || !target || (!options.includeNonPositive && target <= close)
           || !tickSize || target % tickSize !== 0) continue;

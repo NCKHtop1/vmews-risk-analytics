@@ -34,6 +34,21 @@ class IntelligenceSanitizationTest(unittest.TestCase):
         self.assertEqual(cleaned["symbols"]["FPT"]["watchlist"], [])
         self.assertEqual(audit["rejected"], 1)
 
+    def test_research_refresh_rejects_parent_brand_broker_and_geographic_collisions(self) -> None:
+        universe = {"FPT", "FRT", "ACB", "AGR", "MWG", "SSI", "HCM", "BFC", "TPC"}
+        payload = {"symbols": {
+            "FPT": [{"title": "Cổ phiếu FPT Retail tăng gần 40% chỉ sau 2 tuần"}],
+            "ACB": [{"title": "AGR: Nghị quyết HĐQT phê duyệt hạn mức tín dụng tại ACB"}],
+            "MWG": [{"title": "SSI: Cổ phiếu Thế Giới Di Động (MWG) còn dư địa tăng"}],
+            "HCM": [
+                {"title": "BFC: Quyết định của Thuế TP.HCM về xử phạt thuế"},
+                {"title": "TPC: Kết luận kiểm tra thuế tại TP.HCM"},
+            ],
+        }}
+        cleaned, audit = sanitize_payload(payload, universe)
+        self.assertTrue(all(not rows for rows in cleaned["symbols"].values()))
+        self.assertEqual(audit["rejected"], 5)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -96,6 +96,37 @@ test("default leaderboard ranks all validated HOSE names while VN30 remains an e
   assert.deepEqual(Array.from(vn30, row => row.symbol), ["MCH", "FPT"]);
 });
 
+test("economic point strength is metadata and cannot erase otherwise validated HOSE forecasts", async () => {
+  const window = await loadLeaderboard();
+  const lowConfidence = snapshot("FPT", 73_200, 74_000);
+  lowConfidence.horizons["5"].economicPointStatus = "LOW_CONFIDENCE";
+  const rows = window.__VMEWS_BUILD_LEADERBOARD__(base([lowConfidence]), { all: true });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].symbol, "FPT");
+  lowConfidence.horizons["5"].magnitudeValidated = false;
+  assert.equal(window.__VMEWS_BUILD_LEADERBOARD__(base([lowConfidence]), { all: true }).length, 0);
+});
+
+test("latest production dashboard keeps every structurally valid forecast in the ranking universe", async () => {
+  const dashboard = JSON.parse(await readFile(new URL("../data/forecast-dashboard-v12.json", import.meta.url), "utf8"));
+  const window = await loadLeaderboard();
+  const B = { dash: dashboard, model: { promotion: dashboard.promotion } };
+  const horizon = window.__VMEWS_RANKING_HORIZON__(B);
+  const structurallyValid = Object.values(dashboard.symbols).filter(item => {
+    const forecast = item?.horizons?.[String(horizon)] || {};
+    return item.exchange === "HOSE" && item.dataFreshness === "CURRENT"
+      && forecast.priceValidated === true && forecast.validationStatus === "PASS"
+      && forecast.pointDirectionValidated === true && forecast.magnitudeValidated === true
+      && Number(item.close) > 0 && Number(forecast.expectedPrice) > 0
+      && Number(forecast.tickSize) > 0 && Number(forecast.expectedPrice) % Number(forecast.tickSize) === 0;
+  });
+  const ranked = window.__VMEWS_BUILD_LEADERBOARD__(B, { all: true, includeNonPositive: true });
+  assert.ok(structurallyValid.length > 0);
+  assert.equal(ranked.length, structurallyValid.length);
+  assert.ok(ranked.some(row => row.forecast.economicPointStatus !== "PASS"));
+  assert.ok(ranked.some(row => row.upside > 0));
+});
+
 
 test("session overlay re-filters EOD positives that turn negative at the live cutoff", async () => {
   const window = await loadLeaderboard();
@@ -184,6 +215,21 @@ test("detail view selects the audited horizon and exposes one exact up-or-down p
   assert.equal(point.direction, "GIẢM");
   assert.equal(point.delta, -300);
   assert.equal(point.target, 72_900);
+});
+
+test("backtest result date advances by audited trading sessions rather than calendar days", async () => {
+  const { window } = await loadMarketDashboard();
+  const B = { dash: { charts: { FPT: [
+    { date: "2026-08-21", rawClose: 72_000 },
+    { date: "2026-08-24", rawClose: 71_400 },
+    { date: "2026-08-25", rawClose: 70_700 },
+    { date: "2026-08-26", rawClose: 72_600 },
+    { date: "2026-08-27", rawClose: 72_200 },
+    { date: "2026-08-28", rawClose: 73_200 },
+  ] } } };
+  assert.equal(window.__VMEWS_BACKTEST_RESULT_DATE__(B, { symbol: "FPT", originDate: "2026-08-25" }, 3), "2026-08-28");
+  assert.equal(window.__VMEWS_BACKTEST_RESULT_DATE__(B, { symbol: "FPT", originDate: "2026-08-21" }, 1), "2026-08-24");
+  assert.equal(window.__VMEWS_BACKTEST_RESULT_DATE__(B, { symbol: "FPT", originDate: "2026-08-25", targetDate: "2026-09-01" }, 3), "2026-09-01");
 });
 
 test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
