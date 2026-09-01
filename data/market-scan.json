@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-MARKET-SCAN-4.2.0",
-  "generatedAt": "2026-09-01T00:14:43.479521+07:00",
+  "generatedAt": "2026-09-01T21:19:08.149149+07:00",
   "reviewDate": "2026-09-01",
   "modelDate": "2026-08-28",
   "scope": "VCI reference universe of listed common stocks on HOSE, HNX and UPCOM, cross-matched to TradingView Vietnam stock screener.",
@@ -18,17 +18,17 @@
   },
   "coverage": {
     "listedUniverse": 1522,
-    "tradingViewUniverseRows": 1259,
-    "tradingViewReportedTotal": 1259,
-    "priceCovered": 1258,
-    "featureReady": 1168,
+    "tradingViewUniverseRows": 1244,
+    "tradingViewReportedTotal": 1244,
+    "priceCovered": 1243,
+    "featureReady": 1155,
     "eligibleLiquidCurrent": 389,
-    "insufficientHistoryOrIndicatorsExcluded": 90,
-    "lowLiquidityExcluded": 773,
-    "staleEodExcluded": 139,
-    "unmatchedReference": 264,
+    "insufficientHistoryOrIndicatorsExcluded": 88,
+    "lowLiquidityExcluded": 760,
+    "staleEodExcluded": 126,
+    "unmatchedReference": 279,
     "duplicateScreenerRowsIgnored": 0,
-    "coverageRatio": 0.8265440210249672,
+    "coverageRatio": 0.816688567674113,
     "currentFeatureCoverageRatio": 0.676084099868594
   },
   "breadth": {
@@ -42,7 +42,7 @@
   "marketContext": {
     "available": false,
     "vnindexMomentum20d": null,
-    "vnindexModelDate": "2026-08-27",
+    "vnindexModelDate": "2026-08-28",
     "source": "VMEWS VNINDEX date fallback only",
     "benchmarkTicker": null,
     "updateMode": null
@@ -11468,7 +11468,7 @@
       "date": "2026-08-28",
       "provider": "TradingView Vietnam Screener",
       "updateMode": "delayed_streaming_900",
-      "marketCap": 68683355609.22,
+      "marketCap": 82419564453.95001,
       "sector": "Producer Manufacturing",
       "transition": "UNCHANGED",
       "newEscalation": false,
@@ -32282,12 +32282,11 @@
     "priceTimeBasis": "LATEST_COMPLETED_EOD",
     "watchlistTimeBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "modelDate": "2026-08-28",
-    "marketContextDate": "2026-08-27",
+    "marketContextDate": "2026-08-28",
     "marketContextStatus": "EXCLUDED_UNAVAILABLE",
     "marketContextImputed": false,
     "monitorUniverseCount": 389,
     "outcomeTapeCount": 389,
     "pointInTimeReady": true
-  },
-  "snapshotGuardNote": "Intraday run at 2026-09-01T08:56:49.425312+07:00 skipped; retained completed EOD 2026-08-28."
+  }
 }
