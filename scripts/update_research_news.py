@@ -7,11 +7,18 @@ from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 from difflib import SequenceMatcher
 
+from forecast_v14_signal_audit import security_match
+
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 core_path=ROOT/'api'/'stocks.py'
 spec=importlib.util.spec_from_file_location('vmews_news_core',core_path)
 core=importlib.util.module_from_spec(spec);spec.loader.exec_module(core)
 SYMBOLS={s:core.NAMES.get(s,s) for s in core.UNIVERSE}
+try:
+    _dashboard=json.loads((ROOT/'data'/'forecast-dashboard-v12.json').read_text(encoding='utf-8'))
+    UNIVERSE=set((_dashboard.get('symbols') or {})) or set(SYMBOLS)
+except (OSError,ValueError,TypeError):
+    UNIVERSE=set(SYMBOLS)
 QUERY_GROUPS=['','(site:cafef.vn OR site:vietstock.vn)','(site:vnexpress.net OR site:vneconomy.vn OR site:nguoiquansat.vn)','(site:hsx.vn OR site:hnx.vn OR site:ssc.gov.vn)']
 WINDOW_DAYS=540
 MAX_PER_QUERY=25
@@ -46,6 +53,8 @@ def relevance(sym,name,title):
     return 1.0 if symhit else .9 if overlap>=.65 else .72 if overlap>=.35 else .45
 def noisy(title):
     low=title.lower().strip();return not low or low.startswith('untitled') or low.startswith('cw.') or 'chứng quyền' in low or 'covered warrant' in low
+def issuer_relevant(sym,title):
+    return security_match(sym,title,UNIVERSE,require_explicit=True)
 def fetch(sym,name,group,limit=MAX_PER_QUERY):
     q=(f'"{sym}" cổ phiếu {group}').strip();url='https://news.google.com/rss/search?q='+quote_plus(q)+'&hl=vi&gl=VN&ceid=VN:vi';req=Request(url,headers={'User-Agent':'Mozilla/5.0 VMEWS-Research-News/5.1'})
     with urlopen(req,timeout=8) as r:root=ET.fromstring(r.read())
@@ -65,7 +74,7 @@ def coverage_grade(used,pubs,r180):
     if used>=6 and pubs>=3:return 'LIMITED'
     return 'THIN'
 def main():
-    now=datetime.now(timezone.utc);cutoff=(now-timedelta(days=WINDOW_DAYS)).timestamp();c90=(now-timedelta(days=90)).timestamp();c180=(now-timedelta(days=180)).timestamp();payload={'generatedAt':now.isoformat(),'windowDays':WINDOW_DAYS,'method':'full-universe Google News RSS; ticker-first grouped publisher and official-source queries; recency, relevance, source-quality, event taxonomy and fuzzy deduplication','symbols':{s:[] for s in SYMBOLS},'coverage':{}};raw={s:[] for s in SYMBOLS};jobs=[]
+    now=datetime.now(timezone.utc);cutoff=(now-timedelta(days=WINDOW_DAYS)).timestamp();c90=(now-timedelta(days=90)).timestamp();c180=(now-timedelta(days=180)).timestamp();payload={'generatedAt':now.isoformat(),'windowDays':WINDOW_DAYS,'method':'full-universe Google News RSS; ticker-first grouped publisher and official-source queries; strict issuer identity, recency, relevance, source-quality, event taxonomy and fuzzy deduplication','symbols':{s:[] for s in SYMBOLS},'coverage':{}};raw={s:[] for s in SYMBOLS};jobs=[]
     with ThreadPoolExecutor(max_workers=24) as ex:
         for sym,name in SYMBOLS.items():
             for group in QUERY_GROUPS:jobs.append(ex.submit(fetch,sym,name,group))
@@ -74,7 +83,7 @@ def main():
                 for row in fut.result():raw[row['symbol']].append(row)
             except Exception:pass
     for sym,rows in raw.items():
-        collected=len(rows);windowed=[x for x in rows if (not x.get('publishedTs')) or x['publishedTs']>=cutoff];windowed=[x for x in windowed if not noisy(x.get('title',''))];relevant=[x for x in windowed if x.get('relevance',0)>=.70];relevant.sort(key=lambda z:z.get('publishedTs',0),reverse=True);seen=[];uniq=[]
+        collected=len(rows);windowed=[x for x in rows if (not x.get('publishedTs')) or x['publishedTs']>=cutoff];windowed=[x for x in windowed if not noisy(x.get('title',''))];identity_rejected=sum(1 for x in windowed if not issuer_relevant(sym,x.get('title','')));windowed=[x for x in windowed if issuer_relevant(sym,x.get('title',''))];relevant=[x for x in windowed if x.get('relevance',0)>=.70];relevant.sort(key=lambda z:z.get('publishedTs',0),reverse=True);seen=[];uniq=[]
         for x in relevant:
             key=norm(x['title'])
             if not key or near_dup(key,seen):continue
@@ -82,6 +91,6 @@ def main():
         used=uniq[:MAX_USED];material=sum(1 for x in used if x.get('materiality',0)>=.65 or x.get('event')!='General');pubs=len(set(x.get('publisher','Unknown') for x in used));official=sum(1 for x in used if x.get('sourceQuality')==1.0);r90=sum(1 for x in used if x.get('publishedTs',0)>=c90);r180=sum(1 for x in used if x.get('publishedTs',0)>=c180);final=[]
         for x in used:
             y=dict(x);y.pop('symbol',None);y.pop('publishedTs',None);final.append(y)
-        payload['symbols'][sym]=final;payload['coverage'][sym]={'collected':collected,'windowed':len(windowed),'relevant':len(relevant),'unique':len(uniq),'used':len(final),'recent90':r90,'recent180':r180,'material':material,'publishers':pubs,'official':official,'coverageGrade':coverage_grade(len(final),pubs,r180)}
+        payload['symbols'][sym]=final;payload['coverage'][sym]={'collected':collected,'identityRejected':identity_rejected,'windowed':len(windowed),'relevant':len(relevant),'unique':len(uniq),'used':len(final),'recent90':r90,'recent180':r180,'material':material,'publishers':pubs,'official':official,'coverageGrade':coverage_grade(len(final),pubs,r180)}
     p=ROOT/'data'/'research-news.json';p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
 if __name__=='__main__':main()

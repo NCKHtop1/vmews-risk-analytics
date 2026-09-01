@@ -5,6 +5,7 @@ on:
     branches: [forecast-v12-methodfix]
     paths:
       - 'forecast-final-v12.js'
+      - 'forecast-live-leaders-v14.js'
       - 'forecast-polish-v12.js'
       - 'forecast-final.html'
       - 'scripts/v12_browser_smoke.mjs'
@@ -22,6 +23,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check forecast-final-v12.js
+          node --check forecast-live-leaders-v14.js
           node --check forecast-polish-v12.js
       - name: Static final UI contract
         run: |

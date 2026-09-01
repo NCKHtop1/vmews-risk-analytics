@@ -101,9 +101,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("forecast-final-v12.js?release=36.0", self.html)
+        self.assertIn("forecast-final-v12.js?release=38.0", self.html)
         self.assertIn("solution-ai-v17.js?release=36.0", self.html)
-        self.assertIn("forecast-live-leaders-v14.js?release=21.2", self.html)
+        self.assertIn("forecast-live-leaders-v14.js?release=38.0", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_internal_statuses_and_nonexistent_backend_are_not_user_facing(self) -> None:
@@ -168,7 +168,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn('snapshot.dataFreshness !== "CURRENT"', leaders)
         self.assertIn("forecast.priceValidated !== true", leaders)
         self.assertIn('forecast.validationStatus !== "PASS"', leaders)
-        self.assertIn('forecast.economicPointStatus !== "PASS"', leaders)
+        self.assertNotIn('forecast.economicPointStatus !== "PASS"', leaders)
+        self.assertIn('forecast.pointDirectionValidated !== true', leaders)
+        self.assertIn('forecast.magnitudeValidated !== true', leaders)
         self.assertIn("target % tickSize !== 0", leaders)
         self.assertIn("target <= close", leaders)
         self.assertIn("includeNonPositive", leaders)
@@ -182,6 +184,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("function primaryHorizon(B,z=null)", app)
         self.assertIn("function pointMove(q,close)", app)
         self.assertIn("Giá dự báo của mô hình", app)
+        self.assertIn("__VMEWS_BACKTEST_RESULT_DATE__", app)
+        self.assertIn("Ngày có kết quả", self.html)
         self.assertNotIn("ĐỘ TIN CẬY ĐIỂM THẤP", app)
         self.assertNotIn("PHÂN PHỐI THỬ NGHIỆM · KHÔNG PHẢI TÍN HIỆU", app)
         self.assertIn("upside: target / close - 1", leaders)

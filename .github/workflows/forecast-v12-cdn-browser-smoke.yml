@@ -5,6 +5,7 @@ on:
     paths:
       - 'forecast-final.html'
       - 'forecast-final-v12.js'
+      - 'forecast-live-leaders-v14.js'
       - 'data/forecast-model-v12.json'
       - 'data/forecast-dashboard-v12.json'
       - 'data/forecast-backtest-v12.json'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'forecast-final.html'
       - 'forecast-final-v12.js'
+      - 'forecast-live-leaders-v14.js'
       - 'data/forecast-model-v12.json'
       - 'data/forecast-dashboard-v12.json'
       - 'data/forecast-backtest-v12.json'
