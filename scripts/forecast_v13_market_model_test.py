@@ -18,10 +18,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from forecast_v13_market_model import (  # noqa: E402
     INTERCEPT_RETENTION,
+    REGIME_ARCHITECTURE_HORIZONS,
     cost_aware_long_audit,
     directional_magnitude_blend,
     intercept_modes,
     select_directional_magnitude_blend,
+    select_regime_architecture,
     session_limit,
     snap_price,
     tick_size,
@@ -108,6 +110,55 @@ class VietnamPriceGridTest(unittest.TestCase):
         self.assertEqual(INTERCEPT_RETENTION[2], .25)
         self.assertEqual(intercept_modes(2), ("BLEND_0.25",))
         self.assertEqual(intercept_modes(4), ("RAW",))
+
+    def test_long_horizon_regime_weights_are_calibration_only(self) -> None:
+        dates = np.asarray([f"2026-01-{1 + index // 4:02d}" for index in range(80)])
+        market = np.asarray([.01, .01, -.01, -.01] * 20)
+        relative = np.asarray([.003, -.003, .002, -.002] * 20)
+        actual = market + relative
+        selected = select_regime_architecture(actual, relative, market, dates)
+        self.assertEqual(selected["status"], "ACTIVE")
+        self.assertEqual(selected["sealedLabelsUsed"], 0)
+        self.assertIn(selected["marketWeight"], {.5, .75, 1.0, 1.25})
+        self.assertIn(selected["relativeWeight"], {.75, 1.0, 1.25})
+
+    def test_long_horizon_release_requires_three_of_three_walk_forward_folds(self) -> None:
+        sealed_folds = [
+            {"maeSkill": .01, "executableMAESkill": .01} for _ in range(4)
+        ]
+        audit = {
+            "architecture": "MARKET_RELATIVE",
+            "marketRegimeStatus": "ACTIVE",
+            "regimeArchitectureStatus": "ACTIVE",
+            "maeSkill": .02,
+            "rankIC": .15,
+            "coverage20_80": .63,
+            "executableMedianAbs": .005,
+            "executableMAESkill": .018,
+            "chronologicalFolds": sealed_folds,
+            "magnitudeMAESkill": .02,
+            "directionalAccuracy": .56,
+            "pairedNoChangeAudit": {
+                "meanImprovement": .001,
+                "dailyStandardError": .0002,
+                "positiveChronologicalBlocks": 4,
+            },
+        }
+        walk_folds = [
+            {"architecture": "MARKET_RELATIVE", "executableMAESkill": .01}
+            for _ in range(3)
+        ]
+        walk = {
+            "folds": walk_folds,
+            "positiveMAEFolds": 3,
+            "positiveExecutableMAEFolds": 3,
+            "positiveMagnitudeFolds": 3,
+            "meanExecutableMAESkill": .012,
+            "meanRankIC": .14,
+        }
+        self.assertTrue(horizon_price_gate(audit, walk))
+        walk["positiveExecutableMAEFolds"] = 2
+        self.assertFalse(horizon_price_gate(audit, walk))
 
     def test_hose_price_bands(self) -> None:
         self.assertEqual(tick_size(9_990), 10)
@@ -278,6 +329,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
     def test_current_source_and_coverage(self) -> None:
         self.assertGreaterEqual(len(self.dashboard["symbols"]), 400)
         self.assertEqual(self.dashboard["asOf"], self.market["sources"]["marketScanAsOf"])
+        self.assertGreaterEqual(
+            self.market["sources"]["marketScanGeneratedOn"],
+            self.market["sources"]["marketScanAsOf"],
+        )
         self.assertEqual(set(self.dashboard["symbols"]), set(self.current["symbols"]))
         universe = self.market["model"]["universe"]
         self.assertGreaterEqual(universe["hoseCoverage"], .99)
@@ -301,7 +356,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
     def test_each_horizon_is_independently_promoted_or_abstained(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-20.1.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-39.0.0")
         promotion = self.market["model"]["promotion"]
         self.assertEqual(promotion["status"], "PASS")
         promoted = set(promotion["directPriceHorizons"])
@@ -323,6 +378,14 @@ class PublishedMarketForecastTest(unittest.TestCase):
             passed = int(horizon) in promoted
             self.assertEqual(model["priceStatus"], "PASS" if passed else "REVIEW")
             self.assertEqual(horizon_price_gate(audit, walk), passed)
+            inference = model["inferenceTraining"]
+            self.assertGreater(inference["rows"], model["training"]["rows"])
+            self.assertEqual(inference["latestLabelMaturity"], self.market["asOf"])
+            self.assertEqual(inference["policy"], "REFIT_ALL_MATURED_LABELS_AFTER_FROZEN_EVALUATION")
+            if int(horizon) in REGIME_ARCHITECTURE_HORIZONS:
+                self.assertEqual(model["architecture"], "MARKET_RELATIVE")
+                self.assertEqual(audit["architecture"], "MARKET_RELATIVE")
+                self.assertEqual(walk["positiveExecutableMAEFolds"], 3)
             self.assertEqual(audit["futureRowsUsedForTraining"], 0)
             self.assertEqual(audit["futureLabelsUsedForCalibration"], 0)
             self.assertEqual(audit["invalidExecutableQuotes"], 0)
@@ -448,7 +511,11 @@ class PublishedMarketForecastTest(unittest.TestCase):
         audit = self.market["sources"]["fundAudit"]
         self.assertEqual(audit["status"], "CONTEXT_SCENARIO_ONLY")
         self.assertGreaterEqual(audit["snapshotCount"], 1)
-        self.assertLess(audit["snapshotCount"], 4)
+        self.assertTrue(audit["rawHistoryGateEligible"])
+        self.assertEqual(
+            audit["promotionRequired"],
+            "SEPARATE_LONGITUDINAL_BACKTEST_AND_STABILITY_AUDIT",
+        )
         self.assertFalse(audit["modelEligible"])
         self.assertTrue(audit["inferenceEligible"])
         self.assertTrue(audit["trainingFeaturesMasked"])

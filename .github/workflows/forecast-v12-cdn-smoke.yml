@@ -63,7 +63,7 @@ jobs:
           assert g.get('failed')==0,g
           assert m['promotion']['status']=='PASS',m['promotion']
           assert len(d.get('symbols',{}))==403,len(d.get('symbols',{}))
-          assert market.get('version')=='VMEWS-MARKET-FORECAST-20.1.0',market.get('version')
+          assert market.get('version')=='VMEWS-MARKET-FORECAST-39.0.0',market.get('version')
           assert d.get('modelVersion')==market.get('version'),d.get('modelVersion')
           p=market['model']['promotion']
           promoted={int(value) for value in p.get('directPriceHorizons') or []}
@@ -87,7 +87,7 @@ jobs:
                   assert z.get('walkForwardAudit',{}).get('status')=='PASS',h
               assert z.get('magnitudeGate',{}).get('status')=='PASS',h
               assert z.get('magnitudeGate',{}).get('invalidExecutableQuotes')==0,h
-          print('V20.2 IMMUTABLE CDN CONTRACT PASS',market['version'],'symbols',len(d['symbols']))
+          print('V39 IMMUTABLE CDN CONTRACT PASS',market['version'],'symbols',len(d['symbols']))
           PY
       - name: Verify browser runtime contracts
         run: node --test scripts/forecast_v18_frontend_runtime_test.mjs

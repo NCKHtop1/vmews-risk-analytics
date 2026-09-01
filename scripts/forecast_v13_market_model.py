@@ -36,7 +36,9 @@ import pandas as pd
 from scipy.special import expit
 from scipy.stats import spearmanr
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
+from sklearn.linear_model import Ridge
 from sklearn.metrics import brier_score_loss, mean_absolute_error
+from sklearn.preprocessing import StandardScaler
 
 from forecast_v14_signal_audit import (
     FLOW_COLUMNS,
@@ -63,8 +65,9 @@ from forecast_v18_market_intelligence import community_events, community_watchli
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-MARKET-FORECAST-20.1.0"
+VERSION = "VMEWS-MARKET-FORECAST-39.0.0"
 HORIZONS = (1, 2, 3, 4, 5)
+REGIME_ARCHITECTURE_HORIZONS = frozenset({3, 4, 5})
 
 # One frozen complexity profile is used by pull-request verification and by
 # production publication.  The previous ``fast`` branch used fewer boosting
@@ -92,13 +95,10 @@ def production_boosting_rounds(fast: bool = False) -> dict[str, int]:
     return dict(PRODUCTION_BOOSTING_ROUNDS)
 
 
-# Recent walk-forward windows show that the raw market-wide intercept drifts
-# faster than the cross-sectional stock-selection signal at T+2.  Retaining a
-# quarter of that component preserves positive sealed MAE skill while avoiding
-# the latest-regime failure produced by the fully raw T+2 intercept.  T+4 keeps
-# the raw intercept: the current frozen sweep improves executable MAE in all
-# four sealed subperiods and in two of three independently retrained folds.
-INTERCEPT_RETENTION = {2: 0.25, 3: 0.0}
+# T+2 retains the calibration-frozen legacy intercept shrinkage.  T+3...T+5
+# bypass this post-processing entirely: V39 learns the market regime and each
+# issuer's relative return as separate targets.
+INTERCEPT_RETENTION = {2: 0.25}
 QUICK_SYMBOLS = ("FPT", "VCB", "HPG", "MBB", "FRT", "PNJ", "VNM", "SSI")
 VNDIRECT_URL = "https://api-finfo.vndirect.com.vn/v4/stock_prices"
 EOD_CACHE_PATH = DATA / "v16-eod-refresh-cache.json.gz"
@@ -115,6 +115,12 @@ PRICE_FEATURE_COLUMNS = [
     "sector_ret20", "sector_breadth", "sector_relative5", "day_of_week",
 ]
 FEATURE_COLUMNS = PRICE_FEATURE_COLUMNS + NEWS_COLUMNS + FLOW_COLUMNS + FUND_FEATURE_COLUMNS
+MARKET_REGIME_FEATURES = (
+    "market_ret1", "market_ret5", "market_ret20", "market_vol20",
+    "breadth1", "breadth5", "breadth20", "day_of_week",
+)
+REGIME_COMPONENT_WEIGHT_GRID = (.50, .75, 1.00, 1.25)
+RELATIVE_COMPONENT_WEIGHT_GRID = (.75, 1.00, 1.25)
 
 
 def _log(message: str, **fields: Any) -> None:
@@ -419,7 +425,9 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
 
     latest_dates = [str(rows[-1]["date"]) for rows in histories.values() if rows]
     modal_date = statistics.mode(latest_dates) if latest_dates else str(frozen.get("asOf"))
-    reference_date = str(scan.get("reviewDate") or modal_date)
+    # ``reviewDate`` is the collection date and can be a weekend/holiday.  The
+    # quote session is the modal date actually present in the returned candles.
+    reference_date = modal_date
     fresh_symbols = sum(str(rows[-1].get("date", "")) == reference_date for rows in histories.values())
 
     # A successful request is not proof that the quote is correct.  Compare the
@@ -522,7 +530,8 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         )
     return histories, {
         "frozenSourceAsOf": frozen.get("asOf"),
-        "marketScanAsOf": scan.get("reviewDate"),
+        "marketScanAsOf": reference_date,
+        "marketScanGeneratedOn": scan.get("reviewDate"),
         "forecastAsOf": modal_date,
         "refreshedSymbols": len(refreshed),
         "providerBySymbol": refreshed,
@@ -837,6 +846,181 @@ def apply_intercept_mode(
 
 
 @dataclass
+class MarketRegimeModel:
+    """Regularized date-level model for the market component of a forecast."""
+
+    scaler: StandardScaler
+    model: Ridge
+    alpha: float
+    half_life: int | None
+    rows: int
+    date_start: str
+    date_end: str
+
+
+def _market_matrix(values: pd.DataFrame | np.ndarray) -> np.ndarray:
+    """Return the immutable market-regime feature matrix."""
+    if isinstance(values, pd.DataFrame):
+        matrix = values.loc[:, MARKET_REGIME_FEATURES].to_numpy(dtype=float)
+    else:
+        indices = [FEATURE_COLUMNS.index(name) for name in MARKET_REGIME_FEATURES]
+        matrix = np.asarray(values, dtype=float)[:, indices]
+    return np.nan_to_num(matrix, nan=0.0, posinf=0.0, neginf=0.0)
+
+
+def _date_level_market_data(rows: pd.DataFrame, label: str) -> pd.DataFrame:
+    """Collapse the panel to one point-in-time market observation per session."""
+    columns = ["date", label, *MARKET_REGIME_FEATURES]
+    return (
+        rows.loc[:, columns]
+        .groupby("date", observed=True, as_index=False)
+        .median(numeric_only=True)
+        .sort_values("date")
+        .reset_index(drop=True)
+    )
+
+
+def _market_recency_weights(dates: pd.Series, half_life: int | None) -> np.ndarray:
+    """Exponentially down-weight old regimes without peeking past the fit origin."""
+    if half_life is None or half_life <= 0:
+        return np.ones(len(dates), dtype=float)
+    age = np.arange(len(dates) - 1, -1, -1, dtype=float)
+    return np.power(.5, age / float(half_life))
+
+
+def fit_frozen_market_regime_model(
+    rows: pd.DataFrame,
+    label: str,
+    alpha: float,
+    half_life: int | None,
+) -> MarketRegimeModel:
+    """Fit one market model using parameters selected before the test period."""
+    daily = _date_level_market_data(rows, label)
+    x = _market_matrix(daily)
+    scaler = StandardScaler()
+    scaled = scaler.fit_transform(x)
+    model = Ridge(alpha=float(alpha), fit_intercept=True)
+    model.fit(
+        scaled,
+        daily[label].to_numpy(dtype=float),
+        sample_weight=_market_recency_weights(daily["date"], half_life),
+    )
+    return MarketRegimeModel(
+        scaler=scaler,
+        model=model,
+        alpha=float(alpha),
+        half_life=half_life,
+        rows=len(daily),
+        date_start=str(pd.Timestamp(daily["date"].min()).date()),
+        date_end=str(pd.Timestamp(daily["date"].max()).date()),
+    )
+
+
+def predict_market_regime(
+    model: MarketRegimeModel,
+    values: pd.DataFrame | np.ndarray,
+) -> np.ndarray:
+    return model.model.predict(model.scaler.transform(_market_matrix(values)))
+
+
+def fit_market_regime_candidates(
+    train: pd.DataFrame,
+    calibration: pd.DataFrame,
+    label: str,
+) -> tuple[MarketRegimeModel, dict[str, Any]]:
+    """Select ridge shrinkage and regime half-life on calibration only."""
+    calibration_daily = _date_level_market_data(calibration, label)
+    actual = calibration_daily[label].to_numpy(dtype=float)
+    trials: list[dict[str, Any]] = []
+    fitted: dict[tuple[float, int | None], MarketRegimeModel] = {}
+    for alpha in (.10, 1.0, 10.0, 100.0):
+        for half_life in (60, 120, 240, 480, None):
+            candidate = fit_frozen_market_regime_model(train, label, alpha, half_life)
+            fitted[(alpha, half_life)] = candidate
+            prediction = predict_market_regime(candidate, calibration_daily)
+            loss = np.abs(actual - prediction)
+            trials.append(
+                {
+                    "alpha": float(alpha),
+                    "halfLifeSessions": half_life,
+                    "mae": float(loss.mean()),
+                    "standardError": float(loss.std(ddof=1) / math.sqrt(max(1, len(loss)))),
+                    "directionalAccuracy": float(np.mean(np.sign(actual) == np.sign(prediction))),
+                }
+            )
+    best = min(trials, key=lambda item: item["mae"])
+    admissible = [item for item in trials if item["mae"] <= best["mae"] + best["standardError"]]
+    # Inside the one-standard-error envelope prefer stronger regularization and
+    # a longer memory; this keeps the regime component responsive but stable.
+    selected = max(
+        admissible,
+        key=lambda item: (
+            item["alpha"],
+            item["halfLifeSessions"] if item["halfLifeSessions"] is not None else 10_000,
+        ),
+    )
+    key = (float(selected["alpha"]), selected["halfLifeSessions"])
+    return fitted[key], {
+        "status": "ACTIVE",
+        "method": "CALIBRATION_ONLY_REGULARIZED_DATE_LEVEL_RIDGE",
+        "features": list(MARKET_REGIME_FEATURES),
+        "selected": selected,
+        "bestMAE": float(best["mae"]),
+        "candidateCount": len(trials),
+        "sealedLabelsUsed": 0,
+    }
+
+
+def select_regime_architecture(
+    actual: np.ndarray,
+    relative_component: np.ndarray,
+    market_component: np.ndarray,
+    dates: np.ndarray,
+) -> dict[str, Any]:
+    """Freeze relative/market weights using only the calibration partition."""
+    actual = np.asarray(actual, dtype=float)
+    relative_component = np.asarray(relative_component, dtype=float)
+    market_component = np.asarray(market_component, dtype=float)
+    dates = np.asarray(dates)
+    unique_dates = np.sort(np.unique(dates))
+    blocks = [block for block in np.array_split(unique_dates, 4) if len(block)]
+    trials: list[dict[str, Any]] = []
+    for relative_weight in RELATIVE_COMPONENT_WEIGHT_GRID:
+        for market_weight in REGIME_COMPONENT_WEIGHT_GRID:
+            prediction = relative_weight * relative_component + market_weight * market_component
+            loss = np.abs(actual - prediction)
+            block_mae = [
+                float(np.mean(loss[np.isin(dates, block)])) for block in blocks
+            ]
+            trials.append(
+                {
+                    "relativeWeight": float(relative_weight),
+                    "marketWeight": float(market_weight),
+                    "mae": float(loss.mean()),
+                    "standardError": float(loss.std(ddof=1) / math.sqrt(max(1, len(loss)))),
+                    "chronologicalBlockMAE": block_mae,
+                }
+            )
+    best = min(trials, key=lambda item: item["mae"])
+    admissible = [item for item in trials if item["mae"] <= best["mae"] + best["standardError"]]
+    selected = min(
+        admissible,
+        key=lambda item: (
+            abs(item["relativeWeight"] - 1.0) + abs(item["marketWeight"] - 1.0),
+            item["mae"],
+        ),
+    )
+    return {
+        "status": "ACTIVE",
+        "method": "CALIBRATION_ONLY_MARKET_PLUS_ISSUER_RELATIVE",
+        **selected,
+        "bestMAE": float(best["mae"]),
+        "candidateCount": len(trials),
+        "sealedLabelsUsed": 0,
+    }
+
+
+@dataclass
 class HorizonResult:
     horizon: int
     model: HistGradientBoostingRegressor
@@ -859,6 +1043,15 @@ class HorizonResult:
     holdout_probability: np.ndarray
     feature_medians: np.ndarray
     walk_forward: dict[str, Any] | None = None
+    architecture: str = "TOTAL_RETURN"
+    market_model: MarketRegimeModel | None = None
+    regime_weight: float = 0.0
+    relative_weight: float = 1.0
+    inference_model: HistGradientBoostingRegressor | None = None
+    inference_magnitude_model: HistGradientBoostingRegressor | None = None
+    inference_classifier: HistGradientBoostingClassifier | None = None
+    inference_market_model: MarketRegimeModel | None = None
+    inference_training: dict[str, Any] | None = None
 
 
 def shape_prediction(
@@ -1012,11 +1205,41 @@ def predict_horizon_core(
     features: np.ndarray,
     volatility: np.ndarray,
     dates: pd.Series | np.ndarray,
+    use_inference: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Return validated forecast, conditional median, magnitude and P(up)."""
-    probability = result.classifier.predict_proba(features)[:, 1]
-    raw = result.model.predict(features) * volatility
-    raw = apply_intercept_mode(raw, dates, result.intercept_mode)
+    point_model = (
+        result.inference_model
+        if use_inference and result.inference_model is not None
+        else result.model
+    )
+    classifier = (
+        result.inference_classifier
+        if use_inference and result.inference_classifier is not None
+        else result.classifier
+    )
+    magnitude_model = (
+        result.inference_magnitude_model
+        if use_inference and result.inference_magnitude_model is not None
+        else result.magnitude_model
+    )
+    market_model = (
+        result.inference_market_model
+        if use_inference and result.inference_market_model is not None
+        else result.market_model
+    )
+    probability = classifier.predict_proba(features)[:, 1]
+    relative_or_total = point_model.predict(features) * volatility
+    if result.architecture == "MARKET_RELATIVE":
+        if market_model is None:
+            raise ValueError(f"T+{result.horizon}: market-relative architecture lacks market model")
+        relative = cross_sectional_center(relative_or_total, pd.Series(dates))
+        raw = (
+            result.relative_weight * relative
+            + result.regime_weight * predict_market_regime(market_model, features)
+        )
+    else:
+        raw = apply_intercept_mode(relative_or_total, pd.Series(dates), result.intercept_mode)
     point = shape_prediction(
         raw,
         volatility,
@@ -1025,7 +1248,7 @@ def predict_horizon_core(
         result.conviction_floor,
     )
     magnitude = (
-        np.clip(result.magnitude_model.predict(features), .02, 4.0)
+        np.clip(magnitude_model.predict(features), .02, 4.0)
         * volatility
         * result.magnitude_scale
     )
@@ -1076,9 +1299,33 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     cal_y = calibration[label].to_numpy(dtype=float)
     hold_y = holdout[label].to_numpy(dtype=float)
 
-    # Normalising by the symbol's own trailing volatility prevents large-cap and
-    # high-volatility names from collapsing onto the same near-zero VND move.
-    normalized_train_y = np.clip(train_y / np.maximum(train_vol, .004), -4.0, 4.0)
+    architecture = (
+        "MARKET_RELATIVE" if horizon in REGIME_ARCHITECTURE_HORIZONS else "TOTAL_RETURN"
+    )
+    market_model: MarketRegimeModel | None = None
+    market_calibration: dict[str, Any] = {
+        "status": "NOT_APPLICABLE", "sealedLabelsUsed": 0
+    }
+    regime_selection: dict[str, Any] = {
+        "status": "NOT_APPLICABLE",
+        "relativeWeight": 1.0,
+        "marketWeight": 0.0,
+        "sealedLabelsUsed": 0,
+    }
+    if architecture == "MARKET_RELATIVE":
+        train_market_target = train.groupby("date", observed=True)[label].transform("median").to_numpy(dtype=float)
+        fitted_point_y = train_y - train_market_target
+        market_model, market_calibration = fit_market_regime_candidates(
+            train, calibration, label
+        )
+    else:
+        fitted_point_y = train_y
+
+    # Normalising the issuer component by its own trailing volatility prevents
+    # high-volatility names from dominating the common cross-sectional learner.
+    normalized_train_y = np.clip(
+        fitted_point_y / np.maximum(train_vol, .004), -4.0, 4.0
+    )
     # The sealed holdout comparison favours conditional-median forecasts for this
     # noisy return target: absolute error improves executable MAE and cross-sectional
     # rank IC while preserving (and slightly widening) honest point dispersion.
@@ -1125,10 +1372,28 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
     classifier.fit(train_x, train_y > 0)
 
     cal_raw_base = model.predict(cal_x) * (cal_vol if target_mode == "volatility" else 1.0)
-    cal_raw_by_mode = {
-        mode: apply_intercept_mode(cal_raw_base, calibration["date"], mode)
-        for mode in intercept_modes(horizon)
-    }
+    if architecture == "MARKET_RELATIVE":
+        assert market_model is not None
+        cal_relative = cross_sectional_center(cal_raw_base, calibration["date"])
+        cal_market = predict_market_regime(market_model, calibration)
+        regime_selection = select_regime_architecture(
+            cal_y,
+            cal_relative,
+            cal_market,
+            calibration["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+        )
+        relative_weight = float(regime_selection["relativeWeight"])
+        regime_weight = float(regime_selection["marketWeight"])
+        cal_raw_by_mode = {
+            "MARKET_RELATIVE": relative_weight * cal_relative + regime_weight * cal_market
+        }
+    else:
+        relative_weight = 1.0
+        regime_weight = 0.0
+        cal_raw_by_mode = {
+            mode: apply_intercept_mode(cal_raw_base, calibration["date"], mode)
+            for mode in intercept_modes(horizon)
+        }
     cal_probability = classifier.predict_proba(cal_x)[:, 1]
     cal_magnitude_raw = np.clip(magnitude_model.predict(cal_x), .02, 4.0) * cal_vol
     magnitude_scale = float(
@@ -1177,7 +1442,9 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
                 )
     # The horizon-specific intercept retention is frozen from pre-publication
     # walk-forward evidence.  Scale and conviction are calibration-only.
-    selected_mode = intercept_modes(horizon)[0]
+    selected_mode = (
+        "MARKET_RELATIVE" if architecture == "MARKET_RELATIVE" else intercept_modes(horizon)[0]
+    )
     best = min(
         (row for row in candidates if row["interceptMode"] == selected_mode),
         key=lambda item: item["mae"],
@@ -1221,7 +1488,14 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
 
     hold_probability = classifier.predict_proba(hold_x)[:, 1]
     hold_raw = model.predict(hold_x) * (hold_vol if target_mode == "volatility" else 1.0)
-    hold_raw = apply_intercept_mode(hold_raw, holdout["date"], intercept_mode)
+    if architecture == "MARKET_RELATIVE":
+        assert market_model is not None
+        hold_raw = (
+            relative_weight * cross_sectional_center(hold_raw, holdout["date"])
+            + regime_weight * predict_market_regime(market_model, holdout)
+        )
+    else:
+        hold_raw = apply_intercept_mode(hold_raw, holdout["date"], intercept_mode)
     hold_point_prediction = shape_prediction(
         hold_raw, hold_vol, hold_probability, scale, conviction_floor
     )
@@ -1346,6 +1620,80 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         round_trip_cost_bps=float(os.environ.get("V20_ROUND_TRIP_COST_BPS", "35")),
     )
 
+    # Evaluation remains frozen above.  Production inference is a separate
+    # estimator refit on every label that has matured by the latest source
+    # session, while all architecture and calibration choices stay frozen.
+    refit = eligible
+    refit_x = refit[FEATURE_COLUMNS].to_numpy(dtype=np.float32)
+    refit_vol = refit["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
+    refit_y = refit[label].to_numpy(dtype=float)
+    if architecture == "MARKET_RELATIVE":
+        refit_market_target = refit.groupby("date", observed=True)[label].transform("median").to_numpy(dtype=float)
+        refit_point_y = refit_y - refit_market_target
+    else:
+        refit_point_y = refit_y
+    inference_model = HistGradientBoostingRegressor(
+        loss=requested_loss,
+        learning_rate=.065,
+        max_iter=rounds["point"],
+        max_leaf_nodes=23,
+        min_samples_leaf=int(os.environ.get("V13_MIN_LEAF", "180")),
+        l2_regularization=float(os.environ.get("V13_L2", "8.0")),
+        max_bins=128,
+        early_stopping=False,
+        random_state=1000 + horizon,
+    )
+    refit_target = (
+        np.clip(refit_point_y / np.maximum(refit_vol, .004), -4.0, 4.0)
+        if target_mode == "volatility"
+        else refit_point_y
+    )
+    inference_model.fit(refit_x, refit_target)
+    inference_magnitude_model = HistGradientBoostingRegressor(
+        loss="absolute_error",
+        learning_rate=.06,
+        max_iter=rounds["magnitude"],
+        max_leaf_nodes=19,
+        min_samples_leaf=240,
+        l2_regularization=12.0,
+        max_bins=128,
+        early_stopping=False,
+        random_state=3000 + horizon,
+    )
+    inference_magnitude_model.fit(
+        refit_x,
+        np.clip(np.abs(refit_y) / np.maximum(refit_vol, .004), 0.0, 4.0),
+    )
+    inference_classifier = HistGradientBoostingClassifier(
+        learning_rate=.06,
+        max_iter=rounds["classifier"],
+        max_leaf_nodes=19,
+        min_samples_leaf=220,
+        l2_regularization=10.0,
+        max_bins=128,
+        early_stopping=False,
+        random_state=2000 + horizon,
+    )
+    inference_classifier.fit(refit_x, refit_y > 0)
+    inference_market_model = None
+    if architecture == "MARKET_RELATIVE":
+        assert market_model is not None
+        inference_market_model = fit_frozen_market_regime_model(
+            refit,
+            label,
+            market_model.alpha,
+            market_model.half_life,
+        )
+    inference_training = {
+        "policy": "REFIT_ALL_MATURED_LABELS_AFTER_FROZEN_EVALUATION",
+        "rows": len(refit),
+        "dateStart": str(refit["date"].min().date()),
+        "dateEnd": str(refit["date"].max().date()),
+        "latestLabelMaturity": str(refit[maturity].max().date()),
+        "architectureFrozenBeforeRefit": True,
+        "sealedMetricsRecomputedOnRefit": False,
+    }
+
     training = {
         "rows": len(train),
         "dateStart": str(train["date"].min().date()),
@@ -1362,6 +1710,9 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         "convictionFloor": conviction_floor,
         "interceptMode": intercept_mode,
         "interceptModeRule": "FROZEN_PRE_PUBLICATION_WALK_FORWARD",
+        "architecture": architecture,
+        "marketRegime": market_calibration,
+        "regimeArchitecture": regime_selection,
         "shortHorizonScaleCeiling": .85 if horizon == 1 else None,
         "shortHorizonFloorCeiling": .04 if horizon == 1 else None,
         "bestMAE": best["mae"],
@@ -1375,6 +1726,9 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         {
             "dateStart": str(holdout["date"].min().date()),
             "dateEnd": str(holdout["date"].max().date()),
+            "architecture": architecture,
+            "marketRegimeStatus": market_calibration["status"],
+            "regimeArchitectureStatus": regime_selection["status"],
             "futureRowsUsedForTraining": 0,
             "futureLabelsUsedForCalibration": 0,
             "maturityEmbargoSessions": horizon,
@@ -1418,6 +1772,15 @@ def fit_horizon(panel: pd.DataFrame, horizon: int, fast: bool = False) -> Horizo
         holdout_magnitude=hold_magnitude,
         holdout_probability=hold_probability,
         feature_medians=calibration[FEATURE_COLUMNS].median(numeric_only=True).to_numpy(dtype=np.float32),
+        architecture=architecture,
+        market_model=market_model,
+        regime_weight=regime_weight,
+        relative_weight=relative_weight,
+        inference_model=inference_model,
+        inference_magnitude_model=inference_magnitude_model,
+        inference_classifier=inference_classifier,
+        inference_market_model=inference_market_model,
+        inference_training=inference_training,
     )
 
 
@@ -1464,6 +1827,27 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         train_y = train[label].to_numpy(dtype=float)
         calibration_y = calibration[label].to_numpy(dtype=float)
         test_y = test[label].to_numpy(dtype=float)
+        architecture = (
+            "MARKET_RELATIVE" if horizon in REGIME_ARCHITECTURE_HORIZONS else "TOTAL_RETURN"
+        )
+        fold_market_model: MarketRegimeModel | None = None
+        fold_market_audit: dict[str, Any] = {
+            "status": "NOT_APPLICABLE", "sealedLabelsUsed": 0
+        }
+        fold_regime_selection: dict[str, Any] = {
+            "status": "NOT_APPLICABLE",
+            "relativeWeight": 1.0,
+            "marketWeight": 0.0,
+            "sealedLabelsUsed": 0,
+        }
+        if architecture == "MARKET_RELATIVE":
+            train_market_target = train.groupby("date", observed=True)[label].transform("median").to_numpy(dtype=float)
+            train_point_y = train_y - train_market_target
+            fold_market_model, fold_market_audit = fit_market_regime_candidates(
+                train, calibration, label
+            )
+        else:
+            train_point_y = train_y
 
         point_model = HistGradientBoostingRegressor(
             loss=os.environ.get("V13_MODEL_LOSS", "absolute_error"),
@@ -1478,7 +1862,7 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         )
         point_model.fit(
             train_x,
-            np.clip(train_y / np.maximum(train_vol, .004), -4.0, 4.0),
+            np.clip(train_point_y / np.maximum(train_vol, .004), -4.0, 4.0),
         )
         direction_model = HistGradientBoostingClassifier(
             learning_rate=.06,
@@ -1492,16 +1876,42 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         )
         direction_model.fit(train_x, train_y > 0)
         calibration_raw_base = point_model.predict(calibration_x) * calibration_vol
+        if architecture == "MARKET_RELATIVE":
+            assert fold_market_model is not None
+            calibration_relative = cross_sectional_center(
+                calibration_raw_base, calibration["date"]
+            )
+            calibration_market = predict_market_regime(
+                fold_market_model, calibration
+            )
+            fold_regime_selection = select_regime_architecture(
+                calibration_y,
+                calibration_relative,
+                calibration_market,
+                calibration["date"].dt.strftime("%Y-%m-%d").to_numpy(),
+            )
+            fold_relative_weight = float(fold_regime_selection["relativeWeight"])
+            fold_regime_weight = float(fold_regime_selection["marketWeight"])
+            calibration_raw_modes = {
+                "MARKET_RELATIVE": (
+                    fold_relative_weight * calibration_relative
+                    + fold_regime_weight * calibration_market
+                )
+            }
+        else:
+            fold_relative_weight = 1.0
+            fold_regime_weight = 0.0
+            calibration_raw_modes = {
+                mode: apply_intercept_mode(
+                    calibration_raw_base, calibration["date"], mode
+                )
+                for mode in intercept_modes(horizon)
+            }
         scale_limit = .85 if horizon == 1 else 1.6
         scales = np.linspace(.10, scale_limit, 25)
         calibration_days_values = np.sort(calibration["date"].unique())
         mode_trials: list[dict[str, Any]] = []
-        for intercept_mode in intercept_modes(horizon):
-            calibration_raw = apply_intercept_mode(
-                calibration_raw_base,
-                calibration["date"],
-                intercept_mode,
-            )
+        for intercept_mode, calibration_raw in calibration_raw_modes.items():
             block_scales: list[float] = []
             for block_days in np.array_split(calibration_days_values, 4):
                 if not len(block_days):
@@ -1536,12 +1946,17 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
         intercept_mode = str(selected_mode["mode"])
         scale = float(selected_mode["scale"])
         block_scales = list(selected_mode["blockScales"])
-        calibration_raw = apply_intercept_mode(
-            calibration_raw_base, calibration["date"], intercept_mode
-        )
+        calibration_raw = calibration_raw_modes[intercept_mode]
         calibration_point = calibration_raw * scale
         test_raw = point_model.predict(test_x) * test_vol
-        test_raw = apply_intercept_mode(test_raw, test["date"], intercept_mode)
+        if architecture == "MARKET_RELATIVE":
+            assert fold_market_model is not None
+            test_raw = (
+                fold_relative_weight * cross_sectional_center(test_raw, test["date"])
+                + fold_regime_weight * predict_market_regime(fold_market_model, test)
+            )
+        else:
+            test_raw = apply_intercept_mode(test_raw, test["date"], intercept_mode)
         test_point = test_raw * scale
 
         magnitude_model = HistGradientBoostingRegressor(
@@ -1620,13 +2035,17 @@ def expanding_walk_forward_audit(panel: pd.DataFrame, horizon: int, fast: bool =
                 "testEnd": str(pd.Timestamp(test_end).date()),
                 "n": int(len(test)),
                 "scale": scale,
+                "architecture": architecture,
                 "interceptMode": intercept_mode,
                 "interceptModeCalibration": mode_trials,
+                "marketRegime": fold_market_audit,
+                "regimeArchitecture": fold_regime_selection,
                 "calibrationBlockScales": block_scales,
                 "directionalMagnitudeBlend": directional_blend,
                 "maeSkill": metrics["maeSkill"],
                 "executableMAESkill": 1.0 - executable_mae / max(metrics["baselineMAE"], 1e-12),
                 "rankIC": metrics["rankIC"],
+                "directionalAccuracy": metrics["directionalAccuracy"],
                 "magnitudeMAESkill": 1.0 - magnitude_mae / max(magnitude_baseline_mae, 1e-12),
                 "futureRowsUsedForTraining": 0,
                 "futureLabelsUsedForCalibration": 0,
@@ -1717,6 +2136,7 @@ def factor_contributions(
     volatility: np.ndarray,
     dates: pd.Series,
     expected: np.ndarray,
+    use_inference: bool = False,
 ) -> dict[str, np.ndarray]:
     """Grouped leave-at-median counterfactuals, not invented SHAP coefficients."""
     medians = result.feature_medians
@@ -1726,7 +2146,7 @@ def factor_contributions(
         alternative = features.copy()
         alternative[:, indices] = medians[indices]
         ablated, _, _, _ = predict_horizon_core(
-            result, alternative, volatility, dates
+            result, alternative, volatility, dates, use_inference=use_inference
         )
         output[group] = expected - ablated
     # Leave-group-out effects are not additive in a tree ensemble.  Assign the
@@ -1818,7 +2238,7 @@ def _spread(actual: np.ndarray, prediction: np.ndarray, dates: np.ndarray) -> fl
 
 def horizon_price_gate(audit: dict[str, Any], walk_forward: dict[str, Any]) -> bool:
     """Return whether one horizon may be presented as independently validated."""
-    return bool(
+    common = bool(
         audit["maeSkill"] >= .005
         and audit["rankIC"] >= .05
         and .52 <= audit["coverage20_80"] <= .72
@@ -1831,6 +2251,26 @@ def horizon_price_gate(audit: dict[str, Any], walk_forward: dict[str, Any]) -> b
         and walk_forward.get("positiveMagnitudeFolds", 0) >= 2
         and walk_forward.get("meanExecutableMAESkill", -1) > 0
         and walk_forward.get("meanRankIC", -1) >= .05
+    )
+    if not common:
+        return False
+    if audit.get("architecture") != "MARKET_RELATIVE":
+        return True
+    folds = walk_forward.get("folds") or []
+    paired = audit.get("pairedNoChangeAudit") or {}
+    return bool(
+        audit.get("marketRegimeStatus") == "ACTIVE"
+        and audit.get("regimeArchitectureStatus") == "ACTIVE"
+        and len(folds) == 3
+        and all(fold.get("architecture") == "MARKET_RELATIVE" for fold in folds)
+        and walk_forward.get("positiveMAEFolds") == 3
+        and walk_forward.get("positiveExecutableMAEFolds") == 3
+        and float(walk_forward.get("meanExecutableMAESkill") or -1.0) >= .005
+        and float(folds[-1].get("executableMAESkill") or -1.0) > 0
+        and float(audit.get("directionalAccuracy") or 0.0) >= .53
+        and float(paired.get("meanImprovement") or 0.0)
+        > float(paired.get("dailyStandardError") or float("inf"))
+        and int(paired.get("positiveChronologicalBlocks") or 0) >= 3
     )
 
 
@@ -1927,8 +2367,9 @@ def write_artifacts(
         set(symbols), freshness["forecastAsOf"], timestamp
     )
     live_financials, live_financial_audit = financial_decision_contexts(set(symbols), timestamp)
+    decision_events = events.loc[events["symbol"].isin(symbols)].copy()
     live_news, live_news_audit = decision_news_contexts(
-        events, freshness["forecastAsOf"], timestamp
+        decision_events, freshness["forecastAsOf"], timestamp
     )
     community_input = community_events(events)
     live_rumors, live_rumor_audit = rumor_intelligence(
@@ -2103,10 +2544,17 @@ def write_artifacts(
         key = str(horizon)
         volatility = rows["forward_vol"].to_numpy(dtype=float) * math.sqrt(horizon)
         core_prediction, conditional_median, expected_magnitude, probability = (
-            predict_horizon_core(result, feature_x, volatility, rows["date"])
+            predict_horizon_core(
+                result, feature_x, volatility, rows["date"], use_inference=True
+            )
         )
         grouped = factor_contributions(
-            result, feature_x, volatility, rows["date"], core_prediction
+            result,
+            feature_x,
+            volatility,
+            rows["date"],
+            core_prediction,
+            use_inference=True,
         )
         live_priors = [
             decision_prior(
@@ -2211,16 +2659,18 @@ def write_artifacts(
         }
         model_horizons[key] = {
             "activeExperts": active_experts,
+            "architecture": result.architecture,
             "priceStatus": "PASS" if price_pass else "REVIEW",
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
             "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
-            "forecastPresentation": "DISTRIBUTION_FIRST_Q20_Q80_WITH_SEPARATE_CONDITIONAL_CENTER",
+            "forecastPresentation": "ONE_EXECUTABLE_CENTRAL_PRICE_WITH_Q20_Q80_CONTEXT",
             "pointDirectionSemantics": "HISTORICAL_SIGN_HIT_RATE_IS_NOT_AN_ISSUER_PROBABILITY",
             "status": "PASS" if price_pass else "REVIEW",
             "sealedAudit": audit,
             "walkForwardAudit": walk_forward,
             "training": result.training,
+            "inferenceTraining": result.inference_training,
             "calibration": result.calibration,
             "embargoAudit": embargo_audit,
             "magnitudeGate": magnitude_gate,
@@ -2333,7 +2783,7 @@ def write_artifacts(
                 ),
                 "validationStatus": "PASS" if price_pass else "REVIEW",
                 "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
-                "forecastPresentation": "DISTRIBUTION_FIRST",
+                "forecastPresentation": "ONE_EXECUTABLE_CENTRAL_PRICE_WITH_Q20_Q80_CONTEXT",
                 "tickSize": tick_size(point, venue),
                 "exchange": venue,
                 "targetDate": next_trading_dates(str(row["date"].date()), horizon)[-1],
@@ -2457,6 +2907,7 @@ def write_artifacts(
         "governance": {
             "selection": "CALIBRATION_ONLY_ONE_STANDARD_ERROR",
             "trainingProfile": "FROZEN_REGULARIZED_PR_PRODUCTION_PARITY",
+            "productionRefitPolicy": "ALL_MATURED_LABELS_AFTER_FROZEN_EVALUATION",
             "boostingRounds": PRODUCTION_BOOSTING_ROUNDS,
             "legacyFastFlagChangesModel": False,
             "holdoutMethod": "CHRONOLOGICAL_MATURITY_PURGED_PLUS_EXPANDING_RETRAINED_WALK_FORWARD",
@@ -2504,6 +2955,7 @@ def write_artifacts(
         "sources": {
             "historicalAsOf": freshness["frozenSourceAsOf"],
             "marketScanAsOf": freshness["marketScanAsOf"],
+            "marketScanGeneratedOn": freshness.get("marketScanGeneratedOn"),
             "refreshedSymbols": freshness["refreshedSymbols"],
             "quickSymbolSource": "VNDIRECT PUBLIC EOD",
             "priceCrossSource": {
@@ -2539,7 +2991,7 @@ def write_artifacts(
         },
         "model": model,
         "backtest": {
-            "version": "VMEWS-MARKET-BACKTEST-20.1.0",
+            "version": "VMEWS-MARKET-BACKTEST-39.0.0",
             "generatedAt": timestamp,
             "design": "Sealed chronological holdout plus three disjoint expanding walk-forward folds retrained from scratch; T+h maturity purge; pre-test calibration; point-in-time event, flow and fund-snapshot governance; executable HOSE-price and absolute-move audits.",
             "horizons": back_horizons,
@@ -2652,6 +3104,7 @@ def main() -> None:
                 fpt[FEATURE_COLUMNS].to_numpy(dtype=np.float32),
                 np.asarray([volatility]),
                 fpt["date"],
+                use_inference=True,
             )
             probability = float(probability_values[0])
             raw_return = float(core[0])

@@ -88,7 +88,7 @@ jobs:
           dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
           market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
 
-          expected = 'VMEWS-MARKET-FORECAST-20.1.0'
+          expected = 'VMEWS-MARKET-FORECAST-39.0.0'
           assert current.get('modelVersion') == expected, current.get('modelVersion')
           assert dashboard.get('modelVersion') == expected, dashboard.get('modelVersion')
           assert market.get('version') == expected, market.get('version')

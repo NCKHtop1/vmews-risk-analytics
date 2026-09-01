@@ -8,7 +8,6 @@ import math
 import re
 import sys
 from collections import Counter
-from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -19,6 +18,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from forecast_v13_market_model import session_limit, tick_size  # noqa: E402
 from forecast_v14_signal_audit import security_match  # noqa: E402
 from refresh_institutional_flow_v20 import completed_session  # noqa: E402
+from vn_exchange_calendar import trading_session_age  # noqa: E402
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -36,15 +36,10 @@ def _finite(value: Any) -> bool:
 
 
 def _business_age(observed: str | None, as_of: str) -> int:
-    if not observed:
+    try:
+        return trading_session_age(observed, as_of)
+    except (TypeError, ValueError):
         return 99
-    cursor = date.fromisoformat(observed[:10])
-    end = date.fromisoformat(as_of[:10])
-    age = 0
-    while cursor < end:
-        cursor += timedelta(days=1)
-        age += cursor.weekday() < 5
-    return age
 
 
 def _genuine_flow(row: dict[str, Any], kind: str) -> bool:
@@ -106,8 +101,8 @@ def run_audit() -> dict[str, Any]:
     require(as_of == str(market.get("asOf") or "")[:10], "dashboard and market as-of dates differ")
     require(as_of == str((market.get("sources") or {}).get("marketScanAsOf") or "")[:10], "market scan and forecast dates differ")
 
-    expected_version = "VMEWS-MARKET-FORECAST-20.1.0"
-    require(market.get("version") == expected_version, "market artifact is not V20.1")
+    expected_version = "VMEWS-MARKET-FORECAST-39.0.0"
+    require(market.get("version") == expected_version, "market artifact is not V39")
     require(dashboard.get("modelVersion") == expected_version, "dashboard model version differs from market")
     require(current.get("modelVersion") == expected_version, "current model version differs from market")
     require((market.get("model") or {}).get("promotion", {}).get("status") == "PASS", "sealed price promotion is not PASS")
@@ -148,6 +143,34 @@ def run_audit() -> dict[str, Any]:
     quote_failures: list[str] = []
 
     model_horizons = (market.get("model") or {}).get("horizons") or {}
+    for key in map(str, range(1, 6)):
+        model_horizon = model_horizons.get(key) or {}
+        training = model_horizon.get("training") or {}
+        inference = model_horizon.get("inferenceTraining") or {}
+        require(
+            int(inference.get("rows") or 0) > int(training.get("rows") or 0),
+            f"T+{key}: production estimator was not refit on all matured labels",
+        )
+        require(
+            str(inference.get("latestLabelMaturity") or "")[:10] == as_of,
+            f"T+{key}: production refit does not reach the forecast source session",
+        )
+        if int(key) >= 3:
+            walk = model_horizon.get("walkForwardAudit") or {}
+            folds = walk.get("folds") or []
+            require(
+                model_horizon.get("architecture") == "MARKET_RELATIVE",
+                f"T+{key}: long horizon did not use market-relative architecture",
+            )
+            require(
+                len(folds) == 3
+                and all(fold.get("architecture") == "MARKET_RELATIVE" for fold in folds),
+                f"T+{key}: walk-forward did not retrain the market-relative architecture",
+            )
+            require(
+                int(walk.get("positiveExecutableMAEFolds") or 0) == 3,
+                f"T+{key}: long-horizon release lacks 3/3 executable walk-forward folds",
+            )
     for symbol in sorted(symbols):
         snapshot = dashboard["symbols"][symbol]
         current_snapshot = current["symbols"][symbol]
