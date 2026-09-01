@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-POOLED-HOSE-1.2.0",
   "featureVersion": "PANEL-PIT-PRICE-LIQUIDITY-1.0",
-  "generatedAt": "2026-08-31T17:18:01.991185+00:00",
+  "generatedAt": "2026-09-01T01:54:50.130231+00:00",
   "modelAsOf": "2026-08-28",
   "champion": "logistic_l2",
   "promotionPassed": true,
@@ -1068,8 +1068,8 @@
     "DXS": {
       "symbol": "DXS",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.36275961103366994,
-      "auditCalibratedProbability": 0.1397332181659634,
+      "rawScore": 0.3627596110336699,
+      "auditCalibratedProbability": 0.13973321816596335,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1239,7 +1239,7 @@
     "FRT": {
       "symbol": "FRT",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.40798518355089747,
+      "rawScore": 0.4079851835508974,
       "auditCalibratedProbability": 0.15399488045958873,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -1277,7 +1277,7 @@
     "GAS": {
       "symbol": "GAS",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.38506456908842523,
+      "rawScore": 0.3850645690884252,
       "auditCalibratedProbability": 0.1467017755839563,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -1429,7 +1429,7 @@
     "HAH": {
       "symbol": "HAH",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.38587900311261314,
+      "rawScore": 0.3858790031126131,
       "auditCalibratedProbability": 0.14695847670228365,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -1524,8 +1524,8 @@
     "HDG": {
       "symbol": "HDG",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.3812040974888194,
-      "auditCalibratedProbability": 0.14548727241252213,
+      "rawScore": 0.38120409748881934,
+      "auditCalibratedProbability": 0.1454872724125221,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2759,8 +2759,8 @@
     "QCG": {
       "symbol": "QCG",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.392071936624313,
-      "auditCalibratedProbability": 0.14891606751517855,
+      "rawScore": 0.39207193662431294,
+      "auditCalibratedProbability": 0.14891606751517852,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3177,7 +3177,7 @@
     "TCH": {
       "symbol": "TCH",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.4412613052152355,
+      "rawScore": 0.4412613052152354,
       "auditCalibratedProbability": 0.16487474348539446,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -3842,8 +3842,8 @@
     "VPL": {
       "symbol": "VPL",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.3663349305766516,
-      "auditCalibratedProbability": 0.14084266721987762,
+      "rawScore": 0.36633493057665156,
+      "auditCalibratedProbability": 0.1408426672198776,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3880,8 +3880,8 @@
     "VSC": {
       "symbol": "VSC",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.5467310929944339,
-      "auditCalibratedProbability": 0.2026239494550265,
+      "rawScore": 0.5467310929944338,
+      "auditCalibratedProbability": 0.20262394945502643,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3918,8 +3918,8 @@
     "VVS": {
       "symbol": "VVS",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.4309346107599788,
-      "auditCalibratedProbability": 0.16145729835213524,
+      "rawScore": 0.4309346107599787,
+      "auditCalibratedProbability": 0.1614572983521352,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3937,7 +3937,7 @@
     "YEG": {
       "symbol": "YEG",
       "modelAsOf": "2026-08-28",
-      "rawScore": 0.3338933132366704,
+      "rawScore": 0.3338933132366703,
       "auditCalibratedProbability": 0.13086487322823953,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
