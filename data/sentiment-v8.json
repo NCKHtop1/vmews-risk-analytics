@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-SENTIMENT-8.0.1",
-  "generatedAt": "2026-09-01T14:20:05.618372+00:00",
+  "generatedAt": "2026-09-02T13:54:48.220798+00:00",
   "sourceGeneratedAt": "2026-08-31T22:52:34.388639+00:00",
   "model": "mnguyn11/phobert-stock-sentiment-PTDLW",
   "method": "PhoBERT financial sentiment + finance-specific semantic overrides + recency/materiality/source/relevance weighting",
@@ -67,7 +67,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9537181258201599,
+          "confidence": 0.9537184238433838,
           "method": "finance-rule",
           "weight": 0.28339981764423094,
           "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQNzU3a0JHcDdfLVRzc3RXTldxSGJ6SHdqemg0WXRfMnEzNWR0NHpySUg1SUNsOHNreUZFZ0dJdUlRTnFUUEN5dzB3ZkY0ZWlqMTFxNWdSbXV5b2hBWXlyWW5UdnM0SXdDa0o4ZDV3X29Ra21lcDMxSUtGcWtBRW1KQUlYNE9jTXBUejVkVVBXQlRVVWM2SkRqU3NreVFEVzZsRVljSUNORDM3MVhEUVluTy0waDNrUFNHYzhhWWRkUUNieU0?oc=5"
@@ -78,7 +78,7 @@
           "publisher": "Báo Dân trí",
           "event": "Capital / corporate action",
           "label": "POS",
-          "confidence": 0.8393169641494751,
+          "confidence": 0.8393169045448303,
           "method": "dl",
           "weight": 0.2760479260233328,
           "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOLUlqb3J1RnlzeTU1Y3EwQlV2N0xGR1FRMXVzSks3Z0pEZWJjQm13VkE2WGt6N0hNZFhiN0R5WGZkNzhzWEhaUldObjRUcFRhUjkzWXh0Y1VYRlhGeGhPU3JaRndtRUYtaVhiazNwanFpbmxzOVZjSHdQNW5DdG5rSFR5b2tJdThZUUVPZU45YUFlNHVicFU1WjIwbksxOHdRZjdKTDFsc2xFZXRyeEd5UjExQQ?oc=5"
@@ -89,7 +89,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9882175326347351,
+          "confidence": 0.9882176518440247,
           "method": "dl",
           "weight": 0.27193157788033545,
           "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPRkZNOGNfT29DSV9FNTlOd2tvYURITmltZ0VqTVhUWW9YUnk0bHJNaGpRTGUtd2tDQmFwd1ltYl9CTExlWkcwSmxyOGpxQi1WekRjX3J0RUh6QWhfVUlscHdKWk5CYTRubGNUdjBtMThHTTN1Ny02amxtZm9kS2UyYi1odXA2aFd2aURaTlJkMDhmeFE1V0xnWmxfSWh1eUdUTU5HWDE2MUo3b0I3S3ZCdXBhQ0I?oc=5"
@@ -100,7 +100,7 @@
           "publisher": "Báo Dân Việt",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9083191752433777,
+          "confidence": 0.9083186388015747,
           "method": "dl",
           "weight": 0.20839844030134502,
           "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPTS1TR1VYS3doUkxlZ1RQQ1pFZjVpbTJMYU9uX0E4bC1kdF9ZSC1EMDZZcjFMMk9WM2wzTkZBYWxUZ210bThaZ3J6Y1lZVkRSMUZGQ1o5aGkyOGxBOUpHLVZrSjdxYzNQMGRCdXVvSzBLVC1KS3VoRXMxTm9CX0loWnJwT3ByYjFIcGE3NEFKLUpSczRwSFV2WHV5QTJpRXc?oc=5"
@@ -125,7 +125,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.9684819579124451,
+          "confidence": 0.9684818387031555,
           "method": "dl",
           "weight": 0.4875942263109562,
           "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPSkRkR2Y2OW5uNEMxVWN0THpLcjZFLXBSVmlLTGt5UEhOSWlFR1Y2OUo5TmJELTkwSENBWkluMTNvMU9tc2tJZnYxOWNnTG1SZkcyMG9aQWdHWlplWndrUXBGaG5VMzZQQ2d0N2ZGRmo0M1JCeFJaTms4MUxSM3RDV2hDXzVSNnI4YTIxLWpmZVA?oc=5"
@@ -158,7 +158,7 @@
           "publisher": "Báo Tuổi Trẻ",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.7575417160987854,
+          "confidence": 0.7575419545173645,
           "method": "dl",
           "weight": 0.3978551202177201,
           "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPN3BBdzA4NWVPOHR3MXZtUmdNNVBlTndva3VwOTN1dGVDX0VtSDV3M3JFTlhnVzVvSi1zUTdSakc4VFlRQTR0LVdsT0lHZ1EwMzhRWEJVS2dkTWpQUUxQb2JwOTlMRUFrbkI3ei1RWTF1SzFHb3lObzc0emplOE9vMGhsald6N0NEcjRjUUNEcVVOcS1LbE9vclNjckhnb1dBVDFndGZCeGMxN2JxcE9STA?oc=5"
@@ -202,7 +202,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9875754117965698,
+          "confidence": 0.9875755310058594,
           "method": "dl",
           "weight": 0.315,
           "link": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOQkIxdjRNWEpGMUl6RkVaVDdrV1JxMzdPaG5NRG9CLTNQMkhBdld3V042UnRsb29sdXZMc0xWaWNYcVhZc21BSHh6SkhBOV8wb1VzY2dFZnBxUGJKWXRnR1NtSFpxeHh3QjNma0pHWEZMbXZsNnNlT3Qya1pLdlJrWHNGQnJmTmhUZ1NtQkJESmhaY0FORnhzNHJ2WElnRTFSOGY2eG5Hakx5Wm9YbmM5YVVYcVpXaUZrWGFqT0hhY1Y0VFVneDJla3RR?oc=5"
@@ -238,7 +238,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9721813797950745,
+          "confidence": 0.9721816182136536,
           "method": "finance-rule",
           "weight": 0.281671441219145,
           "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOU09UczdUUGREZUxVY25tSGNUMGl3M2p0RjdDdXBqZkp0ZF9RMFBZdzgxdjFnUUYzNXdoSkV3aWl5OHcwd21iLTlNRW9teWJNcW1nRFc3RW1sVS05cmU3c3l6bnZ3aGZGWEFtTnZKTGhpc1Q3bVVLTFpRb0ZvSGxaTEhTN2ppMHNaQ21UNkt0Z2VNSVB1LXl0NmVqOWpBZ05zTmk5T1JESWdWaTJxX0t1bm1KME9xYXBiN0VaQl8xbWszTXc?oc=5"
@@ -271,7 +271,7 @@
           "publisher": "CafeF",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.8658371567726135,
+          "confidence": 0.8658382296562195,
           "method": "dl",
           "weight": 0.13787543962507864,
           "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQUGVzclFuYTFqeF9PUUQ1dVZkamlzT1dtcUczTTBFTE9yVnVlbXZOVzZ6ckE5Q09XRmMzb001bUVEYXViNzJpRTZOemhhbmZLQUduUC1SaThUTkV4TlFFLXN1a2FieXhVYks3OVI0enlDTWVOcWcyNlYtanNYbnlEek03dkdmTVo0T0FMZjhjaHc2bHF1ODNQM29JSQ?oc=5"
@@ -304,7 +304,7 @@
           "publisher": "Tạp chí Tài chính Doanh nghiệp",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.6081650853157043,
+          "confidence": 0.6081539392471313,
           "method": "dl",
           "weight": 0.09308373316983501,
           "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNUlNyRVZYWmZlckZMUENrbjVTbUpyalloU3NTS2RCWGcxbWRjcmJQX1d4dkk3enJXbXZXSW5xaFVPOHVUYWV3ZjBHYXRyTWtDSXZqQUZTaThpaUtzR0pwU0F4U3pXSlhYMjFsZHhoV3N1UzYzblFoRm83LUs2Q3d3QmtYQlBtNG15VU51andSQU9aekwwZmgtYnFzQmRlNjBIdnVSZw?oc=5"
@@ -395,7 +395,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.95133376121521,
+          "confidence": 0.9513335227966309,
           "method": "dl",
           "weight": 0.23768027992249416,
           "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOZmxQand0cEZuUlljZy0zM0daNzlKMkNkbkpua2EzWm9TTGJndXk3b1FSZDRaVVliMkhiYy0yS2lhR2dOTzNBOFdESURhRUdJcWlXamdaTWFDUjQ5TUMwM21PUHR4ZGlZNWhZaEhGUEJGdXRKS0d4eEhfbW90YWxTLTdsZWdNLVN6TjltSXBQbFo4TGl0d2JLR1hrUzBQcHQ0dXlQQXRseWlVN2RQMWZJUXJlTnMxWExYdC15YQ?oc=5"
@@ -453,7 +453,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.983549952507019,
+          "confidence": 0.9835500717163086,
           "method": "dl",
           "weight": 0.2632772236810879,
           "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBmcy1vSFZ0MmYweTR5cXRPZnAxY2xMN0E3YlFQTnNQaGlTbjluekZ3TFpsQnNiWm5QTVplQ3pQLVhDcW01TDNKR2hxSGFnRXhsTkw2MnZGemdWSGM?oc=5"
@@ -668,7 +668,7 @@
           "publisher": "baonghean.vn",
           "event": "Financing / leverage",
           "label": "NEU",
-          "confidence": 0.8458278775215149,
+          "confidence": 0.8458282351493835,
           "method": "dl",
           "weight": 0.30425562831126374,
           "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNWkhMZXRZbjZrWS14LTVqTVptVlA3eWlUSk5rSHIyVGp1MXgwcGFMX0hHb1NwcEYtTmNMWFFBNU9aZEpGVTNuck1TNm5nUGFVblVUaEs4TkNxd0ZIb2lUNmE5X2NkWkdBaVluNlpib3VoSE80Tkk5Zk1JSDBobFJKa3JuTQ?oc=5"
@@ -690,7 +690,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9803228378295898,
+          "confidence": 0.9803229570388794,
           "method": "dl",
           "weight": 0.27253843483070433,
           "link": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxQc2stUHRCeS1CQ3JFQmFaNE5zQmxVbHd2QlBEQWFBUWhQZWJCWUVITUNfQS1BWTNUTnNCNkhSSmQxcFJoQlBBTlo2ZWFqOXlQVlpQd3poNGpaTWllUmZrY01DbEJUTWdfUmRZcWxOYXdxbzE1X3hTZFJELU11UDBtbmNmMzZoeTRuT0ZTV0NaMEhrSkNSLTMtbnd3aHZKZnJGOWJPVUpsdVM0Mm9KSVFXVlM3S0doeC1abmtVaU9tNnVNRkhlYlY3dS1TRFdPTWJnV1ktSUdVVTJaemQtUGU4UHItRjJHZUk?oc=5"
@@ -770,7 +770,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEG",
-          "confidence": 0.9110045433044434,
+          "confidence": 0.911007285118103,
           "method": "dl",
           "weight": 0.2689797588578494,
           "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOb2oxaTBCWU5UT1JlTUY3YjNSWFN6cjJEaTFSRmlJWTVwWTdFb2Qya3dqUGUyM3Q5RUNvMlowLUxBaThNYlE2RDRMSXFKLWp2alJZVFNYcm9xY3l0WklsTHJQTFdaUFdWZ3ZJbWk0Y1BQQjlEdVY3RVZ0UVB5TUk0c2ItbV82TXg2TTRWNDNIUktlOWtxWkJicndOWTdSNkN6SEhoVGh4eWpOeDFkWDRBYjd0d2JtMkpfcGZSRWF1cFM?oc=5"
@@ -781,7 +781,7 @@
           "publisher": "baodautu",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.8993169069290161,
+          "confidence": 0.89931720495224,
           "method": "dl",
           "weight": 0.2622085289314111,
           "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPTmdfd2lpbU9mSERLLTA0M25xMXd6dzdCX3BndklhSzlLa3ZGVmM5a2g5Z0FGZV94eWxWSGJaeTJBT0xBV0ZpdXZINGRWWk9KRHpnMGtTSVNmeXYtLTRCc1E0YTZMX2xzbHoxZUdZZktMYkpEcUlnN01jQ1hBRmp4MTJwTkZncnZ1bVFhOHlveno3dTdWdWVJaFlqWHBiOHF1N0NkQkg2T09zZWdtZlpFYXcxWkhESTdPdmc?oc=5"
@@ -861,7 +861,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9859797358512878,
+          "confidence": 0.9859798550605774,
           "method": "dl",
           "weight": 0.26399577218335185,
           "link": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxQSFdJYkJMM3duNjlHeThRTVowNlpFbm51VFNpemtyZ0ZyS1ZJSm1RSHUzNXdEeVBKNkRvVVF4dmpzNy1YSVd0MUdnOHFPaWh5ZzBzR3VwQk45VUE5b1NxX1VIZ19lM0RocTFuckJxVUhaYjc1cjlzMjhibEItX1p3SW1xbDUxSUdlVWQtdTNaS0tMSmVhUTlaSWhFNXNKWmNCUmt4clk5aW9zemRxc2x5WUdwenhhenhxV21uRzZGVUczb3hKUGRnR21rbmhYLWMzWFE?oc=5"
@@ -872,7 +872,7 @@
           "publisher": "Báo Pháp Luật Việt Nam",
           "event": "Earnings",
           "label": "NEG",
-          "confidence": 0.7818331718444824,
+          "confidence": 0.7818416953086853,
           "method": "dl",
           "weight": 0.235422036804995,
           "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPV3RSS2twdlpTZXV3TWNRQU5kX3haVk1hdXYxaTZOYjdjTzlCSFhNbVUya0hackNNQUlOamVaYzlqLTlldktEZXpFZ3d5N3lJanVxMkI1NERzdV9RX0M1dEk4LU9VUVQwbkZYRWR0aGRieTJBMVozVUxIMTlxZ2xBREVxZ2gxQ0IxelNaa1dHWU5JYjVsUnNTaDh2TGhIUUlncG9aTWswckhWZUttNFktSHBCLUVOSmhfT0JEUDAwOVc?oc=5"
@@ -952,7 +952,7 @@
           "publisher": "baodautu",
           "event": "Capital / corporate action",
           "label": "POS",
-          "confidence": 0.9807028770446777,
+          "confidence": 0.9807027578353882,
           "method": "dl",
           "weight": 0.471030145294714,
           "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOUUJKVjdmc2lCblVScEp1djhqNW9VYmgtdVB3Z0NZWmJHTFZhUEpZdWk0b0F0d1l4QmtKaUdLeVJ2SGdZT2dZWVZhYVVQcGtGNnkteWM2N2F4dnY1T3FJT2haa1lEV3BqUlBQZ0x2ZURkOGdRTVF0NU1kdGpMdmlLSE9ZTXFBZm12bTlwLUVvNGt0ekF5MWlFaUZxUXRSUFh1N1hxWEpOaw?oc=5"
@@ -974,7 +974,7 @@
           "publisher": "baodautu",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.7396606206893921,
+          "confidence": 0.7396605014801025,
           "method": "dl",
           "weight": 0.3566829078507147,
           "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPUVNkLXFxSDhOb18wZnFLSDd2TE9OdDVJU2NWUFRnUVdrUVB0cko5RC1nSllRVV9UYjhzeF9WdXdIaGVmQnVxLXh2OFR3aGV5Z0ZaZ1YzeTRSSHFOa1Y4UjExMmhxNVR3bnJWVHExYTItRzljOTUwb3FDQ3N6bXNuaGFrRndYMERva3ZKXzhsd0JrZ1lSckd1dUJOWTZiT2s?oc=5"
@@ -1007,7 +1007,7 @@
           "publisher": "CafeF",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9799739122390747,
+          "confidence": 0.9799737930297852,
           "method": "dl",
           "weight": 0.28980486262870575,
           "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOTVRRNzhfR2t3bEdLQ1RMZXY5T18zbEFvLVdNTHA5dXpqV0RIQy1oaGJTRlpocU1Td0tCTlBpYWpGamlWbG4wcDA1eGxFd2REYzhjS3A4a0J5UGl4OWNlR3NldVV5cGxDTXdHTndLMVhGY2xMZ2E4cjN1NjZ3UEozOW5jN1cxam1wUE94M19GNHVQTUkzYU9pN1hDVmc?oc=5"
@@ -1054,7 +1054,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9875265955924988,
+          "confidence": 0.9875267148017883,
           "method": "dl",
           "weight": 0.26417724432043954,
           "link": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPckVKWVRfWXRZN1RMNGE2QVlFOGJRZkg5WXUxeEdzZUd6bzlwVlJjcDZIOWY4aEJWUDZ4RUdXUnZSdnNzc3VjOU1fQ20wYWFPM2dKREJQSmNLa3FTTkhWcXRxaHV3c2lmRlFCWklyU3Y5dTNFRjVKX0pRZ3VSWTZEclIxWmVPZjZzUFFlUml0ZGV2RXFZaXBNZ3l0ek1sYjdpdXJYSzEwaWF0TUN1S3dHTVFsa0JMc3Vsc3Vnd21FNXNtNlktd1JSemNwVXJkUQ?oc=5"
@@ -1065,7 +1065,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9673412442207336,
+          "confidence": 0.9673411250114441,
           "method": "dl",
           "weight": 0.15129230048750333,
           "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOa1UyeGEzejVJaGNzaHVoNnNSSS1pZC1mYUI1ZjdVTEN2V2J5THJ5Rk9KLWJPNGlWQnFMQnY1b0pvNC1kTEhIc0c3c0lTZUhKWWV3OHE4YzUyaHBIZnpLTDBmQnhLbHk3WFhCZTdWYWJDRFVMajFaOHUwaUlYRzItS2pqOWZqektReENpeW5PQkF3b0Fya2hJdjNjekJ1TGVyR1JhUVl1MVo?oc=5"
@@ -1087,7 +1087,7 @@
           "publisher": "bnews.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9361026883125305,
+          "confidence": 0.9361032247543335,
           "method": "finance-rule",
           "weight": 0.060638379407629575,
           "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNVllhNXVhdnE0aGRocEdKOWc1czhDQjc1Sm9PdW8zX2xfNGlaaVp2X0lPMXd3dUtwYi1LeVBtcEQwRjJDVEVxSG9ZSDNrWGZuakpHcm9oZy1CRDlrZG5DWDNjd0o3YkRUaHU0VTNJUk5SNTYtWVphaVJUSWhhZmNzYlJKOXVoelo0WEpzTHdzbmVRd1FyTzdyNDd3?oc=5"
@@ -1098,7 +1098,7 @@
           "publisher": "MoneyF",
           "event": "Earnings",
           "label": "NEG",
-          "confidence": 0.9907755255699158,
+          "confidence": 0.9907754063606262,
           "method": "finance-rule",
           "weight": 0.05981763036486828,
           "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNbERKMWZMR0ktTTV6REFiRGxZM1RIc1NpcUw4MDJadUVfei1EdVFrWnVlYXFLVU96RnQ4T1NCSTd5Y1Jkc1hkNFlzYXA3aXBoVDROQllSQ1BabGtoOUZiRGhqcFZ5cm13ZWNPUEVWZUFGeDN1bmVKSTB6eXkyZkZScVVR?oc=5"
@@ -1178,7 +1178,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.974541187286377,
+          "confidence": 0.9745410680770874,
           "method": "dl",
           "weight": 0.2865953019365199,
           "link": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5Ub1hUN0ZNTTZKRUxsNWpxV1c3UnFKNG1wTHBlM19WbTBDMVBLRmlyaGVyUTVUY0dzcWxlTWtmX0RHUm8yaWtwODl2d1BBUVNLOFllanlJS1h3a2NmeWFZeUx6RGhBcFJVYW1fMHh5WWdpQW40QWpXaTFTZ2s?oc=5"
@@ -1200,7 +1200,7 @@
           "publisher": "VnEconomy",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.5754418969154358,
+          "confidence": 0.5754453539848328,
           "method": "dl",
           "weight": 0.20806779722824773,
           "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE9MN2VaeXZSXzg3Zzg0UFJ6aEpEc1JkX21iWV9kNkZvOTBxUHN6bnJFWGlyNm5ScTFTeGNxb3Zrb3Jic2k1YjdYWFZFMEc5QVpHVVJKV1ZqSQ?oc=5"
@@ -1302,7 +1302,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "Earnings",
           "label": "NEU",
-          "confidence": 0.980461061000824,
+          "confidence": 0.9804612994194031,
           "method": "dl",
           "weight": 0.33305403317421756,
           "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNSUJsMThvVkhtRzJLZXIxZVRvVENrbm15WXFHVE5BU19lOHJBN212Zm9sVGRKNG1sblhrb243TXVkRUpGd2J4R0VqNVNQNjNxdjhtX3hoVHVCRGk2T1pkd0dsWmpVd1l2V25XN2lFYWJTaWhFbkdCLXVjNTVnUjM5b3hXeFpkbHkyTHFYZGhBbVpiekM5dXNEQUQ3NGd0NFVPQWlNeFJrNW9ybm9hSndRMnB6U2h1S1k?oc=5"
@@ -1371,7 +1371,7 @@
           "publisher": "Vietstock",
           "event": "Financing / leverage",
           "label": "NEU",
-          "confidence": 0.9760396480560303,
+          "confidence": 0.9760395288467407,
           "method": "dl",
           "weight": 0.6234913296269967,
           "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNeWNpUUg4eW50S3N3TFdpR3E1ZkYyY2VxY0NjMENSOUJzcjl5OWwyY2FBcUpwMXNuNXpRcHdaX1dGdVJVQWt4dVBLajkxMW04SzNEZnVpV2R3SjJBN2hhcDZkSjFRMUpJZnR4WE9yTVY5U1ZNTmFhd2FIVDhhSGdjN0ttaVZkMEhkSHdNRmxTOWV1TzRNeHpKYTgxNDhzLXh4WWliTw?oc=5"
@@ -1415,7 +1415,7 @@
           "publisher": "Mekong ASEAN",
           "event": "Financing / leverage",
           "label": "NEU",
-          "confidence": 0.9826968908309937,
+          "confidence": 0.9826969504356384,
           "method": "dl",
           "weight": 0.47285781168289165,
           "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQekI3TFlHcVpXTC1QSnREMEpEME5md3otYnRWaUZoamJVWFVma1F2YlZBeWZmdjJDMWpoY09fZ3gyZ29tb0daSXhwWXRjTm8wRTFjY2UtRGltQlRsa0ViRGxONWFMWEkwdXJCcGpfSzVndkIxRDhlQVF3Z0xLQklORG10YjFYd2l1Q1BnUE9JS0U2a1Q2ekJxdWxZM21ZN0U?oc=5"
@@ -1426,7 +1426,7 @@
           "publisher": "Tạp chí Tài chính Doanh nghiệp",
           "event": "Financing / leverage",
           "label": "POS",
-          "confidence": 0.8374097347259521,
+          "confidence": 0.8374105095863342,
           "method": "dl",
           "weight": 0.3145995120670678,
           "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPcFg3U2tidzdLWjc3cFIxTGJSem1vYW1qVVZMeFJoVFJ3QTRKTkVxc0dIM3RrRG5DR2NvRENxVFNDMW94R3ppNlIta0RvMC1oenR3cEVaUlh6Z3JlLVVwSU12QVdPbGR3eUZDc0pNcEhlbS1kZFlaNTBCZWhlMGpMMmxhT1AxektEVlZyNnNDUWVaUDlfNXNvMFdQeHhHUEp4SUI5cklIcmVNbS15SHA3UGhpd3Y?oc=5"
@@ -1462,7 +1462,7 @@
           "publisher": "VnEconomy",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9568966031074524,
+          "confidence": 0.9568967819213867,
           "method": "dl",
           "weight": 0.31113484663332425,
           "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE1DMTA2TGpURTdBay1HMHZqZjR5WFdoLUE5azZUOUx2WUFabXVqMDJrSTZCbE1pTDFXUUJqRlRQREprQUZfMHhYZE00Y1o2MjZobk1PX1lRRi1JYlcteFI4X3FJallqREd6ZFhhSA?oc=5"
@@ -1473,7 +1473,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9505136609077454,
+          "confidence": 0.9505135416984558,
           "method": "finance-rule",
           "weight": 0.2877319503302767,
           "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNMHlwWmJlWUI2S05ub3oxY3FpcWtzZ1d2a1V6Nkw2ZzM5emlOYXVrcVV0dnRTUDNWMWlMUVhweU4wcWpVaXNpS0pnOGlkWG94Yk51bHgzN1h1cHYwUC1qQnlpdzloVmJVMGZJMGplcWwyUFZQU1R4SFVxUlNDM1RVV3JUMmpLa1U4YTFjckpTajRhQnpLOFFTOHRTOXh1Y3BOcWFuVnQ0Z2NuQnVrZGRKUGRaem5aNnFIXzNJZllfTWl6UDA?oc=5"
@@ -1528,7 +1528,7 @@
           "publisher": "thuonghieucongluan.com.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.7735297083854675,
+          "confidence": 0.7735304236412048,
           "method": "finance-rule",
           "weight": 0.16803196121645866,
           "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPNjZwWmVGR252NjRJYm54OU1GV095OWY2RnVZQU54Q043eXk4X0hSTWcyaElnZk5oSnd6OTRFV0lPTzZfYWppRU85d3lRNTdDcVJyLWFMcWZQSURoUFN3RzQ2NGVLdG10Q3JkYjYxYU1uVTM5QTNlX25tQkttNjhlbzVJeWpoR3FQek5mdmVGU05uSVlqZXh4bnUtcjBYZHFvOGNOR1Jwa0kwa3FERVdKa283czN0TmRCN2QxYTF0WmxVb1E?oc=5"
@@ -1564,7 +1564,7 @@
           "publisher": "Vietstock",
           "event": "Regulatory / legal",
           "label": "NEG",
-          "confidence": 0.9396957159042358,
+          "confidence": 0.9396955966949463,
           "method": "finance-rule",
           "weight": 0.4668448129328675,
           "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxQTVJ5OVNzVEZxajdMSVJhVXdQSHZFSDE1R2VCUk5mUndvcHc3Y3NiZHFSUGQxelgySDAwXzJaWlNuMmVCWGMtbFJFZWxGdzZ0NG1aQXVUQm9GZEk5ZEJINWU4akdpbzVVOVRuZDI0dkppZHFsTFlxZGxNZnF3YlAxREtaUjBTeTFkbFRaUTBWT1pCRjQ?oc=5"
@@ -1575,7 +1575,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "Regulatory / legal",
           "label": "NEU",
-          "confidence": 0.7438526153564453,
+          "confidence": 0.7438528537750244,
           "method": "dl",
           "weight": 0.30075283503749967,
           "link": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOa2NIM0tUYlRWUXo5cVZxaHBYV21tXzRxcVpBOS1YdlZaM29nVU9mMG5Vd3NBRnJ2cTFKM2ZrYjRrMHVsUVhZUkp0MVpGVVBXY0ZENlNQaUt3R3VMZjhFQ2h2TUt3QWdDMEtOaEpVeXJQZjhDbmxwczZKdkdXcGhRU3hMbmV4WXJnb3ZwTi1GNWVKSllmLVdvR2xTdFA3cWc0RU5PRDFkRFVsVC12OXUxNUYyZ1ZyZnEwOWc2TGV5bUM0Q1ZXeTdhRzA0UDRsX3ZoNWhMNXFwZw?oc=5"
@@ -1586,7 +1586,7 @@
           "publisher": "CafeF",
           "event": "Ownership / governance",
           "label": "NEG",
-          "confidence": 0.8329125642776489,
+          "confidence": 0.8329123854637146,
           "method": "dl",
           "weight": 0.2829568092956358,
           "link": "https://news.google.com/rss/articles/CBMi-gFBVV95cUxNSG1FRVdJb0UyRnBlb1lLaGt0Z3EwNDBOVDYzeTc3MHdRQVNtM3dYT3JaRFEyUW1YanZPeVB4ZHBMZERsUlo2TG01YlUtSGt2S2hTZkJzUmZUWlF5VjBRZ3BTcDBTdENtRExEUDVZeTlfeWNaVlZPYkdKLWk2MWRsczBMWTBQaWVTaUExQVhMS0J0aXZGTUxFTC1DSkZBS3pGU0VBeklfYkY4ZmFfajJPVUJzNXBjalRwOTgzT2FSckoxZEd0SEkydkMtLVB2dFVUUmRFR1RWbTBRQnFQSVUxZ1I1cDA2WnpnZjlIb3BnXy1PSUJDX0QtMmVR?oc=5"
@@ -1721,7 +1721,7 @@
           "publisher": "bnews.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9841644167900085,
+          "confidence": 0.9841645359992981,
           "method": "finance-rule",
           "weight": 0.19444825983684247,
           "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPUG90WmxEVHpqQ2IyLVdXQUQwdHV4YjlScms2eVB3aEhwRENkSlplSVdnNDVfa295QU10LTFPamc2aklRZVJoQjJFN2RvZW0wN2stNUt4MTYxclhVenR5Z0hiQTdqbVhtLUhxSmpoMk9EVFBNWGk3Q2dWYW12QThBN3Z5R2ZOYkREVWdibTFQYkE?oc=5"
@@ -1757,7 +1757,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9734387993812561,
+          "confidence": 0.9734390377998352,
           "method": "dl",
           "weight": 0.2689797588578494,
           "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNZ2Zqd0JWb3JQTkhRTUE1QXdQUGVwUmFOYXdjOVl6TzM1eUY2SEZ3LTBmTlFaZTlQLWNnN3VkWm50NGxWS0VRM1RRSWRkcTdQT3R4WXVUajRIaVpJRzJWOW4zT01kazJFQzVwM2xETjFENm41aTVPMmcwTldNdTFsZkFNaldCc0FxS1h5bkE4S1JWQ3BMWkRSaVNqUTBXUTVpbmc0UnNPTGVhTU84bWRWQUJIVUVXOFpEX0tHM09HTQ?oc=5"
@@ -1779,7 +1779,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "POS",
-          "confidence": 0.7234680652618408,
+          "confidence": 0.7234670519828796,
           "method": "dl",
           "weight": 0.2094816468288508,
           "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNWTg0QXNZWnJyR3V6Yk1zd2VNU0UxdmJKeDI1NXBpaVdyV3B5enE5QXlwMEp3NnlFZF8teUhZVEtLV1NTeS1YUlluOHhqT1dtdUo1aEtJU1BqVkwtTFloUk1WbUl3VHEyNmJqTjJGdWRZZ2ZSSGI3dURyYnpnSHBqczI1T0hnR19DRTh5c29wUlNpbWM?oc=5"
@@ -1790,7 +1790,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9842624664306641,
+          "confidence": 0.9842625856399536,
           "method": "dl",
           "weight": 0.19690590320151646,
           "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxOS01JNlNvcHJGUGVycjdvVE4xQUFTSzh2Smp1M0tuN29uNklGd0R3Z2tEX3lvY1NsbTlneXFjcmtjOXdVN09RazF3aDg4OXp4MmJnV2dfZzE4WkQzTXVQb19Hc2dXb0pIVUM2Zm0zMUxlVXhZLUM0czU1SDJXSEZGV2JNajR1dUVlbVNhbVU2alNzX3NtdEZYS0ZKTmVqamtpV0g1X3NlNU04QmdHeUZIOEY5UUQwX0RfNllrZEpJUWRvbUp2VE9nYg?oc=5"
@@ -1801,7 +1801,7 @@
           "publisher": "VnExpress",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.8125472664833069,
+          "confidence": 0.8125459551811218,
           "method": "dl",
           "weight": 0.19046441843461245,
           "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQRE0zSnBoajg0SWZtdE45OFd6Tkwxblp2WjFmd0VaaE1WSFlwaWdmcDdveEExZXlTZGx6NWZXU1NWd0RWLWhzMkJJSURUOFlDMUF3T05aai1rTXJBV05QQ3c5TnpxWC1qOEUwaVFUQUhCYTFnZE93OHplOTVMTlhvM296bUw3TVhzb1dtX2NR?oc=5"
@@ -1812,7 +1812,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9719975590705872,
+          "confidence": 0.9719976782798767,
           "method": "dl",
           "weight": 0.15129230048750333,
           "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNVFJ1ZEpHTzh3MG43Q014Zlg5QmNGU1gyaW9MWWZ3RXJnaWdDaXI5cmNzU0poNUFGc0JrVlR6ZS1OckVDMjdycnU3b3ZhN2tCS2liZC1kY21wZDVzTDAyUHdlMTF4aGhGZTFsOHg2ZWZBRzlkM2NWTE01REJmdWRqWE0wMnQ1a05SUmNyME4zdUF5OWVwNExnSGhKQTVQR1U4LWh2ODdmSjREazRHdHFLblk3ZDF5WGdGN0NTQXdaM1hqcnBscVE?oc=5"
@@ -1823,7 +1823,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9918381571769714,
+          "confidence": 0.991838276386261,
           "method": "dl",
           "weight": 0.15129230048750333,
           "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPMXduZVZrVWpEN2g4ZXNqZzd6OUVibEZLVkdQdkczcExXc2tlWE1vZ1R2TURlUEw2cHMyc3hHSkZTZVNkSGVzWlloSmluNUhLZC1SM1F1ZmkzQzdVTnhFbWhVT1MxWXVNTjNVSHdEeC04Q3NBSWZIb25ZTF9Rd3NJMHpnRQ?oc=5"
@@ -1881,7 +1881,7 @@
           "publisher": "VnEconomy",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.9882275462150574,
+          "confidence": 0.9882276654243469,
           "method": "dl",
           "weight": 0.3082800288151217,
           "link": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE02VWowUmFqdjlUSjNtUHlIOXJLYWtyNk11bzZQeEp1RTREdWlEN3BnVnNvdjA3R0tqNDZjOFNZc0NJbUNsbFJqTUNXOWxmWkpudnpNMlhRa3Roenl4Y2pTWDY2OTBuUQ?oc=5"
@@ -1892,7 +1892,7 @@
           "publisher": "Tin nhanh chứng khoán",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.9764626622200012,
+          "confidence": 0.9764625430107117,
           "method": "dl",
           "weight": 0.2982625436020517,
           "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQX2wyUGZ3SWRmWkdfTS1VLXNuQ1hTN2dQcTFNUUZtb3dBLTBTaUx5cF81cWNMcGRjaUFVbUxIVVJOZ2tGX0FEYTQ3emRPMmZtdml4bnFiTXQwLVNMUzN1RzFpNTFYdURIZng3VWR5aFhvWlh6S2dXODB4SElJWmlOQW11bkg0a09GQUVKWEJySm9XR2plUUdkUWtlWGwtZmtkNUNmUjZLVTJGcktXX3N4YlEwZi1aQVViaFMxZENFSdIBuwFBVV95cUxOYWtWVXRram9obm5pQ2hNMFBEN05kX0ZhRVNWWXdDYUR0MnR0T0lXc3pXU1V4ejJBeXROSDdGRHFxeV9uX3Q3RUxLT0VwYV9Ra2NhSkFHUjJnNHhGN2VtS2d6R0tKS2k3c3dfazZoTWdmaG9FM085Xzk2RFRONkZjVEtDZm1RNnE4b284aExac1JwekR2d1plSkpzRmpQRXNPcmRUaURNdi03Zy1XbmY0WkhqVmxJcmhQRWM4?oc=5"
@@ -1972,7 +1972,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9888229370117188,
+          "confidence": 0.9888230562210083,
           "method": "finance-rule",
           "weight": 0.27186153574522104,
           "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQbVFQeHNOaDMwVmhpdnhDOERSdTdmNHFXQ0FTWjBSaF9SSmtBVVJ6dGY0Zk4yckxaODV2SjBRSGpmdUF2dGhLQnZwaG9UT29ndHdFcWZqVkIybGthTVVzQnVKdGhfdWZwRmFFNFpKVTQxQWlFaXZEaDNsd3Q1NE5BMWl3WkpUSnVDV1p5cE9IVXJWWXB0STh2T0YwNjRrMVVKZVIxY0s3V0ZZR3BzejF4SnBkSWNsOXM?oc=5"
@@ -1983,7 +1983,7 @@
           "publisher": "bnews.vn",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9787802696228027,
+          "confidence": 0.9787801504135132,
           "method": "dl",
           "weight": 0.1835828586595099,
           "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOLWlHTU5UeXhTOTg4a09vb2dPOThBTnV5dEFhRkZtMXBzVUtLYzRRTFBxa01IN2plSTUyNTlOc050dm8tWTZvekxiX29FaXh0Ni1ZTEl2LXd5UWJZQ1dTV0FLTlRhUXpnd2oxNGJLWDE1OTdqOC1aaWkyNXg3cWFHdk51RlBRazlXTFZxbHFsdmo?oc=5"
@@ -2063,7 +2063,7 @@
           "publisher": "CafeF",
           "event": "Financing / leverage",
           "label": "NEU",
-          "confidence": 0.9565511345863342,
+          "confidence": 0.9565513134002686,
           "method": "dl",
           "weight": 0.4034994889018306,
           "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOQ2xmaGpZVVo3eE5Ra1pILVM2YmJDTWctYkE5LW5vSWxvSlVBSVp0UWs5WV9CTjFLYW50c0NvNXZuRXM1S1dMVjJVN1lLWDNiU1hMU28tR2ppSmRWbjNyam1wZF9PR3pPRXRYa3k2ckE2NkdlUjBZMVBFYktJMTI1ZHRWaERmMTdyWkhET2w3a01HT0dQQ09JX2FkUEsteEtZaXVtNmpyT2J1b2hvM3VOb2V0Tjh3dDlRazVCbVlsNW1RemZ1RVNV?oc=5"
@@ -2085,7 +2085,7 @@
           "publisher": "Bloomberg Businessweek Vietnam",
           "event": "Financing / leverage",
           "label": "NEU",
-          "confidence": 0.9256168007850647,
+          "confidence": 0.925616443157196,
           "method": "dl",
           "weight": 0.31156190758052243,
           "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNemdiMWpUdnJuSUNzb1p3alJuRk92UTY3X2o2cEJBUWc2UFF2Q21RakxKcnJhMkZJS1VVWFBYNnZBdDMwOEprOHlFd0xBYnVFbHpnN25pNTNyUHF6OG1faERPRVR5ekNLU3lobGk4NVVrT0pUVGtFR1J2bldPYlFUbWQwdy1DUTNPd01pYi1HSlVIYjJWb0E?oc=5"
@@ -2118,7 +2118,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9446935057640076,
+          "confidence": 0.9446930885314941,
           "method": "dl",
           "weight": 0.2802960730745974,
           "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxOYWtPQm8xV2U2V1IySTZ5TTR4UFphM09JQ0QtaTgxY2lhekw2SUthMHlMSHpuVFJqMTBGR3RLYXJYVnczeDByc09xQmlNaDVZOGFKZi1UbENrSU1uVmRodThNYWRVMHZBOFFXN3ByUzhiNWVGRkhpb0JYQ2R0Nk9ZVTl1ZldvcFlZNjRCOTRUMzNmY0wzM0sydUxodk4tQQ?oc=5"
@@ -2140,7 +2140,7 @@
           "publisher": "baodautu",
           "event": "General",
           "label": "POS",
-          "confidence": 0.7239024639129639,
+          "confidence": 0.7239004969596863,
           "method": "dl",
           "weight": 0.27952409931825306,
           "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQSGFkUVNWMUFlZThkdlI3bGNQdl9pMkNWN0d5Vi1mTWtMbmsyMm5kMHNtRklOMXBmZndkbVRtN2FTaFFoNHBjX0JaWElKV1VkVTd5U3h5UUZTcllFbEtvMDVtNzE5X1c3eUZreUpsRFQxelRmbmZ3YU1jVkwzd3ZCTjdveXlmVnJvR1NNSnRkVGhCbEx1aVM1WTVkQQ?oc=5"
@@ -2176,7 +2176,7 @@
           "publisher": "Vietstock",
           "event": "Capital / corporate action",
           "label": "POS",
-          "confidence": 0.9761776328086853,
+          "confidence": 0.9761775732040405,
           "method": "dl",
           "weight": 0.6108256248638974,
           "link": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxOVXpEQmJQSVZhSGNxdUpaUE5rcFhoclp4UTN3Ql9IVm9pUVVtcWhFWmFaVlYwVFVzQ0pBQUlzMzBfa1JRTkJld3puUi1EZ3FRbTNGZWZhYWpSblFja0tYV3RhUXFXQ3d5MHVwQlcwUlZnbjlYOHU0anBWQ3BmaFpvS3lfcDhCdVV5SE5HWGNsdGM5M2paR1NzeDBZeDd6RkVwbkJwZHlrNkxFU2hhYllxaFVWMlJkNGtvQzI0Q0U5U3IwTHJmTHBFbmlrN00tS1FnVDJF?oc=5"
@@ -2187,7 +2187,7 @@
           "publisher": "Vietstock",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9771720767021179,
+          "confidence": 0.9771721959114075,
           "method": "dl",
           "weight": 0.6083674865280188,
           "link": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPZXFWNG00ak9mbmdNNVBXX1hGVklfQXRlMzI5TjJlSmRnY3JpazJSR3RqenhkTGhlQW9ONGNCNm1lYVlDUnltWDhVcDFESGpIX092V2toamRseDU1NFd6M3ljQjZTZTIyeldRTlcycDRxT0JhTFlzd092X0o2SU9ZcWhMLUo3LUJMVW1IUDZyT1hHZF9hWERPUm5rOVJ5cUUxX0ZvOHJjZUFHZHByQnIzVVo4bml0X09SSHJKOExqMXdJYkhzQWtfSnB1TXd5SWhKU05vUlJ1dDI?oc=5"
@@ -2289,7 +2289,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.8892742991447449,
+          "confidence": 0.8892737030982971,
           "method": "dl",
           "weight": 0.09046183202524362,
           "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOa25HUzlSUmZrYzRLeUpBcmhIT2dSeDh2dWl5Rk4xUldmOFZ2Z2w1bHFuWjNxUFctSGt1V2kwMFFaMlhsX1lxUFFtOW10a3Q0bG9iUDJzY3lnc1FxS3lGU3hSVmdJZWN5VDYxUWhneFdRSmIwT19OeldRNWFSRTB3aTJveVMwTUNELWYzcWMyVU9oVjFQU255MEg4eUtLcDN6RmQ3MVpuS2JfT2NLVGRNQm5R?oc=5"
@@ -2322,7 +2322,7 @@
           "publisher": "CafeF",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9329107999801636,
+          "confidence": 0.932910680770874,
           "method": "dl",
           "weight": 0.07566764559782256,
           "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOV3FXcGt3M0FlVDBTWlhVbG5jRU9XUVFzMTJyOE5ZVGIxcWVDbGpxT3p6SXMzaTVwZklaWU1qZGZ5RHNoZnNRZnJvMERFM0E0ZWVoX3JUMWNUaGFiQ1M2YnJPZjFwQWM1YU0wTFl0dld0OEVHdm1FbnNGR0x3MTVpLWYwYklkM0h1ZnVqck9MQk1zZWV4NW5yajZ5R0hFOW1XSTNueEUwdFFCYUFIQkZuTnZfcUUxdWtz?oc=5"
@@ -2333,7 +2333,7 @@
           "publisher": "Báo Pháp Luật Việt Nam",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9902432560920715,
+          "confidence": 0.9902433753013611,
           "method": "dl",
           "weight": 0.06089631780649701,
           "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNVDhMZS0ySC10UjRnZlkyRHlJMXAtQ1dsOVhVektyajcxMWZKYTdwcnE1MGgzcVVYUXFlazdjd0dCeGU3UXYzT1JjWEtoUkVRNFU0NWdWcGhyRlRUX3F1dFcta1JlbWVKMGI3c3UxVVNERXIxVUlsMWwwYi12dlJjVC1CZ3NXaV9scTZPcFIxblFKQ0d6VWdaOFRkSWtrN3dFR1YxVUJnaVBKNThqQ0ZvYi1Na3N1Zw?oc=5"
@@ -2402,7 +2402,7 @@
           "publisher": "Vietstock",
           "event": "Earnings",
           "label": "NEU",
-          "confidence": 0.9931800365447998,
+          "confidence": 0.9931799173355103,
           "method": "dl",
           "weight": 0.2126356171067043,
           "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOdWlwamJrTzdtNWwwN0RPRm1nYXlGNEM4SVJLLVplRUxkNUFuZFJ2S1RiaDNZRGRFSGo4ak00dmpvNUgyWWJNMnR3bkJFUXo0dHg0clVyRTdURmRkenBvMURsMmdTczdCZC1mdldRY1ZmY2VpekViVTR3XzZvRnZ5RDRWclN0dzNSQUNBQ2ZDaGIwQmV0MHJMZUZZN0dOblJPaEVtTVhDLU1rUTJHX2N6RlhYMnc4Y0U?oc=5"
@@ -2435,7 +2435,7 @@
           "publisher": "congly.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9778375029563904,
+          "confidence": 0.9778376221656799,
           "method": "dl",
           "weight": 0.19564866840425088,
           "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxON1ZUYTQ2N0t3NEZaT25kVUtpcy01T1VHaGJnUW5hbDk3TE43WEdkQUd4SFJ3djVQWnNmZEtEM3VfdXRSYUVRYUtCdmlKVnF0VWs3RUhtdjQ2eVZNQjAtUlJFU2kwRzJBN1BWOXppaFdUbFBpNWtCV195NFVLbDc1RVNlbEpyNlNaaVJEOTFKWkdUZw?oc=5"
@@ -2493,7 +2493,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9798542857170105,
+          "confidence": 0.9798544049263,
           "method": "finance-rule",
           "weight": 0.28360597599166176,
           "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNVEFZcmdwYzZwb09INUdURURKM3FoUVhiWUlLcVJWaDNuOTMzTzh5aDU1VUlWMnJaazZUUnhHbnNIeVFTc1BqTWxjUFI5TWZkdlc0R250U2NvSXJXU3hjWkVZcVZQb3BidXg2dFIwbjRFdG9qaWszOGctcW5KU3c1NXlrYm5XQzQ2S0dMMXhsYl9DYTZJMnBTY2J1a2wyVUcyV1o4RjVRX0dwVU1uV0JUenJVY2x4MHlkajdwT2dzdkM0ZHM?oc=5"
@@ -2504,7 +2504,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9615118503570557,
+          "confidence": 0.96151202917099,
           "method": "dl",
           "weight": 0.28322630713657654,
           "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNR05hX0E0d0k3ZGVNOEF0SDdjbGtGQWhRMi15aFFZMzRzVDYyLXFIUVZPSGhiQlJEaElfSXMtdmxaNm5aVWRENF83SHBOM2xmV0t1RmhZc3pLWC1mRkxlU0tUMEtHeUw5SndCZXN3aTZfbW5HM0Zncm1STlNyNFhENlJWb3o1V1hQRWhR?oc=5"
@@ -2515,7 +2515,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9650762677192688,
+          "confidence": 0.9650763869285583,
           "method": "dl",
           "weight": 0.28322630713657654,
           "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBWU1RDMjRrb1NaTzJVc2VhQ2xkRnF3NEVfZ1d3TllsNy1BanpYZGFZUkNtY0FCVzUwUTRieHQ2UV9fdHp3ZjA5UkFZd2d6N1ZZY19GNUNMX09iMUp2QTU4a2N4bE9wZ0w1VW9ISVpVYVNUYXVrQnAzWlF0Y2czbGM?oc=5"
@@ -2584,7 +2584,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9796099662780762,
+          "confidence": 0.9796098470687866,
           "method": "dl",
           "weight": 0.2877569757250282,
           "link": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxQRV84UmZpUU1mSHBXYUVFVkRkUER1V2l3TnVmZU9QN1hvM1ZHeTBNeDZmclZDODJjMk1tQzE4NTh2WVpCekNGUER1UGZaeWp5dzV2Y3gtTDZZT3dOMVAzR1ZrYUx6Y3RrOEJuSUdOMGxFRjgteEhlczRfdHo5X0NZdElrRWlYcWJCSzdyWXN2UTdnbzVOLTU5YUM5SVF0d0p1ZVQzLUZOUlFyb3JSNE1HS28xR295WXpmMS1PemZQZUFXZHMxTlRNcWlmVW1jVHdBa3Fkb3pFNUlFOWFHYUdfVQ?oc=5"
@@ -2595,7 +2595,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9735441207885742,
+          "confidence": 0.9735442399978638,
           "method": "finance-rule",
           "weight": 0.28724462737531886,
           "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVUxYMXY1R192V1lEUmdJUkxRQmxwRk9nS1o5WktRSmlfY1BpeGNSUElFR1BUN3lZekFOZXNXa1E2VHpiV2F5UDgweHZtdjRvNTdfRFd0Rl8yaGQ0LWdsZDBYcXpwcUJkNnF5UmFFNFYybFpSNlpZSjZjdTF1dG5QXzFMeXBRbU1ERTVLYXUwVE8xS0pRdVJSVzZDZkJEaFk4em1jdWhfa2pla3dOdElYQ1B3?oc=5"
@@ -2606,7 +2606,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9371654987335205,
+          "confidence": 0.9371654391288757,
           "method": "dl",
           "weight": 0.2852741406660898,
           "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1FMk1aTmQxS2FvcDhoVXVOTmgyU0J2dTl5MVMzQWtEUk9Yd3JwSC1MRnh1TmRRcmFGTkhFWGZhUVFSeHNGengyYmJPR3V5SERtUXVKeEdKdmJLVWdQbkhMRjdjSHF3bFpUd2U4YXJTMVIzSzVhcGM5ZjU0ZkZnSjQ?oc=5"
@@ -2675,7 +2675,7 @@
           "publisher": "Vietstock",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.9866480231285095,
+          "confidence": 0.98664790391922,
           "method": "dl",
           "weight": 0.41214229808840497,
           "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNNkZqVk5FU0I5OUYyMlp3dDRNUVZueWRpek9vMGFTbUtYTHJaZGM3aDIxYVBmWEVRLUVkUzZnTWtGbWRQRkpiMVdDc19pV2RlTzFVSU1XdTRBYm5obTRTYUhOVXhIeDhjQWE1d3pJaG9La1BydzgwdFVqWWRRM3pDNVRWN0dHYjE5TzdzVU5CVVZvVEdpWXlHc2w3bDg2SElTTWVLM1lZdm95QkJhVjYzdGNFOA?oc=5"
@@ -2810,7 +2810,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.9792322516441345,
+          "confidence": 0.9792321920394897,
           "method": "dl",
           "weight": 0.18950820374401625,
           "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNTGZQR0IwMXMxQWRLdFZBNDhRTmJoV2JWbUFsSVBub2VpVGFYaDRCSi1WTW91cG9VaGtKdjVWcjlVZEV0enVfUGd2amJKdUdnU1U4Xzk0UUxLV3RiSXZHakZ1LWpnWnNLcFNjZDlIZFVObnlURXBPNm44ZzdzeE9xZXp6UFg2cWlDakdyOGdPeXdKendSQ3YwMUFYMk42ODVOaGFYaFJTX3V4QjlYU2FzUTlNajM0RzJMV1hvd1RqMlY2ZmFIT2Rv?oc=5"
@@ -2934,7 +2934,7 @@
           "publisher": "thuonghieucongluan.com.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.7735297083854675,
+          "confidence": 0.7735299468040466,
           "method": "finance-rule",
           "weight": 0.16803196121645866,
           "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPNjZwWmVGR252NjRJYm54OU1GV095OWY2RnVZQU54Q043eXk4X0hSTWcyaElnZk5oSnd6OTRFV0lPTzZfYWppRU85d3lRNTdDcVJyLWFMcWZQSURoUFN3RzQ2NGVLdG10Q3JkYjYxYU1uVTM5QTNlX25tQkttNjhlbzVJeWpoR3FQek5mdmVGU05uSVlqZXh4bnUtcjBYZHFvOGNOR1Jwa0kwa3FERVdKa283czN0TmRCN2QxYTF0WmxVb1E?oc=5"
@@ -2956,7 +2956,7 @@
           "publisher": "thuonghieucongluan.com.vn",
           "event": "General",
           "label": "POS",
-          "confidence": 0.8915031552314758,
+          "confidence": 0.8915033340454102,
           "method": "dl",
           "weight": 0.15868042942625857,
           "link": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPVWowVmxscjdpWmYwRi04MkRCRkh0dVVqdUFiRWJydncyVzNjUGt1QjZ6TU1HMFN5RGd4ekdIeXJZMGtqSjlyT0hJWWVyOHhNZDZicUFVUXZEMTg5SUdOeEhramd2MDgyVG9OYktzMEdFanZpUVk3ZnBqa19va1JNdnJJR1ppM1RUU3JQalhlUjlUUDNoZnRnX1ZNQlV5S0NXUWoyWGl3elpxdUQwSC1mbGc2TC1JUW00OGFzYmVDU2xBRkdtekVjWWp0bXJjd3dVNlZJ?oc=5"
@@ -3014,7 +3014,7 @@
           "publisher": "Vietstock",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9916021227836609,
+          "confidence": 0.9916022419929504,
           "method": "dl",
           "weight": 0.5207868346230453,
           "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNWjJ1TjhHYjA2YVg3NTM5LXhUWXRhc21LVU9VM2FEVFZVYXZjLUJBd2pNbldoUExMb1VmaTNLZVdqVWhOWDFEWmR6andrNldXQktiYW5Fb3VqcTRtejRZXzNiV3JYakJVb29vUTVVWGJSVmJ6LU5lR2cwZV9tN1NzMC1jT19pcGcwQ2p1MGJfdFk1b3dxRlF2bGl5R0VUVWlmOEFmMg?oc=5"
@@ -3058,7 +3058,7 @@
           "publisher": "nguoiquansat.vn",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.8584724068641663,
+          "confidence": 0.8584716320037842,
           "method": "dl",
           "weight": 0.3469379426147225,
           "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNS1h5el9LMlRBNTkyZGJpa3JwZFh3akZhbldjM2RCaFZ5bkV2cGVJempaU3pFcnNad01NeEVPTExDeElHR2ZHSXlEYlJvanYzLUU4dm0xeWQ1RS04UUpzSlgwLWFKUFlUZ3pHakZTWkRwUFV4R25LZXhkSnBlajRsUTBXakRTeTZLSllpVzBOZUxKQjdTejFOWmg0NGl2T2tuZHV3VGhXekkzVXNJY0xPTUNoZVNVQQ?oc=5"
@@ -3083,7 +3083,7 @@
           "publisher": "Tin nhanh chứng khoán",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.686026394367218,
+          "confidence": 0.6860247850418091,
           "method": "dl",
           "weight": 0.33716569822929315,
           "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNUFUwdjUzOGdPbHJOc3Q1NUpFSmpPUVQxaVZkdWFWcTMyUHpsOEN2UUY3bEdkNVVPQkVBc3FEZk11czkwakV4b01HYVlNX2p3Q2NDaWVvb09JVkdCOGNDbWI4N2d4RGhDMk5aXzU5UDJ1RG52ZmNENjlHc2dvR0ZzT2V5c05wYkZMeUHSAYYBQVVfeXFMT0JnVmg0WHFWTU4tQ3lEY3cwZG9yUlBVMjdwTE5tVENlOXR4VlVWUDlqMUZxeEM2blVoRC0zei1QVXNSY0gzb05HSVVjaHNYWEYtWlpfa2lYUTE3aGZxeHB4Njh6aEl1RDJRRExoYnlRaDVoeEtuX1NlYVUwYU9RdXdjSHlzUEE?oc=5"
@@ -3105,7 +3105,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9824175238609314,
+          "confidence": 0.982417643070221,
           "method": "dl",
           "weight": 0.2856522093991889,
           "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxNS0ZJcXlBVVBOaV9sM2hHQWR3NVV3Mk5GMXpqNnhZNWl1bE1rdHBhWmFBRUtDcUR4dEF3TUd1b01RM1JENTJfR3hRUXRHaFFIblRtZXZJdFRuUG9uQ0thcm4zYlRQZ2dNSm9jeTc1eDBEN0J0UW0zOVlOeVF2VkJMSGcycm12ODhoN2NtN21TcDRUTDFiMy1mbzRFVHNfQQ?oc=5"
@@ -3116,7 +3116,7 @@
           "publisher": "CafeF",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9887524247169495,
+          "confidence": 0.988752543926239,
           "method": "dl",
           "weight": 0.28553321243802776,
           "link": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNZEt0amdTN3BxdlVOdnhUaXRRSndHeDlycGxOaS02amxvdGJaSTBYRnhUTjAxdVBOcmpWZllSM0J5YUdSMVd1cGxyaWlubjNLM2tIQnBQYVFubGVxQ2JFcUx2cVozeFVKNnk4cmdvOTNadC1vS1l6Vkp2elNpTGI5ekRWaXB1bFVnVFByRU9xdGowZEJwbjZJU0tQT29mZDdtUmdJZmUwTE0ydW9NU3ZmT00talRLNTVKamFPREVxUUJZVkhOMmtJZFBMQVdaQmowMXc?oc=5"
@@ -3127,7 +3127,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9781518578529358,
+          "confidence": 0.9781519770622253,
           "method": "dl",
           "weight": 0.2812839440467348,
           "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPSERFVlhadERJUUgyTzgtazhiX08xdkotQmRQejdzTHJFTXdFN1FJdTBoMzk2Y0s1eFNpLTBoMjlxOVUydG1NOE54MGlxUEMybG9JU3NibUtRZ0JmTjlraEdDOGVWY3JZNGRlY2hLaGxlWDBEajQteG1TMnB3YnlkSnFZcG5FNmhUZ2dicDZGSjBmWGNQSnFsbV9nNkZmZw?oc=5"
@@ -3138,7 +3138,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.8842117786407471,
+          "confidence": 0.884213924407959,
           "method": "dl",
           "weight": 0.2799165772284976,
           "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOSWlscW53M2V1MGRQYjl0clN5bUJYTDVCYjFXVWhOcnY1T1ZPYmljOTk2bk5rc3hsTWtNTXhXSUZFZTVFdk92dDctN21lZjI4TXlLelBOV094V0UzWTVWN1I2Wi00ZFJjSXZDNFFSVDRoWHk5NmpOOUlxaGFPWGxtMXZ1eEx1LWREZ0UwSk9sLXRxTjRxVEg4S0ZlSWVlRlJheXN4TjVqS1FYYTZxazJQOUY0UTBEd2pUZHc?oc=5"
@@ -3149,7 +3149,7 @@
           "publisher": "VnEconomy",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9759969711303711,
+          "confidence": 0.9759973287582397,
           "method": "dl",
           "weight": 0.2639949864828181,
           "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE1lTzlEcFVESU5iVllRbnh0RVBLRFl3Vm1uQ0VETDlvcUk0UUVISTFFemtaMzd1YTVhZlBBNW9OMjJ6QWYwb1RQUnlYalJOOEItamNDWkp3?oc=5"
@@ -3160,7 +3160,7 @@
           "publisher": "VnBusiness",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9079910516738892,
+          "confidence": 0.9079908728599548,
           "method": "dl",
           "weight": 0.20639076102650125,
           "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNVUpGallhMk8zMmFIVVBCWXlsa0tLVTFhU1cxWGJCdjNTZXJaenVNUGprcTRHWnBnd2g5X001WU0wMWhYdVBzY3NackZ0NzVJN096dzdIeURBNjItVW5wRUQxQVg2bzhrbU9lSjlySjhaVzY5cGhEdXgwNVFOMlFBUkF2WlFZRVJhM29sMQ?oc=5"
@@ -3218,7 +3218,7 @@
           "publisher": "CafeF",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.9931448698043823,
+          "confidence": 0.9931447505950928,
           "method": "dl",
           "weight": 0.2937681632435905,
           "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQZ3djTDZCSl8xN0VsTEVlbGttNnVjSWttUnJOSFJRNzYxQ2NVNTNyeGtXODB0cHhnQnZzMHFubjEwaHZNLUJ2eHdPNkxxdW03WFpNbWRkVVZiZ01SX1J5Y3VfNmlJLTdvRnFPVXlYUXplUDBHai1LbFpBWU1rNEFkM2ljTzd2RU5zUHVxRmNn?oc=5"
@@ -3229,7 +3229,7 @@
           "publisher": "VnEconomy",
           "event": "Ownership / governance",
           "label": "NEU",
-          "confidence": 0.9818050265312195,
+          "confidence": 0.981805145740509,
           "method": "dl",
           "weight": 0.2672411439141782,
           "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPYUpSNlFJdGI1V3IyTGNuYXBkbW5qdFpPWllPLUtsR0E1d2M4bUJzWjNYM3JVenVHamF0MWUxYWVVaU1DdjAxeU9meGhzcjhxY2w0aEwxdFdTbHprcEhtc0hMUHFDQnluWFU4eFkxczlMRWNfWGRiVDl4NFVLVFdvQk41VnFSdWhyOG0tYU5uUUtWeGQ4YVM0V2V3dGNPSDFldDc5RA?oc=5"
@@ -3342,7 +3342,7 @@
           "publisher": "Tạp chí Nhịp sống thị trường",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.8005722165107727,
+          "confidence": 0.8005697727203369,
           "method": "dl",
           "weight": 0.04831380573300499,
           "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQTF9TNTh1czFvUGNCVlkyNW9rYjZpQ3VFeGNZNEQ5UV85ZDJKSmZSb3hGbXpub3ZMbHlEVmh5SF9rNnc1azFPb0xHYnJQeGpXcnRuV0kwMmhHa2VQenRqQUQzVUV5Z3Z1ZGNibUpJa19uOGtBVF9MTmhySFBGWktJdzdYYnNfV0llVFBjRVhSTl9sS2UtWVhnNG1PRGNRUGM?oc=5"
@@ -3364,7 +3364,7 @@
           "publisher": "Tin nhanh chứng khoán",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9282801747322083,
+          "confidence": 0.9282803535461426,
           "method": "dl",
           "weight": 0.04309606262429052,
           "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxONWY1S2R3cHNHWWNES21kMXd6R3gyTUcxZHh1d2ZiM3B4emZVMFAwZHNBTHdxMDQtTnpLSjZCR01BUTJBNk9oOTVORWpVeGwyV1VIYVF5UnpvTGhjOTE0RWpVbk1wMDJhc3M5SzZfaGF1VVJ5dUVUTFZDOGJqOWZUMy1KZGxQb3ZKTGd6N3REcUhjTnJHVFFTQzUxOFBILXBBT29ILVQ1dWY1aGvSAacBQVVfeXFMTmdzRzc0bmFIVkhIMDJOVVI4T0dwWVNQSFBPekY3OURxQlRzY0VZelcxdWVMVlRUeXlOWlRaRUhpYkkwaUh2N05xRUp1d3F0RkZweUpmcDQ3N2tRZWlEWUlwVEFPUU1IUlJPNnRwX1BVNjJfbzhSUWh2Q25FZG0yQ28wRE1RS3F6MGRtU2N4U2xLM0FtLVY0TGJka3VENWpzTUI2Y0tMR0U?oc=5"
@@ -3433,7 +3433,7 @@
           "publisher": "Vietstock",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9696463942527771,
+          "confidence": 0.9696465134620667,
           "method": "dl",
           "weight": 0.2855972379743633,
           "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOZmdRdGlUc0lyWFlKSDNjTzhyc3o4NnA0U2daamlKYXhrb25KQllpdWJnb1FkNVZQcmk4cWlUM2IxUS1jWjlZdkdYdncxblJaSUgxaF9lR3ltSjZOYWtSODFkVjNTVU1Pd0luQUo5akctWVdDVk5xSnF4bkVhaDlaWHpZbXNtSWJaMThj?oc=5"
@@ -3444,7 +3444,7 @@
           "publisher": "VietstockFinance",
           "event": "General",
           "label": "NEU",
-          "confidence": 0.9904244542121887,
+          "confidence": 0.9904245734214783,
           "method": "dl",
           "weight": 0.2798442007526474,
           "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxOZGk5MWx2eTd3emxQWVZUUnJVM2ZFMV9OZzFuSWF0UWpnYnEta1RQLVBDUEpFVDhWSkE0ZkFiX2t2VjN4UGhyYVBkVHFXQWVsamdiZkljd1NJbm1KWGh4TUlOSGR2aTRZOWxJZjhaNWxPQVhuRm5lYW1fRTJSYTJmSmUzT21wNW5fLW1BczJMSFlZSldra0FTWmZHQlJaOHdENTE5aFZFdWhGMk5zazhRX2FiSVJ6TGhjVUVGZHFRV25ybjUtNE05WA?oc=5"
@@ -3491,7 +3491,7 @@
           "publisher": "Vietstock",
           "event": "Capital / corporate action",
           "label": "POS",
-          "confidence": 0.9804194569587708,
+          "confidence": 0.9804193377494812,
           "method": "dl",
           "weight": 0.7652065908861672,
           "link": "https://news.google.com/rss/articles/CBMi9AJBVV95cUxOZE8zdHdlZUpqV1hIemxLdENnMmppZmtGLXc4VXl0Z0YxUEM0bWtOSzdUSEl2TkNwXzNWdEd2R0p3SXpXaVRLUWxFREkxWkJORVdSYWFOWlpMUHhLekJZeGRTeVVHd29fMWxCT0FWZmNaeXVIdHFTWVpOZ3BudlRuTDZBb2o5eTV3MjNKbUNvUkFjd3ZKNFRpRG43c2UtUGZpYXFYUUxYNkU5WHJ4NXFxRFV2TnFXODJpbUJ2dGJRTXZoZ2VUb1l0ZkxCUzNnYUhuMkdDd1dOXzhrQ1RLT2dYSy0xeGVLeWk5UEdsMm9lUzFQa3BsZm4tNDYxMG9wZHVUTVBHVUJKRHVQQzlOVC1fV3YwODAyd3QyZmVkQTJMS2JQSkhTY0xmeXR2VGFPbzBVMUtid0RSa1hUXzhSTmlIZjRxNUdabWpfV215TDJFd0hweDdHajdTNVNkR0xiY0IxaVl0VG9qT2l4LWR1QTVHdVNNaWQ?oc=5"
@@ -3706,7 +3706,7 @@
           "publisher": "Vietstock",
           "event": "Capital / corporate action",
           "label": "NEU",
-          "confidence": 0.9913665652275085,
+          "confidence": 0.9913666844367981,
           "method": "dl",
           "weight": 0.43535883166185535,
           "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQbnVhSXFnVUx1MEsxUUo5cWU4UEJtQ01nNjFJVTJyZERTb3c4QUp4TE5vVmczZmRyY0JNZHZ0c2ZxV0E1a0paVzltYWplajVWdzFhVkhXLURhQ2V1N2lsM0d5RFZuQ2RIb1Brbk5MdXhKSFpGVjFMRDlOajljNzZPMnEzb2wyZnZYS1BOUGlqZmNETm94TjFNQ0JHUmRmcG1TYnk3bzJIbndxSUJuRGpVTjJkbTcyYU0yckNHUjZB?oc=5"
