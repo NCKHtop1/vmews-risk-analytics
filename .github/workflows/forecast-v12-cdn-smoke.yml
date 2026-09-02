@@ -1,20 +1,12 @@
 name: Forecast V12 immutable CDN smoke
 
 on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Forecast V20.1 immutable-price audit and market intelligence"
+    types: [completed]
   pull_request:
-    paths:
-      - 'forecast-final.html'
-      - 'forecast-final-v12.js'
-      - 'forecast-live-leaders-v14.js'
-      - 'data/forecast-model-v12.json'
-      - 'data/forecast-dashboard-v12.json'
-      - 'data/forecast-market-v13.json'
-      - 'data/release-audit-v20.json'
-      - 'data/phase-gates-v12.json'
-      - 'scripts/forecast_v18_frontend_runtime_test.mjs'
-      - '.github/workflows/forecast-v12-cdn-smoke.yml'
-  push:
-    branches: [main]
     paths:
       - 'forecast-final.html'
       - 'forecast-final-v12.js'
@@ -29,15 +21,25 @@ on:
 
 jobs:
   smoke:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}
+      - name: Resolve exact published SHA
+        id: published
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Wait for immutable CDN edge
         run: sleep 10
       - name: Verify immutable CDN assets and production contracts
         env:
-          ROOT: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.sha }}
+          ROOT: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ steps.published.outputs.sha }}
         run: |
           set -euo pipefail
           for f in forecast-final.html forecast-final-v12.js forecast-live-leaders-v14.js data/forecast-model-v12.json data/forecast-dashboard-v12.json data/forecast-market-v13.json data/release-audit-v20.json data/phase-gates-v12.json; do

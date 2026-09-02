@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - ".github/workflows/cdn-smoke.yml"
+      - ".github/workflows/forecast-v12-cdn-smoke.yml"
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
@@ -26,11 +28,14 @@ on:
       - "scripts/forecast_v17_live_intelligence.py"
       - "scripts/forecast_v18_market_intelligence.py"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
+      - "scripts/forecast_v21_session_snapshot_test.py"
       - "api/solution-ai.js"
   push:
     branches: [main]
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - ".github/workflows/cdn-smoke.yml"
+      - ".github/workflows/forecast-v12-cdn-smoke.yml"
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
@@ -54,6 +59,7 @@ on:
       - "scripts/forecast_v18_market_intelligence.py"
       - "scripts/forecast_v18_market_intelligence_test.py"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
+      - "scripts/forecast_v21_session_snapshot_test.py"
       - "scripts/refresh_institutional_flow_v20.py"
       - "scripts/refresh_institutional_flow_v20_test.py"
       - "scripts/forecast_v20_release_audit.py"
