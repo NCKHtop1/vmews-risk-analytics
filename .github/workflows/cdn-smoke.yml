@@ -2,6 +2,10 @@ name: Verify SoluTION.AI full-HOSE and Vietnamese forecast CDN
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Forecast V20.1 immutable-price audit and market intelligence"
+    types: [completed]
   pull_request:
     paths:
       - "forecast-final.html"
@@ -16,36 +20,35 @@ on:
       - "data/forecast-market-v13.json"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
       - ".github/workflows/cdn-smoke.yml"
-  push:
-    branches: [main]
-    paths:
-      - "forecast-final.html"
-      - "forecast-final-v12.js"
-      - "forecast-live-leaders-v14.js"
-      - "forecast-polish-v12.js"
-      - "forecast-portfolio-v14.css"
-      - "solution-ai-v17.js"
-      - "api/solution-ai.js"
-      - "data/forecast-current-v12.json"
-      - "data/forecast-dashboard-v12.json"
-      - "data/forecast-market-v13.json"
-      - ".github/workflows/cdn-smoke.yml"
 
 permissions:
   contents: read
 
 jobs:
   verify:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}
+
+      - name: Resolve exact published SHA
+        id: published
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Wait for exact-SHA CDN assets
         shell: bash
+        env:
+          TARGET_SHA: ${{ steps.published.outputs.sha }}
         run: |
           set -euo pipefail
-          ROOT="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${GITHUB_SHA}"
+          ROOT="https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${TARGET_SHA}"
           for attempt in $(seq 1 24); do
             if curl -fsSL --max-time 25 "$ROOT/forecast-final.html" -o /tmp/forecast-final.html \
               && curl -fsSL --max-time 25 "$ROOT/forecast-final-v12.js" -o /tmp/forecast-final-v12.js \
@@ -63,6 +66,8 @@ jobs:
 
       - name: Verify Vietnamese SoluTION.AI interface and independently validated HOSE data
         shell: bash
+        env:
+          TARGET_SHA: ${{ steps.published.outputs.sha }}
         run: |
           set -euo pipefail
           grep -Fq 'lang="vi"' /tmp/forecast-final.html
@@ -180,5 +185,5 @@ jobs:
           assert 'rankingHorizon' in leaders
           assert 'forecast-session-v21.json' in leaders
           print('SoluTION.AI FULL-HOSE CDN PASS', dashboard['asOf'], 'symbols', len(symbols), 'rankingHorizon', preferred)
-          print('FINAL_URL', f"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/{os.environ['GITHUB_SHA']}/forecast-final.html?symbol=FPT")
+          print('FINAL_URL', f"https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/{os.environ['TARGET_SHA']}/forecast-final.html?symbol=FPT")
           PY

@@ -15,6 +15,21 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
         self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
 
+    def test_cdn_smokes_run_after_the_publisher_on_the_published_main_sha(self):
+        workflow_dir = Path(__file__).resolve().parents[1] / ".github" / "workflows"
+        publisher = (workflow_dir / "forecast-v13-daily-refresh.yml").read_text(encoding="utf-8")
+        for name in ("cdn-smoke.yml", "forecast-v12-cdn-smoke.yml"):
+            with self.subTest(workflow=name):
+                workflow = (workflow_dir / name).read_text(encoding="utf-8")
+                self.assertIn("workflow_run:", workflow)
+                self.assertIn("Forecast V20.1 immutable-price audit and market intelligence", workflow)
+                self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
+                self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
+                self.assertIn("ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}", workflow)
+                self.assertIn('echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"', workflow)
+                self.assertNotIn("\n  push:\n", workflow)
+                self.assertGreaterEqual(publisher.count(f'".github/workflows/{name}"'), 2)
+
     def dashboard(self, count=120, as_of="2026-08-24"):
         symbols = {}
         for index in range(count):
