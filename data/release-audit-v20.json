@@ -6,17 +6,17 @@
     "symbols": 403,
     "forecasts": 2015,
     "flowRows": 348611,
-    "headlines": 18790,
+    "headlines": 18835,
     "headlineSources": {
       "community-claims": 9,
       "community-watchlist": 141,
-      "dashboard-communityWatchlist": 201,
-      "dashboard-decisionNews": 392,
+      "dashboard-communityWatchlist": 204,
+      "dashboard-decisionNews": 398,
       "dashboard-decisionRecent": 4296,
       "dashboard-recent": 4273,
       "fireant": 432,
       "research-news": 1145,
-      "research-news-v10": 7901
+      "research-news-v10": 7937
     }
   },
   "price": {
@@ -47,7 +47,7 @@
     "currentSessionBridge": {
       "status": "NOT_APPLICABLE_ALREADY_CURRENT",
       "sessionDate": "2026-08-28",
-      "observedAt": "2026-09-02T20:39:24+07:00",
+      "observedAt": "2026-09-02T21:41:21+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.0,
@@ -118,7 +118,7 @@
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.022242494096688326,
+      "executableMAESkill": 0.022243447875000766,
       "magnitudeMAESkill": 0.03251230341664657,
       "directionalAccuracy": 0.5602364244336646,
       "directionStatus": "PASS",
@@ -129,7 +129,7 @@
     },
     "4": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.017505703999548428,
+      "executableMAESkill": 0.017506535982740323,
       "magnitudeMAESkill": 0.008756476403675495,
       "directionalAccuracy": 0.5662168685777339,
       "directionStatus": "PASS",
