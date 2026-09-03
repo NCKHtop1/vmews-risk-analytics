@@ -32,6 +32,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install research refresh dependencies
+        run: pip install --disable-pip-version-check -q 'numpy>=1.26,<3' 'pandas>=2.1,<4'
       - name: Build market and news snapshots
         run: |
           python scripts/update_market_context.py
