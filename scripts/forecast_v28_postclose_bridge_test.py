@@ -34,6 +34,14 @@ class PostCloseBridgeTest(unittest.TestCase):
         for s in symbols:
             self.assertEqual(out[s][-1]["date"],"2026-08-28"); self.assertFalse(out[s][-1]["ohlcUnavailable"]); self.assertTrue(out[s][-1]["closeIndependentlyConfirmed"])
 
+    def test_already_current_same_day_still_requires_two_source_proof(self):
+        symbols=[f"S{i:02d}" for i in range(10)]; h=histories(symbols,"2026-08-28"); freshness={"forecastAsOf":"2026-08-28","currentHOSESymbols":symbols,"providerBySymbol":{}}
+        out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9,min_secondary_coverage=.9)
+        bridge=meta["postCloseBridge"]
+        self.assertEqual(bridge["status"],"PASS"); self.assertTrue(bridge["completedSessionVerified"]); self.assertTrue(bridge["independentCloseConfirmed"])
+        self.assertEqual(bridge["appendedSymbols"],0); self.assertEqual(bridge["alreadyCurrentSymbols"],len(symbols))
+        self.assertEqual(len(out["FPT"]) if "FPT" in out else len(out[symbols[0]]),1)
+
     def test_rejects_stale_primary_coverage(self):
         symbols=[f"S{i:02d}" for i in range(10)]; freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         with self.assertRaises(RuntimeError): bridge_completed_session(histories(symbols),freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols[:8]),secondary_rows=secondary_for(symbols),min_coverage=.9)

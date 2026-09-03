@@ -92,7 +92,14 @@ def bridge_completed_session(
         "realOHLCRequired": True,
         "inferenceOnly": True,
     }
-    if prior_as_of and prior_as_of >= session_date:
+    # An already-current history proves freshness, but on the current
+    # trading day it does not prove the independent two-source close contract.
+    # Continue through the TradingView/VNDIRECT checks before publication.
+    if (
+        prior_as_of
+        and prior_as_of >= session_date
+        and session_date != now.date().isoformat()
+    ):
         audit["status"] = "NOT_APPLICABLE_ALREADY_CURRENT"
         freshness["postCloseBridge"] = audit
         return histories, freshness
