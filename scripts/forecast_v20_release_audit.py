@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from forecast_v13_market_model import session_limit, tick_size  # noqa: E402
 from forecast_v14_signal_audit import security_match  # noqa: E402
 from refresh_institutional_flow_v20 import completed_session  # noqa: E402
-from vn_exchange_calendar import trading_session_age  # noqa: E402
+from vn_exchange_calendar import next_trading_dates, trading_session_age  # noqa: E402
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -100,6 +100,11 @@ def run_audit() -> dict[str, Any]:
     require(symbols == flow_symbols, f"flow universe differs: missing={sorted(symbols-flow_symbols)[:20]} extra={sorted(flow_symbols-symbols)[:20]}")
     require(as_of == str(market.get("asOf") or "")[:10], "dashboard and market as-of dates differ")
     require(as_of == str((market.get("sources") or {}).get("marketScanAsOf") or "")[:10], "market scan and forecast dates differ")
+    certified_target_dates: dict[str, str] = {}
+    try:
+        certified_target_dates = dict(zip(map(str, range(1, 6)), next_trading_dates(as_of, 5)))
+    except (TypeError, ValueError, RuntimeError) as error:
+        blockers.append(f"cannot derive certified T+1...T+5 target dates from {as_of!r}: {error}")
 
     expected_version = "VMEWS-MARKET-FORECAST-39.0.0"
     require(market.get("version") == expected_version, "market artifact is not V39")
@@ -194,6 +199,12 @@ def run_audit() -> dict[str, Any]:
         for key, forecast in horizons.items():
             quote_count += 1
             horizon = int(key)
+            certified_target = certified_target_dates.get(key)
+            if certified_target is not None and forecast.get("targetDate") != certified_target:
+                quote_failures.append(
+                    f"{symbol}/T+{key}: target date {forecast.get('targetDate')!r} "
+                    f"does not match certified session {certified_target}"
+                )
             point = forecast.get("expectedPrice")
             low = forecast.get("q20Price")
             high = forecast.get("q80Price")
@@ -401,6 +412,10 @@ def run_audit() -> dict[str, Any]:
             "flowRows": flow_row_count,
             "headlines": headline_count,
             "headlineSources": dict(sorted(by_source.items())),
+        },
+        "calendar": {
+            "sourceSession": as_of,
+            "certifiedTargetDates": certified_target_dates,
         },
         "price": {
             "marketSources": dict(sorted(market_sources.items())),
