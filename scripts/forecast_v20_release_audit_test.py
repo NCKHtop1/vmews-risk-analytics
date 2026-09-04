@@ -60,6 +60,31 @@ class ReleaseAuditAbstentionTest(unittest.TestCase):
             self.assertLess(released["horizons"]["4"]["magnitudeMAESkill"], 0)
         audit.DATA = original_data
 
+    def test_wrong_target_date_blocks_release(self) -> None:
+        original_data = audit.DATA
+        audit._business_age = lambda observed, as_of: trading_session_age(observed, as_of)
+        audit.completed_session = latest_completed_session
+        try:
+            with tempfile.TemporaryDirectory() as raw:
+                data = Path(raw) / "data"
+                shutil.copytree(original_data, data)
+                dashboard_path = data / "forecast-dashboard-v12.json"
+                current_path = data / "forecast-current-v12.json"
+                dashboard = json.loads(dashboard_path.read_text(encoding="utf-8"))
+                current = json.loads(current_path.read_text(encoding="utf-8"))
+                symbol = sorted(dashboard["symbols"])[0]
+                dashboard["symbols"][symbol]["horizons"]["1"]["targetDate"] = "2026-09-05"
+                current["symbols"] = dashboard["symbols"]
+                dashboard_path.write_text(json.dumps(dashboard, ensure_ascii=False), encoding="utf-8")
+                current_path.write_text(json.dumps(current, ensure_ascii=False), encoding="utf-8")
+                audit.DATA = data
+
+                report = audit.run_audit()
+                self.assertEqual(report["status"], "FAIL")
+                self.assertTrue(any("target date" in blocker for blocker in report["blockers"]))
+        finally:
+            audit.DATA = original_data
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
