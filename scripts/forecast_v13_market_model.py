@@ -60,6 +60,7 @@ from forecast_v17_live_intelligence import (
     typed_flow_summary,
 )
 from forecast_v18_market_intelligence import community_events, community_watchlist, rumor_intelligence, vn30_metadata
+from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -190,13 +191,8 @@ def session_limit(reference: float, horizon: int, exchange: str = "HOSE") -> tup
 
 
 def next_trading_dates(origin: str, sessions: int = 5) -> list[str]:
-    current = date.fromisoformat(origin)
-    out: list[str] = []
-    while len(out) < sessions:
-        current += timedelta(days=1)
-        if current.weekday() < 5:
-            out.append(current.isoformat())
-    return out
+    """Return future sessions from the certified Vietnam exchange calendar."""
+    return certified_next_trading_dates(origin, sessions)
 
 
 def _vn_direct_rows(symbol: str, size: int = 14, timeout: int = 14) -> list[dict[str, Any]]:
