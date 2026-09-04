@@ -1,11 +1,11 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-04T01:08:57.958190+00:00",
-  "marketModelDate": "2026-09-03",
-  "requested": 11,
-  "reused": 11,
-  "fetched": 0,
-  "cached": 11,
+  "generatedAt": "2026-09-04T13:48:31.313246+00:00",
+  "marketModelDate": "2026-09-04",
+  "requested": 14,
+  "reused": 12,
+  "fetched": 2,
+  "cached": 14,
   "symbols": {
     "VDP": {
       "rows": 1800,
@@ -27,57 +27,75 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
+    "HBC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-12",
+      "source": "Vnstock"
+    },
+    "TVC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-20",
+      "source": "Vnstock"
+    },
     "SHN": {
       "rows": 1800,
       "modelAsOf": "2026-08-27",
       "source": "Vnstock"
     },
-    "G36": {
+    "PAC": {
       "rows": 1800,
-      "modelAsOf": "2026-09-03",
-      "source": "Vnstock"
-    },
-    "HBC": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-12",
-      "source": "Vnstock"
+      "modelAsOf": "2026-08-14",
+      "source": "Yahoo Finance"
     },
     "NTL": {
       "rows": 1800,
       "modelAsOf": "2026-08-14",
       "source": "Yahoo Finance"
     },
-    "TNI": {
+    "HUT": {
       "rows": 1800,
-      "modelAsOf": "2026-09-01",
-      "source": "Yahoo Finance"
+      "modelAsOf": "2026-08-14",
+      "source": "Vnstock"
     },
     "HGM": {
       "rows": 799,
       "modelAsOf": "2026-08-13",
       "source": "Vnstock"
     },
-    "HUT": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-14",
+    "GEE": {
+      "rows": 520,
+      "modelAsOf": "2026-08-11",
+      "source": "Yahoo Finance"
+    },
+    "PMC": {
+      "rows": 1694,
+      "modelAsOf": "2026-09-04",
       "source": "Vnstock"
+    },
+    "TVB": {
+      "rows": 2127,
+      "modelAsOf": "2026-09-04",
+      "source": "Yahoo Finance"
     }
   },
   "errors": [],
   "redSymbols": [
     "VDP",
-    "IDP"
+    "IDP",
+    "VNG",
+    "FIR"
   ],
   "yellowSymbols": [
-    "VNG",
-    "FIR",
-    "SHN",
-    "G36",
+    "PMC",
     "HBC",
+    "TVB",
+    "TVC",
+    "SHN",
+    "PAC",
     "NTL",
-    "TNI",
+    "HUT",
     "HGM",
-    "HUT"
+    "GEE"
   ],
   "missingRed": [],
   "missingAlerts": [],
