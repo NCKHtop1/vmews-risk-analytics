@@ -1,15 +1,25 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-03T13:54:03.759122+00:00",
+  "generatedAt": "2026-09-04T01:08:57.958190+00:00",
   "marketModelDate": "2026-09-03",
   "requested": 11,
-  "reused": 8,
-  "fetched": 3,
+  "reused": 11,
+  "fetched": 0,
   "cached": 11,
   "symbols": {
     "VDP": {
       "rows": 1800,
       "modelAsOf": "2026-08-19",
+      "source": "Yahoo Finance"
+    },
+    "IDP": {
+      "rows": 489,
+      "modelAsOf": "2026-09-03",
+      "source": "Vnstock"
+    },
+    "VNG": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-03",
       "source": "Yahoo Finance"
     },
     "FIR": {
@@ -20,6 +30,11 @@
     "SHN": {
       "rows": 1800,
       "modelAsOf": "2026-08-27",
+      "source": "Vnstock"
+    },
+    "G36": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-03",
       "source": "Vnstock"
     },
     "HBC": {
@@ -45,21 +60,6 @@
     "HUT": {
       "rows": 1800,
       "modelAsOf": "2026-08-14",
-      "source": "Vnstock"
-    },
-    "IDP": {
-      "rows": 489,
-      "modelAsOf": "2026-09-03",
-      "source": "Vnstock"
-    },
-    "VNG": {
-      "rows": 2587,
-      "modelAsOf": "2026-09-03",
-      "source": "Yahoo Finance"
-    },
-    "G36": {
-      "rows": 1990,
-      "modelAsOf": "2026-09-03",
       "source": "Vnstock"
     }
   },
