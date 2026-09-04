@@ -22,6 +22,7 @@ from forecast_v13_market_model import (  # noqa: E402
     cost_aware_long_audit,
     directional_magnitude_blend,
     intercept_modes,
+    next_trading_dates,
     select_directional_magnitude_blend,
     select_regime_architecture,
     session_limit,
@@ -44,6 +45,12 @@ from forecast_v14_signal_audit import (  # noqa: E402
 
 
 class VietnamPriceGridTest(unittest.TestCase):
+    def test_model_target_dates_use_certified_exchange_sessions(self) -> None:
+        self.assertEqual(
+            next_trading_dates("2026-08-28", 5),
+            ["2026-09-03", "2026-09-04", "2026-09-07", "2026-09-08", "2026-09-09"],
+        )
+
     def test_pr_and_production_use_identical_frozen_complexity(self) -> None:
         production = production_boosting_rounds(False)
         pull_request = production_boosting_rounds(True)
@@ -354,6 +361,15 @@ class PublishedMarketForecastTest(unittest.TestCase):
         chart_fpt = self.dashboard["charts"]["FPT"][-1]
         self.assertEqual(fpt["date"], chart_fpt["date"])
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
+
+    def test_all_published_target_dates_follow_certified_sessions(self) -> None:
+        expected = dict(zip(map(str, range(1, 6)), next_trading_dates(self.dashboard["asOf"], 5)))
+        for symbol, snapshot in self.dashboard["symbols"].items():
+            self.assertEqual(snapshot["date"], self.dashboard["asOf"], symbol)
+            self.assertEqual(snapshot, self.current["symbols"][symbol], symbol)
+            self.assertEqual(set(snapshot["horizons"]), set(expected), symbol)
+            for key, target_date in expected.items():
+                self.assertEqual(snapshot["horizons"][key]["targetDate"], target_date, f"{symbol}/T+{key}")
 
     def test_each_horizon_is_independently_promoted_or_abstained(self) -> None:
         self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-39.0.0")
