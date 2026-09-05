@@ -187,7 +187,7 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertLess(payload["coverage"]["cutoffFreshCoverageRatio"], 0.90)
 
     def test_falls_back_to_defensive_ranking_when_live_price_exceeds_all_targets(self):
-        now = datetime(2026, 8, 25, 14, 40, tzinfo=VN_TZ)
+        now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
         payload = build_payload(self.dashboard(as_of="2026-08-25"), self.frame(now=now, price_multiplier=1.10), now)
         self.assertEqual(payload["status"], "PASS")
         self.assertTrue(payload["market"]["defensive"])
