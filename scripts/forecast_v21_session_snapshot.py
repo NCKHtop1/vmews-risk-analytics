@@ -12,7 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 DASHBOARD = ROOT / "data" / "forecast-dashboard-v12.json"
 OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-FORECAST-SESSION-21.3"
+VERSION = "VMEWS-FORECAST-SESSION-21.4"
 MIN_COVERAGE = 0.90
 MIN_CURRENT_COVERAGE = 0.90
 MIN_CUTOFF_FRESH_COVERAGE = 0.90
@@ -243,11 +243,15 @@ def build_payload(dashboard, frame, now=None):
         and cutoff_fresh_coverage >= MIN_CUTOFF_FRESH_COVERAGE
     ) else "DEGRADED"
 
-    positive = [row for row in symbols if forecast_aligned and row["coreTargetT5"] > row["liveClose"]]
+    ranking_pool = [
+        row for row in symbols
+        if forecast_aligned and row["quoteCurrent"] and row["freshForCutoff"]
+    ]
+    positive = [row for row in ranking_pool if row["coreTargetT5"] > row["liveClose"]]
     positive.sort(key=lambda row: (row["conviction"], row["remainingUpsideT5"], row["quality"]), reverse=True)
     defensive = not positive
     leaders = [] if not forecast_aligned else positive[:10] if positive else sorted(
-        symbols,
+        ranking_pool,
         key=lambda row: (row["remainingUpsideT5"], row["quality"]),
         reverse=True,
     )[:10]
@@ -307,6 +311,7 @@ def build_payload(dashboard, frame, now=None):
             "Core T+1 to T+5 targets remain the independently validated sealed forecast until the completed-EOD pipeline publishes a new snapshot.",
             "Quote freshness is bound to the certified latest completed or active exchange session, never to a potentially stale core date.",
             "After the 15:05 EOD readiness cutoff, a same-session final quote remains current even when an illiquid symbol's last trade occurred before 14:30.",
+            "Session leaders are selected only from quotes matching the expected exchange session and passing cutoff freshness; stale quotes remain visible in symbol metadata but never enter leaders.",
             "When the core date lags, verified prices remain visible but forecast ranking and decision labels abstain until the completed-EOD pipeline catches up.",
             "A session snapshot is publishable only when universe coverage, expected-session coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
         ],
