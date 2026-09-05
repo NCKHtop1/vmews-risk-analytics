@@ -90,6 +90,22 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertNotEqual(first["liveClose"], first["coreTargetT5"])
         self.assertAlmostEqual(first["coreUpsideT5"], first["coreTargetT5"] / first["coreClose"] - 1.0)
 
+    def test_leaders_exclude_quotes_outside_certified_session_even_when_global_coverage_passes(self):
+        now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
+        dashboard = self.dashboard()
+        dashboard["symbols"]["T000"]["horizons"]["5"]["expectedPrice"] = 50000
+        frame = self.frame(now=now)
+        stale = datetime(2026, 8, 24, 12, 5, tzinfo=VN_TZ)
+        frame.loc[frame["name"] == "T000", "update_time"] = stale.astimezone(timezone.utc).timestamp()
+
+        payload = build_payload(dashboard, frame, now)
+
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 119)
+        self.assertNotIn("T000", [row["symbol"] for row in payload["leaders"]])
+        self.assertTrue(all(row["quoteCurrent"] and row["freshForCutoff"] for row in payload["leaders"]))
+
+
     def test_rejects_partial_provider_coverage(self):
         now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
         payload = build_payload(self.dashboard(), self.frame(count=60, now=now), now)
