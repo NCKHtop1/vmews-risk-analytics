@@ -6,13 +6,13 @@ import re
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
-from vn_exchange_calendar import is_trading_day, latest_completed_session
+from vn_exchange_calendar import PRICE_READY_AFTER, is_trading_day, latest_completed_session
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DASHBOARD = ROOT / "data" / "forecast-dashboard-v12.json"
 OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
-VERSION = "VMEWS-FORECAST-SESSION-21.2"
+VERSION = "VMEWS-FORECAST-SESSION-21.3"
 MIN_COVERAGE = 0.90
 MIN_CURRENT_COVERAGE = 0.90
 MIN_CUTOFF_FRESH_COVERAGE = 0.90
@@ -56,7 +56,8 @@ def session_name(now):
         return "PRE_OPEN"
     if minutes < 12 * 60 + 45:
         return "AM"
-    if minutes < 17 * 60 + 30:
+    ready_minutes = PRICE_READY_AFTER.hour * 60 + PRICE_READY_AFTER.minute
+    if minutes < ready_minutes:
         return "PM"
     return "POST_CLOSE"
 
@@ -138,7 +139,7 @@ def build_payload(dashboard, frame, now=None):
     expected_core_date = latest_completed_session(now).isoformat()
     expected_quote_date = (
         expected_core_date
-        if session in {"PRE_OPEN", "MARKET_CLOSED"}
+        if session in {"PRE_OPEN", "POST_CLOSE", "MARKET_CLOSED"}
         else now.date().isoformat()
     )
     core_as_of = str(dashboard.get("asOf") or "")[:10]
@@ -174,7 +175,7 @@ def build_payload(dashboard, frame, now=None):
         if quote_date:
             dated.append(quote_date)
         is_current = quote_date == expected_quote_date
-        fresh_for_cutoff = is_current if session in {"PRE_OPEN", "MARKET_CLOSED"} else bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
+        fresh_for_cutoff = is_current if session in {"PRE_OPEN", "POST_CLOSE", "MARKET_CLOSED"} else bool(updated_at and fresh_floor <= updated_at <= now + timedelta(minutes=5))
         current_quotes += int(is_current)
         cutoff_fresh_quotes += int(fresh_for_cutoff)
         update_mode = str(row.get("update_mode") or "UNKNOWN")
@@ -305,6 +306,7 @@ def build_payload(dashboard, frame, now=None):
             "The session layer never treats an incomplete session as a completed EOD model row.",
             "Core T+1 to T+5 targets remain the independently validated sealed forecast until the completed-EOD pipeline publishes a new snapshot.",
             "Quote freshness is bound to the certified latest completed or active exchange session, never to a potentially stale core date.",
+            "After the 15:05 EOD readiness cutoff, a same-session final quote remains current even when an illiquid symbol's last trade occurred before 14:30.",
             "When the core date lags, verified prices remain visible but forecast ranking and decision labels abstain until the completed-EOD pipeline catches up.",
             "A session snapshot is publishable only when universe coverage, expected-session coverage and cutoff freshness all pass strict gates; otherwise the prior last-known-good file is retained.",
         ],

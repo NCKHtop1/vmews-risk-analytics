@@ -138,6 +138,21 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertEqual(payload["coverage"]["expectedQuoteDate"], "2026-08-28")
         self.assertEqual(payload["forecastAlignment"]["status"], "PASS")
 
+    def test_post_close_accepts_same_session_final_quotes_from_illiquid_symbols(self):
+        now = datetime(2026, 9, 4, 21, 40, tzinfo=VN_TZ)
+        last_trade = datetime(2026, 9, 4, 10, 30, tzinfo=VN_TZ)
+        payload = build_payload(
+            self.dashboard(as_of="2026-09-04"),
+            self.frame(now=last_trade),
+            now,
+        )
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["session"], "POST_CLOSE")
+        self.assertEqual(payload["coverage"]["expectedQuoteDate"], "2026-09-04")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 120)
+        self.assertEqual(payload["coverage"]["cutoffFresh"], 120)
+        self.assertEqual(payload["forecastAlignment"]["status"], "PASS")
+
     def test_review_horizon_is_skipped_for_ranking(self):
         now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
         dashboard = self.dashboard()
@@ -162,8 +177,8 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertEqual(payload["coverage"]["currentQuoteDate"], 0)
 
 
-    def test_rejects_same_day_quotes_that_are_stale_for_the_session_cutoff(self):
-        now = datetime(2026, 8, 25, 15, 25, tzinfo=VN_TZ)
+    def test_rejects_same_day_quotes_that_are_stale_for_the_active_session_cutoff(self):
+        now = datetime(2026, 8, 25, 14, 40, tzinfo=VN_TZ)
         stale = datetime(2026, 8, 25, 10, 30, tzinfo=VN_TZ)
         payload = build_payload(self.dashboard(), self.frame(now=stale), now)
         self.assertEqual(payload["status"], "DEGRADED")
