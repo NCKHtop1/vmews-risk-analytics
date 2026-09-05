@@ -77,7 +77,7 @@ jobs:
           import json
           p=json.load(open('data/forecast-session-v21.json',encoding='utf-8'))
           d=json.load(open('data/forecast-dashboard-v12.json',encoding='utf-8'))
-          assert p['version']=='VMEWS-FORECAST-SESSION-21.3',p.get('version')
+          assert p['version']=='VMEWS-FORECAST-SESSION-21.4',p.get('version')
           assert p['status']=='PASS',p.get('status')
           assert p['coreForecastUnchanged'] is True
           promotion=d.get('promotion') or {}
