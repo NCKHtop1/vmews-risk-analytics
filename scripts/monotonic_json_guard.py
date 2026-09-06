@@ -43,7 +43,7 @@ def parse_value(value, kind):
     return text
 
 
-def decide(candidate, current, field, kind):
+def decide(candidate, current, field, kind, skip_equal=False):
     candidate_value = parse_value(get_path(candidate, field), kind)
     if candidate_value is None:
         raise RuntimeError(f"Candidate missing monotonic field {field}")
@@ -63,6 +63,13 @@ def decide(candidate, current, field, kind):
             "current": str(current_value),
         }
     if candidate_value == current_value:
+        if skip_equal:
+            return {
+                "decision": "SKIP",
+                "reason": "current_same_logical_version_won_race",
+                "candidate": str(candidate_value),
+                "current": str(current_value),
+            }
         return {
             "decision": "PUBLISH",
             "reason": "same_logical_version_revalidated",
@@ -83,9 +90,10 @@ def main():
     parser.add_argument("--current", required=True)
     parser.add_argument("--field", required=True)
     parser.add_argument("--kind", choices=["date", "datetime", "int", "float", "string"], default="string")
+    parser.add_argument("--skip-equal", action="store_true")
     args = parser.parse_args()
 
-    result = decide(load(args.candidate), load(args.current), args.field, args.kind)
+    result = decide(load(args.candidate), load(args.current), args.field, args.kind, skip_equal=args.skip_equal)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return PUBLISH if result["decision"] == "PUBLISH" else SKIP
 
