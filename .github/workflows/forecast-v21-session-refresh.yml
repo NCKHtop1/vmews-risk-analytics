@@ -16,6 +16,7 @@ on:
       - "data/forecast-dashboard-v12.json"
       - ".github/workflows/forecast-v21-session-refresh.yml"
       - "scripts/forecast_v21_session_snapshot.py"
+      - "scripts/forecast_v21_publish_guard.py"
   schedule:
     - cron: "15 0 * * 1-5"
     - cron: "5 5 * * 1-5"
@@ -25,12 +26,17 @@ on:
       - ".github/workflows/forecast-v21-session-refresh.yml"
       - "scripts/forecast_v21_session_snapshot.py"
       - "scripts/forecast_v21_session_snapshot_test.py"
+      - "scripts/forecast_v21_publish_guard.py"
+      - "scripts/forecast_v21_publish_guard_test.py"
 
 permissions:
   contents: write
 
+# Session publication has its own serialization boundary. Other data publishers may
+# still advance main concurrently, so publishing also uses bounded fast-forward
+# retries and a monotonic snapshot guard instead of rebasing generated JSON.
 concurrency:
-  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.workflow || 'main' }}
+  group: forecast-session-v21-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: false
 
 jobs:
@@ -43,8 +49,10 @@ jobs:
           python-version: "3.12"
       - name: Install test dependencies
         run: pip install --disable-pip-version-check -q pandas
-      - name: Test coverage, freshness, audited horizon, defensive fallback and core immutability
-        run: python scripts/forecast_v21_session_snapshot_test.py
+      - name: Test coverage, freshness, audited horizon, defensive fallback and atomic publication
+        run: |
+          python scripts/forecast_v21_session_snapshot_test.py
+          python scripts/forecast_v21_publish_guard_test.py
 
   refresh-session-overlay:
     if: >-
@@ -103,14 +111,80 @@ jobs:
           PY
       - name: Persist only validated session overlay
         if: success()
+        env:
+          MAX_PUBLISH_ATTEMPTS: "4"
         run: |
+          set -euo pipefail
+          candidate="/tmp/forecast-session-v21.candidate.json"
+          cp data/forecast-session-v21.json "$candidate"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/forecast-session-v21.json
-          if git diff --cached --quiet; then
-            echo "No validated session change detected."
+
+          for attempt in $(seq 1 "$MAX_PUBLISH_ATTEMPTS"); do
+            echo "Atomic session publish attempt ${attempt}/${MAX_PUBLISH_ATTEMPTS}"
+            git fetch --no-tags origin main
+            git reset --hard origin/main
+
+            set +e
+            python scripts/forecast_v21_publish_guard.py \
+              --candidate "$candidate" \
+              --published data/forecast-session-v21.json \
+              --dashboard data/forecast-dashboard-v12.json
+            guard_rc=$?
+            set -e
+
+            if [ "$guard_rc" -eq 10 ]; then
+              echo "A same/newer validated snapshot or newer core is already on main; keep it and finish green."
+              exit 0
+            fi
+            if [ "$guard_rc" -ne 0 ]; then
+              echo "Publish guard rejected an invalid candidate."
+              exit "$guard_rc"
+            fi
+
+            cp "$candidate" data/forecast-session-v21.json
+            git add data/forecast-session-v21.json
+            if git diff --cached --quiet; then
+              echo "No validated session change detected."
+              exit 0
+            fi
+            git commit -m "Refresh validated forecast session overlay [data-only]"
+
+            set +e
+            push_output=$(git push origin HEAD:main 2>&1)
+            push_rc=$?
+            set -e
+            printf '%s\n' "$push_output"
+            if [ "$push_rc" -eq 0 ]; then
+              echo "Validated session overlay published by fast-forward."
+              exit 0
+            fi
+
+            if printf '%s\n' "$push_output" | grep -Eqi 'non-fast-forward|fetch first|rejected'; then
+              echo "main advanced during publish; retrying from the new remote head without rebasing generated JSON."
+              continue
+            fi
+
+            echo "git push failed for a reason other than a concurrent main advance."
+            exit "$push_rc"
+          done
+
+          echo "main advanced through all bounded attempts; re-checking whether production is already same/newer."
+          git fetch --no-tags origin main
+          git reset --hard origin/main
+          set +e
+          python scripts/forecast_v21_publish_guard.py \
+            --candidate "$candidate" \
+            --published data/forecast-session-v21.json \
+            --dashboard data/forecast-dashboard-v12.json
+          final_guard_rc=$?
+          set -e
+          if [ "$final_guard_rc" -eq 10 ]; then
+            echo "A same/newer validated snapshot or newer core won the race; finish green."
             exit 0
           fi
-          git commit -m "Refresh validated forecast session overlay [data-only]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          if [ "$final_guard_rc" -eq 0 ]; then
+            echo "Candidate is still newer but could not be published after bounded retries; fail visibly instead of hiding publication starvation."
+            exit 75
+          fi
+          exit "$final_guard_rc"
