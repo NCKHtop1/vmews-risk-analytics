@@ -30,8 +30,11 @@ jobs:
       - name: Point stable main URL to the exact immutable asset commit
         env:
           ASSET_REF: ${{ github.sha }}
+          MAX_PUBLISH_ATTEMPTS: "4"
         run: |
-          python - <<'PY'
+          set -euo pipefail
+          candidate="/tmp/release-pointer-v22.candidate.json"
+          ASSET_REF="$ASSET_REF" python - <<'PY'
           import json, os
           from datetime import datetime, timezone
           from pathlib import Path
@@ -42,12 +45,58 @@ jobs:
             "dataRef":"main",
             "policy":"IMMUTABLE_ASSETS_LIVE_MAIN_DATA"
           }
-          Path("data/release-pointer-v22.json").write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          Path("/tmp/release-pointer-v22.candidate.json").write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/release-pointer-v22.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Publish V22 immutable asset pointer [data-only]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          for attempt in $(seq 1 "$MAX_PUBLISH_ATTEMPTS"); do
+            echo "Atomic V22 pointer attempt ${attempt}/${MAX_PUBLISH_ATTEMPTS}"
+            git fetch --no-tags origin main
+            git reset --hard origin/main
+
+            current_ref=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('data/release-pointer-v22.json')
+          if not p.exists():
+              print('')
+          else:
+              print(json.loads(p.read_text(encoding='utf-8')).get('assetRef',''))
+          PY
+            )
+            if [ -n "$current_ref" ]; then
+              if [ "$current_ref" = "$ASSET_REF" ]; then
+                echo "Pointer already references this asset commit."
+                exit 0
+              fi
+              if git merge-base --is-ancestor "$ASSET_REF" "$current_ref" 2>/dev/null; then
+                echo "A newer asset pointer is already published; stale writer exits green."
+                exit 0
+              fi
+              if ! git merge-base --is-ancestor "$current_ref" "$ASSET_REF" 2>/dev/null; then
+                echo "Divergent asset refs detected; refusing to guess pointer order."
+                exit 76
+              fi
+            fi
+
+            cp "$candidate" data/release-pointer-v22.json
+            git add data/release-pointer-v22.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Publish V22 immutable asset pointer [data-only]"
+
+            set +e
+            push_output=$(git push origin HEAD:main 2>&1)
+            push_rc=$?
+            set -e
+            printf '%s\n' "$push_output"
+            if [ "$push_rc" -eq 0 ]; then exit 0; fi
+            if printf '%s\n' "$push_output" | grep -Eqi 'non-fast-forward|fetch first|rejected'; then
+              echo "main advanced during pointer publication; retrying from latest main."
+              continue
+            fi
+            exit "$push_rc"
+          done
+
+          echo "V22 pointer remained publishable but starved after bounded retries."
+          exit 75
