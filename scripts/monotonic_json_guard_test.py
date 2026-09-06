@@ -13,6 +13,11 @@ class TestMonotonicGuard(unittest.TestCase):
     def test_same_revalidated_can_publish(self):
         self.assertEqual(decide({"asOf": "2026-09-04"}, {"asOf": "2026-09-04"}, "asOf", "date")["decision"], "PUBLISH")
 
+    def test_same_version_stale_writer_can_be_forced_to_skip(self):
+        result = decide({"asOf": "2026-09-04"}, {"asOf": "2026-09-04"}, "asOf", "date", skip_equal=True)
+        self.assertEqual(result["decision"], "SKIP")
+        self.assertEqual(result["reason"], "current_same_logical_version_won_race")
+
     def test_datetime_timezone(self):
         result = decide(
             {"generatedAt": "2026-09-06T12:00:00Z"},
