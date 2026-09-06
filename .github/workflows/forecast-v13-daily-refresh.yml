@@ -78,8 +78,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
-  cancel-in-progress: true
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  cancel-in-progress: false
 
 jobs:
   update-validated-forecast:
