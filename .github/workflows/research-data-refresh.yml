@@ -9,6 +9,14 @@ on:
     paths:
       - 'scripts/update_research_news.py'
       - 'scripts/update_market_context.py'
+      - 'scripts/monotonic_json_guard.py'
+      - '.github/workflows/research-data-refresh.yml'
+  pull_request:
+    paths:
+      - 'scripts/update_research_news.py'
+      - 'scripts/update_market_context.py'
+      - 'scripts/monotonic_json_guard.py'
+      - 'scripts/monotonic_json_guard_test.py'
       - '.github/workflows/research-data-refresh.yml'
 
 permissions:
@@ -16,7 +24,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: vmews-research-data-refresh
+  group: vmews-research-data-refresh-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: true
 
 jobs:
@@ -34,6 +42,8 @@ jobs:
           python-version: '3.12'
       - name: Install research refresh dependencies
         run: pip install --disable-pip-version-check -q 'numpy>=1.26,<3' 'pandas>=2.1,<4'
+      - name: Test monotonic publication guard
+        run: PYTHONPATH=scripts python scripts/monotonic_json_guard_test.py
       - name: Build market and news snapshots
         run: |
           python scripts/update_market_context.py
@@ -47,6 +57,7 @@ jobs:
           assert m.get('market',{}).get('available') and m['market'].get('rows',0)>=240
           assert len(n.get('symbols',{}))>=30
           assert set(n.get('symbols',{}))==set(n.get('coverage',{}))
+          assert n.get('generatedAt'), 'research-news generatedAt is required for monotonic publication'
           cov=n['coverage']
           grades=collections.Counter(x['coverageGrade'] for x in cov.values())
           rows=[
@@ -66,13 +77,64 @@ jobs:
           print(body)
           PY
       - name: Publish diagnostic before push
+        if: github.event_name != 'pull_request'
         run: gh issue create --repo "$GITHUB_REPOSITORY" --title "VMEWS RESEARCH DATA PASS ${GITHUB_SHA::7}" --body-file data-report.md
-      - name: Commit and rebase refreshed data
+      - name: Persist only monotonic research bundle
+        if: github.event_name != 'pull_request'
+        env:
+          MAX_PUBLISH_ATTEMPTS: '4'
         run: |
+          set -euo pipefail
+          build_sha="$GITHUB_SHA"
+          candidate_dir="/tmp/research-candidate"
+          mkdir -p "$candidate_dir"
+          cp data/market-context.json data/research-news.json "$candidate_dir/"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/market-context.json data/research-news.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Refresh VMEWS research snapshots [data-only]'
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          for attempt in $(seq 1 "$MAX_PUBLISH_ATTEMPTS"); do
+            echo "Atomic research publish attempt ${attempt}/${MAX_PUBLISH_ATTEMPTS}"
+            git fetch --no-tags origin main
+
+            if ! git diff --quiet "$build_sha"..origin/main -- \
+              scripts/update_research_news.py scripts/update_market_context.py \
+              scripts/monotonic_json_guard.py .github/workflows/research-data-refresh.yml; then
+              echo "Research producer changed after this candidate was built; a newer workflow run owns publication."
+              exit 0
+            fi
+
+            git reset --hard origin/main
+            set +e
+            python scripts/monotonic_json_guard.py \
+              --candidate "$candidate_dir/research-news.json" \
+              --current data/research-news.json \
+              --field generatedAt --kind datetime
+            guard_rc=$?
+            set -e
+            if [ "$guard_rc" -eq 10 ]; then
+              echo "A newer research snapshot is already published."
+              exit 0
+            fi
+            if [ "$guard_rc" -ne 0 ]; then exit "$guard_rc"; fi
+
+            cp "$candidate_dir/market-context.json" data/market-context.json
+            cp "$candidate_dir/research-news.json" data/research-news.json
+            git add data/market-context.json data/research-news.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'Refresh VMEWS research snapshots [data-only]'
+
+            set +e
+            push_output=$(git push origin HEAD:main 2>&1)
+            push_rc=$?
+            set -e
+            printf '%s\n' "$push_output"
+            if [ "$push_rc" -eq 0 ]; then exit 0; fi
+            if printf '%s\n' "$push_output" | grep -Eqi 'non-fast-forward|fetch first|rejected'; then
+              echo "main advanced during research publication; retrying without rebasing generated JSON."
+              continue
+            fi
+            exit "$push_rc"
+          done
+
+          echo "Research candidate remained publishable but starved after bounded retries."
+          exit 75
