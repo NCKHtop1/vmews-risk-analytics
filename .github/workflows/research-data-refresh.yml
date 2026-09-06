@@ -16,8 +16,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: vmews-research-data-refresh
-  cancel-in-progress: true
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  cancel-in-progress: false
 
 jobs:
   refresh:

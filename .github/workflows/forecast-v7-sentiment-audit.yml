@@ -9,10 +9,9 @@ on:
 permissions:
   contents: write
 
-# Serialize all branch data writers. A queued run is preserved rather than canceled.
 concurrency:
-  group: vmews-data-writer-${{ github.ref_name }}
-  queue: max
+  group: vmews-main-data-publisher-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   audit:

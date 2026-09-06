@@ -8,8 +8,8 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: v11-canonical-risk-sync
-  cancel-in-progress: true
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  cancel-in-progress: false
 jobs:
   sync:
     runs-on: ubuntu-latest

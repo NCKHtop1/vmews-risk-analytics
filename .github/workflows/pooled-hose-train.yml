@@ -8,8 +8,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: vmews-pooled-hose-train
-  cancel-in-progress: true
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  cancel-in-progress: false
 
 jobs:
   train:
