@@ -3,8 +3,8 @@
 
 A workflow with ``contents: write`` and an executable ``git push`` can advance
 ``main`` even when the command is a bare ``git push`` or uses a dynamic ref such
-as ``HEAD:$GITHUB_REF_NAME``.  Every such publisher must therefore join the same
-non-cancelling repository-wide publication lock.  This prevents independent
+as ``HEAD:$GITHUB_REF_NAME``. Every such publisher must join the same
+non-cancelling repository-wide publication lock. This prevents independent
 scheduled/manual publishers from racing between commit/rebase/push.
 """
 from __future__ import annotations
@@ -30,12 +30,15 @@ def is_direct_repo_writer(text: str) -> bool:
     has_write_permission = bool(
         re.search(r"(?m)^\s*contents:\s*write\s*$", active)
     )
-    # Deliberately catch all executable push forms, including:
+    # Catch YAML-indented shell commands and conditional forms, including:
     #   git push
     #   git push origin HEAD:main
     #   git push origin "HEAD:$GITHUB_REF_NAME"
     #   if git push ...; then
-    has_push = bool(re.search(r"(?m)(?:^|[;&|]\s*|\bif\s+)git\s+push\b", active))
+    has_push = bool(
+        re.search(r"(?m)^\s*(?:if\s+)?git\s+push\b", active)
+        or re.search(r"(?m)[;&|]\s*git\s+push\b", active)
+    )
     return has_write_permission and has_push
 
 
