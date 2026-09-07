@@ -1,20 +1,20 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-09-04T03:25:18.331333+00:00",
+  "generatedAt": "2026-09-07T03:26:22.988333+00:00",
   "method": "Immutable completed-EOD prequential test-then-score.",
   "summary": {
     "3": {
       "matureOrigins": 3,
-      "nPredictions": 1058,
-      "alphaIC": 0.03923617631124584,
-      "directionHitRate": 0.6423926194797338,
+      "nPredictions": 1131,
+      "alphaIC": 0.021684956999179602,
+      "directionHitRate": 0.6410256410256411,
       "evidenceState": "IMMATURE"
     },
     "5": {
       "matureOrigins": 2,
-      "nPredictions": 681,
-      "alphaIC": 0.18760854718641473,
-      "directionHitRate": 0.6356318930615664,
+      "nPredictions": 754,
+      "alphaIC": 0.1635005236660276,
+      "directionHitRate": 0.6379310344827587,
       "evidenceState": "IMMATURE"
     }
   },
@@ -42,14 +42,14 @@
         "3": {
           "n": 377,
           "marketReturn": 0.0,
-          "alphaIC": 0.0876654782868768,
+          "alphaIC": null,
           "directionHitRate": 0.6870026525198939
         },
         "5": {
-          "n": 304,
-          "marketReturn": -0.00909579773900622,
-          "alphaIC": 0.2361269840844071,
-          "directionHitRate": 0.6611842105263158
+          "n": 377,
+          "marketReturn": -0.005899722127188271,
+          "alphaIC": 0.18791093704363285,
+          "directionHitRate": 0.6657824933687002
         }
       }
     },
@@ -57,10 +57,10 @@
       "asOf": "2026-09-01",
       "horizons": {
         "3": {
-          "n": 304,
-          "marketReturn": -0.00909579773900622,
-          "alphaIC": 0.021922189688160905,
-          "directionHitRate": 0.6513157894736842
+          "n": 377,
+          "marketReturn": -0.005899722127188271,
+          "alphaIC": 0.03524905303965942,
+          "directionHitRate": 0.6472148541114059
         },
         "5": {
           "n": 0,
@@ -83,6 +83,19 @@
     },
     {
       "asOf": "2026-09-04",
+      "horizons": {
+        "3": {
+          "n": 0,
+          "state": "IMMATURE"
+        },
+        "5": {
+          "n": 0,
+          "state": "IMMATURE"
+        }
+      }
+    },
+    {
+      "asOf": "2026-09-07",
       "horizons": {
         "3": {
           "n": 0,
