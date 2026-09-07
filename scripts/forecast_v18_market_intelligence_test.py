@@ -222,10 +222,16 @@ class Public24HMoneyCommunityTest(unittest.TestCase):
 
 class IntradayCommunityPublicationTest(unittest.TestCase):
     def test_workflow_runs_frequently_and_cannot_race_the_full_model_publish(self) -> None:
-        workflow = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "forecast-v19-community-live.yml").read_text(encoding="utf-8")
+        root = Path(__file__).resolve().parents[1] / ".github" / "workflows"
+        workflow = (root / "forecast-v19-community-live.yml").read_text(encoding="utf-8")
+        full_model = (root / "forecast-v13-daily-refresh.yml").read_text(encoding="utf-8")
         self.assertIn('"*/15 2-8 * * 1-5"', workflow)
         self.assertIn('"0,30 1-15 * * 0,6"', workflow)
-        self.assertIn("group: forecast-v14-daily-refresh", workflow)
+        self.assertIn("group: vmews-main-data-publisher-", workflow)
+        self.assertIn("cancel-in-progress: false", workflow)
+        self.assertIn("group: vmews-main-data-publisher-", full_model)
+        self.assertIn("github.sha || 'main'", full_model)
+        self.assertIn("cancel-in-progress: false", full_model)
         self.assertIn("--collect-community", workflow)
         self.assertIn("--publish-live", workflow)
         self.assertIn("community-intelligence-live-v19.json", workflow)
