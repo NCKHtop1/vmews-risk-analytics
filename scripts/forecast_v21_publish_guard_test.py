@@ -112,7 +112,8 @@ class ForecastV21PublishGuardTest(unittest.TestCase):
     def test_workflow_uses_bounded_fast_forward_retry_not_json_rebase(self):
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "forecast-v21-session-refresh.yml").read_text(encoding="utf-8")
-        self.assertIn("forecast-session-v21-publisher", workflow)
+        self.assertIn("vmews-main-data-publisher", workflow)
+        self.assertIn("cancel-in-progress: false", workflow)
         self.assertIn("forecast_v21_publish_guard.py", workflow)
         self.assertIn("git fetch --no-tags origin main", workflow)
         self.assertIn("git reset --hard origin/main", workflow)

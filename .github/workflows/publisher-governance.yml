@@ -1,0 +1,33 @@
+name: Publisher concurrency governance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/publisher_concurrency_audit.py'
+      - 'scripts/publisher_concurrency_audit_test.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/publisher_concurrency_audit.py'
+      - 'scripts/publisher_concurrency_audit_test.py'
+
+permissions:
+  contents: read
+
+jobs:
+  audit-direct-main-publishers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test publisher detection and lock semantics
+        working-directory: scripts
+        run: python publisher_concurrency_audit_test.py
+      - name: Reject cross-workflow publisher races
+        run: python scripts/publisher_concurrency_audit.py

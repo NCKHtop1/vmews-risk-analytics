@@ -23,6 +23,8 @@ on:
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
+      - "scripts/forecast_horizon_gate_diagnostics.py"
+      - "scripts/forecast_release_regression_test.py"
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
       - "scripts/forecast_v17_live_intelligence.py"
@@ -50,6 +52,8 @@ on:
       - "scripts/forecast_v13_market_model.py"
       - "scripts/forecast_v13_market_model_test.py"
       - "scripts/forecast_v13_market_model_test_v28.py"
+      - "scripts/forecast_horizon_gate_diagnostics.py"
+      - "scripts/forecast_release_regression_test.py"
       - "scripts/forecast_v14_signal_audit.py"
       - "scripts/forecast_v14_frontend_contract_test.py"
       - "scripts/forecast_v16_external_data.py"
@@ -78,8 +82,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: forecast-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
-  cancel-in-progress: true
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  cancel-in-progress: false
 
 jobs:
   update-validated-forecast:
@@ -96,6 +100,8 @@ jobs:
         run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener
       - name: Verify strict current-session freshness and exchange calendar
         run: |
+          python scripts/forecast_release_regression_test.py
+          python scripts/run_forecast_v9_deployable_test.py
           python scripts/forecast_v28_postclose_bridge_test.py
           python scripts/vn_exchange_calendar_test.py
       - name: Refresh genuine completed-session foreign and proprietary transactions

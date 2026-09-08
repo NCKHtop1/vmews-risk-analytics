@@ -23,8 +23,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: vmews-data-writer-${{ github.ref_name }}
-  queue: max
+  group: vmews-main-data-publisher-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   monitor:
@@ -70,7 +70,11 @@ jobs:
           assert f['version']=='VMEWS-FORECAST-LIVE-1.0.0' and f['status']=='PASS' and f['timeBasis']=='COMPLETED_EOD_ONLY'
           assert fa['version']=='VMEWS-FORECAST-LIVE-1.0.0' and fa['status'] in {'PASS','WAITING_OR_REVIEW'}
           if fa['status']=='WAITING_OR_REVIEW':
-              assert fa['preservesLastValidatedSnapshot'] is True and 'coverage' in fa['reason'].lower(),fa
+              assert fa['preservesLastValidatedSnapshot'] is True and fa['automaticPromotion'] is False,fa
+              if fa.get('reasonCode')=='PIT_SESSION_MISMATCH':
+                  assert not fa.get('panelAsOf') or not fa.get('scanAsOf') or fa['panelAsOf']!=fa['scanAsOf'],fa
+              else:
+                  assert fa.get('reasonCode')=='INSUFFICIENT_CROSS_SECTION' and 'coverage' in fa['reason'].lower(),fa
           assert m['count']>=1 and set(e['summary'])=={'3','5'}
           assert v10['version']=='VMEWS-FORECAST-LIVE-10.0.0' and v10['status']=='PASS'
           assert v10['modelVersion']=='VMEWS-FORECAST-10.1.0' and v10['timeBasis']=='COMPLETED_EOD_ONLY'

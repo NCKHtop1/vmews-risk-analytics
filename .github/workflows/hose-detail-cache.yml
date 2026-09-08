@@ -19,8 +19,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: vmews-hose-detail-cache
-  cancel-in-progress: true
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  cancel-in-progress: false
 
 jobs:
   build:
