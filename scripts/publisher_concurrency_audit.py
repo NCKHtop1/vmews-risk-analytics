@@ -106,6 +106,12 @@ def concurrency_contract(text: str) -> tuple[bool, list[str]]:
     )
     if not cancel_values or any(value.lower() != "false" for value in cancel_values):
         problems.append("cancel-in-progress must be false for every main publisher lock")
+    # cancel-in-progress protects the active writer, but the default single
+    # pending slot still discards earlier queued releases across workflows.
+    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
+    queue_values = re.findall(r"(?m)^\s*queue:\s*(\S+)\s*$", active)
+    if not queue_values or any(value != "max" for value in queue_values):
+        problems.append("queue must be max to preserve pending main publishers")
     return not problems, problems
 
 

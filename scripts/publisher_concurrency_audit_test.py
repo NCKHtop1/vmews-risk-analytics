@@ -90,6 +90,7 @@ jobs:
 concurrency:
   group: {LOCK_GROUP}-${{{{ github.ref_name }}}}
   cancel-in-progress: false
+  queue: max
 """
         ok, problems = concurrency_contract(text)
         self.assertTrue(ok, problems)
@@ -99,10 +100,19 @@ concurrency:
 concurrency:
   group: {LOCK_GROUP}-main
   cancel-in-progress: true
+  queue: max
 """
         ok, problems = concurrency_contract(text)
         self.assertFalse(ok)
         self.assertTrue(any("cancel-in-progress" in item for item in problems))
+
+    def test_missing_or_single_queue_cannot_drop_pending_releases(self) -> None:
+        for queue in ("", "  queue: single\n"):
+            text = f"concurrency:\n  group: {LOCK_GROUP}-main\n  cancel-in-progress: false\n{queue}"
+            with self.subTest(queue=queue):
+                ok, problems = concurrency_contract(text)
+                self.assertFalse(ok)
+                self.assertTrue(any("queue" in item for item in problems))
 
 
 if __name__ == "__main__":
