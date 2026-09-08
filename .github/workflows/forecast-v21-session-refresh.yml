@@ -32,11 +32,10 @@ on:
 permissions:
   contents: write
 
-# Session publication has its own serialization boundary. Other data publishers may
-# still advance main concurrently, so publishing also uses bounded fast-forward
-# retries and a monotonic snapshot guard instead of rebasing generated JSON.
+# All production writers share one repository-wide lock. Pull-request verification
+# remains isolated by SHA so it never blocks a production refresh.
 concurrency:
-  group: forecast-session-v21-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: false
 
 jobs:

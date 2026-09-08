@@ -8,6 +8,15 @@ VER='VMEWS-FORECAST-LIVE-1.0.0';H=(3,5);MAC={'vixLevel','vixRet20','usdVndRet20'
 
 class CoverageAbstention(RuntimeError):pass
 
+class PITAlignmentAbstention(CoverageAbstention):
+ def __init__(self,panel_date,scan_date):
+  super().__init__(f'PIT mismatch panel={panel_date} scan={scan_date}; current archive withheld')
+  self.panel_date=panel_date;self.scan_date=scan_date
+
+def require_same_completed_eod(panel_date,scan_date):
+ if not panel_date or not scan_date or panel_date!=scan_date:
+  raise PITAlignmentAbstention(panel_date,scan_date)
+
 def require_cross_sectional_coverage(count,minimum=8):
  if count<minimum:raise CoverageAbstention(f'Forecast archive coverage below cross-sectional minimum: {count}/{minimum}')
 
@@ -42,7 +51,7 @@ def snapshot():
  P,_=build_panel(str(ROOT));model=load(ROOT/'data/forecast-model-v9.json');scan=load(ROOT/'data/market-scan.json');sent=load(ROOT/'data/sentiment-v8.json',{'symbols':{}})
  if model.get('version')!='VMEWS-FORECAST-9.0.0' or model.get('promotion',{}).get('status')!='PASS':raise RuntimeError('V9 model gate not PASS')
  d=max(x['date'] for x in P);cur=[x for x in P if x['date']==d];sd=str(scan.get('modelDate') or '')[:10]
- if sd and sd!=d:raise RuntimeError(f'PIT mismatch panel={d} scan={sd}')
+ require_same_completed_eod(d,sd)
  rr={str(x.get('symbol') or '').upper():x for x in scan.get('ranking') or []};pred=[]
  for z in cur:
   s=str(z['symbol']).upper();r=rr.get(s);c0=f((r or {}).get('close'))
@@ -107,6 +116,8 @@ def live():
  try:z=snapshot()
  except CoverageAbstention as error:
   attempt={'version':VER,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'WAITING_OR_REVIEW','reason':str(error),'timeBasis':'COMPLETED_EOD_ONLY','preservesLastValidatedSnapshot':True,'automaticPromotion':False}
+  attempt['reasonCode']='PIT_SESSION_MISMATCH' if isinstance(error,PITAlignmentAbstention) else 'INSUFFICIENT_CROSS_SECTION'
+  if isinstance(error,PITAlignmentAbstention):attempt.update({'panelAsOf':error.panel_date,'scanAsOf':error.scan_date})
   dump(LIVE/'last-attempt.json',attempt);print(json.dumps({'legacyV9Attempt':attempt},ensure_ascii=False,indent=2));return
  st=archive(z);ev=evaluate();dump(LIVE/'evaluation.json',ev);dump(LIVE/'manifest.json',manifest());q={'version':VER,'generatedAt':datetime.now(timezone.utc).isoformat(),'status':'PASS','asOf':z['asOf'],'archiveStatus':st,'coverageState':z.get('coverageState'),'symbols':z.get('symbols'),'integrity':verify(),'modelVersion':z['modelVersion'],'sentimentVersion':z.get('sentimentVersion'),'timeBasis':'COMPLETED_EOD_ONLY'};dump(LIVE/'integrity.json',q);dump(LIVE/'last-attempt.json',{'version':VER,'generatedAt':q['generatedAt'],'status':'PASS','asOf':z['asOf'],'symbols':z.get('symbols'),'preservesLastValidatedSnapshot':True});print(json.dumps({'integrity':q,'evaluation':ev['summary']},ensure_ascii=False,indent=2))
 

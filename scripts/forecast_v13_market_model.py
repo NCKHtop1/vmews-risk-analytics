@@ -2617,6 +2617,10 @@ def write_artifacts(
         audit["newsIncrementalMAESkill"] = ablation["EVENT"]["deltaMAEImprove"]
         audit["flowIncrementalMAESkill"] = ablation["FLOW"]["deltaMAEImprove"]
         price_pass = horizon_price_gate(audit, walk_forward)
+        from forecast_horizon_gate_diagnostics import describe_horizon_price_gate
+        _log("horizon_price_gate_diagnostics", **describe_horizon_price_gate(
+            horizon, audit, walk_forward, price_pass,
+        ))
         economic_point_pass = economic_point_gate(audit, walk_forward)
         direction_pass = audit.get("brierSkill", -1) >= .005
         direction_folds = [

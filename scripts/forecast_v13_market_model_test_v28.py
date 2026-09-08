@@ -12,10 +12,45 @@ archive cardinalities are replaced with invariant governance checks:
 """
 from __future__ import annotations
 
+import json
+import math
 import unittest
 from datetime import datetime
 
 import forecast_v13_market_model_test as legacy
+
+
+def assert_fund_source_reconciliation(self, context, history, decision_at):
+    """Reconcile changing disclosures to the exact decision-time source."""
+    decision = datetime.fromisoformat(decision_at)
+    matches = [
+        snapshot for snapshot in history["snapshots"]
+        if snapshot.get("asOf") == context["asOf"]
+        and snapshot.get("generatedAt") == context["collectedAt"]
+        and snapshot.get("weightUnit") == "FRACTION_OF_NAV"
+    ]
+    self.assertEqual(len(matches), 1, "fund context must identify one archived disclosure")
+    source = matches[0]
+    self.assertLessEqual(datetime.fromisoformat(source["generatedAt"]), decision)
+    self.assertLessEqual(source["asOf"], decision.date().isoformat())
+    rows = [
+        row for row in source["holdings"]
+        if str(row.get("symbol", "")).upper() == "FPT"
+        and 0 <= float(row["weight"]) <= 1
+        and (not row.get("reportDate") or row["reportDate"] <= decision.date().isoformat())
+    ]
+    self.assertGreater(len(rows), 0)
+    weights = [float(row["weight"]) for row in rows]
+    self.assertTrue(all(math.isfinite(weight) for weight in weights))
+    self.assertEqual(context["fundCount"], len(rows))
+    self.assertEqual(len(context["holdings"]), len(rows))
+    self.assertAlmostEqual(context["reportedWeight"], math.fsum(weights))
+    self.assertAlmostEqual(context["averageReportedWeight"], math.fsum(weights) / len(rows))
+    self.assertAlmostEqual(context["largestReportedWeight"], max(weights))
+    self.assertCountEqual(
+        [(row["fundId"], row.get("reportDate"), float(row["weight"])) for row in rows],
+        [(row["fundId"], row.get("reportDate"), float(row["weight"])) for row in context["holdings"]],
+    )
 
 
 def test_fund_holdings_governance(self) -> None:
@@ -47,10 +82,10 @@ def test_fund_holdings_governance(self) -> None:
     self.assertTrue(fpt["availableForScenario"])
     self.assertTrue(fpt["scenarioEligible"])
     self.assertFalse(fpt["usedByForecast"])
-    self.assertEqual(fpt["fundCount"], 17)
-    self.assertAlmostEqual(fpt["averageReportedWeight"], .042094117647058824)
-    self.assertLessEqual(fpt["largestReportedWeight"], .10)
-    self.assertEqual(len(fpt["holdings"]), 17)
+    history = json.loads((legacy.ROOT / "data/fund-holdings-history-v16.json").read_text(encoding="utf-8"))
+    assert_fund_source_reconciliation(
+        self, fpt, history, self.market["model"]["governance"]["decisionTimestamp"],
+    )
     for horizon in fpt_snapshot["horizons"].values():
         self.assertNotEqual(horizon["liveEvidence"]["components"]["FUND"], 0)
         self.assertAlmostEqual(
