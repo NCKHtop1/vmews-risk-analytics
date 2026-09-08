@@ -25,6 +25,7 @@ permissions:
 concurrency:
   group: vmews-main-data-publisher-${{ github.ref_name }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   monitor:
