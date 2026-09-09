@@ -1,11 +1,11 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-08T18:06:58.867113+00:00",
+  "generatedAt": "2026-09-09T01:26:57.630137+00:00",
   "marketModelDate": "2026-09-08",
-  "requested": 20,
-  "reused": 20,
+  "requested": 17,
+  "reused": 17,
   "fetched": 0,
-  "cached": 20,
+  "cached": 17,
   "symbols": {
     "VDP": {
       "rows": 1800,
@@ -42,11 +42,6 @@
       "modelAsOf": "2026-08-12",
       "source": "Vnstock"
     },
-    "NDP": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-07",
-      "source": "Vnstock"
-    },
     "DST": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
@@ -57,20 +52,10 @@
       "modelAsOf": "2026-09-04",
       "source": "Yahoo Finance"
     },
-    "RCC": {
-      "rows": 824,
-      "modelAsOf": "2026-08-26",
-      "source": "Vnstock"
-    },
     "PAN": {
       "rows": 1800,
       "modelAsOf": "2026-08-19",
       "source": "Yahoo Finance"
-    },
-    "IDP": {
-      "rows": 489,
-      "modelAsOf": "2026-09-03",
-      "source": "Vnstock"
     },
     "TVC": {
       "rows": 1800,
@@ -119,12 +104,9 @@
   "yellowSymbols": [
     "HGM",
     "HBC",
-    "NDP",
     "DST",
     "TVB",
-    "RCC",
     "PAN",
-    "IDP",
     "TVC",
     "SHN",
     "HMH",
