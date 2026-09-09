@@ -1,10 +1,12 @@
 {
   "version": "VMEWS-FORECAST-LIVE-1.0.0",
-  "generatedAt": "2026-09-09T03:35:16.181756+00:00",
+  "generatedAt": "2026-09-09T14:39:50.097224+00:00",
   "status": "WAITING_OR_REVIEW",
-  "reason": "Forecast archive coverage below cross-sectional minimum: 3/8",
+  "reason": "PIT mismatch panel=2026-09-08 scan=2026-09-09; current archive withheld",
   "timeBasis": "COMPLETED_EOD_ONLY",
   "preservesLastValidatedSnapshot": true,
   "automaticPromotion": false,
-  "reasonCode": "INSUFFICIENT_CROSS_SECTION"
+  "reasonCode": "PIT_SESSION_MISMATCH",
+  "panelAsOf": "2026-09-08",
+  "scanAsOf": "2026-09-09"
 }

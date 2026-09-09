@@ -1,13 +1,13 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-09-09T03:37:33.008125+00:00",
+  "generatedAt": "2026-09-09T14:42:07.222140+00:00",
   "method": "Immutable completed-EOD prequential test-then-score.",
   "summary": {
     "3": {
       "matureOrigins": 5,
-      "nPredictions": 1726,
-      "alphaIC": -0.054187505055162524,
-      "directionHitRate": 0.6123388475236587,
+      "nPredictions": 1746,
+      "alphaIC": -0.06195412344551876,
+      "directionHitRate": 0.6123881541492365,
       "evidenceState": "EARLY"
     },
     "5": {
@@ -89,10 +89,10 @@
       "asOf": "2026-09-04",
       "horizons": {
         "3": {
-          "n": 275,
-          "marketReturn": -0.008862687257845317,
-          "alphaIC": -0.1718154484892646,
-          "directionHitRate": 0.5963636363636363
+          "n": 295,
+          "marketReturn": -0.01025650016718911,
+          "alphaIC": -0.21064854044104575,
+          "directionHitRate": 0.5966101694915255
         },
         "5": {
           "n": 0,
