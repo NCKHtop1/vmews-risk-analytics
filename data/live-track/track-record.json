@@ -1,19 +1,17 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-09-08T18:02:10.402666+00:00",
+  "generatedAt": "2026-09-09T03:34:46.615956+00:00",
   "trackingStarted": "2026-08-11",
-  "latestArchivedEod": "2026-09-04",
-  "archivedSnapshots": 6,
+  "latestArchivedEod": "2026-09-08",
+  "archivedSnapshots": 7,
   "horizonSessions": 20,
   "eventDefinition": "20-session forward maximum drawdown <= -12%",
   "currentIntegrity": {
-    "status": "WAITING_OR_REVIEW",
-    "reasons": [
-      "market/pooled EOD mismatch (2026-09-08 vs 2026-09-07)"
-    ],
+    "status": "PASS",
+    "reasons": [],
     "marketModelDate": "2026-09-08",
-    "pooledModelDate": "2026-09-07",
-    "sameCompletedEod": false,
+    "pooledModelDate": "2026-09-08",
+    "sameCompletedEod": true,
     "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
     "policyAligned": true,
     "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
@@ -25,7 +23,7 @@
     "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
     "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-    "archiveStatus": "NOT_ARCHIVED_WAITING_FOR_ALIGNMENT",
+    "archiveStatus": "CREATED",
     "revision": null
   },
   "tDayLiveTrack": {
@@ -36,14 +34,14 @@
         "events": 0,
         "eventRate": null,
         "medianMaxDrawdown20": null,
-        "pending": 130
+        "pending": 147
       },
       "YELLOW": {
         "matured": 0,
         "events": 0,
         "eventRate": null,
         "medianMaxDrawdown20": null,
-        "pending": 130
+        "pending": 147
       }
     },
     "combinedAlerts": {
@@ -60,9 +58,9 @@
       "medianMaxDrawdown20": null
     },
     "maturedSignals": 0,
-    "pendingSignals": 130,
+    "pendingSignals": 147,
     "unresolvedSignals": 0,
-    "baselinePending": 2256,
+    "baselinePending": 2630,
     "baselineUnresolved": 0,
     "minimumRecommendedMaturedSignals": 100
   },
@@ -79,7 +77,7 @@
       "medianMaxDrawdown20": null,
       "liftVsLiveBase": null
     },
-    "pendingStates": 1211,
+    "pendingStates": 1405,
     "unresolvedStates": 0,
     "minimumLiveEvidenceMet": false,
     "rankMonitorPass": false,
