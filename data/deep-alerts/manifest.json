@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-09T14:02:00.980759+00:00",
+  "generatedAt": "2026-09-10T01:16:39.616764+00:00",
   "marketModelDate": "2026-09-09",
   "requested": 24,
-  "reused": 21,
-  "fetched": 3,
+  "reused": 24,
+  "fetched": 0,
   "cached": 24,
   "symbols": {
     "FIR": {
@@ -92,9 +92,24 @@
       "modelAsOf": "2026-09-01",
       "source": "Yahoo Finance"
     },
+    "ASM": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-09",
+      "source": "Yahoo Finance"
+    },
     "NHA": {
       "rows": 1454,
       "modelAsOf": "2026-08-18",
+      "source": "Yahoo Finance"
+    },
+    "ITC": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-09",
+      "source": "Yahoo Finance"
+    },
+    "CRE": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-09",
       "source": "Yahoo Finance"
     },
     "VNG": {
@@ -111,21 +126,6 @@
       "rows": 1800,
       "modelAsOf": "2026-08-20",
       "source": "Vnstock"
-    },
-    "ASM": {
-      "rows": 2596,
-      "modelAsOf": "2026-09-09",
-      "source": "Yahoo Finance"
-    },
-    "ITC": {
-      "rows": 2596,
-      "modelAsOf": "2026-09-09",
-      "source": "Yahoo Finance"
-    },
-    "CRE": {
-      "rows": 2078,
-      "modelAsOf": "2026-09-09",
-      "source": "Yahoo Finance"
     }
   },
   "errors": [],
