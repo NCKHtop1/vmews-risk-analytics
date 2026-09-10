@@ -1,21 +1,21 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-09-09T14:42:07.223478+00:00",
+  "generatedAt": "2026-09-10T03:34:47.832925+00:00",
   "status": "PASS",
-  "asOf": "2026-09-09",
-  "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
+  "asOf": "2026-09-10",
+  "archiveStatus": "CREATED",
   "universeRequested": 388,
   "currentResolvedSymbols": 388,
-  "currentAlignedSymbols": 342,
+  "currentAlignedSymbols": 292,
   "currentSourceCounts": {
-    "YAHOO_PRIMARY": 342
+    "YAHOO_PRIMARY": 292
   },
-  "archivedSymbols": 302,
+  "archivedSymbols": 292,
   "archivedSourceCounts": {
-    "YAHOO_PRIMARY": 302
+    "YAHOO_PRIMARY": 292
   },
   "modelVersion": "VMEWS-FORECAST-10.1.0",
   "timeBasis": "COMPLETED_EOD_ONLY",
-  "snapshotHash": "e3c756eb7350c96c124f76e0bf733713cac34b2cedd70888292745452030a00a",
+  "snapshotHash": "83e4c3daa8899bb4862d6511da0e2b04460cd0fbdf82ab20cca27f011ed122bc",
   "badHashes": []
 }

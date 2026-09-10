@@ -1,20 +1,20 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-09-09T14:42:07.222140+00:00",
+  "generatedAt": "2026-09-10T03:34:47.831379+00:00",
   "method": "Immutable completed-EOD prequential test-then-score.",
   "summary": {
     "3": {
-      "matureOrigins": 5,
-      "nPredictions": 1746,
-      "alphaIC": -0.06195412344551876,
-      "directionHitRate": 0.6123881541492365,
+      "matureOrigins": 6,
+      "nPredictions": 2029,
+      "alphaIC": -0.07854330770641116,
+      "directionHitRate": 0.5916814288043203,
       "evidenceState": "EARLY"
     },
     "5": {
-      "matureOrigins": 3,
-      "nPredictions": 1131,
-      "alphaIC": 0.12807634298503864,
-      "directionHitRate": 0.6224580017683466,
+      "matureOrigins": 4,
+      "nPredictions": 1420,
+      "alphaIC": 0.08253352699948356,
+      "directionHitRate": 0.5899569523740574,
       "evidenceState": "IMMATURE"
     }
   },
@@ -25,7 +25,7 @@
         "3": {
           "n": 377,
           "marketReturn": -0.006920449532717325,
-          "alphaIC": 0.008120860958699789,
+          "alphaIC": 0.008142148924893504,
           "directionHitRate": 0.5888594164456233
         },
         "5": {
@@ -46,10 +46,10 @@
           "directionHitRate": 0.6855670103092784
         },
         "5": {
-          "n": 377,
-          "marketReturn": -0.005899722127188271,
-          "alphaIC": 0.1879010646566959,
-          "directionHitRate": 0.6657824933687002
+          "n": 388,
+          "marketReturn": -0.005989384101785249,
+          "alphaIC": 0.17942595431627179,
+          "directionHitRate": 0.654639175257732
         }
       }
     },
@@ -80,8 +80,10 @@
           "directionHitRate": 0.5436893203883495
         },
         "5": {
-          "n": 0,
-          "state": "IMMATURE"
+          "n": 278,
+          "marketReturn": -0.013356950656049407,
+          "alphaIC": -0.04561981061675763,
+          "directionHitRate": 0.5035971223021583
         }
       }
     },
@@ -89,10 +91,10 @@
       "asOf": "2026-09-04",
       "horizons": {
         "3": {
-          "n": 295,
-          "marketReturn": -0.01025650016718911,
-          "alphaIC": -0.21064854044104575,
-          "directionHitRate": 0.5966101694915255
+          "n": 304,
+          "marketReturn": -0.006199886178370139,
+          "alphaIC": -0.13461429585077522,
+          "directionHitRate": 0.5592105263157895
         },
         "5": {
           "n": 0,
@@ -104,6 +106,21 @@
       "asOf": "2026-09-07",
       "horizons": {
         "3": {
+          "n": 274,
+          "marketReturn": -0.006154797913509156,
+          "alphaIC": -0.23754476156733742,
+          "directionHitRate": 0.5255474452554745
+        },
+        "5": {
+          "n": 0,
+          "state": "IMMATURE"
+        }
+      }
+    },
+    {
+      "asOf": "2026-09-09",
+      "horizons": {
+        "3": {
           "n": 0,
           "state": "IMMATURE"
         },
@@ -114,7 +131,7 @@
       }
     },
     {
-      "asOf": "2026-09-09",
+      "asOf": "2026-09-10",
       "horizons": {
         "3": {
           "n": 0,
