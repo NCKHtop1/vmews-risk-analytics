@@ -1,0 +1,65 @@
+name: Forecast V40 tail calibration candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v40-tail-calibration]
+    paths:
+      - "scripts/forecast_v40_tail_blend.py"
+      - "scripts/forecast_v40_tail_blend_test.py"
+      - "scripts/run_forecast_v28_guarded.py"
+      - "api/solution-ai.js"
+      - ".github/workflows/forecast-v40-tail-calibration.yml"
+  pull_request:
+    paths:
+      - "scripts/forecast_v40_tail_blend.py"
+      - "scripts/forecast_v40_tail_blend_test.py"
+      - "scripts/run_forecast_v28_guarded.py"
+      - "api/solution-ai.js"
+      - ".github/workflows/forecast-v40-tail-calibration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  safety-and-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install focused dependencies
+        run: pip install --disable-pip-version-check -q numpy
+      - name: Compile candidate Python
+        run: python -m py_compile scripts/forecast_v40_tail_blend.py scripts/forecast_v40_tail_blend_test.py scripts/run_forecast_v28_guarded.py
+      - name: Tail selector adversarial tests
+        run: PYTHONPATH=scripts python scripts/forecast_v40_tail_blend_test.py
+      - name: Assert guarded runtime integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text=Path('scripts/run_forecast_v28_guarded.py').read_text(encoding='utf-8')
+          required=[
+            'from forecast_v40_tail_blend import select_tail_guarded_directional_blend',
+            'market_model.select_directional_magnitude_blend=select_tail_guarded_directional_blend',
+          ]
+          missing=[item for item in required if item not in text]
+          if missing: raise SystemExit(f'V40 runtime integration missing: {missing}')
+          print('V40 guarded runtime integration PASS')
+          PY
+      - name: SoluTION.AI syntax and diagnostic contract
+        run: |
+          node --check api/solution-ai.js
+          node - <<'JS'
+          const fs=require('fs');
+          const text=fs.readFileSync('api/solution-ai.js','utf8');
+          for (const term of ['direction miss','under-amplitude','over-amplitude','largeMoveAudit','pointToRealizedMoveRatio']) {
+            if (!text.includes(term)) throw new Error(`missing AI diagnostic contract: ${term}`);
+          }
+          console.log('SoluTION.AI forecast-miss diagnostic contract PASS');
+          JS
