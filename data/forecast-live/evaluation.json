@@ -1,26 +1,45 @@
 {
   "version": "VMEWS-FORECAST-LIVE-1.0.0",
-  "generatedAt": "2026-08-14T02:02:41.207632+00:00",
+  "generatedAt": "2026-09-11T14:29:32.464191+00:00",
   "method": "Prequential test-then-score against immutable completed-EOD close tapes.",
   "summary": {
     "3": {
-      "matureOrigins": 0,
-      "nPredictions": 0,
-      "directionHitRate": null,
-      "brier": null,
-      "alphaIC": null,
+      "matureOrigins": 1,
+      "nPredictions": 10,
+      "directionHitRate": 0.5,
+      "brier": 0.2612363563244232,
+      "alphaIC": 0.41818181818181815,
       "evidenceState": "IMMATURE"
     },
     "5": {
-      "matureOrigins": 0,
-      "nPredictions": 0,
-      "directionHitRate": null,
-      "brier": null,
-      "alphaIC": null,
+      "matureOrigins": 1,
+      "nPredictions": 10,
+      "directionHitRate": 0.7,
+      "brier": 0.21523278214073005,
+      "alphaIC": 0.3939393939393939,
       "evidenceState": "IMMATURE"
     }
   },
-  "origins": [],
+  "origins": [
+    {
+      "originDate": "2026-08-13",
+      "matureDate": "2026-09-04",
+      "horizonSessions": 3,
+      "n": 10,
+      "directionHitRate": 0.5,
+      "brier": 0.2612363563244232,
+      "alphaIC": 0.41818181818181815
+    },
+    {
+      "originDate": "2026-08-13",
+      "matureDate": "2026-09-09",
+      "horizonSessions": 5,
+      "n": 10,
+      "directionHitRate": 0.7,
+      "brier": 0.21523278214073005,
+      "alphaIC": 0.3939393939393939
+    }
+  ],
   "governance": {
     "automaticPromotion": false,
     "minimumMatureOrigins": 20

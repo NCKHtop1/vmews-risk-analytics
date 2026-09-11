@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-FORECAST-LIVE-1.0.0",
-  "generatedAt": "2026-08-14T02:02:41.208707+00:00",
-  "count": 1,
+  "generatedAt": "2026-09-11T14:29:32.467160+00:00",
+  "count": 2,
   "snapshots": [
     {
       "date": "2026-08-13",
@@ -10,6 +10,15 @@
       "snapshotHash": "1b69b1f1786e13e7120299ca48aaa94dc327e4ba80216da06192895514193588",
       "modelVersion": "VMEWS-FORECAST-9.0.0",
       "symbols": 10,
+      "coverageState": "LIMITED_CURRENT_EOD_CACHE"
+    },
+    {
+      "date": "2026-09-11",
+      "file": "data/forecast-live/snapshots/2026-09-11.json",
+      "sha256": "8a91b6dc0aa58e92fa844db26e87350ccee40f9bdf6adfa0523bbca6d29191ac",
+      "snapshotHash": "dbea335185c6ae533cbe5dfca077d08c69a1161eeec0724e75c6935a41a6c944",
+      "modelVersion": "VMEWS-FORECAST-9.0.0",
+      "symbols": 13,
       "coverageState": "LIMITED_CURRENT_EOD_CACHE"
     }
   ],

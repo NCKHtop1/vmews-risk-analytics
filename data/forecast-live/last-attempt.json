@@ -1,10 +1,8 @@
 {
   "version": "VMEWS-FORECAST-LIVE-1.0.0",
-  "generatedAt": "2026-09-11T03:30:37.404124+00:00",
-  "status": "WAITING_OR_REVIEW",
-  "reason": "Forecast archive coverage below cross-sectional minimum: 2/8",
-  "timeBasis": "COMPLETED_EOD_ONLY",
-  "preservesLastValidatedSnapshot": true,
-  "automaticPromotion": false,
-  "reasonCode": "INSUFFICIENT_CROSS_SECTION"
+  "generatedAt": "2026-09-11T14:29:32.467355+00:00",
+  "status": "PASS",
+  "asOf": "2026-09-11",
+  "symbols": 13,
+  "preservesLastValidatedSnapshot": true
 }
