@@ -9,9 +9,42 @@ legacy._business_age=lambda observed,as_of: trading_session_age(observed,as_of)
 legacy.completed_session=lambda: latest_completed_session()
 _original=legacy.run_audit
 
+V41_MARKET_VERSION="VMEWS-MARKET-FORECAST-41.0.0"
+_LEGACY_VERSION_BLOCKERS={
+    "market artifact is not V39",
+    "dashboard model version differs from market",
+    "current model version differs from market",
+}
+
 def run_audit():
     report=_original()
     market=json.loads((legacy.DATA/"forecast-market-v13.json").read_text(encoding="utf-8"))
+    dashboard=json.loads((legacy.DATA/"forecast-dashboard-v12.json").read_text(encoding="utf-8"))
+    current=json.loads((legacy.DATA/"forecast-current-v12.json").read_text(encoding="utf-8"))
+
+    # The legacy V20 audit intentionally pins V39. V41 changes the fitted feature
+    # space and must publish a new exact version across all three public artifacts.
+    # Remove only the obsolete V39-string blockers when the V41 version contract
+    # is itself exact and internally consistent; every statistical/data/leakage
+    # blocker from the legacy audit remains untouched.
+    versions=(
+        market.get("version"),
+        dashboard.get("modelVersion"),
+        current.get("modelVersion"),
+    )
+    if versions==(V41_MARKET_VERSION,V41_MARKET_VERSION,V41_MARKET_VERSION):
+        report["blockers"]=[
+            blocker for blocker in report.get("blockers",[])
+            if blocker not in _LEGACY_VERSION_BLOCKERS
+        ]
+    else:
+        message=(
+            "V41 artifact version contract mismatch: "
+            f"market={versions[0]!r} dashboard={versions[1]!r} current={versions[2]!r}"
+        )
+        if message not in report["blockers"]:
+            report["blockers"].append(message)
+
     sources=market.get("sources") or {}; bridge=sources.get("postCloseBridge") or {}
     expected=latest_completed_session(); today=datetime.now(VN_TZ).date()
     if expected==today and str(report.get("asOf") or "")[:10]==today.isoformat():
