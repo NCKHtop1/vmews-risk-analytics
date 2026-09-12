@@ -17,15 +17,15 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
+from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
 from forecast_v28_postclose_bridge import bridge_completed_session  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
-# V40 is intentionally activated at the guarded publication boundary instead of
-# mutating the sealed research implementation in-place. fit_horizon resolves the
-# selector by module global at runtime, so this replacement is deterministic and
-# applies to both calibration selection and the published inference parameters.
-# The selector itself sees calibration labels only; holdout labels remain sealed.
+# V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
+# transition geometry and a separately audited transition radar. Neither layer
+# contains symbol-specific rules and both keep holdout labels sealed.
 market_model.select_directional_magnitude_blend=select_tail_guarded_directional_blend
+install_v41_refined(market_model)
 
 _original_load_histories=market_model.load_histories
 _bridge_metadata={}; _historical_scan_as_of=""
