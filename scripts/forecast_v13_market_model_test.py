@@ -195,7 +195,9 @@ class VietnamPriceGridTest(unittest.TestCase):
         probability = np.full_like(actual, .55)
         magnitude = np.full_like(actual, .012)
         dates = np.asarray([f"2026-01-{1 + index // 4:02d}" for index in range(len(actual))])
-        audit = select_directional_magnitude_blend(actual, point, probability, magnitude, dates)
+        audit = select_directional_magnitude_blend(
+            actual, point, probability, magnitude, dates
+        )
         self.assertEqual(audit["status"], "ABSTAIN")
         self.assertEqual(audit["weight"], 0.0)
         self.assertEqual(audit["sealedLabelsUsed"], 0)
@@ -204,7 +206,9 @@ class VietnamPriceGridTest(unittest.TestCase):
         point = np.asarray([.001, -.001, .002])
         probability = np.asarray([.70, .30, .52])
         magnitude = np.asarray([.02, .03, .04])
-        blended = directional_magnitude_blend(point, probability, magnitude, .20, .10)
+        blended = directional_magnitude_blend(
+            point, probability, magnitude, .20, .10
+        )
         np.testing.assert_allclose(blended, [.0048, -.0068, .002])
 
     def test_cost_aware_screen_is_long_only_and_subtracts_declared_costs(self) -> None:
@@ -234,7 +238,11 @@ class VietnamPriceGridTest(unittest.TestCase):
         audit = {
             "directionalAccuracy": .56,
             "pointToRealizedMoveRatio": .35,
-            "pairedNoChangeAudit": {"meanImprovement": .0002,"dailyStandardError": .0001,"positiveChronologicalBlocks": 4},
+            "pairedNoChangeAudit": {
+                "meanImprovement": .0002,
+                "dailyStandardError": .0001,
+                "positiveChronologicalBlocks": 4,
+            },
             "largeMoveAudit": {"directionalAccuracy": .55},
             "chronologicalFolds": [
                 {"executableMAESkill": .01, "directionalAccuracy": .54},
@@ -245,7 +253,10 @@ class VietnamPriceGridTest(unittest.TestCase):
         }
         walk = {"positiveExecutableMAEFolds": 3, "meanExecutableMAESkill": .01}
         self.assertFalse(economic_point_gate(audit, walk))
-        audit["chronologicalFolds"][-1] = {"executableMAESkill": .006,"directionalAccuracy": .53}
+        audit["chronologicalFolds"][-1] = {
+            "executableMAESkill": .006,
+            "directionalAccuracy": .53,
+        }
         self.assertTrue(economic_point_gate(audit, walk))
 
 
@@ -265,7 +276,10 @@ class PointInTimeSignalTest(unittest.TestCase):
         self.assertTrue(security_match("FPT", "Dragon Capital tăng tỷ trọng PNJ và FPT", universe))
 
     def test_unrelated_ticker_collisions_and_missing_issuer_are_rejected(self) -> None:
-        universe = {"GTA", "ASP", "VSI", "VCB", "PNJ", "FPT", "FRT", "FTS", "DGW", "KBC", "HPG", "BID", "BIC", "VPB", "PET"}
+        universe = {
+            "GTA", "ASP", "VSI", "VCB", "PNJ", "FPT", "FRT", "FTS",
+            "DGW", "KBC", "HPG", "BID", "BIC", "VPB", "PET",
+        }
         self.assertFalse(security_match("GTA", 'GTA 6 vừa lộ gameplay, Take-Two đã "bay màu" 2 tỷ USD', universe, require_explicit=True))
         self.assertFalse(security_match("ASP", "Western Digital Corp (WDC) cổ phiếu giảm 6,69%", universe, require_explicit=True))
         self.assertFalse(security_match("VSI", "Khi đầu tư chứng khoán đặt trong kế hoạch tích lũy dài hạn", universe, require_explicit=True))
@@ -277,13 +291,34 @@ class PointInTimeSignalTest(unittest.TestCase):
         self.assertFalse(security_match("FPT", "HOSE: FTS - Chứng khoán FPT công bố báo cáo", universe, require_explicit=True))
         self.assertTrue(security_match("FRT", "FRT: CTCP Bán lẻ Kỹ thuật số FPT | Tổng quan", universe, require_explicit=True))
         self.assertTrue(security_match("FPT", "Dragon Capital tăng tỷ trọng PNJ và FPT", universe, require_explicit=True))
+        self.assertTrue(security_match("HPG", "Digiworld (DGW) đầu tư vào KBC và HPG", universe, require_explicit=True))
+        self.assertTrue(security_match("BID", "BID: hợp đồng bảo hiểm thẻ BIDV (BIC)", universe, require_explicit=True))
+        self.assertFalse(security_match("VPB", "PET: được cấp hạn mức tín dụng tại VPB", universe, require_explicit=True))
 
     def test_event_reaction_prior_uses_only_already_matured_outcomes(self) -> None:
-        events = pd.DataFrame([
-            {"symbol":"FPT","effectiveSession":"2026-08-20","reaction5":.05,"reactionMaturity5":"2026-08-27"},
-            {"symbol":"FPT","effectiveSession":"2026-08-21","reaction5":.08,"reactionMaturity5":"2026-08-28"},
-            {"symbol":"FPT","effectiveSession":"2026-08-28","reaction5":.20,"reactionMaturity5":"2026-09-04"},
-        ])
+        events = pd.DataFrame(
+            [
+                {
+                    "symbol": "FPT", "date": pd.Timestamp("2026-01-02"),
+                    "publishedAt": "2026-01-02T08:00:00+07:00",
+                    "eventType": "EARNINGS", "label": "POS",
+                    "_matureDate": {"5": "2026-01-09"},
+                    "_cumulativeAbnormalReturn": {"5": .10},
+                },
+                {
+                    "symbol": "FPT", "date": pd.Timestamp("2026-01-08"),
+                    "publishedAt": "2026-01-08T08:00:00+07:00",
+                    "eventType": "EARNINGS", "label": "POS",
+                    "_matureDate": None, "_cumulativeAbnormalReturn": None,
+                },
+                {
+                    "symbol": "FPT", "date": pd.Timestamp("2026-01-12"),
+                    "publishedAt": "2026-01-12T08:00:00+07:00",
+                    "eventType": "EARNINGS", "label": "POS",
+                    "_matureDate": None, "_cumulativeAbnormalReturn": None,
+                },
+            ]
+        )
         enriched, audit = attach_matured_reaction_priors(events)
         self.assertEqual(enriched.loc[1, "reactionPrior5"], 0.0)
         self.assertGreater(enriched.loc[2, "reactionPrior5"], 0.0)
@@ -301,7 +336,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
     def test_current_source_and_coverage(self) -> None:
         self.assertGreaterEqual(len(self.dashboard["symbols"]), 400)
         self.assertEqual(self.dashboard["asOf"], self.market["sources"]["marketScanAsOf"])
-        self.assertGreaterEqual(self.market["sources"]["marketScanGeneratedOn"], self.market["sources"]["marketScanAsOf"])
+        self.assertGreaterEqual(
+            self.market["sources"]["marketScanGeneratedOn"],
+            self.market["sources"]["marketScanAsOf"],
+        )
         self.assertEqual(set(self.dashboard["symbols"]), set(self.current["symbols"]))
         universe = self.market["model"]["universe"]
         self.assertGreaterEqual(universe["hoseCoverage"], .99)
@@ -334,7 +372,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
                 self.assertEqual(snapshot["horizons"][key]["targetDate"], target_date, f"{symbol}/T+{key}")
 
     def test_each_horizon_is_independently_promoted_or_abstained(self) -> None:
-        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-41.0.0")
+        self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-39.0.0")
         promotion = self.market["model"]["promotion"]
         self.assertEqual(promotion["status"], "PASS")
         promoted = set(promotion["directPriceHorizons"])
@@ -343,7 +381,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(promoted | review, set(range(1, 6)))
         self.assertFalse(promoted & review)
         self.assertIn(promotion["preferredRankingHorizon"], promoted)
-        self.assertEqual(promotion["preferredRankingHorizon"], preferred_ranking_horizon(self.market["model"]["horizons"]))
+        self.assertEqual(
+            promotion["preferredRankingHorizon"],
+            preferred_ranking_horizon(self.market["model"]["horizons"]),
+        )
         for horizon in map(str, range(1, 6)):
             model = self.market["model"]["horizons"][horizon]
             audit = model["sealedAudit"]
@@ -381,7 +422,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
             blend = self.market["model"]["horizons"][horizon]["directionalMagnitudeBlend"]
             self.assertEqual(blend["sealedLabelsUsed"], 0)
             self.assertIn(blend["status"], {"ACTIVE", "ABSTAIN"})
-            self.assertLessEqual(blend["weight"], .50)
+            self.assertLessEqual(blend["weight"], .40)
             for fold in walk["folds"]:
                 self.assertEqual(fold["futureRowsUsedForTraining"], 0)
                 self.assertEqual(fold["futureLabelsUsedForCalibration"], 0)
@@ -397,75 +438,231 @@ class PublishedMarketForecastTest(unittest.TestCase):
                 self.assertEqual(calibration["shortHorizonFloorCeiling"], .04)
 
     def test_every_quote_uses_the_exchange_grid_and_review_horizons_abstain(self) -> None:
-        checked = 0; neutral_points = 0; released = 0; abstained = 0
+        checked = 0
+        neutral_points = 0
+        released = 0
+        abstained = 0
         for symbol, snapshot in self.dashboard["symbols"].items():
-            close = snapshot["close"]; exchange = snapshot.get("exchange", "HOSE")
+            close = snapshot["close"]
+            exchange = snapshot.get("exchange", "HOSE")
             for key, forecast in snapshot["horizons"].items():
                 with self.subTest(symbol=symbol, horizon=key):
-                    point = forecast["expectedPrice"]; low = forecast["q20Price"]; high = forecast["q80Price"]
+                    point = forecast["expectedPrice"]
+                    low = forecast["q20Price"]
+                    high = forecast["q80Price"]
                     self.assertEqual(point % tick_size(point, exchange), 0)
                     self.assertEqual(low % tick_size(low, exchange), 0)
                     self.assertEqual(high % tick_size(high, exchange), 0)
                     neutral_points += int(point == close)
-                    self.assertLessEqual(low, point); self.assertLessEqual(point, high)
+                    self.assertLessEqual(low, point)
+                    self.assertLessEqual(point, high)
                     floor, ceiling = session_limit(close, int(key), exchange)
-                    self.assertGreaterEqual(low, floor); self.assertLessEqual(high, ceiling)
-                    if forecast.get("priceValidated"):
+                    self.assertGreaterEqual(low, floor)
+                    self.assertLessEqual(high, ceiling)
+                    self.assertAlmostEqual(math.log(point / close), forecast["expectedReturn"], places=12)
+                    self.assertAlmostEqual(
+                        sum(forecast["expertContributions"].values()),
+                        forecast["expectedReturn"],
+                        places=12,
+                    )
+                    self.assertGreater(forecast["expectedAbsReturn"], 0)
+                    price_pass = int(key) in self.market["model"]["promotion"]["directPriceHorizons"]
+                    self.assertEqual(forecast["priceValidated"], price_pass)
+                    self.assertEqual(forecast["validationStatus"], "PASS" if price_pass else "REVIEW")
+                    if price_pass:
+                        self.assertTrue(forecast["magnitudeValidated"])
                         released += 1
                     else:
+                        self.assertFalse(forecast["priceValidated"])
                         abstained += 1
+                    self.assertLessEqual(forecast["bearScenarioPrice"], close)
+                    self.assertGreaterEqual(forecast["bullScenarioPrice"], close)
+                    self.assertTrue(
+                        forecast["bearScenarioPrice"] < close
+                        or forecast["bullScenarioPrice"] > close
+                    )
+                    self.assertGreaterEqual(forecast["bearScenarioPrice"], floor)
+                    self.assertLessEqual(forecast["bullScenarioPrice"], ceiling)
                     checked += 1
-        self.assertGreater(checked, 1900)
+        self.assertGreaterEqual(checked, 2000)
         self.assertGreater(released, 0)
-        self.assertGreater(abstained, 0)
-        self.assertGreater(neutral_points, 0)
-
-    def test_direction_probability_is_withheld_where_brier_gate_fails(self) -> None:
-        for snapshot in self.dashboard["symbols"].values():
-            for horizon in snapshot["horizons"].values():
-                if horizon.get("directionValidated"):
-                    self.assertTrue(0 <= horizon["probUp"] <= 1)
-                else:
-                    self.assertFalse(horizon.get("directionEvidence") == "CALIBRATED_PROBABILITY")
+        self.assertEqual(released + abstained, checked)
+        self.assertLessEqual(neutral_points / checked, .05)
 
     def test_fpt_never_publishes_an_invalid_sub_tick_change(self) -> None:
         fpt = self.dashboard["symbols"]["FPT"]
-        for forecast in fpt["horizons"].values():
-            self.assertEqual(forecast["expectedPrice"] % tick_size(forecast["expectedPrice"]), 0)
+        for horizon, forecast in fpt["horizons"].items():
+            self.assertEqual(forecast["tickSize"], 100)
+            difference = abs(forecast["expectedPrice"] - fpt["close"])
+            self.assertTrue(difference == 0 or difference >= 100)
+            if horizon != "1":
+                self.assertGreaterEqual(difference, 100)
+            self.assertNotEqual(forecast["expectedPrice"], 68_327)
 
-    def test_fpt_feed_excludes_frt_and_fts_announcements(self) -> None:
-        fpt = self.dashboard["symbols"]["FPT"]
-        for item in (fpt.get("evidence") or {}).get("decisionRecent", []):
-            title = str(item.get("title") or "").lower()
-            self.assertFalse("fpt retail" in title or "chứng khoán fpt" in title)
-
-    def test_fpt_institutional_flow_uses_the_latest_completed_genuine_session(self) -> None:
-        fpt = self.dashboard["symbols"]["FPT"]
-        self.assertFalse(fpt["flow"].get("stale", True))
+    def test_news_and_flow_are_actual_model_features(self) -> None:
+        features = set(self.market["model"]["featureNames"])
+        self.assertIn("news_sentiment5", features)
+        self.assertIn("news_earnings5", features)
+        self.assertIn("news_reaction_prior5", features)
+        self.assertIn("flow_foreign_imbalance5", features)
+        self.assertIn("flow_prop_available", features)
+        self.assertEqual(self.market["model"]["governance"]["outcomeFieldsUsedAsFeatures"], 0)
+        signal = self.market["sources"]["signalAudit"]
+        self.assertGreater(signal["acceptedEvents"], 12_000)
+        self.assertGreater(signal["rejected"].get("issuer_mismatch", 0), 0)
+        reaction = signal["maturedReactionPrior"]
+        self.assertEqual(reaction["status"], "ACTIVE")
+        self.assertGreater(reaction["maturedOutcomes"], 30_000)
+        self.assertEqual(reaction["sameOrFutureEventOutcomesUsed"], 0)
+        for horizon in self.market["model"]["horizons"].values():
+            self.assertIn("EVENT", horizon["activeExperts"])
+            self.assertIn("FLOW", horizon["activeExperts"])
+            self.assertGreater(horizon["eventImpactAudit"]["observations"], 100)
+            self.assertEqual(horizon["eventImpactAudit"]["futureOutcomeFieldsAsFeatures"], 0)
 
     def test_fund_holdings_are_scenario_context_without_moving_central_price(self) -> None:
-        self.skipTest("Governance override supplied by forecast_v13_market_model_test_v28.py")
+        features = set(self.market["model"]["featureNames"])
+        self.assertIn("fund_holder_count", features)
+        self.assertIn("fund_weight_sum", features)
+        audit = self.market["sources"]["fundAudit"]
+        self.assertEqual(audit["status"], "CONTEXT_SCENARIO_ONLY")
+        self.assertGreaterEqual(audit["snapshotCount"], 1)
+        self.assertTrue(audit["rawHistoryGateEligible"])
+        self.assertEqual(
+            audit["promotionRequired"],
+            "SEPARATE_LONGITUDINAL_BACKTEST_AND_STABILITY_AUDIT",
+        )
+        self.assertFalse(audit["modelEligible"])
+        self.assertTrue(audit["inferenceEligible"])
+        self.assertTrue(audit["trainingFeaturesMasked"])
+        self.assertGreaterEqual(audit["scenarioEligibleSymbols"], 50)
+        self.assertEqual(audit["usedByForecastSymbols"], 0)
+        self.assertEqual(audit["postForecastSnapshotsUsedAsFeatures"], 0)
+        self.assertGreaterEqual(audit["latestCollection"]["holdingRows"], 300)
+        fpt_snapshot = self.dashboard["symbols"]["FPT"]
+        fpt = fpt_snapshot["fundContext"]
+        self.assertTrue(fpt["available"])
+        self.assertEqual(
+            fpt["collectedAfterForecast"],
+            str(fpt["asOf"]) > str(fpt_snapshot["date"]),
+        )
+        self.assertFalse(fpt["availableForForecast"])
+        self.assertTrue(fpt["availableForScenario"])
+        self.assertTrue(fpt["scenarioEligible"])
+        self.assertFalse(fpt["usedByForecast"])
+        self.assertEqual(fpt["fundCount"], 17)
+        self.assertAlmostEqual(fpt["averageReportedWeight"], .042094117647058824)
+        self.assertLessEqual(fpt["largestReportedWeight"], .10)
+        self.assertEqual(len(fpt["holdings"]), 17)
+        for horizon in fpt_snapshot["horizons"].values():
+            self.assertNotEqual(horizon["liveEvidence"]["components"]["FUND"], 0)
+            self.assertAlmostEqual(
+                sum(horizon["liveEvidence"]["components"].values()),
+                horizon["scenarioAdjustmentReturn"],
+            )
+            self.assertEqual(horizon["liveAdjustmentReturn"], 0.0)
+            self.assertFalse(horizon["liveAdjustmentAppliedToCentralForecast"])
+            self.assertAlmostEqual(
+                sum(horizon["expertContributions"].values()),
+                horizon["expectedReturn"],
+            )
+        self.assertEqual(audit["decisionAudit"]["historicalBackfillRows"], 0)
 
     def test_archived_institutional_flow_and_financial_evidence_are_available(self) -> None:
+        acb = self.dashboard["symbols"]["ACB"]
+        self.assertTrue(acb["flow"]["foreign"]["available"])
+        self.assertTrue(acb["flow"]["proprietary"]["available"])
+        self.assertGreater(abs(acb["flow"]["proprietary"]["net1"]), 1_000_000_000)
+        self.assertEqual(acb["flow"]["proprietary"]["sourceUnit"], "billion_VND")
         fpt = self.dashboard["symbols"]["FPT"]
-        self.assertIn("foreign", fpt["flow"])
-        self.assertIn("proprietary", fpt["flow"])
-        self.assertIn("fundamentalContext", fpt)
+        self.assertTrue(fpt["fundamentalContext"]["available"])
+        self.assertTrue(fpt["fundamentalContext"]["scenarioEligible"])
+        self.assertFalse(fpt["fundamentalContext"]["usedByForecast"])
+        self.assertNotEqual(fpt["horizons"]["5"]["liveEvidence"]["components"]["FUNDAMENTAL"], 0)
+        self.assertFalse(fpt["horizons"]["5"]["liveAdjustmentAppliedToCentralForecast"])
 
     def test_unvalidated_live_context_is_never_used_by_the_central_forecast(self) -> None:
+        governance = self.market["model"]["governance"]
+        self.assertFalse(governance["livePriorIndependentlyBacktested"])
+        self.assertFalse(governance["centralForecastUsesUnvalidatedPrior"])
+        self.assertTrue(governance["fundHoldingsContextOnlyUntilHistoryGate"])
+        self.assertIn("NOT_APPLIED_TO_CENTRAL_FORECAST", governance["livePriorPolicy"])
         for snapshot in self.dashboard["symbols"].values():
             for horizon in snapshot["horizons"].values():
-                self.assertEqual(horizon["liveAdjustmentReturn"], 0.0)
                 self.assertFalse(horizon["liveAdjustmentAppliedToCentralForecast"])
-
-    def test_sign_ranking_and_cost_evidence_never_masquerade_as_a_probability(self) -> None:
-        for snapshot in self.dashboard["symbols"].values():
-            for horizon in snapshot["horizons"].values():
-                if horizon.get("directionEvidence") != "CALIBRATED_PROBABILITY":
-                    self.assertFalse(horizon.get("directionValidated"))
+                self.assertEqual(horizon["liveAdjustmentReturn"], 0.0)
 
     def test_after_close_news_influences_next_session_without_future_leakage(self) -> None:
-        self.skipTest("Governance override supplied by forecast_v13_market_model_test_v28.py")
+        audit = self.market["sources"]["decisionNewsAudit"]
+        self.assertEqual(audit["historicalBackfillRows"], 0)
+        decision = datetime.fromisoformat(self.market["model"]["governance"]["decisionTimestamp"])
+        observed_symbols = 0
+        observed_articles = 0
+        for snapshot in self.dashboard["symbols"].values():
+            news = snapshot["decisionNews"]
+            items = news.get("items") or []
+            if not items:
+                self.assertEqual(snapshot["newsFeatures"]["pendingDecisionEvents"], 0)
+                continue
+            observed_symbols += 1
+            observed_articles += len(items)
+            self.assertTrue(news["available"])
+            for item in items:
+                self.assertTrue(item["decisionTimeEligible"])
+                self.assertLessEqual(datetime.fromisoformat(item["publishedAt"]), decision)
+        self.assertEqual(observed_symbols, audit["symbols"])
+        self.assertLessEqual(observed_articles, audit["articles"])
+        if audit["articles"] == 0:
+            self.assertEqual(audit["status"], "UNAVAILABLE")
+
+    def test_direction_probability_is_withheld_where_brier_gate_fails(self) -> None:
+        validated = self.market["model"]["promotion"]["directionHorizons"]
+        expected = [
+            int(horizon)
+            for horizon, model in self.market["model"]["horizons"].items()
+            if model["directionStatus"] == "PASS"
+        ]
+        self.assertEqual(validated, expected)
+        for snapshot in self.dashboard["symbols"].values():
+            for horizon in map(str, range(1, 6)):
+                self.assertEqual(
+                    snapshot["horizons"][horizon]["directionValidated"],
+                    int(horizon) in validated,
+                )
+
+    def test_sign_ranking_and_cost_evidence_never_masquerade_as_a_probability(self) -> None:
+        model = self.market["model"]["horizons"]["5"]
+        audit = model["sealedAudit"]
+        fpt = self.dashboard["symbols"]["FPT"]["horizons"]["5"]
+        self.assertGreater(audit["directionalAccuracy"], .52)
+        self.assertEqual(model["pointDirectionStatus"], "PASS")
+        self.assertTrue(fpt["pointDirectionValidated"])
+        self.assertEqual(fpt["directionValidated"], model["directionStatus"] == "PASS")
+        self.assertAlmostEqual(fpt["historicalDirectionAccuracy"], audit["directionalAccuracy"])
+        self.assertTrue(fpt["crossSectionalRankValidated"])
+        self.assertTrue(0 < fpt["crossSectionalRankPercentile"] <= 1)
+        self.assertEqual(
+            fpt["conditionalValueValidated"],
+            model["priceStatus"] == "PASS" and audit["costAwareLongAudit"]["status"] == "PASS",
+        )
+        self.assertFalse(audit["costAwareLongAudit"]["selectionFitOnHoldout"])
+
+    def test_fpt_institutional_flow_uses_the_latest_completed_genuine_session(self) -> None:
+        flow = self.dashboard["symbols"]["FPT"]["flow"]
+        self.assertGreaterEqual(flow["foreign"]["latestDate"], "2026-08-21")
+        self.assertGreaterEqual(flow["proprietary"]["latestDate"], "2026-08-21")
+        self.assertFalse(flow["foreign"]["stale"])
+        self.assertFalse(flow["proprietary"]["stale"])
+        self.assertGreater(abs(flow["foreign"]["net1"]), 1_000_000)
+        self.assertGreater(abs(flow["proprietary"]["net1"]), 1_000_000)
+
+    def test_fpt_feed_excludes_frt_and_fts_announcements(self) -> None:
+        for item in self.dashboard["symbols"]["FPT"]["evidence"]["recent"]:
+            self.assertNotIn("FPT Retail (FRT)", item["title"])
+            self.assertNotIn("Chứng khoán FPT (FTS)", item["title"])
+            self.assertLessEqual(item["availableDate"], self.dashboard["symbols"]["FPT"]["date"])
+        for item in self.dashboard["symbols"]["FPT"]["evidence"].get("decisionRecent", []):
+            self.assertFalse(item["title"].startswith(("FRT:", "FTS:")), item["title"])
 
 
 if __name__ == "__main__":
