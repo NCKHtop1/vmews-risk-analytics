@@ -48,15 +48,29 @@ market_model.load_histories=_load_histories_with_current_session
 market_model.next_trading_dates=certified_next_trading_dates
 
 def _persist_source_semantics():
-    data=Path(__file__).resolve().parents[1]/"data"; market_path=data/"forecast-market-v13.json"; dash_path=data/"forecast-dashboard-v12.json"
-    if not market_path.exists() or not dash_path.exists(): return
-    market=json.loads(market_path.read_text(encoding="utf-8")); dash=json.loads(dash_path.read_text(encoding="utf-8"))
+    data=Path(__file__).resolve().parents[1]/"data"
+    market_path=data/"forecast-market-v13.json"; dash_path=data/"forecast-dashboard-v12.json"; current_path=data/"forecast-current-v12.json"
+    if not market_path.exists() or not dash_path.exists() or not current_path.exists(): return
+    market=json.loads(market_path.read_text(encoding="utf-8")); dash=json.loads(dash_path.read_text(encoding="utf-8")); current=json.loads(current_path.read_text(encoding="utf-8"))
     sources=market.setdefault("sources",{}); sources["priceSessionAsOf"]=market.get("asOf"); sources["historicalRiskScanAsOf"]=_historical_scan_as_of or None
     if _bridge_metadata:
         sources["postCloseBridge"]=_bridge_metadata; sources["marketScanAsOfSemantics"]="CURRENT_PRICE_SESSION_COMPATIBILITY_ALIAS"
         mf=dash.setdefault("marketForecast",{}); mf["priceSessionAsOf"]=dash.get("asOf"); mf["historicalRiskScanAsOf"]=_historical_scan_as_of or None; mf["postCloseBridge"]=_bridge_metadata
+
+    # V41 appends per-symbol transition diagnostics after the core writer has
+    # produced both dashboard/current snapshots. Keep those two public symbol
+    # contracts byte-semantically aligned instead of letting the radar exist in
+    # only one artifact. This preserves the longstanding publication invariant
+    # used by the regression suite and by downstream clients.
+    dash_symbols=dash.get("symbols") or {}; current_symbols=current.get("symbols") or {}
+    for symbol,snapshot in dash_symbols.items():
+        if symbol in current_symbols and "technicalTransition" in snapshot:
+            current_symbols[symbol]["technicalTransition"]=snapshot["technicalTransition"]
+    current["symbols"]=current_symbols
+
     market_path.write_text(json.dumps(market,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
     dash_path.write_text(json.dumps(dash,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
+    current_path.write_text(json.dumps(current,ensure_ascii=False,separators=(",",":"),allow_nan=False),encoding="utf-8")
 
 if __name__=="__main__":
     sys.argv[0]="forecast_v13_market_model.py"; market_model.main(); _persist_source_semantics()
