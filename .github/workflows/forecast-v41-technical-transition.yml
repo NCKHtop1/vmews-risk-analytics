@@ -1,0 +1,76 @@
+name: Forecast V41 technical transition challenger
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [forecast-v41-technical-transition]
+    paths:
+      - "scripts/forecast_v41_technical_transition.py"
+      - "scripts/forecast_v41_runtime_patch.py"
+      - "scripts/forecast_v41_technical_transition_test.py"
+      - "scripts/run_forecast_v28_guarded.py"
+      - "forecast-technical-radar-v41.js"
+      - "forecast-final-v41.html"
+      - ".github/workflows/forecast-v41-technical-transition.yml"
+  pull_request:
+    paths:
+      - "scripts/forecast_v41_technical_transition.py"
+      - "scripts/forecast_v41_runtime_patch.py"
+      - "scripts/forecast_v41_technical_transition_test.py"
+      - "scripts/run_forecast_v28_guarded.py"
+      - "forecast-technical-radar-v41.js"
+      - "forecast-final-v41.html"
+      - ".github/workflows/forecast-v41-technical-transition.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  causal-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install focused dependencies
+        run: pip install --disable-pip-version-check -q numpy pandas scikit-learn
+      - name: Compile V41 Python
+        run: python -m py_compile scripts/forecast_v41_technical_transition.py scripts/forecast_v41_runtime_patch.py scripts/forecast_v41_technical_transition_test.py scripts/run_forecast_v28_guarded.py
+      - name: Run causal transition tests
+        run: PYTHONPATH=scripts python scripts/forecast_v41_technical_transition_test.py
+      - name: Validate radar JavaScript
+        run: node --check forecast-technical-radar-v41.js
+      - name: Assert market-wide guarded integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          runner=Path('scripts/run_forecast_v28_guarded.py').read_text(encoding='utf-8')
+          required=[
+            'from forecast_v41_runtime_patch import install_v41_refined',
+            'install_v41_refined(market_model)',
+            'select_tail_guarded_directional_blend',
+          ]
+          missing=[value for value in required if value not in runner]
+          if missing: raise SystemExit(f'V41 guarded integration missing: {missing}')
+          patch=Path('scripts/forecast_v41_runtime_patch.py').read_text(encoding='utf-8')
+          if 'symbol ==' in patch or 'symbol in (' in patch:
+              raise SystemExit('symbol-specific V41 branch detected')
+          print('V41 market-wide guarded integration PASS')
+          PY
+      - name: Assert dashboard transition contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js=Path('forecast-technical-radar-v41.js').read_text(encoding='utf-8')
+          html=Path('forecast-final-v41.html').read_text(encoding='utf-8')
+          for term in ['Radar chuyển pha kỹ thuật toàn HOSE','data-transition-symbol','Chuyển pha tăng','Rủi ro chuyển pha giảm']:
+              if term not in js: raise SystemExit(f'missing radar contract: {term}')
+          if 'forecast-technical-radar-v41.js' not in html:
+              raise SystemExit('V41 radar entry script missing')
+          print('V41 dashboard transition contract PASS')
+          PY
