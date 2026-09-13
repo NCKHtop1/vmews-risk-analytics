@@ -66,9 +66,10 @@ jobs:
             page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.V41_BROWSER_URL,{waitUntil:'networkidle',timeout:60000});
             await page.waitForSelector('#transitionRadar',{timeout:30000});
-            const heading=(await page.locator('#transitionRadar').innerText()).trim();
-            if(!heading.includes('Technical Regime Transition Radar · V41')) throw new Error('V41 radar title missing');
-            if(!heading.includes('Radar chuyển pha kỹ thuật toàn HOSE')) throw new Error('V41 radar HOSE scope missing');
+            const eyebrow=(await page.locator('#transitionRadar .eyebrow').textContent()||'').trim();
+            const title=(await page.locator('#transitionRadar h2').textContent()||'').trim();
+            if(eyebrow!=='Technical Regime Transition Radar · V41') throw new Error(`V41 radar title missing: ${eyebrow}`);
+            if(title!=='Radar chuyển pha kỹ thuật toàn HOSE') throw new Error(`V41 radar HOSE scope missing: ${title}`);
             if(await page.locator('#transitionRadar .transitionAudit span').count()!==2) throw new Error('V41 bullish/bearish audit badges missing');
             if(await page.locator('#transitionScoreChart').count()!==1) throw new Error('V41 transition score canvas missing');
             const tabs=page.locator('#transitionRadar [data-transition-side]');
