@@ -9,6 +9,11 @@ archive cardinalities are replaced with invariant governance checks:
 * decision-news audit may contain a very small number of eligible issuers that
   are outside the final published dashboard universe, while every published
   item must still be decision-time eligible and non-future.
+
+For V41, the full legacy horizon release-gate test is also retained. The only
+compatibility adjustment is the explicit model-version contract: V41 must
+publish as VMEWS-MARKET-FORECAST-41.0.0, while all remaining gate assertions
+continue to execute unchanged.
 """
 from __future__ import annotations
 
@@ -132,8 +137,25 @@ def test_after_close_news_governance(self) -> None:
         self.assertEqual(audit["status"], "UNAVAILABLE")
 
 
+_original_horizon_release_gate_test = (
+    legacy.PublishedMarketForecastTest.test_each_horizon_is_independently_promoted_or_abstained
+)
+
+
+def test_v41_horizon_release_gate(self) -> None:
+    """Assert the V41 version, then run every legacy release-gate assertion."""
+    self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-41.0.0")
+    version = self.market["version"]
+    self.market["version"] = "VMEWS-MARKET-FORECAST-39.0.0"
+    try:
+        _original_horizon_release_gate_test(self)
+    finally:
+        self.market["version"] = version
+
+
 legacy.PublishedMarketForecastTest.test_fund_holdings_are_scenario_context_without_moving_central_price = test_fund_holdings_governance
 legacy.PublishedMarketForecastTest.test_after_close_news_influences_next_session_without_future_leakage = test_after_close_news_governance
+legacy.PublishedMarketForecastTest.test_each_horizon_is_independently_promoted_or_abstained = test_v41_horizon_release_gate
 
 
 if __name__ == "__main__":

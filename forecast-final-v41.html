@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VMEWS V41 · Technical Transition Radar</title></head>
+<body style="margin:0;background:#061018;color:#edf5f7;font-family:system-ui,sans-serif"><div id="v41Loading" style="padding:32px">Đang tải VMEWS V41…</div>
+<script>
+(async()=>{
+  try{
+    const response=await fetch('./forecast-final.html',{cache:'no-store'});
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    let html=await response.text();
+    const radar='<script src="./forecast-technical-radar-v41.js?release=41.0"><\\/script>';
+    html=html.replace('</body>',radar+'</body>');
+    document.open();document.write(html);document.close();
+  }catch(error){
+    document.getElementById('v41Loading').textContent=`Không thể tải dashboard V41: ${error.message}`;
+  }
+})();
+</script>
+</body></html>
