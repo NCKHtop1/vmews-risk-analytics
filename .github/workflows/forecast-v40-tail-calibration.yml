@@ -8,6 +8,8 @@ on:
       - "scripts/forecast_v40_tail_blend.py"
       - "scripts/forecast_v40_tail_blend_test.py"
       - "scripts/run_forecast_v28_guarded.py"
+      - "scripts/forecast_v41_runtime_patch.py"
+      - "scripts/forecast_v41_technical_transition_test.py"
       - "api/solution-ai.js"
       - ".github/workflows/forecast-v40-tail-calibration.yml"
   pull_request:
@@ -15,6 +17,8 @@ on:
       - "scripts/forecast_v40_tail_blend.py"
       - "scripts/forecast_v40_tail_blend_test.py"
       - "scripts/run_forecast_v28_guarded.py"
+      - "scripts/forecast_v41_runtime_patch.py"
+      - "scripts/forecast_v41_technical_transition_test.py"
       - "api/solution-ai.js"
       - ".github/workflows/forecast-v40-tail-calibration.yml"
 
