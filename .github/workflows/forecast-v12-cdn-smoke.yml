@@ -65,11 +65,17 @@ jobs:
           assert g.get('failed')==0,g
           assert m['promotion']['status']=='PASS',m['promotion']
           assert len(d.get('symbols',{}))==403,len(d.get('symbols',{}))
-          expected={'VMEWS-MARKET-FORECAST-39.0.0'}
           if os.environ.get('GITHUB_EVENT_NAME')=='pull_request':
-              expected.add('VMEWS-MARKET-FORECAST-20.1.0')
+              expected={
+                  'VMEWS-MARKET-FORECAST-20.1.0',
+                  'VMEWS-MARKET-FORECAST-39.0.0',
+                  'VMEWS-MARKET-FORECAST-40.0.0',
+                  'VMEWS-MARKET-FORECAST-41.0.0',
+              }
+          else:
+              expected={'VMEWS-MARKET-FORECAST-41.0.0'}
           assert market.get('version') in expected,market.get('version')
-          assert d.get('modelVersion')==market.get('version'),d.get('modelVersion')
+          assert d.get('modelVersion')==market.get('version'),(d.get('modelVersion'),market.get('version'))
           p=market['model']['promotion']
           promoted={int(value) for value in p.get('directPriceHorizons') or []}
           review={int(value) for value in p.get('reviewHorizons') or []}
@@ -92,7 +98,7 @@ jobs:
                   assert z.get('walkForwardAudit',{}).get('status')=='PASS',h
               assert z.get('magnitudeGate',{}).get('status')=='PASS',h
               assert z.get('magnitudeGate',{}).get('invalidExecutableQuotes')==0,h
-          print('V39 IMMUTABLE CDN CONTRACT PASS',market['version'],'symbols',len(d['symbols']))
+          print('V41 IMMUTABLE CDN CONTRACT PASS',market['version'],'symbols',len(d['symbols']))
           PY
       - name: Verify browser runtime contracts
         run: node --test scripts/forecast_v18_frontend_runtime_test.mjs
