@@ -1,14 +1,14 @@
 {
   "version": "VMEWS-FORECAST-LIVE-1.0.0",
-  "generatedAt": "2026-09-14T03:51:13.343994+00:00",
+  "generatedAt": "2026-09-14T16:24:29.665202+00:00",
   "status": "PASS",
-  "asOf": "2026-09-11",
-  "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
+  "asOf": "2026-09-14",
+  "archiveStatus": "CREATED",
   "coverageState": "LIMITED_CURRENT_EOD_CACHE",
-  "symbols": 15,
+  "symbols": 11,
   "integrity": {
     "ok": true,
-    "snapshots": 2
+    "snapshots": 3
   },
   "modelVersion": "VMEWS-FORECAST-9.0.0",
   "sentimentVersion": "VMEWS-SENTIMENT-8.0.1",
