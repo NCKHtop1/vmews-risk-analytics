@@ -8,7 +8,7 @@
     const response=await fetch('./forecast-final.html',{cache:'no-store'});
     if(!response.ok) throw new Error(`HTTP ${response.status}`);
     let html=await response.text();
-    const radar='<script src="./forecast-technical-radar-v41.js?release=41.0"><\\/script>';
+    const radar='<script src="./forecast-technical-radar-v41.js?release=41.0"><\/script>';
     html=html.replace('</body>',radar+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){

@@ -1,0 +1,106 @@
+name: Forecast V41 exact-SHA CDN browser smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'forecast-final-v41.html'
+      - 'forecast-technical-radar-v41.js'
+      - 'scripts/forecast_v41_runtime_patch.py'
+      - 'scripts/forecast_v41_technical_transition.py'
+      - 'scripts/forecast_v41_technical_transition_test.py'
+      - 'scripts/run_forecast_v28_guarded.py'
+      - 'data/forecast-dashboard-v12.json'
+      - 'scripts/v12_browser_smoke.mjs'
+      - '.github/workflows/forecast-v41-cdn-browser-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'forecast-final-v41.html'
+      - 'forecast-technical-radar-v41.js'
+      - 'scripts/forecast_v41_runtime_patch.py'
+      - 'scripts/forecast_v41_technical_transition.py'
+      - 'scripts/forecast_v41_technical_transition_test.py'
+      - 'scripts/run_forecast_v28_guarded.py'
+      - 'data/forecast-dashboard-v12.json'
+      - 'scripts/v12_browser_smoke.mjs'
+      - '.github/workflows/forecast-v41-cdn-browser-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          timeout 8m npx playwright install chromium >/dev/null
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{const b=await chromium.launch({headless:true});const p=await b.newPage();await p.setContent('<title>V41 exact SHA precheck</title>');if((await p.title())!=='V41 exact SHA precheck')throw Error('precheck failed');await b.close();console.log('CHROMIUM PRECHECK PASS')})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+      - name: Wait for immutable CDN edge
+        run: sleep 10
+      - name: Browser-test complete V41 page on exact immutable commit
+        env:
+          V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final-v41.html?symbol=FPT&dataRef=main
+        run: node scripts/v12_browser_smoke.mjs
+      - name: Assert V41 transition radar is mounted and interactive
+        env:
+          V41_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final-v41.html?symbol=FPT&dataRef=main
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto(process.env.V41_BROWSER_URL,{waitUntil:'networkidle',timeout:60000});
+            await page.waitForSelector('#transitionRadar',{timeout:30000});
+            const eyebrow=(await page.locator('#transitionRadar .eyebrow').textContent()||'').trim();
+            const title=(await page.locator('#transitionRadar h2').textContent()||'').trim();
+            if(eyebrow!=='Technical Regime Transition Radar · V41') throw new Error(`V41 radar title missing: ${eyebrow}`);
+            if(title!=='Radar chuyển pha kỹ thuật toàn HOSE') throw new Error(`V41 radar HOSE scope missing: ${title}`);
+            if(await page.locator('#transitionRadar .transitionAudit span').count()!==2) throw new Error('V41 bullish/bearish audit badges missing');
+            if(await page.locator('#transitionScoreChart').count()!==1) throw new Error('V41 transition score canvas missing');
+            const tabs=page.locator('#transitionRadar [data-transition-side]');
+            if(await tabs.count()!==2) throw new Error('V41 side tabs missing');
+            for(const side of ['bullish','bearish']){
+              await page.locator(`#transitionRadar [data-transition-side="${side}"]`).click();
+              await page.waitForTimeout(120);
+              const cards=await page.locator('#transitionList .transitionCard').count();
+              const empty=await page.locator('#transitionList .transitionEmpty').count();
+              if(cards<1&&empty!==1) throw new Error(`V41 ${side} list has neither candidates nor explicit empty state`);
+            }
+            await page.locator('#transitionRadar [data-transition-side="bullish"]').click();
+            const first=page.locator('#transitionList .transitionCard').first();
+            if(await first.count()){
+              const symbol=(await first.getAttribute('data-transition-symbol')||'').trim();
+              if(!symbol) throw new Error('V41 candidate missing symbol');
+              await first.click();
+              await page.waitForFunction(s=>new URL(location.href).searchParams.get('symbol')===s,symbol,{timeout:8000});
+              await page.waitForFunction(s=>document.querySelector('#chartTitle')?.textContent?.startsWith(s),symbol,{timeout:8000});
+            }
+            if(errors.length) throw new Error(`V41 browser console errors: ${errors.join(' | ')}`);
+            console.log(JSON.stringify({v41BrowserSmoke:'PASS',url:process.env.V41_BROWSER_URL},null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Upload V41 exact-CDN UX screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v41-exact-cdn-browser-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            v12-browser-desktop.png
+            v12-browser-mobile.png
