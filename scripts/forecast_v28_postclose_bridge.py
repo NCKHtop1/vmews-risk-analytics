@@ -2,8 +2,11 @@
 
 Current-session inference is allowed only for the exchange's certified latest
 completed session, with broad same-session TradingView OHLC coverage and broad
-independent VNDIRECT close confirmation.  This also works when a workflow runs
-after midnight, on a weekend, or during an exchange holiday.  No synthetic
+independent VNDIRECT close confirmation. Publication additionally requires the
+entire current forecast universe to resolve to that same completed session, so
+partial provider updates fail before expensive model fitting instead of being
+caught only by downstream release tests. This also works when a workflow runs
+after midnight, on a weekend, or during an exchange holiday. No synthetic
 OHLC is created.
 """
 from __future__ import annotations
@@ -87,6 +90,8 @@ def bridge_completed_session(
         "mismatchCount": 0,
         "appendedSymbols": 0,
         "alreadyCurrentSymbols": 0,
+        "staleSymbols": 0,
+        "staleSymbolSample": [],
         "primary": "TRADINGVIEW_VIETNAM_SCREEN",
         "secondary": "VNDIRECT_PUBLIC_EOD",
         "realOHLCRequired": True,
@@ -204,10 +209,31 @@ def bridge_completed_session(
         provider[symbol] = "TRADINGVIEW_POST_CLOSE_VNDIRECT_CONFIRMED"
         appended += 1
 
+    stale = sorted(
+        symbol for symbol in current
+        if not histories.get(symbol)
+        or str((histories[symbol] or [{}])[-1].get("date") or "")[:10] != session_date
+    )
     audit.update({
-        "status": "PASS",
         "appendedSymbols": appended,
         "alreadyCurrentSymbols": already,
+        "staleSymbols": len(stale),
+        "staleSymbolSample": stale[:20],
+    })
+    if stale:
+        # The downstream release contract already requires every published
+        # symbol to share the dashboard's completed-session date. Enforce that
+        # requirement here, before feature construction/model fitting, so a
+        # delayed provider cannot waste another full training cycle.
+        audit["status"] = "REJECTED_INCOMPLETE_UNIVERSE"
+        freshness["postCloseBridge"] = audit
+        raise RuntimeError(
+            f"Current-session EOD incomplete for {session_date}: {len(stale)}/{len(current)} stale; "
+            f"sample={stale[:20]}. Retry data refresh before model fit."
+        )
+
+    audit.update({
+        "status": "PASS",
         "completedSessionVerified": True,
         "independentCloseConfirmed": True,
     })
