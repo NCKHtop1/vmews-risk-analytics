@@ -6,17 +6,17 @@
     "symbols": 403,
     "forecasts": 2015,
     "flowRows": 350281,
-    "headlines": 21404,
+    "headlines": 21830,
     "headlineSources": {
       "community-claims": 6,
-      "community-watchlist": 146,
-      "dashboard-communityWatchlist": 213,
-      "dashboard-decisionNews": 223,
-      "dashboard-decisionRecent": 4464,
-      "dashboard-recent": 4459,
-      "fireant": 642,
+      "community-watchlist": 150,
+      "dashboard-communityWatchlist": 223,
+      "dashboard-decisionNews": 268,
+      "dashboard-decisionRecent": 4486,
+      "dashboard-recent": 4480,
+      "fireant": 645,
       "research-news": 1224,
-      "research-news-v10": 10027
+      "research-news-v10": 10348
     }
   },
   "calendar": {
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "NOT_APPLICABLE_ALREADY_CURRENT",
       "sessionDate": "2026-09-11",
-      "observedAt": "2026-09-14T07:21:56+07:00",
+      "observedAt": "2026-09-14T09:18:08+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.0,
@@ -106,7 +106,7 @@
   "horizons": {
     "1": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": -0.001099396613055248,
+      "executableMAESkill": -0.001099396613055026,
       "magnitudeMAESkill": 0.0462949518041057,
       "directionalAccuracy": 0.511156798245614,
       "directionStatus": "PASS",
@@ -123,36 +123,36 @@
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0019191273827546245,
+      "meanNetRealizedReturn": 0.0019191273827546247,
       "positiveChronologicalFolds": 3
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.021670363797285375,
-      "magnitudeMAESkill": 0.029361181424785943,
-      "directionalAccuracy": 0.5626878992859827,
+      "executableMAESkill": 0.021725803008505795,
+      "magnitudeMAESkill": 0.02936118142478561,
+      "directionalAccuracy": 0.5627407685802875,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.003298710007437228,
+      "meanNetRealizedReturn": 0.0033032142491500444,
       "positiveChronologicalFolds": 3
     },
     "4": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.015474768047863963,
+      "executableMAESkill": 0.015455958824649563,
       "magnitudeMAESkill": 0.013831616226097188,
-      "directionalAccuracy": 0.5705186950146628,
+      "directionalAccuracy": 0.5705122331164666,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0031566382499923777,
+      "meanNetRealizedReturn": 0.00315492215900073,
       "positiveChronologicalFolds": 3
     },
     "5": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.017733387606100992,
-      "magnitudeMAESkill": 0.023685020081757102,
-      "directionalAccuracy": 0.5709286367795059,
+      "executableMAESkill": 0.017716755872853596,
+      "magnitudeMAESkill": 0.02368502008175677,
+      "directionalAccuracy": 0.5709155783262048,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
