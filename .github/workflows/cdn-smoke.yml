@@ -93,7 +93,7 @@ jobs:
           dashboard = json.load(open('/tmp/forecast-dashboard-v12.json', encoding='utf-8'))
           market = json.load(open('/tmp/forecast-market-v13.json', encoding='utf-8'))
 
-          expected = {'VMEWS-MARKET-FORECAST-39.0.0'}
+          expected = {'VMEWS-MARKET-FORECAST-39.0.0', 'VMEWS-MARKET-FORECAST-41.0.0'}
           if os.environ.get('GITHUB_EVENT_NAME') == 'pull_request':
               expected.add('VMEWS-MARKET-FORECAST-20.1.0')
           assert current.get('modelVersion') in expected, current.get('modelVersion')
