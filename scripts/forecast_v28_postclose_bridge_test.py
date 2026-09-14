@@ -54,6 +54,27 @@ class PostCloseBridgeTest(unittest.TestCase):
             with self.assertRaises(RuntimeError): bridge_completed_session(histories(symbols),freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary,min_secondary_coverage=.9)
             self.assertEqual(freshness["postCloseBridge"]["status"],"REJECTED_SECOND_SOURCE")
 
+    def test_rejects_partial_current_session_before_model_fit(self):
+        symbols=[f"S{i:02d}" for i in range(10)]
+        h=histories(symbols)
+        # Nine symbols already have the session from another trusted EOD source;
+        # one symbol remains stale. Broad source coverage alone must not advance
+        # forecastAsOf and waste a full model fit before discovering the stale row.
+        for symbol in symbols[:9]:
+            h[symbol].append({"date":"2026-08-28","open":50000,"high":50200,"low":49800,"close":50000,"modelClose":50000,"volume":1000000,"provider":"fixture-current","exchange":"HOSE"})
+        freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
+        with self.assertRaisesRegex(RuntimeError,"Current-session EOD incomplete"):
+            bridge_completed_session(
+                h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),
+                frame=frame_for(symbols[:9]),secondary_rows=secondary_for(symbols[:9]),
+                min_coverage=.9,min_secondary_coverage=.9,
+            )
+        bridge=freshness["postCloseBridge"]
+        self.assertEqual(bridge["status"],"REJECTED_INCOMPLETE_UNIVERSE")
+        self.assertEqual(bridge["staleSymbols"],1)
+        self.assertIn("S09",bridge["staleSymbolSample"])
+        self.assertEqual(freshness["forecastAsOf"],"2026-08-27")
+
     def test_preopen_keeps_already_completed_session(self):
         symbols=["FPT","VCB"]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,8,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9)
