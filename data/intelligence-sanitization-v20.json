@@ -1,30 +1,30 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-09-15T15:14:04.796446+00:00",
+  "generatedAt": "2026-09-16T15:10:00.373355+00:00",
   "universeSymbols": 403,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1197,
-      "kept": 1197,
+      "checked": 1148,
+      "kept": 1148,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "research-news-v10.json": {
-      "checked": 10662,
-      "kept": 10662,
+      "checked": 10781,
+      "kept": 10781,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 681,
-      "kept": 681,
+      "checked": 695,
+      "kept": 695,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "community-intelligence-live-v19.json": {
-      "checked": 161,
-      "kept": 161,
+      "checked": 163,
+      "kept": 163,
       "rejected": 0,
       "rejectedBySymbol": {}
     }
