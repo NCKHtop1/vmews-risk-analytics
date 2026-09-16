@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-MARKET-SCAN-4.2.0",
-  "generatedAt": "2026-09-15T21:32:06.122299+07:00",
-  "reviewDate": "2026-09-15",
+  "generatedAt": "2026-09-16T08:35:16.736905+07:00",
+  "reviewDate": "2026-09-16",
   "modelDate": "2026-09-15",
   "scope": "VCI reference universe of listed common stocks on HOSE, HNX and UPCOM, cross-matched to TradingView Vietnam stock screener.",
   "method": "Cross-sectional T-day early-warning screen using daily trend, momentum, 3M drawdown, volatility, RSI, MACD, selloff relative volume, optional market-relative weakness, multi-signal confirmation and liquidity gating.",
@@ -22,22 +22,22 @@
     "tradingViewReportedTotal": 1247,
     "priceCovered": 1246,
     "featureReady": 1159,
-    "eligibleLiquidCurrent": 377,
+    "eligibleLiquidCurrent": 374,
     "insufficientHistoryOrIndicatorsExcluded": 87,
     "lowLiquidityExcluded": 765,
-    "staleEodExcluded": 150,
+    "staleEodExcluded": 232,
     "unmatchedReference": 277,
     "duplicateScreenerRowsIgnored": 0,
     "coverageRatio": 0.8181221273801708,
-    "currentFeatureCoverageRatio": 0.6625082074852265
+    "currentFeatureCoverageRatio": 0.6086671043992121
   },
   "breadth": {
     "red": 9,
     "yellow": 42,
     "watch": 68,
-    "newEscalations": 2,
-    "redShareEligible": 0.023872679045092837,
-    "yellowShareEligible": 0.11140583554376658
+    "newEscalations": 0,
+    "redShareEligible": 0.02406417112299465,
+    "yellowShareEligible": 0.11229946524064172
   },
   "marketContext": {
     "available": false,
@@ -48,116 +48,6 @@
     "updateMode": null
   },
   "topAttention": [
-    {
-      "symbol": "VDP",
-      "exchange": "HOSE",
-      "name": "Công ty Cổ phần Dược phẩm Trung ương VIDIPHA",
-      "close": 24000.0,
-      "ret1": -0.03225806451612903,
-      "ret5": -0.047619047619047616,
-      "mom20": -0.38382541720154045,
-      "mom3m": -0.39663429031408726,
-      "dd60": -0.4670269564441104,
-      "drawdown52w": -0.4714316923412665,
-      "trend50": -0.3291935927585238,
-      "trend200": -0.33763902327261697,
-      "rsi14": 27.71401941017477,
-      "volatilityDailyPct": 3.3333333333333335,
-      "relativeVolume10d": 0.02688273349663966,
-      "volume": 214.0,
-      "averageVolume30d": 168335.56666666668,
-      "medianTurnover20": 4040053600.0000005,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 80.1896026758656,
-      "score": 80.1896026758656,
-      "status": "RED",
-      "phase": "MULTI_SIGNAL_RED",
-      "liquidEligible": true,
-      "drivers": [
-        "3M drawdown -46.7%",
-        "1M momentum -38.4%",
-        "vs SMA50 -32.9%",
-        "vs SMA200 -33.8%"
-      ],
-      "independentStressSignals": 6,
-      "stressFlags": {
-        "drawdown": true,
-        "momentum": true,
-        "ma50": true,
-        "ma200": true,
-        "rsi": true,
-        "macd": true,
-        "volatility": false,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": 794118811035.0,
-      "sector": "Health Technology",
-      "transition": "YELLOW → RED",
-      "newEscalation": true,
-      "stale": false
-    },
-    {
-      "symbol": "BWS",
-      "exchange": "UPCOM",
-      "name": "Công ty Cổ phần Cấp Nước Bà Rịa - Vũng Tàu",
-      "close": 29500.0,
-      "ret1": -0.03278688524590164,
-      "ret5": -0.03908794788273615,
-      "mom20": -0.09785932721712537,
-      "mom3m": -0.12462908011869436,
-      "dd60": -0.1424418604651163,
-      "drawdown52w": -0.23376623376623373,
-      "trend50": -0.09386902567883038,
-      "trend200": -0.12315900545424818,
-      "rsi14": 26.54474352720611,
-      "volatilityDailyPct": 6.206896551724138,
-      "relativeVolume10d": 0.6470291883756673,
-      "volume": 20292.0,
-      "averageVolume30d": 22674.966666666667,
-      "medianTurnover20": 668911516.6666666,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 66.30157229440158,
-      "score": 66.30157229440158,
-      "status": "YELLOW",
-      "phase": "MULTI_SIGNAL_YELLOW",
-      "liquidEligible": true,
-      "drivers": [
-        "3M drawdown -14.2%",
-        "1M momentum -9.8%",
-        "vs SMA50 -9.4%",
-        "daily volatility 6.2%"
-      ],
-      "independentStressSignals": 2,
-      "stressFlags": {
-        "drawdown": false,
-        "momentum": false,
-        "ma50": false,
-        "ma200": false,
-        "rsi": true,
-        "macd": false,
-        "volatility": true,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": 2135170799999.9998,
-      "sector": "Utilities",
-      "transition": "GREEN → YELLOW",
-      "newEscalation": true,
-      "stale": false
-    },
     {
       "symbol": "FIR",
       "exchange": "HOSE",
@@ -594,7 +484,62 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
+      "newEscalation": false,
+      "stale": false
+    },
+    {
+      "symbol": "VDP",
+      "exchange": "HOSE",
+      "name": "Công ty Cổ phần Dược phẩm Trung ương VIDIPHA",
+      "close": 24000.0,
+      "ret1": -0.03225806451612903,
+      "ret5": -0.047619047619047616,
+      "mom20": -0.38382541720154045,
+      "mom3m": -0.39663429031408726,
+      "dd60": -0.4670269564441104,
+      "drawdown52w": -0.4714316923412665,
+      "trend50": -0.3291935927585238,
+      "trend200": -0.33763902327261697,
+      "rsi14": 27.71401941017477,
+      "volatilityDailyPct": 3.3333333333333335,
+      "relativeVolume10d": 0.02688273349663966,
+      "volume": 214.0,
+      "averageVolume30d": 168335.56666666668,
+      "medianTurnover20": 4040053600.0000005,
+      "marketRelative20": null,
+      "marketRelativeEvidenceAvailable": false,
+      "technicalScore": 80.1896026758656,
+      "score": 80.1896026758656,
+      "status": "RED",
+      "phase": "MULTI_SIGNAL_RED",
+      "liquidEligible": true,
+      "drivers": [
+        "3M drawdown -46.7%",
+        "1M momentum -38.4%",
+        "vs SMA50 -32.9%",
+        "vs SMA200 -33.8%"
+      ],
+      "independentStressSignals": 6,
+      "stressFlags": {
+        "drawdown": true,
+        "momentum": true,
+        "ma50": true,
+        "ma200": true,
+        "rsi": true,
+        "macd": true,
+        "volatility": false,
+        "selloffVolume": false,
+        "relativeWeakness": false
+      },
+      "historyReady": true,
+      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
+      "date": "2026-09-15",
+      "provider": "TradingView Vietnam Screener",
+      "updateMode": "delayed_streaming_900",
+      "marketCap": 794118811035.0,
+      "sector": "Health Technology",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -649,7 +594,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 633927294922.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -759,7 +704,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -869,7 +814,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1196804554443.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -924,7 +869,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17618773046875.0,
       "sector": "Consumer Durables",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -979,7 +924,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 36956804217529.0,
       "sector": "Electronic Technology",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1034,7 +979,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 64096864794922.0,
       "sector": "Transportation",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1144,7 +1089,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 604605640259.0,
       "sector": "Non-Energy Minerals",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1199,7 +1144,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 990538890076.0,
       "sector": "Non-Energy Minerals",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1254,7 +1199,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2828800000000.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1309,7 +1254,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 225533012390.0,
       "sector": "Consumer Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1419,7 +1364,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 22225578930664.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1474,7 +1419,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10053738281250.0,
       "sector": "Industrial Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1529,7 +1474,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1584,7 +1529,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 273239928436.00003,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -1694,7 +1639,62 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 29178913012695.0,
       "sector": "Electronic Technology",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
+      "newEscalation": false,
+      "stale": false
+    },
+    {
+      "symbol": "TIN",
+      "exchange": "UPCOM",
+      "name": "Công ty Tài chính Tổng hợp cổ phần Tín Việt",
+      "close": 96100.0,
+      "ret1": -0.029292929292929294,
+      "ret5": -0.07596153846153846,
+      "mom20": -0.1495575221238938,
+      "mom3m": -0.24390243902439024,
+      "dd60": -0.31308077197998574,
+      "drawdown52w": -0.46611111111111114,
+      "trend50": -0.11118921218623412,
+      "trend200": -0.1076858794308132,
+      "rsi14": 35.709102974159734,
+      "volatilityDailyPct": 3.6649214659685865,
+      "relativeVolume10d": 0.085695904653266,
+      "volume": 11096.0,
+      "averageVolume30d": 81760.46666666666,
+      "medianTurnover20": 7857180846.666666,
+      "marketRelative20": null,
+      "marketRelativeEvidenceAvailable": false,
+      "technicalScore": 69.95121804301426,
+      "score": 69.95121804301426,
+      "status": "YELLOW",
+      "phase": "MULTI_SIGNAL_YELLOW",
+      "liquidEligible": true,
+      "drivers": [
+        "3M drawdown -31.3%",
+        "1M momentum -15.0%",
+        "vs SMA50 -11.1%",
+        "vs SMA200 -10.8%"
+      ],
+      "independentStressSignals": 4,
+      "stressFlags": {
+        "drawdown": true,
+        "momentum": true,
+        "ma50": true,
+        "ma200": false,
+        "rsi": false,
+        "macd": true,
+        "volatility": false,
+        "selloffVolume": false,
+        "relativeWeakness": false
+      },
+      "historyReady": true,
+      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
+      "date": "2026-09-15",
+      "provider": "TradingView Vietnam Screener",
+      "updateMode": "delayed_streaming_900",
+      "marketCap": null,
+      "sector": "",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     }
@@ -2136,7 +2136,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2191,8 +2191,8 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 794118811035.0,
       "sector": "Health Technology",
-      "transition": "YELLOW → RED",
-      "newEscalation": true,
+      "transition": "UNCHANGED",
+      "newEscalation": false,
       "stale": false
     }
   ],
@@ -2248,7 +2248,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 633927294922.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2358,7 +2358,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2468,7 +2468,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1196804554443.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2523,7 +2523,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17618773046875.0,
       "sector": "Consumer Durables",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2578,7 +2578,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 36956804217529.0,
       "sector": "Electronic Technology",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2633,7 +2633,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 64096864794922.0,
       "sector": "Transportation",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2743,7 +2743,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 604605640259.0,
       "sector": "Non-Energy Minerals",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2798,7 +2798,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 990538890076.0,
       "sector": "Non-Energy Minerals",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2853,7 +2853,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2828800000000.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -2908,7 +2908,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 225533012390.0,
       "sector": "Consumer Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3018,7 +3018,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 22225578930664.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3073,7 +3073,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10053738281250.0,
       "sector": "Industrial Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3128,7 +3128,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3183,7 +3183,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 273239928436.00003,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3293,7 +3293,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 29178913012695.0,
       "sector": "Electronic Technology",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3513,7 +3513,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12592471923828.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3568,7 +3568,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4754503588867.0,
       "sector": "Transportation",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3843,7 +3843,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1058151260376.0001,
       "sector": "Producer Manufacturing",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -3898,7 +3898,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 546694555664.0,
       "sector": "Consumer Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4228,8 +4228,8 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2135170799999.9998,
       "sector": "Utilities",
-      "transition": "GREEN → YELLOW",
-      "newEscalation": true,
+      "transition": "UNCHANGED",
+      "newEscalation": false,
       "stale": false
     },
     {
@@ -4338,7 +4338,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 29803529296875.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4448,7 +4448,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 360899388123.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -4508,118 +4508,7 @@
       "stale": false
     }
   ],
-  "newEscalations": [
-    {
-      "symbol": "VDP",
-      "exchange": "HOSE",
-      "name": "Công ty Cổ phần Dược phẩm Trung ương VIDIPHA",
-      "close": 24000.0,
-      "ret1": -0.03225806451612903,
-      "ret5": -0.047619047619047616,
-      "mom20": -0.38382541720154045,
-      "mom3m": -0.39663429031408726,
-      "dd60": -0.4670269564441104,
-      "drawdown52w": -0.4714316923412665,
-      "trend50": -0.3291935927585238,
-      "trend200": -0.33763902327261697,
-      "rsi14": 27.71401941017477,
-      "volatilityDailyPct": 3.3333333333333335,
-      "relativeVolume10d": 0.02688273349663966,
-      "volume": 214.0,
-      "averageVolume30d": 168335.56666666668,
-      "medianTurnover20": 4040053600.0000005,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 80.1896026758656,
-      "score": 80.1896026758656,
-      "status": "RED",
-      "phase": "MULTI_SIGNAL_RED",
-      "liquidEligible": true,
-      "drivers": [
-        "3M drawdown -46.7%",
-        "1M momentum -38.4%",
-        "vs SMA50 -32.9%",
-        "vs SMA200 -33.8%"
-      ],
-      "independentStressSignals": 6,
-      "stressFlags": {
-        "drawdown": true,
-        "momentum": true,
-        "ma50": true,
-        "ma200": true,
-        "rsi": true,
-        "macd": true,
-        "volatility": false,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": 794118811035.0,
-      "sector": "Health Technology",
-      "transition": "YELLOW → RED",
-      "newEscalation": true,
-      "stale": false
-    },
-    {
-      "symbol": "BWS",
-      "exchange": "UPCOM",
-      "name": "Công ty Cổ phần Cấp Nước Bà Rịa - Vũng Tàu",
-      "close": 29500.0,
-      "ret1": -0.03278688524590164,
-      "ret5": -0.03908794788273615,
-      "mom20": -0.09785932721712537,
-      "mom3m": -0.12462908011869436,
-      "dd60": -0.1424418604651163,
-      "drawdown52w": -0.23376623376623373,
-      "trend50": -0.09386902567883038,
-      "trend200": -0.12315900545424818,
-      "rsi14": 26.54474352720611,
-      "volatilityDailyPct": 6.206896551724138,
-      "relativeVolume10d": 0.6470291883756673,
-      "volume": 20292.0,
-      "averageVolume30d": 22674.966666666667,
-      "medianTurnover20": 668911516.6666666,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 66.30157229440158,
-      "score": 66.30157229440158,
-      "status": "YELLOW",
-      "phase": "MULTI_SIGNAL_YELLOW",
-      "liquidEligible": true,
-      "drivers": [
-        "3M drawdown -14.2%",
-        "1M momentum -9.8%",
-        "vs SMA50 -9.4%",
-        "daily volatility 6.2%"
-      ],
-      "independentStressSignals": 2,
-      "stressFlags": {
-        "drawdown": false,
-        "momentum": false,
-        "ma50": false,
-        "ma200": false,
-        "rsi": true,
-        "macd": false,
-        "volatility": true,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": 2135170799999.9998,
-      "sector": "Utilities",
-      "transition": "GREEN → YELLOW",
-      "newEscalation": true,
-      "stale": false
-    }
-  ],
+  "newEscalations": [],
   "ranking": [
     {
       "symbol": "FIR",
@@ -5057,7 +4946,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5112,8 +5001,8 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 794118811035.0,
       "sector": "Health Technology",
-      "transition": "YELLOW → RED",
-      "newEscalation": true,
+      "transition": "UNCHANGED",
+      "newEscalation": false,
       "stale": false
     },
     {
@@ -5167,7 +5056,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 633927294922.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5277,7 +5166,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5387,7 +5276,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1196804554443.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5442,7 +5331,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17618773046875.0,
       "sector": "Consumer Durables",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5497,7 +5386,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 36956804217529.0,
       "sector": "Electronic Technology",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5552,7 +5441,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 64096864794922.0,
       "sector": "Transportation",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5662,7 +5551,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 604605640259.0,
       "sector": "Non-Energy Minerals",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5717,7 +5606,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 990538890076.0,
       "sector": "Non-Energy Minerals",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5772,7 +5661,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2828800000000.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5827,7 +5716,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 225533012390.0,
       "sector": "Consumer Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5937,7 +5826,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 22225578930664.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -5992,7 +5881,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10053738281250.0,
       "sector": "Industrial Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6047,7 +5936,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6102,7 +5991,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 273239928436.00003,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6212,7 +6101,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 29178913012695.0,
       "sector": "Electronic Technology",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6432,7 +6321,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12592471923828.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6487,7 +6376,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4754503588867.0,
       "sector": "Transportation",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6762,7 +6651,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1058151260376.0001,
       "sector": "Producer Manufacturing",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -6817,7 +6706,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 546694555664.0,
       "sector": "Consumer Services",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7147,8 +7036,8 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2135170799999.9998,
       "sector": "Utilities",
-      "transition": "GREEN → YELLOW",
-      "newEscalation": true,
+      "transition": "UNCHANGED",
+      "newEscalation": false,
       "stale": false
     },
     {
@@ -7257,7 +7146,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 29803529296875.0,
       "sector": "Finance",
-      "transition": "RED → YELLOW",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7367,7 +7256,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 360899388123.0,
       "sector": "Process Industries",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7477,7 +7366,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 464000000000.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7587,7 +7476,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7642,7 +7531,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7697,7 +7586,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3201851623535.0,
       "sector": "Industrial Services",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7752,7 +7641,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8702209512328.999,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7807,7 +7696,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Process Industries",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7917,7 +7806,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 809944002819.0,
       "sector": "Non-Energy Minerals",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -7972,7 +7861,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 13149038430000.0,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8082,7 +7971,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 484714537811.0,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8137,7 +8026,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2044000000000.0,
       "sector": "Utilities",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8192,7 +8081,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3123071580505.0,
       "sector": "Distribution Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8302,7 +8191,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 979007167969.0,
       "sector": "Health Technology",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8357,7 +8246,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4587328820801.0,
       "sector": "Commercial Services",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8412,7 +8301,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7661029614258.0,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8467,7 +8356,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 722401550293.0,
       "sector": "Distribution Services",
-      "transition": "RED → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8632,7 +8521,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1380102208862.0,
       "sector": "Distribution Services",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8687,7 +8576,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "GREEN → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8742,7 +8631,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4684198523712.0,
       "sector": "Transportation",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8797,7 +8686,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1297574939728.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -8962,7 +8851,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2710877400000.0,
       "sector": "Finance",
-      "transition": "GREEN → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9017,7 +8906,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7152391082764.0,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9127,7 +9016,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 607215660095.0,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9457,7 +9346,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7208828063965.0,
       "sector": "Finance",
-      "transition": "GREEN → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9622,7 +9511,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 12815618875122.0,
       "sector": "Utilities",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9787,7 +9676,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Distribution Services",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -9952,7 +9841,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 632176558113.0,
       "sector": "Non-Energy Minerals",
-      "transition": "GREEN → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10007,7 +9896,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 209017656231.0,
       "sector": "Transportation",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10227,7 +10116,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 28704713977051.0,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10282,7 +10171,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 782707371521.0,
       "sector": "Non-Energy Minerals",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10337,7 +10226,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 30659981286621.0,
       "sector": "Non-Energy Minerals",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10557,7 +10446,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 599995543500.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10887,7 +10776,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1019699546814.0,
       "sector": "Industrial Services",
-      "transition": "GREEN → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -10997,7 +10886,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 580000000000.0,
       "sector": "Finance",
-      "transition": "GREEN → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11052,7 +10941,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 137414971191406.02,
       "sector": "Finance",
-      "transition": "YELLOW → WATCH",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11217,7 +11106,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "YELLOW → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11327,7 +11216,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 32417308300781.0,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11382,7 +11271,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1566082001495.0,
       "sector": "Technology Services",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11437,7 +11326,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 38041286718750.0,
       "sector": "Utilities",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11492,7 +11381,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 13567227685547.0,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11547,7 +11436,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 18370818161011.0,
       "sector": "Consumer Durables",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11657,7 +11546,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 11524698422241.0,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11712,7 +11601,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11822,7 +11711,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1283911541748.0,
       "sector": "Consumer Non-Durables",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11877,7 +11766,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2059700195312.0,
       "sector": "Consumer Non-Durables",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -11932,7 +11821,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8153353222656.0,
       "sector": "Non-Energy Minerals",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12042,7 +11931,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6910998779297.0,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12097,7 +11986,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 10535493722534.0,
       "sector": "Consumer Non-Durables",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12207,7 +12096,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 9821713890839.0,
       "sector": "Transportation",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12262,7 +12151,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 120238000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12482,7 +12371,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12537,7 +12426,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 6348534448242.0,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12592,7 +12481,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 2237623146057.0,
       "sector": "Process Industries",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12867,7 +12756,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 766849707031.0,
       "sector": "Transportation",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -12922,7 +12811,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 287700000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13032,7 +12921,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 5839653836060.0,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13142,7 +13031,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 7585245202637.0,
       "sector": "Non-Energy Minerals",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13197,7 +13086,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1482045949936.0,
       "sector": "Non-Energy Minerals",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13417,7 +13306,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1502834788513.0,
       "sector": "Non-Energy Minerals",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13472,7 +13361,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 3172551956177.0,
       "sector": "Finance",
-      "transition": "YELLOW → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13527,7 +13416,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 906122143555.0,
       "sector": "Industrial Services",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13692,7 +13581,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1297848594666.0,
       "sector": "Process Industries",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13747,7 +13636,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Finance",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -13857,7 +13746,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 4397116015243.9995,
       "sector": "Transportation",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -14350,61 +14239,6 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 8623226354218.001,
       "sector": "Transportation",
-      "transition": "WATCH → GREEN",
-      "newEscalation": false,
-      "stale": false
-    },
-    {
-      "symbol": "BDT",
-      "exchange": "UPCOM",
-      "name": "Công ty Cổ phần Xây lắp và Vật liệu xây dựng Đồng Tháp",
-      "close": 8700.0,
-      "ret1": -0.03333333333333333,
-      "ret5": -0.011363636363636364,
-      "mom20": -0.03333333333333333,
-      "mom3m": -0.08421052631578947,
-      "dd60": -0.16346153846153844,
-      "drawdown52w": -0.16346153846153844,
-      "trend50": -0.045843386707611344,
-      "trend200": -0.0665236051502146,
-      "rsi14": 42.768501619698654,
-      "volatilityDailyPct": 3.4482758620689653,
-      "relativeVolume10d": 0.6564695069914003,
-      "volume": 3000.0,
-      "averageVolume30d": 209744.13333333333,
-      "medianTurnover20": 1824773960.0,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 35.271029495785264,
-      "score": 35.271029495785264,
-      "status": "GREEN",
-      "phase": "NORMAL",
-      "liquidEligible": true,
-      "drivers": [
-        "3M drawdown -16.3%",
-        "vs SMA50 -4.6%",
-        "daily volatility 3.4%",
-        "1M momentum -3.3%"
-      ],
-      "independentStressSignals": 0,
-      "stressFlags": {
-        "drawdown": false,
-        "momentum": false,
-        "ma50": false,
-        "ma200": false,
-        "rsi": false,
-        "macd": false,
-        "volatility": false,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": null,
-      "sector": "",
       "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
@@ -15391,7 +15225,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1811634000000.0,
       "sector": "Finance",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16049,7 +15883,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 17171806402587.998,
       "sector": "Distribution Services",
-      "transition": "WATCH → GREEN",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -16867,7 +16701,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 140439483000.0,
       "sector": "Consumer Non-Durables",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18006,7 +17840,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -18599,7 +18433,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 368312548828.0,
       "sector": "Industrial Services",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19143,60 +18977,6 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": null,
       "sector": "",
-      "transition": "BASELINE",
-      "newEscalation": false,
-      "stale": false
-    },
-    {
-      "symbol": "SDK",
-      "exchange": "UPCOM",
-      "name": "Công ty Cổ phần Cơ khí Luyện Kim",
-      "close": 11100.0,
-      "ret1": 0.14432989690721648,
-      "ret5": -0.017699115044247787,
-      "mom20": 0.26796154486474416,
-      "mom3m": 0.09890000554944495,
-      "dd60": -0.034782608695652195,
-      "drawdown52w": -0.1716834129024284,
-      "trend50": 0.13582413297500917,
-      "trend200": -0.06936461171515029,
-      "rsi14": 61.81482235161147,
-      "volatilityDailyPct": 12.612612612612613,
-      "relativeVolume10d": 0.007792987625279409,
-      "volume": 900.0,
-      "averageVolume30d": 67606.35800718733,
-      "medianTurnover20": 750430573.8797793,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 19.893020576704377,
-      "score": 19.893020576704377,
-      "status": "GREEN",
-      "phase": "NORMAL",
-      "liquidEligible": true,
-      "drivers": [
-        "daily volatility 12.6%",
-        "vs SMA200 -6.9%",
-        "3M drawdown -3.5%"
-      ],
-      "independentStressSignals": 1,
-      "stressFlags": {
-        "drawdown": false,
-        "momentum": false,
-        "ma50": false,
-        "ma200": false,
-        "rsi": false,
-        "macd": false,
-        "volatility": true,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": 82419564453.95001,
-      "sector": "Producer Manufacturing",
       "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
@@ -19685,7 +19465,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 1119908752441.0,
       "sector": "Health Technology",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -19851,61 +19631,6 @@
       "stale": false
     },
     {
-      "symbol": "SZL",
-      "exchange": "HOSE",
-      "name": "Công ty Cổ phần Sonadezi Long Thành",
-      "close": 50300.0,
-      "ret1": -0.0039603960396039604,
-      "ret5": -0.01949317738791423,
-      "mom20": -0.023300970873786405,
-      "mom3m": 0.026530612244897958,
-      "dd60": -0.06331471135940414,
-      "drawdown52w": -0.08211678832116787,
-      "trend50": 0.022046124149142754,
-      "trend200": 0.027894145294780293,
-      "rsi14": 45.929348291842516,
-      "volatilityDailyPct": 4.722792607802875,
-      "relativeVolume10d": 1.0367150317531497,
-      "volume": 42999.0,
-      "averageVolume30d": 30908.033333333333,
-      "medianTurnover20": 1554674076.6666667,
-      "marketRelative20": null,
-      "marketRelativeEvidenceAvailable": false,
-      "technicalScore": 18.028945683057195,
-      "score": 18.028945683057195,
-      "status": "GREEN",
-      "phase": "NORMAL",
-      "liquidEligible": true,
-      "drivers": [
-        "daily volatility 4.7%",
-        "3M drawdown -6.3%",
-        "1M momentum -2.3%",
-        "negative MACD impulse"
-      ],
-      "independentStressSignals": 1,
-      "stressFlags": {
-        "drawdown": false,
-        "momentum": false,
-        "ma50": false,
-        "ma200": false,
-        "rsi": false,
-        "macd": false,
-        "volatility": true,
-        "selloffVolume": false,
-        "relativeWeakness": false
-      },
-      "historyReady": true,
-      "priceBasis": "TradingView EOD/delayed technical fields; SMA200 required for alert eligibility",
-      "date": "2026-09-15",
-      "provider": "TradingView Vietnam Screener",
-      "updateMode": "delayed_streaming_900",
-      "marketCap": 1431793205261.0,
-      "sector": "Finance",
-      "transition": "UNCHANGED",
-      "newEscalation": false,
-      "stale": false
-    },
-    {
       "symbol": "TRC",
       "exchange": "HOSE",
       "name": "Công ty Cổ phần Cao su Tây Ninh",
@@ -19955,7 +19680,7 @@
       "updateMode": "delayed_streaming_900",
       "marketCap": 604500000000.0,
       "sector": "Producer Manufacturing",
-      "transition": "BASELINE",
+      "transition": "UNCHANGED",
       "newEscalation": false,
       "stale": false
     },
@@ -29006,28 +28731,6 @@
       "marketRelativeEvidenceAvailable": false
     },
     {
-      "symbol": "BDT",
-      "name": "Công ty Cổ phần Xây lắp và Vật liệu xây dựng Đồng Tháp",
-      "exchange": "UPCOM",
-      "date": "2026-09-15",
-      "close": 8700.0,
-      "ret5": -0.011363636363636364,
-      "score": 35.271029495785264,
-      "status": "GREEN",
-      "technicalScore": 35.271029495785264,
-      "drivers": [
-        "3M drawdown -16.3%",
-        "vs SMA50 -4.6%",
-        "daily volatility 3.4%",
-        "1M momentum -3.3%"
-      ],
-      "independentStressSignals": 0,
-      "medianTurnover20": 1824773960.0,
-      "liquidEligible": true,
-      "stale": false,
-      "marketRelativeEvidenceAvailable": false
-    },
-    {
       "symbol": "THG",
       "name": "Công ty Cổ phần Đầu tư và Xây dựng Tiền Giang",
       "exchange": "HOSE",
@@ -30895,27 +30598,6 @@
       "marketRelativeEvidenceAvailable": false
     },
     {
-      "symbol": "SDK",
-      "name": "Công ty Cổ phần Cơ khí Luyện Kim",
-      "exchange": "UPCOM",
-      "date": "2026-09-15",
-      "close": 11100.0,
-      "ret5": -0.017699115044247787,
-      "score": 19.893020576704377,
-      "status": "GREEN",
-      "technicalScore": 19.893020576704377,
-      "drivers": [
-        "daily volatility 12.6%",
-        "vs SMA200 -6.9%",
-        "3M drawdown -3.5%"
-      ],
-      "independentStressSignals": 1,
-      "medianTurnover20": 750430573.8797793,
-      "liquidEligible": true,
-      "stale": false,
-      "marketRelativeEvidenceAvailable": false
-    },
-    {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
       "exchange": "HOSE",
@@ -31164,28 +30846,6 @@
       ],
       "independentStressSignals": 1,
       "medianTurnover20": 11680099200.0,
-      "liquidEligible": true,
-      "stale": false,
-      "marketRelativeEvidenceAvailable": false
-    },
-    {
-      "symbol": "SZL",
-      "name": "Công ty Cổ phần Sonadezi Long Thành",
-      "exchange": "HOSE",
-      "date": "2026-09-15",
-      "close": 50300.0,
-      "ret5": -0.01949317738791423,
-      "score": 18.028945683057195,
-      "status": "GREEN",
-      "technicalScore": 18.028945683057195,
-      "drivers": [
-        "daily volatility 4.7%",
-        "3M drawdown -6.3%",
-        "1M momentum -2.3%",
-        "negative MACD impulse"
-      ],
-      "independentStressSignals": 1,
-      "medianTurnover20": 1554674076.6666667,
       "liquidEligible": true,
       "stale": false,
       "marketRelativeEvidenceAvailable": false
@@ -34208,12 +33868,6 @@
       "close": 46500.0
     },
     {
-      "symbol": "BDT",
-      "exchange": "UPCOM",
-      "date": "2026-09-15",
-      "close": 8700.0
-    },
-    {
       "symbol": "THG",
       "exchange": "HOSE",
       "date": "2026-09-15",
@@ -34736,12 +34390,6 @@
       "close": 8800.0
     },
     {
-      "symbol": "SDK",
-      "exchange": "UPCOM",
-      "date": "2026-09-15",
-      "close": 11100.0
-    },
-    {
       "symbol": "CTR",
       "exchange": "HOSE",
       "date": "2026-09-15",
@@ -34812,12 +34460,6 @@
       "exchange": "UPCOM",
       "date": "2026-09-15",
       "close": 43200.0
-    },
-    {
-      "symbol": "SZL",
-      "exchange": "HOSE",
-      "date": "2026-09-15",
-      "close": 50300.0
     },
     {
       "symbol": "TRC",
@@ -35415,8 +35057,8 @@
     "marketContextDate": "2026-09-11",
     "marketContextStatus": "EXCLUDED_UNAVAILABLE",
     "marketContextImputed": false,
-    "monitorUniverseCount": 377,
-    "outcomeTapeCount": 377,
+    "monitorUniverseCount": 374,
+    "outcomeTapeCount": 374,
     "pointInTimeReady": true
   }
 }
