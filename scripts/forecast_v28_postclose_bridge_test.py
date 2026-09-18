@@ -63,7 +63,7 @@ class PostCloseBridgeTest(unittest.TestCase):
         for symbol in symbols[:9]:
             h[symbol].append({"date":"2026-08-28","open":50000,"high":50200,"low":49800,"close":50000,"modelClose":50000,"volume":1000000,"provider":"fixture-current","exchange":"HOSE"})
         freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
-        with self.assertRaisesRegex(RuntimeError,"Current-session EOD incomplete"):
+        with self.assertRaisesRegex(RuntimeError,r"Current-session EOD incomplete.*sample=.*Retry data refresh before model fit"):
             bridge_completed_session(
                 h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),
                 frame=frame_for(symbols[:9]),secondary_rows=secondary_for(symbols[:9]),
