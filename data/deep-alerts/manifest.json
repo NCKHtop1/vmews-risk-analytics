@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-17T14:31:08.473209+00:00",
+  "generatedAt": "2026-09-18T01:28:41.245347+00:00",
   "marketModelDate": "2026-09-17",
   "requested": 40,
-  "reused": 39,
-  "fetched": 1,
+  "reused": 40,
+  "fetched": 0,
   "cached": 40,
   "symbols": {
     "TNH": {
@@ -76,6 +76,11 @@
       "rows": 1800,
       "modelAsOf": "2026-08-13",
       "source": "Vnstock"
+    },
+    "KOS": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-17",
+      "source": "Yahoo Finance"
     },
     "VND": {
       "rows": 1800,
@@ -200,11 +205,6 @@
     "ASM": {
       "rows": 1800,
       "modelAsOf": "2026-09-09",
-      "source": "Yahoo Finance"
-    },
-    "KOS": {
-      "rows": 1856,
-      "modelAsOf": "2026-09-17",
       "source": "Yahoo Finance"
     }
   },
