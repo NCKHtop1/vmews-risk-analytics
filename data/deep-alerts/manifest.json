@@ -1,11 +1,11 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-18T13:56:24.687699+00:00",
+  "generatedAt": "2026-09-21T01:20:12.960844+00:00",
   "marketModelDate": "2026-09-18",
-  "requested": 24,
-  "reused": 20,
-  "fetched": 4,
-  "cached": 24,
+  "requested": 23,
+  "reused": 23,
+  "fetched": 0,
+  "cached": 23,
   "symbols": {
     "BNA": {
       "rows": 1410,
@@ -22,9 +22,19 @@
       "modelAsOf": "2026-09-16",
       "source": "Yahoo Finance"
     },
+    "CKA": {
+      "rows": 1083,
+      "modelAsOf": "2026-09-18",
+      "source": "Vnstock"
+    },
     "KOS": {
       "rows": 1800,
       "modelAsOf": "2026-09-17",
+      "source": "Yahoo Finance"
+    },
+    "CLW": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-18",
       "source": "Yahoo Finance"
     },
     "TTF": {
@@ -37,11 +47,6 @@
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
     },
-    "HMH": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-07",
-      "source": "Vnstock"
-    },
     "VDP": {
       "rows": 1800,
       "modelAsOf": "2026-08-19",
@@ -51,6 +56,11 @@
       "rows": 1800,
       "modelAsOf": "2026-09-15",
       "source": "Yahoo Finance"
+    },
+    "VES": {
+      "rows": 370,
+      "modelAsOf": "2026-09-18",
+      "source": "Vnstock"
     },
     "TOS": {
       "rows": 1117,
@@ -87,6 +97,11 @@
       "modelAsOf": "2026-09-03",
       "source": "Vnstock"
     },
+    "HHC": {
+      "rows": 693,
+      "modelAsOf": "2026-09-18",
+      "source": "Vnstock"
+    },
     "VCG": {
       "rows": 1490,
       "modelAsOf": "2026-09-14",
@@ -106,26 +121,6 @@
       "rows": 1800,
       "modelAsOf": "2026-08-13",
       "source": "Yahoo Finance"
-    },
-    "CKA": {
-      "rows": 1083,
-      "modelAsOf": "2026-09-18",
-      "source": "Vnstock"
-    },
-    "CLW": {
-      "rows": 2593,
-      "modelAsOf": "2026-09-18",
-      "source": "Yahoo Finance"
-    },
-    "VES": {
-      "rows": 370,
-      "modelAsOf": "2026-09-18",
-      "source": "Vnstock"
-    },
-    "HHC": {
-      "rows": 693,
-      "modelAsOf": "2026-09-18",
-      "source": "Vnstock"
     }
   },
   "errors": [],
@@ -140,7 +135,6 @@
   ],
   "yellowSymbols": [
     "DGC",
-    "HMH",
     "VDP",
     "PLP",
     "VES",
