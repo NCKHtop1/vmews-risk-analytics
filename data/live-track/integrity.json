@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-09-21T03:49:37.613597+00:00",
+  "generatedAt": "2026-09-21T16:29:57.213389+00:00",
   "status": "PASS",
   "reasons": [],
-  "marketModelDate": "2026-09-18",
-  "pooledModelDate": "2026-09-18",
+  "marketModelDate": "2026-09-21",
+  "pooledModelDate": "2026-09-21",
   "sameCompletedEod": true,
   "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
   "policyAligned": true,
@@ -17,10 +17,6 @@
   "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
   "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
   "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-  "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
-  "revision": {
-    "existingHash": "7aa91ff4330177c8c602c08e0cd01c085a7134a00a79bc6e2d0735b7700d3ff9",
-    "newHash": "32db838a003d7864df7dbe72c1610cb81c8e7079cceccc32003bf32192ffc193",
-    "modelDate": "2026-09-18"
-  }
+  "archiveStatus": "CREATED",
+  "revision": null
 }
