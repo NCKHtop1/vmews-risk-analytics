@@ -1,14 +1,14 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-09-22T03:49:31.273662+00:00",
+  "generatedAt": "2026-09-22T15:03:13.632856+00:00",
   "status": "PASS",
   "asOf": "2026-09-22",
-  "archiveStatus": "CREATED",
+  "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
   "universeRequested": 388,
   "currentResolvedSymbols": 388,
-  "currentAlignedSymbols": 301,
+  "currentAlignedSymbols": 342,
   "currentSourceCounts": {
-    "YAHOO_PRIMARY": 301
+    "YAHOO_PRIMARY": 342
   },
   "archivedSymbols": 301,
   "archivedSourceCounts": {
