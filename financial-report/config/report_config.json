@@ -1,11 +1,1 @@
-{
-  "source": "vnstock",
-  "reports": [
-    "balance_sheet",
-    "income_statement",
-    "cash_flow",
-    "financial_ratio"
-  ],
-  "excel_format": "MBB_template_style",
-  "fallback_enabled": true
-}
+{"source":"vnstock","vnstock_version":"4.0.4","period":"year","reports":["balance_sheet","income_statement","cash_flow","ratios"],"preserve_all_returned_rows":true,"drop_empty":false,"verified_report_priority":true,"data_branch":"financial-report-data","excel":{"currency_unit":"triệu đồng","freeze_panes":"B5","years_as_columns":true,"comments":false,"metadata_sheet":false}}

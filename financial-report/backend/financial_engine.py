@@ -1,19 +1,7 @@
-"""Financial report engine.
+from .vnstock_connector import VNStockConnector
+from .excel_builder import ExcelBuilder
 
-Pipeline:
-Ticker -> VNStock connector -> validation -> Excel builder
-"""
-
-
-def validate_period(available_start, available_end, request_start, request_end):
-    if request_start < available_start or request_end > available_end:
-        return False
-    return True
-
-
-def build_report(ticker, start_year, end_year):
-    return {
-        'ticker': ticker,
-        'period': f'{start_year}-{end_year}',
-        'status': 'ready'
-    }
+def build_report(ticker,start_year=None,end_year=None,years=None,report_ids=None):
+    data=VNStockConnector().fetch(ticker)
+    selected=years if years is not None else list(range(int(start_year),int(end_year)+1))
+    return ExcelBuilder().build_bytes(data,selected,report_ids)

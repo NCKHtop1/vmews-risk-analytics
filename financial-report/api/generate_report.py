@@ -1,14 +1,8 @@
-"""Financial report API entry point.
+"""Callable API, returning real XLSX bytes rather than a fictitious filename."""
+import sys
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from backend.financial_engine import build_report
 
-Receives ticker and period, validates availability,
-loads financial data and returns Excel output.
-"""
-
-
-def generate_report(ticker, start_year, end_year):
-    return {
-        "ticker": ticker.upper(),
-        "period": f"{start_year}-{end_year}",
-        "status": "ready",
-        "file": f"{ticker.upper()}_Financial_Report_{start_year}_{end_year}.xlsx"
-    }
+def generate_report(ticker,start_year,end_year):
+    return build_report(ticker,start_year,end_year)

@@ -1,0 +1,32 @@
+name: Test financial report downloads
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['financial-report/**', '.github/workflows/financial-report-test.yml']
+  pull_request:
+    paths: ['financial-report/**', '.github/workflows/financial-report-test.yml']
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pip install -q openpyxl==3.1.5 pandas
+      - run: python financial-report/tests/test_reports.py
+      - run: node --check financial-report/frontend/app.js && node --check financial-report/frontend/xlsx.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: financial-excel-tested
+          path: /tmp/*_browser_test.xlsx
+          retention-days: 7
