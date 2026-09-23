@@ -38,6 +38,16 @@ def normalized(value):
     return re.sub(r'[^a-z0-9]+', ' ', unicodedata.normalize('NFKD', text(value).lower().replace('đ','d')).encode('ascii','ignore').decode()).strip()
 
 
+def repair_legacy_units(data):
+    for section in data.get('sections',[]):
+        if section['id']=='ratios':continue
+        for row in section['rows']:
+            if row['unit']=='triệu đồng' and row['id'] in ('outstanding_shares_volume','treasury_stocks_volume','foreign_currencies'):
+                row['unit']='nguyên tệ' if row['id']=='foreign_currencies' else 'cổ phiếu'
+                row['values']={y:None if v is None else round(v*1_000_000,6) for y,v in row['values'].items()}
+    return data
+
+
 def normalize_frame(frame, kind, source):
     """Preserve every returned line, hierarchy, null and zero; reject ambiguous axes."""
     if frame is None or frame.empty: return {'id':kind,'name':REPORTS[kind],'rows':[],'source':source}
@@ -75,11 +85,13 @@ def normalize_frame(frame, kind, source):
         if used[rid]>1:row['id']=f'{rid}__{used[rid]}'
         label = normalized(row['label'])
         is_per_share = bool(re.search(r'\beps\b|\bbvps\b|tren (mot )?co phieu|moi co phieu|per share',label))
+        is_share_count = row['id'] in ('outstanding_shares_volume','treasury_stocks_volume') or 'co phieu' in label and 'so luong' in label
+        is_currency_amount = row['id']=='foreign_currencies'
         if kind not in ('ratios',):
             # KBS statement parser scales every row by 1000, including EPS.
-            divisor = 1000 if source == 'KBS' and is_per_share else 1 if is_per_share else 1_000_000
+            divisor = 1000 if source == 'KBS' and (is_per_share or is_share_count or is_currency_amount) else 1 if (is_per_share or is_share_count or is_currency_amount) else 1_000_000
             row['values']={y:(None if v is None else v/divisor) for y,v in row['values'].items()}
-            row['unit']='đồng/cp' if is_per_share else 'triệu đồng'
+            row['unit']='cổ phiếu' if is_share_count else 'nguyên tệ' if is_currency_amount else 'đồng/cp' if is_per_share else 'triệu đồng'
         elif not row['unit']:
             row['unit']='đồng/cp' if is_per_share else '%' if '%' in row['label'] else ''
     return {'id':kind,'name':REPORTS[kind],'rows':rows,'source':source}
@@ -112,7 +124,7 @@ class VNStockConnector:
 
     def load_cache(self,ticker):
         path=self.data_dir/(valid_ticker(ticker)+'.json')
-        return json.loads(path.read_text(encoding='utf-8')) if path.exists() else None
+        return repair_legacy_units(json.loads(path.read_text(encoding='utf-8'))) if path.exists() else None
 
     def fetch(self,ticker,refresh=False):
         ticker=valid_ticker(ticker)

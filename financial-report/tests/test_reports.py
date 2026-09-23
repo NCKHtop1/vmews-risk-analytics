@@ -48,6 +48,13 @@ class ReportsTest(unittest.TestCase):
   df=pd.DataFrame([{'item':'Tài sản','item_id':'x','2025':1_200_000,'2024':None},{'item':'Dự phòng','item_id':'x','2025':0,'2024':-2_000_000}])
   d=normalize_frame(df,'balance_sheet','VCI')['rows']
   self.assertEqual(d[0]['values']['2025'],1.2);self.assertIsNone(d[0]['values']['2024']);self.assertEqual(d[1]['values']['2025'],0);self.assertEqual(d[1]['values']['2024'],-2);self.assertNotEqual(d[0]['id'],d[1]['id'])
+ def test_share_quantity_keeps_its_own_unit(self):
+  frame=pd.DataFrame([{'item':'Cổ phiếu đang lưu hành (Số lượng)','item_id':'outstanding_shares_volume','2025':2075914794}])
+  row=normalize_frame(frame,'balance_sheet','VCI')['rows'][0]
+  self.assertEqual(row['unit'],'cổ phiếu');self.assertEqual(row['values']['2025'],2075914794)
+  data=json.loads((ROOT/'data/SSI.json').read_text());rows={r['id']:r for r in data['sections'][0]['rows']}
+  outstanding=rows['outstanding_shares_volume']['values']['2025'];treasury=rows['treasury_stocks_volume']['values']['2025']
+  self.assertEqual(outstanding,2075914794);self.assertEqual(treasury,1991468)
  def test_python_excel_numeric_cells_and_plain_format(self):
   wb=load_workbook(io.BytesIO(ExcelBuilder().build_bytes(self.data,[2020,2025],['balance_sheet','income_statement','cash_flow','off_balance'])))
   ws=wb['BCTC'];self.assertEqual(ws.freeze_panes,'B5');self.assertEqual(ws.cell(4,2).value,2020);self.assertEqual(ws.cell(4,3).value,2025)
