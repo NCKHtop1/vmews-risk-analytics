@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       symbols:
-        description: 'Optional comma-separated tickers; empty continues the full catalog'
+        description: 'Optional comma-separated tickers; empty refreshes VN100 in fair order'
         required: false
         default: ''
   push:
@@ -22,12 +22,12 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 120
     env:
       VNSTOCK_TELEMETRY: 'off'
       FINANCIAL_REQUEST_INTERVAL: '3'
       REQUESTED_SYMBOLS: ${{ inputs.symbols }}
-      REFRESH_BUDGET: ${{ github.event_name == 'push' && '6' || '45' }}
+      REFRESH_BUDGET: '100'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,12 +44,14 @@ jobs:
           git -C /tmp/financial-publish sparse-checkout set data
           mkdir -p /tmp/financial-publish/data
           cp -n financial-report/data/*.json /tmp/financial-publish/data/ || true
+          git -C /tmp/financial-publish config user.name 'github-actions[bot]'
+          git -C /tmp/financial-publish config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Collect and validate public financial statements
         run: |
           if [ -n "$REQUESTED_SYMBOLS" ]; then
-            python -u financial-report/scripts/refresh_data.py --output /tmp/financial-publish/data --symbols "$REQUESTED_SYMBOLS" --budget-minutes "$REFRESH_BUDGET"
+            python -u financial-report/scripts/refresh_data.py --output /tmp/financial-publish/data --symbols "$REQUESTED_SYMBOLS" --budget-minutes "$REFRESH_BUDGET" --publish
           else
-            python -u financial-report/scripts/refresh_data.py --output /tmp/financial-publish/data --budget-minutes "$REFRESH_BUDGET"
+            python -u financial-report/scripts/refresh_data.py --output /tmp/financial-publish/data --budget-minutes "$REFRESH_BUDGET" --publish
           fi
       - name: Publish only the financial data branch
         if: always()
