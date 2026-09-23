@@ -33,6 +33,17 @@ class ReportsTest(unittest.TestCase):
  def test_no_quarter_mislabeled_as_year(self):
   bad=pd.DataFrame([['Tỷ lệ','r',12,20]],columns=['item','item_id','2018','2018'])
   with self.assertRaises(ValueError):normalize_frame(bad,'ratios','VCI')
+ def test_balance_totals_for_all_bundled_industries(self):
+  count=0
+  for symbol in ('FPT','VCB','HPG','VNM','ACB','TCB','SSI','BVH'):
+   data=json.loads((ROOT/'data'/f'{symbol}.json').read_text())
+   section=next(s for s in data['sections'] if s['id']=='balance_sheet')
+   rows={r['id']:r['values'] for r in section['rows']}
+   funding=next(rows[k] for k in ('total_resource','total_resources','liabilities_and_shareholders_equity','liabilities_and_shareholders_equities') if k in rows)
+   for y in map(str,data['years']):
+    self.assertIsNotNone(rows['total_assets'][y]);self.assertIsNotNone(funding[y])
+    self.assertAlmostEqual(rows['total_assets'][y],funding[y],places=2,msg=f'{symbol} {y}');count+=1
+  self.assertEqual(count,32)
  def test_zero_null_duplicate_and_scaling(self):
   df=pd.DataFrame([{'item':'Tài sản','item_id':'x','2025':1_200_000,'2024':None},{'item':'Dự phòng','item_id':'x','2025':0,'2024':-2_000_000}])
   d=normalize_frame(df,'balance_sheet','VCI')['rows']
