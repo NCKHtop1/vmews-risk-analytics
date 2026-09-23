@@ -4,5 +4,5 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from backend.financial_engine import build_report
 
-def generate_report(ticker,start_year,end_year):
-    return build_report(ticker,start_year,end_year)
+def generate_report(ticker,start_year=None,end_year=None,**options):
+    return build_report(ticker,start_year,end_year,**options)

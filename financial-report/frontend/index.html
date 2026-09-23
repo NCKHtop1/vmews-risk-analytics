@@ -3,28 +3,28 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FinQuery · Báo cáo tài chính Việt Nam</title>
-<meta name="description" content="Chọn doanh nghiệp và năm báo cáo, tải Excel với đầy đủ chỉ tiêu tài chính có sẵn.">
+<meta name="description" content="Chọn doanh nghiệp VN100 và kỳ báo cáo, tải Excel với đầy đủ chỉ tiêu tài chính có sẵn.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
-<script defer src="xlsx.js"></script><script defer src="app.js"></script>
+<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="app.js"></script>
 </head>
 <body>
 <header class="header"><a class="brand" href="index.html" aria-label="FinQuery trang chủ"><span class="brand-icon">F<span>Q</span></span><span>FinQuery</span></a><div class="header-label">DỮ LIỆU TÀI CHÍNH VIỆT NAM</div><a class="github-link" href="https://github.com/NCKHtop1/vmews-risk-analytics/tree/main/financial-report" target="_blank" rel="noopener">GitHub ↗</a></header>
 <main>
-<div class="intro"><div class="eyebrow"><span class="dot"></span> KHÔNG GIAN TRA CỨU</div><h1>Báo cáo tài chính,<br><span>sẵn sàng cho Excel.</span></h1><p>Chọn doanh nghiệp và năm cần xem. Tải về đầy đủ chỉ tiêu, trình bày rõ ràng theo cột.</p></div>
+<div class="intro"><div class="eyebrow"><span class="dot"></span> KHÔNG GIAN TRA CỨU</div><h1>Báo cáo tài chính,<br><span>sẵn sàng cho Excel.</span></h1><p>Chọn doanh nghiệp VN100 và một hoặc nhiều năm, quý cần xem. Tải về đầy đủ chỉ tiêu, trình bày rõ ràng theo cột.</p></div>
 <div class="workspace">
 <aside class="configuration" aria-label="Thiết lập báo cáo">
-<section class="config-section"><h2><span class="step">01</span> Doanh nghiệp</h2><form id="company-form"><label for="ticker">Mã chứng khoán hoặc tên doanh nghiệp</label><div class="search-line"><input id="ticker" list="company-options" value="MBB" autocomplete="off" spellcheck="false" maxlength="100" placeholder="Ví dụ: MBB, FPT, VCB…" aria-describedby="company-description"><button type="submit" class="search-button" aria-label="Tra cứu doanh nghiệp">→</button></div><datalist id="company-options"></datalist></form><p id="company-description" class="muted small">Đang tải danh sách doanh nghiệp…</p><div class="quick-tickers"><button data-symbol="MBB">MBB</button><button data-symbol="FPT">FPT</button><button data-symbol="VCB">VCB</button><button data-symbol="HPG">HPG</button></div></section>
-<section class="config-section"><h2><span class="step">02</span> Năm báo cáo</h2><p id="availability" class="muted small" aria-live="polite">Đang kiểm tra năm có dữ liệu…</p><div class="year-actions"><button id="all-years" type="button">Tất cả</button><button id="recent-years" type="button">3 năm gần nhất</button><button id="clear-years" type="button">Bỏ chọn</button></div><div id="year-options" class="years" role="group" aria-label="Chọn một hoặc nhiều năm"></div></section>
-<section class="config-section report-section"><h2><span class="step">03</span> Nội dung Excel</h2><div id="report-options" class="reports"></div><div class="download-summary"><span id="summary">Chưa có báo cáo</span><span class="file-badge">.XLSX</span></div><button id="download" class="primary" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>Tải Excel</span></button><p id="download-status" class="muted small" role="status" aria-live="polite">Chỉ tiêu theo hàng · Năm theo cột</p></section>
+<section class="config-section"><h2><span class="step">01</span> Doanh nghiệp</h2><form id="company-form"><label for="ticker">Mã chứng khoán hoặc tên doanh nghiệp</label><div class="search-line"><input id="ticker" list="company-options" value="MBB" autocomplete="off" spellcheck="false" maxlength="100" placeholder="Ví dụ: MBB, FPT, VCB…" aria-describedby="company-description"><button type="submit" class="search-button" aria-label="Tra cứu doanh nghiệp">→</button></div><datalist id="company-options"></datalist></form><p id="company-description" class="muted small">Đang tải danh sách doanh nghiệp…</p><div class="quick-tickers"><button data-symbol="MBB">MBB</button><button data-symbol="FPT">FPT</button><button data-symbol="VCB">VCB</button><button data-symbol="VIC">VIC</button></div></section>
+<section class="config-section"><h2><span class="step">02</span> Kỳ báo cáo</h2><div class="period-switch" role="group" aria-label="Loại kỳ báo cáo"><label><input type="radio" name="period-type" value="quarter" checked><span>Quý</span></label><label><input type="radio" name="period-type" value="year"><span>Năm</span></label></div><p id="availability" class="muted small" aria-live="polite">Đang kiểm tra kỳ có dữ liệu…</p><div class="year-actions"><button id="all-years" type="button">Tất cả</button><button id="recent-years" type="button">4 quý gần nhất</button><button id="latest-period" type="button">Mới nhất</button><button id="clear-years" type="button">Bỏ chọn</button></div><div id="year-options" class="years" role="group" aria-label="Chọn một hoặc nhiều kỳ"></div></section>
+<section class="config-section report-section"><h2><span class="step">03</span> Nội dung Excel</h2><div id="report-options" class="reports"></div><div class="download-summary"><span id="summary">Chưa có báo cáo</span><span class="file-badge">.XLSX</span></div><button id="download" class="primary" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>Tải Excel</span></button><p id="download-status" class="muted small" role="status" aria-live="polite">Chỉ tiêu theo hàng · Kỳ báo cáo theo cột</p></section>
 </aside>
 <section class="preview" aria-label="Xem trước báo cáo">
-<div class="preview-heading"><div><div class="eyebrow">XEM TRƯỚC DỮ LIỆU</div><h2 id="preview-title">MBB <span>/ Báo cáo tài chính</span></h2><p id="company-name" class="muted">Ngân hàng TMCP Quân đội</p></div><span id="data-state" class="status-badge">Đang tải</span></div>
+<div class="preview-heading"><div><div class="eyebrow">XEM TRƯỚC DỮ LIỆU</div><h2 id="preview-title">MBB <span>/ Báo cáo tài chính</span></h2><p id="company-name" class="muted">Ngân hàng TMCP Quân đội</p></div><div class="preview-actions"><span id="data-state" class="status-badge">Đang tải</span><button id="refresh-data" type="button">Làm mới ↻</button></div></div>
 <div id="error" role="alert" hidden></div>
 <div class="preview-toolbar"><div id="report-tabs" role="tablist" aria-label="Loại báo cáo"></div><span id="unit-caption">Triệu đồng</span></div>
-<div id="table-container" class="table-container" tabindex="0" aria-label="Bảng số liệu, cuộn ngang để xem các năm"><div class="empty-state"><span class="loading-ring"></span><h3>Đang chuẩn bị báo cáo</h3><p>Dữ liệu sẽ xuất hiện tại đây.</p></div></div>
+<div id="table-container" class="table-container" tabindex="0" aria-label="Bảng số liệu, cuộn ngang để xem các kỳ"><div class="empty-state"><span class="loading-ring"></span><h3>Đang chuẩn bị báo cáo</h3><p>Dữ liệu sẽ xuất hiện tại đây.</p></div></div>
 <div class="preview-footer"><span id="row-count">—</span><span id="updated-at">—</span></div>
 </section>
 </div>
-<div class="bottom-line"><span>FinQuery / Financial Report Workspace</span><span>Báo cáo năm · HOSE · HNX · UPCoM</span></div>
+<div class="bottom-line"><span>FinQuery / Financial Report Workspace</span><span>VN100 · Báo cáo năm và quý</span></div>
 </main>
 </body></html>

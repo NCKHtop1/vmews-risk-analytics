@@ -4,23 +4,25 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from .data_validator import validate_period
+from .metrics import decorate
 
 NUMBER='#,##0.00;(#,##0.00);"-"'
 INTEGER='#,##0;(#,##0);"-"'
 
 class ExcelBuilder:
     def build_bytes(self,data,years=None,report_ids=None):
-        years=validate_period(data,years or data['years'],report_ids)
+        if report_ids and 'derived_ratios' in report_ids:data=decorate(data)
+        years=validate_period(data,years or data.get('periods',data['years']),report_ids)
         sections=[s for s in data['sections'] if report_ids is None or s['id'] in report_ids]
         workbook=Workbook();workbook.remove(workbook.active)
-        groups=[('BCTC',[s for s in sections if s['id'] not in ('ratios','notes')]),('Chi_so',[s for s in sections if s['id']=='ratios']),('Thuyet_minh',[s for s in sections if s['id']=='notes'])]
+        groups=[('BCTC',[s for s in sections if s['id'] not in ('ratios','derived_ratios','notes')]),('Chi_so',[s for s in sections if s['id'] in ('ratios','derived_ratios')]),('Thuyet_minh',[s for s in sections if s['id']=='notes'])]
         edge=Side(style='thin',color='DDDDDD')
         for sheet_name,reports in groups:
             if not reports:continue
             ws=workbook.create_sheet(sheet_name);ws.sheet_view.showGridLines=False;ws.freeze_panes='B5'
             ws.append([f"{data['symbol']} - {data.get('name',data['symbol'])}"])
             ws.append(['Đơn vị: triệu đồng' if sheet_name!='Chi_so' else 'CHỈ SỐ TÀI CHÍNH'])
-            ws.append([]);ws.append(['CHỈ TIÊU',*years])
+            ws.append([]);ws.append(['CHỈ TIÊU',*[f"Q{str(p)[-1]}/{str(p)[:4]}" if '-Q' in str(p) else p for p in years]])
             ws.merge_cells(start_row=1,start_column=1,end_row=1,end_column=len(years)+1)
             ws.merge_cells(start_row=2,start_column=1,end_row=2,end_column=len(years)+1)
             for section in reports:
@@ -34,8 +36,9 @@ class ExcelBuilder:
                         cell.font=Font(name='Arial',size=11,bold=bool(row.get('bold')))
                         cell.border=Border(left=edge,right=edge,top=edge,bottom=edge)
                         cell.alignment=Alignment(vertical='center',horizontal='left' if cell.column==1 else 'right',wrap_text=cell.column==1)
-                        if cell.column>1:cell.number_format=INTEGER if unit=='đồng/cp' else NUMBER
+                        if cell.column>1:cell.number_format=INTEGER if unit in ('đồng/cp','cổ phiếu') else NUMBER
                     ws.cell(ws.max_row,1).data_type='s'
+                    ws.row_dimensions[ws.max_row].height=max(22,((len(label)+77)//78)*17)
             for row in ws:
                 for cell in row:
                     if cell.row<=4:cell.font=Font(name='Arial',size=11,bold=cell.row in (1,4))

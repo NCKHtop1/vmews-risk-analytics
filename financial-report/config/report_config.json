@@ -1,1 +1,29 @@
-{"source":"vnstock","vnstock_version":"4.0.4","period":"year","reports":["balance_sheet","income_statement","cash_flow","ratios"],"preserve_all_returned_rows":true,"drop_empty":false,"verified_report_priority":true,"data_branch":"financial-report-data","excel":{"currency_unit":"triệu đồng","freeze_panes":"B5","years_as_columns":true,"comments":false,"metadata_sheet":false}}
+{
+  "source": "vnstock",
+  "vnstock_version": "4.0.8",
+  "period": [
+    "year",
+    "quarter"
+  ],
+  "reports": [
+    "balance_sheet",
+    "income_statement",
+    "cash_flow",
+    "ratios",
+    "derived_ratios"
+  ],
+  "preserve_all_returned_rows": true,
+  "drop_empty": false,
+  "verified_report_priority": true,
+  "data_branch": "financial-report-data",
+  "excel": {
+    "currency_unit": "triệu đồng",
+    "freeze_panes": "B5",
+    "comments": false,
+    "metadata_sheet": false,
+    "periods_as_columns": true
+  },
+  "universe": "VN100",
+  "refresh_cron": "15 */4 * * *",
+  "annual_refresh_hours": 24
+}

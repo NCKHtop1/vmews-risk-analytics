@@ -1,7 +1,6 @@
 """Validate the actual periods of each report, including gaps and zero values."""
 import math
 import re
-from datetime import date
 
 CORE = ('balance_sheet', 'income_statement', 'cash_flow')
 
@@ -36,7 +35,8 @@ def validate_period(data, years, report_ids=None):
     if not isinstance(years, (list, tuple)) or not years:
         raise ValueError('Chọn ít nhất một kỳ báo cáo.')
     quarter = data.get('periodType') == 'quarter'
-    if any(not isinstance(y,str) or not re.fullmatch(r'(19|20)\d{2}-Q[1-4]',y) for y in years) if quarter else any(isinstance(y,bool) or not isinstance(y,int) for y in years):
+    invalid = any(not isinstance(y,str) or not re.fullmatch(r'(19|20)\d{2}-Q[1-4]',y) for y in years) if quarter else any(isinstance(y,bool) or not isinstance(y,int) for y in years)
+    if invalid:
         raise ValueError('Kỳ báo cáo không hợp lệ.')
     supported = available_years(data, report_ids)
     if any(y not in supported for y in years):
@@ -51,7 +51,11 @@ def validate_dataset(data):
         raise ValueError('Chưa có dữ liệu báo cáo.')
     quarter = data.get('periodType') == 'quarter'
     pattern = r'(19|20)\d{2}-Q[1-4]' if quarter else r'(19|20)\d{2}'
+    section_ids = set()
     for section in data['sections']:
+        if section['id'] in section_ids:
+            raise ValueError('Báo cáo trùng định danh.')
+        section_ids.add(section['id'])
         seen = set()
         for row in section['rows']:
             if not row.get('label') or row['id'] in seen:
@@ -60,9 +64,6 @@ def validate_dataset(data):
             for year, value in row['values'].items():
                 if not re.fullmatch(pattern, str(year)):
                     raise ValueError('Không trộn dữ liệu quý với dữ liệu năm.')
-                today = date.today()
-                if quarter and (int(str(year)[:4]), int(str(year)[-1])) >= (today.year, (today.month-1)//3+1):
-                    raise ValueError('Không dùng số liệu của quý chưa kết thúc.')
                 if value is not None and (isinstance(value, bool) or not isinstance(value, (int,float)) or not math.isfinite(value)):
                     raise ValueError('Số liệu không hợp lệ.')
         section['periods'] = report_periods(section, data.get('periodType','year'))
