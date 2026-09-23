@@ -1,1 +1,0 @@
-(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='vi'){localStorage.setItem('vmews-lang',q);return}if(!localStorage.getItem('vmews-lang')&&(navigator.language||'').toLowerCase().startsWith('vi'))localStorage.setItem('vmews-lang','vi')}catch(_){}})();
