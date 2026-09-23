@@ -1,0 +1,31 @@
+name: Financial report source verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/probe_sources.py'
+      - '.github/workflows/financial-report-probe.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VNSTOCK_TELEMETRY: 'off'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q vnstock==4.0.4
+      - run: python -u financial-report/scripts/probe_sources.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: financial-provider-probe
+          path: /tmp/financial-probe
+          retention-days: 7
