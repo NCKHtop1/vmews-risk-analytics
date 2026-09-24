@@ -22,7 +22,7 @@ FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('CafeF', 'https://cafef.vn/thi-truong-chung-khoan.rss'),
          ('CafeF', 'https://cafef.vn/doanh-nghiep.rss'),
          ('CafeF', 'https://cafef.vn/tai-chinh-ngan-hang.rss')]
-ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng Quân đội', 'Ngân hàng Quân Đội'],
+ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng MB', 'Ngân hàng Quân đội', 'Ngân hàng Quân Đội'],
            'VCB': ['Vietcombank'], 'BID': ['BIDV'], 'CTG': ['VietinBank'],
            'TCB': ['Techcombank'], 'VPB': ['VPBank'], 'STB': ['Sacombank'],
            'HDB': ['HDBank'], 'LPB': ['LPBank'], 'VIB': ['Ngân hàng Quốc tế'],
@@ -184,6 +184,9 @@ def clean(value):
 
 def company_match(company, text):
     symbol = company['symbol']
+    # MB is an issuer name only in explicit banking context, never a memory unit.
+    if symbol == 'MBB' and re.search(r'(?:ngân hàng|lãi suất)', text, re.I) and re.search(r'(?i:ngân hàng|tại|của|từ)\s+MB(?!\w)', text):
+        return True
     if symbol == 'FPT':
         text = re.sub(r'FPT\s+(?:Retail|Securities)', '', text, flags=re.I)
     # Short tickers such as GAS, DIG, CEO must be explicitly uppercase in publisher text.
@@ -262,3 +265,4 @@ if __name__ == '__main__':
             errors.append(str(e))
     if errors:
         raise SystemExit('; '.join(errors))
+

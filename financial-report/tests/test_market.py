@@ -34,6 +34,13 @@ class MarketTests(unittest.TestCase):
         self.assertFalse(m.company_match(c,'XMBB1 công bố'))
         self.assertFalse(m.company_match({'symbol':'GAS','name':'Tổng công ty khí Việt Nam'},'Giá gas bán lẻ'))
 
+    def test_mb_bank_name_requires_banking_context(self):
+        c={'symbol':'MBB','name':'Ngân hàng TMCP Quân đội'}
+        self.assertTrue(m.company_match(c,'Lãi suất ngân hàng 24/9 tại MB, Techcombank'))
+        self.assertTrue(m.company_match(c,'Ngân hàng MB công bố kết quả'))
+        self.assertFalse(m.company_match(c,'Dung lượng bộ nhớ 512 MB'))
+        self.assertFalse(m.company_match(c,'Ứng dụng ngân hàng chiếm 512 MB'))
+
     def test_history_never_substitutes_another_issuer(self):
         data=[{'symbol':'VIC','t':[1727100000],'o':[25000],'h':[27000],'l':[24000],'c':[26000],'v':[1000]}]
         with self.assertRaises(ValueError): m.normalize_history(data,'MBB')
@@ -57,3 +64,4 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(rows[0]['url'],'https://vnexpress.net/a.html')
 
 if __name__=='__main__': unittest.main()
+
