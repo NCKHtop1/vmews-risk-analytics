@@ -16,13 +16,14 @@ def build():
     html = html.replace('href="favicon.svg"', 'href="frontend/favicon.svg"')
     html = html.replace('<link rel="stylesheet" href="fonts.css">', '<style>' + (front / 'fonts.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="style.css">', '<style>' + (front / 'style.css').read_text() + '</style>')
-    html = html.replace('<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="app.js"></script>', '')
+    html = html.replace('<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="app.js"></script>', '')
     datasets = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'data').glob('*.json') if p.stem in ('MBB','VIC','FPT','VCB')}
     boot = {'companies': json.loads((ROOT / 'data/companies.json').read_text()), 'datasets': datasets}
     payload = json.dumps(boot, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
     scripts = '<script id="financial-bootstrap" type="application/json">' + payload + '</script>'
     scripts += '<script>' + (front / 'xlsx.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'metrics.js').read_text() + '</script>'
+    scripts += '<script>' + (front / 'dashboard.js').read_text() + '</script>'
     scripts += '<script data-base="./data/">' + (front / 'app.js').read_text() + '</script>'
     html = html.replace('</body>', scripts + '</body>')
     (ROOT / 'index.html').write_text(html)

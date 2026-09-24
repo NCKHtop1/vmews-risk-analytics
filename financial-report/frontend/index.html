@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FinQuery · Báo cáo tài chính Việt Nam</title>
-<meta name="description" content="Chọn doanh nghiệp VN100 và kỳ báo cáo, tải Excel với đầy đủ chỉ tiêu tài chính có sẵn.">
+<meta name="description" content="Tra cứu, trực quan hóa báo cáo tài chính VN100 và tải Excel."><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css">
-<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="app.js"></script>
+<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="app.js"></script>
 </head>
 <body>
-<header class="header"><a class="brand" href="index.html" aria-label="FinQuery trang chủ"><span class="brand-icon">F<span>Q</span></span><span>FinQuery</span></a><div class="header-label">VN100</div></header>
+<header class="header"><a class="brand" href="index.html" aria-label="FinQuery trang chủ"><span class="brand-icon">F<span>Q</span></span><span>FinQuery</span></a><nav aria-label="Điều hướng báo cáo"><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">VN100 <span>Việt Nam</span></div></header>
 <main>
-<div class="intro"><h1>Báo cáo tài chính</h1><p>Tra cứu báo cáo năm và quý của doanh nghiệp VN100.</p></div>
+<div class="intro"><div><h1>Báo cáo tài chính</h1><p>Tra cứu theo doanh nghiệp và kỳ báo cáo.</p></div></div>
 <div class="workspace">
 <aside class="configuration" aria-label="Thiết lập báo cáo">
 <section class="config-section"><h2><span class="step">01</span> Doanh nghiệp</h2><form id="company-form"><label for="ticker">Mã chứng khoán hoặc tên doanh nghiệp</label><div class="search-line"><input id="ticker" list="company-options" value="MBB" autocomplete="off" spellcheck="false" maxlength="100" placeholder="Ví dụ: MBB, FPT, VCB…" aria-describedby="company-description"><button type="submit" class="search-button" aria-label="Tra cứu doanh nghiệp">→</button></div><datalist id="company-options"></datalist></form><p id="company-description" class="muted small">Đang tải danh sách doanh nghiệp…</p><div class="quick-tickers"><button data-symbol="MBB">MBB</button><button data-symbol="FPT">FPT</button><button data-symbol="VCB">VCB</button><button data-symbol="VIC">VIC</button></div></section>
@@ -18,13 +18,15 @@
 <section class="config-section report-section"><h2><span class="step">03</span> Nội dung Excel</h2><div id="report-options" class="reports"></div><div class="download-summary"><span id="summary">Chưa có báo cáo</span><span class="file-badge">.XLSX</span></div><button id="download" class="primary" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>Tải Excel</span></button><p id="download-status" class="muted small" role="status" aria-live="polite"></p></section>
 </aside>
 <section class="preview" aria-label="Xem trước báo cáo">
-<div class="preview-heading"><div><div class="eyebrow">BÁO CÁO</div><h2 id="preview-title">MBB <span>/ Báo cáo tài chính</span></h2><p id="company-name" class="muted">Ngân hàng TMCP Quân đội</p></div><div class="preview-actions"><span id="data-state" class="status-badge">Đang tải</span><button id="refresh-data" type="button">Làm mới ↻</button></div></div>
+<div class="preview-heading"><div><div class="eyebrow">DOANH NGHIỆP</div><h2 id="preview-title">MBB <span>/ Báo cáo tài chính</span></h2><p id="company-name" class="muted">Ngân hàng TMCP Quân đội</p></div><div class="preview-actions"><span id="data-state" class="status-badge">Đang tải</span><button id="refresh-data" type="button">Làm mới ↻</button></div></div>
 <div id="error" role="alert" hidden></div>
+<section id="overview" class="overview" aria-label="Tổng quan tài chính" hidden><div class="section-heading"><h3>Tổng quan</h3><span id="overview-period"></span></div><div id="kpi-grid" class="kpi-grid"></div><div class="chart-grid"><section class="chart-panel trend-panel" aria-label="Biểu đồ chỉ tiêu theo kỳ"><div class="chart-heading"><div><h3>Diễn biến theo kỳ</h3><span>Tỷ đồng</span></div><label class="sr-only" for="chart-metric">Chỉ tiêu biểu đồ</label><select id="chart-metric" aria-label="Chỉ tiêu biểu đồ"></select></div><div id="trend-chart"></div></section><section class="chart-panel capital-panel" aria-label="Cơ cấu nguồn vốn"><div class="chart-heading"><div><h3>Cơ cấu nguồn vốn</h3><span id="capital-period"></span></div></div><div id="capital-chart"></div></section></div></section>
+<div id="report-detail" class="detail-heading"><h3>Bảng số liệu</h3><span>Đầy đủ chỉ tiêu</span></div>
 <div class="preview-toolbar"><div id="report-tabs" role="tablist" aria-label="Loại báo cáo"></div><span id="unit-caption">Triệu đồng</span></div>
 <div id="table-container" class="table-container" tabindex="0" aria-label="Bảng số liệu, cuộn ngang để xem các kỳ"><div class="empty-state"><span class="loading-ring"></span><h3>Đang tải báo cáo</h3><p></p></div></div>
 <div class="preview-footer"><span id="row-count">—</span><span id="updated-at">—</span></div>
 </section>
 </div>
-<div class="bottom-line"><span>FinQuery</span><span>VN100 · Báo cáo năm và quý</span></div>
+<footer class="bottom-line"><span>Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong></span><span>FinQuery · VN100</span></footer>
 </main>
 </body></html>

@@ -42,3 +42,11 @@ python -m http.server 8080
 `api/generate_report.py` is a callable Python module returning XLSX bytes, not a deployed HTTP service. Examples: `generate_report('VIC', years=[2023, 2025])` or `generate_report('VIC', period_type='quarter', periods=['2026-Q1','2026-Q2'])`. The live website creates downloads in the browser and needs no download server.
 
 The interface uses the locally bundled Be Vietnam Pro font under the SIL Open Font License (`frontend/font-license.txt`). It has no GitHub navigation or promotional headline.
+
+## Visual overview
+
+The overview uses the selected periods and exactly the same normalized statement rows as the detailed table. Four cards show the last selected period in **billion VND**, while the detailed table and Excel preserve their original units. Comparisons use the actual preceding quarter/year, not the preceding selected column; missing inputs or a non-positive comparison base suppress the percentage. Year-to-date cash flow is labelled and is not compared with a single quarter. Bank revenue cards show net interest income with its own label.
+
+An interactive metric selector changes the trend chart. Missing observations remain gaps, negative values stay below zero, and time spacing follows the actual reporting periods. Capital composition is shown only when nonnegative equity and liabilities reconcile with total assets. Visuals never modify Excel contents. The footer carries “Bản quyền © ngochailuong”.
+
+Use the stable `/main/financial-report/index.html` CDN route for future interface updates. Commit-pinned URLs are immutable snapshots and continue to show the corresponding older interface; both interfaces read the independently refreshed data branch.
