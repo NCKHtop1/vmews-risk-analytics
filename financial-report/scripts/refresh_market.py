@@ -18,7 +18,10 @@ API = 'https://trading.vietcap.com.vn/api/'
 FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/chung-khoan.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/doanh-nghiep.rss'),
-         ('VietnamNet', 'https://vietnamnet.vn/kinh-doanh.rss')]
+         ('VietnamNet', 'https://vietnamnet.vn/kinh-doanh.rss'),
+         ('CafeF', 'https://cafef.vn/thi-truong-chung-khoan.rss'),
+         ('CafeF', 'https://cafef.vn/doanh-nghiep.rss'),
+         ('CafeF', 'https://cafef.vn/tai-chinh-ngan-hang.rss')]
 ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng Quân đội', 'Ngân hàng Quân Đội'],
            'VCB': ['Vietcombank'], 'BID': ['BIDV'], 'CTG': ['VietinBank'],
            'TCB': ['Techcombank'], 'VPB': ['VPBank'], 'STB': ['Sacombank'],
@@ -26,6 +29,7 @@ ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng Quân đội', 'Ngân hàng
            'VIC': ['Vingroup'], 'VHM': ['Vinhomes'], 'VRE': ['Vincom Retail'],
            'VNM': ['Vinamilk'], 'HPG': ['Tập đoàn Hòa Phát'], 'BVH': ['Tập đoàn Bảo Việt'],
            'MWG': ['Thế Giới Di Động'], 'MSN': ['Masan'], 'SAB': ['Sabeco'],
+           'DCM': ['PVCFC', 'Phân bón Cà Mau'], 'FRT': ['FPT Retail'], 'FPT': ['Tập đoàn FPT'],
            'GAS': ['PV GAS'], 'PLX': ['Petrolimex'], 'VJC': ['Vietjet'], 'HVN': ['Vietnam Airlines']}
 
 
@@ -43,6 +47,8 @@ def request(url, payload=None):
 
 
 def number(v):
+    if isinstance(v, bool):
+        return None
     try:
         n = float(v)
         return n if math.isfinite(n) else None
@@ -56,7 +62,10 @@ def timestamp(v):
         if n > 1e12:
             n /= 1000
         if n > 1e9:
-            return datetime.fromtimestamp(n, timezone.utc).isoformat()
+            try:
+                return datetime.fromtimestamp(n, timezone.utc).isoformat()
+            except (ValueError, OverflowError, OSError):
+                return None
     try:
         d = datetime.fromisoformat(str(v).replace('Z', '+00:00'))
         return d.replace(tzinfo=d.tzinfo or VN).astimezone(timezone.utc).isoformat()
@@ -91,7 +100,9 @@ def normalize_history(payload, symbol):
         payload = payload.get('data', [])
     if not payload:
         raise ValueError('Empty OHLC response')
-    data = next((x for x in payload if x.get('symbol') == symbol), payload[0])
+    data = next((x for x in payload if x.get('symbol') == symbol), None)
+    if data is None:
+        raise ValueError('OHLC response is for a different issuer')
     fields = ['t', 'o', 'h', 'l', 'c', 'v']
     if not all(isinstance(data.get(k), list) for k in fields) or len({len(data[k]) for k in fields}) != 1:
         raise ValueError('Unexpected OHLC arrays')
@@ -173,6 +184,8 @@ def clean(value):
 
 def company_match(company, text):
     symbol = company['symbol']
+    if symbol == 'FPT':
+        text = re.sub(r'FPT\s+(?:Retail|Securities)', '', text, flags=re.I)
     # Short tickers such as GAS, DIG, CEO must be explicitly uppercase in publisher text.
     if re.search(r'(?<!\w)' + re.escape(symbol) + r'(?!\w)', text):
         return True
@@ -183,7 +196,10 @@ def company_match(company, text):
 def parse_feed(raw, publisher, feed_url, companies, current):
     rows = []
     domain = urlsplit(feed_url).hostname
-    for item in ET.fromstring(raw).findall('.//item'):
+    text = raw.decode('utf-8-sig') if isinstance(raw, bytes) else raw
+    # Some publishers prepend blank lines or a BOM before the XML declaration.
+    text = text.lstrip('\ufeff \t\r\n')
+    for item in ET.fromstring(text).findall('.//item'):
         title = clean(item.findtext('title'))
         link = urlsplit((item.findtext('link') or '').strip())
         if link.scheme not in ('http', 'https') or link.hostname != domain or not title:
