@@ -11,7 +11,7 @@ INTEGER='#,##0;(#,##0);"-"'
 
 class ExcelBuilder:
     def build_bytes(self,data,years=None,report_ids=None):
-        if report_ids and 'derived_ratios' in report_ids:data=decorate(data)
+        data=decorate(data)
         years=validate_period(data,years or data.get('periods',data['years']),report_ids)
         sections=[s for s in data['sections'] if report_ids is None or s['id'] in report_ids]
         workbook=Workbook();workbook.remove(workbook.active)
@@ -30,7 +30,7 @@ class ExcelBuilder:
                 for cell in ws[section_row]:cell.fill=PatternFill('solid',fgColor='EDEDED');cell.font=Font(name='Arial',size=11,bold=True)
                 for row in section['rows']:
                     unit=row.get('unit','');label=row['label']
-                    if unit and unit!='triệu đồng' and unit.lower() not in label.lower():label+=f' ({unit})'
+                    if unit and (unit!='triệu đồng' or section['id'] in ('ratios','derived_ratios')) and unit.lower() not in label.lower():label+=f' ({unit})'
                     ws.append([label,*[row['values'].get(str(y)) for y in years]])
                     for cell in ws[ws.max_row]:
                         cell.font=Font(name='Arial',size=11,bold=bool(row.get('bold')))

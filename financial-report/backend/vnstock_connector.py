@@ -9,6 +9,7 @@ import time
 import unicodedata
 from datetime import datetime, timezone
 from .data_validator import valid_ticker, validate_dataset, validate_period
+from .metrics import decorate
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REPORTS = {
@@ -137,7 +138,7 @@ class VNStockConnector:
     def fetch(self,ticker,refresh=False):
         ticker=valid_ticker(ticker)
         cached=self.load_cache(ticker)
-        if cached and not refresh:return validate_dataset(cached)
+        if cached and not refresh:return validate_dataset(decorate(cached))
         os.environ.setdefault('VNSTOCK_TELEMETRY','off')
         from vnstock import Finance
         from vnstock.config import Config
@@ -210,7 +211,7 @@ class VNStockConnector:
             raise ValueError(f'{ticker}: chưa lấy được dữ liệu năm từ nguồn công bố.')
         data=results['year']
         if 'quarter' in results:data['quarterly']=results['quarter']
-        return validate_dataset(data)
+        return validate_dataset(decorate(data))
 
     def get_financial_data(self,ticker,start_year,end_year):
         data=self.fetch(ticker)

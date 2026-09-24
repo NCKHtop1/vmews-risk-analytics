@@ -1,6 +1,7 @@
 """Transparent metrics computed exclusively from the selected financial statements."""
 import copy,json,pathlib
 DEFINITIONS=json.loads((pathlib.Path(__file__).resolve().parents[1]/'config/derived_metrics.json').read_text())
+CHECKS=json.loads((pathlib.Path(__file__).resolve().parents[1]/'config/ratio_checks.json').read_text())
 def previous(period,growth=False):
     if '-Q' not in str(period):return str(int(period)-1)
     y,q=int(period[:4]),int(period[-1])
@@ -13,6 +14,30 @@ def decorate(data):
         for r in sections.get(ref['section'],{}).get('rows',[]):
             if r['id'] in ref['ids']:return r['values'].get(str(p))
         return None
+    source=sections.get('ratios')
+    if d.get('periodType')=='quarter' and source and source.get('source')=='KBS':
+        original=copy.deepcopy(source.get('rawRows',source['rows']))
+        source['rawRows']=original
+        source['rows']=copy.deepcopy(original)
+        source_rows={r['id']:r for r in original}
+        checks={}
+        for p in periods:
+            matched=0;failed=0
+            for c in CHECKS:
+                a=value({'section':c['section'],'ids':c['numerator']},p)
+                b=value({'section':c['section'],'ids':c['denominator']},p)
+                reported=source_rows.get(c['id'],{}).get('values',{}).get(p)
+                if a is None or b is None or b<=0 or reported is None:continue
+                if abs(a/b*c['scale']-reported)<=c['tolerance']:matched+=1
+                else:failed+=1
+            accepted=matched>=2 and failed==0
+            checks[p]={'matched':matched,'mismatched':failed,'accepted':accepted}
+            if not accepted:
+                for row in source['rows']:
+                    if p in row['values']:row['values'][p]=None
+        source['periodChecks']=checks
+        source['periods']=source['years']=sorted({p for r in source['rows'] for p,v in r['values'].items() if v is not None})
+        source['qualityStatus']='periods_checked' if source['periods'] else 'periods_unverified'
     rows=[]
     for m in DEFINITIONS:
         values={}

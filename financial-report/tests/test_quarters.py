@@ -46,6 +46,15 @@ class QuarterlyReportsTest(unittest.TestCase):
   next(r for r in inc['rows'] if r['id']=='net_sales')['values']['2026-Q2']=0
   rows={r['id']:r for r in decorate(altered)['sections'][-1]['rows']}
   self.assertIsNone(rows['derived_gross_margin']['values']['2026-Q2'])
+ def test_quarter_source_date_mismatch_is_not_exported(self):
+  # Actual source claims Q2/2026 gross margin -18.63%; the reviewed statements
+  # imply 25.09%. Retain the source privately but block this labelled period.
+  d=decorate(self.data);source=next(s for s in d['sections'] if s['id']=='ratios')
+  self.assertGreater(source['periodChecks']['2026-Q2']['mismatched'],1)
+  self.assertNotIn('2026-Q2',source['periods'])
+  self.assertTrue(all(r['values'].get('2026-Q2') is None for r in source['rows']))
+  self.assertTrue(any(r['values'].get('2026-Q2') is not None for r in source['rawRows']))
+  with self.assertRaises(ValueError):ExcelBuilder().build_bytes(self.data,['2026-Q2'],['ratios'])
  def test_current_vn100_and_fair_refresh_order(self):
   companies=json.loads((ROOT/'data/companies.json').read_text());symbols=[c['symbol'] for c in companies]
   self.assertEqual(len(symbols),100);self.assertEqual(len(set(symbols)),100);self.assertIn('VIC',symbols)

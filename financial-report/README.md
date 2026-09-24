@@ -18,7 +18,9 @@ The data branch contains `manifest.json` with separate annual and quarterly cove
 
 Canonical quarter keys are `YYYY-Q1` to `YYYY-Q4`, distinct from annual keys. VCI quarterly cash-flow values represent individual quarters. KBS fallback cash flow is labelled year-to-date; datasets with differing bases are not merged. Report dates with duplicate provider suffixes are excluded instead of choosing an arbitrary value. VCI ratios currently expose stale 2018 periods and repeated year labels, so they are not used as current ratios.
 
-All usable KBS ratio rows are retained under **Chỉ số từ nguồn** with their original units, including valuation, profitability, growth, liquidity, debt and cash-flow measures. Banks have sector-specific indicators such as NIM, CIR and LDR. These source ratios can differ from calculations on the VCI consolidated statements; their exact inputs and calculation dates are not independently certified.
+All KBS ratio rows are collected. Usable periods are retained under **Chỉ số từ nguồn** with their original units, including valuation, profitability, growth, liquidity, debt and cash-flow measures. Banks have sector-specific indicators such as NIM, CIR and LDR. These source ratios can differ from calculations on the VCI consolidated statements; their exact inputs and calculation dates are not independently certified.
+
+Quarterly KBS ratio date labels have been observed to disagree with the actual statements. A source period is enabled only when at least two available control ratios reconcile and none contradicts the statement. Unverified periods remain in raw source records for diagnosis but are excluded from preview/export; the corresponding option is disabled if no quarter passes. This check never infers a different date from numerical similarity. The calculated group remains available for the actual published statement quarters.
 
 **Chỉ số tính từ BCTC** adds up to 14 transparent measures computed from the actual displayed statements. Definitions live in `config/derived_metrics.json`; Python and browser calculations share those definitions. They cover margins, liabilities/assets, equity/assets, period ROA/ROE, operating cash-flow coverage, current/cash ratios, same-period growth, and operating cash after fixed-asset purchases. ROA/ROE use average opening/closing balances and are explicitly not annualized. Missing opening balances, missing comparison periods and non-positive denominators produce blanks. Quarterly flow ratios are not calculated by dividing cumulative cash flow by single-quarter income. Source ratios are preserved separately and are never silently overwritten by a different formula.
 
@@ -38,3 +40,5 @@ python -m http.server 8080
 ```
 
 `api/generate_report.py` is a callable Python module returning XLSX bytes, not a deployed HTTP service. Examples: `generate_report('VIC', years=[2023, 2025])` or `generate_report('VIC', period_type='quarter', periods=['2026-Q1','2026-Q2'])`. The live website creates downloads in the browser and needs no download server.
+
+The interface uses the locally bundled Be Vietnam Pro font under the SIL Open Font License (`frontend/font-license.txt`). It has no GitHub navigation or promotional headline.

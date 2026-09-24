@@ -10,8 +10,11 @@ def build():
     metric_path=front/'metrics.js'
     definitions=json.dumps(json.loads((ROOT/'config/derived_metrics.json').read_text()),ensure_ascii=False,separators=(',',':'))
     metric_path.write_text(re.sub(r'const definitions=/\* METRIC_DEFINITIONS \*/.*?;\n',lambda _: 'const definitions=/* METRIC_DEFINITIONS */'+definitions+';\n',metric_path.read_text()))
+    checks=json.dumps(json.loads((ROOT/'config/ratio_checks.json').read_text()),ensure_ascii=False,separators=(',',':'))
+    metric_path.write_text(re.sub(r'const checks=/\* RATIO_CHECKS \*/.*?;\n',lambda _: 'const checks=/* RATIO_CHECKS */'+checks+';\n',metric_path.read_text()))
     html = (front / 'index.html').read_text()
     html = html.replace('href="favicon.svg"', 'href="frontend/favicon.svg"')
+    html = html.replace('<link rel="stylesheet" href="fonts.css">', '<style>' + (front / 'fonts.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="style.css">', '<style>' + (front / 'style.css').read_text() + '</style>')
     html = html.replace('<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="app.js"></script>', '')
     datasets = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'data').glob('*.json') if p.stem in ('MBB','VIC','FPT','VCB')}

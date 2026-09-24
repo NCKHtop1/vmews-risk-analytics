@@ -1,0 +1,10 @@
+[
+ {"id":"gross_margin","section":"income_statement","numerator":["gross_profit"],"denominator":["net_sales"],"scale":100,"tolerance":0.15},
+ {"id":"net_margin","section":"income_statement","numerator":["net_profit_loss_after_tax"],"denominator":["net_sales"],"scale":100,"tolerance":0.15},
+ {"id":"liabilities_to_assets","section":"balance_sheet","numerator":["liabilities","total_liabilities"],"denominator":["total_assets"],"scale":100,"tolerance":0.15},
+ {"id":"equity_to_assets","section":"balance_sheet","numerator":["owners_equity"],"denominator":["total_assets"],"scale":100,"tolerance":0.15},
+ {"id":"equity_total_assets","section":"balance_sheet","numerator":["owners_equity"],"denominator":["total_assets"],"scale":100,"tolerance":0.15},
+ {"id":"outstanding_loans_total_assets","section":"balance_sheet","numerator":["loans_and_advances_to_customers"],"denominator":["total_assets"],"scale":100,"tolerance":0.15},
+ {"id":"short_term_ratio","section":"balance_sheet","numerator":["current_assets"],"denominator":["current_liabilities"],"scale":1,"tolerance":0.025},
+ {"id":"cash_ratio","section":"balance_sheet","numerator":["cash_and_cash_equivalents"],"denominator":["current_liabilities"],"scale":1,"tolerance":0.025}
+]
