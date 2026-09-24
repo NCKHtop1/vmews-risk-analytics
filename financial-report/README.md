@@ -50,3 +50,36 @@ The overview uses the selected periods and exactly the same normalized statement
 An interactive metric selector changes the trend chart. Missing observations remain gaps, negative values stay below zero, and time spacing follows the actual reporting periods. Capital composition is shown only when nonnegative equity and liabilities reconcile with total assets. Visuals never modify Excel contents. The footer carries “Bản quyền © ngochailuong”.
 
 Use the stable `/main/financial-report/index.html` CDN route for future interface updates. Commit-pinned URLs are immutable snapshots and continue to show the corresponding older interface; both interfaces read the independently refreshed data branch.
+
+
+## Market prices, candlesticks and company news
+
+The market panel uses a dedicated `financial-market-data` branch (`market/quotes.json`,
+`market/history/{SYMBOL}.json`, `market/news.json`). Financial statement refresh and Excel
+exports are independent. `financial-market-refresh.yml` checks prices every 15 minutes
+between 09:07 and 15:52 Vietnam time on weekdays, and publisher RSS every 30 minutes.
+GitHub Actions schedules and upstream providers can be delayed; the UI shows collection
+and source timestamps separately, and never labels these snapshots realtime. The browser
+checks the published snapshots every five minutes while visible.
+
+Vietcap's public price board and daily OHLC endpoints return raw VND prices; no heuristic
+rescaling is applied. Invalid candles are rejected. A failed refresh preserves previous
+successful values and their original timestamps, marks them retained, and fails the run.
+Charts show daily OHLCV, 20/50-session simple moving averages computed from the full
+history, zoom controls and a time slider. The last daily candle may be incomplete.
+Historical adjustment for corporate actions is not independently guaranteed.
+
+News comes directly from publisher RSS (VnExpress, Báo Đầu tư, VietnamNet), retaining only
+headline, publication time, publisher and article URL. Articles are matched to companies
+by explicit ticker or curated company name aliases, deduplicated and sorted newest first;
+no complete articles are republished. The feed stores the latest 30 days and reports
+source failures. Empty company feeds are explicitly shown, with an optional economy feed.
+Watchlists are stored in the visitor's local browser only.
+
+Sources / adapter references:
+- https://trading.vietcap.com.vn/
+- https://github.com/thinh-vu/vnstock/blob/main/vnstock/explorer/vci/trading.py
+- https://github.com/thinh-vu/vnstock/blob/main/vnstock/explorer/vci/quote.py
+- https://vnexpress.net/rss
+- https://baodautu.vn/rssMain.html
+- https://vietnamnet.vn/rss

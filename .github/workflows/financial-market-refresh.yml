@@ -1,0 +1,90 @@
+name: Refresh FinQuery prices and company news
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Dataset to refresh
+        type: choice
+        options: [all, prices, news]
+        default: all
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/refresh_market.py'
+      - '.github/workflows/financial-market-refresh.yml'
+  schedule:
+    - cron: '7,22,37,52 2-8 * * 1-5'
+    - cron: '11,41 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: financial-market-data-publisher
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore last successful market snapshots
+        run: |
+          if git ls-remote --exit-code --heads origin financial-market-data; then
+            git fetch origin financial-market-data
+            git worktree add /tmp/market-publish FETCH_HEAD
+            git -C /tmp/market-publish sparse-checkout set market
+          else
+            mkdir -p /tmp/market-publish
+            git -C /tmp/market-publish init
+            git -C /tmp/market-publish remote add origin "$(git remote get-url origin)"
+            git -C /tmp/market-publish config http.https://github.com/.extraheader "$(git config --get http.https://github.com/.extraheader)"
+          fi
+          mkdir -p /tmp/market-publish/market
+      - name: Collect prices, candles and publisher headlines
+        id: collect
+        env:
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          REQUESTED_MODE: ${{ inputs.mode }}
+        run: |
+          mode="${REQUESTED_MODE:-all}"
+          if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
+          if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
+          python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
+      - name: Publish market snapshots without replacing financial reports
+        if: always()
+        working-directory: /tmp/market-publish
+        run: |
+          test -d market
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse market
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh FinQuery market prices, candles and company news'
+            git push origin HEAD:refs/heads/financial-market-data
+          fi
+      - name: Summarize source coverage
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('/tmp/market-publish/market')
+          for name in ['quotes.json','prices-status.json','news.json','history/MBB.json']:
+              f=p/name
+              if not f.exists(): continue
+              d=json.loads(f.read_text())
+              if name=='quotes.json': print('BOARD', d.get('coverage'), d.get('quotes',{}).get('MBB'))
+              elif name=='news.json': print('NEWS',d.get('sources'),d.get('items',[])[:3])
+              elif name.startswith('history'): print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
+              else: print('STATUS',d)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-market-snapshots
+          path: /tmp/market-publish/market
+          retention-days: 3
