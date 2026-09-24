@@ -1,3 +1,4 @@
+import tempfile
 import copy,io,json,pathlib,sys,unittest,subprocess
 import pandas as pd
 from openpyxl import load_workbook
@@ -65,7 +66,7 @@ class ReportsTest(unittest.TestCase):
   for symbol,years,reports in [('MBB',[2020,2025],['balance_sheet','income_statement','cash_flow','off_balance']),('FPT',[2022,2024,2025],['balance_sheet','income_statement','cash_flow','ratios']),('VCB',[2025],['ratios'])]:
    data=json.loads((ROOT/'data'/f'{symbol}.json').read_text())
    js="const fs=require('fs'),vm=require('vm');vm.runInThisContext(fs.readFileSync(process.argv[1],'utf8'));const d=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));fs.writeFileSync(process.argv[3],FinancialXlsx.workbook(d,JSON.parse(process.argv[4]),JSON.parse(process.argv[5])));"
-   target=pathlib.Path('/tmp')/f'{symbol}_browser_test.xlsx'
+   target=pathlib.Path(tempfile.gettempdir())/f'{symbol}_browser_test.xlsx'
    subprocess.run(['node','-e',js,str(ROOT/'frontend/xlsx.js'),str(ROOT/'data'/f'{symbol}.json'),str(target),json.dumps(years),json.dumps(reports)],check=True)
    wb=load_workbook(target);counter=0
    for sheet in wb:
@@ -81,3 +82,4 @@ class ReportsTest(unittest.TestCase):
       pos+=1
    self.assertGreater(counter,10)
 if __name__=='__main__':unittest.main()
+

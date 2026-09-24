@@ -1,3 +1,4 @@
+import tempfile
 import copy,io,json,pathlib,sys,subprocess,unittest
 import pandas as pd
 from openpyxl import load_workbook
@@ -63,7 +64,7 @@ class QuarterlyReportsTest(unittest.TestCase):
  def test_quarter_excel_matches_browser_python_and_every_value(self):
   d=decorate(self.data);periods=['2025-Q3','2026-Q2'];reports=['balance_sheet','income_statement','cash_flow','derived_ratios']
   js="const fs=require('fs'),vm=require('vm');for(const f of process.argv.slice(1,3))vm.runInThisContext(fs.readFileSync(f,'utf8'));const d=FinancialMetrics.decorate(JSON.parse(fs.readFileSync(process.argv[3],'utf8')).quarterly);fs.writeFileSync(process.argv[4],FinancialXlsx.workbook(d,JSON.parse(process.argv[5]),JSON.parse(process.argv[6])));"
-  target=pathlib.Path('/tmp/VIC_quarter_browser_test.xlsx')
+  target=pathlib.Path(tempfile.gettempdir())/'VIC_quarter_browser_test.xlsx'
   subprocess.run(['node','-e',js,str(ROOT/'frontend/metrics.js'),str(ROOT/'frontend/xlsx.js'),str(ROOT/'data/VIC.json'),str(target),json.dumps(periods),json.dumps(reports)],check=True)
   browser=load_workbook(target);python=load_workbook(io.BytesIO(ExcelBuilder().build_bytes(self.data,periods,reports)))
   self.assertEqual(browser.sheetnames,['BCTC','Chi_so'])
@@ -81,3 +82,4 @@ class QuarterlyReportsTest(unittest.TestCase):
       pos+=1
     self.assertTrue(all(c.comment is None for row in ws for c in row))
 if __name__=='__main__':unittest.main()
+
