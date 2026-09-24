@@ -7,16 +7,22 @@ const label=p=>String(p).includes('-Q')?'Q'+String(p).at(-1)+'/'+String(p).slice
 const previous=p=>String(p).includes('-Q')?(Number(String(p).at(-1))===1?`${Number(String(p).slice(0,4))-1}-Q4`:`${String(p).slice(0,4)}-Q${Number(String(p).at(-1))-1}`):String(Number(p)-1);
 const definitions=[
  {key:'assets',label:'Tổng tài sản',section:'balance_sheet',ids:['total_assets'],icon:'M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1m-6 4h1m4 0h1m-6 4h6'},
- {key:'revenue',label:'Doanh thu thuần',section:'income_statement',ids:['net_sales','net_interest_income','net_insurance_operating_revenue','net_revenue_of_insurance_premium','total_operating_income'],icon:'M4 18V6m0 12h16M7 14l4-4 4 2 5-7m-5 0h5v5'},
- {key:'profit',label:'Lợi nhuận sau thuế',section:'income_statement',ids:['net_profit_loss_after_tax'],icon:'M5 20V10h4v10m2 0V4h4v16m2 0v-7h4v7'},
+ {key:'revenue',label:'Doanh thu thuần',section:'income_statement',ids:['net_sales','net_interest_income','net_sales_from_insurance_business','net_insurance_operating_revenue','net_revenue_of_insurance_premium','total_operating_income'],icon:'M4 18V6m0 12h16M7 14l4-4 4 2 5-7m-5 0h5v5'},
+ {key:'profit',label:'Lợi nhuận sau thuế',section:'income_statement',ids:['net_profit_loss_after_tax','profit_after_tax'],icon:'M5 20V10h4v10m2 0V4h4v16m2 0v-7h4v7'},
  {key:'cash',label:'Dòng tiền HĐKD',section:'cash_flow',ids:['net_cash_inflows_outflows_from_operating_activities','net_cash_from_operating_activities'],icon:'M4 7h15l-3-3M20 17H5l3 3M4 7v6m16 4v-6'}
 ];
-function selectRow(data,section,ids){const rows=data?.sections.find(s=>s.id===section)?.rows||[];return ids.map(id=>rows.find(r=>r.id===id)).find(Boolean);}
+function selectRow(data,section,ids){const rows=data?.sections.find(s=>s.id===section)?.rows||[];const standard=ids.map(id=>rows.find(r=>r.id===id)).find(Boolean);if(standard)return standard;
+ // The independently reviewed MBB annual workbook retains its original row IDs.
+ if(data?.symbol==='MBB'&&data.periodType!=='quarter'){
+  const aliases={total_assets:'mbb_47',total_liabilities:'mbb_62',owners_equity:'mbb_73',net_interest_income:'mbb_79',net_profit_loss_after_tax:'mbb_98',net_cash_from_operating_activities:'mbb_130'};
+  for(const id of ids){const row=rows.find(r=>r.id===aliases[id]);if(row)return{...row,id};}
+ }return undefined;
+}
 function amount(row,p){const v=row?.values[String(p)];if(!Number.isFinite(v))return null;return row.unit==='triệu đồng'?v/1000:row.unit==='tỷ đồng'?v:row.unit==='đồng'?v/1e9:null;}
 function model(data,selected){
  const periods=[...new Set(selected)].map(String).sort();const latest=periods.at(-1);const prior=latest?previous(latest):null;
  const metrics=definitions.map(d=>{const row=selectRow(data,d.section,d.ids);let title=d.label;
-  if(d.key==='revenue'&&row?.id!=='net_sales')title=({net_interest_income:'Thu nhập lãi thuần',net_insurance_operating_revenue:'Doanh thu bảo hiểm thuần',net_revenue_of_insurance_premium:'Doanh thu phí bảo hiểm thuần',total_operating_income:'Tổng thu nhập hoạt động'})[row?.id]||d.label;
+  if(d.key==='revenue'&&row?.id!=='net_sales')title=({net_interest_income:'Thu nhập lãi thuần',net_sales_from_insurance_business:'Doanh thu bảo hiểm thuần',net_insurance_operating_revenue:'Doanh thu bảo hiểm thuần',net_revenue_of_insurance_premium:'Doanh thu phí bảo hiểm thuần',total_operating_income:'Tổng thu nhập hoạt động'})[row?.id]||d.label;
   const basis=data?.sections.find(s=>s.id===d.section)?.basis;const ytd=data?.periodType==='quarter'&&basis==='year_to_date';if(ytd)title+=' · Lũy kế';
   const value=amount(row,latest),before=ytd?null:amount(row,prior);return{...d,label:title,value,delta:before!==null&&before>0&&value!==null?(value-before)/before*100:null,prior,series:periods.map(p=>({period:p,value:amount(row,p)}))};
  });
