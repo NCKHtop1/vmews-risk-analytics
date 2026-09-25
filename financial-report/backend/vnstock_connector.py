@@ -1,4 +1,4 @@
-"""Real vnstock adapter. Public methods only; respects the installed data entitlement."""
+"""Direct Vietcap financial-statement adapter with cached fallbacks."""
 import copy
 import json
 import math
@@ -7,7 +7,11 @@ import pathlib
 import re
 import time
 import unicodedata
+import urllib.parse
+import urllib.request
+import http.cookiejar
 from datetime import datetime, timezone
+import pandas as pd
 from .data_validator import valid_ticker, validate_dataset, validate_period
 from .metrics import decorate
 
@@ -24,23 +28,21 @@ DEEP_PERIOD_LIMITS = {
     'year': max(4, int(os.environ.get('FINANCIAL_YEAR_PERIODS', '24'))),
     'quarter': max(4, int(os.environ.get('FINANCIAL_QUARTER_PERIODS', '48'))),
 }
-
-def fetch_report_frame(client, source, kind, method, period):
-    """Prefer VCI's full response instead of the public four-period display limit."""
-    limit = DEEP_PERIOD_LIMITS[period]
-    if source == 'VCI' and hasattr(client, '_get_report'):
-        try:
-            frame = client._get_report(
-                report_type=kind, lang='vi', show_log=False, mode='final',
-                style='readable', get_all=True, period=period, limit=limit)
-            if frame is not None and not frame.empty:
-                return frame, {'strategy': 'vci_deep', 'requestedPeriods': limit}
-        except Exception:
-            # Keep production alive if an internal provider method changes.
-            pass
-    kwargs = {'period': period, 'show_log': False}
-    kwargs.update(({'display_mode': 'all'} if kind == 'ratios' else {}) if source == 'KBS' else {'lang': 'vi', 'dropna': False})
-    return getattr(client, method)(**kwargs), {'strategy': 'public_fallback', 'requestedPeriods': 4}
+VCI_BASE = 'https://iq.vietcap.com.vn/api/iq-insight-service'
+VCI_SECTIONS = {
+    'balance_sheet': 'BALANCE_SHEET',
+    'income_statement': 'INCOME_STATEMENT',
+    'cash_flow': 'CASH_FLOW',
+}
+VCI_HEADERS = {
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Referer': 'https://trading.vietcap.com.vn/',
+    'Origin': 'https://trading.vietcap.com.vn',
+    'User-Agent': 'Mozilla/5.0 (compatible; FinQuery/1.0; +https://github.com/NCKHtop1/vmews-risk-analytics)',
+}
 
 def text(value):
     if value is None or str(value).lower() in ('nan','none','<na>'): return ''
@@ -58,6 +60,81 @@ def number(value):
 
 def normalized(value):
     return re.sub(r'[^a-z0-9]+', ' ', unicodedata.normalize('NFKD', text(value).lower().replace('đ','d')).encode('ascii','ignore').decode()).strip()
+
+def _vci_opener():
+    jar=http.cookiejar.CookieJar()
+    opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    try:
+        req=urllib.request.Request('https://trading.vietcap.com.vn/priceboard',headers=VCI_HEADERS)
+        opener.open(req,timeout=10).close()
+    except Exception:
+        pass
+    return opener
+
+
+def _vci_json(opener,path,params=None):
+    url=VCI_BASE+path
+    if params:url+='?'+urllib.parse.urlencode(params)
+    req=urllib.request.Request(url,headers=VCI_HEADERS)
+    with opener.open(req,timeout=20) as response:
+        if getattr(response,'status',200)!=200:raise ConnectionError(f'VCI HTTP {response.status}')
+        return json.loads(response.read().decode('utf-8'))
+
+
+def _vci_metadata(opener,ticker):
+    payload=_vci_json(opener,f'/v1/company/{ticker}/financial-statement/metrics')
+    data=payload.get('data') or {}
+    result={}
+    for group in data.values() if isinstance(data,dict) else []:
+        if not isinstance(group,list):continue
+        for item in group:
+            if not isinstance(item,dict):continue
+            field=text(item.get('field'))
+            if field:
+                result[field]=text(item.get('titleVi')) or text(item.get('fullTitleVi')) or field
+    return result
+
+
+def vci_records_frame(records,metadata,period,limit=None):
+    """Convert Vietcap's period records to the row-oriented schema used by FinQuery."""
+    if not isinstance(records,list):return pd.DataFrame()
+    records=records[:int(limit or DEEP_PERIOD_LIMITS[period])]
+    period_rows=[];seen=set()
+    for record in records:
+        if not isinstance(record,dict):continue
+        y=number(record.get('year',record.get('yearReport')))
+        if y is None:continue
+        y=int(y)
+        if period=='quarter':
+            q=number(record.get('quarter',record.get('lengthReport')))
+            if q is None or int(q) not in (1,2,3,4):continue
+            key=f'{y}-Q{int(q)}'
+        else:key=str(y)
+        if key in seen:continue
+        seen.add(key);period_rows.append((key,record))
+    if not period_rows:return pd.DataFrame()
+    excluded={'year','yearReport','quarter','lengthReport','report_period','ticker','symbol','code'}
+    fields=[]
+    for _,record in period_rows:
+        for field in record:
+            if field in excluded or field in fields:continue
+            if metadata and field not in metadata:continue
+            if any(number(r.get(field)) is not None for _,r in period_rows):fields.append(field)
+    rows=[]
+    for field in fields:
+        row={'item':metadata.get(field,field) if metadata else field,'item_id':field}
+        for key,record in period_rows:row[key]=record.get(field)
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _vci_financial_frame(opener,ticker,kind,period,metadata):
+    payload=_vci_json(opener,f'/v1/company/{ticker}/financial-statement',{'section':VCI_SECTIONS[kind]})
+    data=payload.get('data') or {}
+    records=data.get('years' if period=='year' else 'quarters',[]) if isinstance(data,dict) else []
+    return vci_records_frame(records,metadata,period)
+
+
 
 
 def repair_legacy_units(data):
@@ -160,21 +237,17 @@ class VNStockConnector:
         ticker=valid_ticker(ticker)
         cached=self.load_cache(ticker)
         if cached and not refresh:return validate_dataset(decorate(cached))
-        os.environ.setdefault('VNSTOCK_TELEMETRY','off')
-        from vnstock import Finance
-        from vnstock.config import Config
-        Config.REQUEST_TIMEOUT=15
         now=datetime.now(timezone.utc).isoformat()
-        clients={}
-        failures={}
-        for source in ('VCI','KBS'):
-            try:clients[source]=Finance(source=source,symbol=ticker,period='quarter',get_all=True,show_log=False)
-            except Exception as e:failures[source]=str(e)[:240]
+        opener=_vci_opener()
+        try:metadata=_vci_metadata(opener,ticker)
+        except Exception as e:
+            metadata={}
+            self.audit.append({'source':'VCI','report':'metadata','error':str(e)[:240]})
         results={}
         for period in ('quarter','year'):
             old=(cached or {}).get('quarterly',{}) if period=='quarter' else (cached or {})
-            # Annual statements change much less often. Refresh them daily and all
-            # quarter statements on every sweep; a newly added symbol is always fetched.
+            # Annual statements change much less often. Keep the daily throttle,
+            # while quarterly data is refreshed on every sweep.
             if period=='year' and old.get('updatedAt'):
                 age=(datetime.now(timezone.utc)-datetime.fromisoformat(old['updatedAt'])).total_seconds()
                 if age<86400 and old.get('sections'):
@@ -183,30 +256,16 @@ class VNStockConnector:
                     continue
             old_sections={s['id']:s for s in old.get('sections',[])}
             sections={}
-            for source in ('VCI','KBS'):
-                if source not in clients:
-                    self.audit.append({'period':period,'source':source,'error':failures[source]});continue
-                # Fetch both statement providers. VCI can expose a much deeper
-                # history than the four-period public display default; KBS adds
-                # source-specific line items and the source ratio table.
-                methods=[(k,k) for k in ('balance_sheet','income_statement','cash_flow')]
-                if source=='KBS':methods.append(('ratios','ratio'))
-                for kind,method in methods:
-                    try:
-                        time.sleep(float(os.environ.get('FINANCIAL_REQUEST_INTERVAL','3')))
-                        frame, meta = fetch_report_frame(clients[source],source,kind,method,period)
-                        section=normalize_frame(frame,kind,source,period)
-                        validate_dataset({'symbol':ticker,'periodType':period,'sections':[section]})
-                        if not section['periods']:raise ValueError('Không có kỳ báo cáo hợp lệ.')
-                        section['updatedAt']=now
-                        if kind in sections:
-                            sections[kind]=merge_sections(sections[kind],section)
-                            validate_dataset({'symbol':ticker,'periodType':period,'sections':[sections[kind]]})
-                            sections[kind]['updatedAt']=now
-                        else:
-                            sections[kind]=section
-                        self.audit.append({'period':period,'source':source,'report':kind,'rows':len(section['rows']),'periods':section['periods'],**meta})
-                    except Exception as e:self.audit.append({'period':period,'source':source,'report':kind,'error':str(e)[:240]})
+            for kind in ('balance_sheet','income_statement','cash_flow'):
+                try:
+                    time.sleep(float(os.environ.get('FINANCIAL_REQUEST_INTERVAL','3')))
+                    frame=_vci_financial_frame(opener,ticker,kind,period,metadata)
+                    section=normalize_frame(frame,kind,'VCI',period)
+                    validate_dataset({'symbol':ticker,'periodType':period,'sections':[section]})
+                    if not section['periods']:raise ValueError('Không có kỳ báo cáo hợp lệ.')
+                    section['updatedAt']=now;sections[kind]=section
+                    self.audit.append({'period':period,'source':'VCI','report':kind,'rows':len(section['rows']),'periods':section['periods'],'strategy':'direct_deep','requestedPeriods':DEEP_PERIOD_LIMITS[period]})
+                except Exception as e:self.audit.append({'period':period,'source':'VCI','report':kind,'error':str(e)[:240]})
             fresh=set(sections)
             for kind,section in old_sections.items():
                 if kind not in sections:sections[kind]=copy.deepcopy(section)
@@ -218,18 +277,18 @@ class VNStockConnector:
                 for section in audited['sections']:
                     if section['id']=='ratios':continue
                     extra=sections.get(section['id'])
-                    future={int(y) for r in extra['rows'] for y,v in r['values'].items() if v is not None}-set(audited['years']) if extra else set()
+                    additional={int(y) for r in extra['rows'] for y,v in r['values'].items() if v is not None}-set(audited['years']) if extra else set()
                     sections[section['id']]=copy.deepcopy(section)
                     sections[section['id']]['updatedAt']=now if section['id'] in fresh else old.get('updatedAt')
-                    if future:
+                    if additional:
                         clipped=copy.deepcopy(extra)
-                        for row in clipped['rows']:row['values']={y:v for y,v in row['values'].items() if int(y) in future}
+                        for row in clipped['rows']:row['values']={y:v for y,v in row['values'].items() if int(y) in additional}
                         sections[section['id']]=merge_sections(sections[section['id']],clipped)
             if not sections:continue
             core_dates=[sections[k].get('updatedAt',old.get('updatedAt','')) for k in ('balance_sheet','income_statement','cash_flow') if k in sections]
             result={'schemaVersion':2,'symbol':ticker,'name':(audited or cached or {}).get('name',ticker),'periodType':period,
                     'updatedAt':min(core_dates) if core_dates and all(core_dates) else old.get('updatedAt'),
-                    'checkedAt':now,'refreshStatus':'ok' if all(k in fresh for k in ('balance_sheet','income_statement','cash_flow','ratios')) else 'partial' if fresh else 'retained',
+                    'checkedAt':now,'refreshStatus':'ok' if all(k in fresh for k in ('balance_sheet','income_statement','cash_flow')) else 'partial' if fresh else 'retained',
                     'sections':[sections[k] for k in REPORTS if k in sections]}
             results[period]=validate_dataset(result)
         if 'year' not in results:
