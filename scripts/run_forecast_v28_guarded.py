@@ -62,8 +62,15 @@ def _persist_source_semantics():
     market=json.loads(market_path.read_text(encoding="utf-8")); dash=json.loads(dash_path.read_text(encoding="utf-8")); current=json.loads(current_path.read_text(encoding="utf-8"))
     sources=market.setdefault("sources",{}); sources["priceSessionAsOf"]=market.get("asOf"); sources["historicalRiskScanAsOf"]=_historical_scan_as_of or None
     if _bridge_metadata:
-        sources["postCloseBridge"]=_bridge_metadata; sources["marketScanAsOfSemantics"]="CURRENT_PRICE_SESSION_COMPATIBILITY_ALIAS"
-        mf=dash.setdefault("marketForecast",{}); mf["priceSessionAsOf"]=dash.get("asOf"); mf["historicalRiskScanAsOf"]=_historical_scan_as_of or None; mf["postCloseBridge"]=_bridge_metadata
+        sources["postCloseBridge"]=_bridge_metadata
+        sources["marketScanAsOfSemantics"]="CURRENT_PRICE_SESSION_COMPATIBILITY_ALIAS"
+        sources["historicalRiskScanGeneratedOn"]=sources.get("marketScanGeneratedOn")
+        sources["marketScanGeneratedOn"]=_bridge_metadata.get("observedAt") or sources.get("marketScanGeneratedOn")
+        mf=dash.setdefault("marketForecast",{})
+        mf["priceSessionAsOf"]=dash.get("asOf")
+        mf["historicalRiskScanAsOf"]=_historical_scan_as_of or None
+        mf["historicalRiskScanGeneratedOn"]=sources.get("historicalRiskScanGeneratedOn")
+        mf["postCloseBridge"]=_bridge_metadata
 
     # V41 appends per-symbol transition diagnostics after the core writer has
     # produced both dashboard/current snapshots. Keep those two public symbol
