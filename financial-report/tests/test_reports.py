@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from backend.data_validator import available_years,validate_period
-from backend.vnstock_connector import normalize_frame,fetch_report_frame,DEEP_PERIOD_LIMITS
+from backend.vnstock_connector import normalize_frame,vci_records_frame,DEEP_PERIOD_LIMITS
 from backend.excel_builder import ExcelBuilder
 
 class ReportsTest(unittest.TestCase):
@@ -31,17 +31,12 @@ class ReportsTest(unittest.TestCase):
    if s['id']=='cash_flow':
     for r in s['rows']:r['values']['2023']=None
   with self.assertRaises(ValueError):validate_period(d,[2023])
- def test_vci_deep_fetch_requests_more_than_default_four_periods(self):
-  class FakeVCI:
-   def __init__(self):self.kwargs=None
-   def _get_report(self,**kwargs):
-    self.kwargs=kwargs
-    return pd.DataFrame([{'item':'Doanh thu','item_id':'sales','2025':1,'2024':2,'2023':3,'2022':4,'2021':5}])
-  client=FakeVCI();frame,meta=fetch_report_frame(client,'VCI','income_statement','income_statement','year')
-  self.assertEqual(client.kwargs['limit'],DEEP_PERIOD_LIMITS['year'])
-  self.assertGreater(client.kwargs['limit'],4)
-  self.assertEqual(meta['strategy'],'vci_deep')
-  self.assertEqual(len(frame.columns),7)
+ def test_vci_deep_records_are_not_truncated_to_four_periods(self):
+  records=[{'year':y,'sales':y*10} for y in range(2026,2018,-1)]
+  frame=vci_records_frame(records,{'sales':'Doanh thu'},'year')
+  self.assertGreater(DEEP_PERIOD_LIMITS['year'],4)
+  self.assertEqual(list(frame.columns),['item','item_id','2026','2025','2024','2023','2022','2021','2020','2019'])
+  self.assertEqual(frame.iloc[0]['2019'],20190)
 
  def test_no_quarter_mislabeled_as_year(self):
   bad=pd.DataFrame([['Tỷ lệ','r',12,20]],columns=['item','item_id','2018','2018'])
