@@ -52,7 +52,7 @@ function model(data,selected,focus=null,compare=null){
  const chosen=comparisonPeriods(data,focus,compare);const latest=chosen.latest,prior=chosen.prior;
  let periods=[...new Set((selected||[]).map(String).filter(p=>chosen.available.includes(p)))].sort((a,b)=>periodIndex(a)-periodIndex(b));
  if(!periods.length)periods=chosen.available.slice(data?.periodType==='quarter'?-4:-6);
- for(const p of [prior,latest])if(p&&!periods.includes(p))periods.push(p);periods.sort((a,b)=>periodIndex(a)-periodIndex(b));
+ periods.sort((a,b)=>periodIndex(a)-periodIndex(b));
  const metrics=definitions.map(d=>{const row=selectRow(data,d.section,d.ids);let title=d.label;
   if(d.key==='revenue'&&row?.id!=='net_sales')title=({net_interest_income:'Thu nhập lãi thuần',net_sales_from_insurance_business:'Doanh thu bảo hiểm thuần',net_insurance_operating_revenue:'Doanh thu bảo hiểm thuần',net_revenue_of_insurance_premium:'Doanh thu phí bảo hiểm thuần',total_operating_income:'Tổng thu nhập hoạt động'})[row?.id]||d.label;
   const basis=data?.sections.find(s=>s.id===d.section)?.basis;const ytd=data?.periodType==='quarter'&&basis==='year_to_date';if(ytd)title+=' · Lũy kế';
