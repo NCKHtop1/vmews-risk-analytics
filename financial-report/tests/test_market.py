@@ -53,6 +53,13 @@ class MarketTests(unittest.TestCase):
         self.assertFalse(m.company_match({'symbol':'FPT','name':'Công ty Cổ phần FPT'}, 'FPT Retail tăng trưởng'))
         self.assertTrue(m.company_match({'symbol':'FRT','name':'Công ty Bán lẻ FPT'}, 'FPT Retail tăng trưởng'))
 
+    def test_vneconomy_finance_feed_gets_topic_tags(self):
+        companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
+        xml='<?xml version="1.0" encoding="UTF-8"?><rss><channel><item><title>Lãi suất ngân hàng giảm, thị trường chứng khoán tăng</title><link>https://vneconomy.vn/lai-suat-thi-truong.htm</link><pubDate>Thu, 24 Sep 2026 08:00:00 +0700</pubDate></item></channel></rss>'
+        rows=m.parse_feed(xml,'VnEconomy','https://vneconomy.vn/tai-chinh.rss',companies,datetime(2026,9,24,10,tzinfo=timezone.utc))
+        self.assertEqual(len(rows),1)
+        self.assertTrue({'finance','rates','banking','stocks'}.issubset(set(rows[0]['topics'])))
+
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
         def item(url,day='Thu, 24 Sep 2026 08:00:00 +0700'):
