@@ -4,4 +4,4 @@ import subprocess
 import unittest
 class MarketChartTests(unittest.TestCase):
     def test_chart_math(self):
-        subprocess.run(['node','--test',str(Path(__file__).with_name('chart_math.test.cjs'))],check=True)
+        subprocess.run(['node','--test',*[str(p) for p in Path(__file__).parent.glob('chart_*.test.cjs')]],check=True)
