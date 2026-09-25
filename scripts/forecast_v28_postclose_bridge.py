@@ -2,12 +2,12 @@
 
 Current-session inference is allowed only for the exchange's certified latest
 completed session, with broad same-session TradingView OHLC coverage and broad
-independent VNDIRECT close confirmation. Symbols without a verified same-session
-bar remain explicitly stale; they never receive synthetic OHLC and they do not
-block publication when both independent source coverage gates pass. Downstream
-consumers must keep stale symbols out of current-session rankings. This also
-works when a workflow runs after midnight, on a weekend, or during an exchange
-holiday. No synthetic OHLC is created.
+independent VNDIRECT close confirmation. Symbols without independently confirmed
+same-session data are excluded from the current publication universe; their
+historical rows remain untouched and no synthetic OHLC is created. This allows a
+broad verified market cross-section to advance without relabeling suspended,
+illiquid, or provider-missing names as current. This also works when a workflow
+runs after midnight, on a weekend, or during an exchange holiday.
 """
 from __future__ import annotations
 import math, os, re
@@ -214,27 +214,49 @@ def bridge_completed_session(
         if not histories.get(symbol)
         or str((histories[symbol] or [{}])[-1].get("date") or "")[:10] != session_date
     )
+    verified_current = sorted(
+        symbol for symbol in common
+        if histories.get(symbol)
+        and str((histories[symbol] or [{}])[-1].get("date") or "")[:10] == session_date
+    )
+    excluded = sorted(current - set(verified_current))
+    verified_coverage = len(verified_current) / len(current)
+    required_publication_coverage = max(float(min_coverage), float(min_secondary_coverage))
+    if verified_coverage + 1e-12 < required_publication_coverage:
+        audit["status"] = "REJECTED_VERIFIED_PUBLICATION_COVERAGE"
+        audit["verifiedCurrentSymbols"] = len(verified_current)
+        audit["verifiedCoverage"] = round(verified_coverage, 6)
+        audit["requiredPublicationCoverage"] = required_publication_coverage
+        audit["excludedSymbols"] = len(excluded)
+        audit["excludedSymbolSample"] = excluded[:20]
+        freshness["postCloseBridge"] = audit
+        raise RuntimeError(
+            f"Verified current-session publication coverage for {session_date} "
+            f"{verified_coverage:.1%} below {required_publication_coverage:.1%}"
+        )
+
     audit.update({
         "appendedSymbols": appended,
         "alreadyCurrentSymbols": already,
         "staleSymbols": len(stale),
         "staleSymbolSample": stale[:20],
-    })
-    # A broad, independently confirmed same-session cross-section is enough to
-    # advance the market snapshot. Some listed names can legitimately have no
-    # same-day trade/quote (suspension, illiquidity, provider omission). Keep
-    # those rows untouched and explicitly stale instead of fabricating OHLC or
-    # freezing every liquid symbol behind a 100% universe requirement.
-    audit.update({
+        "verifiedCurrentSymbols": len(verified_current),
+        "verifiedCoverage": round(verified_coverage, 6),
+        "requiredPublicationCoverage": required_publication_coverage,
+        "excludedSymbols": len(excluded),
+        "excludedSymbolSample": excluded[:20],
         "status": "PASS",
         "completedSessionVerified": True,
         "independentCloseConfirmed": True,
-        "partialUniverse": bool(stale),
-        "publicationScope": "VERIFIED_CURRENT_PLUS_EXPLICIT_STALE" if stale else "FULL_CURRENT_UNIVERSE",
+        "partialUniverse": bool(excluded),
+        "publicationScope": "INDEPENDENTLY_VERIFIED_CURRENT_ONLY" if excluded else "FULL_CURRENT_UNIVERSE",
     })
     freshness.update({
         "forecastAsOf": session_date,
         "postCloseQuoteAsOf": session_date,
         "postCloseBridge": audit,
+        "currentHOSESymbols": verified_current,
+        "excludedCurrentSessionSymbols": excluded,
+        "excludedStaleSymbols": stale,
     })
     return histories, freshness
