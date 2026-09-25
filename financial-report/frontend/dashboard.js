@@ -5,6 +5,23 @@ const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
 const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2});
 const label=p=>String(p).includes('-Q')?'Q'+String(p).at(-1)+'/'+String(p).slice(0,4):String(p);
 const previous=p=>String(p).includes('-Q')?(Number(String(p).at(-1))===1?`${Number(String(p).slice(0,4))-1}-Q4`:`${String(p).slice(0,4)}-Q${Number(String(p).at(-1))-1}`):String(Number(p)-1);
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const ROW_LABELS={
+ total_assets:['tong cong tai san','tong tai san'],
+ liabilities:['no phai tra','tong no phai tra'],
+ total_liabilities:['no phai tra','tong no phai tra'],
+ owners_equity:['von chu so huu','tong von chu so huu'],
+ net_sales:['doanh thu thuan'],
+ net_interest_income:['thu nhap lai thuan'],
+ net_sales_from_insurance_business:['doanh thu bao hiem thuan'],
+ net_insurance_operating_revenue:['doanh thu bao hiem thuan'],
+ net_revenue_of_insurance_premium:['doanh thu phi bao hiem thuan'],
+ total_operating_income:['tong thu nhap hoat dong'],
+ net_profit_loss_after_tax:['lai lo thuan sau thue','loi nhuan sau thue','loi nhuan sau thue thu nhap doanh nghiep'],
+ profit_after_tax:['lai lo thuan sau thue','loi nhuan sau thue','loi nhuan sau thue thu nhap doanh nghiep'],
+ net_cash_inflows_outflows_from_operating_activities:['luu chuyen tien te rong tu cac hoat dong san xuat kinh doanh','luu chuyen tien thuan tu hoat dong kinh doanh'],
+ net_cash_from_operating_activities:['luu chuyen tien te rong tu cac hoat dong san xuat kinh doanh','luu chuyen tien thuan tu hoat dong kinh doanh']
+};
 const definitions=[
  {key:'assets',label:'Tổng tài sản',section:'balance_sheet',ids:['total_assets'],icon:'M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1m-6 4h1m4 0h1m-6 4h6'},
  {key:'revenue',label:'Doanh thu thuần',section:'income_statement',ids:['net_sales','net_interest_income','net_sales_from_insurance_business','net_insurance_operating_revenue','net_revenue_of_insurance_premium','total_operating_income'],icon:'M4 18V6m0 12h16M7 14l4-4 4 2 5-7m-5 0h5v5'},
@@ -16,19 +33,34 @@ function selectRow(data,section,ids){const rows=data?.sections.find(s=>s.id===se
  if(data?.symbol==='MBB'&&data.periodType!=='quarter'){
   const aliases={total_assets:'mbb_47',total_liabilities:'mbb_62',owners_equity:'mbb_73',net_interest_income:'mbb_79',net_profit_loss_after_tax:'mbb_98',net_cash_from_operating_activities:'mbb_130'};
   for(const id of ids){const row=rows.find(r=>r.id===aliases[id]);if(row)return{...row,id};}
- }return undefined;
+ }
+ const wanted=new Set(ids.flatMap(id=>ROW_LABELS[id]||[]));if(!wanted.size)return undefined;
+ const row=rows.find(r=>wanted.has(norm(r.label)));return row?{...row,id:ids[0]}:undefined;
 }
 function amount(row,p){const v=row?.values[String(p)];if(!Number.isFinite(v))return null;return row.unit==='triệu đồng'?v/1000:row.unit==='tỷ đồng'?v:row.unit==='đồng'?v/1e9:null;}
-function model(data,selected){
- const periods=[...new Set(selected)].map(String).sort();const latest=periods.at(-1);const prior=latest?previous(latest):null;
+function availablePeriods(data){
+ const source=Array.isArray(data?.periods)&&data.periods.length?data.periods:(data?.sections||[]).flatMap(s=>s.periods||[]);
+ return [...new Set(source.map(String))].sort((a,b)=>periodIndex(a)-periodIndex(b));
+}
+function comparisonPeriods(data,focus,compare){
+ const available=availablePeriods(data);let latest=focus!=null&&available.includes(String(focus))?String(focus):available.at(-1)||null;
+ let prior=null;if(latest){const direct=previous(latest);prior=available.includes(direct)?direct:available.filter(p=>periodIndex(p)<periodIndex(latest)).at(-1)||null;}
+ if(compare!=null&&available.includes(String(compare))&&String(compare)!==latest)prior=String(compare);
+ return{available,latest,prior};
+}
+function model(data,selected,focus=null,compare=null){
+ const chosen=comparisonPeriods(data,focus,compare);const latest=chosen.latest,prior=chosen.prior;
+ let periods=[...new Set((selected||[]).map(String).filter(p=>chosen.available.includes(p)))].sort((a,b)=>periodIndex(a)-periodIndex(b));
+ if(!periods.length)periods=chosen.available.slice(data?.periodType==='quarter'?-4:-6);
+ for(const p of [prior,latest])if(p&&!periods.includes(p))periods.push(p);periods.sort((a,b)=>periodIndex(a)-periodIndex(b));
  const metrics=definitions.map(d=>{const row=selectRow(data,d.section,d.ids);let title=d.label;
   if(d.key==='revenue'&&row?.id!=='net_sales')title=({net_interest_income:'Thu nhập lãi thuần',net_sales_from_insurance_business:'Doanh thu bảo hiểm thuần',net_insurance_operating_revenue:'Doanh thu bảo hiểm thuần',net_revenue_of_insurance_premium:'Doanh thu phí bảo hiểm thuần',total_operating_income:'Tổng thu nhập hoạt động'})[row?.id]||d.label;
   const basis=data?.sections.find(s=>s.id===d.section)?.basis;const ytd=data?.periodType==='quarter'&&basis==='year_to_date';if(ytd)title+=' · Lũy kế';
-  const value=amount(row,latest),before=ytd?null:amount(row,prior);return{...d,label:title,value,delta:before!==null&&before>0&&value!==null?(value-before)/before*100:null,prior,series:periods.map(p=>({period:p,value:amount(row,p)}))};
+  const value=amount(row,latest),before=ytd?null:amount(row,prior);return{...d,label:title,value,before,delta:before!==null&&before!==0&&value!==null?(value-before)/Math.abs(before)*100:null,prior,series:periods.map(p=>({period:p,value:amount(row,p)}))};
  });
  const assets=amount(selectRow(data,'balance_sheet',['total_assets']),latest),debt=amount(selectRow(data,'balance_sheet',['liabilities','total_liabilities']),latest),equity=amount(selectRow(data,'balance_sheet',['owners_equity']),latest);
  const capital=assets>0&&debt!==null&&equity!==null&&debt>=0&&equity>=0&&Math.abs(debt+equity-assets)<=Math.max(.001,assets*.000001)?{assets,debt,equity,equityPercent:equity/assets*100}:null;
- return{periods,latest,metrics,capital};
+ return{periods,available:chosen.available,latest,compare:prior,metrics,capital};
 }
 function periodIndex(p){return p.includes('-Q')?Number(p.slice(0,4))*4+Number(p.at(-1)):Number(p)*4;}
 function geometry(series,width=560,height=190,padding={left:65,right:24,top:18,bottom:35}){
@@ -40,7 +72,7 @@ function geometry(series,width=560,height=190,padding={left:65,right:24,top:18,b
  return{points,path,zero:y(0),lo,hi,y,padding,width,height};
 }
 function sparkline(series){const g=geometry(series,96,32,{left:4,right:4,top:4,bottom:4});return`<svg class="sparkline" viewBox="0 0 96 32" aria-hidden="true"><path d="${g.path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
-function cards(m){return m.metrics.map((k,i)=>`<article class="kpi-card kpi-${i}"><div class="kpi-label"><span>${esc(k.label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${k.icon}"/></svg></div><div class="kpi-value">${k.value===null?'—':nf.format(k.value)}<span>tỷ đồng</span></div><div class="kpi-bottom"><div>${k.delta===null?`<span class="kpi-context">${k.value===null?'Chưa có dữ liệu':esc(label(m.latest))}</span>`:`<span class="kpi-change ${k.delta<0?'down':'up'}">${k.delta>0?'+':''}${nf.format(k.delta)}%</span><span class="kpi-context">so với ${esc(label(k.prior))}</span>`}</div>${sparkline(k.series)}</div></article>`).join('');}
+function cards(m){return m.metrics.map((k,i)=>{const context=k.value===null?'Chưa có dữ liệu':m.compare?(k.before===null?`Không có số liệu ${label(m.compare)}`:`so với ${label(m.compare)}`):label(m.latest);return`<article class="kpi-card kpi-${i}"><div class="kpi-label"><span>${esc(k.label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${k.icon}"/></svg></div><div class="kpi-value">${k.value===null?'—':nf.format(k.value)}<span>tỷ đồng</span></div><div class="kpi-bottom"><div>${k.delta===null?`<span class="kpi-context">${esc(context)}</span>`:`<span class="kpi-change ${k.delta<0?'down':'up'}">${k.delta>0?'+':''}${nf.format(k.delta)}%</span><span class="kpi-context">${esc(context)}</span>`}</div>${sparkline(k.series)}</div></article>`}).join('');}
 function axisNumber(v){return Math.abs(v)>=1e6?nf.format(v/1e6)+'tr':Math.abs(v)>=1000?nf.format(v/1000)+'k':nf.format(v);}
 function trend(metric){
  if(!metric||!metric.series.some(s=>s.value!==null))return'<div class="chart-empty">Chưa có dữ liệu cho chỉ tiêu này.</div>';
@@ -54,12 +86,16 @@ function capital(m){
  const c=m.capital,length=2*Math.PI*47,e=length*c.equityPercent/100;
  return`<div class="capital-content"><svg class="capital-ring" viewBox="0 0 130 130" role="img" aria-label="Vốn chủ sở hữu ${nf.format(c.equityPercent)} phần trăm tổng nguồn vốn"><circle cx="65" cy="65" r="47" fill="none" stroke="#dce3f5" stroke-width="15"/><circle cx="65" cy="65" r="47" fill="none" stroke="#5264dc" stroke-width="15" stroke-dasharray="${e} ${length-e}" transform="rotate(-90 65 65)"/><text x="65" y="63" text-anchor="middle" class="ring-number">${nf.format(c.equityPercent)}%</text><text x="65" y="82" text-anchor="middle" class="ring-caption">Vốn chủ sở hữu</text></svg><div class="capital-legend"><div><span><i class="equity-swatch"></i>Vốn chủ sở hữu</span><strong>${nf.format(c.equity)} <small>tỷ</small></strong></div><div><span><i class="debt-swatch"></i>Nợ phải trả</span><strong>${nf.format(c.debt)} <small>tỷ</small></strong></div></div></div>`;
 }
-function render(data,periods,selected='profit'){
- const el=id=>document.getElementById(id),m=model(data,periods);el('overview').hidden=!data||!m.latest;if(!data||!m.latest)return selected;
- el('overview-period').textContent=label(m.latest)+' · Kỳ cuối được chọn';el('kpi-grid').innerHTML=cards(m);
+function render(data,periods,selected='profit',focus=null,compare=null){
+ const el=id=>document.getElementById(id),m=model(data,periods,focus,compare);el('overview').hidden=!data||!m.latest;if(!data||!m.latest)return{metric:selected,focus:null,compare:null};
+ el('overview-period').textContent=m.compare?`${label(m.latest)} · so với ${label(m.compare)}`:label(m.latest);el('kpi-grid').innerHTML=cards(m);
+ const focusSelect=el('overview-focus-period'),compareSelect=el('overview-compare-period'),details=el('overview-compare-details'),descending=[...m.available].reverse();
+ if(focusSelect){focusSelect.innerHTML=descending.map(p=>`<option value="${esc(p)}" ${p===m.latest?'selected':''}>${esc(label(p))}</option>`).join('');focusSelect.disabled=descending.length<2;}
+ if(compareSelect){const choices=descending.filter(p=>p!==m.latest);compareSelect.innerHTML=choices.map(p=>`<option value="${esc(p)}" ${p===m.compare?'selected':''}>${esc(label(p))}</option>`).join('');compareSelect.disabled=!choices.length;}
+ if(details)details.hidden=m.available.length<2;
  const available=m.metrics.filter(k=>k.series.some(p=>p.value!==null));if(!available.some(k=>k.key===selected))selected=available[0]?.key||'';
  el('chart-metric').innerHTML=available.map(k=>`<option value="${k.key}" ${k.key===selected?'selected':''}>${esc(k.label)}</option>`).join('');el('chart-metric').disabled=!available.length;
- el('trend-chart').innerHTML=trend(m.metrics.find(k=>k.key===selected));el('capital-period').textContent=label(m.latest);el('capital-chart').innerHTML=capital(m);return selected;
+ el('trend-chart').innerHTML=trend(m.metrics.find(k=>k.key===selected));el('capital-period').textContent=label(m.latest);el('capital-chart').innerHTML=capital(m);return{metric:selected,focus:m.latest,compare:m.compare};
 }
-root.FinancialDashboard={model,geometry,render};if(typeof module!=='undefined')module.exports=root.FinancialDashboard;
+root.FinancialDashboard={model,geometry,render,availablePeriods,comparisonPeriods};if(typeof module!=='undefined')module.exports=root.FinancialDashboard;
 })(typeof window==='undefined'?globalThis:window);
