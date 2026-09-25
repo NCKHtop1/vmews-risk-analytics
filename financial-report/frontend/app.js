@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id);
 const DATA_BASE=new URL(document.currentScript.dataset.base||'../data/',document.currentScript.src||location.href).href;
 const BOOT=JSON.parse(document.getElementById('financial-bootstrap')?.textContent||'{}');
 const LIVE_BASE=document.documentElement.dataset.hosting==='pages'?DATA_BASE:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-report-data/data/';
-const state={bundle:null,data:null,companies:[],years:[],reports:[],active:'balance_sheet',chartMetric:'profit',loading:false,controller:null,mode:new URLSearchParams(location.search).get('mode')==='year'?'year':'quarter',fallback:false};
+const state={bundle:null,data:null,companies:[],years:[],reports:[],active:'balance_sheet',chartMetric:'profit',overviewPeriod:null,overviewCompare:null,loading:false,controller:null,mode:new URLSearchParams(location.search).get('mode')==='year'?'year':'quarter',fallback:false};
 const names={balance_sheet:'Cân đối kế toán',income_statement:'Kết quả kinh doanh',cash_flow:'Lưu chuyển tiền tệ',ratios:'Chỉ số từ nguồn',derived_ratios:'Chỉ số tính từ BCTC',notes:'Thuyết minh',off_balance:'Ngoại bảng'};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2});
@@ -26,7 +26,7 @@ function checkData(d,symbol,mode='year'){
  if(mode==='year'&&d.quarterly)checkData(d.quarterly,symbol,'quarter');return FinancialMetrics.decorate(d);
 }
 function setMode(mode,preserve=false){
- if(!['year','quarter'].includes(mode))throw Error('Kỳ báo cáo không hợp lệ.');state.mode=mode;
+ if(!['year','quarter'].includes(mode))throw Error('Kỳ báo cáo không hợp lệ.');state.mode=mode;state.overviewPeriod=null;state.overviewCompare=null;
  if(!state.bundle)return;
  state.data=mode==='quarter'?state.bundle.quarterly:state.bundle;
  document.querySelectorAll('input[name="period-type"]').forEach(b=>{b.checked=b.value===mode;});
@@ -50,7 +50,7 @@ function renderYears(){
 }
 function renderReports(){if(!state.data)return;$('report-options').innerHTML=state.data.sections.map(s=>`<div class="report-option"><input type="checkbox" id="report-${esc(s.id)}" value="${esc(s.id)}" ${!s.periods.length?'disabled':''} ${state.reports.includes(s.id)?'checked':''}><label for="report-${esc(s.id)}">${esc(names[s.id]||s.name)}${s.qualityStatus==='periods_unverified'?' · Chưa khớp kỳ':''}</label><small>${s.rows.filter(r=>Object.values(r.values).some(v=>v!==null)).length}</small></div>`).join('');}
 function renderPreview(){
- state.chartMetric=FinancialDashboard.render(state.data,state.years,state.chartMetric);
+ const overview=FinancialDashboard.render(state.data,state.years,state.chartMetric,state.overviewPeriod,state.overviewCompare);state.chartMetric=overview.metric;state.overviewPeriod=overview.focus;state.overviewCompare=overview.compare;
  const reports=state.data?.sections.filter(s=>state.reports.includes(s.id))||[];if(!reports.some(s=>s.id===state.active))state.active=reports[0]?.id||'';
  $('report-tabs').innerHTML=reports.map(s=>`<button type="button" role="tab" id="tab-${esc(s.id)}" aria-selected="${state.active===s.id}" data-report="${esc(s.id)}">${esc(names[s.id]||s.name)}</button>`).join('');const section=reports.find(s=>s.id===state.active);
  $('unit-caption').textContent=['ratios','derived_ratios'].includes(section?.id)?'Đơn vị theo chỉ tiêu':section?.basis==='year_to_date'?'Triệu đồng · Lũy kế':'Triệu đồng';
@@ -64,7 +64,7 @@ async function loadCompany(raw){
  const match=state.companies.find(c=>c.symbol===raw.trim().toUpperCase()||c.name.toLowerCase()===raw.trim().toLowerCase());const symbol=match?.symbol||raw.trim().split(/[\s—–]/)[0].toUpperCase();
  if(!state.companies.some(c=>c.symbol===symbol)){state.controller?.abort();state.bundle=null;state.data=null;state.years=[];state.reports=[];state.loading=false;$('report-options').replaceChildren();$('year-options').replaceChildren();$('availability').textContent='Hãy chọn một doanh nghiệp VN100.';$('data-state').textContent='Mã ngoài VN100';$('preview-title').textContent=symbol;$('company-name').textContent='';$('updated-at').textContent='—';$('refresh-data').disabled=false;renderPreview();error('Trang này hỗ trợ các doanh nghiệp thuộc VN100. Hãy chọn một mã trong danh sách.');return;}
  window.FinancialMarket?.select(symbol,state.companies);
- state.controller?.abort();const ctl=new AbortController();state.controller=ctl;state.loading=true;state.bundle=null;state.data=null;state.years=[];state.reports=[];$('ticker').value=symbol;error('');$('download').disabled=true;$('refresh-data').disabled=true;$('data-state').className='status-badge';$('data-state').textContent='Đang tải';$('availability').textContent='Đang kiểm tra kỳ có dữ liệu…';$('report-options').replaceChildren();$('year-options').replaceChildren();$('report-tabs').replaceChildren();$('preview-title').innerHTML=`${esc(symbol)} <span>/ Báo cáo tài chính</span>`;$('company-name').textContent=match?.name||symbol;$('table-container').innerHTML='<div class="empty-state"><span class="loading-ring"></span><h3>Đang tải báo cáo</h3><p></p></div>';
+ state.controller?.abort();const ctl=new AbortController();state.controller=ctl;state.loading=true;state.bundle=null;state.data=null;state.years=[];state.reports=[];state.overviewPeriod=null;state.overviewCompare=null;$('ticker').value=symbol;error('');$('download').disabled=true;$('refresh-data').disabled=true;$('data-state').className='status-badge';$('data-state').textContent='Đang tải';$('availability').textContent='Đang kiểm tra kỳ có dữ liệu…';$('report-options').replaceChildren();$('year-options').replaceChildren();$('report-tabs').replaceChildren();$('preview-title').innerHTML=`${esc(symbol)} <span>/ Báo cáo tài chính</span>`;$('company-name').textContent=match?.name||symbol;$('table-container').innerHTML='<div class="empty-state"><span class="loading-ring"></span><h3>Đang tải báo cáo</h3><p></p></div>';
  FinancialDashboard.render(null,[]);
  try{
   let d;state.fallback=false;
@@ -82,7 +82,9 @@ $('report-options').addEventListener('change',e=>{const r=e.target.value;state.r
 $('all-years').addEventListener('click',()=>{state.years=eligible();update();});$('recent-years').addEventListener('click',()=>{state.years=eligible().slice(state.mode==='quarter'?-4:-3);update();});$('latest-period').addEventListener('click',()=>{state.years=eligible().slice(-1);update();});$('clear-years').addEventListener('click',()=>{state.years=[];update();});
 $('refresh-data').addEventListener('click',()=>loadCompany($('ticker').value));document.querySelectorAll('input[name="period-type"]').forEach(r=>r.addEventListener('change',()=>setMode(r.value)));
 $('report-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-report]');if(b){state.active=b.dataset.report;renderPreview();}});
-$('chart-metric').addEventListener('change',e=>{state.chartMetric=e.target.value;FinancialDashboard.render(state.data,state.years,state.chartMetric);});
+$('chart-metric').addEventListener('change',e=>{state.chartMetric=e.target.value;const overview=FinancialDashboard.render(state.data,state.years,state.chartMetric,state.overviewPeriod,state.overviewCompare);state.chartMetric=overview.metric;state.overviewPeriod=overview.focus;state.overviewCompare=overview.compare;});
+$('overview-focus-period').addEventListener('change',e=>{state.overviewPeriod=e.target.value;const overview=FinancialDashboard.render(state.data,state.years,state.chartMetric,state.overviewPeriod,state.overviewCompare);state.chartMetric=overview.metric;state.overviewPeriod=overview.focus;state.overviewCompare=overview.compare;});
+$('overview-compare-period').addEventListener('change',e=>{state.overviewCompare=e.target.value;const overview=FinancialDashboard.render(state.data,state.years,state.chartMetric,state.overviewPeriod,state.overviewCompare);state.chartMetric=overview.metric;state.overviewPeriod=overview.focus;state.overviewCompare=overview.compare;});
 for(const event of ['pointerover','focusin'])$('trend-chart').addEventListener(event,e=>{const point=e.target.closest('[data-tooltip]');if(point)$('trend-chart').querySelector('.chart-readout').textContent=point.dataset.tooltip;});
 $('copyright-year').textContent=new Date().getFullYear();
 $('report-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;const ids=state.data?.sections.filter(s=>state.reports.includes(s.id)).map(s=>s.id)||[];if(!ids.length)return;e.preventDefault();state.active=ids[(ids.indexOf(state.active)+(e.key==='ArrowRight'?1:ids.length-1))%ids.length];renderPreview();$('tab-'+state.active)?.focus();});$('download').addEventListener('click',download);
