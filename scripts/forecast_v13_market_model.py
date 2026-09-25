@@ -3049,7 +3049,7 @@ def write_artifacts(
             },
         }
     )
-    current.update({"generatedAt": timestamp, "symbols": snapshots, "modelVersion": VERSION})
+    current.update({"generatedAt": timestamp, "asOf": freshness["forecastAsOf"], "symbols": snapshots, "modelVersion": VERSION})
     _json_save(DATA / "forecast-dashboard-v12.json", dashboard)
     _json_save(DATA / "forecast-current-v12.json", current)
     _json_save(DATA / "forecast-market-v13.json", market_artifact)
