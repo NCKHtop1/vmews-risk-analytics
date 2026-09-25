@@ -38,6 +38,27 @@ class ReportsTest(unittest.TestCase):
   self.assertEqual(list(frame.columns),['item','item_id','2026','2025','2024','2023','2022','2021','2020','2019'])
   self.assertEqual(frame.iloc[0]['2019'],20190)
 
+ def test_dashboard_defaults_to_latest_and_previous_period_with_raw_vci_ids(self):
+  fixture={'symbol':'FPT','periodType':'year','periods':[2023,2024,2025],'sections':[
+   {'id':'balance_sheet','basis':'point_in_time','rows':[
+    {'id':'bsa53','label':'TỔNG CỘNG TÀI SẢN','unit':'triệu đồng','values':{'2023':100000,'2024':110000,'2025':121000}},
+    {'id':'bsa54','label':'NỢ PHẢI TRẢ','unit':'triệu đồng','values':{'2023':60000,'2024':65000,'2025':70000}},
+    {'id':'bsa78','label':'Vốn chủ sở hữu','unit':'triệu đồng','values':{'2023':40000,'2024':45000,'2025':51000}}]},
+   {'id':'income_statement','basis':'year','rows':[
+    {'id':'isa3','label':'Doanh thu thuần','unit':'triệu đồng','values':{'2023':50000,'2024':55000,'2025':66000}},
+    {'id':'isa20','label':'Lãi/(lỗ) thuần sau thuế','unit':'triệu đồng','values':{'2023':5000,'2024':6000,'2025':9000}}]},
+   {'id':'cash_flow','basis':'year','rows':[
+    {'id':'cfa18','label':'Lưu chuyển tiền tệ ròng từ các hoạt động sản xuất kinh doanh','unit':'triệu đồng','values':{'2023':7000,'2024':8000,'2025':10000}}]}]}
+  js="const D=require(process.argv[1]),d=JSON.parse(process.argv[2]);const a=D.model(d,[2023,2024,2025]);const b=D.model(d,[2023,2024,2025],'2025','2023');const q=D.comparisonPeriods({periods:['2025-Q4','2026-Q1','2026-Q2']});console.log(JSON.stringify({latest:a.latest,compare:a.compare,assets:a.metrics.find(x=>x.key==='assets'),revenue:a.metrics.find(x=>x.key==='revenue'),profit:a.metrics.find(x=>x.key==='profit'),cash:a.metrics.find(x=>x.key==='cash'),capital:a.capital,custom:b.compare,customDelta:b.metrics.find(x=>x.key==='assets').delta,q}));"
+  out=subprocess.run(['node','-e',js,str(ROOT/'frontend/dashboard.js'),json.dumps(fixture)],check=True,capture_output=True,text=True)
+  data=json.loads(out.stdout)
+  self.assertEqual((data['latest'],data['compare']),('2025','2024'))
+  self.assertEqual(data['assets']['value'],121);self.assertAlmostEqual(data['assets']['delta'],10)
+  self.assertEqual(data['revenue']['value'],66);self.assertEqual(data['profit']['value'],9);self.assertEqual(data['cash']['value'],10)
+  self.assertAlmostEqual(data['capital']['equityPercent'],51/121*100)
+  self.assertEqual(data['custom'],'2023');self.assertAlmostEqual(data['customDelta'],21)
+  self.assertEqual((data['q']['latest'],data['q']['prior']),('2026-Q2','2026-Q1'))
+
  def test_no_quarter_mislabeled_as_year(self):
   bad=pd.DataFrame([['Tỷ lệ','r',12,20]],columns=['item','item_id','2018','2018'])
   with self.assertRaises(ValueError):normalize_frame(bad,'ratios','VCI')
