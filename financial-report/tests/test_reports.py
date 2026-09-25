@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from backend.data_validator import available_years,validate_period
-from backend.vnstock_connector import normalize_frame,vci_records_frame,DEEP_PERIOD_LIMITS
+from backend.vnstock_connector import normalize_frame,vci_records_frame,DEEP_PERIOD_LIMITS,canonicalize_section_ids
 from backend.excel_builder import ExcelBuilder
 
 class ReportsTest(unittest.TestCase):
@@ -37,6 +37,12 @@ class ReportsTest(unittest.TestCase):
   self.assertGreater(DEEP_PERIOD_LIMITS['year'],4)
   self.assertEqual(list(frame.columns),['item','item_id','2026','2025','2024','2023','2022','2021','2020','2019'])
   self.assertEqual(frame.iloc[0]['2019'],20190)
+
+ def test_direct_vci_ids_are_mapped_back_to_validated_metric_ids(self):
+  section={'id':'income_statement','name':'KQKD','rows':[{'id':'isa3','label':'Doanh thu thuần','unit':'triệu đồng','level':0,'values':{'2025':1}}]}
+  fixed=canonicalize_section_ids(section,'FPT','year')
+  self.assertEqual(fixed['rows'][0]['id'],'net_sales')
+  self.assertEqual(fixed['rows'][0]['values']['2025'],1)
 
  def test_no_quarter_mislabeled_as_year(self):
   bad=pd.DataFrame([['Tỷ lệ','r',12,20]],columns=['item','item_id','2018','2018'])
