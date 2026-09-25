@@ -13,7 +13,7 @@ class ChartController{
  window.addEventListener('online',()=>this.connect());
  }
  async config(){try{const r=await fetch(configURL,{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error();this.options=await r.json();}catch{this.options={};}this.connect();}
- status(text){$('chart-stream-status').textContent=text;}
+ status(text){const node=$('chart-stream-status');node.textContent=text;node.hidden=!text;}
  controls(){
  $('chart-interval').addEventListener('change',e=>{this.tf=e.target.value;this.load();});
  $('chart-type').addEventListener('change',e=>{this.type=e.target.value;this.rebuild(true);});
@@ -54,7 +54,7 @@ class ChartController{
  range(){if(!this.bars.length)return;const months=Number($('chart-period').value);if(!months){this.chart.timeScale().fitContent();return;}const last=this.bars.at(-1),end=typeof last.time==='number'?new Date(last.time*1000):new Date(last.time+'T12:00:00Z'),start=new Date(end);start.setUTCMonth(start.getUTCMonth()-months);const index=this.bars.findIndex(b=>(typeof b.time==='number'?b.time*1000:Date.parse(b.time+'T12:00:00Z'))>=+start);this.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,index),to:this.bars.length+3});$('chart-range-label').textContent=months===60&&Date.parse(this.baseBars[0]?.time)>+start?'Nguồn hiện tại chưa đủ 5 năm; hiển thị toàn bộ lịch sử có sẵn.':`${this.bars.length} nến có dữ liệu · Giờ Việt Nam`;}
  zoom(f){const r=this.chart.timeScale().getVisibleLogicalRange();if(r){const mid=(r.from+r.to)/2,half=(r.to-r.from)*f/2;this.chart.timeScale().setVisibleLogicalRange({from:mid-half,to:mid+half});}}
  subscribe(){if(this.socket?.readyState===WebSocket.OPEN){this.socket.send(JSON.stringify({type:'subscribe',symbols:this.watch,intervals:['1m','1d']}));}}
- connect(){clearTimeout(this.retry);if(this.stopped||!this.options)return;if(!this.options.websocketUrl){this.status('Dữ liệu lịch sử · Chưa kết nối nguồn WebSocket');return;}if(!/^wss:\/\//.test(this.options.websocketUrl)){this.status('Cấu hình WebSocket cần địa chỉ wss:// hợp lệ.');return;}if(this.socket&&this.socket.readyState<2)return;
+ connect(){clearTimeout(this.retry);if(this.stopped||!this.options)return;if(!this.options.websocketUrl){this.status('');return;}if(!/^wss:\/\//.test(this.options.websocketUrl)){this.status('Cấu hình WebSocket cần địa chỉ wss:// hợp lệ.');return;}if(this.socket&&this.socket.readyState<2)return;
  this.status('Đang kết nối luồng giá…');const socket=this.socket=new WebSocket(this.options.websocketUrl);
  socket.onopen=()=>{this.retries=0;this.status('Đã kết nối · Đang chờ dữ liệu thị trường');this.subscribe();if(this.hasConnected)this.load(true);this.hasConnected=true;};
  socket.onmessage=e=>{if(socket!==this.socket)return;clearTimeout(this.staleTimer);this.staleTimer=setTimeout(()=>this.status('Chưa nhận thông điệp mới trong 90 giây · Kiểm tra trạng thái nguồn/phiên'),90000);try{const m=JSON.parse(e.data);if(m.type==='ping'){socket.send(JSON.stringify({type:'pong'}));return;}if(m.type==='status'){this.status(String(m.message||'Đang chờ dữ liệu').slice(0,160));return;}if(m.type==='quote'&&this.watch.includes(m.symbol)&&Number.isFinite(m.price)&&m.price>0&&Number.isFinite(Date.parse(m.sourceTime))){this.onQuote(m);return;}if(m.type==='candle'){if(this.loading){if(this.buffer.length<2000)this.buffer.push(m);}else this.candle(m);}}catch{this.status('Bỏ qua thông điệp thị trường không hợp lệ.');}};
