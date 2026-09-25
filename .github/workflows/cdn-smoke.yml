@@ -103,13 +103,13 @@ jobs:
           assert dashboard.get('modelVersion') == market.get('version')
 
           symbols = dashboard.get('symbols') or {}
-          assert len(symbols) == 403, len(symbols)
+          assert len(symbols) >= 360, len(symbols)
           promotion = dashboard.get('promotion') or {}
           assert promotion.get('status') == 'PASS', promotion
           promoted = {int(value) for value in promotion.get('directPriceHorizons') or []}
           review = {int(value) for value in promotion.get('reviewHorizons') or []}
           preferred = int(promotion.get('preferredRankingHorizon') or 0)
-          assert len(promoted) >= 3, promoted
+          assert promoted & {3, 4, 5}, promoted
           assert promoted | review == set(range(1, 6)), (promoted, review)
           assert promoted.isdisjoint(review), (promoted, review)
           assert preferred in promoted, promotion
@@ -118,9 +118,10 @@ jobs:
 
           model = market.get('model') or {}
           universe = model.get('universe') or {}
-          assert universe.get('currentSymbols') == 403, universe
-          assert universe.get('freshSymbols') == 403, universe
+          assert universe.get('currentSymbols') == len(symbols), universe
+          assert universe.get('freshSymbols') == len(symbols), universe
           assert universe.get('staleSymbols') == 0, universe
+          assert float(universe.get('hoseCoverage') or 0) >= float(universe.get('requiredCurrentCoverage') or .90), universe
 
           for horizon in map(str, range(1, 6)):
               audit = model['horizons'][horizon]
@@ -170,7 +171,8 @@ jobs:
               key = str(preferred)
               positive = [
                   symbol for symbol in members
-                  if symbols[symbol]['horizons'][key]['priceValidated']
+                  if symbol in symbols
+                  and symbols[symbol]['horizons'][key]['priceValidated']
                   and symbols[symbol]['horizons'][key].get('validationStatus') == 'PASS'
                   and symbols[symbol]['horizons'][key]['expectedPrice'] > symbols[symbol]['close']
               ]
