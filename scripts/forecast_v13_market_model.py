@@ -2351,9 +2351,30 @@ def write_artifacts(
         .tail(1)
         .set_index("symbol", drop=False)
     )
-    symbols = sorted(set(freshness["currentHOSESymbols"]) & set(latest.index))
-    if len(symbols) < 390:
-        raise RuntimeError(f"current HOSE coverage unexpectedly collapsed: {len(symbols)}")
+    eligible_symbols = sorted(set(freshness["currentHOSESymbols"]) & set(latest.index))
+    forecast_as_of = str(freshness["forecastAsOf"])[:10]
+    symbols = [
+        symbol for symbol in eligible_symbols
+        if str(latest.loc[symbol]["date"].date()) == forecast_as_of
+    ]
+    excluded_stale_symbols = sorted(set(eligible_symbols) - set(symbols))
+    minimum_current_coverage = float(os.environ.get("V42_PUBLISH_MIN_CURRENT_COVERAGE", ".90"))
+    current_coverage = len(symbols) / max(1, int(freshness["currentHOSECount"]))
+    if current_coverage < minimum_current_coverage:
+        raise RuntimeError(
+            f"current-session forecast coverage below release floor: "
+            f"{len(symbols)}/{freshness['currentHOSECount']}={current_coverage:.1%} "
+            f"< {minimum_current_coverage:.1%}; stale sample={excluded_stale_symbols[:20]}"
+        )
+    freshness["publicationCoverage"] = {
+        "status": "PASS",
+        "session": forecast_as_of,
+        "publishedSymbols": len(symbols),
+        "listedHOSE": int(freshness["currentHOSECount"]),
+        "coverage": float(current_coverage),
+        "requiredCoverage": float(minimum_current_coverage),
+        "excludedStaleSymbols": excluded_stale_symbols,
+    }
     rows = latest.loc[symbols].copy()
     rows["risk_scan"] = [
         str((freshness["scan"].get(symbol) or {}).get("status", "")) for symbol in symbols
@@ -2886,8 +2907,11 @@ def write_artifacts(
             if _clean_number(item.get("close")) > 0
         ]
 
-    if len(validated_horizons) < 3 or not set(validated_horizons).intersection({3, 4, 5}):
-        raise RuntimeError(f"Too few independently validated horizons remain: {validated_horizons}")
+    # Horizons are promoted independently. A failed short horizon must never
+    # block fresh prices for a medium horizon that passed the sealed gate.
+    # Ranking still requires at least one independently validated T+3..T+5 horizon.
+    if not set(validated_horizons).intersection({3, 4, 5}):
+        raise RuntimeError(f"No independently validated medium horizon remains: {validated_horizons}")
     ranking_horizon = preferred_ranking_horizon(model_horizons)
     promotion = {
         "status": "PASS",
@@ -2943,7 +2967,9 @@ def write_artifacts(
             "trainingSymbols": int(panel["symbol"].nunique()),
             "listedHOSE": freshness["currentHOSECount"],
             "hoseCoverage": len(symbols) / max(1, freshness["currentHOSECount"]),
+            "requiredCurrentCoverage": minimum_current_coverage,
             "insufficientHistorySymbols": freshness["insufficientHistory"],
+            "staleOrUnverifiedSymbols": excluded_stale_symbols,
             "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
             "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),
         },
@@ -3011,7 +3037,8 @@ def write_artifacts(
             "marketForecast": {
                 "artifact": "forecast-market-v13.json",
                 "tickGridEnforced": True,
-                "allHOSECommonStocks": True,
+                "allHOSECommonStocks": current_coverage >= .99,
+                "currentSessionCoverage": freshness["publicationCoverage"],
                 "signalAudit": signal_audit,
                 "decisionAt": timestamp,
                 "fundInferenceSymbols": len(live_funds),
