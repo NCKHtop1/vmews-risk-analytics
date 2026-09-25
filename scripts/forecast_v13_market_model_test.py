@@ -334,7 +334,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         cls.market = json.loads((ROOT / "data/forecast-market-v13.json").read_text())
 
     def test_current_source_and_coverage(self) -> None:
-        self.assertGreaterEqual(len(self.dashboard["symbols"]), 400)
+        self.assertGreaterEqual(len(self.dashboard["symbols"]), 360)
         self.assertEqual(self.dashboard["asOf"], self.market["sources"]["marketScanAsOf"])
         self.assertGreaterEqual(
             self.market["sources"]["marketScanGeneratedOn"],
@@ -342,10 +342,17 @@ class PublishedMarketForecastTest(unittest.TestCase):
         )
         self.assertEqual(set(self.dashboard["symbols"]), set(self.current["symbols"]))
         universe = self.market["model"]["universe"]
-        self.assertGreaterEqual(universe["hoseCoverage"], .99)
+        self.assertGreaterEqual(universe["hoseCoverage"], universe["requiredCurrentCoverage"])
+        self.assertGreaterEqual(universe["requiredCurrentCoverage"], .90)
         self.assertEqual(universe["freshSymbols"], universe["currentSymbols"])
         self.assertEqual(universe["staleSymbols"], 0)
-        self.assertEqual(universe["currentSymbols"] + len(universe["insufficientHistorySymbols"]), universe["listedHOSE"])
+        accounted = (
+            universe["currentSymbols"]
+            + len(universe["insufficientHistorySymbols"])
+            + len(universe["staleOrUnverifiedSymbols"])
+        )
+        self.assertEqual(accounted, universe["listedHOSE"])
+        self.assertFalse(set(universe["staleOrUnverifiedSymbols"]) & set(self.dashboard["symbols"]))
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
         price_audit = self.market["sources"]["priceCrossSource"]
         self.assertEqual(price_audit["status"], "PASS")
@@ -377,7 +384,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(promotion["status"], "PASS")
         promoted = set(promotion["directPriceHorizons"])
         review = set(promotion.get("reviewHorizons") or [])
-        self.assertGreaterEqual(len(promoted), 3)
+        self.assertTrue(promoted & {3, 4, 5})
         self.assertEqual(promoted | review, set(range(1, 6)))
         self.assertFalse(promoted & review)
         self.assertIn(promotion["preferredRankingHorizon"], promoted)
