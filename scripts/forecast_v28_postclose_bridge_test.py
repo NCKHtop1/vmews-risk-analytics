@@ -1,5 +1,5 @@
 from __future__ import annotations
-import sys, unittest
+import gzip, json, sys, tempfile, unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
