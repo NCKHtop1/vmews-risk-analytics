@@ -363,6 +363,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertGreater(fpt["close"], 0)
         self.assertIn(fpt["marketDataSource"], {"VNDIRECT_PUBLIC_EOD", "MARKET_SCAN_EOD", "PREVIOUS_VALIDATED_EOD"})
         self.assertEqual(fpt["priceSourceAgreement"]["status"], "PASS")
+        self.assertEqual(fpt["priceSourceAgreement"]["session"], self.dashboard["asOf"])
         chart_fpt = self.dashboard["charts"]["FPT"][-1]
         self.assertEqual(fpt["date"], chart_fpt["date"])
         self.assertEqual(fpt["close"], chart_fpt["rawClose"])
