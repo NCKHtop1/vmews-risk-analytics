@@ -38,7 +38,9 @@ def _load_histories_with_current_session(*args,**kwargs):
     # rows to EOD_CACHE_PATH. Reuse that exact independent source instead of
     # issuing a duplicate market-wide request that can time out after a
     # successful refresh. If no cache exists, retain the network fallback.
-    secondary=load_vndirect_secondary_cache(market_model.EOD_CACHE_PATH)
+    secondary=freshness.pop("_postCloseVndirectRows", None) or {}
+    if not secondary:
+        secondary=load_vndirect_secondary_cache(market_model.EOD_CACHE_PATH)
     if not secondary:
         secondary=market_model._vn_direct_hose_rows()
     histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
