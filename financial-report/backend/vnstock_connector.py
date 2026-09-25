@@ -20,6 +20,27 @@ REPORTS = {
     'notes': 'Thuyết minh báo cáo tài chính',
     'off_balance': 'Chỉ tiêu ngoại bảng',
 }
+DEEP_PERIOD_LIMITS = {
+    'year': max(4, int(os.environ.get('FINANCIAL_YEAR_PERIODS', '24'))),
+    'quarter': max(4, int(os.environ.get('FINANCIAL_QUARTER_PERIODS', '48'))),
+}
+
+def fetch_report_frame(client, source, kind, method, period):
+    """Prefer VCI's full response instead of the public four-period display limit."""
+    limit = DEEP_PERIOD_LIMITS[period]
+    if source == 'VCI' and hasattr(client, '_get_report'):
+        try:
+            frame = client._get_report(
+                report_type=kind, lang='vi', show_log=False, mode='final',
+                style='readable', get_all=True, period=period, limit=limit)
+            if frame is not None and not frame.empty:
+                return frame, {'strategy': 'vci_deep', 'requestedPeriods': limit}
+        except Exception:
+            # Keep production alive if an internal provider method changes.
+            pass
+    kwargs = {'period': period, 'show_log': False}
+    kwargs.update(({'display_mode': 'all'} if kind == 'ratios' else {}) if source == 'KBS' else {'lang': 'vi', 'dropna': False})
+    return getattr(client, method)(**kwargs), {'strategy': 'public_fallback', 'requestedPeriods': 4}
 
 def text(value):
     if value is None or str(value).lower() in ('nan','none','<na>'): return ''
@@ -165,22 +186,26 @@ class VNStockConnector:
             for source in ('VCI','KBS'):
                 if source not in clients:
                     self.audit.append({'period':period,'source':source,'error':failures[source]});continue
-                # VCI ratio currently returns 2018 rows irrespective of current periods.
-                # KBS exposes all usable ratio categories through display_mode=all.
-                methods=[(k,k) for k in ('balance_sheet','income_statement','cash_flow') if k not in sections]
+                # Fetch both statement providers. VCI can expose a much deeper
+                # history than the four-period public display default; KBS adds
+                # source-specific line items and the source ratio table.
+                methods=[(k,k) for k in ('balance_sheet','income_statement','cash_flow')]
                 if source=='KBS':methods.append(('ratios','ratio'))
                 for kind,method in methods:
                     try:
                         time.sleep(float(os.environ.get('FINANCIAL_REQUEST_INTERVAL','3')))
-                        kwargs={'period':period,'show_log':False}
-                        kwargs.update(({'display_mode':'all'} if kind=='ratios' else {}) if source=='KBS' else {'lang':'vi','dropna':False})
-                        frame=getattr(clients[source],method)(**kwargs)
+                        frame, meta = fetch_report_frame(clients[source],source,kind,method,period)
                         section=normalize_frame(frame,kind,source,period)
                         validate_dataset({'symbol':ticker,'periodType':period,'sections':[section]})
                         if not section['periods']:raise ValueError('Không có kỳ báo cáo hợp lệ.')
                         section['updatedAt']=now
-                        sections[kind]=section
-                        self.audit.append({'period':period,'source':source,'report':kind,'rows':len(section['rows']),'periods':section['periods']})
+                        if kind in sections:
+                            sections[kind]=merge_sections(sections[kind],section)
+                            validate_dataset({'symbol':ticker,'periodType':period,'sections':[sections[kind]]})
+                            sections[kind]['updatedAt']=now
+                        else:
+                            sections[kind]=section
+                        self.audit.append({'period':period,'source':source,'report':kind,'rows':len(section['rows']),'periods':section['periods'],**meta})
                     except Exception as e:self.audit.append({'period':period,'source':source,'report':kind,'error':str(e)[:240]})
             fresh=set(sections)
             for kind,section in old_sections.items():
