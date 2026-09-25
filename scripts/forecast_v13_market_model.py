@@ -2352,8 +2352,21 @@ def write_artifacts(
         .set_index("symbol", drop=False)
     )
     symbols = sorted(set(freshness["currentHOSESymbols"]) & set(latest.index))
-    if len(symbols) < 390:
-        raise RuntimeError(f"current HOSE coverage unexpectedly collapsed: {len(symbols)}")
+    bridge_audit = freshness.get("postCloseBridge") or {}
+    publication_reference_symbols = int(
+        bridge_audit.get("eligibleSymbols") or freshness.get("currentHOSECount") or len(symbols)
+    )
+    required_publish_coverage = max(
+        float(bridge_audit.get("minimumCoverage") or .90),
+        float(bridge_audit.get("minimumSecondaryCoverage") or .90),
+    )
+    publish_coverage = len(symbols) / max(1, publication_reference_symbols)
+    if publish_coverage + 1e-12 < required_publish_coverage:
+        raise RuntimeError(
+            "current verified HOSE publication coverage unexpectedly collapsed: "
+            f"{len(symbols)}/{publication_reference_symbols}={publish_coverage:.1%} "
+            f"required={required_publish_coverage:.1%}"
+        )
     rows = latest.loc[symbols].copy()
     rows["risk_scan"] = [
         str((freshness["scan"].get(symbol) or {}).get("status", "")) for symbol in symbols
@@ -2942,7 +2955,12 @@ def write_artifacts(
             "currentSymbols": len(symbols),
             "trainingSymbols": int(panel["symbol"].nunique()),
             "listedHOSE": freshness["currentHOSECount"],
+            "publicationReferenceSymbols": publication_reference_symbols,
+            "publishCoverage": publish_coverage,
+            "requiredPublishCoverage": required_publish_coverage,
             "hoseCoverage": len(symbols) / max(1, freshness["currentHOSECount"]),
+            "excludedCurrentSessionSymbols": list(freshness.get("excludedCurrentSessionSymbols") or []),
+            "excludedStaleSymbols": list(freshness.get("excludedStaleSymbols") or []),
             "insufficientHistorySymbols": freshness["insufficientHistory"],
             "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
             "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),
