@@ -19,6 +19,8 @@ def build():
     html = html.replace('<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="market.js"></script><script defer src="app.js"></script>', '')
     html = html.replace('<link rel="stylesheet" href="market.css">', '<style>' + (front / 'market.css').read_text() + '</style>')
     html = html.replace('<script defer src="market.js"></script>', '')
+    for filename in ('vendor/lightweight-charts-5.0.9.js','chart-math.js','chart-engine.js'):
+        html = html.replace('<script defer src="'+filename+'"></script>', '')
     datasets = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'data').glob('*.json') if p.stem in ('MBB','VIC','FPT','VCB')}
     boot = {'companies': json.loads((ROOT / 'data/companies.json').read_text()), 'datasets': datasets}
     payload = json.dumps(boot, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
@@ -26,6 +28,8 @@ def build():
     scripts += '<script>' + (front / 'xlsx.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'metrics.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'dashboard.js').read_text() + '</script>'
+    for filename in ('vendor/lightweight-charts-5.0.9.js','chart-math.js','chart-engine.js'):
+        scripts += '<script data-config="./frontend/chart-config.json">' + (front / filename).read_text() + '</script>'
     scripts += '<script>' + (front / 'market.js').read_text() + '</script>'
     scripts += '<script data-base="./data/">' + (front / 'app.js').read_text() + '</script>'
     html = html.replace('</body>', scripts + '</body>')
@@ -34,4 +38,5 @@ def build():
 
 if __name__ == '__main__':
     build()
+
 

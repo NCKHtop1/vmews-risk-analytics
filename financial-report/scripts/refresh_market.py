@@ -95,7 +95,7 @@ def normalize_board(items, symbols, collected):
     return rows
 
 
-def normalize_history(payload, symbol):
+def normalize_history(payload, symbol, minute=False):
     if isinstance(payload, dict):
         payload = payload.get('data', [])
     if not payload:
@@ -119,7 +119,8 @@ def normalize_history(payload, symbol):
         day = datetime.fromisoformat(stamp).astimezone(VN).date().isoformat()
         if day > datetime.now(VN).date().isoformat():
             continue
-        rows[day] = dict(time=day, open=o, high=h, low=l, close=c, volume=v)
+        key = stamp if minute else day
+        rows[key] = dict(time=key, open=o, high=h, low=l, close=c, volume=v)
     if not rows:
         raise ValueError('No valid OHLC bars')
     return [rows[k] for k in sorted(rows)]
@@ -163,7 +164,7 @@ def prices(out, companies):
         path = out / 'history' / (symbol + '.json')
         previous = read(path, {})
         try:
-            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': 'ONE_DAY', 'symbols': [symbol], 'to': int(time.time()), 'countBack': 800}))
+            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': 'ONE_DAY', 'symbols': [symbol], 'to': int(time.time()), 'countBack': 1600}))
             bars = normalize_history(payload, symbol)
             write(path, {'symbol': symbol, 'source': 'Vietcap', 'sourceUrl': 'https://trading.vietcap.com.vn/', 'unit': 'VND', 'interval': '1D', 'collectedAt': now(), 'checkedAt': now(), 'status': 'ok', 'bars': bars})
             histories += 1
@@ -171,6 +172,16 @@ def prices(out, companies):
             errors.append(symbol + ': ' + str(e))
             if previous.get('bars'):
                 write(path, {**previous, 'checkedAt': now(), 'status': 'retained', 'error': str(e)})
+        minute_path = out / 'intraday' / (symbol + '.json')
+        minute_previous = read(minute_path, {})
+        try:
+            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': 'ONE_MINUTE', 'symbols': [symbol], 'to': int(time.time()), 'countBack': 1600}))
+            bars = normalize_history(payload, symbol, minute=True)
+            write(minute_path, {'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND', 'interval': '1m', 'collectedAt': now(), 'status': 'ok', 'bars': bars})
+        except Exception as e:
+            errors.append(symbol + ' intraday: ' + str(e))
+            if minute_previous.get('bars'):
+                write(minute_path, {**minute_previous, 'checkedAt': now(), 'status': 'retained'})
         time.sleep(0.6)
     write(out / 'prices-status.json', {'checkedAt': now(), 'quotes': len(fresh), 'histories': histories, 'expected': len(symbols), 'errors': errors})
     print(f'Prices: {len(fresh)}/{len(symbols)}; histories: {histories}/{len(symbols)}', flush=True)
@@ -265,4 +276,5 @@ if __name__ == '__main__':
             errors.append(str(e))
     if errors:
         raise SystemExit('; '.join(errors))
+
 
