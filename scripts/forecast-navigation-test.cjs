@@ -46,6 +46,16 @@ function context(url) {
   assert.equal(view.horizons['3'].expectedPrice, 71900);
   assert.equal(view.liveSession.forecastAligned, false);
   assert.equal(snapshot.close, 71700);
+  const portfolio = read('forecast-portfolio-v14.js');
+  const tape = { innerHTML: '' };
+  session.symbols[0].change = -.0091883614;
+  ctx.window.__VMEWS_SESSION__ = session;
+  const tapeContext = { window: ctx.window, document: { querySelector: () => tape },
+    number: value => value == null ? null : Number(value), price: String, escapeHTML: String };
+  vm.runInNewContext(portfolio.slice(portfolio.indexOf('  function renderMarketTape('), portfolio.indexOf('  function updateSymbolPresentation(')) + '\nthis.render = renderMarketTape;', tapeContext);
+  tapeContext.render({ dash: { symbols: { FPT: snapshot }, charts: { FPT: [{close: 72000}, {close: 71700}] } } });
+  assert.ok(tape.innerHTML.includes('64700'));
+  assert.ok(tape.innerHTML.includes('-0.92%'));
   assert.equal(ctx.window.__VMEWS_APPLY_SESSION_VIEW__('UNKNOWN', snapshot, session), snapshot);
   session.coverage.currentCoverageRatio = .5;
   assert.equal(await ctx.window.testSession.loadSessionOverlay(base), null);

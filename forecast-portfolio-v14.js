@@ -246,9 +246,11 @@
       const rows = base.dash.charts?.[symbol] || [];
       if (!snapshot || rows.length < 2) return [];
       const previous = number(rows.at(-2)?.rawClose ?? rows.at(-2)?.close);
-      const current = number(snapshot.close);
+      const view = window.__VMEWS_APPLY_SESSION_VIEW__?.(symbol, snapshot) || snapshot;
+      const current = number(view.close);
       if (previous === null || previous <= 0 || current === null) return [];
-      const change = (current / previous - 1) * 100;
+      const sessionChange = number(view.liveSession?.change);
+      const change = sessionChange !== null ? sessionChange * 100 : (current / previous - 1) * 100;
       const direction = change >= 0 ? "up" : "down";
       return [`<span class="tapeQuote"><b>${escapeHTML(symbol)}</b><span>${price(current)}</span><span class="${direction}">${change >= 0 ? "+" : ""}${change.toFixed(2)}%</span></span>`];
     });
@@ -280,6 +282,7 @@
     loader().then(base => {
       document.body.classList.add("appLoaded");
       renderMarketTape(base);
+      window.addEventListener("vmews:session-updated", () => renderMarketTape(base));
       const suggestions = document.querySelector("#symbolSuggestions");
       if (suggestions) {
         const fragment = document.createDocumentFragment();
