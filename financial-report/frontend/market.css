@@ -14,3 +14,9 @@
 
 
 #chart-terminal{margin-top:12px;min-width:0}#chart-terminal:fullscreen{background:#fff;padding:20px;overflow:auto}#price-chart{height:540px;min-height:400px;width:100%;overflow:hidden;touch-action:pan-y}#chart-terminal:fullscreen #price-chart{height:70vh}#price-readout{font-variant-numeric:tabular-nums;min-height:38px;line-height:1.7}.chart-stream-status{font-size:11px;color:#68738b;background:#f1f4fa;padding:8px 10px;border-radius:7px}.chart-credit{font-size:10px;color:#788499}.chart-credit a{color:inherit}#chart-indicators{font-size:12px;background:#f7f9fc;border:1px solid #e8edf5;border-radius:8px;padding:10px;margin:10px 0}#chart-indicators summary{cursor:pointer;font-weight:650}.indicator-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}.indicator-grid>div{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px;background:white;border-radius:6px}.indicator-grid label{display:flex;gap:5px;align-items:center}.indicator-grid input[type=number]{width:55px;padding:5px;border:1px solid #dfe5ef;border-radius:4px}#chart-indicator-error{color:#b23b4e}.market-price{min-width:0}@media(max-width:600px){#price-chart{height:470px}.market-controls{gap:7px}.market-controls label{font-size:11px}}
+/* Isolate library layout tables from financial-report table styling. */
+#price-chart table{width:auto;border:0;border-collapse:collapse;border-spacing:0;table-layout:fixed}
+#price-chart td,#price-chart th,#price-chart td:first-child{min-width:0;max-width:none;padding:0;border:0;box-shadow:none;background:transparent;position:static;left:auto;z-index:auto;line-height:normal;white-space:nowrap;text-align:left}
+#price-chart tr:hover td{background:transparent}
+#chart-terminal.chart-expanded{position:fixed;inset:0;z-index:10000;background:#fff;padding:20px;overflow:auto;margin:0}
+#chart-terminal.chart-expanded #price-chart{height:70vh}
