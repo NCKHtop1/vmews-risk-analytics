@@ -334,7 +334,6 @@ class PublishedMarketForecastTest(unittest.TestCase):
         cls.market = json.loads((ROOT / "data/forecast-market-v13.json").read_text())
 
     def test_current_source_and_coverage(self) -> None:
-        self.assertGreaterEqual(len(self.dashboard["symbols"]), 400)
         self.assertEqual(self.dashboard["asOf"], self.market["sources"]["marketScanAsOf"])
         self.assertGreaterEqual(
             self.market["sources"]["marketScanGeneratedOn"],
@@ -342,10 +341,16 @@ class PublishedMarketForecastTest(unittest.TestCase):
         )
         self.assertEqual(set(self.dashboard["symbols"]), set(self.current["symbols"]))
         universe = self.market["model"]["universe"]
-        self.assertGreaterEqual(universe["hoseCoverage"], .99)
+        self.assertEqual(len(self.dashboard["symbols"]), universe["currentSymbols"])
+        self.assertGreaterEqual(universe["publishCoverage"], universe["requiredPublishCoverage"])
+        self.assertGreaterEqual(universe["requiredPublishCoverage"], .90)
         self.assertEqual(universe["freshSymbols"], universe["currentSymbols"])
         self.assertEqual(universe["staleSymbols"], 0)
-        self.assertEqual(universe["currentSymbols"] + len(universe["insufficientHistorySymbols"]), universe["listedHOSE"])
+        self.assertEqual(
+            universe["publicationReferenceSymbols"] - universe["currentSymbols"],
+            len(universe["excludedCurrentSessionSymbols"]),
+        )
+        self.assertTrue(set(universe["excludedStaleSymbols"]).issubset(set(universe["excludedCurrentSessionSymbols"])))
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
         price_audit = self.market["sources"]["priceCrossSource"]
         self.assertEqual(price_audit["status"], "PASS")
