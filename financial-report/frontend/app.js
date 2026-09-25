@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const DATA_BASE=new URL(document.currentScript.dataset.base||'../data/',document.currentScript.src||location.href).href;
 const BOOT=JSON.parse(document.getElementById('financial-bootstrap')?.textContent||'{}');
-const LIVE_BASE='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-report-data/data/';
+const LIVE_BASE=document.documentElement.dataset.hosting==='pages'?DATA_BASE:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-report-data/data/';
 const state={bundle:null,data:null,companies:[],years:[],reports:[],active:'balance_sheet',chartMetric:'profit',loading:false,controller:null,mode:new URLSearchParams(location.search).get('mode')==='year'?'year':'quarter',fallback:false};
 const names={balance_sheet:'Cân đối kế toán',income_statement:'Kết quả kinh doanh',cash_flow:'Lưu chuyển tiền tệ',ratios:'Chỉ số từ nguồn',derived_ratios:'Chỉ số tính từ BCTC',notes:'Thuyết minh',off_balance:'Ngoại bảng'};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -97,4 +97,5 @@ async function init(){
 function registerTools(){const context=document.modelContext;if(!context?.registerTool)return;const life=new AbortController();context.registerTool({name:'select_financial_report',title:'Chọn báo cáo tài chính',description:'Chọn doanh nghiệp VN100, năm hoặc quý có dữ liệu và cập nhật bảng xem trước.',inputSchema:{type:'object',properties:{symbol:{type:'string'},mode:{type:'string',enum:['year','quarter']},periods:{type:'array',items:{type:['string','integer']},minItems:1}},required:['symbol'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},async execute(input){if(!input||typeof input.symbol!=='string')throw Error('Mã không hợp lệ');await loadCompany(input.symbol);if(!state.bundle)throw Error('Chưa có báo cáo');if(input.mode)setMode(input.mode);if(input.periods){if(!Array.isArray(input.periods)||!input.periods.length||input.periods.some(p=>!eligible().includes(p)))throw Error('Kỳ không có dữ liệu');state.years=sorted(input.periods);update();}return{symbol:state.bundle.symbol,mode:state.mode,periods:state.years,reports:state.reports};}},{signal:life.signal});window.addEventListener('pagehide',()=>life.abort(),{once:true});}
 init();
 })();
+
 

@@ -1,7 +1,16 @@
-name: Deploy VMEWS Pages (optional manual)
+name: Deploy VMEWS Pages
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Refresh FinQuery prices and company news', 'Refresh financial reports for CDN']
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -9,52 +18,60 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-manual
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    outputs:
-      pages_ready: ${{ steps.pages.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build static frontend wired to verified production APIs
+        with:
+          ref: main
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-report-data
+          path: _financial-data
+          sparse-checkout: data
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-market-data
+          path: _market-data
+          sparse-checkout: market
+      - name: Build site with same-origin financial and market data
         shell: bash
         run: |
+          rsync -a _financial-data/data/ financial-report/data/
+          python financial-report/scripts/build_cdn.py
           mkdir -p _site
-          rsync -a --exclude='_site' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
+          rsync -a --exclude='_site' --exclude='_financial-data' --exclude='_market-data' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
+          mkdir -p _site/financial-report/market
+          rsync -a _market-data/market/ _site/financial-report/market/
           python - <<'PY'
           from pathlib import Path
+          import json, subprocess
           p=Path('_site/qtrr-final.js')
           s=p.read_text(encoding='utf-8')
           s=s.replace("const API='/api/stocks2', VALIDATE_API='/api/validate';", "const API='https://vmews-risk-analytics-sojd.vercel.app/api/radar', VALIDATE_API='https://vmews-risk-analytics-sojd.vercel.app/api/validate2';")
           s=s.replace('Requesting current risk states from Vnstock…','Loading verified production risk data…')
           p.write_text(s,encoding='utf-8')
-          touch=Path('_site/.nojekyll'); touch.touch()
+          p=Path('_site/financial-report/index.html')
+          p.write_text(p.read_text().replace('<html lang="vi">','<html lang="vi" data-hosting="pages">'))
+          revision=lambda directory: subprocess.check_output(['git','-C',directory,'rev-parse','HEAD'],text=True).strip()
+          Path('_site/financial-report/deployment.json').write_text(json.dumps({'code':revision('.'),'financialData':revision('_financial-data'),'marketData':revision('_market-data')}))
+          Path('_site/.nojekyll').touch()
           PY
-      - name: Detect optional GitHub Pages availability
-        id: pages
-        continue-on-error: true
-        uses: actions/configure-pages@v5
-      - name: Explain unavailable optional Pages target
-        if: steps.pages.outcome != 'success'
-        run: |
-          echo "GitHub Pages is not enabled/accessible for this repository token."
-          echo "This is not a forecast publication failure: the audited production target is the exact-SHA CDN."
-      - name: Upload Pages artifact
-        if: steps.pages.outcome == 'success'
-        uses: actions/upload-pages-artifact@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
-
   deploy:
-    if: needs.build.outputs.pages_ready == 'true'
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
