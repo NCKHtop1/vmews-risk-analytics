@@ -92,7 +92,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
       <h2 id="decision" class="decision neutral">—</h2>
       <div id="summary" class="summary">—</div>
       <div class="stats">
-        <div class="stat"><span>Giá hiện tại</span><b id="close">—</b></div>
+        <div class="stat"><span>Giá hiện tại</span><b id="close">—</b><small id="quoteAsOf"></small></div>
         <div class="stat"><span>Giá dự báo T+1</span><b id="t1">—</b></div>
         <div class="stat"><span>Giá dự báo T+3</span><b id="t3">—</b></div>
         <div class="stat"><span>Giá dự báo T+5</span><b id="t5">—</b></div>
@@ -162,11 +162,12 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <div id="solutionAiSuggestions" class="solutionAiSuggestions"><button type="button" data-ai-prompt="Phân tích đầy đủ mã cổ phiếu đang xem, đọc đường forecast T+1 đến T+5, kết hợp thông tin mới nhất từ nguồn công khai và kết luận đúng trọng tâm.">Phân tích tích hợp</button><button type="button" data-ai-prompt="Tìm thông tin mới về kinh tế vĩ mô, lãi suất và các yếu tố đang ảnh hưởng đến thị trường Việt Nam.">Vĩ mô & tin mới</button><button type="button" data-ai-prompt="Danh mục quỹ, dòng tiền và các yếu tố chính đang tác động đến dự báo như thế nào?">Quỹ & dòng tiền</button><button type="button" data-ai-prompt="Tìm và đối chiếu thông tin mới cho mã đang xem; đánh giá từng nguồn đang ủng hộ, mâu thuẫn hay chưa đủ rõ đối với forecast hiện tại.">Đối chiếu nguồn mới</button><button type="button" data-ai-prompt="Đánh giá chất lượng kiểm định, đường T+1 đến T+5, vùng bất định và các giới hạn của forecast mã đang xem.">Kiểm định forecast</button><button type="button" data-ai-prompt="So sánh các mã HOSE có dự báo tăng tốt nhất trong kỳ được mô hình chọn.">Top HOSE</button></div>
   <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, nguồn mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
 </aside>
-<script src="./forecast-final-v12.js?release=38.0"></script>
+<script src="./forecast-final-v12.js?release=42.0"></script>
 <script src="./forecast-polish-v12.js?release=20.0"></script>
 <script src="./forecast-portfolio-v14.js?release=20.0"></script>
-<script src="./forecast-live-leaders-v14.js?release=38.0"></script>
+<script src="./forecast-live-leaders-v14.js?release=42.0"></script>
 <script src="./solution-ai-v17.js?release=36.0"></script>
 <script src="./forecast-deep-dive-v24.js?release=25.0"></script>
 </body>
 </html>
+

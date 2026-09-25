@@ -538,6 +538,34 @@
     });
   }
 
+  let sessionRefreshing = false;
+  async function refreshSession() {
+    if (sessionRefreshing || !state.base || document.hidden) return;
+    sessionRefreshing = true;
+    try {
+      const next = await loadSessionOverlay(state.base);
+      // Keep a still-valid snapshot during a transient fetch failure.
+      if (!next && state.session && sessionUsableNow(state.session)) return;
+      if (JSON.stringify(next) === JSON.stringify(state.session)) return;
+      const selected = state.rows[state.index]?.symbol;
+      state.session = next;
+      window.__VMEWS_SESSION__ = next;
+      window.dispatchEvent(new CustomEvent("vmews:session-updated", { detail: { session: next } }));
+      state.candidates = finalLeaderboard(state.base, next, { all: true, includeNonPositive: true });
+      state.universe = finalLeaderboard(state.base, next, { all: true });
+      state.defensive = state.universe.length === 0;
+      state.rows = finalLeaderboard(state.base, next, { filter: state.filter, includeNonPositive: state.defensive });
+      state.index = Math.max(0, state.rows.findIndex(row => row.symbol === selected));
+      $("#snapshotDate").textContent = `${state.base.dash.asOf || "—"}${sessionStamp()}`;
+      refreshMode();
+      renderPulse();
+      renderCards();
+      scheduleRotation();
+    } finally {
+      sessionRefreshing = false;
+    }
+  }
+
   async function init() {
     try {
       const load = window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__;
@@ -558,6 +586,9 @@
       renderCards();
       bindControls();
       scheduleRotation();
+      window.setInterval(() => { void refreshSession(); }, 60000);
+      window.addEventListener("focus", () => { void refreshSession(); });
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) void refreshSession(); });
     } catch (error) {
       console.error("VMEWS leaderboard:", error);
       $("#signalDeck").innerHTML = `<div class="deckEmpty">${escapeHTML(error?.message || error)}</div>`;
