@@ -44,6 +44,18 @@ class ReportsTest(unittest.TestCase):
   self.assertEqual(fixed['rows'][0]['id'],'net_sales')
   self.assertEqual(fixed['rows'][0]['values']['2025'],1)
 
+ def test_browser_metrics_support_direct_vci_raw_ids_by_label(self):
+  d={'periodType':'year','sections':[
+   {'id':'income_statement','rows':[{'id':'isa3','label':'Doanh thu thuần','unit':'triệu đồng','values':{'2024':100,'2025':120}},{'id':'isa5','label':'Lợi nhuận gộp','unit':'triệu đồng','values':{'2024':30,'2025':42}},{'id':'isa20','label':'Lãi/(lỗ) thuần sau thuế','unit':'triệu đồng','values':{'2024':10,'2025':12}}]},
+   {'id':'balance_sheet','rows':[{'id':'bsa1','label':'TÀI SẢN NGẮN HẠN','unit':'triệu đồng','values':{'2024':50,'2025':60}},{'id':'bsa_total','label':'TỔNG CỘNG TÀI SẢN','unit':'triệu đồng','values':{'2024':200,'2025':220}},{'id':'bsl_cur','label':'Nợ ngắn hạn','unit':'triệu đồng','values':{'2024':25,'2025':30}},{'id':'bse','label':'Vốn chủ sở hữu','unit':'triệu đồng','values':{'2024':100,'2025':110}}]},
+   {'id':'cash_flow','basis':'year','rows':[{'id':'cfa18','label':'Lưu chuyển tiền tệ ròng từ các hoạt động sản xuất kinh doanh','unit':'triệu đồng','values':{'2024':15,'2025':18}}]}
+  ]}
+  script="const fs=require('fs'),vm=require('vm');vm.runInThisContext(fs.readFileSync(process.argv[1],'utf8'));const d=JSON.parse(process.argv[2]);const x=FinancialMetrics.decorate(d);process.stdout.write(JSON.stringify(x.sections.find(s=>s.id==='derived_ratios')));"
+  out=subprocess.check_output(['node','-e',script,str(ROOT/'frontend/metrics.js'),json.dumps(d)],text=True)
+  rows={r['id']:r for r in json.loads(out)['rows']}
+  self.assertAlmostEqual(rows['derived_gross_margin']['values']['2025'],35)
+  self.assertAlmostEqual(rows['derived_current_ratio']['values']['2025'],2)
+
  def test_no_quarter_mislabeled_as_year(self):
   bad=pd.DataFrame([['Tỷ lệ','r',12,20]],columns=['item','item_id','2018','2018'])
   with self.assertRaises(ValueError):normalize_frame(bad,'ratios','VCI')
