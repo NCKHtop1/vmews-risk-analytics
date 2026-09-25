@@ -71,10 +71,15 @@ class PostCloseBridgeTest(unittest.TestCase):
         bridge=meta["postCloseBridge"]
         self.assertEqual(bridge["status"],"PASS")
         self.assertTrue(bridge["partialUniverse"])
-        self.assertEqual(bridge["publicationScope"],"VERIFIED_CURRENT_PLUS_EXPLICIT_STALE")
+        self.assertEqual(bridge["publicationScope"],"INDEPENDENTLY_VERIFIED_CURRENT_ONLY")
+        self.assertEqual(bridge["verifiedCurrentSymbols"],9)
+        self.assertAlmostEqual(bridge["verifiedCoverage"],.9)
+        self.assertEqual(bridge["excludedSymbols"],1)
         self.assertEqual(bridge["staleSymbols"],1)
         self.assertIn("S09",bridge["staleSymbolSample"])
         self.assertEqual(meta["forecastAsOf"],"2026-08-28")
+        self.assertEqual(meta["currentHOSESymbols"],symbols[:9])
+        self.assertEqual(meta["excludedCurrentSessionSymbols"],["S09"])
         self.assertEqual(out["S09"][-1]["date"],"2026-08-27")
         self.assertNotIn("ohlcUnavailable",out["S09"][-1])
 
