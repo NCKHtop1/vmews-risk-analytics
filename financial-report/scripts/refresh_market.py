@@ -21,7 +21,34 @@ FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('VietnamNet', 'https://vietnamnet.vn/kinh-doanh.rss'),
          ('CafeF', 'https://cafef.vn/thi-truong-chung-khoan.rss'),
          ('CafeF', 'https://cafef.vn/doanh-nghiep.rss'),
-         ('CafeF', 'https://cafef.vn/tai-chinh-ngan-hang.rss')]
+         ('CafeF', 'https://cafef.vn/tai-chinh-ngan-hang.rss'),
+         ('VnEconomy', 'https://vneconomy.vn/tin-moi.rss'),
+         ('VnEconomy', 'https://vneconomy.vn/tai-chinh.rss'),
+         ('VnEconomy', 'https://vneconomy.vn/chung-khoan.rss'),
+         ('VnEconomy', 'https://vneconomy.vn/thi-truong.rss'),
+         ('VnEconomy', 'https://vneconomy.vn/dau-tu.rss'),
+         ('VnEconomy', 'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss')]
+FEED_TOPICS = {
+    'https://baodautu.vn/chung-khoan.rss': {'stocks', 'market', 'investment'},
+    'https://baodautu.vn/doanh-nghiep.rss': {'company', 'investment'},
+    'https://cafef.vn/thi-truong-chung-khoan.rss': {'stocks', 'market', 'investment'},
+    'https://cafef.vn/doanh-nghiep.rss': {'company'},
+    'https://cafef.vn/tai-chinh-ngan-hang.rss': {'finance', 'banking'},
+    'https://vneconomy.vn/tai-chinh.rss': {'finance'},
+    'https://vneconomy.vn/chung-khoan.rss': {'stocks', 'market', 'investment'},
+    'https://vneconomy.vn/thi-truong.rss': {'market'},
+    'https://vneconomy.vn/dau-tu.rss': {'investment', 'market'},
+    'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss': {'company'},
+}
+TOPIC_PATTERNS = {
+    'finance': re.compile(r'tài chính|trái phiếu|tỷ giá|bảo hiểm|ngân sách', re.I),
+    'market': re.compile(r'thị trường|giá vàng|giá dầu|hàng hóa|bất động sản', re.I),
+    'rates': re.compile(r'lãi suất|tiền gửi|cho vay|tín dụng', re.I),
+    'stocks': re.compile(r'chứng khoán|cổ phiếu|vn-?index|hose|hnx|upcom|phái sinh', re.I),
+    'banking': re.compile(r'ngân hàng|tín dụng|tiền gửi', re.I),
+    'investment': re.compile(r'đầu tư|fdi|giải ngân|dự án|quỹ đầu tư', re.I),
+    'macro': re.compile(r'gdp|cpi|lạm phát|kinh tế|xuất khẩu|nhập khẩu|tăng trưởng', re.I),
+}
 ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng MB', 'Ngân hàng Quân đội', 'Ngân hàng Quân Đội'],
            'VCB': ['Vietcombank'], 'BID': ['BIDV'], 'CTG': ['VietinBank'],
            'TCB': ['Techcombank'], 'VPB': ['VPBank'], 'STB': ['Sacombank'],
@@ -225,9 +252,16 @@ def parse_feed(raw, publisher, feed_url, companies, current):
             continue
         if dt > current + timedelta(minutes=10) or dt < current - timedelta(days=30):
             continue
-        text = title + ' ' + clean(item.findtext('description'))
+        body = clean(item.findtext('description'))
+        text = title + ' ' + body
         matched = [c['symbol'] for c in companies if company_match(c, text)]
-        rows.append({'title': title, 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched})
+        topics = set(FEED_TOPICS.get(feed_url, ()))
+        for topic, pattern in TOPIC_PATTERNS.items():
+            if pattern.search(text):
+                topics.add(topic)
+        if matched:
+            topics.add('company')
+        rows.append({'title': title, 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics)})
     return rows
 
 
@@ -254,7 +288,7 @@ def news(out, companies):
         unique[row['url']] = row
         titles.add(key)
     ok = any(s['status'] == 'ok' for s in sources)
-    write(path, {'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'sources': sources, 'items': list(unique.values())[:1200]})
+    write(path, {'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'sources': sources, 'items': list(unique.values())[:2500]})
     print(f'News: {len(rows)} fetched; {len(unique)} unique; sources {sum(s["status"] == "ok" for s in sources)}/{len(sources)}', flush=True)
     if not ok:
         raise RuntimeError('All RSS sources failed; previous news retained')
