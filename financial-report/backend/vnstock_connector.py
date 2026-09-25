@@ -146,6 +146,42 @@ def repair_legacy_units(data):
                 row['values']={y:None if v is None else round(v*1_000_000,6) for y,v in row['values'].items()}
     return data
 
+def _canonical_template(ticker, period='year'):
+    path=ROOT/'data'/(valid_ticker(ticker)+'.json')
+    if not path.exists():return {}
+    try:
+        data=json.loads(path.read_text(encoding='utf-8'))
+        if period=='quarter':data=data.get('quarterly',{})
+        return {section['id']:section for section in data.get('sections',[])}
+    except (OSError,ValueError,KeyError):
+        return {}
+
+
+def canonicalize_section_ids(section,ticker,period='year'):
+    """Reuse validated stable IDs by exact label/unit match without changing values."""
+    template=_canonical_template(ticker,period).get(section.get('id'),{})
+    matches={}
+    for row in template.get('rows',[]):
+        matches.setdefault((normalized(row.get('label')),text(row.get('unit'))),[]).append(row.get('id'))
+    result=copy.deepcopy(section);used=set()
+    for row in result.get('rows',[]):
+        ids=matches.get((normalized(row.get('label')),text(row.get('unit'))),[])
+        if len(ids)==1 and ids[0] and ids[0] not in used:
+            row['id']=ids[0]
+        used.add(row['id'])
+    return result
+
+
+def canonicalize_dataset_ids(data,ticker):
+    result=copy.deepcopy(data)
+    period=result.get('periodType','year')
+    result['sections']=[canonicalize_section_ids(s,ticker,period) for s in result.get('sections',[])]
+    if result.get('quarterly'):
+        result['quarterly']=canonicalize_dataset_ids(result['quarterly'],ticker)
+    return result
+
+
+
 
 def normalize_frame(frame, kind, source, period='year'):
     """Preserve every returned line, hierarchy, null and zero; reject ambiguous axes."""
@@ -230,8 +266,9 @@ class VNStockConnector:
         self.audit=[]
 
     def load_cache(self,ticker):
-        path=self.data_dir/(valid_ticker(ticker)+'.json')
-        return repair_legacy_units(json.loads(path.read_text(encoding='utf-8'))) if path.exists() else None
+        ticker=valid_ticker(ticker)
+        path=self.data_dir/(ticker+'.json')
+        return repair_legacy_units(canonicalize_dataset_ids(json.loads(path.read_text(encoding='utf-8')),ticker)) if path.exists() else None
 
     def fetch(self,ticker,refresh=False):
         ticker=valid_ticker(ticker)
@@ -260,7 +297,7 @@ class VNStockConnector:
                 try:
                     time.sleep(float(os.environ.get('FINANCIAL_REQUEST_INTERVAL','3')))
                     frame=_vci_financial_frame(opener,ticker,kind,period,metadata)
-                    section=normalize_frame(frame,kind,'VCI',period)
+                    section=canonicalize_section_ids(normalize_frame(frame,kind,'VCI',period),ticker,period)
                     validate_dataset({'symbol':ticker,'periodType':period,'sections':[section]})
                     if not section['periods']:raise ValueError('Không có kỳ báo cáo hợp lệ.')
                     section['updatedAt']=now;sections[kind]=section
