@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from backend.data_validator import available_years,validate_period
-from backend.vnstock_connector import normalize_frame
+from backend.vnstock_connector import normalize_frame,fetch_report_frame,DEEP_PERIOD_LIMITS
 from backend.excel_builder import ExcelBuilder
 
 class ReportsTest(unittest.TestCase):
@@ -31,6 +31,18 @@ class ReportsTest(unittest.TestCase):
    if s['id']=='cash_flow':
     for r in s['rows']:r['values']['2023']=None
   with self.assertRaises(ValueError):validate_period(d,[2023])
+ def test_vci_deep_fetch_requests_more_than_default_four_periods(self):
+  class FakeVCI:
+   def __init__(self):self.kwargs=None
+   def _get_report(self,**kwargs):
+    self.kwargs=kwargs
+    return pd.DataFrame([{'item':'Doanh thu','item_id':'sales','2025':1,'2024':2,'2023':3,'2022':4,'2021':5}])
+  client=FakeVCI();frame,meta=fetch_report_frame(client,'VCI','income_statement','income_statement','year')
+  self.assertEqual(client.kwargs['limit'],DEEP_PERIOD_LIMITS['year'])
+  self.assertGreater(client.kwargs['limit'],4)
+  self.assertEqual(meta['strategy'],'vci_deep')
+  self.assertEqual(len(frame.columns),7)
+
  def test_no_quarter_mislabeled_as_year(self):
   bad=pd.DataFrame([['Tỷ lệ','r',12,20]],columns=['item','item_id','2018','2018'])
   with self.assertRaises(ValueError):normalize_frame(bad,'ratios','VCI')
