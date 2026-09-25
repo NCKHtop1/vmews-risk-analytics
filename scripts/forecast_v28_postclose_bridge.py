@@ -10,8 +10,9 @@ illiquid, or provider-missing names as current. This also works when a workflow
 runs after midnight, on a weekend, or during an exchange holiday.
 """
 from __future__ import annotations
-import math, os, re
+import gzip, json, math, os, re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from vn_exchange_calendar import latest_completed_session
 
@@ -19,6 +20,32 @@ VN_TZ = timezone(timedelta(hours=7))
 MIN_POSTCLOSE_COVERAGE = float(os.getenv("V28_POSTCLOSE_MIN_COVERAGE", "0.90"))
 MIN_SECONDARY_COVERAGE = float(os.getenv("V28_POSTCLOSE_MIN_SECONDARY_COVERAGE", "0.90"))
 MAX_LOG_GAP = float(os.getenv("V28_POSTCLOSE_MAX_LOG_GAP", "0.003"))
+
+def load_vndirect_secondary_cache(path) -> dict[str, list[dict[str, Any]]]:
+    """Read the VNDIRECT EOD rows already refreshed by this forecast run.
+
+    This avoids a second market-wide network request after load_histories() has
+    just refreshed and persisted the same independent VNDIRECT source. A stale
+    cache cannot make publication pass because bridge_completed_session() still
+    requires same-session rows and the configured coverage threshold.
+    """
+    try:
+        cache_path = Path(path)
+        if not cache_path.exists():
+            return {}
+        with gzip.open(cache_path, "rt", encoding="utf-8") as stream:
+            payload = json.load(stream)
+    except (OSError, EOFError, ValueError, json.JSONDecodeError):
+        return {}
+    if str(payload.get("source") or "") != "VNDIRECT_PUBLIC_EOD":
+        return {}
+    histories = payload.get("histories") or {}
+    return {
+        str(symbol).upper(): [row for row in rows if isinstance(row, dict)]
+        for symbol, rows in histories.items()
+        if isinstance(rows, list)
+    }
+
 
 
 def _num(value: Any, default=None):
