@@ -51,6 +51,11 @@ console.log(JSON.stringify({vic:m,annual:dash.model(annual,[2020,2025]),bank:das
         self.assertAlmostEqual((b['x']-a['x'])/(c['x']-a['x']),1/3)
         self.assertEqual(g['path'].count('M'),2)
 
+    def test_forecast_link_uses_current_pages_release_not_pinned_commit(self):
+        html=(ROOT/'index.html').read_text(encoding='utf-8')
+        self.assertIn('https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=MBB',html)
+        self.assertNotIn('cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/a077b436c666cb8362a38c0b5bee74c634d070ad/forecast-final.html',html)
+
     def test_reviewed_annual_workbook_ids_have_explicit_mapping(self):
         m=self.models['annual'];k={r['key']:r for r in m['metrics']}
         self.assertAlmostEqual(k['assets']['value'],1615763.927)

@@ -2,12 +2,12 @@
 
 Current-session inference is allowed only for the exchange's certified latest
 completed session, with broad same-session TradingView OHLC coverage and broad
-independent VNDIRECT close confirmation. Publication additionally requires the
-entire current forecast universe to resolve to that same completed session, so
-partial provider updates fail before expensive model fitting instead of being
-caught only by downstream release tests. This also works when a workflow runs
-after midnight, on a weekend, or during an exchange holiday. No synthetic
-OHLC is created.
+independent VNDIRECT close confirmation. Symbols without a verified same-session
+bar remain explicitly stale; they never receive synthetic OHLC and they do not
+block publication when both independent source coverage gates pass. Downstream
+consumers must keep stale symbols out of current-session rankings. This also
+works when a workflow runs after midnight, on a weekend, or during an exchange
+holiday. No synthetic OHLC is created.
 """
 from __future__ import annotations
 import math, os, re
@@ -220,22 +220,17 @@ def bridge_completed_session(
         "staleSymbols": len(stale),
         "staleSymbolSample": stale[:20],
     })
-    if stale:
-        # The downstream release contract already requires every published
-        # symbol to share the dashboard's completed-session date. Enforce that
-        # requirement here, before feature construction/model fitting, so a
-        # delayed provider cannot waste another full training cycle.
-        audit["status"] = "REJECTED_INCOMPLETE_UNIVERSE"
-        freshness["postCloseBridge"] = audit
-        raise RuntimeError(
-            f"Current-session EOD incomplete for {session_date}: {len(stale)}/{len(current)} stale; "
-            f"sample={stale[:20]}. Retry data refresh before model fit."
-        )
-
+    # A broad, independently confirmed same-session cross-section is enough to
+    # advance the market snapshot. Some listed names can legitimately have no
+    # same-day trade/quote (suspension, illiquidity, provider omission). Keep
+    # those rows untouched and explicitly stale instead of fabricating OHLC or
+    # freezing every liquid symbol behind a 100% universe requirement.
     audit.update({
         "status": "PASS",
         "completedSessionVerified": True,
         "independentCloseConfirmed": True,
+        "partialUniverse": bool(stale),
+        "publicationScope": "VERIFIED_CURRENT_PLUS_EXPLICIT_STALE" if stale else "FULL_CURRENT_UNIVERSE",
     })
     freshness.update({
         "forecastAsOf": session_date,

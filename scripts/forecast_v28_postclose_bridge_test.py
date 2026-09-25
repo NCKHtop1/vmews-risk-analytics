@@ -54,26 +54,29 @@ class PostCloseBridgeTest(unittest.TestCase):
             with self.assertRaises(RuntimeError): bridge_completed_session(histories(symbols),freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary,min_secondary_coverage=.9)
             self.assertEqual(freshness["postCloseBridge"]["status"],"REJECTED_SECOND_SOURCE")
 
-    def test_rejects_partial_current_session_before_model_fit(self):
+    def test_partial_current_session_above_gate_advances_without_fabricating_stale_rows(self):
         symbols=[f"S{i:02d}" for i in range(10)]
         h=histories(symbols)
-        # Nine symbols already have the session from another trusted EOD source;
-        # one symbol remains stale. Broad source coverage alone must not advance
-        # forecastAsOf and waste a full model fit before discovering the stale row.
+        # Nine symbols have independently confirmed same-session data; one
+        # remains stale. The broad current cross-section may advance, but the
+        # stale symbol must remain untouched and explicitly disclosed.
         for symbol in symbols[:9]:
             h[symbol].append({"date":"2026-08-28","open":50000,"high":50200,"low":49800,"close":50000,"modelClose":50000,"volume":1000000,"provider":"fixture-current","exchange":"HOSE"})
         freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
-        with self.assertRaisesRegex(RuntimeError,r"Current-session EOD incomplete.*sample=.*Retry data refresh before model fit"):
-            bridge_completed_session(
-                h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),
-                frame=frame_for(symbols[:9]),secondary_rows=secondary_for(symbols[:9]),
-                min_coverage=.9,min_secondary_coverage=.9,
-            )
-        bridge=freshness["postCloseBridge"]
-        self.assertEqual(bridge["status"],"REJECTED_INCOMPLETE_UNIVERSE")
+        out,meta=bridge_completed_session(
+            h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),
+            frame=frame_for(symbols[:9]),secondary_rows=secondary_for(symbols[:9]),
+            min_coverage=.9,min_secondary_coverage=.9,
+        )
+        bridge=meta["postCloseBridge"]
+        self.assertEqual(bridge["status"],"PASS")
+        self.assertTrue(bridge["partialUniverse"])
+        self.assertEqual(bridge["publicationScope"],"VERIFIED_CURRENT_PLUS_EXPLICIT_STALE")
         self.assertEqual(bridge["staleSymbols"],1)
         self.assertIn("S09",bridge["staleSymbolSample"])
-        self.assertEqual(freshness["forecastAsOf"],"2026-08-27")
+        self.assertEqual(meta["forecastAsOf"],"2026-08-28")
+        self.assertEqual(out["S09"][-1]["date"],"2026-08-27")
+        self.assertNotIn("ohlcUnavailable",out["S09"][-1])
 
     def test_preopen_keeps_already_completed_session(self):
         symbols=["FPT","VCB"]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
