@@ -347,11 +347,11 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(universe["freshSymbols"], universe["currentSymbols"])
         self.assertEqual(universe["staleSymbols"], 0)
         accounted = (
-            universe["currentSymbols"]
-            + len(universe["insufficientHistorySymbols"])
-            + len(universe["staleOrUnverifiedSymbols"])
+            set(self.dashboard["symbols"])
+            | set(universe["insufficientHistorySymbols"])
+            | set(universe["staleOrUnverifiedSymbols"])
         )
-        self.assertEqual(accounted, universe["listedHOSE"])
+        self.assertEqual(len(accounted), universe["listedHOSE"])
         self.assertFalse(set(universe["staleOrUnverifiedSymbols"]) & set(self.dashboard["symbols"]))
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
         price_audit = self.market["sources"]["priceCrossSource"]
