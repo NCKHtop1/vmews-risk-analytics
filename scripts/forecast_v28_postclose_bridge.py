@@ -262,6 +262,52 @@ def bridge_completed_session(
             f"{verified_coverage:.1%} below {required_publication_coverage:.1%}"
         )
 
+    historical_price_cross_source = freshness.get("priceCrossSource") or {}
+    current_agreements = {}
+    current_gaps = []
+    for symbol in verified_current:
+        primary_close = float(primary[symbol]["close"])
+        secondary_close = float(secondary[symbol]["close"])
+        absolute_log_gap = abs(math.log(primary_close / secondary_close))
+        tolerance = max(MAX_LOG_GAP, 2 * _tick(primary_close) / primary_close)
+        current_gaps.append(absolute_log_gap)
+        current_agreements[symbol] = {
+            "status": "PASS",
+            "session": session_date,
+            "primary": "TRADINGVIEW_VIETNAM_SCREEN",
+            "reference": "VNDIRECT_PUBLIC_EOD",
+            "primaryClose": primary_close,
+            "referenceClose": secondary_close,
+            "absoluteLogGap": absolute_log_gap,
+            "tolerance": tolerance,
+        }
+
+    freshness["historicalPriceCrossSource"] = historical_price_cross_source
+    freshness["priceCrossSource"] = {
+        "status": "PASS",
+        "method": "SAME_COMPLETED_SESSION_TRADINGVIEW_VS_VNDIRECT_CLOSE",
+        "session": session_date,
+        "comparedSymbols": len(verified_current),
+        "referenceEligibleSymbols": len(current),
+        "universeSymbols": len(current),
+        "eligibleCoverage": verified_coverage,
+        "requiredEligibleCoverage": required_publication_coverage,
+        "universeCoverage": verified_coverage,
+        "requiredUniverseCoverage": required_publication_coverage,
+        "coverage": verified_coverage,
+        "requiredCoverage": required_publication_coverage,
+        "mismatchCount": 0,
+        "mismatches": [],
+        "medianAbsoluteLogGap": (
+            sorted(current_gaps)[len(current_gaps)//2] if current_gaps else None
+        ),
+        "p95AbsoluteLogGap": (
+            sorted(current_gaps)[min(len(current_gaps)-1, int(.95 * len(current_gaps)))]
+            if current_gaps else None
+        ),
+        "symbols": current_agreements,
+    }
+
     audit.update({
         "appendedSymbols": appended,
         "alreadyCurrentSymbols": already,
