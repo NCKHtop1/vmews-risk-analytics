@@ -4,7 +4,7 @@ const M=window.FinChartMath,L=window.LightweightCharts,$=id=>document.getElement
 const fmt=n=>Number.isFinite(n)?n.toLocaleString('vi-VN',{maximumFractionDigits:2}):'—';
 const stamp=t=>new Date(t).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});
 const timeLabel=t=>typeof t==='number'?new Date(t*1000).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):typeof t==='string'?t:`${t.year}-${String(t.month).padStart(2,'0')}-${String(t.day).padStart(2,'0')}`;
-const defaults={sma:20,ema:20,rsi:14,fast:12,slow:26,signal:9,bb:20,deviation:2,vma:20};
+const defaults={sma:20,ema:20,wma:20,vwma:20,rsi:14,fast:12,slow:26,signal:9,bb:20,deviation:2,vma:20,atr:14,adx:14,stoch:14,stochSignal:3,cci:20,roc:10,willr:14,mfi:14,cmf:20,supertrend:10,supertrendFactor:3};
 class ChartController{
  constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf='1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];
  this.chart=L.createChart($('price-chart'),{autoSize:true,height:540,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:true},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
@@ -23,7 +23,7 @@ class ChartController{
  $('chart-fullscreen').addEventListener('click',async()=>{const terminal=$('chart-terminal');if(terminal.classList.contains('chart-expanded')){terminal.classList.remove('chart-expanded');$('chart-fullscreen').textContent='Toàn màn hình';return;}try{if(document.fullscreenElement)await document.exitFullscreen();else await terminal.requestFullscreen();}catch{terminal.classList.add('chart-expanded');$('chart-fullscreen').textContent='Thoát toàn màn hình';}});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('chart-terminal').classList.contains('chart-expanded')){$('chart-terminal').classList.remove('chart-expanded');$('chart-fullscreen').textContent='Toàn màn hình';}});
  document.addEventListener('fullscreenchange',()=>{$('chart-fullscreen').textContent=document.fullscreenElement?'Thoát toàn màn hình':'Toàn màn hình';});
- $('chart-indicators').addEventListener('change',e=>{if(e.target.type==='number'){const key=e.target.dataset.param,n=Number(e.target.value),max=key==='deviation'?5:200,min=key==='deviation'?.5:2;if(!Number.isFinite(n)||n<min||n>max||(key!=='deviation'&&!Number.isInteger(n))){e.target.value=this.params[key];return;}const next={...this.params,[key]:n};if(next.fast>=next.slow){e.target.value=this.params[key];$('chart-indicator-error').textContent='MACD: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.';return;}this.params=next;}$('chart-indicator-error').textContent='';this.values=M.indicators(this.bars,this.params);this.rebuild(true);});
+ $('chart-indicators').addEventListener('change',e=>{if(e.target.type==='number'){const key=e.target.dataset.param,n=Number(e.target.value),min=Number(e.target.min||0),max=Number(e.target.max||1e9),step=Number(e.target.step||1);const integer=step>=1;if(!Number.isFinite(n)||n<min||n>max||(integer&&!Number.isInteger(n))){e.target.value=this.params[key];return;}const next={...this.params,[key]:n};if(next.fast>=next.slow){e.target.value=this.params[key];$('chart-indicator-error').textContent='MACD: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.';return;}this.params=next;}$('chart-indicator-error').textContent='';this.values=M.indicators(this.bars,this.params);this.rebuild(true);});
  }
  select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.load();}else this.subscribe();}
  async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF;
@@ -33,16 +33,25 @@ class ChartController{
  for(const message of this.buffer)this.candle(message);this.buffer=[];
  }catch(e){if(generation!==this.generation||e.name==='AbortError')return;this.loading=false;if(baseTF==='1m'){this.tf='1d';$('chart-interval').value='1d';$('chart-status').textContent='Chưa có nến phút cho '+symbol+'; đang chuyển sang dữ liệu ngày.';return this.load(force);}$('chart-status').textContent='Không tải được lịch sử. Bấm Cập nhật để thử lại.';}
  }
- enabled(name){return $('ind-'+name).checked;}
+ enabled(name){return !!$('ind-'+name)?.checked;}
  rebuild(keep){const range=keep?this.chart.timeScale().getVisibleLogicalRange():null;for(const s of Object.values(this.series))this.chart.removeSeries(s);this.series={};
  const kind=this.type==='line'?L.LineSeries:this.type==='area'?L.AreaSeries:L.CandlestickSeries;
  this.series.price=this.chart.addSeries(kind,{upColor:'#089981',downColor:'#f23645',wickUpColor:'#089981',wickDownColor:'#f23645',borderVisible:false,color:'#4564cc',lineColor:'#4564cc',topColor:'#4564cc50',bottomColor:'#4564cc05',priceFormat:{type:'price',precision:0,minMove:1}},0);
- let pane=0;const line=(key,color,index=0)=>this.series[key]=this.chart.addSeries(L.LineSeries,{color,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false},index);
+ let pane=0;const line=(key,color,index=0)=>this.series[key]=this.chart.addSeries(L.LineSeries,{color,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false},index);const guides=(series,levels)=>levels.forEach(price=>series.createPriceLine({price,color:'#abb3c3',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''}));
  if(this.enabled('volume')||this.enabled('vma')){pane++;this.series.volume=this.chart.addSeries(L.HistogramSeries,{priceFormat:{type:'volume'},priceLineVisible:false,lastValueVisible:false,visible:this.enabled('volume')},pane);if(this.enabled('vma'))line('vma','#d59637',pane);}
- if(this.enabled('sma'))line('sma','#da962b');if(this.enabled('ema'))line('ema','#725cce');
+ if(this.enabled('sma'))line('sma','#da962b');if(this.enabled('ema'))line('ema','#725cce');if(this.enabled('wma'))line('wma','#227c9d');if(this.enabled('vwma'))line('vwma','#00897b');if(this.enabled('supertrend'))line('supertrend','#d04b64');
  if(this.enabled('bb')){line('upper','#7597ba');line('middle','#adb5c5');line('lower','#7597ba');}
- if(this.enabled('rsi')){pane++;line('rsi','#9764c7',pane);for(const price of [30,70])this.series.rsi.createPriceLine({price,color:'#abb3c3',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''});}
- if(this.enabled('macd')){pane++;line('macd','#3777bc',pane);line('signal','#e69239',pane);this.series.hist=this.chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},pane);}
+ if(this.enabled('rsi')){pane++;line('rsi','#9764c7',pane);guides(this.series.rsi,[30,70]);}
+ if(this.enabled('macd')){pane++;line('macd','#3777bc',pane);line('signal','#e69239',pane);this.series.hist=this.chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},pane);guides(this.series.macd,[0]);}
+ if(this.enabled('atr')){pane++;line('atr','#8b6f47',pane);}
+ if(this.enabled('adx')){pane++;line('adx','#6d5aa7',pane);guides(this.series.adx,[20,25]);}
+ if(this.enabled('stoch')){pane++;line('stoch','#3478b8',pane);line('stochSignal','#e08a35',pane);guides(this.series.stoch,[20,80]);}
+ if(this.enabled('cci')){pane++;line('cci','#7a5f9e',pane);guides(this.series.cci,[-100,100]);}
+ if(this.enabled('roc')){pane++;line('roc','#2b8a7e',pane);guides(this.series.roc,[0]);}
+ if(this.enabled('willr')){pane++;line('willr','#a56b35',pane);guides(this.series.willr,[-80,-20]);}
+ if(this.enabled('obv')){pane++;line('obv','#4e6bb3',pane);}
+ if(this.enabled('mfi')){pane++;line('mfi','#7b5cab',pane);guides(this.series.mfi,[20,80]);}
+ if(this.enabled('cmf')){pane++;line('cmf','#318b6c',pane);guides(this.series.cmf,[0]);}
  this.series.price.setData(this.bars.map(b=>this.priceData(b)));if(this.series.volume)this.series.volume.setData(this.bars.map(b=>this.volumeData(b)));
  for(const [key,s]of Object.entries(this.series)){if(['price','volume'].includes(key))continue;s.setData(this.values.filter(v=>Number.isFinite(v[key])).map(v=>({time:v.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})})));}
  this.chart.panes().forEach((p,i)=>p.setHeight(i?95:350));this.chart.applyOptions({timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
