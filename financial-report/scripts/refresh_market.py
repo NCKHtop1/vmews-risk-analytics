@@ -491,11 +491,12 @@ def parse_vbma_table(raw):
             except csv.Error:
                 continue
             rows = [[clean(x) for x in row] for row in rows if any(clean(x) for x in row)]
-            if not rows:
+            if not rows or len(rows[0]) <= 1:
                 continue
-            width = max(len(x) for x in rows)
-            score = width * min(len(rows), 50)
-            if width > 1 and (best is None or score > best[0]):
+            width = len(rows[0])
+            consistent = sum(1 for row in rows[1:51] if len(row) == width)
+            score = width * 100 + consistent
+            if best is None or score > best[0]:
                 best = (score, rows)
     if best is None:
         raise ValueError('Cannot decode VBMA table')
