@@ -68,7 +68,7 @@ class MarketTests(unittest.TestCase):
         bars=[{'close':90+i*2,'volume':1000+i*10} for i in range(21)]
         news=[{'title':'Doanh nghiệp báo lãi tăng trưởng mạnh','url':'https://vnexpress.net/a','source':'VnExpress','publishedAt':datetime.now(timezone.utc).isoformat(),'symbols':['FPT']}]
         d=m.movement_driver('FPT',quote,bars,news,1.0)
-        self.assertEqual(d['causality'],'association_not_proven')
+        self.assertEqual(d['attributionMethod'],'weighted_market_relative_volume_momentum_news')
         self.assertAlmostEqual(d['relativeStrengthPct'],4)
         self.assertGreater(d['volumeRatio20'],2)
         self.assertEqual(d['news72hCount'],1)
@@ -104,39 +104,57 @@ class MarketTests(unittest.TestCase):
         finally:
             m.request=original
 
-    def test_full_daily_history_paginates_and_preserves_older_retained_bars(self):
-        original=m.request
+    def test_daily_history_backfill_merges_older_pages_and_marks_complete(self):
+        original=m._history_page
         calls=[]
-        base=1700000000
-        def payload(times):
-            return [{'symbol':'FPT','t':times,'o':[100]*len(times),'h':[110]*len(times),'l':[90]*len(times),'c':[105]*len(times),'v':[1000]*len(times)}]
-        pages=[
-            list(range(base-1599*86400,base+1,86400)),
-            list(range(base-3199*86400,base-1599*86400,86400)),
-        ]
-        def fake_request(url,payload_arg=None):
-            calls.append(payload_arg)
-            idx=min(len(calls)-1,len(pages)-1)
-            return m.json.dumps(payload(pages[idx])).encode()
+        def fake_page(symbol,frame,to,count,minute=False,retries=3):
+            calls.append((symbol,frame,to,count,minute))
+            if len(calls)==1:
+                return [
+                    {'time':'2026-09-24','open':100,'high':110,'low':90,'close':105,'volume':1000},
+                    {'time':'2026-09-25','open':105,'high':112,'low':100,'close':110,'volume':1200},
+                ]
+            return [
+                {'time':'2010-01-04','open':50,'high':55,'low':48,'close':53,'volume':500},
+                {'time':'2010-01-05','open':53,'high':56,'low':50,'close':54,'volume':550},
+            ]
+        old_pages=m.os.environ.get('HISTORY_BACKFILL_PAGES')
+        old_size=m.os.environ.get('HISTORY_PAGE_SIZE')
         try:
-            m.request=fake_request
-            bars=m._full_daily_history('FPT',2500)
-            self.assertGreaterEqual(len(bars),2500)
-            self.assertGreaterEqual(len(calls),2)
-            self.assertTrue(all(call['countBack']<=1600 for call in calls))
+            m._history_page=fake_page
+            m.os.environ['HISTORY_BACKFILL_PAGES']='1'
+            m.os.environ['HISTORY_PAGE_SIZE']='700'
             with tempfile.TemporaryDirectory() as tmp:
                 out=pathlib.Path(tmp)
-                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2000-01-03','open':90,'high':100,'low':80,'close':95,'volume':500}]})
-                m.os.environ['HISTORY_COUNT_BACK']='2500'
-                ok=m._refresh_one_history(out,'FPT',minute=False)
+                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2020-04-29','open':90,'high':100,'low':80,'close':95,'volume':500}]})
+                symbol,ok,error=m._daily_history(out,'FPT')
                 saved=m.read(out/'history/FPT.json',{})
-                self.assertTrue(ok[1])
-                self.assertEqual(saved['bars'][0]['time'],'2000-01-03')
-                self.assertEqual(saved['barCount'],len(saved['bars']))
-                self.assertEqual(saved['firstBar'],'2000-01-03')
+                self.assertTrue(ok)
+                self.assertIsNone(error)
+                self.assertEqual(symbol,'FPT')
+                self.assertEqual(saved['firstBar'],'2010-01-04')
+                self.assertEqual(saved['lastBar'],'2026-09-25')
+                self.assertEqual(saved['barCount'],5)
+                self.assertTrue(saved['historyComplete'])  # short older page means source exhausted
+                self.assertEqual(saved['backfillPagesFetched'],1)
+                self.assertEqual(calls[1][3],700)
         finally:
-            m.request=original
-            m.os.environ.pop('HISTORY_COUNT_BACK',None)
+            m._history_page=original
+            if old_pages is None:m.os.environ.pop('HISTORY_BACKFILL_PAGES',None)
+            else:m.os.environ['HISTORY_BACKFILL_PAGES']=old_pages
+            if old_size is None:m.os.environ.pop('HISTORY_PAGE_SIZE',None)
+            else:m.os.environ['HISTORY_PAGE_SIZE']=old_size
+
+    def test_history_symbol_filter_and_low_concurrency_are_supported(self):
+        script=(ROOT/'scripts/refresh_market.py').read_text()
+        workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text()
+        self.assertIn("HISTORY_SYMBOLS",script)
+        self.assertIn("HISTORY_WORKERS', '2'",script)
+        self.assertIn("HISTORY_BACKFILL_PAGES",script)
+        self.assertIn("history_backfill_pages",workflow)
+        self.assertIn("HISTORY_PAGE_SIZE: '700'",workflow)
+        self.assertIn("export HISTORY_BACKFILL_PAGES=10",workflow)
+
 
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
@@ -213,15 +231,20 @@ class MarketTests(unittest.TestCase):
         self.assertIn("nativeTitle.textContent='Biểu đồ FinQuery · '+state.symbol",market)
         self.assertIn("this.tf=$('chart-interval')?.value||'1d'",chart)
         self.assertIn("if(M.intraday(this.tf)&&(!months||months>=12))",chart)
+        self.assertIn('technicalSnapshot()',chart)
+        self.assertIn('mean reversion',chart)
+        self.assertIn('Tín hiệu tổng hợp:',chart)
 
     def test_local_analysis_has_natural_language_and_concept_understanding(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         self.assertIn('movementNarrative',js)
         self.assertIn('financialNarrative',js)
         self.assertIn('conceptHTML',js)
-        for concept in ('ROE','ROA','FCF','OCF','Biên lợi nhuận gộp','Đòn bẩy tài chính'):
+        for concept in ('ROE','ROA','FCF','OCF','Biên lợi nhuận gộp','Đòn bẩy tài chính','RSI','MACD','Bollinger Bands','Supertrend','ADX','Mean reversion','Giá phiên trước / giá tham chiếu','Dự báo T+1–T+5','Backtest','RMSE','MAE','MAPE'):
             self.assertIn(concept,js)
         self.assertIn("return'concept'",js)
+        self.assertIn('relatedConcepts',js)
+        self.assertIn('conceptCurrent',js)
 
     def test_pandas_ta_reference_suite_is_available(self):
         rows=80
@@ -312,7 +335,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
         self.assertIn("return'macro'",research)
         self.assertIn('macroHTML',research)
-        self.assertIn('chưa đủ để coi đó là nguyên nhân',research)
+        self.assertNotIn('chưa đủ để coi đó là nguyên nhân',research.lower())
+        self.assertNotIn('không tự khẳng định quan hệ nhân quả',research.lower())
+        self.assertIn('Catalyst vĩ mô phù hợp nhất',research)
 
     def test_professional_logo_and_dolphin_ai_shell_are_present(self):
         html=(ROOT/'frontend/index.html').read_text()
@@ -323,10 +348,31 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="company-logo"',html)
         self.assertIn('id="ai-fab"',html)
         self.assertIn('Dolphin AI',html)
+        self.assertIn('dolphin-mark',html)
+        self.assertIn('brand-mark',html)
+        self.assertIn('<svg viewBox="0 0 64 64"',html)
         self.assertIn('companiesmarketcap.com/img/company-logos/64/',app)
         self.assertIn('ticker-with-logo',market)
         self.assertIn('openDrawer',research)
         self.assertIn('.indicator-dialog{position:fixed!important;top:76px!important;right:22px!important',css)
+
+    def test_vn100_board_exposes_previous_close_absolute_and_percent_change(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        self.assertIn('<th>Phiên trước</th><th>± Giá</th><th>± %</th>',html)
+        self.assertIn('q.price-q.reference',market)
+        self.assertIn('colspan="9"',market)
+        self.assertNotIn('không tự khẳng định quan hệ nhân quả',market.lower())
+
+    def test_dolphin_answers_are_direct_and_use_live_technical_context(self):
+        research=(ROOT/'frontend/research-ai.js').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        self.assertIn('technical:m.technical||null',research)
+        self.assertIn('Kỹ thuật khung ',research)
+        self.assertIn('Catalyst tin tức ưu tiên',research)
+        self.assertIn('technical:chartController.context?.()?.technical||null',market)
+        self.assertNotIn('trước khi kết luận',research.lower())
+        self.assertNotIn('chưa đủ để coi',research.lower())
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
