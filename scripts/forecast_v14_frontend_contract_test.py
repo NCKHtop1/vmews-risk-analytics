@@ -101,9 +101,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("forecast-final-v12.js?release=38.0", self.html)
+        self.assertIn("forecast-final-v12.js?release=43.0", self.html)
         self.assertIn("solution-ai-v17.js?release=36.0", self.html)
-        self.assertIn("forecast-live-leaders-v14.js?release=38.0", self.html)
+        self.assertIn("forecast-live-leaders-v14.js?release=42.0", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_internal_statuses_and_nonexistent_backend_are_not_user_facing(self) -> None:
@@ -135,7 +135,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         motion = (ROOT / "forecast-portfolio-v14.js").read_text(encoding="utf-8")
         self.assertIn("base.dash.symbols", motion)
         self.assertIn("base.dash.charts", motion)
-        self.assertIn("snapshot.close", motion)
+        self.assertIn("view.close", motion)
+        self.assertIn("__VMEWS_APPLY_SESSION_VIEW__", motion)
         self.assertIn("rawClose", motion)
         self.assertIn("DỮ LIỆU MỚI NHẤT", self.html)
 
@@ -183,6 +184,9 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("rankingEligible", leaders)
         self.assertIn("function primaryHorizon(B,z=null)", app)
         self.assertIn("function pointMove(q,close)", app)
+        self.assertIn("q?.priceValidated===true", app)
+        self.assertIn("CHƯA ĐẠT KIỂM ĐỊNH", app)
+        self.assertIn("Kỳ này không phát hành giá dự báo", app)
         self.assertIn("Giá dự báo của mô hình", app)
         self.assertIn("__VMEWS_BACKTEST_RESULT_DATE__", app)
         self.assertIn("Ngày có kết quả", self.html)
