@@ -221,6 +221,39 @@ class MarketTests(unittest.TestCase):
             self.assertIn(label,html)
         self.assertNotIn('id="tradingview-link"',html)
 
+    def test_vbma_macro_parser_handles_legacy_delimiters_and_numeric_cells(self):
+        raw='Date;PMI;Ghi chú\n2026-08;50,5;Mở rộng\n2026-09;51,2;Tăng\n'.encode('utf-8-sig')
+        data=m.parse_vbma_table(raw)
+        self.assertEqual(data['columns'],['Date','PMI','Ghi chú'])
+        self.assertIn('PMI',data['numericColumns'])
+        self.assertAlmostEqual(data['rows'][-1]['PMI'],51.2)
+        self.assertEqual(data['rows'][-1]['Ghi chú'],'Tăng')
+
+    def test_macro_collection_scope_excludes_bond_and_swap_curves(self):
+        self.assertEqual(set(m.VBMA_TABLES),{'macro_overview','fdi','gdp_growth','pmi','money_supply','credit_sector'})
+        joined=' '.join(slug for slug,_ in m.VBMA_TABLES.values()).lower()
+        for forbidden in ('bond','swap','yield_curve','short_term_benchmark'):
+            self.assertNotIn(forbidden,joined)
+
+    def test_indicator_picker_signals_macro_gate_and_natural_macro_answers_are_wired(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        research=(ROOT/'frontend/research-ai.js').read_text()
+        macro=(ROOT/'frontend/macro.js').read_text()
+        self.assertIn('indicator-open',html)
+        self.assertIn('indicator-search',html)
+        self.assertIn('signal-feed',html)
+        self.assertIn('macro-access-code',html)
+        self.assertIn('ACCESS_HASH',macro)
+        self.assertNotIn("ACCESS_HASH='13579'",macro)
+        for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
+            self.assertIn(token,chart)
+        self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
+        self.assertIn("return'macro'",research)
+        self.assertIn('macroHTML',research)
+        self.assertIn('chưa đủ để coi đó là nguyên nhân',research)
+
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
         def item(url,day='Thu, 24 Sep 2026 08:00:00 +0700'):
