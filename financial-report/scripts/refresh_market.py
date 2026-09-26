@@ -167,6 +167,140 @@ def write(path, data):
     temp.replace(path)
 
 
+POSITIVE_NEWS = re.compile(r'tăng|tăng trưởng|lãi|lợi nhuận|kỷ lục|vượt kế hoạch|ký kết|trúng thầu|cổ tức|mua vào|nâng hạng|mở rộng|phục hồi|khởi sắc', re.I)
+NEGATIVE_NEWS = re.compile(r'giảm|sụt|lỗ|thua lỗ|xử phạt|điều tra|bán ra|hạ dự báo|rủi ro|nợ xấu|chậm thanh toán|thu hồi|cảnh báo|khởi tố', re.I)
+DRIVER_WEIGHTS = {'market': .20, 'relative': .28, 'volume': .22, 'momentum': .15, 'news': .15}
+
+
+def clamp(value, low=-100.0, high=100.0):
+    return max(low, min(high, value))
+
+
+def movement_driver(symbol, quote, bars, news_items, market_change):
+    """Transparent factor attribution. Scores describe association, not proven causality."""
+    change = number((quote or {}).get('changePct'))
+    price = number((quote or {}).get('price'))
+    volumes = [number(row.get('volume')) for row in (bars or [])[-20:]]
+    volumes = [v for v in volumes if v is not None and v >= 0]
+    avg_volume = sum(volumes) / len(volumes) if volumes else None
+    current_volume = number((quote or {}).get('volume'))
+    volume_ratio = current_volume / avg_volume if avg_volume and current_volume is not None else None
+
+    closes = [number(row.get('close')) for row in (bars or []) if number(row.get('close')) and number(row.get('close')) > 0]
+    anchor = closes[-6] if len(closes) >= 6 else closes[0] if closes else None
+    momentum = (price / anchor - 1) * 100 if price and anchor else None
+    returns = [(closes[i] / closes[i - 1] - 1) * 100 for i in range(max(1, len(closes) - 20), len(closes)) if closes[i - 1] > 0]
+    if returns:
+        avg_return = sum(returns) / len(returns)
+        volatility = (sum((x - avg_return) ** 2 for x in returns) / len(returns)) ** .5
+    else:
+        volatility = None
+
+    high, low = number((quote or {}).get('high')), number((quote or {}).get('low'))
+    range_position = (price - low) / (high - low) * 100 if price is not None and high is not None and low is not None and high > low else None
+    relative = change - market_change if change is not None and market_change is not None else None
+
+    current = datetime.now(timezone.utc)
+    company_news = []
+    weighted_news = []
+    for item in news_items or []:
+        if symbol not in (item.get('symbols') or []):
+            continue
+        try:
+            published = datetime.fromisoformat(str(item.get('publishedAt')).replace('Z', '+00:00'))
+            if published.tzinfo is None:
+                published = published.replace(tzinfo=timezone.utc)
+            age_hours = max(0, (current - published.astimezone(timezone.utc)).total_seconds() / 3600)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        if age_hours > 72:
+            continue
+        title = clean(item.get('title'))
+        pos, neg = len(POSITIVE_NEWS.findall(title)), len(NEGATIVE_NEWS.findall(title))
+        raw = clamp((pos - neg) * 45)
+        freshness = 1 if age_hours <= 24 else .65 if age_hours <= 48 else .4
+        if raw:
+            weighted_news.append(raw * freshness)
+        company_news.append({
+            'title': title, 'url': item.get('url'), 'source': item.get('source'),
+            'publishedAt': item.get('publishedAt'), 'signal': round(raw, 1)
+        })
+    news_score = sum(weighted_news) / len(weighted_news) if weighted_news else 0.0
+
+    direction = 1 if (change or 0) > 0 else -1 if (change or 0) < 0 else 0
+    scores = {
+        'market': clamp((market_change or 0) / 2.5 * 100) if market_change is not None else None,
+        'relative': clamp(relative / 3.5 * 100) if relative is not None else None,
+        'volume': direction * clamp((volume_ratio - 1) * 80) if volume_ratio is not None and direction else 0.0 if volume_ratio is not None else None,
+        'momentum': clamp(momentum / 8 * 100) if momentum is not None else None,
+        'news': clamp(news_score) if company_news else 0.0,
+    }
+    labels = {
+        'market': 'Thị trường chung', 'relative': 'Sức mạnh tương đối',
+        'volume': 'Thanh khoản', 'momentum': 'Động lượng 5 phiên', 'news': 'Tin tức gần nhất'
+    }
+    factors = []
+    total = 0.0
+    available = 0
+    for key in ('market', 'relative', 'volume', 'momentum', 'news'):
+        score = scores[key]
+        if score is None:
+            continue
+        available += 1
+        contribution = score * DRIVER_WEIGHTS[key]
+        total += contribution
+        factors.append({
+            'id': key, 'label': labels[key], 'score': round(score, 1),
+            'weight': DRIVER_WEIGHTS[key], 'contribution': round(contribution, 1)
+        })
+    total = round(clamp(total), 1)
+    factors.sort(key=lambda row: abs(row['contribution']), reverse=True)
+    evidence = available / len(DRIVER_WEIGHTS)
+    confidence_score = round(clamp(38 + evidence * 32 + min(len(company_news), 3) * 4 + min(abs(total), 50) * .18, 0, 92))
+    confidence = 'cao' if confidence_score >= 75 else 'trung bình' if confidence_score >= 58 else 'thấp'
+    leaders = factors[:2]
+    summary = 'Chưa đủ dữ liệu để phân rã biến động.'
+    if leaders:
+        joined = ' và '.join(f"{row['label']} ({row['contribution']:+.1f})" for row in leaders)
+        summary = f"Tín hiệu nổi bật: {joined}. Điểm tổng {total:+.1f}/100."
+    return {
+        'symbol': symbol, 'generatedAt': now(), 'changePct': change,
+        'marketMedianChangePct': round(market_change, 3) if market_change is not None else None,
+        'relativeStrengthPct': round(relative, 3) if relative is not None else None,
+        'volumeRatio20': round(volume_ratio, 3) if volume_ratio is not None else None,
+        'momentum5dPct': round(momentum, 3) if momentum is not None else None,
+        'volatility20dPct': round(volatility, 3) if volatility is not None else None,
+        'rangePositionPct': round(range_position, 1) if range_position is not None else None,
+        'news72hCount': len(company_news), 'newsScore': round(news_score, 1),
+        'score': total, 'confidence': confidence, 'confidenceScore': confidence_score,
+        'factors': factors, 'headlines': company_news[:5], 'summary': summary,
+        'causality': 'association_not_proven'
+    }
+
+
+def build_drivers(out, companies):
+    quote_bundle = read(out / 'quotes.json', {'quotes': {}})
+    quotes = quote_bundle.get('quotes') or {}
+    changes = [number(row.get('changePct')) for row in quotes.values() if row.get('status') == 'ok']
+    changes = sorted(v for v in changes if v is not None)
+    market_change = changes[len(changes) // 2] if changes else None
+    news_items = read(out / 'news.json', {'items': []}).get('items') or []
+    symbols = {}
+    for company in companies:
+        symbol = company['symbol']
+        quote = quotes.get(symbol)
+        if not quote:
+            continue
+        bars = read(out / 'history' / (symbol + '.json'), {}).get('bars') or []
+        symbols[symbol] = movement_driver(symbol, quote, bars, news_items, market_change)
+    write(out / 'drivers.json', {
+        'generatedAt': now(), 'methodVersion': 'movement-drivers-v1',
+        'marketMedianChangePct': round(market_change, 3) if market_change is not None else None,
+        'weights': DRIVER_WEIGHTS, 'symbols': symbols
+    })
+    return symbols
+
+
 def prices(out, companies):
     symbols = [c['symbol'] for c in companies]
     board_path = out / 'quotes.json'
@@ -211,7 +345,8 @@ def prices(out, companies):
                 write(minute_path, {**minute_previous, 'checkedAt': now(), 'status': 'retained'})
         time.sleep(0.6)
     write(out / 'prices-status.json', {'checkedAt': now(), 'quotes': len(fresh), 'histories': histories, 'expected': len(symbols), 'errors': errors})
-    print(f'Prices: {len(fresh)}/{len(symbols)}; histories: {histories}/{len(symbols)}', flush=True)
+    drivers = build_drivers(out, companies)
+    print(f'Prices: {len(fresh)}/{len(symbols)}; histories: {histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
     if not fresh or histories == 0:
         raise RuntimeError('Market collection incomplete; previous successful data retained')
 
@@ -289,7 +424,8 @@ def news(out, companies):
         titles.add(key)
     ok = any(s['status'] == 'ok' for s in sources)
     write(path, {'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'sources': sources, 'items': list(unique.values())[:2500]})
-    print(f'News: {len(rows)} fetched; {len(unique)} unique; sources {sum(s["status"] == "ok" for s in sources)}/{len(sources)}', flush=True)
+    drivers = build_drivers(out, companies) if (out / 'quotes.json').exists() else {}
+    print(f'News: {len(rows)} fetched; {len(unique)} unique; sources {sum(s["status"] == "ok" for s in sources)}/{len(sources)}; drivers: {len(drivers)}', flush=True)
     if not ok:
         raise RuntimeError('All RSS sources failed; previous news retained')
 
