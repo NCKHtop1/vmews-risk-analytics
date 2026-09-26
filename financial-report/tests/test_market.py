@@ -118,25 +118,60 @@ class MarketTests(unittest.TestCase):
             calls.append(payload_arg)
             idx=min(len(calls)-1,len(pages)-1)
             return m.json.dumps(payload(pages[idx])).encode()
+        old_env={k:m.os.environ.get(k) for k in ('HISTORY_COUNT_BACK','HISTORY_FULL_BACKFILL','HISTORY_PAGE_RETRIES','HISTORY_PAGE_DELAY','HISTORY_SYMBOL_DELAY')}
         try:
             m.request=fake_request
-            bars=m._full_daily_history('FPT',2500)
+            m.os.environ['HISTORY_PAGE_RETRIES']='1'
+            m.os.environ['HISTORY_PAGE_DELAY']='0'
+            bars,complete=m._full_daily_history('FPT',2500)
             self.assertGreaterEqual(len(bars),2500)
+            self.assertTrue(complete)
             self.assertGreaterEqual(len(calls),2)
             self.assertTrue(all(call['countBack']<=1600 for call in calls))
+            calls.clear()
             with tempfile.TemporaryDirectory() as tmp:
                 out=pathlib.Path(tmp)
                 m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2000-01-03','open':90,'high':100,'low':80,'close':95,'volume':500}]})
                 m.os.environ['HISTORY_COUNT_BACK']='2500'
+                m.os.environ['HISTORY_FULL_BACKFILL']='1'
+                m.os.environ['HISTORY_SYMBOL_DELAY']='0'
                 ok=m._refresh_one_history(out,'FPT',minute=False)
                 saved=m.read(out/'history/FPT.json',{})
                 self.assertTrue(ok[1])
                 self.assertEqual(saved['bars'][0]['time'],'2000-01-03')
                 self.assertEqual(saved['barCount'],len(saved['bars']))
                 self.assertEqual(saved['firstBar'],'2000-01-03')
+                self.assertTrue(saved['historyComplete'])
         finally:
             m.request=original
-            m.os.environ.pop('HISTORY_COUNT_BACK',None)
+            for key,value in old_env.items():
+                if value is None:m.os.environ.pop(key,None)
+                else:m.os.environ[key]=value
+
+    def test_full_backfill_skips_histories_already_marked_complete(self):
+        companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
+        original=m._refresh_one_history
+        old_full=m.os.environ.get('HISTORY_FULL_BACKFILL')
+        calls=[]
+        def fake(out,symbol,minute=False):
+            calls.append((symbol,minute))
+            return symbol,True,None
+        try:
+            m._refresh_one_history=fake
+            m.os.environ['HISTORY_FULL_BACKFILL']='1'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.write(out/'history/FPT.json',{'symbol':'FPT','historyComplete':True,'bars':[{'time':'2020-01-01'}]})
+                m.refresh_history_group(out,companies,minute=False)
+                self.assertEqual([s for s,_ in calls],['VHM','VCB'])
+                status=m.read(out/'history-status.json',{})
+                self.assertTrue(status['fullBackfill'])
+                self.assertEqual(status['expected'],2)
+                self.assertEqual(status['completeHistories'],1)
+        finally:
+            m._refresh_one_history=original
+            if old_full is None:m.os.environ.pop('HISTORY_FULL_BACKFILL',None)
+            else:m.os.environ['HISTORY_FULL_BACKFILL']=old_full
 
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
