@@ -340,8 +340,9 @@ test("source freshness labels are clear and contain no internal data-engineering
   assert.doesNotMatch(source, new RegExp(["không điền", "giả"].join("\\s+"), "i"));
   assert.doesNotMatch(source, /Object\.assign\(horizon\s*,\s*adjustment\)/);
   assert.doesNotMatch(source, /FORECAST LOCKED/);
-  assert.doesNotMatch(source, /\/main\/data/);
   assert.match(source, /CDN_PATH\[2\]/);
+  assert.match(source, /PAGES_HOST/);
+  assert.match(source, /raw\.githubusercontent\.com\/NCKHtop1\/vmews-risk-analytics\/main\/data/);
   assert.doesNotMatch(source, /Cập nhật chậm|Đã cập nhật cùng phiên|Chưa có dữ liệu từ nguồn|Đang mở rộng nguồn|Bối cảnh tham khảo · chưa điều chỉnh giá trung tâm/);
   assert.match(source, /Phiên gần nhất/);
   assert.match(source, /Mở BCTC/);
