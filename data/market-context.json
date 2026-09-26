@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-09-25T21:37:18.792148+00:00",
+  "generatedAt": "2026-09-26T05:01:47.246322+00:00",
   "market": {
-    "score": 11.448578338505886,
+    "score": 18.668403568042024,
     "available": true,
-    "technical": 4.151658982316747,
+    "technical": 10.771902925192858,
     "analog20": {
-      "score": 25.0,
-      "rate": 0.075,
-      "threshold": -0.1356047641456147,
+      "score": 33.333333333333336,
+      "rate": 0.1,
+      "threshold": -0.13558938824693734,
       "matches": 40,
       "available": true,
       "examples": [
         {
-          "date": "2024-09-11",
-          "similarity": 0.8224265988591322,
-          "forwardDrawdown": -0.011178763991230745,
-          "event": false
+          "date": "2022-04-12",
+          "similarity": 0.8117563625399842,
+          "forwardDrawdown": -0.18723929253994154,
+          "event": true
         },
         {
-          "date": "2022-03-02",
-          "similarity": 0.816517409646997,
-          "forwardDrawdown": -0.02643520047857817,
-          "event": false
-        },
-        {
-          "date": "2024-09-10",
-          "similarity": 0.8132699034218893,
-          "forwardDrawdown": -0.012722744797062036,
+          "date": "2024-09-12",
+          "similarity": 0.7949929551798892,
+          "forwardDrawdown": -0.013602870340600814,
           "event": false
         },
         {
           "date": "2022-04-13",
-          "similarity": 0.8031828348944724,
+          "similarity": 0.7917335254141774,
           "forwardDrawdown": -0.2066409491537301,
           "event": true
         },
         {
-          "date": "2024-12-31",
-          "similarity": 0.7937338154239766,
-          "forwardDrawdown": -0.029768453982293552,
+          "date": "2022-04-14",
+          "similarity": 0.7886815801804274,
+          "forwardDrawdown": -0.20390324493990564,
+          "event": true
+        },
+        {
+          "date": "2024-09-17",
+          "similarity": 0.7860519170536051,
+          "forwardDrawdown": 0.004726219049970171,
           "event": false
         }
       ]
     },
-    "date": "2026-09-23",
+    "date": "2026-09-24",
     "ticker": "0P0000HY8X.VN",
-    "rows": 1517,
+    "rows": 1518,
     "source": "Yahoo Finance",
     "provider": "query1.finance.yahoo.com",
     "audit": [
@@ -53,7 +53,7 @@
         "source": "Yahoo Finance",
         "provider": "query1.finance.yahoo.com",
         "symbol": "0P0000HY8X.VN",
-        "rows": 1517,
+        "rows": 1518,
         "ok": true
       }
     ]
