@@ -138,6 +138,31 @@ class MarketTests(unittest.TestCase):
             m.request=original
             m.os.environ.pop('HISTORY_COUNT_BACK',None)
 
+    def test_full_daily_history_resumes_before_retained_oldest_bar_and_keeps_partial_progress(self):
+        original=m._history_page
+        calls=[]
+        previous=[
+            {'time':'2020-01-02','open':100,'high':110,'low':90,'close':105,'volume':1000},
+            {'time':'2020-01-03','open':100,'high':110,'low':90,'close':105,'volume':1000},
+        ]
+        older=[
+            {'time':'2019-12-30','open':90,'high':100,'low':80,'close':95,'volume':900},
+            {'time':'2019-12-31','open':91,'high':101,'low':81,'close':96,'volume':950},
+        ]
+        def fake(symbol,frame,to,count,minute=False,retries=3):
+            calls.append(to)
+            if len(calls)==1:return older
+            raise TimeoutError('older page unavailable')
+        try:
+            m._history_page=fake
+            bars=m._full_daily_history('FPT',10,previous)
+            self.assertEqual(bars[0]['time'],'2019-12-30')
+            self.assertEqual(bars[-1]['time'],'2020-01-03')
+            retained_cursor=int(m.datetime.fromisoformat('2020-01-02').replace(tzinfo=m.VN).timestamp())-1
+            self.assertEqual(calls[0],retained_cursor)
+        finally:
+            m._history_page=original
+
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
         original=m._refresh_one_history

@@ -348,23 +348,46 @@ def prices(out, companies):
         raise RuntimeError('Quote collection incomplete; previous successful data retained')
 
 
-def _history_page(symbol, frame, to, count, minute=False):
-    payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
-        'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
-    }))
-    return normalize_history(payload, symbol, minute=minute)
+def _history_page(symbol, frame, to, count, minute=False, retries=3):
+    last_error = None
+    for attempt in range(max(1, retries)):
+        try:
+            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
+                'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
+            }))
+            return normalize_history(payload, symbol, minute=minute)
+        except Exception as e:
+            last_error = e
+            if attempt + 1 < retries:
+                time.sleep(.8 * (attempt + 1))
+    raise last_error
 
 
-def _full_daily_history(symbol, target):
-    """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
-    merged = {}
-    cursor = int(time.time())
+def _full_daily_history(symbol, target, previous_bars=None):
+    """Resume backwards from retained history and keep every successful page."""
+    merged = {
+        bar['time']: bar for bar in (previous_bars or [])
+        if isinstance(bar, dict) and bar.get('time')
+    }
     page_size = min(1600, target)
-    for _ in range(max(1, math.ceil(target / page_size) + 1)):
-        bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+    if merged:
+        earliest = min(merged)
+        cursor = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
+    else:
+        cursor = int(time.time())
+    max_pages = max(1, math.ceil(max(0, target - len(merged)) / page_size) + 1)
+    for _ in range(max_pages):
+        if len(merged) >= target:
+            break
+        try:
+            bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+        except Exception:
+            if merged:
+                break
+            raise
         before = len(merged)
         merged.update({bar['time']: bar for bar in bars})
-        if len(merged) >= target or len(merged) == before or len(bars) < page_size:
+        if len(merged) == before or len(bars) < page_size:
             break
         earliest = min(bar['time'] for bar in bars)
         cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
@@ -384,12 +407,7 @@ def _refresh_one_history(out, symbol, minute=False):
             bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
-            bars = _full_daily_history(symbol, target)
-            # Never discard older successful bars if the upstream temporarily returns a shorter window.
-            if previous.get('bars'):
-                merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
-                merged.update({bar['time']: bar for bar in bars})
-                bars = [merged[key] for key in sorted(merged)]
+            bars = _full_daily_history(symbol, target, previous.get('bars') or [])
         row = {
             'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
             'interval': '1m' if minute else '1D', 'collectedAt': now(),
