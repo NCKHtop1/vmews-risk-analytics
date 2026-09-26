@@ -131,16 +131,16 @@ class MarketTests(unittest.TestCase):
             calls.clear()
             with tempfile.TemporaryDirectory() as tmp:
                 out=pathlib.Path(tmp)
-                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2000-01-03','open':90,'high':100,'low':80,'close':95,'volume':500}]})
+                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2024-01-03','open':90,'high':100,'low':80,'close':95,'volume':500}]})
                 m.os.environ['HISTORY_COUNT_BACK']='2500'
                 m.os.environ['HISTORY_FULL_BACKFILL']='1'
                 m.os.environ['HISTORY_SYMBOL_DELAY']='0'
                 ok=m._refresh_one_history(out,'FPT',minute=False)
                 saved=m.read(out/'history/FPT.json',{})
                 self.assertTrue(ok[1])
-                self.assertEqual(saved['bars'][0]['time'],'2000-01-03')
+                self.assertEqual(saved['bars'][-1]['time'],'2024-01-03')
                 self.assertEqual(saved['barCount'],len(saved['bars']))
-                self.assertEqual(saved['firstBar'],'2000-01-03')
+                self.assertEqual(saved['lastBar'],'2024-01-03')
                 self.assertTrue(saved['historyComplete'])
         finally:
             m.request=original
