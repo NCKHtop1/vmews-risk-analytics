@@ -193,9 +193,79 @@ const CONCEPTS={
  quickratio:{name:'Quick ratio',aliases:['quick ratio','he so thanh toan nhanh'],text:'Quick ratio đo khả năng thanh toán ngắn hạn sau khi loại phần tồn kho kém thanh khoản hơn. Chỉ số này hữu ích để đánh giá áp lực tiền mặt ngắn hạn.',financial:true},
  yoy:{name:'YoY',aliases:['yoy','year over year','cung ky'],text:'YoY là so sánh với cùng kỳ năm trước. Cách so này loại bớt yếu tố mùa vụ và phù hợp để đánh giá tốc độ tăng trưởng theo năm.',financial:true},
  qoq:{name:'QoQ',aliases:['qoq','quarter over quarter','quy truoc'],text:'QoQ là so sánh với quý liền trước. Chỉ số này phản ánh thay đổi ngắn hạn nhưng có thể chịu ảnh hưởng mùa vụ.',financial:true},
- cagr:{name:'CAGR',aliases:['cagr','compound annual growth rate'],text:'CAGR là tốc độ tăng trưởng kép bình quân năm giữa hai mốc thời gian. Nó hữu ích để tóm tắt xu hướng dài hạn nhưng không thể hiện độ biến động từng năm.',financial:true}
+ cagr:{name:'CAGR',aliases:['cagr','compound annual growth rate'],text:'CAGR là tốc độ tăng trưởng kép bình quân năm giữa hai mốc thời gian. Nó hữu ích để tóm tắt xu hướng dài hạn nhưng không thể hiện độ biến động từng năm.',financial:true},
+ capex:{name:'CAPEX',aliases:['capex','chi dau tu','chi mua tscd'],text:'CAPEX là tiền chi cho tài sản cố định và tài sản dài hạn. CAPEX cao có thể phản ánh mở rộng công suất, nhưng cần so với OCF, tăng trưởng doanh thu và hiệu suất tài sản.',financial:true},
+ grossprofit:{name:'Lợi nhuận gộp',aliases:['loi nhuan gop','gross profit'],text:'Lợi nhuận gộp là phần doanh thu còn lại sau giá vốn. Đây là lớp lợi nhuận đầu tiên phản ánh sức mạnh giá bán, cơ cấu sản phẩm và chi phí đầu vào.',financial:true},
+ netprofit:{name:'Lợi nhuận sau thuế',aliases:['loi nhuan sau thue','lnst','net profit','net income'],text:'Lợi nhuận sau thuế là kết quả còn lại sau toàn bộ chi phí và thuế. Khi LNST tăng cùng OCF và biên lợi nhuận, chất lượng tăng trưởng thường tốt hơn.',financial:true},
+ revenue:{name:'Doanh thu',aliases:['doanh thu','revenue','sales'],text:'Doanh thu phản ánh quy mô bán hàng hoặc cung cấp dịch vụ trong kỳ. Phân tích doanh thu cần đọc tốc độ tăng trưởng, biên lợi nhuận, phải thu và dòng tiền.',financial:true},
+ bvps:{name:'BVPS',aliases:['bvps','book value per share','gia tri so sach moi co phieu'],text:'BVPS là giá trị vốn chủ sở hữu thuộc cổ đông phổ thông trên mỗi cổ phiếu lưu hành. Đây là mẫu số dùng trong định giá P/B.',financial:true},
+ ev:{name:'Enterprise Value',aliases:['enterprise value','ev','gia tri doanh nghiep'],text:'Enterprise Value đo giá trị hoạt động dành cho cả chủ nợ và cổ đông, thường bằng vốn hóa cộng nợ ròng và các điều chỉnh cần thiết.',financial:true},
+ evebitda:{name:'EV/EBITDA',aliases:['ev ebitda','ev/ebitda'],text:'EV/EBITDA so giá trị doanh nghiệp với EBITDA. Chỉ số hữu ích khi so doanh nghiệp có cấu trúc vốn khác nhau, nhưng cần lưu ý CAPEX và vốn lưu động.',financial:true},
+ dividend:{name:'Cổ tức / Dividend yield',aliases:['co tuc','dividend','dividend yield','ty suat co tuc'],text:'Dividend yield đo cổ tức tiền mặt trên giá cổ phiếu. Lợi suất cao chỉ bền vững khi dòng tiền và khả năng chi trả hỗ trợ mức cổ tức đó.',financial:true},
+ payout:{name:'Payout ratio',aliases:['payout','payout ratio','ty le chi tra co tuc'],text:'Payout ratio là tỷ lệ lợi nhuận được phân phối dưới dạng cổ tức. Mức cao để lại ít lợi nhuận giữ lại hơn cho tái đầu tư.',financial:true},
+ dcf:{name:'DCF',aliases:['dcf','discounted cash flow','chiet khau dong tien'],text:'DCF định giá doanh nghiệp bằng giá trị hiện tại của dòng tiền tương lai. Kết quả nhạy với tăng trưởng dài hạn, biên lợi nhuận và tỷ lệ chiết khấu.',financial:true},
+ wacc:{name:'WACC',aliases:['wacc','weighted average cost of capital','chi phi von binh quan'],text:'WACC là chi phí vốn bình quân gia quyền của nợ và vốn chủ. Trong DCF, WACC thường là tỷ lệ chiết khấu cho FCFF.',financial:true},
+ beta:{name:'Beta',aliases:['beta','he so beta'],text:'Beta đo độ nhạy của lợi suất cổ phiếu với lợi suất thị trường. Beta lớn hơn 1 thường nghĩa là biến động mạnh hơn thị trường về mặt hệ thống.',market:true},
+ marketcap:{name:'Vốn hóa thị trường',aliases:['von hoa','market cap','market capitalization'],text:'Vốn hóa bằng giá cổ phiếu nhân số cổ phiếu lưu hành. Nó đo quy mô giá trị vốn cổ phần trên thị trường.',market:true},
+ support:{name:'Hỗ trợ',aliases:['ho tro','support','vung ho tro'],text:'Hỗ trợ là vùng giá nơi lực mua từng hấp thụ lực bán và giá có phản ứng đi lên. Một vùng hỗ trợ mạnh thường được xác nhận bằng nhiều lần phản ứng và khối lượng.',technical:true},
+ resistance:{name:'Kháng cự',aliases:['khang cu','resistance','vung khang cu'],text:'Kháng cự là vùng giá nơi nguồn cung từng chặn đà tăng. Vượt kháng cự với khối lượng cao và đóng cửa phía trên thường mạnh hơn một cú xuyên ngắn.',technical:true},
+ vwap:{name:'VWAP',aliases:['vwap','volume weighted average price'],text:'VWAP là giá giao dịch bình quân có trọng số theo khối lượng trong phiên hoặc cửa sổ xác định. Giá trên VWAP thường phản ánh giao dịch đang diễn ra trên mức giá bình quân của dòng tiền.',technical:true},
+ ohlc:{name:'OHLC / Nến giá',aliases:['ohlc','open high low close','nen gia','candlestick'],text:'OHLC gồm giá mở cửa, cao nhất, thấp nhất và đóng cửa của một nến. Thân nến và bóng nến mô tả cân bằng cung cầu trong khung thời gian đó.',technical:true},
+ gap:{name:'Gap giá',aliases:['gap','khoang trong gia','gap gia'],text:'Gap là khoảng giá giữa hai vùng giao dịch liên tiếp không chồng lấn đáng kể. Gap có thể phản ánh thông tin mới, mất cân bằng cung cầu hoặc thay đổi kỳ vọng.',technical:true},
+ drawdown:{name:'Maximum Drawdown',aliases:['drawdown','max drawdown','maximum drawdown','mdd'],text:'Maximum Drawdown là mức sụt giảm lớn nhất từ một đỉnh vốn đến đáy tiếp theo. Nó đo rủi ro mất vốn theo đường đi, không chỉ độ biến động.',financial:true},
+ sharpe:{name:'Sharpe ratio',aliases:['sharpe','sharpe ratio'],text:'Sharpe ratio đo lợi suất vượt mức phi rủi ro trên mỗi đơn vị biến động. Sharpe cao hơn nghĩa là hiệu quả lợi nhuận/rủi ro tốt hơn trong cùng cách đo.',financial:true},
+ forecast:{name:'Dự báo T+1–T+5',aliases:['forecast','du bao','t+1','t+2','t+3','t+4','t+5'],text:'T+1–T+5 là các chân trời dự báo một đến năm phiên giao dịch tiếp theo. Kết quả nên đọc cùng sai số kiểm định, hướng dự báo và độ ổn định qua nhiều cửa sổ.',system:true},
+ backtest:{name:'Backtest',aliases:['backtest','kiem dinh qua khu','back testing'],text:'Backtest chạy mô hình hoặc chiến lược trên dữ liệu lịch sử theo đúng quy tắc vận hành thật để đo hiệu năng. Backtest đáng tin cần tránh nhìn trước dữ liệu và phải tách giai đoạn huấn luyện/kiểm định.',system:true},
+ walkforward:{name:'Walk-forward validation',aliases:['walk forward','walk-forward','walkforward'],text:'Walk-forward huấn luyện trên một cửa sổ quá khứ rồi kiểm định trên giai đoạn kế tiếp, sau đó trượt cửa sổ. Đây là cách kiểm định gần với vận hành dự báo theo thời gian thực.',system:true},
+ leakage:{name:'Data leakage',aliases:['data leakage','leakage','ro ri du lieu','nhin truoc du lieu'],text:'Data leakage xảy ra khi mô hình vô tình sử dụng thông tin mà tại thời điểm dự báo thực tế chưa thể biết. Leakage làm kết quả backtest đẹp giả tạo.',system:true},
+ overfit:{name:'Overfitting',aliases:['overfitting','overfit','qua khop'],text:'Overfitting là khi mô hình học quá sát nhiễu của dữ liệu huấn luyện và suy giảm mạnh trên dữ liệu mới. Dấu hiệu điển hình là train tốt nhưng out-of-sample kém.',system:true},
+ mae:{name:'MAE',aliases:['mae','mean absolute error'],text:'MAE là trung bình trị tuyệt đối sai số dự báo. MAE cùng đơn vị với biến mục tiêu nên dễ diễn giải.',system:true},
+ rmse:{name:'RMSE',aliases:['rmse','root mean squared error'],text:'RMSE là căn bậc hai của trung bình bình phương sai số. RMSE phạt các sai số lớn mạnh hơn MAE.',system:true},
+ mape:{name:'MAPE',aliases:['mape','mean absolute percentage error'],text:'MAPE là trung bình phần trăm sai số tuyệt đối. Chỉ số dễ đọc theo %, nhưng không ổn khi giá trị thực gần 0.',system:true},
+ directional:{name:'Directional Accuracy',aliases:['directional accuracy','do chinh xac huong','accuracy huong'],text:'Directional Accuracy đo tỷ lệ lần mô hình dự báo đúng hướng tăng/giảm của biến mục tiêu. Nó bổ sung góc nhìn mà MAE/RMSE không thể hiện.',system:true},
+ confidence:{name:'Độ tin cậy tín hiệu',aliases:['do tin cay','confidence','confidence score'],text:'Độ tin cậy tín hiệu FinQuery phản ánh mức đồng thuận của nhiều nhóm bằng chứng như động lượng, xu hướng, thanh khoản và trạng thái chỉ báo; điểm cao nghĩa là các tín hiệu ít mâu thuẫn hơn.',system:true}
 };
-function conceptKey(question){const s=norm(question);let best=null,bestLen=0;for(const[key,d]of Object.entries(CONCEPTS)){for(const alias of d.aliases||[]){const a=norm(alias);if(a&&s.includes(a)&&a.length>bestLen){best=key;bestLen=a.length;}}}return best;}
+const CONCEPT_DETAILS={
+ roe:{formula:'ROE = LNST / Vốn chủ sở hữu bình quân × 100%',read:'ROE cao chỉ thật sự mạnh khi đi cùng chất lượng lợi nhuận và đòn bẩy hợp lý.'},
+ roa:{formula:'ROA = LNST / Tổng tài sản bình quân × 100%',read:'So ROA chủ yếu giữa doanh nghiệp cùng ngành vì cường độ tài sản khác nhau.'},
+ fcf:{formula:'FCF ≈ OCF - CAPEX tiền mặt',read:'FCF dương bền vững cho thấy hoạt động tạo tiền đủ tài trợ đầu tư và còn dư địa phân phối vốn.'},
+ ocf:{formula:'OCF lấy từ báo cáo lưu chuyển tiền tệ',read:'OCF/LNST quanh hoặc trên 100% qua nhiều kỳ thường phản ánh khả năng chuyển lợi nhuận thành tiền tốt.'},
+ grossmargin:{formula:'Biên gộp = Lợi nhuận gộp / Doanh thu thuần × 100%',read:'Biên gộp tăng thể hiện pricing power, mix hoặc chi phí đầu vào thuận lợi hơn.'},
+ netmargin:{formula:'Biên ròng = LNST / Doanh thu × 100%',read:'Biên ròng tổng hợp tác động của giá vốn, vận hành, tài chính và thuế.'},
+ pe:{formula:'P/E = Giá cổ phiếu / EPS',read:'So P/E với lịch sử, tăng trưởng lợi nhuận và doanh nghiệp cùng ngành.'},
+ pb:{formula:'P/B = Giá cổ phiếu / BVPS',read:'P/B nên đọc cùng ROE; P/B cao đi kèm ROE cao có logic khác P/B cao nhưng ROE yếu.'},
+ eps:{formula:'EPS = LNST thuộc cổ đông phổ thông / Số cổ phiếu bình quân',read:'Tăng EPS bền vững quan trọng hơn tăng lợi nhuận tuyệt đối nếu doanh nghiệp pha loãng cổ phiếu.'},
+ cagr:{formula:'CAGR = (Giá trị cuối / Giá trị đầu)^(1/số năm) - 1',read:'CAGR tóm tắt tốc độ dài hạn nhưng che khuất biến động từng năm.'},
+ sma:{formula:'SMA(n) = tổng n giá đóng cửa / n',read:'Giá trên SMA và SMA đi lên thiên tăng; dưới SMA và SMA đi xuống thiên giảm.'},
+ ema:{formula:'EMA_t = Giá_t × k + EMA_(t-1) × (1-k), k=2/(n+1)',read:'EMA phản ứng nhanh hơn SMA nên phù hợp theo dõi thay đổi động lượng ngắn hạn.'},
+ vwma:{formula:'VWMA = Σ(Giá × Khối lượng) / Σ Khối lượng',read:'Giá vượt VWMA với volume cao cho thấy dòng tiền xác nhận tốt hơn.'},
+ rsi:{formula:'RSI = 100 - 100/(1+RS)',read:'RSI >70 quá mua, <30 quá bán; rời vùng cực trị hướng về 50 là mean reversion.'},
+ macd:{formula:'MACD = EMA nhanh - EMA chậm; Signal = EMA của MACD',read:'MACD trên Signal thiên tăng; histogram mở rộng cùng hướng cho thấy xung lực mạnh thêm.'},
+ bollinger:{formula:'Upper/Lower = SMA ± k × độ lệch chuẩn',read:'Dải mở rộng là biến động tăng; quay vào dải sau cực trị hỗ trợ kịch bản mean reversion.'},
+ atr:{formula:'TR=max(H-L, |H-C trước|, |L-C trước|); ATR=MA(TR)',read:'ATR đo biên độ chứ không đo hướng; dùng để lượng hóa độ rộng biến động.'},
+ adx:{formula:'ADX được làm mượt từ +DI, -DI và DX',read:'ADX >25 cho thấy xu hướng đủ lực; hướng phải lấy từ giá/MACD/Supertrend.'},
+ roc:{formula:'ROC = (Close_t / Close_(t-n) - 1) × 100%',read:'ROC dương là động lượng tăng, âm là động lượng giảm.'},
+ reference:{formula:'±% = (Giá hiện tại / Giá tham chiếu - 1) × 100%',read:'FinQuery hiển thị cả giá tham chiếu, chênh lệch tuyệt đối và chênh lệch %.'},
+ capex:{formula:'CAPEX tiền mặt lấy từ dòng tiền đầu tư',read:'So CAPEX với OCF, doanh thu và tài sản mới để phân biệt mở rộng hiệu quả với đầu tư làm căng dòng tiền.'},
+ grossprofit:{formula:'Lợi nhuận gộp = Doanh thu thuần - Giá vốn',read:'Đọc đồng thời mức tuyệt đối và biên gộp.'},
+ bvps:{formula:'BVPS = Vốn chủ thuộc CĐ phổ thông / CP lưu hành',read:'BVPS là nền tảng của P/B và phản ánh giá trị sổ sách trên mỗi cổ phiếu.'},
+ ev:{formula:'EV ≈ Vốn hóa + Nợ tài chính - Tiền và tương đương tiền',read:'EV đo giá trị hoạt động độc lập hơn với cấu trúc vốn so với chỉ nhìn vốn hóa.'},
+ evebitda:{formula:'EV/EBITDA = Enterprise Value / EBITDA',read:'So với cùng ngành và kiểm tra CAPEX vì EBITDA bỏ qua nhu cầu đầu tư.'},
+ dividend:{formula:'Dividend yield = Cổ tức tiền mặt / Giá cổ phiếu × 100%',read:'Lợi suất cao cần được hỗ trợ bởi FCF và payout hợp lý.'},
+ dcf:{formula:'Giá trị = Σ FCF_t/(1+r)^t + Terminal Value/(1+r)^n',read:'DCF rất nhạy với WACC và tăng trưởng dài hạn; nên chạy nhiều kịch bản.'},
+ wacc:{formula:'WACC = E/(D+E)×Re + D/(D+E)×Rd×(1-T)',read:'WACC tăng làm giá trị hiện tại trong DCF giảm.'},
+ beta:{formula:'Beta = Cov(R_stock,R_market) / Var(R_market)',read:'Beta đo rủi ro hệ thống tương đối, không đo toàn bộ rủi ro doanh nghiệp.'},
+ vwap:{formula:'VWAP = Σ(Giá giao dịch × Khối lượng) / Σ Khối lượng',read:'Giá trên VWAP cho thấy giao dịch đang ở mức cao hơn giá bình quân có trọng số khối lượng.'},
+ drawdown:{formula:'Drawdown = Giá trị hiện tại / Đỉnh trước đó - 1',read:'Maximum Drawdown là drawdown âm lớn nhất trong chuỗi.'},
+ sharpe:{formula:'Sharpe = (Lợi suất - Lãi suất phi rủi ro) / Độ lệch chuẩn lợi suất',read:'So Sharpe chỉ khi kỳ đo và cách annualize nhất quán.'},
+ mae:{formula:'MAE = mean(|y - ŷ|)',read:'Càng thấp càng tốt khi so cùng tập dữ liệu và cùng đơn vị.'},
+ rmse:{formula:'RMSE = sqrt(mean((y - ŷ)^2))',read:'RMSE nhạy với sai số lớn hơn MAE.'},
+ mape:{formula:'MAPE = mean(|(y - ŷ)/y|) × 100%',read:'Cẩn trọng khi y gần 0.'},
+ directional:{formula:'Directional Accuracy = số lần đúng hướng / tổng số dự báo',read:'Dùng cùng MAE/RMSE để tách “đúng hướng” khỏi “đúng mức giá”.'}
+};
+function conceptKey(question){const s=norm(question);let best=null,bestLen=0;for(const[key,d]of Object.entries(CONCEPTS)){for(const alias of [d.name,...(d.aliases||[])]){const a=norm(alias);if(a&&s.includes(a)&&a.length>bestLen){best=key;bestLen=a.length;}}}return best;}
+function relatedConcepts(question){const terms=norm(question).split(' ').filter(x=>x.length>2);return Object.entries(CONCEPTS).map(([key,d])=>{const hay=norm([d.name,...(d.aliases||[]),d.text].join(' ')),score=terms.reduce((sum,t)=>sum+(hay.includes(t)?1:0),0);return{key,d,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||b.d.name.length-a.d.name.length).slice(0,6);}
+
 function metricDefinition(row){
  const label=String(row?.label||''),s=norm(label);
  if(/tai san ngan han/.test(s))return label+' là nhóm tài sản dự kiến chuyển thành tiền, bán hoặc sử dụng trong chu kỳ kinh doanh ngắn hạn; thường gồm tiền, phải thu, tồn kho và đầu tư ngắn hạn.';
@@ -231,10 +301,19 @@ function technicalNarrative(t,key){
  return parts.filter(Boolean);
 }
 function conceptHTML(question,a,q,annual,quarterly){
- const key=conceptKey(question),d=key?CONCEPTS[key]:null;
- if(d){let current='',m=market();if(a){if(key==='fcf')current=' Với '+state.symbol+', FCF năm '+a.period+' ước tính '+money(a.values.fcf)+'.';else if(key==='ocf')current=' Với '+state.symbol+', OCF năm '+a.period+' là '+money(a.values.ocf)+', tương đương '+num(a.ratios.ocfIncome)+'% lợi nhuận sau thuế.';else if(key==='leverage')current=' Với '+state.symbol+', nợ phải trả tương đương '+num(a.ratios.liabilitiesAssets)+'% tổng tài sản.';else if(key==='receivables')current=' Với '+state.symbol+', phải thu năm '+a.period+' là '+money(a.values.receivables)+', thay đổi '+pct(a.change.receivables)+' so với năm trước.';else if(key==='inventory')current=' Với '+state.symbol+', tồn kho năm '+a.period+' là '+money(a.values.inventory)+'.';else if(d.key&&Number.isFinite(a.ratios[d.key]))current=' Với '+state.symbol+', '+d.name+' năm '+a.period+' là '+num(a.ratios[d.key])+'%.';}if(key==='reference'&&m.quote)current=' '+state.symbol+' hiện có giá tham chiếu '+nf.format(m.quote.reference)+' đ, giá hiện tại '+nf.format(m.quote.price)+' đ, chênh '+(m.quote.price-m.quote.reference>0?'+':'')+nf.format(m.quote.price-m.quote.reference)+' đ.';if(d.technical)return prose([d.text+current,...technicalNarrative(m.technical,key)])+movementHTML({quote:m.quote,driver:m.driver,technical:m.technical,news:m.news||[]});if(d.macro)return prose([d.text+current])+macroHTML(question,m);return prose([d.text+current])+financialHTML(a,q);}
- const qHit=localMetricHit(question,quarterly),aHit=localMetricHit(question,annual),hit=qHit||aHit;if(hit){const data=qHit?quarterly:annual,row=hit.row,ps=periods(data).slice(-6),vals=ps.filter(p=>Number.isFinite(val(row,p))).map(p=>p+': '+point(val(row,p),row.unit));return prose([metricDefinition(row)+' Với '+state.symbol+', chuỗi gần nhất là '+vals.join('; ')+'.'])+section('Chuỗi dữ liệu gần nhất',table(vals.map(x=>{const parts=x.split(': ');return[parts[0],parts.slice(1).join(': '),'','neutral']})));}
- return prose(['Câu hỏi đang chạm tới một khái niệm ngoài danh mục chuẩn của FinQuery. Hệ thống vẫn sẽ tìm trong toàn bộ tên chỉ tiêu BCTC, dữ liệu kỹ thuật, bảng giá và dữ liệu vĩ mô đang tải để trả lời theo dữ liệu thực tế.'])+searchHTML(question,annual,quarterly);
+ const key=conceptKey(question),d=key?CONCEPTS[key]:null,m=market();
+ if(d){
+  let current='';if(a){if(key==='fcf')current=' Với '+state.symbol+', FCF năm '+a.period+' ước tính '+money(a.values.fcf)+'.';else if(key==='ocf')current=' Với '+state.symbol+', OCF năm '+a.period+' là '+money(a.values.ocf)+', tương đương '+num(a.ratios.ocfIncome)+'% lợi nhuận sau thuế.';else if(key==='capex')current=' Với '+state.symbol+', CAPEX năm '+a.period+' là '+money(a.values.capex)+'.';else if(key==='leverage')current=' Với '+state.symbol+', nợ phải trả tương đương '+num(a.ratios.liabilitiesAssets)+'% tổng tài sản.';else if(key==='receivables')current=' Với '+state.symbol+', phải thu năm '+a.period+' là '+money(a.values.receivables)+', thay đổi '+pct(a.change.receivables)+' so với năm trước.';else if(key==='inventory')current=' Với '+state.symbol+', tồn kho năm '+a.period+' là '+money(a.values.inventory)+'.';else if(key==='revenue')current=' Với '+state.symbol+', doanh thu năm '+a.period+' là '+money(a.values.revenue)+', thay đổi '+pct(a.change.revenue)+'.';else if(key==='netprofit')current=' Với '+state.symbol+', LNST năm '+a.period+' là '+money(a.values.profit)+', thay đổi '+pct(a.change.profit)+'.';else if(d.key&&Number.isFinite(a.ratios[d.key]))current=' Với '+state.symbol+', '+d.name+' năm '+a.period+' là '+num(a.ratios[d.key])+'%.';}
+  if(key==='reference'&&m.quote&&Number.isFinite(m.quote.reference)&&Number.isFinite(m.quote.price))current=' '+state.symbol+' hiện có giá tham chiếu '+nf.format(m.quote.reference)+' đ, giá hiện tại '+nf.format(m.quote.price)+' đ, chênh '+(m.quote.price-m.quote.reference>0?'+':'')+nf.format(m.quote.price-m.quote.reference)+' đ ('+pct(m.quote.changePct)+').';
+  if(key==='relativestrength'&&Number.isFinite(m.driver?.relativeStrengthPct))current=' '+state.symbol+' hiện có sức mạnh tương đối '+pct(m.driver.relativeStrengthPct)+' so với trung vị VN100.';
+  const detail=CONCEPT_DETAILS[key]||{},explain=[d.text+current,detail.formula?'Công thức: '+detail.formula+'.':'',detail.read?'Cách đọc: '+detail.read:''].filter(Boolean);
+  if(d.technical)return prose(explain.concat(technicalNarrative(m.technical,key)))+movementHTML({quote:m.quote,driver:m.driver,technical:m.technical,news:m.news||[]});
+  if(d.macro)return prose(explain)+macroHTML(question,m);
+  return prose(explain)+(d.system?'':financialHTML(a,q));
+ }
+ const qHit=localMetricHit(question,quarterly),aHit=localMetricHit(question,annual),hit=qHit||aHit;if(hit){const data=qHit?quarterly:annual,row=hit.row,ps=periods(data).slice(-8),vals=ps.filter(p=>Number.isFinite(val(row,p))).map(p=>p+': '+point(val(row,p),row.unit));return prose([metricDefinition(row)+' Với '+state.symbol+', chuỗi gần nhất là '+vals.join('; ')+'.'])+section('Chuỗi dữ liệu gần nhất',table(vals.map(x=>{const parts=x.split(': ');return[parts[0],parts.slice(1).join(': '),'','neutral']})));}
+ const related=relatedConcepts(question);if(related.length)return section('Các khái niệm khớp câu hỏi',`<div class="analysis-search-results">${related.map(x=>`<div><strong>${esc(x.d.name)}</strong><span>${esc(x.d.technical?'Kỹ thuật':x.d.macro?'Vĩ mô':x.d.system?'Hệ thống':'Tài chính')}</span><p>${esc(x.d.text)}</p></div>`).join('')}</div>`)+searchHTML(question,annual,quarterly);
+ return searchHTML(question,annual,quarterly);
 }
 function headlineList(items){if(!items?.length)return'';return section('Tin liên quan gần nhất',`<div class="analysis-news">${items.slice(0,5).map(n=>{const u=/^https?:\/\//.test(n.url||'')?n.url:'#';return`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><span>${esc(n.title)}</span><small>${esc(n.source||'')} · ${esc(String(n.publishedAt||'').slice(0,10))}</small></a>`}).join('')}</div>`);}
 function movementHTML(ctx){
