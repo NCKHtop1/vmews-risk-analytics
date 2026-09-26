@@ -135,7 +135,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         motion = (ROOT / "forecast-portfolio-v14.js").read_text(encoding="utf-8")
         self.assertIn("base.dash.symbols", motion)
         self.assertIn("base.dash.charts", motion)
-        self.assertIn("snapshot.close", motion)
+        self.assertIn("view.close", motion)
+        self.assertIn("__VMEWS_APPLY_SESSION_VIEW__", motion)
         self.assertIn("rawClose", motion)
         self.assertIn("DỮ LIỆU MỚI NHẤT", self.html)
 
