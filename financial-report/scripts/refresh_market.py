@@ -286,7 +286,7 @@ def movement_driver(symbol, quote, bars, news_items, market_change):
         'news72hCount': len(company_news), 'newsScore': round(news_score, 1),
         'score': total, 'confidence': confidence, 'confidenceScore': confidence_score,
         'factors': factors, 'headlines': company_news[:5], 'summary': summary,
-        'causality': 'association_not_proven'
+        'attributionMethod': 'weighted_market_relative_volume_momentum_news'
     }
 
 
@@ -306,7 +306,7 @@ def build_drivers(out, companies):
         bars = read(out / 'history' / (symbol + '.json'), {}).get('bars') or []
         symbols[symbol] = movement_driver(symbol, quote, bars, news_items, market_change)
     write(out / 'drivers.json', {
-        'generatedAt': now(), 'methodVersion': 'movement-drivers-v1',
+        'generatedAt': now(), 'methodVersion': 'movement-drivers-v2',
         'marketMedianChangePct': round(market_change, 3) if market_change is not None else None,
         'weights': DRIVER_WEIGHTS, 'symbols': symbols
     })
@@ -348,30 +348,99 @@ def prices(out, companies):
         raise RuntimeError('Quote collection incomplete; previous successful data retained')
 
 
-def _history_page(symbol, frame, to, count, minute=False):
-    payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
-        'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
-    }))
-    return normalize_history(payload, symbol, minute=minute)
+def _history_page(symbol, frame, to, count, minute=False, retries=3):
+    """Fetch one bounded OHLC page with retry/backoff for intermittent upstream timeouts."""
+    last_error = None
+    for attempt in range(max(1, retries)):
+        try:
+            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
+                'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
+            }))
+            return normalize_history(payload, symbol, minute=minute)
+        except Exception as exc:
+            last_error = exc
+            if attempt + 1 < max(1, retries):
+                time.sleep(1.25 * (attempt + 1))
+    raise last_error
 
 
-def _full_daily_history(symbol, target):
-    """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
+def _before_day(day):
+    return int(datetime.fromisoformat(day).replace(tzinfo=VN).timestamp()) - 1
+
+
+def _merge_bar_groups(*groups):
     merged = {}
-    cursor = int(time.time())
-    page_size = min(1600, target)
-    for _ in range(max(1, math.ceil(target / page_size) + 1)):
-        bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
-        before = len(merged)
-        merged.update({bar['time']: bar for bar in bars})
-        if len(merged) >= target or len(merged) == before or len(bars) < page_size:
-            break
-        earliest = min(bar['time'] for bar in bars)
-        cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
-        if cursor_next >= cursor:
-            break
-        cursor = cursor_next
-    return [merged[key] for key in sorted(merged)][-target:]
+    for group in groups:
+        for bar in group or []:
+            if isinstance(bar, dict) and bar.get('time'):
+                merged[bar['time']] = bar
+    return [merged[key] for key in sorted(merged)]
+
+
+def _daily_history(out, symbol):
+    """Refresh recent daily bars and progressively backfill toward the listing date.
+
+    Backfill is intentionally page-bounded: small pages are materially more reliable
+    on the public Vietcap endpoint than one very large countBack request. Existing
+    bars are always retained and older pages are merged, so repeated runs converge
+    on the full available history instead of truncating it.
+    """
+    path = out / 'history' / (symbol + '.json')
+    previous = read(path, {})
+    previous_bars = previous.get('bars') or []
+    recent_count = max(40, int(os.environ.get('HISTORY_RECENT_COUNT', '180')))
+    page_size = max(100, min(900, int(os.environ.get('HISTORY_PAGE_SIZE', '700'))))
+    pages = max(0, int(os.environ.get('HISTORY_BACKFILL_PAGES', '1')))
+    complete = bool(previous.get('historyComplete'))
+    bars = list(previous_bars)
+    latest_error = None
+
+    try:
+        latest = _history_page(symbol, 'ONE_DAY', int(time.time()), recent_count, minute=False)
+        bars = _merge_bar_groups(bars, latest)
+    except Exception as exc:
+        latest_error = str(exc)
+        if not bars:
+            raise
+
+    fetched_pages = 0
+    if not complete and pages and bars:
+        cursor = _before_day(bars[0]['time'])
+        for _ in range(pages):
+            try:
+                older = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+            except Exception:
+                # Keep the successful coverage already accumulated in this run.
+                break
+            if not older:
+                complete = True
+                break
+            old_first = bars[0]['time']
+            bars = _merge_bar_groups(older, bars)
+            fetched_pages += 1
+            new_first = bars[0]['time']
+            if new_first >= old_first:
+                complete = True
+                break
+            if len(older) < page_size:
+                complete = True
+                break
+            cursor = _before_day(new_first)
+
+    row = {
+        'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND', 'interval': '1D',
+        'collectedAt': now(), 'checkedAt': now(), 'status': 'ok',
+        'barCount': len(bars), 'firstBar': bars[0]['time'] if bars else None,
+        'lastBar': bars[-1]['time'] if bars else None,
+        'historyComplete': complete, 'backfillPagesFetched': fetched_pages,
+        'pageSize': page_size, 'sourceUrl': 'https://trading.vietcap.com.vn/',
+        'bars': bars
+    }
+    if latest_error:
+        row['latestRefreshError'] = latest_error
+        row['status'] = 'partial'
+    write(path, row)
+    return symbol, True, None
 
 
 def _refresh_one_history(out, symbol, minute=False):
@@ -379,27 +448,17 @@ def _refresh_one_history(out, symbol, minute=False):
     path = out / folder / (symbol + '.json')
     previous = read(path, {})
     try:
-        if minute:
-            count = int(os.environ.get('INTRADAY_COUNT_BACK', '700'))
-            bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
-        else:
-            target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
-            bars = _full_daily_history(symbol, target)
-            # Never discard older successful bars if the upstream temporarily returns a shorter window.
-            if previous.get('bars'):
-                merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
-                merged.update({bar['time']: bar for bar in bars})
-                bars = [merged[key] for key in sorted(merged)]
+        if not minute:
+            return _daily_history(out, symbol)
+        count = int(os.environ.get('INTRADAY_COUNT_BACK', '700'))
+        bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
         row = {
             'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
-            'interval': '1m' if minute else '1D', 'collectedAt': now(),
-            'checkedAt': now(), 'status': 'ok', 'barCount': len(bars),
+            'interval': '1m', 'collectedAt': now(), 'checkedAt': now(),
+            'status': 'ok', 'barCount': len(bars),
             'firstBar': bars[0]['time'] if bars else None,
-            'lastBar': bars[-1]['time'] if bars else None,
-            'bars': bars
+            'lastBar': bars[-1]['time'] if bars else None, 'bars': bars
         }
-        if not minute:
-            row['sourceUrl'] = 'https://trading.vietcap.com.vn/'
         write(path, row)
         return symbol, True, None
     except Exception as e:
@@ -411,14 +470,16 @@ def _refresh_one_history(out, symbol, minute=False):
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
-    forced = [s.strip().upper() for s in os.environ.get('INTRADAY_SYMBOLS', '').split(',') if s.strip()]
-    if minute and forced:
+    intraday_forced = [s.strip().upper() for s in os.environ.get('INTRADAY_SYMBOLS', '').split(',') if s.strip()]
+    history_forced = [s.strip().upper() for s in os.environ.get('HISTORY_SYMBOLS', '').split(',') if s.strip()]
+    forced = intraday_forced if minute else history_forced
+    if forced:
         symbols = [s for s in all_symbols if s in forced]
     else:
         symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
     errors, success = [], 0
-    # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
-    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
+    # The public candle endpoint is sensitive to large concurrent page requests.
+    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '2'))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):
