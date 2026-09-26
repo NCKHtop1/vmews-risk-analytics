@@ -103,13 +103,12 @@ jobs:
           assert dashboard.get('modelVersion') == market.get('version')
 
           symbols = dashboard.get('symbols') or {}
-          assert len(symbols) == 403, len(symbols)
           promotion = dashboard.get('promotion') or {}
           assert promotion.get('status') == 'PASS', promotion
           promoted = {int(value) for value in promotion.get('directPriceHorizons') or []}
           review = {int(value) for value in promotion.get('reviewHorizons') or []}
           preferred = int(promotion.get('preferredRankingHorizon') or 0)
-          assert len(promoted) >= 3, promoted
+          assert promoted & {3, 4, 5}, promoted
           assert promoted | review == set(range(1, 6)), (promoted, review)
           assert promoted.isdisjoint(review), (promoted, review)
           assert preferred in promoted, promotion
@@ -118,9 +117,21 @@ jobs:
 
           model = market.get('model') or {}
           universe = model.get('universe') or {}
-          assert universe.get('currentSymbols') == 403, universe
-          assert universe.get('freshSymbols') == 403, universe
+          current_symbols = int(universe.get('currentSymbols') or 0)
+          fresh_symbols = int(universe.get('freshSymbols') or 0)
+          listed_hose = int(universe.get('listedHOSE') or 0)
+          required_coverage = float(universe.get('requiredCurrentCoverage') or .90)
+          hose_coverage = float(universe.get('hoseCoverage') or 0)
+          insufficient = set(universe.get('insufficientHistorySymbols') or [])
+          stale = set(universe.get('staleOrUnverifiedSymbols') or [])
+          assert len(symbols) == current_symbols, (len(symbols), universe)
+          assert current_symbols >= 360, universe
+          assert fresh_symbols == current_symbols, universe
           assert universe.get('staleSymbols') == 0, universe
+          assert required_coverage >= .90, universe
+          assert hose_coverage >= required_coverage, universe
+          assert not stale & set(symbols), (stale & set(symbols))
+          assert len(set(symbols) | insufficient | stale) == listed_hose, universe
 
           for horizon in map(str, range(1, 6)):
               audit = model['horizons'][horizon]

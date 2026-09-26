@@ -5,8 +5,6 @@ on:
   pull_request:
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
-      - ".github/workflows/cdn-smoke.yml"
-      - ".github/workflows/forecast-v12-cdn-smoke.yml"
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
@@ -38,8 +36,6 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
-      - ".github/workflows/cdn-smoke.yml"
-      - ".github/workflows/forecast-v12-cdn-smoke.yml"
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
