@@ -1,6 +1,7 @@
 """Reject corrupt market values, unsafe RSS links and issuer mismatches."""
 import importlib.util
 import pathlib
+import tempfile
 import unittest
 from datetime import datetime, timezone
 
@@ -73,6 +74,33 @@ class MarketTests(unittest.TestCase):
         self.assertTrue(any(f['id']=='relative' and f['contribution']>0 for f in d['factors']))
         self.assertGreater(d['score'],0)
         self.assertIn(d['confidence'],('thấp','trung bình','cao'))
+
+    def test_fast_price_refresh_does_not_fetch_per_symbol_candles(self):
+        companies=[{'symbol':'FPT','name':'Công ty Cổ phần FPT'}]
+        original=m.request
+        calls=[]
+        def fake_request(url,payload=None):
+            calls.append((url,payload))
+            return b'[{"listingInfo":{"symbol":"FPT","refPrice":100000},"matchPrice":{"symbol":"FPT","matchPrice":101000,"accumulatedVolume":500000,"highest":102000,"lowest":99000,"time":1727100000000}}]'
+        try:
+            m.request=fake_request
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                (out/'history').mkdir(parents=True)
+                bars=[{'time':f'2026-09-{day:02d}','open':90000,'high':92000,'low':89000,'close':90000+day*100,'volume':100000+day} for day in range(1,22)]
+                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':bars})
+                m.write(out/'news.json',{'items':[]})
+                m.prices(out,companies)
+                self.assertEqual(len(calls),1)
+                self.assertIn('getList',calls[0][0])
+                self.assertNotIn('gap-chart',calls[0][0])
+                self.assertTrue((out/'drivers.json').exists())
+                status=m.read(out/'prices-status.json',{})
+                self.assertEqual(status['quotes'],1)
+                self.assertEqual(status['histories'],1)
+                self.assertEqual(status['historyRefresh'],'separate_eod_job')
+        finally:
+            m.request=original
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
