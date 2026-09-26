@@ -5,7 +5,7 @@ on:
       mode:
         description: Dataset to refresh
         type: choice
-        options: [all, prices, news]
+        options: [all, prices, news, history, intraday]
         default: all
   push:
     branches: [main]
@@ -55,12 +55,14 @@ jobs:
         env:
           EVENT_SCHEDULE: ${{ github.event.schedule }}
           REQUESTED_MODE: ${{ inputs.mode }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
           if [ "$EVENT_SCHEDULE" = '20 8 * * 1-5' ]; then mode=history; fi
           if [ "$EVENT_SCHEDULE" = '35 8 * * 1-5' ]; then mode=intraday; fi
+          if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[intraday-backfill\]'; then mode=intraday; fi
           python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
       - name: Publish market snapshots without replacing financial reports
         if: always()

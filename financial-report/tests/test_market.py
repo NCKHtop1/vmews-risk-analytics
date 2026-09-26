@@ -112,12 +112,25 @@ class MarketTests(unittest.TestCase):
         self.assertIn('quarterSnapshot',js)
         self.assertIn('riskSignals',js)
 
-    def test_tradingview_widget_tracks_selected_hose_symbol(self):
-        js=(ROOT/'frontend/market.js').read_text()
-        self.assertIn("symbol:'HOSE:'+ticker",js)
-        self.assertIn("script.innerHTML=JSON.stringify",js)
-        self.assertNotIn("symbol:'NASDAQ:AAPL'",js)
-        self.assertIn("tvTitle.textContent='TradingView · '+state.symbol+' · 15 phút'",js)
+    def test_native_chart_replaces_restricted_tradingview_widget(self):
+        market=(ROOT/'frontend/market.js').read_text()
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        html=(ROOT/'frontend/index.html').read_text()
+        self.assertNotIn('embed-widget-advanced-chart.js',market+html)
+        self.assertNotIn('tradingview-widget-slot',html)
+        self.assertIn('Biểu đồ FinQuery',html)
+        self.assertIn('<option value="15m" selected>15 phút</option>',html)
+        self.assertIn("nativeTitle.textContent='Biểu đồ FinQuery · '+state.symbol",market)
+        self.assertIn("this.tf='1d'",chart)
+
+    def test_local_analysis_has_natural_language_and_concept_understanding(self):
+        js=(ROOT/'frontend/research-ai.js').read_text()
+        self.assertIn('movementNarrative',js)
+        self.assertIn('financialNarrative',js)
+        self.assertIn('conceptHTML',js)
+        for concept in ('ROE','ROA','FCF','OCF','Biên lợi nhuận gộp','Đòn bẩy tài chính'):
+            self.assertIn(concept,js)
+        self.assertIn("return'concept'",js)
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
