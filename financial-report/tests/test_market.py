@@ -128,6 +128,33 @@ class MarketTests(unittest.TestCase):
             if old_env is None:m.os.environ.pop('INTRADAY_ONLY_MISSING',None)
             else:m.os.environ['INTRADAY_ONLY_MISSING']=old_env
 
+    def test_intraday_forced_symbols_override_missing_scan(self):
+        companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
+        original=m._refresh_one_history
+        old_symbols=m.os.environ.get('INTRADAY_SYMBOLS')
+        old_workers=m.os.environ.get('INTRADAY_WORKERS')
+        calls=[]
+        def fake(out,symbol,minute=False):
+            calls.append((symbol,minute))
+            return symbol,True,None
+        try:
+            m._refresh_one_history=fake
+            m.os.environ['INTRADAY_SYMBOLS']='VHM,VCB'
+            m.os.environ['INTRADAY_WORKERS']='1'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.refresh_history_group(out,companies,minute=True)
+                self.assertEqual([s for s,_ in calls],['VHM','VCB'])
+                status=m.read(out/'intraday-status.json',{})
+                self.assertEqual(status['forcedSymbols'],['VHM','VCB'])
+                self.assertEqual(status['expected'],2)
+        finally:
+            m._refresh_one_history=original
+            if old_symbols is None:m.os.environ.pop('INTRADAY_SYMBOLS',None)
+            else:m.os.environ['INTRADAY_SYMBOLS']=old_symbols
+            if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
+            else:m.os.environ['INTRADAY_WORKERS']=old_workers
+
     def test_research_analysis_is_local_and_ui_has_no_external_model_noise(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
