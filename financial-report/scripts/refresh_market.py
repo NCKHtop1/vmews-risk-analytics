@@ -366,15 +366,33 @@ def _history_page(symbol, frame, to, count, minute=False):
     raise last_error
 
 
-def _full_daily_history(symbol, target):
-    """Fetch the complete available daily history in bounded, rate-limit-friendly pages."""
-    merged = {}
-    cursor = int(time.time())
+def _full_daily_history(symbol, target, seed=None):
+    """Backfill daily bars from the oldest retained bar toward listing date.
+
+    Existing bars are used as a seed, so repeated runs resume instead of
+    re-downloading the latest window. If an older page fails after progress,
+    the partial extension is still returned and can be continued next run.
+    """
+    seed = [bar for bar in (seed or []) if isinstance(bar, dict) and bar.get('time')]
+    merged = {bar['time']: bar for bar in seed}
+    seed_count = len(merged)
+    if seed:
+        earliest_seed = min(merged)
+        cursor = int(datetime.fromisoformat(earliest_seed).replace(tzinfo=VN).timestamp()) - 1
+    else:
+        cursor = int(time.time())
     page_size = max(200, min(1600, int(os.environ.get('HISTORY_PAGE_SIZE', '1600')), target))
     page_delay = max(0.0, float(os.environ.get('HISTORY_PAGE_DELAY', '0.45')))
-    complete = False
-    for _ in range(max(1, math.ceil(target / page_size) + 2)):
-        bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+    complete = len(merged) >= target
+    for _ in range(max(1, math.ceil(max(0, target - len(merged)) / page_size) + 2)):
+        if complete:
+            break
+        try:
+            bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+        except Exception:
+            if len(merged) > seed_count:
+                break
+            raise
         before = len(merged)
         merged.update({bar['time']: bar for bar in bars})
         if len(bars) < page_size:
@@ -384,6 +402,7 @@ def _full_daily_history(symbol, target):
             complete = True
             break
         if len(merged) == before:
+            complete = True
             break
         earliest = min(bar['time'] for bar in bars)
         cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
@@ -410,7 +429,7 @@ def _refresh_one_history(out, symbol, minute=False):
             if symbol_delay:
                 time.sleep(symbol_delay)
             target = int(os.environ.get('HISTORY_COUNT_BACK', '8000'))
-            bars, history_complete = _full_daily_history(symbol, target)
+            bars, history_complete = _full_daily_history(symbol, target, previous.get('bars') or [])
         else:
             count = int(os.environ.get('HISTORY_COUNT_BACK', '1600'))
             bars = _history_page(symbol, 'ONE_DAY', int(time.time()), count, minute=False)
