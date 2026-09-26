@@ -42,11 +42,26 @@ function renderChart(){const ds=state.data?.datasets?.[state.active],box=$('macr
 function renderTable(){const ds=state.data?.datasets?.[state.active];if(!ds)return;const cols=ds.columns||[],rows=(ds.rows||[]).slice(-20).reverse();$('macro-table-head').innerHTML='<tr>'+cols.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr>';$('macro-table-body').innerHTML=rows.map(r=>'<tr>'+cols.map(x=>'<td>'+esc(fmt(r[x]))+'</td>').join('')+'</tr>').join('');}
 function render(){if(!state.data)return;const sets=state.data.datasets||{};if(!sets[state.active])state.active=Object.keys(sets)[0]||'';renderTabs();metricOptions();renderKpis();renderChart();renderTable();$('macro-source-status').textContent='VBMA · cập nhật '+new Date(state.data.checkedAt).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});}
 async function load(){try{$('macro-source-status').textContent='Đang tải VBMA…';state.data=normalizePayload(await fetchMacro());render();}catch(e){$('macro-source-status').textContent='Chưa tải được dữ liệu VBMA';$('macro-chart').innerHTML='<div class="analysis-empty">Nguồn vĩ mô tạm thời chưa phản hồi.</div>';}}
-async function unlock(code){if(await digest(String(code||''))!==ACCESS_HASH){$('macro-gate-error').textContent='Mã truy cập không đúng.';return false;}state.unlocked=true;sessionStorage.setItem('finquery-macro-access','1');$('macro-gate').hidden=true;$('macro-workspace').hidden=false;$('macro-gate-error').textContent='';await load();return true;}
+function showWorkspace(){
+ const gate=$('macro-gate'),workspace=$('macro-workspace'),input=$('macro-access-code');
+ if(gate){gate.hidden=true;gate.style.display='none';}
+ if(workspace){workspace.hidden=false;workspace.style.display='block';}
+ if(input)input.value='';
+ requestAnimationFrame(()=>workspace?.scrollIntoView({behavior:'smooth',block:'start'}));
+}
+async function unlock(code){
+ const button=$('macro-unlock-form')?.querySelector('button[type=submit]');
+ if(await digest(String(code||'').trim())!==ACCESS_HASH){$('macro-gate-error').textContent='Mã truy cập không đúng.';return false;}
+ state.unlocked=true;sessionStorage.setItem('finquery-macro-access','1');$('macro-gate-error').textContent='';if(button){button.disabled=true;button.textContent='Đang mở…';}
+ showWorkspace();
+ await load();
+ if(button){button.disabled=false;button.textContent='Mở dữ liệu';}
+ return true;
+}
 $('macro-unlock-form')?.addEventListener('submit',e=>{e.preventDefault();unlock($('macro-access-code').value);});
 $('macro-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-macro-tab]');if(!b)return;state.active=b.dataset.macroTab;state.metric='';render();});
 $('macro-metric')?.addEventListener('change',e=>{state.metric=e.target.value;renderKpis();renderChart();});
 $('macro-refresh')?.addEventListener('click',load);
-if(sessionStorage.getItem('finquery-macro-access')==='1'){state.unlocked=true;$('macro-gate').hidden=true;$('macro-workspace').hidden=false;load();}
+if(sessionStorage.getItem('finquery-macro-access')==='1'){state.unlocked=true;showWorkspace();load();}
 window.FinMacro={context(){if(!state.unlocked||!state.data)return null;const compact={};for(const [id,ds]of Object.entries(state.data.datasets||{}))compact[id]={title:ds.title,columns:ds.columns,numericColumns:ds.numericColumns,rows:(ds.rows||[]).slice(-12),status:ds.status};return{checkedAt:state.data.checkedAt,active:state.active,datasets:compact};},refresh:load};
 })();
