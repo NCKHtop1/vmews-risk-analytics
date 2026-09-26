@@ -5,7 +5,7 @@ on:
       mode:
         description: Dataset to refresh
         type: choice
-        options: [all, prices, news, history, intraday]
+        options: [all, prices, news, macro, history, intraday]
         default: all
   push:
     branches: [main]
@@ -17,6 +17,8 @@ on:
     - cron: '7,22,37,52 2-8 * * 1-5'
     # Publisher RSS refresh.
     - cron: '11,41 * * * *'
+    # VBMA macro tables refresh once each business day.
+    - cron: '15 1 * * 1-5'
     # Heavy candle history runs separately after the Vietnam close.
     - cron: '20 8 * * 1-5'
     - cron: '35 8 * * 1-5'
@@ -63,6 +65,7 @@ jobs:
         run: |
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
+          if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
           if [ "$EVENT_SCHEDULE" = '20 8 * * 1-5' ]; then mode=history; fi
           if [ "$EVENT_SCHEDULE" = '35 8 * * 1-5' ]; then mode=intraday; fi
@@ -86,13 +89,14 @@ jobs:
           python - <<'PY'
           import json, pathlib
           p=pathlib.Path('/tmp/market-publish/market')
-          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','news.json','history/MBB.json']:
+          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','news.json','macro.json','history/MBB.json']:
               f=p/name
               if not f.exists(): continue
               d=json.loads(f.read_text())
               if name=='quotes.json': print('BOARD', d.get('coverage'), d.get('quotes',{}).get('MBB'))
               elif name=='drivers.json': print('DRIVERS',len(d.get('symbols',{})),d.get('symbols',{}).get('MBB'))
               elif name=='news.json': print('NEWS',d.get('sources'),d.get('items',[])[:3])
+              elif name=='macro.json': print('MACRO',d.get('status'),[(k,len(v.get('rows',[]))) for k,v in d.get('datasets',{}).items()])
               elif name=='history/MBB.json': print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
               else: print('STATUS',d)
           PY
