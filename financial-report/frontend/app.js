@@ -89,6 +89,7 @@ for(const event of ['pointerover','focusin'])$('trend-chart').addEventListener(e
 $('copyright-year').textContent=new Date().getFullYear();
 $('report-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;const ids=state.data?.sections.filter(s=>state.reports.includes(s.id)).map(s=>s.id)||[];if(!ids.length)return;e.preventDefault();state.active=ids[(ids.indexOf(state.active)+(e.key==='ArrowRight'?1:ids.length-1))%ids.length];renderPreview();$('tab-'+state.active)?.focus();});$('download').addEventListener('click',download);
 function companyOptions(){ $('company-options').innerHTML=state.companies.map(c=>`<option value="${esc(c.symbol)}">${esc(c.name)}</option>`).join(''); }
+window.FinancialReportContext={raw(){if(!state.data)return null;return{symbol:state.bundle?.symbol||state.data.symbol,name:state.data.name||state.bundle?.name||'',mode:state.mode,updatedAt:state.data.updatedAt||null,selectedPeriods:[...state.years],data:state.data};}};
 async function init(){
  try{state.companies=BOOT.companies||await json(DATA_BASE+'companies.json',null);companyOptions();$('company-description').textContent='100 doanh nghiệp thuộc VN100.';}catch{error('Chưa tải được danh sách VN100. Vui lòng tải lại trang.');return;}
  // Membership updates do not block a company request, and a failed manifest
