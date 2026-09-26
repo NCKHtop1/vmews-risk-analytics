@@ -1,5 +1,7 @@
 """Public Vietcap market snapshots and publisher RSS; no credentials required."""
 import argparse
+import csv
+import io
 import html
 import json
 import math
@@ -60,6 +62,14 @@ ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng MB', 'Ngân hàng Quân đ�
            'MWG': ['Thế Giới Di Động'], 'MSN': ['Masan'], 'SAB': ['Sabeco'],
            'DCM': ['PVCFC', 'Phân bón Cà Mau'], 'FRT': ['FPT Retail'], 'FPT': ['Tập đoàn FPT'],
            'GAS': ['PV GAS'], 'PLX': ['Petrolimex'], 'VJC': ['Vietjet'], 'HVN': ['Vietnam Airlines']}
+VBMA_TABLES = {
+    'macro_overview': ('tong_quan_kinh_te_vi_mo', 'Tổng quan kinh tế vĩ mô'),
+    'fdi': ('tinh_hinh_fdi', 'Tình hình FDI'),
+    'gdp_growth': ('toc_do_tang_truong_gdp_thuc_te', 'Tăng trưởng GDP thực tế'),
+    'pmi': ('pmi_theo_thang', 'PMI theo tháng'),
+    'money_supply': ('tong_cung_tien_theo_thang', 'Tổng cung tiền theo tháng'),
+    'credit_sector': ('du_no_tin_dung_theo_nganh_nghe', 'Dư nợ tín dụng theo ngành nghề'),
+}
 
 
 def now():
@@ -449,6 +459,84 @@ def parse_feed(raw, publisher, feed_url, companies, current):
     return rows
 
 
+def _vbma_cell(value):
+    text = clean(value).strip()
+    if not text:
+        return None
+    candidate = text.replace(' ', '').replace('%', '')
+    if re.fullmatch(r'-?\d+(?:[.,]\d+)?', candidate):
+        if candidate.count(',') == 1 and candidate.count('.') == 0:
+            candidate = candidate.replace(',', '.')
+        elif candidate.count('.') > 1 and ',' not in candidate:
+            candidate = candidate.replace('.', '')
+        try:
+            value = float(candidate)
+            return int(value) if value.is_integer() else value
+        except ValueError:
+            pass
+    return text
+
+
+def parse_vbma_table(raw):
+    """Decode VBMA macro CSV tables across their legacy encodings/delimiters."""
+    best = None
+    for encoding in ('utf-16', 'utf-16-le', 'utf-16-be', 'utf-8-sig', 'utf-8', 'cp1258', 'latin1'):
+        try:
+            text = raw.decode(encoding)
+        except (UnicodeError, LookupError):
+            continue
+        for sep in (',', ';', '\t', '|'):
+            try:
+                rows = list(csv.reader(io.StringIO(text), delimiter=sep))
+            except csv.Error:
+                continue
+            rows = [[clean(x) for x in row] for row in rows if any(clean(x) for x in row)]
+            if not rows:
+                continue
+            width = max(len(x) for x in rows)
+            score = width * min(len(rows), 50)
+            if width > 1 and (best is None or score > best[0]):
+                best = (score, rows)
+    if best is None:
+        raise ValueError('Cannot decode VBMA table')
+    rows = best[1]
+    header = [x or ('Cột ' + str(i + 1)) for i, x in enumerate(rows[0])]
+    header[0] = 'Date' if header[0] in ('Unnamed: 0', '') else header[0]
+    unique, seen = [], {}
+    for name in header:
+        seen[name] = seen.get(name, 0) + 1
+        unique.append(name if seen[name] == 1 else f'{name} ({seen[name]})')
+    data = []
+    for raw_row in rows[1:]:
+        padded = raw_row + [''] * (len(unique) - len(raw_row))
+        data.append({unique[i]: _vbma_cell(padded[i]) for i in range(len(unique))})
+    numeric = [name for name in unique if any(isinstance(row.get(name), (int, float)) and not isinstance(row.get(name), bool) for row in data)]
+    return {'columns': unique, 'numericColumns': numeric, 'rows': data}
+
+
+def macro(out, companies=None):
+    path = out / 'macro.json'
+    previous = read(path, {'datasets': {}})
+    datasets, sources = {}, []
+    for key, (slug, title) in VBMA_TABLES.items():
+        url = f'https://vbma.org.vn/csv/markets/tables/vi/{slug}.csv'
+        try:
+            parsed = parse_vbma_table(request(url))
+            parsed.update({'id': key, 'title': title, 'source': 'VBMA', 'sourceUrl': url, 'collectedAt': now(), 'status': 'ok'})
+            datasets[key] = parsed
+            sources.append({'id': key, 'url': url, 'status': 'ok', 'rows': len(parsed['rows'])})
+        except Exception as e:
+            retained = previous.get('datasets', {}).get(key)
+            if retained:
+                datasets[key] = {**retained, 'status': 'retained', 'error': str(e)}
+            sources.append({'id': key, 'url': url, 'status': 'error', 'error': str(e)})
+    ok = any(x['status'] == 'ok' for x in sources)
+    write(path, {'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'source': 'VBMA', 'sources': sources, 'datasets': datasets})
+    print(f'Macro: {sum(x["status"] == "ok" for x in sources)}/{len(sources)} VBMA tables; {sum(len(x.get("rows", [])) for x in datasets.values())} rows', flush=True)
+    if not datasets:
+        raise RuntimeError('VBMA macro collection failed and no retained data is available')
+
+
 def news(out, companies):
     path = out / 'news.json'
     previous = read(path, {'items': []})
@@ -482,13 +570,13 @@ def news(out, companies):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--mode', choices=['prices', 'history', 'intraday', 'news', 'all'], default='all')
+    parser.add_argument('--mode', choices=['prices', 'history', 'intraday', 'news', 'macro', 'all'], default='all')
     args = parser.parse_args()
     companies = read(ROOT / 'data/companies.json', [])
     if len({c['symbol'] for c in companies}) != 100:
         raise RuntimeError('Expected 100 unique VN100 symbols')
     errors = []
-    for mode in (['prices', 'news'] if args.mode == 'all' else [args.mode]):
+    for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
         try:
             globals()[mode](args.output, companies)
         except Exception as e:
