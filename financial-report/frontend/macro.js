@@ -7,14 +7,27 @@ const fmt=v=>typeof v==='number'&&Number.isFinite(v)?new Intl.NumberFormat('vi-V
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function digest(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function fetchMacro(){const r=await fetch(BASE+'macro.json?v='+Math.floor(Date.now()/60000),{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data?.datasets||typeof data.datasets!=='object')throw Error('Dữ liệu VBMA không hợp lệ');return data;}
-function periodLabel(value){return /^(?:T(?:1[0-2]|[1-9])\s+\d{4}|Q[1-4]\s+\d{4}|\d{4}(?:[-/]\d{1,2})?)$/i.test(String(value||'').trim());}
+function periodLabel(value){return periodRank(value)!==null;}
+function periodRank(value){
+ const s=String(value||'').trim();
+ let m=s.match(/^T(1[0-2]|[1-9])\s+(\d{4})$/i);if(m)return Number(m[2])*12+Number(m[1])-1;
+ m=s.match(/^Q([1-4])\s+(\d{4})$/i);if(m)return Number(m[2])*12+(Number(m[1])-1)*3+2;
+ m=s.match(/^(\d{4})[-/](\d{1,2})$/);if(m&&Number(m[2])>=1&&Number(m[2])<=12)return Number(m[1])*12+Number(m[2])-1;
+ m=s.match(/^(\d{4})$/);if(m)return Number(m[1])*12+11;
+ return null;
+}
 function normalizeDataset(ds){
  const cols=ds.columns||[],first=cols[0],periodCols=cols.slice(1).filter(periodLabel),rows=ds.rows||[];
  if(first&&periodCols.length>=Math.max(3,Math.floor((cols.length-1)*.6))&&rows.length){
   const names=rows.map((r,i)=>String(r[first]??('Chỉ tiêu '+(i+1))).trim()).filter(Boolean),units=cols[1]==='- (2)'?rows.map(r=>r['- (2)']):[];
-  const out=periodCols.map(p=>{const row={Date:p};rows.forEach((r,i)=>{const name=names[i]||('Chỉ tiêu '+(i+1));if(typeof r[p]==='number')row[name]=r[p];});return row;});
+  const out=periodCols.sort((a,b)=>periodRank(a)-periodRank(b)).map(p=>{const row={Date:p};rows.forEach((r,i)=>{const name=names[i]||('Chỉ tiêu '+(i+1));if(typeof r[p]==='number')row[name]=r[p];});return row;});
   const metrics=[...new Set(out.flatMap(r=>Object.keys(r).filter(k=>k!=='Date'&&typeof r[k]==='number')))];
   return {...ds,columns:['Date',...metrics],numericColumns:metrics,rows:out,orientation:'time-columns',units:Object.fromEntries(names.map((n,i)=>[n,units[i]||'']))};
+ }
+ const timed=first?rows.map(row=>({row,rank:periodRank(row[first])})).filter(x=>x.rank!==null):[];
+ if(timed.length>=3){
+  const sorted=timed.sort((a,b)=>a.rank-b.rank).map(x=>x.row);
+  return {...ds,rows:sorted,orientation:'time-rows'};
  }
  return {...ds,orientation:'time-rows'};
 }
