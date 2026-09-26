@@ -343,7 +343,7 @@ def _refresh_one_history(out, symbol, minute=False):
     path = out / folder / (symbol + '.json')
     previous = read(path, {})
     frame = 'ONE_MINUTE' if minute else 'ONE_DAY'
-    count = 700 if minute else 1600
+    count = int(os.environ.get('INTRADAY_COUNT_BACK', '700')) if minute else 1600
     try:
         payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': frame, 'symbols': [symbol], 'to': int(time.time()), 'countBack': count}))
         bars = normalize_history(payload, symbol, minute=minute)
@@ -365,10 +365,14 @@ def _refresh_one_history(out, symbol, minute=False):
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
-    symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
+    forced = [s.strip().upper() for s in os.environ.get('INTRADAY_SYMBOLS', '').split(',') if s.strip()]
+    if minute and forced:
+        symbols = [s for s in all_symbols if s in forced]
+    else:
+        symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
     errors, success = [], 0
     # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
-    workers = 3 if minute else 6
+    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else 6
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):
@@ -378,7 +382,7 @@ def refresh_history_group(out, companies, minute=False):
             else:
                 errors.append(f'{symbol}{" intraday" if minute else ""}: {error}')
     name = 'intraday' if minute else 'history'
-    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'errors': errors})
+    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'forcedSymbols': forced, 'errors': errors})
     if not minute:
         build_drivers(out, companies)
     print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}', flush=True)
