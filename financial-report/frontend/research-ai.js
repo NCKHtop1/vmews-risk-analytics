@@ -32,7 +32,43 @@ async function directModel(secret){if(state.model)return state.model;const r=awa
 function geminiText(payload){return(payload.candidates||[]).flatMap(c=>c.content?.parts||[]).map(p=>p.text||'').filter(Boolean).join('\n').trim();}
 function geminiSources(payload){const out=[],seen=new Set();for(const c of payload.candidates||[]){for(const chunk of c.groundingMetadata?.groundingChunks||[]){const w=chunk.web;if(!w?.uri||seen.has(w.uri))continue;seen.add(w.uri);out.push({url:w.uri,title:w.title||''});}}return out.slice(0,6);}
 async function directAnalysis(question,ctx){const secret=sessionSecret();if(!secret)throw Error('DIRECT_KEY_MISSING');const model=await directModel(secret);const body={systemInstruction:{parts:[{text:directSystem()}]},contents:[{role:'user',parts:[{text:['CÂU HỎI:',question,'DỮ LIỆU FINQUERY:',JSON.stringify(ctx),'LỊCH SỬ HỎI ĐÁP:',JSON.stringify(state.messages.slice(-6))].join('\n')}]}],tools:[{googleSearch:{}}],generationConfig:{temperature:.15,maxOutputTokens:3600}};const r=await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':secret},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error?.message||('Gemini HTTP '+r.status));const answer=geminiText(d);if(!answer)throw Error('Gemini không trả nội dung');return{answer,provider:'Gemini trực tiếp',model,sources:geminiSources(d)};}
-async function ask(question){if(state.busy||!question.trim())return;state.busy=true;const send=$('research-ai-send'),status=$('research-ai-status');if(send)send.disabled=true;if(status)status.textContent='Đang phân tích dữ liệu và nguồn…';add('user',question);const ctx=buildContext(question),sources=(ctx.recentNews||[]).filter(x=>/^https?:\/\//.test(x.url||'')).slice(0,8).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt}));let answer='',meta='';try{const res=await fetch(ENDPOINT,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:ctx,history:state.messages.slice(-8),sources})});const body=await res.json().catch(()=>({}));if(!res.ok)throw Error(body.message||body.error||('HTTP '+res.status));answer=String(body.answer||'').trim();if(!answer)throw Error('AI không trả nội dung');meta=`${body.provider||'AI'} · ${body.model||''}`;if(status)status.textContent=`${body.provider||'AI'} · đã nối dữ liệu cục bộ`;}catch(serverError){try{const direct=await directAnalysis(question,ctx);answer=direct.answer;meta=`${direct.provider} · ${direct.model}${direct.sources.length?' · '+direct.sources.length+' nguồn web':''}`;if(status)status.textContent=`${direct.provider} · dữ liệu cục bộ + Google Search`;}catch(directError){answer=localSummary(question,ctx);meta='Fallback cục bộ · '+(directError.message==='DIRECT_KEY_MISSING'?'chưa kết nối Gemini':String(directError.message||serverError.message||'AI chưa sẵn sàng'));if(status)status.textContent=sessionSecret()?'Gemini tạm lỗi · đang dùng dữ liệu cục bộ':'Có phân tích cục bộ · kết nối Gemini để hỏi sâu + web';}}add('assistant',answer,meta);state.messages.push({role:'user',content:question},{role:'assistant',content:answer});}finally{state.busy=false;if(send)send.disabled=false;}}
+async function ask(question){
+ if(state.busy||!question.trim())return;
+ state.busy=true;
+ const send=$('research-ai-send'),status=$('research-ai-status');
+ if(send)send.disabled=true;
+ if(status)status.textContent='Đang phân tích dữ liệu và nguồn…';
+ add('user',question);
+ const ctx=buildContext(question),sources=(ctx.recentNews||[]).filter(x=>/^https?:\/\//.test(x.url||'')).slice(0,8).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt}));
+ let answer='',meta='';
+ try{
+  try{
+   const res=await fetch(ENDPOINT,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:ctx,history:state.messages.slice(-8),sources})});
+   const body=await res.json().catch(()=>({}));
+   if(!res.ok)throw Error(body.message||body.error||('HTTP '+res.status));
+   answer=String(body.answer||'').trim();
+   if(!answer)throw Error('AI không trả nội dung');
+   meta=`${body.provider||'AI'} · ${body.model||''}`;
+   if(status)status.textContent=`${body.provider||'AI'} · đã nối dữ liệu cục bộ`;
+  }catch(serverError){
+   try{
+    const direct=await directAnalysis(question,ctx);
+    answer=direct.answer;
+    meta=`${direct.provider} · ${direct.model}${direct.sources.length?' · '+direct.sources.length+' nguồn web':''}`;
+    if(status)status.textContent=`${direct.provider} · dữ liệu cục bộ + Google Search`;
+   }catch(directError){
+    answer=localSummary(question,ctx);
+    meta='Fallback cục bộ · '+(directError.message==='DIRECT_KEY_MISSING'?'chưa kết nối Gemini':String(directError.message||serverError.message||'AI chưa sẵn sàng'));
+    if(status)status.textContent=sessionSecret()?'Gemini tạm lỗi · đang dùng dữ liệu cục bộ':'Có phân tích cục bộ · kết nối Gemini để hỏi sâu + web';
+   }
+  }
+  add('assistant',answer,meta);
+  state.messages.push({role:'user',content:question},{role:'assistant',content:answer});
+ }finally{
+  state.busy=false;
+  if(send)send.disabled=false;
+ }
+}
 async function health(){const status=$('research-ai-status');if(sessionSecret()){status.textContent='Gemini phiên này · sẵn sàng';return;}try{const r=await fetch(ENDPOINT,{mode:'cors',cache:'no-store'}),d=await r.json();if(r.ok&&d.ready){status.textContent=`${d.provider} · ${d.model}`;}else status.textContent='Có phân tích cục bộ · có thể kết nối Gemini';}catch{if(status)status.textContent='Có phân tích cục bộ · có thể kết nối Gemini';}}
 function sync(symbol){state.symbol=symbol||'';const p=$('research-ai-context');if(p)p.textContent=`${state.symbol||'VN100'} · giá · hệ số biến động · BCTC · chỉ số · tin chính thống`;}
 window.FinQueryAI={sync,ask};
