@@ -105,13 +105,13 @@ function scoreHealth(a,q){
  if(q&&Number.isFinite(q.yoyChange.profit)){score+=q.yoyChange.profit>5?6:q.yoyChange.profit<-5?-6:0;parts++;}
  return Math.max(0,Math.min(100,Math.round(score)));
 }
-function trendTag(n,positive=true){if(!Number.isFinite(n))return{label:'Chưa đủ dữ liệu',tone:'neutral'};const good=positive?n>0:n<0;return{label:good?'Tích cực':n===0?'Đi ngang':'Cần theo dõi',tone:good?'positive':n===0?'neutral':'negative'};}
+function trendTag(n,positive=true){if(!Number.isFinite(n))return{label:'Không có số liệu kỳ này',tone:'neutral'};const good=positive?n>0:n<0;return{label:good?'Tích cực':n===0?'Đi ngang':'Cần theo dõi',tone:good?'positive':n===0?'neutral':'negative'};}
 
 function card(label,value,sub='',t='neutral'){return`<div class="analysis-kpi"><span>${esc(label)}</span><strong class="${esc(t)}">${esc(value)}</strong>${sub?`<small>${esc(sub)}</small>`:''}</div>`;}
 function table(rows){return`<div class="analysis-table">${rows.map(r=>`<div class="analysis-table-row"><span>${esc(r[0])}</span><b>${esc(r[1])}</b><em class="${esc(r[3]||'neutral')}">${esc(r[2]||'')}</em></div>`).join('')}</div>`;}
 function section(title,body){return`<section class="analysis-block"><h4>${esc(title)}</h4>${body}</section>`;}
 function prose(items){const parts=(items||[]).filter(Boolean);return parts.length?'<div class="analysis-narrative">'+parts.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'';}
-function relationText(value,positive='tăng',negative='giảm'){if(!Number.isFinite(value))return'không đủ dữ liệu để xác định';if(Math.abs(value)<.15)return'gần như đi ngang';return value>0?positive+' '+num(Math.abs(value))+'%':negative+' '+num(Math.abs(value))+'%';}
+function relationText(value,positive='tăng',negative='giảm'){if(!Number.isFinite(value))return'không có số liệu so sánh';if(Math.abs(value)<.15)return'gần như đi ngang';return value>0?positive+' '+num(Math.abs(value))+'%':negative+' '+num(Math.abs(value))+'%';}
 function movementNarrative(ctx){
  const q=ctx.quote,d=ctx.driver;if(!q)return[];
  const ch=Number(q.changePct),dir=ch>0?'tăng':ch<0?'giảm':'đi ngang',rel=Number(d?.relativeStrengthPct),vol=Number(d?.volumeRatio20),mom=Number(d?.momentum5dPct),top=(d?.factors||[]).slice(0,3),headline=(ctx.news||[])[0],out=[];
@@ -134,8 +134,8 @@ function riskNarrative(a,q){
  if(!a)return[];
  const signals=riskSignals(a,q),risks=signals.filter(x=>x.level==='risk'),watch=signals.filter(x=>x.level==='watch');
  if(risks.length)return['Điểm cần chú ý nhất hiện nằm ở '+risks.map(x=>x.title.toLowerCase()).join(', ')+'. Các cảnh báo này xuất phát trực tiếp từ dòng tiền, đòn bẩy hoặc biến động vốn lưu động trong dữ liệu hiện có.'];
- if(watch.length)return['Chưa xuất hiện cảnh báo định lượng nghiêm trọng, nhưng '+watch.map(x=>x.title.toLowerCase()).join(', ')+' vẫn cần theo dõi ở các kỳ tiếp theo.'];
- return['Các thước đo rủi ro cốt lõi hiện chưa phát tín hiệu bất lợi rõ rệt trong phạm vi dữ liệu đang có.'];
+ if(watch.length)return['Rủi ro hiện tập trung ở '+watch.map(x=>x.title.toLowerCase()).join(', ')+'. Đây là các biến cần theo dõi sát ở kỳ kế tiếp vì chúng đang lệch khỏi vùng thuận lợi.'];
+ return['Bộ chỉ tiêu rủi ro cốt lõi đang ở trạng thái ổn định: dòng tiền, đòn bẩy và vốn lưu động chưa cho thấy điểm căng nổi bật trong kỳ hiện tại.'];
 }
 function compareNarrative(a,q){
  const out=[];if(a)out.push('So với '+a.previous+', năm '+a.period+' ghi nhận doanh thu '+relationText(a.change.revenue)+' và lợi nhuận sau thuế '+relationText(a.change.profit)+'; tổng tài sản '+relationText(a.change.assets)+' và vốn chủ sở hữu '+relationText(a.change.equity)+'.');
@@ -234,7 +234,7 @@ function movementHTML(ctx){
  const technical=t?section('Trạng thái kỹ thuật hiện tại',prose(technicalNarrative(t,null))):'';return`${prose(movementNarrative(ctx))}<div class="analysis-kpis">${kpis}</div>${technical}${factors.length?section('Phân rã động lực',table(factors)):''}${section('Bối cảnh định lượng',details)}${headlineList(ctx.news)}`;
 }
 function financialHTML(a,q){
- if(!a)return section('Sức khỏe tài chính','<div class="analysis-empty">Chưa có dữ liệu BCTC năm.</div>');
+ if(!a)return section('Sức khỏe tài chính','<div class="analysis-empty">Bộ dữ liệu hiện không có BCTC năm cho mã này.</div>');
  const score=scoreHealth(a,q),quality=trendTag(a.ratios.ocfIncome-80),growthTone=trendTag(a.change.profit),levTone=trendTag(60-a.ratios.liabilitiesAssets);
  const kpis=[
   card('Điểm sức khỏe',score!==null?score+'/100':'—',a.period,score>=70?'positive':score>=50?'neutral':'negative'),
@@ -273,7 +273,7 @@ function financialHTML(a,q){
  return`${prose(financialNarrative(a,q))}<div class="analysis-kpis">${kpis}</div>${section('Tăng trưởng & hiệu quả',perf)}${section('Chất lượng dòng tiền',cash)}${section('Cơ cấu tài chính',balance)}${q?section('Quý gần nhất',quarter):''}`;
 }
 function riskHTML(a,q){
- const signals=riskSignals(a,q);if(!signals.length)return section('Rủi ro định lượng','<div class="analysis-empty">Chưa đủ dữ liệu để tạo cảnh báo định lượng.</div>');
+ const signals=riskSignals(a,q);if(!signals.length)return section('Rủi ro định lượng','<div class="analysis-empty">Bộ dữ liệu hiện không có đủ trường để tính nhóm cảnh báo này.</div>');
  return`${prose(riskNarrative(a,q))}<div class="analysis-risk-grid">${signals.map(s=>`<div class="analysis-risk ${esc(s.level)}"><span>${esc(s.title)}</span><strong>${esc(s.value)}</strong><p>${esc(s.detail)}</p></div>`).join('')}</div>`;
 }
 function comparisonHTML(a,q){
@@ -293,10 +293,19 @@ function comparisonHTML(a,q){
  return prose(compareNarrative(a,q))+parts.join('');
 }
 function searchHTML(question,annual,quarterly){
- const terms=norm(question).split(' ').filter(x=>x.length>2),datasets=[['Năm',annual],['Quý',quarterly]],hits=[];
- for(const [label,data] of datasets){if(!data)continue;for(const r of rows(data)){const n=norm(r.label),score=terms.reduce((a,t)=>a+(n.includes(t)?1:0),0);if(!score)continue;const ps=periods(data).slice(-5),vals=ps.filter(p=>Number.isFinite(val(r,p))).map(p=>`${p}: ${point(val(r,p),r.unit)}`);if(vals.length)hits.push({score,label,row:r,vals});}}
- hits.sort((a,b)=>b.score-a.score);if(!hits.length)return section('Kết quả','<div class="analysis-empty">Không tìm thấy chỉ tiêu phù hợp trong dữ liệu hiện có. Hãy hỏi theo nhóm: doanh thu, lợi nhuận, dòng tiền, nợ, tài sản, ROE, ROA, phải thu hoặc tồn kho.</div>');
- return section('Chỉ tiêu liên quan',`<div class="analysis-search-results">${hits.slice(0,12).map(h=>`<div><strong>${esc(h.row.label)}</strong><span>${esc(h.label)}</span><p>${esc(h.vals.join(' · '))}</p></div>`).join('')}</div>`);
+ const stop=new Set(['tai','sao','nhu','the','nao','hien','nay','cua','cho','voi','mot','nhung','cac','bao','nhieu','gi','la']),terms=norm(question).split(' ').filter(x=>x.length>2&&!stop.has(x)),datasets=[['Năm',annual],['Quý',quarterly]],hits=[];
+ for(const [label,data] of datasets){if(!data)continue;for(const r of rows(data)){const n=norm(r.label),score=terms.reduce((a,t)=>a+(n.includes(t)?1:0),0);if(!score)continue;const ps=periods(data).slice(-6),vals=ps.filter(p=>Number.isFinite(val(r,p))).map(p=>`${p}: ${point(val(r,p),r.unit)}`);if(vals.length)hits.push({score,label,row:r,vals});}}
+ hits.sort((a,b)=>b.score-a.score);
+ const m=market(),macro=window.FinMacro?.context?.(),macroHits=[];
+ for(const ds of Object.values(macro?.datasets||{})){const cols=ds.columns||[],title=norm(ds.title),columnHits=cols.filter(col=>terms.some(t=>norm(col).includes(t)));const score=terms.reduce((a,t)=>a+(title.includes(t)?1:0),0)+columnHits.length;if(!score)continue;const last=(ds.rows||[]).at(-1)||{},selected=columnHits.length?columnHits.slice(0,5):(ds.numericColumns||[]).slice(0,5);macroHits.push({score,title:ds.title,values:selected.filter(k=>last[k]!==undefined).map(k=>k+': '+String(last[k]))});}
+ macroHits.sort((a,b)=>b.score-a.score);
+ const news=(m.marketNews||[]).map(n=>({n,score:terms.reduce((a,t)=>a+(norm(n.title).includes(t)?1:0),0)})).filter(x=>x.score).sort((a,b)=>b.score-a.score||Date.parse(b.n.publishedAt)-Date.parse(a.n.publishedAt)).slice(0,5);
+ const blocks=[];
+ if(hits.length)blocks.push(section('Chỉ tiêu BCTC liên quan',`<div class="analysis-search-results">${hits.slice(0,12).map(h=>`<div><strong>${esc(h.row.label)}</strong><span>${esc(h.label)}</span><p>${esc(h.vals.join(' · '))}</p></div>`).join('')}</div>`));
+ if(macroHits.length)blocks.push(section('Dữ liệu vĩ mô liên quan',`<div class="analysis-search-results">${macroHits.slice(0,6).map(h=>`<div><strong>${esc(h.title)}</strong><p>${esc(h.values.join(' · '))}</p></div>`).join('')}</div>`));
+ if(news.length)blocks.push(section('Tin liên quan',`<div class="analysis-news">${news.map(({n})=>`<a href="${esc(n.url||'#')}" target="_blank" rel="noopener noreferrer"><span>${esc(n.title)}</span><small>${esc(n.source||'')} · ${esc(String(n.publishedAt||'').slice(0,10))}</small></a>`).join('')}</div>`));
+ if(blocks.length)return prose(['FinQuery đã rà toàn bộ dữ liệu doanh nghiệp, vĩ mô và luồng tin đang tải theo nội dung câu hỏi.'])+blocks.join('');
+ return prose(['Câu hỏi này không khớp tên trường dữ liệu trực tiếp. Hãy diễn đạt theo đối tượng cần phân tích, ví dụ chỉ báo kỹ thuật, BCTC, lãi suất, NHNN, thanh khoản, tăng trưởng, định giá hoặc một chỉ tiêu cụ thể; FinQuery sẽ tự định tuyến sang phần dữ liệu tương ứng.']);
 }
 function macroDatasetFor(question,macro){if(!macro?.datasets)return null;const s=norm(question),id=/\bpmi\b/.test(s)?'pmi':/\bfdi\b/.test(s)?'fdi':/gdp/.test(s)?'gdp_growth':/cung tien|m2|money supply/.test(s)?'money_supply':/tin dung|credit/.test(s)?'credit_sector':'macro_overview';return macro.datasets[id]?{id,...macro.datasets[id]}:null;}
 function macroNews(question,items){const terms=norm(question).split(' ').filter(x=>x.length>2&&!['tai','sao','giam','tang','nhu','the','nao','hien','nay'].includes(x));return(items||[]).map(n=>{const s=norm(n.title),score=terms.reduce((a,t)=>a+(s.includes(t)?1:0),0);return{...n,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,5);}
