@@ -15,7 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: financial-report
+          sparse-checkout: |
+            financial-report
+            api
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -24,7 +26,7 @@ jobs:
           node-version: '22'
       - run: pip install -q openpyxl==3.1.5 pandas
       - run: python -m unittest discover -s financial-report/tests -v
-      - run: node --check financial-report/frontend/market.js && node --check financial-report/frontend/research-ai.js && node --check financial-report/frontend/dashboard.js && node --check financial-report/frontend/app.js && node --check financial-report/frontend/xlsx.js && node --check financial-report/frontend/metrics.js
+      - run: node --check financial-report/frontend/market.js && node --check financial-report/frontend/research-ai.js && node --check financial-report/frontend/dashboard.js && node --check financial-report/frontend/app.js && node --check financial-report/frontend/xlsx.js && node --check financial-report/frontend/metrics.js && node --check api/solution-ai.js
       - uses: actions/upload-artifact@v4
         with:
           name: financial-excel-tested
