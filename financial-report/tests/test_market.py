@@ -229,6 +229,12 @@ class MarketTests(unittest.TestCase):
         self.assertAlmostEqual(data['rows'][-1]['PMI'],51.2)
         self.assertEqual(data['rows'][-1]['Ghi chú'],'Tăng')
 
+    def test_vbma_parser_prefers_real_multi_column_header(self):
+        raw='Date,Metric,Note\nT1 2026,10,"a;b"\nT2 2026,11,"c;d"\n'.encode('utf-8')
+        data=m.parse_vbma_table(raw)
+        self.assertEqual(data['columns'],['Date','Metric','Note'])
+        self.assertEqual(data['rows'][-1]['Metric'],11)
+
     def test_macro_collection_scope_excludes_bond_and_swap_curves(self):
         self.assertEqual(set(m.VBMA_TABLES),{'macro_overview','fdi','gdp_growth','pmi','money_supply','credit_sector'})
         joined=' '.join(slug for slug,_ in m.VBMA_TABLES.values()).lower()
@@ -241,6 +247,7 @@ class MarketTests(unittest.TestCase):
         market=(ROOT/'frontend/market.js').read_text()
         research=(ROOT/'frontend/research-ai.js').read_text()
         macro=(ROOT/'frontend/macro.js').read_text()
+        self.assertIn('normalizeDataset',macro)
         self.assertIn('indicator-open',html)
         self.assertIn('indicator-search',html)
         self.assertIn('signal-feed',html)
