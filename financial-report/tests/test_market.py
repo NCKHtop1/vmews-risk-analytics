@@ -102,6 +102,32 @@ class MarketTests(unittest.TestCase):
         finally:
             m.request=original
 
+    def test_intraday_missing_backfill_targets_only_missing_symbols(self):
+        companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
+        original=m._refresh_one_history
+        old_env=m.os.environ.get('INTRADAY_ONLY_MISSING')
+        calls=[]
+        def fake(out,symbol,minute=False):
+            calls.append((symbol,minute))
+            return symbol,True,None
+        try:
+            m._refresh_one_history=fake
+            m.os.environ['INTRADAY_ONLY_MISSING']='1'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.write(out/'intraday/FPT.json',{'bars':[{'time':'x'}]})
+                m.refresh_history_group(out,companies,minute=True)
+                self.assertEqual({s for s,_ in calls},{'VHM','VCB'})
+                self.assertTrue(all(minute for _,minute in calls))
+                status=m.read(out/'intraday-status.json',{})
+                self.assertEqual(status['expected'],2)
+                self.assertEqual(status['universe'],3)
+                self.assertTrue(status['onlyMissing'])
+        finally:
+            m._refresh_one_history=original
+            if old_env is None:m.os.environ.pop('INTRADAY_ONLY_MISSING',None)
+            else:m.os.environ['INTRADAY_ONLY_MISSING']=old_env
+
     def test_research_analysis_is_local_and_ui_has_no_external_model_noise(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
