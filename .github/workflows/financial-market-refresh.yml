@@ -73,11 +73,12 @@ jobs:
           python - <<'PY'
           import json, pathlib
           p=pathlib.Path('/tmp/market-publish/market')
-          for name in ['quotes.json','prices-status.json','news.json','history/MBB.json']:
+          for name in ['quotes.json','drivers.json','prices-status.json','news.json','history/MBB.json']:
               f=p/name
               if not f.exists(): continue
               d=json.loads(f.read_text())
               if name=='quotes.json': print('BOARD', d.get('coverage'), d.get('quotes',{}).get('MBB'))
+              elif name=='drivers.json': print('DRIVERS',len(d.get('symbols',{})),d.get('symbols',{}).get('MBB'))
               elif name=='news.json': print('NEWS',d.get('sources'),d.get('items',[])[:3])
               elif name.startswith('history'): print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
               else: print('STATUS',d)
