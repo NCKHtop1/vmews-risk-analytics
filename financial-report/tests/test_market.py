@@ -102,6 +102,23 @@ class MarketTests(unittest.TestCase):
         finally:
             m.request=original
 
+    def test_research_analysis_is_local_and_ui_has_no_external_model_noise(self):
+        js=(ROOT/'frontend/research-ai.js').read_text()
+        html=(ROOT/'frontend/index.html').read_text()
+        for forbidden in ('generativelanguage.googleapis.com','Gemini','Fallback cục bộ','Máy chủ AI chưa phản hồi','research-ai-key'):
+            self.assertNotIn(forbidden,js+html)
+        self.assertIn('Phân tích chuyên sâu',html)
+        self.assertIn('annualSnapshot',js)
+        self.assertIn('quarterSnapshot',js)
+        self.assertIn('riskSignals',js)
+
+    def test_tradingview_widget_tracks_selected_hose_symbol(self):
+        js=(ROOT/'frontend/market.js').read_text()
+        self.assertIn("symbol:'HOSE:'+ticker",js)
+        self.assertIn("script.innerHTML=JSON.stringify",js)
+        self.assertNotIn("symbol:'NASDAQ:AAPL'",js)
+        self.assertIn("tvTitle.textContent='TradingView · '+state.symbol+' · 15 phút'",js)
+
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
         def item(url,day='Thu, 24 Sep 2026 08:00:00 +0700'):
