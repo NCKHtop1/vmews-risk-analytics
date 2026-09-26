@@ -13,8 +13,13 @@ on:
       - 'financial-report/scripts/refresh_market.py'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
+    # Fast VN100 quote board snapshots: every 15 minutes during the trading window.
     - cron: '7,22,37,52 2-8 * * 1-5'
+    # Publisher RSS refresh.
     - cron: '11,41 * * * *'
+    # Heavy candle history runs separately after the Vietnam close.
+    - cron: '20 8 * * 1-5'
+    - cron: '35 8 * * 1-5'
 permissions:
   contents: write
 concurrency:
@@ -54,6 +59,8 @@ jobs:
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
+          if [ "$EVENT_SCHEDULE" = '20 8 * * 1-5' ]; then mode=history; fi
+          if [ "$EVENT_SCHEDULE" = '35 8 * * 1-5' ]; then mode=intraday; fi
           python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
       - name: Publish market snapshots without replacing financial reports
         if: always()
@@ -73,14 +80,14 @@ jobs:
           python - <<'PY'
           import json, pathlib
           p=pathlib.Path('/tmp/market-publish/market')
-          for name in ['quotes.json','drivers.json','prices-status.json','news.json','history/MBB.json']:
+          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','news.json','history/MBB.json']:
               f=p/name
               if not f.exists(): continue
               d=json.loads(f.read_text())
               if name=='quotes.json': print('BOARD', d.get('coverage'), d.get('quotes',{}).get('MBB'))
               elif name=='drivers.json': print('DRIVERS',len(d.get('symbols',{})),d.get('symbols',{}).get('MBB'))
               elif name=='news.json': print('NEWS',d.get('sources'),d.get('items',[])[:3])
-              elif name.startswith('history'): print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
+              elif name=='history/MBB.json': print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
               else: print('STATUS',d)
           PY
       - uses: actions/upload-artifact@v4
