@@ -60,6 +60,20 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(len(rows),1)
         self.assertTrue({'finance','rates','banking','stocks'}.issubset(set(rows[0]['topics'])))
 
+    def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
+        quote={'price':110,'changePct':5,'volume':2500,'high':112,'low':100,'status':'ok'}
+        bars=[{'close':90+i*2,'volume':1000+i*10} for i in range(21)]
+        news=[{'title':'Doanh nghiệp báo lãi tăng trưởng mạnh','url':'https://vnexpress.net/a','source':'VnExpress','publishedAt':datetime.now(timezone.utc).isoformat(),'symbols':['FPT']}]
+        d=m.movement_driver('FPT',quote,bars,news,1.0)
+        self.assertEqual(d['causality'],'association_not_proven')
+        self.assertAlmostEqual(d['relativeStrengthPct'],4)
+        self.assertGreater(d['volumeRatio20'],2)
+        self.assertEqual(d['news72hCount'],1)
+        self.assertEqual(sum(round(f['weight'],2) for f in d['factors']),1.0)
+        self.assertTrue(any(f['id']=='relative' and f['contribution']>0 for f in d['factors']))
+        self.assertGreater(d['score'],0)
+        self.assertIn(d['confidence'],('thấp','trung bình','cao'))
+
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
         def item(url,day='Thu, 24 Sep 2026 08:00:00 +0700'):
