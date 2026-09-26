@@ -30,7 +30,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,8 +62,13 @@ jobs:
           INTRADAY_SYMBOLS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && 'VHM,VCB' || '' }}
           INTRADAY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '300' || '700' }}
           INTRADAY_WORKERS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '1' || '3' }}
-          HISTORY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[history-full]') && '6000' || '1600' }}
+          HISTORY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[history-full]') && '8000' || '1600' }}
           HISTORY_WORKERS: '4'
+          HISTORY_FULL_BACKFILL: ${{ contains(github.event.head_commit.message, '[history-full]') && '1' || '0' }}
+          HISTORY_PAGE_RETRIES: ${{ contains(github.event.head_commit.message, '[history-full]') && '4' || '2' }}
+          HISTORY_RETRY_DELAY: '2'
+          HISTORY_PAGE_DELAY: ${{ contains(github.event.head_commit.message, '[history-full]') && '0.45' || '0' }}
+          HISTORY_SYMBOL_DELAY: ${{ contains(github.event.head_commit.message, '[history-full]') && '0.35' || '0' }}
         run: |
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi

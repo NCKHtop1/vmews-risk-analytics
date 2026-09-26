@@ -68,7 +68,7 @@ class MarketTests(unittest.TestCase):
         bars=[{'close':90+i*2,'volume':1000+i*10} for i in range(21)]
         news=[{'title':'Doanh nghiệp báo lãi tăng trưởng mạnh','url':'https://vnexpress.net/a','source':'VnExpress','publishedAt':datetime.now(timezone.utc).isoformat(),'symbols':['FPT']}]
         d=m.movement_driver('FPT',quote,bars,news,1.0)
-        self.assertEqual(d['causality'],'association_not_proven')
+        self.assertEqual(d['interpretation'],'factor_attribution')
         self.assertAlmostEqual(d['relativeStrengthPct'],4)
         self.assertGreater(d['volumeRatio20'],2)
         self.assertEqual(d['news72hCount'],1)
@@ -118,25 +118,60 @@ class MarketTests(unittest.TestCase):
             calls.append(payload_arg)
             idx=min(len(calls)-1,len(pages)-1)
             return m.json.dumps(payload(pages[idx])).encode()
+        old_env={k:m.os.environ.get(k) for k in ('HISTORY_COUNT_BACK','HISTORY_FULL_BACKFILL','HISTORY_PAGE_RETRIES','HISTORY_PAGE_DELAY','HISTORY_SYMBOL_DELAY')}
         try:
             m.request=fake_request
-            bars=m._full_daily_history('FPT',2500)
+            m.os.environ['HISTORY_PAGE_RETRIES']='1'
+            m.os.environ['HISTORY_PAGE_DELAY']='0'
+            bars,complete=m._full_daily_history('FPT',2500)
             self.assertGreaterEqual(len(bars),2500)
+            self.assertTrue(complete)
             self.assertGreaterEqual(len(calls),2)
             self.assertTrue(all(call['countBack']<=1600 for call in calls))
+            calls.clear()
             with tempfile.TemporaryDirectory() as tmp:
                 out=pathlib.Path(tmp)
-                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2000-01-03','open':90,'high':100,'low':80,'close':95,'volume':500}]})
+                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[{'time':'2024-01-03','open':90,'high':100,'low':80,'close':95,'volume':500}]})
                 m.os.environ['HISTORY_COUNT_BACK']='2500'
+                m.os.environ['HISTORY_FULL_BACKFILL']='1'
+                m.os.environ['HISTORY_SYMBOL_DELAY']='0'
                 ok=m._refresh_one_history(out,'FPT',minute=False)
                 saved=m.read(out/'history/FPT.json',{})
                 self.assertTrue(ok[1])
-                self.assertEqual(saved['bars'][0]['time'],'2000-01-03')
+                self.assertEqual(saved['bars'][-1]['time'],'2024-01-03')
                 self.assertEqual(saved['barCount'],len(saved['bars']))
-                self.assertEqual(saved['firstBar'],'2000-01-03')
+                self.assertEqual(saved['lastBar'],'2024-01-03')
+                self.assertTrue(saved['historyComplete'])
         finally:
             m.request=original
-            m.os.environ.pop('HISTORY_COUNT_BACK',None)
+            for key,value in old_env.items():
+                if value is None:m.os.environ.pop(key,None)
+                else:m.os.environ[key]=value
+
+    def test_full_backfill_skips_histories_already_marked_complete(self):
+        companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
+        original=m._refresh_one_history
+        old_full=m.os.environ.get('HISTORY_FULL_BACKFILL')
+        calls=[]
+        def fake(out,symbol,minute=False):
+            calls.append((symbol,minute))
+            return symbol,True,None
+        try:
+            m._refresh_one_history=fake
+            m.os.environ['HISTORY_FULL_BACKFILL']='1'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.write(out/'history/FPT.json',{'symbol':'FPT','historyComplete':True,'bars':[{'time':'2020-01-01'}]})
+                m.refresh_history_group(out,companies,minute=False)
+                self.assertEqual([s for s,_ in calls],['VHM','VCB'])
+                status=m.read(out/'history-status.json',{})
+                self.assertTrue(status['fullBackfill'])
+                self.assertEqual(status['expected'],2)
+                self.assertEqual(status['completeHistories'],1)
+        finally:
+            m._refresh_one_history=original
+            if old_full is None:m.os.environ.pop('HISTORY_FULL_BACKFILL',None)
+            else:m.os.environ['HISTORY_FULL_BACKFILL']=old_full
 
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
@@ -307,12 +342,25 @@ class MarketTests(unittest.TestCase):
         self.assertIn("workspace.style.display='block'",macro)
         build=(ROOT/'scripts/build_cdn.py').read_text()
         self.assertIn("(front / 'macro.js').read_text()",build)
-        for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
+        for token in ('MACD cắt lên Signal','RSI quay lại từ quá bán','Supertrend đổi hướng','ADX vượt 25','Mean reversion'):
             self.assertIn(token,chart)
         self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
         self.assertIn("return'macro'",research)
         self.assertIn('macroHTML',research)
-        self.assertIn('chưa đủ để coi đó là nguyên nhân',research)
+        for robotic in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','trước khi kết luận'):
+            self.assertNotIn(robotic,research+market+chart)
+
+    def test_vn100_board_shows_reference_price_absolute_change_and_richer_concepts(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        research=(ROOT/'frontend/research-ai.js').read_text()
+        self.assertIn('TC phiên trước',html)
+        self.assertIn('± Giá (đ)',html)
+        self.assertIn('q.price-q.reference',market)
+        for concept in ('Bollinger Bands','Supertrend','Williams %R','Lãi suất ON','OMO','Giá tham chiếu','M2 / tổng cung tiền'):
+            self.assertIn(concept,research)
+        self.assertIn('localMetricHit',research)
+        self.assertIn('Catalyst gần nhất',research)
 
     def test_professional_logo_and_dolphin_ai_shell_are_present(self):
         html=(ROOT/'frontend/index.html').read_text()
