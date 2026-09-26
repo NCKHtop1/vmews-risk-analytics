@@ -342,7 +342,7 @@ def _refresh_one_history(out, symbol, minute=False):
     path = out / folder / (symbol + '.json')
     previous = read(path, {})
     frame = 'ONE_MINUTE' if minute else 'ONE_DAY'
-    count = 1600
+    count = 700 if minute else 1600
     try:
         payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': frame, 'symbols': [symbol], 'to': int(time.time()), 'countBack': count}))
         bars = normalize_history(payload, symbol, minute=minute)
@@ -362,11 +362,13 @@ def _refresh_one_history(out, symbol, minute=False):
 
 
 def refresh_history_group(out, companies, minute=False):
-    symbols = [c['symbol'] for c in companies]
+    all_symbols = [c['symbol'] for c in companies]
+    only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
+    symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
     errors, success = [], 0
-    # Bounded concurrency keeps the EOD job well below Actions timeout while
-    # avoiding an aggressive burst against the public upstream.
-    with ThreadPoolExecutor(max_workers=6) as pool:
+    # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
+    workers = 3 if minute else 6
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):
             symbol, ok, error = future.result()
@@ -375,10 +377,10 @@ def refresh_history_group(out, companies, minute=False):
             else:
                 errors.append(f'{symbol}{" intraday" if minute else ""}: {error}')
     name = 'intraday' if minute else 'history'
-    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'errors': errors})
+    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'errors': errors})
     if not minute:
         build_drivers(out, companies)
-    print(f'{name}: {success}/{len(symbols)}', flush=True)
+    print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}', flush=True)
     # Keep retained data available if a minority of requests fail. Fail only
     # when the entire upstream route is unavailable.
     if success == 0:
