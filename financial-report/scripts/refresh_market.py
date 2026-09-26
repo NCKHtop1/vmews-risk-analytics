@@ -348,19 +348,55 @@ def prices(out, companies):
         raise RuntimeError('Quote collection incomplete; previous successful data retained')
 
 
+def _history_page(symbol, frame, to, count, minute=False):
+    payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
+        'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
+    }))
+    return normalize_history(payload, symbol, minute=minute)
+
+
+def _full_daily_history(symbol, target):
+    """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
+    merged = {}
+    cursor = int(time.time())
+    page_size = min(1600, target)
+    for _ in range(max(1, math.ceil(target / page_size) + 1)):
+        bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+        before = len(merged)
+        merged.update({bar['time']: bar for bar in bars})
+        if len(merged) >= target or len(merged) == before or len(bars) < page_size:
+            break
+        earliest = min(bar['time'] for bar in bars)
+        cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
+        if cursor_next >= cursor:
+            break
+        cursor = cursor_next
+    return [merged[key] for key in sorted(merged)][-target:]
+
+
 def _refresh_one_history(out, symbol, minute=False):
     folder = 'intraday' if minute else 'history'
     path = out / folder / (symbol + '.json')
     previous = read(path, {})
-    frame = 'ONE_MINUTE' if minute else 'ONE_DAY'
-    count = int(os.environ.get('INTRADAY_COUNT_BACK', '700')) if minute else 1600
     try:
-        payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': frame, 'symbols': [symbol], 'to': int(time.time()), 'countBack': count}))
-        bars = normalize_history(payload, symbol, minute=minute)
+        if minute:
+            count = int(os.environ.get('INTRADAY_COUNT_BACK', '700'))
+            bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
+        else:
+            target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
+            bars = _full_daily_history(symbol, target)
+            # Never discard older successful bars if the upstream temporarily returns a shorter window.
+            if previous.get('bars'):
+                merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
+                merged.update({bar['time']: bar for bar in bars})
+                bars = [merged[key] for key in sorted(merged)]
         row = {
             'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
             'interval': '1m' if minute else '1D', 'collectedAt': now(),
-            'checkedAt': now(), 'status': 'ok', 'bars': bars
+            'checkedAt': now(), 'status': 'ok', 'barCount': len(bars),
+            'firstBar': bars[0]['time'] if bars else None,
+            'lastBar': bars[-1]['time'] if bars else None,
+            'bars': bars
         }
         if not minute:
             row['sourceUrl'] = 'https://trading.vietcap.com.vn/'
@@ -382,7 +418,7 @@ def refresh_history_group(out, companies, minute=False):
         symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
     errors, success = [], 0
     # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
-    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else 6
+    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):

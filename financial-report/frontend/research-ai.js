@@ -257,9 +257,13 @@ function analyze(question){
 }
 function addUser(text){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message user';a.innerHTML=`<strong>Câu hỏi</strong><p>${esc(text)}</p>`;box.append(a);}
 function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);box.scrollTop=box.scrollHeight;}
-function ask(question){const q=String(question||'').trim();if(!q)return;addUser(q);addAnalysis(analyze(q));}
-function sync(symbol){state.symbol=symbol||'';const title=$('research-ai-title');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;}
-window.FinQueryAI={sync,ask,analyze};
+function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');if(fab)fab.setAttribute('aria-expanded','true');setTimeout(()=>$('research-ai-question')?.focus(),80);}
+function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab)fab.setAttribute('aria-expanded','false');}
+function ask(question){const q=String(question||'').trim();if(!q)return;openDrawer();addUser(q);addAnalysis(analyze(q));}
+function sync(symbol){state.symbol=symbol||'';const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`Đọc BCTC, giá, kỹ thuật và tin thị trường cho ${state.symbol||'VN100'} bằng dữ liệu FinQuery hiện có.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
+window.FinQueryAI={sync,ask,analyze,open:openDrawer,close:closeDrawer};
 const form=$('research-ai-form'),input=$('research-ai-question');form?.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(q){input.value='';ask(q);}});document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'')));
+$('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('research-ai')?.hidden)closeDrawer();});
 sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');
 })();
