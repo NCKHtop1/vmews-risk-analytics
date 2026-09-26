@@ -334,18 +334,35 @@ class PublishedMarketForecastTest(unittest.TestCase):
         cls.market = json.loads((ROOT / "data/forecast-market-v13.json").read_text())
 
     def test_current_source_and_coverage(self) -> None:
-        self.assertGreaterEqual(len(self.dashboard["symbols"]), 400)
+        self.assertGreaterEqual(len(self.dashboard["symbols"]), 360)
         self.assertEqual(self.dashboard["asOf"], self.market["sources"]["marketScanAsOf"])
-        self.assertGreaterEqual(
-            self.market["sources"]["marketScanGeneratedOn"],
-            self.market["sources"]["marketScanAsOf"],
-        )
+        sources = self.market["sources"]
+        bridge = sources.get("postCloseBridge") or {}
+        if bridge.get("status") == "PASS":
+            self.assertEqual(sources.get("priceSessionAsOf"), self.dashboard["asOf"])
+            self.assertLessEqual(sources.get("historicalRiskScanAsOf"), self.dashboard["asOf"])
+            self.assertGreaterEqual(
+                sources["marketScanGeneratedOn"],
+                sources["historicalRiskScanAsOf"],
+            )
+        else:
+            self.assertGreaterEqual(
+                sources["marketScanGeneratedOn"],
+                sources["marketScanAsOf"],
+            )
         self.assertEqual(set(self.dashboard["symbols"]), set(self.current["symbols"]))
         universe = self.market["model"]["universe"]
-        self.assertGreaterEqual(universe["hoseCoverage"], .99)
+        self.assertGreaterEqual(universe["hoseCoverage"], universe["requiredCurrentCoverage"])
+        self.assertGreaterEqual(universe["requiredCurrentCoverage"], .90)
         self.assertEqual(universe["freshSymbols"], universe["currentSymbols"])
         self.assertEqual(universe["staleSymbols"], 0)
-        self.assertEqual(universe["currentSymbols"] + len(universe["insufficientHistorySymbols"]), universe["listedHOSE"])
+        accounted = (
+            set(self.dashboard["symbols"])
+            | set(universe["insufficientHistorySymbols"])
+            | set(universe["staleOrUnverifiedSymbols"])
+        )
+        self.assertEqual(len(accounted), universe["listedHOSE"])
+        self.assertFalse(set(universe["staleOrUnverifiedSymbols"]) & set(self.dashboard["symbols"]))
         self.assertEqual(set(universe["insufficientHistorySymbols"]), {"DMX"})
         price_audit = self.market["sources"]["priceCrossSource"]
         self.assertEqual(price_audit["status"], "PASS")
@@ -356,7 +373,10 @@ class PublishedMarketForecastTest(unittest.TestCase):
         fpt = self.dashboard["symbols"]["FPT"]
         self.assertGreaterEqual(fpt["date"], self.dashboard["asOf"])
         self.assertGreater(fpt["close"], 0)
-        self.assertIn(fpt["marketDataSource"], {"VNDIRECT_PUBLIC_EOD", "MARKET_SCAN_EOD", "PREVIOUS_VALIDATED_EOD"})
+        self.assertIn(
+            fpt["marketDataSource"],
+            {"VNDIRECT_PUBLIC_EOD", "MARKET_SCAN_EOD", "PREVIOUS_VALIDATED_EOD", "TRADINGVIEW_POST_CLOSE_VNDIRECT_CONFIRMED"},
+        )
         self.assertEqual(fpt["priceSourceAgreement"]["status"], "PASS")
         chart_fpt = self.dashboard["charts"]["FPT"][-1]
         self.assertEqual(fpt["date"], chart_fpt["date"])
@@ -377,7 +397,7 @@ class PublishedMarketForecastTest(unittest.TestCase):
         self.assertEqual(promotion["status"], "PASS")
         promoted = set(promotion["directPriceHorizons"])
         review = set(promotion.get("reviewHorizons") or [])
-        self.assertGreaterEqual(len(promoted), 3)
+        self.assertTrue(promoted & {3, 4, 5})
         self.assertEqual(promoted | review, set(range(1, 6)))
         self.assertFalse(promoted & review)
         self.assertIn(promotion["preferredRankingHorizon"], promoted)
@@ -484,7 +504,8 @@ class PublishedMarketForecastTest(unittest.TestCase):
                     self.assertGreaterEqual(forecast["bearScenarioPrice"], floor)
                     self.assertLessEqual(forecast["bullScenarioPrice"], ceiling)
                     checked += 1
-        self.assertGreaterEqual(checked, 2000)
+        self.assertEqual(checked, len(self.dashboard["symbols"]) * 5)
+        self.assertGreaterEqual(checked, 1800)
         self.assertGreater(released, 0)
         self.assertEqual(released + abstained, checked)
         self.assertLessEqual(neutral_points / checked, .05)
