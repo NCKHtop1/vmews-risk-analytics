@@ -271,7 +271,7 @@ def movement_driver(symbol, quote, bars, news_items, market_change):
     confidence_score = round(clamp(38 + evidence * 32 + min(len(company_news), 3) * 4 + min(abs(total), 50) * .18, 0, 92))
     confidence = 'cao' if confidence_score >= 75 else 'trung bình' if confidence_score >= 58 else 'thấp'
     leaders = factors[:2]
-    summary = 'Chưa đủ dữ liệu để phân rã biến động.'
+    summary = 'Phân rã động lực cần giá, khối lượng và dữ liệu thị trường cùng kỳ.'
     if leaders:
         joined = ' và '.join(f"{row['label']} ({row['contribution']:+.1f})" for row in leaders)
         summary = f"Tín hiệu nổi bật: {joined}. Điểm tổng {total:+.1f}/100."
@@ -286,7 +286,7 @@ def movement_driver(symbol, quote, bars, news_items, market_change):
         'news72hCount': len(company_news), 'newsScore': round(news_score, 1),
         'score': total, 'confidence': confidence, 'confidenceScore': confidence_score,
         'factors': factors, 'headlines': company_news[:5], 'summary': summary,
-        'causality': 'association_not_proven'
+        'interpretation': 'factor_attribution'
     }
 
 
