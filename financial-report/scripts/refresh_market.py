@@ -3,6 +3,7 @@ import argparse
 import html
 import json
 import math
+import os
 import re
 import time
 import xml.etree.ElementTree as ET
