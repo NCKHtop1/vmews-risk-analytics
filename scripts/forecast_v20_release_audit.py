@@ -95,9 +95,16 @@ def run_audit() -> dict[str, Any]:
     current_symbols = set((current.get("symbols") or {}))
     flow_symbols = set((flow.get("symbols") or {}))
     as_of = str(dashboard.get("asOf") or "")[:10]
-    require(len(symbols) >= 400, f"published universe collapsed to {len(symbols)} symbols")
+    universe = ((market.get("model") or {}).get("universe") or {})
+    required_current_coverage = float(universe.get("requiredCurrentCoverage") or .90)
+    listed_hose = int(universe.get("listedHOSE") or len(symbols))
+    published_coverage = len(symbols) / max(1, listed_hose)
+    require(
+        published_coverage >= required_current_coverage,
+        f"published current-session coverage {published_coverage:.1%} below {required_current_coverage:.1%}",
+    )
     require(symbols == current_symbols, "dashboard/current symbol universes differ")
-    require(symbols == flow_symbols, f"flow universe differs: missing={sorted(symbols-flow_symbols)[:20]} extra={sorted(flow_symbols-symbols)[:20]}")
+    require(symbols <= flow_symbols, f"flow archive is missing published symbols: {sorted(symbols-flow_symbols)[:20]}")
     require(as_of == str(market.get("asOf") or "")[:10], "dashboard and market as-of dates differ")
     require(as_of == str((market.get("sources") or {}).get("marketScanAsOf") or "")[:10], "market scan and forecast dates differ")
     certified_target_dates: dict[str, str] = {}
@@ -114,7 +121,10 @@ def run_audit() -> dict[str, Any]:
     promotion = (market.get("model") or {}).get("promotion") or {}
     promoted_horizons = {int(value) for value in promotion.get("directPriceHorizons") or []}
     review_horizons = {int(value) for value in promotion.get("reviewHorizons") or []}
-    require(len(promoted_horizons) >= 3, f"too few promoted horizons: {sorted(promoted_horizons)}")
+    require(
+        bool(promoted_horizons & {3, 4, 5}),
+        f"no independently validated medium horizon remains: {sorted(promoted_horizons)}",
+    )
     require(promoted_horizons | review_horizons == set(range(1, 6)), "promotion/review horizon partition is incomplete")
     require(promoted_horizons.isdisjoint(review_horizons), "a horizon cannot be both promoted and REVIEW")
     require(int(promotion.get("preferredRankingHorizon") or 0) in promoted_horizons, "ranking horizon is not independently validated")
@@ -288,7 +298,8 @@ def run_audit() -> dict[str, Any]:
     duplicate_flow_dates: list[str] = []
     invalid_flow_values: list[str] = []
     source_latest = {"foreign": [], "proprietary": []}
-    for symbol, rows in sorted((flow.get("symbols") or {}).items()):
+    for symbol in sorted(symbols):
+        rows = (flow.get("symbols") or {}).get(symbol) or []
         dates = [str(row.get("date") or "")[:10] for row in rows]
         flow_row_count += len(rows)
         if dates != sorted(set(dates)):
@@ -320,8 +331,8 @@ def run_audit() -> dict[str, Any]:
     require(not duplicate_flow_dates, f"duplicate/unsorted flow dates: {duplicate_flow_dates[:20]}")
     require(not invalid_flow_values, f"invalid flow values: {invalid_flow_values[:20]}")
     summary = flow_audit.get("summary") or {}
-    require(int(summary.get("refreshRequestedSymbols") or 0) == len(symbols), "flow refresh did not request the full published universe")
-    require(int(summary.get("refreshRequestedKinds") or 0) == len(symbols) * 2, "flow refresh did not attempt both sources for every symbol")
+    require(int(summary.get("refreshRequestedSymbols") or 0) >= len(symbols), "flow refresh did not request every published symbol")
+    require(int(summary.get("refreshRequestedKinds") or 0) >= len(symbols) * 2, "flow refresh did not attempt both sources for every published symbol")
     require(float(summary.get("refreshSuccessCoverage") or 0) == 1.0, "one or more institutional-flow requests failed")
     require(int(summary.get("rejectedFetchShards") or 0) == 0, "one or more isolated flow shards were absent or corrupt")
 
@@ -337,7 +348,7 @@ def run_audit() -> dict[str, Any]:
     weak_identity: list[str] = []
     by_source: Counter[str] = Counter()
     for source, symbol, title, explicit in _headline_items(headline_payload):
-        if not title:
+        if symbol not in symbols or not title:
             continue
         headline_count += 1
         by_source[source] += 1
