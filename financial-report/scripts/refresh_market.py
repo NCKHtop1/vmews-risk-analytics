@@ -6,6 +6,7 @@ import math
 import re
 import time
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -302,6 +303,11 @@ def build_drivers(out, companies):
 
 
 def prices(out, companies):
+    """Fast 15-minute quote snapshot.
+
+    Daily and minute candles are refreshed by separate jobs so the board update
+    never waits for 200 per-symbol history requests.
+    """
     symbols = [c['symbol'] for c in companies]
     board_path = out / 'quotes.json'
     old = read(board_path, {'quotes': {}})
@@ -317,38 +323,74 @@ def prices(out, companies):
     for symbol in symbols:
         if symbol in fresh:
             quotes[symbol] = fresh[symbol]
-        elif symbol in old['quotes']:
+        elif symbol in old.get('quotes', {}):
             quotes[symbol] = {**old['quotes'][symbol], 'status': 'retained'}
     write(board_path, {'checkedAt': collected, 'source': 'Vietcap', 'quotes': quotes, 'errors': errors, 'coverage': len(fresh), 'expected': len(symbols)})
-    histories = 0
-    for symbol in symbols:
-        path = out / 'history' / (symbol + '.json')
-        previous = read(path, {})
-        try:
-            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': 'ONE_DAY', 'symbols': [symbol], 'to': int(time.time()), 'countBack': 1600}))
-            bars = normalize_history(payload, symbol)
-            write(path, {'symbol': symbol, 'source': 'Vietcap', 'sourceUrl': 'https://trading.vietcap.com.vn/', 'unit': 'VND', 'interval': '1D', 'collectedAt': now(), 'checkedAt': now(), 'status': 'ok', 'bars': bars})
-            histories += 1
-        except Exception as e:
-            errors.append(symbol + ': ' + str(e))
-            if previous.get('bars'):
-                write(path, {**previous, 'checkedAt': now(), 'status': 'retained', 'error': str(e)})
-        minute_path = out / 'intraday' / (symbol + '.json')
-        minute_previous = read(minute_path, {})
-        try:
-            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': 'ONE_MINUTE', 'symbols': [symbol], 'to': int(time.time()), 'countBack': 1600}))
-            bars = normalize_history(payload, symbol, minute=True)
-            write(minute_path, {'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND', 'interval': '1m', 'collectedAt': now(), 'status': 'ok', 'bars': bars})
-        except Exception as e:
-            errors.append(symbol + ' intraday: ' + str(e))
-            if minute_previous.get('bars'):
-                write(minute_path, {**minute_previous, 'checkedAt': now(), 'status': 'retained'})
-        time.sleep(0.6)
-    write(out / 'prices-status.json', {'checkedAt': now(), 'quotes': len(fresh), 'histories': histories, 'expected': len(symbols), 'errors': errors})
+    available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
+    write(out / 'prices-status.json', {
+        'checkedAt': now(), 'quotes': len(fresh), 'histories': available_histories,
+        'expected': len(symbols), 'errors': errors, 'historyRefresh': 'separate_eod_job'
+    })
     drivers = build_drivers(out, companies)
-    print(f'Prices: {len(fresh)}/{len(symbols)}; histories: {histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
-    if not fresh or histories == 0:
-        raise RuntimeError('Market collection incomplete; previous successful data retained')
+    print(f'Prices: {len(fresh)}/{len(symbols)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
+    if not fresh:
+        raise RuntimeError('Quote collection incomplete; previous successful data retained')
+
+
+def _refresh_one_history(out, symbol, minute=False):
+    folder = 'intraday' if minute else 'history'
+    path = out / folder / (symbol + '.json')
+    previous = read(path, {})
+    frame = 'ONE_MINUTE' if minute else 'ONE_DAY'
+    count = 1600
+    try:
+        payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {'timeFrame': frame, 'symbols': [symbol], 'to': int(time.time()), 'countBack': count}))
+        bars = normalize_history(payload, symbol, minute=minute)
+        row = {
+            'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
+            'interval': '1m' if minute else '1D', 'collectedAt': now(),
+            'checkedAt': now(), 'status': 'ok', 'bars': bars
+        }
+        if not minute:
+            row['sourceUrl'] = 'https://trading.vietcap.com.vn/'
+        write(path, row)
+        return symbol, True, None
+    except Exception as e:
+        if previous.get('bars'):
+            write(path, {**previous, 'checkedAt': now(), 'status': 'retained', 'error': str(e)})
+        return symbol, False, str(e)
+
+
+def refresh_history_group(out, companies, minute=False):
+    symbols = [c['symbol'] for c in companies]
+    errors, success = [], 0
+    # Bounded concurrency keeps the EOD job well below Actions timeout while
+    # avoiding an aggressive burst against the public upstream.
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
+        for future in as_completed(futures):
+            symbol, ok, error = future.result()
+            if ok:
+                success += 1
+            else:
+                errors.append(f'{symbol}{" intraday" if minute else ""}: {error}')
+    name = 'intraday' if minute else 'history'
+    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'errors': errors})
+    if not minute:
+        build_drivers(out, companies)
+    print(f'{name}: {success}/{len(symbols)}', flush=True)
+    # Keep retained data available if a minority of requests fail. Fail only
+    # when the entire upstream route is unavailable.
+    if success == 0:
+        raise RuntimeError(f'{name} refresh failed for all symbols')
+
+
+def history(out, companies):
+    refresh_history_group(out, companies, minute=False)
+
+
+def intraday(out, companies):
+    refresh_history_group(out, companies, minute=True)
 
 
 def clean(value):
@@ -433,7 +475,7 @@ def news(out, companies):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--mode', choices=['prices', 'news', 'all'], default='all')
+    parser.add_argument('--mode', choices=['prices', 'history', 'intraday', 'news', 'all'], default='all')
     args = parser.parse_args()
     companies = read(ROOT / 'data/companies.json', [])
     if len({c['symbol'] for c in companies}) != 100:
