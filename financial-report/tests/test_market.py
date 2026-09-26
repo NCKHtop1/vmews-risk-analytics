@@ -68,7 +68,7 @@ class MarketTests(unittest.TestCase):
         bars=[{'close':90+i*2,'volume':1000+i*10} for i in range(21)]
         news=[{'title':'Doanh nghiệp báo lãi tăng trưởng mạnh','url':'https://vnexpress.net/a','source':'VnExpress','publishedAt':datetime.now(timezone.utc).isoformat(),'symbols':['FPT']}]
         d=m.movement_driver('FPT',quote,bars,news,1.0)
-        self.assertEqual(d['causality'],'association_not_proven')
+        self.assertEqual(d['interpretation'],'factor_attribution')
         self.assertAlmostEqual(d['relativeStrengthPct'],4)
         self.assertGreater(d['volumeRatio20'],2)
         self.assertEqual(d['news72hCount'],1)
@@ -342,12 +342,25 @@ class MarketTests(unittest.TestCase):
         self.assertIn("workspace.style.display='block'",macro)
         build=(ROOT/'scripts/build_cdn.py').read_text()
         self.assertIn("(front / 'macro.js').read_text()",build)
-        for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
+        for token in ('MACD cắt lên Signal','RSI quay lại từ quá bán','Supertrend đổi hướng','ADX vượt 25','Mean reversion'):
             self.assertIn(token,chart)
         self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
         self.assertIn("return'macro'",research)
         self.assertIn('macroHTML',research)
-        self.assertIn('chưa đủ để coi đó là nguyên nhân',research)
+        for robotic in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','trước khi kết luận'):
+            self.assertNotIn(robotic,research+market+chart)
+
+    def test_vn100_board_shows_reference_price_absolute_change_and_richer_concepts(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        research=(ROOT/'frontend/research-ai.js').read_text()
+        self.assertIn('TC phiên trước',html)
+        self.assertIn('± Giá (đ)',html)
+        self.assertIn('q.price-q.reference',market)
+        for concept in ('Bollinger Bands','Supertrend','Williams %R','Lãi suất ON','OMO','Giá tham chiếu','M2 / tổng cung tiền'):
+            self.assertIn(concept,research)
+        self.assertIn('localMetricHit',research)
+        self.assertIn('Catalyst gần nhất',research)
 
     def test_professional_logo_and_dolphin_ai_shell_are_present(self):
         html=(ROOT/'frontend/index.html').read_text()
