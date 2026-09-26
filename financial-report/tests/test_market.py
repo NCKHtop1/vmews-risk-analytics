@@ -2,6 +2,8 @@
 import importlib.util
 import pathlib
 import tempfile
+import pandas as pd
+import pandas_ta_classic as ta
 import unittest
 from datetime import datetime, timezone
 
@@ -184,6 +186,40 @@ class MarketTests(unittest.TestCase):
         for concept in ('ROE','ROA','FCF','OCF','Biên lợi nhuận gộp','Đòn bẩy tài chính'):
             self.assertIn(concept,js)
         self.assertIn("return'concept'",js)
+
+    def test_pandas_ta_reference_suite_is_available(self):
+        rows=80
+        df=pd.DataFrame({
+            'open':[100+i*.4 for i in range(rows)],
+            'high':[102+i*.4 for i in range(rows)],
+            'low':[99+i*.4 for i in range(rows)],
+            'close':[101+i*.4+(1 if i%7==0 else 0) for i in range(rows)],
+            'volume':[100000+i*1000 for i in range(rows)],
+        })
+        checks={
+            'sma':df.ta.sma(length=20),
+            'ema':df.ta.ema(length=20),
+            'wma':df.ta.wma(length=20),
+            'vwma':df.ta.vwma(length=20),
+            'rsi':df.ta.rsi(length=14),
+            'macd':df.ta.macd(fast=12,slow=26,signal=9),
+            'bbands':df.ta.bbands(length=20,std=2),
+            'supertrend':df.ta.supertrend(length=10,multiplier=3),
+            'atr':df.ta.atr(length=14),
+            'adx':df.ta.adx(length=14),
+            'stoch':df.ta.stoch(k=14,d=3,smooth_k=3),
+            'cci':df.ta.cci(length=20),
+            'roc':df.ta.roc(length=10),
+            'willr':df.ta.willr(length=14),
+            'obv':df.ta.obv(),
+            'mfi':df.ta.mfi(length=14),
+            'cmf':df.ta.cmf(length=20),
+        }
+        self.assertTrue(all(v is not None and len(v)==rows for v in checks.values()))
+        html=(ROOT/'frontend/index.html').read_text()
+        for label in ('SMA','EMA','WMA','VWMA','RSI','MACD','Bollinger Bands','Supertrend','ATR','ADX','Stochastic','CCI','ROC','Williams %R','OBV','MFI','CMF'):
+            self.assertIn(label,html)
+        self.assertNotIn('id="tradingview-link"',html)
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
