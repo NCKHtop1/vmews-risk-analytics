@@ -17,7 +17,7 @@ def build():
     html = html.replace('<link rel="stylesheet" href="fonts.css">', '<style>' + (front / 'fonts.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="style.css">', '<style>' + (front / 'style.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="market.css">', '<style>' + (front / 'market.css').read_text() + '</style>')
-    for filename in ('xlsx.js','metrics.js','dashboard.js','vendor/lightweight-charts-5.0.9.js','chart-math.js','chart-engine.js','market.js','research-ai.js','app.js'):
+    for filename in ('xlsx.js','metrics.js','dashboard.js','vendor/lightweight-charts-5.0.9.js','chart-math.js','chart-engine.js','market.js','macro.js','research-ai.js','app.js'):
         html = html.replace('<script defer src="'+filename+'"></script>', '')
     datasets = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'data').glob('*.json') if p.stem in ('MBB','VIC','FPT','VCB')}
     boot = {'companies': json.loads((ROOT / 'data/companies.json').read_text()), 'datasets': datasets}
@@ -29,6 +29,7 @@ def build():
     for filename in ('vendor/lightweight-charts-5.0.9.js','chart-math.js','chart-engine.js'):
         scripts += '<script data-config="./frontend/chart-config.json">' + (front / filename).read_text() + '</script>'
     scripts += '<script>' + (front / 'market.js').read_text() + '</script>'
+    scripts += '<script>' + (front / 'macro.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'research-ai.js').read_text() + '</script>'
     scripts += '<script data-base="./data/">' + (front / 'app.js').read_text() + '</script>'
     html = html.replace('</body>', scripts + '</body>')
