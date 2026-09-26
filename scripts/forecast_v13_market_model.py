@@ -370,6 +370,11 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as exc:
             return symbol, None, f"{type(exc).__name__}: {exc}"[:200]
 
+    # Keep the raw VNDIRECT response in memory for the post-close bridge.
+    # The model history below remains bounded to the audited market-scan date;
+    # only the bridge may inspect newer rows, and it still requires independent
+    # same-session TradingView confirmation before advancing forecastAsOf.
+    postclose_secondary_rows: dict[str, list[dict[str, Any]]] = {}
     if requested:
         received: dict[str, list[dict[str, Any]]] = {}
         reference_date = str(scan.get("reviewDate") or "")[:10]
@@ -377,8 +382,11 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
             try:
                 batched = _vn_direct_hose_rows()
                 for symbol in requested:
+                    raw_rows = list(batched.get(symbol, []) or [])
+                    if raw_rows:
+                        postclose_secondary_rows[symbol] = raw_rows
                     incoming = [
-                        row for row in batched.get(symbol, [])
+                        row for row in raw_rows
                         if not reference_date or row["date"] <= reference_date
                     ]
                     if incoming:
@@ -395,6 +403,8 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
                     failures[symbol] = failure
                     continue
                 assert incoming is not None
+                if incoming:
+                    postclose_secondary_rows[symbol] = list(incoming)
                 bounded = [row for row in incoming if not reference_date or row["date"] <= reference_date]
                 if bounded:
                     received[symbol] = bounded
@@ -539,6 +549,9 @@ def load_histories(refresh_symbols: tuple[str, ...] = QUICK_SYMBOLS) -> tuple[di
         "freshSymbols": fresh_symbols,
         "staleSymbols": len(histories) - fresh_symbols,
         "priceCrossSource": price_cross_source,
+        # Ephemeral same-job transport only. The guarded post-close bridge pops
+        # this field before model publication; it is never written to artifacts.
+        "_postCloseVndirectRows": postclose_secondary_rows,
     }
 
 
@@ -2352,8 +2365,21 @@ def write_artifacts(
         .set_index("symbol", drop=False)
     )
     symbols = sorted(set(freshness["currentHOSESymbols"]) & set(latest.index))
-    if len(symbols) < 390:
-        raise RuntimeError(f"current HOSE coverage unexpectedly collapsed: {len(symbols)}")
+    bridge_audit = freshness.get("postCloseBridge") or {}
+    publication_reference_symbols = int(
+        bridge_audit.get("eligibleSymbols") or freshness.get("currentHOSECount") or len(symbols)
+    )
+    required_publish_coverage = max(
+        float(bridge_audit.get("minimumCoverage") or .90),
+        float(bridge_audit.get("minimumSecondaryCoverage") or .90),
+    )
+    publish_coverage = len(symbols) / max(1, publication_reference_symbols)
+    if publish_coverage + 1e-12 < required_publish_coverage:
+        raise RuntimeError(
+            "current verified HOSE publication coverage unexpectedly collapsed: "
+            f"{len(symbols)}/{publication_reference_symbols}={publish_coverage:.1%} "
+            f"required={required_publish_coverage:.1%}"
+        )
     rows = latest.loc[symbols].copy()
     rows["risk_scan"] = [
         str((freshness["scan"].get(symbol) or {}).get("status", "")) for symbol in symbols
@@ -2942,7 +2968,12 @@ def write_artifacts(
             "currentSymbols": len(symbols),
             "trainingSymbols": int(panel["symbol"].nunique()),
             "listedHOSE": freshness["currentHOSECount"],
+            "publicationReferenceSymbols": publication_reference_symbols,
+            "publishCoverage": publish_coverage,
+            "requiredPublishCoverage": required_publish_coverage,
             "hoseCoverage": len(symbols) / max(1, freshness["currentHOSECount"]),
+            "excludedCurrentSessionSymbols": list(freshness.get("excludedCurrentSessionSymbols") or []),
+            "excludedStaleSymbols": list(freshness.get("excludedStaleSymbols") or []),
             "insufficientHistorySymbols": freshness["insufficientHistory"],
             "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
             "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),

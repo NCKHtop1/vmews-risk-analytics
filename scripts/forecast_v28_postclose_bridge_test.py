@@ -1,10 +1,10 @@
 from __future__ import annotations
-import sys, unittest
+import gzip, json, sys, tempfile, unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))
-from forecast_v28_postclose_bridge import bridge_completed_session
+from forecast_v28_postclose_bridge import bridge_completed_session, load_vndirect_secondary_cache
 VN_TZ=timezone(timedelta(hours=7))
 
 def frame_for(symbols,date_text="2026-08-28"):
@@ -26,6 +26,23 @@ def histories(symbols,as_of="2026-08-27"):
     return {s:[{"date":as_of,"open":49000,"high":51000,"low":48500,"close":50000,"modelClose":50000,"volume":900000,"provider":"fixture","exchange":"HOSE"}] for s in symbols}
 
 class PostCloseBridgeTest(unittest.TestCase):
+    def test_reads_refreshed_vndirect_secondary_cache_without_network_roundtrip(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"eod.json.gz"
+            with gzip.open(path,"wt",encoding="utf-8") as stream:
+                json.dump({
+                    "source":"VNDIRECT_PUBLIC_EOD",
+                    "generatedAt":"2026-08-28T15:10:00+07:00",
+                    "histories":{
+                        "FPT":[{"date":"2026-08-28","close":64700,"provider":"VNDIRECT PUBLIC EOD"}],
+                        "VCB":[{"date":"2026-08-28","close":60300,"provider":"VNDIRECT PUBLIC EOD"}],
+                    },
+                },stream)
+            rows=load_vndirect_secondary_cache(path)
+            self.assertEqual(set(rows),{"FPT","VCB"})
+            self.assertEqual(rows["FPT"][0]["close"],64700)
+            self.assertEqual(load_vndirect_secondary_cache(Path(directory)/"missing.gz"),{})
+
     def test_advances_only_after_two_source_same_day_proof(self):
         symbols=[f"S{i:02d}" for i in range(10)]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9,min_secondary_coverage=.9)
@@ -71,10 +88,15 @@ class PostCloseBridgeTest(unittest.TestCase):
         bridge=meta["postCloseBridge"]
         self.assertEqual(bridge["status"],"PASS")
         self.assertTrue(bridge["partialUniverse"])
-        self.assertEqual(bridge["publicationScope"],"VERIFIED_CURRENT_PLUS_EXPLICIT_STALE")
+        self.assertEqual(bridge["publicationScope"],"INDEPENDENTLY_VERIFIED_CURRENT_ONLY")
+        self.assertEqual(bridge["verifiedCurrentSymbols"],9)
+        self.assertAlmostEqual(bridge["verifiedCoverage"],.9)
+        self.assertEqual(bridge["excludedSymbols"],1)
         self.assertEqual(bridge["staleSymbols"],1)
         self.assertIn("S09",bridge["staleSymbolSample"])
         self.assertEqual(meta["forecastAsOf"],"2026-08-28")
+        self.assertEqual(meta["currentHOSESymbols"],symbols[:9])
+        self.assertEqual(meta["excludedCurrentSessionSymbols"],["S09"])
         self.assertEqual(out["S09"][-1]["date"],"2026-08-27")
         self.assertNotIn("ohlcUnavailable",out["S09"][-1])
 

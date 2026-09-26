@@ -18,7 +18,7 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
 from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
-from forecast_v28_postclose_bridge import bridge_completed_session  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session, load_vndirect_secondary_cache  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
 # V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
@@ -34,7 +34,15 @@ def _load_histories_with_current_session(*args,**kwargs):
     global _bridge_metadata,_historical_scan_as_of
     histories,freshness=_original_load_histories(*args,**kwargs)
     _historical_scan_as_of=str(freshness.get("marketScanAsOf") or "")[:10]
-    secondary=market_model._vn_direct_hose_rows()
+    # load_histories() has already refreshed VNDIRECT and written its bounded
+    # rows to EOD_CACHE_PATH. Reuse that exact independent source instead of
+    # issuing a duplicate market-wide request that can time out after a
+    # successful refresh. If no cache exists, retain the network fallback.
+    secondary=freshness.pop("_postCloseVndirectRows", None) or {}
+    if not secondary:
+        secondary=load_vndirect_secondary_cache(market_model.EOD_CACHE_PATH)
+    if not secondary:
+        secondary=market_model._vn_direct_hose_rows()
     histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
@@ -54,8 +62,15 @@ def _persist_source_semantics():
     market=json.loads(market_path.read_text(encoding="utf-8")); dash=json.loads(dash_path.read_text(encoding="utf-8")); current=json.loads(current_path.read_text(encoding="utf-8"))
     sources=market.setdefault("sources",{}); sources["priceSessionAsOf"]=market.get("asOf"); sources["historicalRiskScanAsOf"]=_historical_scan_as_of or None
     if _bridge_metadata:
-        sources["postCloseBridge"]=_bridge_metadata; sources["marketScanAsOfSemantics"]="CURRENT_PRICE_SESSION_COMPATIBILITY_ALIAS"
-        mf=dash.setdefault("marketForecast",{}); mf["priceSessionAsOf"]=dash.get("asOf"); mf["historicalRiskScanAsOf"]=_historical_scan_as_of or None; mf["postCloseBridge"]=_bridge_metadata
+        sources["postCloseBridge"]=_bridge_metadata
+        sources["marketScanAsOfSemantics"]="CURRENT_PRICE_SESSION_COMPATIBILITY_ALIAS"
+        sources["historicalRiskScanGeneratedOn"]=sources.get("marketScanGeneratedOn")
+        sources["marketScanGeneratedOn"]=_bridge_metadata.get("observedAt") or sources.get("marketScanGeneratedOn")
+        mf=dash.setdefault("marketForecast",{})
+        mf["priceSessionAsOf"]=dash.get("asOf")
+        mf["historicalRiskScanAsOf"]=_historical_scan_as_of or None
+        mf["historicalRiskScanGeneratedOn"]=sources.get("historicalRiskScanGeneratedOn")
+        mf["postCloseBridge"]=_bridge_metadata
 
     # V41 appends per-symbol transition diagnostics after the core writer has
     # produced both dashboard/current snapshots. Keep those two public symbol
