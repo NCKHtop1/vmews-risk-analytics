@@ -349,47 +349,77 @@ def prices(out, companies):
 
 
 def _history_page(symbol, frame, to, count, minute=False):
-    payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
-        'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
-    }))
-    return normalize_history(payload, symbol, minute=minute)
+    attempts = 1 if minute else max(1, int(os.environ.get('HISTORY_PAGE_RETRIES', '3')))
+    retry_delay = max(0.0, float(os.environ.get('HISTORY_RETRY_DELAY', '2')))
+    last_error = None
+    for attempt in range(attempts):
+        try:
+            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
+                'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
+            }))
+            return normalize_history(payload, symbol, minute=minute)
+        except Exception as e:
+            last_error = e
+            if attempt + 1 >= attempts:
+                raise
+            time.sleep(retry_delay * (2 ** attempt))
+    raise last_error
 
 
 def _full_daily_history(symbol, target):
-    """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
+    """Fetch the complete available daily history in bounded, rate-limit-friendly pages."""
     merged = {}
     cursor = int(time.time())
-    page_size = min(1600, target)
-    for _ in range(max(1, math.ceil(target / page_size) + 1)):
+    page_size = max(200, min(1600, int(os.environ.get('HISTORY_PAGE_SIZE', '1600')), target))
+    page_delay = max(0.0, float(os.environ.get('HISTORY_PAGE_DELAY', '0.45')))
+    complete = False
+    for _ in range(max(1, math.ceil(target / page_size) + 2)):
         bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
         before = len(merged)
         merged.update({bar['time']: bar for bar in bars})
-        if len(merged) >= target or len(merged) == before or len(bars) < page_size:
+        if len(bars) < page_size:
+            complete = True
+            break
+        if len(merged) >= target:
+            complete = True
+            break
+        if len(merged) == before:
             break
         earliest = min(bar['time'] for bar in bars)
         cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
         if cursor_next >= cursor:
             break
         cursor = cursor_next
-    return [merged[key] for key in sorted(merged)][-target:]
+        if page_delay:
+            time.sleep(page_delay)
+    return [merged[key] for key in sorted(merged)][-target:], complete
 
 
 def _refresh_one_history(out, symbol, minute=False):
     folder = 'intraday' if minute else 'history'
     path = out / folder / (symbol + '.json')
     previous = read(path, {})
+    full_backfill = (not minute and os.environ.get('HISTORY_FULL_BACKFILL') == '1')
     try:
         if minute:
             count = int(os.environ.get('INTRADAY_COUNT_BACK', '700'))
             bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
+            history_complete = previous.get('historyComplete')
+        elif full_backfill:
+            symbol_delay = max(0.0, float(os.environ.get('HISTORY_SYMBOL_DELAY', '0.35')))
+            if symbol_delay:
+                time.sleep(symbol_delay)
+            target = int(os.environ.get('HISTORY_COUNT_BACK', '8000'))
+            bars, history_complete = _full_daily_history(symbol, target)
         else:
-            target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
-            bars = _full_daily_history(symbol, target)
-            # Never discard older successful bars if the upstream temporarily returns a shorter window.
-            if previous.get('bars'):
-                merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
-                merged.update({bar['time']: bar for bar in bars})
-                bars = [merged[key] for key in sorted(merged)]
+            count = int(os.environ.get('HISTORY_COUNT_BACK', '1600'))
+            bars = _history_page(symbol, 'ONE_DAY', int(time.time()), count, minute=False)
+            history_complete = bool(previous.get('historyComplete'))
+        if not minute and previous.get('bars'):
+            # Daily refreshes must append new bars without ever throwing away older backfilled years.
+            merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
+            merged.update({bar['time']: bar for bar in bars})
+            bars = [merged[key] for key in sorted(merged)]
         row = {
             'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
             'interval': '1m' if minute else '1D', 'collectedAt': now(),
@@ -400,6 +430,7 @@ def _refresh_one_history(out, symbol, minute=False):
         }
         if not minute:
             row['sourceUrl'] = 'https://trading.vietcap.com.vn/'
+            row['historyComplete'] = bool(history_complete)
         write(path, row)
         return symbol, True, None
     except Exception as e:
@@ -411,14 +442,19 @@ def _refresh_one_history(out, symbol, minute=False):
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
+    full_backfill = (not minute and os.environ.get('HISTORY_FULL_BACKFILL') == '1')
     forced = [s.strip().upper() for s in os.environ.get('INTRADAY_SYMBOLS', '').split(',') if s.strip()]
     if minute and forced:
         symbols = [s for s in all_symbols if s in forced]
+    elif minute and only_missing:
+        symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')]
+    elif full_backfill:
+        symbols = [s for s in all_symbols if read(out / 'history' / (s + '.json'), {}).get('historyComplete') is not True]
     else:
-        symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
+        symbols = all_symbols
     errors, success = [], 0
-    # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
-    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
+    # Full-history backfill is deliberately serialized to avoid saturating the public upstream.
+    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else (1 if full_backfill else int(os.environ.get('HISTORY_WORKERS', '4')))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):
@@ -428,13 +464,18 @@ def refresh_history_group(out, companies, minute=False):
             else:
                 errors.append(f'{symbol}{" intraday" if minute else ""}: {error}')
     name = 'intraday' if minute else 'history'
-    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'forcedSymbols': forced, 'errors': errors})
+    complete_count = sum(1 for symbol in all_symbols if read(out / 'history' / (symbol + '.json'), {}).get('historyComplete') is True) if not minute else None
+    status = {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'forcedSymbols': forced, 'errors': errors}
+    if not minute:
+        status.update({'fullBackfill': full_backfill, 'completeHistories': complete_count})
+    write(out / f'{name}-status.json', status)
     if not minute:
         build_drivers(out, companies)
-    print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}', flush=True)
+    suffix = f'; complete histories {complete_count}/{len(all_symbols)}' if not minute else ''
+    print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}{suffix}', flush=True)
     # Keep retained data available if a minority of requests fail. Fail only
-    # when the entire upstream route is unavailable.
-    if success == 0:
+    # when the entire upstream route is unavailable and there was work to do.
+    if symbols and success == 0:
         raise RuntimeError(f'{name} refresh failed for all symbols')
 
 
