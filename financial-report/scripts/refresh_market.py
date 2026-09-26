@@ -464,6 +464,8 @@ def _vbma_cell(value):
     if not text:
         return None
     candidate = text.replace(' ', '').replace('%', '')
+    if re.fullmatch(r'-?\d{1,3}(?:,\d{3}){2,}', candidate):
+        return int(candidate.replace(',', ''))
     if re.fullmatch(r'-?\d+(?:[.,]\d+)?', candidate):
         if candidate.count(',') == 1 and candidate.count('.') == 0:
             candidate = candidate.replace(',', '.')
@@ -515,6 +517,27 @@ def parse_vbma_table(raw):
     return {'columns': unique, 'numericColumns': numeric, 'rows': data}
 
 
+def normalize_vbma_dataset(key, parsed):
+    rows, columns = parsed.get('rows', []), parsed.get('columns', [])
+    if key == 'money_supply':
+        amount_columns = [c for c in columns[1:] if not str(c).strip().startswith('%')]
+        for row in rows:
+            for column in amount_columns:
+                value = row.get(column)
+                if isinstance(value, str) and re.fullmatch(r'-?\d{1,3}(?:,\d{3})+', value):
+                    row[column] = int(value.replace(',', ''))
+    if key == 'credit_sector':
+        for row in rows:
+            for column in columns[1:]:
+                value = row.get(column)
+                if isinstance(value, str) and re.fullmatch(r'-?\d{1,3}(?:,\d{3})+', value):
+                    row[column] = int(value.replace(',', ''))
+                elif isinstance(value, float) and abs(value) < 10000 and abs(value * 1000 - round(value * 1000)) < 1e-6:
+                    row[column] = int(round(value * 1000))
+    parsed['numericColumns'] = [name for name in columns if any(isinstance(row.get(name), (int, float)) and not isinstance(row.get(name), bool) for row in rows)]
+    return parsed
+
+
 def macro(out, companies=None):
     path = out / 'macro.json'
     previous = read(path, {'datasets': {}})
@@ -522,7 +545,7 @@ def macro(out, companies=None):
     for key, (slug, title) in VBMA_TABLES.items():
         url = f'https://vbma.org.vn/csv/markets/tables/vi/{slug}.csv'
         try:
-            parsed = parse_vbma_table(request(url))
+            parsed = normalize_vbma_dataset(key, parse_vbma_table(request(url)))
             parsed.update({'id': key, 'title': title, 'source': 'VBMA', 'sourceUrl': url, 'collectedAt': now(), 'status': 'ok'})
             datasets[key] = parsed
             sources.append({'id': key, 'url': url, 'status': 'ok', 'rows': len(parsed['rows'])})
