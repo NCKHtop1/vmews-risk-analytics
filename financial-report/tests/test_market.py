@@ -235,6 +235,16 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(data['columns'],['Date','Metric','Note'])
         self.assertEqual(data['rows'][-1]['Metric'],11)
 
+    def test_vbma_amount_normalization_for_money_supply_and_credit(self):
+        money={'columns':['Cột 1','M2 (tỷ VND)','% YoY'],'rows':[{'Cột 1':'T6 2026','M2 (tỷ VND)':'20,414,616','% YoY':4.24}]}
+        money=m.normalize_vbma_dataset('money_supply',money)
+        self.assertEqual(money['rows'][0]['M2 (tỷ VND)'],20414616)
+        self.assertAlmostEqual(money['rows'][0]['% YoY'],4.24)
+        credit={'columns':['Cột 1','Nông, lâm, thủy sản','Vận tải, viễn thông'],'rows':[{'Cột 1':'T6 2026','Nông, lâm, thủy sản':'1,225,073','Vận tải, viễn thông':546.391}]}
+        credit=m.normalize_vbma_dataset('credit_sector',credit)
+        self.assertEqual(credit['rows'][0]['Nông, lâm, thủy sản'],1225073)
+        self.assertEqual(credit['rows'][0]['Vận tải, viễn thông'],546391)
+
     def test_macro_collection_scope_excludes_bond_and_swap_curves(self):
         self.assertEqual(set(m.VBMA_TABLES),{'macro_overview','fdi','gdp_growth','pmi','money_supply','credit_sector'})
         joined=' '.join(slug for slug,_ in m.VBMA_TABLES.values()).lower()
@@ -248,6 +258,8 @@ class MarketTests(unittest.TestCase):
         research=(ROOT/'frontend/research-ai.js').read_text()
         macro=(ROOT/'frontend/macro.js').read_text()
         self.assertIn('normalizeDataset',macro)
+        self.assertIn('periodRank',macro)
+        self.assertIn("timed.sort((a,b)=>a.rank-b.rank)",macro)
         self.assertIn('indicator-open',html)
         self.assertIn('indicator-search',html)
         self.assertIn('signal-feed',html)
