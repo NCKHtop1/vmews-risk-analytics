@@ -55,7 +55,7 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('CAFEF_EVENTS',enabled)
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         self.assertIn('refresh_events.py',flow)
-        self.assertIn('EVENT_FETCH_WORKERS: \\'12\\'',flow)
+        self.assertIn("EVENT_FETCH_WORKERS: '12'",flow)
 
 
     def test_events_v6_dedupes_secondary_when_official_event_exists(self):
