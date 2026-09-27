@@ -1,6 +1,6 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const state={symbol:''};
+const state={symbol:'',history:[],busy:false};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
@@ -312,12 +312,79 @@ function analyze(question){
  const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='financial'?financialHTML(a,q):type==='risk'?riskHTML(a,q):type==='compare'?comparisonHTML(a,q):type==='memo'?memoHTML(question,a,q,m):searchHTML(question,annual,quarterly,m);
  return{type,html:body||'<div class="analysis-empty">Câu hỏi này được neo vào các trường dữ liệu thực đang có; không có giá trị tương ứng để tính thêm trong kỳ hiện tại.</div>'};
 }
-function addUser(text){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message user';a.innerHTML=`<strong>Câu hỏi</strong><p>${esc(text)}</p>`;box.append(a);}
-function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);box.scrollTop=box.scrollHeight;}
+const AI_ENDPOINT=window.FINQUERY_AI_ENDPOINT||'https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai';
+const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
+function compactRows(data,question,limit=18){
+ if(!data)return[];
+ const ps=periods(data).slice(-8),terms=norm(question).split(' ').filter(x=>x.length>2&&!STOP_WORDS.has(x)),chosen=new Map();
+ const add=(row,score)=>{if(!row)return;const key=String(row.section||'')+'|'+String(row.label||'');const prior=chosen.get(key);if(!prior||score>prior.score)chosen.set(key,{row,score});};
+ for(const row of rows(data)){const label=norm(row.label),score=terms.reduce((s,t)=>s+(label.includes(t)?3:0),0);if(score)add(row,score);}
+ for(const key of ['revenue','profit','assets','liabilities','equity','cash','ocf','capex','roe','roa','grossMargin','netMargin','quick','liabilitiesAssets','liabilitiesEquity','revGrowth','profitGrowth'])add(find(data,key),2);
+ return[...chosen.values()].sort((a,b)=>b.score-a.score).slice(0,limit).map(({row})=>({
+  label:row.label,unit:row.unit||'',section:row.section||'',basis:row.basis||null,
+  values:Object.fromEntries(ps.filter(p=>Number.isFinite(val(row,p))).map(p=>[p,val(row,p)]))
+ }));
+}
+function compactMacro(question){
+ try{
+  const macro=window.FinMacro?.context?.(),ds=macroDatasetFor(question,macro);if(!ds)return null;
+  return{name:ds.name||ds.title||null,numericColumns:ds.numericColumns||[],rows:(ds.rows||[]).slice(-6)};
+ }catch{return null;}
+}
+function cleanNews(items,limit=8){
+ const seen=new Set(),out=[];
+ for(const item of items||[]){const url=String(item?.url||'');if(!/^https?:\/\//i.test(url)||seen.has(url))continue;seen.add(url);out.push({title:String(item.title||'').slice(0,240),url,source:String(item.source||item.publisher||'').slice(0,100),publishedAt:String(item.publishedAt||item.date||'').slice(0,40),summary:String(item.summary||'').slice(0,500),topics:Array.isArray(item.topics)?item.topics.slice(0,8):[]});if(out.length>=limit)break;}
+ return out;
+}
+function buildLLMContext(question){
+ const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
+ const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],8),macro=compactMacro(question);
+ return{
+  scope:'financial-report',contextVersion:'DOLPHIN_V2_GROUNDED',symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
+  generatedAt:new Date().toISOString(),
+  dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
+  marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,
+  localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,18),quarterRows:compactRows(quarterly,question,18)},
+  macroSnapshot:macro,recentNews:companyNews
+ };
+}
+function sourcesForLLM(){
+ const m=market();return cleanNews([...(m.news||[]),...(m.marketNews||[])],8).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt}));
+}
+function llmHTML(answer,meta={}){
+ const lines=String(answer||'').trim().split(/\n/),blocks=[];let bullets=[];
+ const flush=()=>{if(!bullets.length)return;blocks.push('<div class="research-case">'+bullets.map(x=>'<p>• '+esc(x)+'</p>').join('')+'</div>');bullets=[];};
+ for(const rawLine of lines){const line=rawLine.trim();if(!line){flush();continue;}const h=line.match(/^#{1,4}\s+(.+)$/);if(h){flush();blocks.push('<h4>'+esc(h[1])+'</h4>');continue;}const b=line.match(/^[-*]\s+(.+)$/);if(b){bullets.push(b[1]);continue;}flush();blocks.push('<p>'+esc(line.replace(/\*\*/g,''))+'</p>');}
+ flush();
+ const provider=[meta.provider,meta.model].filter(Boolean).join(' · '),mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'LLM + tìm kiếm web':meta.sourceMode?'LLM + dữ liệu đã cung cấp':'LLM + FinQuery';
+ return '<section class="analysis-block"><h4>Dolphin AI · phân tích có dữ liệu neo</h4><div class="analysis-narrative">'+blocks.join('')+'</div><small>'+esc([provider,mode].filter(Boolean).join(' · '))+'</small></section>';
+}
+function addUser(text){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message user';a.innerHTML='<strong>Câu hỏi</strong><p>'+esc(text)+'</p>';box.append(a);box.scrollTop=box.scrollHeight;}
+function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);box.scrollTop=box.scrollHeight;return a;}
+function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>Dolphin đang đọc dữ liệu FinQuery và đối chiếu câu hỏi…</p></div>'});}
 function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');if(fab)fab.setAttribute('aria-expanded','true');setTimeout(()=>$('research-ai-question')?.focus(),80);}
 function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab)fab.setAttribute('aria-expanded','false');}
-function ask(question){const q=String(question||'').trim();if(!q)return;openDrawer();addUser(q);addAnalysis(analyze(q));}
-function sync(symbol){state.symbol=symbol||'';const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`Đọc BCTC, giá, kỹ thuật và tin thị trường cho ${state.symbol||'VN100'} bằng dữ liệu FinQuery hiện có.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
+async function callLLM(question){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+ try{
+  const response=await fetch(AI_ENDPOINT,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:buildLLMContext(question),history:state.history.slice(-8),sources:sourcesForLLM()}),signal:controller.signal});
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload.message||payload.error||('AI_HTTP_'+response.status));
+  if(!payload.answer)throw new Error('AI_EMPTY_RESPONSE');
+  return payload;
+ }finally{clearTimeout(timer);}
+}
+async function ask(question){
+ const q=String(question||'').trim();if(!q||state.busy)return;openDrawer();addUser(q);state.busy=true;
+ const send=$('research-ai-send');if(send)send.disabled=true;const waiting=addThinking();
+ try{
+  const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
+  state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);
+ }catch(error){
+  waiting?.remove();const local=analyze(q);local.html='<div class="analysis-empty">LLM tạm chưa khả dụng; Dolphin đang dùng engine FinQuery cục bộ nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
+ }finally{state.busy=false;if(send)send.disabled=false;}
+}
+function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`LLM suy luận trên BCTC, giá, kỹ thuật và tin thị trường đã neo dữ liệu cho ${state.symbol||'VN100'}; tự fallback về FinQuery cục bộ khi cần.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
 window.FinQueryAI={sync,ask,analyze,open:openDrawer,close:closeDrawer};
 const form=$('research-ai-form'),input=$('research-ai-question');form?.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(q){input.value='';ask(q);}});document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'')));
 $('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});

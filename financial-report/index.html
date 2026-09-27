@@ -304,7 +304,7 @@ function board(){let list=state.companies.filter(c=>(!state.watchOnly||watch.inc
 function toggleWatch(symbol){watch=watch.includes(symbol)?watch.filter(s=>s!==symbol):[...watch,symbol];try{localStorage.setItem('finquery-watchlist',JSON.stringify(watch));$('watch-status').textContent='Danh sách được lưu trên trình duyệt này.';}catch{$('watch-status').textContent='Trình duyệt không cho lưu; danh sách chỉ giữ trong lần mở này.';}showQuote();board();chartController.select(state.symbol,watch);}
 function news(){const data=state.news, rows=(data?.items||[]).filter(r=>state.newsMode==='all'||r.symbols?.includes(state.symbol)).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));$('news-title').textContent=state.newsMode==='all'?'Tin kinh tế mới nhất':`Tin doanh nghiệp · ${state.symbol}`;$('news-status').textContent=data?`Kiểm tra ${date(data.checkedAt)} · ${(data.sources||[]).filter(s=>s.status==='ok').length}/${(data.sources||[]).length} nguồn phản hồi${data.status==='retained'?' · Đang dùng tin đã lưu':''}`:'Chưa tải được tin tức.';$('news-list').innerHTML=rows.slice(0,30).map(r=>{const url=safeURL(r.url);return url?`<article class="news-item"><p>${esc(r.source)} <span>· ${esc(date(r.publishedAt))}</span></p><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(r.title)} <span aria-hidden="true">↗</span></a></article>`:'';}).join('')||`<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây. Chọn “Tin kinh tế” để xem những bài mới nhất từ các nguồn đang cập nhật.</p>`;}
 async function refresh(){if(state.refreshing)return;state.refreshing=true;$('market-refresh').disabled=true;$('market-refresh-status').textContent='Đang tải giá và tin…';const results=await Promise.allSettled([get('quotes.json'),get('news.json')]);if(results[0].status==='fulfilled'&&results[0].value.quotes){for(const [symbol,q]of Object.entries(results[0].value.quotes)){const old=state.quotes[symbol];if(!old?.sourceTime||!q.sourceTime||Date.parse(q.sourceTime)>=Date.parse(old.sourceTime))state.quotes[symbol]=q;}}if(results[1].status==='fulfilled'&&Array.isArray(results[1].value.items))state.news=results[1].value;showQuote();board();news();$('market-refresh-status').textContent=results.some(r=>r.status==='rejected')?'Một phần dữ liệu chưa tải được; giữ bản gần nhất nếu có.':'Đã tải bản công bố gần nhất.';state.refreshing=false;$('market-refresh').disabled=false;}
-window.FinancialMarket={select(symbol,companies){state.companies=companies;const changed=state.symbol!==symbol;state.symbol=symbol;showQuote();board();news();chartController.select(symbol,watch);}};
+window.FinancialMarket={select(symbol,companies){state.companies=companies;const changed=state.symbol!==symbol;state.symbol=symbol;showQuote();board();news();chartController.select(symbol,watch);window.FinQueryAI?.sync(symbol);},context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=all.filter(n=>n.symbols?.includes(state.symbol)).slice(0,15),marketNews=all.filter(n=>(n.topics||[]).some(t=>['market','stocks','rates','banking','macro','finance'].includes(t))).slice(0,40);return{symbol:state.symbol,quote:state.quotes?.[state.symbol]||null,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,news:items,marketNews};}};
 $('watch-toggle').addEventListener('click',()=>toggleWatch(state.symbol));$('market-rows').addEventListener('click',e=>{const star=e.target.closest('[data-watch]'),ticker=e.target.closest('[data-market-symbol]');if(star)toggleWatch(star.dataset.watch);if(ticker){$('ticker').value=ticker.dataset.marketSymbol;$('company-form').requestSubmit();}});$('market-filter').addEventListener('input',board);$('watch-only').addEventListener('change',e=>{state.watchOnly=e.target.checked;board();});$('market-sort').addEventListener('change',e=>{state.sort=e.target.value;board();});$('market-refresh').addEventListener('click',()=>{refresh();if(state.symbol)chartController.load(true);});$('news-mode').addEventListener('change',e=>{state.newsMode=e.target.value;news();});
 const chartController=window.FinChart.create(BASE,q=>{const previous=state.quotes[q.symbol];if(previous?.sourceTime&&Date.parse(previous.sourceTime)>Date.parse(q.sourceTime))return;state.quotes[q.symbol]={...previous,...q,changePct:Number.isFinite(q.changePct)?q.changePct:(q.reference||previous?.reference)>0?(q.price/(q.reference||previous.reference)-1)*100:null,unit:'VND',source:'WebSocket',status:'ok',collectedAt:new Date().toISOString()};showQuote();board();});
 refresh();
@@ -405,13 +405,528 @@ async function init(){
  json(liveUrl('companies.json'),null,6000).then(list=>{if(Array.isArray(list)&&new Set(list.map(c=>c.symbol)).size===100){state.companies=list;companyOptions();}}).catch(()=>{});
  await loadCompany(new URLSearchParams(location.search).get('symbol')||'MBB');registerTools();
 }
+window.FinancialReportContext={raw(){if(!state.bundle&&!state.data)return null;return{symbol:state.bundle?.symbol||state.data?.symbol,name:state.bundle?.name||state.data?.name||'',mode:state.mode,updatedAt:state.data?.updatedAt||state.bundle?.updatedAt||null,selectedPeriods:[...state.years],data:state.data,annual:state.bundle||null,quarterly:state.bundle?.quarterly||null};}};
 function registerTools(){const context=document.modelContext;if(!context?.registerTool)return;const life=new AbortController();context.registerTool({name:'select_financial_report',title:'Chọn báo cáo tài chính',description:'Chọn doanh nghiệp VN100, năm hoặc quý có dữ liệu và cập nhật bảng xem trước.',inputSchema:{type:'object',properties:{symbol:{type:'string'},mode:{type:'string',enum:['year','quarter']},periods:{type:'array',items:{type:['string','integer']},minItems:1}},required:['symbol'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},async execute(input){if(!input||typeof input.symbol!=='string')throw Error('Mã không hợp lệ');await loadCompany(input.symbol);if(!state.bundle)throw Error('Chưa có báo cáo');if(input.mode)setMode(input.mode);if(input.periods){if(!Array.isArray(input.periods)||!input.periods.length||input.periods.some(p=>!eligible().includes(p)))throw Error('Kỳ không có dữ liệu');state.years=sorted(input.periods);update();}return{symbol:state.bundle.symbol,mode:state.mode,periods:state.years,reports:state.reports};}},{signal:life.signal});window.addEventListener('pagehide',()=>life.abort(),{once:true});}
 init();
 })();
 
 
 
-</script></body></html>
+</script>
+<style id="dolphin-ai-v2-style">
+.ai-fab{position:fixed;right:22px;bottom:22px;z-index:80;display:flex;align-items:center;gap:10px;border:0;border-radius:999px;padding:10px 16px;background:#102a56;color:#fff;box-shadow:0 12px 34px rgba(15,35,75,.28);cursor:pointer}.ai-fab strong,.ai-fab small{display:block}.ai-fab small{opacity:.78;font-size:11px}.ai-fab-orb{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#7ce7ff,#5268ef)}.dolphin-logo{width:38px;height:38px}
+.ai-drawer{position:fixed;right:22px;bottom:84px;z-index:79;width:min(520px,calc(100vw - 28px));max-height:min(760px,calc(100vh - 110px));overflow:hidden;background:#fff;border:1px solid #dce5f4;border-radius:22px;box-shadow:0 18px 60px rgba(15,35,75,.25)}.ai-drawer[hidden]{display:none}.research-ai-head{display:flex;justify-content:space-between;gap:16px;padding:18px 18px 12px;border-bottom:1px solid #edf1f7}.research-ai-label{font-size:11px;font-weight:800;letter-spacing:.08em;color:#5c6f92}.research-ai-head h3{margin:4px 0}.research-ai-head p{margin:0;color:#64748b;font-size:13px}.ai-close{border:0;background:#eef3fb;border-radius:50%;width:34px;height:34px;font-size:22px;cursor:pointer}.research-ai-prompts{display:flex;gap:7px;overflow:auto;padding:10px 14px}.research-ai-prompts button{white-space:nowrap;border:1px solid #dbe5f4;background:#f7f9fd;border-radius:999px;padding:7px 10px;cursor:pointer}.research-ai-form{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #edf1f7;border-bottom:1px solid #edf1f7}.research-ai-form textarea{flex:1;resize:none;border:1px solid #ccd7e8;border-radius:12px;padding:10px;font:inherit}.research-ai-form button{border:0;border-radius:12px;background:#173b78;color:#fff;padding:0 14px;font-weight:700}.research-ai-form button:disabled{opacity:.55}.research-ai-messages{padding:14px;overflow:auto;max-height:470px;background:#f8fafc}.research-ai-message{margin:0 0 12px}.research-ai-message.user{margin-left:42px;background:#173b78;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 12px}.research-ai-message.user p{margin:4px 0 0}.research-ai-message.assistant{margin-right:16px;background:#fff;border:1px solid #e1e8f2;border-radius:16px 16px 16px 4px;padding:12px}.analysis-block h4{margin:8px 0}.analysis-narrative p,.research-case p{margin:7px 0;line-height:1.55}.analysis-empty{color:#64748b;font-size:13px}.analysis-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.analysis-kpi{padding:9px;border:1px solid #e5ebf4;border-radius:12px}.analysis-kpi span,.analysis-kpi small{display:block;font-size:11px;color:#64748b}.analysis-kpi strong{display:block;margin:4px 0}.analysis-table-row{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #edf1f7}.analysis-table-row em{font-style:normal}.positive{color:#15803d}.negative{color:#b91c1c}.neutral{color:#475569}.analysis-news a{display:block;padding:7px 0;border-bottom:1px solid #edf1f7;color:inherit;text-decoration:none}.analysis-news small{display:block;color:#64748b}.loading-ring{display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:#2563eb;border-radius:50%;animation:dolphin-spin .8s linear infinite}@keyframes dolphin-spin{to{transform:rotate(360deg)}}@media(max-width:640px){.ai-fab{right:12px;bottom:12px}.ai-drawer{right:8px;bottom:72px;width:calc(100vw - 16px);max-height:calc(100vh - 88px)}}
+</style>
+<button id="ai-fab" class="ai-fab" type="button" aria-controls="research-ai" aria-expanded="false"><span class="ai-fab-orb" aria-hidden="true"><svg class="dolphin-logo" viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="#5c7cff"/><path d="M16.8 39.7c4.5-9.6 14.5-16.8 26.2-17.6 5.9-.4 10.9 1.1 14.8 4.1-4.5-.2-8.5 1.4-10.9 4.6-1.6 2.1-1.8 4.3-.4 6.2 1.4 1.8 4 2.5 7 1.8-4.7 7.3-12.2 12.1-21.5 13.2l-4.8 5.8-3.3-6.7c-4.5-2.2-7-6.1-7.1-11.4Z" fill="white"/></svg></span><span><strong>Dolphin AI</strong><small>FinQuery Intelligence</small></span></button>
+<section id="research-ai" class="research-ai ai-drawer" aria-label="Phân tích chuyên sâu" hidden><div class="research-ai-head"><div><span class="research-ai-label">DOLPHIN AI · FINQUERY</span><h3 id="research-ai-title">Phân tích chuyên sâu</h3><p id="research-ai-subtitle">LLM suy luận trên dữ liệu FinQuery đã kiểm chứng.</p></div><button id="ai-close" class="ai-close" type="button" aria-label="Đóng Dolphin AI">×</button></div><div class="research-ai-prompts"><button type="button" data-ai-prompt="Phân tích chuyên sâu toàn diện mã này và lập hồ sơ nghiên cứu.">Hồ sơ nghiên cứu</button><button type="button" data-ai-prompt="Vì sao mã này tăng hoặc giảm trong phiên hôm nay?">Động lực phiên</button><button type="button" data-ai-prompt="Phân tích sức khỏe tài chính của doanh nghiệp này.">Sức khỏe tài chính</button><button type="button" data-ai-prompt="Các rủi ro định lượng chính hiện tại là gì?">Rủi ro</button><button type="button" data-ai-prompt="So sánh kỳ gần nhất với kỳ trước và cùng kỳ.">So sánh kỳ</button></div><form id="research-ai-form" class="research-ai-form"><textarea id="research-ai-question" rows="2" maxlength="1000" placeholder="Hỏi tự nhiên: Vì sao ROA giảm? NIM thay đổi thế nào? Tin NHNN ảnh hưởng ra sao?" aria-label="Câu hỏi phân tích"></textarea><button id="research-ai-send" type="submit">Phân tích</button></form><div id="research-ai-messages" class="research-ai-messages" aria-live="polite"></div></section>
+<script>(function(){'use strict';
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9%]+/g,' ').trim();
+const C=[
+{id:'roe',title:'ROE',aliases:['roe','return on equity','ty suat loi nhuan tren von chu'],definition:'ROE cho biết 100 đồng vốn chủ sở hữu bình quân tạo ra bao nhiêu đồng lợi nhuận sau thuế trong kỳ.',formula:'Lợi nhuận sau thuế / Vốn chủ sở hữu bình quân × 100%',read:'ROE tăng cùng lợi nhuận và dòng tiền thường cho thấy hiệu quả vốn tốt lên. ROE cao nhưng nợ tăng nhanh thì cần tách phần cải thiện do kinh doanh khỏi phần do đòn bẩy.',metric:'roe'},
+{id:'roa',title:'ROA',aliases:['roa','return on assets','ty suat sinh loi tren tai san'],definition:'ROA cho biết 100 đồng tài sản bình quân tạo ra bao nhiêu đồng lợi nhuận sau thuế trong kỳ.',formula:'Lợi nhuận sau thuế / Tổng tài sản bình quân × 100%',read:'ROA càng cao và ổn định thì tài sản đang tạo lợi nhuận tốt hơn. Khi ROA giảm, cần xem biên lợi nhuận, vòng quay tài sản và tài sản mới đầu tư đã tạo doanh thu hay chưa.',metric:'roa'},
+{id:'roic',title:'ROIC',aliases:['roic','return on invested capital','loi nhuan tren von dau tu'],definition:'ROIC đo lợi nhuận hoạt động sau thuế tạo ra trên phần vốn dài hạn thực sự được đưa vào kinh doanh.',formula:'NOPAT / Vốn đầu tư bình quân × 100%',read:'ROIC cao hơn chi phí vốn trong thời gian dài cho thấy doanh nghiệp tạo thêm giá trị từ vốn bỏ vào hoạt động.',metric:null},
+{id:'grossMargin',title:'Biên lợi nhuận gộp',aliases:['bien loi nhuan gop','gross margin','bien gop'],definition:'Biên gộp cho biết sau khi trừ giá vốn, 100 đồng doanh thu còn lại bao nhiêu đồng để trang trải chi phí vận hành, tài chính và thuế.',formula:'Lợi nhuận gộp / Doanh thu thuần × 100%',read:'Biên gộp tăng thường đến từ giá bán tốt hơn, cơ cấu sản phẩm tốt hơn hoặc chi phí đầu vào giảm. Biên giảm kéo dài cho thấy sức ép giá vốn hoặc cạnh tranh.',metric:'grossMargin'},
+{id:'netMargin',title:'Biên lợi nhuận ròng',aliases:['bien loi nhuan rong','net margin','bien rong'],definition:'Biên ròng cho biết 100 đồng doanh thu cuối cùng giữ lại bao nhiêu đồng lợi nhuận sau thuế.',formula:'Lợi nhuận sau thuế / Doanh thu thuần × 100%',read:'Biên ròng tăng cho thấy doanh thu được chuyển thành lợi nhuận tốt hơn; cần xem mức tăng đến từ hoạt động chính hay khoản bất thường.',metric:'netMargin'},
+{id:'ebitda',title:'EBITDA',aliases:['ebitda'],definition:'EBITDA là lợi nhuận trước lãi vay, thuế và khấu hao, dùng để nhìn khả năng tạo lợi nhuận từ hoạt động trước cấu trúc tài trợ và chính sách khấu hao.',formula:'EBIT + Khấu hao và phân bổ',read:'EBITDA tăng nhưng dòng tiền kinh doanh không tăng tương ứng thì cần xem vốn lưu động và chất lượng doanh thu.',metric:null},
+{id:'eps',title:'EPS',aliases:['eps','earnings per share','lai tren moi co phieu'],definition:'EPS là phần lợi nhuận sau thuế thuộc về mỗi cổ phiếu đang lưu hành.',formula:'LNST thuộc cổ đông công ty mẹ / Số cổ phiếu bình quân',read:'EPS tăng bền vững cho thấy lợi nhuận trên mỗi cổ phần cải thiện; phát hành thêm cổ phiếu có thể làm EPS tăng chậm hơn lợi nhuận tuyệt đối.',metric:null},
+{id:'pe',title:'P/E',aliases:['p e','pe','price earnings','he so pe'],definition:'P/E cho biết thị trường đang trả bao nhiêu đồng cho 1 đồng lợi nhuận một năm của doanh nghiệp.',formula:'Giá cổ phiếu / EPS',read:'P/E cao thường phản ánh kỳ vọng tăng trưởng cao hơn hoặc mức định giá đắt hơn. So sánh nên đặt cùng ngành, chu kỳ lợi nhuận và tốc độ tăng trưởng.',metric:null},
+{id:'pb',title:'P/B',aliases:['p b','pb','price book','he so pb'],definition:'P/B so giá thị trường với giá trị sổ sách trên mỗi cổ phiếu.',formula:'Giá cổ phiếu / BVPS',read:'P/B đặc biệt đáng chú ý với ngân hàng và doanh nghiệp tài sản lớn. P/B thấp không tự động rẻ nếu ROE thấp hoặc chất lượng tài sản yếu.',metric:null},
+{id:'ocf',title:'OCF / CFO',aliases:['ocf','cfo','dong tien hoat dong kinh doanh','dong tien hd kinh doanh'],definition:'OCF là tiền thực thu trừ tiền thực chi từ hoạt động kinh doanh trong kỳ.',formula:'Dòng tiền thuần từ hoạt động kinh doanh',read:'OCF dương và đi cùng lợi nhuận cho thấy lợi nhuận được chuyển thành tiền. Lợi nhuận tăng nhưng OCF yếu kéo dài thường liên quan phải thu, tồn kho hoặc khoản phải trả.',metric:'ocf'},
+{id:'fcf',title:'FCF',aliases:['fcf','free cash flow','dong tien tu do'],definition:'FCF là phần tiền còn lại sau khi hoạt động kinh doanh tạo tiền và doanh nghiệp đã chi cho đầu tư tài sản dài hạn.',formula:'OCF - Chi đầu tư tài sản cố định',read:'FCF dương tạo dư địa trả nợ, cổ tức, mua lại cổ phiếu hoặc tái đầu tư. FCF âm có thể bình thường trong giai đoạn mở rộng nếu dự án mới tạo tăng trưởng đủ tốt.',metric:'fcf'},
+{id:'capex',title:'CAPEX',aliases:['capex','chi dau tu','chi dau tu tai san'],definition:'CAPEX là tiền chi cho nhà xưởng, máy móc, hạ tầng và tài sản dài hạn phục vụ nhiều kỳ.',formula:'Tiền chi mua sắm, xây dựng tài sản dài hạn',read:'CAPEX cao cần đọc cùng tăng trưởng công suất, doanh thu tương lai và FCF; một mình CAPEX cao không nói tốt hay xấu.',metric:'capex'},
+{id:'receivables',title:'Khoản phải thu',aliases:['phai thu','receivables','phai thu khach hang'],definition:'Khoản phải thu là phần doanh thu hoặc nghĩa vụ thanh toán mà doanh nghiệp đã ghi nhận nhưng chưa thu tiền.',formula:'Số dư phải thu tại ngày báo cáo',read:'Nếu phải thu tăng nhanh hơn doanh thu nhiều kỳ, tiền đang bị giữ ở khách hàng lâu hơn và chất lượng tăng trưởng doanh thu cần được xem kỹ.',metric:'receivables'},
+{id:'inventory',title:'Hàng tồn kho',aliases:['ton kho','hang ton kho','inventory'],definition:'Hàng tồn kho là nguyên vật liệu, sản phẩm dở dang và hàng hóa chưa được bán tại ngày báo cáo.',formula:'Số dư hàng tồn kho',read:'Tồn kho tăng cùng doanh thu có thể phục vụ mở rộng. Tồn kho tăng nhanh hơn doanh thu kéo dài làm vốn bị giữ lại và tăng rủi ro giảm giá hoặc chậm tiêu thụ.',metric:'inventory'},
+{id:'liabilitiesAssets',title:'Nợ phải trả / Tổng tài sản',aliases:['no tren tai san','liabilities assets','no phai tra tren tong tai san'],definition:'Tỷ lệ này cho biết bao nhiêu phần trăm tài sản được tài trợ bằng nợ phải trả.',formula:'Nợ phải trả / Tổng tài sản × 100%',read:'Tỷ lệ cao làm doanh nghiệp nhạy hơn với lãi suất, dòng tiền và khả năng tái cấp vốn; mức hợp lý phụ thuộc ngành.',metric:'liabilitiesAssets'},
+{id:'liabilitiesEquity',title:'Nợ / Vốn chủ',aliases:['no tren von chu','debt equity','d e','liabilities equity'],definition:'Tỷ lệ nợ trên vốn chủ cho biết quy mô nghĩa vụ nợ so với phần vốn thuộc chủ sở hữu.',formula:'Nợ phải trả / Vốn chủ sở hữu',read:'Tỷ lệ tăng nhanh cho thấy doanh nghiệp đang dựa nhiều hơn vào nguồn vốn nợ.',metric:'liabilitiesEquity'},
+{id:'quick',title:'Thanh toán nhanh',aliases:['quick ratio','thanh toan nhanh','ty so thanh toan nhanh'],definition:'Thanh toán nhanh đo khả năng dùng tài sản ngắn hạn có tính thanh khoản cao để trả nợ ngắn hạn, không dựa nhiều vào việc bán tồn kho.',formula:'(Tiền + Đầu tư ngắn hạn + Phải thu) / Nợ ngắn hạn',read:'Tỷ lệ dưới 1 kéo dài có thể tạo áp lực vốn lưu động; mức chuẩn khác nhau theo ngành.',metric:'quick'},
+{id:'workingCapital',title:'Vốn lưu động',aliases:['von luu dong','working capital'],definition:'Vốn lưu động là phần tài sản ngắn hạn còn lại sau khi trừ nợ ngắn hạn.',formula:'Tài sản ngắn hạn - Nợ ngắn hạn',read:'Vốn lưu động tăng do phải thu hoặc tồn kho tăng chưa chắc tốt; cần xem dòng tiền kinh doanh đi cùng.',metric:null},
+{id:'yoy',title:'YoY',aliases:['yoy','year over year','cung ky'],definition:'YoY so một kỳ với đúng kỳ tương ứng của năm trước.',formula:'(Kỳ hiện tại / Cùng kỳ năm trước - 1) × 100%',read:'YoY phù hợp để giảm ảnh hưởng mùa vụ khi đọc doanh thu và lợi nhuận quý.',metric:null},
+{id:'qoq',title:'QoQ',aliases:['qoq','quarter over quarter','quy truoc'],definition:'QoQ so quý hiện tại với quý ngay trước đó.',formula:'(Quý hiện tại / Quý trước - 1) × 100%',read:'QoQ phản ánh tốc độ thay đổi ngắn hạn nhưng dễ bị mùa vụ tác động.',metric:null},
+{id:'cagr',title:'CAGR',aliases:['cagr','tang truong kep'],definition:'CAGR là tốc độ tăng trưởng bình quân năm theo lãi kép giữa hai mốc thời gian.',formula:'(Giá trị cuối / Giá trị đầu)^(1/số năm) - 1',read:'CAGR giúp tóm tắt xu hướng nhiều năm nhưng không cho thấy biến động từng năm ở giữa.',metric:null},
+{id:'sma',title:'SMA',aliases:['sma','simple moving average','duong trung binh don'],definition:'SMA là giá trung bình của một số nến gần nhất, mỗi nến có trọng số như nhau.',formula:'Tổng giá đóng cửa N nến / N',read:'Giá nằm trên SMA và SMA dốc lên thường cho thấy cấu trúc xu hướng đang tích cực hơn; cắt SMA chỉ là một tín hiệu, cần đọc cùng động lượng và khối lượng.',metric:null},
+{id:'ema',title:'EMA',aliases:['ema','exponential moving average'],definition:'EMA là đường trung bình ưu tiên trọng số lớn hơn cho các nến mới.',formula:'EMA mới = EMA trước + hệ số × (giá mới - EMA trước)',read:'EMA phản ứng nhanh hơn SMA nên phù hợp để theo dõi thay đổi xu hướng ngắn hạn.',metric:null},
+{id:'rsi',title:'RSI',aliases:['rsi','relative strength index','qua mua qua ban'],definition:'RSI đo tương quan giữa các nhịp tăng và giảm gần đây trên thang 0-100.',formula:'100 - 100 / (1 + RS), với RS là mức tăng bình quân / mức giảm bình quân',read:'RSI dưới 30 là trạng thái bán mạnh; đi trở lại trên 30 là mean reversion ban đầu. RSI quanh 50 là vùng cân bằng; trên 55 cho thấy động lượng tăng rõ hơn; trên 70 là tăng mạnh nhưng đã xa vùng cân bằng.',metric:null},
+{id:'macd',title:'MACD',aliases:['macd','moving average convergence divergence','signal line'],definition:'MACD lấy chênh lệch giữa EMA nhanh và EMA chậm để đo hướng và xung lực của xu hướng.',formula:'MACD = EMA nhanh - EMA chậm; Signal = EMA của MACD',read:'MACD cắt lên Signal cho thấy xung lực đang chuyển tích cực; chất lượng tín hiệu mạnh hơn khi RSI cải thiện, giá đứng trên đường trung bình và khối lượng tăng.',metric:null},
+{id:'bollinger',title:'Bollinger Bands',aliases:['bollinger','bollinger bands','bbands'],definition:'Bollinger Bands đặt hai biên quanh đường trung bình dựa trên độ lệch chuẩn của giá.',formula:'Middle = SMA; Upper/Lower = SMA ± k × độ lệch chuẩn',read:'Giá chạm biên không tự động là đảo chiều. Độ rộng dải phản ánh biến động, còn vị trí giá trong dải cho thấy giá đang ở đâu so với phân phối gần đây.',metric:null},
+{id:'atr',title:'ATR',aliases:['atr','average true range'],definition:'ATR đo biên độ dao động thực tế trung bình, tập trung vào độ lớn biến động chứ không đo hướng.',formula:'Trung bình True Range trong N nến',read:'ATR tăng nghĩa là giá đang dao động mạnh hơn; ATR giảm nghĩa là biên dao động co lại.',metric:null},
+{id:'adx',title:'ADX',aliases:['adx','average directional index'],definition:'ADX đo độ mạnh của xu hướng, không nói xu hướng tăng hay giảm.',formula:'Được tính từ +DI, -DI và DX',read:'ADX trên khoảng 25 thường cho thấy xu hướng đã có lực; hướng phải đọc cùng giá, Supertrend hoặc MACD.',metric:null},
+{id:'stochastic',title:'Stochastic',aliases:['stochastic','stoch','%k','%d'],definition:'Stochastic đo vị trí giá đóng cửa so với biên cao-thấp của một khoảng nến gần nhất.',formula:'%K = (Close - Lowest Low) / (Highest High - Lowest Low) × 100',read:'Chỉ báo nhạy với mean reversion; vùng dưới 20 là yếu, trên 80 là mạnh nhưng dễ rung lắc.',metric:null},
+{id:'supertrend',title:'Supertrend',aliases:['supertrend'],definition:'Supertrend kết hợp giá trung bình và ATR để tạo một ngưỡng xu hướng bám theo biến động.',formula:'Dải cơ sở ± hệ số × ATR',read:'Giá trên Supertrend là trạng thái xu hướng tăng theo mô hình; giá dưới Supertrend là trạng thái xu hướng giảm.',metric:null},
+{id:'obv',title:'OBV',aliases:['obv','on balance volume'],definition:'OBV cộng khối lượng khi giá tăng và trừ khối lượng khi giá giảm để theo dõi hướng tích lũy dòng tiền.',formula:'OBV mới = OBV trước ± Volume',read:'OBV tăng cùng giá củng cố xu hướng; phân kỳ OBV và giá thường đáng chú ý.',metric:null},
+{id:'mfi',title:'MFI',aliases:['mfi','money flow index'],definition:'MFI kết hợp giá và khối lượng để đo áp lực tiền vào/ra trên thang 0-100.',formula:'Dựa trên Typical Price × Volume và tỷ lệ dòng tiền dương/âm',read:'MFI thấp cho thấy áp lực bán và dòng tiền ra mạnh; MFI cao cho thấy tiền vào mạnh.',metric:null},
+{id:'cmf',title:'CMF',aliases:['cmf','chaikin money flow'],definition:'CMF đo vị trí đóng cửa trong biên nến có trọng số khối lượng để ước lượng dòng tiền tích lũy hoặc phân phối.',formula:'Tổng Money Flow Volume / Tổng Volume',read:'CMF trên 0 cho thấy dòng tiền nghiêng tích lũy; dưới 0 nghiêng phân phối.',metric:null},
+{id:'volume',title:'Khối lượng',aliases:['volume','khoi luong','thanh khoan giao dich'],definition:'Khối lượng là số cổ phiếu được khớp trong một khoảng thời gian.',formula:'Tổng số cổ phiếu khớp lệnh',read:'Một biến động giá đi cùng khối lượng cao hơn bình quân thường có mức xác nhận thị trường mạnh hơn biến động trên thanh khoản mỏng.',metric:null},
+{id:'meanReversion',title:'Mean reversion',aliases:['mean reversion','hoi ve trung binh','quay lai trung binh'],definition:'Mean reversion là hiện tượng giá hoặc chỉ báo sau khi lệch xa mức bình quân có xu hướng quay về vùng cân bằng.',formula:'Không có một công thức duy nhất; thường đọc bằng độ lệch so với SMA/VWAP và RSI',read:'RSI rời vùng quá bán và giá tiến lại SMA là một dạng mean reversion. Mean reversion không đồng nghĩa xu hướng dài hạn đã đảo chiều.',metric:null},
+{id:'volatility',title:'Biến động',aliases:['volatility','bien dong','do bien dong'],definition:'Biến động đo mức độ giá dao động quanh mức trung bình trong một khoảng thời gian.',formula:'Thường dùng độ lệch chuẩn của lợi suất hoặc ATR',read:'Biến động cao làm biên lời/lỗ tiềm năng lớn hơn và khoảng dừng kỹ thuật cũng cần rộng hơn.',metric:null},
+{id:'drawdown',title:'Drawdown',aliases:['drawdown','muc sut giam'],definition:'Drawdown là mức giảm từ đỉnh gần nhất xuống đáy sau đó.',formula:'(Giá hiện tại / Đỉnh trước đó - 1) × 100%',read:'Drawdown giúp nhìn mức thiệt hại đã xảy ra trong một chu kỳ giảm, khác với biến động ngày.',metric:null},
+{id:'reference',title:'Giá tham chiếu',aliases:['gia tham chieu','reference price','phien truoc','gia dong cua phien truoc'],definition:'Giá tham chiếu là mốc dùng để tính phần trăm tăng giảm của phiên hiện tại, thường là giá đóng cửa điều chỉnh của phiên trước theo quy tắc sàn.',formula:'% thay đổi = (Giá hiện tại / Giá tham chiếu - 1) × 100%',read:'Nếu cổ phiếu tăng 3,59%, cần nhìn luôn giá tham chiếu và mức tăng tuyệt đối bằng đồng để biết phiên trước thị trường đang định giá ở đâu.',metric:null},
+{id:'pmi',title:'PMI',aliases:['pmi','purchasing managers index'],definition:'PMI là chỉ số khảo sát nhà quản trị mua hàng về đơn hàng, sản lượng, việc làm, tồn kho và thời gian giao hàng.',formula:'Chỉ số khuếch tán từ khảo sát doanh nghiệp',read:'PMI trên 50 thường cho thấy hoạt động sản xuất mở rộng; dưới 50 cho thấy thu hẹp.',metric:null},
+{id:'gdp',title:'GDP',aliases:['gdp','tong san pham trong nuoc'],definition:'GDP là tổng giá trị hàng hóa và dịch vụ cuối cùng được tạo ra trong nền kinh tế trong một giai đoạn.',formula:'Có thể tính theo sản xuất, chi tiêu hoặc thu nhập',read:'Tăng trưởng GDP phản ánh tốc độ mở rộng của nền kinh tế, nhưng ảnh hưởng lên từng ngành khác nhau.',metric:null},
+{id:'m2',title:'Cung tiền M2',aliases:['m2','cung tien','money supply'],definition:'M2 là thước đo lượng tiền rộng trong nền kinh tế, gồm tiền mặt, tiền gửi thanh toán và nhiều loại tiền gửi có tính thanh khoản cao.',formula:'Tổng các thành phần tiền theo định nghĩa thống kê tiền tệ',read:'M2 tăng nhanh thường đi cùng điều kiện thanh khoản dồi dào hơn; cần đọc cùng tín dụng, lạm phát và lãi suất.',metric:null},
+{id:'credit',title:'Tăng trưởng tín dụng',aliases:['tin dung','credit growth','du no tin dung'],definition:'Tăng trưởng tín dụng cho biết dư nợ cho vay của hệ thống tăng bao nhiêu so với mốc trước.',formula:'(Dư nợ hiện tại / Dư nợ mốc so sánh - 1) × 100%',read:'Tín dụng tăng hỗ trợ cầu và hoạt động kinh tế nhưng tốc độ quá nhanh có thể làm áp lực lạm phát và chất lượng tài sản tăng.',metric:null},
+{id:'omo',title:'OMO',aliases:['omo','thi truong mo','open market operation'],definition:'OMO là nghiệp vụ Ngân hàng Nhà nước bơm hoặc hút thanh khoản ngắn hạn qua giao dịch giấy tờ có giá với các tổ chức tín dụng.',formula:'Theo khối lượng phát hành/đáo hạn và giao dịch từng ngày',read:'Bơm ròng thường giảm căng thanh khoản VND; hút ròng thường rút phần tiền dư. Tác động lên lãi suất liên ngân hàng còn phụ thuộc nhu cầu vay và trạng thái thanh khoản trước đó.',metric:null},
+{id:'overnight',title:'Lãi suất qua đêm liên ngân hàng',aliases:['overnight','lai suat qua dem','lai suat on','on rate'],definition:'Lãi suất qua đêm là mức lãi các ngân hàng vay mượn VND với nhau trong thời hạn một ngày.',formula:'Lãi suất giao dịch bình quân theo dữ liệu liên ngân hàng',read:'ON tăng nhanh thường phản ánh nhu cầu VND ngắn hạn căng hơn; ON giảm cho thấy thanh khoản ngắn hạn bớt căng hoặc cầu vay giảm.',metric:null},
+{id:'inflation',title:'Lạm phát / CPI',aliases:['lam phat','cpi','consumer price index'],definition:'CPI đo mức thay đổi giá của một rổ hàng hóa và dịch vụ tiêu dùng; tốc độ tăng CPI thường được dùng để theo dõi lạm phát.',formula:'(CPI kỳ này / CPI kỳ gốc - 1) × 100%',read:'Lạm phát tăng có thể làm chính sách tiền tệ thận trọng hơn và ảnh hưởng chi phí vốn, sức mua và biên lợi nhuận.',metric:null},
+{id:'fdi',title:'FDI',aliases:['fdi','dau tu truc tiep nuoc ngoai'],definition:'FDI là vốn đầu tư trực tiếp từ nhà đầu tư nước ngoài vào dự án hoặc doanh nghiệp trong nước.',formula:'Theo vốn đăng ký, điều chỉnh và vốn thực hiện',read:'FDI thực hiện cho thấy lượng vốn thực sự được giải ngân; FDI đăng ký phản ánh quy mô cam kết và kỳ vọng đầu tư.',metric:null},
+{id:'currentRatio',title:'Hệ số thanh toán hiện hành',aliases:['current ratio','thanh toan hien hanh','he so thanh toan hien hanh'],definition:'Hệ số thanh toán hiện hành cho biết quy mô tài sản ngắn hạn so với nợ ngắn hạn tại ngày báo cáo.',formula:'Tài sản ngắn hạn / Nợ ngắn hạn',read:'Trên 1 nghĩa là tài sản ngắn hạn lớn hơn nợ ngắn hạn; vẫn cần xem tài sản đó nằm ở tiền, phải thu hay tồn kho để đánh giá chất lượng thanh khoản.',metric:null},
+{id:'assetTurnover',title:'Vòng quay tổng tài sản',aliases:['asset turnover','vong quay tai san','vong quay tong tai san'],definition:'Vòng quay tổng tài sản cho biết 1 đồng tài sản bình quân tạo ra bao nhiêu đồng doanh thu trong kỳ.',formula:'Doanh thu thuần / Tổng tài sản bình quân',read:'Vòng quay tăng cho thấy cùng một quy mô tài sản đang tạo ra nhiều doanh thu hơn. Khi chỉ số giảm, cần xem doanh nghiệp vừa đầu tư tài sản mới hay hiệu suất khai thác đang yếu đi.',metric:null},
+{id:'inventoryTurnover',title:'Vòng quay hàng tồn kho',aliases:['inventory turnover','vong quay ton kho','vong quay hang ton kho'],definition:'Vòng quay tồn kho cho biết tồn kho được bán và thay thế bao nhiêu lần trong kỳ.',formula:'Giá vốn hàng bán / Tồn kho bình quân',read:'Vòng quay giảm kéo dài thường đi cùng tồn kho chậm luân chuyển; vòng quay tăng có thể phản ánh tiêu thụ tốt hơn hoặc mức tồn kho được tối ưu.',metric:null},
+{id:'receivableTurnover',title:'Vòng quay khoản phải thu',aliases:['receivable turnover','vong quay phai thu','vong quay khoan phai thu'],definition:'Vòng quay phải thu cho biết doanh nghiệp thu hồi các khoản bán chịu nhanh đến mức nào.',formula:'Doanh thu bán chịu / Phải thu bình quân',read:'Vòng quay tăng nghĩa là tiền về nhanh hơn; vòng quay giảm trong khi doanh thu tăng mạnh cần kiểm tra chính sách tín dụng và chất lượng khách hàng.',metric:null},
+{id:'interestCoverage',title:'Khả năng thanh toán lãi vay',aliases:['interest coverage','interest coverage ratio','kha nang tra lai vay','bao phu lai vay'],definition:'Chỉ số này cho biết lợi nhuận hoạt động có thể trang trải chi phí lãi vay bao nhiêu lần.',formula:'EBIT / Chi phí lãi vay',read:'Mức càng cao thì vùng đệm trả lãi càng lớn. Khi xuống gần 1, lợi nhuận hoạt động chỉ vừa đủ trả lãi và rủi ro tài chính tăng mạnh.',metric:null},
+{id:'operatingMargin',title:'Biên lợi nhuận hoạt động',aliases:['operating margin','bien loi nhuan hoat dong','bien ebit'],definition:'Biên lợi nhuận hoạt động cho biết 100 đồng doanh thu tạo ra bao nhiêu đồng lợi nhuận từ hoạt động trước chi phí tài chính và thuế.',formula:'Lợi nhuận hoạt động / Doanh thu thuần × 100%',read:'Biên tăng cho thấy hoạt động cốt lõi tạo lợi nhuận tốt hơn; biên giảm thường phản ánh giá vốn hoặc chi phí vận hành tăng nhanh hơn doanh thu.',metric:null},
+{id:'ebit',title:'EBIT',aliases:['ebit','earnings before interest and taxes'],definition:'EBIT là lợi nhuận trước lãi vay và thuế, dùng để nhìn kết quả hoạt động trước ảnh hưởng của cấu trúc vay nợ và thuế.',formula:'Lợi nhuận trước thuế + Chi phí lãi vay',read:'EBIT tăng cùng doanh thu cho thấy hoạt động chính đang mở rộng; nếu EBIT tăng nhưng OCF yếu, cần kiểm tra vốn lưu động.',metric:null},
+{id:'nopat',title:'NOPAT',aliases:['nopat','net operating profit after tax'],definition:'NOPAT là lợi nhuận hoạt động sau thuế giả định doanh nghiệp không chịu ảnh hưởng của cấu trúc vay nợ.',formula:'EBIT × (1 - Thuế suất)',read:'NOPAT thường được dùng cùng vốn đầu tư để tính ROIC và đánh giá khả năng tạo giá trị từ hoạt động cốt lõi.',metric:null},
+{id:'ev',title:'Enterprise Value (EV)',aliases:['enterprise value','ev','gia tri doanh nghiep'],definition:'EV ước tính giá trị toàn bộ hoạt động doanh nghiệp thuộc cả cổ đông và chủ nợ.',formula:'Vốn hóa + Nợ vay - Tiền và tương đương tiền',read:'EV phù hợp khi so các doanh nghiệp có cấu trúc nợ khác nhau vì nó cộng phần vốn của chủ nợ vào giá trị thị trường của cổ đông.',metric:null},
+{id:'evEbitda',title:'EV/EBITDA',aliases:['ev ebitda','ev/ebitda'],definition:'EV/EBITDA cho biết thị trường định giá toàn bộ doanh nghiệp gấp bao nhiêu lần EBITDA một năm.',formula:'Enterprise Value / EBITDA',read:'Chỉ số thấp hơn doanh nghiệp cùng ngành có thể phản ánh định giá thấp hơn, nhưng cần đọc cùng tăng trưởng, CAPEX, chất lượng dòng tiền và chu kỳ ngành.',metric:null},
+{id:'peg',title:'PEG',aliases:['peg','price earnings growth'],definition:'PEG điều chỉnh P/E theo tốc độ tăng trưởng lợi nhuận để đặt mức định giá cạnh tốc độ tăng trưởng.',formula:'P/E / Tốc độ tăng trưởng EPS',read:'PEG quanh 1 thường được dùng như một mốc tham khảo; không nên dùng nếu lợi nhuận biến động mạnh hoặc tăng trưởng ngắn hạn bất thường.',metric:null},
+{id:'dividendYield',title:'Tỷ suất cổ tức',aliases:['dividend yield','ty suat co tuc','loi suat co tuc'],definition:'Tỷ suất cổ tức cho biết tiền cổ tức tiền mặt một năm tương đương bao nhiêu phần trăm giá cổ phiếu.',formula:'Cổ tức tiền mặt mỗi cổ phiếu / Giá cổ phiếu × 100%',read:'Tỷ suất cao tạo dòng tiền cho cổ đông nhưng cần kiểm tra khả năng duy trì cổ tức từ lợi nhuận và FCF.',metric:null},
+{id:'payoutRatio',title:'Tỷ lệ chi trả cổ tức',aliases:['payout ratio','ty le chi tra co tuc'],definition:'Tỷ lệ chi trả cổ tức cho biết doanh nghiệp dùng bao nhiêu phần trăm lợi nhuận để trả cổ tức.',formula:'Cổ tức / Lợi nhuận sau thuế thuộc cổ đông',read:'Tỷ lệ cao phù hợp với doanh nghiệp trưởng thành; tỷ lệ quá cao trong khi FCF yếu làm khả năng duy trì cổ tức kém bền hơn.',metric:null},
+{id:'bvps',title:'BVPS',aliases:['bvps','book value per share','gia tri so sach moi co phieu'],definition:'BVPS là phần vốn chủ sở hữu thuộc về mỗi cổ phiếu đang lưu hành.',formula:'Vốn chủ sở hữu thuộc cổ đông / Số cổ phiếu lưu hành',read:'BVPS tăng cho thấy giá trị sổ sách trên mỗi cổ phần tăng; với ngân hàng, BVPS thường được đọc cùng P/B và ROE.',metric:null},
+{id:'marketCap',title:'Vốn hóa thị trường',aliases:['market cap','market capitalization','von hoa','von hoa thi truong'],definition:'Vốn hóa là giá trị thị trường của toàn bộ cổ phiếu đang lưu hành tại mức giá hiện tại.',formula:'Giá cổ phiếu × Số cổ phiếu đang lưu hành',read:'Vốn hóa phản ánh quy mô thị trường của phần vốn cổ đông, khác với EV vì chưa cộng nợ vay và chưa trừ tiền mặt.',metric:null},
+{id:'freeFloat',title:'Free float',aliases:['free float','co phieu tu do chuyen nhuong'],definition:'Free float là phần cổ phiếu có khả năng giao dịch tự do trên thị trường, không nằm trong các khoản nắm giữ bị hạn chế hoặc mang tính chiến lược dài hạn.',formula:'Cổ phiếu tự do chuyển nhượng / Tổng cổ phiếu lưu hành',read:'Free float thấp có thể làm thanh khoản mỏng và giá nhạy hơn với lệnh lớn.',metric:null},
+{id:'beta',title:'Beta',aliases:['beta','he so beta'],definition:'Beta đo mức độ lợi suất cổ phiếu thường biến động cùng thị trường.',formula:'Cov(lợi suất cổ phiếu, lợi suất thị trường) / Var(lợi suất thị trường)',read:'Beta lớn hơn 1 nghĩa là cổ phiếu thường dao động mạnh hơn thị trường; beta dưới 1 thường ổn định hơn trong cùng giai đoạn đo.',metric:null},
+{id:'sharpe',title:'Sharpe ratio',aliases:['sharpe','sharpe ratio'],definition:'Sharpe ratio đo phần lợi suất vượt lãi suất phi rủi ro trên mỗi đơn vị biến động.',formula:'(Lợi suất danh mục - Lãi suất phi rủi ro) / Độ lệch chuẩn lợi suất',read:'Sharpe cao hơn nghĩa là mức lợi suất đạt được tốt hơn so với lượng biến động đã chấp nhận trong giai đoạn đo.',metric:null},
+{id:'vwap',title:'VWAP',aliases:['vwap','volume weighted average price','gia trung binh theo khoi luong'],definition:'VWAP là giá giao dịch bình quân có trọng số theo khối lượng trong phiên hoặc khoảng thời gian.',formula:'Tổng (Giá × Khối lượng) / Tổng khối lượng',read:'Giá trên VWAP cho thấy phần lớn khối lượng đã giao dịch ở mức thấp hơn giá hiện tại; giá dưới VWAP cho thấy phần lớn khối lượng đã giao dịch ở mức cao hơn.',metric:null},
+{id:'cci',title:'CCI',aliases:['cci','commodity channel index'],definition:'CCI đo độ lệch của giá điển hình so với mức trung bình trong một khoảng thời gian.',formula:'(Typical Price - SMA của Typical Price) / (0,015 × Mean Deviation)',read:'CCI trên +100 cho thấy giá đang mạnh hơn rõ rệt so với nền gần đây; dưới -100 cho thấy trạng thái yếu mạnh theo chiều ngược lại.',metric:null},
+{id:'roc',title:'ROC',aliases:['roc','rate of change'],definition:'ROC đo phần trăm thay đổi của giá so với N nến trước.',formula:'(Giá hiện tại / Giá N nến trước - 1) × 100%',read:'ROC dương và tăng cho thấy xung lực tăng mạnh dần; ROC âm cho thấy giá thấp hơn mốc N nến trước.',metric:null},
+{id:'willr',title:'Williams %R',aliases:['williams %r','williams r','willr'],definition:'Williams %R đo vị trí giá đóng cửa trong biên cao-thấp của N nến, trên thang từ -100 đến 0.',formula:'-100 × (Highest High - Close) / (Highest High - Lowest Low)',read:'Gần 0 nghĩa là giá nằm sát vùng cao của biên; gần -100 nghĩa là giá nằm sát vùng thấp của biên.',metric:null},
+{id:'supportResistance',title:'Hỗ trợ và kháng cự',aliases:['ho tro khang cu','support resistance','support','resistance'],definition:'Hỗ trợ là vùng giá nơi lực mua từng đủ mạnh để chặn nhịp giảm; kháng cự là vùng giá nơi lực bán từng chặn nhịp tăng.',formula:'Xác định từ đỉnh/đáy trước, vùng tích lũy, đường trung bình và cụm khối lượng',read:'Vùng giá có nhiều lần phản ứng và khối lượng lớn thường đáng chú ý hơn một mức giá đơn lẻ.',metric:null},
+{id:'breakout',title:'Breakout',aliases:['breakout','pha vo','vuot khang cu'],definition:'Breakout là khi giá vượt ra khỏi một vùng tích lũy hoặc kháng cự quan trọng.',formula:'Giá đóng cửa vượt vùng cản; thường đọc cùng khối lượng và độ rộng biên',read:'Breakout đi kèm khối lượng cao và giữ được trên vùng vừa vượt có chất lượng tốt hơn một cú xuyên cản ngắn rồi quay lại.',metric:null},
+{id:'gap',title:'Gap giá',aliases:['gap','khoang trong gia','gap up','gap down'],definition:'Gap là khoảng trống giữa vùng giá của hai phiên hoặc hai nến liên tiếp khi không có giao dịch ở khoảng giá nằm giữa.',formula:'So biên cao-thấp của hai nến liên tiếp',read:'Gap cho thấy thay đổi nhanh trong kỳ vọng; mức ý nghĩa phụ thuộc vị trí xu hướng, khối lượng và việc gap có bị lấp sau đó hay không.',metric:null},
+{id:'nim',title:'NIM',aliases:['nim','net interest margin','bien lai rong'],definition:'NIM cho biết ngân hàng tạo được bao nhiêu thu nhập lãi ròng trên mỗi đồng tài sản sinh lãi bình quân.',formula:'Thu nhập lãi thuần / Tài sản sinh lãi bình quân × 100%',read:'NIM tăng thường hỗ trợ lợi nhuận ngân hàng; cần đọc cùng chi phí vốn, chất lượng tín dụng và tỷ lệ nợ xấu.',metric:null},
+{id:'npl',title:'Nợ xấu / NPL',aliases:['npl','no xau','non performing loan'],definition:'NPL là tỷ lệ các khoản vay thuộc nhóm nợ xấu trên tổng dư nợ cho vay.',formula:'Nợ nhóm 3-5 / Tổng dư nợ × 100%',read:'NPL tăng cho thấy chất lượng tín dụng xấu đi và có thể kéo chi phí dự phòng lên.',metric:null},
+{id:'casa',title:'CASA',aliases:['casa','current account savings account','tien gui khong ky han'],definition:'CASA là tỷ trọng tiền gửi không kỳ hạn trong tổng tiền gửi khách hàng của ngân hàng.',formula:'Tiền gửi không kỳ hạn / Tổng tiền gửi khách hàng × 100%',read:'CASA cao giúp ngân hàng có nguồn vốn chi phí thấp hơn, qua đó hỗ trợ NIM nếu các yếu tố khác không đổi.',metric:null}
+];
+const byId=Object.fromEntries(C.map(x=>[x.id,x]));
+function tokens(s){return norm(s).split(' ').filter(x=>x.length>1);}
+function edit(a,b){a=norm(a);b=norm(b);if(a===b)return 0;if(!a)return b.length;if(!b)return a.length;const prev=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let left=i,diag=i-1;prev[0]=i;for(let j=1;j<=b.length;j++){const up=prev[j],next=Math.min(up+1,left+1,diag+(a[i-1]===b[j-1]?0:1));diag=up;prev[j]=next;left=next;}}return prev[b.length];}
+function scoreConcept(q,c){const s=norm(q),qt=tokens(s);let score=0;for(const a of [c.title,...(c.aliases||[])]){const n=norm(a),at=tokens(n);if(!n)continue;if(s===n)score=Math.max(score,30);else if(s.includes(n))score=Math.max(score,20+Math.min(6,at.length));else{const overlap=at.filter(t=>qt.includes(t)).length,coverage=overlap/Math.max(1,at.length);score=Math.max(score,coverage*12+overlap*2);if(at.length===1){const best=qt.reduce((m,t)=>Math.min(m,edit(t,at[0])),99);if(best<=1)score=Math.max(score,14);else if(best===2&&at[0].length>=5)score=Math.max(score,8);}}}return score;}
+function search(question,limit=5){return C.map(c=>({c,score:scoreConcept(question,c)})).filter(x=>x.score>=3).sort((a,b)=>b.score-a.score||a.c.title.localeCompare(b.c.title,'vi')).slice(0,limit);}
+function find(question){const ranked=search(question,1);return ranked[0]?.score>=5?ranked[0].c:null;}
+function explainLabel(label){const s=norm(label);
+ if(/doanh thu|thu nhap ban hang/.test(s))return'Doanh thu là giá trị doanh nghiệp ghi nhận từ hàng hóa hoặc dịch vụ đã cung cấp trong kỳ, trước khi trừ các nhóm chi phí.';
+ if(/gia von/.test(s))return'Giá vốn là chi phí trực tiếp gắn với hàng hóa hoặc dịch vụ đã tạo ra doanh thu trong kỳ.';
+ if(/loi nhuan gop/.test(s))return'Lợi nhuận gộp là phần doanh thu còn lại sau khi trừ giá vốn, trước chi phí bán hàng, quản lý, tài chính và thuế.';
+ if(/loi nhuan/.test(s))return'Lợi nhuận cho biết phần giá trị còn lại sau các nhóm chi phí tương ứng trong kỳ; cần đọc cùng dòng tiền để kiểm tra mức độ chuyển thành tiền thực.';
+ if(/khau hao|hao mon/.test(s))return'Khấu hao phân bổ nguyên giá tài sản cố định vào chi phí qua thời gian sử dụng; đây là chi phí kế toán nhưng không phải khoản chi tiền mới trong kỳ.';
+ if(/du phong/.test(s))return'Dự phòng là khoản doanh nghiệp ghi nhận trước cho tổn thất hoặc nghĩa vụ có khả năng phát sinh, làm giảm lợi nhuận hiện tại để phản ánh rủi ro tốt hơn.';
+ if(/thue thu nhap hoan lai|thue hoan lai/.test(s))return'Thuế thu nhập hoãn lại phát sinh khi thời điểm ghi nhận doanh thu, chi phí hoặc giá trị tài sản theo kế toán khác với thời điểm tính thuế.';
+ if(/loi the thuong mai|goodwill/.test(s))return'Lợi thế thương mại là phần giá mua một doanh nghiệp cao hơn giá trị hợp lý của tài sản thuần nhận được khi mua lại.';
+ if(/tai san co dinh/.test(s))return'Tài sản cố định là nhà xưởng, máy móc, thiết bị và tài sản dài hạn được dùng trong nhiều kỳ kinh doanh.';
+ if(/tai san ngan han/.test(s))return'Tài sản ngắn hạn là các nguồn lực dự kiến chuyển thành tiền, bán hoặc sử dụng trong chu kỳ kinh doanh ngắn, thường gồm tiền, phải thu và tồn kho.';
+ if(/tai san/.test(s))return'Tài sản là các nguồn lực kinh tế doanh nghiệp đang kiểm soát và kỳ vọng tạo lợi ích trong tương lai.';
+ if(/no ngan han/.test(s))return'Nợ ngắn hạn là các nghĩa vụ phải thanh toán trong chu kỳ kinh doanh ngắn hoặc trong khoảng một năm.';
+ if(/no phai tra|no vay/.test(s))return'Nợ phản ánh nghĩa vụ doanh nghiệp phải thanh toán cho ngân hàng, nhà cung cấp, trái chủ hoặc các bên khác.';
+ if(/von dieu le|von gop/.test(s))return'Vốn góp là phần vốn cổ đông đã góp vào doanh nghiệp theo giá trị ghi nhận kế toán.';
+ if(/loi nhuan sau thue chua phan phoi|loi nhuan giu lai/.test(s))return'Lợi nhuận giữ lại là phần lợi nhuận sau thuế tích lũy chưa được chia hết cho cổ đông và đang được giữ lại trong doanh nghiệp.';
+ if(/von chu/.test(s))return'Vốn chủ sở hữu là phần giá trị thuộc cổ đông sau khi lấy tổng tài sản trừ toàn bộ nợ phải trả.';
+ if(/tien va tuong duong tien/.test(s))return'Tiền và tương đương tiền là nguồn thanh khoản có thể sử dụng gần như ngay lập tức để thanh toán hoặc đầu tư.';
+ if(/phai thu/.test(s))return'Khoản phải thu là tiền khách hàng hoặc đối tác còn phải thanh toán cho doanh nghiệp; tăng nhanh hơn doanh thu làm dòng tiền bị giữ lại lâu hơn.';
+ if(/hang ton kho|ton kho/.test(s))return'Hàng tồn kho là nguyên vật liệu, sản phẩm dở dang và hàng hóa chưa bán; cần đọc tốc độ tăng cùng doanh thu và vòng quay tồn kho.';
+ if(/tien gui khach hang/.test(s))return'Tiền gửi khách hàng là nguồn vốn ngân hàng nhận từ khách hàng và là một cấu phần chính của nguồn vốn huy động.';
+ if(/cho vay khach hang|du no/.test(s))return'Cho vay khách hàng là dư nợ tín dụng ngân hàng đã cấp cho khách hàng; quy mô tăng cần đọc cùng NIM, nợ xấu và dự phòng.';
+ if(/thu nhap lai thuan/.test(s))return'Thu nhập lãi thuần là phần chênh giữa thu nhập lãi từ tài sản sinh lãi và chi phí lãi trả cho nguồn vốn.';
+ if(/dong tien|luu chuyen tien/.test(s))return'Dòng tiền ghi nhận tiền thực thu và thực chi trong kỳ, khác với lợi nhuận kế toán vốn có thể bao gồm doanh thu hoặc chi phí chưa thu/chi tiền.';
+ if(/chi phi lai vay|lai vay/.test(s))return'Chi phí lãi vay là khoản doanh nghiệp trả cho vốn vay; khi tăng nhanh hơn EBIT, vùng đệm trả lãi thu hẹp.';
+ if(/chi phi/.test(s))return'Chi phí là nguồn lực doanh nghiệp đã sử dụng để tạo doanh thu, vận hành hoạt động hoặc tài trợ vốn trong kỳ.';
+ if(/co phieu luu hanh/.test(s))return'Cổ phiếu lưu hành là số cổ phiếu thực tế đang thuộc sở hữu nhà đầu tư, dùng làm mẫu số cho EPS và nhiều chỉ tiêu trên mỗi cổ phần.';
+ if(/tang truong/.test(s))return'Tăng trưởng đo tốc độ thay đổi của một chỉ tiêu so với mốc trước hoặc cùng kỳ.';
+ if(/ty suat|ty so|bien|vong quay/.test(s))return'Đây là tỷ lệ so sánh hai đại lượng để đo hiệu quả, khả năng thanh toán, tốc độ luân chuyển hoặc cấu trúc tài chính qua thời gian.';
+ return'Đây là một khoản mục trong dữ liệu FinQuery. Giá trị của nó cần được đọc theo xu hướng nhiều kỳ, tỷ trọng trong báo cáo và quan hệ với dòng tiền hoặc lợi nhuận liên quan.';}
+window.FinQueryKnowledge={concepts:C,byId,find,search,scoreConcept,explainLabel,norm};
+})();</script><script>(function(){'use strict';
+const $=id=>document.getElementById(id);
+const state={symbol:'',history:[],busy:false};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
+const pct=n=>Number.isFinite(n)?`${n>0?'+':''}${nf.format(n)}%`:'—';
+const num=n=>Number.isFinite(n)?nf.format(n):'—';
+const tone=n=>!Number.isFinite(n)?'neutral':n>0?'positive':n<0?'negative':'neutral';
+const raw=()=>{try{return window.FinancialReportContext?.raw?.()||null;}catch{return null;}};
+const market=()=>{try{return window.FinancialMarket?.context?.()||{};}catch{return{};}};
+function periods(data){return[...new Set((data?.periods||data?.years||[]).map(String))].sort((a,b)=>{const f=x=>{const m=String(x).match(/^(\d{4})(?:-Q([1-4]))?$/);return m?Number(m[1])*4+(Number(m[2]||4)-1):-1};return f(a)-f(b);});}
+function sections(data){return data?.sections||[];}
+function rows(data){return sections(data).flatMap(s=>(s.rows||[]).map(r=>({...r,section:s.id,basis:s.basis||null})));}
+
+const ALIASES={
+ revenue:[/^doanh thu thuan$/,/^thu nhap lai thuan$/,/^tong thu nhap hoat dong$/,/doanh thu bao hiem thuan/],
+ grossProfit:[/^loi nhuan gop$/],
+ profit:[/lai lo thuan sau thue/,/loi nhuan sau thue/],
+ parentProfit:[/loi nhuan cua co dong cua cong ty me/,/loi nhuan sau thue cua cd cong ty me/],
+ assets:[/^tong cong tai san$/,/^tong tai san$/],
+ currentAssets:[/^tai san ngan han$/],
+ liabilities:[/^no phai tra$/,/^tong no phai tra$/],
+ equity:[/^von chu so huu$/,/^tong von chu so huu$/],
+ cash:[/^tien va tuong duong tien$/],
+ receivables:[/^cac khoan phai thu$/,/^phai thu khach hang$/],
+ inventory:[/^hang ton kho rong$/,/^hang ton kho$/],
+ ocf:[/luu chuyen tien te rong tu cac hoat dong san xuat kinh doanh/,/luu chuyen tien thuan tu hoat dong kinh doanh/],
+ capex:[/tien chi de mua sam xay dung tscd va cac tai san dai han khac/],
+ grossMargin:[/ty suat loi nhuan gop bien/],
+ netMargin:[/ty suat sinh loi tren doanh thu thuan/],
+ roe:[/ty suat loi nhuan tren von chu so huu binh quan/],
+ roa:[/ty suat sinh loi tren tong tai san binh quan/],
+ quick:[/ty so thanh toan nhanh/],
+ debtAssets:[/ty so no vay tren tong tai san/],
+ liabilitiesAssets:[/ty so no tren tong tai san/],
+ liabilitiesEquity:[/ty so no tren von chu so huu/],
+ ocfRevenue:[/ty so dong tien hd.* tren doanh thu thuan/],
+ ocfIncome:[/dong tien tu hd.* tren loi nhuan thuan/],
+ revGrowth:[/tang truong\s+doanh thu thuan/],
+ profitGrowth:[/tang truong loi nhuan sau thue cua cd cong ty me/,/tang truong loi nhuan truoc thue/]
+};
+function find(data,key){const patterns=ALIASES[key]||[];return rows(data).find(r=>patterns.some(p=>p.test(norm(r.label))));}
+function val(row,period){const v=row?.values?.[period];const n=Number(v);return Number.isFinite(n)?n:null;}
+function latest(data){return periods(data).at(-1)||null;}
+function previousPeriod(data,p){const ps=periods(data),i=ps.indexOf(String(p));return i>0?ps[i-1]:null;}
+function sameQuarterLastYear(data,p){const m=String(p||'').match(/^(\d{4})-Q([1-4])$/);if(!m)return null;const x=`${Number(m[1])-1}-Q${m[2]}`;return periods(data).includes(x)?x:null;}
+function growth(a,b){return Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a/b-1)*100:null;}
+function divide(a,b,m=1){return Number.isFinite(a)&&Number.isFinite(b)&&b!==0?a/b*m:null;}
+function money(v){return Number.isFinite(v)?`${nf.format(v/1000)} tỷ`:'—';}
+function point(v,unit){if(!Number.isFinite(v))return'—';if(unit==='%')return`${nf.format(v)}%`;if(/vnd/i.test(unit||''))return`${nf.format(v)} đ`;if(/lan|vong/i.test(norm(unit)))return`${nf.format(v)}x`;return money(v);}
+function metric(data,key,p=latest(data)){const r=find(data,key);return{row:r,value:val(r,p),period:p,unit:r?.unit||''};}
+
+function annualSnapshot(data){
+ if(!data)return null;const p=latest(data),prev=previousPeriod(data,p);
+ const get=k=>metric(data,k,p),old=k=>metric(data,k,prev).value;
+ const revenue=get('revenue'),profit=get('profit'),gross=get('grossProfit'),assets=get('assets'),liab=get('liabilities'),equity=get('equity'),cash=get('cash'),recv=get('receivables'),inv=get('inventory'),ocf=get('ocf'),capex=get('capex');
+ const fcf=Number.isFinite(ocf.value)&&Number.isFinite(capex.value)?ocf.value+capex.value:null;
+ return{
+  period:p,previous:prev,
+  values:{revenue:revenue.value,profit:profit.value,gross:gross.value,assets:assets.value,liabilities:liab.value,equity:equity.value,cash:cash.value,receivables:recv.value,inventory:inv.value,ocf:ocf.value,capex:capex.value,fcf},
+  change:{revenue:growth(revenue.value,old('revenue')),profit:growth(profit.value,old('profit')),assets:growth(assets.value,old('assets')),liabilities:growth(liab.value,old('liabilities')),equity:growth(equity.value,old('equity')),cash:growth(cash.value,old('cash')),receivables:growth(recv.value,old('receivables'))},
+  ratios:{
+   grossMargin:val(find(data,'grossMargin'),p)??divide(gross.value,revenue.value,100),
+   netMargin:val(find(data,'netMargin'),p)??divide(profit.value,revenue.value,100),
+   roe:val(find(data,'roe'),p)??divide(profit.value,equity.value,100),
+   roa:val(find(data,'roa'),p)??divide(profit.value,assets.value,100),
+   quick:val(find(data,'quick'),p),
+   debtAssets:val(find(data,'debtAssets'),p),
+   liabilitiesAssets:val(find(data,'liabilitiesAssets'),p)??divide(liab.value,assets.value,100),
+   liabilitiesEquity:val(find(data,'liabilitiesEquity'),p)??divide(liab.value,equity.value,100),
+   ocfRevenue:val(find(data,'ocfRevenue'),p)??divide(ocf.value,revenue.value,100),
+   ocfIncome:val(find(data,'ocfIncome'),p)??divide(ocf.value,profit.value,100),
+   receivablesRevenue:divide(recv.value,revenue.value,100),
+   inventoryRevenue:divide(inv.value,revenue.value,100)
+  }
+ };
+}
+function quarterSnapshot(data){
+ if(!data)return null;const p=latest(data),prev=previousPeriod(data,p),yoy=sameQuarterLastYear(data,p);
+ const get=(k,x=p)=>val(find(data,k),x);
+ return{
+  period:p,previous:prev,yoy,
+  revenue:get('revenue'),profit:get('profit'),ocf:get('ocf'),assets:get('assets'),liabilities:get('liabilities'),equity:get('equity'),cash:get('cash'),receivables:get('receivables'),
+  qoq:{revenue:growth(get('revenue'),get('revenue',prev)),profit:growth(get('profit'),get('profit',prev)),ocf:growth(get('ocf'),get('ocf',prev)),assets:growth(get('assets'),get('assets',prev))},
+  yoyChange:{revenue:growth(get('revenue'),get('revenue',yoy)),profit:growth(get('profit'),get('profit',yoy)),ocf:growth(get('ocf'),get('ocf',yoy)),assets:growth(get('assets'),get('assets',yoy))}
+ };
+}
+function riskSignals(a,q){
+ const s=[];if(!a)return s;
+ const push=(level,title,value,detail)=>s.push({level,title,value,detail});
+ if(Number.isFinite(a.ratios.ocfIncome))push(a.ratios.ocfIncome>=100?'good':a.ratios.ocfIncome>=75?'watch':'risk','Chất lượng lợi nhuận',`${nf.format(a.ratios.ocfIncome)}%`,a.ratios.ocfIncome>=100?'Dòng tiền HĐKD bao phủ lợi nhuận sau thuế.':'Dòng tiền HĐKD thấp hơn lợi nhuận kế toán.');
+ if(Number.isFinite(a.values.fcf))push(a.values.fcf>=0?'good':'risk','Dòng tiền tự do',money(a.values.fcf),a.values.fcf>=0?'OCF đủ bù CAPEX trong kỳ.':'CAPEX vượt dòng tiền HĐKD.');
+ if(Number.isFinite(a.ratios.liabilitiesAssets))push(a.ratios.liabilitiesAssets<55?'good':a.ratios.liabilitiesAssets<70?'watch':'risk','Đòn bẩy',`${nf.format(a.ratios.liabilitiesAssets)}% tài sản`,a.ratios.liabilitiesAssets<55?'Cơ cấu nợ/tài sản ở mức cân bằng.':'Tỷ trọng nợ trong tổng tài sản cần theo dõi.');
+ if(Number.isFinite(a.change.receivables)&&Number.isFinite(a.change.revenue))push(a.change.receivables<=a.change.revenue+5?'good':'watch','Phải thu / doanh thu',`${pct(a.change.receivables)} vs ${pct(a.change.revenue)}`,a.change.receivables<=a.change.revenue+5?'Phải thu không tăng nhanh bất thường so với doanh thu.':'Phải thu tăng nhanh hơn doanh thu.');
+ if(q&&Number.isFinite(q.ocf))push(q.ocf>=0?'good':'risk',`OCF ${q.period}`,money(q.ocf),q.ocf>=0?'Dòng tiền HĐKD quý dương.':'Dòng tiền HĐKD quý âm.');
+ return s;
+}
+function scoreHealth(a,q){
+ if(!a)return null;let score=50,parts=0;
+ const add=(ok,good,bad)=>{if(!Number.isFinite(ok))return;score+=ok>=good?8:ok<=bad?-8:0;parts++;};
+ add(a.change.revenue,10,0);add(a.change.profit,10,0);add(a.ratios.netMargin,10,5);add(a.ratios.roe,15,8);add(a.ratios.ocfIncome,100,60);
+ if(Number.isFinite(a.ratios.liabilitiesAssets)){score+=a.ratios.liabilitiesAssets<=55?7:a.ratios.liabilitiesAssets>=75?-7:0;parts++;}
+ if(Number.isFinite(a.values.fcf)){score+=a.values.fcf>=0?7:-7;parts++;}
+ if(q&&Number.isFinite(q.yoyChange.profit)){score+=q.yoyChange.profit>5?6:q.yoyChange.profit<-5?-6:0;parts++;}
+ return Math.max(0,Math.min(100,Math.round(score)));
+}
+function trendTag(n,positive=true){if(!Number.isFinite(n))return{label:'Không có số liệu',tone:'neutral'};const good=positive?n>0:n<0;return{label:good?'Tích cực':n===0?'Đi ngang':'Cần theo dõi',tone:good?'positive':n===0?'neutral':'negative'};}
+
+function card(label,value,sub='',t='neutral'){return`<div class="analysis-kpi"><span>${esc(label)}</span><strong class="${esc(t)}">${esc(value)}</strong>${sub?`<small>${esc(sub)}</small>`:''}</div>`;}
+function table(rows){return`<div class="analysis-table">${rows.map(r=>`<div class="analysis-table-row"><span>${esc(r[0])}</span><b>${esc(r[1])}</b><em class="${esc(r[3]||'neutral')}">${esc(r[2]||'')}</em></div>`).join('')}</div>`;}
+function section(title,body){return`<section class="analysis-block"><h4>${esc(title)}</h4>${body}</section>`;}
+function prose(items){const parts=(items||[]).filter(Boolean);return parts.length?'<div class="analysis-narrative">'+parts.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'';}
+function relationText(value,positive='tăng',negative='giảm'){if(!Number.isFinite(value))return'không có số liệu so sánh';if(Math.abs(value)<.15)return'gần như đi ngang';return value>0?positive+' '+num(Math.abs(value))+'%':negative+' '+num(Math.abs(value))+'%';}
+function movementNarrative(ctx){
+ const q=ctx.quote,d=ctx.driver;if(!q)return[];
+ const ch=Number(q.changePct),delta=Number.isFinite(q.price)&&Number.isFinite(q.reference)?q.price-q.reference:null,dir=ch>0?'tăng':ch<0?'giảm':'đi ngang',rel=Number(d?.relativeStrengthPct),vol=Number(d?.volumeRatio20),mom=Number(d?.momentum5dPct),top=(d?.factors||[]).slice(0,2),headline=(ctx.news||[])[0],out=[];
+ let first=state.symbol+' đang '+dir+' '+num(Math.abs(ch||0))+'% so với giá tham chiếu '+(Number.isFinite(q.reference)?nf.format(q.reference)+' đồng':'—')+'.';
+ if(Number.isFinite(delta))first+=' Mức thay đổi tuyệt đối là '+(delta>0?'+':'')+nf.format(delta)+' đồng, từ '+nf.format(q.reference)+' lên '+nf.format(q.price)+' đồng.';
+ if(Number.isFinite(rel))first+=' So với trung vị VN100, '+state.symbol+' '+(rel>=0?'mạnh hơn':'yếu hơn')+' '+num(Math.abs(rel))+' điểm %.';
+ out.push(first);
+ if(d){let second='Động lượng 5 phiên '+relationText(mom)+'. Thanh khoản đạt '+num(vol)+' lần bình quân 20 phiên.';if(top.length)second+=' Hai lực nổi bật nhất trong mô hình là '+top.map(x=>x.label.toLowerCase()+' ('+(x.contribution>0?'+':'')+num(x.contribution)+')').join(' và ')+'.';second+=' Vì vậy nhịp '+dir+' hiện được đọc chủ yếu từ '+(top[0]?.label?.toLowerCase()||'trạng thái giá và thị trường')+'.';out.push(second);}
+ if(ctx.technical?.snapshot)out.push(ctx.technical.snapshot.title+'. '+ctx.technical.snapshot.detail);
+ if(headline){const qt=Date.parse(q.sourceTime||q.collectedAt||''),nt=Date.parse(headline.publishedAt||''),hours=Number.isFinite(qt)&&Number.isFinite(nt)?(qt-nt)/3600000:null;let timing='';if(Number.isFinite(hours))timing=hours>=0?' Tin được công bố khoảng '+num(Math.abs(hours))+' giờ trước snapshot, nên nằm trong bộ thông tin thị trường đã biết ở thời điểm giá hiện tại.':' Tin xuất hiện sau snapshot khoảng '+num(Math.abs(hours))+' giờ, vì vậy nó thuộc bối cảnh cho phiên kế tiếp chứ không giải thích phần biến động đã xảy ra trước đó.';out.push('Tin gần nhất gắn với '+state.symbol+' là “'+headline.title+'” từ '+(headline.source||'nguồn báo chí')+'.'+timing+(headline.summary?' Nội dung RSS tóm tắt: '+headline.summary:''));}
+ return out;
+}
+function financialNarrative(a,q){
+ if(!a)return[];
+ const out=['Ở kỳ năm '+a.period+', doanh thu '+relationText(a.change.revenue)+' và lợi nhuận sau thuế '+relationText(a.change.profit)+' so với '+a.previous+'. Biên ròng ở mức '+num(a.ratios.netMargin)+'%, ROE '+num(a.ratios.roe)+'% và ROA '+num(a.ratios.roa)+'%.'];
+ if(Number.isFinite(a.ratios.ocfIncome))out.push('Dòng tiền HĐKD đạt '+money(a.values.ocf)+', tương đương '+num(a.ratios.ocfIncome)+'% lợi nhuận sau thuế; FCF ước tính '+money(a.values.fcf)+' sau CAPEX. Nợ phải trả chiếm khoảng '+num(a.ratios.liabilitiesAssets)+'% tổng tài sản.');
+ if(q)out.push('Ở '+q.period+', doanh thu '+relationText(q.qoq.revenue)+' QoQ và '+relationText(q.yoyChange.revenue)+' YoY; lợi nhuận sau thuế '+relationText(q.qoq.profit)+' QoQ và '+relationText(q.yoyChange.profit)+' YoY. Nên đọc đồng thời với dòng tiền quý để đánh giá chất lượng tăng trưởng.');
+ return out;
+}
+function riskNarrative(a,q){
+ if(!a)return[];
+ const signals=riskSignals(a,q),risks=signals.filter(x=>x.level==='risk'),watch=signals.filter(x=>x.level==='watch');
+ if(risks.length)return['Điểm cần chú ý nhất hiện nằm ở '+risks.map(x=>x.title.toLowerCase()).join(', ')+'. Các cảnh báo này xuất phát trực tiếp từ dòng tiền, đòn bẩy hoặc biến động vốn lưu động trong dữ liệu hiện có.'];
+ if(watch.length)return['Các chỉ tiêu rủi ro chính đang ở vùng kiểm soát; nhóm cần theo dõi sát nhất là '+watch.map(x=>x.title.toLowerCase()).join(', ')+'.'];
+ return['Các thước đo rủi ro cốt lõi đang ở trạng thái ổn định trong bộ dữ liệu hiện tại. Trọng tâm chuyển sang tốc độ tăng trưởng, chất lượng dòng tiền và khả năng duy trì biên lợi nhuận.'];
+}
+function compareNarrative(a,q){
+ const out=[];if(a)out.push('So với '+a.previous+', năm '+a.period+' ghi nhận doanh thu '+relationText(a.change.revenue)+' và lợi nhuận sau thuế '+relationText(a.change.profit)+'; tổng tài sản '+relationText(a.change.assets)+' và vốn chủ sở hữu '+relationText(a.change.equity)+'.');
+ if(q)out.push('Quý '+q.period+' cho thấy doanh thu '+relationText(q.qoq.revenue)+' so với quý trước và '+relationText(q.yoyChange.revenue)+' so với cùng kỳ; lợi nhuận '+relationText(q.qoq.profit)+' QoQ và '+relationText(q.yoyChange.profit)+' YoY.');
+ return out;
+}
+const K=window.FinQueryKnowledge||{find(){return null;},explainLabel(){return'Đây là chỉ tiêu có trong dữ liệu FinQuery.';}};
+function technicalMetric(concept,m){const t=m?.technical,i=t?.indicators||{};if(!concept||!t)return null;const map={rsi:'rsi',macd:'macd',bollinger:'middle',atr:'atr',adx:'adx',stochastic:'stoch',supertrend:'supertrend',obv:'obv',mfi:'mfi',cmf:'cmf',sma:'sma',ema:'ema'};const key=map[concept.id];return key&&Number.isFinite(i[key])?{value:i[key],period:t.timeframe,key}:null;}
+function currentConceptValue(concept,a,q,annual,m){if(!concept)return null;if(concept.metric&&a){if(Object.prototype.hasOwnProperty.call(a.ratios,concept.metric)&&Number.isFinite(a.ratios[concept.metric]))return{value:a.ratios[concept.metric],period:a.period,unit:'%'};if(Object.prototype.hasOwnProperty.call(a.values,concept.metric)&&Number.isFinite(a.values[concept.metric]))return{value:a.values[concept.metric],period:a.period,unit:'money'};}if(concept.id==='reference'&&Number.isFinite(m?.quote?.reference))return{value:m.quote.reference,period:'phiên hiện tại',unit:'VND'};return technicalMetric(concept,m);}
+function dynamicMetricHit(question,annual,quarterly){const terms=norm(question).split(' ').filter(x=>x.length>2&&!['nghia','khai','niem','cong','thuc','the','nao','bao','nhieu','tot','xau'].includes(x)),hits=[];for(const [scope,data]of[['Năm',annual],['Quý',quarterly]]){if(!data)continue;for(const row of rows(data)){const n=norm(row.label),score=terms.reduce((s,t)=>s+(n.includes(t)?1:0),0);if(score)hits.push({score,scope,row,data});}}hits.sort((a,b)=>b.score-a.score);return hits[0]||null;}
+function conceptDiagnosis(concept,a,q){
+ if(!concept||!a)return[];
+ const out=[];
+ if(concept.id==='roa'){
+  const profit=a.change.profit,assets=a.change.assets,margin=a.ratios.netMargin;
+  if(Number.isFinite(profit)&&Number.isFinite(assets))out.push('ROA đang chịu tác động trực tiếp từ tốc độ lợi nhuận so với tốc độ mở rộng tài sản: lợi nhuận '+relationText(profit)+', trong khi tổng tài sản '+relationText(assets)+'. '+(profit>assets?'Lợi nhuận đang tăng nhanh hơn tài sản nên hiệu quả sử dụng tài sản được hỗ trợ.':'Tài sản đang tăng nhanh hơn lợi nhuận nên ROA bị pha loãng.'));
+  if(Number.isFinite(margin))out.push('Biên ròng hiện ở '+num(margin)+'%; nếu biên ròng giảm thì ROA thường giảm ngay cả khi doanh thu vẫn tăng.');
+ }
+ if(concept.id==='roe'){
+  const profit=a.change.profit,equity=a.change.equity,lev=a.ratios.liabilitiesEquity;
+  if(Number.isFinite(profit)&&Number.isFinite(equity))out.push('ROE phụ thuộc vào lợi nhuận tạo ra trên vốn chủ: lợi nhuận '+relationText(profit)+', còn vốn chủ '+relationText(equity)+'. '+(profit>equity?'Lợi nhuận tăng nhanh hơn vốn chủ nên ROE được hỗ trợ.':'Vốn chủ tăng nhanh hơn lợi nhuận nên ROE bị kéo xuống.'));
+  if(Number.isFinite(lev))out.push('Nợ/vốn chủ ở '+num(lev)+'; ROE cao đi cùng đòn bẩy tăng cần tách phần cải thiện do hoạt động khỏi phần do dùng nợ nhiều hơn.');
+ }
+ if(concept.id==='ocf'||concept.id==='fcf'){
+  if(Number.isFinite(a.ratios.ocfIncome))out.push('OCF hiện bằng '+num(a.ratios.ocfIncome)+'% lợi nhuận sau thuế. '+(a.ratios.ocfIncome>=100?'Tiền từ hoạt động đang bao phủ toàn bộ lợi nhuận kế toán.':'Tiền từ hoạt động đang thấp hơn lợi nhuận kế toán, nên phải thu, tồn kho và các khoản phải trả là các điểm cần đọc tiếp.'));
+  if(Number.isFinite(a.values.fcf))out.push('FCF ước tính '+money(a.values.fcf)+'. '+(a.values.fcf>=0?'Sau CAPEX doanh nghiệp vẫn còn dòng tiền tự do dương.':'CAPEX đang lớn hơn lượng tiền hoạt động tạo ra trong kỳ.'));
+ }
+ if(concept.id==='receivables'&&Number.isFinite(a.change.receivables)&&Number.isFinite(a.change.revenue))out.push('Phải thu '+relationText(a.change.receivables)+', còn doanh thu '+relationText(a.change.revenue)+'. '+(a.change.receivables>a.change.revenue+5?'Tiền bị giữ ở khách hàng đang tăng nhanh hơn tốc độ bán hàng.':'Phải thu đang tăng cùng nhịp hoặc chậm hơn doanh thu, nên vốn bị giữ ở khách hàng chưa tạo áp lực lớn lên tăng trưởng hiện tại.'));
+ if(concept.id==='inventory'&&Number.isFinite(a.ratios.inventoryRevenue))out.push('Tồn kho tương đương '+num(a.ratios.inventoryRevenue)+'% doanh thu năm hiện tại; cần đọc xu hướng nhiều kỳ để phân biệt tích trữ phục vụ tăng trưởng với tồn kho chậm luân chuyển.');
+ if(q&&concept.metric&&Number.isFinite(q.yoyChange?.profit))out.push('Quý '+q.period+' có lợi nhuận '+relationText(q.yoyChange.profit)+' so với cùng kỳ, cung cấp tín hiệu gần hơn về hướng thay đổi của hiệu quả sinh lời.');
+ return out;
+}
+function conceptHTML(question,a,q,annual,quarterly,m){
+ const ranked=K.search?.(question,4)||[],concept=K.find?.(question)||ranked[0]?.c||null,dyn=!concept?dynamicMetricHit(question,annual,quarterly):null;if(!concept&&!dyn)return'';
+ if(dyn){const p=latest(dyn.data),prev=previousPeriod(dyn.data,p),v=val(dyn.row,p),old=val(dyn.row,prev),g=growth(v,old),definition=K.explainLabel?.(dyn.row.label)||'Đây là chỉ tiêu có trong dữ liệu FinQuery.';return prose([dyn.row.label+': '+definition+' Với '+state.symbol+', kỳ '+p+' ghi nhận '+point(v,dyn.row.unit)+(Number.isFinite(g)?', '+relationText(g)+' so với '+prev:'')+'.'])+section('Dữ liệu đang có',table([[dyn.row.label,point(v,dyn.row.unit),prev?('so với '+prev+' '+pct(g)):'',tone(g)]]));}
+ const current=currentConceptValue(concept,a,q,annual,m),paragraphs=[concept.definition,concept.formula?'Công thức: '+concept.formula+'.':'',concept.read||'',...conceptDiagnosis(concept,a,q)];
+ if(current){let value=current.unit==='%'?num(current.value)+'%':current.unit==='money'?money(current.value):current.unit==='VND'?nf.format(current.value)+' đồng':num(current.value);let sentence='Với '+state.symbol+', '+concept.title+' tại '+current.period+' đang ở mức '+value+'.';if(concept.metric&&annual&&a?.previous){const old=val(find(annual,concept.metric),a.previous);if(Number.isFinite(old)){const diff=current.value-old;sentence+=' So với '+a.previous+', chỉ tiêu '+(diff>=0?'tăng ':'giảm ')+num(Math.abs(diff))+' điểm.';}}paragraphs.push(sentence);}
+ if(m?.technical&&['rsi','macd','bollinger','atr','adx','stochastic','supertrend','obv','mfi','cmf','sma','ema','meanReversion','volume','cci','roc','willr','vwap'].includes(concept.id)&&m.technical.snapshot)paragraphs.push(m.technical.snapshot.title+'. '+m.technical.snapshot.detail);
+ if(ranked.length>1)paragraphs.push('Các khái niệm gần câu hỏi nhất trong hệ thống: '+ranked.slice(1,4).map(x=>x.c.title).join(', ')+'.');
+ return prose(paragraphs.filter(Boolean));
+}
+function headlineList(items){if(!items?.length)return'';return section('Tin liên quan gần nhất',`<div class="analysis-news">${items.slice(0,5).map(n=>{const u=/^https?:\/\//.test(n.url||'')?n.url:'#';return`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><span>${esc(n.title)}</span><small>${esc(n.source||'')} · ${esc(String(n.publishedAt||'').slice(0,10))}</small></a>`}).join('')}</div>`);}
+function movementHTML(ctx){
+ const q=ctx.quote,d=ctx.driver;if(!q&&!d)return section('Biến động phiên','<div class="analysis-empty">Snapshot thị trường của mã này không hiện diện trong bộ dữ liệu đang tải.</div>');
+ const kpis=[card('Giá',q?nf.format(q.price)+' đ':'—','Snapshot gần nhất'),card('Biến động',q?pct(q.changePct):'—','So với tham chiếu',tone(q?.changePct)),card('Điểm động lực',d?`${d.score>0?'+':''}${num(d.score)}/100`:'—',d?`Độ tin cậy ${num(d.confidenceScore)}/100`:'' ,tone(d?.score)),card('KL / TB20',d&&Number.isFinite(d.volumeRatio20)?num(d.volumeRatio20)+'x':'—','Mức hoạt động tương đối',d?.volumeRatio20>1?'positive':'neutral')].join('');
+ const factors=(d?.factors||[]).map(f=>[f.label,`${f.contribution>0?'+':''}${num(f.contribution)}`,`w ${Math.round((f.weight||0)*100)}%`,tone(f.contribution)]);
+ const details=d?table([
+  ['Thị trường chung',pct(d.marketMedianChangePct),'Trung vị VN100',tone(d.marketMedianChangePct)],
+  ['Sức mạnh tương đối',pct(d.relativeStrengthPct),'so với thị trường',tone(d.relativeStrengthPct)],
+  ['Động lượng 5 phiên',pct(d.momentum5dPct),'xu hướng ngắn hạn',tone(d.momentum5dPct)],
+  ['Biến động 20 phiên',Number.isFinite(d.volatility20dPct)?num(d.volatility20dPct)+'%':'—','độ lệch chuẩn','neutral'],
+  ['Vị trí trong biên phiên',Number.isFinite(d.rangePositionPct)?num(d.rangePositionPct)+'%':'—','0% thấp · 100% cao','neutral']
+ ]):'';
+ return`${prose(movementNarrative(ctx))}<div class="analysis-kpis">${kpis}</div>${factors.length?section('Phân rã động lực',table(factors)):''}${section('Bối cảnh định lượng',details)}${headlineList(ctx.news)}`;
+}
+function financialHTML(a,q){
+ if(!a)return section('Sức khỏe tài chính','<div class="analysis-empty">Bộ dữ liệu đang tải không có BCTC năm để tính nhóm chỉ tiêu này.</div>');
+ const score=scoreHealth(a,q),quality=trendTag(a.ratios.ocfIncome-80),growthTone=trendTag(a.change.profit),levTone=trendTag(60-a.ratios.liabilitiesAssets);
+ const kpis=[
+  card('Điểm sức khỏe',score!==null?score+'/100':'—',a.period,score>=70?'positive':score>=50?'neutral':'negative'),
+  card('Doanh thu',money(a.values.revenue),pct(a.change.revenue),tone(a.change.revenue)),
+  card('LN sau thuế',money(a.values.profit),pct(a.change.profit),tone(a.change.profit)),
+  card('OCF',money(a.values.ocf),`OCF/LNST ${num(a.ratios.ocfIncome)}%`,a.ratios.ocfIncome>=100?'positive':a.ratios.ocfIncome>=75?'neutral':'negative')
+ ].join('');
+ const perf=table([
+  ['Tăng trưởng doanh thu',pct(a.change.revenue),a.previous+' → '+a.period,tone(a.change.revenue)],
+  ['Tăng trưởng LNST',pct(a.change.profit),a.previous+' → '+a.period,tone(a.change.profit)],
+  ['Biên gộp',Number.isFinite(a.ratios.grossMargin)?num(a.ratios.grossMargin)+'%':'—','khả năng tạo giá trị gộp',quality.tone],
+  ['Biên ròng',Number.isFinite(a.ratios.netMargin)?num(a.ratios.netMargin)+'%':'—','LNST / doanh thu',growthTone.tone],
+  ['ROE',Number.isFinite(a.ratios.roe)?num(a.ratios.roe)+'%':'—','hiệu quả vốn chủ','positive'],
+  ['ROA',Number.isFinite(a.ratios.roa)?num(a.ratios.roa)+'%':'—','hiệu quả tài sản','positive']
+ ]);
+ const cash=table([
+  ['OCF',money(a.values.ocf),`${num(a.ratios.ocfIncome)}% LNST`,a.ratios.ocfIncome>=100?'positive':a.ratios.ocfIncome>=75?'neutral':'negative'],
+  ['CAPEX',money(a.values.capex),'chi đầu tư tài sản','neutral'],
+  ['FCF',money(a.values.fcf),'OCF + CAPEX',tone(a.values.fcf)],
+  ['OCF / doanh thu',Number.isFinite(a.ratios.ocfRevenue)?num(a.ratios.ocfRevenue)+'%':'—','chuyển doanh thu thành tiền',a.ratios.ocfRevenue>=10?'positive':'neutral']
+ ]);
+ const balance=table([
+  ['Tổng tài sản',money(a.values.assets),pct(a.change.assets),tone(a.change.assets)],
+  ['Nợ phải trả',money(a.values.liabilities),`${num(a.ratios.liabilitiesAssets)}% tài sản`,levTone.tone],
+  ['Vốn chủ sở hữu',money(a.values.equity),pct(a.change.equity),tone(a.change.equity)],
+  ['Tiền & tương đương',money(a.values.cash),pct(a.change.cash),tone(a.change.cash)],
+  ['Phải thu',money(a.values.receivables),`${num(a.ratios.receivablesRevenue)}% doanh thu`,a.change.receivables>a.change.revenue+5?'negative':'neutral'],
+  ['Hàng tồn kho',money(a.values.inventory),`${num(a.ratios.inventoryRevenue)}% doanh thu`,'neutral']
+ ]);
+ let quarter='';if(q){quarter=table([
+  ['Doanh thu '+q.period,money(q.revenue),`QoQ ${pct(q.qoq.revenue)} · YoY ${pct(q.yoyChange.revenue)}`,tone(q.yoyChange.revenue)],
+  ['LNST '+q.period,money(q.profit),`QoQ ${pct(q.qoq.profit)} · YoY ${pct(q.yoyChange.profit)}`,tone(q.yoyChange.profit)],
+  ['OCF '+q.period,money(q.ocf),`QoQ ${pct(q.qoq.ocf)} · YoY ${pct(q.yoyChange.ocf)}`,tone(q.ocf)],
+  ['Tài sản '+q.period,money(q.assets),`QoQ ${pct(q.qoq.assets)} · YoY ${pct(q.yoyChange.assets)}`,tone(q.yoyChange.assets)]
+ ]);}
+ return`${prose(financialNarrative(a,q))}<div class="analysis-kpis">${kpis}</div>${section('Tăng trưởng & hiệu quả',perf)}${section('Chất lượng dòng tiền',cash)}${section('Cơ cấu tài chính',balance)}${q?section('Quý gần nhất',quarter):''}`;
+}
+function riskHTML(a,q){
+ const signals=riskSignals(a,q);if(!signals.length)return section('Rủi ro định lượng','<div class="analysis-empty">Các trường dữ liệu cần thiết cho mô hình rủi ro này không hiện diện trong kỳ đang chọn.</div>');
+ return`${prose(riskNarrative(a,q))}<div class="analysis-risk-grid">${signals.map(s=>`<div class="analysis-risk ${esc(s.level)}"><span>${esc(s.title)}</span><strong>${esc(s.value)}</strong><p>${esc(s.detail)}</p></div>`).join('')}</div>`;
+}
+function comparisonHTML(a,q){
+ const parts=[];if(a)parts.push(section(`Năm ${a.period} so với ${a.previous}`,table([
+  ['Doanh thu',money(a.values.revenue),pct(a.change.revenue),tone(a.change.revenue)],
+  ['LN sau thuế',money(a.values.profit),pct(a.change.profit),tone(a.change.profit)],
+  ['Tổng tài sản',money(a.values.assets),pct(a.change.assets),tone(a.change.assets)],
+  ['Vốn chủ sở hữu',money(a.values.equity),pct(a.change.equity),tone(a.change.equity)],
+  ['Dòng tiền HĐKD',money(a.values.ocf),`${num(a.ratios.ocfIncome)}% LNST`,tone(a.ratios.ocfIncome-100)]
+ ])));
+ if(q)parts.push(section(`${q.period} · QoQ và cùng kỳ`,table([
+  ['Doanh thu',money(q.revenue),`QoQ ${pct(q.qoq.revenue)} · YoY ${pct(q.yoyChange.revenue)}`,tone(q.yoyChange.revenue)],
+  ['LN sau thuế',money(q.profit),`QoQ ${pct(q.qoq.profit)} · YoY ${pct(q.yoyChange.profit)}`,tone(q.yoyChange.profit)],
+  ['Dòng tiền HĐKD',money(q.ocf),`QoQ ${pct(q.qoq.ocf)} · YoY ${pct(q.yoyChange.ocf)}`,tone(q.ocf)],
+  ['Tổng tài sản',money(q.assets),`QoQ ${pct(q.qoq.assets)} · YoY ${pct(q.yoyChange.assets)}`,tone(q.yoyChange.assets)]
+ ])));
+ return prose(compareNarrative(a,q))+parts.join('');
+}
+function localMetricSearch(question,annual,quarterly){
+ const terms=norm(question).split(' ').filter(x=>x.length>2&&!['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia'].includes(x)),datasets=[['Năm',annual],['Quý',quarterly]],hits=[];
+ for(const [scope,data]of datasets){if(!data)continue;for(const row of rows(data)){const label=norm(row.label),score=terms.reduce((s,t)=>s+(label.includes(t)?2:0),0);if(!score)continue;const ps=periods(data).slice(-8),values=ps.filter(p=>Number.isFinite(val(row,p))).map(p=>({period:p,value:val(row,p)}));if(values.length)hits.push({score,scope,row,data,values});}}
+ return hits.sort((a,b)=>b.score-a.score);
+}
+function newsSearch(question,items){
+ const stop=new Set(['tai','sao','vi','sao','giam','tang','the','nao','hien','nay','phan','tich','danh','gia','cho','toi','ve','cua','anh','huong']);
+ const terms=norm(question).split(' ').filter(x=>x.length>2&&!stop.has(x));
+ return(items||[]).map(n=>{const hay=norm((n.title||'')+' '+(n.summary||'')+' '+(n.topics||[]).join(' ')),score=terms.reduce((s,t)=>s+(hay.includes(t)?2:0),0)+(n.symbols||[]).includes(state.symbol)?2:0;return{...n,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,8);
+}
+function searchHTML(question,annual,quarterly,m){
+ const concept=K.find?.(question);if(concept)return conceptHTML(question,annualSnapshot(annual),quarterSnapshot(quarterly),annual,quarterly,m);
+ const hits=localMetricSearch(question,annual,quarterly),newsHits=newsSearch(question,[...(m.news||[]),...(m.marketNews||[])]);
+ const paragraphs=[];
+ if(hits.length){const h=hits[0],last=h.values.at(-1),prev=h.values.at(-2),g=prev?growth(last.value,prev.value):null;paragraphs.push(h.row.label+' của '+state.symbol+' ở '+last.period+' là '+point(last.value,h.row.unit)+(Number.isFinite(g)?', '+relationText(g)+' so với '+prev.period:'')+'. '+(K.explainLabel?.(h.row.label)||''));}
+ if(newsHits.length){const n=newsHits[0];paragraphs.push('Tin phù hợp nhất với câu hỏi là “'+n.title+'” từ '+(n.source||'nguồn báo chí')+' công bố '+String(n.publishedAt||'').slice(0,16).replace('T',' ')+'.'+(n.summary?' Nội dung tóm tắt: '+n.summary:''));}
+ if(m.technical?.snapshot)paragraphs.push('Trạng thái kỹ thuật hiện tại: '+m.technical.snapshot.title+'. '+m.technical.snapshot.detail);
+ if(paragraphs.length){let details='';if(hits.length)details+=section('Chuỗi dữ liệu liên quan',`<div class="analysis-search-results">${hits.slice(0,8).map(h=>`<div><strong>${esc(h.row.label)}</strong><span>${esc(h.scope)}</span><p>${esc(h.values.map(x=>x.period+': '+point(x.value,h.row.unit)).join(' · '))}</p></div>`).join('')}</div>`);if(newsHits.length)details+=headlineList(newsHits);return prose(paragraphs)+details;}
+ const nearest=K.search?.(question,4)||[];
+ if(nearest.length){const first=nearest[0].c;return prose([first.definition,first.formula?'Công thức: '+first.formula+'.':'',first.read||'','Câu hỏi được ghép với nhóm khái niệm gần nhất trong kho FinQuery: '+nearest.map(x=>x.c.title).join(', ')+'.'].filter(Boolean));}
+ const tech=m.technical?.snapshot?m.technical.snapshot.title+'. '+m.technical.snapshot.detail:'',marketText=m.quote?state.symbol+' đang '+(m.quote.changePct>=0?'tăng ':'giảm ')+num(Math.abs(m.quote.changePct))+'% so với tham chiếu '+(Number.isFinite(m.quote.reference)?nf.format(m.quote.reference)+' đồng':'hiện tại')+'.':'';
+ return prose([marketText,tech,'Câu hỏi được xử lý theo dữ liệu thực của mã đang xem: giá, chỉ báo kỹ thuật, BCTC và tin liên quan đang có trong FinQuery.'].filter(Boolean));
+}
+function macroDatasetFor(question,macro){if(!macro?.datasets)return null;const s=norm(question),id=/\bpmi\b/.test(s)?'pmi':/\bfdi\b/.test(s)?'fdi':/gdp/.test(s)?'gdp_growth':/cung tien|m2|money supply/.test(s)?'money_supply':/tin dung|credit/.test(s)?'credit_sector':'macro_overview';return macro.datasets[id]?{id,...macro.datasets[id]}:null;}
+function macroNews(question,items){return newsSearch(question,items).slice(0,5);}
+function macroHTML(question,m){
+ const macro=window.FinMacro?.context?.(),ds=macroDatasetFor(question,macro),matched=macroNews(question,m.marketNews||[]),paragraphs=[];
+ if(ds){const rs=ds.rows||[],last=rs.at(-1),prev=rs.at(-2),numeric=ds.numericColumns||[],tokens=norm(question).split(' '),chosen=numeric.find(k=>tokens.some(t=>t.length>2&&norm(k).includes(t)))||numeric[0];if(last&&chosen&&typeof last[chosen]==='number'){let sentence='Dữ liệu VBMA gần nhất ghi nhận '+chosen+' ở '+num(last[chosen])+'.';if(prev&&typeof prev[chosen]==='number'&&prev[chosen]!==0){const change=(last[chosen]/prev[chosen]-1)*100;sentence+=' So với mốc liền trước, '+chosen+' '+relationText(change)+'.';}paragraphs.push(sentence);}}
+ if(matched.length){const first=matched[0],second=matched[1],qt=Date.parse(m.quote?.sourceTime||m.quote?.collectedAt||''),nt=Date.parse(first.publishedAt||''),timing=Number.isFinite(qt)&&Number.isFinite(nt)?(qt-nt)/3600000:null;let sentence='Tin gần nhất liên quan tới câu hỏi là “'+first.title+'” từ '+(first.source||'nguồn báo chí')+'.';if(Number.isFinite(timing))sentence+=timing>=0?' Tin xuất hiện trước snapshot khoảng '+num(Math.abs(timing))+' giờ, nên đã nằm trong bối cảnh thông tin thị trường ở thời điểm giá hiện tại.':' Tin xuất hiện sau snapshot khoảng '+num(Math.abs(timing))+' giờ, nên phù hợp hơn để theo dõi phản ứng ở phiên kế tiếp.';if(first.summary)sentence+=' Nội dung RSS: '+first.summary;paragraphs.push(sentence);if(second)paragraphs.push('Bối cảnh thứ hai là “'+second.title+'”. Khi đọc các sự kiện NHNN, OMO, lãi suất ON hay tín dụng, Dolphin AI sắp xếp theo thứ tự trạng thái thanh khoản trước sự kiện → hành động điều tiết → phản ứng lãi suất và thị trường sau sự kiện để xác định cơ chế đang chi phối.');}
+ else paragraphs.push('Với câu hỏi vĩ mô này, Dolphin AI đọc dữ liệu VBMA đang mở trước, sau đó ghép với chuỗi tin thị trường theo thời điểm. Trọng tâm là diễn biến trước và sau sự kiện: thanh khoản, lãi suất, tín dụng và phản ứng của thị trường.');
+ let sources='';if(matched.length)sources=headlineList(matched);
+ return prose(paragraphs)+sources;
+}
+function evidenceFacts(a,q,m){
+ const facts=[];if(m.quote){facts.push(['Giá',nf.format(m.quote.price)+' đ','Tham chiếu '+(Number.isFinite(m.quote.reference)?nf.format(m.quote.reference)+' đ':'—'),tone(m.quote.changePct)]);facts.push(['Biến động phiên',pct(m.quote.changePct),Number.isFinite(m.quote.reference)?'Từ '+nf.format(m.quote.reference)+' đ':'',tone(m.quote.changePct)]);}
+ if(a){facts.push(['Doanh thu '+a.period,money(a.values.revenue),pct(a.change.revenue),tone(a.change.revenue)]);facts.push(['LNST '+a.period,money(a.values.profit),pct(a.change.profit),tone(a.change.profit)]);facts.push(['ROE / ROA',num(a.ratios.roe)+'% / '+num(a.ratios.roa)+'%','Hiệu quả vốn và tài sản','neutral']);facts.push(['OCF / LNST',num(a.ratios.ocfIncome)+'%',money(a.values.ocf),tone(a.ratios.ocfIncome-100)]);}
+ if(q){facts.push(['Quý '+q.period,money(q.revenue),'DT YoY '+pct(q.yoyChange.revenue),tone(q.yoyChange.revenue)]);facts.push(['LNST quý',money(q.profit),'YoY '+pct(q.yoyChange.profit),tone(q.yoyChange.profit)]);}
+ return facts;
+}
+function supportCase(a,q,m){
+ const items=[];if(a?.change.revenue>0)items.push('Doanh thu năm '+a.period+' tăng '+num(a.change.revenue)+'%.');if(a?.change.profit>0)items.push('Lợi nhuận sau thuế tăng '+num(a.change.profit)+'%.');if(a?.ratios.ocfIncome>=100)items.push('OCF bao phủ '+num(a.ratios.ocfIncome)+'% lợi nhuận sau thuế, chất lượng tiền mặt tốt.');if(q?.yoyChange.profit>0)items.push('Lợi nhuận quý '+q.period+' tăng '+num(q.yoyChange.profit)+'% so với cùng kỳ.');if(m.technical?.snapshot?.tone==='positive')items.push(m.technical.snapshot.title+': '+m.technical.snapshot.detail);if(m.driver?.relativeStrengthPct>0)items.push(state.symbol+' mạnh hơn trung vị VN100 '+num(m.driver.relativeStrengthPct)+' điểm %.');return items.slice(0,6);
+}
+function counterCase(a,q,m){
+ const items=[];if(a?.change.profit<0)items.push('Lợi nhuận sau thuế giảm '+num(Math.abs(a.change.profit))+'%.');if(Number.isFinite(a?.ratios.ocfIncome)&&a.ratios.ocfIncome<75)items.push('OCF chỉ bằng '+num(a.ratios.ocfIncome)+'% lợi nhuận sau thuế, tiền mặt đi sau lợi nhuận kế toán.');if(Number.isFinite(a?.ratios.liabilitiesAssets)&&a.ratios.liabilitiesAssets>=70)items.push('Nợ phải trả chiếm '+num(a.ratios.liabilitiesAssets)+'% tổng tài sản.');if(Number.isFinite(a?.change.receivables)&&Number.isFinite(a?.change.revenue)&&a.change.receivables>a.change.revenue+5)items.push('Phải thu tăng '+num(a.change.receivables)+'%, nhanh hơn doanh thu '+num(a.change.revenue)+'%.');if(q?.yoyChange.profit<0)items.push('Lợi nhuận quý '+q.period+' giảm '+num(Math.abs(q.yoyChange.profit))+'% YoY.');if(m.technical?.snapshot?.tone==='negative')items.push(m.technical.snapshot.title+': '+m.technical.snapshot.detail);if(m.driver?.relativeStrengthPct<0)items.push(state.symbol+' yếu hơn trung vị VN100 '+num(Math.abs(m.driver.relativeStrengthPct))+' điểm %.');return items.slice(0,6);
+}
+function memoHTML(question,a,q,m){
+ const facts=evidenceFacts(a,q,m),support=supportCase(a,q,m),counter=counterCase(a,q,m),newsHits=newsSearch(question,[...(m.news||[]),...(m.marketNews||[])]).slice(0,4),headline=[];
+ if(m.quote)headline.push(state.symbol+' đang '+(m.quote.changePct>=0?'tăng ':'giảm ')+num(Math.abs(m.quote.changePct))+'% so với tham chiếu '+nf.format(m.quote.reference)+' đồng.');
+ if(a)headline.push('Năm '+a.period+', doanh thu '+relationText(a.change.revenue)+' và lợi nhuận '+relationText(a.change.profit)+'. OCF/LNST ở '+num(a.ratios.ocfIncome)+'%.');
+ if(m.technical?.snapshot)headline.push(m.technical.snapshot.title+'. '+m.technical.snapshot.detail);
+ const supportHTML=support.length?'<div class="research-case positive-case">'+support.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'',counterHTML=counter.length?'<div class="research-case negative-case">'+counter.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'';
+ const watch=[];if(Number.isFinite(m.quote?.reference))watch.push('Giữ/đánh mất vùng tham chiếu '+nf.format(m.quote.reference)+' đồng.');if(m.technical?.indicators?.rsi<50)watch.push('RSI vượt 50 để xác nhận động lượng hồi phục rõ hơn.');else if(Number.isFinite(m.technical?.indicators?.rsi))watch.push('RSI hiện '+num(m.technical.indicators.rsi)+', theo dõi khả năng duy trì trên vùng cân bằng.');if(Number.isFinite(m.technical?.volumeRatio20))watch.push('Khối lượng hiện '+num(m.technical.volumeRatio20)+'x TB20.');if(q?.period)watch.push('Kỳ công bố tiếp theo sau '+q.period+' để kiểm tra hướng doanh thu, lợi nhuận và OCF.');
+ return`${prose(headline)}${facts.length?section('Dữ kiện chính',table(facts)):''}${supportHTML?section('Luận điểm hỗ trợ',supportHTML):''}${counterHTML?section('Điểm làm yếu luận điểm',counterHTML):''}${newsHits.length?headlineList(newsHits):''}${watch.length?section('Mốc cần theo dõi','<div class="research-case watch-case">'+watch.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>'):''}`;
+}
+function classify(q){const s=norm(q),concept=K.find?.(q),asksDefinition=/la gi|nghia la gi|khai niem|cong thuc|cach tinh|do cai gi|the hien gi/.test(s),stockMove=/gia co phieu|co phieu|ma nay|phien hom nay|phien nay|dong luc phien|vi sao ma|vi sao co phieu/.test(s);if(/nhnn|ngan hang nha nuoc|lai suat|overnight|\bon\b|omo|thanh khoan|ty gia|lam phat|\bgdp\b|\bpmi\b|\bfdi\b|cung tien|m2|tin dung|vi mo/.test(s))return'macro';if(concept&&asksDefinition)return'concept';if(stockMove||((/vi sao|nguyen nhan|tang|giam|bien dong/.test(s))&&!concept))return'movement';if(concept)return'concept';if(/rui ro|canh bao|bat thuong|yeu diem/.test(s))return'risk';if(/so sanh|ky truoc|cung ky|qoq|yoy/.test(s))return'compare';if(/phan tich chuyen sau|phan tich toan dien|tong hop|ho so nghien cuu|danh gia tong the|tinh hinh/.test(s))return'memo';if(/suc khoe|tai chinh|tong quan|doanh thu|loi nhuan|dong tien|no|roe|roa|bien loi nhuan|fcf|ocf|phai thu|ton kho/.test(s))return'financial';if(asksDefinition)return'concept';return'search';}
+function analyze(question){
+ const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
+ const ctx={quote:m.quote||null,driver:m.driver||null,technical:m.technical||null,news:m.news||[],marketNews:m.marketNews||[]};
+ const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='financial'?financialHTML(a,q):type==='risk'?riskHTML(a,q):type==='compare'?comparisonHTML(a,q):type==='memo'?memoHTML(question,a,q,m):searchHTML(question,annual,quarterly,m);
+ return{type,html:body||'<div class="analysis-empty">Câu hỏi này được neo vào các trường dữ liệu thực đang có; không có giá trị tương ứng để tính thêm trong kỳ hiện tại.</div>'};
+}
+const AI_ENDPOINT=window.FINQUERY_AI_ENDPOINT||'https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai';
+const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
+function compactRows(data,question,limit=18){
+ if(!data)return[];
+ const ps=periods(data).slice(-8),terms=norm(question).split(' ').filter(x=>x.length>2&&!STOP_WORDS.has(x)),chosen=new Map();
+ const add=(row,score)=>{if(!row)return;const key=String(row.section||'')+'|'+String(row.label||'');const prior=chosen.get(key);if(!prior||score>prior.score)chosen.set(key,{row,score});};
+ for(const row of rows(data)){const label=norm(row.label),score=terms.reduce((s,t)=>s+(label.includes(t)?3:0),0);if(score)add(row,score);}
+ for(const key of ['revenue','profit','assets','liabilities','equity','cash','ocf','capex','roe','roa','grossMargin','netMargin','quick','liabilitiesAssets','liabilitiesEquity','revGrowth','profitGrowth'])add(find(data,key),2);
+ return[...chosen.values()].sort((a,b)=>b.score-a.score).slice(0,limit).map(({row})=>({
+  label:row.label,unit:row.unit||'',section:row.section||'',basis:row.basis||null,
+  values:Object.fromEntries(ps.filter(p=>Number.isFinite(val(row,p))).map(p=>[p,val(row,p)]))
+ }));
+}
+function compactMacro(question){
+ try{
+  const macro=window.FinMacro?.context?.(),ds=macroDatasetFor(question,macro);if(!ds)return null;
+  return{name:ds.name||ds.title||null,numericColumns:ds.numericColumns||[],rows:(ds.rows||[]).slice(-6)};
+ }catch{return null;}
+}
+function cleanNews(items,limit=8){
+ const seen=new Set(),out=[];
+ for(const item of items||[]){const url=String(item?.url||'');if(!/^https?:\/\//i.test(url)||seen.has(url))continue;seen.add(url);out.push({title:String(item.title||'').slice(0,240),url,source:String(item.source||item.publisher||'').slice(0,100),publishedAt:String(item.publishedAt||item.date||'').slice(0,40),summary:String(item.summary||'').slice(0,500),topics:Array.isArray(item.topics)?item.topics.slice(0,8):[]});if(out.length>=limit)break;}
+ return out;
+}
+function buildLLMContext(question){
+ const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
+ const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],8),macro=compactMacro(question);
+ return{
+  scope:'financial-report',contextVersion:'DOLPHIN_V2_GROUNDED',symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
+  generatedAt:new Date().toISOString(),
+  dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
+  marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,
+  localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,18),quarterRows:compactRows(quarterly,question,18)},
+  macroSnapshot:macro,recentNews:companyNews
+ };
+}
+function sourcesForLLM(){
+ const m=market();return cleanNews([...(m.news||[]),...(m.marketNews||[])],8).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt}));
+}
+function llmHTML(answer,meta={}){
+ const lines=String(answer||'').trim().split(/\n/),blocks=[];let bullets=[];
+ const flush=()=>{if(!bullets.length)return;blocks.push('<div class="research-case">'+bullets.map(x=>'<p>• '+esc(x)+'</p>').join('')+'</div>');bullets=[];};
+ for(const rawLine of lines){const line=rawLine.trim();if(!line){flush();continue;}const h=line.match(/^#{1,4}\s+(.+)$/);if(h){flush();blocks.push('<h4>'+esc(h[1])+'</h4>');continue;}const b=line.match(/^[-*]\s+(.+)$/);if(b){bullets.push(b[1]);continue;}flush();blocks.push('<p>'+esc(line.replace(/\*\*/g,''))+'</p>');}
+ flush();
+ const provider=[meta.provider,meta.model].filter(Boolean).join(' · '),mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'LLM + tìm kiếm web':meta.sourceMode?'LLM + dữ liệu đã cung cấp':'LLM + FinQuery';
+ return '<section class="analysis-block"><h4>Dolphin AI · phân tích có dữ liệu neo</h4><div class="analysis-narrative">'+blocks.join('')+'</div><small>'+esc([provider,mode].filter(Boolean).join(' · '))+'</small></section>';
+}
+function addUser(text){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message user';a.innerHTML='<strong>Câu hỏi</strong><p>'+esc(text)+'</p>';box.append(a);box.scrollTop=box.scrollHeight;}
+function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);box.scrollTop=box.scrollHeight;return a;}
+function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>Dolphin đang đọc dữ liệu FinQuery và đối chiếu câu hỏi…</p></div>'});}
+function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');if(fab)fab.setAttribute('aria-expanded','true');setTimeout(()=>$('research-ai-question')?.focus(),80);}
+function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab)fab.setAttribute('aria-expanded','false');}
+async function callLLM(question){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+ try{
+  const response=await fetch(AI_ENDPOINT,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:buildLLMContext(question),history:state.history.slice(-8),sources:sourcesForLLM()}),signal:controller.signal});
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload.message||payload.error||('AI_HTTP_'+response.status));
+  if(!payload.answer)throw new Error('AI_EMPTY_RESPONSE');
+  return payload;
+ }finally{clearTimeout(timer);}
+}
+async function ask(question){
+ const q=String(question||'').trim();if(!q||state.busy)return;openDrawer();addUser(q);state.busy=true;
+ const send=$('research-ai-send');if(send)send.disabled=true;const waiting=addThinking();
+ try{
+  const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
+  state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);
+ }catch(error){
+  waiting?.remove();const local=analyze(q);local.html='<div class="analysis-empty">LLM tạm chưa khả dụng; Dolphin đang dùng engine FinQuery cục bộ nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
+ }finally{state.busy=false;if(send)send.disabled=false;}
+}
+function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`LLM suy luận trên BCTC, giá, kỹ thuật và tin thị trường đã neo dữ liệu cho ${state.symbol||'VN100'}; tự fallback về FinQuery cục bộ khi cần.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
+window.FinQueryAI={sync,ask,analyze,open:openDrawer,close:closeDrawer};
+const form=$('research-ai-form'),input=$('research-ai-question');form?.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(q){input.value='';ask(q);}});document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'')));
+$('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('research-ai')?.hidden)closeDrawer();});
+sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');
+})();</script></body></html>
 
 
 
