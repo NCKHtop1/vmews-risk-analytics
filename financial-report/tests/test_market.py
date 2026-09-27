@@ -165,7 +165,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn("compactExpanded:false",insights)
         self.assertIn("researchExpanded:false",insights)
         self.assertIn("eventExpanded:false",insights)
-        self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",insights)
+        self.assertIn("if(!state.compactExpanded)",insights)
+        self.assertIn("insight-summary-toggle",insights)
+        self.assertIn("Sự kiện doanh nghiệp",insights)
+        self.assertIn("Báo cáo CTCK",insights)
         self.assertIn("reportPreview=shownReports.slice(0,state.researchExpanded?shownReports.length:4)",insights)
         self.assertIn("eventPreview=shownEvents.slice(0,state.eventExpanded?shownEvents.length:6)",insights)
         self.assertIn("data-insight-expand",insights)
@@ -175,6 +178,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("state.researchExpanded=false;renderDashboard()",insights)
         self.assertIn("state.eventExpanded=false;renderDashboard()",insights)
         self.assertIn(".insight-more-toggle",css)
+        self.assertIn(".insight-summary-toggle",css)
         self.assertIn(".idea-more-toggle",css)
 
     def test_research_v7_registry_has_broader_broker_coverage_and_finlens(self):
