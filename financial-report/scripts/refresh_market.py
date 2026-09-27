@@ -349,17 +349,26 @@ def prices(out, companies):
 
 
 def _history_page(symbol, frame, to, count, minute=False):
-    payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
-        'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
-    }))
-    return normalize_history(payload, symbol, minute=minute)
+    attempts = 1 if minute else max(1, int(os.environ.get('HISTORY_RETRIES', '3')))
+    last_error = None
+    for attempt in range(attempts):
+        try:
+            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
+                'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
+            }))
+            return normalize_history(payload, symbol, minute=minute)
+        except Exception as e:
+            last_error = e
+            if attempt + 1 < attempts:
+                time.sleep(.6 * (attempt + 1))
+    raise last_error
 
 
 def _full_daily_history(symbol, target):
     """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
     merged = {}
     cursor = int(time.time())
-    page_size = min(1600, target)
+    page_size = min(max(300, int(os.environ.get('HISTORY_PAGE_SIZE', '1600'))), 1600, target)
     for _ in range(max(1, math.ceil(target / page_size) + 1)):
         bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
         before = len(merged)

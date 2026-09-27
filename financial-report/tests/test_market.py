@@ -357,16 +357,17 @@ class MarketTests(unittest.TestCase):
             self.assertIn(token,chart)
         self.assertNotIn('Nên đối chiếu RSI và khối lượng trước khi kết luận',chart)
 
-    def test_full_history_workflow_uses_listing_range_fallback(self):
+    def test_full_history_workflow_uses_low_load_listing_backfill(self):
         workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml')
-        # The workflow file is outside ROOT when tests run in repository checkout.
         text=workflow.read_text() if workflow.exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
         script=(ROOT/'scripts/refresh_market.py').read_text()
         self.assertIn("'12000'",text)
-        self.assertIn("HISTORY_START_DATE: '1998-01-01'",text)
-        self.assertIn('vnstock==4.0.4',text)
-        self.assertIn('_vnstock_full_history',script)
-        self.assertIn('HISTORY_VNSTOCK_FALLBACK',script)
+        self.assertIn("HISTORY_PAGE_SIZE",text)
+        self.assertIn("'1000'",text)
+        self.assertIn("HISTORY_RETRIES: '3'",text)
+        self.assertNotIn('pip install -q vnstock',text)
+        self.assertIn("os.environ.get('HISTORY_PAGE_SIZE'",script)
+        self.assertIn("os.environ.get('HISTORY_RETRIES'",script)
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
