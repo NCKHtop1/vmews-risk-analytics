@@ -62,6 +62,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="insight-detail"',html)
         self.assertIn('setInsights(items,onOpen)',chart)
         self.assertIn('timeToCoordinate',chart)
+        self.assertIn('target<first||target>last',chart)
         self.assertIn('chart-insight-marker',chart)
         self.assertIn('registerInsights(api)',market)
         self.assertIn("window.FinInsights?.select?.(symbol)",market)
