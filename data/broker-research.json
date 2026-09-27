@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-09-27T11:32:44+00:00",
+  "updatedAt": "2026-09-27T14:34:45+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
     {
@@ -96,17 +96,6 @@
       "summary": "MBS công bố báo cáo ngày 17/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 82.200 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
-      "id": "VIETCAP-BSR-2026-09-11-f7ca6093",
-      "symbol": "POW",
-      "broker": "VIETCAP",
-      "brokerName": "Vietcap Securities",
-      "publishedAt": "2026-09-11",
-      "title": "Ngành Năng lượng - Xung đột Mỹ - Iran kéo dài khiến giá dầu năm 2026/2027 neo cao Báo Cáo Ngành 24/09/2026 • GAS PLX PVS BSR PPC NT2 PVD POW PVT DPM DCM PLC OIL QTP Xem thêm 24/09/2026",
-      "currency": "VND",
-      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/nganh-nang-luong-xung-dot-my-iran-keo-dai-khien-gia-dau-nam-2026-2027-neo-cao",
-      "summary": "VIETCAP công bố báo cáo ngày 11/09/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
-    },
-    {
       "id": "VIETCAP-HPG-2026-09-11",
       "symbol": "HPG",
       "broker": "VIETCAP",
@@ -131,6 +120,17 @@
         "Chi phí SG&A/logistics cao hơn kỳ vọng"
       ],
       "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/hpg-mua-58-6-trien-vong-loi-nhuan-tich-cuc-duoc-duy-tri-dinh-gia-van-hap-dan-cap-nhat"
+    },
+    {
+      "id": "VIETCAP-BSR-2026-09-11-f7ca6093",
+      "symbol": "BSR",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-11",
+      "title": "Ngành Năng lượng - Xung đột Mỹ - Iran kéo dài khiến giá dầu năm 2026/2027 neo cao Báo Cáo Ngành 24/09/2026 • GAS PLX PVS BSR PPC NT2 PVD POW PVT DPM DCM PLC OIL QTP Xem thêm 24/09/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/nganh-nang-luong-xung-dot-my-iran-keo-dai-khien-gia-dau-nam-2026-2027-neo-cao",
+      "summary": "VIETCAP công bố báo cáo ngày 11/09/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "MBS-VTP-2026-09-10",
