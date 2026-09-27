@@ -220,6 +220,43 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(cursor,0)
 
 
+    def test_research_v71_registry_has_public_per_symbol_indexes(self):
+        cfg=json.loads((ROOT/'config/research_sources.json').read_text())
+        rows={x['code']:x for x in cfg['sources'] if x.get('enabled')}
+        self.assertGreaterEqual(len(rows),23)
+        self.assertEqual(rows['SMARTCHART']['adapter'],'smartchart_symbol')
+        self.assertEqual(rows['24HMONEY']['adapter'],'money24_symbol')
+        self.assertIn('{symbol}',rows['SMARTCHART']['urlTemplate'])
+        self.assertIn('{symbol}',rows['24HMONEY']['urlTemplate'])
+
+    def test_research_v71_parses_smartchart_and_24hmoney_metadata(self):
+        smart='Báo cáo mới HPG: Khuyến nghị MUA với giá mục tiêu 26,900 đồng/cổ phiếu DSC · 2026-08-27 HPG: Khuyến nghị MUA với giá mục tiêu 25,000 đồng/cổ phiếu VietinbankSC · 2026-08-26'
+        rows=im.parse_smartchart_symbol(smart,'HPG','https://smartchart.vn/bao-cao/HPG')
+        self.assertEqual(len(rows),2)
+        dsc=next(x for x in rows if x['broker']=='DSC')
+        self.assertEqual(dsc['targetPrice'],26900)
+        self.assertEqual(dsc['recommendation'],'MUA')
+        self.assertEqual(dsc['publishedAt'],'2026-08-27')
+        self.assertEqual(dsc['dataProvider'],'SMARTCHART')
+        self.assertIn('#finquery-',dsc['sourceUrl'])
+        money='HPG: Khuyến nghị MUA với giá mục tiêu 32,700 đồng/cổ phiếu Nguồn: BSC Ngày phát hành: 20/08/2026 Tải về HPG: Báo cáo cập nhật KQKD Q2/2026 Nguồn: NHSV Ngày phát hành: 13/08/2026 Tải về'
+        rows=im.parse_24hmoney_symbol(money,'HPG','https://24hmoney.vn/bao-cao-phan-tich?k=HPG')
+        self.assertEqual(len(rows),2)
+        bsc=next(x for x in rows if x['broker']=='BSC')
+        self.assertEqual(bsc['targetPrice'],32700)
+        self.assertEqual(bsc['publishedAt'],'2026-08-20')
+        self.assertEqual(bsc['dataProvider'],'24HMONEY')
+
+    def test_research_v71_workflow_prioritizes_user_visible_symbols(self):
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '30'",flow)
+        self.assertIn("RESEARCH_PRIORITY_SYMBOLS: 'MBB,HPG,FPT,VCB,VIC'",flow)
+        script=(ROOT/'scripts/refresh_insights.py').read_text()
+        self.assertIn("aggregatorCursors",script)
+        self.assertIn("discover_public_aggregator",script)
+        self.assertIn("dataProvider':provider",script)
+
+
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
         chart=(ROOT/'frontend/chart-engine.js').read_text()
         css=(ROOT/'frontend/market.css').read_text()
