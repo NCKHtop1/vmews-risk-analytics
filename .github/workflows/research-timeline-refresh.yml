@@ -30,6 +30,7 @@ jobs:
       FINLENS_SYMBOL_BUDGET: '25'
       PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '30'
       RESEARCH_PRIORITY_SYMBOLS: 'MBB,HPG,FPT,VCB,VIC'
+      EVENT_FETCH_WORKERS: '12'
     steps:
       - uses: actions/checkout@v4
         with:
