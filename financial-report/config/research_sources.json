@@ -165,9 +165,10 @@
       "code": "FINLENS",
       "name": "FinLens Research",
       "url": "https://mcp.finlens.vn/mcp",
-      "mode": "authenticated_mcp",
+      "mode": "optional_authenticated",
       "adapter": "finlens_mcp",
-      "enabled": true
+      "enabled": false,
+      "note": "Disabled by default; public 24HMoney/SmartChart indexes are the no-key research layer."
     },
     {
       "code": "SMARTCHART",
@@ -186,5 +187,5 @@
       "enabled": true
     }
   ],
-  "notes": "Direct broker sources are preferred. Public per-symbol indexes fill metadata gaps; FinLens MCP is optional authenticated enrichment. FinQuery stores only source-linked metadata and preserves the actual recommending broker."
+  "notes": "FinQuery uses public 24HMoney/SmartChart indexes as the default report aggregation layer. FinLens MCP is optional and disabled by default because it requires authenticated Pro/Premium access."
 }
