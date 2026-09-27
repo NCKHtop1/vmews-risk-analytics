@@ -220,8 +220,8 @@ class MarketTests(unittest.TestCase):
     def test_research_v7_registry_has_broader_broker_coverage_and_finlens(self):
         cfg=json.loads((ROOT/'config/research_sources.json').read_text())
         codes={x['code'] for x in cfg['sources'] if x.get('enabled')}
-        self.assertGreaterEqual(len(codes),21)
-        self.assertTrue({'TCBS','CTS','PHS','VIX','VDSC','FINLENS'}.issubset(codes))
+        self.assertGreaterEqual(len(codes),22)
+        self.assertTrue({'TCBS','CTS','PHS','VIX','VDSC','SMARTCHART','24HMONEY'}.issubset(codes))
         finlens=next(x for x in cfg['sources'] if x['code']=='FINLENS')
         self.assertEqual(finlens['adapter'],'finlens_mcp')
         self.assertEqual(finlens['mode'],'authenticated_mcp')
@@ -249,11 +249,13 @@ class MarketTests(unittest.TestCase):
 
     def test_research_v7_workflow_can_use_finlens_secret_but_does_not_require_it(self):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
-        self.assertIn('FINLENS_API_KEY: ${{ secrets.FINLENS_API_KEY }}',flow)
-        self.assertIn('FINLENS_MCP_TOKEN: ${{ secrets.FINLENS_MCP_TOKEN }}',flow)
-        self.assertIn("FINLENS_SYMBOL_BUDGET: '5'",flow)
+        self.assertNotIn('FINLENS_API_KEY:',flow)
+        self.assertNotIn('FINLENS_MCP_TOKEN:',flow)
+        self.assertNotIn('FINLENS_SYMBOL_BUDGET:',flow)
         self.assertIn("RESEARCH_DETAIL_BUDGET: '24'",flow)
         reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
+        finlens_cfg=next(x for x in json.loads((ROOT/'config/research_sources.json').read_text())['sources'] if x['code']=='FINLENS')
+        self.assertFalse(finlens_cfg['enabled'])
         if not (os.environ.get('FINLENS_API_KEY') or os.environ.get('FINLENS_MCP_TOKEN')):
             self.assertEqual(reports,[])
             self.assertEqual(status['status'],'not_configured')
