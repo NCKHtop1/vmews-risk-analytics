@@ -28,6 +28,8 @@ jobs:
       FINLENS_API_KEY: ${{ secrets.FINLENS_API_KEY }}
       FINLENS_MCP_TOKEN: ${{ secrets.FINLENS_MCP_TOKEN }}
       FINLENS_SYMBOL_BUDGET: '25'
+      PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '30'
+      RESEARCH_PRIORITY_SYMBOLS: 'MBB,HPG,FPT,VCB,VIC'
     steps:
       - uses: actions/checkout@v4
         with:
