@@ -114,39 +114,49 @@ def hnx_rows(raw,symbol,source_url,publisher):
         })
     return rows
 
-def cafef_rows(raw,symbol,source_url):
+def parse_24hmoney_events(raw,symbol,source_url):
     text=page_text(raw)
-    # Event history is rendered as date + one or more event descriptions until the next date.
-    matches=list(re.finditer(r'\b(\d{2}/\d{2}/20\d{2})\s*:\s*',text))
-    rows=[]
+    rows=[];seen=set()
+    header=re.compile(
+        r'(Sự kiện|Báo cáo tài chính|Lịch chia cổ tức|Kế hoạch|Phát hành)'
+        r'\s+(\d{2}/\d{2}/20\d{2}|20\d{2}-\d{2}-\d{2})\s+'
+        +re.escape(symbol)+r'\s+',
+        re.I
+    )
+    matches=list(header.finditer(text))
     for idx,m in enumerate(matches):
-        day=parse_date(m.group(1))
+        category=clean(m.group(1))
+        day=parse_date(m.group(2))
         if not day:continue
-        end=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+420)
-        chunk=clean(text[m.end():end])
-        if not chunk:continue
-        pieces=re.split(r'(?=(?:Cổ tức bằng|Thưởng bằng|Bán ưu đãi|Phát hành cho CBCNV|Phát hành thêm|Quyền mua))',chunk,flags=re.I)
-        for piece in pieces:
-            title=clean(piece)
-            if len(title)<5:continue
-            low=norm(title)
-            if 'co tuc bang tien' in low:etype='cash_dividend'
-            elif 'co tuc bang co phieu' in low:etype='stock_dividend'
-            elif 'thuong bang co phieu' in low:etype='bonus_share'
-            elif 'ban uu dai' in low or 'quyen mua' in low or 'phat hanh them' in low:etype='rights_issue'
-            elif 'phat hanh cho cbcnv' in low:etype='esop'
-            else:continue
-            ratio=None
-            rm=re.search(r'tỷ lệ\s*([0-9.,:]+%?)',title,re.I)
-            if rm:ratio=rm.group(1)
-            details={'exRightDate':day}
-            if ratio:details['ratio']=ratio
-            rows.append({
-              'id':stable_id(symbol,etype,day,title),'symbol':symbol,'type':etype,'date':day,
-              'title':title[:180],'summary':title[:260],'details':details,
-              'source':{'publisher':'CafeF','url':source_url},'fetchedAt':now(),'dataQuality':'secondary'
-            })
+        nxt=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+720)
+        title=clean(text[m.end():nxt])
+        if not title:continue
+        etype=classify(title)
+        low=norm(title)
+        if 'bao cao tai chinh' in norm(category) or 'ket qua kinh doanh' in low:
+            etype='earnings'
+        elif 'lich chia co tuc' in norm(category) and etype=='other':
+            etype='cash_dividend'
+        elif etype=='other' and ('quyen' in low or 'giao dich khong huong quyen' in low):
+            etype='rights_issue'
+        details={'publishedAt':day}
+        ex=re.search(r'(?:GDKHQ|giao dịch không hưởng quyền)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        if ex:details['exRightDate']=ex.group(1)
+        rec=re.search(r'(?:chốt danh sách|đăng ký cuối cùng)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        if rec:details['recordDate']=rec.group(1)
+        pay=re.search(r'(?:ngày thực hiện|thời gian thực hiện|thanh toán)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        if pay:details['paymentDate']=pay.group(1)
+        ratio=re.search(r'(?:tỷ lệ|tỉ lệ)(?:\s+thực hiện)?\s*:?\s*([0-9.,:]+%?)',title,re.I)
+        if ratio:details['ratio']=ratio.group(1)
+        rid=stable_id(symbol,etype,day,title)
+        if rid in seen:continue
+        seen.add(rid)
+        rows.append({'id':rid,'symbol':symbol,'type':etype,'date':day,'title':title[:220],
+                     'summary':title[:340],'details':details,
+                     'source':{'publisher':'24HMoney','url':source_url},
+                     'fetchedAt':now(),'dataQuality':'aggregated'})
     return rows
+
 
 def fingerprint(row):
     d=row.get('details') or {}
@@ -175,45 +185,46 @@ def refresh(output):
     seed=read(ROOT/'data/corporate-events.json',{'events':[]})
     published=read(output/'corporate-events.json',{'events':[]})
     discovered=[];health=[]
-    for source in [x for x in config.get('sources',[]) if x.get('enabled')]:
+    sources=[x for x in config.get('sources',[]) if x.get('enabled')]
+    for source in sources:
         base={'code':source['code'],'name':source.get('name',source['code']),'checkedAt':now(),'kind':source.get('kind'),'status':'pending','parsed':0,'reachable':0}
         if source.get('kind')=='health':
             try:
-                _,status,_=fetch(source['url']);base['httpStatus']=status;base['reachable']=1;base['status']='reachable'
+                _,status,_=fetch(source['url'],timeout=8);base['httpStatus']=status;base['reachable']=1;base['status']='reachable'
             except Exception as exc:base['status']='error';base['error']=str(exc)[:180]
             health.append(base);continue
         exchange_by_symbol={str(x.get('symbol','')).upper():str(x.get('exchange','HOSE')).lower() for x in companies}
         tasks=[(symbol,str(source.get('urlTemplate','')).replace('{symbol}',symbol).replace('{exchange}',exchange_by_symbol.get(symbol,'hose'))) for symbol in symbols]
+        workers=max(6,min(18,int(os.environ.get('EVENT_FETCH_WORKERS','12'))))
         def collect_one(task):
             symbol,url=task
             try:
-                raw,_,_=fetch(url,timeout=12)
-                if source.get('kind')=='cafef_history':
-                    rows=cafef_rows(raw,symbol,url)
-                else:
-                    rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
+                raw,_,_=fetch(url,timeout=8)
+                if source.get('kind')=='cafef_history':rows=cafef_rows(raw,symbol,url)
+                elif source.get('kind')=='24hmoney_events':rows=parse_24hmoney_events(raw,symbol,url)
+                else:rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
                 return rows,True
             except Exception:
                 return [],False
-        workers=max(2,min(20,int(os.environ.get('EVENT_FETCH_WORKERS','12'))))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            results=list(pool.map(collect_one,tasks))
         errors=0
-        for rows,reachable in results:
-            if reachable:base['reachable']+=1
-            else:errors+=1
-            discovered.extend(rows);base['parsed']+=len(rows)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures=[pool.submit(collect_one,task) for task in tasks]
+            for future in as_completed(futures):
+                rows,reachable=future.result()
+                if reachable:base['reachable']+=1
+                else:errors+=1
+                discovered.extend(rows);base['parsed']+=len(rows)
         base['status']='ok' if base['parsed'] else ('reachable_no_events' if base['reachable'] else 'error')
         if errors:base['errors']=errors
         health.append(base)
     events=merge_events(seed.get('events') or [],published.get('events') or [],discovered)
-    payload={
-      'version':2,'updatedAt':now(),
-      'policy':'FinQuery stores source-linked corporate-event metadata; official exchange/depository/company sources are preferred.',
-      'events':events
-    }
+    payload={'version':2,'updatedAt':now(),
+      'policy':'FinQuery stores source-linked corporate-event metadata; official/depository/company sources are preferred, with 24HMoney used as a public discovery layer.',
+      'events':events}
     write(output/'corporate-events.json',payload)
-    status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':sum(1 for x in health if x.get('reachable') or x.get('status')=='reachable'),'eventsDiscoveredThisRun':len(discovered),'storedEvents':len(events),'sources':health}
+    status={'checkedAt':now(),'sourcesTotal':len(health),
+      'sourcesReachable':sum(1 for x in health if x.get('reachable') or x.get('status')=='reachable'),
+      'eventsDiscoveredThisRun':len(discovered),'storedEvents':len(events),'sources':health}
     write(output/'event-status.json',status)
     print(json.dumps(status,ensure_ascii=False))
     return status

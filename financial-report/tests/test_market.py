@@ -31,11 +31,32 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(cash['details']['recordDate'],'2026-01-14')
         self.assertEqual(cash['details']['payoutDate'],'2026-01-23')
         self.assertEqual(cash['dataQuality'],'official')
-        cafe='<div>17/06/2022: Cổ tức bằng Cổ phiếu, tỷ lệ 30% Cổ tức bằng Tiền, tỷ lệ 5% 31/05/2021: Cổ tức bằng Tiền, tỷ lệ 5%</div>'
-        rows=em.cafef_rows(cafe,'HPG','https://cafef.example/HPG')
+        events='<div>Lịch chia cổ tức 17/06/2022 HPG Mã HPG trả cổ tức bằng cổ phiếu, tỉ lệ 0.30, ngày GDKHQ 2022-06-17, ngày thực hiện 2022-07-06</div><div>Lịch chia cổ tức 17/06/2022 HPG Mã HPG trả cổ tức bằng tiền, tỉ lệ 0.05 (500 đồng/cổ phiếu), ngày GDKHQ 2022-06-17, ngày thực hiện 2022-07-06</div>'
+        rows=em.parse_24hmoney_events(events,'HPG','https://24hmoney.example/stock/HPG/events')
         self.assertTrue(any(x['type']=='stock_dividend' and x['date']=='2022-06-17' for x in rows))
         self.assertTrue(any(x['type']=='cash_dividend' and x['date']=='2022-06-17' for x in rows))
-        self.assertTrue(all(x['dataQuality']=='secondary' for x in rows))
+        self.assertTrue(all(x['dataQuality']=='aggregated' for x in rows))
+
+    def test_events_v8_parses_24hmoney_event_timeline(self):
+        raw='<div>Sự kiện 15/05/2026 HPG HPG: Thông báo về ngày đăng ký cuối cùng trả cổ tức năm 2025 bằng cổ phiếu</div><div>Lịch chia cổ tức 15/05/2026 HPG Mã HPG trả cổ tức bằng cổ phiếu, tỉ lệ 0.1 (phát hành thêm: 767,546,585), ngày GDKHQ 2026-07-01, ngày thực hiện 2026-07-02</div><div>Lịch chia cổ tức 05/05/2026 HPG Mã HPG chia cổ tức bằng tiền, tỉ lệ 0.05 (500 đồng/cổ phiếu), ngày GDKHQ 2026-05-11, ngày thực hiện 2026-06-03</div>'
+        rows=em.parse_24hmoney_events(raw,'HPG','https://24hmoney.vn/stock/HPG/events')
+        self.assertGreaterEqual(len(rows),2)
+        self.assertTrue(any(x['type']=='stock_dividend' for x in rows))
+        self.assertTrue(any(x['type']=='cash_dividend' for x in rows))
+        self.assertTrue(any(x['details'].get('exRightDate')=='2026-07-01' for x in rows))
+        self.assertTrue(all(x['dataQuality']=='aggregated' for x in rows))
+
+    def test_events_v8_uses_24hmoney_and_does_not_crawl_two_hundred_hnx_pages(self):
+        cfg=json.loads((ROOT/'config/event_sources.json').read_text())
+        enabled={x['code']:x for x in cfg['sources'] if x.get('enabled')}
+        self.assertIn('24HMONEY_EVENTS',enabled)
+        self.assertNotIn('HNX_LISTED',enabled)
+        self.assertNotIn('HNX_UPCOM',enabled)
+        self.assertNotIn('CAFEF_EVENTS',enabled)
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn('refresh_events.py',flow)
+        self.assertIn("EVENT_FETCH_WORKERS: '12'",flow)
+
 
     def test_events_v6_dedupes_secondary_when_official_event_exists(self):
         official={'id':'a','symbol':'HPG','type':'cash_dividend','date':'2022-06-17','title':'Official','details':{'recordDate':'2022-06-20','ratio':'5%'},'source':{'publisher':'HOSE','url':'https://example.com/o'},'dataQuality':'official'}
@@ -47,8 +68,7 @@ class MarketTests(unittest.TestCase):
     def test_events_v6_has_official_registry_schedule_and_pages_trigger(self):
         sources=json.loads((ROOT/'config/event_sources.json').read_text())
         kinds={x['kind'] for x in sources['sources'] if x.get('enabled')}
-        self.assertIn('issuer_template',kinds)
-        self.assertIn('cafef_history',kinds)
+        self.assertIn('24hmoney_events',kinds)
         self.assertIn('health',kinds)
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
@@ -199,11 +219,12 @@ class MarketTests(unittest.TestCase):
     def test_research_v7_registry_has_broader_broker_coverage_and_finlens(self):
         cfg=json.loads((ROOT/'config/research_sources.json').read_text())
         codes={x['code'] for x in cfg['sources'] if x.get('enabled')}
-        self.assertGreaterEqual(len(codes),21)
-        self.assertTrue({'TCBS','CTS','PHS','VIX','VDSC','FINLENS'}.issubset(codes))
+        self.assertGreaterEqual(len(codes),22)
+        self.assertTrue({'TCBS','CTS','PHS','VIX','VDSC','SMARTCHART','24HMONEY'}.issubset(codes))
         finlens=next(x for x in cfg['sources'] if x['code']=='FINLENS')
         self.assertEqual(finlens['adapter'],'finlens_mcp')
-        self.assertEqual(finlens['mode'],'authenticated_mcp')
+        self.assertEqual(finlens['mode'],'optional_authenticated')
+        self.assertFalse(finlens['enabled'])
 
     def test_research_v7_text_listing_discovers_company_reports(self):
         source={'code':'TCBS','name':'Techcom Securities','url':'https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/','adapter':'text_listing'}
@@ -228,11 +249,13 @@ class MarketTests(unittest.TestCase):
 
     def test_research_v7_workflow_can_use_finlens_secret_but_does_not_require_it(self):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
-        self.assertIn('FINLENS_API_KEY: ${{ secrets.FINLENS_API_KEY }}',flow)
-        self.assertIn('FINLENS_MCP_TOKEN: ${{ secrets.FINLENS_MCP_TOKEN }}',flow)
-        self.assertIn("FINLENS_SYMBOL_BUDGET: '25'",flow)
-        self.assertIn("RESEARCH_DETAIL_BUDGET: '180'",flow)
+        self.assertNotIn('FINLENS_API_KEY:',flow)
+        self.assertNotIn('FINLENS_MCP_TOKEN:',flow)
+        self.assertNotIn('FINLENS_SYMBOL_BUDGET:',flow)
+        self.assertIn("RESEARCH_DETAIL_BUDGET: '24'",flow)
         reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
+        finlens_cfg=next(x for x in json.loads((ROOT/'config/research_sources.json').read_text())['sources'] if x['code']=='FINLENS')
+        self.assertFalse(finlens_cfg['enabled'])
         if not (os.environ.get('FINLENS_API_KEY') or os.environ.get('FINLENS_MCP_TOKEN')):
             self.assertEqual(reports,[])
             self.assertEqual(status['status'],'not_configured')
@@ -242,7 +265,7 @@ class MarketTests(unittest.TestCase):
     def test_research_v71_registry_has_public_per_symbol_indexes(self):
         cfg=json.loads((ROOT/'config/research_sources.json').read_text())
         rows={x['code']:x for x in cfg['sources'] if x.get('enabled')}
-        self.assertGreaterEqual(len(rows),23)
+        self.assertGreaterEqual(len(rows),22)
         self.assertEqual(rows['SMARTCHART']['adapter'],'smartchart_symbol')
         self.assertEqual(rows['24HMONEY']['adapter'],'money24_symbol')
         self.assertIn('{symbol}',rows['SMARTCHART']['urlTemplate'])
@@ -266,9 +289,37 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(bsc['publishedAt'],'2026-08-20')
         self.assertEqual(bsc['dataProvider'],'24HMONEY')
 
+    def test_research_v8_24hmoney_anchor_keeps_real_report_url(self):
+        raw='<a href="https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-rpId5554.html">MBB: Khuyến nghị MUA với giá mục tiêu 32,900 đồng/cổ phiếu</a> Nguồn: BSC Ngày phát hành: 24/06/2026 Tải về'
+        rows=im.parse_24hmoney_symbol(raw,'MBB','https://24hmoney.vn/bao-cao-phan-tich?k=MBB')
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['sourceUrl'],'https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-rpId5554.html')
+        self.assertEqual(rows[0]['broker'],'BSC')
+        self.assertEqual(rows[0]['targetPrice'],32900)
+
+    def test_research_v8_timeout_guard_is_bounded_and_incremental(self):
+        script=(ROOT/'scripts/refresh_insights.py').read_text()
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn('timeout=8',script)
+        self.assertIn('as_completed(futures)',script)
+        self.assertIn('detail_jobs=[]',script)
+        self.assertIn("min(len(symbols),default_budget)",script)
+        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '100'",flow)
+        self.assertIn("RESEARCH_FETCH_WORKERS: '16'",flow)
+        self.assertIn("timeout-minutes: 25",flow)
+
+    def test_research_v8_merge_prefers_richer_curated_summary(self):
+        prior={'id':'a','symbol':'HPG','broker':'MBS','publishedAt':'2026-09-18','title':'HPG report','summary':'Tóm tắt FinQuery đã biên soạn','highlights':['Điểm đã xác minh'],'sourceUrl':'https://mbs.example/a'}
+        discovered={'id':'b','symbol':'HPG','broker':'MBS','publishedAt':'2026-09-18','title':'HPG report','summary':'Metadata ngắn','sourceUrl':'https://smartchart.example/b','dataProvider':'SMARTCHART'}
+        merged=im.merge_reports([prior],[discovered])
+        self.assertEqual(len(merged),1)
+        self.assertEqual(merged[0]['summary'],'Tóm tắt FinQuery đã biên soạn')
+        self.assertEqual(merged[0]['highlights'],['Điểm đã xác minh'])
+
+
     def test_research_v71_workflow_prioritizes_user_visible_symbols(self):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
-        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '30'",flow)
+        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '100'",flow)
         self.assertIn("RESEARCH_PRIORITY_SYMBOLS: 'MBB,HPG,FPT,VCB,VIC'",flow)
         self.assertIn("EVENT_FETCH_WORKERS: '12'",flow)
         event_script=(ROOT/'scripts/refresh_events.py').read_text()
@@ -278,6 +329,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn("aggregatorCursors",script)
         self.assertIn("discover_public_aggregator",script)
         self.assertIn("dataProvider':provider",script)
+        self.assertIn("ThreadPoolExecutor",script)
+        insights_js=(ROOT/'frontend/insights.js').read_text()
+        self.assertIn("if(!state.compactExpanded)",insights_js)
+        self.assertIn('insight-summary-toggle',insights_js)
+        self.assertIn("filtered.map(compactCard).join('')",insights_js)
+        self.assertIn('symbolsCovered',insights_js)
+        self.assertIn("'symbolsTotal':len(universe)",(ROOT/'scripts/refresh_insights.py').read_text())
 
 
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
