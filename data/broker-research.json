@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-09-27T14:34:46+00:00",
+  "updatedAt": "2026-09-27T17:14:33+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
     {
@@ -96,6 +96,17 @@
       "summary": "MBS công bố báo cáo ngày 17/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 82.200 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
+      "id": "VIETCAP-BSR-2026-09-11-f7ca6093",
+      "symbol": "POW",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-11",
+      "title": "Ngành Năng lượng - Xung đột Mỹ - Iran kéo dài khiến giá dầu năm 2026/2027 neo cao Báo Cáo Ngành 24/09/2026 • GAS PLX PVS BSR PPC NT2 PVD POW PVT DPM DCM PLC OIL QTP Xem thêm 24/09/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/nganh-nang-luong-xung-dot-my-iran-keo-dai-khien-gia-dau-nam-2026-2027-neo-cao",
+      "summary": "VIETCAP công bố báo cáo ngày 11/09/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
       "id": "VIETCAP-HPG-2026-09-11",
       "symbol": "HPG",
       "broker": "VIETCAP",
@@ -120,17 +131,6 @@
         "Chi phí SG&A/logistics cao hơn kỳ vọng"
       ],
       "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/hpg-mua-58-6-trien-vong-loi-nhuan-tich-cuc-duoc-duy-tri-dinh-gia-van-hap-dan-cap-nhat"
-    },
-    {
-      "id": "VIETCAP-BSR-2026-09-11-f7ca6093",
-      "symbol": "BSR",
-      "broker": "VIETCAP",
-      "brokerName": "Vietcap Securities",
-      "publishedAt": "2026-09-11",
-      "title": "Ngành Năng lượng - Xung đột Mỹ - Iran kéo dài khiến giá dầu năm 2026/2027 neo cao Báo Cáo Ngành 24/09/2026 • GAS PLX PVS BSR PPC NT2 PVD POW PVT DPM DCM PLC OIL QTP Xem thêm 24/09/2026",
-      "currency": "VND",
-      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/nganh-nang-luong-xung-dot-my-iran-keo-dai-khien-gia-dau-nam-2026-2027-neo-cao",
-      "summary": "VIETCAP công bố báo cáo ngày 11/09/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "MBS-VTP-2026-09-10",
@@ -449,6 +449,18 @@
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/ctd-cap-nhat-thong-tin-ve-chuyen-di-tham-quan-du-an-nha-hat-opera-ha-noi-isola-della-musica/",
       "summary": "MBS công bố báo cáo ngày 12/06/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "VIX-GMD-2026-06-10-19cff962",
+      "symbol": "GMD",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-06-10",
+      "title": "GMD – Lãi đột biến từ thoái vốn (cập nhật KQKD Q2)",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/gmd-lai-dot-bien-tu-thoai-von-cap-nhat-kqkd-q2.html",
+      "recommendation": "NẮM GIỮ",
+      "summary": "VIX công bố báo cáo ngày 10/06/2026 với khuyến nghị NẮM GIỮ. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "MBS-GVR-2026-06-10",
@@ -1126,6 +1138,30 @@
       "recommendation": "BÁN",
       "targetPrice": 36500,
       "summary": "MBS công bố báo cáo ngày 03/10/2025 với khuyến nghị BÁN, giá mục tiêu 36.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "VIX-REE-2026-09-25-176cd35a",
+      "symbol": "VIX",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2008-09-11",
+      "title": "Công ty Cổ phần Chứng khoán VIX Địa chỉ: Tầng 22, số 52 Phố Lê Đại Hành, Phường Hai Bà Trưng, Thành phố Hà Nội. Xem bản đồ Điện thoại: (024) 4456 8888 Fax: (024) 3978 5379 – (024) 3978 5380 Email: support@vixs.vn Truy cậ",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo REE ngày 25/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ.",
+      "recommendation": "MUA"
+    },
+    {
+      "id": "VIX-REE-2008-09-11-92d473dc",
+      "symbol": "REE",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2008-09-11",
+      "title": "REE- Báo cáo triển vọng cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/ree-bao-cao-trien-vong-co-phieu.html",
+      "recommendation": "MUA",
+      "summary": "VIX công bố báo cáo ngày 11/09/2008 với khuyến nghị MUA. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     }
   ]
 }
