@@ -149,6 +149,184 @@ def discover_generic(raw,source,universe):
         seen.add(url);rows.append({'symbol':symbol,'title':label,'sourceUrl':url})
     return rows
 
+def discover_text_listing(raw,source,universe):
+    """Discover report metadata from public listing pages whose titles are plain text."""
+    rows=discover_generic(raw,source,universe)
+    text=page_text(raw)
+    matches=list(re.finditer(r'\b(\d{1,2}[/-]\d{1,2}[/-]20\d{2})\b',text))
+    for idx,m in enumerate(matches):
+        published=parse_date(m.group(1))
+        if not published:continue
+        end=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+520)
+        chunk=clean(text[m.end():end])[:520]
+        symbol=ticker_from_text(chunk,universe)
+        if not symbol:continue
+        # Keep company-research chunks; exclude obvious market-only headlines.
+        low=chunk.lower()
+        if any(x in low for x in ('vn-index','vnindex','thị trường giữa phiên','thị trường cuối phiên','bản tin ngày')) and not re.search(r'\b'+re.escape(symbol)+r'\b',chunk):
+            continue
+        title=chunk
+        for noise in ('other ','Báo cáo đặc biệt ','Phân tích công ty ','Báo cáo doanh nghiệp ','XEM CHI TIẾT ','Xem báo cáo ','Tải file '):
+            if title.startswith(noise):title=title[len(noise):]
+        title=clean(title)[:220]
+        row={'symbol':symbol,'title':title or ('Báo cáo '+symbol),'sourceUrl':source['url'],'publishedAt':published}
+        rating=parse_rating(chunk);target=parse_target(chunk,symbol)
+        if rating:row['recommendation']=rating
+        if target:row['targetPrice']=target
+        rows.append(row)
+    return dedupe_seeds(rows)
+
+BROKER_ALIASES={
+    'MB SECURITIES':'MBS','MBS':'MBS','KB SECURITIES VIETNAM':'KBSV','KBSV':'KBSV',
+    'BIDV SECURITIES':'BSC','BSC':'BSC','VIETCAP':'VIETCAP','VCSC':'VIETCAP',
+    'FPT SECURITIES':'FPTS','FPTS':'FPTS','ACB SECURITIES':'ACBS','ACBS':'ACBS',
+    'SSI':'SSI','SSI RESEARCH':'SSI','HSC':'HSC','VNDIRECT':'VNDIRECT',
+    'VIETINBANK SECURITIES':'CTS','CTS':'CTS','TECHCOM SECURITIES':'TCBS','TCBS':'TCBS',
+    'PHU HUNG SECURITIES':'PHS','PHS':'PHS','VIX SECURITIES':'VIX','VIX':'VIX',
+    'VIET DRAGON SECURITIES':'VDSC','RONG VIET SECURITIES':'VDSC','VDSC':'VDSC',
+    'MIRAE ASSET':'MIRAE','MIRAE ASSET SECURITIES VIETNAM':'MIRAE',
+    'YUANTA SECURITIES VIETNAM':'YUANTA','YUANTA':'YUANTA','KIS VIETNAM':'KIS','KIS':'KIS',
+    'SAIGON-HANOI SECURITIES':'SHS','SHS':'SHS','VIETCOMBANK SECURITIES':'VCBS','VCBS':'VCBS'
+}
+
+def parse_sse_or_json(body):
+    body=body.decode('utf-8','replace') if isinstance(body,(bytes,bytearray)) else str(body or '')
+    stripped=body.strip()
+    if not stripped:return {}
+    if stripped.startswith('{') or stripped.startswith('['):
+        return json.loads(stripped)
+    values=[]
+    for line in stripped.splitlines():
+        if not line.startswith('data:'):continue
+        payload=line[5:].strip()
+        if not payload or payload=='[DONE]':continue
+        try:values.append(json.loads(payload))
+        except Exception:pass
+    if not values:return {}
+    return next((x for x in reversed(values) if isinstance(x,dict) and ('result'in x or 'error'in x)),values[-1])
+
+def mcp_post(url,token,payload,session_id=None,timeout=35):
+    headers={'User-Agent':UA,'Accept':'application/json, text/event-stream','Content-Type':'application/json'}
+    if token:headers['Authorization']='Bearer '+token
+    if session_id:headers['Mcp-Session-Id']=session_id
+    req=Request(url,data=json.dumps(payload).encode('utf-8'),headers=headers,method='POST')
+    with urlopen(req,timeout=timeout) as response:
+        body=response.read(2_000_000)
+        return parse_sse_or_json(body),response.headers.get('Mcp-Session-Id') or session_id
+
+def finlens_tool_call(token,tool_name,arguments):
+    url=os.environ.get('FINLENS_MCP_URL','https://mcp.finlens.vn/mcp')
+    last=None
+    for protocol in ('2025-06-18','2024-11-05'):
+        try:
+            init={'jsonrpc':'2.0','id':1,'method':'initialize','params':{'protocolVersion':protocol,'capabilities':{},'clientInfo':{'name':'FinQuery','version':'7'}}}
+            reply,session=mcp_post(url,token,init)
+            if isinstance(reply,dict) and reply.get('error'):raise RuntimeError(str(reply['error']))
+            try:mcp_post(url,token,{'jsonrpc':'2.0','method':'notifications/initialized'},session)
+            except Exception:pass
+            call={'jsonrpc':'2.0','id':2,'method':'tools/call','params':{'name':tool_name,'arguments':arguments}}
+            result,_=mcp_post(url,token,call,session)
+            if isinstance(result,dict) and result.get('error'):raise RuntimeError(str(result['error']))
+            return result
+        except Exception as exc:last=exc
+    raise RuntimeError('FinLens MCP: '+str(last))
+
+def mcp_payload(value):
+    result=value.get('result',{}) if isinstance(value,dict) else {}
+    if isinstance(result.get('structuredContent'),(dict,list)):return result['structuredContent']
+    for part in result.get('content') or []:
+        if not isinstance(part,dict) or part.get('type')!='text':continue
+        raw=part.get('text','').strip()
+        try:return json.loads(raw)
+        except Exception:continue
+    return result
+
+def collect_dicts(value):
+    out=[]
+    def walk(x):
+        if isinstance(x,dict):
+            out.append(x)
+            for v in x.values():walk(v)
+        elif isinstance(x,list):
+            for v in x:walk(v)
+    walk(value);return out
+
+def first_value(row,*keys):
+    for key in keys:
+        value=row.get(key)
+        if value not in (None,''):return value
+    return None
+
+def normalize_broker(value):
+    raw=clean(value).upper()
+    if raw in BROKER_ALIASES:return BROKER_ALIASES[raw]
+    for name,code in BROKER_ALIASES.items():
+        if name in raw:return code
+    compact=re.sub(r'[^A-Z0-9]','',raw)
+    return compact[:16] or 'FINLENS'
+
+def normalize_finlens_report(row,symbol):
+    title=clean(first_value(row,'title','report_title','name','report_name'))
+    raw_broker=first_value(row,'broker','broker_name','securities_company','source','publisher')
+    published=parse_date(first_value(row,'published_at','publishedAt','report_date','date','created_at') or '')
+    row_symbol=clean(first_value(row,'ticker','symbol','stock_code') or symbol).upper()
+    if row_symbol!=symbol or not title or not published:return None
+    broker=normalize_broker(raw_broker or 'FINLENS')
+    url=first_value(row,'source_url','sourceUrl','report_url','url','download_url','pdf_url')
+    report_id=clean(first_value(row,'report_id','id','reportId') or hashlib.sha1((broker+symbol+published+title).encode()).hexdigest()[:12])
+    if not (isinstance(url,str) and url.startswith(('http://','https://'))):
+        url='https://finlens.vn/?ticker='+symbol+'&report='+re.sub(r'[^A-Za-z0-9_-]','',report_id)[:80]
+    rating=parse_rating(first_value(row,'recommendation','rating','action') or '')
+    target_raw=first_value(row,'target_price','targetPrice','target','fair_value')
+    target=None
+    if target_raw not in (None,''):
+        try:
+            n=float(str(target_raw).replace(',',''))
+            if 0<n<1000:n*=1000
+            if 1000<=n<=10_000_000:target=int(round(n))
+        except Exception:pass
+    result={
+      'id':stable_id(broker,symbol,published,url,title),'symbol':symbol,'broker':broker,
+      'brokerName':clean(raw_broker or broker),'publishedAt':published,'title':title[:240],
+      'currency':'VND','sourceUrl':url,'dataProvider':'FINLENS'
+    }
+    if rating:result['recommendation']=rating
+    if target:result['targetPrice']=target
+    summary=clean(first_value(row,'summary','abstract','description','short_summary'))
+    if summary:result['summary']=summary[:900]
+    else:result['summary']='Metadata báo cáo được FinLens tổng hợp; FinQuery giữ nguyên nguồn CTCK, ngày báo cáo, khuyến nghị và giá mục tiêu khi có.'
+    return result
+
+def discover_finlens(source,universe,prior_status):
+    token=os.environ.get('FINLENS_MCP_TOKEN') or os.environ.get('FINLENS_API_KEY')
+    row={'code':'FINLENS','name':source.get('name','FinLens Research'),'url':source['url'],'mode':'authenticated_mcp','adapter':'finlens_mcp','checkedAt':now(),'status':'not_configured','discovered':0,'parsed':0}
+    if not token:
+        row['note']='Set FINLENS_API_KEY or FINLENS_MCP_TOKEN to import authenticated research metadata.'
+        return [],row,int(prior_status.get('finlensCursor') or 0)
+    symbols=sorted(universe)
+    if not symbols:return [],row,0
+    cursor=int(prior_status.get('finlensCursor') or 0)%len(symbols)
+    budget=max(1,min(len(symbols),int(os.environ.get('FINLENS_SYMBOL_BUDGET','25'))))
+    batch=[symbols[(cursor+i)%len(symbols)] for i in range(budget)]
+    reports=[];errors=[]
+    for symbol in batch:
+        try:
+            raw=finlens_tool_call(token,'research_list_reports',{'scope':'stock','ticker':symbol,'limit':10})
+            payload=mcp_payload(raw)
+            seen=set()
+            for candidate in collect_dicts(payload):
+                normalized=normalize_finlens_report(candidate,symbol)
+                if not normalized or normalized['id'] in seen:continue
+                seen.add(normalized['id']);reports.append(normalized)
+        except Exception as exc:
+            errors.append(symbol+': '+str(exc)[:100])
+            if len(errors)>=4:break
+    row['discovered']=len(reports);row['parsed']=len(reports)
+    row['symbolsAttempted']=len(batch if not errors else batch[:max(1,len(batch))])
+    row['status']='ok' if reports else ('error' if errors else 'reachable_no_reports')
+    if errors:row['errors']=errors[:4]
+    return reports,row,(cursor+budget)%len(symbols)
+
 def discover_fpts(raw,source,universe):
     rows=discover_generic(raw,source,universe);text=page_text(raw)
     for m in re.finditer(r'(\d{1,2}/\d{1,2}/20\d{2})\s+([A-Z]{3})\s+(.{8,140}?)(?=\d{1,2}/\d{1,2}/20\d{2}|$)',text):
@@ -264,7 +442,8 @@ def discover_source(source,raw,universe):
     if adapter=='fpts_listing':return discover_fpts(raw,source,universe)
     if adapter=='vietcap_listing':return discover_vietcap(raw,source,universe)
     if adapter=='acbs_listing':return discover_acbs(raw,source,universe)
-    if adapter=='health_only':return []
+    if adapter=='text_listing':return discover_text_listing(raw,source,universe)
+    if adapter in ('health_only','finlens_mcp'):return []
     return discover_generic(raw,source,universe)
 
 def refresh(output,max_detail=120):
@@ -280,8 +459,13 @@ def refresh(output,max_detail=120):
     event_by_id.update({x.get('id'):x for x in published_events.get('events',[]) if x.get('id')})
     events=validate_events({'version':1,'updatedAt':published_events.get('updatedAt') or seeded_events.get('updatedAt'),'events':list(event_by_id.values())})
     discovered=[];health=[];budget=max(1,max_detail)
+    prior_status=read(output/'insights-status.json',{})
+    finlens_cursor=int(prior_status.get('finlensCursor') or 0)
     for source in load_sources():
         row={'code':source['code'],'name':source.get('name',source['code']),'url':source['url'],'mode':source.get('mode',''),'adapter':source.get('adapter',''),'checkedAt':now(),'status':'pending','discovered':0,'parsed':0}
+        if source.get('adapter')=='finlens_mcp':
+            rows,row,finlens_cursor=discover_finlens(source,universe,prior_status)
+            discovered.extend(rows);health.append(row);continue
         try:
             raw,status,ctype=fetch(source['url']);row['httpStatus']=status
             seeds=discover_source(source,raw,universe);row['discovered']=len(seeds)
@@ -312,7 +496,7 @@ def refresh(output,max_detail=120):
     }
     write(research_path,value);events['updatedAt']=events.get('updatedAt') or now();write(events_path,events)
     ok=sum(1 for x in health if x['status'] in ('ok','reachable','reachable_no_reports','reachable_no_parse'))
-    status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':ok,'reportsDiscoveredThisRun':len(discovered),'storedReports':len(reports),'corporateEvents':len(events.get('events') or []),'sources':health}
+    status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':ok,'reportsDiscoveredThisRun':len(discovered),'storedReports':len(reports),'corporateEvents':len(events.get('events') or []),'finlensCursor':finlens_cursor,'sources':health}
     write(output/'insights-status.json',status)
     print(json.dumps(status,ensure_ascii=False))
     return status

@@ -24,7 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      RESEARCH_DETAIL_BUDGET: '120'
+      RESEARCH_DETAIL_BUDGET: '180'
+      FINLENS_API_KEY: ${{ secrets.FINLENS_API_KEY }}
+      FINLENS_MCP_TOKEN: ${{ secrets.FINLENS_MCP_TOKEN }}
+      FINLENS_SYMBOL_BUDGET: '25'
     steps:
       - uses: actions/checkout@v4
         with:

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "sources": [
     {
       "code": "MBS",
@@ -120,6 +120,55 @@
       "mode": "monitoring",
       "adapter": "health_only",
       "enabled": true
+    },
+    {
+      "code": "TCBS",
+      "name": "Techcom Securities",
+      "url": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "mode": "public_html",
+      "adapter": "text_listing",
+      "enabled": true
+    },
+    {
+      "code": "CTS",
+      "name": "VietinBank Securities",
+      "url": "https://advisor.cts.vn/category/bao-cao-phan-tich/bao-cao-doanh-nghiep/",
+      "mode": "public_html",
+      "adapter": "text_listing",
+      "enabled": true
+    },
+    {
+      "code": "PHS",
+      "name": "Phu Hung Securities",
+      "url": "https://www.phs.vn/trung-tam-phan-tich",
+      "mode": "public_html",
+      "adapter": "text_listing",
+      "enabled": true
+    },
+    {
+      "code": "VIX",
+      "name": "VIX Securities",
+      "url": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "mode": "public_html",
+      "adapter": "text_listing",
+      "enabled": true
+    },
+    {
+      "code": "VDSC",
+      "name": "Viet Dragon Securities",
+      "url": "https://www.vdsc.com.vn/trung-tam-phan-tich",
+      "mode": "public_html",
+      "adapter": "text_listing",
+      "enabled": true
+    },
+    {
+      "code": "FINLENS",
+      "name": "FinLens Research",
+      "url": "https://mcp.finlens.vn/mcp",
+      "mode": "authenticated_mcp",
+      "adapter": "finlens_mcp",
+      "enabled": true
     }
-  ]
+  ],
+  "notes": "Public broker sources are crawled directly; FinLens MCP is an optional authenticated enrichment source when FINLENS_API_KEY or FINLENS_MCP_TOKEN is configured."
 }
