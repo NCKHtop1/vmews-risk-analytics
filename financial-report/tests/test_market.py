@@ -251,8 +251,8 @@ class MarketTests(unittest.TestCase):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         self.assertIn('FINLENS_API_KEY: ${{ secrets.FINLENS_API_KEY }}',flow)
         self.assertIn('FINLENS_MCP_TOKEN: ${{ secrets.FINLENS_MCP_TOKEN }}',flow)
-        self.assertIn("FINLENS_SYMBOL_BUDGET: '25'",flow)
-        self.assertIn("RESEARCH_DETAIL_BUDGET: '180'",flow)
+        self.assertIn("FINLENS_SYMBOL_BUDGET: '5'",flow)
+        self.assertIn("RESEARCH_DETAIL_BUDGET: '24'",flow)
         reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
         if not (os.environ.get('FINLENS_API_KEY') or os.environ.get('FINLENS_MCP_TOKEN')):
             self.assertEqual(reports,[])
@@ -287,9 +287,29 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(bsc['publishedAt'],'2026-08-20')
         self.assertEqual(bsc['dataProvider'],'24HMONEY')
 
+    def test_research_v8_24hmoney_anchor_keeps_real_report_url(self):
+        raw='<a href="https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-rpId5554.html">MBB: Khuyến nghị MUA với giá mục tiêu 32,900 đồng/cổ phiếu</a> Nguồn: BSC Ngày phát hành: 24/06/2026 Tải về'
+        rows=im.parse_24hmoney_symbol(raw,'MBB','https://24hmoney.vn/bao-cao-phan-tich?k=MBB')
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['sourceUrl'],'https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-rpId5554.html')
+        self.assertEqual(rows[0]['broker'],'BSC')
+        self.assertEqual(rows[0]['targetPrice'],32900)
+
+    def test_research_v8_timeout_guard_is_bounded_and_incremental(self):
+        script=(ROOT/'scripts/refresh_insights.py').read_text()
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn('timeout=8',script)
+        self.assertIn('as_completed(futures)',script)
+        self.assertIn('detail_jobs=[]',script)
+        self.assertIn("min(len(symbols),default_budget)",script)
+        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '100'",flow)
+        self.assertIn("RESEARCH_FETCH_WORKERS: '16'",flow)
+        self.assertIn("timeout-minutes: 45",flow)
+
+
     def test_research_v71_workflow_prioritizes_user_visible_symbols(self):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
-        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '30'",flow)
+        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '100'",flow)
         self.assertIn("RESEARCH_PRIORITY_SYMBOLS: 'MBB,HPG,FPT,VCB,VIC'",flow)
         self.assertIn("EVENT_FETCH_WORKERS: '12'",flow)
         event_script=(ROOT/'scripts/refresh_events.py').read_text()
@@ -299,6 +319,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("aggregatorCursors",script)
         self.assertIn("discover_public_aggregator",script)
         self.assertIn("dataProvider':provider",script)
+        self.assertIn("ThreadPoolExecutor",script)
+        self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",script=(ROOT/'frontend/insights.js').read_text())
 
 
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
