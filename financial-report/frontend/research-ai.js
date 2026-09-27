@@ -1,6 +1,8 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const state={symbol:'',history:[],busy:false,directKey:'',model:'',modelCandidates:[]};
+const DOLPHIN_VERSION='DOLPHIN_V4';
+const AI_MODE_KEY='finquery_dolphin_mode';
+const state={symbol:'',history:[],busy:false,directKey:'',model:'',modelCandidates:[],mode:'normal',lastQuestion:'',currentController:null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
@@ -318,6 +320,27 @@ const GEMINI_SESSION_KEY='vmews_solution_ai_browser_session';
 const GOOGLE_SEARCH_TOOL={type:'google_search'};
 const URL_CONTEXT_TOOL={type:'url_context'};
 const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
+function restoreAIMode(){try{state.mode=localStorage.getItem(AI_MODE_KEY)==='deep'?'deep':'normal';}catch{state.mode='normal';}}
+function modeLabel(mode=state.mode){return mode==='deep'?'Phân tích sâu':'Nhanh & tiết kiệm';}
+function setAIMode(mode,persist=true){
+ state.mode=mode==='deep'?'deep':'normal';
+ if(persist)try{localStorage.setItem(AI_MODE_KEY,state.mode);}catch{}
+ state.model=pickModel(state.mode,state.modelCandidates)||state.model;
+ document.querySelectorAll('[data-dolphin-mode]').forEach(b=>b.classList.toggle('active',b.dataset.dolphinMode===state.mode));
+ renderGeminiStatus();
+}
+function modelVersionScore(name){const m=String(name||'').match(/gemini-(\d+)(?:\.(\d+))?/i);return m?Number(m[1])*100+Number(m[2]||0):0;}
+function pickModel(mode,models,exclude=[]){
+ const blocked=new Set(exclude),pool=(models||[]).filter(x=>!blocked.has(x));if(!pool.length)return'';
+ const lite=pool.filter(x=>/flash[-_.]?lite/i.test(x)).sort((a,b)=>modelVersionScore(b)-modelVersionScore(a));
+ const full=pool.filter(x=>/flash/i.test(x)&&!/flash[-_.]?lite/i.test(x)).sort((a,b)=>modelVersionScore(b)-modelVersionScore(a));
+ return mode==='deep'?(full[0]||lite[0]||''):(lite[0]||full[0]||'');
+}
+function modelPlan(mode=state.mode){
+ const first=pickModel(mode,state.modelCandidates),plan=first?[first]:[];
+ if(mode==='deep'){const lite=pickModel('normal',state.modelCandidates,plan);if(lite)plan.push(lite);}
+ return plan;
+}
 
 function sessionSecret(){
  if(state.directKey)return state.directKey;
@@ -339,25 +362,18 @@ function providerMessage(status,details=''){
  return details||('Kết nối Gemini chưa sẵn sàng ('+status+').');
 }
 function availableModels(payload){
- const models=(payload?.models||[]).filter(item=>{
+ return (payload?.models||[]).filter(item=>{
   const name=String(item.name||'').replace(/^models\//,'');
   const supported=item.supportedGenerationMethods||item.supportedActions||[];
   return name.startsWith('gemini-')&&/flash/i.test(name)&&!/image|audio|tts|live|embedding|robotics/i.test(name)&&(supported.length===0||supported.includes('generateContent')||supported.includes('generate_content'));
  }).map(item=>String(item.name||'').replace(/^models\//,''));
- const ordered=[];
- for(const preferred of ['gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash']){
-  const selected=models.find(x=>x===preferred)||models.find(x=>x.startsWith(preferred+'-'));
-  if(selected&&!ordered.includes(selected))ordered.push(selected);
- }
- for(const model of models)if(!ordered.includes(model))ordered.push(model);
- return ordered;
 }
 async function validateGemini(secret){
  const response=await fetch(GOOGLE_AI_ORIGIN+'/models?pageSize=100',{method:'GET',mode:'cors',cache:'no-store',headers:{'x-goog-api-key':secret}});
  const payload=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(providerMessage(response.status,payload?.error?.message));
  state.modelCandidates=availableModels(payload);
- const model=state.modelCandidates[0]||'';
+ const model=pickModel(state.mode,state.modelCandidates);
  if(!model)throw new Error('Dự án Google chưa có mô hình Gemini Flash khả dụng.');
  state.model=model;
  return model;
@@ -388,7 +404,7 @@ function buildLLMContext(question){
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
  const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],8),macro=compactMacro(question);
  return{
-  scope:'financial-report',contextVersion:'DOLPHIN_V3_BROWSER_GEMINI',symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
+  scope:'financial-report',contextVersion:DOLPHIN_VERSION,symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
   generatedAt:new Date().toISOString(),
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
   marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,
@@ -417,6 +433,10 @@ function dolphinSystemInstruction(){
 function shouldSearchWeb(question){
  const s=norm(question);
  return /hom nay|phien nay|moi nhat|tin|nhnn|ngan hang nha nuoc|lai suat|vi mo|ty gia|lam phat|gdp|pmi|fdi|tai sao gia|vi sao gia|bien dong|su kien|chinh sach/.test(s);
+}
+function inferredQuestionMode(question){
+ const s=norm(question);
+ return /phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|vi sao .*phien|dong luc phien|doi chieu nguon|nguyen nhan bien dong/.test(s)?'deep':null;
 }
 function geminiPrompt(question){
  return[
@@ -458,10 +478,12 @@ function providerAnswer(payload){
  return{text,sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
 }
 async function callGeminiModel(question,secret,model){
- const search=shouldSearchWeb(question),input=geminiPrompt(question);
- const common={method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret}};
- const interactionBody=tools=>({model,input,system_instruction:dolphinSystemInstruction(),store:false,generation_config:{max_output_tokens:3500,temperature:.16,thinking_level:'high'},...(tools.length?{tools:tools.map(type=>type==='google_search'?GOOGLE_SEARCH_TOOL:URL_CONTEXT_TOOL)}:{})});
- const compatibleBody=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:{maxOutputTokens:3500,temperature:.16},...(withSearch?{tools:[{googleSearch:{}}]}:{})});
+ const search=shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep';
+ const signal=state.currentController?.signal;
+ const common={method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},...(signal?{signal}:{})};
+ const generation={max_output_tokens:deep?4200:2100,temperature:deep?.16:.12,...(deep?{thinking_level:'high'}:{})};
+ const interactionBody=tools=>({model,input,system_instruction:dolphinSystemInstruction(),store:false,generation_config:generation,...(tools.length?{tools:tools.map(type=>type==='google_search'?GOOGLE_SEARCH_TOOL:URL_CONTEXT_TOOL)}:{})});
+ const compatibleBody=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:{maxOutputTokens:deep?4200:2100,temperature:deep?.16:.12},...(withSearch?{tools:[{googleSearch:{}}]}:{})});
  let response;
  if(search){
   response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search','url_context']))});
@@ -483,32 +505,43 @@ async function callLLM(question){
  const secret=sessionSecret();
  if(!secret){const err=new Error('Dolphin chưa kết nối Gemini.');err.code='NO_GEMINI_KEY';throw err;}
  if(!state.modelCandidates.length)await validateGemini(secret);
- const candidates=[...new Set([state.model,...state.modelCandidates].filter(Boolean))].slice(0,3);
+ const candidates=modelPlan(state.mode);
+ if(!candidates.length)throw new Error('Không tìm thấy Gemini Flash phù hợp.');
  let lastError;
  for(const model of candidates){
   state.model=model;
   try{return await callGeminiModel(question,secret,model);}
-  catch(error){lastError=error;if(![404,429,500,502,503,504].includes(Number(error.status)))break;}
+  catch(error){
+   lastError=error;
+   if(error?.name==='AbortError')throw error;
+   if(![404,429,500,502,503,504].includes(Number(error.status)))break;
+  }
  }
  throw lastError||new Error('Gemini tạm thời chưa phản hồi.');
 }
+function inlineMarkdown(value){
+ let out=esc(String(value||''));out=out.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');return out;
+}
 function llmHTML(answer,meta={}){
  const lines=String(answer||'').trim().split(/\n/),blocks=[];let bullets=[];
- const flush=()=>{if(!bullets.length)return;blocks.push('<div class="research-case">'+bullets.map(x=>'<p>• '+esc(x.replace(/\*\*/g,''))+'</p>').join('')+'</div>');bullets=[];};
- for(const rawLine of lines){const line=rawLine.trim();if(!line){flush();continue;}const h=line.match(/^#{1,4}\s+(.+)$/);if(h){flush();blocks.push('<h4>'+esc(h[1].replace(/\*\*/g,''))+'</h4>');continue;}const b=line.match(/^[-*]\s+(.+)$/);if(b){bullets.push(b[1]);continue;}flush();blocks.push('<p>'+esc(line.replace(/\*\*/g,''))+'</p>');}
+ const flush=()=>{if(!bullets.length)return;blocks.push('<div class="research-case">'+bullets.map(x=>'<p>• '+inlineMarkdown(x)+'</p>').join('')+'</div>');bullets=[];};
+ for(const rawLine of lines){const line=rawLine.trim();if(!line){flush();continue;}const h=line.match(/^#{1,4}\s+(.+)$/);if(h){flush();blocks.push('<h4>'+inlineMarkdown(h[1])+'</h4>');continue;}const b=line.match(/^[-*]\s+(.+)$/);if(b){bullets.push(b[1]);continue;}flush();blocks.push('<p>'+inlineMarkdown(line)+'</p>');}
  flush();
- const provider=[meta.provider,meta.model].filter(Boolean).join(' · '),mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'Gemini + Google Search':'Gemini + FinQuery';
- const sources=(meta.sources||[]).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||url)+'</a>':'';}).filter(Boolean);
- return '<section class="analysis-block"><h4>Dolphin AI · phân tích có dữ liệu neo</h4><div class="analysis-narrative">'+blocks.join('')+'</div>'+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc([provider,mode].filter(Boolean).join(' · '))+'</small></section>';
+ const mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'FinQuery + Gemini + Web':'FinQuery + Gemini';
+ const sources=(meta.sources||[]).slice(0,6).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||url)+'</a>':'';}).filter(Boolean);
+ return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel())+'</small></section>';
 }
-function addUser(text){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message user';a.innerHTML='<strong>Câu hỏi</strong><p>'+esc(text)+'</p>';box.append(a);box.scrollTop=box.scrollHeight;}
-function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);box.scrollTop=box.scrollHeight;return a;}
-function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>Dolphin đang đọc FinQuery'+(shouldSearchWeb(state.lastQuestion||'')?' và đối chiếu Google Search':'')+'…</p></div>'});}
+function nearBottom(box){return !box||box.scrollHeight-box.scrollTop-box.clientHeight<120;}
+function scrollIfNeeded(box,wasNear=true){if(box&&wasNear)box.scrollTop=box.scrollHeight;}
+function addUser(text){const box=$('research-ai-messages');if(!box)return;const was=nearBottom(box),a=document.createElement('article');a.className='research-ai-message user';a.innerHTML='<strong>Câu hỏi</strong><p>'+esc(text)+'</p>';box.append(a);scrollIfNeeded(box,was);}
+function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const was=nearBottom(box),a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);scrollIfNeeded(box,was);return a;}
+function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>'+(state.mode==='deep'?'Dolphin đang phân tích dữ liệu và đối chiếu nguồn…':'Dolphin đang phân tích '+esc(state.symbol||'mã đang xem')+'…')+'</p></div>'});}
 function mountGeminiUI(){
  const drawer=$('research-ai');if(!drawer||$('dolphin-gemini-connect'))return;
- const box=document.createElement('div');box.id='dolphin-gemini-connect';box.style.cssText='margin:10px 14px;padding:12px;border:1px solid #dce5f4;border-radius:14px;background:#f8fafc;display:grid;gap:9px';
- box.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><strong style="display:block">Bật Dolphin AI thông minh</strong><small id="dolphin-gemini-status" style="color:#64748b">Đang kiểm tra kết nối…</small></div><button id="dolphin-gemini-disconnect" type="button" style="display:none;border:1px solid #d7e0ef;background:#fff;border-radius:10px;padding:6px 9px;cursor:pointer">Ngắt</button></div><div id="dolphin-gemini-guide" style="display:grid;gap:7px"><div style="font-size:12px;line-height:1.5;color:#475569"><b>Miễn phí cho nhu cầu cơ bản.</b> Cần tài khoản Google; Free Tier không yêu cầu bật thanh toán.</div><div style="display:flex;gap:7px;flex-wrap:wrap"><a id="dolphin-gemini-get-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;text-decoration:none;border:0;border-radius:10px;background:#eef3ff;color:#173b78;padding:8px 10px;font-weight:700">1. Lấy khóa miễn phí ↗</a><button id="dolphin-gemini-paste" type="button" style="border:1px solid #d7e0ef;background:#fff;border-radius:10px;padding:8px 10px;font-weight:700;cursor:pointer">2. Dán khóa</button></div><small style="color:#64748b;line-height:1.45">Google AI Studio sẽ tạo/cấp khóa. Chỉ cần sao chép khóa rồi quay lại đây bấm “Dán khóa”.</small></div><div id="dolphin-gemini-form" style="display:flex;gap:7px"><input id="dolphin-gemini-key" type="password" autocomplete="off" spellcheck="false" placeholder="Dán khóa Gemini của Google vào đây" style="min-width:0;flex:1;border:1px solid #ccd7e8;border-radius:10px;padding:8px 10px"><button id="dolphin-gemini-save" type="button" style="border:0;border-radius:10px;background:#173b78;color:#fff;padding:8px 12px;font-weight:700;cursor:pointer">3. Kết nối</button></div><small id="dolphin-gemini-note" style="color:#64748b;line-height:1.45">Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub và tự mất khi đóng phiên.</small>';
+ const box=document.createElement('section');box.id='dolphin-gemini-connect';box.className='dolphin-connect-card';
+ box.innerHTML='<div class="dolphin-connect-head"><div><strong>Bật Dolphin AI thông minh</strong><small id="dolphin-gemini-status">Đang kiểm tra kết nối…</small></div><button id="dolphin-gemini-disconnect" class="dolphin-disconnect" type="button">Ngắt</button></div><div class="dolphin-mode-switch" aria-label="Chế độ AI"><button type="button" data-dolphin-mode="normal">⚡ Nhanh & tiết kiệm<small>Flash-Lite</small></button><button type="button" data-dolphin-mode="deep">✦ Phân tích sâu<small>Flash · dùng nhiều quota hơn</small></button></div><div id="dolphin-gemini-guide" class="dolphin-connect-guide"><p><b>3 bước để bật AI:</b> lấy khóa miễn phí từ Google AI Studio, sao chép rồi kết nối.</p><div><a id="dolphin-gemini-get-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">1. Lấy khóa miễn phí ↗</a><button id="dolphin-gemini-paste" type="button">2. Dán khóa</button></div></div><div id="dolphin-gemini-form" class="dolphin-key-form"><input id="dolphin-gemini-key" type="password" autocomplete="off" spellcheck="false" placeholder="Dán khóa Gemini của Google"><button id="dolphin-gemini-save" type="button">3. Kết nối</button></div><small id="dolphin-gemini-note" class="dolphin-connect-note">Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub.</small>';
  const prompts=drawer.querySelector('.research-ai-prompts');drawer.insertBefore(box,prompts||drawer.firstChild);
+ document.querySelectorAll('[data-dolphin-mode]').forEach(b=>b.addEventListener('click',()=>setAIMode(b.dataset.dolphinMode)));
  $('dolphin-gemini-save')?.addEventListener('click',connectGeminiFromUI);
  $('dolphin-gemini-key')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();connectGeminiFromUI();}});
  $('dolphin-gemini-paste')?.addEventListener('click',async()=>{
@@ -516,56 +549,57 @@ function mountGeminiUI(){
   try{
    const value=String(await navigator.clipboard.readText()).trim();
    if(!value){renderGeminiStatus('Clipboard chưa có khóa. Hãy sao chép khóa từ Google AI Studio.');return;}
-   if(input)input.value=value;
-   if(button)button.textContent='Đã dán ✓';
-   renderGeminiStatus('Đã dán khóa · bấm “3. Kết nối”.');
-  }catch{
-   renderGeminiStatus('Trình duyệt không cho đọc clipboard; hãy dán thủ công vào ô bên dưới.');
-   input?.focus();
-  }
+   if(input)input.value=value;if(button)button.textContent='Đã dán ✓';renderGeminiStatus('Đã dán khóa · bấm “3. Kết nối”.');
+  }catch{renderGeminiStatus('Trình duyệt không cho dán tự động; hãy nhấn Ctrl+V vào ô khóa.');input?.focus();}
  });
  $('dolphin-gemini-disconnect')?.addEventListener('click',()=>{forgetSession();renderGeminiStatus();});
- renderGeminiStatus();
+ setAIMode(state.mode,false);renderGeminiStatus();
 }
 function renderGeminiStatus(message=''){
- const secret=sessionSecret(),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),guide=$('dolphin-gemini-guide'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
- if(status)status.textContent=message||(secret?(state.model?'Đã kết nối · '+state.model:'Đã có khóa phiên · sẽ xác minh khi hỏi'):'Chưa bật Gemini · làm 3 bước bên dưới');
- if(form)form.style.display=secret?'none':'flex';
- if(guide)guide.style.display=secret?'none':'grid';
- if(disconnect)disconnect.style.display=secret?'inline-block':'none';
- if(note)note.textContent=secret?'Gemini đang chạy trực tiếp trên dữ liệu FinQuery của mã đang xem.':'Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub và tự mất khi đóng phiên.';
+ const secret=sessionSecret(),card=$('dolphin-gemini-connect'),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),guide=$('dolphin-gemini-guide'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
+ card?.classList.toggle('connected',Boolean(secret));
+ if(status)status.textContent=message||(secret?('Đã kết nối · '+modeLabel()):'Chưa bật Gemini · làm 3 bước bên dưới');
+ if(form)form.hidden=Boolean(secret);if(guide)guide.hidden=Boolean(secret);if(disconnect)disconnect.hidden=!secret;
+ if(note)note.textContent=secret?((state.mode==='deep'?'Gemini Flash':'Gemini Flash-Lite')+' · dữ liệu tài chính lấy từ FinQuery.'):'Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub.';
+ document.querySelectorAll('[data-dolphin-mode]').forEach(b=>b.classList.toggle('active',b.dataset.dolphinMode===state.mode));
 }
 async function connectGeminiFromUI(){
  const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-save'),secret=String(input?.value||'').trim();if(!secret)return;
  if(button)button.disabled=true;renderGeminiStatus('Đang xác minh trực tiếp với Google Gemini…');
- try{rememberSession(secret);const model=await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Đã kết nối · '+model);}
+ try{rememberSession(secret);await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Đã kết nối · '+modeLabel());}
  catch(error){forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}
  finally{if(button)button.disabled=false;}
 }
 async function refreshGeminiSession(){
  mountGeminiUI();const secret=sessionSecret();if(!secret)return;
- try{const model=await validateGemini(secret);renderGeminiStatus('Đã kết nối · '+model);}
+ try{await validateGemini(secret);renderGeminiStatus('Đã kết nối · '+modeLabel());}
  catch(error){renderGeminiStatus(error?.message||'Khóa phiên cần được kiểm tra lại.');}
 }
-function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');mountGeminiUI();if(fab)fab.setAttribute('aria-expanded','true');setTimeout(()=>$('research-ai-question')?.focus(),80);}
-function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab)fab.setAttribute('aria-expanded','false');}
-async function ask(question){
- const q=String(question||'').trim();if(!q||state.busy)return;state.lastQuestion=q;openDrawer();addUser(q);state.busy=true;
- const send=$('research-ai-send');if(send)send.disabled=true;const waiting=addThinking();
+function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');mountGeminiUI();if(fab){fab.setAttribute('aria-expanded','true');fab.hidden=true;}setTimeout(()=>$('research-ai-question')?.focus(),80);}
+function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab){fab.setAttribute('aria-expanded','false');fab.hidden=false;}}
+async function ask(question,preferredMode=null){
+ const q=String(question||'').trim();if(!q||state.busy)return;
+ const nextMode=preferredMode||inferredQuestionMode(q);if(nextMode)setAIMode(nextMode);
+ state.lastQuestion=q;openDrawer();addUser(q);state.busy=true;state.currentController=new AbortController();
+ const send=$('research-ai-send');if(send){send.disabled=false;send.textContent='Dừng';send.dataset.busy='1';}const waiting=addThinking();
  try{
   const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
-  state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);
-  renderGeminiStatus();
+  state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
-  waiting?.remove();const local=analyze(q),reason=error?.code==='NO_GEMINI_KEY'?'Chưa kết nối Gemini; ':'Gemini tạm chưa phản hồi; ';
-  local.html='<div class="analysis-empty">'+esc(reason)+(error?.code==='NO_GEMINI_KEY'?'Muốn bật LLM, bấm “1. Lấy khóa miễn phí” ở phía trên, sao chép khóa Google rồi bấm “2. Dán khóa” → “3. Kết nối”. Trong lúc chưa kết nối, ':'')+'Dolphin đang dùng engine FinQuery cục bộ, nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
-  if(error?.message&&error?.code!=='NO_GEMINI_KEY')renderGeminiStatus(error.message);
- }finally{state.busy=false;if(send)send.disabled=false;}
+  waiting?.remove();if(error?.name==='AbortError'){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
+  const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY';
+  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':'Gemini chưa phản hồi; đang tiếp tục bằng FinQuery local. ')+'</div>'+local.html;addAnalysis(local);
+  if(error?.message&&!noKey)renderGeminiStatus(error.message);
+ }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
-function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`Gemini suy luận trực tiếp trên BCTC, giá, kỹ thuật và tin đã neo dữ liệu cho ${state.symbol||'VN100'}; FinQuery cục bộ luôn sẵn sàng khi Gemini không kết nối.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
-window.FinQueryAI={sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},geminiStatus:()=>({connected:Boolean(sessionSecret()),model:state.model||null})};
-const form=$('research-ai-form'),input=$('research-ai-question');form?.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(q){input.value='';ask(q);}});document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'')));
+function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
+window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({connected:Boolean(sessionSecret()),mode:state.mode,model:state.model||null})};
+const form=$('research-ai-form'),input=$('research-ai-question'),sendButton=$('research-ai-send');
+form?.addEventListener('submit',e=>{e.preventDefault();if(state.busy){state.currentController?.abort();return;}const q=input.value.trim();if(q){input.value='';input.style.height='';ask(q);}});
+input?.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,130)+'px';});
+input?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&window.innerWidth>600){e.preventDefault();form?.requestSubmit();}});
+document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'',b.dataset.aiMode||null)));
 $('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('research-ai')?.hidden)closeDrawer();});
-sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');mountGeminiUI();void refreshGeminiSession();
+restoreAIMode();sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');mountGeminiUI();void refreshGeminiSession();
 })();
