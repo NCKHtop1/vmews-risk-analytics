@@ -1,5 +1,6 @@
 """Reject corrupt market values, unsafe RSS links and issuer mismatches."""
 import importlib.util
+import json
 import pathlib
 import tempfile
 import pandas as pd
@@ -12,7 +13,70 @@ spec = importlib.util.spec_from_file_location('market', ROOT / 'scripts/refresh_
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 
+insight_spec = importlib.util.spec_from_file_location('insight_refresh', ROOT / 'scripts/refresh_insights.py')
+im = importlib.util.module_from_spec(insight_spec)
+insight_spec.loader.exec_module(im)
+
 class MarketTests(unittest.TestCase):
+    def test_insight_data_seeds_are_source_linked_and_attributed(self):
+        events=json.loads((ROOT/'data/corporate-events.json').read_text())
+        research=json.loads((ROOT/'data/broker-research.json').read_text())
+        hpg_events=[x for x in events['events'] if x['symbol']=='HPG']
+        self.assertTrue(any(x['type']=='stock_dividend' and x['date']=='2026-05-25' and x['details']['recordDate']=='2026-05-26' and x['details']['ratio']=='10%' for x in hpg_events))
+        self.assertTrue(any(x['type']=='listing' and x['date']=='2026-07-15' for x in hpg_events))
+        self.assertTrue(all(x['source']['url'].startswith('https://') for x in hpg_events))
+        latest=next(x for x in research['reports'] if x['id']=='MBS-HPG-2026-09-18')
+        self.assertEqual(latest['recommendation'],'KHẢ QUAN')
+        self.assertEqual(latest['targetPrice'],32000)
+        self.assertTrue(latest['sourceUrl'].startswith('https://www.mbs.com.vn/'))
+
+    def test_mbs_research_parser_extracts_metadata_without_copying_report_body(self):
+        listing='<a href="https://www.mbs.com.vn/hpg-bcpt-test/">HPG - BCPT - Giá thép thuận lợi</a><a href="/other/">Tin khác</a>'
+        rows=im.discover_mbs_list(listing,{'HPG','FPT'})
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['symbol'],'HPG')
+        report='<html><body><div>Ngày đăng: 18/09/2026</div><p>Khuyến nghị KHẢ QUAN với giá mục tiêu 32,000 VND/cp.</p><p>Nội dung rất dài không được lưu nguyên văn.</p></body></html>'
+        row=im.parse_mbs_report(report,rows[0])
+        self.assertEqual(row['publishedAt'],'2026-09-18')
+        self.assertEqual(row['recommendation'],'KHẢ QUAN')
+        self.assertEqual(row['targetPrice'],32000)
+        self.assertNotIn('Nội dung rất dài',row['summary'])
+        prior={**row,'summary':'Tóm tắt FinQuery đã biên soạn','highlights':['Điểm đã xác minh']}
+        merged=im.merge_reports([prior],[row])
+        self.assertEqual(merged[0]['summary'],'Tóm tắt FinQuery đã biên soạn')
+        self.assertEqual(merged[0]['highlights'],['Điểm đã xác minh'])
+
+    def test_events_and_broker_research_are_wired_to_chart_dolphin_and_bundle(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        insights=(ROOT/'frontend/insights.js').read_text()
+        research=(ROOT/'frontend/research-ai.js').read_text()
+        build=(ROOT/'scripts/build_cdn.py').read_text()
+        bundle=(ROOT/'index.html').read_text()
+        workflow=(ROOT.parent/'.github/workflows/financial-report-refresh.yml')
+        flow=workflow.read_text() if workflow.exists() else pathlib.Path('.github/workflows/financial-report-refresh.yml').read_text()
+        self.assertIn('src="insights.js"',html)
+        self.assertIn('id="chart-insight-markers"',html)
+        self.assertIn('id="market-insights"',html)
+        self.assertIn('id="insight-detail"',html)
+        self.assertIn('setInsights(items,onOpen)',chart)
+        self.assertIn('timeToCoordinate',chart)
+        self.assertIn('chart-insight-marker',chart)
+        self.assertIn('registerInsights(api)',market)
+        self.assertIn("window.FinInsights?.select?.(symbol)",market)
+        self.assertIn("window.FinInsights={select,attachChart,context,open,reload:load}",insights)
+        self.assertIn('Khuyến nghị và giá mục tiêu là quan điểm của',insights)
+        self.assertIn('corporateEvents',research)
+        self.assertIn('brokerResearch',research)
+        self.assertIn('brokerConsensus',research)
+        self.assertIn('không phải khuyến nghị của FinQuery',research)
+        self.assertIn("(front / 'insights.js').read_text()",build)
+        self.assertIn("refresh_insights.py --output /tmp/financial-publish/data",flow)
+        self.assertIn('chart-insight-markers',bundle)
+        self.assertIn('FinInsights',bundle)
+        self.assertIn('brokerResearch',bundle)
+
     def test_board_does_not_scale_vnd_or_invent_missing_price(self):
         items = [{'listingInfo': {'symbol':'MBB','refPrice':25000}, 'matchPrice':{'matchPrice':26000,'accumulatedVolume':1234,'time':1727100000000}}, {'listingInfo':{'symbol':'FPT'},'matchPrice':{'matchPrice':None}}]
         rows=m.normalize_board(items,['MBB','FPT'],'2026-09-24T00:00:00+00:00')
