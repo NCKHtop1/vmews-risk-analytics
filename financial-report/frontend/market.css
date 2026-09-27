@@ -125,3 +125,40 @@
  .dolphin-mode-switch{grid-template-columns:1fr 1fr}
 }
 @media(prefers-reduced-motion:reduce){.dolphin-logo,.ai-fab::before{animation:none!important}}
+
+/* Dolphin centered modal + market comparison tabs */
+body.dolphin-modal-open{overflow:hidden}
+.ai-backdrop{position:fixed;inset:0;z-index:12980;background:rgba(15,23,42,.30);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .16s ease}
+.ai-backdrop.open{opacity:1}.ai-backdrop[hidden]{display:none!important}
+.research-ai.ai-drawer.ai-modal{
+ position:fixed!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;
+ width:min(840px,calc(100vw - 36px))!important;height:min(86dvh,900px)!important;max-height:calc(100dvh - 30px)!important;
+ transform:translate(-50%,calc(-50% + 12px)) scale(.985)!important;opacity:0!important;z-index:12990!important;
+ border:1px solid rgba(104,126,235,.28)!important;border-radius:24px!important;background:rgba(255,255,255,.985)!important;
+ box-shadow:0 35px 110px rgba(15,31,67,.34),0 0 0 1px rgba(123,139,255,.08),0 0 54px rgba(91,124,255,.18)!important;
+ transition:transform .16s ease,opacity .16s ease!important
+}
+.research-ai.ai-drawer.ai-modal.open{transform:translate(-50%,-50%) scale(1)!important;opacity:1!important}
+.research-ai-head-actions{display:flex;align-items:center;gap:10px}
+.dolphin-modal-orb{width:46px;height:46px;display:grid;place-items:center;border-radius:50%;box-shadow:0 0 0 1px rgba(103,147,255,.28),0 0 18px rgba(64,156,255,.52),0 0 38px rgba(105,76,235,.30);overflow:hidden;flex:0 0 auto}
+.dolphin-modal-orb .dolphin-logo{width:46px!important;height:46px!important}
+.research-ai.ai-drawer.ai-modal .research-ai-head{padding:16px 18px 13px!important}
+.research-ai.ai-drawer.ai-modal .dolphin-connect-card{margin-top:11px}
+.dolphin-mode-switch button small{font-size:8px!important}
+@media(max-width:600px){
+ .research-ai.ai-drawer.ai-modal{left:8px!important;top:8px!important;right:8px!important;bottom:8px!important;width:auto!important;height:auto!important;max-height:none!important;transform:translateY(10px) scale(.99)!important;border-radius:18px!important}
+ .research-ai.ai-drawer.ai-modal.open{transform:none!important}
+ .dolphin-modal-orb{width:40px;height:40px}.dolphin-modal-orb .dolphin-logo{width:40px!important;height:40px!important}
+}
+.market-view-tabs{display:flex;gap:0;margin:12px 0 10px;border:1px solid #dfe6f1;border-radius:11px;background:#f7f9fd;overflow:auto;scrollbar-width:none}
+.market-view-tabs::-webkit-scrollbar{display:none}.market-view-tabs button{border:0!important;border-right:1px solid #e4e9f2!important;border-radius:0!important;background:transparent!important;padding:9px 13px!important;font-size:10px!important;font-weight:650!important;color:#61708a!important;white-space:nowrap}
+.market-view-tabs button:last-child{border-right:0!important}.market-view-tabs button.active{background:#fff!important;color:#3455bf!important;box-shadow:inset 0 -2px #4967d6!important}
+.market-compare-panel{margin-top:8px;border:1px solid #e0e6f0;border-radius:12px;background:linear-gradient(180deg,#fff,#fbfcff);padding:14px 15px 12px;min-height:430px}
+.market-compare-panel[hidden]{display:none!important}.market-compare-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.market-compare-head>div{min-width:0}
+.market-compare-head span:first-child{display:block;font-size:8px;font-weight:800;letter-spacing:.9px;color:#6072cb}.market-compare-head h4{margin:3px 0 4px;font-size:14px;color:#344963}.market-compare-head p{margin:0;font-size:9px;line-height:1.5;color:#7b8799}
+#market-compare-period{font-size:9px;color:#7d8899;border:1px solid #e1e6ef;border-radius:999px;padding:5px 8px;background:#fff;white-space:nowrap}
+.market-compare-legend{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 6px}.market-compare-legend span{display:inline-flex;align-items:center;gap:5px;border:1px solid #e2e7ef;border-radius:999px;background:#fff;padding:5px 8px;font-size:9px;color:#5d6d85}
+.market-compare-legend i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}.market-compare-legend b{font-size:9px;color:#40536f}.market-compare-legend em{font-style:normal;font-variant-numeric:tabular-nums;color:#6e7b90}
+.market-compare-chart{height:360px;width:100%;overflow:hidden}.market-compare-chart svg{display:block;width:100%;height:100%}.market-compare-loading,.market-compare-empty{height:100%;min-height:330px;display:grid;place-items:center;text-align:center;color:#7d899d;font-size:10px;line-height:1.6;padding:24px}
+.market-compare-note{margin:8px 0 0;padding-top:8px;border-top:1px solid #edf1f6;font-size:8px;line-height:1.55;color:#8a95a7}
+@media(max-width:600px){.market-view-tabs button{padding:8px 10px!important;font-size:9px!important}.market-compare-panel{padding:12px 10px;min-height:380px}.market-compare-chart{height:315px}.market-compare-head{align-items:flex-start}.market-compare-legend{gap:5px}}
