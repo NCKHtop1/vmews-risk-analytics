@@ -82,6 +82,35 @@ function edit(a,b){a=norm(a);b=norm(b);if(a===b)return 0;if(!a)return b.length;i
 function scoreConcept(q,c){const s=norm(q),qt=tokens(s);let score=0;for(const a of [c.title,...(c.aliases||[])]){const n=norm(a),at=tokens(n);if(!n)continue;if(s===n)score=Math.max(score,30);else if(s.includes(n))score=Math.max(score,20+Math.min(6,at.length));else{const overlap=at.filter(t=>qt.includes(t)).length,coverage=overlap/Math.max(1,at.length);score=Math.max(score,coverage*12+overlap*2);if(at.length===1){const best=qt.reduce((m,t)=>Math.min(m,edit(t,at[0])),99);if(best<=1)score=Math.max(score,14);else if(best===2&&at[0].length>=5)score=Math.max(score,8);}}}return score;}
 function search(question,limit=5){return C.map(c=>({c,score:scoreConcept(question,c)})).filter(x=>x.score>=3).sort((a,b)=>b.score-a.score||a.c.title.localeCompare(b.c.title,'vi')).slice(0,limit);}
 function find(question){const ranked=search(question,1);return ranked[0]?.score>=5?ranked[0].c:null;}
-function explainLabel(label){const s=norm(label);if(/doanh thu/.test(s))return'Chỉ tiêu doanh thu ghi nhận giá trị hàng hóa hoặc dịch vụ doanh nghiệp tạo ra trong kỳ.';if(/loi nhuan/.test(s))return'Chỉ tiêu lợi nhuận cho biết phần giá trị còn lại sau các nhóm chi phí tương ứng trong kỳ.';if(/tai san/.test(s))return'Chỉ tiêu tài sản phản ánh nguồn lực kinh tế doanh nghiệp đang kiểm soát tại ngày báo cáo.';if(/no phai tra|no vay/.test(s))return'Chỉ tiêu nợ phản ánh nghĩa vụ doanh nghiệp phải thanh toán cho bên ngoài.';if(/von chu/.test(s))return'Vốn chủ sở hữu là phần giá trị còn lại thuộc cổ đông sau khi lấy tài sản trừ nợ phải trả.';if(/dong tien|luu chuyen tien/.test(s))return'Chỉ tiêu dòng tiền ghi nhận tiền thực thu và thực chi, khác với lợi nhuận kế toán.';if(/chi phi/.test(s))return'Chỉ tiêu chi phí ghi nhận nguồn lực đã sử dụng để tạo doanh thu hoặc duy trì hoạt động trong kỳ.';if(/tang truong/.test(s))return'Chỉ tiêu tăng trưởng đo tốc độ thay đổi so với mốc trước hoặc cùng kỳ.';if(/ty suat|ty so|bien/.test(s))return'Đây là tỷ lệ dùng để so quy mô của hai chỉ tiêu và theo dõi chất lượng hoạt động qua thời gian.';return'Đây là một chỉ tiêu đang có trong dữ liệu FinQuery của doanh nghiệp.';}
+function explainLabel(label){const s=norm(label);
+ if(/doanh thu|thu nhap ban hang/.test(s))return'Doanh thu là giá trị doanh nghiệp ghi nhận từ hàng hóa hoặc dịch vụ đã cung cấp trong kỳ, trước khi trừ các nhóm chi phí.';
+ if(/gia von/.test(s))return'Giá vốn là chi phí trực tiếp gắn với hàng hóa hoặc dịch vụ đã tạo ra doanh thu trong kỳ.';
+ if(/loi nhuan gop/.test(s))return'Lợi nhuận gộp là phần doanh thu còn lại sau khi trừ giá vốn, trước chi phí bán hàng, quản lý, tài chính và thuế.';
+ if(/loi nhuan/.test(s))return'Lợi nhuận cho biết phần giá trị còn lại sau các nhóm chi phí tương ứng trong kỳ; cần đọc cùng dòng tiền để kiểm tra mức độ chuyển thành tiền thực.';
+ if(/khau hao|hao mon/.test(s))return'Khấu hao phân bổ nguyên giá tài sản cố định vào chi phí qua thời gian sử dụng; đây là chi phí kế toán nhưng không phải khoản chi tiền mới trong kỳ.';
+ if(/du phong/.test(s))return'Dự phòng là khoản doanh nghiệp ghi nhận trước cho tổn thất hoặc nghĩa vụ có khả năng phát sinh, làm giảm lợi nhuận hiện tại để phản ánh rủi ro tốt hơn.';
+ if(/thue thu nhap hoan lai|thue hoan lai/.test(s))return'Thuế thu nhập hoãn lại phát sinh khi thời điểm ghi nhận doanh thu, chi phí hoặc giá trị tài sản theo kế toán khác với thời điểm tính thuế.';
+ if(/loi the thuong mai|goodwill/.test(s))return'Lợi thế thương mại là phần giá mua một doanh nghiệp cao hơn giá trị hợp lý của tài sản thuần nhận được khi mua lại.';
+ if(/tai san co dinh/.test(s))return'Tài sản cố định là nhà xưởng, máy móc, thiết bị và tài sản dài hạn được dùng trong nhiều kỳ kinh doanh.';
+ if(/tai san ngan han/.test(s))return'Tài sản ngắn hạn là các nguồn lực dự kiến chuyển thành tiền, bán hoặc sử dụng trong chu kỳ kinh doanh ngắn, thường gồm tiền, phải thu và tồn kho.';
+ if(/tai san/.test(s))return'Tài sản là các nguồn lực kinh tế doanh nghiệp đang kiểm soát và kỳ vọng tạo lợi ích trong tương lai.';
+ if(/no ngan han/.test(s))return'Nợ ngắn hạn là các nghĩa vụ phải thanh toán trong chu kỳ kinh doanh ngắn hoặc trong khoảng một năm.';
+ if(/no phai tra|no vay/.test(s))return'Nợ phản ánh nghĩa vụ doanh nghiệp phải thanh toán cho ngân hàng, nhà cung cấp, trái chủ hoặc các bên khác.';
+ if(/von dieu le|von gop/.test(s))return'Vốn góp là phần vốn cổ đông đã góp vào doanh nghiệp theo giá trị ghi nhận kế toán.';
+ if(/loi nhuan sau thue chua phan phoi|loi nhuan giu lai/.test(s))return'Lợi nhuận giữ lại là phần lợi nhuận sau thuế tích lũy chưa được chia hết cho cổ đông và đang được giữ lại trong doanh nghiệp.';
+ if(/von chu/.test(s))return'Vốn chủ sở hữu là phần giá trị thuộc cổ đông sau khi lấy tổng tài sản trừ toàn bộ nợ phải trả.';
+ if(/tien va tuong duong tien/.test(s))return'Tiền và tương đương tiền là nguồn thanh khoản có thể sử dụng gần như ngay lập tức để thanh toán hoặc đầu tư.';
+ if(/phai thu/.test(s))return'Khoản phải thu là tiền khách hàng hoặc đối tác còn phải thanh toán cho doanh nghiệp; tăng nhanh hơn doanh thu làm dòng tiền bị giữ lại lâu hơn.';
+ if(/hang ton kho|ton kho/.test(s))return'Hàng tồn kho là nguyên vật liệu, sản phẩm dở dang và hàng hóa chưa bán; cần đọc tốc độ tăng cùng doanh thu và vòng quay tồn kho.';
+ if(/tien gui khach hang/.test(s))return'Tiền gửi khách hàng là nguồn vốn ngân hàng nhận từ khách hàng và là một cấu phần chính của nguồn vốn huy động.';
+ if(/cho vay khach hang|du no/.test(s))return'Cho vay khách hàng là dư nợ tín dụng ngân hàng đã cấp cho khách hàng; quy mô tăng cần đọc cùng NIM, nợ xấu và dự phòng.';
+ if(/thu nhap lai thuan/.test(s))return'Thu nhập lãi thuần là phần chênh giữa thu nhập lãi từ tài sản sinh lãi và chi phí lãi trả cho nguồn vốn.';
+ if(/dong tien|luu chuyen tien/.test(s))return'Dòng tiền ghi nhận tiền thực thu và thực chi trong kỳ, khác với lợi nhuận kế toán vốn có thể bao gồm doanh thu hoặc chi phí chưa thu/chi tiền.';
+ if(/chi phi lai vay|lai vay/.test(s))return'Chi phí lãi vay là khoản doanh nghiệp trả cho vốn vay; khi tăng nhanh hơn EBIT, vùng đệm trả lãi thu hẹp.';
+ if(/chi phi/.test(s))return'Chi phí là nguồn lực doanh nghiệp đã sử dụng để tạo doanh thu, vận hành hoạt động hoặc tài trợ vốn trong kỳ.';
+ if(/co phieu luu hanh/.test(s))return'Cổ phiếu lưu hành là số cổ phiếu thực tế đang thuộc sở hữu nhà đầu tư, dùng làm mẫu số cho EPS và nhiều chỉ tiêu trên mỗi cổ phần.';
+ if(/tang truong/.test(s))return'Tăng trưởng đo tốc độ thay đổi của một chỉ tiêu so với mốc trước hoặc cùng kỳ.';
+ if(/ty suat|ty so|bien|vong quay/.test(s))return'Đây là tỷ lệ so sánh hai đại lượng để đo hiệu quả, khả năng thanh toán, tốc độ luân chuyển hoặc cấu trúc tài chính qua thời gian.';
+ return'Đây là một khoản mục trong dữ liệu FinQuery. Giá trị của nó cần được đọc theo xu hướng nhiều kỳ, tỷ trọng trong báo cáo và quan hệ với dòng tiền hoặc lợi nhuận liên quan.';}
 window.FinQueryKnowledge={concepts:C,byId,find,search,scoreConcept,explainLabel,norm};
 })();
