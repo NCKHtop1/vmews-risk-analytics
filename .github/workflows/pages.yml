@@ -12,7 +12,7 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
   workflow_run:
-    workflows: ['Refresh FinQuery prices and company news', 'Refresh financial reports for CDN']
+    workflows: ['Refresh FinQuery prices and company news', 'Refresh financial reports for CDN', 'Refresh broker research timeline']
     types: [completed]
     branches: [main]
 
@@ -48,7 +48,11 @@ jobs:
       - name: Build site with same-origin financial and market data
         shell: bash
         run: |
+          mkdir -p /tmp/main-insight-seed
+          cp financial-report/data/broker-research.json /tmp/main-insight-seed/broker-research.json
+          cp financial-report/data/corporate-events.json /tmp/main-insight-seed/corporate-events.json
           rsync -a _financial-data/data/ financial-report/data/
+          python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
           python financial-report/scripts/build_cdn.py
           mkdir -p _site
           rsync -a --exclude='_site' --exclude='_financial-data' --exclude='_market-data' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/

@@ -438,6 +438,15 @@ class MarketTests(unittest.TestCase):
         self.assertIn('.market-compare-panel',css)
         self.assertIn('đây không phải dữ liệu dòng tiền mua/bán',html)
 
+    def test_pages_merges_research_seed_and_redeploys_after_research_refresh(self):
+        pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
+        merge=(ROOT/'scripts/merge_insight_data.py').read_text()
+        self.assertIn('Refresh broker research timeline',pages)
+        self.assertIn('merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data',pages)
+        self.assertIn("CURATED=('summary','highlights','catalysts','risks')",merge)
+        self.assertIn('merge_reports',merge)
+        self.assertIn('merge_events',merge)
+
     def test_native_chart_replaces_restricted_tradingview_widget(self):
         market=(ROOT/'frontend/market.js').read_text()
         chart=(ROOT/'frontend/chart-engine.js').read_text()
