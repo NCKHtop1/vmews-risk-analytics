@@ -87,6 +87,21 @@ class MarketTests(unittest.TestCase):
         brokers={x['broker'] for x in research['reports'] if x['symbol']=='HPG'}
         self.assertTrue({'MBS','VIETCAP','SHS','BSC'}.issubset(brokers))
 
+    def test_research_bootstrap_has_broad_mbb_hpg_coverage(self):
+        research=json.loads((ROOT/'data/broker-research.json').read_text())
+        mbb=[x for x in research['reports'] if x['symbol']=='MBB']
+        hpg=[x for x in research['reports'] if x['symbol']=='HPG']
+        self.assertGreaterEqual(len(mbb),10)
+        self.assertGreaterEqual(len({x['broker'] for x in mbb}),8)
+        self.assertGreaterEqual(sum(1 for x in mbb if x.get('targetPrice')),6)
+        self.assertGreaterEqual(len(hpg),20)
+        self.assertGreaterEqual(len({x['broker'] for x in hpg}),12)
+        self.assertGreaterEqual(sum(1 for x in hpg if x.get('targetPrice')),14)
+        self.assertTrue(all(str(x.get('sourceUrl','')).startswith('https://') for x in mbb+hpg))
+        self.assertTrue(any(x.get('dataProvider')=='SMARTCHART' for x in mbb))
+        self.assertTrue(any(x.get('dataProvider') in ('24HMONEY','CAFEF') for x in hpg))
+
+
     def test_insight_data_seeds_are_source_linked_and_attributed(self):
         events=json.loads((ROOT/'data/corporate-events.json').read_text())
         research=json.loads((ROOT/'data/broker-research.json').read_text())
