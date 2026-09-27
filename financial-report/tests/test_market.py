@@ -207,22 +207,54 @@ class MarketTests(unittest.TestCase):
             if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
             else:m.os.environ['INTRADAY_WORKERS']=old_workers
 
-    def test_research_analysis_uses_browser_gemini_with_local_fallback(self):
+    def test_dolphin_v4_uses_quota_aware_browser_gemini_with_local_fallback(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
         self.assertIn('generativelanguage.googleapis.com',js)
         self.assertIn('vmews_solution_ai_browser_session',js)
-        self.assertIn('DOLPHIN_V3_BROWSER_GEMINI',js)
+        self.assertIn("DOLPHIN_VERSION='DOLPHIN_V4'",js)
+        self.assertIn("AI_MODE_KEY='finquery_dolphin_mode'",js)
+        self.assertIn("mode==='deep'?(full[0]||lite[0]||''):(lite[0]||full[0]||'')",js)
+        self.assertIn("if(mode==='deep'){const lite=pickModel('normal'",js)
+        self.assertIn('Flash-Lite',js)
         self.assertIn('sessionStorage',js)
         self.assertIn('Google Search',js)
         self.assertNotIn('vmews-risk-analytics-sojd.vercel.app/api/solution-ai',js+html)
         self.assertNotIn('FINQUERY_AI_ENDPOINT',js+html)
         self.assertNotIn('localStorage.setItem(GEMINI_SESSION_KEY',js)
-        self.assertIn('Phân tích chuyên sâu',html)
+        self.assertNotIn('research-ai-subtitle',html)
+        self.assertIn('data-ai-mode="deep"',html)
+        self.assertIn('data-ai-mode="normal"',html)
+        self.assertIn('grid-template-rows:auto auto auto minmax(0,1fr) auto',css)
+        self.assertIn('dolphinPulseV4',css)
         self.assertIn('annualSnapshot',js)
         self.assertIn('quarterSnapshot',js)
         self.assertIn('riskSignals',js)
         self.assertIn('const local=analyze(q)',js)
+
+    def test_company_news_is_strict_and_sector_news_cannot_pose_as_company_news(self):
+        market=(ROOT/'frontend/market.js').read_text()
+        research=(ROOT/'frontend/research-ai.js').read_text()
+        self.assertIn('companyNewsScore',market)
+        self.assertIn('strictCompanyNews',market)
+        self.assertIn('score>=7',market)
+        self.assertIn("MBB:['MBB','MBBANK','MB BANK'",market)
+        self.assertIn("const relevant=strictCompanyNews(fresh,state.symbol,1)[0]",market)
+        self.assertNotIn("strictCompanyNews(fresh,state.symbol,1)[0]||sectorNews",market)
+        self.assertIn('sectorNews:marketNews',market)
+        self.assertIn("category:'COMPANY'",research)
+        self.assertIn("category:'SECTOR'",research)
+        self.assertIn('Không được gọi sectorNews là tin của doanh nghiệp',research)
+
+    def test_chart_quote_consistency_gate_hides_bad_technical_context(self):
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
+        self.assertIn('delta<=.15',chart)
+        self.assertIn('chart-data-mismatch',chart)
+        self.assertIn('!this.dataConsistent',chart)
+        self.assertIn('Dữ liệu giá và biểu đồ đang lệch nhau',chart)
+        self.assertIn('.chart-data-mismatch',css)
 
     def test_native_chart_replaces_restricted_tradingview_widget(self):
         market=(ROOT/'frontend/market.js').read_text()
