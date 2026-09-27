@@ -69,6 +69,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn('idea-dashboard',css)
         self.assertIn('idea-event-mark.cash_dividend',css)
         self.assertIn('idea-report-item',css)
+        bundle=(ROOT/'index.html').read_text()
+        self.assertIn('id="investment-ideas"',bundle)
+        self.assertIn('eventSourceHealth',bundle)
 
     def test_hpg_seed_has_cash_stock_dividend_and_multi_broker_research(self):
         events=json.loads((ROOT/'data/corporate-events.json').read_text())
