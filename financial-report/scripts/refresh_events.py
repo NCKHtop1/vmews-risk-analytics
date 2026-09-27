@@ -117,30 +117,28 @@ def hnx_rows(raw,symbol,source_url,publisher):
 def parse_24hmoney_events(raw,symbol,source_url):
     text=page_text(raw)
     rows=[];seen=set()
-    # 24HMoney renders a timeline as: category + date + ticker + title.
     header=re.compile(
         r'(Sự kiện|Báo cáo tài chính|Lịch chia cổ tức|Kế hoạch|Phát hành)'
-        r'\s+(?:\d{2}/\d{2}/20\d{2}|20\d{2}-\d{2}-\d{2})\s+'
+        r'\s+(\d{2}/\d{2}/20\d{2}|20\d{2}-\d{2}-\d{2})\s+'
         +re.escape(symbol)+r'\s+',
         re.I
     )
     matches=list(header.finditer(text))
     for idx,m in enumerate(matches):
         category=clean(m.group(1))
-        day_match=re.search(r'(?:Sự kiện|Báo cáo tài chính|Lịch chia cổ tức|Kế hoạch|Phát hành)\s+(\d{2}/\d{2}/20\d{2}|20\d{2}-\d{2}-\d{2})\s+'+re.escape(symbol)+r'\s+',m.group(0),re.I)
-        day=parse_date(day_match.group(1) if day_match else '')
+        day=parse_date(m.group(2))
         if not day:continue
         nxt=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+720)
         title=clean(text[m.end():nxt])
         if not title:continue
         etype=classify(title)
         low=norm(title)
-        if etype=='other' and ('quyen' in low or 'giao dich khong huong quyen' in low):
-            etype='rights_issue'
         if 'bao cao tai chinh' in norm(category) or 'ket qua kinh doanh' in low:
             etype='earnings'
-        if 'lich chia co tuc' in norm(category) and etype=='other':
+        elif 'lich chia co tuc' in norm(category) and etype=='other':
             etype='cash_dividend'
+        elif etype=='other' and ('quyen' in low or 'giao dich khong huong quyen' in low):
+            etype='rights_issue'
         details={'publishedAt':day}
         ex=re.search(r'(?:GDKHQ|giao dịch không hưởng quyền)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
         if ex:details['exRightDate']=ex.group(1)
@@ -153,12 +151,10 @@ def parse_24hmoney_events(raw,symbol,source_url):
         rid=stable_id(symbol,etype,day,title)
         if rid in seen:continue
         seen.add(rid)
-        rows.append({
-            'id':rid,'symbol':symbol,'type':etype,'date':day,'title':title[:220],
-            'summary':title[:340],'details':details,
-            'source':{'publisher':'24HMoney','url':source_url},
-            'fetchedAt':now(),'dataQuality':'aggregated'
-        })
+        rows.append({'id':rid,'symbol':symbol,'type':etype,'date':day,'title':title[:220],
+                     'summary':title[:340],'details':details,
+                     'source':{'publisher':'24HMoney','url':source_url},
+                     'fetchedAt':now(),'dataQuality':'aggregated'})
     return rows
 
 
