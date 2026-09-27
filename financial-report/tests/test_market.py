@@ -70,7 +70,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('corporateEvents',research)
         self.assertIn('brokerResearch',research)
         self.assertIn('brokerConsensus',research)
-        self.assertIn('không phải khuyến nghị của FinQuery',research)
+        self.assertIn('khuyến nghị của FinQuery hoặc Dolphin',research)
         self.assertIn("(front / 'insights.js').read_text()",build)
         self.assertIn("refresh_insights.py --output /tmp/financial-publish/data",flow)
         self.assertIn('chart-insight-markers',bundle)
