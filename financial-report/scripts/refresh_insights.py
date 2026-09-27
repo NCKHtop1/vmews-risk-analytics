@@ -549,9 +549,16 @@ def merge_reports(existing,discovered):
         best=max((prior,row),key=report_quality)
         other=row if best is prior else prior
         merged={**other,**best}
-        # Preserve richer fields across duplicate index sources.
-        for field in ('recommendation','targetPrice','summary','brokerName','sourceUrl','dataProvider'):
+        for field in ('recommendation','targetPrice','brokerName','sourceUrl','dataProvider'):
             if not merged.get(field) and other.get(field):merged[field]=other[field]
+        for field in ('summary','highlights','catalysts','risks'):
+            bv=best.get(field);ov=other.get(field)
+            if isinstance(bv,list) and isinstance(ov,list):
+                if len(ov)>len(bv):merged[field]=ov
+            elif isinstance(bv,str) and isinstance(ov,str) and len(ov)>len(bv):
+                merged[field]=ov
+            elif not bv and ov:
+                merged[field]=ov
         buckets[key]=merged
     rows=list(buckets.values())
     return sorted(rows,key=lambda r:(r.get('publishedAt',''),r.get('broker',''),r.get('symbol',''),r.get('title','')),reverse=True)
