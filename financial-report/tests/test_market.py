@@ -46,6 +46,70 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(merged[0]['summary'],'Tóm tắt FinQuery đã biên soạn')
         self.assertEqual(merged[0]['highlights'],['Điểm đã xác minh'])
 
+    def test_research_v5_registry_covers_major_brokers_and_vn100(self):
+        sources=json.loads((ROOT/'config/research_sources.json').read_text())
+        codes={x['code'] for x in sources['sources'] if x.get('enabled')}
+        self.assertTrue({'MBS','VIETCAP','FPTS','ACBS','SHS','BSC','VCBS','KBSV','MIRAE','DSC','SSI','YUANTA'}.issubset(codes))
+        self.assertGreaterEqual(len(codes),15)
+        companies=json.loads((ROOT/'data/companies.json').read_text())
+        self.assertEqual(len(companies),100)
+        self.assertTrue(all(len(x['symbol'])==3 for x in companies))
+
+    def test_research_v5_parses_vietcap_fpts_acbs_and_generic_bsc(self):
+        universe={'HPG','FPT','MWG','VCB'}
+        vietcap={'code':'VIETCAP','name':'Vietcap','url':'https://www.vietcap.com.vn/trung-tam-phan-tich','adapter':'vietcap_listing'}
+        raw='HPG [BUY +58.6%] - Triển vọng lợi nhuận tích cực - Cập nhật Company Research 11 Sep 2026'
+        rows=im.discover_vietcap(raw,vietcap,universe)
+        self.assertEqual(rows[0]['symbol'],'HPG')
+        self.assertEqual(rows[0]['publishedAt'],'2026-09-11')
+        self.assertEqual(rows[0]['recommendation'],'MUA')
+
+        fpts={'code':'FPTS','name':'FPTS','url':'https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169','adapter':'fpts_listing'}
+        rows=im.discover_fpts('14/09/2026 MWG Khuyến nghị Bán cổ phiếu MWG ngày 14/09/2026 - FPTS',fpts,universe)
+        self.assertEqual(rows[0]['symbol'],'MWG')
+        self.assertEqual(rows[0]['publishedAt'],'2026-09-14')
+
+        acbs={'code':'ACBS','name':'ACBS','url':'https://acbs.com.vn/bao-cao','adapter':'acbs_listing'}
+        rows=im.discover_acbs('14/09/2026 HPG Khuyến nghị Khả quan Tổng tỷ suất lợi nhuận 16% Giá mục tiêu 32.300 VND',acbs,universe)
+        self.assertEqual(rows[0]['symbol'],'HPG')
+        self.assertEqual(rows[0]['targetPrice'],32300)
+        self.assertEqual(rows[0]['recommendation'],'KHẢ QUAN')
+
+        bsc={'code':'BSC','name':'BSC','url':'https://www.bsc.com.vn/bao-cao-phan-tich','adapter':'generic_anchors'}
+        listing='<a href="/bao-cao-phan-tich/chi-tiet-bao-cao/123">X-Alpha | HPG 40,800 +50%: Vua thép thức giấc - báo cáo phân tích</a>'
+        seeds=im.discover_generic(listing,bsc,universe)
+        self.assertEqual(seeds[0]['symbol'],'HPG')
+        detail='<div>Ngày : 14/05/2026</div><p>Duy trì khuyến nghị MUA. Giá trị hợp lý 40,800 VND/CP.</p>'
+        row=im.parse_report_page(detail,seeds[0],bsc)
+        self.assertEqual(row['publishedAt'],'2026-05-14')
+        self.assertEqual(row['recommendation'],'MUA')
+        self.assertEqual(row['targetPrice'],40800)
+
+    def test_research_v5_seeds_multiple_brokers_for_hpg(self):
+        research=json.loads((ROOT/'data/broker-research.json').read_text())
+        brokers={x['broker'] for x in research['reports'] if x['symbol']=='HPG'}
+        self.assertTrue({'MBS','VIETCAP','SHS','BSC'}.issubset(brokers))
+
+    def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
+        self.assertIn('priceToCoordinate',chart)
+        self.assertIn("anchorPrice=isResearch?Number(bar.high):Number(bar.low)",chart)
+        self.assertIn('chart-insight-stem',chart)
+        self.assertNotIn("bottom:'+(12+stack*31)",chart)
+        self.assertIn('.chart-insight-stem',css)
+
+    def test_research_v5_has_independent_multi_daily_refresh_and_health_status(self):
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        insights=(ROOT/'frontend/insights.js').read_text()
+        self.assertIn("cron: '17 0-10/2 * * 1-5'",flow)
+        self.assertIn('financial-report-data-publisher',flow)
+        self.assertIn('refresh_insights.py',flow)
+        self.assertIn('insights-status.json',flow)
+        self.assertIn("read('insights-status.json').catch(()=>null)",insights)
+        self.assertIn('sourcesReachable',insights)
+        self.assertIn('sourceHealth',insights)
+
     def test_events_and_broker_research_are_wired_to_chart_dolphin_and_bundle(self):
         html=(ROOT/'frontend/index.html').read_text()
         chart=(ROOT/'frontend/chart-engine.js').read_text()
@@ -62,6 +126,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="insight-detail"',html)
         self.assertIn('setInsights(items,onOpen)',chart)
         self.assertIn('timeToCoordinate',chart)
+        self.assertIn('priceToCoordinate',chart)
         self.assertIn('target<first||target>last',chart)
         self.assertIn('chart-insight-marker',chart)
         self.assertIn('registerInsights(api)',market)
@@ -74,6 +139,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('khuyến nghị của FinQuery hoặc Dolphin',research)
         self.assertIn("(front / 'insights.js').read_text()",build)
         self.assertIn("refresh_insights.py --output /tmp/financial-publish/data",flow)
+        self.assertIn('brokerResearch',research)
         self.assertIn('chart-insight-markers',bundle)
         self.assertIn('FinInsights',bundle)
         self.assertIn('brokerResearch',bundle)
