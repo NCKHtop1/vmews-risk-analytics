@@ -117,67 +117,50 @@ def hnx_rows(raw,symbol,source_url,publisher):
 def parse_24hmoney_events(raw,symbol,source_url):
     text=page_text(raw)
     rows=[];seen=set()
-    # The public event timeline uses: category + date + ticker + title.
-    pattern=r'((?:Sự kiện|Lịch chia cổ tức|Báo cáo tài chính|Kế hoạch|Phát hành)[^\d]{0,24})(20\d{2}-\d{2}-\d{2})\s+'+re.escape(symbol)+r'\s+(.{5,360}?)(?=(?:\s+(?:Sự kiện|Lịch chia cổ tức|Báo cáo tài chính|Kế hoạch|Phát hành)\s+20\d{2}-\d{2}-\d{2}\s+'+re.escape(symbol)+r')|$)'
-    for m in re.finditer(pattern,text,re.I|re.S):
-        category,day,title=m.groups()
-        title=clean(title)
+    # 24HMoney renders a timeline as: category + date + ticker + title.
+    header=re.compile(
+        r'(Sự kiện|Báo cáo tài chính|Lịch chia cổ tức|Kế hoạch|Phát hành)'
+        r'\s+(?:\d{2}/\d{2}/20\d{2}|20\d{2}-\d{2}-\d{2})\s+'
+        +re.escape(symbol)+r'\s+',
+        re.I
+    )
+    matches=list(header.finditer(text))
+    for idx,m in enumerate(matches):
+        category=clean(m.group(1))
+        day_match=re.search(r'(?:Sự kiện|Báo cáo tài chính|Lịch chia cổ tức|Kế hoạch|Phát hành)\s+(\d{2}/\d{2}/20\d{2}|20\d{2}-\d{2}-\d{2})\s+'+re.escape(symbol)+r'\s+',m.group(0),re.I)
+        day=parse_date(day_match.group(1) if day_match else '')
+        if not day:continue
+        nxt=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+720)
+        title=clean(text[m.end():nxt])
         if not title:continue
         etype=classify(title)
         low=norm(title)
-        if 'bao cao tai chinh' in low or 'ket qua kinh doanh' in low:etype='earnings'
-        if 'lich chia co tuc' in norm(category):etype=etype if etype!='other' else 'cash_dividend'
+        if etype=='other' and ('quyen' in low or 'giao dich khong huong quyen' in low):
+            etype='rights_issue'
+        if 'bao cao tai chinh' in norm(category) or 'ket qua kinh doanh' in low:
+            etype='earnings'
+        if 'lich chia co tuc' in norm(category) and etype=='other':
+            etype='cash_dividend'
         details={'publishedAt':day}
-        ex=re.search(r'(?:GDKHQ|giao dịch không hưởng quyền)\s*[:]?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        ex=re.search(r'(?:GDKHQ|giao dịch không hưởng quyền)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
         if ex:details['exRightDate']=ex.group(1)
-        rec=re.search(r'(?:chốt danh sách|đăng ký cuối cùng)\s*[:]?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        rec=re.search(r'(?:chốt danh sách|đăng ký cuối cùng)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
         if rec:details['recordDate']=rec.group(1)
-        pay=re.search(r'(?:ngày thực hiện|thời gian thực hiện|thanh toán)\s*[:]?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        pay=re.search(r'(?:ngày thực hiện|thời gian thực hiện|thanh toán)\s*:?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
         if pay:details['paymentDate']=pay.group(1)
-        ratio=re.search(r'(?:tỷ lệ(?: thực hiện)?)\s*[:]?\s*([0-9.,:]+%?)',title,re.I)
+        ratio=re.search(r'(?:tỷ lệ|tỉ lệ)(?:\s+thực hiện)?\s*:?\s*([0-9.,:]+%?)',title,re.I)
         if ratio:details['ratio']=ratio.group(1)
         rid=stable_id(symbol,etype,day,title)
         if rid in seen:continue
         seen.add(rid)
-        rows.append({'id':rid,'symbol':symbol,'type':etype,'date':day,'title':title[:220],
-                     'summary':title[:340],'details':details,
-                     'source':{'publisher':'24HMoney','url':source_url},
-                     'fetchedAt':now(),'dataQuality':'aggregated'})
+        rows.append({
+            'id':rid,'symbol':symbol,'type':etype,'date':day,'title':title[:220],
+            'summary':title[:340],'details':details,
+            'source':{'publisher':'24HMoney','url':source_url},
+            'fetchedAt':now(),'dataQuality':'aggregated'
+        })
     return rows
 
-
-    text=page_text(raw)
-    # Event history is rendered as date + one or more event descriptions until the next date.
-    matches=list(re.finditer(r'\b(\d{2}/\d{2}/20\d{2})\s*:\s*',text))
-    rows=[]
-    for idx,m in enumerate(matches):
-        day=parse_date(m.group(1))
-        if not day:continue
-        end=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+420)
-        chunk=clean(text[m.end():end])
-        if not chunk:continue
-        pieces=re.split(r'(?=(?:Cổ tức bằng|Thưởng bằng|Bán ưu đãi|Phát hành cho CBCNV|Phát hành thêm|Quyền mua))',chunk,flags=re.I)
-        for piece in pieces:
-            title=clean(piece)
-            if len(title)<5:continue
-            low=norm(title)
-            if 'co tuc bang tien' in low:etype='cash_dividend'
-            elif 'co tuc bang co phieu' in low:etype='stock_dividend'
-            elif 'thuong bang co phieu' in low:etype='bonus_share'
-            elif 'ban uu dai' in low or 'quyen mua' in low or 'phat hanh them' in low:etype='rights_issue'
-            elif 'phat hanh cho cbcnv' in low:etype='esop'
-            else:continue
-            ratio=None
-            rm=re.search(r'tỷ lệ\s*([0-9.,:]+%?)',title,re.I)
-            if rm:ratio=rm.group(1)
-            details={'exRightDate':day}
-            if ratio:details['ratio']=ratio
-            rows.append({
-              'id':stable_id(symbol,etype,day,title),'symbol':symbol,'type':etype,'date':day,
-              'title':title[:180],'summary':title[:260],'details':details,
-              'source':{'publisher':'CafeF','url':source_url},'fetchedAt':now(),'dataQuality':'secondary'
-            })
-    return rows
 
 def fingerprint(row):
     d=row.get('details') or {}
