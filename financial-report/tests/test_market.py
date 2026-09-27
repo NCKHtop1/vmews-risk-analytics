@@ -62,6 +62,7 @@ class MarketTests(unittest.TestCase):
         rows=m.parse_feed(xml,'VnEconomy','https://vneconomy.vn/tai-chinh.rss',companies,datetime(2026,9,24,10,tzinfo=timezone.utc))
         self.assertEqual(len(rows),1)
         self.assertTrue({'finance','rates','banking','stocks'}.issubset(set(rows[0]['topics'])))
+        self.assertIn('summary',rows[0])
 
     def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
         quote={'price':110,'changePct':5,'volume':2500,'high':112,'low':100,'status':'ok'}
@@ -216,12 +217,20 @@ class MarketTests(unittest.TestCase):
 
     def test_local_analysis_has_natural_language_and_concept_understanding(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
+        kb=(ROOT/'frontend/knowledge-base.js').read_text()
         self.assertIn('movementNarrative',js)
         self.assertIn('financialNarrative',js)
         self.assertIn('conceptHTML',js)
-        for concept in ('ROE','ROA','FCF','OCF','Biên lợi nhuận gộp','Đòn bẩy tài chính'):
-            self.assertIn(concept,js)
+        self.assertIn('dynamicMetricHit',js)
+        self.assertIn('memoHTML',js)
+        self.assertIn('supportCase',js)
+        self.assertIn('counterCase',js)
+        for concept in ('ROE','ROA','ROIC','FCF','OCF','Biên lợi nhuận gộp','MACD','RSI','OMO','Lãi suất qua đêm liên ngân hàng'):
+            self.assertIn(concept,kb)
         self.assertIn("return'concept'",js)
+        self.assertIn("return'memo'",js)
+        build=(ROOT/'scripts/build_cdn.py').read_text()
+        self.assertIn("(front / 'knowledge-base.js').read_text()",build)
 
     def test_pandas_ta_reference_suite_is_available(self):
         rows=80
@@ -312,7 +321,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
         self.assertIn("return'macro'",research)
         self.assertIn('macroHTML',research)
-        self.assertIn('chưa đủ để coi đó là nguyên nhân',research)
+        for forbidden in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','không coi việc xuất hiện cùng ngày là bằng chứng nhân quả'):
+            self.assertNotIn(forbidden,research+market)
 
     def test_professional_logo_and_dolphin_ai_shell_are_present(self):
         html=(ROOT/'frontend/index.html').read_text()
@@ -323,10 +333,40 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="company-logo"',html)
         self.assertIn('id="ai-fab"',html)
         self.assertIn('Dolphin AI',html)
+        self.assertIn('class="dolphin-logo"',html)
+        self.assertIn('class="finquery-logo"',html)
+        self.assertIn('storage.googleapis.com/cdn-entrade/company/',app)
         self.assertIn('companiesmarketcap.com/img/company-logos/64/',app)
+        self.assertIn('placeholderLogo',app)
         self.assertIn('ticker-with-logo',market)
+        self.assertIn('data-logo-placeholder',market)
         self.assertIn('openDrawer',research)
         self.assertIn('.indicator-dialog{position:fixed!important;top:76px!important;right:22px!important',css)
+
+    def test_market_board_exposes_reference_price_and_absolute_change(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        self.assertIn('<th>Tham chiếu</th>',html)
+        self.assertIn('q.price-q.reference',market)
+        self.assertIn("fmt(q?.reference)",market)
+        self.assertNotIn('driver-causality',market)
+
+    def test_technical_signal_language_is_explicit_and_contextual(self):
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        for token in ('mean-reversion','Khối lượng ','Supertrend ','MACD vừa chuyển sang phía trên Signal','Thiết lập kỹ thuật nghiêng tăng','technicalContext()'):
+            self.assertIn(token,chart)
+        self.assertNotIn('Nên đối chiếu RSI và khối lượng trước khi kết luận',chart)
+
+    def test_full_history_workflow_uses_listing_range_fallback(self):
+        workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml')
+        # The workflow file is outside ROOT when tests run in repository checkout.
+        text=workflow.read_text() if workflow.exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        script=(ROOT/'scripts/refresh_market.py').read_text()
+        self.assertIn("'12000'",text)
+        self.assertIn("HISTORY_START_DATE: '1998-01-01'",text)
+        self.assertIn('vnstock==4.0.4',text)
+        self.assertIn('_vnstock_full_history',script)
+        self.assertIn('HISTORY_VNSTOCK_FALLBACK',script)
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
