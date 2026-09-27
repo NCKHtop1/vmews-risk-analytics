@@ -251,6 +251,14 @@ def load_sources():
     value=read(ROOT/'config/research_sources.json',{'sources':[]})
     return [x for x in value.get('sources',[]) if x.get('enabled')]
 
+def discover_mbs_list(raw,universe):
+    source={'code':'MBS','name':'MB Securities','url':'https://www.mbs.com.vn/bao-cao-phan-tich-co-phieu/','adapter':'generic_anchors'}
+    return discover_generic(raw,source,universe)
+
+def parse_mbs_report(raw,seed):
+    source={'code':'MBS','name':'MB Securities','url':'https://www.mbs.com.vn/bao-cao-phan-tich-co-phieu/','adapter':'generic_anchors'}
+    return parse_report_page(raw,seed,source)
+
 def discover_source(source,raw,universe):
     adapter=source.get('adapter')
     if adapter=='fpts_listing':return discover_fpts(raw,source,universe)
