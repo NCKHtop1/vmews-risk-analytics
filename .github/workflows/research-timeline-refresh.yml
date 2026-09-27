@@ -1,0 +1,67 @@
+name: Refresh broker research timeline
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/refresh_insights.py'
+      - 'financial-report/config/research_sources.json'
+      - 'financial-report/data/broker-research.json'
+      - 'financial-report/data/corporate-events.json'
+      - '.github/workflows/research-timeline-refresh.yml'
+  schedule:
+    # 07:17, 09:17, 11:17, 13:17, 15:17, 17:17 Vietnam time on weekdays.
+    - cron: '17 0-10/2 * * 1-5'
+permissions:
+  contents: write
+concurrency:
+  group: financial-report-data-publisher
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RESEARCH_DETAIL_BUDGET: '120'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            financial-report/scripts
+            financial-report/config
+            financial-report/data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore published insight datasets
+        run: |
+          git fetch origin financial-report-data
+          git worktree add /tmp/financial-publish FETCH_HEAD
+          git -C /tmp/financial-publish sparse-checkout set data
+          mkdir -p /tmp/financial-publish/data
+          cp -n financial-report/data/companies.json /tmp/financial-publish/data/companies.json || true
+          cp -n financial-report/data/broker-research.json /tmp/financial-publish/data/broker-research.json || true
+          cp -n financial-report/data/corporate-events.json /tmp/financial-publish/data/corporate-events.json || true
+      - name: Sweep public broker research sources
+        run: |
+          python -u financial-report/scripts/refresh_insights.py             --output /tmp/financial-publish/data             --max-detail "$RESEARCH_DETAIL_BUDGET"
+      - name: Publish research timeline datasets
+        working-directory: /tmp/financial-publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse data/broker-research.json data/corporate-events.json data/insights-status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh multi-broker research timeline"
+            git push origin HEAD:refs/heads/financial-report-data
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-timeline-data
+          path: |
+            /tmp/financial-publish/data/broker-research.json
+            /tmp/financial-publish/data/corporate-events.json
+            /tmp/financial-publish/data/insights-status.json
+          retention-days: 7

@@ -57,7 +57,7 @@ jobs:
       - name: Refresh public corporate-event and broker-research metadata
         if: always()
         run: |
-          python -u financial-report/scripts/refresh_insights.py --output /tmp/financial-publish/data --mbs-pages 4
+          python -u financial-report/scripts/refresh_insights.py --output /tmp/financial-publish/data --max-detail 120
       - name: Publish only the financial data branch
         if: always()
         working-directory: /tmp/financial-publish
