@@ -411,7 +411,8 @@ function buildLLMContext(question){
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,18),quarterRows:compactRows(quarterly,question,18)},
   macroSnapshot:macro,recentNews:companyNews,sectorNews:cleanNews(m.sectorNews||m.marketNews||[],6),
   corporateEvents:Array.isArray(insights.corporateEvents)?insights.corporateEvents.slice(0,10):[],
-  brokerResearch:Array.isArray(insights.brokerResearch)?insights.brokerResearch.slice(0,8):[],brokerConsensus:insights.consensus||null
+  brokerResearch:Array.isArray(insights.brokerResearch)?insights.brokerResearch.slice(0,8):[],brokerConsensus:insights.consensus||null,
+  researchSourceHealth:Array.isArray(insights.sourceHealth)?insights.sourceHealth.slice(0,20):[],eventSourceHealth:Array.isArray(insights.eventSourceHealth)?insights.eventSourceHealth.slice(0,12):[]
  };
 }
 function sourcesForLLM(){

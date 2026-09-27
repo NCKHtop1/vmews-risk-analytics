@@ -17,7 +17,71 @@ insight_spec = importlib.util.spec_from_file_location('insight_refresh', ROOT / 
 im = importlib.util.module_from_spec(insight_spec)
 insight_spec.loader.exec_module(im)
 
+event_spec = importlib.util.spec_from_file_location('event_refresh', ROOT / 'scripts/refresh_events.py')
+em = importlib.util.module_from_spec(event_spec)
+event_spec.loader.exec_module(em)
+
 class MarketTests(unittest.TestCase):
+    def test_events_v6_parses_hnx_and_cafef_history(self):
+        hnx='<table><tr><td>Trả cổ tức bằng tiền</td><td>13/01/2026</td><td>14/01/2026</td><td>23/01/2026</td></tr><tr><td>Họp Đại hội cổ đông thường niên</td><td>18/03/2026</td><td>19/03/2026</td><td>17/04/2026</td></tr></table>'
+        rows=em.hnx_rows(hnx,'QNS','https://hnx.example/QNS','HNX')
+        cash=next(x for x in rows if x['type']=='cash_dividend')
+        self.assertEqual(cash['date'],'2026-01-13')
+        self.assertEqual(cash['details']['recordDate'],'2026-01-14')
+        self.assertEqual(cash['details']['payoutDate'],'2026-01-23')
+        self.assertEqual(cash['dataQuality'],'official')
+        cafe='<div>17/06/2022: Cổ tức bằng Cổ phiếu, tỷ lệ 30% Cổ tức bằng Tiền, tỷ lệ 5% 31/05/2021: Cổ tức bằng Tiền, tỷ lệ 5%</div>'
+        rows=em.cafef_rows(cafe,'HPG','https://cafef.example/HPG')
+        self.assertTrue(any(x['type']=='stock_dividend' and x['date']=='2022-06-17' for x in rows))
+        self.assertTrue(any(x['type']=='cash_dividend' and x['date']=='2022-06-17' for x in rows))
+        self.assertTrue(all(x['dataQuality']=='secondary' for x in rows))
+
+    def test_events_v6_dedupes_secondary_when_official_event_exists(self):
+        official={'id':'a','symbol':'HPG','type':'cash_dividend','date':'2022-06-17','title':'Official','details':{'recordDate':'2022-06-20','ratio':'5%'},'source':{'publisher':'HOSE','url':'https://example.com/o'},'dataQuality':'official'}
+        secondary={'id':'b','symbol':'HPG','type':'cash_dividend','date':'2022-06-17','title':'CafeF','details':{'ratio':'5%'},'source':{'publisher':'CafeF','url':'https://example.com/c'},'dataQuality':'secondary'}
+        rows=em.merge_events([official],[],[secondary])
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['details']['ratio'],'5%')
+
+    def test_events_v6_has_official_registry_schedule_and_pages_trigger(self):
+        sources=json.loads((ROOT/'config/event_sources.json').read_text())
+        kinds={x['kind'] for x in sources['sources'] if x.get('enabled')}
+        self.assertIn('issuer_template',kinds)
+        self.assertIn('cafef_history',kinds)
+        self.assertIn('health',kinds)
+        flow=(ROOT.parent/'.github/workflows/corporate-events-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/corporate-events-refresh.yml').exists() else pathlib.Path('.github/workflows/corporate-events-refresh.yml').read_text()
+        pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
+        self.assertIn("cron: '47 0,4,8,12 * * 1-5'",flow)
+        self.assertIn('financial-report-data-publisher',flow)
+        self.assertIn('refresh_events.py',flow)
+        self.assertIn('event-status.json',flow)
+        self.assertIn('Refresh corporate events',pages)
+
+    def test_investment_ideas_v6_dashboard_is_symbol_dynamic(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        insights=(ROOT/'frontend/insights.js').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
+        for needle in ('id="investment-ideas"','id="idea-rating-distribution"','id="idea-target-zone"','id="idea-report-list"','id="idea-event-list"'):
+            self.assertIn(needle,html)
+        self.assertIn("Investment Ideas · '+(state.symbol||'—')",insights)
+        self.assertIn("read('event-status.json').catch(()=>null)",insights)
+        self.assertIn('eventSourceHealth',insights)
+        self.assertIn('idea-dashboard',css)
+        self.assertIn('idea-event-mark.cash_dividend',css)
+        self.assertIn('idea-report-item',css)
+        bundle=(ROOT/'index.html').read_text()
+        self.assertIn('id="investment-ideas"',bundle)
+        self.assertIn('eventSourceHealth',bundle)
+
+    def test_hpg_seed_has_cash_stock_dividend_and_multi_broker_research(self):
+        events=json.loads((ROOT/'data/corporate-events.json').read_text())
+        research=json.loads((ROOT/'data/broker-research.json').read_text())
+        hpg=[x for x in events['events'] if x['symbol']=='HPG' and x['date']=='2022-06-17']
+        self.assertTrue(any(x['type']=='cash_dividend' and x['details']['cashAmount']=='500 đồng/cp' for x in hpg))
+        self.assertTrue(any(x['type']=='stock_dividend' and x['details']['ratio']=='10:3' for x in hpg))
+        brokers={x['broker'] for x in research['reports'] if x['symbol']=='HPG'}
+        self.assertTrue({'MBS','VIETCAP','SHS','BSC'}.issubset(brokers))
+
     def test_insight_data_seeds_are_source_linked_and_attributed(self):
         events=json.loads((ROOT/'data/corporate-events.json').read_text())
         research=json.loads((ROOT/'data/broker-research.json').read_text())

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "code": "HNX_LISTED",
+      "name": "Sở GDCK Hà Nội - cổ phiếu niêm yết",
+      "kind": "issuer_template",
+      "urlTemplate": "https://www.hnx.vn/vi-vn/cophieu-etfs/chi-tiet-chung-khoan-uc-{symbol}.html",
+      "priority": 1,
+      "enabled": true
+    },
+    {
+      "code": "HNX_UPCOM",
+      "name": "Sở GDCK Hà Nội - UPCoM",
+      "kind": "issuer_template",
+      "urlTemplate": "https://www.hnx.vn/vi-vn/upcom/chi-tiet-chung-khoan-uc-{symbol}.html",
+      "priority": 1,
+      "enabled": true
+    },
+    {
+      "code": "VSDC",
+      "name": "Tổng công ty Lưu ký và Bù trừ Chứng khoán Việt Nam",
+      "kind": "health",
+      "url": "https://vsd.vn/",
+      "priority": 1,
+      "enabled": true
+    },
+    {
+      "code": "HOSE",
+      "name": "Sở GDCK TP.HCM",
+      "kind": "health",
+      "url": "https://www.hsx.vn/",
+      "priority": 1,
+      "enabled": true
+    },
+    {
+      "code": "CAFEF_EVENTS",
+      "name": "CafeF - lịch sự kiện cổ phiếu",
+      "kind": "cafef_history",
+      "urlTemplate": "https://cafef.vn/du-lieu/DuLieu.aspx?cat_id=1009&san={exchange}&symbol={symbol}",
+      "priority": 3,
+      "enabled": true
+    }
+  ],
+  "eventTypes": [
+    "cash_dividend",
+    "stock_dividend",
+    "bonus_share",
+    "rights_issue",
+    "agm",
+    "egm",
+    "esop",
+    "private_placement",
+    "buyback",
+    "listing",
+    "delisting",
+    "earnings",
+    "shareholder_vote",
+    "other"
+  ]
+}
