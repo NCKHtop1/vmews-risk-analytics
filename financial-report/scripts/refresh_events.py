@@ -48,6 +48,14 @@ def fetch(url,timeout=18):
     with urlopen(req,timeout=timeout) as r:
         return r.read(3_000_000).decode('utf-8','replace'),getattr(r,'status',200),r.headers.get('Content-Type','')
 
+class TextParser(HTMLParser):
+    def __init__(self): super().__init__(convert_charrefs=True);self.parts=[]
+    def handle_data(self,data):
+        if data and data.strip():self.parts.append(data.strip())
+
+def page_text(raw):
+    p=TextParser();p.feed(raw);return clean(' '.join(p.parts))
+
 class CellParser(HTMLParser):
     def __init__(self): super().__init__(convert_charrefs=True);self.cells=[];self.buf=None
     def handle_starttag(self,tag,attrs):
@@ -105,9 +113,43 @@ def hnx_rows(raw,symbol,source_url,publisher):
         })
     return rows
 
+def cafef_rows(raw,symbol,source_url):
+    text=page_text(raw)
+    # Event history is rendered as date + one or more event descriptions until the next date.
+    matches=list(re.finditer(r'\b(\d{2}/\d{2}/20\d{2})\s*:\s*',text))
+    rows=[]
+    for idx,m in enumerate(matches):
+        day=parse_date(m.group(1))
+        if not day:continue
+        end=matches[idx+1].start() if idx+1<len(matches) else min(len(text),m.end()+420)
+        chunk=clean(text[m.end():end])
+        if not chunk:continue
+        pieces=re.split(r'(?=(?:Cổ tức bằng|Thưởng bằng|Bán ưu đãi|Phát hành cho CBCNV|Phát hành thêm|Quyền mua))',chunk,flags=re.I)
+        for piece in pieces:
+            title=clean(piece)
+            if len(title)<5:continue
+            low=norm(title)
+            if 'co tuc bang tien' in low:etype='cash_dividend'
+            elif 'co tuc bang co phieu' in low:etype='stock_dividend'
+            elif 'thuong bang co phieu' in low:etype='bonus_share'
+            elif 'ban uu dai' in low or 'quyen mua' in low or 'phat hanh them' in low:etype='rights_issue'
+            elif 'phat hanh cho cbcnv' in low:etype='esop'
+            else:continue
+            ratio=None
+            rm=re.search(r'tỷ lệ\s*([0-9.,:]+%?)',title,re.I)
+            if rm:ratio=rm.group(1)
+            details={'exRightDate':day}
+            if ratio:details['ratio']=ratio
+            rows.append({
+              'id':stable_id(symbol,etype,day,title),'symbol':symbol,'type':etype,'date':day,
+              'title':title[:180],'summary':title[:260],'details':details,
+              'source':{'publisher':'CafeF','url':source_url},'fetchedAt':now(),'dataQuality':'secondary'
+            })
+    return rows
+
 def fingerprint(row):
     d=row.get('details') or {}
-    return '|'.join([str(row.get('symbol','')),str(row.get('type','')),str(row.get('date','')),str(d.get('recordDate','')),norm(row.get('title',''))[:60]])
+    return '|'.join([str(row.get('symbol','')),str(row.get('type','')),str(row.get('date','')),str(d.get('recordDate',''))])
 
 def merge_events(seed,published,discovered):
     out={}
@@ -140,11 +182,15 @@ def refresh(output):
             except Exception as exc:base['status']='error';base['error']=str(exc)[:180]
             health.append(base);continue
         errors=0
+        exchange_by_symbol={str(x.get('symbol','')).upper():str(x.get('exchange','HOSE')).lower() for x in companies}
         for symbol in symbols:
-            url=str(source.get('urlTemplate','')).replace('{symbol}',symbol)
+            url=str(source.get('urlTemplate','')).replace('{symbol}',symbol).replace('{exchange}',exchange_by_symbol.get(symbol,'hose'))
             try:
                 raw,status,_=fetch(url);base['reachable']+=1
-                rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
+                if source.get('kind')=='cafef_history':
+                    rows=cafef_rows(raw,symbol,url)
+                else:
+                    rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
                 discovered.extend(rows);base['parsed']+=len(rows)
             except Exception:
                 errors+=1
