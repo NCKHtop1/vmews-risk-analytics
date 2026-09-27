@@ -42,7 +42,7 @@ jobs:
           git worktree add /tmp/insight-publish FETCH_HEAD
           git -C /tmp/insight-publish sparse-checkout set data
           mkdir -p /tmp/insight-publish/data
-          cp -n financial-report/data/companies.json /tmp/insight-publish/data/companies.json || true
+          cp financial-report/data/companies.json /tmp/insight-publish/data/companies.json
           cp -n financial-report/data/broker-research.json /tmp/insight-publish/data/broker-research.json || true
           cp -n financial-report/data/corporate-events.json /tmp/insight-publish/data/corporate-events.json || true
       - name: Sweep public broker research sources
