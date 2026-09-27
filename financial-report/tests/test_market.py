@@ -206,8 +206,8 @@ class MarketTests(unittest.TestCase):
 
     def test_research_v7_workflow_can_use_finlens_secret_but_does_not_require_it(self):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
-        self.assertIn('FINLENS_API_KEY: \${{ secrets.FINLENS_API_KEY }}',flow)
-        self.assertIn('FINLENS_MCP_TOKEN: \${{ secrets.FINLENS_MCP_TOKEN }}',flow)
+        self.assertIn('FINLENS_API_KEY: ${{ secrets.FINLENS_API_KEY }}',flow)
+        self.assertIn('FINLENS_MCP_TOKEN: ${{ secrets.FINLENS_MCP_TOKEN }}',flow)
         self.assertIn("FINLENS_SYMBOL_BUDGET: '25'",flow)
         self.assertIn("RESEARCH_DETAIL_BUDGET: '180'",flow)
         reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
