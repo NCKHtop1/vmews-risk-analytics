@@ -338,7 +338,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
         self.assertIn("return'macro'",research)
         self.assertIn('macroHTML',research)
-        for forbidden in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','không coi việc xuất hiện cùng ngày là bằng chứng nhân quả'):
+        for forbidden in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','không coi việc xuất hiện cùng ngày là bằng chứng nhân quả','Chưa có lực hỗ trợ nổi bật','Chưa xuất hiện điểm suy yếu','Chưa đủ dữ liệu'):
             self.assertNotIn(forbidden,research+market)
 
     def test_professional_logo_and_dolphin_ai_shell_are_present(self):
