@@ -57,7 +57,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn('event-status.json',flow)
         self.assertIn('Refresh investment insights',pages)
         self.assertIn('ref: financial-insights-data',pages)
-        self.assertIn("rsync -a _insight-data/data/ financial-report/data/",pages)
+        self.assertIn('for f in broker-research.json corporate-events.json insights-status.json event-status.json',pages)
+        self.assertNotIn('rsync -a _insight-data/data/ financial-report/data/',pages)
         self.assertIn("'insightData':revision('_insight-data')",pages)
 
     def test_investment_ideas_v6_dashboard_is_symbol_dynamic(self):
@@ -182,6 +183,7 @@ class MarketTests(unittest.TestCase):
         financial=(ROOT.parent/'.github/workflows/financial-report-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-report-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-report-refresh.yml').read_text()
         self.assertIn('name: Refresh investment insights',flow)
         self.assertIn('financial-insights-data',flow)
+        self.assertIn('cp financial-report/data/companies.json /tmp/insight-publish/data/companies.json',flow)
         self.assertNotIn('git push origin HEAD:refs/heads/financial-report-data',flow)
         self.assertIn('refresh_insights.py',flow)
         self.assertIn('refresh_events.py',flow)
