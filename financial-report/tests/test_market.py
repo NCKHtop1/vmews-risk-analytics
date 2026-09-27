@@ -49,13 +49,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn('issuer_template',kinds)
         self.assertIn('cafef_history',kinds)
         self.assertIn('health',kinds)
-        flow=(ROOT.parent/'.github/workflows/corporate-events-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/corporate-events-refresh.yml').exists() else pathlib.Path('.github/workflows/corporate-events-refresh.yml').read_text()
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
-        self.assertIn("cron: '47 0,4,8,12 * * 1-5'",flow)
+        self.assertIn("cron: '17 0-10/2 * * 1-5'",flow)
         self.assertIn('financial-report-data-publisher',flow)
         self.assertIn('refresh_events.py',flow)
         self.assertIn('event-status.json',flow)
-        self.assertIn('Refresh corporate events',pages)
+        self.assertIn('Refresh investment insights',pages)
 
     def test_investment_ideas_v6_dashboard_is_symbol_dynamic(self):
         html=(ROOT/'frontend/index.html').read_text()
@@ -173,15 +173,21 @@ class MarketTests(unittest.TestCase):
         self.assertIn("read('insights-status.json').catch(()=>null)",insights)
         self.assertIn('sourcesReachable',insights)
         self.assertIn('sourceHealth',insights)
-    def test_research_and_event_publishers_are_separated(self):
+    def test_research_and_event_publishers_are_consolidated(self):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
-        event_flow=(ROOT.parent/'.github/workflows/corporate-events-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/corporate-events-refresh.yml').exists() else pathlib.Path('.github/workflows/corporate-events-refresh.yml').read_text()
-        self.assertNotIn("'financial-report/data/corporate-events.json'",flow)
-        self.assertNotIn('data/corporate-events.json data/insights-status.json',flow)
-        self.assertIn('data/corporate-events.json data/event-status.json',event_flow)
+        manual=(ROOT.parent/'.github/workflows/corporate-events-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/corporate-events-refresh.yml').exists() else pathlib.Path('.github/workflows/corporate-events-refresh.yml').read_text()
+        financial=(ROOT.parent/'.github/workflows/financial-report-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-report-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-report-refresh.yml').read_text()
+        self.assertIn('name: Refresh investment insights',flow)
+        self.assertIn('refresh_insights.py',flow)
+        self.assertIn('refresh_events.py',flow)
+        self.assertIn('data/broker-research.json',flow)
+        self.assertIn('data/corporate-events.json',flow)
+        self.assertIn('data/insights-status.json',flow)
+        self.assertIn('data/event-status.json',flow)
         self.assertIn('group: financial-report-data-publisher',flow)
-        self.assertIn('group: financial-report-data-publisher',event_flow)
-
+        self.assertIn('name: Manual corporate event refresh',manual)
+        self.assertNotIn('schedule:',manual)
+        self.assertNotIn('refresh_insights.py',financial)
 
     def test_events_and_broker_research_are_wired_to_chart_dolphin_and_bundle(self):
         html=(ROOT/'frontend/index.html').read_text()
@@ -514,7 +520,7 @@ class MarketTests(unittest.TestCase):
     def test_pages_merges_research_seed_and_redeploys_after_research_refresh(self):
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
         merge=(ROOT/'scripts/merge_insight_data.py').read_text()
-        self.assertIn('Refresh broker research timeline',pages)
+        self.assertIn('Refresh investment insights',pages)
         self.assertIn('merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data',pages)
         self.assertIn("CURATED=('summary','highlights','catalysts','risks')",merge)
         self.assertIn('merge_reports',merge)
