@@ -521,9 +521,7 @@ def report_logical_key(row):
     title=unicodedata.normalize('NFD',title)
     title=''.join(ch for ch in title if unicodedata.category(ch)!='Mn')
     title=re.sub(r'[^a-z0-9]+',' ',title).strip()
-    target=row.get('targetPrice')
-    target_key=str(int(target)) if isinstance(target,(int,float)) and target else ''
-    return '|'.join([clean(row.get('broker','')).upper(),clean(row.get('symbol','')).upper(),str(row.get('publishedAt','')),title,target_key])
+    return '|'.join([clean(row.get('broker','')).upper(),clean(row.get('symbol','')).upper(),str(row.get('publishedAt','')),title])
 
 def report_quality(row):
     provider=str(row.get('dataProvider','')).upper()
