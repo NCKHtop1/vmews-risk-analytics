@@ -1,16 +1,6 @@
 name: Refresh investment insights
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'financial-report/scripts/refresh_insights.py'
-      - 'financial-report/scripts/refresh_events.py'
-      - 'financial-report/config/research_sources.json'
-      - 'financial-report/config/event_sources.json'
-      - 'financial-report/data/broker-research.json'
-      - 'financial-report/data/corporate-events.json'
-      - '.github/workflows/research-timeline-refresh.yml'
   schedule:
     # 07:17, 09:17, 11:17, 13:17, 15:17, 17:17 Vietnam time on weekdays.
     - cron: '17 0-10/2 * * 1-5'
