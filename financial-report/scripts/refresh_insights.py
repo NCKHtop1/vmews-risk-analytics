@@ -551,12 +551,14 @@ def merge_reports(existing,discovered):
         merged={**other,**best}
         for field in ('recommendation','targetPrice','brokerName','sourceUrl','dataProvider'):
             if not merged.get(field) and other.get(field):merged[field]=other[field]
+        curated_other=any(other.get(field) for field in ('highlights','catalysts','risks'))
+        curated_best=any(best.get(field) for field in ('highlights','catalysts','risks'))
         for field in ('summary','highlights','catalysts','risks'):
             bv=best.get(field);ov=other.get(field)
             if isinstance(bv,list) and isinstance(ov,list):
-                if len(ov)>len(bv):merged[field]=ov
-            elif isinstance(bv,str) and isinstance(ov,str) and len(ov)>len(bv):
-                merged[field]=ov
+                if len(ov)>len(bv) or (curated_other and not curated_best):merged[field]=ov
+            elif isinstance(bv,str) and isinstance(ov,str):
+                if len(ov)>len(bv) or (field=='summary' and curated_other and not curated_best):merged[field]=ov
             elif not bv and ov:
                 merged[field]=ov
         buckets[key]=merged
