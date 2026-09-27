@@ -256,6 +256,17 @@ class MarketTests(unittest.TestCase):
         self.assertIn('Dữ liệu giá và biểu đồ đang lệch nhau',chart)
         self.assertIn('.chart-data-mismatch',css)
 
+    def test_production_bundle_matches_dolphin_v4(self):
+        bundle=(ROOT/'index.html').read_text()
+        source=(ROOT/'frontend/research-ai.js').read_text()
+        self.assertIn('DOLPHIN_V4',source)
+        self.assertIn('DOLPHIN_V4',bundle)
+        self.assertIn('strictCompanyNews',bundle)
+        self.assertIn('chart-data-mismatch',bundle)
+        self.assertIn('Flash-Lite',bundle)
+        self.assertNotIn('research-ai-subtitle',bundle)
+        self.assertLess(bundle.index('id="research-ai-messages"'),bundle.index('id="research-ai-form"'))
+
     def test_native_chart_replaces_restricted_tradingview_widget(self):
         market=(ROOT/'frontend/market.js').read_text()
         chart=(ROOT/'frontend/chart-engine.js').read_text()
