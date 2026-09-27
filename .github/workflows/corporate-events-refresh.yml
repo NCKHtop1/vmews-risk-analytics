@@ -1,0 +1,62 @@
+name: Refresh corporate events
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/refresh_events.py'
+      - 'financial-report/config/event_sources.json'
+      - 'financial-report/data/corporate-events.json'
+      - '.github/workflows/corporate-events-refresh.yml'
+  schedule:
+    # 07:47, 11:47, 15:47, 19:47 Vietnam time on weekdays.
+    - cron: '47 0,4,8,12 * * 1-5'
+permissions:
+  contents: write
+concurrency:
+  group: financial-report-data-publisher
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            financial-report/scripts
+            financial-report/config
+            financial-report/data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore published event datasets
+        run: |
+          git fetch origin financial-report-data
+          git worktree add /tmp/financial-publish FETCH_HEAD
+          git -C /tmp/financial-publish sparse-checkout set data
+          mkdir -p /tmp/financial-publish/data
+          cp -n financial-report/data/companies.json /tmp/financial-publish/data/companies.json || true
+          cp -n financial-report/data/corporate-events.json /tmp/financial-publish/data/corporate-events.json || true
+      - name: Sweep corporate-event sources
+        run: |
+          python -u financial-report/scripts/refresh_events.py --output /tmp/financial-publish/data
+      - name: Publish event timeline datasets
+        working-directory: /tmp/financial-publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse data/corporate-events.json data/event-status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh corporate event timeline"
+            git push origin HEAD:refs/heads/financial-report-data
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corporate-event-data
+          path: |
+            /tmp/financial-publish/data/corporate-events.json
+            /tmp/financial-publish/data/event-status.json
+          retention-days: 7
