@@ -32,10 +32,10 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(cash['details']['payoutDate'],'2026-01-23')
         self.assertEqual(cash['dataQuality'],'official')
         cafe='<div>17/06/2022: Cổ tức bằng Cổ phiếu, tỷ lệ 30% Cổ tức bằng Tiền, tỷ lệ 5% 31/05/2021: Cổ tức bằng Tiền, tỷ lệ 5%</div>'
-        rows=em.cafef_rows(cafe,'HPG','https://cafef.example/HPG')
+        rows=em.parse_24hmoney_events(cafe.replace('17/06/2022: ','Lịch chia cổ tức 17/06/2022 HPG '),'HPG','https://24hmoney.example/stock/HPG/events')
         self.assertTrue(any(x['type']=='stock_dividend' and x['date']=='2022-06-17' for x in rows))
         self.assertTrue(any(x['type']=='cash_dividend' and x['date']=='2022-06-17' for x in rows))
-        self.assertTrue(all(x['dataQuality']=='secondary' for x in rows))
+        self.assertTrue(all(x['dataQuality']=='aggregated' for x in rows))
 
     def test_events_v8_parses_24hmoney_event_timeline(self):
         raw='<div>Sự kiện 15/05/2026 HPG HPG: Thông báo về ngày đăng ký cuối cùng trả cổ tức năm 2025 bằng cổ phiếu</div><div>Lịch chia cổ tức 15/05/2026 HPG Mã HPG trả cổ tức bằng cổ phiếu, tỉ lệ 0.1 (phát hành thêm: 767,546,585), ngày GDKHQ 2026-07-01, ngày thực hiện 2026-07-02</div><div>Lịch chia cổ tức 05/05/2026 HPG Mã HPG chia cổ tức bằng tiền, tỉ lệ 0.05 (500 đồng/cổ phiếu), ngày GDKHQ 2026-05-11, ngày thực hiện 2026-06-03</div>'
@@ -68,8 +68,7 @@ class MarketTests(unittest.TestCase):
     def test_events_v6_has_official_registry_schedule_and_pages_trigger(self):
         sources=json.loads((ROOT/'config/event_sources.json').read_text())
         kinds={x['kind'] for x in sources['sources'] if x.get('enabled')}
-        self.assertIn('issuer_template',kinds)
-        self.assertIn('cafef_history',kinds)
+        self.assertIn('24hmoney_events',kinds)
         self.assertIn('health',kinds)
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
@@ -224,7 +223,8 @@ class MarketTests(unittest.TestCase):
         self.assertTrue({'TCBS','CTS','PHS','VIX','VDSC','SMARTCHART','24HMONEY'}.issubset(codes))
         finlens=next(x for x in cfg['sources'] if x['code']=='FINLENS')
         self.assertEqual(finlens['adapter'],'finlens_mcp')
-        self.assertEqual(finlens['mode'],'authenticated_mcp')
+        self.assertEqual(finlens['mode'],'optional_authenticated')
+        self.assertFalse(finlens['enabled'])
 
     def test_research_v7_text_listing_discovers_company_reports(self):
         source={'code':'TCBS','name':'Techcom Securities','url':'https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/','adapter':'text_listing'}
@@ -253,6 +253,7 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('FINLENS_MCP_TOKEN:',flow)
         self.assertNotIn('FINLENS_SYMBOL_BUDGET:',flow)
         self.assertIn("RESEARCH_DETAIL_BUDGET: '24'",flow)
+        self.assertIn('symbolsCovered',flow if False else insights)
         reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
         finlens_cfg=next(x for x in json.loads((ROOT/'config/research_sources.json').read_text())['sources'] if x['code']=='FINLENS')
         self.assertFalse(finlens_cfg['enabled'])
@@ -307,6 +308,14 @@ class MarketTests(unittest.TestCase):
         self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '100'",flow)
         self.assertIn("RESEARCH_FETCH_WORKERS: '16'",flow)
         self.assertIn("timeout-minutes: 25",flow)
+
+    def test_research_v8_merge_prefers_richer_curated_summary(self):
+        prior={'id':'a','symbol':'HPG','broker':'MBS','publishedAt':'2026-09-18','title':'HPG report','summary':'Tóm tắt FinQuery đã biên soạn','highlights':['Điểm đã xác minh'],'sourceUrl':'https://mbs.example/a'}
+        discovered={'id':'b','symbol':'HPG','broker':'MBS','publishedAt':'2026-09-18','title':'HPG report','summary':'Metadata ngắn','sourceUrl':'https://smartchart.example/b','dataProvider':'SMARTCHART'}
+        merged=im.merge_reports([prior],[discovered])
+        self.assertEqual(len(merged),1)
+        self.assertEqual(merged[0]['summary'],'Tóm tắt FinQuery đã biên soạn')
+        self.assertEqual(merged[0]['highlights'],['Điểm đã xác minh'])
 
 
     def test_research_v71_workflow_prioritizes_user_visible_symbols(self):
