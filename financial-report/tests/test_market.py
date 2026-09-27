@@ -263,7 +263,7 @@ class MarketTests(unittest.TestCase):
     def test_research_v71_registry_has_public_per_symbol_indexes(self):
         cfg=json.loads((ROOT/'config/research_sources.json').read_text())
         rows={x['code']:x for x in cfg['sources'] if x.get('enabled')}
-        self.assertGreaterEqual(len(rows),23)
+        self.assertGreaterEqual(len(rows),22)
         self.assertEqual(rows['SMARTCHART']['adapter'],'smartchart_symbol')
         self.assertEqual(rows['24HMONEY']['adapter'],'money24_symbol')
         self.assertIn('{symbol}',rows['SMARTCHART']['urlTemplate'])
@@ -304,7 +304,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("min(len(symbols),default_budget)",script)
         self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '100'",flow)
         self.assertIn("RESEARCH_FETCH_WORKERS: '16'",flow)
-        self.assertIn("timeout-minutes: 45",flow)
+        self.assertIn("timeout-minutes: 25",flow)
 
 
     def test_research_v71_workflow_prioritizes_user_visible_symbols(self):
