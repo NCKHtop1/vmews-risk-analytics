@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "sources": [
     {
       "code": "MBS",
@@ -168,7 +168,23 @@
       "mode": "authenticated_mcp",
       "adapter": "finlens_mcp",
       "enabled": true
+    },
+    {
+      "code": "SMARTCHART",
+      "name": "SmartChart broker-report index",
+      "urlTemplate": "https://smartchart.vn/bao-cao/{symbol}",
+      "mode": "public_aggregator",
+      "adapter": "smartchart_symbol",
+      "enabled": true
+    },
+    {
+      "code": "24HMONEY",
+      "name": "24HMoney broker-report index",
+      "urlTemplate": "https://24hmoney.vn/bao-cao-phan-tich?k={symbol}",
+      "mode": "public_aggregator",
+      "adapter": "money24_symbol",
+      "enabled": true
     }
   ],
-  "notes": "Public broker sources are crawled directly; FinLens MCP is an optional authenticated enrichment source when FINLENS_API_KEY or FINLENS_MCP_TOKEN is configured."
+  "notes": "Direct broker sources are preferred. Public per-symbol indexes fill metadata gaps; FinLens MCP is optional authenticated enrichment. FinQuery stores only source-linked metadata and preserves the actual recommending broker."
 }
