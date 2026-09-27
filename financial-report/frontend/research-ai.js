@@ -409,11 +409,12 @@ function buildLLMContext(question){
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
   marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,18),quarterRows:compactRows(quarterly,question,18)},
-  macroSnapshot:macro,recentNews:companyNews
+  macroSnapshot:macro,recentNews:companyNews,sectorNews:cleanNews(m.sectorNews||m.marketNews||[],6)
  };
 }
 function sourcesForLLM(){
- const m=market();return cleanNews([...(m.news||[]),...(m.marketNews||[])],8).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt}));
+ const m=market(),company=cleanNews(m.news||[],6).map(x=>({...x,category:'COMPANY'})),sector=cleanNews(m.sectorNews||m.marketNews||[],6).map(x=>({...x,category:'SECTOR'}));
+ return [...company,...sector].slice(0,10).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt,category:x.category}));
 }
 function dolphinSystemInstruction(){
  return[
@@ -424,6 +425,7 @@ function dolphinSystemInstruction(){
   'Luôn phân biệt số năm và số quý; gắn nhận định với kỳ cụ thể. Không annualize nếu context không cung cấp quy tắc.',
   'Nếu câu hỏi là follow-up ngắn, dùng lịch sử gần nhất và symbol hiện tại để hiểu mã này, quý này, chỉ số đó.',
   'Tin và Google Search chỉ là lớp bằng chứng bổ sung. Không dùng nguồn web để ghi đè số BCTC hoặc giá đã neo trong FinQuery.',
+  'Phân biệt recentNews là tin doanh nghiệp đã lọc chặt với sectorNews là bối cảnh ngành. Không được gọi sectorNews là tin của doanh nghiệp.',
   'Nếu hỏi nguyên nhân biến động giá, tách rõ dữ kiện quan sát được khỏi nguyên nhân có bằng chứng. Không khẳng định quan hệ nhân quả chỉ từ tương quan.',
   'Nếu dữ liệu không đủ, nêu đúng dữ liệu nào đang thiếu và vẫn trả lời phần có thể kiểm chứng.',
   'Không đưa ra khuyến nghị mua/bán hoặc cam kết lợi nhuận. Có thể phân tích kịch bản, rủi ro, điều kiện xác nhận và điểm cần theo dõi.',
