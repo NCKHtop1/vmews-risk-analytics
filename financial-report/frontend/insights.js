@@ -1,7 +1,7 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DATA_BASE=new URL('data/',location.href).href;
-const state={symbol:'',events:[],reports:[],loaded:false,filter:'all',chart:null,updatedAt:null};
+const state={symbol:'',events:[],reports:[],loaded:false,filter:'all',chart:null,updatedAt:null,health:null};
 const EVENT_LABELS={agm:'ĐHĐCĐ',stock_dividend:'Cổ tức CP',cash_dividend:'Cổ tức tiền',dividend:'Cổ tức',rights:'Quyền',listing:'Niêm yết',earnings:'KQKD',other:'Sự kiện'};
 const EVENT_MARKS={agm:'A',stock_dividend:'D',cash_dividend:'$',dividend:'D',rights:'R',listing:'L',earnings:'E',other:'•'};
 const safeURL=value=>{try{const u=new URL(String(value||''));return u.protocol==='https:'?u.href:'';}catch{return'';}};
@@ -54,16 +54,16 @@ function open(id){
 function render(){
  const list=$('insight-list'),status=$('insight-status'),summary=$('insight-consensus');if(!list)return;
  const all=rows(),filtered=all.filter(x=>state.filter==='all'||x._kind===state.filter),events=all.filter(x=>x._kind==='event'),reports=all.filter(x=>x._kind==='research'),c=consensus();
- if(status)status.textContent=(state.loaded?'Đã đồng bộ':'Đang tải')+' · '+events.length+' sự kiện · '+reports.length+' báo cáo cho '+(state.symbol||'mã đang xem');
- if(summary)summary.innerHTML=c.brokers?'<span><b>'+c.brokers+'</b> CTCK gần nhất</span>'+(Number.isFinite(c.targetMedian)?'<span>Target trung vị <b>'+money(c.targetMedian)+'</b></span>':''):'<span>Chưa có báo cáo CTCK đã chuẩn hóa cho mã này.</span>';
+ if(status){const coverage=state.health&&Number.isFinite(state.health.sourcesTotal)?' · '+(state.health.sourcesReachable||0)+'/'+state.health.sourcesTotal+' nguồn research truy cập được':'';status.textContent=(state.loaded?'Đã đồng bộ':'Đang tải')+' · '+events.length+' sự kiện · '+reports.length+' báo cáo cho '+(state.symbol||'mã đang xem')+coverage;}
+ if(summary)summary.innerHTML=c.brokers?'<span><b>'+c.brokers+'</b> CTCK gần nhất</span>'+(Number.isFinite(c.targetMedian)?'<span>Target trung vị <b>'+money(c.targetMedian)+'</b></span><span>Khoảng target <b>'+money(c.targetMin)+'–'+money(c.targetMax)+'</b></span>':''):'<span>Chưa có báo cáo CTCK đã chuẩn hóa cho mã này.</span>';
  list.innerHTML=filtered.slice(0,18).map(x=>x._kind==='research'?'<button type="button" class="insight-card research" data-insight-open="research:'+esc(x.id)+'"><span class="insight-dot">'+esc(String(x.broker||'R').slice(0,4))+'</span><span class="insight-card-copy"><b>'+esc(x.broker)+' · '+esc(x.title)+'</b><small>'+esc(date(x.publishedAt))+(x.recommendation?' · '+esc(x.recommendation):'')+(Number.isFinite(Number(x.targetPrice))?' · Target '+money(x.targetPrice):'')+'</small></span><span class="insight-chevron">›</span></button>':'<button type="button" class="insight-card event" data-insight-open="event:'+esc(x.id)+'"><span class="insight-dot">'+esc(EVENT_MARKS[x.type]||'•')+'</span><span class="insight-card-copy"><b>'+esc(EVENT_LABELS[x.type]||'Sự kiện')+' · '+esc(x.title)+'</b><small>'+esc(date(x.date))+' · '+esc(x.source?.publisher||'Nguồn doanh nghiệp')+'</small></span><span class="insight-chevron">›</span></button>').join('')||'<div class="insight-empty">Chưa có sự kiện hoặc báo cáo nghiên cứu đã chuẩn hóa cho '+esc(state.symbol||'mã này')+'.</div>';
  document.querySelectorAll('[data-insight-filter]').forEach(b=>b.classList.toggle('active',b.dataset.insightFilter===state.filter));
  syncChart();
 }
 async function load(){
  try{
-  const [e,r]=await Promise.all([read('corporate-events.json'),read('broker-research.json')]);
-  state.events=Array.isArray(e.events)?e.events:[];state.reports=Array.isArray(r.reports)?r.reports:[];state.updatedAt=[e.updatedAt,r.updatedAt].filter(Boolean).sort().at(-1)||null;state.loaded=true;
+  const [e,r,h]=await Promise.all([read('corporate-events.json'),read('broker-research.json'),read('insights-status.json').catch(()=>null)]);
+  state.events=Array.isArray(e.events)?e.events:[];state.reports=Array.isArray(r.reports)?r.reports:[];state.health=h;state.updatedAt=[e.updatedAt,r.updatedAt,h?.checkedAt].filter(Boolean).sort().at(-1)||null;state.loaded=true;
  }catch(error){state.loaded=false;console.warn('FinInsights:',error);}
  render();
 }
@@ -72,7 +72,7 @@ function attachChart(chart){state.chart=chart;syncChart();}
 function context(){
  const eventRows=state.events.filter(x=>x.symbol===state.symbol).sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,10);
  const reportRows=state.reports.filter(x=>x.symbol===state.symbol).sort((a,b)=>String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0,8);
- return{symbol:state.symbol,updatedAt:state.updatedAt,corporateEvents:eventRows,brokerResearch:reportRows.map(x=>({id:x.id,broker:x.broker,publishedAt:x.publishedAt,title:x.title,recommendation:x.recommendation||null,targetPrice:Number.isFinite(Number(x.targetPrice))?Number(x.targetPrice):null,currency:x.currency||'VND',summary:x.summary||'',highlights:(x.highlights||[]).slice(0,5),catalysts:(x.catalysts||[]).slice(0,5),risks:(x.risks||[]).slice(0,5),sourceUrl:x.sourceUrl})),consensus:consensus()};
+ return{symbol:state.symbol,updatedAt:state.updatedAt,corporateEvents:eventRows,brokerResearch:reportRows.map(x=>({id:x.id,broker:x.broker,brokerName:x.brokerName||x.broker,publishedAt:x.publishedAt,title:x.title,recommendation:x.recommendation||null,targetPrice:Number.isFinite(Number(x.targetPrice))?Number(x.targetPrice):null,currency:x.currency||'VND',summary:x.summary||'',highlights:(x.highlights||[]).slice(0,5),catalysts:(x.catalysts||[]).slice(0,5),risks:(x.risks||[]).slice(0,5),sourceUrl:x.sourceUrl})),consensus:consensus(),sourceHealth:state.health?.sources||[]};
 }
 $('insight-filters')?.addEventListener('click',e=>{const b=e.target.closest('[data-insight-filter]');if(!b)return;state.filter=b.dataset.insightFilter;render();});
 $('insight-list')?.addEventListener('click',e=>{const b=e.target.closest('[data-insight-open]');if(b)open(b.dataset.insightOpen);});
