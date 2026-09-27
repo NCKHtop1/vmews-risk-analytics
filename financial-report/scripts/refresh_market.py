@@ -374,6 +374,66 @@ def _full_daily_history(symbol, target):
     return [merged[key] for key in sorted(merged)][-target:]
 
 
+def _normalize_vnstock_history(df, symbol, provider):
+    if df is None or len(df) == 0:
+        raise RuntimeError(f'{symbol}: {provider} returned no rows')
+    cols = {str(col).strip().lower(): col for col in df.columns}
+    time_col = cols.get('time') or cols.get('date') or cols.get('trading_date')
+    if time_col is None or cols.get('close') is None:
+        raise RuntimeError(f'{symbol}: unexpected {provider} columns {list(df.columns)}')
+    bars = []
+    for _, row in df.iterrows():
+        raw_time = row.get(time_col)
+        day = raw_time.date().isoformat() if hasattr(raw_time, 'date') else str(raw_time or '')[:10]
+        close = number(row.get(cols['close']))
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day or '') or close is None or close <= 0:
+            continue
+        open_ = number(row.get(cols.get('open'))) if cols.get('open') is not None else close
+        high = number(row.get(cols.get('high'))) if cols.get('high') is not None else close
+        low = number(row.get(cols.get('low'))) if cols.get('low') is not None else close
+        volume = number(row.get(cols.get('volume'))) if cols.get('volume') is not None else 0
+        bars.append({'time': day, 'open': open_ or close, 'high': high or close, 'low': low or close, 'close': close, 'volume': max(0, volume or 0)})
+    if not bars:
+        raise RuntimeError(f'{symbol}: {provider} returned no usable bars')
+    sample = sorted(x['close'] for x in bars[-120:] if x['close'] > 0)
+    median = sample[len(sample)//2] if sample else bars[-1]['close']
+    if median < 1000:
+        for bar in bars:
+            for field in ('open', 'high', 'low', 'close'):
+                bar[field] *= 1000
+    merged = {bar['time']: bar for bar in bars}
+    return [merged[key] for key in sorted(merged)]
+
+
+def _vnstock_full_history(symbol):
+    """Best-effort long daily history from free Vnstock routes, used only for a full backfill."""
+    start = os.environ.get('HISTORY_START_DATE', '1998-01-01')
+    end = (datetime.now(VN).date() + timedelta(days=1)).isoformat()
+    errors = []
+    try:
+        from vnstock.ui import Market
+        df = Market().equity(symbol).ohlcv(start=start, end=end, interval='1D', count=12000)
+        bars = _normalize_vnstock_history(df, symbol, 'Vnstock Unified Market')
+        if bars:
+            return bars, 'Vnstock Unified Market'
+    except Exception as e:
+        errors.append('Unified Market: ' + str(e))
+    try:
+        from vnstock import Vnstock
+        for source in ('VCI', 'KBS'):
+            try:
+                stock = Vnstock().stock(symbol=symbol, source=source)
+                df = stock.quote.history(start=start, end=end, interval='1D')
+                bars = _normalize_vnstock_history(df, symbol, f'Vnstock {source}')
+                if bars:
+                    return bars, f'Vnstock {source}'
+            except Exception as e:
+                errors.append(f'{source}: {e}')
+    except Exception as e:
+        errors.append('Vnstock import: ' + str(e))
+    raise RuntimeError(' | '.join(errors) or 'Vnstock long-history routes returned no data')
+
+
 def _refresh_one_history(out, symbol, minute=False):
     folder = 'intraday' if minute else 'history'
     path = out / folder / (symbol + '.json')
@@ -385,13 +445,23 @@ def _refresh_one_history(out, symbol, minute=False):
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
             bars = _full_daily_history(symbol, target)
+            providers = ['Vietcap']
+            if os.environ.get('HISTORY_VNSTOCK_FALLBACK') == '1':
+                try:
+                    extra, provider = _vnstock_full_history(symbol)
+                    merged = {bar['time']: bar for bar in bars}
+                    merged.update({bar['time']: bar for bar in extra})
+                    bars = [merged[key] for key in sorted(merged)]
+                    providers.append(provider)
+                except Exception as vn_error:
+                    providers.append('Vnstock fallback error: ' + str(vn_error)[:240])
             # Never discard older successful bars if the upstream temporarily returns a shorter window.
             if previous.get('bars'):
                 merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
                 merged.update({bar['time']: bar for bar in bars})
                 bars = [merged[key] for key in sorted(merged)]
         row = {
-            'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
+            'symbol': symbol, 'source': 'Vietcap' if minute else ' + '.join(providers), 'unit': 'VND',
             'interval': '1m' if minute else '1D', 'collectedAt': now(),
             'checkedAt': now(), 'status': 'ok', 'barCount': len(bars),
             'firstBar': bars[0]['time'] if bars else None,
@@ -491,7 +561,7 @@ def parse_feed(raw, publisher, feed_url, companies, current):
                 topics.add(topic)
         if matched:
             topics.add('company')
-        rows.append({'title': title, 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics)})
+        rows.append({'title': title, 'summary': body[:900], 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics)})
     return rows
 
 
