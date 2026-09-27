@@ -107,6 +107,11 @@ function systemInstruction() {
     "Không tự thêm câu mẫu về xác suất, giới hạn hay kiểm định. Chỉ nêu một gate cụ thể khi câu hỏi hỏi độ tin cậy/thiếu xác nhận hoặc gate đó trực tiếp ảnh hưởng kết luận.",
     "Tin cộng đồng chưa có công bố xác nhận phải được gọi là thông tin đang đối chiếu, không được khẳng định là sự thật.",
     "Khi context.scope là financial-report, ưu tiên marketSnapshot, movementDrivers, localFinancialData và recentNews trước kiến thức chung. Hãy định lượng bằng số liệu/kỳ báo cáo cụ thể thay vì trả lời chung chung.",
+    "Với context.scope là financial-report, localFinancialData và các summary/rows do FinQuery cung cấp là nguồn số liệu có cấu trúc ưu tiên. Không tự tính lại ROA, ROE, biên lợi nhuận, tăng trưởng hoặc các tỷ số nếu context đã cung cấp giá trị tương ứng.",
+    "Nếu người dùng hỏi NIM, CIR, LDR hoặc chỉ tiêu ngành ngân hàng, chỉ sử dụng chỉ tiêu hiện diện trong localFinancialData.annualRows/quarterRows hoặc dữ liệu nguồn rõ ràng; nếu không có thì nói đúng là chưa có dữ liệu trong context.",
+    "Mọi nhận định tài chính phải gắn với kỳ báo cáo cụ thể khi context có kỳ. Không trộn số năm với số quý và không biến số quý thành số năm nếu không có quy tắc annualize được cung cấp.",
+    "Nếu câu hỏi là follow-up ngắn, dùng lịch sử hội thoại gần nhất và symbol hiện tại để hiểu đại từ như mã này, quý này, chỉ số đó; không bắt người dùng lặp lại dữ liệu đã có.",
+    "Nguồn web có thể bổ sung bối cảnh nhưng không được ghi đè số liệu BCTC/giá đã neo trong context. Khi nguồn ngoài khác thời điểm hoặc khác định nghĩa, nêu rõ sự khác biệt thay vì hòa trộn.",
     "movementDrivers là phân rã tín hiệu quan sát được: market, relative, volume, momentum và news. Score/contribution/weight không chứng minh quan hệ nhân quả; khi giải thích vì sao giá tăng/giảm phải tách tín hiệu hỗ trợ, tín hiệu mâu thuẫn và tin có thể xác minh.",
     "Nếu localFinancialData có nhiều năm/quý, hãy chỉ ra xu hướng, thay đổi giữa kỳ, chất lượng lợi nhuận, dòng tiền, đòn bẩy và các điểm bất thường có dữ liệu. Không tự tạo chỉ tiêu không có trong ngữ cảnh.",
     "Khi dùng nguồn tin supplied, nêu tên nguồn và thời điểm khi điều đó giúp kiểm chứng kết luận; không biến tiêu đề thành sự kiện đã xác minh nếu chưa đọc/đối chiếu.",
@@ -230,6 +235,8 @@ export default async function handler(request, response) {
         failoverUsed: attempts.length > 0,
         unavailableProviders: attempts.map(item => item.provider),
         sourceMode: provider.id === "gemini" ? "NATIVE_WEB_SEARCH" : "SUPPLIED_PUBLIC_EVIDENCE",
+        grounded: context?.scope === "financial-report",
+        contextVersion: String(context?.contextVersion || "").slice(0, 80) || null,
       });
     } catch (error) {
       attempts.push({ provider: provider.name, reason: String(error?.message || "UNKNOWN").slice(0, 100) });
