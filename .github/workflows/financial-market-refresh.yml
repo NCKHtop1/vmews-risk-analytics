@@ -66,6 +66,8 @@ jobs:
           HISTORY_WORKERS: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '2' || '4' }}
           HISTORY_PAGE_SIZE: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1000' || '1600' }}
           HISTORY_RETRIES: '3'
+          HISTORY_KBS_FULL: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1' || '0' }}
+          HISTORY_START_DATE: '1998-01-01'
         run: |
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
