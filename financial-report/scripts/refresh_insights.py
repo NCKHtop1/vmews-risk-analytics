@@ -515,20 +515,48 @@ def seed_to_report(seed,source):
     result['summary']=source['code']+' có báo cáo '+seed['symbol']+' ngày '+datetime.fromisoformat(published).strftime('%d/%m/%Y')+'. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ.'
     return result
 
+def report_logical_key(row):
+    import unicodedata
+    title=clean(row.get('title','')).lower()
+    title=unicodedata.normalize('NFD',title)
+    title=''.join(ch for ch in title if unicodedata.category(ch)!='Mn')
+    title=re.sub(r'[^a-z0-9]+',' ',title).strip()
+    target=row.get('targetPrice')
+    target_key=str(int(target)) if isinstance(target,(int,float)) and target else ''
+    return '|'.join([clean(row.get('broker','')).upper(),clean(row.get('symbol','')).upper(),str(row.get('publishedAt','')),title,target_key])
+
+def report_quality(row):
+    provider=str(row.get('dataProvider','')).upper()
+    url=str(row.get('sourceUrl',''))
+    score=0
+    if provider=='24HMONEY':score+=4
+    if provider=='SMARTCHART':score+=3
+    if provider and provider not in ('24HMONEY','SMARTCHART'):score+=4
+    if '/bao-cao-phan-tich/' in url and '24hmoney.vn' in url and '#finquery-' not in url:score+=4
+    if '#finquery-' not in url:score+=1
+    if row.get('recommendation'):score+=1
+    if row.get('targetPrice') is not None:score+=1
+    if len(str(row.get('summary','')))>=160:score+=1
+    return score
+
 def merge_reports(existing,discovered):
-    by_source={r.get('sourceUrl'):dict(r) for r in existing if r.get('sourceUrl')}
-    by_id={r.get('id'):dict(r) for r in existing if r.get('id')}
-    for row in discovered:
-        prior=by_source.get(row.get('sourceUrl')) or by_id.get(row.get('id'))
-        if prior:
-            merged={**row,**prior}
-            for key in ('publishedAt','recommendation','targetPrice','currency','sourceUrl','title','broker','brokerName','symbol'):
-                if row.get(key) is not None:merged[key]=row[key]
-        else:merged=row
-        by_id[merged['id']]=merged
-        if merged.get('sourceUrl'):by_source[merged['sourceUrl']]=merged
-    unique={r['id']:r for r in by_id.values() if r.get('id')}
-    return sorted(unique.values(),key=lambda r:(r.get('publishedAt',''),r.get('broker',''),r.get('symbol','')),reverse=True)
+    buckets={}
+    for row in list(existing or [])+list(discovered or []):
+        if not isinstance(row,dict) or not row.get('symbol') or not row.get('broker') or not row.get('publishedAt'):
+            continue
+        key=report_logical_key(row)
+        prior=buckets.get(key)
+        if not prior:
+            buckets[key]=dict(row);continue
+        best=max((prior,row),key=report_quality)
+        other=row if best is prior else prior
+        merged={**other,**best}
+        # Preserve richer fields across duplicate index sources.
+        for field in ('recommendation','targetPrice','summary','brokerName','sourceUrl','dataProvider'):
+            if not merged.get(field) and other.get(field):merged[field]=other[field]
+        buckets[key]=merged
+    rows=list(buckets.values())
+    return sorted(rows,key=lambda r:(r.get('publishedAt',''),r.get('broker',''),r.get('symbol',''),r.get('title','')),reverse=True)
 
 def validate_events(value):
     rows=value.get('events') if isinstance(value,dict) else None
@@ -637,6 +665,7 @@ def refresh(output,max_detail=24):
     ok=sum(1 for x in health if x['status'] in ('ok','reachable','reachable_no_reports','reachable_no_parse'))
     status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':ok,
             'reportsDiscoveredThisRun':len(discovered),'storedReports':len(reports),
+            'symbolsTotal':len(universe),'symbolsCovered':len({r.get('symbol') for r in reports if r.get('symbol')}),
             'corporateEvents':len(events.get('events') or []),'finlensCursor':finlens_cursor,
             'aggregatorCursors':aggregator_cursors,'detailEnriched':len(detail_jobs),'sources':health}
     write(output/'insights-status.json',status)
