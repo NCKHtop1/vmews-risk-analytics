@@ -37,6 +37,27 @@ class MarketTests(unittest.TestCase):
         self.assertTrue(any(x['type']=='cash_dividend' and x['date']=='2022-06-17' for x in rows))
         self.assertTrue(all(x['dataQuality']=='secondary' for x in rows))
 
+    def test_events_v8_parses_24hmoney_event_timeline(self):
+        raw='<div>Sự kiện 15/05/2026 HPG HPG: Thông báo về ngày đăng ký cuối cùng trả cổ tức năm 2025 bằng cổ phiếu</div><div>Lịch chia cổ tức 15/05/2026 HPG Mã HPG trả cổ tức bằng cổ phiếu, tỉ lệ 0.1 (phát hành thêm: 767,546,585), ngày GDKHQ 2026-07-01, ngày thực hiện 2026-07-02</div><div>Lịch chia cổ tức 05/05/2026 HPG Mã HPG chia cổ tức bằng tiền, tỉ lệ 0.05 (500 đồng/cổ phiếu), ngày GDKHQ 2026-05-11, ngày thực hiện 2026-06-03</div>'
+        rows=em.parse_24hmoney_events(raw,'HPG','https://24hmoney.vn/stock/HPG/events')
+        self.assertGreaterEqual(len(rows),2)
+        self.assertTrue(any(x['type']=='stock_dividend' for x in rows))
+        self.assertTrue(any(x['type']=='cash_dividend' for x in rows))
+        self.assertTrue(any(x['details'].get('exRightDate')=='2026-07-01' for x in rows))
+        self.assertTrue(all(x['dataQuality']=='aggregated' for x in rows))
+
+    def test_events_v8_uses_24hmoney_and_does_not_crawl_two_hundred_hnx_pages(self):
+        cfg=json.loads((ROOT/'config/event_sources.json').read_text())
+        enabled={x['code']:x for x in cfg['sources'] if x.get('enabled')}
+        self.assertIn('24HMONEY_EVENTS',enabled)
+        self.assertNotIn('HNX_LISTED',enabled)
+        self.assertNotIn('HNX_UPCOM',enabled)
+        self.assertNotIn('CAFEF_EVENTS',enabled)
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn('refresh_events.py',flow)
+        self.assertIn('EVENT_FETCH_WORKERS: \\'12\\'',flow)
+
+
     def test_events_v6_dedupes_secondary_when_official_event_exists(self):
         official={'id':'a','symbol':'HPG','type':'cash_dividend','date':'2022-06-17','title':'Official','details':{'recordDate':'2022-06-20','ratio':'5%'},'source':{'publisher':'HOSE','url':'https://example.com/o'},'dataQuality':'official'}
         secondary={'id':'b','symbol':'HPG','type':'cash_dividend','date':'2022-06-17','title':'CafeF','details':{'ratio':'5%'},'source':{'publisher':'CafeF','url':'https://example.com/c'},'dataQuality':'secondary'}
