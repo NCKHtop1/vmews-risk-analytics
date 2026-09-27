@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-27T00:00:00Z",
+  "policy": "Corporate-event records are source-linked metadata. Dates are not shifted unless explicitly named as ex-right/record/listing/trading dates.",
+  "events": [
+    {
+      "id": "HPG-2026-04-21-AGM",
+      "symbol": "HPG",
+      "type": "agm",
+      "date": "2026-04-21",
+      "title": "ĐHĐCĐ thường niên 2026",
+      "summary": "ĐHĐCĐ thông qua kế hoạch doanh thu 210.000 tỷ đồng, lợi nhuận sau thuế 22.000 tỷ đồng và phương án cổ tức 2025 gồm 10% cổ phiếu + 5% tiền mặt.",
+      "details": {
+        "revenuePlan2026BillionVnd": 210000,
+        "netProfitPlan2026BillionVnd": 22000,
+        "stockDividend": "10%",
+        "cashDividend": "5%"
+      },
+      "source": {
+        "publisher": "Hòa Phát",
+        "url": "https://www.hoaphat.com.vn/tin-tuc/hoa-phat-dat-9-056-ty-dong-loi-nhuan-sau-thue-quy-1-tang-170-so-voi-cung-ky.html"
+      }
+    },
+    {
+      "id": "HPG-2026-05-25-EXRIGHT",
+      "symbol": "HPG",
+      "type": "stock_dividend",
+      "date": "2026-05-25",
+      "title": "Giao dịch không hưởng quyền cổ tức cổ phiếu 2025",
+      "summary": "Ngày giao dịch không hưởng quyền cho phương án trả cổ tức 2025 bằng cổ phiếu tỷ lệ 10%; ngày đăng ký cuối cùng 26/05/2026.",
+      "details": {
+        "exRightDate": "2026-05-25",
+        "recordDate": "2026-05-26",
+        "ratio": "10%",
+        "entitlement": "100 cổ phiếu nhận 10 cổ phiếu mới"
+      },
+      "source": {
+        "publisher": "HOSE",
+        "url": "https://staticfile.hsx.vn/Uploads/UploadDocuments/2462408/20260515%20-%20HPG%20-%20Thong%20bao%201121%20tra%20co%20tuc%20bang%20co%20phieu.pdf"
+      }
+    },
+    {
+      "id": "HPG-2026-07-15-LISTING",
+      "symbol": "HPG",
+      "type": "listing",
+      "date": "2026-07-15",
+      "title": "Cổ phiếu trả cổ tức 2025 bắt đầu giao dịch",
+      "summary": "Cổ phiếu phát hành để trả cổ tức năm 2025 được đưa vào giao dịch; số lượng chứng khoán thay đổi niêm yết là 767.498.665 cổ phiếu.",
+      "details": {
+        "tradingDate": "2026-07-15",
+        "additionalShares": 767498665,
+        "totalSharesAfter": 8442964520
+      },
+      "source": {
+        "publisher": "Hòa Phát / HOSE",
+        "url": "https://www.hoaphat.com.vn/tin-tuc/thong-bao-ve-ngay-giao-dich-co-phieu-phat-hanh-tra-co-tuc-nam-2025-1.html"
+      }
+    }
+  ]
+}
