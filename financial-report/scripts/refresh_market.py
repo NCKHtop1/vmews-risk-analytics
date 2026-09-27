@@ -376,6 +376,17 @@ def _history_page(symbol, frame, to, count, minute=False):
     raise last_error
 
 
+def _kbs_number(value):
+    if isinstance(value, str):
+        text = value.strip().replace(' ', '')
+        if re.fullmatch(r'-?\d{1,3}(?:,\d{3})+(?:\.\d+)?', text):
+            text = text.replace(',', '')
+        elif re.fullmatch(r'-?\d+,\d+', text):
+            text = text.replace(',', '.')
+        return number(text)
+    return number(value)
+
+
 def _kbs_day(value):
     if isinstance(value, (int, float)):
         n = float(value)
@@ -408,13 +419,13 @@ def normalize_kbs_history(payload, symbol):
         if not isinstance(row, dict):
             continue
         day = _kbs_day(row.get('t') or row.get('time') or row.get('date'))
-        close = number(row.get('c') if 'c' in row else row.get('close'))
+        close = _kbs_number(row.get('c') if 'c' in row else row.get('close'))
         if not day or close is None or close <= 0:
             continue
-        open_ = number(row.get('o') if 'o' in row else row.get('open')) or close
-        high = number(row.get('h') if 'h' in row else row.get('high')) or close
-        low = number(row.get('l') if 'l' in row else row.get('low')) or close
-        volume = number(row.get('v') if 'v' in row else row.get('volume')) or 0
+        open_ = _kbs_number(row.get('o') if 'o' in row else row.get('open')) or close
+        high = _kbs_number(row.get('h') if 'h' in row else row.get('high')) or close
+        low = _kbs_number(row.get('l') if 'l' in row else row.get('low')) or close
+        volume = _kbs_number(row.get('v') if 'v' in row else row.get('volume')) or 0
         bars.append({'time': day, 'open': open_, 'high': high, 'low': low, 'close': close, 'volume': max(0, volume)})
     if not bars:
         raise RuntimeError(f'{symbol}: KBS returned no usable daily bars')
