@@ -1,16 +1,6 @@
-name: Refresh corporate events
+name: Manual corporate event refresh
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'financial-report/scripts/refresh_events.py'
-      - 'financial-report/config/event_sources.json'
-      - 'financial-report/data/corporate-events.json'
-      - '.github/workflows/corporate-events-refresh.yml'
-  schedule:
-    # 07:47, 11:47, 15:47, 19:47 Vietnam time on weekdays.
-    - cron: '47 0,4,8,12 * * 1-5'
 permissions:
   contents: write
 concurrency:
@@ -40,9 +30,8 @@ jobs:
           cp -n financial-report/data/companies.json /tmp/financial-publish/data/companies.json || true
           cp -n financial-report/data/corporate-events.json /tmp/financial-publish/data/corporate-events.json || true
       - name: Sweep corporate-event sources
-        run: |
-          python -u financial-report/scripts/refresh_events.py --output /tmp/financial-publish/data
-      - name: Publish event timeline datasets
+        run: python -u financial-report/scripts/refresh_events.py --output /tmp/financial-publish/data
+      - name: Publish corporate-event datasets
         working-directory: /tmp/financial-publish
         run: |
           git config user.name 'github-actions[bot]'
@@ -52,11 +41,3 @@ jobs:
             git commit -m "Refresh corporate event timeline"
             git push origin HEAD:refs/heads/financial-report-data
           fi
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: corporate-event-data
-          path: |
-            /tmp/financial-publish/data/corporate-events.json
-            /tmp/financial-publish/data/event-status.json
-          retention-days: 7
