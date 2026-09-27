@@ -271,8 +271,14 @@ def refresh(output,max_detail=120):
     companies=read(output/'companies.json',read(ROOT/'data/companies.json',[]))
     universe={str(x.get('symbol','')).upper() for x in companies if re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())}
     research_path=output/'broker-research.json';events_path=output/'corporate-events.json'
-    current=read(research_path,read(ROOT/'data/broker-research.json',{'version':1,'reports':[]}))
-    events=validate_events(read(events_path,read(ROOT/'data/corporate-events.json',{'version':1,'events':[]})))
+    seeded_research=read(ROOT/'data/broker-research.json',{'version':1,'reports':[]})
+    published_research=read(research_path,{'version':1,'reports':[]})
+    current={'version':2,'reports':merge_reports(seeded_research.get('reports') or [],published_research.get('reports') or [])}
+    seeded_events=read(ROOT/'data/corporate-events.json',{'version':1,'events':[]})
+    published_events=read(events_path,{'version':1,'events':[]})
+    event_by_id={x.get('id'):x for x in seeded_events.get('events',[]) if x.get('id')}
+    event_by_id.update({x.get('id'):x for x in published_events.get('events',[]) if x.get('id')})
+    events=validate_events({'version':1,'updatedAt':published_events.get('updatedAt') or seeded_events.get('updatedAt'),'events':list(event_by_id.values())})
     discovered=[];health=[];budget=max(1,max_detail)
     for source in load_sources():
         row={'code':source['code'],'name':source.get('name',source['code']),'url':source['url'],'mode':source.get('mode',''),'adapter':source.get('adapter',''),'checkedAt':now(),'status':'pending','discovered':0,'parsed':0}
