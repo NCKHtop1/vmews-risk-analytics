@@ -8,7 +8,7 @@
 <script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="insights.js"></script><script defer src="macro.js"></script><script defer src="knowledge-base.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script>
 </head>
 <body>
-<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng báo cáo"><a href="#market">Thị trường</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">VN100 <span>Việt Nam</span></div></header>
+<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng báo cáo"><a href="#market">Thị trường</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">VN100 <span>Việt Nam</span></div></header>
 <main>
 <div class="intro"><div><h1>Báo cáo tài chính</h1><p>Tra cứu theo doanh nghiệp và kỳ báo cáo.</p></div></div>
 <div class="workspace">
@@ -96,6 +96,38 @@
 <div class="forecast-card"><div><span class="forecast-label">SoluTION.AI · FORECAST</span><h4>Khám phá góc nhìn dự báo</h4><p>Xem kịch bản giá T+1–T+5, các yếu tố tác động và kết quả kiểm định cho <strong id="forecast-symbol">MBB</strong>.</p></div><div class="forecast-action"><a id="forecast-link" href="https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=MBB" target="_blank" rel="noopener noreferrer">Xem dự báo MBB ↗</a><small>Mở trang Forecast trong tab mới</small></div></div></div>
 <aside class="market-news"><h3 id="news-title">Tin doanh nghiệp</h3><label class="sr-only" for="news-mode">Loại tin</label><select id="news-mode"><option value="company">Theo doanh nghiệp</option><option value="all">Tin kinh tế</option><option value="finance">Tài chính</option><option value="market">Thị trường</option><option value="rates">Lãi suất</option><option value="stocks">Chứng khoán</option><option value="banking">Ngân hàng</option><option value="investment">Đầu tư</option><option value="macro">Vĩ mô</option></select><p id="news-status" class="market-subtitle"></p><div id="news-list"></div></aside></div>
 <section class="market-board" aria-label="Bảng giá VN100"><div class="market-top"><h3>Bảng giá VN100</h3><span id="market-count" class="market-subtitle"></span></div><div class="market-toolbar"><input id="market-filter" type="search" placeholder="Tìm mã hoặc doanh nghiệp" aria-label="Lọc bảng giá"><label><input id="watch-only" type="checkbox">Đang theo dõi</label><label>Sắp xếp <select id="market-sort"><option value="symbol">Mã A–Z</option><option value="change">Tăng giá nhiều nhất</option></select></label></div><div class="market-table-wrap"><table class="market-table"><thead><tr><th>Theo dõi</th><th>Mã</th><th>Giá (đ)</th><th>Tham chiếu</th><th>Thay đổi</th><th>Khối lượng (CP)</th><th>Động lực / hệ số</th><th>Thời điểm nguồn</th></tr></thead><tbody id="market-rows"></tbody></table></div></section>
+</section>
+<section id="investment-ideas" class="investment-ideas-section" aria-label="Investment Ideas">
+<div class="idea-section-head"><div><span class="research-ai-label">INVESTMENT IDEAS</span><h2 id="idea-title">Ý tưởng đầu tư</h2><p id="idea-health">Đang đồng bộ báo cáo CTCK và sự kiện doanh nghiệp…</p></div><span id="idea-consensus-badge" class="idea-consensus-badge">Đang tải</span></div>
+<div class="idea-dashboard">
+<div class="idea-overview-card">
+<div class="idea-overview-title"><div><span>TỔNG QUAN</span><h3 id="idea-symbol-title">Mã đang xem · Báo cáo phân tích</h3><p>Tổng hợp các báo cáo CTCK và sự kiện doanh nghiệp đã chuẩn hóa.</p></div></div>
+<div id="idea-meta" class="idea-meta"></div>
+<div class="idea-kpis">
+<div><span>GIÁ HIỆN TẠI</span><strong id="idea-price">—</strong><small id="idea-price-change"></small></div>
+<div><span>GIÁ MỤC TIÊU ĐỒNG THUẬN</span><strong id="idea-target">—</strong><small id="idea-upside"></small></div>
+<div><span>VÙNG MỤC TIÊU</span><strong id="idea-target-range">—</strong><small id="idea-target-count"></small></div>
+</div>
+</div>
+<div class="idea-rating-card">
+<div class="idea-card-head"><h3>Phân bố khuyến nghị</h3><span id="idea-rating-total"></span></div>
+<div id="idea-rating-distribution" class="idea-rating-distribution"></div>
+</div>
+<div class="idea-target-card">
+<div class="idea-card-head"><h3>Vùng giá mục tiêu</h3><span>CTCK gần nhất</span></div>
+<div id="idea-target-zone" class="idea-target-zone"></div>
+</div>
+<div class="idea-report-card">
+<div class="idea-card-head"><h3>Danh sách báo cáo</h3><span id="idea-report-count"></span></div>
+<div id="idea-research-filters" class="idea-filter-row"></div>
+<div id="idea-report-list" class="idea-report-list"></div>
+</div>
+<div class="idea-event-card">
+<div class="idea-card-head"><div><h3>Sự kiện & quyền cổ đông</h3><small>Cổ tức, quyền mua, ĐHĐCĐ, ESOP, niêm yết…</small></div><span id="idea-event-count"></span></div>
+<div id="idea-event-filters" class="idea-filter-row"></div>
+<div id="idea-event-list" class="idea-event-list"></div>
+</div>
+</div>
 </section>
 <section id="macro" class="macro-section" aria-label="Dữ liệu vĩ mô">
 <div class="macro-head"><div><span class="research-ai-label">MACRO DATA</span><h2>Dữ liệu vĩ mô</h2><p>Trực quan dữ liệu VBMA: tổng quan kinh tế, FDI, GDP, PMI, cung tiền và tín dụng.</p></div><span id="macro-source-status"></span></div>
