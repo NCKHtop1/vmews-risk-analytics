@@ -331,7 +331,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn("dataProvider':provider",script)
         self.assertIn("ThreadPoolExecutor",script)
         insights_js=(ROOT/'frontend/insights.js').read_text()
-        self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",insights_js)
+        self.assertIn("if(!state.compactExpanded)",insights_js)
+        self.assertIn('insight-summary-toggle',insights_js)
+        self.assertIn("filtered.map(compactCard).join('')",insights_js)
         self.assertIn('symbolsCovered',insights_js)
         self.assertIn("'symbolsTotal':len(universe)",(ROOT/'scripts/refresh_insights.py').read_text())
 
