@@ -321,6 +321,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("dataProvider':provider",script)
         self.assertIn("ThreadPoolExecutor",script)
         self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",script=(ROOT/'frontend/insights.js').read_text())
+        self.assertIn('symbolsCovered',script)
+        self.assertIn("'symbolsTotal':len(universe)",script)
 
 
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
