@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-09-27T14:42:54+00:00",
+  "sourcesTotal": 5,
+  "sourcesReachable": 2,
+  "eventsDiscoveredThisRun": 1782,
+  "storedEvents": 1760,
+  "sources": [
+    {
+      "code": "HNX_LISTED",
+      "name": "Sở GDCK Hà Nội - cổ phiếu niêm yết",
+      "checkedAt": "2026-09-27T14:34:46+00:00",
+      "kind": "issuer_template",
+      "status": "error",
+      "parsed": 0,
+      "reachable": 0,
+      "errors": 97
+    },
+    {
+      "code": "HNX_UPCOM",
+      "name": "Sở GDCK Hà Nội - UPCoM",
+      "checkedAt": "2026-09-27T14:35:50+00:00",
+      "kind": "issuer_template",
+      "status": "error",
+      "parsed": 0,
+      "reachable": 0,
+      "errors": 97
+    },
+    {
+      "code": "VSDC",
+      "name": "Tổng công ty Lưu ký và Bù trừ Chứng khoán Việt Nam",
+      "checkedAt": "2026-09-27T14:36:40+00:00",
+      "kind": "health",
+      "status": "error",
+      "parsed": 0,
+      "reachable": 0,
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'vsd.vn'. (_ssl.c:1010)>"
+    },
+    {
+      "code": "HOSE",
+      "name": "Sở GDCK TP.HCM",
+      "checkedAt": "2026-09-27T14:36:41+00:00",
+      "kind": "health",
+      "status": "reachable",
+      "parsed": 0,
+      "reachable": 1,
+      "httpStatus": 200
+    },
+    {
+      "code": "CAFEF_EVENTS",
+      "name": "CafeF - lịch sự kiện cổ phiếu",
+      "checkedAt": "2026-09-27T14:36:43+00:00",
+      "kind": "cafef_history",
+      "status": "ok",
+      "parsed": 1782,
+      "reachable": 97
+    }
+  ]
+}
