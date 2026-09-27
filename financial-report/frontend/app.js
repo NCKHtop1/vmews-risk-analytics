@@ -11,11 +11,13 @@ const fmt=v=>v==null?'':v===0?'–':v<0?`(${nf.format(-v)})`:nf.format(v);
 const label=p=>String(p).includes('-Q')?'Q'+String(p).at(-1)+'/'+String(p).slice(0,4):String(p);
 const sorted=a=>[...new Set(a)].sort((a,b)=>String(a).localeCompare(String(b)));
 const liveUrl=file=>LIVE_BASE+file+'?v='+Math.floor(Date.now()/300000);
-const companyLogoUrl=symbol=>'https://companiesmarketcap.com/img/company-logos/64/'+encodeURIComponent(symbol)+'.VN.png';
+const companyLogoUrl=symbol=>'https://storage.googleapis.com/cdn-entrade/company/'+encodeURIComponent(symbol);
+const companyLogoFallback=symbol=>'https://companiesmarketcap.com/img/company-logos/64/'+encodeURIComponent(symbol)+'.VN.png';
+function placeholderLogo(symbol){const label=String(symbol||'VN').slice(0,3).toUpperCase(),svg=`<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eff7ff"/><stop offset="1" stop-color="#ebe9ff"/></linearGradient></defs><rect width="72" height="72" rx="20" fill="url(#g)"/><circle cx="55" cy="16" r="11" fill="#ffffffaa"/><text x="36" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#315dcc">${label}</text></svg>`;return'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);}
 function syncCompanyIdentity(symbol,name='',exchange='HOSE'){
  const img=$('company-logo'),fallback=$('company-logo-fallback'),meta=$('company-meta');
- if(fallback){fallback.textContent=symbol;fallback.hidden=false;}
- if(img){img.alt=(name||symbol)+' logo';img.hidden=false;img.dataset.symbol=symbol;img.src=companyLogoUrl(symbol);}
+ if(fallback){fallback.textContent=symbol;fallback.hidden=true;}
+ if(img){img.alt=(name||symbol)+' logo';img.hidden=false;img.dataset.symbol=symbol;img.dataset.logoStage='0';img.dataset.logoAlt=companyLogoFallback(symbol);img.dataset.logoPlaceholder=placeholderLogo(symbol);img.src=companyLogoUrl(symbol);}
  if(meta)meta.textContent=(exchange||'HOSE')+' · VN100 · Dữ liệu tài chính & thị trường';
 }
 async function json(url,signal,timeout=12000){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeout);const abort=()=>ctl.abort();signal?.addEventListener('abort',abort,{once:true});try{const r=await fetch(url,{signal:ctl.signal,cache:'no-cache'});if(!r.ok)throw Error('Dữ liệu tạm thời chưa tải được. Vui lòng thử lại.');return await r.json();}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}}
@@ -84,7 +86,7 @@ async function loadCompany(raw){
 }
 function download(){if(!state.data||!state.years.length||!state.reports.length)return;try{const bytes=FinancialXlsx.workbook(state.data,state.years,state.reports);const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=`${state.data.symbol}_BCTC_${state.years.join('_')}.xlsx`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);$('download-status').textContent='Đã tạo file Excel.';}catch(e){error(e.message);}}
 $('company-logo')?.addEventListener('load',()=>{const f=$('company-logo-fallback');if(f)f.hidden=true;});
-$('company-logo')?.addEventListener('error',e=>{e.currentTarget.hidden=true;const f=$('company-logo-fallback');if(f)f.hidden=false;});
+$('company-logo')?.addEventListener('error',e=>{const img=e.currentTarget,stage=Number(img.dataset.logoStage||0);if(stage===0&&img.dataset.logoAlt){img.dataset.logoStage='1';img.src=img.dataset.logoAlt;return;}if(stage<=1&&img.dataset.logoPlaceholder){img.dataset.logoStage='2';img.src=img.dataset.logoPlaceholder;return;}img.hidden=true;const f=$('company-logo-fallback');if(f)f.hidden=false;});
 $('company-form').addEventListener('submit',e=>{e.preventDefault();loadCompany($('ticker').value);});$('ticker').addEventListener('change',()=>loadCompany($('ticker').value));document.querySelectorAll('[data-symbol]').forEach(b=>b.addEventListener('click',()=>loadCompany(b.dataset.symbol)));
 $('year-options').addEventListener('change',e=>{const p=state.mode==='quarter'?e.target.value:Number(e.target.value);state.years=e.target.checked?sorted([...state.years,p]):state.years.filter(v=>v!==p);renderPreview();});
 $('report-options').addEventListener('change',e=>{const r=e.target.value;state.reports=e.target.checked?[...state.reports,r]:state.reports.filter(v=>v!==r);update();});

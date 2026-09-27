@@ -271,7 +271,7 @@ def movement_driver(symbol, quote, bars, news_items, market_change):
     confidence_score = round(clamp(38 + evidence * 32 + min(len(company_news), 3) * 4 + min(abs(total), 50) * .18, 0, 92))
     confidence = 'cao' if confidence_score >= 75 else 'trung bình' if confidence_score >= 58 else 'thấp'
     leaders = factors[:2]
-    summary = 'Phân rã động lực cần giá, khối lượng và dữ liệu thị trường cùng kỳ.'
+    summary = 'Chưa đủ dữ liệu để phân rã biến động.'
     if leaders:
         joined = ' và '.join(f"{row['label']} ({row['contribution']:+.1f})" for row in leaders)
         summary = f"Tín hiệu nổi bật: {joined}. Điểm tổng {total:+.1f}/100."
@@ -286,7 +286,7 @@ def movement_driver(symbol, quote, bars, news_items, market_change):
         'news72hCount': len(company_news), 'newsScore': round(news_score, 1),
         'score': total, 'confidence': confidence, 'confidenceScore': confidence_score,
         'factors': factors, 'headlines': company_news[:5], 'summary': summary,
-        'interpretation': 'factor_attribution'
+        'causality': 'association_not_proven'
     }
 
 
@@ -349,98 +349,119 @@ def prices(out, companies):
 
 
 def _history_page(symbol, frame, to, count, minute=False):
-    attempts = 1 if minute else max(1, int(os.environ.get('HISTORY_PAGE_RETRIES', '3')))
-    retry_delay = max(0.0, float(os.environ.get('HISTORY_RETRY_DELAY', '2')))
-    last_error = None
-    for attempt in range(attempts):
-        try:
-            payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
-                'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
-            }))
-            return normalize_history(payload, symbol, minute=minute)
-        except Exception as e:
-            last_error = e
-            if attempt + 1 >= attempts:
-                raise
-            time.sleep(retry_delay * (2 ** attempt))
-    raise last_error
+    payload = json.loads(request(API + 'chart/OHLCChart/gap-chart', {
+        'timeFrame': frame, 'symbols': [symbol], 'to': int(to), 'countBack': int(count)
+    }))
+    return normalize_history(payload, symbol, minute=minute)
 
 
-def _full_daily_history(symbol, target, seed=None):
-    """Backfill daily bars from the oldest retained bar toward listing date.
-
-    Existing bars are used as a seed, so repeated runs resume instead of
-    re-downloading the latest window. If an older page fails after progress,
-    the partial extension is still returned and can be continued next run.
-    """
-    seed = [bar for bar in (seed or []) if isinstance(bar, dict) and bar.get('time')]
-    merged = {bar['time']: bar for bar in seed}
-    seed_count = len(merged)
-    if seed:
-        earliest_seed = min(merged)
-        cursor = int(datetime.fromisoformat(earliest_seed).replace(tzinfo=VN).timestamp()) - 1
-    else:
-        cursor = int(time.time())
-    page_size = max(200, min(1600, int(os.environ.get('HISTORY_PAGE_SIZE', '1600')), target))
-    page_delay = max(0.0, float(os.environ.get('HISTORY_PAGE_DELAY', '0.45')))
-    complete = len(merged) >= target
-    for _ in range(max(1, math.ceil(max(0, target - len(merged)) / page_size) + 2)):
-        if complete:
-            break
-        try:
-            bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
-        except Exception:
-            if len(merged) > seed_count:
-                break
-            raise
+def _full_daily_history(symbol, target):
+    """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
+    merged = {}
+    cursor = int(time.time())
+    page_size = min(1600, target)
+    for _ in range(max(1, math.ceil(target / page_size) + 1)):
+        bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
         before = len(merged)
         merged.update({bar['time']: bar for bar in bars})
-        if len(bars) < page_size:
-            complete = True
-            break
-        if len(merged) >= target:
-            complete = True
-            break
-        if len(merged) == before:
-            complete = True
+        if len(merged) >= target or len(merged) == before or len(bars) < page_size:
             break
         earliest = min(bar['time'] for bar in bars)
         cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
         if cursor_next >= cursor:
             break
         cursor = cursor_next
-        if page_delay:
-            time.sleep(page_delay)
-    return [merged[key] for key in sorted(merged)][-target:], complete
+    return [merged[key] for key in sorted(merged)][-target:]
+
+
+def _normalize_vnstock_history(df, symbol, provider):
+    if df is None or len(df) == 0:
+        raise RuntimeError(f'{symbol}: {provider} returned no rows')
+    cols = {str(col).strip().lower(): col for col in df.columns}
+    time_col = cols.get('time') or cols.get('date') or cols.get('trading_date')
+    if time_col is None or cols.get('close') is None:
+        raise RuntimeError(f'{symbol}: unexpected {provider} columns {list(df.columns)}')
+    bars = []
+    for _, row in df.iterrows():
+        raw_time = row.get(time_col)
+        day = raw_time.date().isoformat() if hasattr(raw_time, 'date') else str(raw_time or '')[:10]
+        close = number(row.get(cols['close']))
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day or '') or close is None or close <= 0:
+            continue
+        open_ = number(row.get(cols.get('open'))) if cols.get('open') is not None else close
+        high = number(row.get(cols.get('high'))) if cols.get('high') is not None else close
+        low = number(row.get(cols.get('low'))) if cols.get('low') is not None else close
+        volume = number(row.get(cols.get('volume'))) if cols.get('volume') is not None else 0
+        bars.append({'time': day, 'open': open_ or close, 'high': high or close, 'low': low or close, 'close': close, 'volume': max(0, volume or 0)})
+    if not bars:
+        raise RuntimeError(f'{symbol}: {provider} returned no usable bars')
+    sample = sorted(x['close'] for x in bars[-120:] if x['close'] > 0)
+    median = sample[len(sample)//2] if sample else bars[-1]['close']
+    if median < 1000:
+        for bar in bars:
+            for field in ('open', 'high', 'low', 'close'):
+                bar[field] *= 1000
+    merged = {bar['time']: bar for bar in bars}
+    return [merged[key] for key in sorted(merged)]
+
+
+def _vnstock_full_history(symbol):
+    """Best-effort long daily history from free Vnstock routes, used only for a full backfill."""
+    start = os.environ.get('HISTORY_START_DATE', '1998-01-01')
+    end = (datetime.now(VN).date() + timedelta(days=1)).isoformat()
+    errors = []
+    try:
+        from vnstock.ui import Market
+        df = Market().equity(symbol).ohlcv(start=start, end=end, interval='1D', count=12000)
+        bars = _normalize_vnstock_history(df, symbol, 'Vnstock Unified Market')
+        if bars:
+            return bars, 'Vnstock Unified Market'
+    except Exception as e:
+        errors.append('Unified Market: ' + str(e))
+    try:
+        from vnstock import Vnstock
+        for source in ('VCI', 'KBS'):
+            try:
+                stock = Vnstock().stock(symbol=symbol, source=source)
+                df = stock.quote.history(start=start, end=end, interval='1D')
+                bars = _normalize_vnstock_history(df, symbol, f'Vnstock {source}')
+                if bars:
+                    return bars, f'Vnstock {source}'
+            except Exception as e:
+                errors.append(f'{source}: {e}')
+    except Exception as e:
+        errors.append('Vnstock import: ' + str(e))
+    raise RuntimeError(' | '.join(errors) or 'Vnstock long-history routes returned no data')
 
 
 def _refresh_one_history(out, symbol, minute=False):
     folder = 'intraday' if minute else 'history'
     path = out / folder / (symbol + '.json')
     previous = read(path, {})
-    full_backfill = (not minute and os.environ.get('HISTORY_FULL_BACKFILL') == '1')
     try:
         if minute:
             count = int(os.environ.get('INTRADAY_COUNT_BACK', '700'))
             bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
-            history_complete = previous.get('historyComplete')
-        elif full_backfill:
-            symbol_delay = max(0.0, float(os.environ.get('HISTORY_SYMBOL_DELAY', '0.35')))
-            if symbol_delay:
-                time.sleep(symbol_delay)
-            target = int(os.environ.get('HISTORY_COUNT_BACK', '8000'))
-            bars, history_complete = _full_daily_history(symbol, target, previous.get('bars') or [])
         else:
-            count = int(os.environ.get('HISTORY_COUNT_BACK', '1600'))
-            bars = _history_page(symbol, 'ONE_DAY', int(time.time()), count, minute=False)
-            history_complete = bool(previous.get('historyComplete'))
-        if not minute and previous.get('bars'):
-            # Daily refreshes must append new bars without ever throwing away older backfilled years.
-            merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
-            merged.update({bar['time']: bar for bar in bars})
-            bars = [merged[key] for key in sorted(merged)]
+            target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
+            bars = _full_daily_history(symbol, target)
+            providers = ['Vietcap']
+            if os.environ.get('HISTORY_VNSTOCK_FALLBACK') == '1':
+                try:
+                    extra, provider = _vnstock_full_history(symbol)
+                    merged = {bar['time']: bar for bar in bars}
+                    merged.update({bar['time']: bar for bar in extra})
+                    bars = [merged[key] for key in sorted(merged)]
+                    providers.append(provider)
+                except Exception as vn_error:
+                    providers.append('Vnstock fallback error: ' + str(vn_error)[:240])
+            # Never discard older successful bars if the upstream temporarily returns a shorter window.
+            if previous.get('bars'):
+                merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
+                merged.update({bar['time']: bar for bar in bars})
+                bars = [merged[key] for key in sorted(merged)]
         row = {
-            'symbol': symbol, 'source': 'Vietcap', 'unit': 'VND',
+            'symbol': symbol, 'source': 'Vietcap' if minute else ' + '.join(providers), 'unit': 'VND',
             'interval': '1m' if minute else '1D', 'collectedAt': now(),
             'checkedAt': now(), 'status': 'ok', 'barCount': len(bars),
             'firstBar': bars[0]['time'] if bars else None,
@@ -449,7 +470,6 @@ def _refresh_one_history(out, symbol, minute=False):
         }
         if not minute:
             row['sourceUrl'] = 'https://trading.vietcap.com.vn/'
-            row['historyComplete'] = bool(history_complete)
         write(path, row)
         return symbol, True, None
     except Exception as e:
@@ -461,19 +481,14 @@ def _refresh_one_history(out, symbol, minute=False):
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
-    full_backfill = (not minute and os.environ.get('HISTORY_FULL_BACKFILL') == '1')
     forced = [s.strip().upper() for s in os.environ.get('INTRADAY_SYMBOLS', '').split(',') if s.strip()]
     if minute and forced:
         symbols = [s for s in all_symbols if s in forced]
-    elif minute and only_missing:
-        symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')]
-    elif full_backfill:
-        symbols = [s for s in all_symbols if read(out / 'history' / (s + '.json'), {}).get('historyComplete') is not True]
     else:
-        symbols = all_symbols
+        symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
     errors, success = [], 0
-    # Full-history backfill is deliberately serialized to avoid saturating the public upstream.
-    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else (1 if full_backfill else int(os.environ.get('HISTORY_WORKERS', '4')))
+    # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
+    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):
@@ -483,18 +498,13 @@ def refresh_history_group(out, companies, minute=False):
             else:
                 errors.append(f'{symbol}{" intraday" if minute else ""}: {error}')
     name = 'intraday' if minute else 'history'
-    complete_count = sum(1 for symbol in all_symbols if read(out / 'history' / (symbol + '.json'), {}).get('historyComplete') is True) if not minute else None
-    status = {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'forcedSymbols': forced, 'errors': errors}
-    if not minute:
-        status.update({'fullBackfill': full_backfill, 'completeHistories': complete_count})
-    write(out / f'{name}-status.json', status)
+    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'forcedSymbols': forced, 'errors': errors})
     if not minute:
         build_drivers(out, companies)
-    suffix = f'; complete histories {complete_count}/{len(all_symbols)}' if not minute else ''
-    print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}{suffix}', flush=True)
+    print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}', flush=True)
     # Keep retained data available if a minority of requests fail. Fail only
-    # when the entire upstream route is unavailable and there was work to do.
-    if symbols and success == 0:
+    # when the entire upstream route is unavailable.
+    if success == 0:
         raise RuntimeError(f'{name} refresh failed for all symbols')
 
 
@@ -551,7 +561,7 @@ def parse_feed(raw, publisher, feed_url, companies, current):
                 topics.add(topic)
         if matched:
             topics.add('company')
-        rows.append({'title': title, 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics)})
+        rows.append({'title': title, 'summary': body[:900], 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics)})
     return rows
 
 
