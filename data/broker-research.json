@@ -1,24 +1,51 @@
 {
-  "version": 1,
-  "updatedAt": "2026-09-27T07:34:29+00:00",
-  "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery does not convert them into its own recommendation.",
+  "version": 2,
+  "updatedAt": "2026-09-27T11:30:47+00:00",
+  "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VIETCAP-PNJ-2026-09-25-4cb7c2c6",
+      "symbol": "PNJ",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-25",
+      "title": "PNJ - Tài liệu ĐHCĐ bất thường và KQKD sơ bộ 8T 2026: Kế hoạch năm 2026 kém tích cực với khoản lỗ đáng kể - Nhận định nhanh Doanh Nghiệp 25/09/2026 • PNJ Nhận Định Nhanh 25/09/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/pnj-tai-lieu-dhcd-bat-thuong-va-kqkd-so-bo-8t-2026-ke-hoach-nam-2026-kem-tich-cuc-voi-khoan-lo-dang-ke-nhan-dinh-nhanh",
+      "recommendation": "BÁN",
+      "summary": "VIETCAP công bố báo cáo ngày 25/09/2026 với khuyến nghị BÁN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "VIETCAP-DCM-2026-09-23-f43ad201",
+      "symbol": "DCM",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-23",
+      "title": "DCM - KQKD 8T 2026 tích cực, mỏ Nam Du – U Minh sẽ bổ sung nguồn cung khí - Báo cáo ĐHCĐ bất thường Doanh Nghiệp 23/09/2026 • DCM Nhận Định Nhanh 23/09/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/dcm-kqkd-8t-2026-tich-cuc-mo-nam-du-u-minh-se-bo-sung-nguon-cung-khi-bao-cao-dhcd-bat-thuong",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 35800,
+      "summary": "VIETCAP công bố báo cáo ngày 23/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 35.800 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "MBS-TCB-2026-09-22",
       "symbol": "TCB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-09-22",
       "title": "TCB – BCPT – Bổ sung động lực tăng trưởng từ các dự án hạ tầng",
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/tcb-bcpt-bo-sung-dong-luc-tang-truong-tu-cac-du-an-ha-tang/",
       "recommendation": "MUA",
-      "targetPrice": 44300,
-      "summary": "MBS công bố báo cáo ngày 22/09/2026 với khuyến nghị MUA, giá mục tiêu 44.300 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
+      "summary": "MBS công bố báo cáo ngày 22/09/2026 với khuyến nghị MUA, giá mục tiêu 44.300 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm.",
+      "targetPrice": 44300
     },
     {
       "id": "MBS-HPG-2026-09-18",
       "symbol": "HPG",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-09-18",
       "title": "HPG – BCPT – Giá thép tăng trưởng nhờ nhu cầu thuận lợi",
       "currency": "VND",
@@ -46,6 +73,7 @@
       "id": "MBS-PVT-2026-09-17",
       "symbol": "PVT",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-09-17",
       "title": "PVT – BCPT – Từ nền tảng vững chãi đến chu kỳ tăng trưởng mới",
       "currency": "VND",
@@ -58,6 +86,7 @@
       "id": "MBS-GEE-2026-09-17",
       "symbol": "GEE",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-09-17",
       "title": "GEE – BCPT – Hưởng lợi toàn diện từ chu kỳ phát triển hạ tầng",
       "currency": "VND",
@@ -67,9 +96,47 @@
       "summary": "MBS công bố báo cáo ngày 17/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 82.200 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
+      "id": "VIETCAP-HPG-2026-09-11",
+      "symbol": "HPG",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-11",
+      "title": "Triển vọng lợi nhuận tích cực được duy trì; định giá vẫn hấp dẫn",
+      "recommendation": "MUA",
+      "targetPrice": 32700,
+      "currency": "VND",
+      "summary": "Vietcap duy trì khuyến nghị MUA và giảm 8% giá mục tiêu HPG xuống 32.700 đồng/cp; báo cáo nhấn mạnh triển vọng lợi nhuận vẫn tích cực nhưng cập nhật WACC và chi phí SG&A/logistics.",
+      "highlights": [
+        "Duy trì khuyến nghị MUA.",
+        "Giá mục tiêu 32.700 đồng/cp.",
+        "Điều chỉnh dự báo lợi nhuận nhiều năm và cập nhật WACC."
+      ],
+      "catalysts": [
+        "Triển vọng lợi nhuận mảng thép tích cực",
+        "Định giá vẫn hấp dẫn"
+      ],
+      "risks": [
+        "WACC cao hơn",
+        "Chi phí SG&A/logistics cao hơn kỳ vọng"
+      ],
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/hpg-mua-58-6-trien-vong-loi-nhuan-tich-cuc-duoc-duy-tri-dinh-gia-van-hap-dan-cap-nhat"
+    },
+    {
+      "id": "VIETCAP-BSR-2026-09-11-f7ca6093",
+      "symbol": "BSR",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-11",
+      "title": "Ngành Năng lượng - Xung đột Mỹ - Iran kéo dài khiến giá dầu năm 2026/2027 neo cao Báo Cáo Ngành 24/09/2026 • GAS PLX PVS BSR PPC NT2 PVD POW PVT DPM DCM PLC OIL QTP Xem thêm 24/09/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/nganh-nang-luong-xung-dot-my-iran-keo-dai-khien-gia-dau-nam-2026-2027-neo-cao",
+      "summary": "VIETCAP công bố báo cáo ngày 11/09/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
       "id": "MBS-VTP-2026-09-10",
       "symbol": "VTP",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-09-10",
       "title": "VTP – BCPT – Áp lực chi phí nhiên liệu gia tăng",
       "currency": "VND",
@@ -82,18 +149,20 @@
       "id": "MBS-HDB-2026-08-26",
       "symbol": "HDB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-26",
       "title": "HDB – BCPT – Hiệu quả hoạt động vượt trội được duy trì",
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/hdb-bcpt-hieu-qua-hoat-dong-vuot-troi-duoc-duy-tri/",
       "recommendation": "KHẢ QUAN",
-      "targetPrice": 38350,
-      "summary": "MBS công bố báo cáo ngày 26/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 38.350 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
+      "summary": "MBS công bố báo cáo ngày 26/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 38.350 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm.",
+      "targetPrice": 38350
     },
     {
       "id": "MBS-CTD-2026-08-24",
       "symbol": "CTD",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-24",
       "title": "CTD – BCPT – Tiếp đà tăng trưởng nhờ nguồn việc dồi dào",
       "currency": "VND",
@@ -103,9 +172,23 @@
       "summary": "MBS công bố báo cáo ngày 24/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 75.700 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
+      "id": "ACBS-FRT-2026-08-24-180b4b2f",
+      "symbol": "GMD",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-08-24",
+      "title": "Khuyến nghị gần nhất GMD",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "TRUNG LẬP",
+      "targetPrice": 78400,
+      "summary": "ACBS có báo cáo FRT ngày 24/08/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
       "id": "MBS-BSR-2026-08-18",
       "symbol": "BSR",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-18",
       "title": "BSR – BCPT – Định giá ngắn hạn đã được phản ánh, chờ đợi triển vọng dài hạn tích cực",
       "currency": "VND",
@@ -118,6 +201,7 @@
       "id": "MBS-VCB-2026-08-14",
       "symbol": "VCB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-14",
       "title": "VCB – Analyst meeting: Cập nhật KQKD Q2/2026 và Triển vọng nửa cuối năm 2026",
       "currency": "VND",
@@ -128,6 +212,7 @@
       "id": "MBS-CTG-2026-08-14",
       "symbol": "CTG",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-14",
       "title": "CTG – Analyst meeting: Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -138,6 +223,7 @@
       "id": "MBS-VPB-2026-08-12",
       "symbol": "VPB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-12",
       "title": "VPB – BCPT – Tăng trưởng vượt trội, định giá hấp dẫn",
       "currency": "VND",
@@ -150,6 +236,7 @@
       "id": "MBS-HDB-2026-08-12",
       "symbol": "HDB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-12",
       "title": "HDB – Analyst meeting: Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -161,6 +248,7 @@
       "id": "MBS-GMD-2026-08-12",
       "symbol": "GMD",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-12",
       "title": "GMD – Analyst meeting: Cập nhật KQKD Q2/2026 và 6T2026",
       "currency": "VND",
@@ -171,6 +259,7 @@
       "id": "MBS-VNM-2026-08-07",
       "symbol": "VNM",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-07",
       "title": "VNM – Analyst Meeting: Cập nhật KQKD Q2/2026",
       "currency": "VND",
@@ -181,6 +270,7 @@
       "id": "MBS-VIB-2026-08-07",
       "symbol": "VIB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-07",
       "title": "VIB – Analyst meeting: Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -192,6 +282,7 @@
       "id": "MBS-MBB-2026-08-07",
       "symbol": "MBB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-07",
       "title": "MBB – Analyst meeting: Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -202,6 +293,7 @@
       "id": "MBS-VPL-2026-08-03",
       "symbol": "VPL",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-08-03",
       "title": "VPL – Cập nhật KQKD Q2/26 và 6T26",
       "currency": "VND",
@@ -222,6 +314,7 @@
       "id": "MBS-VHM-2026-07-31",
       "symbol": "VHM",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-31",
       "title": "VHM – Cập nhật KQKD Q2/26 và 6T26",
       "currency": "VND",
@@ -232,6 +325,7 @@
       "id": "MBS-CTD-2026-07-31",
       "symbol": "CTD",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-31",
       "title": "CTD – Analyst meeting: Cập nhật KQKD năm tài chính 2026 và triển vọng năm 2027",
       "currency": "VND",
@@ -243,6 +337,7 @@
       "id": "MBS-VPB-2026-07-30",
       "symbol": "VPB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-30",
       "title": "VPB – Analyst Meeting: Cập nhật KQKD Q2/2026",
       "currency": "VND",
@@ -253,6 +348,7 @@
       "id": "MBS-VRE-2026-07-29",
       "symbol": "VRE",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-29",
       "title": "VRE – Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -263,6 +359,7 @@
       "id": "MBS-TCB-2026-07-27",
       "symbol": "TCB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-27",
       "title": "TCB – Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -273,6 +370,7 @@
       "id": "MBS-ACB-2026-07-27",
       "symbol": "ACB",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-27",
       "title": "ACB – Cập nhật KQKD Q2/2026 và Kế hoạch 2026",
       "currency": "VND",
@@ -283,11 +381,12 @@
       "id": "MBS-VSC-2026-07-14",
       "symbol": "VSC",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-14",
       "title": "VSC – BCPT – Vượt qua thách thức, sẵn sàng bứt tốc",
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/vsc-bcpt-vuot-qua-thach-thuc-san-sang-but-toc/",
-      "recommendation": "KHẢ QUAN",
+      "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 24500,
       "summary": "MBS công bố báo cáo ngày 14/07/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 24.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
@@ -295,17 +394,20 @@
       "id": "MBS-PNJ-2026-07-07",
       "symbol": "PNJ",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-07",
       "title": "PNJ – Cập nhật thông tin buổi gặp gỡ nhà đầu tư sau sự kiện P-Lab",
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/pnj-cap-nhat-thong-tin-buoi-gap-go-nha-dau-tu-sau-su-kien-p-lab/",
       "recommendation": "BÁN",
+      "targetPrice": 86900,
       "summary": "MBS công bố báo cáo ngày 07/07/2026 với khuyến nghị BÁN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
       "id": "MBS-CTG-2026-07-06",
       "symbol": "CTG",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-07-06",
       "title": "CTG – BCPT – Lợi nhuận khả quan tiếp tục được củng cố",
       "currency": "VND",
@@ -317,6 +419,7 @@
       "id": "MBS-REE-2026-06-16",
       "symbol": "REE",
       "broker": "MBS",
+      "brokerName": "MB Securities",
       "publishedAt": "2026-06-16",
       "title": "REE – BCPT – Vững vàng trước khó khăn",
       "currency": "VND",
@@ -441,6 +544,31 @@
       "summary": "MBS công bố báo cáo ngày 26/05/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 57.300 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
+      "id": "SHS-HPG-2026-05-20",
+      "symbol": "HPG",
+      "broker": "SHS",
+      "brokerName": "Saigon-Hanoi Securities",
+      "publishedAt": "2026-05-20",
+      "title": "HPG Báo cáo cập nhật Q1/2026",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "currency": "VND",
+      "summary": "SHS duy trì khuyến nghị TĂNG TỶ TRỌNG sau Q1/2026, ghi nhận hoạt động cốt lõi tăng trưởng và sản lượng thép cải thiện mạnh.",
+      "highlights": [
+        "Doanh thu Q1/2026 tăng mạnh so với cùng kỳ.",
+        "SHS tiếp tục duy trì TĂNG TỶ TRỌNG.",
+        "Sản lượng HRC và thép tiêu thụ cải thiện."
+      ],
+      "catalysts": [
+        "Sản lượng thép tăng",
+        "Dung Quất 2 tăng đóng góp"
+      ],
+      "risks": [
+        "Biến động giá thép",
+        "Chu kỳ nhu cầu xây dựng"
+      ],
+      "sourceUrl": "https://www.shs.com.vn/bao-cao-phan-tich/hpg-bao-cao-cap-nhat"
+    },
+    {
       "id": "MBS-POW-2026-05-20",
       "symbol": "POW",
       "broker": "MBS",
@@ -461,6 +589,32 @@
       "recommendation": "BÁN",
       "targetPrice": 20800,
       "summary": "MBS công bố báo cáo ngày 19/05/2026 với khuyến nghị BÁN, giá mục tiêu 20.800 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "BSC-HPG-2026-05-14",
+      "symbol": "HPG",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-05-14",
+      "title": "X-Alpha | HPG 40,800 +50%: Vua thép thức giấc",
+      "recommendation": "MUA",
+      "targetPrice": 40800,
+      "currency": "VND",
+      "summary": "BSC duy trì khuyến nghị MUA và giá trị hợp lý cuối 2026 là 40.800 đồng/cp; báo cáo nâng mạnh giá mục tiêu sau khi điều chỉnh dự báo lợi nhuận và giả định giá bán thép.",
+      "highlights": [
+        "Duy trì khuyến nghị MUA.",
+        "Giá trị hợp lý cuối 2026 là 40.800 đồng/cp.",
+        "BSC điều chỉnh tăng dự báo lợi nhuận trong bối cảnh giá bán thép cao hơn."
+      ],
+      "catalysts": [
+        "Giá bán thép cải thiện",
+        "Quy mô doanh thu/lợi nhuận tăng"
+      ],
+      "risks": [
+        "Giá thép đảo chiều",
+        "Nhu cầu thấp hơn giả định"
+      ],
+      "sourceUrl": "https://new.bsc.com.vn/bao-cao-phan-tich/chi-tiet-bao-cao/12768320"
     },
     {
       "id": "MBS-BCM-2026-05-13",
@@ -822,6 +976,17 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 61200,
       "summary": "MBS công bố báo cáo ngày 02/02/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 61.200 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "FPTS-MWG-2026-09-14-718a7767",
+      "symbol": "SIP",
+      "broker": "FPTS",
+      "brokerName": "FPT Securities",
+      "publishedAt": "2026-01-30",
+      "title": "Khuyến nghị Mua cổ phiếu SIP ngày",
+      "currency": "VND",
+      "sourceUrl": "https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169",
+      "summary": "FPTS có báo cáo MWG ngày 14/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "MBS-MSN-2025-11-20",
