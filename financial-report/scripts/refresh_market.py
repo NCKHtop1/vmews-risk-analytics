@@ -13,12 +13,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 VN = timezone(timedelta(hours=7))
 API = 'https://trading.vietcap.com.vn/api/'
+KBS_API = 'https://kbbuddywts.kbsec.com.vn/iis-server/investment'
 FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/chung-khoan.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/doanh-nghiep.rss'),
@@ -82,6 +83,17 @@ def request(url, payload=None):
         headers.update({'Content-Type': 'application/json', 'Referer': 'https://trading.vietcap.com.vn/', 'Origin': 'https://trading.vietcap.com.vn'})
     req = Request(url, data=json.dumps(payload).encode() if payload is not None else None, headers=headers)
     with urlopen(req, timeout=25) as response:
+        return response.read()
+
+
+def request_query(url, params=None, referer=None):
+    if params:
+        url += ('&' if '?' in url else '?') + urlencode(params)
+    headers = {'User-Agent': 'FinQuery/1.0 public financial dashboard', 'Accept': 'application/json, text/plain, */*'}
+    if referer:
+        headers['Referer'] = referer
+    req = Request(url, headers=headers)
+    with urlopen(req, timeout=30) as response:
         return response.read()
 
 
@@ -364,6 +376,82 @@ def _history_page(symbol, frame, to, count, minute=False):
     raise last_error
 
 
+def _kbs_number(value):
+    if isinstance(value, str):
+        text = value.strip().replace(' ', '')
+        if re.fullmatch(r'-?\d{1,3}(?:,\d{3})+(?:\.\d+)?', text):
+            text = text.replace(',', '')
+        elif re.fullmatch(r'-?\d+,\d+', text):
+            text = text.replace(',', '.')
+        return number(text)
+    return number(value)
+
+
+def _kbs_day(value):
+    if isinstance(value, (int, float)):
+        n = float(value)
+        if n > 1e12:
+            n /= 1000
+        try:
+            return datetime.fromtimestamp(n, VN).date().isoformat()
+        except (ValueError, OverflowError, OSError):
+            return None
+    text = str(value or '').strip()
+    for pattern in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%Y/%m/%d'):
+        try:
+            return datetime.strptime(text[:10], pattern).date().isoformat()
+        except ValueError:
+            pass
+    parsed = timestamp(value)
+    return parsed[:10] if parsed else None
+
+
+def normalize_kbs_history(payload, symbol):
+    if isinstance(payload, dict):
+        rows = payload.get('data_day') or payload.get('data') or []
+        payload_symbol = str(payload.get('symbol') or symbol).upper()
+        if payload_symbol and payload_symbol != symbol:
+            raise ValueError(f'{symbol}: KBS returned {payload_symbol}')
+    else:
+        rows = payload if isinstance(payload, list) else []
+    bars = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        day = _kbs_day(row.get('t') or row.get('time') or row.get('date'))
+        close = _kbs_number(row.get('c') if 'c' in row else row.get('close'))
+        if not day or close is None or close <= 0:
+            continue
+        open_ = _kbs_number(row.get('o') if 'o' in row else row.get('open')) or close
+        high = _kbs_number(row.get('h') if 'h' in row else row.get('high')) or close
+        low = _kbs_number(row.get('l') if 'l' in row else row.get('low')) or close
+        volume = _kbs_number(row.get('v') if 'v' in row else row.get('volume')) or 0
+        bars.append({'time': day, 'open': open_, 'high': high, 'low': low, 'close': close, 'volume': max(0, volume)})
+    if not bars:
+        raise RuntimeError(f'{symbol}: KBS returned no usable daily bars')
+    sample = sorted(bar['close'] for bar in bars[-120:] if bar['close'] > 0)
+    median = sample[len(sample)//2] if sample else bars[-1]['close']
+    if median < 1000:
+        for bar in bars:
+            for field in ('open', 'high', 'low', 'close'):
+                bar[field] *= 1000
+    merged = {bar['time']: bar for bar in bars}
+    return [merged[key] for key in sorted(merged)]
+
+
+def _kbs_full_history(symbol):
+    start = os.environ.get('HISTORY_START_DATE', '1998-01-01')
+    end = datetime.now(VN).date().isoformat()
+    start_date = datetime.fromisoformat(start).strftime('%d-%m-%Y')
+    end_date = datetime.fromisoformat(end).strftime('%d-%m-%Y')
+    raw = request_query(
+        f'{KBS_API}/stocks/{symbol}/data_day',
+        {'sdate': start_date, 'edate': end_date},
+        'https://kbbuddywts.kbsec.com.vn/'
+    )
+    return normalize_kbs_history(json.loads(raw), symbol)
+
+
 def _full_daily_history(symbol, target):
     """Fetch daily bars backwards in bounded pages so older years are not silently truncated."""
     merged = {}
@@ -453,8 +541,26 @@ def _refresh_one_history(out, symbol, minute=False):
             bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
-            bars = _full_daily_history(symbol, target)
-            providers = ['Vietcap']
+            providers = []
+            bars = []
+            if os.environ.get('HISTORY_KBS_FULL') == '1':
+                try:
+                    bars = _kbs_full_history(symbol)
+                    providers.append('KBS')
+                except Exception as kbs_error:
+                    providers.append('KBS error: ' + str(kbs_error)[:180])
+            if not bars:
+                bars = _full_daily_history(symbol, target)
+                providers.append('Vietcap')
+            elif len(bars) < 40 or bars[-1]['time'] < (datetime.now(VN).date() - timedelta(days=10)).isoformat():
+                try:
+                    recent = _history_page(symbol, 'ONE_DAY', int(time.time()), min(500, target), minute=False)
+                    merged = {bar['time']: bar for bar in bars}
+                    merged.update({bar['time']: bar for bar in recent})
+                    bars = [merged[key] for key in sorted(merged)]
+                    providers.append('Vietcap recent')
+                except Exception:
+                    pass
             if os.environ.get('HISTORY_VNSTOCK_FALLBACK') == '1':
                 try:
                     extra, provider = _vnstock_full_history(symbol)
@@ -470,7 +576,7 @@ def _refresh_one_history(out, symbol, minute=False):
                 merged.update({bar['time']: bar for bar in bars})
                 bars = [merged[key] for key in sorted(merged)]
         row = {
-            'symbol': symbol, 'source': 'Vietcap' if minute else ' + '.join(providers), 'unit': 'VND',
+            'symbol': symbol, 'source': 'Vietcap' if minute else ' + '.join(providers or ['Vietcap']), 'unit': 'VND',
             'interval': '1m' if minute else '1D', 'collectedAt': now(),
             'checkedAt': now(), 'status': 'ok', 'barCount': len(bars),
             'firstBar': bars[0]['time'] if bars else None,

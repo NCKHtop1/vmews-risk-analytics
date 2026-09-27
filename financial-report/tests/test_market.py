@@ -105,6 +105,21 @@ class MarketTests(unittest.TestCase):
         finally:
             m.request=original
 
+    def test_kbs_history_normalization_supports_listing_to_present_payload(self):
+        payload={'symbol':'FPT','data_day':[
+            {'t':'13-12-2006','o':40000,'h':42000,'l':39500,'c':41000,'v':120000},
+            {'t':'14-12-2006','o':41000,'h':43000,'l':40500,'c':42500,'v':150000},
+        ]}
+        bars=m.normalize_kbs_history(payload,'FPT')
+        self.assertEqual(len(bars),2)
+        self.assertEqual(bars[0]['time'],'2006-12-13')
+        self.assertEqual(bars[-1]['close'],42500)
+        self.assertEqual(bars[-1]['volume'],150000)
+
+    def test_kbs_history_rejects_wrong_symbol(self):
+        with self.assertRaises(ValueError):
+            m.normalize_kbs_history({'symbol':'VCB','data_day':[{'t':'01-01-2026','c':10000}]},'FPT')
+
     def test_full_daily_history_paginates_and_preserves_older_retained_bars(self):
         original=m.request
         calls=[]
@@ -225,8 +240,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn('memoHTML',js)
         self.assertIn('supportCase',js)
         self.assertIn('counterCase',js)
-        for concept in ('ROE','ROA','ROIC','FCF','OCF','Biên lợi nhuận gộp','MACD','RSI','OMO','Lãi suất qua đêm liên ngân hàng'):
+        for concept in ('ROE','ROA','ROIC','FCF','OCF','Biên lợi nhuận gộp','MACD','RSI','OMO','Lãi suất qua đêm liên ngân hàng','Vòng quay tổng tài sản','EV/EBITDA','NIM','Nợ xấu / NPL','Sharpe ratio'):
             self.assertIn(concept,kb)
+        self.assertIn('conceptDiagnosis',js)
+        self.assertIn('K.search',js)
         self.assertIn("return'concept'",js)
         self.assertIn("return'memo'",js)
         build=(ROOT/'scripts/build_cdn.py').read_text()
@@ -365,9 +382,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn("HISTORY_PAGE_SIZE",text)
         self.assertIn("'1000'",text)
         self.assertIn("HISTORY_RETRIES: '3'",text)
+        self.assertIn("HISTORY_KBS_FULL",text)
+        self.assertIn("HISTORY_START_DATE: '1998-01-01'",text)
         self.assertNotIn('pip install -q vnstock',text)
         self.assertIn("os.environ.get('HISTORY_PAGE_SIZE'",script)
         self.assertIn("os.environ.get('HISTORY_RETRIES'",script)
+        self.assertIn("_kbs_full_history",script)
+        self.assertIn("KBS_API",script)
 
     def test_rss_requires_real_publisher_link_and_publication_date(self):
         companies=[{'symbol':'MBB','name':'Ngân hàng Quân đội'}]
