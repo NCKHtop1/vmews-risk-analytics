@@ -31,31 +31,81 @@
       "sourceUrl": "https://www.mbs.com.vn/hpg-bcpt-gia-thep-tang-truong-nho-nhu-cau-thuan-loi/"
     },
     {
-      "id": "MBS-HPG-2026-02-25",
+      "id": "VIETCAP-HPG-2026-09-11",
       "symbol": "HPG",
-      "broker": "MBS",
-      "publishedAt": "2026-02-25",
-      "title": "Vững vàng bước vào chu kì mới",
-      "recommendation": "KHẢ QUAN",
-      "targetPrice": 35600,
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2026-09-11",
+      "title": "Triển vọng lợi nhuận tích cực được duy trì; định giá vẫn hấp dẫn",
+      "recommendation": "MUA",
+      "targetPrice": 32700,
       "currency": "VND",
-      "summary": "MBS đánh giá HPG ở mức KHẢ QUAN với giá mục tiêu 35.600 đồng/cp, kỳ vọng giá thép phục hồi và sản lượng tiêu thụ cải thiện trong khi áp lực thép Trung Quốc hạ nhiệt.",
+      "summary": "Vietcap duy trì khuyến nghị MUA và giảm 8% giá mục tiêu HPG xuống 32.700 đồng/cp; báo cáo nhấn mạnh triển vọng lợi nhuận vẫn tích cực nhưng cập nhật WACC và chi phí SG&A/logistics.",
       "highlights": [
-        "MBS kỳ vọng giá thép có thể phục hồi từ Q1/26 khi sản lượng tiêu thụ tăng và áp lực từ thép Trung Quốc giảm.",
-        "Dự báo lợi nhuận 2026 được điều chỉnh giảm so với dự báo cũ do giá bán thấp hơn và chi phí tài chính cao hơn.",
-        "Giá mục tiêu tại thời điểm báo cáo là 35.600 đồng/cp."
+        "Duy trì khuyến nghị MUA.",
+        "Giá mục tiêu 32.700 đồng/cp.",
+        "Điều chỉnh dự báo lợi nhuận nhiều năm và cập nhật WACC."
       ],
       "catalysts": [
-        "Sản lượng tiêu thụ tăng",
-        "Giá thép phục hồi",
+        "Triển vọng lợi nhuận mảng thép tích cực",
+        "Định giá vẫn hấp dẫn"
+      ],
+      "risks": [
+        "WACC cao hơn",
+        "Chi phí SG&A/logistics cao hơn kỳ vọng"
+      ],
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/hpg-mua-58-6-trien-vong-loi-nhuan-tich-cuc-duoc-duy-tri-dinh-gia-van-hap-dan-cap-nhat"
+    },
+    {
+      "id": "SHS-HPG-2026-05-20",
+      "symbol": "HPG",
+      "broker": "SHS",
+      "brokerName": "Saigon-Hanoi Securities",
+      "publishedAt": "2026-05-20",
+      "title": "HPG Báo cáo cập nhật Q1/2026",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "currency": "VND",
+      "summary": "SHS duy trì khuyến nghị TĂNG TỶ TRỌNG sau Q1/2026, ghi nhận hoạt động cốt lõi tăng trưởng và sản lượng thép cải thiện mạnh.",
+      "highlights": [
+        "Doanh thu Q1/2026 tăng mạnh so với cùng kỳ.",
+        "SHS tiếp tục duy trì TĂNG TỶ TRỌNG.",
+        "Sản lượng HRC và thép tiêu thụ cải thiện."
+      ],
+      "catalysts": [
+        "Sản lượng thép tăng",
         "Dung Quất 2 tăng đóng góp"
       ],
       "risks": [
-        "Giá bán thép thấp hơn dự kiến",
-        "Chi phí tài chính cao",
-        "Cạnh tranh từ thép nhập khẩu"
+        "Biến động giá thép",
+        "Chu kỳ nhu cầu xây dựng"
       ],
-      "sourceUrl": "https://www.mbs.com.vn/hpg-bcpt-vung-vang-buoc-vao-chu-ki-moi/"
+      "sourceUrl": "https://www.shs.com.vn/bao-cao-phan-tich/hpg-bao-cao-cap-nhat"
+    },
+    {
+      "id": "BSC-HPG-2026-05-14",
+      "symbol": "HPG",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-05-14",
+      "title": "X-Alpha | HPG 40,800 +50%: Vua thép thức giấc",
+      "recommendation": "MUA",
+      "targetPrice": 40800,
+      "currency": "VND",
+      "summary": "BSC duy trì khuyến nghị MUA và giá trị hợp lý cuối 2026 là 40.800 đồng/cp; báo cáo nâng mạnh giá mục tiêu sau khi điều chỉnh dự báo lợi nhuận và giả định giá bán thép.",
+      "highlights": [
+        "Duy trì khuyến nghị MUA.",
+        "Giá trị hợp lý cuối 2026 là 40.800 đồng/cp.",
+        "BSC điều chỉnh tăng dự báo lợi nhuận trong bối cảnh giá bán thép cao hơn."
+      ],
+      "catalysts": [
+        "Giá bán thép cải thiện",
+        "Quy mô doanh thu/lợi nhuận tăng"
+      ],
+      "risks": [
+        "Giá thép đảo chiều",
+        "Nhu cầu thấp hơn giả định"
+      ],
+      "sourceUrl": "https://new.bsc.com.vn/bao-cao-phan-tich/chi-tiet-bao-cao/12768320"
     },
     {
       "id": "MBS-FPT-2026-03-25",
@@ -82,6 +132,33 @@
         "Biến động nhu cầu quốc tế"
       ],
       "sourceUrl": "https://www.mbs.com.vn/fpt-bcpt-tap-trung-nguon-luc-thuc-day-mang-cong-nghe/"
+    },
+    {
+      "id": "MBS-HPG-2026-02-25",
+      "symbol": "HPG",
+      "broker": "MBS",
+      "publishedAt": "2026-02-25",
+      "title": "Vững vàng bước vào chu kì mới",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 35600,
+      "currency": "VND",
+      "summary": "MBS đánh giá HPG ở mức KHẢ QUAN với giá mục tiêu 35.600 đồng/cp, kỳ vọng giá thép phục hồi và sản lượng tiêu thụ cải thiện trong khi áp lực thép Trung Quốc hạ nhiệt.",
+      "highlights": [
+        "MBS kỳ vọng giá thép có thể phục hồi từ Q1/26 khi sản lượng tiêu thụ tăng và áp lực từ thép Trung Quốc giảm.",
+        "Dự báo lợi nhuận 2026 được điều chỉnh giảm so với dự báo cũ do giá bán thấp hơn và chi phí tài chính cao hơn.",
+        "Giá mục tiêu tại thời điểm báo cáo là 35.600 đồng/cp."
+      ],
+      "catalysts": [
+        "Sản lượng tiêu thụ tăng",
+        "Giá thép phục hồi",
+        "Dung Quất 2 tăng đóng góp"
+      ],
+      "risks": [
+        "Giá bán thép thấp hơn dự kiến",
+        "Chi phí tài chính cao",
+        "Cạnh tranh từ thép nhập khẩu"
+      ],
+      "sourceUrl": "https://www.mbs.com.vn/hpg-bcpt-vung-vang-buoc-vao-chu-ki-moi/"
     }
   ]
 }
