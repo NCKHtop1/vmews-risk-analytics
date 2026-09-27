@@ -42,6 +42,11 @@ jobs:
           sparse-checkout: data
       - uses: actions/checkout@v4
         with:
+          ref: financial-insights-data
+          path: _insight-data
+          sparse-checkout: data
+      - uses: actions/checkout@v4
+        with:
           ref: financial-market-data
           path: _market-data
           sparse-checkout: market
@@ -52,10 +57,13 @@ jobs:
           cp financial-report/data/broker-research.json /tmp/main-insight-seed/broker-research.json
           cp financial-report/data/corporate-events.json /tmp/main-insight-seed/corporate-events.json
           rsync -a _financial-data/data/ financial-report/data/
+          for f in broker-research.json corporate-events.json insights-status.json event-status.json; do
+            if [ -f "_insight-data/data/$f" ]; then cp "_insight-data/data/$f" "financial-report/data/$f"; fi
+          done
           python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
           python financial-report/scripts/build_cdn.py
           mkdir -p _site
-          rsync -a --exclude='_site' --exclude='_financial-data' --exclude='_market-data' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
+          rsync -a --exclude='_site' --exclude='_financial-data' --exclude='_insight-data' --exclude='_market-data' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
           mkdir -p _site/financial-report/market
           rsync -a _market-data/market/ _site/financial-report/market/
           python - <<'PY'
@@ -69,7 +77,7 @@ jobs:
           p=Path('_site/financial-report/index.html')
           p.write_text(p.read_text().replace('<html lang="vi">','<html lang="vi" data-hosting="pages">'))
           revision=lambda directory: subprocess.check_output(['git','-C',directory,'rev-parse','HEAD'],text=True).strip()
-          Path('_site/financial-report/deployment.json').write_text(json.dumps({'code':revision('.'),'financialData':revision('_financial-data'),'marketData':revision('_market-data')}))
+          Path('_site/financial-report/deployment.json').write_text(json.dumps({'code':revision('.'),'financialData':revision('_financial-data'),'insightData':revision('_insight-data'),'marketData':revision('_market-data')}))
           Path('_site/.nojekyll').touch()
           PY
       - uses: actions/configure-pages@v5

@@ -4,7 +4,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: financial-report-data-publisher
+  group: financial-insights-data-publisher
   cancel-in-progress: false
 jobs:
   refresh:
@@ -23,21 +23,21 @@ jobs:
           python-version: '3.12'
       - name: Restore published event datasets
         run: |
-          git fetch origin financial-report-data
-          git worktree add /tmp/financial-publish FETCH_HEAD
-          git -C /tmp/financial-publish sparse-checkout set data
-          mkdir -p /tmp/financial-publish/data
-          cp -n financial-report/data/companies.json /tmp/financial-publish/data/companies.json || true
-          cp -n financial-report/data/corporate-events.json /tmp/financial-publish/data/corporate-events.json || true
+          git fetch origin financial-insights-data
+          git worktree add /tmp/insight-publish FETCH_HEAD
+          git -C /tmp/insight-publish sparse-checkout set data
+          mkdir -p /tmp/insight-publish/data
+          cp financial-report/data/companies.json /tmp/insight-publish/data/companies.json
+          cp -n financial-report/data/corporate-events.json /tmp/insight-publish/data/corporate-events.json || true
       - name: Sweep corporate-event sources
-        run: python -u financial-report/scripts/refresh_events.py --output /tmp/financial-publish/data
+        run: python -u financial-report/scripts/refresh_events.py --output /tmp/insight-publish/data
       - name: Publish corporate-event datasets
-        working-directory: /tmp/financial-publish
+        working-directory: /tmp/insight-publish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add --sparse data/corporate-events.json data/event-status.json
           if ! git diff --cached --quiet; then
             git commit -m "Refresh corporate event timeline"
-            git push origin HEAD:refs/heads/financial-report-data
+            git push origin HEAD:refs/heads/financial-insights-data
           fi
