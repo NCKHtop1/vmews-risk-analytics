@@ -1,6 +1,7 @@
 """Reject corrupt market values, unsafe RSS links and issuer mismatches."""
 import importlib.util
 import json
+import os
 import pathlib
 import tempfile
 import pandas as pd
