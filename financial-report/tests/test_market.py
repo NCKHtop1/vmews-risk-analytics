@@ -173,6 +173,15 @@ class MarketTests(unittest.TestCase):
         self.assertIn("read('insights-status.json').catch(()=>null)",insights)
         self.assertIn('sourcesReachable',insights)
         self.assertIn('sourceHealth',insights)
+    def test_research_and_event_publishers_are_separated(self):
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        event_flow=(ROOT.parent/'.github/workflows/corporate-events-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/corporate-events-refresh.yml').exists() else pathlib.Path('.github/workflows/corporate-events-refresh.yml').read_text()
+        self.assertNotIn("'financial-report/data/corporate-events.json'",flow)
+        self.assertNotIn('data/corporate-events.json data/insights-status.json',flow)
+        self.assertIn('data/corporate-events.json data/event-status.json',event_flow)
+        self.assertIn('group: financial-report-data-publisher',flow)
+        self.assertIn('group: financial-report-data-publisher',event_flow)
+
 
     def test_events_and_broker_research_are_wired_to_chart_dolphin_and_bundle(self):
         html=(ROOT/'frontend/index.html').read_text()
