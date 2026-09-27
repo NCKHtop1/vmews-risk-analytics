@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-27T00:00:00Z",
+  "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery does not convert them into its own recommendation.",
+  "reports": [
+    {
+      "id": "MBS-HPG-2026-09-18",
+      "symbol": "HPG",
+      "broker": "MBS",
+      "publishedAt": "2026-09-18",
+      "title": "Giá thép tăng trưởng nhờ nhu cầu thuận lợi",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 32000,
+      "currency": "VND",
+      "summary": "MBS duy trì đánh giá KHẢ QUAN và giá mục tiêu 32.000 đồng/cp. Báo cáo kỳ vọng lợi nhuận ròng Q3/26 đạt khoảng 5.600 tỷ đồng, đồng thời nâng dự báo lợi nhuận 2026/27 do giả định doanh thu và biên gộp tốt hơn khi giá thép cao hơn.",
+      "highlights": [
+        "Lợi nhuận ròng Q3/26 được MBS dự báo khoảng 5.600 tỷ đồng, tăng 40% so với cùng kỳ.",
+        "Dự báo lợi nhuận ròng 2026/27 được điều chỉnh tăng lần lượt 26% và 15% so với dự báo trước.",
+        "Động lực chính được MBS nhấn mạnh là nhu cầu, doanh thu và biên lợi nhuận gộp cải thiện trong bối cảnh giá thép cao hơn."
+      ],
+      "catalysts": [
+        "Nhu cầu thép cải thiện",
+        "Giá thép cao hơn",
+        "Biên lợi nhuận gộp mở rộng"
+      ],
+      "risks": [
+        "Biến động giá thép và nguyên liệu",
+        "Chi phí tài chính",
+        "Rủi ro cầu thép thấp hơn kỳ vọng"
+      ],
+      "sourceUrl": "https://www.mbs.com.vn/hpg-bcpt-gia-thep-tang-truong-nho-nhu-cau-thuan-loi/"
+    },
+    {
+      "id": "MBS-HPG-2026-02-25",
+      "symbol": "HPG",
+      "broker": "MBS",
+      "publishedAt": "2026-02-25",
+      "title": "Vững vàng bước vào chu kì mới",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 35600,
+      "currency": "VND",
+      "summary": "MBS đánh giá HPG ở mức KHẢ QUAN với giá mục tiêu 35.600 đồng/cp, kỳ vọng giá thép phục hồi và sản lượng tiêu thụ cải thiện trong khi áp lực thép Trung Quốc hạ nhiệt.",
+      "highlights": [
+        "MBS kỳ vọng giá thép có thể phục hồi từ Q1/26 khi sản lượng tiêu thụ tăng và áp lực từ thép Trung Quốc giảm.",
+        "Dự báo lợi nhuận 2026 được điều chỉnh giảm so với dự báo cũ do giá bán thấp hơn và chi phí tài chính cao hơn.",
+        "Giá mục tiêu tại thời điểm báo cáo là 35.600 đồng/cp."
+      ],
+      "catalysts": [
+        "Sản lượng tiêu thụ tăng",
+        "Giá thép phục hồi",
+        "Dung Quất 2 tăng đóng góp"
+      ],
+      "risks": [
+        "Giá bán thép thấp hơn dự kiến",
+        "Chi phí tài chính cao",
+        "Cạnh tranh từ thép nhập khẩu"
+      ],
+      "sourceUrl": "https://www.mbs.com.vn/hpg-bcpt-vung-vang-buoc-vao-chu-ki-moi/"
+    },
+    {
+      "id": "MBS-FPT-2026-03-25",
+      "symbol": "FPT",
+      "broker": "MBS",
+      "publishedAt": "2026-03-25",
+      "title": "Tập trung nguồn lực thúc đẩy mảng công nghệ",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 114000,
+      "currency": "VND",
+      "summary": "MBS duy trì đánh giá KHẢ QUAN với giá mục tiêu 114.000 đồng/cp, kỳ vọng lợi nhuận 2026 phục hồi nhờ mảng CNTT và cho rằng định giá đã trở về vùng hấp dẫn hơn.",
+      "highlights": [
+        "MBS kỳ vọng lợi nhuận ròng 2026 tăng 16,8% so với cùng kỳ nhờ mảng CNTT phục hồi.",
+        "P/E dự phóng 2026-27 được MBS đánh giá thấp hơn đáng kể trung bình 5 năm.",
+        "Giá mục tiêu tại thời điểm báo cáo là 114.000 đồng/cp."
+      ],
+      "catalysts": [
+        "Mảng CNTT phục hồi",
+        "Tăng trưởng lợi nhuận",
+        "Định giá thấp hơn lịch sử"
+      ],
+      "risks": [
+        "Tăng trưởng CNTT thấp hơn kỳ vọng",
+        "Biến động nhu cầu quốc tế"
+      ],
+      "sourceUrl": "https://www.mbs.com.vn/fpt-bcpt-tap-trung-nguon-luc-thuc-day-mang-cong-nghe/"
+    }
+  ]
+}
