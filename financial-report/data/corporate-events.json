@@ -4,21 +4,20 @@
   "policy": "Corporate-event records are source-linked metadata. Dates are not shifted unless explicitly named as ex-right/record/listing/trading dates.",
   "events": [
     {
-      "id": "HPG-2026-04-21-AGM",
+      "id": "HPG-2026-07-15-LISTING",
       "symbol": "HPG",
-      "type": "agm",
-      "date": "2026-04-21",
-      "title": "ĐHĐCĐ thường niên 2026",
-      "summary": "ĐHĐCĐ thông qua kế hoạch doanh thu 210.000 tỷ đồng, lợi nhuận sau thuế 22.000 tỷ đồng và phương án cổ tức 2025 gồm 10% cổ phiếu + 5% tiền mặt.",
+      "type": "listing",
+      "date": "2026-07-15",
+      "title": "Cổ phiếu trả cổ tức 2025 bắt đầu giao dịch",
+      "summary": "Cổ phiếu phát hành để trả cổ tức năm 2025 được đưa vào giao dịch; số lượng chứng khoán thay đổi niêm yết là 767.498.665 cổ phiếu.",
       "details": {
-        "revenuePlan2026BillionVnd": 210000,
-        "netProfitPlan2026BillionVnd": 22000,
-        "stockDividend": "10%",
-        "cashDividend": "5%"
+        "tradingDate": "2026-07-15",
+        "additionalShares": 767498665,
+        "totalSharesAfter": 8442964520
       },
       "source": {
-        "publisher": "Hòa Phát",
-        "url": "https://www.hoaphat.com.vn/tin-tuc/hoa-phat-dat-9-056-ty-dong-loi-nhuan-sau-thue-quy-1-tang-170-so-voi-cung-ky.html"
+        "publisher": "Hòa Phát / HOSE",
+        "url": "https://www.hoaphat.com.vn/tin-tuc/thong-bao-ve-ngay-giao-dich-co-phieu-phat-hanh-tra-co-tuc-nam-2025-1.html"
       }
     },
     {
@@ -40,20 +39,58 @@
       }
     },
     {
-      "id": "HPG-2026-07-15-LISTING",
+      "id": "HPG-2026-04-21-AGM",
       "symbol": "HPG",
-      "type": "listing",
-      "date": "2026-07-15",
-      "title": "Cổ phiếu trả cổ tức 2025 bắt đầu giao dịch",
-      "summary": "Cổ phiếu phát hành để trả cổ tức năm 2025 được đưa vào giao dịch; số lượng chứng khoán thay đổi niêm yết là 767.498.665 cổ phiếu.",
+      "type": "agm",
+      "date": "2026-04-21",
+      "title": "ĐHĐCĐ thường niên 2026",
+      "summary": "ĐHĐCĐ thông qua kế hoạch doanh thu 210.000 tỷ đồng, lợi nhuận sau thuế 22.000 tỷ đồng và phương án cổ tức 2025 gồm 10% cổ phiếu + 5% tiền mặt.",
       "details": {
-        "tradingDate": "2026-07-15",
-        "additionalShares": 767498665,
-        "totalSharesAfter": 8442964520
+        "revenuePlan2026BillionVnd": 210000,
+        "netProfitPlan2026BillionVnd": 22000,
+        "stockDividend": "10%",
+        "cashDividend": "5%"
       },
       "source": {
-        "publisher": "Hòa Phát / HOSE",
-        "url": "https://www.hoaphat.com.vn/tin-tuc/thong-bao-ve-ngay-giao-dich-co-phieu-phat-hanh-tra-co-tuc-nam-2025-1.html"
+        "publisher": "Hòa Phát",
+        "url": "https://www.hoaphat.com.vn/tin-tuc/hoa-phat-dat-9-056-ty-dong-loi-nhuan-sau-thue-quy-1-tang-170-so-voi-cung-ky.html"
+      }
+    },
+    {
+      "id": "HPG-2022-06-17-CASH-DIV",
+      "symbol": "HPG",
+      "type": "cash_dividend",
+      "date": "2022-06-17",
+      "title": "Cổ tức năm 2021 bằng tiền",
+      "summary": "Ngày GDKHQ 17/06/2022; cổ tức tiền mặt 5%, tương đương 500 đồng/cp; ngày đăng ký cuối cùng 20/06/2022; thanh toán 06/07/2022.",
+      "details": {
+        "exRightDate": "2022-06-17",
+        "recordDate": "2022-06-20",
+        "payoutDate": "2022-07-06",
+        "ratio": "5%",
+        "cashAmount": "500 đồng/cp"
+      },
+      "source": {
+        "publisher": "CafeF / theo HOSE",
+        "url": "https://cafef.vn/du-lieu/hpg-449606/hpg-1762022-ngay-gdkhq-tra-co-tuc-nam-2021-bang-tien-500-dcp-bang-co-phieu-ty-le-103.chn"
+      }
+    },
+    {
+      "id": "HPG-2022-06-17-STOCK-DIV",
+      "symbol": "HPG",
+      "type": "stock_dividend",
+      "date": "2022-06-17",
+      "title": "Cổ tức năm 2021 bằng cổ phiếu",
+      "summary": "Ngày GDKHQ 17/06/2022; trả cổ tức bằng cổ phiếu tỷ lệ 10:3; ngày đăng ký cuối cùng 20/06/2022.",
+      "details": {
+        "exRightDate": "2022-06-17",
+        "recordDate": "2022-06-20",
+        "ratio": "10:3",
+        "entitlement": "10 cổ phiếu nhận 3 cổ phiếu mới"
+      },
+      "source": {
+        "publisher": "CafeF / theo HOSE",
+        "url": "https://cafef.vn/du-lieu/hpg-449606/hpg-1762022-ngay-gdkhq-tra-co-tuc-nam-2021-bang-tien-500-dcp-bang-co-phieu-ty-le-103.chn"
       }
     }
   ]
