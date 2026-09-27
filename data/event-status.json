@@ -1,34 +1,14 @@
 {
-  "checkedAt": "2026-09-27T17:31:39+00:00",
-  "sourcesTotal": 5,
+  "checkedAt": "2026-09-27T17:59:07+00:00",
+  "sourcesTotal": 3,
   "sourcesReachable": 2,
-  "eventsDiscoveredThisRun": 1784,
-  "storedEvents": 1764,
+  "eventsDiscoveredThisRun": 1664,
+  "storedEvents": 3021,
   "sources": [
-    {
-      "code": "HNX_LISTED",
-      "name": "Sở GDCK Hà Nội - cổ phiếu niêm yết",
-      "checkedAt": "2026-09-27T17:30:58+00:00",
-      "kind": "issuer_template",
-      "status": "error",
-      "parsed": 0,
-      "reachable": 0,
-      "errors": 97
-    },
-    {
-      "code": "HNX_UPCOM",
-      "name": "Sở GDCK Hà Nội - UPCoM",
-      "checkedAt": "2026-09-27T17:31:04+00:00",
-      "kind": "issuer_template",
-      "status": "error",
-      "parsed": 0,
-      "reachable": 0,
-      "errors": 97
-    },
     {
       "code": "VSDC",
       "name": "Tổng công ty Lưu ký và Bù trừ Chứng khoán Việt Nam",
-      "checkedAt": "2026-09-27T17:31:08+00:00",
+      "checkedAt": "2026-09-27T17:58:54+00:00",
       "kind": "health",
       "status": "error",
       "parsed": 0,
@@ -38,7 +18,7 @@
     {
       "code": "HOSE",
       "name": "Sở GDCK TP.HCM",
-      "checkedAt": "2026-09-27T17:31:09+00:00",
+      "checkedAt": "2026-09-27T17:58:55+00:00",
       "kind": "health",
       "status": "reachable",
       "parsed": 0,
@@ -46,13 +26,14 @@
       "httpStatus": 200
     },
     {
-      "code": "CAFEF_EVENTS",
-      "name": "CafeF - lịch sự kiện cổ phiếu",
-      "checkedAt": "2026-09-27T17:31:11+00:00",
-      "kind": "cafef_history",
+      "code": "24HMONEY_EVENTS",
+      "name": "24HMoney - sự kiện theo mã",
+      "checkedAt": "2026-09-27T17:58:58+00:00",
+      "kind": "24hmoney_events",
       "status": "ok",
-      "parsed": 1784,
-      "reachable": 97
+      "parsed": 1664,
+      "reachable": 43,
+      "errors": 54
     }
   ]
 }
