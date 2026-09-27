@@ -158,6 +158,64 @@ class MarketTests(unittest.TestCase):
         brokers={x['broker'] for x in research['reports'] if x['symbol']=='HPG'}
         self.assertTrue({'MBS','VIETCAP','SHS','BSC'}.issubset(brokers))
 
+    def test_research_v7_collapses_long_lists_until_user_expands(self):
+        insights=(ROOT/'frontend/insights.js').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
+        self.assertIn("compactExpanded:false",insights)
+        self.assertIn("researchExpanded:false",insights)
+        self.assertIn("eventExpanded:false",insights)
+        self.assertIn("compactLimit=state.compactExpanded?18:4",insights)
+        self.assertIn("reportPreview=shownReports.slice(0,state.researchExpanded?shownReports.length:4)",insights)
+        self.assertIn("eventPreview=shownEvents.slice(0,state.eventExpanded?shownEvents.length:6)",insights)
+        self.assertIn("data-insight-expand",insights)
+        self.assertIn("data-idea-research-expand",insights)
+        self.assertIn("data-idea-event-expand",insights)
+        self.assertIn(".insight-more-toggle",css)
+        self.assertIn(".idea-more-toggle",css)
+
+    def test_research_v7_registry_has_broader_broker_coverage_and_finlens(self):
+        cfg=json.loads((ROOT/'config/research_sources.json').read_text())
+        codes={x['code'] for x in cfg['sources'] if x.get('enabled')}
+        self.assertGreaterEqual(len(codes),21)
+        self.assertTrue({'TCBS','CTS','PHS','VIX','VDSC','FINLENS'}.issubset(codes))
+        finlens=next(x for x in cfg['sources'] if x['code']=='FINLENS')
+        self.assertEqual(finlens['adapter'],'finlens_mcp')
+        self.assertEqual(finlens['mode'],'authenticated_mcp')
+
+    def test_research_v7_text_listing_discovers_company_reports(self):
+        source={'code':'TCBS','name':'Techcom Securities','url':'https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/','adapter':'text_listing'}
+        raw='<div>21/09/2026 Phân tích công ty Báo cáo phân tích lần đầu · HVN · Tổng Công ty Hàng không Việt Nam</div><div>20/09/2026 Bản tin ngày VN-Index kiểm định hỗ trợ</div>'
+        rows=im.discover_text_listing(raw,source,{'HVN','HPG'})
+        h=next(x for x in rows if x['symbol']=='HVN')
+        self.assertEqual(h['publishedAt'],'2026-09-21')
+        self.assertIn('HVN',h['title'])
+
+    def test_research_v7_normalizes_finlens_metadata_without_copying_report_body(self):
+        row=im.normalize_finlens_report({
+            'ticker':'HPG','broker_name':'BIDV Securities','date':'20/08/2026',
+            'title':'HPG - Báo cáo cập nhật KQKD Q2.2026','recommendation':'MUA',
+            'target_price':32.7,'report_id':'abc123','summary':'Tóm tắt metadata.'
+        },'HPG')
+        self.assertEqual(row['broker'],'BSC')
+        self.assertEqual(row['targetPrice'],32700)
+        self.assertEqual(row['publishedAt'],'2026-08-20')
+        self.assertEqual(row['dataProvider'],'FINLENS')
+        self.assertIn('finlens.vn',row['sourceUrl'])
+        self.assertLessEqual(len(row['summary']),900)
+
+    def test_research_v7_workflow_can_use_finlens_secret_but_does_not_require_it(self):
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn('FINLENS_API_KEY: \${{ secrets.FINLENS_API_KEY }}',flow)
+        self.assertIn('FINLENS_MCP_TOKEN: \${{ secrets.FINLENS_MCP_TOKEN }}',flow)
+        self.assertIn("FINLENS_SYMBOL_BUDGET: '25'",flow)
+        self.assertIn("RESEARCH_DETAIL_BUDGET: '180'",flow)
+        reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
+        if not (os.environ.get('FINLENS_API_KEY') or os.environ.get('FINLENS_MCP_TOKEN')):
+            self.assertEqual(reports,[])
+            self.assertEqual(status['status'],'not_configured')
+            self.assertEqual(cursor,0)
+
+
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
         chart=(ROOT/'frontend/chart-engine.js').read_text()
         css=(ROOT/'frontend/market.css').read_text()
