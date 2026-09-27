@@ -75,8 +75,11 @@ function renderCompact(){
  const all=rows(),filtered=all.filter(x=>state.filter==='all'||x._kind===state.filter),events=all.filter(x=>x._kind==='event'),reports=all.filter(x=>x._kind==='research'),c=consensus();
  if(status){const coverage=state.health&&Number.isFinite(state.health.sourcesTotal)?' · '+(state.health.sourcesReachable||0)+'/'+state.health.sourcesTotal+' nguồn research truy cập được':'';status.textContent=(state.loaded?'Đã đồng bộ':'Đang tải')+' · '+events.length+' sự kiện · '+reports.length+' báo cáo cho '+(state.symbol||'mã đang xem')+coverage;}
  if(summary)summary.innerHTML=c.brokers?'<span><b>'+c.brokers+'</b> CTCK gần nhất</span>'+(Number.isFinite(c.targetMedian)?'<span>Target trung vị <b>'+money(c.targetMedian)+'</b></span><span>Khoảng target <b>'+money(c.targetMin)+'–'+money(c.targetMax)+'</b></span>':''):'<span>Chưa có báo cáo CTCK đã chuẩn hóa cho mã này.</span>';
- const compactLimit=state.compactExpanded?filtered.length:4,compactShown=filtered.slice(0,compactLimit);
- list.innerHTML=(compactShown.map(compactCard).join('')||'<div class="insight-empty">Chưa có sự kiện hoặc báo cáo nghiên cứu đã chuẩn hóa cho '+esc(state.symbol||'mã này')+'.</div>')+(filtered.length>4?'<button type="button" class="insight-more-toggle" data-insight-expand="'+(state.compactExpanded?'less':'more')+'">'+(state.compactExpanded?'Thu gọn':'Xem thêm '+(filtered.length-compactShown.length))+' <span aria-hidden="true">'+(state.compactExpanded?'⌃':'⌄')+'</span></button>':'');
+ if(!state.compactExpanded){
+  list.innerHTML='<button type="button" class="insight-summary-toggle" data-insight-expand="more"><span><b>Sự kiện doanh nghiệp</b><small>'+events.length+' sự kiện đã chuẩn hóa</small></span><span><b>Báo cáo CTCK</b><small>'+reports.length+' báo cáo · '+c.brokers+' CTCK gần nhất</small></span><i aria-hidden="true">⌄</i></button>';
+ }else{
+  list.innerHTML=(filtered.map(compactCard).join('')||'<div class="insight-empty">Chưa có sự kiện hoặc báo cáo nghiên cứu đã chuẩn hóa cho '+esc(state.symbol||'mã này')+'.</div>')+(filtered.length?'<button type="button" class="insight-more-toggle" data-insight-expand="less">Thu gọn <span aria-hidden="true">⌃</span></button>':'');
+ }
  document.querySelectorAll('[data-insight-filter]').forEach(b=>b.classList.toggle('active',b.dataset.insightFilter===state.filter));
 }
 function ratingLabel(group){return RATING_GROUPS.find(x=>x.id===group)?.label||'KHÁC';}
