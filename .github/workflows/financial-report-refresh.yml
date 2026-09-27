@@ -11,6 +11,7 @@ on:
     paths:
       - 'financial-report/backend/**'
       - 'financial-report/scripts/refresh_data.py'
+      - 'financial-report/scripts/refresh_insights.py'
       - '.github/workflows/financial-report-refresh.yml'
   schedule:
     - cron: '15 */4 * * *'
@@ -53,6 +54,10 @@ jobs:
           else
             python -u financial-report/scripts/refresh_data.py --output /tmp/financial-publish/data --budget-minutes "$REFRESH_BUDGET" --publish
           fi
+      - name: Refresh public corporate-event and broker-research metadata
+        if: always()
+        run: |
+          python -u financial-report/scripts/refresh_insights.py --output /tmp/financial-publish/data --mbs-pages 4
       - name: Publish only the financial data branch
         if: always()
         working-directory: /tmp/financial-publish
