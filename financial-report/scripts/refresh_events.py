@@ -15,19 +15,19 @@ ROOT=Path(__file__).resolve().parents[1]
 UA='Mozilla/5.0 (compatible; FinQueryEvents/1.0; +https://github.com/NCKHtop1/vmews-risk-analytics)'
 
 TYPE_RULES=[
- ('cash_dividend',r'(trả|chi|tạm ứng).{0,35}cổ tức.{0,25}(bằng )?tiền'),
- ('stock_dividend',r'(trả|chia).{0,35}cổ tức.{0,25}(bằng )?(cp|cổ phiếu)'),
- ('bonus_share',r'(thưởng|phát hành).{0,30}cổ phiếu.{0,20}(thưởng|tăng vốn từ nguồn vốn chủ)'),
- ('rights_issue',r'(phát hành|quyền mua).{0,35}(cổ đông hiện hữu|quyền mua)'),
- ('agm',r'(họp|đại hội).{0,20}(đại hội đồng cổ đông|đhđcđ).{0,20}(thường niên|thường kỳ)'),
- ('egm',r'(họp|đại hội).{0,20}(đại hội đồng cổ đông|đhđcđ).{0,20}(bất thường|bất thường niên)'),
- ('shareholder_vote',r'(lấy ý kiến|xin ý kiến).{0,25}cổ đông'),
- ('esop',r'\besop\b|phát hành.{0,25}(người lao động|cán bộ nhân viên)'),
- ('private_placement',r'phát hành.{0,25}riêng lẻ'),
- ('buyback',r'(mua lại|mua).{0,25}cổ phiếu quỹ'),
- ('listing',r'(niêm yết bổ sung|đăng ký giao dịch bổ sung|ngày giao dịch cổ phiếu phát hành)'),
- ('delisting',r'(hủy niêm yết|hủy đăng ký giao dịch)'),
- ('earnings',r'(công bố|báo cáo).{0,20}(kết quả kinh doanh|kqkd)'),
+ ('cash_dividend',r'(tra|chi|tam ung).{0,35}co tuc.{0,25}(bang )?tien'),
+ ('stock_dividend',r'(tra|chia).{0,35}co tuc.{0,25}(bang )?(cp|co phieu)'),
+ ('bonus_share',r'(thuong|phat hanh).{0,30}co phieu.{0,20}(thuong|tang von tu nguon von chu)'),
+ ('rights_issue',r'(phat hanh|quyen mua).{0,35}(co dong hien huu|quyen mua)'),
+ ('agm',r'(hop|dai hoi).{0,20}(dai hoi dong co dong|dhdcd).{0,20}(thuong nien|thuong ky)'),
+ ('egm',r'(hop|dai hoi).{0,20}(dai hoi dong co dong|dhdcd).{0,20}(bat thuong|bat thuong nien)'),
+ ('shareholder_vote',r'(lay y kien|xin y kien).{0,25}co dong'),
+ ('esop',r'\besop\b|phat hanh.{0,25}(nguoi lao dong|can bo nhan vien)'),
+ ('private_placement',r'phat hanh.{0,25}rieng le'),
+ ('buyback',r'(mua lai|mua).{0,25}co phieu quy'),
+ ('listing',r'(niem yet bo sung|dang ky giao dich bo sung|ngay giao dich co phieu phat hanh)'),
+ ('delisting',r'(huy niem yet|huy dang ky giao dich)'),
+ ('earnings',r'(cong bo|bao cao).{0,20}(ket qua kinh doanh|kqkd)'),
 ]
 
 def now(): return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -149,7 +149,7 @@ def cafef_rows(raw,symbol,source_url):
 
 def fingerprint(row):
     d=row.get('details') or {}
-    return '|'.join([str(row.get('symbol','')),str(row.get('type','')),str(row.get('date','')),str(d.get('recordDate',''))])
+    return '|'.join([str(row.get('symbol','')),str(row.get('type','')),str(row.get('date',''))])
 
 def merge_events(seed,published,discovered):
     out={}
