@@ -6,7 +6,7 @@ documents. HNX issuer pages are parsed directly; HOSE/VSDC are health-checked
 until a stable public listing adapter is available.
 """
 import argparse, hashlib, html, json, os, re
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
