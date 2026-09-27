@@ -1042,20 +1042,34 @@ function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;
 function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>Dolphin đang đọc FinQuery'+(shouldSearchWeb(state.lastQuestion||'')?' và đối chiếu Google Search':'')+'…</p></div>'});}
 function mountGeminiUI(){
  const drawer=$('research-ai');if(!drawer||$('dolphin-gemini-connect'))return;
- const box=document.createElement('div');box.id='dolphin-gemini-connect';box.style.cssText='margin:10px 14px;padding:10px 12px;border:1px solid #dce5f4;border-radius:14px;background:#f8fafc;display:grid;gap:8px';
- box.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><strong style="display:block">Gemini trực tiếp</strong><small id="dolphin-gemini-status" style="color:#64748b">Đang kiểm tra kết nối…</small></div><button id="dolphin-gemini-disconnect" type="button" style="display:none;border:1px solid #d7e0ef;background:#fff;border-radius:10px;padding:6px 9px;cursor:pointer">Ngắt</button></div><div id="dolphin-gemini-form" style="display:flex;gap:7px"><input id="dolphin-gemini-key" type="password" autocomplete="off" placeholder="Nhập Google Gemini API key" style="min-width:0;flex:1;border:1px solid #ccd7e8;border-radius:10px;padding:8px 10px"><button id="dolphin-gemini-save" type="button" style="border:0;border-radius:10px;background:#173b78;color:#fff;padding:8px 12px;font-weight:700;cursor:pointer">Kết nối</button></div><small id="dolphin-gemini-note" style="color:#64748b">Khóa chỉ giữ trong sessionStorage của trình duyệt; không ghi vào GitHub.</small>';
+ const box=document.createElement('div');box.id='dolphin-gemini-connect';box.style.cssText='margin:10px 14px;padding:12px;border:1px solid #dce5f4;border-radius:14px;background:#f8fafc;display:grid;gap:9px';
+ box.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><strong style="display:block">Bật Dolphin AI thông minh</strong><small id="dolphin-gemini-status" style="color:#64748b">Đang kiểm tra kết nối…</small></div><button id="dolphin-gemini-disconnect" type="button" style="display:none;border:1px solid #d7e0ef;background:#fff;border-radius:10px;padding:6px 9px;cursor:pointer">Ngắt</button></div><div id="dolphin-gemini-guide" style="display:grid;gap:7px"><div style="font-size:12px;line-height:1.5;color:#475569"><b>Miễn phí cho nhu cầu cơ bản.</b> Cần tài khoản Google; Free Tier không yêu cầu bật thanh toán.</div><div style="display:flex;gap:7px;flex-wrap:wrap"><a id="dolphin-gemini-get-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;text-decoration:none;border:0;border-radius:10px;background:#eef3ff;color:#173b78;padding:8px 10px;font-weight:700">1. Lấy khóa miễn phí ↗</a><button id="dolphin-gemini-paste" type="button" style="border:1px solid #d7e0ef;background:#fff;border-radius:10px;padding:8px 10px;font-weight:700;cursor:pointer">2. Dán khóa</button></div><small style="color:#64748b;line-height:1.45">Google AI Studio sẽ tạo/cấp khóa. Chỉ cần sao chép khóa rồi quay lại đây bấm “Dán khóa”.</small></div><div id="dolphin-gemini-form" style="display:flex;gap:7px"><input id="dolphin-gemini-key" type="password" autocomplete="off" spellcheck="false" placeholder="Dán khóa Gemini của Google vào đây" style="min-width:0;flex:1;border:1px solid #ccd7e8;border-radius:10px;padding:8px 10px"><button id="dolphin-gemini-save" type="button" style="border:0;border-radius:10px;background:#173b78;color:#fff;padding:8px 12px;font-weight:700;cursor:pointer">3. Kết nối</button></div><small id="dolphin-gemini-note" style="color:#64748b;line-height:1.45">Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub và tự mất khi đóng phiên.</small>';
  const prompts=drawer.querySelector('.research-ai-prompts');drawer.insertBefore(box,prompts||drawer.firstChild);
  $('dolphin-gemini-save')?.addEventListener('click',connectGeminiFromUI);
  $('dolphin-gemini-key')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();connectGeminiFromUI();}});
+ $('dolphin-gemini-paste')?.addEventListener('click',async()=>{
+  const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-paste');
+  try{
+   const value=String(await navigator.clipboard.readText()).trim();
+   if(!value){renderGeminiStatus('Clipboard chưa có khóa. Hãy sao chép khóa từ Google AI Studio.');return;}
+   if(input)input.value=value;
+   if(button)button.textContent='Đã dán ✓';
+   renderGeminiStatus('Đã dán khóa · bấm “3. Kết nối”.');
+  }catch{
+   renderGeminiStatus('Trình duyệt không cho đọc clipboard; hãy dán thủ công vào ô bên dưới.');
+   input?.focus();
+  }
+ });
  $('dolphin-gemini-disconnect')?.addEventListener('click',()=>{forgetSession();renderGeminiStatus();});
  renderGeminiStatus();
 }
 function renderGeminiStatus(message=''){
- const secret=sessionSecret(),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
- if(status)status.textContent=message||(secret?(state.model?'Đã kết nối · '+state.model:'Đã có khóa phiên · sẽ xác minh khi hỏi'):'Chưa kết nối · Dolphin vẫn dùng FinQuery cục bộ');
+ const secret=sessionSecret(),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),guide=$('dolphin-gemini-guide'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
+ if(status)status.textContent=message||(secret?(state.model?'Đã kết nối · '+state.model:'Đã có khóa phiên · sẽ xác minh khi hỏi'):'Chưa bật Gemini · làm 3 bước bên dưới');
  if(form)form.style.display=secret?'none':'flex';
+ if(guide)guide.style.display=secret?'none':'grid';
  if(disconnect)disconnect.style.display=secret?'inline-block':'none';
- if(note)note.textContent=secret?'Gemini chạy trực tiếp từ trình duyệt trên dữ liệu FinQuery đang mở.':'Khóa chỉ giữ trong sessionStorage của trình duyệt; không ghi vào GitHub.';
+ if(note)note.textContent=secret?'Gemini đang chạy trực tiếp trên dữ liệu FinQuery của mã đang xem.':'Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub và tự mất khi đóng phiên.';
 }
 async function connectGeminiFromUI(){
  const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-save'),secret=String(input?.value||'').trim();if(!secret)return;
@@ -1080,7 +1094,7 @@ async function ask(question){
   renderGeminiStatus();
  }catch(error){
   waiting?.remove();const local=analyze(q),reason=error?.code==='NO_GEMINI_KEY'?'Chưa kết nối Gemini; ':'Gemini tạm chưa phản hồi; ';
-  local.html='<div class="analysis-empty">'+esc(reason)+'Dolphin đang dùng engine FinQuery cục bộ, nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
+  local.html='<div class="analysis-empty">'+esc(reason)+(error?.code==='NO_GEMINI_KEY'?'Muốn bật LLM, bấm “1. Lấy khóa miễn phí” ở phía trên, sao chép khóa Google rồi bấm “2. Dán khóa” → “3. Kết nối”. Trong lúc chưa kết nối, ':'')+'Dolphin đang dùng engine FinQuery cục bộ, nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
   if(error?.message&&error?.code!=='NO_GEMINI_KEY')renderGeminiStatus(error.message);
  }finally{state.busy=false;if(send)send.disabled=false;}
 }
