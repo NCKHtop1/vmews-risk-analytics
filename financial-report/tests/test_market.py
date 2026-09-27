@@ -207,15 +207,22 @@ class MarketTests(unittest.TestCase):
             if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
             else:m.os.environ['INTRADAY_WORKERS']=old_workers
 
-    def test_research_analysis_is_local_and_ui_has_no_external_model_noise(self):
+    def test_research_analysis_uses_browser_gemini_with_local_fallback(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
-        for forbidden in ('generativelanguage.googleapis.com','Gemini','Fallback cục bộ','Máy chủ AI chưa phản hồi','research-ai-key'):
-            self.assertNotIn(forbidden,js+html)
+        self.assertIn('generativelanguage.googleapis.com',js)
+        self.assertIn('vmews_solution_ai_browser_session',js)
+        self.assertIn('DOLPHIN_V3_BROWSER_GEMINI',js)
+        self.assertIn('sessionStorage',js)
+        self.assertIn('Google Search',js)
+        self.assertNotIn('vmews-risk-analytics-sojd.vercel.app/api/solution-ai',js+html)
+        self.assertNotIn('FINQUERY_AI_ENDPOINT',js+html)
+        self.assertNotIn('localStorage.setItem(GEMINI_SESSION_KEY',js)
         self.assertIn('Phân tích chuyên sâu',html)
         self.assertIn('annualSnapshot',js)
         self.assertIn('quarterSnapshot',js)
         self.assertIn('riskSignals',js)
+        self.assertIn('const local=analyze(q)',js)
 
     def test_native_chart_replaces_restricted_tradingview_widget(self):
         market=(ROOT/'frontend/market.js').read_text()
