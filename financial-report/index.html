@@ -536,7 +536,7 @@ function explainLabel(label){const s=norm(label);
 window.FinQueryKnowledge={concepts:C,byId,find,search,scoreConcept,explainLabel,norm};
 })();</script><script>(function(){'use strict';
 const $=id=>document.getElementById(id);
-const state={symbol:'',history:[],busy:false};
+const state={symbol:'',history:[],busy:false,directKey:'',model:'',modelCandidates:[]};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
@@ -848,8 +848,56 @@ function analyze(question){
  const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='financial'?financialHTML(a,q):type==='risk'?riskHTML(a,q):type==='compare'?comparisonHTML(a,q):type==='memo'?memoHTML(question,a,q,m):searchHTML(question,annual,quarterly,m);
  return{type,html:body||'<div class="analysis-empty">Câu hỏi này được neo vào các trường dữ liệu thực đang có; không có giá trị tương ứng để tính thêm trong kỳ hiện tại.</div>'};
 }
-const AI_ENDPOINT=window.FINQUERY_AI_ENDPOINT||'https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai';
+
+const GOOGLE_AI_ORIGIN='https://generativelanguage.googleapis.com/v1beta';
+const GEMINI_SESSION_KEY='vmews_solution_ai_browser_session';
+const GOOGLE_SEARCH_TOOL={type:'google_search'};
+const URL_CONTEXT_TOOL={type:'url_context'};
 const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
+
+function sessionSecret(){
+ if(state.directKey)return state.directKey;
+ try{return sessionStorage.getItem(GEMINI_SESSION_KEY)?.trim()||'';}catch{return'';}
+}
+function rememberSession(secret){
+ state.directKey=String(secret||'').trim();
+ try{sessionStorage.setItem(GEMINI_SESSION_KEY,state.directKey);}catch{}
+}
+function forgetSession(){
+ state.directKey='';state.model='';state.modelCandidates=[];
+ try{sessionStorage.removeItem(GEMINI_SESSION_KEY);}catch{}
+}
+function providerMessage(status,details=''){
+ if(status===401||status===403)return'Khóa Google không hợp lệ, đã bị thu hồi hoặc chưa có quyền sử dụng Gemini.';
+ if(status===429)return'Gemini đã hết hạn mức tạm thời. Dolphin chuyển sang FinQuery cục bộ.';
+ if(status===404)return'Mô hình Gemini chưa khả dụng với dự án Google hiện tại.';
+ if(status>=500)return'Google Gemini đang tạm thời gián đoạn.';
+ return details||('Kết nối Gemini chưa sẵn sàng ('+status+').');
+}
+function availableModels(payload){
+ const models=(payload?.models||[]).filter(item=>{
+  const name=String(item.name||'').replace(/^models\//,'');
+  const supported=item.supportedGenerationMethods||item.supportedActions||[];
+  return name.startsWith('gemini-')&&/flash/i.test(name)&&!/image|audio|tts|live|embedding|robotics/i.test(name)&&(supported.length===0||supported.includes('generateContent')||supported.includes('generate_content'));
+ }).map(item=>String(item.name||'').replace(/^models\//,''));
+ const ordered=[];
+ for(const preferred of ['gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash']){
+  const selected=models.find(x=>x===preferred)||models.find(x=>x.startsWith(preferred+'-'));
+  if(selected&&!ordered.includes(selected))ordered.push(selected);
+ }
+ for(const model of models)if(!ordered.includes(model))ordered.push(model);
+ return ordered;
+}
+async function validateGemini(secret){
+ const response=await fetch(GOOGLE_AI_ORIGIN+'/models?pageSize=100',{method:'GET',mode:'cors',cache:'no-store',headers:{'x-goog-api-key':secret}});
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(providerMessage(response.status,payload?.error?.message));
+ state.modelCandidates=availableModels(payload);
+ const model=state.modelCandidates[0]||'';
+ if(!model)throw new Error('Dự án Google chưa có mô hình Gemini Flash khả dụng.');
+ state.model=model;
+ return model;
+}
 function compactRows(data,question,limit=18){
  if(!data)return[];
  const ps=periods(data).slice(-8),terms=norm(question).split(' ').filter(x=>x.length>2&&!STOP_WORDS.has(x)),chosen=new Map();
@@ -876,7 +924,7 @@ function buildLLMContext(question){
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
  const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],8),macro=compactMacro(question);
  return{
-  scope:'financial-report',contextVersion:'DOLPHIN_V2_GROUNDED',symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
+  scope:'financial-report',contextVersion:'DOLPHIN_V3_BROWSER_GEMINI',symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
   generatedAt:new Date().toISOString(),
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
   marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,
@@ -887,45 +935,161 @@ function buildLLMContext(question){
 function sourcesForLLM(){
  const m=market();return cleanNews([...(m.news||[]),...(m.marketNews||[])],8).map(x=>({title:x.title,url:x.url,publisher:x.source,publishedAt:x.publishedAt}));
 }
+function dolphinSystemInstruction(){
+ return[
+  'Bạn là Dolphin AI của FinQuery, trợ lý nghiên cứu tài chính doanh nghiệp Việt Nam.',
+  'Luôn trả lời bằng tiếng Việt tự nhiên, trực tiếp, tránh văn phong chung chung kiểu AI.',
+  'Dữ liệu trong context.localFinancialData, marketSnapshot, movementDrivers và technical là dữ liệu neo. Không tự tạo, thay đổi hoặc ước đoán số liệu nếu dữ liệu neo không có.',
+  'Không tự tính lại ROA, ROE, biên lợi nhuận, tăng trưởng hoặc các tỷ số khi FinQuery đã cung cấp giá trị. Nếu thiếu chỉ tiêu như NIM, CIR, LDR thì nói rõ chưa có trong dữ liệu hiện tại.',
+  'Luôn phân biệt số năm và số quý; gắn nhận định với kỳ cụ thể. Không annualize nếu context không cung cấp quy tắc.',
+  'Nếu câu hỏi là follow-up ngắn, dùng lịch sử gần nhất và symbol hiện tại để hiểu mã này, quý này, chỉ số đó.',
+  'Tin và Google Search chỉ là lớp bằng chứng bổ sung. Không dùng nguồn web để ghi đè số BCTC hoặc giá đã neo trong FinQuery.',
+  'Nếu hỏi nguyên nhân biến động giá, tách rõ dữ kiện quan sát được khỏi nguyên nhân có bằng chứng. Không khẳng định quan hệ nhân quả chỉ từ tương quan.',
+  'Nếu dữ liệu không đủ, nêu đúng dữ liệu nào đang thiếu và vẫn trả lời phần có thể kiểm chứng.',
+  'Không đưa ra khuyến nghị mua/bán hoặc cam kết lợi nhuận. Có thể phân tích kịch bản, rủi ro, điều kiện xác nhận và điểm cần theo dõi.',
+  'Trả lời theo cấu trúc phù hợp với câu hỏi; không ép mọi câu trả lời vào cùng một mẫu.'
+ ].join('\n');
+}
+function shouldSearchWeb(question){
+ const s=norm(question);
+ return /hom nay|phien nay|moi nhat|tin|nhnn|ngan hang nha nuoc|lai suat|vi mo|ty gia|lam phat|gdp|pmi|fdi|tai sao gia|vi sao gia|bien dong|su kien|chinh sach/.test(s);
+}
+function geminiPrompt(question){
+ return[
+  'CÂU HỎI NGƯỜI DÙNG:\n'+question,
+  'LỊCH SỬ GẦN NHẤT:\n'+JSON.stringify(state.history.slice(-8)),
+  'FINQUERY CONTEXT:\n'+JSON.stringify(buildLLMContext(question)),
+  'NGUỒN ĐÃ CÓ TRONG TRANG:\n'+JSON.stringify(sourcesForLLM()),
+  'Hãy trả lời câu hỏi dựa trên dữ liệu neo trước. Nếu có tìm kiếm web, chỉ dùng để bổ sung bằng chứng và nêu thời điểm khi cần.'
+ ].join('\n\n');
+}
+function safeExternalUrl(url){
+ try{const u=new URL(String(url||''));return /^https?:$/.test(u.protocol)?u.href:'';}catch{return'';}
+}
+function providerAnswer(payload){
+ const sources=[],known=new Set(),queries=[];let searched=false,readUrls=false;const paragraphs=[];
+ const add=(url,title)=>{const safe=safeExternalUrl(url);if(!safe||known.has(safe))return;known.add(safe);sources.push({url:safe,title:String(title||new URL(safe).hostname).slice(0,160)});};
+ for(const step of payload?.steps||[]){
+  if(step.type==='google_search_call'||step.type==='google_search_result')searched=true;
+  if(step.type==='url_context_call'||step.type==='url_context_result')readUrls=true;
+  if(typeof step.query==='string'&&step.query.trim())queries.push(step.query.trim());
+  for(const query of step.queries||[])if(String(query).trim())queries.push(String(query).trim());
+  if(step.type!=='model_output')continue;
+  for(const item of step.content||[]){
+   if(typeof item.text==='string'&&item.text.trim())paragraphs.push(item.text.trim());
+   for(const a of item.annotations||[])if(a.type==='url_citation')add(a.url,a.title);
+  }
+ }
+ for(const candidate of payload?.candidates||[]){
+  for(const chunk of candidate.groundingMetadata?.groundingChunks||[])if(chunk.web?.uri)add(chunk.web.uri,chunk.web.title);
+  if(candidate.groundingMetadata?.webSearchQueries?.length){searched=true;queries.push(...candidate.groundingMetadata.webSearchQueries.map(String));}
+ }
+ if(paragraphs.length)return{text:paragraphs.join('\n\n'),sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
+ if(typeof payload?.output_text==='string'&&payload.output_text.trim())return{text:payload.output_text.trim(),sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
+ for(const output of payload?.outputs||[]){
+  if(typeof output.text==='string'&&output.text.trim())return{text:output.text.trim(),sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
+  for(const item of output.content||[])if(typeof item.text==='string'&&item.text.trim())return{text:item.text.trim(),sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
+ }
+ const text=(payload?.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').filter(Boolean).join('\n').trim();
+ return{text,sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
+}
+async function callGeminiModel(question,secret,model){
+ const search=shouldSearchWeb(question),input=geminiPrompt(question);
+ const common={method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret}};
+ const interactionBody=tools=>({model,input,system_instruction:dolphinSystemInstruction(),store:false,generation_config:{max_output_tokens:3500,temperature:.16,thinking_level:'high'},...(tools.length?{tools:tools.map(type=>type==='google_search'?GOOGLE_SEARCH_TOOL:URL_CONTEXT_TOOL)}:{})});
+ const compatibleBody=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:{maxOutputTokens:3500,temperature:.16},...(withSearch?{tools:[{googleSearch:{}}]}:{})});
+ let response;
+ if(search){
+  response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search','url_context']))});
+  if(!response.ok&&[400,403].includes(response.status))response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search']))});
+ }else{
+  response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody([]))});
+ }
+ if([400,404,405].includes(response.status)){
+  response=await fetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(search))});
+  if(!response.ok&&search&&[400,403,429].includes(response.status))response=await fetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(false))});
+ }
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;throw err;}
+ const result=providerAnswer(payload);
+ if(!result.text)throw new Error('Gemini chưa trả về nội dung phân tích.');
+ return{answer:result.text,provider:'Gemini',model,sourceMode:result.searched?'NATIVE_WEB_SEARCH':'FINQUERY_GROUNDED',sources:result.sources,queries:result.queries};
+}
+async function callLLM(question){
+ const secret=sessionSecret();
+ if(!secret){const err=new Error('Dolphin chưa kết nối Gemini.');err.code='NO_GEMINI_KEY';throw err;}
+ if(!state.modelCandidates.length)await validateGemini(secret);
+ const candidates=[...new Set([state.model,...state.modelCandidates].filter(Boolean))].slice(0,3);
+ let lastError;
+ for(const model of candidates){
+  state.model=model;
+  try{return await callGeminiModel(question,secret,model);}
+  catch(error){lastError=error;if(![404,429,500,502,503,504].includes(Number(error.status)))break;}
+ }
+ throw lastError||new Error('Gemini tạm thời chưa phản hồi.');
+}
 function llmHTML(answer,meta={}){
  const lines=String(answer||'').trim().split(/\n/),blocks=[];let bullets=[];
- const flush=()=>{if(!bullets.length)return;blocks.push('<div class="research-case">'+bullets.map(x=>'<p>• '+esc(x)+'</p>').join('')+'</div>');bullets=[];};
- for(const rawLine of lines){const line=rawLine.trim();if(!line){flush();continue;}const h=line.match(/^#{1,4}\s+(.+)$/);if(h){flush();blocks.push('<h4>'+esc(h[1])+'</h4>');continue;}const b=line.match(/^[-*]\s+(.+)$/);if(b){bullets.push(b[1]);continue;}flush();blocks.push('<p>'+esc(line.replace(/\*\*/g,''))+'</p>');}
+ const flush=()=>{if(!bullets.length)return;blocks.push('<div class="research-case">'+bullets.map(x=>'<p>• '+esc(x.replace(/\*\*/g,''))+'</p>').join('')+'</div>');bullets=[];};
+ for(const rawLine of lines){const line=rawLine.trim();if(!line){flush();continue;}const h=line.match(/^#{1,4}\s+(.+)$/);if(h){flush();blocks.push('<h4>'+esc(h[1].replace(/\*\*/g,''))+'</h4>');continue;}const b=line.match(/^[-*]\s+(.+)$/);if(b){bullets.push(b[1]);continue;}flush();blocks.push('<p>'+esc(line.replace(/\*\*/g,''))+'</p>');}
  flush();
- const provider=[meta.provider,meta.model].filter(Boolean).join(' · '),mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'LLM + tìm kiếm web':meta.sourceMode?'LLM + dữ liệu đã cung cấp':'LLM + FinQuery';
- return '<section class="analysis-block"><h4>Dolphin AI · phân tích có dữ liệu neo</h4><div class="analysis-narrative">'+blocks.join('')+'</div><small>'+esc([provider,mode].filter(Boolean).join(' · '))+'</small></section>';
+ const provider=[meta.provider,meta.model].filter(Boolean).join(' · '),mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'Gemini + Google Search':'Gemini + FinQuery';
+ const sources=(meta.sources||[]).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||url)+'</a>':'';}).filter(Boolean);
+ return '<section class="analysis-block"><h4>Dolphin AI · phân tích có dữ liệu neo</h4><div class="analysis-narrative">'+blocks.join('')+'</div>'+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc([provider,mode].filter(Boolean).join(' · '))+'</small></section>';
 }
 function addUser(text){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message user';a.innerHTML='<strong>Câu hỏi</strong><p>'+esc(text)+'</p>';box.append(a);box.scrollTop=box.scrollHeight;}
 function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);box.scrollTop=box.scrollHeight;return a;}
-function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>Dolphin đang đọc dữ liệu FinQuery và đối chiếu câu hỏi…</p></div>'});}
-function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');if(fab)fab.setAttribute('aria-expanded','true');setTimeout(()=>$('research-ai-question')?.focus(),80);}
-function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab)fab.setAttribute('aria-expanded','false');}
-async function callLLM(question){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
- try{
-  const response=await fetch(AI_ENDPOINT,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:buildLLMContext(question),history:state.history.slice(-8),sources:sourcesForLLM()}),signal:controller.signal});
-  const payload=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(payload.message||payload.error||('AI_HTTP_'+response.status));
-  if(!payload.answer)throw new Error('AI_EMPTY_RESPONSE');
-  return payload;
- }finally{clearTimeout(timer);}
+function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>Dolphin đang đọc FinQuery'+(shouldSearchWeb(state.lastQuestion||'')?' và đối chiếu Google Search':'')+'…</p></div>'});}
+function mountGeminiUI(){
+ const drawer=$('research-ai');if(!drawer||$('dolphin-gemini-connect'))return;
+ const box=document.createElement('div');box.id='dolphin-gemini-connect';box.style.cssText='margin:10px 14px;padding:10px 12px;border:1px solid #dce5f4;border-radius:14px;background:#f8fafc;display:grid;gap:8px';
+ box.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><strong style="display:block">Gemini trực tiếp</strong><small id="dolphin-gemini-status" style="color:#64748b">Đang kiểm tra kết nối…</small></div><button id="dolphin-gemini-disconnect" type="button" style="display:none;border:1px solid #d7e0ef;background:#fff;border-radius:10px;padding:6px 9px;cursor:pointer">Ngắt</button></div><div id="dolphin-gemini-form" style="display:flex;gap:7px"><input id="dolphin-gemini-key" type="password" autocomplete="off" placeholder="Nhập Google Gemini API key" style="min-width:0;flex:1;border:1px solid #ccd7e8;border-radius:10px;padding:8px 10px"><button id="dolphin-gemini-save" type="button" style="border:0;border-radius:10px;background:#173b78;color:#fff;padding:8px 12px;font-weight:700;cursor:pointer">Kết nối</button></div><small id="dolphin-gemini-note" style="color:#64748b">Khóa chỉ giữ trong sessionStorage của trình duyệt; không ghi vào GitHub.</small>';
+ const prompts=drawer.querySelector('.research-ai-prompts');drawer.insertBefore(box,prompts||drawer.firstChild);
+ $('dolphin-gemini-save')?.addEventListener('click',connectGeminiFromUI);
+ $('dolphin-gemini-key')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();connectGeminiFromUI();}});
+ $('dolphin-gemini-disconnect')?.addEventListener('click',()=>{forgetSession();renderGeminiStatus();});
+ renderGeminiStatus();
 }
+function renderGeminiStatus(message=''){
+ const secret=sessionSecret(),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
+ if(status)status.textContent=message||(secret?(state.model?'Đã kết nối · '+state.model:'Đã có khóa phiên · sẽ xác minh khi hỏi'):'Chưa kết nối · Dolphin vẫn dùng FinQuery cục bộ');
+ if(form)form.style.display=secret?'none':'flex';
+ if(disconnect)disconnect.style.display=secret?'inline-block':'none';
+ if(note)note.textContent=secret?'Gemini chạy trực tiếp từ trình duyệt trên dữ liệu FinQuery đang mở.':'Khóa chỉ giữ trong sessionStorage của trình duyệt; không ghi vào GitHub.';
+}
+async function connectGeminiFromUI(){
+ const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-save'),secret=String(input?.value||'').trim();if(!secret)return;
+ if(button)button.disabled=true;renderGeminiStatus('Đang xác minh trực tiếp với Google Gemini…');
+ try{rememberSession(secret);const model=await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Đã kết nối · '+model);}
+ catch(error){forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}
+ finally{if(button)button.disabled=false;}
+}
+async function refreshGeminiSession(){
+ mountGeminiUI();const secret=sessionSecret();if(!secret)return;
+ try{const model=await validateGemini(secret);renderGeminiStatus('Đã kết nối · '+model);}
+ catch(error){renderGeminiStatus(error?.message||'Khóa phiên cần được kiểm tra lại.');}
+}
+function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.hidden=false;drawer.classList.add('open');mountGeminiUI();if(fab)fab.setAttribute('aria-expanded','true');setTimeout(()=>$('research-ai-question')?.focus(),80);}
+function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab');if(!drawer)return;drawer.classList.remove('open');drawer.hidden=true;if(fab)fab.setAttribute('aria-expanded','false');}
 async function ask(question){
- const q=String(question||'').trim();if(!q||state.busy)return;openDrawer();addUser(q);state.busy=true;
+ const q=String(question||'').trim();if(!q||state.busy)return;state.lastQuestion=q;openDrawer();addUser(q);state.busy=true;
  const send=$('research-ai-send');if(send)send.disabled=true;const waiting=addThinking();
  try{
   const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);
+  renderGeminiStatus();
  }catch(error){
-  waiting?.remove();const local=analyze(q);local.html='<div class="analysis-empty">LLM tạm chưa khả dụng; Dolphin đang dùng engine FinQuery cục bộ nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
+  waiting?.remove();const local=analyze(q),reason=error?.code==='NO_GEMINI_KEY'?'Chưa kết nối Gemini; ':'Gemini tạm chưa phản hồi; ';
+  local.html='<div class="analysis-empty">'+esc(reason)+'Dolphin đang dùng engine FinQuery cục bộ, nên số liệu và phép tính vẫn lấy từ dữ liệu hiện có.</div>'+local.html;addAnalysis(local);
+  if(error?.message&&error?.code!=='NO_GEMINI_KEY')renderGeminiStatus(error.message);
  }finally{state.busy=false;if(send)send.disabled=false;}
 }
-function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`LLM suy luận trên BCTC, giá, kỹ thuật và tin thị trường đã neo dữ liệu cho ${state.symbol||'VN100'}; tự fallback về FinQuery cục bộ khi cần.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
-window.FinQueryAI={sync,ask,analyze,open:openDrawer,close:closeDrawer};
+function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),sub=$('research-ai-subtitle'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(sub)sub.textContent=`Gemini suy luận trực tiếp trên BCTC, giá, kỹ thuật và tin đã neo dữ liệu cho ${state.symbol||'VN100'}; FinQuery cục bộ luôn sẵn sàng khi Gemini không kết nối.`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
+window.FinQueryAI={sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},geminiStatus:()=>({connected:Boolean(sessionSecret()),model:state.model||null})};
 const form=$('research-ai-form'),input=$('research-ai-question');form?.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(q){input.value='';ask(q);}});document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'')));
 $('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('research-ai')?.hidden)closeDrawer();});
-sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');
+sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');mountGeminiUI();void refreshGeminiSession();
 })();</script></body></html>
 
 
