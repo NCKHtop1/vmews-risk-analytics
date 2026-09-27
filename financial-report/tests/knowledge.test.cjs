@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+global.window=globalThis;
+require('../frontend/knowledge-base.js');
+const K=globalThis.FinQueryKnowledge;
+assert.ok(K,'knowledge base should load');
+assert.equal(K.find('ROA là gì?').id,'roa');
+assert.equal(K.find('asset turnover là gì?').id,'assetTurnover');
+assert.equal(K.find('vong quay hang ton kho').id,'inventoryTurnover');
+assert.equal(K.find('interst coverage').id,'interestCoverage');
+assert.equal(K.find('willams r').id,'willr');
+assert.equal(K.find('beta co phieu').id,'beta');
+assert.equal(K.find('NIM ngân hàng').id,'nim');
+assert.equal(K.find('nợ xấu NPL').id,'npl');
+assert.ok(K.search('gia tri doanh nghiep ev ebitda',3).some(x=>x.c.id==='evEbitda'));
+assert.match(K.explainLabel('Thuế thu nhập hoãn lại'),/khác với thời điểm tính thuế/i);
+assert.match(K.explainLabel('Khấu hao lũy kế'),/khấu hao/i);
+assert.match(K.explainLabel('Cho vay khách hàng'),/dư nợ tín dụng/i);
+console.log('knowledge-base tests passed');
