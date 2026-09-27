@@ -53,7 +53,7 @@ class MarketTests(unittest.TestCase):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
         self.assertIn("cron: '17 0-10/2 * * 1-5'",flow)
-        self.assertIn('financial-insights-data-publisher',flow)
+        self.assertIn('financial-insights-data-publisher-v2',flow)
         self.assertIn('refresh_events.py',flow)
         self.assertIn('event-status.json',flow)
         self.assertIn('Refresh investment insights',pages)
@@ -165,7 +165,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn("compactExpanded:false",insights)
         self.assertIn("researchExpanded:false",insights)
         self.assertIn("eventExpanded:false",insights)
-        self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",insights)
+        self.assertIn("if(!state.compactExpanded)",insights)
+        self.assertIn("insight-summary-toggle",insights)
+        self.assertIn("Sự kiện doanh nghiệp",insights)
+        self.assertIn("Báo cáo CTCK",insights)
         self.assertIn("reportPreview=shownReports.slice(0,state.researchExpanded?shownReports.length:4)",insights)
         self.assertIn("eventPreview=shownEvents.slice(0,state.eventExpanded?shownEvents.length:6)",insights)
         self.assertIn("data-insight-expand",insights)
@@ -175,6 +178,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("state.researchExpanded=false;renderDashboard()",insights)
         self.assertIn("state.eventExpanded=false;renderDashboard()",insights)
         self.assertIn(".insight-more-toggle",css)
+        self.assertIn(".insight-summary-toggle",css)
         self.assertIn(".idea-more-toggle",css)
 
     def test_research_v7_registry_has_broader_broker_coverage_and_finlens(self):
@@ -220,6 +224,47 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(cursor,0)
 
 
+    def test_research_v71_registry_has_public_per_symbol_indexes(self):
+        cfg=json.loads((ROOT/'config/research_sources.json').read_text())
+        rows={x['code']:x for x in cfg['sources'] if x.get('enabled')}
+        self.assertGreaterEqual(len(rows),23)
+        self.assertEqual(rows['SMARTCHART']['adapter'],'smartchart_symbol')
+        self.assertEqual(rows['24HMONEY']['adapter'],'money24_symbol')
+        self.assertIn('{symbol}',rows['SMARTCHART']['urlTemplate'])
+        self.assertIn('{symbol}',rows['24HMONEY']['urlTemplate'])
+
+    def test_research_v71_parses_smartchart_and_24hmoney_metadata(self):
+        smart='Báo cáo mới HPG: Khuyến nghị MUA với giá mục tiêu 26,900 đồng/cổ phiếu DSC · 2026-08-27 HPG: Khuyến nghị MUA với giá mục tiêu 25,000 đồng/cổ phiếu VietinbankSC · 2026-08-26'
+        rows=im.parse_smartchart_symbol(smart,'HPG','https://smartchart.vn/bao-cao/HPG')
+        self.assertEqual(len(rows),2)
+        dsc=next(x for x in rows if x['broker']=='DSC')
+        self.assertEqual(dsc['targetPrice'],26900)
+        self.assertEqual(dsc['recommendation'],'MUA')
+        self.assertEqual(dsc['publishedAt'],'2026-08-27')
+        self.assertEqual(dsc['dataProvider'],'SMARTCHART')
+        self.assertIn('#finquery-',dsc['sourceUrl'])
+        money='HPG: Khuyến nghị MUA với giá mục tiêu 32,700 đồng/cổ phiếu Nguồn: BSC Ngày phát hành: 20/08/2026 Tải về HPG: Báo cáo cập nhật KQKD Q2/2026 Nguồn: NHSV Ngày phát hành: 13/08/2026 Tải về'
+        rows=im.parse_24hmoney_symbol(money,'HPG','https://24hmoney.vn/bao-cao-phan-tich?k=HPG')
+        self.assertEqual(len(rows),2)
+        bsc=next(x for x in rows if x['broker']=='BSC')
+        self.assertEqual(bsc['targetPrice'],32700)
+        self.assertEqual(bsc['publishedAt'],'2026-08-20')
+        self.assertEqual(bsc['dataProvider'],'24HMONEY')
+
+    def test_research_v71_workflow_prioritizes_user_visible_symbols(self):
+        flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
+        self.assertIn("PUBLIC_AGGREGATOR_SYMBOL_BUDGET: '30'",flow)
+        self.assertIn("RESEARCH_PRIORITY_SYMBOLS: 'MBB,HPG,FPT,VCB,VIC'",flow)
+        self.assertIn("EVENT_FETCH_WORKERS: '12'",flow)
+        event_script=(ROOT/'scripts/refresh_events.py').read_text()
+        self.assertIn('ThreadPoolExecutor',event_script)
+        self.assertIn("EVENT_FETCH_WORKERS",event_script)
+        script=(ROOT/'scripts/refresh_insights.py').read_text()
+        self.assertIn("aggregatorCursors",script)
+        self.assertIn("discover_public_aggregator",script)
+        self.assertIn("dataProvider':provider",script)
+
+
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
         chart=(ROOT/'frontend/chart-engine.js').read_text()
         css=(ROOT/'frontend/market.css').read_text()
@@ -233,7 +278,7 @@ class MarketTests(unittest.TestCase):
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
         insights=(ROOT/'frontend/insights.js').read_text()
         self.assertIn("cron: '17 0-10/2 * * 1-5'",flow)
-        self.assertIn('financial-insights-data-publisher',flow)
+        self.assertIn('financial-insights-data-publisher-v2',flow)
         self.assertIn('refresh_insights.py',flow)
         self.assertIn('insights-status.json',flow)
         self.assertIn("read('insights-status.json').catch(()=>null)",insights)
@@ -253,7 +298,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('data/corporate-events.json',flow)
         self.assertIn('data/insights-status.json',flow)
         self.assertIn('data/event-status.json',flow)
-        self.assertIn('group: financial-insights-data-publisher',flow)
+        self.assertIn('group: financial-insights-data-publisher-v2',flow)
         self.assertIn('name: Manual corporate event refresh',manual)
         self.assertNotIn('schedule:',manual)
         self.assertNotIn('refresh_insights.py',financial)

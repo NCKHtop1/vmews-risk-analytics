@@ -99,6 +99,10 @@ def parse_date(text):
         if m:
             try:return datetime.strptime(m.group(1).replace('-','/'),'%d/%m/%Y').date().isoformat()
             except ValueError:pass
+    iso=re.search(r'\b(20\d{2}-\d{2}-\d{2})\b',value)
+    if iso:
+        try:return datetime.strptime(iso.group(1),'%Y-%m-%d').date().isoformat()
+        except ValueError:pass
     m=re.search(r'\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(20\d{2})\b',value,re.I)
     if m:
         try:return datetime(int(m.group(3)),MONTHS[m.group(2)[:3].lower()],int(m.group(1))).date().isoformat()
@@ -186,7 +190,11 @@ BROKER_ALIASES={
     'VIET DRAGON SECURITIES':'VDSC','RONG VIET SECURITIES':'VDSC','VDSC':'VDSC',
     'MIRAE ASSET':'MIRAE','MIRAE ASSET SECURITIES VIETNAM':'MIRAE',
     'YUANTA SECURITIES VIETNAM':'YUANTA','YUANTA':'YUANTA','KIS VIETNAM':'KIS','KIS':'KIS',
-    'SAIGON-HANOI SECURITIES':'SHS','SHS':'SHS','VIETCOMBANK SECURITIES':'VCBS','VCBS':'VCBS'
+    'SAIGON-HANOI SECURITIES':'SHS','SHS':'SHS','VIETCOMBANK SECURITIES':'VCBS','VCBS':'VCBS',
+    'VIETINBANKSC':'CTS','VIETINBANK SC':'CTS','VNDS':'VNDIRECT','VND':'VNDIRECT',
+    'MAS':'MIRAE','YSVN':'YUANTA','DSC':'DSC','KAFI':'KAFI','NHSV':'NHSV','BETA':'BETA',
+    'SSV':'SSV','VPX':'VPX','EVS':'EVS','KAFI SECURITIES':'KAFI','AGRISECO':'AGRISECO',
+    'BVSC':'BVSC','SBBS':'SBBS','VPBS':'VPBS','KAFI':'KAFI'
 }
 
 def parse_sse_or_json(body):
@@ -327,6 +335,77 @@ def discover_finlens(source,universe,prior_status):
     if errors:row['errors']=errors[:4]
     return reports,row,(cursor+budget)%len(symbols)
 
+def aggregated_report(symbol,broker_name,published,title,page_url,provider):
+    broker=normalize_broker(broker_name)
+    title=clean(title)[:240]
+    published=parse_date(published)
+    if not title or not published:return None
+    rating=parse_rating(title);target=parse_target(title,symbol)
+    fingerprint=hashlib.sha1((broker+'|'+symbol+'|'+published+'|'+title).encode('utf-8')).hexdigest()[:12]
+    source_url=page_url+('#' if '#' not in page_url else '&')+'finquery-'+fingerprint
+    result={
+      'id':stable_id(broker,symbol,published,source_url,title),'symbol':symbol,'broker':broker,
+      'brokerName':clean(broker_name or broker),'publishedAt':published,'title':title,
+      'currency':'VND','sourceUrl':source_url,'dataProvider':provider
+    }
+    if rating:result['recommendation']=rating
+    if target:result['targetPrice']=target
+    bits=[]
+    if rating:bits.append('khuyến nghị '+rating)
+    if target:bits.append('giá mục tiêu '+f'{target:,}'.replace(',','.')+' đồng/cp')
+    result['summary']=(broker+' có báo cáo '+symbol+' ngày '+datetime.fromisoformat(published).strftime('%d/%m/%Y')+
+      ((' với '+', '.join(bits))+'.' if bits else '.')+
+      ' FinQuery lấy metadata từ chỉ mục công khai '+provider+' và giữ nguyên CTCK phát hành.')
+    return result
+
+def parse_smartchart_symbol(raw,symbol,page_url):
+    text=page_text(raw);rows=[];seen=set()
+    pattern=r'(?<![A-Z0-9])'+re.escape(symbol)+r'\s*:\s*(.{5,260}?)\s+([A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9 .&_-]{1,60})\s+·\s+(20\d{2}-\d{2}-\d{2})'
+    for m in re.finditer(pattern,text,re.I):
+        title,broker,day=m.groups()
+        # Stop titles from spanning across the preceding/next item.
+        title=clean(title)
+        if symbol+':' in title.upper():title=title.upper().split(symbol+':')[-1].strip()
+        report=aggregated_report(symbol,broker,day,symbol+': '+title,page_url,'SMARTCHART')
+        if report and report['id'] not in seen:seen.add(report['id']);rows.append(report)
+    return rows
+
+def parse_24hmoney_symbol(raw,symbol,page_url):
+    text=page_text(raw);rows=[];seen=set()
+    pattern=r'(?<![A-Z0-9])'+re.escape(symbol)+r'\s*:\s*(.{5,320}?)\s+Nguồn\s*:\s*(.{2,90}?)\s+Ngày phát hành\s*:\s*(\d{1,2}/\d{1,2}/20\d{2})'
+    for m in re.finditer(pattern,text,re.I):
+        title,broker,day=m.groups()
+        report=aggregated_report(symbol,broker,day,symbol+': '+clean(title),page_url,'24HMONEY')
+        if report and report['id'] not in seen:seen.add(report['id']);rows.append(report)
+    return rows
+
+def discover_public_aggregator(source,universe,prior_status):
+    symbols=sorted(universe)
+    code=source['code'];adapter=source['adapter'];template=source['urlTemplate']
+    cursors=dict(prior_status.get('aggregatorCursors') or {})
+    cursor=int(cursors.get(code) or 0)%max(1,len(symbols))
+    budget=max(1,min(len(symbols),int(os.environ.get('PUBLIC_AGGREGATOR_SYMBOL_BUDGET','30'))))
+    priority=[x.strip().upper() for x in os.environ.get('RESEARCH_PRIORITY_SYMBOLS','MBB,HPG,FPT,VCB,VIC').split(',') if x.strip().upper() in universe]
+    batch=[]
+    for symbol in priority+[symbols[(cursor+i)%len(symbols)] for i in range(budget)]:
+        if symbol not in batch:batch.append(symbol)
+    reports=[];errors=[];reachable=0
+    for symbol in batch:
+        page_url=template.replace('{symbol}',symbol)
+        try:
+            raw,_,_=fetch(page_url,timeout=14);reachable+=1
+            if adapter=='smartchart_symbol':rows=parse_smartchart_symbol(raw,symbol,page_url)
+            else:rows=parse_24hmoney_symbol(raw,symbol,page_url)
+            reports.extend(rows)
+        except Exception as exc:
+            errors.append(symbol+': '+str(exc)[:90])
+    next_cursor=(cursor+budget)%len(symbols) if symbols else 0
+    row={'code':code,'name':source.get('name',code),'url':template,'mode':'public_aggregator','adapter':adapter,
+         'checkedAt':now(),'status':'ok' if reports else ('reachable_no_reports' if reachable else 'error'),
+         'discovered':len(reports),'parsed':len(reports),'symbolsAttempted':len(batch),'symbolsReachable':reachable}
+    if errors:row['errors']=errors[:5]
+    return reports,row,next_cursor
+
 def discover_fpts(raw,source,universe):
     rows=discover_generic(raw,source,universe);text=page_text(raw)
     for m in re.finditer(r'(\d{1,2}/\d{1,2}/20\d{2})\s+([A-Z]{3})\s+(.{8,140}?)(?=\d{1,2}/\d{1,2}/20\d{2}|$)',text):
@@ -443,7 +522,7 @@ def discover_source(source,raw,universe):
     if adapter=='vietcap_listing':return discover_vietcap(raw,source,universe)
     if adapter=='acbs_listing':return discover_acbs(raw,source,universe)
     if adapter=='text_listing':return discover_text_listing(raw,source,universe)
-    if adapter in ('health_only','finlens_mcp'):return []
+    if adapter in ('health_only','finlens_mcp','smartchart_symbol','money24_symbol'):return []
     return discover_generic(raw,source,universe)
 
 def refresh(output,max_detail=120):
@@ -461,13 +540,19 @@ def refresh(output,max_detail=120):
     discovered=[];health=[];budget=max(1,max_detail)
     prior_status=read(output/'insights-status.json',{})
     finlens_cursor=int(prior_status.get('finlensCursor') or 0)
+    aggregator_cursors=dict(prior_status.get('aggregatorCursors') or {})
     for source in load_sources():
-        row={'code':source['code'],'name':source.get('name',source['code']),'url':source['url'],'mode':source.get('mode',''),'adapter':source.get('adapter',''),'checkedAt':now(),'status':'pending','discovered':0,'parsed':0}
+        source_url=source.get('url') or source.get('urlTemplate') or ''
+        row={'code':source['code'],'name':source.get('name',source['code']),'url':source_url,'mode':source.get('mode',''),'adapter':source.get('adapter',''),'checkedAt':now(),'status':'pending','discovered':0,'parsed':0}
         if source.get('adapter')=='finlens_mcp':
             rows,row,finlens_cursor=discover_finlens(source,universe,prior_status)
             discovered.extend(rows);health.append(row);continue
+        if source.get('adapter') in ('smartchart_symbol','money24_symbol'):
+            rows,row,next_cursor=discover_public_aggregator(source,universe,prior_status)
+            aggregator_cursors[source['code']]=next_cursor
+            discovered.extend(rows);health.append(row);continue
         try:
-            raw,status,ctype=fetch(source['url']);row['httpStatus']=status
+            raw,status,ctype=fetch(source_url);row['httpStatus']=status
             seeds=discover_source(source,raw,universe);row['discovered']=len(seeds)
             if source.get('adapter')=='health_only':
                 row['status']='reachable';health.append(row);continue
@@ -496,7 +581,7 @@ def refresh(output,max_detail=120):
     }
     write(research_path,value);events['updatedAt']=events.get('updatedAt') or now();write(events_path,events)
     ok=sum(1 for x in health if x['status'] in ('ok','reachable','reachable_no_reports','reachable_no_parse'))
-    status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':ok,'reportsDiscoveredThisRun':len(discovered),'storedReports':len(reports),'corporateEvents':len(events.get('events') or []),'finlensCursor':finlens_cursor,'sources':health}
+    status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':ok,'reportsDiscoveredThisRun':len(discovered),'storedReports':len(reports),'corporateEvents':len(events.get('events') or []),'finlensCursor':finlens_cursor,'aggregatorCursors':aggregator_cursors,'sources':health}
     write(output/'insights-status.json',status)
     print(json.dumps(status,ensure_ascii=False))
     return status

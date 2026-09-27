@@ -4,7 +4,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: financial-insights-data-publisher
+  group: financial-insights-data-publisher-v2
   cancel-in-progress: false
 jobs:
   refresh:

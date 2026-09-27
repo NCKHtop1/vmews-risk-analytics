@@ -5,7 +5,8 @@ structured event metadata plus source URLs. It does not copy full disclosure
 documents. HNX issuer pages are parsed directly; HOSE/VSDC are health-checked
 until a stable public listing adapter is available.
 """
-import argparse, hashlib, html, json, re
+import argparse, hashlib, html, json, os, re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -181,19 +182,27 @@ def refresh(output):
                 _,status,_=fetch(source['url']);base['httpStatus']=status;base['reachable']=1;base['status']='reachable'
             except Exception as exc:base['status']='error';base['error']=str(exc)[:180]
             health.append(base);continue
-        errors=0
         exchange_by_symbol={str(x.get('symbol','')).upper():str(x.get('exchange','HOSE')).lower() for x in companies}
-        for symbol in symbols:
-            url=str(source.get('urlTemplate','')).replace('{symbol}',symbol).replace('{exchange}',exchange_by_symbol.get(symbol,'hose'))
+        tasks=[(symbol,str(source.get('urlTemplate','')).replace('{symbol}',symbol).replace('{exchange}',exchange_by_symbol.get(symbol,'hose'))) for symbol in symbols]
+        def collect_one(task):
+            symbol,url=task
             try:
-                raw,status,_=fetch(url);base['reachable']+=1
+                raw,_,_=fetch(url,timeout=12)
                 if source.get('kind')=='cafef_history':
                     rows=cafef_rows(raw,symbol,url)
                 else:
                     rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
-                discovered.extend(rows);base['parsed']+=len(rows)
+                return rows,True
             except Exception:
-                errors+=1
+                return [],False
+        workers=max(2,min(20,int(os.environ.get('EVENT_FETCH_WORKERS','12'))))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            results=list(pool.map(collect_one,tasks))
+        errors=0
+        for rows,reachable in results:
+            if reachable:base['reachable']+=1
+            else:errors+=1
+            discovered.extend(rows);base['parsed']+=len(rows)
         base['status']='ok' if base['parsed'] else ('reachable_no_events' if base['reachable'] else 'error')
         if errors:base['errors']=errors
         health.append(base)

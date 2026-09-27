@@ -221,3 +221,7 @@ body.dolphin-modal-open{overflow:hidden}
 .insight-more-toggle{grid-column:1/-1}.idea-more-toggle{width:100%;margin-top:2px}.idea-more-toggle.wide{grid-column:1/-1}
 .insight-more-toggle:hover,.idea-more-toggle:hover{background:#eef2ff;border-color:#aab9ec}.insight-more-toggle span,.idea-more-toggle span{font-size:13px;margin-left:4px;vertical-align:-1px}
 .idea-report-list,.idea-event-list{align-content:start}
+
+.insight-summary-toggle{grid-column:1/-1;width:100%;border:1px solid #dbe3f0;background:linear-gradient(180deg,#fff,#f8faff);border-radius:12px;padding:13px 15px;display:grid;grid-template-columns:1fr 1fr auto;gap:14px;text-align:left;align-items:center;cursor:pointer}
+.insight-summary-toggle:hover{border-color:#aebcef;background:#f5f7ff}.insight-summary-toggle span{min-width:0}.insight-summary-toggle b{display:block;font-size:10px;color:#334963}.insight-summary-toggle small{display:block;margin-top:4px;font-size:8px;color:#8793a5}.insight-summary-toggle i{font-style:normal;font-size:18px;color:#6478cf}
+@media(max-width:700px){.insight-summary-toggle{grid-template-columns:1fr auto}.insight-summary-toggle span:nth-child(2){grid-column:1/2}}
