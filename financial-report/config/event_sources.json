@@ -32,6 +32,14 @@
       "url": "https://www.hsx.vn/",
       "priority": 1,
       "enabled": true
+    },
+    {
+      "code": "CAFEF_EVENTS",
+      "name": "CafeF - lịch sự kiện cổ phiếu",
+      "kind": "cafef_history",
+      "urlTemplate": "https://cafef.vn/du-lieu/DuLieu.aspx?cat_id=1009&san={exchange}&symbol={symbol}",
+      "priority": 3,
+      "enabled": true
     }
   ],
   "eventTypes": [
