@@ -114,7 +114,38 @@ def hnx_rows(raw,symbol,source_url,publisher):
         })
     return rows
 
-def cafef_rows(raw,symbol,source_url):
+def parse_24hmoney_events(raw,symbol,source_url):
+    text=page_text(raw)
+    rows=[];seen=set()
+    # The public event timeline uses: category + date + ticker + title.
+    pattern=r'((?:Sự kiện|Lịch chia cổ tức|Báo cáo tài chính|Kế hoạch|Phát hành)[^\d]{0,24})(20\d{2}-\d{2}-\d{2})\s+'+re.escape(symbol)+r'\s+(.{5,360}?)(?=(?:\s+(?:Sự kiện|Lịch chia cổ tức|Báo cáo tài chính|Kế hoạch|Phát hành)\s+20\d{2}-\d{2}-\d{2}\s+'+re.escape(symbol)+r')|$)'
+    for m in re.finditer(pattern,text,re.I|re.S):
+        category,day,title=m.groups()
+        title=clean(title)
+        if not title:continue
+        etype=classify(title)
+        low=norm(title)
+        if 'bao cao tai chinh' in low or 'ket qua kinh doanh' in low:etype='earnings'
+        if 'lich chia co tuc' in norm(category):etype=etype if etype!='other' else 'cash_dividend'
+        details={'publishedAt':day}
+        ex=re.search(r'(?:GDKHQ|giao dịch không hưởng quyền)\s*[:]?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        if ex:details['exRightDate']=ex.group(1)
+        rec=re.search(r'(?:chốt danh sách|đăng ký cuối cùng)\s*[:]?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        if rec:details['recordDate']=rec.group(1)
+        pay=re.search(r'(?:ngày thực hiện|thời gian thực hiện|thanh toán)\s*[:]?\s*(20\d{2}-\d{2}-\d{2})',title,re.I)
+        if pay:details['paymentDate']=pay.group(1)
+        ratio=re.search(r'(?:tỷ lệ(?: thực hiện)?)\s*[:]?\s*([0-9.,:]+%?)',title,re.I)
+        if ratio:details['ratio']=ratio.group(1)
+        rid=stable_id(symbol,etype,day,title)
+        if rid in seen:continue
+        seen.add(rid)
+        rows.append({'id':rid,'symbol':symbol,'type':etype,'date':day,'title':title[:220],
+                     'summary':title[:340],'details':details,
+                     'source':{'publisher':'24HMoney','url':source_url},
+                     'fetchedAt':now(),'dataQuality':'aggregated'})
+    return rows
+
+
     text=page_text(raw)
     # Event history is rendered as date + one or more event descriptions until the next date.
     matches=list(re.finditer(r'\b(\d{2}/\d{2}/20\d{2})\s*:\s*',text))
@@ -175,45 +206,46 @@ def refresh(output):
     seed=read(ROOT/'data/corporate-events.json',{'events':[]})
     published=read(output/'corporate-events.json',{'events':[]})
     discovered=[];health=[]
-    for source in [x for x in config.get('sources',[]) if x.get('enabled')]:
+    sources=[x for x in config.get('sources',[]) if x.get('enabled')]
+    for source in sources:
         base={'code':source['code'],'name':source.get('name',source['code']),'checkedAt':now(),'kind':source.get('kind'),'status':'pending','parsed':0,'reachable':0}
         if source.get('kind')=='health':
             try:
-                _,status,_=fetch(source['url']);base['httpStatus']=status;base['reachable']=1;base['status']='reachable'
+                _,status,_=fetch(source['url'],timeout=8);base['httpStatus']=status;base['reachable']=1;base['status']='reachable'
             except Exception as exc:base['status']='error';base['error']=str(exc)[:180]
             health.append(base);continue
         exchange_by_symbol={str(x.get('symbol','')).upper():str(x.get('exchange','HOSE')).lower() for x in companies}
         tasks=[(symbol,str(source.get('urlTemplate','')).replace('{symbol}',symbol).replace('{exchange}',exchange_by_symbol.get(symbol,'hose'))) for symbol in symbols]
+        workers=max(6,min(18,int(os.environ.get('EVENT_FETCH_WORKERS','12'))))
         def collect_one(task):
             symbol,url=task
             try:
-                raw,_,_=fetch(url,timeout=12)
-                if source.get('kind')=='cafef_history':
-                    rows=cafef_rows(raw,symbol,url)
-                else:
-                    rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
+                raw,_,_=fetch(url,timeout=8)
+                if source.get('kind')=='cafef_history':rows=cafef_rows(raw,symbol,url)
+                elif source.get('kind')=='24hmoney_events':rows=parse_24hmoney_events(raw,symbol,url)
+                else:rows=hnx_rows(raw,symbol,url,source.get('name',source['code']))
                 return rows,True
             except Exception:
                 return [],False
-        workers=max(2,min(20,int(os.environ.get('EVENT_FETCH_WORKERS','12'))))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            results=list(pool.map(collect_one,tasks))
         errors=0
-        for rows,reachable in results:
-            if reachable:base['reachable']+=1
-            else:errors+=1
-            discovered.extend(rows);base['parsed']+=len(rows)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures=[pool.submit(collect_one,task) for task in tasks]
+            for future in as_completed(futures):
+                rows,reachable=future.result()
+                if reachable:base['reachable']+=1
+                else:errors+=1
+                discovered.extend(rows);base['parsed']+=len(rows)
         base['status']='ok' if base['parsed'] else ('reachable_no_events' if base['reachable'] else 'error')
         if errors:base['errors']=errors
         health.append(base)
     events=merge_events(seed.get('events') or [],published.get('events') or [],discovered)
-    payload={
-      'version':2,'updatedAt':now(),
-      'policy':'FinQuery stores source-linked corporate-event metadata; official exchange/depository/company sources are preferred.',
-      'events':events
-    }
+    payload={'version':2,'updatedAt':now(),
+      'policy':'FinQuery stores source-linked corporate-event metadata; official/depository/company sources are preferred, with 24HMoney used as a public discovery layer.',
+      'events':events}
     write(output/'corporate-events.json',payload)
-    status={'checkedAt':now(),'sourcesTotal':len(health),'sourcesReachable':sum(1 for x in health if x.get('reachable') or x.get('status')=='reachable'),'eventsDiscoveredThisRun':len(discovered),'storedEvents':len(events),'sources':health}
+    status={'checkedAt':now(),'sourcesTotal':len(health),
+      'sourcesReachable':sum(1 for x in health if x.get('reachable') or x.get('status')=='reachable'),
+      'eventsDiscoveredThisRun':len(discovered),'storedEvents':len(events),'sources':health}
     write(output/'event-status.json',status)
     print(json.dumps(status,ensure_ascii=False))
     return status
