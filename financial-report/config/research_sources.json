@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "code": "MBS",
+      "name": "MB Securities",
+      "url": "https://www.mbs.com.vn/bao-cao-phan-tich-co-phieu/",
+      "mode": "public_html",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "VIETCAP",
+      "name": "Vietcap Securities",
+      "url": "https://www.vietcap.com.vn/trung-tam-phan-tich",
+      "mode": "public_html",
+      "adapter": "vietcap_listing",
+      "enabled": true
+    },
+    {
+      "code": "FPTS",
+      "name": "FPT Securities",
+      "url": "https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169",
+      "mode": "public_html",
+      "adapter": "fpts_listing",
+      "enabled": true
+    },
+    {
+      "code": "ACBS",
+      "name": "ACB Securities",
+      "url": "https://acbs.com.vn/bao-cao",
+      "mode": "public_html",
+      "adapter": "acbs_listing",
+      "enabled": true
+    },
+    {
+      "code": "SHS",
+      "name": "Saigon-Hanoi Securities",
+      "url": "https://www.shs.com.vn/bao-cao-phan-tich",
+      "mode": "public_html",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "BSC",
+      "name": "BIDV Securities",
+      "url": "https://www.bsc.com.vn/bao-cao-phan-tich",
+      "mode": "public_html",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "VCBS",
+      "name": "Vietcombank Securities",
+      "url": "https://www.vcbs.com.vn/trung-tam-phan-tich/bao-cao-phan-tich",
+      "mode": "public_js",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "KBSV",
+      "name": "KB Securities Vietnam",
+      "url": "https://www.kbsec.com.vn/gp",
+      "mode": "public_html",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "MIRAE",
+      "name": "Mirae Asset Securities Vietnam",
+      "url": "https://masvn.com/",
+      "mode": "public_html",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "DSC",
+      "name": "DSC Securities",
+      "url": "https://www.dsc.com.vn/dich-vu/bao-cao-phan-tich",
+      "mode": "public_html",
+      "adapter": "generic_anchors",
+      "enabled": true
+    },
+    {
+      "code": "SSI",
+      "name": "SSI Research",
+      "url": "https://research.ssi.com.vn/",
+      "mode": "account_or_public_subset",
+      "adapter": "health_only",
+      "enabled": true
+    },
+    {
+      "code": "YUANTA",
+      "name": "Yuanta Securities Vietnam",
+      "url": "https://yuanta.com.vn/",
+      "mode": "public_or_leadform",
+      "adapter": "health_only",
+      "enabled": true
+    },
+    {
+      "code": "KIS",
+      "name": "KIS Vietnam",
+      "url": "https://kisvn.vn/",
+      "mode": "monitoring",
+      "adapter": "health_only",
+      "enabled": true
+    },
+    {
+      "code": "HSC",
+      "name": "Ho Chi Minh City Securities",
+      "url": "https://www.hsc.com.vn/",
+      "mode": "monitoring",
+      "adapter": "health_only",
+      "enabled": true
+    },
+    {
+      "code": "VNDIRECT",
+      "name": "VNDIRECT Research",
+      "url": "https://www.vndirect.com.vn/",
+      "mode": "monitoring",
+      "adapter": "health_only",
+      "enabled": true
+    }
+  ]
+}
