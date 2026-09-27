@@ -31,8 +31,8 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(cash['details']['recordDate'],'2026-01-14')
         self.assertEqual(cash['details']['payoutDate'],'2026-01-23')
         self.assertEqual(cash['dataQuality'],'official')
-        cafe='<div>17/06/2022: Cổ tức bằng Cổ phiếu, tỷ lệ 30% Cổ tức bằng Tiền, tỷ lệ 5% 31/05/2021: Cổ tức bằng Tiền, tỷ lệ 5%</div>'
-        rows=em.parse_24hmoney_events(cafe.replace('17/06/2022: ','Lịch chia cổ tức 17/06/2022 HPG '),'HPG','https://24hmoney.example/stock/HPG/events')
+        events='<div>Lịch chia cổ tức 17/06/2022 HPG Mã HPG trả cổ tức bằng cổ phiếu, tỉ lệ 0.30, ngày GDKHQ 2022-06-17, ngày thực hiện 2022-07-06</div><div>Lịch chia cổ tức 17/06/2022 HPG Mã HPG trả cổ tức bằng tiền, tỉ lệ 0.05 (500 đồng/cổ phiếu), ngày GDKHQ 2022-06-17, ngày thực hiện 2022-07-06</div>'
+        rows=em.parse_24hmoney_events(events,'HPG','https://24hmoney.example/stock/HPG/events')
         self.assertTrue(any(x['type']=='stock_dividend' and x['date']=='2022-06-17' for x in rows))
         self.assertTrue(any(x['type']=='cash_dividend' and x['date']=='2022-06-17' for x in rows))
         self.assertTrue(all(x['dataQuality']=='aggregated' for x in rows))
@@ -253,7 +253,6 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('FINLENS_MCP_TOKEN:',flow)
         self.assertNotIn('FINLENS_SYMBOL_BUDGET:',flow)
         self.assertIn("RESEARCH_DETAIL_BUDGET: '24'",flow)
-        self.assertIn('symbolsCovered',flow if False else insights)
         reports,status,cursor=im.discover_finlens({'name':'FinLens Research','url':'https://mcp.finlens.vn/mcp'}, {'HPG'}, {})
         finlens_cfg=next(x for x in json.loads((ROOT/'config/research_sources.json').read_text())['sources'] if x['code']=='FINLENS')
         self.assertFalse(finlens_cfg['enabled'])
@@ -331,9 +330,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn("discover_public_aggregator",script)
         self.assertIn("dataProvider':provider",script)
         self.assertIn("ThreadPoolExecutor",script)
-        self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",script=(ROOT/'frontend/insights.js').read_text())
-        self.assertIn('symbolsCovered',script)
-        self.assertIn("'symbolsTotal':len(universe)",script)
+        insights_js=(ROOT/'frontend/insights.js').read_text()
+        self.assertIn("compactLimit=state.compactExpanded?filtered.length:4",insights_js)
+        self.assertIn('symbolsCovered',insights_js)
+        self.assertIn("'symbolsTotal':len(universe)",(ROOT/'scripts/refresh_insights.py').read_text())
 
 
     def test_research_v5_markers_are_anchored_to_candles_not_bottom_legend(self):
