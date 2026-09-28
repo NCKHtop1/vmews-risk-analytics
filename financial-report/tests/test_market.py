@@ -45,6 +45,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn('green_credit',ids)
         self.assertIn('training_hours',ids)
         self.assertIn('women_workforce_pct',ids)
+        metric_by_id={x['metricId']:x for x in metrics}
+        self.assertEqual(metric_by_id['training_hours']['value'],1681691)
+        self.assertAlmostEqual(metric_by_id['women_workforce_pct']['value'],58.6)
+        self.assertEqual(metric_by_id['green_credit']['unit'],'billion VND')
         self.assertTrue(all(x['sourceUrl']=='https://example.com/vpb.pdf' for x in metrics))
         ratings=esm.extract_ratings(text,cfg['rating_patterns'],2024,'https://example.com/vpb.pdf','VPBank ESG 2024')
         self.assertTrue(any(x['provider']=="Moody's" and x['value']=='CIS-2' for x in ratings))
@@ -52,7 +56,7 @@ class MarketTests(unittest.TestCase):
         self.assertTrue(any(x['provider']=='WWF' for x in ratings))
 
     def test_corporate_esg_document_discovery_helpers_are_year_and_type_aware(self):
-        self.assertEqual(esm.extract_year('Sustainability Report 2025 published 2026'),2026)
+        self.assertEqual(esm.extract_year('Sustainability Report 2025 published 2026'),2025)
         self.assertEqual(esm.classify_document('Báo cáo phát triển bền vững 2025'),'sustainability_report')
         self.assertEqual(esm.classify_document('Green Bond Framework Second Party Opinion'),'sustainable_finance_assessment')
         self.assertTrue(esm.relevant('Báo cáo thường niên 2025',['annual report','báo cáo thường niên']))
@@ -61,12 +65,16 @@ class MarketTests(unittest.TestCase):
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
         self.assertIn('options: [all, prices, news, macro, esg, history, intraday]',flow)
-        self.assertIn("cron: '47 2,9 * * 1-5'",flow)
+        self.assertIn("cron: '47 9,14 * * 1-5'",flow)
         self.assertIn("cron: '47 2 * * 6'",flow)
         self.assertIn('pypdf==5.1.0',flow)
         self.assertIn('refresh_esg.py',flow)
         self.assertIn("mode=esg",flow)
+        self.assertIn("[esg-refresh]",flow)
+        self.assertIn("github.event.schedule == '47 9,14 * * 1-5'",flow)
         self.assertIn("'company-esg.json','esg-status.json'",flow)
+        pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
+        self.assertIn('rsync -a _market-data/market/ _site/financial-report/market/',pages)
 
     def test_events_v6_parses_hnx_and_cafef_history(self):
         hnx='<table><tr><td>Trả cổ tức bằng tiền</td><td>13/01/2026</td><td>14/01/2026</td><td>23/01/2026</td></tr><tr><td>Họp Đại hội cổ đông thường niên</td><td>18/03/2026</td><td>19/03/2026</td><td>17/04/2026</td></tr></table>'
@@ -1042,6 +1050,12 @@ class MarketTests(unittest.TestCase):
         self.assertIn('ds.metricTable?[first,state.metric]',macro)
         self.assertIn('World Bank Sovereign ESG',html)
         self.assertIn('WORLD_BANK_ESG_SOURCE', (ROOT/'scripts/refresh_market.py').read_text())
+        self.assertIn('company-esg.json',macro)
+        self.assertIn('corporateDataset',macro)
+        self.assertIn('macro-esg-assessments',html)
+        self.assertIn("finquery:symbol-change",(ROOT/'frontend/app.js').read_text())
+        self.assertIn("company_esg_",research)
+        self.assertIn("externalAssessments",research)
         build=(ROOT/'scripts/build_cdn.py').read_text()
         self.assertIn("(front / 'macro.js').read_text()",build)
         for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
