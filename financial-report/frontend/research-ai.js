@@ -1,6 +1,6 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const DOLPHIN_VERSION='DOLPHIN_V5';
+const DOLPHIN_VERSION='DOLPHIN_V6';
 const AI_MODE_KEY='finquery_dolphin_mode';
 const state={symbol:'',history:[],busy:false,directKey:'',model:'',modelCandidates:[],mode:'normal',lastQuestion:'',currentController:null,geminiReady:false,lastGeminiError:''};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -317,7 +317,8 @@ function analyze(question){
 
 const GOOGLE_AI_ORIGIN='https://generativelanguage.googleapis.com/v1beta';
 const GEMINI_SESSION_KEY='vmews_solution_ai_browser_session';
-const STABLE_MODEL_ORDER={normal:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'],deep:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite']};
+const STABLE_MODEL_ORDER={normal:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'],deep:['gemini-3.8-flash','gemini-3.5-flash-lite','gemini-3.7-flash','gemini-3.1-flash-lite','gemini-3.6-flash','gemini-3.5-flash']};
+const TRANSIENT_GEMINI_STATUS=new Set([408,429,500,502,503,504]);
 const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
 function restoreAIMode(){try{state.mode=localStorage.getItem(AI_MODE_KEY)==='deep'?'deep':'normal';}catch{state.mode='normal';}}
 function modeLabel(mode=state.mode){return mode==='deep'?'Phân tích sâu':'Nhanh & tiết kiệm';}
@@ -342,7 +343,7 @@ function modelPlan(mode=state.mode){
  const pool=[...new Set(state.modelCandidates||[])];
  const score=name=>{const stable=/preview|experimental|exp-/i.test(name)?0:10000,lite=/flash[-_.]?lite/i.test(name),fit=mode==='deep'?(lite?0:1000):(lite?1000:0);return stable+fit+modelVersionScore(name);};
  for(const candidate of pool.filter(x=>!plan.includes(x)).sort((a,b)=>score(b)-score(a)))plan.push(candidate);
- return plan.slice(0,4);
+ return plan.slice(0,6);
 }
 
 function sessionSecret(){
@@ -361,11 +362,13 @@ function providerMessage(status,details=''){
  const detail=String(details||'').replace(/\s+/g,' ').trim().slice(0,260);
  if(status===401)return'HTTP 401 · khóa Gemini không hợp lệ, hết hiệu lực hoặc không được chấp nhận'+(detail?' · '+detail:'');
  if(status===403)return'HTTP 403 · dự án/key không được phép generateContent'+(detail?' · '+detail:'');
- if(status===429)return'HTTP 429 · dự án Gemini đang chạm rate limit/quota'+(detail?' · '+detail:'');
+ if(status===429)return'HTTP 429 · Gemini đang chạm rate limit/quota';
  if(status===404)return'HTTP 404 · model Gemini không khả dụng với dự án hiện tại'+(detail?' · '+detail:'');
- if(status>=500)return'HTTP '+status+' · dịch vụ Gemini trả lỗi máy chủ'+(detail?' · '+detail:'');
+ if(status===503)return'HTTP 503 · Gemini đang quá tải tạm thời';
+ if(status>=500)return'HTTP '+status+' · dịch vụ Gemini tạm thời chưa sẵn sàng';
  return 'HTTP '+status+(detail?' · '+detail:'');
 }
+function transientGemini(status){return TRANSIENT_GEMINI_STATUS.has(Number(status));}
 async function geminiFetch(url,options={},timeoutMs=30000){
  const parent=options.signal,ctl=new AbortController();let timedOut=false;
  const onAbort=()=>ctl.abort();if(parent){if(parent.aborted)ctl.abort();else parent.addEventListener('abort',onAbort,{once:true});}
@@ -384,8 +387,32 @@ function availableModels(payload){
 async function geminiGenerate(secret,model,body,timeoutMs=30000){
  const response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},body:JSON.stringify(body),...(state.currentController?.signal?{signal:state.currentController.signal}:{})},timeoutMs);
  const payload=await response.json().catch(()=>({}));
- if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;err.model=model;throw err;}
+ if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;err.model=model;err.providerDetails=String(payload?.error?.message||'');throw err;}
  return payload;
+}
+function retryDelay(attempt){return Math.min(5000,700*(2**attempt))+Math.floor(Math.random()*300);}
+function waitGemini(ms){
+ const signal=state.currentController?.signal;
+ return new Promise((resolve,reject)=>{
+  if(signal?.aborted){const e=new Error('Đã dừng');e.name='AbortError';reject(e);return;}
+  const timer=setTimeout(done,ms);
+  function done(){signal?.removeEventListener('abort',abort);resolve();}
+  function abort(){clearTimeout(timer);signal?.removeEventListener('abort',abort);const e=new Error('Đã dừng');e.name='AbortError';reject(e);}
+  signal?.addEventListener('abort',abort,{once:true});
+ });
+}
+async function geminiGenerateResilient(secret,model,body,timeoutMs=30000,attempts=2){
+ let lastError;
+ for(let attempt=0;attempt<Math.max(1,attempts);attempt++){
+  try{return await geminiGenerate(secret,model,body,timeoutMs);}
+  catch(error){
+   lastError=error;
+   if(error?.name==='AbortError'||!transientGemini(error?.status)||attempt>=attempts-1)throw error;
+   renderGeminiStatus('Gemini '+model+' đang bận · tự thử lại '+(attempt+2)+'/'+attempts+'…');
+   await waitGemini(retryDelay(attempt));
+  }
+ }
+ throw lastError;
 }
 function probeGenerationConfig(model){
  const generationConfig={maxOutputTokens:256,temperature:0};
@@ -404,7 +431,7 @@ async function probeGemini(secret){
  const plan=modelPlan(state.mode),errors=[];
  for(const model of plan){
   try{
-   const payload=await geminiGenerate(secret,model,{contents:[{role:'user',parts:[{text:'Reply with exactly OK'}]}],generationConfig:probeGenerationConfig(model)},20000);
+   const payload=await geminiGenerateResilient(secret,model,{contents:[{role:'user',parts:[{text:'Reply with exactly OK'}]}],generationConfig:probeGenerationConfig(model)},20000,2);
    const result=providerAnswer(payload);
    if(result.text){state.model=model;state.geminiReady=true;state.lastGeminiError='';return model;}
    errors.push(model+' · '+emptyGeminiReason(payload));
@@ -492,7 +519,7 @@ function shouldSearchWeb(question){
 }
 function inferredQuestionMode(question){
  const s=norm(question);
- return /phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|vi sao .*phien|dong luc phien|doi chieu nguon|nguyen nhan bien dong/.test(s)?'deep':null;
+ return /phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|doi chieu nguon/.test(s)?'deep':null;
 }
 function geminiPrompt(question){
  return[
@@ -533,19 +560,19 @@ function providerAnswer(payload){
  const text=(payload?.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').filter(Boolean).join('\n').trim();
  return{text,sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
 }
-async function callGeminiModel(question,secret,model){
- const search=shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
- const generation={maxOutputTokens:deep?2400:1400,temperature:deep?.16:.12,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:deep?'high':'low'}}:{})};
+async function callGeminiModel(question,secret,model,allowSearch=true){
+ const search=allowSearch&&shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
+ const generation={maxOutputTokens:deep?2200:1400,temperature:deep?.16:.12,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:deep?'medium':'low'}}:{})};
  const body=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:generation,...(withSearch?{tools:[{googleSearch:{}}]}:{})});
  let payload;
- try{payload=await geminiGenerate(secret,model,body(search),32000);}
+ try{payload=await geminiGenerateResilient(secret,model,body(search),32000,2);}
  catch(error){
-  if(search&&[400,403,429,500,502,503,504].includes(Number(error?.status)))payload=await geminiGenerate(secret,model,body(false),32000);
+  if(search&&[400,403,429,500,502,503,504].includes(Number(error?.status)))payload=await geminiGenerateResilient(secret,model,body(false),32000,2);
   else throw error;
  }
  const result=providerAnswer(payload);
- if(!result.text)throw new Error('Gemini chưa trả về nội dung phân tích.');
- state.geminiReady=true;state.lastGeminiError='';
+ if(!result.text){const err=new Error('Gemini chưa trả về nội dung phân tích.');err.status=503;err.model=model;throw err;}
+ state.geminiReady=true;state.lastGeminiError='';state.model=model;
  return{answer:result.text,provider:'Gemini',model,sourceMode:result.searched?'NATIVE_WEB_SEARCH':'FINQUERY_GROUNDED',sources:result.sources,queries:result.queries};
 }
 async function callLLM(question){
@@ -554,15 +581,22 @@ async function callLLM(question){
  if(!state.modelCandidates.length||!state.geminiReady)await validateGemini(secret);
  const candidates=modelPlan(state.mode);
  if(!candidates.length)throw new Error('Không tìm thấy Gemini Flash phù hợp.');
- let lastError;
- for(const model of candidates){
-  state.model=model;
-  try{return await callGeminiModel(question,secret,model);}
+ let lastError;const attempted=[];
+ for(let i=0;i<candidates.length;i++){
+  const model=candidates[i];state.model=model;attempted.push(model);
+  try{return await callGeminiModel(question,secret,model,i===0);}
   catch(error){
-   lastError=error;state.geminiReady=false;state.lastGeminiError=String(error?.message||error);
+   lastError=error;state.lastGeminiError=String(error?.message||error);
    if(error?.name==='AbortError')throw error;
-   if(![403,404,429,500,502,503,504].includes(Number(error.status)))break;
+   const status=Number(error.status);
+   if(status===401){state.geminiReady=false;throw error;}
+   if(![403,404,429,500,502,503,504].includes(status))break;
+   if(transientGemini(status)){state.geminiReady=true;renderGeminiStatus('Gemini '+model+' đang bận · chuyển model dự phòng…');}
   }
+ }
+ if(lastError&&transientGemini(lastError.status)){
+  const err=new Error('Gemini đang quá tải tạm thời sau khi Dolphin đã retry và chuyển qua '+attempted.length+' model dự phòng. Khóa API vẫn kết nối.');
+  err.status=lastError.status;err.code='GEMINI_TRANSIENT_EXHAUSTED';err.attemptedModels=attempted;throw err;
  }
  throw lastError||new Error('Gemini tạm thời chưa phản hồi.');
 }
@@ -635,9 +669,9 @@ async function ask(question,preferredMode=null){
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
   waiting?.remove();if(error?.name==='AbortError'){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
-  const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY',detail=String(error?.message||'').slice(0,320);
-  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · đang tiếp tục bằng FinQuery local. ')+'</div>'+local.html;addAnalysis(local);
-  if(error?.message&&!noKey){state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(detail);}
+  const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY',transient=error?.code==='GEMINI_TRANSIENT_EXHAUSTED'||transientGemini(error?.status),detail=String(error?.message||'').slice(0,320);
+  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':transient?'Gemini đang quá tải tạm thời; Dolphin đã tự retry và đổi model nhưng chưa nhận được phản hồi. FinQuery local đang tiếp tục. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · FinQuery local đang tiếp tục. ')+'</div>'+local.html;addAnalysis(local);
+  if(error?.message&&!noKey){if(!transient)state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(transient?'Gemini đang bận · khóa vẫn kết nối · câu hỏi tiếp theo sẽ tự retry/failover.':detail);}
  }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
