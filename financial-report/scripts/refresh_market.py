@@ -921,18 +921,32 @@ def macro(out, companies=None):
         raise RuntimeError('Macro and ESG collection failed and no retained data is available')
 
 
+def _fetch_news_feed(publisher, url, companies, current):
+    try:
+        items = parse_feed(request(url), publisher, url, companies, current)
+        return items, {'name': publisher, 'url': url, 'status': 'ok', 'items': len(items)}
+    except Exception as e:
+        return [], {'name': publisher, 'url': url, 'status': 'error', 'error': str(e)}
+
+
 def news(out, companies):
     path = out / 'news.json'
     previous = read(path, {'items': []})
     current = datetime.now(timezone.utc)
     rows, sources = [], []
-    for publisher, url in FEEDS:
-        try:
-            items = parse_feed(request(url), publisher, url, companies, current)
+    # RSS is best-effort and must never serialize 13 independent network timeouts.
+    # Keep the job bounded to roughly one upstream timeout so news cannot starve
+    # the 15-minute quote publisher in the shared workflow queue.
+    workers = min(8, max(1, len(FEEDS)))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_fetch_news_feed, publisher, url, companies, current)
+                   for publisher, url in FEEDS]
+        for future in as_completed(futures):
+            items, source = future.result()
             rows.extend(items)
-            sources.append({'name': publisher, 'url': url, 'status': 'ok', 'items': len(items)})
-        except Exception as e:
-            sources.append({'name': publisher, 'url': url, 'status': 'error', 'error': str(e)})
+            sources.append(source)
+    source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
+    sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
     unique = {}
     titles = set()
     for row in sorted(rows + previous['items'], key=lambda r: r['publishedAt'], reverse=True):
