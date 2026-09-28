@@ -26,7 +26,9 @@ permissions:
   contents: write
 concurrency:
   group: financial-market-data-publisher
-  cancel-in-progress: false
+  # Normally keep the active publisher. A deliberately tagged code push may
+  # supersede a stuck market run after the replacement has already passed CI.
+  cancel-in-progress: ${{ contains(github.event.head_commit.message, '[supersede-market-run]') }}
 jobs:
   refresh:
     runs-on: ubuntu-latest
