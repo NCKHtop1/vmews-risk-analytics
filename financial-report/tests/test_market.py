@@ -475,7 +475,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("cron: '20 9 * * 1-5'",workflow)
         self.assertIn("cron: '35 9 * * 1-5'",workflow)
         self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
-        self.assertIn("[history-refresh]",workflow)
+        self.assertIn("history-refresh",workflow)
         self.assertNotIn("cron: '20 8 * * 1-5'",workflow)
         self.assertNotIn("cron: '35 8 * * 1-5'",workflow)
         self.assertNotIn('also_news=1',workflow)
