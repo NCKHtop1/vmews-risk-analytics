@@ -337,7 +337,9 @@ function pickModel(mode,models,exclude=[]){
  return mode==='deep'?(full[0]||lite[0]||''):(lite[0]||full[0]||'');
 }
 function modelPlan(mode=state.mode){
- const pool=[...new Set(state.modelCandidates||[])],preferred=pickModel(mode,pool),plan=preferred?[preferred]:[];
+ const first=pickModel(mode,state.modelCandidates),plan=first?[first]:[];
+ if(mode==='deep'){const lite=pickModel('normal',state.modelCandidates,plan);if(lite)plan.push(lite);}
+ const pool=[...new Set(state.modelCandidates||[])];
  const score=name=>{const stable=/preview|experimental|exp-/i.test(name)?0:10000,lite=/flash[-_.]?lite/i.test(name),fit=mode==='deep'?(lite?0:1000):(lite?1000:0);return stable+fit+modelVersionScore(name);};
  for(const candidate of pool.filter(x=>!plan.includes(x)).sort((a,b)=>score(b)-score(a)))plan.push(candidate);
  return plan.slice(0,4);
