@@ -6,7 +6,7 @@ const state={data:null,active:'',metric:'',unlocked:false};
 const fmt=v=>typeof v==='number'&&Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(v):String(v??'—');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function digest(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-async function fetchMacro(){const r=await fetch(BASE+'macro.json?v='+Math.floor(Date.now()/60000),{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data?.datasets||typeof data.datasets!=='object')throw Error('Dữ liệu VBMA không hợp lệ');return data;}
+async function fetchMacro(){const r=await fetch(BASE+'macro.json?v='+Math.floor(Date.now()/60000),{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data?.datasets||typeof data.datasets!=='object')throw Error('Dữ liệu Macro & ESG không hợp lệ');return data;}
 function periodLabel(value){return periodRank(value)!==null;}
 function periodRank(value){
  const s=String(value||'').trim();
@@ -65,5 +65,5 @@ $('macro-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ma
 $('macro-metric')?.addEventListener('change',e=>{state.metric=e.target.value;renderKpis();renderChart();renderTable();});
 $('macro-refresh')?.addEventListener('click',load);
 if(sessionStorage.getItem('finquery-macro-access')==='1'){state.unlocked=true;showWorkspace();load();}
-window.FinMacro={context(){if(!state.unlocked||!state.data)return null;const compact={};for(const [id,ds]of Object.entries(state.data.datasets||{}))compact[id]={title:ds.title,columns:ds.columns,numericColumns:ds.numericColumns,rows:(ds.rows||[]).slice(-12),status:ds.status};return{checkedAt:state.data.checkedAt,active:state.active,datasets:compact};},refresh:load};
+window.FinMacro={context(){if(!state.unlocked||!state.data)return null;const compact={};for(const [id,ds]of Object.entries(state.data.datasets||{}))compact[id]={title:ds.title,source:ds.source||null,columns:ds.columns,numericColumns:ds.numericColumns,metricLabels:ds.metricLabels||null,metricUnits:ds.metricUnits||null,rows:(ds.rows||[]).slice(-12),status:ds.status};return{checkedAt:state.data.checkedAt,active:state.active,datasets:compact};},refresh:load};
 })();
