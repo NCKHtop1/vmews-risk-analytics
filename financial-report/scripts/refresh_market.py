@@ -346,6 +346,13 @@ def prices(out, companies):
     try:
         payload = json.loads(request(API + 'price/symbols/getList', {'symbols': symbols}))
         fresh = normalize_board(payload, symbols, collected)
+        missing = [symbol for symbol in symbols if symbol not in fresh]
+        if missing:
+            try:
+                retry_payload = json.loads(request(API + 'price/symbols/getList', {'symbols': missing}))
+                fresh.update(normalize_board(retry_payload, missing, collected))
+            except Exception as retry_error:
+                errors.append(f'quote retry {len(missing)} symbols: {retry_error}')
     except Exception as e:
         fresh = {}
         errors.append('quotes: ' + str(e))
@@ -359,7 +366,9 @@ def prices(out, companies):
     available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
     write(out / 'prices-status.json', {
         'checkedAt': now(), 'quotes': len(fresh), 'histories': available_histories,
-        'expected': len(symbols), 'errors': errors, 'historyRefresh': 'separate_eod_job'
+        'expected': len(symbols), 'retainedQuotes': max(0, len(quotes) - len(fresh)),
+        'errors': errors, 'quoteRefresh': '15_minute_session_job',
+        'historyRefresh': 'live_quote_merged_client_then_separate_eod_official'
     })
     drivers = build_drivers(out, companies)
     print(f'Prices: {len(fresh)}/{len(symbols)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
