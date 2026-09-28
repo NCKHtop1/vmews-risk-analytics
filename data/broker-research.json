@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-09-28T05:33:53+00:00",
+  "updatedAt": "2026-09-28T14:09:35+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-BSR-2026-09-28-001b1c7b",
+      "symbol": "BSR",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-28",
+      "title": "initial_report Báo cáo phân tích lần đầu — BSR · Công ty CP – Tổng Công ty Lọc Hoá dầu Việt Nam Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BSR ngày 28/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "VNDIRECT-MWG-2026-09-25-27342b93",
       "symbol": "MWG",
@@ -368,6 +379,20 @@
       "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 40000,
       "summary": "AGR có báo cáo DCM ngày 24/09/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 40.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-DCM-2026-09-24-36dc147c",
+      "symbol": "DCM",
+      "broker": "AGR",
+      "brokerName": "phiếu AGR",
+      "publishedAt": "2026-09-24",
+      "title": "DCM: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 40,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/DCM#finquery-a510083c10bb",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 40000,
+      "summary": "AGR có báo cáo DCM ngày 24/09/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 40.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VIETCAP-FRT-2026-09-23-530f28e4",
@@ -10649,6 +10674,20 @@
       "recommendation": "NẮM GIỮ",
       "targetPrice": 98000,
       "summary": "AGR có báo cáo CTR ngày 28/05/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 98.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-CTR-2026-05-28-642e1b9a",
+      "symbol": "CTR",
+      "broker": "AGR",
+      "brokerName": "phiếu AGR",
+      "publishedAt": "2026-05-28",
+      "title": "CTR: Khuyến nghị NẮM GIỮ với giá mục tiêu 98,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/CTR#finquery-378c8dc30f9a",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "NẮM GIỮ",
+      "targetPrice": 98000,
+      "summary": "AGR có báo cáo CTR ngày 28/05/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 98.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BETA-KDH-2026-05-27-8631717d",
