@@ -360,7 +360,7 @@ function forgetSession(){
 function providerMessage(status,details=''){
  if(status===401)return'Khóa Google không hợp lệ hoặc đã bị thu hồi.';
  if(status===403)return'Google từ chối quyền cho model hoặc công cụ đang dùng; Dolphin sẽ thử đường gọi/model dự phòng.';
- if(status===429)return'Gemini đã hết hạn mức tạm thời. Dolphin chuyển sang FinQuery cục bộ.';
+ if(status===429)return'Gemini trả về 429 (giới hạn tốc độ hoặc hạn mức dự án). Dolphin đã thử đường/model dự phòng trước khi chuyển sang FinQuery local.';
  if(status===404)return'Mô hình Gemini chưa khả dụng với dự án Google hiện tại.';
  if(status>=500)return'Google Gemini đang tạm thời gián đoạn.';
  return details||('Kết nối Gemini chưa sẵn sàng ('+status+').');
@@ -501,7 +501,7 @@ function providerAnswer(payload){
  return{text,sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
 }
 async function callGeminiModel(question,secret,model){
- const search=shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep';
+ const search=shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
  const signal=state.currentController?.signal;
  const common={method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},...(signal?{signal}:{})};
  const generation={max_output_tokens:deep?4200:2100,temperature:deep?.16:.12,...(deep?{thinking_level:'high'}:{})};
@@ -514,9 +514,11 @@ async function callGeminiModel(question,secret,model){
  }else{
   response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody([]))});
  }
- if([400,403,404,405].includes(response.status)){
-  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(search))});
-  if(!response.ok&&search&&[400,403,429].includes(response.status))response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(false))});
+ const interactionFallback=[400,403,404,405,429,500,502,503,504].includes(response.status);
+ if(interactionFallback){
+  const keepSearch=search&&[400,403,404,405].includes(response.status);
+  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(keepSearch))});
+  if(!response.ok&&keepSearch&&[400,403,429,500,502,503,504].includes(response.status))response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(false))});
  }
  const payload=await response.json().catch(()=>({}));
  if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;throw err;}
