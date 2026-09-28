@@ -135,9 +135,16 @@ def normalize_board(items, symbols, collected):
         if price is None or price <= 0:
             continue
         # Vietcap raw price board and OHLC endpoints express prices in VND.
+        # Preserve session OHLC fields when the board exposes them so the 15-minute
+        # quote snapshot can update the live daily candle without waiting for EOD history.
+        open_price = number(match.get('openPrice') if match.get('openPrice') is not None else
+                            match.get('open') if match.get('open') is not None else
+                            item.get('openPrice') if item.get('openPrice') is not None else
+                            listing.get('openPrice'))
         rows[symbol] = {'symbol': symbol, 'price': price, 'reference': ref,
                         'changePct': (price / ref - 1) * 100 if ref and ref > 0 else None,
                         'volume': number(match.get('accumulatedVolume')),
+                        'open': open_price,
                         'high': number(match.get('highest')), 'low': number(match.get('lowest')),
                         'sourceTime': timestamp(match.get('time')), 'collectedAt': collected,
                         'source': 'Vietcap', 'unit': 'VND', 'status': 'ok'}
