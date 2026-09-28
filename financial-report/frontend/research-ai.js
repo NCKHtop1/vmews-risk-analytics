@@ -588,7 +588,7 @@ async function connectGeminiFromUI(){
  const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-save'),secret=String(input?.value||'').trim();if(!secret)return;
  if(button)button.disabled=true;renderGeminiStatus('Đang xác minh trực tiếp với Google Gemini…');
  try{rememberSession(secret);await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Đã kết nối · '+modeLabel());}
- catch(error){if([429,500,502,503,504].includes(Number(error?.status))){state.modelCandidates=['gemini-3.5-flash-lite','gemini-3.8-flash','gemini-3.7-flash'];state.model=pickModel(state.mode,state.modelCandidates);if(input)input.value='';renderGeminiStatus('Đã lưu khóa · Google đang bận, Dolphin sẽ tự thử model dự phòng khi truy vấn.');}else{forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}}
+ catch(error){if([429,500,502,503,504].includes(Number(error?.status))){if(input)input.value='';renderGeminiStatus('Đã lưu khóa · Google đang bận, Dolphin sẽ tự xác minh lại và thử model khả dụng khi truy vấn.');}else{forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}}
  finally{if(button)button.disabled=false;}
 }
 async function refreshGeminiSession(){
