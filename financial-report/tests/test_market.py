@@ -918,7 +918,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('metricLabels',macro)
         self.assertIn('ds.allYears?points:points.slice(-48)',macro)
         self.assertIn('ds.metricTable?[first,state.metric]',macro)
-        self.assertIn('World Bank ESG',html)
+        self.assertIn('World Bank Sovereign ESG',html)
         self.assertIn('WORLD_BANK_ESG_SOURCE', (ROOT/'scripts/refresh_market.py').read_text())
         build=(ROOT/'scripts/build_cdn.py').read_text()
         self.assertIn("(front / 'macro.js').read_text()",build)
