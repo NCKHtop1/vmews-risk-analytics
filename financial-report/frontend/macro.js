@@ -35,7 +35,7 @@ function normalizeDataset(ds){
 function currentSymbol(){return String(new URL(location.href).searchParams.get('symbol')||$('ticker')?.value||'').trim().toUpperCase();}
 function corporateDataset(esg,symbol){
  const company=esg?.companies?.[symbol];if(!company)return null;
- const years={},labels={},units={};for(const row of company.metrics||[]){const year=Number(row.year);if(!Number.isFinite(year)||!Number.isFinite(Number(row.value)))continue;years[year]??={Year:year};years[year][row.metricId]=Number(row.value);labels[row.metricId]=row.label||row.metricId;if(row.unit)units[row.metricId]=row.unit;}
+ const years={},labels={},units={},metricRows=(company.canonicalMetrics?.length?company.canonicalMetrics:company.metrics)||[];for(const row of metricRows){const year=Number(row.year);if(!Number.isFinite(year)||!Number.isFinite(Number(row.value)))continue;years[year]??={Year:year};years[year][row.metricId]=Number(row.value);labels[row.metricId]=row.label||row.metricId;if(row.unit)units[row.metricId]=row.unit;}
  for(const row of company.externalAssessments||[]){const year=Number(row.year);if(Number.isFinite(year))years[year]??={Year:year};}
  const rows=Object.values(years).sort((a,b)=>a.Year-b.Year),metrics=[...new Set(rows.flatMap(r=>Object.keys(r).filter(k=>k!=='Year'&&Number.isFinite(r[k]))))];
  return{id:'company_esg_'+symbol,title:'ESG doanh nghiệp · '+symbol,source:'Bank disclosures + external assessments',status:'ok',companySymbol:symbol,columns:['Year',...metrics],numericColumns:metrics,metricLabels:labels,metricUnits:units,rows,allYears:true,metricTable:true};

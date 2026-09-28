@@ -25,6 +25,7 @@ USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "1800000"))
 DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "30"))
+EXTRACTOR_VERSION = 2
 
 
 def now():
@@ -85,7 +86,8 @@ def clean_text(text):
 
 
 def ascii_fold(text):
-    return "".join(c for c in unicodedata.normalize("NFKD", str(text or "")) if not unicodedata.combining(c)).lower()
+    folded = "".join(c for c in unicodedata.normalize("NFKD", str(text or "")) if not unicodedata.combining(c)).lower()
+    return folded.replace("\u0111", "d")
 
 
 def strip_html(raw):
@@ -110,20 +112,48 @@ def extract_year(text):
 
 
 def classify_document(text):
-    s = ascii_fold(text)
-    if "sustainability" in s or "phat trien ben vung" in s or re.search(r"\besg\b", s):
-        return "sustainability_report"
-    if "climate" in s or "tcfd" in s or "ifrs s2" in s:
-        return "climate_disclosure"
-    if "green bond" in s or "sustainable finance" in s or "second party opinion" in s or "spo" in s:
+    s = re.sub(r"[-_/]+", " ", ascii_fold(text))
+    if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
         return "sustainable_finance_assessment"
     if "annual report" in s or "bao cao thuong nien" in s:
         return "annual_report"
+    if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s:
+        return "sustainability_report"
+    if "tcfd" in s or "ifrs s2" in s or ("climate" in s and "disclosure" in s):
+        return "climate_disclosure"
     if "vnsi" in s:
         return "vnsi"
     if "susba" in s or "sustainable banking assessment" in s:
         return "susba"
+    if "sustainability" in s or "phat trien ben vung" in s or re.search(r"\besg\b", s):
+        return "esg_web_content"
     return "esg_other"
+
+
+def infer_report_year(text, fallback=None):
+    """Prefer a reporting year explicitly tied to a report/disclosure label."""
+    sample = clean_text(text[:50000])
+    patterns = [
+        r"(?:Sustainability|ESG|Annual)\s+Report\s+(20[0-3]\d)",
+        r"(20[0-3]\d)\s+(?:Sustainability|ESG|Annual)\s+Report",
+        r"Báo\s+cáo\s+(?:phát\s+triển\s+bền\s+vững|thường\s+niên)[^\d]{0,30}(20[0-3]\d)",
+        r"(?:reporting|financial)\s+(?:year|period)[^\d]{0,20}(20[0-3]\d)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, sample, re.I)
+        if match:
+            return int(match.group(1))
+    return fallback
+
+
+def metric_document_allowed(doc):
+    if doc.get("type") in {"sustainability_report", "annual_report", "climate_disclosure"}:
+        return True
+    if doc.get("type") == "esg_web_content":
+        path = urlsplit(doc.get("url") or "").path.lower()
+        noisy = any(x in path for x in ("/giai-thuong", "/award", "/tin-tuc", "/news", "/su-kien"))
+        return not noisy
+    return False
 
 
 def relevant(text, keywords):
@@ -168,7 +198,12 @@ def discover_seed(seed_url, keywords):
     candidates = []
     for url, label in links:
         combined = f"{label} {url}"
-        if looks_pdf(url) or relevant(combined, keywords):
+        folded = re.sub(r"[-_/]+", " ", ascii_fold(combined))
+        pdf_relevant = looks_pdf(url) and (
+            relevant(combined, keywords)
+            or re.search(r"\b(?:bao cao|report|sustainab|esg|tcfd|climate|green bond|annual)\b", folded)
+        )
+        if pdf_relevant or relevant(combined, keywords):
             candidates.append((url, label))
     # Keep bounded; prefer PDFs and newest-looking titles.
     candidates = sorted(
@@ -229,7 +264,7 @@ def discover_seed(seed_url, keywords):
 
 def extract_document_text(url):
     raw, ctype, final_url = fetch(url, timeout=35)
-    if looks_pdf(final_url, ctype):
+    if looks_pdf(final_url, ctype) and raw.lstrip().startswith(b"%PDF"):
         try:
             from pypdf import PdfReader
         except Exception as exc:
@@ -248,27 +283,33 @@ def extract_document_text(url):
             if size >= MAX_TEXT_CHARS:
                 break
         return clean_text(" ".join(parts))[:MAX_TEXT_CHARS], final_url, "pdf"
+    # Some sites return an HTML download gate from a URL ending in .pdf.
     return strip_html(raw)[:MAX_TEXT_CHARS], final_url, "html"
 
 
-def parse_number(raw):
-    s = str(raw).strip().replace(" ", "")
-    # Keep only a single numeric token.
-    s = re.sub(r"[^\d,.\-+]", "", s)
+def parse_number(raw, unit=None):
+    s = re.sub(r"[^\d,.\-+]", "", str(raw or "").strip().replace(" ", ""))
     if not s:
         return None
+    unit_l = ascii_fold(unit or "")
     if "," in s and "." in s:
-        # Last separator is usually decimal; other separator is thousands.
         if s.rfind(",") > s.rfind("."):
             s = s.replace(".", "").replace(",", ".")
         else:
             s = s.replace(",", "")
-    elif s.count(",") == 1 and len(s.rsplit(",", 1)[-1]) <= 2:
-        s = s.replace(",", ".")
     elif s.count(",") >= 1:
-        s = s.replace(",", "")
+        if s.count(",") == 1 and len(s.rsplit(",", 1)[-1]) <= 2:
+            s = s.replace(",", ".")
+        else:
+            s = s.replace(",", "")
     elif s.count(".") > 1:
         s = s.replace(".", "")
+    elif s.count(".") == 1:
+        left, right = s.split(".", 1)
+        # Vietnamese bank disclosures often use "." as the thousands separator
+        # for values reported in VND billions/millions (7.714 tỷ = 7,714).
+        if len(right) == 3 and any(x in unit_l for x in ("ty dong", "trieu dong", "billion vnd", "million vnd")):
+            s = left + right
     try:
         return float(s)
     except ValueError:
@@ -276,84 +317,198 @@ def parse_number(raw):
 
 
 VALUE_RE = re.compile(
-    r"(?P<value>[-+]?\d[\d.,]*(?:\s?\d{3})?)\s*"
-    r"(?P<unit>%|tCO2e|tCO₂e|CO2e|CO₂e|kWh|MWh|GWh|m3|m³|kg|tấn|tons?|"
-    r"hours?|giờ|triệu đồng|tỷ đồng|nghìn tỷ đồng|million VND|billion VND|VND)?",
+    r"(?:(?P<prefix>VND|VNĐ)\s*)?"
+    r"(?P<value>[-+]?\d[\d.,]*)\s*"
+    r"(?P<unit>nghìn\s+tỷ\s+đồng|tỷ\s+đồng|triệu\s+đồng|trillion|billion|million|"
+    r"million\s+VND|billion\s+VND|trillion\s+VND|VND|%|tCO2e|tCO₂e|CO2e|CO₂e|"
+    r"kWh|MWh|GWh|m3|m³|kg|tấn|tons?|training\s+hours?|hours?|giờ)?",
     re.I,
 )
 
 
-def infer_unit(snippet, matched_unit, rule):
-    if matched_unit:
-        return matched_unit.strip()
-    s = ascii_fold(snippet)
-    if "vnd" in s and "billion" in s:
-        return "billion VND"
-    if "vnd" in s and "million" in s:
-        return "million VND"
-    for token, unit in [
-        ("nghin ty", "nghìn tỷ đồng"), ("ty dong", "tỷ đồng"), ("trieu dong", "triệu đồng"),
-        ("tco2e", "tCO2e"), ("%", "%"), ("kwh", "kWh"), ("mwh", "MWh"), ("m3", "m3"),
-        ("hours", "hours"), ("gio", "hours"),
-    ]:
-        if token in s:
-            return unit
-    return rule.get("unit_hint")
-
-
-def metric_value_match(text, report_year=None):
-    matches = list(VALUE_RE.finditer(text))
-    for match in matches[:10]:
-        value = parse_number(match.group("value"))
-        raw_digits = re.sub(r"\D", "", match.group("value"))
-        # Skip a nearby reporting/calendar year; otherwise phrases such as
-        # "training hours in 2024 1,681,691" become the false value 2024.
-        if value is not None and len(raw_digits) == 4 and 1990 <= value <= 2039:
-            if report_year is None or int(value) == int(report_year) or len(matches) > 1:
-                continue
-        return match
+def normalized_unit(match):
+    prefix = clean_text(match.groupdict().get("prefix") or "")
+    suffix = clean_text(match.groupdict().get("unit") or "")
+    s = ascii_fold(suffix)
+    if prefix:
+        if s in {"trillion", "billion", "million"}:
+            return s + " VND"
+        if not suffix:
+            return "VND"
+    if suffix:
+        if s in {"trillion", "billion", "million"} and prefix:
+            return s + " VND"
+        if s.startswith("training hour"):
+            return "hours"
+        if s in {"gio", "hour", "hours"}:
+            return "hours"
+        if "co2e" in s:
+            return "tCO2e"
+        if s == "m3":
+            return "m3"
+        return suffix
     return None
 
 
-def extract_metrics(text, rules, year, source_url, source_title):
+def unit_family(unit):
+    s = ascii_fold(unit or "")
+    if not s:
+        return None
+    if "vnd" in s or "dong" in s:
+        return "currency"
+    if "%" in s:
+        return "percent"
+    if "co2e" in s:
+        return "emissions"
+    if any(x in s for x in ("kwh", "mwh", "gwh")):
+        return "energy"
+    if s in {"m3", "m³"}:
+        return "water"
+    if any(x in s for x in ("kg", "tan", "ton")):
+        return "mass"
+    if "hour" in s or s == "gio":
+        return "hours"
+    return None
+
+
+def expected_family(rule):
+    return unit_family(rule.get("unit_hint"))
+
+
+def normalize_metric_value(value, unit, family):
+    if value is None:
+        return None, unit
+    s = ascii_fold(unit or "")
+    if family == "currency":
+        if "nghin ty" in s or "trillion vnd" in s:
+            return value * 1000, "billion VND"
+        if "ty dong" in s or "billion vnd" in s:
+            return value, "billion VND"
+        if "trieu dong" in s or "million vnd" in s:
+            return value / 1000, "billion VND"
+        if s == "vnd":
+            return value / 1_000_000_000, "billion VND"
+    if family == "energy":
+        if "gwh" in s:
+            return value * 1_000_000, "kWh"
+        if "mwh" in s:
+            return value * 1000, "kWh"
+        return value, "kWh"
+    if family == "mass":
+        if "tan" in s or "ton" in s:
+            return value * 1000, "kg"
+        return value, "kg"
+    if family == "emissions":
+        return value, "tCO2e"
+    if family == "water":
+        return value, "m3"
+    if family == "hours":
+        return value, "hours"
+    if family == "percent":
+        return value, "%"
+    return value, unit
+
+
+def candidate_from_match(match, rule, distance, alias, report_year, implicit_alias_unit=False):
+    explicit_unit = normalized_unit(match)
+    family = expected_family(rule)
+    unit = explicit_unit
+    if not unit and implicit_alias_unit and distance <= 18:
+        unit = rule.get("unit_hint")
+    detected_family = unit_family(unit)
+    if not detected_family or (family and detected_family != family):
+        return None
+    value = parse_number(match.group("value"), unit)
+    raw_digits = re.sub(r"\D", "", match.group("value"))
+    if value is None:
+        return None
+    if len(raw_digits) == 4 and 1990 <= value <= 2039 and not explicit_unit:
+        return None
+    value, unit = normalize_metric_value(value, unit, family)
+    if value is None or not (float("-inf") < value < float("inf")):
+        return None
+    if family == "percent" and not (0 <= value <= 100):
+        return None
+    if family in {"currency", "emissions", "energy", "water", "mass", "hours"} and value < 0:
+        return None
+    score = (110 if implicit_alias_unit else 100) - min(40, distance / 3)
+    if explicit_unit:
+        score += 8
+    return {
+        "value": value, "rawValue": match.group("value"), "unit": unit,
+        "qualityScore": round(score, 2), "explicitUnit": bool(explicit_unit)
+    }
+
+
+def extract_metrics(text, rules, year, source_url, source_title, source_type=None):
     results = []
     lower = text.lower()
     for rule in rules:
         best = None
+        expected = expected_family(rule)
         for alias in rule["aliases"]:
-            start = 0
             alias_l = alias.lower()
+            start = 0
             while True:
                 idx = lower.find(alias_l, start)
                 if idx < 0:
                     break
-                window_start, window_end = max(0, idx - 110), min(len(text), idx + len(alias) + 180)
+                window_start = max(0, idx - 180)
+                window_end = min(len(text), idx + len(alias) + 260)
                 snippet = clean_text(text[window_start:window_end])
-                local = text[idx:window_end]
-                m = metric_value_match(local[len(alias):], year)
-                if not m:
-                    # Sometimes the value is immediately before the label.
-                    before = text[window_start:idx]
-                    matches = [x for x in VALUE_RE.finditer(before)
-                               if not (len(re.sub(r"\D", "", x.group("value"))) == 4
-                                       and 1990 <= (parse_number(x.group("value")) or 0) <= 2039)]
-                    m = matches[-1] if matches else None
-                if m:
-                    raw_value = m.group("value")
-                    value = parse_number(raw_value)
-                    unit = infer_unit(snippet, m.groupdict().get("unit"), rule)
-                    score = 2 + (1 if unit and unit != rule.get("unit_hint") else 0)
-                    candidate = {
-                        "metricId": rule["id"], "pillar": rule["pillar"], "label": rule["label"],
-                        "year": year, "value": value, "rawValue": raw_value, "unit": unit,
-                        "sourceUrl": source_url, "sourceTitle": source_title,
-                        "snippet": snippet[:360], "confidence": "medium", "_score": score,
-                    }
-                    if best is None or candidate["_score"] > best["_score"]:
+                snippet_fold = ascii_fold(snippet)
+                # Scope 1/2/3 listed together describes a combined boundary, not
+                # an individual scope value.
+                if rule["id"] in {"scope1", "scope2", "scope3"} and re.search(
+                    r"scope\s*1\s*(?:,|and|&)\s*(?:scope\s*)?2|scope\s*1\s*,\s*2\s*(?:,|and)\s*3",
+                    snippet_fold
+                ):
+                    start = idx + len(alias_l)
+                    continue
+
+                candidates = []
+                after = text[idx + len(alias):window_end]
+                alias_has_unit = (
+                    expected == "hours" and ("hour" in ascii_fold(alias) or "gio" in ascii_fold(alias))
+                )
+                for match in list(VALUE_RE.finditer(after))[:10]:
+                    candidate = candidate_from_match(
+                        match, rule, match.start(), alias, year, implicit_alias_unit=alias_has_unit
+                    )
+                    if candidate:
+                        candidates.append(candidate)
+
+                before = text[window_start:idx]
+                before_matches = list(VALUE_RE.finditer(before))[-10:]
+                # "respectively/lần lượt" with several same-unit values cannot
+                # be mapped safely to one KPI using proximity alone.
+                ambiguous_pairing = ("lan luot" in ascii_fold(before[-120:] + text[idx:idx+100])
+                                     or "respectively" in ascii_fold(before[-120:] + text[idx:idx+100]))
+                if not ambiguous_pairing:
+                    for match in before_matches:
+                        distance = len(before) - match.end()
+                        candidate = candidate_from_match(
+                            match, rule, distance, alias, year,
+                            implicit_alias_unit=alias_has_unit
+                        )
+                        if candidate:
+                            candidates.append(candidate)
+
+                for candidate in candidates:
+                    candidate["metricId"] = rule["id"]
+                    candidate["pillar"] = rule["pillar"]
+                    candidate["label"] = rule["label"]
+                    candidate["year"] = year
+                    candidate["sourceUrl"] = source_url
+                    candidate["sourceTitle"] = source_title
+                    candidate["sourceType"] = source_type
+                    candidate["snippet"] = snippet[:500]
+                    candidate["confidence"] = "high" if candidate["qualityScore"] >= 100 else "medium"
+                    candidate.pop("explicitUnit", None)
+                    if best is None or candidate["qualityScore"] > best["qualityScore"]:
                         best = candidate
                 start = idx + len(alias_l)
         if best:
-            best.pop("_score", None)
             results.append(best)
     return results
 
@@ -407,10 +562,68 @@ def merge_unique(rows, key_fields):
     return out
 
 
+def canonical_metrics(rows):
+    chosen = {}
+    for row in rows:
+        if row.get("year") is None or row.get("metricId") is None:
+            continue
+        key = (row["metricId"], row["year"])
+        score = float(row.get("qualityScore") or 0)
+        if row.get("sourceType") in {"sustainability_report", "annual_report", "climate_disclosure"}:
+            score += 8
+        if row.get("confidence") == "high":
+            score += 4
+        current = chosen.get(key)
+        if current is None or score > current[0]:
+            chosen[key] = (score, row)
+    return [item[1] for item in sorted(chosen.values(), key=lambda x: (x[1].get("year") or 0, x[1].get("metricId") or ""))]
+
+
+def reset_document(doc):
+    row = dict(doc)
+    row["type"] = classify_document((row.get("title") or "") + " " + (row.get("url") or ""))
+    for key in ("processedAt", "contentHash", "textLength", "lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
+        row.pop(key, None)
+    return row
+
+
+def migration_keep_document(doc, keywords):
+    kind = doc.get("type") or classify_document((doc.get("title") or "") + " " + (doc.get("url") or ""))
+    path = urlsplit(doc.get("url") or "").path.lower()
+    if kind == "esg_web_content" and any(x in path for x in ("/giai-thuong", "/award", "/tin-tuc", "/news", "/su-kien")):
+        return False
+    if kind == "esg_other":
+        return relevant((doc.get("title") or "") + " " + (doc.get("url") or ""), keywords)
+    return True
+
+
+def backlog_priority(owner, doc):
+    priorities = {
+        "sustainability_report": 6, "climate_disclosure": 6, "annual_report": 5,
+        "sustainable_finance_assessment": 5, "vnsi": 4, "susba": 4,
+        "esg_web_content": 3, "esg_other": 1,
+    }
+    return (7 if owner == "__external__" else priorities.get(doc.get("type"), 1), doc.get("year") or 0)
+
+
 def collect(config, output):
     previous = read(output / "company-esg.json", {"companies": {}, "externalDocuments": []})
     banks = config["banks"]
     keywords = config["document_keywords"]
+    if previous.get("extractorVersion") != EXTRACTOR_VERSION:
+        # A stricter extractor must never keep KPI rows produced by an older,
+        # more permissive parser. Rebuild from retained source documents.
+        for company in previous.get("companies", {}).values():
+            company["metrics"] = []
+            company["canonicalMetrics"] = []
+            company["externalAssessments"] = []
+            company["documents"] = [
+                reset_document(doc) for doc in company.get("documents", [])
+                if migration_keep_document(reset_document(doc), keywords)
+            ]
+        previous["externalDocuments"] = [
+            reset_document(doc) for doc in previous.get("externalDocuments", [])
+        ]
     source_status = []
     discovered = {symbol: {} for symbol in banks}
 
@@ -482,7 +695,10 @@ def collect(config, output):
             blocked = False
         if not blocked:
             eligible_backlog.append((owner, doc))
-    eligible_backlog.sort(key=lambda item: (item[1].get("year") or 0, item[1].get("url", "")), reverse=True)
+    eligible_backlog.sort(
+        key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
+        reverse=True
+    )
     selected = eligible_backlog[:DOCS_PER_RUN]
     processed = 0
     workers = min(4, max(1, len(selected)))
@@ -497,6 +713,8 @@ def collect(config, output):
                 doc["contentHash"] = hashlib.sha256(text.encode("utf-8", "ignore")).hexdigest()
                 doc["processedAt"] = now()
                 doc["textLength"] = len(text)
+                doc["type"] = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
+                doc["year"] = infer_report_year(text, doc.get("year"))
                 doc.pop("lastError", None)
                 doc.pop("retryAfter", None)
                 if owner == "__external__":
@@ -509,9 +727,16 @@ def collect(config, output):
                             )
                             companies[symbol]["externalAssessments"].extend(extracted)
                 else:
-                    metrics = extract_metrics(text, config["metric_rules"], doc.get("year"), final_url, doc.get("title"))
-                    ratings = extract_ratings(text, config["rating_patterns"], doc.get("year"), final_url, doc.get("title"))
-                    companies[owner]["metrics"].extend(metrics)
+                    if metric_document_allowed(doc):
+                        metrics = extract_metrics(
+                            text, config["metric_rules"], doc.get("year"),
+                            final_url, doc.get("title"), source_type=doc.get("type")
+                        )
+                        companies[owner]["metrics"].extend(metrics)
+                    ratings = extract_ratings(
+                        text, config["rating_patterns"], doc.get("year"),
+                        final_url, doc.get("title")
+                    )
                     companies[owner]["externalAssessments"].extend(ratings)
                 processed += 1
             except Exception as exc:
@@ -527,6 +752,7 @@ def collect(config, output):
             companies[symbol]["metrics"],
             ["metricId", "year", "rawValue", "unit", "sourceUrl"],
         )
+        companies[symbol]["canonicalMetrics"] = canonical_metrics(companies[symbol]["metrics"])
         companies[symbol]["externalAssessments"] = merge_unique(
             companies[symbol]["externalAssessments"],
             ["provider", "assessmentType", "year", "value", "sourceUrl"],
@@ -535,17 +761,19 @@ def collect(config, output):
             "documents": len(companies[symbol]["documents"]),
             "processedDocuments": sum(bool(d.get("processedAt")) for d in companies[symbol]["documents"]),
             "metrics": len(companies[symbol]["metrics"]),
+            "canonicalMetrics": len(companies[symbol]["canonicalMetrics"]),
             "externalAssessments": len(companies[symbol]["externalAssessments"]),
         }
 
     payload = {
         "checkedAt": now(),
+        "extractorVersion": EXTRACTOR_VERSION,
         "sourceRegistryVersion": config.get("version"),
         "status": "ok" if any(s.get("status") == "ok" for s in source_status) else "retained",
         "methodology": {
             "compositeScore": False,
             "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
-            "metricConfidence": "medium unless a future structured-source adapter marks the metric high-confidence.",
+            "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest source per metric/year.",
         },
         "companies": companies,
         "externalDocuments": sorted(external_docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True),
@@ -567,6 +795,7 @@ def collect(config, output):
         "sourcesTotal": len(source_status),
         "documents": sum(v["coverage"]["documents"] for v in companies.values()),
         "metrics": sum(v["coverage"]["metrics"] for v in companies.values()),
+        "canonicalMetrics": sum(v["coverage"]["canonicalMetrics"] for v in companies.values()),
         "externalAssessments": sum(v["coverage"]["externalAssessments"] for v in companies.values()),
         "documentsProcessedThisRun": processed,
         "backlogRemaining": payload["run"]["backlogRemaining"],

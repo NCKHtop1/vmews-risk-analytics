@@ -62,6 +62,45 @@ class MarketTests(unittest.TestCase):
         self.assertTrue(esm.relevant('Báo cáo thường niên 2025',['annual report','báo cáo thường niên']))
         self.assertEqual(len(esm.doc_key('https://example.com/a.pdf')),20)
 
+    def test_corporate_esg_v2_rejects_percentage_and_page_number_false_positives(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        text='''Sustainability Report 2025. Green credit exposure increased by nearly 15% compared with 2024 and reached VND 18.7 trillion. Scope 1 and Scope 2 emissions are reported in the appendix on page 31-32. Water consumption was reduced by 30-50%. Paper consumption target was reduced by 20%. A total of 866,193 training hours were recorded, while technology programs represented 15% of training time.'''
+        metrics=esm.extract_metrics(text,cfg['metric_rules'],2025,'https://example.com/tcb.pdf','TCB Sustainability 2025','sustainability_report')
+        by_id={x['metricId']:x for x in metrics}
+        self.assertEqual(by_id['green_credit']['value'],18700)
+        self.assertEqual(by_id['green_credit']['unit'],'billion VND')
+        self.assertEqual(by_id['training_hours']['value'],866193)
+        self.assertNotIn('scope1',by_id)
+        self.assertNotIn('scope2',by_id)
+        self.assertNotIn('water',by_id)
+        self.assertNotIn('paper',by_id)
+
+    def test_corporate_esg_v2_normalizes_vietnamese_thousands_and_total_emissions(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        text='''Báo cáo phát triển bền vững 2025. Tổng phát thải khí nhà kính 3.218.052 tCO2e. Dư nợ tín dụng xanh đạt 71.000 tỷ đồng. Hơn 14 tỷ đồng dành cho hoạt động cộng đồng.'''
+        metrics=esm.extract_metrics(text,cfg['metric_rules'],2025,'https://example.com/report.pdf','ESG 2025','sustainability_report')
+        by_id={x['metricId']:x for x in metrics}
+        self.assertEqual(by_id['green_credit']['value'],71000)
+        self.assertEqual(by_id['green_credit']['unit'],'billion VND')
+        self.assertEqual(by_id['ghg_total']['value'],3218052)
+        self.assertEqual(by_id['ghg_total']['unit'],'tCO2e')
+
+    def test_corporate_esg_v2_infers_reporting_year_from_document_content(self):
+        self.assertEqual(esm.infer_report_year('Published 15 May 2026. Sustainability Report 2025. Environment chapter.',2026),2025)
+        self.assertEqual(esm.infer_report_year('Báo cáo phát triển bền vững năm 2024 được công bố tháng 4/2025',2025),2024)
+        self.assertTrue(esm.metric_document_allowed({'type':'sustainability_report','url':'https://bank/report.pdf'}))
+        self.assertFalse(esm.metric_document_allowed({'type':'esg_web_content','url':'https://bank/tin-tuc/giai-thuong-esg'}))
+
+    def test_corporate_esg_v2_canonical_metric_prefers_stronger_report_source(self):
+        rows=[
+            {'metricId':'green_credit','year':2025,'value':15000,'qualityScore':90,'confidence':'medium','sourceType':'esg_web_content'},
+            {'metricId':'green_credit','year':2025,'value':18700,'qualityScore':108,'confidence':'high','sourceType':'sustainability_report'},
+        ]
+        canonical=esm.canonical_metrics(rows)
+        self.assertEqual(len(canonical),1)
+        self.assertEqual(canonical[0]['value'],18700)
+        self.assertEqual(esm.EXTRACTOR_VERSION,2)
+
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
         self.assertIn('options: [all, prices, news, macro, esg, history, intraday]',flow)
@@ -1052,6 +1091,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('WORLD_BANK_ESG_SOURCE', (ROOT/'scripts/refresh_market.py').read_text())
         self.assertIn('company-esg.json',macro)
         self.assertIn('corporateDataset',macro)
+        self.assertIn('canonicalMetrics',macro)
         self.assertIn('macro-esg-assessments',html)
         self.assertIn("finquery:symbol-change",(ROOT/'frontend/app.js').read_text())
         self.assertIn("company_esg_",research)
