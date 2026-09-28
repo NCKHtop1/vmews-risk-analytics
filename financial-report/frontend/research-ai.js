@@ -1,8 +1,8 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const DOLPHIN_VERSION='DOLPHIN_V4';
+const DOLPHIN_VERSION='DOLPHIN_V5';
 const AI_MODE_KEY='finquery_dolphin_mode';
-const state={symbol:'',history:[],busy:false,directKey:'',model:'',modelCandidates:[],mode:'normal',lastQuestion:'',currentController:null};
+const state={symbol:'',history:[],busy:false,directKey:'',model:'',modelCandidates:[],mode:'normal',lastQuestion:'',currentController:null,geminiReady:false,lastGeminiError:''};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
@@ -317,8 +317,7 @@ function analyze(question){
 
 const GOOGLE_AI_ORIGIN='https://generativelanguage.googleapis.com/v1beta';
 const GEMINI_SESSION_KEY='vmews_solution_ai_browser_session';
-const GOOGLE_SEARCH_TOOL={type:'google_search'};
-const URL_CONTEXT_TOOL={type:'url_context'};
+const STABLE_MODEL_ORDER={normal:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'],deep:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite']};
 const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
 function restoreAIMode(){try{state.mode=localStorage.getItem(AI_MODE_KEY)==='deep'?'deep':'normal';}catch{state.mode='normal';}}
 function modeLabel(mode=state.mode){return mode==='deep'?'Phân tích sâu':'Nhanh & tiết kiệm';}
@@ -332,6 +331,7 @@ function setAIMode(mode,persist=true){
 function modelVersionScore(name){const m=String(name||'').match(/gemini-(\d+)(?:\.(\d+))?/i);return m?Number(m[1])*100+Number(m[2]||0):0;}
 function pickModel(mode,models,exclude=[]){
  const blocked=new Set(exclude),pool=(models||[]).filter(x=>!blocked.has(x));if(!pool.length)return'';
+ const stable=(STABLE_MODEL_ORDER[mode==='deep'?'deep':'normal']||[]).find(name=>pool.includes(name)&&!blocked.has(name));if(stable)return stable;
  const lite=pool.filter(x=>/flash[-_.]?lite/i.test(x)).sort((a,b)=>modelVersionScore(b)-modelVersionScore(a));
  const full=pool.filter(x=>/flash/i.test(x)&&!/flash[-_.]?lite/i.test(x)).sort((a,b)=>modelVersionScore(b)-modelVersionScore(a));
  return mode==='deep'?(full[0]||lite[0]||''):(lite[0]||full[0]||'');
@@ -350,20 +350,21 @@ function sessionSecret(){
  try{return sessionStorage.getItem(GEMINI_SESSION_KEY)?.trim()||'';}catch{return'';}
 }
 function rememberSession(secret){
- state.directKey=String(secret||'').trim();
+ state.directKey=String(secret||'').trim();state.geminiReady=false;state.lastGeminiError='';
  try{sessionStorage.setItem(GEMINI_SESSION_KEY,state.directKey);}catch{}
 }
 function forgetSession(){
- state.directKey='';state.model='';state.modelCandidates=[];
+ state.directKey='';state.model='';state.modelCandidates=[];state.geminiReady=false;state.lastGeminiError='';
  try{sessionStorage.removeItem(GEMINI_SESSION_KEY);}catch{}
 }
 function providerMessage(status,details=''){
- if(status===401)return'Khóa Google không hợp lệ hoặc đã bị thu hồi.';
- if(status===403)return'Google từ chối quyền cho model hoặc công cụ đang dùng; Dolphin sẽ thử đường gọi/model dự phòng.';
- if(status===429)return'Gemini trả về 429 (giới hạn tốc độ hoặc hạn mức dự án). Dolphin đã thử đường/model dự phòng trước khi chuyển sang FinQuery local.';
- if(status===404)return'Mô hình Gemini chưa khả dụng với dự án Google hiện tại.';
- if(status>=500)return'Google Gemini đang tạm thời gián đoạn.';
- return details||('Kết nối Gemini chưa sẵn sàng ('+status+').');
+ const detail=String(details||'').replace(/\s+/g,' ').trim().slice(0,260);
+ if(status===401)return'HTTP 401 · khóa Gemini không hợp lệ, hết hiệu lực hoặc không được chấp nhận'+(detail?' · '+detail:'');
+ if(status===403)return'HTTP 403 · dự án/key không được phép generateContent'+(detail?' · '+detail:'');
+ if(status===429)return'HTTP 429 · dự án Gemini đang chạm rate limit/quota'+(detail?' · '+detail:'');
+ if(status===404)return'HTTP 404 · model Gemini không khả dụng với dự án hiện tại'+(detail?' · '+detail:'');
+ if(status>=500)return'HTTP '+status+' · dịch vụ Gemini trả lỗi máy chủ'+(detail?' · '+detail:'');
+ return 'HTTP '+status+(detail?' · '+detail:'');
 }
 async function geminiFetch(url,options={},timeoutMs=30000){
  const parent=options.signal,ctl=new AbortController();let timedOut=false;
@@ -380,14 +381,33 @@ function availableModels(payload){
   return name.startsWith('gemini-')&&/flash/i.test(name)&&!/image|audio|tts|live|embedding|robotics/i.test(name)&&(supported.length===0||supported.includes('generateContent')||supported.includes('generate_content'));
  }).map(item=>String(item.name||'').replace(/^models\//,''));
 }
-async function validateGemini(secret){
+async function geminiGenerate(secret,model,body,timeoutMs=30000){
+ const response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},body:JSON.stringify(body),...(state.currentController?.signal?{signal:state.currentController.signal}:{})},timeoutMs);
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;err.model=model;throw err;}
+ return payload;
+}
+async function probeGemini(secret){
+ const plan=modelPlan(state.mode),errors=[];
+ for(const model of plan){
+  try{
+   const payload=await geminiGenerate(secret,model,{contents:[{role:'user',parts:[{text:'Reply with exactly OK'}]}],generationConfig:{maxOutputTokens:12,temperature:0}},15000);
+   const result=providerAnswer(payload);
+   if(result.text){state.model=model;state.geminiReady=true;state.lastGeminiError='';return model;}
+   errors.push(model+' · empty response');
+  }catch(error){errors.push(model+' · '+String(error?.message||error));if(error?.status===401)throw error;}
+ }
+ const err=new Error(errors.at(-1)||'Gemini không trả lời probe generateContent.');err.status=errors.length?503:0;throw err;
+}
+async function validateGemini(secret,{probe=true}={}){
  const response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models?pageSize=100',{method:'GET',mode:'cors',cache:'no-store',headers:{'x-goog-api-key':secret}},15000);
  const payload=await response.json().catch(()=>({}));
  if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;throw err;}
  state.modelCandidates=availableModels(payload);
  const model=pickModel(state.mode,state.modelCandidates);
- if(!model)throw new Error('Dự án Google chưa có mô hình Gemini Flash khả dụng.');
+ if(!model)throw new Error('Dự án Google chưa có mô hình Gemini Flash hỗ trợ generateContent.');
  state.model=model;
+ if(probe)return probeGemini(secret);
  return model;
 }
 function compactRows(data,question,limit=18){
@@ -502,34 +522,23 @@ function providerAnswer(payload){
 }
 async function callGeminiModel(question,secret,model){
  const search=shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
- const signal=state.currentController?.signal;
- const common={method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},...(signal?{signal}:{})};
- const generation={max_output_tokens:deep?4200:2100,temperature:deep?.16:.12,...(deep?{thinking_level:'high'}:{})};
- const interactionBody=tools=>({model,input,system_instruction:dolphinSystemInstruction(),store:false,generation_config:generation,...(tools.length?{tools:tools.map(type=>type==='google_search'?GOOGLE_SEARCH_TOOL:URL_CONTEXT_TOOL)}:{})});
- const compatibleBody=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:{maxOutputTokens:deep?4200:2100,temperature:deep?.16:.12},...(withSearch?{tools:[{googleSearch:{}}]}:{})});
- let response;
- if(search){
-  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search','url_context']))});
-  if(!response.ok&&[400,403].includes(response.status))response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search']))});
- }else{
-  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody([]))});
+ const generation={maxOutputTokens:deep?2400:1400,temperature:deep?.16:.12};
+ const body=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:generation,...(withSearch?{tools:[{googleSearch:{}}]}:{})});
+ let payload;
+ try{payload=await geminiGenerate(secret,model,body(search),32000);}
+ catch(error){
+  if(search&&[400,403,429,500,502,503,504].includes(Number(error?.status)))payload=await geminiGenerate(secret,model,body(false),32000);
+  else throw error;
  }
- const interactionFallback=[400,403,404,405,429,500,502,503,504].includes(response.status);
- if(interactionFallback){
-  const keepSearch=search&&[400,403,404,405].includes(response.status);
-  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(keepSearch))});
-  if(!response.ok&&keepSearch&&[400,403,429,500,502,503,504].includes(response.status))response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(false))});
- }
- const payload=await response.json().catch(()=>({}));
- if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;throw err;}
  const result=providerAnswer(payload);
  if(!result.text)throw new Error('Gemini chưa trả về nội dung phân tích.');
+ state.geminiReady=true;state.lastGeminiError='';
  return{answer:result.text,provider:'Gemini',model,sourceMode:result.searched?'NATIVE_WEB_SEARCH':'FINQUERY_GROUNDED',sources:result.sources,queries:result.queries};
 }
 async function callLLM(question){
  const secret=sessionSecret();
  if(!secret){const err=new Error('Dolphin chưa kết nối Gemini.');err.code='NO_GEMINI_KEY';throw err;}
- if(!state.modelCandidates.length)await validateGemini(secret);
+ if(!state.modelCandidates.length||!state.geminiReady)await validateGemini(secret);
  const candidates=modelPlan(state.mode);
  if(!candidates.length)throw new Error('Không tìm thấy Gemini Flash phù hợp.');
  let lastError;
@@ -537,7 +546,7 @@ async function callLLM(question){
   state.model=model;
   try{return await callGeminiModel(question,secret,model);}
   catch(error){
-   lastError=error;
+   lastError=error;state.geminiReady=false;state.lastGeminiError=String(error?.message||error);
    if(error?.name==='AbortError')throw error;
    if(![403,404,429,500,502,503,504].includes(Number(error.status)))break;
   }
@@ -581,24 +590,25 @@ function mountGeminiUI(){
  setAIMode(state.mode,false);renderGeminiStatus();
 }
 function renderGeminiStatus(message=''){
- const secret=sessionSecret(),card=$('dolphin-gemini-connect'),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),guide=$('dolphin-gemini-guide'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
- card?.classList.toggle('connected',Boolean(secret));
- if(status)status.textContent=message||(secret?('Đã kết nối · '+modeLabel()):'Chưa bật Gemini · làm 3 bước bên dưới');
+ const secret=sessionSecret(),ready=Boolean(secret&&state.geminiReady),card=$('dolphin-gemini-connect'),status=$('dolphin-gemini-status'),form=$('dolphin-gemini-form'),guide=$('dolphin-gemini-guide'),disconnect=$('dolphin-gemini-disconnect'),note=$('dolphin-gemini-note');
+ card?.classList.toggle('connected',ready);
+ if(status)status.textContent=message||(ready?('Gemini phản hồi OK · '+(state.model||'model khả dụng')):(secret?'Key đã lưu nhưng Gemini chưa xác nhận generateContent.':'Chưa bật Gemini · làm 3 bước bên dưới'));
  if(form)form.hidden=Boolean(secret);if(guide)guide.hidden=Boolean(secret);if(disconnect)disconnect.hidden=!secret;
- if(note)note.textContent=secret?((state.mode==='deep'?'Gemini Flash':'Gemini Flash-Lite')+' · dữ liệu tài chính lấy từ FinQuery.'):'Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub.';
+ if(note)note.textContent=ready?((state.model||'Gemini')+' · '+modeLabel()+' · dữ liệu tài chính lấy từ FinQuery.'):(secret?'Dolphin chỉ báo kết nối khi probe generateContent thực sự thành công.':'Khóa chỉ giữ trong phiên trình duyệt này; không ghi vào GitHub.');
  document.querySelectorAll('[data-dolphin-mode]').forEach(b=>b.classList.toggle('active',b.dataset.dolphinMode===state.mode));
 }
 async function connectGeminiFromUI(){
  const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-save'),secret=String(input?.value||'').trim();if(!secret)return;
- if(button)button.disabled=true;renderGeminiStatus('Đang xác minh trực tiếp với Google Gemini…');
- try{rememberSession(secret);await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Đã kết nối · '+modeLabel());}
- catch(error){if([429,500,502,503,504].includes(Number(error?.status))){if(input)input.value='';renderGeminiStatus('Đã lưu khóa · Google đang bận, Dolphin sẽ tự xác minh lại và thử model khả dụng khi truy vấn.');}else{forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}}
+ if(button)button.disabled=true;renderGeminiStatus('Đang test generateContent thật với Google Gemini…');
+ try{rememberSession(secret);const model=await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Gemini phản hồi OK · '+model);}
+ catch(error){state.geminiReady=false;state.lastGeminiError=String(error?.message||error);if(Number(error?.status)===401)forgetSession();if(input)input.value='';renderGeminiStatus('Không thể generateContent · '+state.lastGeminiError);}
  finally{if(button)button.disabled=false;}
 }
 async function refreshGeminiSession(){
  mountGeminiUI();const secret=sessionSecret();if(!secret)return;
- try{await validateGemini(secret);renderGeminiStatus('Đã kết nối · '+modeLabel());}
- catch(error){renderGeminiStatus(error?.message||'Khóa phiên cần được kiểm tra lại.');}
+ renderGeminiStatus('Đang kiểm tra lại generateContent…');
+ try{const model=await validateGemini(secret);renderGeminiStatus('Gemini phản hồi OK · '+model);}
+ catch(error){state.geminiReady=false;state.lastGeminiError=String(error?.message||error);renderGeminiStatus('Không thể generateContent · '+state.lastGeminiError);}
 }
 function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return;if(backdrop)backdrop.hidden=false;drawer.hidden=false;requestAnimationFrame(()=>{backdrop?.classList.add('open');drawer.classList.add('open');});document.body.classList.add('dolphin-modal-open');mountGeminiUI();if(fab){fab.setAttribute('aria-expanded','true');fab.hidden=true;}setTimeout(()=>$('research-ai-question')?.focus(),100);}
 function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return;drawer.classList.remove('open');backdrop?.classList.remove('open');document.body.classList.remove('dolphin-modal-open');setTimeout(()=>{drawer.hidden=true;if(backdrop)backdrop.hidden=true;},160);if(fab){fab.setAttribute('aria-expanded','false');fab.hidden=false;}}
@@ -612,13 +622,13 @@ async function ask(question,preferredMode=null){
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
   waiting?.remove();if(error?.name==='AbortError'){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
-  const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY';
-  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':'Gemini chưa phản hồi; đang tiếp tục bằng FinQuery local. ')+'</div>'+local.html;addAnalysis(local);
-  if(error?.message&&!noKey)renderGeminiStatus(error.message);
+  const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY',detail=String(error?.message||'').slice(0,320);
+  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · đang tiếp tục bằng FinQuery local. ')+'</div>'+local.html;addAnalysis(local);
+  if(error?.message&&!noKey){state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(detail);}
  }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
-window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({connected:Boolean(sessionSecret()),mode:state.mode,model:state.model||null})};
+window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
 const form=$('research-ai-form'),input=$('research-ai-question'),sendButton=$('research-ai-send');
 form?.addEventListener('submit',e=>{e.preventDefault();if(state.busy){state.currentController?.abort();return;}const q=input.value.trim();if(q){input.value='';input.style.height='';ask(q);}});
 input?.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,130)+'px';});
