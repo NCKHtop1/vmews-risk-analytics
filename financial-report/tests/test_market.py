@@ -412,11 +412,14 @@ class MarketTests(unittest.TestCase):
         self.assertIn('brokerResearch',bundle)
 
     def test_board_does_not_scale_vnd_or_invent_missing_price(self):
-        items = [{'listingInfo': {'symbol':'MBB','refPrice':25000}, 'matchPrice':{'matchPrice':26000,'accumulatedVolume':1234,'time':1727100000000}}, {'listingInfo':{'symbol':'FPT'},'matchPrice':{'matchPrice':None}}]
+        items = [{'listingInfo': {'symbol':'MBB','refPrice':25000}, 'matchPrice':{'matchPrice':26000,'openPrice':25200,'highest':26300,'lowest':24900,'accumulatedVolume':1234,'time':1727100000000}}, {'listingInfo':{'symbol':'FPT'},'matchPrice':{'matchPrice':None}}]
         rows=m.normalize_board(items,['MBB','FPT'],'2026-09-24T00:00:00+00:00')
         self.assertEqual(rows['MBB']['price'],26000)
         self.assertAlmostEqual(rows['MBB']['changePct'],4)
         self.assertEqual(rows['MBB']['volume'],1234)
+        self.assertEqual(rows['MBB']['open'],25200)
+        self.assertEqual(rows['MBB']['high'],26300)
+        self.assertEqual(rows['MBB']['low'],24900)
         self.assertNotIn('FPT',rows)
         self.assertIsNone(m.number('NaN'))
 
@@ -498,8 +501,11 @@ class MarketTests(unittest.TestCase):
                 self.assertTrue((out/'drivers.json').exists())
                 status=m.read(out/'prices-status.json',{})
                 self.assertEqual(status['quotes'],1)
+                self.assertEqual(status['expected'],1)
                 self.assertEqual(status['histories'],1)
-                self.assertEqual(status['historyRefresh'],'separate_eod_job')
+                self.assertEqual(status['retainedQuotes'],0)
+                self.assertEqual(status['quoteRefresh'],'15_minute_session_job')
+                self.assertIn('live_quote_merged_client',status['historyRefresh'])
         finally:
             m.request=original
 
@@ -664,6 +670,19 @@ class MarketTests(unittest.TestCase):
         self.assertIn('!this.dataConsistent',chart)
         self.assertIn('Dữ liệu giá và biểu đồ đang lệch nhau',chart)
         self.assertIn('.chart-data-mismatch',css)
+
+    def test_live_daily_chart_merges_15_minute_quote_and_replays_after_history_load(self):
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        self.assertIn('mergeDailyQuote(q,force=false)',chart)
+        self.assertIn("this.baseBars.push({time:day,open,high,low,close:price",chart)
+        self.assertIn("openEstimated:!(Number.isFinite(openLive)&&openLive>0)",chart)
+        self.assertIn("if(!M.intraday(this.tf))this.mergeDailyQuote(this.lastMarketQuote,true)",chart)
+        self.assertIn("Snapshot live · ",chart)
+        self.assertIn("chartController.snapshot(currentQuote)",market)
+        self.assertIn("setInterval(()=>{if(!document.hidden)refresh();},60000)",market)
+        self.assertIn("cron: '7,22,37,52 2-8 * * 1-5'",workflow)
 
     def test_production_bundle_matches_dolphin_v4(self):
         bundle=(ROOT/'index.html').read_text()
