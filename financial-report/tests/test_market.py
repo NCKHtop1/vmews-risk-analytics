@@ -22,7 +22,52 @@ event_spec = importlib.util.spec_from_file_location('event_refresh', ROOT / 'scr
 em = importlib.util.module_from_spec(event_spec)
 event_spec.loader.exec_module(em)
 
+esg_spec = importlib.util.spec_from_file_location('esg_refresh', ROOT / 'scripts/refresh_esg.py')
+esm = importlib.util.module_from_spec(esg_spec)
+esg_spec.loader.exec_module(esm)
+
 class MarketTests(unittest.TestCase):
+    def test_corporate_esg_registry_covers_vn100_banks_and_external_providers(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
+        self.assertTrue(required.issubset(set(cfg['banks'])))
+        self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
+        providers={x['provider'] for x in cfg['external_sources']}
+        self.assertTrue({'WWF SUSBA','HOSE VNSI','VIS Rating','Morningstar Sustainalytics','S&P Global Ratings'}.issubset(providers))
+        self.assertGreaterEqual(len(cfg['metric_rules']),15)
+        self.assertTrue(any(x['type']=='ESG Credit Impact Score' for x in cfg['rating_patterns']))
+
+    def test_corporate_esg_metric_and_rating_extraction_preserves_native_scale_and_provenance(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        text='''VPBank Sustainable Development Report 2024. Green credit VND 21,943 billion. Training hours in 2024 1,681,691. Female employees 58.6%. Moody’s ESG Credit Impact Score remained CIS-2. VPBank continued in VNSI and was assessed under WWF Sustainable Banking Assessment (SUSBA).'''
+        metrics=esm.extract_metrics(text,cfg['metric_rules'],2024,'https://example.com/vpb.pdf','VPBank ESG 2024')
+        ids={x['metricId'] for x in metrics}
+        self.assertIn('green_credit',ids)
+        self.assertIn('training_hours',ids)
+        self.assertIn('women_workforce_pct',ids)
+        self.assertTrue(all(x['sourceUrl']=='https://example.com/vpb.pdf' for x in metrics))
+        ratings=esm.extract_ratings(text,cfg['rating_patterns'],2024,'https://example.com/vpb.pdf','VPBank ESG 2024')
+        self.assertTrue(any(x['provider']=="Moody's" and x['value']=='CIS-2' for x in ratings))
+        self.assertTrue(any(x['provider']=='HOSE' for x in ratings))
+        self.assertTrue(any(x['provider']=='WWF' for x in ratings))
+
+    def test_corporate_esg_document_discovery_helpers_are_year_and_type_aware(self):
+        self.assertEqual(esm.extract_year('Sustainability Report 2025 published 2026'),2026)
+        self.assertEqual(esm.classify_document('Báo cáo phát triển bền vững 2025'),'sustainability_report')
+        self.assertEqual(esm.classify_document('Green Bond Framework Second Party Opinion'),'sustainable_finance_assessment')
+        self.assertTrue(esm.relevant('Báo cáo thường niên 2025',['annual report','báo cáo thường niên']))
+        self.assertEqual(len(esm.doc_key('https://example.com/a.pdf')),20)
+
+    def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
+        flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        self.assertIn('options: [all, prices, news, macro, esg, history, intraday]',flow)
+        self.assertIn("cron: '47 2,9 * * 1-5'",flow)
+        self.assertIn("cron: '47 2 * * 6'",flow)
+        self.assertIn('pypdf==5.1.0',flow)
+        self.assertIn('refresh_esg.py',flow)
+        self.assertIn("mode=esg",flow)
+        self.assertIn("'company-esg.json','esg-status.json'",flow)
+
     def test_events_v6_parses_hnx_and_cafef_history(self):
         hnx='<table><tr><td>Trả cổ tức bằng tiền</td><td>13/01/2026</td><td>14/01/2026</td><td>23/01/2026</td></tr><tr><td>Họp Đại hội cổ đông thường niên</td><td>18/03/2026</td><td>19/03/2026</td><td>17/04/2026</td></tr></table>'
         rows=em.hnx_rows(hnx,'QNS','https://hnx.example/QNS','HNX')
