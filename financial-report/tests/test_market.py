@@ -605,19 +605,22 @@ class MarketTests(unittest.TestCase):
             if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
             else:m.os.environ['INTRADAY_WORKERS']=old_workers
 
-    def test_dolphin_v4_uses_quota_aware_browser_gemini_with_local_fallback(self):
+    def test_dolphin_v5_verifies_real_generate_content_before_connected(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
         css=(ROOT/'frontend/market.css').read_text()
         self.assertIn('generativelanguage.googleapis.com',js)
         self.assertIn('vmews_solution_ai_browser_session',js)
-        self.assertIn("DOLPHIN_VERSION='DOLPHIN_V4'",js)
+        self.assertIn("DOLPHIN_VERSION='DOLPHIN_V5'",js)
         self.assertIn("AI_MODE_KEY='finquery_dolphin_mode'",js)
-        self.assertIn("mode==='deep'?(full[0]||lite[0]||''):(lite[0]||full[0]||'')",js)
-        self.assertIn("if(mode==='deep'){const lite=pickModel('normal'",js)
-        self.assertIn("deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model)",js)
-        self.assertIn("const interactionFallback=[400,403,404,405,429,500,502,503,504].includes(response.status)",js)
-        self.assertIn("const keepSearch=search&&[400,403,404,405].includes(response.status)",js)
+        self.assertIn("gemini-3.5-flash-lite",js)
+        self.assertIn("gemini-3.8-flash",js)
+        self.assertIn("async function probeGemini(secret)",js)
+        self.assertIn(":generateContent",js)
+        self.assertIn("Reply with exactly OK",js)
+        self.assertIn("state.geminiReady=true",js)
+        self.assertIn("Dolphin chỉ báo kết nối khi probe generateContent thực sự thành công.",js)
+        self.assertNotIn("GOOGLE_AI_ORIGIN+'/interactions'",js)
         self.assertIn('Flash-Lite',js)
         self.assertIn('sessionStorage',js)
         self.assertIn('Google Search',js)
@@ -633,6 +636,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('quarterSnapshot',js)
         self.assertIn('riskSignals',js)
         self.assertIn('const local=analyze(q)',js)
+        self.assertIn("Gemini lỗi: '+esc(detail",js)
 
     def test_company_news_is_strict_and_sector_news_cannot_pose_as_company_news(self):
         market=(ROOT/'frontend/market.js').read_text()
@@ -660,8 +664,8 @@ class MarketTests(unittest.TestCase):
     def test_production_bundle_matches_dolphin_v4(self):
         bundle=(ROOT/'index.html').read_text()
         source=(ROOT/'frontend/research-ai.js').read_text()
-        self.assertIn('DOLPHIN_V4',source)
-        self.assertIn('DOLPHIN_V4',bundle)
+        self.assertIn('DOLPHIN_V5',source)
+        self.assertIn('DOLPHIN_V5',bundle)
         self.assertIn('strictCompanyNews',bundle)
         self.assertIn('chart-data-mismatch',bundle)
         self.assertIn('Flash-Lite',bundle)
