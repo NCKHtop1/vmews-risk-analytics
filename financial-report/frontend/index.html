@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="vi">
 <head>
-<meta charset="utf-8"><meta name="finquery-dolphin-version" content="DOLPHIN_V4"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="finquery-dolphin-version" content="DOLPHIN_V6"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FinQuery · Báo cáo tài chính Việt Nam</title>
 <meta name="description" content="Tra cứu, trực quan hóa báo cáo tài chính VN100 và tải Excel."><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css">
@@ -22,7 +22,7 @@
 <div id="error" role="alert" hidden></div>
 <section id="market" class="market-section" aria-label="Giá chứng khoán và tin tức">
 <div class="market-top"><div><h2>Thị trường & doanh nghiệp</h2><p class="market-subtitle">Giá cổ phiếu, biểu đồ và tin doanh nghiệp.</p></div><button id="market-refresh" type="button">Cập nhật ↻</button></div><p id="market-refresh-status" class="market-subtitle" role="status"></p>
-<div class="market-grid"><div class="market-price"><div class="price-head"><div><h3 id="market-symbol">MBB</h3><span id="quote-price">Đang tải giá…</span><span id="quote-change"></span></div><button id="watch-toggle" type="button" aria-pressed="false">☆ Theo dõi</button></div><p id="quote-time" class="market-subtitle"></p><div class="native-chart-heading"><span id="native-chart-title">Biểu đồ FinQuery · MBB</span><span>Dữ liệu thị trường của FinQuery</span></div>
+<div class="market-grid"><div class="market-price"><div class="price-head"><div><h3 id="market-symbol">MBB</h3><span id="quote-price">Đang tải giá…</span><span id="quote-change"></span></div><button id="watch-toggle" type="button" aria-pressed="false">☆ Theo dõi</button></div><p id="quote-time" class="market-subtitle" hidden></p><div class="native-chart-heading"><span id="native-chart-title">Biểu đồ FinQuery · MBB</span><span>Dữ liệu thị trường của FinQuery</span></div>
 <div class="market-view-tabs" role="tablist" aria-label="Chế độ biểu đồ">
 <button type="button" class="active" data-market-view="price" role="tab" aria-selected="true">Giá & kỹ thuật</button>
 <button type="button" data-market-view="peers" role="tab" aria-selected="false">So sánh cổ phiếu ngành</button>
@@ -81,7 +81,7 @@
 <div class="indicator-settings-card" data-settings-for="cmf"><strong>CMF</strong><label>Chu kỳ<input type="number" data-param="cmf" min="2" max="100" value="20"></label></div>
 <p id="chart-indicator-error" role="status"></p></aside>
 </div></div></dialog>
-<p id="chart-stream-status" class="chart-stream-status" role="status" hidden></p><div id="price-readout" aria-live="off"></div><div class="chart-canvas-wrap"><div id="price-chart" aria-label="Biểu đồ giá và khối lượng"></div><div id="chart-insight-markers" class="chart-insight-markers" aria-label="Mốc sự kiện và báo cáo phân tích"></div></div><p id="chart-range-label"></p><p id="chart-status" class="market-subtitle"></p><p class="chart-credit">TradingView Lightweight Charts™ · Copyright © 2025 <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView, Inc.</a> · Nguồn dữ liệu được ghi bên trên.</p></section>
+<p id="chart-stream-status" class="chart-stream-status" role="status" hidden></p><div id="price-readout" aria-live="off"></div><div class="chart-canvas-wrap"><div id="price-chart" aria-label="Biểu đồ giá và khối lượng"></div><div id="chart-insight-markers" class="chart-insight-markers" aria-label="Mốc sự kiện và báo cáo phân tích"></div></div><p id="chart-range-label" hidden></p><p id="chart-status" class="market-subtitle" hidden></p></section>
 <section id="market-insights" class="market-insights" aria-label="Sự kiện doanh nghiệp và báo cáo phân tích">
 <div class="market-insights-head"><div><span class="research-ai-label">EVENTS & RESEARCH</span><h4>Sự kiện & báo cáo CTCK</h4><p id="insight-status">Đang tải dữ liệu sự kiện và nghiên cứu…</p></div><div id="insight-consensus" class="insight-consensus"></div></div>
 <div id="insight-filters" class="insight-filters" role="group" aria-label="Lọc sự kiện và báo cáo"><button type="button" class="active" data-insight-filter="all">Tất cả</button><button type="button" data-insight-filter="event">Sự kiện</button><button type="button" data-insight-filter="research">Báo cáo CTCK</button></div>
@@ -130,7 +130,7 @@
 </div>
 </section>
 <section id="macro" class="macro-section" aria-label="Dữ liệu vĩ mô">
-<div class="macro-head"><div><span class="research-ai-label">MACRO DATA</span><h2>Dữ liệu vĩ mô</h2><p>Trực quan dữ liệu VBMA: tổng quan kinh tế, FDI, GDP, PMI, cung tiền và tín dụng.</p></div><span id="macro-source-status"></span></div>
+<div class="macro-head"><div><span class="research-ai-label">MACRO & ESG DATA</span><h2>Dữ liệu vĩ mô & ESG</h2><p>VBMA và World Bank Sovereign ESG: vĩ mô, FDI, GDP, PMI, cung tiền, tín dụng và toàn bộ chuỗi ESG Việt Nam có sẵn theo năm.</p></div><span id="macro-source-status"></span></div>
 <div id="macro-gate" class="macro-gate"><div><strong>Khu vực dữ liệu giới hạn</strong><p>Nhập mã truy cập để mở bảng dữ liệu vĩ mô.</p></div><form id="macro-unlock-form"><input id="macro-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập dữ liệu vĩ mô"><button type="submit">Mở dữ liệu</button></form><p id="macro-gate-error" role="status"></p></div>
 <div id="macro-workspace" class="macro-workspace" hidden>
 <div class="macro-tabs" id="macro-tabs"></div>
@@ -157,7 +157,7 @@
 <div class="preview-footer"><span id="row-count">—</span><span id="updated-at">—</span></div>
 </section>
 </div>
-<footer class="bottom-line"><span>Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong></span><span>FinQuery · VN100</span></footer>
+<footer class="bottom-line"><span>Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong></span><span>FinQuery · VN100 · <a class="library-credit" href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView Lightweight Charts™</a></span></footer>
 </main>
 </body></html>
 
