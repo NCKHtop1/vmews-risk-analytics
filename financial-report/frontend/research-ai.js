@@ -387,14 +387,27 @@ async function geminiGenerate(secret,model,body,timeoutMs=30000){
  if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;err.model=model;throw err;}
  return payload;
 }
+function probeGenerationConfig(model){
+ const generationConfig={maxOutputTokens:256,temperature:0};
+ if(/^gemini-3(?:\.|-)/i.test(model))generationConfig.thinkingConfig={thinkingLevel:'low'};
+ else if(/^gemini-2\.5-(?:flash|flash-lite)/i.test(model))generationConfig.thinkingConfig={thinkingBudget:0};
+ return generationConfig;
+}
+function emptyGeminiReason(payload){
+ const candidate=payload?.candidates?.[0]||{},finish=String(candidate.finishReason||candidate.finish_reason||'').trim();
+ const usage=payload?.usageMetadata||payload?.usage_metadata||{};
+ const thoughts=Number(usage.thoughtsTokenCount??usage.thoughts_token_count);
+ const output=Number(usage.candidatesTokenCount??usage.candidates_token_count);
+ return [finish&&('finish='+finish),Number.isFinite(thoughts)&&('thoughts='+thoughts),Number.isFinite(output)&&('output='+output)].filter(Boolean).join(', ')||'empty response';
+}
 async function probeGemini(secret){
  const plan=modelPlan(state.mode),errors=[];
  for(const model of plan){
   try{
-   const payload=await geminiGenerate(secret,model,{contents:[{role:'user',parts:[{text:'Reply with exactly OK'}]}],generationConfig:{maxOutputTokens:12,temperature:0}},15000);
+   const payload=await geminiGenerate(secret,model,{contents:[{role:'user',parts:[{text:'Reply with exactly OK'}]}],generationConfig:probeGenerationConfig(model)},20000);
    const result=providerAnswer(payload);
    if(result.text){state.model=model;state.geminiReady=true;state.lastGeminiError='';return model;}
-   errors.push(model+' · empty response');
+   errors.push(model+' · '+emptyGeminiReason(payload));
   }catch(error){errors.push(model+' · '+String(error?.message||error));if(error?.status===401)throw error;}
  }
  const err=new Error(errors.at(-1)||'Gemini không trả lời probe generateContent.');err.status=errors.length?503:0;throw err;
@@ -522,7 +535,7 @@ function providerAnswer(payload){
 }
 async function callGeminiModel(question,secret,model){
  const search=shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
- const generation={maxOutputTokens:deep?2400:1400,temperature:deep?.16:.12};
+ const generation={maxOutputTokens:deep?2400:1400,temperature:deep?.16:.12,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:deep?'high':'low'}}:{})};
  const body=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:generation,...(withSearch?{tools:[{googleSearch:{}}]}:{})});
  let payload;
  try{payload=await geminiGenerate(secret,model,body(search),32000);}
