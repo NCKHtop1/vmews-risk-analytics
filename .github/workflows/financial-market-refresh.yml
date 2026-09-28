@@ -5,12 +5,14 @@ on:
       mode:
         description: Dataset to refresh
         type: choice
-        options: [all, prices, news, macro, history, intraday]
+        options: [all, prices, news, macro, esg, history, intraday]
         default: all
   push:
     branches: [main]
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/refresh_esg.py'
+      - 'financial-report/config/esg_sources.json'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
     # Fast VN100 quote board snapshots: every 15 minutes during the trading window.
@@ -19,6 +21,9 @@ on:
     - cron: '11,41 * * * *'
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
+    # Corporate ESG source discovery: twice each business day, plus Saturday catch-up.
+    - cron: '47 9,14 * * 1-5'
+    - cron: '47 2 * * 6'
     # Heavy candle history runs separately after the Vietnam close.
     - cron: '20 9 * * 1-5'
     - cron: '35 9 * * 1-5'
@@ -52,7 +57,10 @@ jobs:
             git -C /tmp/market-publish config http.https://github.com/.extraheader "$(git config --get http.https://github.com/.extraheader)"
           fi
           mkdir -p /tmp/market-publish/market
-      - name: Collect prices, candles and publisher headlines
+      - name: Install ESG document parser
+        if: inputs.mode == 'esg' || github.event.schedule == '47 9,14 * * 1-5' || github.event.schedule == '47 2 * * 6' || contains(github.event.head_commit.message, '[esg-refresh]')
+        run: pip install -q pypdf==5.1.0
+      - name: Collect prices, candles, publisher headlines and ESG
         id: collect
         env:
           EVENT_SCHEDULE: ${{ github.event.schedule }}
@@ -73,6 +81,8 @@ jobs:
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
+          if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ] || [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg; fi
+          if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[esg-refresh\]'; then mode=esg; fi
           # Keep the 15-minute quote run intentionally lightweight. RSS has its
           # own schedule and is fetched concurrently in refresh_market.py.
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
@@ -81,7 +91,11 @@ jobs:
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-refresh\]'; then mode=history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
-          python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
+          if [ "$mode" = 'esg' ]; then
+            python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
+          else
+            python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
+          fi
       - name: Publish market snapshots without replacing financial reports
         if: always()
         working-directory: /tmp/market-publish
@@ -100,7 +114,7 @@ jobs:
           python - <<'PY'
           import json, pathlib
           p=pathlib.Path('/tmp/market-publish/market')
-          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','news.json','macro.json','history/MBB.json']:
+          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','news.json','macro.json','company-esg.json','esg-status.json','history/MBB.json']:
               f=p/name
               if not f.exists(): continue
               d=json.loads(f.read_text())
@@ -108,6 +122,8 @@ jobs:
               elif name=='drivers.json': print('DRIVERS',len(d.get('symbols',{})),d.get('symbols',{}).get('MBB'))
               elif name=='news.json': print('NEWS',d.get('sources'),d.get('items',[])[:3])
               elif name=='macro.json': print('MACRO',d.get('status'),[(k,len(v.get('rows',[]))) for k,v in d.get('datasets',{}).items()])
+              elif name=='company-esg.json': print('CORPORATE ESG',d.get('status'),d.get('run'),[(k,v.get('coverage')) for k,v in list(d.get('companies',{}).items())[:5]])
+              elif name=='esg-status.json': print('ESG STATUS',d)
               elif name=='history/MBB.json': print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
               else: print('STATUS',d)
           PY
