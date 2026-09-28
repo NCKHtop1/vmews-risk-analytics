@@ -20,8 +20,8 @@ on:
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
     # Heavy candle history runs separately after the Vietnam close.
-    - cron: '20 8 * * 1-5'
-    - cron: '35 8 * * 1-5'
+    - cron: '20 9 * * 1-5'
+    - cron: '35 9 * * 1-5'
 permissions:
   contents: write
 concurrency:
@@ -75,8 +75,8 @@ jobs:
           # Keep the 15-minute quote run intentionally lightweight. RSS has its
           # own schedule and is fetched concurrently in refresh_market.py.
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
-          if [ "$EVENT_SCHEDULE" = '20 8 * * 1-5' ]; then mode=history; fi
-          if [ "$EVENT_SCHEDULE" = '35 8 * * 1-5' ]; then mode=intraday; fi
+          if [ "$EVENT_SCHEDULE" = '20 9 * * 1-5' ]; then mode=history; fi
+          if [ "$EVENT_SCHEDULE" = '35 9 * * 1-5' ]; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
           python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
