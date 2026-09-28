@@ -428,32 +428,38 @@
     {
       "provider": "Moody's",
       "type": "ESG Credit Impact Score",
-      "pattern": "\\bCIS-[1-5]\\b"
+      "pattern": "\\bCIS-[1-5]\\b",
+      "context_pattern": "Moody|ESG Credit Impact|CIS-[1-5]"
     },
     {
       "provider": "HOSE",
       "type": "VNSI membership",
-      "pattern": "\\bVNSI\\b"
+      "pattern": "\\bVNSI\\b",
+      "context_pattern": "VNSI|HOSE|Ho Chi Minh Stock Exchange|Sở Giao dịch Chứng khoán"
     },
     {
       "provider": "WWF",
       "type": "SUSBA assessment",
-      "pattern": "\\bSUSBA\\b|Sustainable Banking Assessment"
+      "pattern": "\\bSUSBA\\b|Sustainable Banking Assessment",
+      "context_pattern": "WWF|SUSBA|Sustainable Banking Assessment"
     },
     {
       "provider": "S&P Global Ratings",
       "type": "Shades of Green/SPO",
-      "pattern": "\\b(?:Dark|Medium|Light) Green\\b|Second Party Opinion|SPO"
+      "pattern": "\\b(?:Dark|Medium|Light) Green\\b|Second Party Opinion|SPO",
+      "context_pattern": "S&P|S&P Global|Shades of Green"
     },
     {
       "provider": "Sustainalytics",
       "type": "Second Party Opinion",
-      "pattern": "credible,? impactful|Second[- ]Party Opinion"
+      "pattern": "credible,? impactful|Second[- ]Party Opinion",
+      "context_pattern": "Sustainalytics|Morningstar"
     },
     {
       "provider": "VIS Rating",
       "type": "Second Party Opinion",
-      "pattern": "best practice|aligned with|Second Party Opinion|Ý kiến của Bên Thứ Hai"
+      "pattern": "best practice|aligned with|Second Party Opinion|Ý kiến của Bên Thứ Hai",
+      "context_pattern": "VIS Rating|VISRating"
     }
   ]
 }
