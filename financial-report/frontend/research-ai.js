@@ -339,7 +339,10 @@ function pickModel(mode,models,exclude=[]){
 function modelPlan(mode=state.mode){
  const first=pickModel(mode,state.modelCandidates),plan=first?[first]:[];
  if(mode==='deep'){const lite=pickModel('normal',state.modelCandidates,plan);if(lite)plan.push(lite);}
- return plan;
+ const pool=[...new Set(state.modelCandidates||[])];
+ const score=name=>{const stable=/preview|experimental|exp-/i.test(name)?0:10000,lite=/flash[-_.]?lite/i.test(name),fit=mode==='deep'?(lite?0:1000):(lite?1000:0);return stable+fit+modelVersionScore(name);};
+ for(const candidate of pool.filter(x=>!plan.includes(x)).sort((a,b)=>score(b)-score(a)))plan.push(candidate);
+ return plan.slice(0,4);
 }
 
 function sessionSecret(){
@@ -355,11 +358,20 @@ function forgetSession(){
  try{sessionStorage.removeItem(GEMINI_SESSION_KEY);}catch{}
 }
 function providerMessage(status,details=''){
- if(status===401||status===403)return'Khóa Google không hợp lệ, đã bị thu hồi hoặc chưa có quyền sử dụng Gemini.';
+ if(status===401)return'Khóa Google không hợp lệ hoặc đã bị thu hồi.';
+ if(status===403)return'Google từ chối quyền cho model hoặc công cụ đang dùng; Dolphin sẽ thử đường gọi/model dự phòng.';
  if(status===429)return'Gemini đã hết hạn mức tạm thời. Dolphin chuyển sang FinQuery cục bộ.';
  if(status===404)return'Mô hình Gemini chưa khả dụng với dự án Google hiện tại.';
  if(status>=500)return'Google Gemini đang tạm thời gián đoạn.';
  return details||('Kết nối Gemini chưa sẵn sàng ('+status+').');
+}
+async function geminiFetch(url,options={},timeoutMs=30000){
+ const parent=options.signal,ctl=new AbortController();let timedOut=false;
+ const onAbort=()=>ctl.abort();if(parent){if(parent.aborted)ctl.abort();else parent.addEventListener('abort',onAbort,{once:true});}
+ const timer=setTimeout(()=>{timedOut=true;ctl.abort();},timeoutMs);
+ try{return await fetch(url,{...options,signal:ctl.signal});}
+ catch(error){if(timedOut){const err=new Error('Gemini phản hồi quá chậm; Dolphin đang thử model dự phòng.');err.status=504;err.code='GEMINI_TIMEOUT';throw err;}throw error;}
+ finally{clearTimeout(timer);if(parent)parent.removeEventListener('abort',onAbort);}
 }
 function availableModels(payload){
  return (payload?.models||[]).filter(item=>{
@@ -369,9 +381,9 @@ function availableModels(payload){
  }).map(item=>String(item.name||'').replace(/^models\//,''));
 }
 async function validateGemini(secret){
- const response=await fetch(GOOGLE_AI_ORIGIN+'/models?pageSize=100',{method:'GET',mode:'cors',cache:'no-store',headers:{'x-goog-api-key':secret}});
+ const response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models?pageSize=100',{method:'GET',mode:'cors',cache:'no-store',headers:{'x-goog-api-key':secret}},15000);
  const payload=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(providerMessage(response.status,payload?.error?.message));
+ if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;throw err;}
  state.modelCandidates=availableModels(payload);
  const model=pickModel(state.mode,state.modelCandidates);
  if(!model)throw new Error('Dự án Google chưa có mô hình Gemini Flash khả dụng.');
@@ -497,14 +509,14 @@ async function callGeminiModel(question,secret,model){
  const compatibleBody=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:{maxOutputTokens:deep?4200:2100,temperature:deep?.16:.12},...(withSearch?{tools:[{googleSearch:{}}]}:{})});
  let response;
  if(search){
-  response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search','url_context']))});
-  if(!response.ok&&[400,403].includes(response.status))response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search']))});
+  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search','url_context']))});
+  if(!response.ok&&[400,403].includes(response.status))response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody(['google_search']))});
  }else{
-  response=await fetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody([]))});
+  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/interactions',{...common,body:JSON.stringify(interactionBody([]))});
  }
- if([400,404,405].includes(response.status)){
-  response=await fetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(search))});
-  if(!response.ok&&search&&[400,403,429].includes(response.status))response=await fetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(false))});
+ if([400,403,404,405].includes(response.status)){
+  response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(search))});
+  if(!response.ok&&search&&[400,403,429].includes(response.status))response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{...common,body:JSON.stringify(compatibleBody(false))});
  }
  const payload=await response.json().catch(()=>({}));
  if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;throw err;}
@@ -525,7 +537,7 @@ async function callLLM(question){
   catch(error){
    lastError=error;
    if(error?.name==='AbortError')throw error;
-   if(![404,429,500,502,503,504].includes(Number(error.status)))break;
+   if(![403,404,429,500,502,503,504].includes(Number(error.status)))break;
   }
  }
  throw lastError||new Error('Gemini tạm thời chưa phản hồi.');
@@ -578,7 +590,7 @@ async function connectGeminiFromUI(){
  const input=$('dolphin-gemini-key'),button=$('dolphin-gemini-save'),secret=String(input?.value||'').trim();if(!secret)return;
  if(button)button.disabled=true;renderGeminiStatus('Đang xác minh trực tiếp với Google Gemini…');
  try{rememberSession(secret);await validateGemini(secret);if(input)input.value='';renderGeminiStatus('Đã kết nối · '+modeLabel());}
- catch(error){forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}
+ catch(error){if([429,500,502,503,504].includes(Number(error?.status))){if(input)input.value='';renderGeminiStatus('Đã lưu khóa · Google đang bận, Dolphin sẽ tự xác minh lại và thử model khả dụng khi truy vấn.');}else{forgetSession();renderGeminiStatus(error?.message||'Không kết nối được Gemini.');}}
  finally{if(button)button.disabled=false;}
 }
 async function refreshGeminiSession(){
