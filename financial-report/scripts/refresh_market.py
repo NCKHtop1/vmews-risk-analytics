@@ -72,6 +72,10 @@ VBMA_TABLES = {
     'credit_sector': ('du_no_tin_dung_theo_nganh_nghe', 'Dư nợ tín dụng theo ngành nghề'),
 }
 
+WORLD_BANK_API = 'https://api.worldbank.org/v2'
+WORLD_BANK_ESG_SOURCE = '75'
+WORLD_BANK_ESG_PROFILE = 'https://esgdata.worldbank.org/data/countries?iso3=VNM'
+
 
 def now():
     return datetime.now(timezone.utc).isoformat()
@@ -775,6 +779,103 @@ def normalize_vbma_dataset(key, parsed):
     return parsed
 
 
+def _world_bank_json(path, params=None):
+    raw = request_query(WORLD_BANK_API + path, params or {}, 'https://databank.worldbank.org/')
+    payload = json.loads(raw)
+    if isinstance(payload, dict):
+        message = payload.get('message') or payload.get('error') or payload
+        raise ValueError(f'World Bank API error: {message}')
+    if not isinstance(payload, list) or len(payload) < 2:
+        raise ValueError('Unexpected World Bank API response')
+    meta = payload[0] if isinstance(payload[0], dict) else {}
+    rows = payload[1] if isinstance(payload[1], list) else []
+    return meta, rows
+
+
+def _world_bank_indicator_chunks(codes, max_count=45, max_chars=2200):
+    chunk, length = [], 0
+    for code in codes:
+        extra = len(code) + (1 if chunk else 0)
+        if chunk and (len(chunk) >= max_count or length + extra > max_chars):
+            yield chunk
+            chunk, length = [], 0
+        chunk.append(code)
+        length += extra
+    if chunk:
+        yield chunk
+
+
+def world_bank_esg_vietnam():
+    """Fetch every ESG series published in World Bank DataBank source 75 for Viet Nam.
+
+    The source catalog is discovered dynamically, so newly added indicators become
+    available without maintaining a hard-coded indicator list. All annual observations
+    returned by the source are retained.
+    """
+    catalog_meta, catalog = _world_bank_json('/indicator', {
+        'source': WORLD_BANK_ESG_SOURCE, 'format': 'json', 'per_page': '1000'
+    })
+    indicators = {}
+    for item in catalog:
+        code = str(item.get('id') or '').strip()
+        name = clean(item.get('name') or code)
+        if code and re.fullmatch(r'[A-Za-z0-9_.-]+', code):
+            indicators[code] = {
+                'name': name or code,
+                'unit': clean(item.get('unit') or ''),
+                'note': clean(item.get('sourceNote') or '')[:500]
+            }
+    if not indicators:
+        raise ValueError('World Bank ESG source 75 returned no indicators')
+
+    end_year = datetime.now(VN).year + 1
+    observations, data_updates = {}, []
+    codes = sorted(indicators)
+    for chunk in _world_bank_indicator_chunks(codes):
+        meta, rows = _world_bank_json('/country/VNM/indicator/' + ';'.join(chunk), {
+            'source': WORLD_BANK_ESG_SOURCE, 'date': f'1960:{end_year}',
+            'format': 'json', 'per_page': '20000'
+        })
+        if meta.get('lastupdated'):
+            data_updates.append(str(meta.get('lastupdated')))
+        for item in rows:
+            indicator = item.get('indicator') if isinstance(item.get('indicator'), dict) else {}
+            code = str(indicator.get('id') or '').strip()
+            year = str(item.get('date') or '').strip()
+            value = number(item.get('value'))
+            if code not in indicators or not re.fullmatch(r'\d{4}', year) or value is None:
+                continue
+            observations.setdefault(year, {})[code] = value
+
+    if not observations:
+        raise ValueError('World Bank ESG source 75 returned no Viet Nam observations')
+    active_codes = [code for code in codes if any(code in row for row in observations.values())]
+    rows = [{'Year': int(year), **{code: observations[year][code] for code in active_codes if code in observations[year]}}
+            for year in sorted(observations)]
+    metric_labels = {code: indicators[code]['name'] for code in active_codes}
+    metric_units = {code: indicators[code]['unit'] for code in active_codes if indicators[code]['unit']}
+    return {
+        'id': 'esg_world_bank',
+        'title': 'ESG Việt Nam · World Bank',
+        'source': 'World Bank Sovereign ESG / DataBank source 75',
+        'sourceUrl': WORLD_BANK_ESG_PROFILE,
+        'collectedAt': now(),
+        'status': 'ok',
+        'columns': ['Year'] + active_codes,
+        'numericColumns': active_codes,
+        'metricLabels': metric_labels,
+        'metricUnits': metric_units,
+        'rows': rows,
+        'allYears': True,
+        'metricTable': True,
+        'indicatorCount': len(active_codes),
+        'catalogCount': len(indicators),
+        'firstYear': rows[0]['Year'],
+        'lastYear': rows[-1]['Year'],
+        'sourceLastUpdated': max(data_updates) if data_updates else catalog_meta.get('lastupdated')
+    }
+
+
 def macro(out, companies=None):
     path = out / 'macro.json'
     previous = read(path, {'datasets': {}})
@@ -785,17 +886,39 @@ def macro(out, companies=None):
             parsed = normalize_vbma_dataset(key, parse_vbma_table(request(url)))
             parsed.update({'id': key, 'title': title, 'source': 'VBMA', 'sourceUrl': url, 'collectedAt': now(), 'status': 'ok'})
             datasets[key] = parsed
-            sources.append({'id': key, 'url': url, 'status': 'ok', 'rows': len(parsed['rows'])})
+            sources.append({'id': key, 'provider': 'VBMA', 'url': url, 'status': 'ok', 'rows': len(parsed['rows'])})
         except Exception as e:
             retained = previous.get('datasets', {}).get(key)
             if retained:
                 datasets[key] = {**retained, 'status': 'retained', 'error': str(e)}
-            sources.append({'id': key, 'url': url, 'status': 'error', 'error': str(e)})
+            sources.append({'id': key, 'provider': 'VBMA', 'url': url, 'status': 'error', 'error': str(e)})
+
+    try:
+        esg = world_bank_esg_vietnam()
+        datasets['esg_world_bank'] = esg
+        sources.append({
+            'id': 'esg_world_bank', 'provider': 'World Bank ESG', 'url': WORLD_BANK_ESG_PROFILE,
+            'status': 'ok', 'rows': len(esg['rows']), 'indicators': esg['indicatorCount']
+        })
+    except Exception as e:
+        retained = previous.get('datasets', {}).get('esg_world_bank')
+        if retained:
+            datasets['esg_world_bank'] = {**retained, 'status': 'retained', 'error': str(e)}
+        sources.append({'id': 'esg_world_bank', 'provider': 'World Bank ESG', 'url': WORLD_BANK_ESG_PROFILE,
+                        'status': 'error', 'error': str(e)})
+
     ok = any(x['status'] == 'ok' for x in sources)
-    write(path, {'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'source': 'VBMA', 'sources': sources, 'datasets': datasets})
-    print(f'Macro: {sum(x["status"] == "ok" for x in sources)}/{len(sources)} VBMA tables; {sum(len(x.get("rows", [])) for x in datasets.values())} rows', flush=True)
+    providers = sorted({x.get('provider') for x in sources if x.get('provider') and (x['status'] == 'ok' or x['id'] in datasets)})
+    write(path, {
+        'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'),
+        'status': 'ok' if ok else 'retained', 'source': ' + '.join(providers) or 'Macro data',
+        'sources': sources, 'datasets': datasets
+    })
+    esg_count = datasets.get('esg_world_bank', {}).get('indicatorCount', 0)
+    print(f'Macro/ESG: {sum(x["status"] == "ok" for x in sources)}/{len(sources)} sources; '
+          f'{sum(len(x.get("rows", [])) for x in datasets.values())} rows; ESG indicators {esg_count}', flush=True)
     if not datasets:
-        raise RuntimeError('VBMA macro collection failed and no retained data is available')
+        raise RuntimeError('Macro and ESG collection failed and no retained data is available')
 
 
 def news(out, companies):

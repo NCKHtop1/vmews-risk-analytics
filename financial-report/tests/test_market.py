@@ -611,13 +611,13 @@ class MarketTests(unittest.TestCase):
             if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
             else:m.os.environ['INTRADAY_WORKERS']=old_workers
 
-    def test_dolphin_v5_verifies_real_generate_content_before_connected(self):
+    def test_dolphin_v6_retries_transient_gemini_and_keeps_valid_key_connected(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
         css=(ROOT/'frontend/market.css').read_text()
         self.assertIn('generativelanguage.googleapis.com',js)
         self.assertIn('vmews_solution_ai_browser_session',js)
-        self.assertIn("DOLPHIN_VERSION='DOLPHIN_V5'",js)
+        self.assertIn("DOLPHIN_VERSION='DOLPHIN_V6'",js)
         self.assertIn("AI_MODE_KEY='finquery_dolphin_mode'",js)
         self.assertIn("gemini-3.5-flash-lite",js)
         self.assertIn("gemini-3.8-flash",js)
@@ -646,7 +646,15 @@ class MarketTests(unittest.TestCase):
         self.assertIn('quarterSnapshot',js)
         self.assertIn('riskSignals',js)
         self.assertIn('const local=analyze(q)',js)
-        self.assertIn("Gemini lỗi: '+esc(detail",js)
+        self.assertIn('TRANSIENT_GEMINI_STATUS',js)
+        self.assertIn('geminiGenerateResilient',js)
+        self.assertIn('retryDelay(attempt)',js)
+        self.assertIn('await waitGemini(retryDelay(attempt))',js)
+        self.assertIn('plan.slice(0,6)',js)
+        self.assertIn("GEMINI_TRANSIENT_EXHAUSTED",js)
+        self.assertIn("thinkingLevel:deep?'medium':'low'",js)
+        self.assertIn("khóa vẫn kết nối",js)
+        self.assertIn('data-ai-mode="normal" data-ai-prompt="Vì sao mã này tăng hoặc giảm trong phiên hôm nay?"',html)
 
     def test_company_news_is_strict_and_sector_news_cannot_pose_as_company_news(self):
         market=(ROOT/'frontend/market.js').read_text()
@@ -684,11 +692,26 @@ class MarketTests(unittest.TestCase):
         self.assertIn("setInterval(()=>{if(!document.hidden)refresh();},60000)",market)
         self.assertIn("cron: '7,22,37,52 2-8 * * 1-5'",workflow)
 
-    def test_production_bundle_matches_dolphin_v4(self):
+    def test_chart_ui_hides_verbose_status_and_moves_tradingview_attribution_to_footer(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        chart=(ROOT/'frontend/chart-engine.js').read_text()
+        insights=(ROOT/'frontend/insights.js').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
+        self.assertIn('id="quote-time" class="market-subtitle" hidden',html)
+        self.assertIn('id="chart-range-label" hidden',html)
+        self.assertIn('id="chart-status" class="market-subtitle" hidden',html)
+        self.assertNotIn('class="chart-credit"',html)
+        self.assertIn('attributionLogo:false',chart)
+        self.assertIn('Charts by TradingView Lightweight Charts™',html)
+        self.assertNotIn('⌄',insights)
+        self.assertNotIn('⌃',insights)
+        self.assertIn('.clean-chevron',css)
+
+    def test_production_bundle_matches_dolphin_v6(self):
         bundle=(ROOT/'index.html').read_text()
         source=(ROOT/'frontend/research-ai.js').read_text()
-        self.assertIn('DOLPHIN_V5',source)
-        self.assertIn('DOLPHIN_V5',bundle)
+        self.assertIn('DOLPHIN_V6',source)
+        self.assertIn('DOLPHIN_V6',bundle)
         self.assertIn('strictCompanyNews',bundle)
         self.assertIn('chart-data-mismatch',bundle)
         self.assertIn('Flash-Lite',bundle)
@@ -840,6 +863,40 @@ class MarketTests(unittest.TestCase):
         for forbidden in ('bond','swap','yield_curve','short_term_benchmark'):
             self.assertNotIn(forbidden,joined)
 
+    def test_world_bank_esg_vietnam_keeps_all_available_years_and_dynamic_catalog(self):
+        original=m._world_bank_json
+        calls=[]
+        def fake(path,params=None):
+            calls.append((path,params))
+            if path=='/indicator':
+                return {'lastupdated':'2026-09-18'},[
+                    {'id':'EN.TEST','name':'Environment test','unit':'%','sourceNote':'E'},
+                    {'id':'GOV_TEST','name':'Governance test','unit':'index','sourceNote':'G'},
+                ]
+            return {'lastupdated':'2026-09-18'},[
+                {'indicator':{'id':'EN.TEST'},'date':'1960','value':1.5},
+                {'indicator':{'id':'EN.TEST'},'date':'2024','value':2.5},
+                {'indicator':{'id':'GOV_TEST'},'date':'1996','value':-0.2},
+                {'indicator':{'id':'GOV_TEST'},'date':'2025','value':0.4},
+            ]
+        try:
+            m._world_bank_json=fake
+            ds=m.world_bank_esg_vietnam()
+            self.assertEqual(ds['id'],'esg_world_bank')
+            self.assertTrue(ds['allYears'])
+            self.assertTrue(ds['metricTable'])
+            self.assertEqual(ds['catalogCount'],2)
+            self.assertEqual(ds['indicatorCount'],2)
+            self.assertEqual(ds['firstYear'],1960)
+            self.assertEqual(ds['lastYear'],2025)
+            self.assertEqual(ds['metricLabels']['EN.TEST'],'Environment test')
+            self.assertEqual(ds['rows'][0]['EN.TEST'],1.5)
+            self.assertEqual(ds['rows'][-1]['GOV_TEST'],0.4)
+            self.assertEqual(calls[0][1]['source'],'75')
+            self.assertTrue(any('/country/VNM/indicator/' in path for path,_ in calls))
+        finally:
+            m._world_bank_json=original
+
     def test_indicator_picker_signals_macro_gate_and_natural_macro_answers_are_wired(self):
         html=(ROOT/'frontend/index.html').read_text()
         chart=(ROOT/'frontend/chart-engine.js').read_text()
@@ -858,6 +915,11 @@ class MarketTests(unittest.TestCase):
         self.assertIn('showWorkspace',macro)
         self.assertIn("workspace.hidden=false",macro)
         self.assertIn("workspace.style.display='block'",macro)
+        self.assertIn('metricLabels',macro)
+        self.assertIn('ds.allYears?points:points.slice(-48)',macro)
+        self.assertIn('ds.metricTable?[first,state.metric]',macro)
+        self.assertIn('World Bank Sovereign ESG',html)
+        self.assertIn('WORLD_BANK_ESG_SOURCE', (ROOT/'scripts/refresh_market.py').read_text())
         build=(ROOT/'scripts/build_cdn.py').read_text()
         self.assertIn("(front / 'macro.js').read_text()",build)
         for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
