@@ -25,6 +25,7 @@ USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "1800000"))
 DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "30"))
+EXTRACTOR_VERSION = 2
 
 
 def now():
@@ -111,19 +112,47 @@ def extract_year(text):
 
 def classify_document(text):
     s = ascii_fold(text)
-    if "sustainability" in s or "phat trien ben vung" in s or re.search(r"\besg\b", s):
-        return "sustainability_report"
-    if "climate" in s or "tcfd" in s or "ifrs s2" in s:
-        return "climate_disclosure"
-    if "green bond" in s or "sustainable finance" in s or "second party opinion" in s or "spo" in s:
+    if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
         return "sustainable_finance_assessment"
     if "annual report" in s or "bao cao thuong nien" in s:
         return "annual_report"
+    if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s:
+        return "sustainability_report"
+    if "tcfd" in s or "ifrs s2" in s or ("climate" in s and "disclosure" in s):
+        return "climate_disclosure"
     if "vnsi" in s:
         return "vnsi"
     if "susba" in s or "sustainable banking assessment" in s:
         return "susba"
+    if "sustainability" in s or "phat trien ben vung" in s or re.search(r"\besg\b", s):
+        return "esg_web_content"
     return "esg_other"
+
+
+def infer_report_year(text, fallback=None):
+    """Prefer a reporting year explicitly tied to a report/disclosure label."""
+    sample = clean_text(text[:50000])
+    patterns = [
+        r"(?:Sustainability|ESG|Annual)\s+Report\s+(20[0-3]\d)",
+        r"(20[0-3]\d)\s+(?:Sustainability|ESG|Annual)\s+Report",
+        r"Báo\s+cáo\s+(?:phát\s+triển\s+bền\s+vững|thường\s+niên)[^\d]{0,30}(20[0-3]\d)",
+        r"(?:reporting|financial)\s+(?:year|period)[^\d]{0,20}(20[0-3]\d)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, sample, re.I)
+        if match:
+            return int(match.group(1))
+    return fallback
+
+
+def metric_document_allowed(doc):
+    if doc.get("type") in {"sustainability_report", "annual_report", "climate_disclosure"}:
+        return True
+    if doc.get("type") == "esg_web_content":
+        path = urlsplit(doc.get("url") or "").path.lower()
+        noisy = any(x in path for x in ("/giai-thuong", "/award", "/tin-tuc", "/news", "/su-kien"))
+        return not noisy
+    return False
 
 
 def relevant(text, keywords):
@@ -229,7 +258,7 @@ def discover_seed(seed_url, keywords):
 
 def extract_document_text(url):
     raw, ctype, final_url = fetch(url, timeout=35)
-    if looks_pdf(final_url, ctype):
+    if looks_pdf(final_url, ctype) and raw.lstrip().startswith(b"%PDF"):
         try:
             from pypdf import PdfReader
         except Exception as exc:
@@ -248,6 +277,7 @@ def extract_document_text(url):
             if size >= MAX_TEXT_CHARS:
                 break
         return clean_text(" ".join(parts))[:MAX_TEXT_CHARS], final_url, "pdf"
+    # Some sites return an HTML download gate from a URL ending in .pdf.
     return strip_html(raw)[:MAX_TEXT_CHARS], final_url, "html"
 
 
