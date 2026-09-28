@@ -521,9 +521,36 @@ class MarketTests(unittest.TestCase):
                 self.assertEqual(status['histories'],1)
                 self.assertEqual(status['retainedQuotes'],0)
                 self.assertEqual(status['quoteRefresh'],'15_minute_session_job')
-                self.assertIn('live_quote_merged_client',status['historyRefresh'])
+                self.assertIn('server_live_quote_merge',status['historyRefresh'])
+                self.assertIn('liveDailyBarsMerged',status)
         finally:
             m.request=original
+
+    def test_live_quote_persists_current_daily_bar_without_history_network_request(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            m.write(out/'history/FPT.json',{
+                'symbol':'FPT','source':'KBS','status':'retained','barCount':2,
+                'firstBar':'2020-01-02','lastBar':'2026-09-25',
+                'bars':[
+                    {'time':'2020-01-02','open':10000,'high':10100,'low':9900,'close':10050,'volume':1000},
+                    {'time':'2026-09-25','open':65500,'high':65900,'low':64600,'close':64700,'volume':3543900},
+                ]
+            })
+            merged=m.merge_live_daily_quotes(out,{'FPT':{
+                'symbol':'FPT','status':'ok','source':'Vietcap',
+                'price':63700,'reference':64700,'open':64700,'high':64800,'low':63000,'volume':5148700,
+                'sourceTime':'2026-09-28T07:45:00+00:00','collectedAt':'2026-09-28T17:05:35+00:00'
+            }})
+            saved=m.read(out/'history/FPT.json',{})
+            self.assertEqual(merged,1)
+            self.assertEqual(saved['source'],'KBS')
+            self.assertEqual(saved['firstBar'],'2020-01-02')
+            self.assertEqual(saved['lastBar'],'2026-09-28')
+            self.assertEqual(saved['bars'][-1],{
+                'time':'2026-09-28','open':64700.0,'high':64800.0,'low':63000.0,'close':63700.0,'volume':5148700.0
+            })
+            self.assertEqual(saved['liveQuoteProvider'],'Vietcap')
 
     def test_kbs_history_normalization_supports_listing_to_present_payload(self):
         payload={'symbol':'FPT','data_day':[
@@ -1022,7 +1049,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("'12000'",text)
         self.assertIn("HISTORY_PAGE_SIZE",text)
         self.assertIn("'1000'",text)
-        self.assertIn("HISTORY_RETRIES: '3'",text)
+        self.assertIn("HISTORY_RETRIES:",text)
+        self.assertIn("&& '3' || '1'",text)
         self.assertIn("HISTORY_KBS_FULL",text)
         self.assertIn("HISTORY_START_DATE: '1998-01-01'",text)
         self.assertNotIn('pip install -q vnstock',text)

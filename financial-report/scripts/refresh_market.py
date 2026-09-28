@@ -336,11 +336,69 @@ def build_drivers(out, companies):
     return symbols
 
 
+def merge_live_daily_quotes(out, quotes):
+    """Persist the current trading-day OHLCV into retained daily history.
+
+    The quote board already returns a cumulative session snapshot for all VN100
+    symbols in one fast request. Persisting that snapshot makes the daily chart
+    current even when a later per-symbol EOD history request times out. An
+    official history refresh can overwrite the same date afterwards.
+    """
+    merged_count = 0
+    for symbol, quote in (quotes or {}).items():
+        if quote.get('status') != 'ok':
+            continue
+        price = number(quote.get('price'))
+        source_time = timestamp(quote.get('sourceTime') or quote.get('collectedAt'))
+        if price is None or price <= 0 or not source_time:
+            continue
+        try:
+            day = datetime.fromisoformat(source_time).astimezone(VN).date().isoformat()
+        except (ValueError, TypeError):
+            continue
+        path = out / 'history' / (symbol + '.json')
+        previous = read(path, {})
+        previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+        if not previous_bars:
+            continue
+        last_day = str(previous_bars[-1].get('time') or '')
+        if last_day and day < last_day:
+            continue
+        by_day = {bar['time']: bar for bar in previous_bars}
+        existing = by_day.get(day, {})
+        open_ = number(quote.get('open')) or number(existing.get('open')) or number(quote.get('reference')) or price
+        high_values = [number(quote.get('high')), number(existing.get('high')), open_, price]
+        low_values = [number(quote.get('low')), number(existing.get('low')), open_, price]
+        high = max(v for v in high_values if v is not None)
+        low = min(v for v in low_values if v is not None)
+        volume = max(number(quote.get('volume')) or 0, number(existing.get('volume')) or 0)
+        by_day[day] = {
+            'time': day, 'open': open_, 'high': high, 'low': low,
+            'close': price, 'volume': volume
+        }
+        bars = [by_day[key] for key in sorted(by_day)]
+        stamp = now()
+        write(path, {
+            **previous,
+            'checkedAt': stamp,
+            'liveQuoteMergedAt': stamp,
+            'liveQuoteSourceTime': quote.get('sourceTime') or quote.get('collectedAt'),
+            'liveQuoteProvider': quote.get('source') or 'Vietcap',
+            'barCount': len(bars),
+            'firstBar': bars[0]['time'],
+            'lastBar': bars[-1]['time'],
+            'bars': bars
+        })
+        merged_count += 1
+    return merged_count
+
+
 def prices(out, companies):
     """Fast 15-minute quote snapshot.
 
-    Daily and minute candles are refreshed by separate jobs so the board update
-    never waits for 200 per-symbol history requests.
+    The same board snapshot is also merged into each existing daily history
+    file, so today's candle stays current without any per-symbol chart request.
+    Minute candles and official history corrections remain separate jobs.
     """
     symbols = [c['symbol'] for c in companies]
     board_path = out / 'quotes.json'
@@ -367,15 +425,17 @@ def prices(out, companies):
         elif symbol in old.get('quotes', {}):
             quotes[symbol] = {**old['quotes'][symbol], 'status': 'retained'}
     write(board_path, {'checkedAt': collected, 'source': 'Vietcap', 'quotes': quotes, 'errors': errors, 'coverage': len(fresh), 'expected': len(symbols)})
+    live_daily_merged = merge_live_daily_quotes(out, fresh)
     available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
     write(out / 'prices-status.json', {
         'checkedAt': now(), 'quotes': len(fresh), 'histories': available_histories,
         'expected': len(symbols), 'retainedQuotes': max(0, len(quotes) - len(fresh)),
+        'liveDailyBarsMerged': live_daily_merged,
         'errors': errors, 'quoteRefresh': '15_minute_session_job',
-        'historyRefresh': 'live_quote_merged_client_then_separate_eod_official'
+        'historyRefresh': 'server_live_quote_merge_plus_client_replay_then_separate_eod_official'
     })
     drivers = build_drivers(out, companies)
-    print(f'Prices: {len(fresh)}/{len(symbols)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
+    print(f'Prices: {len(fresh)}/{len(symbols)}; live daily bars: {live_daily_merged}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
     if not fresh:
         raise RuntimeError('Quote collection incomplete; previous successful data retained')
 

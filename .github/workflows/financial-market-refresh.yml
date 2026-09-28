@@ -63,9 +63,9 @@ jobs:
           INTRADAY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '300' || '700' }}
           INTRADAY_WORKERS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '1' || '3' }}
           HISTORY_COUNT_BACK: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '12000' || '1600' }}
-          HISTORY_WORKERS: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '2' || '4' }}
+          HISTORY_WORKERS: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '2' || '8' }}
           HISTORY_PAGE_SIZE: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1000' || '1600' }}
-          HISTORY_RETRIES: '3'
+          HISTORY_RETRIES: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '3' || '1' }}
           HISTORY_RECENT_COUNT: '80'
           HISTORY_KBS_FULL: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1' || '0' }}
           HISTORY_START_DATE: '1998-01-01'
