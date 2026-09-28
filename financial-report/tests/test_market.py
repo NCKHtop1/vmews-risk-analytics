@@ -480,6 +480,9 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn("cron: '35 8 * * 1-5'",workflow)
         self.assertNotIn('also_news=1',workflow)
         self.assertNotIn('if [ "$also_news" = \'1\' ]',workflow)
+        self.assertIn("[supersede-market-run]",workflow)
+        self.assertIn("cancel-in-progress: ${{ contains(github.event.head_commit.message, '[supersede-market-run]') }}",workflow)
+        self.assertNotIn("cancel-in-progress: true",workflow)
 
     def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
         quote={'price':110,'changePct':5,'volume':2500,'high':112,'low':100,'status':'ok'}
