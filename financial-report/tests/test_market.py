@@ -474,6 +474,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("if [ \"$EVENT_SCHEDULE\" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi",workflow)
         self.assertIn("cron: '20 9 * * 1-5'",workflow)
         self.assertIn("cron: '35 9 * * 1-5'",workflow)
+        self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
+        self.assertIn("[history-refresh]",workflow)
         self.assertNotIn("cron: '20 8 * * 1-5'",workflow)
         self.assertNotIn("cron: '35 8 * * 1-5'",workflow)
         self.assertNotIn('also_news=1',workflow)
@@ -571,6 +573,40 @@ class MarketTests(unittest.TestCase):
         finally:
             m.request=original
             m.os.environ.pop('HISTORY_COUNT_BACK',None)
+
+    def test_normal_eod_history_refresh_uses_small_recent_window_and_merges_retained_history(self):
+        original=m._history_page
+        calls=[]
+        def fake_history_page(symbol,frame,to,count,minute=False):
+            calls.append({'symbol':symbol,'frame':frame,'count':count,'minute':minute})
+            return [
+                {'time':'2026-09-25','open':64700,'high':65000,'low':64600,'close':64700,'volume':3000000},
+                {'time':'2026-09-28','open':64700,'high':64800,'low':63000,'close':63700,'volume':5148700},
+            ]
+        try:
+            m._history_page=fake_history_page
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.write(out/'history/FPT.json',{'symbol':'FPT','bars':[
+                    {'time':'2020-01-02','open':10000,'high':10100,'low':9900,'close':10050,'volume':1000},
+                    {'time':'2026-09-25','open':64600,'high':64900,'low':64500,'close':64600,'volume':2000000},
+                ]})
+                m.os.environ['HISTORY_COUNT_BACK']='1600'
+                m.os.environ['HISTORY_RECENT_COUNT']='80'
+                ok=m._refresh_one_history(out,'FPT',minute=False)
+                saved=m.read(out/'history/FPT.json',{})
+                self.assertTrue(ok[1])
+                self.assertEqual(len(calls),1)
+                self.assertEqual(calls[0]['frame'],'ONE_DAY')
+                self.assertEqual(calls[0]['count'],80)
+                self.assertEqual(saved['firstBar'],'2020-01-02')
+                self.assertEqual(saved['lastBar'],'2026-09-28')
+                self.assertEqual(saved['bars'][-1]['close'],63700)
+                self.assertIn('Vietcap recent',saved['source'])
+        finally:
+            m._history_page=original
+            m.os.environ.pop('HISTORY_COUNT_BACK',None)
+            m.os.environ.pop('HISTORY_RECENT_COUNT',None)
 
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
