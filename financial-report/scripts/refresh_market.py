@@ -561,26 +561,28 @@ def _refresh_one_history(out, symbol, minute=False):
             bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
+            recent_count = max(20, min(250, int(os.environ.get('HISTORY_RECENT_COUNT', '80'))))
             providers = []
             bars = []
-            if os.environ.get('HISTORY_KBS_FULL') == '1':
+            force_full = os.environ.get('HISTORY_KBS_FULL') == '1'
+            previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+            previous_last = previous_bars[-1].get('time') if previous_bars else None
+            recent_cutoff = (datetime.now(VN).date() - timedelta(days=180)).isoformat()
+            # Normal EOD refresh is incremental: existing symbols only need the
+            # recent daily window merged onto their retained long history. This
+            # avoids re-downloading ~1,600 bars x 100 symbols every business day.
+            if force_full:
                 try:
                     bars = _kbs_full_history(symbol)
                     providers.append('KBS')
                 except Exception as kbs_error:
                     providers.append('KBS error: ' + str(kbs_error)[:180])
+            elif previous_bars and previous_last and previous_last >= recent_cutoff:
+                bars = _history_page(symbol, 'ONE_DAY', int(time.time()), min(recent_count, target), minute=False)
+                providers.append('Vietcap recent')
             if not bars:
                 bars = _full_daily_history(symbol, target)
-                providers.append('Vietcap')
-            elif len(bars) < 40 or bars[-1]['time'] < (datetime.now(VN).date() - timedelta(days=10)).isoformat():
-                try:
-                    recent = _history_page(symbol, 'ONE_DAY', int(time.time()), min(500, target), minute=False)
-                    merged = {bar['time']: bar for bar in bars}
-                    merged.update({bar['time']: bar for bar in recent})
-                    bars = [merged[key] for key in sorted(merged)]
-                    providers.append('Vietcap recent')
-                except Exception:
-                    pass
+                providers.append('Vietcap full')
             if os.environ.get('HISTORY_VNSTOCK_FALLBACK') == '1':
                 try:
                     extra, provider = _vnstock_full_history(symbol)
@@ -590,9 +592,10 @@ def _refresh_one_history(out, symbol, minute=False):
                     providers.append(provider)
                 except Exception as vn_error:
                     providers.append('Vnstock fallback error: ' + str(vn_error)[:240])
-            # Never discard older successful bars if the upstream temporarily returns a shorter window.
-            if previous.get('bars'):
-                merged = {bar['time']: bar for bar in previous['bars'] if isinstance(bar, dict) and bar.get('time')}
+            # Never discard older successful bars if the upstream returns only
+            # the recent incremental window.
+            if previous_bars:
+                merged = {bar['time']: bar for bar in previous_bars}
                 merged.update({bar['time']: bar for bar in bars})
                 bars = [merged[key] for key in sorted(merged)]
         row = {
