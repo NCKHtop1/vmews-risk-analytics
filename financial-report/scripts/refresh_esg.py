@@ -111,7 +111,7 @@ def extract_year(text):
 
 
 def classify_document(text):
-    s = ascii_fold(text)
+    s = re.sub(r"[-_/]+", " ", ascii_fold(text))
     if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
         return "sustainable_finance_assessment"
     if "annual report" in s or "bao cao thuong nien" in s:
@@ -197,7 +197,12 @@ def discover_seed(seed_url, keywords):
     candidates = []
     for url, label in links:
         combined = f"{label} {url}"
-        if looks_pdf(url) or relevant(combined, keywords):
+        folded = re.sub(r"[-_/]+", " ", ascii_fold(combined))
+        pdf_relevant = looks_pdf(url) and (
+            relevant(combined, keywords)
+            or re.search(r"\b(?:bao cao|report|sustainab|esg|tcfd|climate|green bond|annual)\b", folded)
+        )
+        if pdf_relevant or relevant(combined, keywords):
             candidates.append((url, label))
     # Keep bounded; prefer PDFs and newest-looking titles.
     candidates = sorted(
@@ -462,9 +467,12 @@ def extract_metrics(text, rules, year, source_url, source_title, source_type=Non
 
                 candidates = []
                 after = text[idx + len(alias):window_end]
+                alias_has_unit = (
+                    expected == "hours" and ("hour" in ascii_fold(alias) or "gio" in ascii_fold(alias))
+                )
                 for match in list(VALUE_RE.finditer(after))[:10]:
                     candidate = candidate_from_match(
-                        match, rule, match.start(), alias, year, implicit_alias_unit=False
+                        match, rule, match.start(), alias, year, implicit_alias_unit=alias_has_unit
                     )
                     if candidate:
                         candidates.append(candidate)
@@ -478,9 +486,6 @@ def extract_metrics(text, rules, year, source_url, source_title, source_type=Non
                 if not ambiguous_pairing:
                     for match in before_matches:
                         distance = len(before) - match.end()
-                        alias_has_unit = (
-                            expected == "hours" and ("hour" in ascii_fold(alias) or "gio" in ascii_fold(alias))
-                        )
                         candidate = candidate_from_match(
                             match, rule, distance, alias, year,
                             implicit_alias_unit=alias_has_unit
