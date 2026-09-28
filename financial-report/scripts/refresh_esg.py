@@ -100,8 +100,13 @@ def looks_pdf(url, ctype=""):
 
 
 def extract_year(text):
+    """Prefer the first year in a report title/URL as the reporting year.
+
+    Archive labels commonly look like "Sustainability Report 2025 - published
+    2026"; taking the newest number would incorrectly move 2025 KPIs into 2026.
+    """
     years = [int(x) for x in re.findall(r"\b(20[0-3]\d)\b", str(text or ""))]
-    return max(years) if years else None
+    return years[0] if years else None
 
 
 def classify_document(text):
@@ -209,8 +214,10 @@ def discover_seed(seed_url, keywords):
             # Discovery is best-effort; seed page remains authoritative provenance.
             pass
 
-    # Also treat the landing page itself as extractable ESG content if it contains useful text.
-    if relevant(html_text[:30000], keywords):
+    # Use the landing page itself only when it does not expose a stable report
+    # document/detail link. This prevents a dynamic archive page from consuming
+    # extraction slots on every run.
+    if not documents and relevant(html_text[:30000], keywords):
         documents[final_url] = {
             "id": doc_key(final_url), "url": final_url,
             "title": clean_text(html_text[:140]) or final_url, "sourcePage": seed_url,
@@ -280,14 +287,32 @@ def infer_unit(snippet, matched_unit, rule):
     if matched_unit:
         return matched_unit.strip()
     s = ascii_fold(snippet)
+    if "vnd" in s and "billion" in s:
+        return "billion VND"
+    if "vnd" in s and "million" in s:
+        return "million VND"
     for token, unit in [
-        ("ty dong", "tỷ đồng"), ("trieu dong", "triệu đồng"), ("nghin ty", "nghìn tỷ đồng"),
+        ("nghin ty", "nghìn tỷ đồng"), ("ty dong", "tỷ đồng"), ("trieu dong", "triệu đồng"),
         ("tco2e", "tCO2e"), ("%", "%"), ("kwh", "kWh"), ("mwh", "MWh"), ("m3", "m3"),
         ("hours", "hours"), ("gio", "hours"),
     ]:
         if token in s:
             return unit
     return rule.get("unit_hint")
+
+
+def metric_value_match(text, report_year=None):
+    matches = list(VALUE_RE.finditer(text))
+    for match in matches[:10]:
+        value = parse_number(match.group("value"))
+        raw_digits = re.sub(r"\D", "", match.group("value"))
+        # Skip a nearby reporting/calendar year; otherwise phrases such as
+        # "training hours in 2024 1,681,691" become the false value 2024.
+        if value is not None and len(raw_digits) == 4 and 1990 <= value <= 2039:
+            if report_year is None or int(value) == int(report_year) or len(matches) > 1:
+                continue
+        return match
+    return None
 
 
 def extract_metrics(text, rules, year, source_url, source_title):
@@ -305,11 +330,13 @@ def extract_metrics(text, rules, year, source_url, source_title):
                 window_start, window_end = max(0, idx - 110), min(len(text), idx + len(alias) + 180)
                 snippet = clean_text(text[window_start:window_end])
                 local = text[idx:window_end]
-                m = VALUE_RE.search(local[len(alias):])
+                m = metric_value_match(local[len(alias):], year)
                 if not m:
                     # Sometimes the value is immediately before the label.
                     before = text[window_start:idx]
-                    matches = list(VALUE_RE.finditer(before))
+                    matches = [x for x in VALUE_RE.finditer(before)
+                               if not (len(re.sub(r"\D", "", x.group("value"))) == 4
+                                       and 1990 <= (parse_number(x.group("value")) or 0) <= 2039)]
                     m = matches[-1] if matches else None
                 if m:
                     raw_value = m.group("value")
@@ -331,18 +358,24 @@ def extract_metrics(text, rules, year, source_url, source_title):
     return results
 
 
-def extract_ratings(text, patterns, year, source_url, source_title):
+def extract_ratings(text, patterns, year, source_url, source_title, provider_hint=None):
     out = []
     for row in patterns:
+        if provider_hint and row["provider"] != provider_hint:
+            continue
         m = re.search(row["pattern"], text, re.I)
         if not m:
             continue
-        start, end = max(0, m.start() - 180), min(len(text), m.end() + 260)
+        start, end = max(0, m.start() - 420), min(len(text), m.end() + 420)
+        context = text[start:end]
+        context_pattern = row.get("context_pattern")
+        if not provider_hint and context_pattern and not re.search(context_pattern, context, re.I):
+            continue
         out.append({
             "provider": row["provider"], "assessmentType": row["type"],
             "year": year, "value": clean_text(m.group(0)),
             "sourceUrl": source_url, "sourceTitle": source_title,
-            "snippet": clean_text(text[start:end])[:500],
+            "snippet": clean_text(context)[:700],
             "confidence": "medium",
         })
     return out
@@ -351,7 +384,16 @@ def extract_ratings(text, patterns, year, source_url, source_title):
 def bank_in_text(bank_cfg, text):
     s = ascii_fold(text)
     names = [bank_cfg.get("name", "")] + bank_cfg.get("aliases", [])
-    return any(ascii_fold(name) in s for name in names if len(ascii_fold(name)) >= 3)
+    for name in names:
+        folded = ascii_fold(name).strip()
+        if len(folded) < 3:
+            continue
+        if re.fullmatch(r"[a-z0-9]{3,4}", folded):
+            if re.search(rf"(?<![a-z0-9]){re.escape(folded)}(?![a-z0-9])", s):
+                return True
+        elif folded in s:
+            return True
+    return False
 
 
 def merge_unique(rows, key_fields):
@@ -392,7 +434,8 @@ def collect(config, output):
     for symbol, cfg in banks.items():
         prev = previous.get("companies", {}).get(symbol, {})
         docs = {d["url"]: d for d in prev.get("documents", []) if d.get("url")}
-        docs.update(discovered[symbol])
+        for url, discovered_doc in discovered[symbol].items():
+            docs[url] = {**docs.get(url, {}), **discovered_doc}
         ordered = sorted(docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True)
         metrics = list(prev.get("metrics", []))
         ratings = list(prev.get("externalAssessments", []))
@@ -421,36 +464,63 @@ def collect(config, output):
             for doc in docs:
                 doc["provider"] = src["provider"]
                 doc["externalKind"] = src["kind"]
-                external_docs[doc["url"]] = doc
+                external_docs[doc["url"]] = {**external_docs.get(doc["url"], {}), **doc}
     for doc in external_docs.values():
         if not doc.get("processedAt"):
             backlog.append(("__external__", doc))
 
-    # Bounded processing so a historical bootstrap cannot block the market publisher.
-    backlog.sort(key=lambda item: (item[1].get("year") or 0, item[1].get("url", "")), reverse=True)
-    processed = 0
-    for owner, doc in backlog[:DOCS_PER_RUN]:
+    # Bounded, parallel processing so a historical bootstrap cannot block the
+    # market publisher. Failed documents back off for 24h instead of consuming
+    # every subsequent run.
+    current = datetime.now(timezone.utc)
+    eligible_backlog = []
+    for owner, doc in backlog:
+        retry_after = doc.get("retryAfter")
         try:
-            text, final_url, content_type = extract_document_text(doc["url"])
-            doc["url"] = final_url
-            doc["contentType"] = content_type
-            doc["contentHash"] = hashlib.sha256(text.encode("utf-8", "ignore")).hexdigest()
-            doc["processedAt"] = now()
-            doc["textLength"] = len(text)
-            if owner == "__external__":
-                for symbol, cfg in banks.items():
-                    if bank_in_text(cfg, text):
-                        extracted = extract_ratings(text, config["rating_patterns"], doc.get("year"), final_url, doc.get("title"))
-                        companies[symbol]["externalAssessments"].extend(extracted)
-            else:
-                metrics = extract_metrics(text, config["metric_rules"], doc.get("year"), final_url, doc.get("title"))
-                ratings = extract_ratings(text, config["rating_patterns"], doc.get("year"), final_url, doc.get("title"))
-                companies[owner]["metrics"].extend(metrics)
-                companies[owner]["externalAssessments"].extend(ratings)
-            processed += 1
-        except Exception as exc:
-            doc["lastError"] = str(exc)[:300]
-            doc["lastAttemptAt"] = now()
+            blocked = retry_after and datetime.fromisoformat(retry_after) > current
+        except (ValueError, TypeError):
+            blocked = False
+        if not blocked:
+            eligible_backlog.append((owner, doc))
+    eligible_backlog.sort(key=lambda item: (item[1].get("year") or 0, item[1].get("url", "")), reverse=True)
+    selected = eligible_backlog[:DOCS_PER_RUN]
+    processed = 0
+    workers = min(4, max(1, len(selected)))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(extract_document_text, doc["url"]): (owner, doc) for owner, doc in selected}
+        for future in as_completed(futures):
+            owner, doc = futures[future]
+            try:
+                text, final_url, content_type = future.result()
+                doc["url"] = final_url
+                doc["contentType"] = content_type
+                doc["contentHash"] = hashlib.sha256(text.encode("utf-8", "ignore")).hexdigest()
+                doc["processedAt"] = now()
+                doc["textLength"] = len(text)
+                doc.pop("lastError", None)
+                doc.pop("retryAfter", None)
+                if owner == "__external__":
+                    provider_hint = doc.get("provider")
+                    for symbol, cfg in banks.items():
+                        if bank_in_text(cfg, text):
+                            extracted = extract_ratings(
+                                text, config["rating_patterns"], doc.get("year"),
+                                final_url, doc.get("title"), provider_hint=provider_hint
+                            )
+                            companies[symbol]["externalAssessments"].extend(extracted)
+                else:
+                    metrics = extract_metrics(text, config["metric_rules"], doc.get("year"), final_url, doc.get("title"))
+                    ratings = extract_ratings(text, config["rating_patterns"], doc.get("year"), final_url, doc.get("title"))
+                    companies[owner]["metrics"].extend(metrics)
+                    companies[owner]["externalAssessments"].extend(ratings)
+                processed += 1
+            except Exception as exc:
+                failures = int(doc.get("failedAttempts") or 0) + 1
+                doc["failedAttempts"] = failures
+                doc["lastError"] = str(exc)[:300]
+                doc["lastAttemptAt"] = now()
+                delay = timedelta(hours=24 if failures < 3 else 168)
+                doc["retryAfter"] = (datetime.now(timezone.utc) + delay).isoformat()
 
     for symbol in companies:
         companies[symbol]["metrics"] = merge_unique(
@@ -484,7 +554,9 @@ def collect(config, output):
             "documentsProcessed": processed,
             "backlogBeforeRun": len(backlog),
             "backlogRemaining": max(0, len(backlog) - processed),
+            "eligibleBacklog": len(eligible_backlog),
             "maxDocumentsPerRun": DOCS_PER_RUN,
+            "documentWorkers": workers,
         },
     }
     write(output / "company-esg.json", payload)
