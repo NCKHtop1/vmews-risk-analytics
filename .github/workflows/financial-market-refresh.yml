@@ -70,14 +70,18 @@ jobs:
           HISTORY_START_DATE: '1998-01-01'
         run: |
           mode="${REQUESTED_MODE:-all}"
+          also_news=0
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
-          if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
+          if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; also_news=1; fi
           if [ "$EVENT_SCHEDULE" = '20 8 * * 1-5' ]; then mode=history; fi
           if [ "$EVENT_SCHEDULE" = '35 8 * * 1-5' ]; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
           python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
+          if [ "$also_news" = '1' ]; then
+            python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode news
+          fi
       - name: Publish market snapshots without replacing financial reports
         if: always()
         working-directory: /tmp/market-publish
