@@ -472,6 +472,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn('pool.submit(_fetch_news_feed, publisher, url, companies, current)',script)
         self.assertIn('for future in as_completed(futures):',script)
         self.assertIn("if [ \"$EVENT_SCHEDULE\" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi",workflow)
+        self.assertIn("cron: '20 9 * * 1-5'",workflow)
+        self.assertIn("cron: '35 9 * * 1-5'",workflow)
+        self.assertNotIn("cron: '20 8 * * 1-5'",workflow)
+        self.assertNotIn("cron: '35 8 * * 1-5'",workflow)
         self.assertNotIn('also_news=1',workflow)
         self.assertNotIn('if [ "$also_news" = \'1\' ]',workflow)
 
