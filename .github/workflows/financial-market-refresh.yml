@@ -66,6 +66,7 @@ jobs:
           HISTORY_WORKERS: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '2' || '4' }}
           HISTORY_PAGE_SIZE: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1000' || '1600' }}
           HISTORY_RETRIES: '3'
+          HISTORY_RECENT_COUNT: '80'
           HISTORY_KBS_FULL: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1' || '0' }}
           HISTORY_START_DATE: '1998-01-01'
         run: |
@@ -78,6 +79,7 @@ jobs:
           if [ "$EVENT_SCHEDULE" = '20 9 * * 1-5' ]; then mode=history; fi
           if [ "$EVENT_SCHEDULE" = '35 9 * * 1-5' ]; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
+          if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-refresh\]'; then mode=history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
           python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
       - name: Publish market snapshots without replacing financial reports
