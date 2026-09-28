@@ -86,7 +86,8 @@ def clean_text(text):
 
 
 def ascii_fold(text):
-    return "".join(c for c in unicodedata.normalize("NFKD", str(text or "")) if not unicodedata.combining(c)).lower()
+    folded = "".join(c for c in unicodedata.normalize("NFKD", str(text or "")) if not unicodedata.combining(c)).lower()
+    return folded.replace("\u0111", "d")
 
 
 def strip_html(raw):
