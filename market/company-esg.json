@@ -1,0 +1,2072 @@
+{
+  "checkedAt": "2026-09-28T23:50:11.857225+00:00",
+  "sourceRegistryVersion": 1,
+  "status": "ok",
+  "methodology": {
+    "compositeScore": false,
+    "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
+    "metricConfidence": "medium unless a future structured-source adapter marks the metric high-confidence."
+  },
+  "companies": {
+    "ACB": {
+      "symbol": "ACB",
+      "name": "Asia Commercial Bank",
+      "checkedAt": "2026-09-28T23:49:31.900589+00:00",
+      "documents": [
+        {
+          "id": "4c50ba807f5df7eeae1a",
+          "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien",
+          "title": "Báo cáo thường niên Về chúng tôi Nhà đầu tư Tuyển dụng ACB Rewards Thư viện An toàn Thanh lý tài sản Hỗ trợ 24/7 Hỗ trợ 24/7 (028) 38 247 24",
+          "sourcePage": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien",
+          "year": null,
+          "type": "annual_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "BID": {
+      "symbol": "BID",
+      "name": "BIDV",
+      "checkedAt": "2026-09-28T23:49:31.900616+00:00",
+      "documents": [
+        {
+          "id": "7d2c2c8504b19ded0bfc",
+          "url": "https://bidvinfo.com.vn/esg",
+          "title": "ESG",
+          "sourcePage": "https://bidv.com.vn/vn/ve-bidv/phat-trien-ben-vung",
+          "year": 2026,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "909aa358015746069e65926122f6868f2fd9f321fc669b98712a6975bad0788d",
+          "processedAt": "2026-09-28T23:49:56.189080+00:00",
+          "textLength": 2147
+        },
+        {
+          "id": "8bf5503e85bfff9b3c40",
+          "url": "https://bidv.com.vn/bidv/tin-tuc/thong-tin-bao-chi/bidv-ngan-hang-trien-khai-giao-dich-phat-hanh-trai-phieu-esg-tot-nhat-viet-nam-2023",
+          "title": "Ngân hàng triển khai giao dịch phát hành trái phiếu ESG tốt nhất Việt Nam 2023 Global banking and Finance Review",
+          "sourcePage": "https://bidv.com.vn/vn/ve-bidv/phat-trien-ben-vung",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "2e407f4e2750c2d8b9f4249ebfd71ac071519b4c4ed9480ec16f3d76236d7dd5",
+          "processedAt": "2026-09-28T23:50:08.436450+00:00",
+          "textLength": 23265
+        }
+      ],
+      "metrics": [
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2026,
+          "value": 227.0,
+          "rawValue": "227",
+          "unit": "VND",
+          "sourceUrl": "https://bidvinfo.com.vn/esg",
+          "sourceTitle": "ESG",
+          "snippet": "V x&#226;y dựng lớp ph&#242;ng vệ t&#224;i ch&#237;nh vững chắc cho mọi gia đ&#236;nh S&#225;ng 20/9, sự kiện cộng đồng &quot;H&#227;y gọi cho con&quot; thuộc v&#242;ng B&#225;n kết 5 chương tr&#236;nh Vũ trụ Đồng tiền 2026 đ&#227; diễn ra đầy cảm x&#250;c tại Cục A05. BIDV đồng h&#224;nh c&#249;ng",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "value": 71.0,
+          "rawValue": "71.000",
+          "unit": "tỷ đồng",
+          "sourceUrl": "https://bidv.com.vn/bidv/tin-tuc/thong-tin-bao-chi/bidv-ngan-hang-trien-khai-giao-dich-phat-hanh-trai-phieu-esg-tot-nhat-viet-nam-2023",
+          "sourceTitle": "Ngân hàng triển khai giao dịch phát hành trái phiếu ESG tốt nhất Việt Nam 2023 Global banking and Finance Review",
+          "snippet": "ược sử dụng đúng các mục tiêu đã cam kết. Tính đến hết Quý III/2023, BIDV là một trong các ngân hàng có dư nợ tín dụng xanh cao nhất hệ thống với quy mô cho vay đạt gần 71.000 tỷ đồng, chiếm khoảng 5% tổng dư nợ, tăng 11% so với năm 2022. Trong đó, lĩnh vực năng lượng sạch, năng lượng tái tạo chiếm 86%",
+          "confidence": "medium"
+        }
+      ],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 2,
+        "processedDocuments": 2,
+        "metrics": 2,
+        "externalAssessments": 0
+      }
+    },
+    "CTG": {
+      "symbol": "CTG",
+      "name": "VietinBank",
+      "checkedAt": "2026-09-28T23:49:31.900625+00:00",
+      "documents": [
+        {
+          "id": "ad7278cf29364edea6e0",
+          "url": "https://investor.vietinbank.vn/documents/20126/9f83d34a-e901-7122-7839-2458d4869c99",
+          "title": "VietinBank lần đầu ra mắt Báo cáo phát triển bền vững",
+          "sourcePage": "https://investor.vietinbank.vn/",
+          "year": null,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "5d5bdad6bb1dc0347c18",
+          "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
+          "title": "Báo cáo thường niên",
+          "sourcePage": "https://investor.vietinbank.vn/",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "4c3dd503763f24fd5927",
+          "url": "https://investor.vietinbank.vn/vi/sustainabledevelopmentreports.aspx",
+          "title": "Báo cáo phát triển bền vững Báo cáo phát triển bền vững",
+          "sourcePage": "https://investor.vietinbank.vn/",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 3,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "EIB": {
+      "symbol": "EIB",
+      "name": "Eximbank",
+      "checkedAt": "2026-09-28T23:49:31.900669+00:00",
+      "documents": [
+        {
+          "id": "f6b18311f04c295e3f80",
+          "url": "https://media.eximbank.com.vn/exim/files/20260330 - EIB - BCTC rieng le nam 2025 da kiem toan.pdf",
+          "title": "Báo cáo tài chính năm 2025 đã kiểm toán (30/03/2026) Báo cáo tài chính riêng lẻ năm 2025 đã kiểm toán",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": 2025,
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "URL can't contain control characters. '/exim/files/20260330 - EIB - BCTC rieng le nam 2025 da kiem toan.pdf' (found at least ' ')",
+          "lastAttemptAt": "2026-09-28T23:50:00.406769+00:00",
+          "retryAfter": "2026-09-29T23:50:00.406776+00:00"
+        },
+        {
+          "id": "7067e3bb54f26cf304e3",
+          "url": "https://media.eximbank.com.vn/exim/files/20260330 - EIB - BCTC hop nhat nam 2025 da kiem toan.pdf",
+          "title": "Báo cáo tài chính năm 2025 đã kiểm toán (30/03/2026) Báo cáo tài chính hợp nhất năm 2025 đã kiểm toán",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": 2025,
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "URL can't contain control characters. '/exim/files/20260330 - EIB - BCTC hop nhat nam 2025 da kiem toan.pdf' (found at least ' ')",
+          "lastAttemptAt": "2026-09-28T23:50:00.406788+00:00",
+          "retryAfter": "2026-09-29T23:50:00.406793+00:00"
+        },
+        {
+          "id": "7622881a4555adbcc1d3",
+          "url": "https://media.eximbank.com.vn/exim/files/EXIMBANK BCTN 2025 TV 3.pdf",
+          "title": "Báo cáo thường niên năm 2025",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": 2025,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "URL can't contain control characters. '/exim/files/EXIMBANK BCTN 2025 TV 3.pdf' (found at least ' ')",
+          "lastAttemptAt": "2026-09-28T23:50:00.406737+00:00",
+          "retryAfter": "2026-09-29T23:50:00.406752+00:00"
+        },
+        {
+          "id": "4de780159614e99f0dfd",
+          "url": "https://media.eximbank.com.vn/exim/files/20250416 - EIB - Bao cao thuong nien nam 2024.pdf",
+          "title": "Báo cáo thường niên năm 2024",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": 2024,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "URL can't contain control characters. '/exim/files/20250416 - EIB - Bao cao thuong nien nam 2024.pdf' (found at least ' ')",
+          "lastAttemptAt": "2026-09-28T23:50:03.360760+00:00",
+          "retryAfter": "2026-09-29T23:50:03.360771+00:00"
+        },
+        {
+          "id": "786b5ba26704c6fcdc69",
+          "url": "https://media.eximbank.com.vn/exim/files/Dieu le Eximbank.pdf",
+          "title": "Dieu le Eximbank.pdf",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": null,
+          "type": "esg_other"
+        },
+        {
+          "id": "1956eeabfd0e8f86da3d",
+          "url": "https://eximbank.com.vn/thong-tin-khac",
+          "title": "Công bố thông tin khác Eximbank lấy phát triển bền vững làm trọng tâm của mọi hoạt động Tìm hiểu thêm",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "167c5a6c7a0de3037257",
+          "url": "https://media.eximbank.com.vn/exim/files/20260505 - EIB - Dieu le (Tieng Viet).pdf",
+          "title": "20260505 - EIB - Dieu le (Tieng Viet).pdf",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": null,
+          "type": "esg_other"
+        },
+        {
+          "id": "b8fa7b4c12ade00586bf",
+          "url": "https://media.eximbank.com.vn/exim/files/20260225 - Dieu le - Tieng Viet.pdf",
+          "title": "20260225 - Dieu le - Tieng Viet.pdf",
+          "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
+          "year": null,
+          "type": "esg_other"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 8,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "HDB": {
+      "symbol": "HDB",
+      "name": "HDBank",
+      "checkedAt": "2026-09-28T23:49:31.900687+00:00",
+      "documents": [
+        {
+          "id": "154efe68d916615a36dd",
+          "url": "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu",
+          "title": "Báo cáo thường niên ngân hàng HDBank Cá nhân Doanh nghiệp Khách hàng đặc biệt Nhà đầu tư Đăng nhập Đăng ký Vn English 日本 Đăng ký Khách hàng",
+          "sourcePage": "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "4a80dbed66d65bb366c099511368be4efb4686c5245e14c25765994183eed265",
+          "processedAt": "2026-09-28T23:50:07.116692+00:00",
+          "textLength": 752
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 1,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "LPB": {
+      "symbol": "LPB",
+      "name": "LPBank",
+      "checkedAt": "2026-09-28T23:49:31.900692+00:00",
+      "documents": [
+        {
+          "id": "83ae132689391be88eb5",
+          "url": "https://lpbank.com.vn/nha-dau-tu",
+          "title": "LPBank - Ngân hàng Lộc Phát Việt Nam --> Cá nhân Doanh nghiệp Khách hàng ưu tiên Nhà đầu tư Về LPBank Tin tức Tuyển dụng Mạng lưới Tổng đài",
+          "sourcePage": "https://lpbank.com.vn/nha-dau-tu",
+          "year": 2026,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "53bc1471aa98a3493b97fe817b4fbbf62997008d8724dc691eaa1c413eaf3604",
+          "processedAt": "2026-09-28T23:49:58.237028+00:00",
+          "textLength": 6195
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 1,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "MBB": {
+      "symbol": "MBB",
+      "name": "MB Bank",
+      "checkedAt": "2026-09-28T23:49:31.900696+00:00",
+      "documents": [
+        {
+          "id": "b14564025d2501b70427",
+          "url": "https://mbbank.com.vn/resources/files/Tin-MB/2026/huong-dan-su-dung-tong-dai-mb-2026.pdf",
+          "title": "Hướng dẫn sử dụng Tổng đài (Tại đây)",
+          "sourcePage": "https://www.mbbank.com.vn/Investor/bao-cao-thuong-nen",
+          "year": 2026,
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "Stream has ended unexpectedly",
+          "lastAttemptAt": "2026-09-28T23:49:56.130711+00:00",
+          "retryAfter": "2026-09-29T23:49:56.130729+00:00"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "MSB": {
+      "symbol": "MSB",
+      "name": "MSB",
+      "checkedAt": "2026-09-28T23:49:31.900707+00:00",
+      "documents": [
+        {
+          "id": "4dd2f118fe31db0d2716",
+          "url": "https://www.msb.com.vn/ve-chung-toi/tin-tuc-va-su-kien/vuon-tam-ben-vung/msb-hoan-thanh-xay-dung-chien-luoc-esg-voi-lo-trinh-trien-khai-den-2030/",
+          "title": "MSB hoàn thành xây dựng chiến lược ESG với lộ trình triển khai đến 2030 11/06/2026 Ngân hàng TMCP Hàng Hải Việt Nam (MSB), với sự đồng hành của PwC Việt Nam, vừa hoàn thành xây dựng Chiến lược ESG và lộ trình triển khai giai đoạn 2026–2030, đánh dấu một cột mốc quan trọng trong hành trình hiện thực hóa mục tiêu phát triển bền vững và nâng tầm quản [...]",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2030,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "e9f3821fe06689d320b630c22ab7309243bbb1047000164ff097f92cb1b9592b",
+          "processedAt": "2026-09-28T23:49:54.157461+00:00",
+          "textLength": 4548
+        },
+        {
+          "id": "e50ce1da20ab602e51f8",
+          "url": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "title": "Phát triển bền vững",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2026,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "9fb3442cadb1c3b9723ff9a1a99a74da2681af32799bfc021a252d2db12cfa4c",
+          "processedAt": "2026-09-28T23:49:54.804182+00:00",
+          "textLength": 6049
+        },
+        {
+          "id": "f8c0054db481ad52536d",
+          "url": "https://www.msb.com.vn/en/about-us/sustainability/",
+          "title": "English",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2026,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "e30380345340df41a1ce9bd4bc7cbc125839b8010fccd4472b6114d21ed16f27",
+          "processedAt": "2026-09-28T23:49:54.929392+00:00",
+          "textLength": 5930
+        },
+        {
+          "id": "9466614cb69363a439e2",
+          "url": "https://www.msb.com.vn/ve-chung-toi/tin-tuc-va-su-kien/vuon-tam-ben-vung/msb-cong-bo-ban-cam-ket-moi-truong-xa-hoi/",
+          "title": "Bản cam kết tuân thủ quy định về Môi trường & Xã hội 02/07/2026 MSB luôn chú trọng đến sự phát triển bền vững và cố gắng tạo ra những giá trị tốt đẹp cho môi trường và xã hội. Để hoàn thành các nhiệm vụ đó, chúng tôi cần các Khách hàng đồng hành cùng chúng tôi bằng việc đảm bảo tuân thủ quy định về Môi trường [...]",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2026,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "8c7fff46f9a0f8c81bf978da28ae680f3da422286eb6c5be65a0ea04272016df",
+          "processedAt": "2026-09-28T23:49:54.809361+00:00",
+          "textLength": 7604
+        },
+        {
+          "id": "9e84d91b7e46bea5570b",
+          "url": "https://www.msb.com.vn/msb-website/MSB-Bao-cao-phat-trien-ben-vung-2025.pdf",
+          "title": "Tải báo cáo 2025",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2025,
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "negative seek value -1",
+          "lastAttemptAt": "2026-09-28T23:50:01.983738+00:00",
+          "retryAfter": "2026-09-29T23:50:01.983761+00:00"
+        },
+        {
+          "id": "ae0207434d6a5cdc8572",
+          "url": "https://www.msb.com.vn/ve-chung-toi/tin-tuc-va-su-kien/vuon-tam-ben-vung/msb-chung-tay-chuyen-doi-xanh-vinfast/",
+          "title": "MSB chung tay chuyển đổi xanh, phát triển bền vững 30/07/2025 Ngân hàng TMCP Hàng Hải Việt Nam (MSB) vừa ký thỏa thuận hợp tác với Công ty TNHH Sản xuất và Kinh doanh VinFast (Vinfast) nhằm hỗ trợ người dân Thủ đô chuyển đổi sang sử dụng xe điện, góp phần thúc đẩy phát triển xanh và bền vững tại Việt Nam. Ngân hàng TMCP [...]",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "138865aa6124df325f5172f03b86b23d4392ee984d8e8004755c70e11a81f247",
+          "processedAt": "2026-09-28T23:50:01.569989+00:00",
+          "textLength": 5173
+        },
+        {
+          "id": "ec704a1d17114851dc4c",
+          "url": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5138",
+          "title": "2025 Tích hợp ESG vào chiến lược dài hạn Báo Dân Trí",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "fe9b309a99697bd0c9b647aabdfd9bf9d59ce4728c4f7a04f445ea5aeaac8d8e",
+          "processedAt": "2026-09-28T23:50:02.212230+00:00",
+          "textLength": 72023
+        },
+        {
+          "id": "5ab744266e8a82b90940",
+          "url": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5152",
+          "title": "2024 Ngân hàng tốt nhất về Phát triển bền vững Tạp chí Global Brand Magazine",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "fe9b309a99697bd0c9b647aabdfd9bf9d59ce4728c4f7a04f445ea5aeaac8d8e",
+          "processedAt": "2026-09-28T23:50:06.073017+00:00",
+          "textLength": 72023
+        },
+        {
+          "id": "f233ce940385b622dd24",
+          "url": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5150",
+          "title": "2024 NH thực thi ESG tốt nhất Việt Nam 2024 Tạp chí Euromoney",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "fe9b309a99697bd0c9b647aabdfd9bf9d59ce4728c4f7a04f445ea5aeaac8d8e",
+          "processedAt": "2026-09-28T23:50:06.379805+00:00",
+          "textLength": 72023
+        }
+      ],
+      "metrics": [
+        {
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2026,
+          "value": 13.602,
+          "rawValue": "13.602",
+          "unit": "tỷ đồng",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "sourceTitle": "Phát triển bền vững",
+          "snippet": "oạt động của mình, với nhiều kết quả ấn tượng 7.714 tỷ đồng và 8.971 tỷ đồng Lần lượt là tổng dư nợ các khoản tín dụng xanh và giá trị giải ngân cho doanh nghiệp do phụ nữ làm chủ 13.602 tỷ đồng Phân bổ giá trị kinh tế cho các bên liên quan 3.218.052 tCO2e Tổng phát thải cả 3 Phạm vi của MSB Hoàn thiện",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2026,
+          "value": 680.0,
+          "rawValue": "680",
+          "unit": "tỷ đồng",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "sourceTitle": "Phát triển bền vững",
+          "snippet": "p tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vững Phát hành 680 tỷ đồng trái phiếu bền vững Báo cáo phát triển bền vững Xem thêm Báo cáo Phát triển bền vững năm của MSB được phát hành độc lập &amp; áp dụng bộ tiêu chuẩn GRI Tải b",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2026,
+          "value": 3.0,
+          "rawValue": "3",
+          "unit": "tCO2e",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "sourceTitle": "Phát triển bền vững",
+          "snippet": "o doanh nghiệp do phụ nữ làm chủ 13.602 tỷ đồng Phân bổ giá trị kinh tế cho các bên liên quan 3.218.052 tCO2e Tổng phát thải cả 3 Phạm vi của MSB Hoàn thiện hệ thống ESMS Cho cấp tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vữn",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2026,
+          "value": 680.0,
+          "rawValue": "680",
+          "unit": "tỷ đồng",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "sourceTitle": "Phát triển bền vững",
+          "snippet": "hiện hệ thống ESMS Cho cấp tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vững Phát hành 680 tỷ đồng trái phiếu bền vững Báo cáo phát triển bền vững Xem thêm Báo cáo Phát triển bền vững năm của MSB được phát hành độc lập &am",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2026,
+          "value": 8.971,
+          "rawValue": "8.971",
+          "unit": "billion VND",
+          "sourceUrl": "https://www.msb.com.vn/en/about-us/sustainability/",
+          "sourceTitle": "English",
+          "snippet": "hlights In 2025, our ESG initiatives delivered sustainable value with impactful results. VND 7.714 billion in green credit outstanding and VND 8.971 billion disbursed to women-led businesses VND 13.602 billion in economic value distributed to stakeholders 3.218.052 tCO₂e MSB’s total Scope 1, 2 and 3 e",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2026,
+          "value": 680.0,
+          "rawValue": "680",
+          "unit": "billion VND",
+          "sourceUrl": "https://www.msb.com.vn/en/about-us/sustainability/",
+          "sourceTitle": "English",
+          "snippet": "or credit and trade finance activities Over VND 14 billion allocated to community development initiatives MSB Sustainable Finance Framework issued VND 680 billion of sustainability bonds Sustainability Report Learn More MSB’s 2025 Sustainability Report is independently assured and aligned with GRI Standards",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2026,
+          "value": 2.0,
+          "rawValue": "2",
+          "unit": "billion VND",
+          "sourceUrl": "https://www.msb.com.vn/en/about-us/sustainability/",
+          "sourceTitle": "English",
+          "snippet": "n-led businesses VND 13.602 billion in economic value distributed to stakeholders 3.218.052 tCO₂e MSB’s total Scope 1, 2 and 3 emissions amounted to 3.218.052 tCO₂e Enhanced ESMS for credit and trade finance activities Over VND 14 billion allocated to community development initiatives MSB Sustain",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2025,
+          "value": 2023.0,
+          "rawValue": "2023",
+          "unit": "VND",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5138",
+          "sourceTitle": "2025 Tích hợp ESG vào chiến lược dài hạn Báo Dân Trí",
+          "snippet": "g (Fraud Score) đến mô hình phê duyệt không điểm chạm (STP). Thành tựu này là bảo chứng vàng cho một định chế tài chính bền vững, nơi sự an toàn của khách hàng luôn được đặt ở mức ưu tiên cao nhất. (Nguồn: vnexpress.net ) ERMA Ngân hàng chuyển đổi số tốt nhất 2023 Với nỗ lực công nghệ hóa mô hình kinh doanh",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "value": 2019.0,
+          "rawValue": "2019",
+          "unit": "hours",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5138",
+          "sourceTitle": "2025 Tích hợp ESG vào chiến lược dài hạn Báo Dân Trí",
+          "snippet": "coi là một trong những giải thưởng uy tín nhất trong ngành ngân hàng toàn cầu và được coi là sự công nhận của cộng đồng quốc tế về thành tích và chất lượng của các ngân hàng. Các biên tập viên của [...] Close 2019 Ngân hàng tốt nhất Việt Nam Giải thưởng Ngân hàng Tốt nhất Thế giới của Global Financ",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2024,
+          "value": 2023.0,
+          "rawValue": "2023",
+          "unit": "VND",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5152",
+          "sourceTitle": "2024 Ngân hàng tốt nhất về Phát triển bền vững Tạp chí Global Brand Magazine",
+          "snippet": "g (Fraud Score) đến mô hình phê duyệt không điểm chạm (STP). Thành tựu này là bảo chứng vàng cho một định chế tài chính bền vững, nơi sự an toàn của khách hàng luôn được đặt ở mức ưu tiên cao nhất. (Nguồn: vnexpress.net ) ERMA Ngân hàng chuyển đổi số tốt nhất 2023 Với nỗ lực công nghệ hóa mô hình kinh doanh",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "value": 2019.0,
+          "rawValue": "2019",
+          "unit": "hours",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5152",
+          "sourceTitle": "2024 Ngân hàng tốt nhất về Phát triển bền vững Tạp chí Global Brand Magazine",
+          "snippet": "coi là một trong những giải thưởng uy tín nhất trong ngành ngân hàng toàn cầu và được coi là sự công nhận của cộng đồng quốc tế về thành tích và chất lượng của các ngân hàng. Các biên tập viên của [...] Close 2019 Ngân hàng tốt nhất Việt Nam Giải thưởng Ngân hàng Tốt nhất Thế giới của Global Financ",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2024,
+          "value": 2023.0,
+          "rawValue": "2023",
+          "unit": "VND",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5150",
+          "sourceTitle": "2024 NH thực thi ESG tốt nhất Việt Nam 2024 Tạp chí Euromoney",
+          "snippet": "g (Fraud Score) đến mô hình phê duyệt không điểm chạm (STP). Thành tựu này là bảo chứng vàng cho một định chế tài chính bền vững, nơi sự an toàn của khách hàng luôn được đặt ở mức ưu tiên cao nhất. (Nguồn: vnexpress.net ) ERMA Ngân hàng chuyển đổi số tốt nhất 2023 Với nỗ lực công nghệ hóa mô hình kinh doanh",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "value": 2019.0,
+          "rawValue": "2019",
+          "unit": "hours",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/giai-thuong/#popup_award_item_5150",
+          "sourceTitle": "2024 NH thực thi ESG tốt nhất Việt Nam 2024 Tạp chí Euromoney",
+          "snippet": "coi là một trong những giải thưởng uy tín nhất trong ngành ngân hàng toàn cầu và được coi là sự công nhận của cộng đồng quốc tế về thành tích và chất lượng của các ngân hàng. Các biên tập viên của [...] Close 2019 Ngân hàng tốt nhất Việt Nam Giải thưởng Ngân hàng Tốt nhất Thế giới của Global Financ",
+          "confidence": "medium"
+        }
+      ],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 9,
+        "processedDocuments": 8,
+        "metrics": 13,
+        "externalAssessments": 0
+      }
+    },
+    "NAB": {
+      "symbol": "NAB",
+      "name": "Nam A Bank",
+      "checkedAt": "2026-09-28T23:49:31.900713+00:00",
+      "documents": [],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 0,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "OCB": {
+      "symbol": "OCB",
+      "name": "OCB",
+      "checkedAt": "2026-09-28T23:49:31.900721+00:00",
+      "documents": [
+        {
+          "id": "65aab233120d3f54ae4e",
+          "url": "https://ocb.com.vn/vi/ve-ocb/phat-trien-ben-vung",
+          "title": "Phát triển bền vững",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "SHB": {
+      "symbol": "SHB",
+      "name": "SHB",
+      "checkedAt": "2026-09-28T23:49:31.900725+00:00",
+      "documents": [],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 0,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "SSB": {
+      "symbol": "SSB",
+      "name": "SeABank",
+      "checkedAt": "2026-09-28T23:49:31.900734+00:00",
+      "documents": [
+        {
+          "id": "26377bb1b058fa962fc1",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
+          "title": "Sustainability Report 2025 23/07/2026 Read more",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "88a42531e1e79d58bb94e67c7da99b49057cefa8c7833f4e42107c1ff8077f80",
+          "processedAt": "2026-09-28T23:49:57.662859+00:00",
+          "textLength": 2392
+        },
+        {
+          "id": "587f7420903b8f468d01",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
+          "title": "SeABank's Annual Report 2025 01/04/2026",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "598744c0b02ca64af1a963c2f1681b9e0d2bf4d81852e8f41bbb17c740597ad7",
+          "processedAt": "2026-09-28T23:49:57.677053+00:00",
+          "textLength": 2376
+        },
+        {
+          "id": "63a3abaf8b52f1a85e00",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
+          "title": "Sustainability Report 2024 05/09/2025 Read more",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "8a1b39aa90ec3cdb9b9648a7be6b97418d181787cc2313f345815ebd33cbc09a",
+          "processedAt": "2026-09-28T23:50:03.359977+00:00",
+          "textLength": 2392
+        },
+        {
+          "id": "8fd342db37c26fd52c8f",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
+          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "fbf3ee79b8c5dafff7a4633c12617dca38e376a0283d769b56c9cebd6f88430e",
+          "processedAt": "2026-09-28T23:50:02.889370+00:00",
+          "textLength": 2376
+        },
+        {
+          "id": "b6ad1f86bd5ec4ae8ab1",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2023",
+          "title": "SeABank's Annual Report 2023 04/04/2024",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "92ce75832694ac910c03010e3fb44a79d2f27ac49998499d51cf1164958d7c81",
+          "processedAt": "2026-09-28T23:50:05.732570+00:00",
+          "textLength": 2360
+        },
+        {
+          "id": "8a524558ec88d31b0a9e",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2022",
+          "title": "SeABank's Annual Report 2022 19/04/2023 Read more",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": 2022,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "246f0179d5b5020d920f",
+          "url": "https://www.seabank.com.vn/en/tin-tuc/tin-seabank/phat-trien-ben-vung",
+          "title": "Sustainable Development",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": null,
+          "type": "esg_other",
+          "contentType": "html"
+        },
+        {
+          "id": "9e82681913d076a4f0d8",
+          "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien",
+          "title": "Annual Report",
+          "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+          "year": null,
+          "type": "annual_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 8,
+        "processedDocuments": 5,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "STB": {
+      "symbol": "STB",
+      "name": "Sacombank",
+      "checkedAt": "2026-09-28T23:49:31.900741+00:00",
+      "documents": [
+        {
+          "id": "180bf5c244a6a4a3f432",
+          "url": "https://www.sacombank.com.vn/content/dam/sacombank/files/nhadautu/Sacombank_DieuLe2023.pdf",
+          "title": "Điều lệ",
+          "sourcePage": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html",
+          "year": null,
+          "type": "esg_other"
+        },
+        {
+          "id": "f3f3143835a56e315069",
+          "url": "https://www.sacombank.com.vn/content/dam/sacombank/files/nhadautu/Ban%20cao%20bach%20-%20Phat%20hanh%20co%20phieu%20de%20hoan%20doi.pdf",
+          "title": "Bản cáo bạch",
+          "sourcePage": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html",
+          "year": null,
+          "type": "esg_other"
+        },
+        {
+          "id": "b51ac528e188c85c2b25",
+          "url": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html/cf/nha-dau-tu/bao-cao-thuong-nien.html",
+          "title": "Báo cáo thường niên",
+          "sourcePage": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html",
+          "year": null,
+          "type": "annual_report",
+          "contentType": "html"
+        },
+        {
+          "id": "e3aed274cb0b61a90670",
+          "url": "https://www.sacombank.com.vn/content/dam/sacombank/files/an-toan-bao-mat/DIEU%20KHOAN%20CHUNG%20VE%20BAO%20VE%20VA%20XU%20LY%20DU%20LIEU%20CA%20NHAN.pdf",
+          "title": "An toàn bảo mật",
+          "sourcePage": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html",
+          "year": null,
+          "type": "esg_other"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 4,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "TCB": {
+      "symbol": "TCB",
+      "name": "Techcombank",
+      "checkedAt": "2026-09-28T23:49:31.900751+00:00",
+      "documents": [
+        {
+          "id": "56ecaa75021fa68c4629",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "title": "Download Report",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": 2026,
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
+          "processedAt": "2026-09-28T23:49:57.583176+00:00",
+          "textLength": 192129
+        },
+        {
+          "id": "725b2cc303c70d1ae0c8",
+          "url": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "title": "Our Milestones",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "4f8cbab79fa4ad6c4ae96272b14d8d2b753d446ef994b346e2f825a24ed2bb38",
+          "processedAt": "2026-09-28T23:49:59.103657+00:00",
+          "textLength": 4813
+        },
+        {
+          "id": "f8a4e9fe11d18570428e",
+          "url": "https://tccorp.tcbs.com.vn/esg-advisor",
+          "title": "A Pioneering AI Solution for ESG Techcom Securities, in collaboration with Techcombank, helps businesses quickly and transparently assess green criteria in accordance with Decision No. 21/2025/QĐ-TTg. Find out more",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "de24d9f8ebad2592c640b9db379c603eb0b9dd9e9bc44b5491df94ab2c84c3a5",
+          "processedAt": "2026-09-28T23:50:00.406622+00:00",
+          "textLength": 6
+        },
+        {
+          "id": "3a04bceed126cd49f0e4",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/news",
+          "title": "View all our activities",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "5f8da544b07832ede0e2",
+          "url": "https://techcombank.com/en/about-us/sustainability",
+          "title": "Overview",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "92a4cc6c630bcb4bdbd4",
+          "url": "https://techcombank.com/en/about-us/sustainability/strategy",
+          "title": "Our Strategy",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "Our Solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "97d2416e207bace17546",
+          "url": "https://techcombank.com/en/about-us/sustainability/our-contact",
+          "title": "Our Contact",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "c03fbf402b61c69d6202",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking/green-loan",
+          "title": "Green Loans Find out more",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "df135628ad25b6fd26ba",
+          "url": "https://techcombank.com/en/investors/annual-report",
+          "title": "Annual Report",
+          "sourcePage": "https://techcombank.com/en/investors/annual-report",
+          "year": null,
+          "type": "annual_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [
+        {
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2026,
+          "value": 15.0,
+          "rawValue": "15",
+          "unit": "%",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "industry forums, contributing to broader market awareness and capability building. As a result, Techcombank’s green credit exposure continued to expand in 2025, increasing by nearly 15% compared with 2024 and reaching a peak of VND 18.7 trillion during the year, distributed across key green sectors su",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2026,
+          "value": 500.0,
+          "rawValue": "500",
+          "unit": "billion VND",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "us improvement of Techcombank’s green bond reporting practices. In 2025, Techcombank has continued to advance sustainable finance through the new issuance of VND 500 billion Green Bond, reinforcing our commitment to mobilising capital towards environmentally sustainable activities. This issuance reflects Tec",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2026,
+          "value": 2.0,
+          "rawValue": "2",
+          "unit": "tCO2e",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "ombank has been tracking greenhouse gas emissions across our head/key offices and branch network, focusing on Scope 1 and Scope 2 emissions. This estimation includes emissions from fuel consumption for owned assets and generators, as well as indirect emissions from purchased electricity: In paral",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2026,
+          "value": 1.0,
+          "rawValue": "1",
+          "unit": "tCO2e",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "een tracking greenhouse gas emissions across our head/key offices and branch network, focusing on Scope 1 and Scope 2 emissions. This estimation includes emissions from fuel consumption for owned assets and generators, as well as indirect emissions from purchased electricity: In parallel, Techcom",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "scope3",
+          "pillar": "E",
+          "label": "Phát thải Scope 3",
+          "year": 2026,
+          "value": 31.0,
+          "rawValue": "31",
+          "unit": "tCO2e",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "t (Scope 2) GHG emissions Section Sustainable Operation Page 31 - 32 GRI 305: Emissions 305-3 Other indirect (Scope 3) GHG emissions Section Sustainable Operation Page 31 - 32 GRI 305: Emissions 305-4 GHG emissions intensity Section Sustainable Operation Page 31 - 32 GRI 305: Emissions 305-5 Redu",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2026,
+          "value": 4.0,
+          "rawValue": "4",
+          "unit": "tCO2e",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "s advanced carbon-tracking technology, the Visa Eco Debit and Credit Cards enable customers to view estimated greenhouse gas emissions (CO₂e) associated with their transactions across different spending categories. EnvironmentChapter 4 26 Sustainability report 2025 EnvironmentChapter 4 27 4.1.6 | External Engagem",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2026,
+          "value": 2025.0,
+          "rawValue": "2025",
+          "unit": "tCO2e",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "d branch network. The calculation applies the grid emission factor approach, as follows: Emissions (tCO₂e) = (Electricity consumption) × (Grid emission factor). Electricity consumption is recorded in kWh, and the grid emission factor used for 2025 is an estimate derived by Techcombank based on appropriate public",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2026,
+          "value": 30.0,
+          "rawValue": "30",
+          "unit": "%",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "key offices uses sensors to prevent waste and optimize water conservation. • Automatic sensor faucets: Reduce water consumption by 30-50% by automatically turning on/off when hands are present/absent. • Automatic sensor toilets and urinals: Flush according to usage needs, saving 30-40% water compared to co",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2026,
+          "value": 20.0,
+          "rawValue": "20",
+          "unit": "%",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "by 20% • Achieve full digitalisation of core banking services to transition to paperless branches and reduce paper consumption • Expand financing to small and medium enterprise (SME) and women-led businesses, with a focus on helping them to build new, sustainable and thriving businesses. • Maintain at lea",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2026,
+          "value": 15.0,
+          "rawValue": "15",
+          "unit": "%",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "Overall training In 2025, each Techcombank employee averaged 53.6 hours spent in training. A total of 866,193 training hours were recorded, with future capability development programs related to technology, data, digitisation and agility accounted for ~15% of training time or 147,881 hours. • Corporate",
+          "confidence": "medium"
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2026,
+          "value": 5.3,
+          "rawValue": "5.3",
+          "unit": "VND",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "hts & benefits (Employee engagement, employee development) S8 - Creating Positive Impact in Local Communities Community investment and social initiatives that enhance local wellbeing and participation. Section 5.3 Contribution to local communities S9 - Protecting Customer Data and Strengthening Privacy Protec",
+          "confidence": "medium"
+        }
+      ],
+      "externalAssessments": [
+        {
+          "provider": "HOSE",
+          "assessmentType": "VNSI membership",
+          "year": 2026,
+          "value": "VNSI",
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "sourceTitle": "Download Report",
+          "snippet": "onnected communities through two flagship international marathons in Hanoi and Ho Chi Minh City. By bringing thousands of runners together, these marathons promote active living, community engagement and long-term wellbeing – values that sit at the heart of Techcombank’s sustainability agenda. As a result of these collective efforts, in 2025 Techcombank was honored to be included in the Vietnam Sustainability Index (VNSI) by the Ho Chi Minh City stock exchange (HOSE), ranking among the Top 20 listed companies with the best ESG practices in Vietnam—reflecting the strength of our governance, transparency and sustainable finance initiatives. Techcombank was also honored with the “Best Sustainab",
+          "confidence": "medium"
+        },
+        {
+          "provider": "HOSE",
+          "assessmentType": "VNSI membership",
+          "year": 2025,
+          "value": "VNSI",
+          "sourceUrl": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "sourceTitle": "Our Milestones",
+          "snippet": "financial activities. Issued the Green Bond Framework, becoming the first private bank in Vietnam to issue a Green Bond Framework with a “Medium Green” rating by S&amp;P. Significant milestones in 2025 Issued first standalone Sustainability Report Launched dedicated ESG section on TCB website to promote ESG practices Secured a EUR 200 million long-term facility from EIB Selected in the Vietnam Sustainability Index (VNSI) by the Ho Chi Minh city stock exchange (HOSE), ranking among the Top 20 listed companies with the best ESG practices in Vietnam Honored “Best sustainable Bank in Vietnam” by FinanceAsia Sustainability Report Sustainability Report 2025 Independent Report in Accordance with GR",
+          "confidence": "medium"
+        }
+      ],
+      "coverage": {
+        "documents": 10,
+        "processedDocuments": 3,
+        "metrics": 11,
+        "externalAssessments": 2
+      }
+    },
+    "TPB": {
+      "symbol": "TPB",
+      "name": "TPBank",
+      "checkedAt": "2026-09-28T23:49:31.900756+00:00",
+      "documents": [
+        {
+          "id": "247e91a06e927e5991e3",
+          "url": "https://tpb.vn/nha-dau-tu/phat-trien-ben-vung",
+          "title": "Phát triển bền vững",
+          "sourcePage": "https://tpb.vn/nha-dau-tu",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        },
+        {
+          "id": "a9d71dc4bdd88882d547",
+          "url": "https://tpb.vn/nha-dau-tu/bao-cao-thuong-nien",
+          "title": "Báo cáo thường niên",
+          "sourcePage": "https://tpb.vn/nha-dau-tu",
+          "year": null,
+          "type": "annual_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 2,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "VCB": {
+      "symbol": "VCB",
+      "name": "Vietcombank",
+      "checkedAt": "2026-09-28T23:49:31.900760+00:00",
+      "documents": [],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 0,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "VIB": {
+      "symbol": "VIB",
+      "name": "VIB",
+      "checkedAt": "2026-09-28T23:49:31.900764+00:00",
+      "documents": [
+        {
+          "id": "6968d1a581184f508e23",
+          "url": "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien",
+          "title": "Báo cáo thường niên",
+          "sourcePage": "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "e02d6c4cd7ab048e09cdd6177207b35cce23698b76660578ac68d40516c638ab",
+          "processedAt": "2026-09-28T23:50:04.707214+00:00",
+          "textLength": 2146
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 1,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    },
+    "VPB": {
+      "symbol": "VPB",
+      "name": "VPBank",
+      "checkedAt": "2026-09-28T23:49:31.900768+00:00",
+      "documents": [
+        {
+          "id": "0ab1ed69a413e8e35eef",
+          "url": "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung",
+          "title": "Báo cáo phát triển bền vững",
+          "sourcePage": "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung",
+          "year": null,
+          "type": "sustainability_report",
+          "contentType": "html"
+        }
+      ],
+      "metrics": [],
+      "externalAssessments": [],
+      "coverage": {
+        "documents": 1,
+        "processedDocuments": 0,
+        "metrics": 0,
+        "externalAssessments": 0
+      }
+    }
+  },
+  "externalDocuments": [
+    {
+      "id": "1058c55ba3c85db9ae5e",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/12/SUSTAINABLE-BANKING-ASSESSMENT-2024.pdf",
+      "title": "SUSTAINABLE-BANKING-ASSESSMENT-2024.pdf",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2024,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "b75578da14fcf5955cb0b9a4691c1c4594ef962231c49ad1b46968960f462999",
+      "processedAt": "2026-09-28T23:50:06.513339+00:00",
+      "textLength": 89099
+    },
+    {
+      "id": "b005c22b2a54ead2319b",
+      "url": "https://www.wwf.sg/susba/reports/",
+      "title": "Reports",
+      "sourcePage": "https://www.wwf.sg/susba/about/",
+      "year": 2024,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentHash": "18788b1e85a61d1bc662430a182cc1188770e5d61c5857c0bf1353c9030e713c",
+      "processedAt": "2026-09-28T23:50:02.769877+00:00",
+      "textLength": 4043
+    },
+    {
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-28T23:50:11.768138+00:00",
+      "textLength": 61879
+    },
+    {
+      "id": "1ba16d784121888b47f1",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
+      "title": "report-2019-compressed.pdf",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2022,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "report-2018-compressed.pdf",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2022,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "736d1a258096fff8e0cd",
+      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/Sustainable-Banking-Assessment-2022.pdf",
+      "title": "2022 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2022,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "e1a40bba3d34076267d9",
+      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/Assessing-Banks-Seafood-Sector-Policies.pdf",
+      "title": "2022 Baseline Assessment of Banks' Seafood Sector Policies",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2022,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "75115a3050a133626083",
+      "url": "https://assets.bbhub.io/company/sites/60/2021/10/FINAL-2017-TCFD-Report.pdf",
+      "title": "Recommendations of the Task Force on Climate-related Financial Disclosures - TCFD assets.bbhub.io",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/esg-regulatory-insights-hub",
+      "year": 2021,
+      "type": "climate_disclosure",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "6a7e0d05d95a47e318e1",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
+      "title": "2021 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2021,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "952a7cf2c85642395465",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
+      "title": "2020 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2020,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "c6d164862c0327932c55",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
+      "title": "2017 Full Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2017,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "544a08968ebda8495b75",
+      "url": "https://www.swissre.com/dam/jcr:e73ee7c3-7f83-4c17-a2b8-8ef23a8d3312/swiss-re-institute-expertise-publication-economics-of-climate-change.pdf",
+      "title": "https://www.swissre.com/dam/jcr:e73ee7c3-7f83-4c17-a2b8-8ef23a8d3312/swiss-re-institute-expertise-publication-economics-of-climate-change.pdf",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions/physical-climate-risk-metrics",
+      "year": null,
+      "type": "climate_disclosure",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "3f657328348bfec1bf88",
+      "url": "https://www.sustainalytics.com/corporate-solutions/esg-solutions/top-rated-companies",
+      "title": "Top-Rated Companies",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "407e8b826b8c2351210a",
+      "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending",
+      "title": "Sustainable Finance and Lending",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "ce2041d78fec770e7787",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/-/view/sourceId/101635448",
+      "title": "Sustainable Finance FAQ: Sustainable Bond Impact and Transparency in Post-Issuance Reporting",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainable_finance_assessment",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "ecbd237d832e5c94c231",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/eu-sustainable-finance-action-plan-solutions/sustainable-finance-disclosure-regulation",
+      "title": "Sustainable Finance Disclosure Regulation",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "48bb7ad3b1ad48f98040",
+      "url": "https://www.spglobal.com/ratings/en/products/solutions/sustainable-finance",
+      "title": "Sustainable Finance",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "df200cc89058aa8a2d0b",
+      "url": "https://www.spglobal.com/ratings/en/research/sustainability-insights",
+      "title": "Sustainability Insights",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "2253af34ca58229eee04",
+      "url": "https://www.morningstar.com/company/corporate-sustainability",
+      "title": "Sustainability",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "eabd2926347c36adb365",
+      "url": "https://visrating.com/our-services/second-party-opinion.18.html",
+      "title": "Second Party Opinion",
+      "sourcePage": "https://visrating.com/second-party-opinion/",
+      "year": null,
+      "type": "sustainable_finance_assessment",
+      "contentType": "html",
+      "provider": "VIS Rating",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "c61ffa15b70931ac2f41",
+      "url": "https://www.spice-indices.com/idp/",
+      "title": "SPICE: The Index Source for ESG Data",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "f18cce432e71dda5c16e",
+      "url": "https://www.sustainalytics.com/esg-research",
+      "title": "Resource Center",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "c83f1aa8de4d1a6574f0",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions/physical-climate-risk-metrics",
+      "title": "Physical Climate Risk Metrics",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "c5d35e244a56d4bf420b",
+      "url": "https://www.sustainalytics.com/investor-solutions/analytic-reporting-solutions/esg-investment-platform",
+      "title": "Partner Platforms",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "e1243c368c2fb34d4a6a",
+      "url": "https://www.sustainalytics.com/esg-news",
+      "title": "News and Events",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "e5f4375a00a3d9abaa50",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-transition-toolkit/nature-data",
+      "title": "Nature Data",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "17dae3d5867dc53c6c62",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-transition-toolkit/nzif-data-solution",
+      "title": "NZIF Data Solution",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "935077d2f110607abb7c",
+      "url": "https://www.morningstar.com/content/dam/marketing/shared/Company/Trends/Sustainability/Detail/Documents/Morningstar-Sustainable-Investing-Handbook.pdf",
+      "title": "Morningstar Sustainable Investing Handbook www.morningstar.com",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/esg-regulatory-insights-hub",
+      "year": null,
+      "type": "sustainability_report",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "fb7817d479af9c9cdbcc",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research/environmental-impact",
+      "title": "Impact Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "916c30d72d84a44021fe",
+      "url": "https://www.sustainalytics.com/corporate-solutions/esg-solutions/global-access-sustainability-research-database",
+      "title": "Global Access - Sustainability Research Database",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "d2f04de6958bd270795d",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/230727-faq-applying-our-integrated-analytical-approach-for-use-of-proceeds-second-party-opinions-s12788419",
+      "title": "FAQ: Applying Our Integrated Analytical Approach For Second Party Opinions",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainable_finance_assessment",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "fa7b705eef8393bd1aa8",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/241031-faq-applying-our-analytical-approach-for-european-green-bond-external-reviews-s13292507",
+      "title": "FAQ: Applying Our Analytical Approach For European Green Bond External Reviews",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainable_finance_assessment",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "0e820c912bcf6a847c6a",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/european-banking-authority-pillar-iii-solutions",
+      "title": "European Banking Authority (EBA) Pillar III Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "a675707fc00b44254a92",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/eu-sustainable-finance-action-plan-solutions/eu-taxonomy-solution",
+      "title": "EU Taxonomy Solution",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "8e8f2fdc2a50b35e4f2f",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/eu-sustainable-finance-action-plan-solutions",
+      "title": "EU Sustainable Finance Action Plan Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "8a21d719f39a4bb5da07",
+      "url": "https://www.sustainalytics.com/corporate-solutions/esg-solutions",
+      "title": "ESG Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "30d4c1d2e71ee6afe923",
+      "url": "https://www.sustainalytics.com/esg-data",
+      "title": "ESG Risk Ratings",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "d784c03b639912e747d2",
+      "url": "https://www.sustainalytics.com/corporate-solutions/esg-solutions/esg-risk-ratings",
+      "title": "ESG Risk Ratings",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "3f921833b945471d9931",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research",
+      "title": "ESG Research",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "35c3f2eeec3465bdf09a",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions",
+      "title": "ESG Regulatory Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "aa0c1b52d61488e99119",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/esg-regulatory-insights-hub",
+      "title": "ESG Regulatory Insights Hub",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "f00f92ccb59ae131f74d",
+      "url": "https://www.sustainalytics.com/corporate-solutions/esg-solutions/esg-licenses",
+      "title": "ESG Licenses",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "79f94a834fd991b95215",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research/country-sanctions-research",
+      "title": "Country Screening & Sanctions Research",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "70cef22680b9805747c2",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research/country-risk",
+      "title": "Country Risk Ratings",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "371bf455d5a2a0677a85",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research/controversies-research",
+      "title": "Controversies Research",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "5d3078e0626146147e74",
+      "url": "https://www.wwf.sg/susba/contact-susba-team/",
+      "title": "Contact SUSBA Team",
+      "sourcePage": "https://www.wwf.sg/susba/about/",
+      "year": null,
+      "type": "susba",
+      "contentType": "html",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "fb79dc86cdb690e231d2",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research/esg-screening",
+      "title": "Compliance & ESG Screening Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "bb55845f61dccbb8545f",
+      "url": "https://connect.sustainalytics.com/hubfs/INV/Climate%20Solutions/MS-SUST-NZFSPA-Brief_0925.pdf",
+      "title": "Climate and Net Zero Aligned Solutions",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/esg-research/climate-solutions/carbon-emissions-data",
+      "year": null,
+      "type": "climate_disclosure",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "07a4bc0aa0b3e0817306",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-transition-toolkit",
+      "title": "Climate Transition Toolkit",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "fb1914e56c43c11300e8",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-research",
+      "title": "Climate Solutions Overview",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "3f2555008f362dfd2ec6",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions",
+      "title": "Climate Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "f90b4cde231295f63671",
+      "url": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-transition-toolkit/climate-reporting-tcfd",
+      "title": "Climate Reporting",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "b9524879a618512c8388",
+      "url": "https://www.spglobal.com/ratings/en/research/climate-finance",
+      "title": "Climate Finance in Lower-Income Countries",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "2ad35fb952b12dcde702",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-research/climate-solutions/carbon-emissions-data",
+      "title": "Carbon Emissions Data",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "4c8d828b7a04804b01d8",
+      "url": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/eu-sustainable-finance-action-plan-solutions/csrd-solutions",
+      "title": "CSRD Solutions",
+      "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "1683fe8913ee337b0886",
+      "url": "https://www.aasb.gov.au/admin/file/content105/c9/AASBED_SR1_10-23.pdf",
+      "title": "Australian Sustainability Reporting Standards – Disclosure of Climate-related Financial Information www.aasb.gov.au",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/esg-regulatory-solutions/esg-regulatory-insights-hub",
+      "year": null,
+      "type": "sustainability_report",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "55e5ff5caff997330a73",
+      "url": "https://www.wwf.sg/susba/assessments/",
+      "title": "Assessments",
+      "sourcePage": "https://www.wwf.sg/susba/about/",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "8d91b93f48ba2bf6311a",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/241031-analytical-approach-european-green-bond-external-reviews-s13280480",
+      "title": "Analytical Approach: European Green Bond External Reviews",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainable_finance_assessment",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "a36ae78ae420a207f574",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/230727-analytical-approach-second-party-opinions-use-of-proceeds-s12775313",
+      "title": "Analytical Approach for Second Party Opinions",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "sustainable_finance_assessment",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "74772c7c9928d238a390",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/analytical-approach-climate-bonds-initiative-external-reviews-s101660515",
+      "title": "Analytical Approach for Climate Bond Initiative External Reviews",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "climate_disclosure",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion"
+    },
+    {
+      "id": "0d9d1e8d0b9ea09f21ba",
+      "url": "https://www.wwf.sg/susba/about/",
+      "title": "About",
+      "sourcePage": "https://www.wwf.sg/susba/about/",
+      "year": null,
+      "type": "sustainability_report",
+      "contentType": "html",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "5278c75be602879a63b2",
+      "url": "https://connect.sustainalytics.com/hubfs/INV/Climate%20Solutions/Carbon%20Emissions/2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
+      "title": "2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-transition-toolkit/climate-reporting-tcfd",
+      "year": null,
+      "type": "climate_disclosure",
+      "provider": "Morningstar Sustainalytics",
+      "externalKind": "second_party_opinion"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "ACB"
+    },
+    {
+      "url": "https://acb.com.vn/ve-chung-toi",
+      "status": "ok",
+      "documents": 0,
+      "symbol": "ACB"
+    },
+    {
+      "url": "https://bidv.com.vn/vn/quan-he-nha-dau-tu/bao-cao-va-tai-lieu/",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "BID"
+    },
+    {
+      "url": "https://bidv.com.vn/vn/ve-bidv/phat-trien-ben-vung",
+      "status": "ok",
+      "documents": 2,
+      "symbol": "BID"
+    },
+    {
+      "url": "https://investor.vietinbank.vn/",
+      "status": "ok",
+      "documents": 3,
+      "symbol": "CTG"
+    },
+    {
+      "url": "https://eximbank.com.vn/nha-dau-tu",
+      "status": "ok",
+      "documents": 8,
+      "symbol": "EIB"
+    },
+    {
+      "url": "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "HDB"
+    },
+    {
+      "url": "https://lpbank.com.vn/nha-dau-tu",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "LPB"
+    },
+    {
+      "url": "https://www.mbbank.com.vn/Investor/bao-cao-thuong-nen",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "MBB"
+    },
+    {
+      "url": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+      "status": "ok",
+      "documents": 9,
+      "symbol": "MSB"
+    },
+    {
+      "url": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
+      "symbol": "NAB"
+    },
+    {
+      "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "OCB"
+    },
+    {
+      "url": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
+      "symbol": "SHB"
+    },
+    {
+      "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
+      "status": "ok",
+      "documents": 8,
+      "symbol": "SSB"
+    },
+    {
+      "url": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu.html",
+      "status": "ok",
+      "documents": 4,
+      "symbol": "STB"
+    },
+    {
+      "url": "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html",
+      "status": "ok",
+      "documents": 4,
+      "symbol": "STB"
+    },
+    {
+      "url": "https://techcombank.com/en/investors/annual-report",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "TCB"
+    },
+    {
+      "url": "https://techcombank.com/en/about-us/sustainability",
+      "status": "ok",
+      "documents": 9,
+      "symbol": "TCB"
+    },
+    {
+      "url": "https://tpb.vn/nha-dau-tu",
+      "status": "ok",
+      "documents": 2,
+      "symbol": "TPB"
+    },
+    {
+      "url": "https://portal.vietcombank.com.vn/en-us/Investors/Pages/investor-detail.aspx?ItemID=4",
+      "status": "error",
+      "error": "The read operation timed out",
+      "symbol": "VCB"
+    },
+    {
+      "url": "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "VIB"
+    },
+    {
+      "url": "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "VPB"
+    },
+    {
+      "url": "https://www.vpbank.com.vn/ve-chung-toi/phat-trien-ben-vung",
+      "status": "error",
+      "error": "HTTP Error 404: Not Found",
+      "symbol": "VPB"
+    },
+    {
+      "url": "https://www.wwf.sg/susba/reports/",
+      "status": "ok",
+      "documents": 14,
+      "provider": "WWF SUSBA",
+      "external": true
+    },
+    {
+      "url": "https://www.wwf.sg/susba/about/",
+      "status": "ok",
+      "documents": 7,
+      "provider": "WWF SUSBA",
+      "external": true
+    },
+    {
+      "url": "https://www.hsx.vn/",
+      "status": "ok",
+      "documents": 0,
+      "provider": "HOSE VNSI",
+      "external": true
+    },
+    {
+      "url": "https://visrating.com/second-party-opinion/",
+      "status": "ok",
+      "documents": 1,
+      "provider": "VIS Rating",
+      "external": true
+    },
+    {
+      "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
+      "status": "ok",
+      "documents": 38,
+      "provider": "Morningstar Sustainalytics",
+      "external": true
+    },
+    {
+      "url": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "status": "ok",
+      "documents": 10,
+      "provider": "S&P Global Ratings",
+      "external": true
+    }
+  ],
+  "run": {
+    "documentsProcessed": 24,
+    "backlogBeforeRun": 116,
+    "backlogRemaining": 92,
+    "eligibleBacklog": 116,
+    "maxDocumentsPerRun": 30,
+    "documentWorkers": 4
+  }
+}
