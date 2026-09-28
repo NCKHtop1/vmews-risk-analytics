@@ -465,6 +465,16 @@ class MarketTests(unittest.TestCase):
         self.assertTrue({'finance','rates','banking','stocks'}.issubset(set(rows[0]['topics'])))
         self.assertIn('summary',rows[0])
 
+    def test_news_refresh_is_concurrent_and_price_cron_is_quote_only(self):
+        script=(ROOT/'scripts/refresh_market.py').read_text()
+        workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        self.assertIn('with ThreadPoolExecutor(max_workers=workers) as pool:',script)
+        self.assertIn('pool.submit(_fetch_news_feed, publisher, url, companies, current)',script)
+        self.assertIn('for future in as_completed(futures):',script)
+        self.assertIn("if [ \"$EVENT_SCHEDULE\" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi",workflow)
+        self.assertNotIn('also_news=1',workflow)
+        self.assertNotIn('if [ "$also_news" = \'1\' ]',workflow)
+
     def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
         quote={'price':110,'changePct':5,'volume':2500,'high':112,'low':100,'status':'ok'}
         bars=[{'close':90+i*2,'volume':1000+i*10} for i in range(21)]
