@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-09-27T17:58:54+00:00",
+  "updatedAt": "2026-09-28T05:33:53+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
     {
@@ -107,6 +107,19 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 25300,
       "summary": "VDSC có báo cáo VPB ngày 25/09/2026 với giá mục tiêu 25.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-VPB-2026-09-25-d63198d4",
+      "symbol": "VPB",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-09-25",
+      "title": "VPB: Khuyến nghị TÍCH LỦY với giá mục tiêu 25,300 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-806529e2820d",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 25300,
+      "summary": "VDSC có báo cáo VPB ngày 25/09/2026 với giá mục tiêu 25.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-HPG-2026-09-25-eced25e1",
@@ -233,6 +246,20 @@
       "summary": "VPX có báo cáo VGC ngày 24/09/2026 với khuyến nghị MUA, giá mục tiêu 51.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VPX-VGC-2026-09-24-4df62579",
+      "symbol": "VGC",
+      "broker": "VPX",
+      "brokerName": "phiếu VPX",
+      "publishedAt": "2026-09-24",
+      "title": "VGC: Khuyến nghị MUA với giá mục tiêu 51,800 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VGC#finquery-ff2057b4b518",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 51800,
+      "summary": "VPX có báo cáo VGC ngày 24/09/2026 với khuyến nghị MUA, giá mục tiêu 51.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "VPX-POW-2026-09-24-b661b86f",
       "symbol": "POW",
       "broker": "VPX",
@@ -272,6 +299,19 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 37400,
       "summary": "VDSC có báo cáo TCB ngày 24/09/2026 với giá mục tiêu 37.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-TCB-2026-09-24-985699e7",
+      "symbol": "TCB",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-09-24",
+      "title": "TCB: Khuyến nghị TÍCH LŨY với giá mục tiêu 37,400 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TCB#finquery-25700d6e9624",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 37400,
+      "summary": "VDSC có báo cáo TCB ngày 24/09/2026 với giá mục tiêu 37.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSV-HHV-2026-09-24-1edb1ebb",
@@ -449,6 +489,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 44300,
       "summary": "MBS có báo cáo TCB ngày 22/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 44.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-TCB-2026-09-22-c4b155a3",
+      "symbol": "TCB",
+      "broker": "MBS",
+      "brokerName": "phiếu MBS",
+      "publishedAt": "2026-09-22",
+      "title": "TCB: Khuyến nghị KHẢ QUAN với giá mục tiêu 44,300 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TCB#finquery-3b86d8afce5d",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 44300,
+      "summary": "MBS có báo cáo TCB ngày 22/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 44.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-TCB-2026-09-22",
@@ -742,6 +796,20 @@
       "summary": "NHSV có báo cáo VNM ngày 18/09/2026 với khuyến nghị MUA, giá mục tiêu 88.888 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "NHSV-VNM-2026-09-18-e4376636",
+      "symbol": "VNM",
+      "broker": "NHSV",
+      "brokerName": "phiếu NHSV",
+      "publishedAt": "2026-09-18",
+      "title": "VNM: Khuyến nghị MUA với giá mục tiêu 88,888 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-294f74723566",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 88888,
+      "summary": "NHSV có báo cáo VNM ngày 18/09/2026 với khuyến nghị MUA, giá mục tiêu 88.888 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "NHSV-SIP-2026-09-18-153c090d",
       "symbol": "SIP",
       "broker": "NHSV",
@@ -865,6 +933,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 71900,
       "summary": "VNDIRECT có báo cáo VNM ngày 17/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 71.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-VNM-2026-09-17-3f41d2ed",
+      "symbol": "VNM",
+      "broker": "VNDIRECT",
+      "brokerName": "phiếu VNDS",
+      "publishedAt": "2026-09-17",
+      "title": "VNM: Khuyến nghị Khả quan với giá mục tiêu 71,900 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-e4b3736e0d06",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 71900,
+      "summary": "VNDIRECT có báo cáo VNM ngày 17/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 71.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-CTG-2026-09-17-a0406c7b",
@@ -1014,9 +1096,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-25-200-dong-co-phieu-rpid6030.html",
       "dataProvider": "24HMONEY",
-      "summary": "SSI có báo cáo MBB ngày 16/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 25.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "KHẢ QUAN",
-      "targetPrice": 25200
+      "targetPrice": 25200,
+      "summary": "SSI có báo cáo MBB ngày 16/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 25.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSI-MBB-2026-09-16-0e65c68f",
@@ -1131,6 +1213,20 @@
       "summary": "VDSC có báo cáo VNM ngày 15/09/2026 với khuyến nghị MUA, giá mục tiêu 70.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VDSC-VNM-2026-09-15-c28de859",
+      "symbol": "VNM",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-09-15",
+      "title": "VNM: Khuyến nghị MUA với giá mục tiêu 70,100 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-48cdc14b3942",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 70100,
+      "summary": "VDSC có báo cáo VNM ngày 15/09/2026 với khuyến nghị MUA, giá mục tiêu 70.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "VDSC-MWG-2026-09-15-1163940f",
       "symbol": "MWG",
       "broker": "VDSC",
@@ -1187,6 +1283,18 @@
       "summary": "VDSC có báo cáo ACB ngày 15/09/2026 với khuyến nghị MUA, giá mục tiêu 27.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VCBS-SSI-2026-09-15-4e99a880",
+      "symbol": "SSI",
+      "broker": "VCBS",
+      "brokerName": "VCBS",
+      "publishedAt": "2026-09-15",
+      "title": "SSI: Báo cáo Phân tích Kỹ thuật 15/09/2026",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/SSI#finquery-78caeed444d7",
+      "dataProvider": "SMARTCHART",
+      "summary": "VCBS có báo cáo SSI ngày 15/09/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "SHS-VSC-2026-09-15-df3af711",
       "symbol": "VSC",
       "broker": "SHS",
@@ -1199,6 +1307,20 @@
       "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 16240,
       "summary": "SHS có báo cáo VSC ngày 15/09/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 16.240 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "SHS-VSC-2026-09-15-f1e55187",
+      "symbol": "VSC",
+      "broker": "SHS",
+      "brokerName": "phiếu SHS",
+      "publishedAt": "2026-09-15",
+      "title": "VSC: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 16,240 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VSC#finquery-225689315e89",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 16240,
+      "summary": "SHS có báo cáo VSC ngày 15/09/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 16.240 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BSC-VCB-2026-09-15-d3e146ae",
@@ -1290,7 +1412,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vix-bao-cao-cap-nhat-14-09-2026-rpid6011.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VIX ngày 14/09/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VIX ngày 14/09/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSV-FPT-2026-09-14-b6f21f18",
@@ -1680,6 +1802,20 @@
       "summary": "MBS có báo cáo VTP ngày 10/09/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 57.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "MBS-VTP-2026-09-10-bb2c68d4",
+      "symbol": "VTP",
+      "broker": "MBS",
+      "brokerName": "phiếu MBS",
+      "publishedAt": "2026-09-10",
+      "title": "VTP: Khuyến nghị TRUNG LẬP với giá mục tiêu 57,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VTP#finquery-73f63a20003b",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TRUNG LẬP",
+      "targetPrice": 57000,
+      "summary": "MBS có báo cáo VTP ngày 10/09/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 57.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "MBS-VTP-2026-09-10",
       "symbol": "VTP",
       "broker": "MBS",
@@ -1707,6 +1843,20 @@
       "summary": "KBSV có báo cáo VTP ngày 10/09/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 56.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "KBSV-VTP-2026-09-10-21361e6d",
+      "symbol": "VTP",
+      "broker": "KBSV",
+      "brokerName": "phiếu KBSV",
+      "publishedAt": "2026-09-10",
+      "title": "VTP: Khuyến nghị TRUNG LẬP với giá mục tiêu 56,700 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VTP#finquery-8823b8234f47",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TRUNG LẬP",
+      "targetPrice": 56700,
+      "summary": "KBSV có báo cáo VTP ngày 10/09/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 56.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "DSC-VCG-2026-09-10-ccbdd5f7",
       "symbol": "VCG",
       "broker": "DSC",
@@ -1718,6 +1868,19 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 18000,
       "summary": "DSC có báo cáo VCG ngày 10/09/2026 với giá mục tiêu 18.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "DSC-VCG-2026-09-10-cbad4e1b",
+      "symbol": "VCG",
+      "broker": "DSC",
+      "brokerName": "đồng DSC",
+      "publishedAt": "2026-09-10",
+      "title": "VCG: Khuyến nghị THEO DÕI với giá mục tiêu 18,000",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VCG#finquery-93db4545b2a1",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 18000,
+      "summary": "DSC có báo cáo VCG ngày 10/09/2026 với giá mục tiêu 18.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BSC-GMD-2026-09-10-0f7b2b49",
@@ -1853,7 +2016,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/stb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5978.html",
       "dataProvider": "24HMONEY",
-      "summary": "NHSV có báo cáo STB ngày 08/09/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "NHSV có báo cáo STB ngày 08/09/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "KBSV-ACB-2026-09-08-01b7e9a6",
@@ -1976,6 +2139,20 @@
       "recommendation": "MUA",
       "targetPrice": 30800,
       "summary": "EVS có báo cáo VPB ngày 07/09/2026 với khuyến nghị MUA, giá mục tiêu 30.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "EVS-VPB-2026-09-07-7c0a8a5f",
+      "symbol": "VPB",
+      "broker": "EVS",
+      "brokerName": "phiếu EVS",
+      "publishedAt": "2026-09-07",
+      "title": "VPB: Khuyến nghị MUA với giá mục tiêu 30,800 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-5f9c42cdf484",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 30800,
+      "summary": "EVS có báo cáo VPB ngày 07/09/2026 với khuyến nghị MUA, giá mục tiêu 30.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "CTS-BSR-2026-09-07-b9ac3d38",
@@ -2199,6 +2376,19 @@
       "summary": "DSC có báo cáo VIB ngày 04/09/2026 với giá mục tiêu 14.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "DSC-VIB-2026-09-04-515e1d0c",
+      "symbol": "VIB",
+      "broker": "DSC",
+      "brokerName": "phiếu DSC",
+      "publishedAt": "2026-09-04",
+      "title": "VIB: Khuyến nghị THEO DÕI với giá mục tiêu 14,200 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VIB#finquery-96cd6175e77c",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 14200,
+      "summary": "DSC có báo cáo VIB ngày 04/09/2026 với giá mục tiêu 14.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "BVSC-GAS-2026-09-04-feb3d83c",
       "symbol": "GAS",
       "broker": "BVSC",
@@ -2358,7 +2548,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vsc-bao-cao-cap-nhat-kqkd-q2-2026-rpid5963.html",
       "dataProvider": "24HMONEY",
-      "summary": "NHSV có báo cáo VSC ngày 03/09/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "NHSV có báo cáo VSC ngày 03/09/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MIRAE-MWG-2026-09-03-58cf47df",
@@ -2386,6 +2576,19 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 60500,
       "summary": "DSC có báo cáo VTP ngày 03/09/2026 với giá mục tiêu 60.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "DSC-VTP-2026-09-03-930f5c4b",
+      "symbol": "VTP",
+      "broker": "DSC",
+      "brokerName": "phiếu DSC",
+      "publishedAt": "2026-09-03",
+      "title": "VTP: Khuyến nghị THEO DÕI với giá mục tiêu 60,500 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VTP#finquery-5aaf39038ab0",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 60500,
+      "summary": "DSC có báo cáo VTP ngày 03/09/2026 với giá mục tiêu 60.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VPX-SAB-2026-08-28-a2a8e465",
@@ -2436,6 +2639,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 119700,
       "summary": "VNDIRECT có báo cáo VPL ngày 28/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 119.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-VPL-2026-08-28-88535450",
+      "symbol": "VPL",
+      "broker": "VNDIRECT",
+      "brokerName": "phiếu VNDS",
+      "publishedAt": "2026-08-28",
+      "title": "VPL: Khuyến nghị KHẢ QUAN với giá mục tiêu 119,700 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPL#finquery-03496ec3d11c",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 119700,
+      "summary": "VNDIRECT có báo cáo VPL ngày 28/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 119.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-SIP-2026-08-28-2b9784a8",
@@ -2586,6 +2803,18 @@
       "summary": "VIETCAP có báo cáo PVD ngày 27/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 22.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "TPS-VPB-2026-08-27-b9090ce8",
+      "symbol": "VPB",
+      "broker": "TPS",
+      "brokerName": "TPS",
+      "publishedAt": "2026-08-27",
+      "title": "VPB: Báo cáo Phân tích Kỹ thuật 27/08/2026",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-f56dc0addfb9",
+      "dataProvider": "SMARTCHART",
+      "summary": "TPS có báo cáo VPB ngày 27/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "TPS-BID-2026-08-27-05f0525b",
       "symbol": "BID",
       "broker": "TPS",
@@ -2607,7 +2836,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tal-bao-cao-cap-nhat-kqkd-q2-2026-rpid5947.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo TAL ngày 27/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo TAL ngày 27/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-NLG-2026-08-27-4066968a",
@@ -2699,9 +2928,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-26-900-dong-co-phieu-rpid5939.html",
       "dataProvider": "24HMONEY",
-      "summary": "DSC có báo cáo HPG ngày 27/08/2026 với khuyến nghị MUA, giá mục tiêu 26.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 26900
+      "targetPrice": 26900,
+      "summary": "DSC có báo cáo HPG ngày 27/08/2026 với khuyến nghị MUA, giá mục tiêu 26.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "DSC-HPG-2026-08-27-482aa102",
@@ -2862,9 +3091,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-27-700-dong-co-phieu-rpid5925.html",
       "dataProvider": "24HMONEY",
-      "summary": "KAFI có báo cáo MBB ngày 26/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 27.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "KHẢ QUAN",
-      "targetPrice": 27700
+      "targetPrice": 27700,
+      "summary": "KAFI có báo cáo MBB ngày 26/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 27.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "KAFI-MBB-2026-08-26-eca7c79a",
@@ -2892,6 +3121,19 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 59841,
       "summary": "DSC có báo cáo VHC ngày 26/08/2026 với giá mục tiêu 59.841 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "DSC-VHC-2026-08-26-394dc062",
+      "symbol": "VHC",
+      "broker": "DSC",
+      "brokerName": "phiếu DSC",
+      "publishedAt": "2026-08-26",
+      "title": "VHC: Khuyến nghị THEO DÕI với giá mục tiêu 59,841 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-4d24b8b5ba54",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 59841,
+      "summary": "DSC có báo cáo VHC ngày 26/08/2026 với giá mục tiêu 59.841 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "DSC-HCM-2026-08-26-1f0c3edb",
@@ -2987,9 +3229,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-25-000-dong-co-phieu-rpid5930.html",
       "dataProvider": "24HMONEY",
-      "summary": "CTS có báo cáo HPG ngày 26/08/2026 với khuyến nghị MUA, giá mục tiêu 25.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 25000
+      "targetPrice": 25000,
+      "summary": "CTS có báo cáo HPG ngày 26/08/2026 với khuyến nghị MUA, giá mục tiêu 25.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "CTS-HPG-2026-08-26-06a69cb5",
@@ -3084,6 +3326,20 @@
       "summary": "DSC có báo cáo TCB ngày 25/08/2026 với khuyến nghị MUA, giá mục tiêu 38.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "DSC-TCB-2026-08-25-79158efb",
+      "symbol": "TCB",
+      "broker": "DSC",
+      "brokerName": "phiếu DSC",
+      "publishedAt": "2026-08-25",
+      "title": "TCB: Khuyến nghị MUA với giá mục tiêu 38,200 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TCB#finquery-37260cc71e7a",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 38200,
+      "summary": "DSC có báo cáo TCB ngày 25/08/2026 với khuyến nghị MUA, giá mục tiêu 38.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "DSC-REE-2026-08-25-eba4536c",
       "symbol": "REE",
       "broker": "DSC",
@@ -3121,9 +3377,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-23-500-dong-co-phieu-rpid5916.html",
       "dataProvider": "24HMONEY",
-      "summary": "DSC có báo cáo MBB ngày 25/08/2026 với khuyến nghị MUA, giá mục tiêu 23.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 23500
+      "targetPrice": 23500,
+      "summary": "DSC có báo cáo MBB ngày 25/08/2026 với khuyến nghị MUA, giá mục tiêu 23.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "DSC-MBB-2026-08-25-0855f10a",
@@ -3427,9 +3683,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-35-900-dong-co-phieu-rpid5887.html",
       "dataProvider": "24HMONEY",
-      "summary": "SSV có báo cáo HPG ngày 21/08/2026 với khuyến nghị MUA, giá mục tiêu 35.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 35900
+      "targetPrice": 35900,
+      "summary": "SSV có báo cáo HPG ngày 21/08/2026 với khuyến nghị MUA, giá mục tiêu 35.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSV-HPG-2026-08-21-515b13c9",
@@ -3497,9 +3753,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-25-000-dong-co-phieu-rpid5891.html",
       "dataProvider": "24HMONEY",
-      "summary": "NHSV có báo cáo MBB ngày 21/08/2026 với khuyến nghị MUA, giá mục tiêu 25.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 25000
+      "targetPrice": 25000,
+      "summary": "NHSV có báo cáo MBB ngày 21/08/2026 với khuyến nghị MUA, giá mục tiêu 25.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "NHSV-MBB-2026-08-21-ae27256a",
@@ -3584,6 +3840,20 @@
       "summary": "BSC có báo cáo VNM ngày 21/08/2026 với khuyến nghị MUA, giá mục tiêu 75.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "BSC-VNM-2026-08-21-b9b79b0c",
+      "symbol": "VNM",
+      "broker": "BSC",
+      "brokerName": "phiếu BSC",
+      "publishedAt": "2026-08-21",
+      "title": "VNM: Khuyến nghị MUA với giá mục tiêu 75,700 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-a7f882b27e89",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 75700,
+      "summary": "BSC có báo cáo VNM ngày 21/08/2026 với khuyến nghị MUA, giá mục tiêu 75.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "BSC-HSG-2026-08-21-767233e4",
       "symbol": "HSG",
       "broker": "BSC",
@@ -3636,6 +3906,20 @@
       "recommendation": "TRUNG LẬP",
       "targetPrice": 67000,
       "summary": "SSI có báo cáo VNM ngày 20/08/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 67.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "SSI-VNM-2026-08-20-e2177c16",
+      "symbol": "VNM",
+      "broker": "SSI",
+      "brokerName": "phiếu SSI",
+      "publishedAt": "2026-08-20",
+      "title": "VNM: Khuyến nghị TRUNG LẬP với giá mục tiêu 67,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-c4cbfc6f5c0c",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TRUNG LẬP",
+      "targetPrice": 67000,
+      "summary": "SSI có báo cáo VNM ngày 20/08/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 67.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "PHIUAGR-BSR-2026-08-20-870157c3",
@@ -3697,9 +3981,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-32-700-dong-co-phieu-rpid5875.html",
       "dataProvider": "24HMONEY",
-      "summary": "BSC có báo cáo HPG ngày 20/08/2026 với khuyến nghị MUA, giá mục tiêu 32.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 32700
+      "targetPrice": 32700,
+      "summary": "BSC có báo cáo HPG ngày 20/08/2026 với khuyến nghị MUA, giá mục tiêu 32.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BSC-HPG-2026-08-20-3841a693",
@@ -3728,6 +4012,20 @@
       "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 30000,
       "summary": "AGR có báo cáo BSR ngày 20/08/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 30.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-BSR-2026-08-20-e7acb895",
+      "symbol": "BSR",
+      "broker": "AGR",
+      "brokerName": "phiếu AGR",
+      "publishedAt": "2026-08-20",
+      "title": "BSR: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 30,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/BSR#finquery-9aa2fc5cf53c",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 30000,
+      "summary": "AGR có báo cáo BSR ngày 20/08/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 30.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VIX-GMD-2026-08-19-b8f641b3",
@@ -4096,7 +4394,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vci-bao-cao-cap-nhat-kqkd-q2-2026-rpid5854.html",
       "dataProvider": "24HMONEY",
-      "summary": "BETA có báo cáo VCI ngày 17/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "BETA có báo cáo VCI ngày 17/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BETA-NKG-2026-08-17-6a3cfa34",
@@ -4428,7 +4726,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vsc-bao-cao-cap-nhat-kqkd-q2-2026-rpid5823.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VSC ngày 12/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VSC ngày 12/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-VNM-2026-08-12-5f7bd693",
@@ -4440,7 +4738,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vnm-bao-cao-cap-nhat-kqkd-q2-2026-rpid5824.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VNM ngày 12/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VNM ngày 12/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-TCH-2026-08-12-cc2c1f97",
@@ -4452,7 +4750,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tch-bao-cao-cap-nhat-kqkd-q2-2026-rpid5825.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo TCH ngày 12/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo TCH ngày 12/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-PHR-2026-08-12-e8f85553",
@@ -4491,6 +4789,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 39400,
       "summary": "MBS có báo cáo VPB ngày 12/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 39.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-VPB-2026-08-12-c465afc3",
+      "symbol": "VPB",
+      "broker": "MBS",
+      "brokerName": "phiếu MBS",
+      "publishedAt": "2026-08-12",
+      "title": "VPB: Khuyến nghị KHẢ QUAN với giá mục tiêu 39,400 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-0eaabb2abc86",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 39400,
+      "summary": "MBS có báo cáo VPB ngày 12/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 39.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-VPB-2026-08-12",
@@ -4634,6 +4946,20 @@
       "summary": "SSV có báo cáo VNM ngày 11/08/2026 với khuyến nghị MUA, giá mục tiêu 79.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "SSV-VNM-2026-08-11-82b995ce",
+      "symbol": "VNM",
+      "broker": "SSV",
+      "brokerName": "phiếu SSV",
+      "publishedAt": "2026-08-11",
+      "title": "VNM: Khuyến nghị MUA với giá mục tiêu 79,600 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-4fa50342de3e",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 79600,
+      "summary": "SSV có báo cáo VNM ngày 11/08/2026 với khuyến nghị MUA, giá mục tiêu 79.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "SSV-SAB-2026-08-11-c2938ae0",
       "symbol": "SAB",
       "broker": "SSV",
@@ -4752,7 +5078,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vci-bao-cao-cap-nhat-kqkd-q2-2026-rpid5810.html",
       "dataProvider": "24HMONEY",
-      "summary": "BETA có báo cáo VCI ngày 11/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "BETA có báo cáo VCI ngày 11/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VPX-VPL-2026-08-10-eff41fae",
@@ -4764,7 +5090,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpl-bao-cao-cap-nhat-kqkd-q2-2026-rpid5804.html",
       "dataProvider": "24HMONEY",
-      "summary": "VPX có báo cáo VPL ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VPX có báo cáo VPL ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VPX-TCX-2026-08-10-6d36dcd6",
@@ -4776,7 +5102,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcx-bao-cao-cap-nhat-kqkd-q2-2026-rpid5805.html",
       "dataProvider": "24HMONEY",
-      "summary": "VPX có báo cáo TCX ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VPX có báo cáo TCX ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VIX-FPT-2026-08-10-9484cb5f",
@@ -4823,7 +5149,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/stb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5799.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo STB ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo STB ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-GVR-2026-08-10-053d426c",
@@ -4864,6 +5190,20 @@
       "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 63700,
       "summary": "SHS có báo cáo BCM ngày 10/08/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 63.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "PHIUMIRAE-VHC-2026-08-10-5e415583",
+      "symbol": "VHC",
+      "broker": "PHIUMIRAE",
+      "brokerName": "phiếu MIRAE",
+      "publishedAt": "2026-08-10",
+      "title": "VHC: Khuyến nghị MUA với giá mục tiêu 69,900 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-664dcbc8dc07",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 69900,
+      "summary": "PHIUMIRAE có báo cáo VHC ngày 10/08/2026 với khuyến nghị MUA, giá mục tiêu 69.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "PHIUMIRAE-BWE-2026-08-10-f58ad059",
@@ -4973,7 +5313,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5781.html",
       "dataProvider": "24HMONEY",
-      "summary": "VPX có báo cáo TCB ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VPX có báo cáo TCB ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VPX-POW-2026-08-07-5805049d",
@@ -5008,7 +5348,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpl-bao-cao-cap-nhat-kqkd-q2-2026-rpid5784.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VPL ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VPL ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-VGC-2026-08-07-4649d2d8",
@@ -5020,7 +5360,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vgc-bao-cao-cap-nhat-kqkd-q2-2026-rpid5785.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VGC ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VGC ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-PVD-2026-08-07-5d37c9d6",
@@ -5056,7 +5396,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vtp-bao-cao-cap-nhat-kqkd-q2-2026-rpid5762.html",
       "dataProvider": "24HMONEY",
-      "summary": "SHS có báo cáo VTP ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "SHS có báo cáo VTP ngày 07/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SHS-GMD-2026-08-07-dff42ea9",
@@ -5246,6 +5586,20 @@
       "summary": "ACBS có báo cáo VHM ngày 07/08/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 62.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "ACBS-VHM-2026-08-07-e6a18888",
+      "symbol": "VHM",
+      "broker": "ACBS",
+      "brokerName": "phiếu ACBS",
+      "publishedAt": "2026-08-07",
+      "title": "VHM: Khuyến nghị TRUNG LẬP với giá mục tiêu 62,900 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHM#finquery-21552f0e0085",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TRUNG LẬP",
+      "targetPrice": 62900,
+      "summary": "ACBS có báo cáo VHM ngày 07/08/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 62.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "ACBS-VCB-2026-08-07-7066aa23",
       "symbol": "VCB",
       "broker": "ACBS",
@@ -5367,7 +5721,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5767.html",
       "dataProvider": "24HMONEY",
-      "summary": "VFS có báo cáo TCB ngày 06/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VFS có báo cáo TCB ngày 06/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-VRE-2026-08-06-2ab96e74",
@@ -5379,7 +5733,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vre-bao-cao-cap-nhat-kqkd-q2-2026-rpid5768.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VRE ngày 06/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VRE ngày 06/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-VHM-2026-08-06-18069aef",
@@ -5391,7 +5745,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vhm-bao-cao-cap-nhat-kqkd-q2-2026-rpid5769.html",
       "dataProvider": "24HMONEY",
-      "summary": "TCBS có báo cáo VHM ngày 06/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "TCBS có báo cáo VHM ngày 06/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-BID-2026-08-06-bd34141a",
@@ -5661,9 +6015,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-33-800-dong-co-phieu-rpid5752.html",
       "dataProvider": "24HMONEY",
-      "summary": "ACBS có báo cáo HPG ngày 06/08/2026 với khuyến nghị MUA, giá mục tiêu 33.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 33800
+      "targetPrice": 33800,
+      "summary": "ACBS có báo cáo HPG ngày 06/08/2026 với khuyến nghị MUA, giá mục tiêu 33.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSV-MWG-2026-08-05-595ba5c8",
@@ -5732,6 +6086,20 @@
       "summary": "BSC có báo cáo VPB ngày 05/08/2026 với khuyến nghị MUA, giá mục tiêu 36.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "BSC-VPB-2026-08-05-9c08d6de",
+      "symbol": "VPB",
+      "broker": "BSC",
+      "brokerName": "phiếu BSC",
+      "publishedAt": "2026-08-05",
+      "title": "VPB: Khuyến nghị MUA với giá mục tiêu 36,500 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-abd3839afaf0",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 36500,
+      "summary": "BSC có báo cáo VPB ngày 05/08/2026 với khuyến nghị MUA, giá mục tiêu 36.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "ABS-MWG-2026-08-05-df16e4e6",
       "symbol": "MWG",
       "broker": "ABS",
@@ -5769,7 +6137,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/stb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5736.html",
       "dataProvider": "24HMONEY",
-      "summary": "VPX có báo cáo STB ngày 04/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VPX có báo cáo STB ngày 04/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VPX-DGW-2026-08-04-83e03a13",
@@ -5820,6 +6188,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 58600,
       "summary": "VIETCAP có báo cáo VHC ngày 04/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 58.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-VHC-2026-08-04-01c0843c",
+      "symbol": "VHC",
+      "broker": "VIETCAP",
+      "brokerName": "phiếu Vietcap",
+      "publishedAt": "2026-08-04",
+      "title": "VHC: Khuyến nghị KHẢ QUAN với giá mục tiêu 58,600 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-721c5b240a32",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 58600,
+      "summary": "VIETCAP có báo cáo VHC ngày 04/08/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 58.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSV-DGW-2026-08-04-953ea21b",
@@ -6186,7 +6568,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vhm-bao-cao-cap-nhat-kqkd-q2-2026-rpid5715.html",
       "dataProvider": "24HMONEY",
-      "summary": "MBS có báo cáo VHM ngày 31/07/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "MBS có báo cáo VHM ngày 31/07/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-VHM-2026-07-31",
@@ -6306,6 +6688,20 @@
       "summary": "ACBS có báo cáo VIB ngày 31/07/2026 với khuyến nghị MUA, giá mục tiêu 18.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "ACBS-VIB-2026-07-31-1184d2f7",
+      "symbol": "VIB",
+      "broker": "ACBS",
+      "brokerName": "phiếu ACBS",
+      "publishedAt": "2026-07-31",
+      "title": "VIB: Khuyến nghị MUA với giá mục tiêu 18,400 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VIB#finquery-0164f44a12bf",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 18400,
+      "summary": "ACBS có báo cáo VIB ngày 31/07/2026 với khuyến nghị MUA, giá mục tiêu 18.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "ABS-MSN-2026-07-31-6ec5d235",
       "symbol": "MSN",
       "broker": "ABS",
@@ -6370,6 +6766,20 @@
       "summary": "SHS có báo cáo VGC ngày 30/07/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 52.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "SHS-VGC-2026-07-30-3c112510",
+      "symbol": "VGC",
+      "broker": "SHS",
+      "brokerName": "phiếu SHS",
+      "publishedAt": "2026-07-30",
+      "title": "VGC: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 52,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VGC#finquery-1753e2ca3c88",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 52000,
+      "summary": "SHS có báo cáo VGC ngày 30/07/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 52.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "NHSV-VRE-2026-07-30-a6612a70",
       "symbol": "VRE",
       "broker": "NHSV",
@@ -6379,7 +6789,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vre-bao-cao-cap-nhat-kqkd-q2-2026-rpid5700.html",
       "dataProvider": "24HMONEY",
-      "summary": "NHSV có báo cáo VRE ngày 30/07/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "NHSV có báo cáo VRE ngày 30/07/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-VPB-2026-07-30",
@@ -6405,6 +6815,20 @@
       "recommendation": "MUA",
       "targetPrice": 32200,
       "summary": "ACBS có báo cáo VRE ngày 30/07/2026 với khuyến nghị MUA, giá mục tiêu 32.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-VRE-2026-07-30-ed31249c",
+      "symbol": "VRE",
+      "broker": "ACBS",
+      "brokerName": "phiếu ACBS",
+      "publishedAt": "2026-07-30",
+      "title": "VRE: Khuyến nghị MUA với giá mục tiêu 32,200 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VRE#finquery-8170f6312fb0",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 32200,
+      "summary": "ACBS có báo cáo VRE ngày 30/07/2026 với khuyến nghị MUA, giá mục tiêu 32.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VIX-ACB-2026-07-29-5cd960ed",
@@ -6454,7 +6878,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vre-bao-cao-cap-nhat-kqkd-q2-2026-rpid5682.html",
       "dataProvider": "24HMONEY",
-      "summary": "MBS có báo cáo VRE ngày 29/07/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "MBS có báo cáo VRE ngày 29/07/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-VRE-2026-07-29",
@@ -6520,6 +6944,20 @@
       "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 32000,
       "summary": "AGR có báo cáo TCB ngày 28/07/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 32.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-TCB-2026-07-28-9e287ac0",
+      "symbol": "TCB",
+      "broker": "AGR",
+      "brokerName": "phiếu AGR",
+      "publishedAt": "2026-07-28",
+      "title": "TCB: KHUYẾN NGHỊ TĂNG TỶ TRỌNG VỚI GIÁ MỤC TIÊU 32,000 ĐỒNG/CỔ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TCB#finquery-2864f62e12f7",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 32000,
+      "summary": "AGR có báo cáo TCB ngày 28/07/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 32.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VNDIRECT-SAB-2026-07-27-6a3f90c0",
@@ -6591,7 +7029,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5679.html",
       "dataProvider": "24HMONEY",
-      "summary": "VFS có báo cáo VPB ngày 24/07/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VFS có báo cáo VPB ngày 24/07/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BETA-TCB-2026-07-24-f0393c17",
@@ -6603,7 +7041,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-bao-cao-cap-nhat-kqkd-q2-2026-rpid5677.html",
       "dataProvider": "24HMONEY",
-      "summary": "BETA có báo cáo TCB ngày 24/07/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "BETA có báo cáo TCB ngày 24/07/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "AGR-VPB-2026-07-24-f5bd6d15",
@@ -6618,6 +7056,20 @@
       "recommendation": "TĂNG TỶ TRỌNG",
       "targetPrice": 30000,
       "summary": "AGR có báo cáo VPB ngày 24/07/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 30.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-VPB-2026-07-24-907d1916",
+      "symbol": "VPB",
+      "broker": "AGR",
+      "brokerName": "phiếu AGR",
+      "publishedAt": "2026-07-24",
+      "title": "VPB: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 30,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-235807e8ac66",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 30000,
+      "summary": "AGR có báo cáo VPB ngày 24/07/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 30.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "ACBS-TCB-2026-07-24-59cb292f",
@@ -6698,6 +7150,20 @@
       "recommendation": "MUA",
       "targetPrice": 34000,
       "summary": "NHSV có báo cáo VPB ngày 23/07/2026 với khuyến nghị MUA, giá mục tiêu 34.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "NHSV-VPB-2026-07-23-45ed6498",
+      "symbol": "VPB",
+      "broker": "NHSV",
+      "brokerName": "phiếu NHSV",
+      "publishedAt": "2026-07-23",
+      "title": "VPB: Khuyến nghị MUA với giá mục tiêu 34,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VPB#finquery-a9f8056e4a20",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 34000,
+      "summary": "NHSV có báo cáo VPB ngày 23/07/2026 với khuyến nghị MUA, giá mục tiêu 34.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "FPTS-VND-2026-07-22-718a7767",
@@ -6899,6 +7365,20 @@
       "summary": "MBS có báo cáo VSC ngày 14/07/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 24.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "MBS-VSC-2026-07-14-7a6c45e4",
+      "symbol": "VSC",
+      "broker": "MBS",
+      "brokerName": "phiếu MBS",
+      "publishedAt": "2026-07-14",
+      "title": "VSC: Khuyến nghị KHẢ QUAN với giá mục tiêu 24,500 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VSC#finquery-f7be32a70ddb",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 24500,
+      "summary": "MBS có báo cáo VSC ngày 14/07/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 24.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "MBS-VSC-2026-07-14",
       "symbol": "VSC",
       "broker": "MBS",
@@ -6980,6 +7460,20 @@
       "recommendation": "MUA",
       "targetPrice": 76500,
       "summary": "EVS có báo cáo STB ngày 13/07/2026 với khuyến nghị MUA, giá mục tiêu 76.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "EVS-STB-2026-07-13-6dd27f39",
+      "symbol": "STB",
+      "broker": "EVS",
+      "brokerName": "phiếu EVS",
+      "publishedAt": "2026-07-13",
+      "title": "STB: Khuyến nghị MUA với giá mục tiêu 76,500 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/STB#finquery-d486d4c50a84",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 76500,
+      "summary": "EVS có báo cáo STB ngày 13/07/2026 với khuyến nghị MUA, giá mục tiêu 76.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VIETCAP-PNJ-2026-07-12-142cec3f",
@@ -7129,6 +7623,20 @@
       "recommendation": "MUA",
       "targetPrice": 26500,
       "summary": "VDSC có báo cáo VSC ngày 07/07/2026 với khuyến nghị MUA, giá mục tiêu 26.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-VSC-2026-07-07-6b473048",
+      "symbol": "VSC",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-07-07",
+      "title": "VSC: Khuyến nghị MUA với giá mục tiêu 26,500 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VSC#finquery-e04df2680df8",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 26500,
+      "summary": "VDSC có báo cáo VSC ngày 07/07/2026 với khuyến nghị MUA, giá mục tiêu 26.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-GMD-2026-07-07-5c7d1e55",
@@ -7326,9 +7834,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-28-000-dong-co-phieu-rpid5611.html",
       "dataProvider": "24HMONEY",
-      "summary": "EVS có báo cáo MBB ngày 06/07/2026 với khuyến nghị MUA, giá mục tiêu 28.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 28000
+      "targetPrice": 28000,
+      "summary": "EVS có báo cáo MBB ngày 06/07/2026 với khuyến nghị MUA, giá mục tiêu 28.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "EVS-MBB-2026-07-06-6691759b",
@@ -7357,6 +7865,20 @@
       "recommendation": "MUA",
       "targetPrice": 18700,
       "summary": "CTS có báo cáo VIB ngày 06/07/2026 với khuyến nghị MUA, giá mục tiêu 18.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "CTS-VIB-2026-07-06-fc5a8f01",
+      "symbol": "VIB",
+      "broker": "CTS",
+      "brokerName": "phiếu VietinbankSC",
+      "publishedAt": "2026-07-06",
+      "title": "VIB: Khuyến nghị MUA với giá mục tiêu 18,700 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VIB#finquery-712138878f10",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 18700,
+      "summary": "CTS có báo cáo VIB ngày 06/07/2026 với khuyến nghị MUA, giá mục tiêu 18.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "CTS-BID-2026-07-06-45d4f2aa",
@@ -7600,9 +8122,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-kha-quan-voi-gia-muc-tieu-30-782-dong-co-phieu-rpid5604.html",
       "dataProvider": "24HMONEY",
-      "summary": "KAFI có báo cáo HPG ngày 01/07/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 30.782 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "KHẢ QUAN",
-      "targetPrice": 30782
+      "targetPrice": 30782,
+      "summary": "KAFI có báo cáo HPG ngày 01/07/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 30.782 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VNDIRECT-POW-2026-06-30-37a69f6e",
@@ -7645,6 +8167,19 @@
       "summary": "VDSC có báo cáo VIB ngày 30/06/2026 với giá mục tiêu 17.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VDSC-VIB-2026-06-30-33c3c6e2",
+      "symbol": "VIB",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-06-30",
+      "title": "VIB: Khuyến nghị TÍCH LŨY với giá mục tiêu 17,900 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VIB#finquery-733f229d9953",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 17900,
+      "summary": "VDSC có báo cáo VIB ngày 30/06/2026 với giá mục tiêu 17.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "VDSC-VHC-2026-06-30-cfba1a3e",
       "symbol": "VHC",
       "broker": "VDSC",
@@ -7657,6 +8192,20 @@
       "recommendation": "MUA",
       "targetPrice": 73300,
       "summary": "VDSC có báo cáo VHC ngày 30/06/2026 với khuyến nghị MUA, giá mục tiêu 73.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-VHC-2026-06-30-15c9cb6d",
+      "symbol": "VHC",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-06-30",
+      "title": "VHC: Khuyến nghị MUA với giá mục tiêu 73,300 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-f35ed7e10a0c",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 73300,
+      "summary": "VDSC có báo cáo VHC ngày 30/06/2026 với khuyến nghị MUA, giá mục tiêu 73.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-TCB-2026-06-30-9701195b",
@@ -7928,6 +8477,20 @@
       "summary": "SSV có báo cáo VNM ngày 26/06/2026 với khuyến nghị MUA, giá mục tiêu 73.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "SSV-VNM-2026-06-26-0d9e9584",
+      "symbol": "VNM",
+      "broker": "SSV",
+      "brokerName": "phiếu SSV",
+      "publishedAt": "2026-06-26",
+      "title": "VNM: Khuyến nghị MUA với giá mục tiêu 73,700 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VNM#finquery-3eb7e2159726",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 73700,
+      "summary": "SSV có báo cáo VNM ngày 26/06/2026 với khuyến nghị MUA, giá mục tiêu 73.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "ACBS-BCM-2026-06-26-985930ff",
       "symbol": "BCM",
       "broker": "ACBS",
@@ -7984,6 +8547,20 @@
       "summary": "SSI có báo cáo BMP ngày 25/06/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 168.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "PHIUMIRAE-TPB-2026-06-25-9f167b0a",
+      "symbol": "TPB",
+      "broker": "PHIUMIRAE",
+      "brokerName": "phiếu MIRAE",
+      "publishedAt": "2026-06-25",
+      "title": "TPB: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 18,600 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TPB#finquery-0f004aa425aa",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 18600,
+      "summary": "PHIUMIRAE có báo cáo TPB ngày 25/06/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 18.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "NHSV-CTD-2026-06-25-a52bfd43",
       "symbol": "CTD",
       "broker": "NHSV",
@@ -8033,7 +8610,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vgc-bao-cao-cap-nhat-kqkd-q1-2026-rpid5556.html",
       "dataProvider": "24HMONEY",
-      "summary": "VFS có báo cáo VGC ngày 24/06/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VFS có báo cáo VGC ngày 24/06/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VFS-NLG-2026-06-24-88cfcc0f",
@@ -8242,6 +8819,20 @@
       "summary": "BSC có báo cáo VCB ngày 22/06/2026 với khuyến nghị MUA, giá mục tiêu 75.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "PHIUMIRAE-VRE-2026-06-19-139a4711",
+      "symbol": "VRE",
+      "broker": "PHIUMIRAE",
+      "brokerName": "phiếu MIRAE",
+      "publishedAt": "2026-06-19",
+      "title": "VRE: Khuyến nghị MUA với giá mục tiêu 36,800 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VRE#finquery-4ef33b0aca77",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 36800,
+      "summary": "PHIUMIRAE có báo cáo VRE ngày 19/06/2026 với khuyến nghị MUA, giá mục tiêu 36.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "PHIUMIRAE-MSN-2026-06-19-ce719214",
       "symbol": "MSN",
       "broker": "PHIUMIRAE",
@@ -8431,6 +9022,20 @@
       "recommendation": "MUA",
       "targetPrice": 18600,
       "summary": "VIETCAP có báo cáo TPB ngày 17/06/2026 với khuyến nghị MUA, giá mục tiêu 18.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-TPB-2026-06-17-8878911a",
+      "symbol": "TPB",
+      "broker": "VIETCAP",
+      "brokerName": "phiếu Vietcap",
+      "publishedAt": "2026-06-17",
+      "title": "TPB: Khuyến nghị MUA với giá mục tiêu 18,600 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TPB#finquery-6a3ac2321346",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 18600,
+      "summary": "VIETCAP có báo cáo TPB ngày 17/06/2026 với khuyến nghị MUA, giá mục tiêu 18.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-SAB-2026-06-17-a91a0ecf",
@@ -8669,9 +9274,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-30-800-dong-co-phieu-rpid5507.html",
       "dataProvider": "24HMONEY",
-      "summary": "VDSC có báo cáo HPG ngày 15/06/2026 với khuyến nghị MUA, giá mục tiêu 30.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 30800
+      "targetPrice": 30800,
+      "summary": "VDSC có báo cáo HPG ngày 15/06/2026 với khuyến nghị MUA, giá mục tiêu 30.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VCBS-CTD-2026-06-15-6d7c4b75",
@@ -9041,7 +9646,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vck-bao-cao-phan-tich-ky-thuat-10-06-2026-rpid5472.html",
       "dataProvider": "24HMONEY",
-      "summary": "VIKKIBANKS có báo cáo VCK ngày 10/06/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VIKKIBANKS có báo cáo VCK ngày 10/06/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSV-VHC-2026-06-10-9cc9ce0a",
@@ -9056,6 +9661,20 @@
       "recommendation": "MUA",
       "targetPrice": 69400,
       "summary": "SSV có báo cáo VHC ngày 10/06/2026 với khuyến nghị MUA, giá mục tiêu 69.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "SSV-VHC-2026-06-10-77e9f7bd",
+      "symbol": "VHC",
+      "broker": "SSV",
+      "brokerName": "phiếu SSV",
+      "publishedAt": "2026-06-10",
+      "title": "VHC: Khuyến nghị MUA với giá mục tiêu 69,400 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-becaebd0860c",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 69400,
+      "summary": "SSV có báo cáo VHC ngày 10/06/2026 với khuyến nghị MUA, giá mục tiêu 69.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-GVR-2026-06-10",
@@ -9107,9 +9726,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-34-500-dong-co-phieu-rpid5477.html",
       "dataProvider": "24HMONEY",
-      "summary": "SSV có báo cáo HPG ngày 09/06/2026 với khuyến nghị MUA, giá mục tiêu 34.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 34500
+      "targetPrice": 34500,
+      "summary": "SSV có báo cáo HPG ngày 09/06/2026 với khuyến nghị MUA, giá mục tiêu 34.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MIRAE-DGW-2026-06-09-ea122049",
@@ -9179,6 +9798,20 @@
       "summary": "VDSC có báo cáo TCH ngày 08/06/2026 với khuyến nghị MUA, giá mục tiêu 21.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VDSC-TCH-2026-06-08-de28adb1",
+      "symbol": "TCH",
+      "broker": "VDSC",
+      "brokerName": "phiếu VDSC",
+      "publishedAt": "2026-06-08",
+      "title": "TCH: Khuyến nghị MUA với giá mục tiêu 21,700 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/TCH#finquery-666aae5fd76b",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 21700,
+      "summary": "VDSC có báo cáo TCH ngày 08/06/2026 với khuyến nghị MUA, giá mục tiêu 21.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "VDSC-FRT-2026-06-08-4dabe5f1",
       "symbol": "FRT",
       "broker": "VDSC",
@@ -9205,6 +9838,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 38900,
       "summary": "MBS có báo cáo VRE ngày 08/06/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 38.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-VRE-2026-06-08-2495cc38",
+      "symbol": "VRE",
+      "broker": "MBS",
+      "brokerName": "phiếu MBS",
+      "publishedAt": "2026-06-08",
+      "title": "VRE: Khuyến nghị KHẢ QUAN với giá mục tiêu 38,900 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VRE#finquery-4a6a9df9faa8",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 38900,
+      "summary": "MBS có báo cáo VRE ngày 08/06/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 38.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-VRE-2026-06-08",
@@ -9275,6 +9922,20 @@
       "summary": "NHSV có báo cáo VHC ngày 06/06/2026 với khuyến nghị MUA, giá mục tiêu 75.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "NHSV-VHC-2026-06-06-76a27741",
+      "symbol": "VHC",
+      "broker": "NHSV",
+      "brokerName": "phiếu NHSV",
+      "publishedAt": "2026-06-06",
+      "title": "VHC: Khuyến nghị MUA với giá mục tiêu 75,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-ab5ba3e5fe3a",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 75000,
+      "summary": "NHSV có báo cáo VHC ngày 06/06/2026 với khuyến nghị MUA, giá mục tiêu 75.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "NHSV-PHR-2026-06-06-eb4bd9d7",
       "symbol": "PHR",
       "broker": "NHSV",
@@ -9298,7 +9959,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vjc-bao-cao-phan-tich-ky-thuat-05-06-2026-rpid5453.html",
       "dataProvider": "24HMONEY",
-      "summary": "VIKKIBANKS có báo cáo VJC ngày 05/06/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "VIKKIBANKS có báo cáo VJC ngày 05/06/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "NHSV-ANV-2026-06-05-4c6737f3",
@@ -9712,6 +10373,20 @@
       "summary": "BSC có báo cáo VGC ngày 01/06/2026 với khuyến nghị MUA, giá mục tiêu 51.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "BSC-VGC-2026-06-01-6a403960",
+      "symbol": "VGC",
+      "broker": "BSC",
+      "brokerName": "phiếu BSC",
+      "publishedAt": "2026-06-01",
+      "title": "VGC: Khuyến nghị MUA với giá mục tiêu 51,800 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VGC#finquery-f9c08c09ca34",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 51800,
+      "summary": "BSC có báo cáo VGC ngày 01/06/2026 với khuyến nghị MUA, giá mục tiêu 51.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "ACBS-GMD-2026-06-01-0f434546",
       "symbol": "GMD",
       "broker": "ACBS",
@@ -10049,9 +10724,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-kha-quan-voi-gia-muc-tieu-36-600-dong-co-phieu-rpid5396.html",
       "dataProvider": "24HMONEY",
-      "summary": "VNDIRECT có báo cáo HPG ngày 25/05/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 36.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "KHẢ QUAN",
-      "targetPrice": 36600
+      "targetPrice": 36600,
+      "summary": "VNDIRECT có báo cáo HPG ngày 25/05/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 36.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "SSI-PVD-2026-05-25-06079f9c",
@@ -10066,6 +10741,20 @@
       "recommendation": "TRUNG LẬP",
       "targetPrice": 34000,
       "summary": "SSI có báo cáo PVD ngày 25/05/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 34.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "PHIUCSI-VHC-2026-05-25-90e97f15",
+      "symbol": "VHC",
+      "broker": "PHIUCSI",
+      "brokerName": "phiếu CSI",
+      "publishedAt": "2026-05-25",
+      "title": "VHC: Khuyến nghị MUA với giá mục tiêu 83,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-4ac45261a7e7",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 83000,
+      "summary": "PHIUCSI có báo cáo VHC ngày 25/05/2026 với khuyến nghị MUA, giá mục tiêu 83.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "CSI-VHC-2026-05-25-35c6318d",
@@ -10122,6 +10811,18 @@
       "summary": "VPX có báo cáo VSC ngày 22/05/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VPX-VSC-2026-05-22-c2badeae",
+      "symbol": "VSC",
+      "broker": "VPX",
+      "brokerName": "cập nhật ĐHCĐ 2026 VPX",
+      "publishedAt": "2026-05-22",
+      "title": "VSC: Báo cáo",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VSC#finquery-2807ee389fba",
+      "dataProvider": "SMARTCHART",
+      "summary": "VPX có báo cáo VSC ngày 22/05/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "PHIUMIRAE-BMP-2026-05-22-e4b294e0",
       "symbol": "BMP",
       "broker": "PHIUMIRAE",
@@ -10145,7 +10846,7 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vsc-bao-cao-cap-nhat-kqkd-q1-2026-rpid5391.html",
       "dataProvider": "24HMONEY",
-      "summary": "NHSV có báo cáo VSC ngày 22/05/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "summary": "NHSV có báo cáo VSC ngày 22/05/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MIRAE-BMP-2026-05-22-8e1e868d",
@@ -10283,6 +10984,19 @@
       "summary": "DSC có báo cáo VSC ngày 21/05/2026 với giá mục tiêu 22.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "DSC-VSC-2026-05-21-31e875d3",
+      "symbol": "VSC",
+      "broker": "DSC",
+      "brokerName": "phiếu DSC",
+      "publishedAt": "2026-05-21",
+      "title": "VSC: Khuyến nghị THEO DÕI với giá mục tiêu 22,000 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VSC#finquery-e3bd93171812",
+      "dataProvider": "SMARTCHART",
+      "targetPrice": 22000,
+      "summary": "DSC có báo cáo VSC ngày 21/05/2026 với giá mục tiêu 22.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "BSC-PVT-2026-05-21-8d60124b",
       "symbol": "PVT",
       "broker": "BSC",
@@ -10373,6 +11087,20 @@
       "recommendation": "MUA",
       "targetPrice": 66800,
       "summary": "VIETCAP có báo cáo VGC ngày 19/05/2026 với khuyến nghị MUA, giá mục tiêu 66.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-VGC-2026-05-19-a869e223",
+      "symbol": "VGC",
+      "broker": "VIETCAP",
+      "brokerName": "phiếu Vietcap",
+      "publishedAt": "2026-05-19",
+      "title": "VGC: Khuyến nghị MUA với giá mục tiêu 66,800 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VGC#finquery-547f07dee04b",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "MUA",
+      "targetPrice": 66800,
+      "summary": "VIETCAP có báo cáo VGC ngày 19/05/2026 với khuyến nghị MUA, giá mục tiêu 66.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "PHIUMIRAE-CTR-2026-05-19-e42335bc",
@@ -10853,6 +11581,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 98300,
       "summary": "SHS có báo cáo MSN ngày 13/05/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 98.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "PHIUMIRAE-VHC-2026-05-13-a7726530",
+      "symbol": "VHC",
+      "broker": "PHIUMIRAE",
+      "brokerName": "phiếu MIRAE",
+      "publishedAt": "2026-05-13",
+      "title": "VHC: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 69,900 đồng/cổ",
+      "currency": "VND",
+      "sourceUrl": "https://smartchart.vn/bao-cao/VHC#finquery-75a3d3b77d1c",
+      "dataProvider": "SMARTCHART",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 69900,
+      "summary": "PHIUMIRAE có báo cáo VHC ngày 13/05/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 69.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
       "id": "NHSV-HSG-2026-05-13-ca345a3f",
@@ -14457,15 +15199,15 @@
       "id": "MBS-BID-2026-03-11-2ad07b44",
       "symbol": "BID",
       "broker": "MBS",
+      "brokerName": "MBS",
       "publishedAt": "2026-03-11",
       "title": "BID – BCPT – Cơ hội tích lũy sau nhịp điều chỉnh",
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/bid--bcpt--co-hoi-tich-luy-sau-nhip-dieu-chinh-rpid4887.html",
-      "recommendation": "KHẢ QUAN",
-      "targetPrice": 55500,
+      "dataProvider": "24HMONEY",
       "summary": "MBS công bố báo cáo ngày 11/03/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 55.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm.",
-      "brokerName": "MBS",
-      "dataProvider": "24HMONEY"
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 55500
     },
     {
       "id": "KBSV-KBC-2026-03-11-f620cbd4",
@@ -14553,14 +15295,14 @@
       "id": "MBS-VIB-2026-03-10-e11c4c69",
       "symbol": "VIB",
       "broker": "MBS",
+      "brokerName": "MBS",
       "publishedAt": "2026-03-10",
       "title": "VIB – BCPT – Triển vọng khả quan sau quá trình cải thiện chất lượng tài sản",
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vib--bcpt--trien-vong-kha-quan-sau-qua-trinh-cai-thien-chat-luong-tai-san-rpid4898.html",
+      "dataProvider": "24HMONEY",
       "recommendation": "KHẢ QUAN",
-      "summary": "MBS công bố báo cáo ngày 10/03/2026 với khuyến nghị KHẢ QUAN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm.",
-      "brokerName": "MBS",
-      "dataProvider": "24HMONEY"
+      "summary": "MBS công bố báo cáo ngày 10/03/2026 với khuyến nghị KHẢ QUAN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo MBS để đọc đầy đủ luận điểm."
     },
     {
       "id": "MBS-VHM-2026-03-10-07b7afe6",
