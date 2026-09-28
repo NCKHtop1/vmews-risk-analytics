@@ -561,10 +561,68 @@ def merge_unique(rows, key_fields):
     return out
 
 
+def canonical_metrics(rows):
+    chosen = {}
+    for row in rows:
+        if row.get("year") is None or row.get("metricId") is None:
+            continue
+        key = (row["metricId"], row["year"])
+        score = float(row.get("qualityScore") or 0)
+        if row.get("sourceType") in {"sustainability_report", "annual_report", "climate_disclosure"}:
+            score += 8
+        if row.get("confidence") == "high":
+            score += 4
+        current = chosen.get(key)
+        if current is None or score > current[0]:
+            chosen[key] = (score, row)
+    return [item[1] for item in sorted(chosen.values(), key=lambda x: (x[1].get("year") or 0, x[1].get("metricId") or ""))]
+
+
+def reset_document(doc):
+    row = dict(doc)
+    row["type"] = classify_document((row.get("title") or "") + " " + (row.get("url") or ""))
+    for key in ("processedAt", "contentHash", "textLength", "lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
+        row.pop(key, None)
+    return row
+
+
+def migration_keep_document(doc, keywords):
+    kind = doc.get("type") or classify_document((doc.get("title") or "") + " " + (doc.get("url") or ""))
+    path = urlsplit(doc.get("url") or "").path.lower()
+    if kind == "esg_web_content" and any(x in path for x in ("/giai-thuong", "/award", "/tin-tuc", "/news", "/su-kien")):
+        return False
+    if kind == "esg_other":
+        return relevant((doc.get("title") or "") + " " + (doc.get("url") or ""), keywords)
+    return True
+
+
+def backlog_priority(owner, doc):
+    priorities = {
+        "sustainability_report": 6, "climate_disclosure": 6, "annual_report": 5,
+        "sustainable_finance_assessment": 5, "vnsi": 4, "susba": 4,
+        "esg_web_content": 3, "esg_other": 1,
+    }
+    return (7 if owner == "__external__" else priorities.get(doc.get("type"), 1), doc.get("year") or 0)
+
+
 def collect(config, output):
     previous = read(output / "company-esg.json", {"companies": {}, "externalDocuments": []})
     banks = config["banks"]
     keywords = config["document_keywords"]
+    if previous.get("extractorVersion") != EXTRACTOR_VERSION:
+        # A stricter extractor must never keep KPI rows produced by an older,
+        # more permissive parser. Rebuild from retained source documents.
+        for company in previous.get("companies", {}).values():
+            company["metrics"] = []
+            company["canonicalMetrics"] = []
+            company["externalAssessments"] = []
+            company["documents"] = [
+                reset_document(doc) for doc in company.get("documents", [])
+                if migration_keep_document(reset_document(doc), keywords)
+            ]
+        previous["externalDocuments"] = [
+            reset_document(doc) for doc in previous.get("externalDocuments", [])
+        ]
     source_status = []
     discovered = {symbol: {} for symbol in banks}
 
@@ -636,7 +694,10 @@ def collect(config, output):
             blocked = False
         if not blocked:
             eligible_backlog.append((owner, doc))
-    eligible_backlog.sort(key=lambda item: (item[1].get("year") or 0, item[1].get("url", "")), reverse=True)
+    eligible_backlog.sort(
+        key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
+        reverse=True
+    )
     selected = eligible_backlog[:DOCS_PER_RUN]
     processed = 0
     workers = min(4, max(1, len(selected)))
@@ -651,6 +712,8 @@ def collect(config, output):
                 doc["contentHash"] = hashlib.sha256(text.encode("utf-8", "ignore")).hexdigest()
                 doc["processedAt"] = now()
                 doc["textLength"] = len(text)
+                doc["type"] = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
+                doc["year"] = infer_report_year(text, doc.get("year"))
                 doc.pop("lastError", None)
                 doc.pop("retryAfter", None)
                 if owner == "__external__":
@@ -663,9 +726,16 @@ def collect(config, output):
                             )
                             companies[symbol]["externalAssessments"].extend(extracted)
                 else:
-                    metrics = extract_metrics(text, config["metric_rules"], doc.get("year"), final_url, doc.get("title"))
-                    ratings = extract_ratings(text, config["rating_patterns"], doc.get("year"), final_url, doc.get("title"))
-                    companies[owner]["metrics"].extend(metrics)
+                    if metric_document_allowed(doc):
+                        metrics = extract_metrics(
+                            text, config["metric_rules"], doc.get("year"),
+                            final_url, doc.get("title"), source_type=doc.get("type")
+                        )
+                        companies[owner]["metrics"].extend(metrics)
+                    ratings = extract_ratings(
+                        text, config["rating_patterns"], doc.get("year"),
+                        final_url, doc.get("title")
+                    )
                     companies[owner]["externalAssessments"].extend(ratings)
                 processed += 1
             except Exception as exc:
@@ -681,6 +751,7 @@ def collect(config, output):
             companies[symbol]["metrics"],
             ["metricId", "year", "rawValue", "unit", "sourceUrl"],
         )
+        companies[symbol]["canonicalMetrics"] = canonical_metrics(companies[symbol]["metrics"])
         companies[symbol]["externalAssessments"] = merge_unique(
             companies[symbol]["externalAssessments"],
             ["provider", "assessmentType", "year", "value", "sourceUrl"],
@@ -689,17 +760,19 @@ def collect(config, output):
             "documents": len(companies[symbol]["documents"]),
             "processedDocuments": sum(bool(d.get("processedAt")) for d in companies[symbol]["documents"]),
             "metrics": len(companies[symbol]["metrics"]),
+            "canonicalMetrics": len(companies[symbol]["canonicalMetrics"]),
             "externalAssessments": len(companies[symbol]["externalAssessments"]),
         }
 
     payload = {
         "checkedAt": now(),
+        "extractorVersion": EXTRACTOR_VERSION,
         "sourceRegistryVersion": config.get("version"),
         "status": "ok" if any(s.get("status") == "ok" for s in source_status) else "retained",
         "methodology": {
             "compositeScore": False,
             "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
-            "metricConfidence": "medium unless a future structured-source adapter marks the metric high-confidence.",
+            "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest source per metric/year.",
         },
         "companies": companies,
         "externalDocuments": sorted(external_docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True),
@@ -721,6 +794,7 @@ def collect(config, output):
         "sourcesTotal": len(source_status),
         "documents": sum(v["coverage"]["documents"] for v in companies.values()),
         "metrics": sum(v["coverage"]["metrics"] for v in companies.values()),
+        "canonicalMetrics": sum(v["coverage"]["canonicalMetrics"] for v in companies.values()),
         "externalAssessments": sum(v["coverage"]["externalAssessments"] for v in companies.values()),
         "documentsProcessedThisRun": processed,
         "backlogRemaining": payload["run"]["backlogRemaining"],
