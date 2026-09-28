@@ -1,0 +1,459 @@
+{
+  "version": 1,
+  "banks": {
+    "ACB": {
+      "name": "Asia Commercial Bank",
+      "aliases": [
+        "ACB"
+      ],
+      "seed_urls": [
+        "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien",
+        "https://acb.com.vn/ve-chung-toi"
+      ]
+    },
+    "BID": {
+      "name": "BIDV",
+      "aliases": [
+        "BIDV",
+        "Bank for Investment and Development of Vietnam"
+      ],
+      "seed_urls": [
+        "https://bidv.com.vn/vn/quan-he-nha-dau-tu/bao-cao-va-tai-lieu/",
+        "https://bidv.com.vn/vn/ve-bidv/phat-trien-ben-vung"
+      ]
+    },
+    "CTG": {
+      "name": "VietinBank",
+      "aliases": [
+        "VietinBank"
+      ],
+      "seed_urls": [
+        "https://investor.vietinbank.vn/"
+      ]
+    },
+    "EIB": {
+      "name": "Eximbank",
+      "aliases": [
+        "Eximbank"
+      ],
+      "seed_urls": [
+        "https://eximbank.com.vn/nha-dau-tu"
+      ]
+    },
+    "HDB": {
+      "name": "HDBank",
+      "aliases": [
+        "HDBank"
+      ],
+      "seed_urls": [
+        "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu"
+      ]
+    },
+    "LPB": {
+      "name": "LPBank",
+      "aliases": [
+        "LPBank"
+      ],
+      "seed_urls": [
+        "https://lpbank.com.vn/nha-dau-tu"
+      ]
+    },
+    "MBB": {
+      "name": "MB Bank",
+      "aliases": [
+        "MBBank",
+        "MB Bank",
+        "Ngân hàng Quân đội"
+      ],
+      "seed_urls": [
+        "https://www.mbbank.com.vn/Investor/bao-cao-thuong-nen"
+      ]
+    },
+    "MSB": {
+      "name": "MSB",
+      "aliases": [
+        "MSB",
+        "Maritime Bank"
+      ],
+      "seed_urls": [
+        "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/"
+      ]
+    },
+    "NAB": {
+      "name": "Nam A Bank",
+      "aliases": [
+        "Nam A Bank"
+      ],
+      "seed_urls": [
+        "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1"
+      ]
+    },
+    "OCB": {
+      "name": "OCB",
+      "aliases": [
+        "OCB",
+        "Orient Commercial Bank"
+      ],
+      "seed_urls": [
+        "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien"
+      ]
+    },
+    "SHB": {
+      "name": "SHB",
+      "aliases": [
+        "SHB",
+        "Saigon Hanoi Bank"
+      ],
+      "seed_urls": [
+        "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/"
+      ]
+    },
+    "SSB": {
+      "name": "SeABank",
+      "aliases": [
+        "SeABank"
+      ],
+      "seed_urls": [
+        "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-"
+      ]
+    },
+    "STB": {
+      "name": "Sacombank",
+      "aliases": [
+        "Sacombank"
+      ],
+      "seed_urls": [
+        "https://www.sacombank.com.vn/trang-chu/nha-dau-tu.html",
+        "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html"
+      ]
+    },
+    "TCB": {
+      "name": "Techcombank",
+      "aliases": [
+        "Techcombank"
+      ],
+      "seed_urls": [
+        "https://techcombank.com/en/investors/annual-report",
+        "https://techcombank.com/en/about-us/sustainability"
+      ]
+    },
+    "TPB": {
+      "name": "TPBank",
+      "aliases": [
+        "TPBank"
+      ],
+      "seed_urls": [
+        "https://tpb.vn/nha-dau-tu"
+      ]
+    },
+    "VCB": {
+      "name": "Vietcombank",
+      "aliases": [
+        "Vietcombank"
+      ],
+      "seed_urls": [
+        "https://portal.vietcombank.com.vn/en-us/Investors/Pages/investor-detail.aspx?ItemID=4"
+      ]
+    },
+    "VIB": {
+      "name": "VIB",
+      "aliases": [
+        "VIB",
+        "Vietnam International Bank"
+      ],
+      "seed_urls": [
+        "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien"
+      ]
+    },
+    "VPB": {
+      "name": "VPBank",
+      "aliases": [
+        "VPBank"
+      ],
+      "seed_urls": [
+        "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung",
+        "https://www.vpbank.com.vn/ve-chung-toi/phat-trien-ben-vung"
+      ]
+    }
+  },
+  "external_sources": [
+    {
+      "id": "wwf_susba",
+      "provider": "WWF SUSBA",
+      "seed_urls": [
+        "https://www.wwf.sg/susba/reports/",
+        "https://www.wwf.sg/susba/about/"
+      ],
+      "kind": "bank_assessment"
+    },
+    {
+      "id": "hose_vnsi",
+      "provider": "HOSE VNSI",
+      "seed_urls": [
+        "https://www.hsx.vn/"
+      ],
+      "kind": "index_membership"
+    },
+    {
+      "id": "vis_rating",
+      "provider": "VIS Rating",
+      "seed_urls": [
+        "https://visrating.com/second-party-opinion/"
+      ],
+      "kind": "second_party_opinion"
+    },
+    {
+      "id": "sustainalytics",
+      "provider": "Morningstar Sustainalytics",
+      "seed_urls": [
+        "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects"
+      ],
+      "kind": "second_party_opinion"
+    },
+    {
+      "id": "spglobal",
+      "provider": "S&P Global Ratings",
+      "seed_urls": [
+        "https://www.spglobal.com/ratings/en/products/second-party-opinions"
+      ],
+      "kind": "second_party_opinion"
+    }
+  ],
+  "document_keywords": [
+    "sustainability",
+    "sustainable development",
+    "esg",
+    "annual report",
+    "integrated report",
+    "phát triển bền vững",
+    "bao cao phat trien ben vung",
+    "báo cáo phát triển bền vững",
+    "báo cáo thường niên",
+    "bao cao thuong nien",
+    "climate",
+    "green bond",
+    "sustainable finance",
+    "second party opinion",
+    "vnsi",
+    "susba"
+  ],
+  "metric_rules": [
+    {
+      "id": "green_credit",
+      "pillar": "E",
+      "label": "Dư nợ tín dụng xanh",
+      "aliases": [
+        "tín dụng xanh",
+        "green credit",
+        "green loan balance"
+      ],
+      "unit_hint": "VND"
+    },
+    {
+      "id": "sustainable_finance",
+      "pillar": "E",
+      "label": "Tài chính bền vững",
+      "aliases": [
+        "tài chính bền vững",
+        "sustainable finance",
+        "sustainable financing"
+      ],
+      "unit_hint": "VND"
+    },
+    {
+      "id": "scope1",
+      "pillar": "E",
+      "label": "Phát thải Scope 1",
+      "aliases": [
+        "scope 1",
+        "phạm vi 1"
+      ],
+      "unit_hint": "tCO2e"
+    },
+    {
+      "id": "scope2",
+      "pillar": "E",
+      "label": "Phát thải Scope 2",
+      "aliases": [
+        "scope 2",
+        "phạm vi 2"
+      ],
+      "unit_hint": "tCO2e"
+    },
+    {
+      "id": "scope3",
+      "pillar": "E",
+      "label": "Phát thải Scope 3",
+      "aliases": [
+        "scope 3",
+        "phạm vi 3"
+      ],
+      "unit_hint": "tCO2e"
+    },
+    {
+      "id": "ghg_total",
+      "pillar": "E",
+      "label": "Tổng phát thải KNK",
+      "aliases": [
+        "tổng phát thải",
+        "total emissions",
+        "greenhouse gas emissions",
+        "ghg emissions"
+      ],
+      "unit_hint": "tCO2e"
+    },
+    {
+      "id": "electricity",
+      "pillar": "E",
+      "label": "Điện tiêu thụ",
+      "aliases": [
+        "điện tiêu thụ",
+        "electricity consumption",
+        "energy consumption"
+      ],
+      "unit_hint": "kWh"
+    },
+    {
+      "id": "water",
+      "pillar": "E",
+      "label": "Nước tiêu thụ",
+      "aliases": [
+        "nước tiêu thụ",
+        "water consumption"
+      ],
+      "unit_hint": "m3"
+    },
+    {
+      "id": "paper",
+      "pillar": "E",
+      "label": "Giấy tiêu thụ",
+      "aliases": [
+        "giấy tiêu thụ",
+        "paper consumption"
+      ],
+      "unit_hint": "kg"
+    },
+    {
+      "id": "women_workforce_pct",
+      "pillar": "S",
+      "label": "Tỷ lệ nữ trong lực lượng lao động",
+      "aliases": [
+        "tỷ lệ nữ",
+        "female employees",
+        "women in workforce"
+      ],
+      "unit_hint": "%"
+    },
+    {
+      "id": "women_management_pct",
+      "pillar": "S",
+      "label": "Tỷ lệ nữ quản lý",
+      "aliases": [
+        "nữ quản lý",
+        "female management",
+        "women in management"
+      ],
+      "unit_hint": "%"
+    },
+    {
+      "id": "training_hours",
+      "pillar": "S",
+      "label": "Tổng giờ đào tạo",
+      "aliases": [
+        "giờ đào tạo",
+        "training hours",
+        "learning hours"
+      ],
+      "unit_hint": "hours"
+    },
+    {
+      "id": "training_hours_per_employee",
+      "pillar": "S",
+      "label": "Giờ đào tạo bình quân/nhân viên",
+      "aliases": [
+        "giờ đào tạo trung bình",
+        "training hours per employee",
+        "learning hours/employee"
+      ],
+      "unit_hint": "hours/employee"
+    },
+    {
+      "id": "csr_spend",
+      "pillar": "S",
+      "label": "Chi cho cộng đồng/CSR",
+      "aliases": [
+        "hoạt động xã hội",
+        "cộng đồng",
+        "csr",
+        "community investment"
+      ],
+      "unit_hint": "VND"
+    },
+    {
+      "id": "female_board_pct",
+      "pillar": "G",
+      "label": "Tỷ lệ nữ trong HĐQT/Ban quản lý",
+      "aliases": [
+        "female board",
+        "women on board",
+        "nữ trong hội đồng quản trị",
+        "female in board of management"
+      ],
+      "unit_hint": "%"
+    },
+    {
+      "id": "board_independence_pct",
+      "pillar": "G",
+      "label": "Tỷ lệ thành viên HĐQT độc lập",
+      "aliases": [
+        "independent directors",
+        "thành viên độc lập"
+      ],
+      "unit_hint": "%"
+    },
+    {
+      "id": "esg_screening",
+      "pillar": "G",
+      "label": "Khoản cấp tín dụng qua sàng lọc E&S/ESG",
+      "aliases": [
+        "esg screening",
+        "e&s screening",
+        "environmental and social screening",
+        "sàng lọc môi trường và xã hội"
+      ],
+      "unit_hint": "%"
+    }
+  ],
+  "rating_patterns": [
+    {
+      "provider": "Moody's",
+      "type": "ESG Credit Impact Score",
+      "pattern": "\\bCIS-[1-5]\\b"
+    },
+    {
+      "provider": "HOSE",
+      "type": "VNSI membership",
+      "pattern": "\\bVNSI\\b"
+    },
+    {
+      "provider": "WWF",
+      "type": "SUSBA assessment",
+      "pattern": "\\bSUSBA\\b|Sustainable Banking Assessment"
+    },
+    {
+      "provider": "S&P Global Ratings",
+      "type": "Shades of Green/SPO",
+      "pattern": "\\b(?:Dark|Medium|Light) Green\\b|Second Party Opinion|SPO"
+    },
+    {
+      "provider": "Sustainalytics",
+      "type": "Second Party Opinion",
+      "pattern": "credible,? impactful|Second[- ]Party Opinion"
+    },
+    {
+      "provider": "VIS Rating",
+      "type": "Second Party Opinion",
+      "pattern": "best practice|aligned with|Second Party Opinion|Ý kiến của Bên Thứ Hai"
+    }
+  ]
+}
