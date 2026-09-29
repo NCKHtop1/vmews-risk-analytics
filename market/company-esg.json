@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-29T17:36:26.917681+00:00",
+  "checkedAt": "2026-09-29T17:45:16.309230+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 12,
   "status": "ok",
@@ -14,7 +14,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T17:35:51.241813+00:00",
+      "checkedAt": "2026-09-29T17:43:02.954501+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -482,7 +482,7 @@
     "ANV": {
       "symbol": "ANV",
       "name": "Công ty Cổ phần Nam Việt",
-      "checkedAt": "2026-09-29T17:35:51.241982+00:00",
+      "checkedAt": "2026-09-29T17:43:02.954689+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -518,7 +518,7 @@
     "BAF": {
       "symbol": "BAF",
       "name": "Công ty Cổ phần Nông nghiệp BAF Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.242296+00:00",
+      "checkedAt": "2026-09-29T17:43:02.955078+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -540,7 +540,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/baf/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "90804162bd695104a743ca5a21155e21b6c5bcd029ffd7aa5e3fbb76516e80d8",
+          "processedAt": "2026-09-29T17:44:09.407216+00:00",
+          "textLength": 348695
         },
         {
           "id": "f0d0382bee36eebc3d06",
@@ -551,21 +555,130 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 500.0,
+          "rawValue": "500",
+          "unit": "billion VND",
+          "qualityScore": 107.67,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ài chính Quốc tế (IFC) đã ký kết hợp tác chiến lược với gói tài trợ 39 triệu USD và cam kết của IFC sẽ đồng hành, hỗ trợ BAF phát triển bền vững • Huy động thành công 500 tỷ đồng tín dụng xanh từ các định chế tài chính quốc tế đến từ Hàn Quốc và Đài Loan gồm: Shinhan Việt Nam, Daegu và First Commercial Bank; phục vụ cho dự án phát triển trang trại công nghệ cao Giai Xuân • Khánh thành 4 trang trại công nghệ cao. Đồng thời tiếp tục khởi công trang t",
+          "confidence": "high"
+        },
+        {
+          "value": 8941.76,
+          "rawValue": "8.941,76",
+          "unit": "tCO2e",
+          "qualityScore": 108.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": ": 0,45 tCO2e/Tấn SP 128.181,06 tCO2e Năm 2024: 0,48 tCO2e/tấn SP Năm 2025: 0,54 tCO2e/Tấn SP 452.308,40 tCO2e Năm 2024: 0,51 tCO2e/tấn SP Năm 2025: 0,22 tCO2e/Tấn SP 8.941,76 tCO2eTỔNG PHÁT THẢI 589.431,23 tCO2e 190 191 2 5 BÁO CÁO THƯỜNG NIÊNCTCP NÔNG NGHIỆP BAF VIỆT NAM Thông tin chung Tổ chức và nhân sự Chiến lược Phát triển Báo cáo Tình hình hoạt động trong năm 2025 Quản trị doanh nghiệp Báo cáo phát triển bền vững Báo cáo tài chính 2025 05 0602",
+          "confidence": "high"
+        },
+        {
+          "value": 32.0,
+          "rawValue": "32",
+          "unit": "%",
+          "qualityScore": 107.0,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ộ lao động phổ thông 1.107 52,09% 1.791 52% CHỦ ĐỀ XÃ HỘI Thống kê người lao động: II Theo giới tính 2.125 100% 3.440 100% 1 Nam 1.398 65,79% 2.356 68% 2 Nữ 727 34,21% 1.084 32% - Tỷ lệ nữ làm công tác quản lý 27 1,27% 30 0,87% - Tỷ lệ nữ làm các vị trí điều hành cấp cao 1 0,05% 1 0,03% Trình độ lao động phổ thông Trình độ Đại học và trên Đại học Trình độ cao đẳng, trung cấp chuyên nghiệp Sơ cấp và công nhân Kỹ thuật STT Tiêu chí Năm 2024 Năm",
+          "confidence": "high"
+        },
+        {
+          "value": 10780.0,
+          "rawValue": "10.780",
+          "unit": "billion VND",
+          "qualityScore": 77.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "Vươn ra biển lớn” chính là hành trình BAF mang nông sản Việt Nam chinh phục những thị trường khó tính, với cam kết mang lại giá trị thịnh vượng và bền vững cho cổ đông, đối tác và cộng đồng. 72 5 BÁO CÁO THƯỜNG NIÊN 2025 DẤU ẤN NĂM 2025 8 92 5 BÁO CÁO THƯỜNG NIÊN QUY MÔ VƯỢT TRỘI 10.780 tỷ đồng +44,72% yoy 40 trang trại +17,76% trang trại yoy 5.028 99,79% Doanh thu thuần (2024: 59,00% DTT) 3.040 tỷ đồng 27,19% yoy gần900.000con heo trong đó đàn",
+          "confidence": "medium"
+        },
+        {
+          "value": 100.0,
+          "rawValue": "100",
+          "unit": "%",
+          "qualityScore": 89.67,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ÁO CỦA HỘI ĐỒNG QUẢN TRỊ Hoạt động & kết quả đánh giá của Thành viên HĐQT độc lập Trong năm 2025, cơ cấu HĐQT của BAF đảm bảo tuân thủ quy định pháp luật và Điều lệ Công ty với 02 thành viên độc lập: Ông Lê Xuân Thọ: tham gia 49/49 cuộc họp HĐQT (tỷ lệ 100%). Ông Nguyễn Thanh Tân: tham gia 49/49 cuộc họp HĐQT (tỷ lệ 100%). các thành viên Hội đồng Quản trị (HĐQT) độc lập đã thực hiện đầy đủ, nghiêm túc chức năng và quyền hạn theo quy định của pháp luật hi",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 8941.76,
+          "rawValue": "8.941,76",
+          "unit": "tCO2e",
+          "qualityScore": 108.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": ": 0,45 tCO2e/Tấn SP 128.181,06 tCO2e Năm 2024: 0,48 tCO2e/tấn SP Năm 2025: 0,54 tCO2e/Tấn SP 452.308,40 tCO2e Năm 2024: 0,51 tCO2e/tấn SP Năm 2025: 0,22 tCO2e/Tấn SP 8.941,76 tCO2eTỔNG PHÁT THẢI 589.431,23 tCO2e 190 191 2 5 BÁO CÁO THƯỜNG NIÊNCTCP NÔNG NGHIỆP BAF VIỆT NAM Thông tin chung Tổ chức và nhân sự Chiến lược Phát triển Báo cáo Tình hình hoạt động trong năm 2025 Quản trị doanh nghiệp Báo cáo phát triển bền vững Báo cáo tài chính 2025 05 0602",
+          "confidence": "high"
+        },
+        {
+          "value": 500.0,
+          "rawValue": "500",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976780.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ài chính Quốc tế (IFC) đã ký kết hợp tác chiến lược với gói tài trợ 39 triệu USD và cam kết của IFC sẽ đồng hành, hỗ trợ BAF phát triển bền vững • Huy động thành công 500 tỷ đồng tín dụng xanh từ các định chế tài chính quốc tế đến từ Hàn Quốc và Đài Loan gồm: Shinhan Việt Nam, Daegu và First Commercial Bank; phục vụ cho dự án phát triển trang trại công nghệ cao Giai Xuân • Khánh thành 4 trang trại công nghệ cao. Đồng thời tiếp tục khởi công trang t",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "500",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 5,
+        "canonicalMetrics": 2,
         "externalAssessments": 0
       }
     },
     "BCM": {
       "symbol": "BCM",
       "name": "Tập đoàn Đầu tư và Phát triển Công nghiệp Becamex - CTCP",
-      "checkedAt": "2026-09-29T17:35:51.242888+00:00",
+      "checkedAt": "2026-09-29T17:43:02.955811+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -575,7 +688,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/bcm/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7d7e4815c19f2558fd392aa5e3936341ea595ff5ceb7bb2006bf3e873e5406c4",
+          "processedAt": "2026-09-29T17:45:04.252570+00:00",
+          "textLength": 223878
         },
         {
           "id": "09423ac681e525e25cb8",
@@ -627,21 +744,156 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
-      "externalAssessments": [],
-      "canonicalMetrics": [],
+      "metrics": [
+        {
+          "value": 15325.8,
+          "rawValue": "15.325,8",
+          "unit": "tCO2e",
+          "qualityScore": 98.0,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "hoảng 91,57 tỷ kJ (91.568.529,74 MJ), so với 95,95 tỷ kJ năm 2023 và 104,19 tỷ kJ năm 2024, phản ánh sự cải thiện trong hiệu quả sử dụng năng lượng. Tương ứng, tổng phát thải KNK (Phạm vi 1 và Phạm vi 2) giảm xuống còn 15.325,8 tCO₂e, tương đương mức giảm 4% so với năm 2024, sau khi ghi nhận mức tăng từ 15.623,6 tCO₂e năm 2023 lên 15.971,6 tCO₂e năm 2024. Kết quả này tiếp tục được hỗ trợ bởi các sáng kiến tái chế sinh khối; tuy nhiên, do sản lượ",
+          "confidence": "medium"
+        },
+        {
+          "value": 15325.8,
+          "rawValue": "15.325,8",
+          "unit": "tCO2e",
+          "qualityScore": 102.33,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ỷ kJ (91.568.529,74 MJ), so với 95,95 tỷ kJ năm 2023 và 104,19 tỷ kJ năm 2024, phản ánh sự cải thiện trong hiệu quả sử dụng năng lượng. Tương ứng, tổng phát thải KNK (Phạm vi 1 và Phạm vi 2) giảm xuống còn 15.325,8 tCO₂e, tương đương mức giảm 4% so với năm 2024, sau khi ghi nhận mức tăng từ 15.623,6 tCO₂e năm 2023 lên 15.971,6 tCO₂e năm 2024. Kết quả này tiếp tục được hỗ trợ bởi các sáng kiến tái chế sinh khối; tuy nhiên, do sản lượng dăm gỗ giả",
+          "confidence": "high"
+        },
+        {
+          "value": 15325.8,
+          "rawValue": "15.325,8",
+          "unit": "tCO2e",
+          "qualityScore": 93.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ng) giảm xuống còn khoảng 91,57 tỷ kJ (91.568.529,74 MJ), so với 95,95 tỷ kJ năm 2023 và 104,19 tỷ kJ năm 2024, phản ánh sự cải thiện trong hiệu quả sử dụng năng lượng. Tương ứng, tổng phát thải KNK (Phạm vi 1 và Phạm vi 2) giảm xuống còn 15.325,8 tCO₂e, tương đương mức giảm 4% so với năm 2024, sau khi ghi nhận mức tăng từ 15.623,6 tCO₂e năm 2023 lên 15.971,6 tCO₂e năm 2024. Kết quả này tiếp tục được hỗ trợ bởi các sáng kiến tái chế sinh khối; tuy nh",
+          "confidence": "medium"
+        },
+        {
+          "value": 71835000.0,
+          "rawValue": "71.835",
+          "unit": "kWh",
+          "qualityScore": 95.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "mặt trời áp mái, trang trại điện mặt trời, đồng phát LNG và hệ thống lưu trữ năng lượng bằng pin, nhằm đảm bảo nguồn cung năng lượng ổn định và bền vững. Trong năm 2025, sản lượng điện tiêu thụ từ hệ thống điện mặt trời áp mái đạt 71.835 MWh, với hơn 85 dự án và tổng công suất lắp đặt khoảng 100 MWp tại 11 tỉnh, tương đương 12,1 tỷ đồng chi phí tiết kiệm. Việc mở rộng hệ thống điện mặt trời áp mái cũng đóng góp giảm phát thải 47.354 tấn CO₂ tương đư",
+          "confidence": "medium"
+        },
+        {
+          "value": 1.0,
+          "rawValue": "1",
+          "unit": "hours",
+          "qualityScore": 109.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "hiệp vụ chuyên môn đặc biệt là các khóa an toàn lao động, PCCC cụ thể như sau: TRÁCH NHIỆM ĐỐI VỚI NGƯỜI LAO ĐỘNG STT Khóa đào tạo Nội dung đào tạo chính Số lượng người tham dự Số giờ đào tạo 1 Đào tạo An toàn lao động nhóm 4 An toàn chung 1720 8h Đào tạo An toàn lao động nhóm 3 An toàn hóa chất 35 24h 2 Huấn luyện nghiệp vụ PCCC&CNCH PCCC&CNCH 27 8h 3 Cập nhật Văn bản Pháp luật Cập nhật Văn bản Pháp luật 200 8h 4 Bồi dưỡng nghiệp vụ PCCC&CNCH PCC",
+          "confidence": "high"
+        },
+        {
+          "value": 114.0,
+          "rawValue": "114",
+          "unit": "billion VND",
+          "qualityScore": 102.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "h, tổ chức các chương trình giao lưu văn nghệ, thể dục thể thao, tặng quà tết cho các hoàn cảnh khó khăn tại các Xí nghiệp trực thuộc... Riêng trong năm 2025, tổng kinh phí hỗ trợ cộng đồng của Tập đoàn là 114 tỷ đồng với nhiều hoạt động vì cộng đồng. ““ Chi tiết thông tin được trình bày tại Báo cáo phát triển bền vững của Tập đoàn. TRÁCH NHIỆM VỚI MÔI TRƯỜNG TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG Becamex Group luôn coi nguồn nhân lực là nền t",
+          "confidence": "high"
+        }
+      ],
+      "externalAssessments": [
+        {
+          "provider": "HOSE",
+          "assessmentType": "VNSI membership",
+          "year": 2025,
+          "value": "VNSI",
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "snippet": "ốc. Bước tiến này thắt chặt quan hệ đối tác chiến lược, đẩy mạnh việc nhân rộng mô hình khu công nghiệp thông minh và bền vững, qua đó gia tăng vị thế của Tập đoàn trong việc thu hút nguồn vốn FDI và phát triển kinh tế vùng. Ngày 08/08/2025, Tập đoàn Becamex (mã chứng khoán: BCM) tiếp tục được Sở Giao dịch Chứng khoán Thành phố Hồ Chí Minh công bố nằm trong Top 20 doanh nghiệp có chỉ số phát triển bền vững tốt nhất (VNSI) kỳ tháng 07/2025. Đây là năm thứ hai liên tiếp Tập đoàn Becamex được vinh danh trong bộ chỉ số này, khẳng định những nỗ lực kiên định trong chiến lược phát triển bền vững và trách nhiệm doanh nghiệp. HỘI THẢO KHỞI ĐỘNG NGHIÊN CỨU KHẢ THI KHU CÔNG NGHIỆP SINH THÁI TẠI BÌNH D",
+          "confidence": "medium"
+        }
+      ],
+      "canonicalMetrics": [
+        {
+          "value": 114.0,
+          "rawValue": "114",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "h, tổ chức các chương trình giao lưu văn nghệ, thể dục thể thao, tặng quà tết cho các hoàn cảnh khó khăn tại các Xí nghiệp trực thuộc... Riêng trong năm 2025, tổng kinh phí hỗ trợ cộng đồng của Tập đoàn là 114 tỷ đồng với nhiều hoạt động vì cộng đồng. ““ Chi tiết thông tin được trình bày tại Báo cáo phát triển bền vững của Tập đoàn. TRÁCH NHIỆM VỚI MÔI TRƯỜNG TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG Becamex Group luôn coi nguồn nhân lực là nền t",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "114",
+          "repaired": true
+        },
+        {
+          "value": 15325.8,
+          "rawValue": "15.325,8",
+          "unit": "tCO2e",
+          "qualityScore": 102.33,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783970512.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ỷ kJ (91.568.529,74 MJ), so với 95,95 tỷ kJ năm 2023 và 104,19 tỷ kJ năm 2024, phản ánh sự cải thiện trong hiệu quả sử dụng năng lượng. Tương ứng, tổng phát thải KNK (Phạm vi 1 và Phạm vi 2) giảm xuống còn 15.325,8 tCO₂e, tương đương mức giảm 4% so với năm 2024, sau khi ghi nhận mức tăng từ 15.623,6 tCO₂e năm 2023 lên 15.971,6 tCO₂e năm 2024. Kết quả này tiếp tục được hỗ trợ bởi các sáng kiến tái chế sinh khối; tuy nhiên, do sản lượng dăm gỗ giả",
+          "confidence": "high"
+        }
+      ],
       "coverage": {
         "documents": 6,
-        "processedDocuments": 2,
-        "metrics": 0,
-        "canonicalMetrics": 0,
-        "externalAssessments": 0
+        "processedDocuments": 3,
+        "metrics": 6,
+        "canonicalMetrics": 2,
+        "externalAssessments": 1
       }
     },
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T17:35:51.243639+00:00",
+      "checkedAt": "2026-09-29T17:43:02.956655+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -845,7 +1097,7 @@
     "BMP": {
       "symbol": "BMP",
       "name": "Công ty Cổ phần Nhựa Bình Minh",
-      "checkedAt": "2026-09-29T17:35:51.243968+00:00",
+      "checkedAt": "2026-09-29T17:43:02.957057+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -897,7 +1149,7 @@
     "BSI": {
       "symbol": "BSI",
       "name": "Công ty Cổ phần Chứng khoán BIDV",
-      "checkedAt": "2026-09-29T17:35:51.244275+00:00",
+      "checkedAt": "2026-09-29T17:43:02.957411+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -948,7 +1200,7 @@
     "BSR": {
       "symbol": "BSR",
       "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.244587+00:00",
+      "checkedAt": "2026-09-29T17:43:02.957796+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -999,7 +1251,7 @@
     "BVH": {
       "symbol": "BVH",
       "name": "Tập đoàn Bảo Việt",
-      "checkedAt": "2026-09-29T17:35:51.244834+00:00",
+      "checkedAt": "2026-09-29T17:43:02.958080+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1050,7 +1302,7 @@
     "BWE": {
       "symbol": "BWE",
       "name": "Công ty Cổ phần - Tổng công ty Nước - Môi trường Bình Dương",
-      "checkedAt": "2026-09-29T17:35:51.245135+00:00",
+      "checkedAt": "2026-09-29T17:43:02.958445+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1097,7 +1349,7 @@
     "CII": {
       "symbol": "CII",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-09-29T17:35:51.245139+00:00",
+      "checkedAt": "2026-09-29T17:43:02.958450+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1115,7 +1367,7 @@
     "CMG": {
       "symbol": "CMG",
       "name": "Công ty Cổ phần Tập đoàn Công nghệ CMC",
-      "checkedAt": "2026-09-29T17:35:51.245610+00:00",
+      "checkedAt": "2026-09-29T17:43:02.958989+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1172,7 +1424,7 @@
     "CTD": {
       "symbol": "CTD",
       "name": "Công ty Cổ phần Xây dựng Coteccons",
-      "checkedAt": "2026-09-29T17:35:51.245826+00:00",
+      "checkedAt": "2026-09-29T17:43:02.959241+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1203,7 +1455,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T17:35:51.246460+00:00",
+      "checkedAt": "2026-09-29T17:43:02.959990+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -1258,7 +1510,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên",
+          "title": "Báo cáo thường niên Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2024",
           "year": null,
           "type": "sustainability_report",
@@ -1666,7 +1918,7 @@
     "CTR": {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
-      "checkedAt": "2026-09-29T17:35:51.246754+00:00",
+      "checkedAt": "2026-09-29T17:43:02.960319+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1688,7 +1940,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/ctr/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "f21947949491d7079d14b47ca69005716ef3c21976b41189380d581e7b0693f0",
+          "processedAt": "2026-09-29T17:45:09.491473+00:00",
+          "textLength": 159654
         },
         {
           "id": "1eb2b32e609255397c42",
@@ -1703,21 +1959,132 @@
           "retryAfter": "2026-09-30T17:06:48.330028+00:00"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 540.82,
+          "rawValue": "540,82",
+          "unit": "billion VND",
+          "qualityScore": 99.0,
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "cho thấy khả năng tự tích lũy nội lực mà không cần huy động thêm vốn từ cổ đông. Như vậy, Tổng Công ty đảm bảo bảo toàn và gia tăng vốn chủ sở hữu, phù hợp với nguyên tắc quản trị tài chính bền vững. Tổng phân phối lợi nhuận 540,82 tỷ đồng. ▶ Chi trả cổ tức 45.47% ▶ Trích quỹ ĐTPT 29,49% ▶ Quỹ khen thưởng & phúc lợi 25.04% Cổ tức chiếm tỷ trọng lớn nhất (45,5%), tiếp theo là Quỹ đầu tư phát triển (29,5%) và Quỹ khen thưởng & phúc lợi (25,0%). Tổng Công t",
+          "confidence": "medium"
+        },
+        {
+          "value": 83.64,
+          "rawValue": "83,64",
+          "unit": "hours",
+          "qualityScore": 105.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "nh công phần mềm học tập chủ động CALS, Số khóa học trong năm là 1.383 khóa, với hàng nghìn bài giảng điện tử được thực hiện, phù hợp với xu thế đào tạo trong kỷ nguyên mới.. ▶ Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên: 83,64 giờ/năm. ▶ Các chương trình đào tạo nâng cao nhận thức, kỹ năng cho Cán bộ nhân viên năm 2025 tập trung vào 4 nhóm: Đào tạo giá trị cốt lõi, khung tuân thủ. Đào tạo nâng cao kỹ năng, chuyên môn, nghiệp vụ. Đào tạo k",
+          "confidence": "high"
+        },
+        {
+          "value": 83.64,
+          "rawValue": "83,64",
+          "unit": "hours",
+          "qualityScore": 108.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "nh công phần mềm học tập chủ động CALS, Số khóa học trong năm là 1.383 khóa, với hàng nghìn bài giảng điện tử được thực hiện, phù hợp với xu thế đào tạo trong kỷ nguyên mới.. ▶ Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên: 83,64 giờ/năm. ▶ Các chương trình đào tạo nâng cao nhận thức, kỹ năng cho Cán bộ nhân viên năm 2025 tập trung vào 4 nhóm: Đào tạo giá trị cốt lõi, khung tuân thủ. Đào tạo nâng cao kỹ năng, chuyên môn, nghiệp vụ. Đào tạo kỹ năng quản",
+          "confidence": "high"
+        },
+        {
+          "value": 0.106,
+          "rawValue": "106",
+          "unit": "billion VND",
+          "qualityScore": 81.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "m kết đóng góp nhiều nhất cho cộng đồng xã hội. Tích cực tham gia các chương trình xóa đói, giảm nghèo, ủng hộ trường học, người có hoàn cảnh khó khăn. ▶ Tổng Công ty tham gia các hoạt động xã hội, từ thiện đạt kết quả thiết thực, với tổng số tiền đóng góp: Quỹ Bảo trợ trẻ em 106 triệu đồng; Quỹ Mái ấm Công đoàn – Nghĩa tình đồng đội 244 triệu đồng; Quỹ Vì người nghèo 2,821 tỷ đồng. Đồng thời, triển khai kế hoạch hoạt động gắn kết nội bộ trong toàn Tổn",
+          "confidence": "medium"
+        },
+        {
+          "value": 7.0,
+          "rawValue": "0,007",
+          "unit": "%",
+          "qualityScore": 95.33,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "% Không có. Không có NGUYỄN TẤT TRƯỜNG Thành viên HĐQT 46 Thạc sỹ quản trị kinh doanh; Cử nhân Công nghệ thông tin19/06/2018 8.316 cp ~ 0,007% Không có. Không có NGUYỄN QUANG KHẢI Thành viên độc lập HĐQT 51 Kỹ sư Điện tử viễn thông 22/04/2022 0 cp ~ 0% Không có. Thành viên HĐQT 01 đơn vị khác: Công ty cổ phần DMSpro; Giám đốc công nghệ công ty NGS Digital. I. HĐQT VÀ CÁC TIỂU BAN 1. Thành viên và cơ cấu của Hội đồng quản trị HĐQT bao gồm 5 thành viên: Đỗ",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 0.106,
+          "rawValue": "106",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "m kết đóng góp nhiều nhất cho cộng đồng xã hội. Tích cực tham gia các chương trình xóa đói, giảm nghèo, ủng hộ trường học, người có hoàn cảnh khó khăn. ▶ Tổng Công ty tham gia các hoạt động xã hội, từ thiện đạt kết quả thiết thực, với tổng số tiền đóng góp: Quỹ Bảo trợ trẻ em 106 triệu đồng; Quỹ Mái ấm Công đoàn – Nghĩa tình đồng đội 244 triệu đồng; Quỹ Vì người nghèo 2,821 tỷ đồng. Đồng thời, triển khai kế hoạch hoạt động gắn kết nội bộ trong toàn Tổn",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "106",
+          "repaired": true
+        },
+        {
+          "value": 83.64,
+          "rawValue": "83,64",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776371859.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "nh công phần mềm học tập chủ động CALS, Số khóa học trong năm là 1.383 khóa, với hàng nghìn bài giảng điện tử được thực hiện, phù hợp với xu thế đào tạo trong kỷ nguyên mới.. ▶ Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên: 83,64 giờ/năm. ▶ Các chương trình đào tạo nâng cao nhận thức, kỹ năng cho Cán bộ nhân viên năm 2025 tập trung vào 4 nhóm: Đào tạo giá trị cốt lõi, khung tuân thủ. Đào tạo nâng cao kỹ năng, chuyên môn, nghiệp vụ. Đào tạo kỹ năng quản",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "83,64",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 5,
+        "canonicalMetrics": 2,
         "externalAssessments": 0
       }
     },
     "CTS": {
       "symbol": "CTS",
       "name": "Công ty Cổ phần Chứng khoán Vietinbank",
-      "checkedAt": "2026-09-29T17:35:51.247051+00:00",
+      "checkedAt": "2026-09-29T17:43:02.960681+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1764,7 +2131,7 @@
     "DBC": {
       "symbol": "DBC",
       "name": "Công ty Cổ phần Tập đoàn Dabaco Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.247349+00:00",
+      "checkedAt": "2026-09-29T17:43:02.961052+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1811,7 +2178,7 @@
     "DCM": {
       "symbol": "DCM",
       "name": "Công ty Cổ phần - Tổng Công ty Phân bón Dầu Khí Cà Mau",
-      "checkedAt": "2026-09-29T17:35:51.247654+00:00",
+      "checkedAt": "2026-09-29T17:43:02.961400+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1858,7 +2225,7 @@
     "DGW": {
       "symbol": "DGW",
       "name": "Công ty Cổ phần Thế Giới Số",
-      "checkedAt": "2026-09-29T17:35:51.247946+00:00",
+      "checkedAt": "2026-09-29T17:43:02.961783+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1905,7 +2272,7 @@
     "DIG": {
       "symbol": "DIG",
       "name": "Tổng Công ty Cổ phần Đầu tư Phát triển Xây dựng",
-      "checkedAt": "2026-09-29T17:35:51.248195+00:00",
+      "checkedAt": "2026-09-29T17:43:02.962097+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1944,7 +2311,7 @@
     "DPM": {
       "symbol": "DPM",
       "name": "Tổng Công ty Phân bón và Hóa chất Dầu khí - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:35:51.248528+00:00",
+      "checkedAt": "2026-09-29T17:43:02.962492+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1988,7 +2355,7 @@
     "DSE": {
       "symbol": "DSE",
       "name": "Công ty Cổ phần Chứng khoán DNSE",
-      "checkedAt": "2026-09-29T17:35:51.248886+00:00",
+      "checkedAt": "2026-09-29T17:43:02.962930+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2077,7 +2444,7 @@
     "DXG": {
       "symbol": "DXG",
       "name": "Công ty Cổ phần Bluemarq Group",
-      "checkedAt": "2026-09-29T17:35:51.249134+00:00",
+      "checkedAt": "2026-09-29T17:43:02.963239+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2116,7 +2483,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T17:35:51.249759+00:00",
+      "checkedAt": "2026-09-29T17:43:02.963973+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -2311,7 +2678,7 @@
     "EVF": {
       "symbol": "EVF",
       "name": "Công ty Tài chính Tổng hợp Cổ phần Điện Lực",
-      "checkedAt": "2026-09-29T17:35:51.250057+00:00",
+      "checkedAt": "2026-09-29T17:43:02.964326+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2358,7 +2725,7 @@
     "FPT": {
       "symbol": "FPT",
       "name": "Công ty Cổ phần FPT",
-      "checkedAt": "2026-09-29T17:35:51.250308+00:00",
+      "checkedAt": "2026-09-29T17:43:02.964626+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2397,7 +2764,7 @@
     "FRT": {
       "symbol": "FRT",
       "name": "Công ty Cổ phần Bán lẻ Kỹ thuật số FPT",
-      "checkedAt": "2026-09-29T17:35:51.250666+00:00",
+      "checkedAt": "2026-09-29T17:43:02.965033+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2449,7 +2816,7 @@
     "FTS": {
       "symbol": "FTS",
       "name": "Công ty Cổ phần Chứng khoán FPT",
-      "checkedAt": "2026-09-29T17:35:51.250965+00:00",
+      "checkedAt": "2026-09-29T17:43:02.965381+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2496,7 +2863,7 @@
     "GAS": {
       "symbol": "GAS",
       "name": "Tổng Công ty Khí Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:35:51.251260+00:00",
+      "checkedAt": "2026-09-29T17:43:02.965750+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2543,7 +2910,7 @@
     "GEE": {
       "symbol": "GEE",
       "name": "Công ty Cổ phần Điện lực Gelex",
-      "checkedAt": "2026-09-29T17:35:51.251564+00:00",
+      "checkedAt": "2026-09-29T17:43:02.966105+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2590,7 +2957,7 @@
     "GEX": {
       "symbol": "GEX",
       "name": "Công ty Cổ phần Tập đoàn Gelex",
-      "checkedAt": "2026-09-29T17:35:51.251861+00:00",
+      "checkedAt": "2026-09-29T17:43:02.966448+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2637,7 +3004,7 @@
     "GMD": {
       "symbol": "GMD",
       "name": "Công ty Cổ phần Tập đoàn Gemadept",
-      "checkedAt": "2026-09-29T17:35:51.252151+00:00",
+      "checkedAt": "2026-09-29T17:43:02.966806+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2659,7 +3026,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/gmd/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "f11330376d6846ae87d457268b86f089e91526c966a3e8f8e6a59194b8183c58",
+          "processedAt": "2026-09-29T17:44:48.568813+00:00",
+          "textLength": 390755
         },
         {
           "id": "e0d3b1d6e43b4369a0cc",
@@ -2670,21 +3041,109 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
-      "externalAssessments": [],
-      "canonicalMetrics": [],
+      "metrics": [
+        {
+          "value": 1416501.0,
+          "rawValue": "1.416.501",
+          "unit": "kWh",
+          "qualityScore": 102.67,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973946.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ƯỢNG - CÁC GIẢI PHÁP TIẾT KIỆM NĂNG LƯỢNG QUẢN LÝ CHẤT THẢI, BẢO VỆ MÔI TRƯỜNG AN TOÀN LAO ĐỘNG - SỨC KHỎE NGHỀ NGHIỆP SỬ DỤNG NGUỒN NƯỚC - CÁC GIẢI PHÁP TIẾT KIỆM NƯỚC Tổng lượng điện tiêu thụ trong năm 2025 1.416.501 kWh Tổng lượng dầu DO tiêu thụ trong năm 2025 17.470lít Tổng lượng nước tiêu thụ trong năm 2025 16.934 m3 • Xây dựng và duy trì hệ thống quản lý an toàn sức khỏe nghề nghiệp bao gồm các chính sách, mục tiêu, quy trình, quy định, chươn",
+          "confidence": "high"
+        },
+        {
+          "value": 16934.0,
+          "rawValue": "16.934",
+          "unit": "m3",
+          "qualityScore": 102.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973946.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "NGHỀ NGHIỆP SỬ DỤNG NGUỒN NƯỚC - CÁC GIẢI PHÁP TIẾT KIỆM NƯỚC Tổng lượng điện tiêu thụ trong năm 2025 1.416.501 kWh Tổng lượng dầu DO tiêu thụ trong năm 2025 17.470lít Tổng lượng nước tiêu thụ trong năm 2025 16.934 m3 • Xây dựng và duy trì hệ thống quản lý an toàn sức khỏe nghề nghiệp bao gồm các chính sách, mục tiêu, quy trình, quy định, chương trình đào tạo - huấn luyện, các hoạt động kiểm soát hoạt động vận hành,... để đảm bảo không xảy ra tai n",
+          "confidence": "high"
+        },
+        {
+          "value": 50.0,
+          "rawValue": "50",
+          "unit": "%",
+          "qualityScore": 98.33,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973946.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "liệu thành viên HĐQT do tổ chức bên ngoài lập) khi tìm kiếm ứng viên HĐQT không?  Không. (B)D.4 Thành phần và cơ cấu HĐQT (B)D.4.1 Chủ tịch HĐQT là Thành viên Độc lập và số lượng Thành viên Độc lập và không điều hành có chiếm 50% tổng số lượng thành viên HĐQT không?  Chủ tịch HĐQT là thành viên HĐQT điều hành. Số lượng thành viên HĐQT độc lập là 3/10 thành viên (chiếm 1/3 tổng số thành viên HĐQT) (B)D.5 Quản trị rủi ro (B)D.5.1 Công ty có công bố rằng",
+          "confidence": "medium"
+        }
+      ],
+      "externalAssessments": [
+        {
+          "provider": "HOSE",
+          "assessmentType": "VNSI membership",
+          "year": 2025,
+          "value": "VNSI",
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973946.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "snippet": "n lược mở rộng năng lực khai thác và nâng cao hiệu quả vận hành cụm cảng sông lớn nhất tại khu vực phía Bắc. Gemadept được lựa chọn vào Top 20 doanh nghiệp có Chỉ số Phát triển Bền vững tốt nhất thị trường (VNSI20) Trong tháng 08/2025, Gemadept được Sở Giao dịch Chứng khoán TP . Hồ Chí Minh (HOSE) lựa chọn vào Top 20 doanh nghiệp có Chỉ số Phát triển Bền vững tốt nhất thị trường (VNSI20). Việc được đưa vào rổ chỉ số VNSI tiếp tục khẳng định định hướng phát triển bền vững và cam kết ESG xuyên suốt trong hoạt động của Gemadept. Cảng Gemalink được vinh danh tại Hội nghị CMA Terminals QHSSE APAC 2025 Trong tháng 09/2025, Cảng Gemalink được CMA Terminals vinh danh với 02 giải thưởng tại Hội nghị ",
+          "confidence": "medium"
+        }
+      ],
+      "canonicalMetrics": [
+        {
+          "value": 1416501.0,
+          "rawValue": "1.416.501",
+          "unit": "kWh",
+          "qualityScore": 102.67,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973946.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ƯỢNG - CÁC GIẢI PHÁP TIẾT KIỆM NĂNG LƯỢNG QUẢN LÝ CHẤT THẢI, BẢO VỆ MÔI TRƯỜNG AN TOÀN LAO ĐỘNG - SỨC KHỎE NGHỀ NGHIỆP SỬ DỤNG NGUỒN NƯỚC - CÁC GIẢI PHÁP TIẾT KIỆM NƯỚC Tổng lượng điện tiêu thụ trong năm 2025 1.416.501 kWh Tổng lượng dầu DO tiêu thụ trong năm 2025 17.470lít Tổng lượng nước tiêu thụ trong năm 2025 16.934 m3 • Xây dựng và duy trì hệ thống quản lý an toàn sức khỏe nghề nghiệp bao gồm các chính sách, mục tiêu, quy trình, quy định, chươn",
+          "confidence": "high"
+        },
+        {
+          "value": 16934.0,
+          "rawValue": "16.934",
+          "unit": "m3",
+          "qualityScore": 102.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973946.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "NGHỀ NGHIỆP SỬ DỤNG NGUỒN NƯỚC - CÁC GIẢI PHÁP TIẾT KIỆM NƯỚC Tổng lượng điện tiêu thụ trong năm 2025 1.416.501 kWh Tổng lượng dầu DO tiêu thụ trong năm 2025 17.470lít Tổng lượng nước tiêu thụ trong năm 2025 16.934 m3 • Xây dựng và duy trì hệ thống quản lý an toàn sức khỏe nghề nghiệp bao gồm các chính sách, mục tiêu, quy trình, quy định, chương trình đào tạo - huấn luyện, các hoạt động kiểm soát hoạt động vận hành,... để đảm bảo không xảy ra tai n",
+          "confidence": "high"
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
-        "externalAssessments": 0
+        "processedDocuments": 2,
+        "metrics": 3,
+        "canonicalMetrics": 2,
+        "externalAssessments": 1
       }
     },
     "GVR": {
       "symbol": "GVR",
       "name": "Tập đoàn Công nghiệp Cao su Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:35:51.252495+00:00",
+      "checkedAt": "2026-09-29T17:43:02.967217+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2703,7 +3162,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/gvr/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "1086f74cf30e9722e56c8419e45238b77bb90ada9dffc70f32efb8ff30f329b4",
+          "processedAt": "2026-09-29T17:43:42.416895+00:00",
+          "textLength": 425214
         },
         {
           "id": "d6d9ba51cf97bff811ae",
@@ -2722,13 +3185,29 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 3000000.0,
+          "rawValue": "3,000,000",
+          "unit": "kWh",
+          "qualityScore": 98.0,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783976634.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "developed according to high-tech agricultural models, applying mechanization and comprehensive digitalization of processes. No. Category Unit Executed Volume I SAVINGS/REDUCTION 1 Electricity consumption savings kWh Achieve at least 3,000,000 kWh 2 Fuel consumption savings (DO oil, LPG gas, wood, firewood, etc.) kg Achieve at least 600,000 kg II EMISSION REDUCTION 4 Savings and reduction of chemicals used Kg Achieve at least 200,000 kg 5 Wastewater recycling",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 0,
-        "metrics": 0,
+        "processedDocuments": 1,
+        "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
       }
@@ -2736,7 +3215,7 @@
     "HAG": {
       "symbol": "HAG",
       "name": "Công ty Cổ phần Hoàng Anh Gia Lai",
-      "checkedAt": "2026-09-29T17:35:51.252827+00:00",
+      "checkedAt": "2026-09-29T17:43:02.967585+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2780,7 +3259,7 @@
     "HCM": {
       "symbol": "HCM",
       "name": "Công ty Cổ phần Chứng khoán Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-09-29T17:35:51.253169+00:00",
+      "checkedAt": "2026-09-29T17:43:02.968004+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2835,7 +3314,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T17:35:51.254183+00:00",
+      "checkedAt": "2026-09-29T17:43:02.969223+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3002,7 +3481,7 @@
     "HDG": {
       "symbol": "HDG",
       "name": "Công ty Cổ phần Tập đoàn Hà Đô",
-      "checkedAt": "2026-09-29T17:35:51.254507+00:00",
+      "checkedAt": "2026-09-29T17:43:02.969600+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3021,7 +3500,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/hdg/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "23d210d5bc494ea8875945735ae55b7a23a576131d19d1b03c5eb447f8234785",
+          "processedAt": "2026-09-29T17:44:29.221686+00:00",
+          "textLength": 63661
         },
         {
           "id": "ad34b583f08fa3fd712f",
@@ -3045,7 +3528,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -3054,7 +3537,7 @@
     "HHV": {
       "symbol": "HHV",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Giao thông Đèo Cả",
-      "checkedAt": "2026-09-29T17:35:51.254828+00:00",
+      "checkedAt": "2026-09-29T17:43:02.969977+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3076,7 +3559,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/hhv/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "89da3f1161094ce4679d144335a8605e7576a71809f2c475a203388d0b635fe6",
+          "processedAt": "2026-09-29T17:44:44.608589+00:00",
+          "textLength": 107463
         },
         {
           "id": "866ac88a74c0e20e17b7",
@@ -3087,13 +3574,29 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 15.0,
+          "rawValue": "0,00015",
+          "unit": "%",
+          "qualityScore": 103.33,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971896.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "phiếu sở hữu đầu kỳ Số cổ phiếu sở hữu cuối kỳ Lý do tăng, giảm (mua, bán, chuyển đổi, thưởng...)Số cổ phiếu Tỷ lệ Số cổ phiếu Tỷ lệ 8 Nguyễn Thị Tuyết Vợ của ông Hoàng Văn Hải - Thành viên độc lập HĐQT HHV 666 0,00015% 0 0% Bán cổ phiếu và được nhận cổ tức bằng cổ phiếu 9 Hoàng Minh Đức Con đẻ của ông Hoàng Văn Hải - Thành viên độc lập HĐQT HHV 4.210 0,00097% 0 0% Bán cổ phiếu và được nhận cổ tức bằng cổ phiếu 10 Hoàng Minh Khôi Con đẻ của ông Hoàng Vă",
+          "confidence": "high"
+        }
+      ],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
+        "processedDocuments": 2,
+        "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
       }
@@ -3101,7 +3604,7 @@
     "HPG": {
       "symbol": "HPG",
       "name": "Công ty Cổ phần Tập đoàn Hòa Phát",
-      "checkedAt": "2026-09-29T17:35:51.255081+00:00",
+      "checkedAt": "2026-09-29T17:43:02.970282+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3140,7 +3643,7 @@
     "HSG": {
       "symbol": "HSG",
       "name": "Công ty Cổ phần Tập đoàn Hoa Sen",
-      "checkedAt": "2026-09-29T17:35:51.255372+00:00",
+      "checkedAt": "2026-09-29T17:43:02.970628+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3187,7 +3690,7 @@
     "HT1": {
       "symbol": "HT1",
       "name": "Công ty Cổ phần Xi măng VICEM Hà Tiên",
-      "checkedAt": "2026-09-29T17:35:51.255630+00:00",
+      "checkedAt": "2026-09-29T17:43:02.970951+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3226,7 +3729,7 @@
     "KBC": {
       "symbol": "KBC",
       "name": "Tổng Công ty Phát triển Đô thị Kinh Bắc - CTCP",
-      "checkedAt": "2026-09-29T17:35:51.255963+00:00",
+      "checkedAt": "2026-09-29T17:43:02.971353+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3271,7 +3774,7 @@
     "KDC": {
       "symbol": "KDC",
       "name": "Công ty Cổ phần Tập đoàn KIDO",
-      "checkedAt": "2026-09-29T17:35:51.256242+00:00",
+      "checkedAt": "2026-09-29T17:43:02.971680+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3290,7 +3793,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/kdc/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d63eac82c2a6e561f950caebe4e84389377fd612d5c2a3663a70ad4457be11b8",
+          "processedAt": "2026-09-29T17:44:45.473267+00:00",
+          "textLength": 314343
         },
         {
           "id": "a47dff6be1f840d1df3b",
@@ -3301,13 +3808,29 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 1.7,
+          "rawValue": "1.700.000.000",
+          "unit": "billion VND",
+          "qualityScore": 78.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783972553.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "c hoàn cảnh khó khăn ựứên khắỦ lãnh ựhổ Việự NamṶ HOẠT ĐỘNG THIỆN NGUYỆN 1.700.000.000 VND www.kdc.vn 147BÁO CÁO THƯỜNG NIÊN KIDO GROUP 2025 146 CHƯƠNG ḹṸ GẮN KẾT TRÁCH NHIỆM CÙNG CỘNG ĐỒNG Năm Ứỵa đỼợc ghi nhận là mộự năm ựhiên ựai Ủhỽc ựạỦṷ khi nhiềỵ hình ựhái ngỵḎ hiểm ḍỵấự hiện ựứên Ủhạm ḇi ứộngṷ nối ựiếỦṸ bão Ẇ mỼa lớn diện ứộng Ẇ lḆ lỹựṷ kèm lḆ Ứỵéự ḇà Ửạự lở đấựṶ Theo ựhống kê đã ḶḺ cơn bãoṷ ḻ cơn áỦ ựhấỦ nhiệự đớiṹ mỼa lớnṷ lḆ ḇỼợự lịch",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 0,
-        "metrics": 0,
+        "processedDocuments": 1,
+        "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
       }
@@ -3315,7 +3838,7 @@
     "KDH": {
       "symbol": "KDH",
       "name": "Công ty Cổ phần Đầu tư và Kinh doanh nhà Khang Điền",
-      "checkedAt": "2026-09-29T17:35:51.256547+00:00",
+      "checkedAt": "2026-09-29T17:43:02.972071+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3362,7 +3885,7 @@
     "KOS": {
       "symbol": "KOS",
       "name": "Công ty Cổ phần KOSY",
-      "checkedAt": "2026-09-29T17:35:51.256897+00:00",
+      "checkedAt": "2026-09-29T17:43:02.972483+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3381,7 +3904,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/kos/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "8bd6db81009f80de999f9eefc62ab51b102c4b957196703858f4272e88f66799",
+          "processedAt": "2026-09-29T17:44:57.500499+00:00",
+          "textLength": 113370
         },
         {
           "id": "95e260654d1d7fde4a05",
@@ -3400,13 +3927,29 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 429900.0,
+          "rawValue": "429,900",
+          "unit": "billion VND",
+          "qualityScore": 68,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971736.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ến: 429,900 tỷ đồng; + Đất nhà ở xã hội: 17.463,7 m2 chiếm 6,73%; + Đất thương mại dịch vụ: 8.637,8 m 2 chiếm 3,33%; + Đất trường mầm non: 4.762,1 m 2 chiếm 1,83%; + Đất sinh hoạt cộng đồng: 2.769,9 m 2 chiếm: 1,07%; + Đất sinh cây xanh, mặt nước cảnh quan: 29.911,1 m2 chiếm:8,27%; + Đất bãi để xe: 4.336,4 m 2 chiếm: 1,67%; + Đất giao thông: 114.555,5 m 2 chiếm: 44,14%; TỔNG QUAN Phường Thái Nguyên là trung tâm chính trị, kinh tế, văn hóa, giáo",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 0,
-        "metrics": 0,
+        "processedDocuments": 1,
+        "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
       }
@@ -3414,7 +3957,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T17:35:51.257464+00:00",
+      "checkedAt": "2026-09-29T17:43:02.973306+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3562,7 +4105,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T17:35:51.258120+00:00",
+      "checkedAt": "2026-09-29T17:43:02.974079+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3790,7 +4333,7 @@
     "MCH": {
       "symbol": "MCH",
       "name": "Công ty Cổ phần Hàng Tiêu Dùng MaSan",
-      "checkedAt": "2026-09-29T17:35:51.258455+00:00",
+      "checkedAt": "2026-09-29T17:43:02.974476+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3849,7 +4392,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T17:35:51.260430+00:00",
+      "checkedAt": "2026-09-29T17:43:02.976814+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -4385,7 +4928,7 @@
     "MSN": {
       "symbol": "MSN",
       "name": "Công ty Cổ phần Tập đoàn Masan",
-      "checkedAt": "2026-09-29T17:35:51.260741+00:00",
+      "checkedAt": "2026-09-29T17:43:02.977179+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4432,7 +4975,7 @@
     "MWG": {
       "symbol": "MWG",
       "name": "Công ty Cổ phần Đầu tư Thế Giới Di Động",
-      "checkedAt": "2026-09-29T17:35:51.260996+00:00",
+      "checkedAt": "2026-09-29T17:43:02.977488+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4471,7 +5014,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T17:35:51.263484+00:00",
+      "checkedAt": "2026-09-29T17:43:02.980215+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -4486,6 +5029,18 @@
           "contentHash": "74ef15159b76576f289e98ff9212e6dc6aed2ca9c8aa114921bb16d2d735d287",
           "processedAt": "2026-09-29T17:31:19.898026+00:00",
           "textLength": 5741
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "Báo cáo thường niên năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
         },
         {
           "id": "9905202effdd869504d3",
@@ -4522,18 +5077,6 @@
           "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
           "processedAt": "2026-09-29T03:25:01.084606+00:00",
           "textLength": 337
-        },
-        {
-          "id": "358356aafec4c64c0e15",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
-          "processedAt": "2026-09-29T03:25:01.578252+00:00",
-          "textLength": 336
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -4620,6 +5163,18 @@
           "textLength": 213889
         },
         {
+          "id": "33e5a56cd74d6d5f8f61",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
+          "processedAt": "2026-09-29T03:25:05.799971+00:00",
+          "textLength": 262818
+        },
+        {
           "id": "672efd9d89b939b0cb7a",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2023/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2023.pdf",
           "title": "Báo cáo thường niên năm 2023",
@@ -4634,26 +5189,14 @@
         {
           "id": "0c9ce9572663228d1389",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
+          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "sustainability_report",
+          "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
           "processedAt": "2026-09-29T03:40:21.817994+00:00",
           "textLength": 251546
-        },
-        {
-          "id": "33e5a56cd74d6d5f8f61",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
-          "processedAt": "2026-09-29T03:25:05.799971+00:00",
-          "textLength": 262818
         },
         {
           "id": "656e569b13a9f118e6e9",
@@ -4670,7 +5213,7 @@
         {
           "id": "bf618c3dc088db37aaf4",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn-2021/bao-cao-thuong-nien-2021.pdf",
-          "title": "Báo cáo thường niên năm 2021",
+          "title": "bao-cao-thuong-nien-2021.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2021,
           "type": "annual_report",
@@ -4706,10 +5249,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
+          "title": "Báo cáo thường niên năm 2018",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "esg_other",
+          "type": "annual_report",
           "contentType": "pdf"
         },
         {
@@ -5400,7 +5943,7 @@
     "NKG": {
       "symbol": "NKG",
       "name": "Công ty Cổ phần Thép Nam Kim",
-      "checkedAt": "2026-09-29T17:35:51.263754+00:00",
+      "checkedAt": "2026-09-29T17:43:02.980545+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5439,7 +5982,7 @@
     "NLG": {
       "symbol": "NLG",
       "name": "Công ty Cổ phần Đầu tư Nam Long",
-      "checkedAt": "2026-09-29T17:35:51.264053+00:00",
+      "checkedAt": "2026-09-29T17:43:02.980910+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5486,7 +6029,7 @@
     "NT2": {
       "symbol": "NT2",
       "name": "Công ty Cổ phần Điện lực Dầu khí Nhơn Trạch 2",
-      "checkedAt": "2026-09-29T17:35:51.264387+00:00",
+      "checkedAt": "2026-09-29T17:43:02.981305+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5538,7 +6081,7 @@
     "NVL": {
       "symbol": "NVL",
       "name": "Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va",
-      "checkedAt": "2026-09-29T17:35:51.264391+00:00",
+      "checkedAt": "2026-09-29T17:43:02.981309+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5556,7 +6099,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T17:35:51.266748+00:00",
+      "checkedAt": "2026-09-29T17:43:02.983247+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -6523,7 +7066,7 @@
     "PAN": {
       "symbol": "PAN",
       "name": "Công ty Cổ phần Tập đoàn PAN",
-      "checkedAt": "2026-09-29T17:35:51.267055+00:00",
+      "checkedAt": "2026-09-29T17:43:02.983605+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6545,7 +7088,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/pan/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "f07931da7a05d42573a5793060d49631e39bf18aa262ee7433eaaf674e0b7091",
+          "processedAt": "2026-09-29T17:44:09.022430+00:00",
+          "textLength": 360752
         },
         {
           "id": "81873627fc53121d44d2",
@@ -6556,21 +7103,70 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 468.0,
+          "rawValue": "468",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973846.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "biệt đối xử và thúc đẩy bình đẳng giới, bảo đảm cơ hội phát triển nghề nghiệp cho cả lao động nam và nữ. Tập đoàn tiếp tục đầu tư cho đào tạo và phát triển năng lực; trong kỳ, 468 giờ đào tạo/ lao động tạo được tổ chức trên toàn hệ thống, hỗ trợ người lao động nâng cao kỹ năng chuyên môn, tăng khả năng thích ứng và đóng góp hiệu quả vào hoạt động sản xuất – kinh doanh. Tập đoàn PAN luôn ý thức rõ trách nhiệm đối với cộng đồng và xã hội, trong đó p",
+          "confidence": "high"
+        },
+        {
+          "value": 7.48,
+          "rawValue": "7,48",
+          "unit": "billion VND",
+          "qualityScore": 90.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973846.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "đã trao 250 suất học bổng cho sinh viên khối ngành nông nghiệp; trong những năm gần đây, Tập đoàn đã đóng góp hơn 7,48 tỷ đồng hỗ trợ khắc phục hậu quả thiên tai và các hoạt động cộng đồng, hỗ trợ những hộ gia đình khó khăn. Từ năm 2020 đến nay, hơn 555.163 cây xanh đã được trồng tại nhiều tỉnh thành nhằm phục hồi hệ sinh thái và cải thiện môi trường sống. Chính sách đào tạo, nâng cao kỹ năng và đảm bảo an toàn – vệ sinh lao động được duy trì t",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 7.48,
+          "rawValue": "7,48",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783973846.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "đã trao 250 suất học bổng cho sinh viên khối ngành nông nghiệp; trong những năm gần đây, Tập đoàn đã đóng góp hơn 7,48 tỷ đồng hỗ trợ khắc phục hậu quả thiên tai và các hoạt động cộng đồng, hỗ trợ những hộ gia đình khó khăn. Từ năm 2020 đến nay, hơn 555.163 cây xanh đã được trồng tại nhiều tỉnh thành nhằm phục hồi hệ sinh thái và cải thiện môi trường sống. Chính sách đào tạo, nâng cao kỹ năng và đảm bảo an toàn – vệ sinh lao động được duy trì t",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "7,48",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 2,
+        "canonicalMetrics": 1,
         "externalAssessments": 0
       }
     },
     "PC1": {
       "symbol": "PC1",
       "name": "Công ty Cổ phần Tập đoàn PC1",
-      "checkedAt": "2026-09-29T17:35:51.267354+00:00",
+      "checkedAt": "2026-09-29T17:43:02.983969+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6592,7 +7188,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/pc1/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "8448ba51d15667413e059445b06c9e7b25465fb4029919ac8820ab2dc6a80785",
+          "processedAt": "2026-09-29T17:44:59.613395+00:00",
+          "textLength": 319392
         },
         {
           "id": "b914f07eb6616a776502",
@@ -6603,21 +7203,85 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 36.0,
+          "rawValue": "36",
+          "unit": "hours",
+          "qualityScore": 93.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971635.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ng trình đào tạo Cẩm nang văn hóa dành cho tất cả CBNV Tập đoàn/đơn vị • Một số chương trình khác: Cập nhật kiến thức thuế kế toán 2025, sơ cứu cấp cứu ngoại viện,... Đối tượng Số giờ đào tạo trung bình năm 2025 Nhân viên, chuyên viên, trưởng bộ phận, trưởng nhóm 36 giờ/ năm T rưởng phòng/phó phòng 48 giờ/ năm Giám đốc/ Phó Giám đốc các ban, T rưởng ban/Phó ban 60 giờ/ năm Bảng thống kê khối lượng nguyên vật liệu sử dụng năm 2025 như sau 172 | Báo",
+          "confidence": "medium"
+        },
+        {
+          "value": 36.0,
+          "rawValue": "36",
+          "unit": "hours",
+          "qualityScore": 97.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971635.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ng trình đào tạo Cẩm nang văn hóa dành cho tất cả CBNV Tập đoàn/đơn vị • Một số chương trình khác: Cập nhật kiến thức thuế kế toán 2025, sơ cứu cấp cứu ngoại viện,... Đối tượng Số giờ đào tạo trung bình năm 2025 Nhân viên, chuyên viên, trưởng bộ phận, trưởng nhóm 36 giờ/ năm T rưởng phòng/phó phòng 48 giờ/ năm Giám đốc/ Phó Giám đốc các ban, T rưởng ban/Phó ban 60 giờ/ năm Bảng thống kê khối lượng nguyên vật liệu sử dụng năm 2025 như sau 172 | Báo cáo thường",
+          "confidence": "medium"
+        },
+        {
+          "value": 2.0,
+          "rawValue": "2",
+          "unit": "billion VND",
+          "qualityScore": 68,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971635.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ền 2 tỷ đồng nhằm hỗ trợ địa phương khắc phục hậu quả sau thiên tai cơn bão số 10 và 11. Hỗ trợ bệnh viện tuyến TW và địa phương để nâng cao năng lực điều trị và chăm sóc sức khỏe cộng đồng và hiệu quả làm việc của đội ngũ y bác sỹ Hỗ trợ các địa phương, vùng cao, vùng đồng bào khó khăn TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG 174 | Báo cáo thường niên 2025 PC1 | 175 TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG PC1 tiếp tục khai thác hiệu quả 10 nhà",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 2.0,
+          "rawValue": "2",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971635.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ền 2 tỷ đồng nhằm hỗ trợ địa phương khắc phục hậu quả sau thiên tai cơn bão số 10 và 11. Hỗ trợ bệnh viện tuyến TW và địa phương để nâng cao năng lực điều trị và chăm sóc sức khỏe cộng đồng và hiệu quả làm việc của đội ngũ y bác sỹ Hỗ trợ các địa phương, vùng cao, vùng đồng bào khó khăn TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG 174 | Báo cáo thường niên 2025 PC1 | 175 TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG PC1 tiếp tục khai thác hiệu quả 10 nhà",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "2",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 3,
+        "canonicalMetrics": 1,
         "externalAssessments": 0
       }
     },
     "PDR": {
       "symbol": "PDR",
       "name": "Công ty Cổ phần Phát triển Bất động sản Phát Đạt",
-      "checkedAt": "2026-09-29T17:35:51.267656+00:00",
+      "checkedAt": "2026-09-29T17:43:02.984325+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6664,7 +7328,7 @@
     "PHR": {
       "symbol": "PHR",
       "name": "Công ty Cổ phần Cao su Phước Hòa",
-      "checkedAt": "2026-09-29T17:35:51.267952+00:00",
+      "checkedAt": "2026-09-29T17:43:02.984667+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6711,7 +7375,7 @@
     "PLX": {
       "symbol": "PLX",
       "name": "Tập đoàn Xăng dầu Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.268720+00:00",
+      "checkedAt": "2026-09-29T17:43:02.985590+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6742,7 +7406,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/plx/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "01f5ec092fb7c6aebdb68e4dcea603757aee8d4a639fa32941542eeb071cda3a",
+          "processedAt": "2026-09-29T17:45:06.365388+00:00",
+          "textLength": 299506
         },
         {
           "id": "c7ce4ccc9d5791543cdd",
@@ -6830,6 +7498,36 @@
           "sourceType": "sustainability_report",
           "snippet": "m nhà máy tanktop Khách hàng › Tích cực triển khai các hoạt động hướng tới mục tiêu giảm phát thải khí nhà kính và bảo vệ môi trường, thể hiện trách nhiệm của doanh nghiệp đối với cộng đồng trong việc chuyển dịch năng lượng xanh › Năm 2025, toàn T ập đoàn thực hiện công tác an sinh xã hội đạt gần 240 tỷ đồng, tập trung vào hỗ trợ đồng bào khắc phục hậu quả thiên tai, xóa nhà tạm cho hộ nghèo, xây dựng trường học, hỗ trợ thiết bị y tế, Quỹ Vì ngư",
           "confidence": "medium"
+        },
+        {
+          "value": 1450792.0,
+          "rawValue": "1.450.792",
+          "unit": "hours",
+          "qualityScore": 117.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783969767.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "g các giải pháp kỹ thuật, quản lý nhằm kiểm soát hơi xăng, giảm phát tán, bảo vệ sức khỏe cộng đồng và duy trì hoạt động kinh doanh an toàn, hiệu quả. Giáo dục và đào tạo T ổng số giờ đào tạo: 1.450.792 giờ. Chi phí đào tạo trong nước: 101,3 tỷ đồng 85 TƯ DUY MỚI - DẪN TƯƠNG LAIBÁO CÁO THƯỜNG NIÊN84 CHƯƠNG 03 Về hỗ trợ y tế Petrolimex đã hỗ trợ 7 tỷ đồng vào lĩnh vực y tế, cung cấp các trang thiết bị y tế cần thiết cho các địa phương trong cả nước",
+          "confidence": "high"
+        },
+        {
+          "value": 240.0,
+          "rawValue": "240",
+          "unit": "billion VND",
+          "qualityScore": 97.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783969767.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "a phương để triển khai các chương trình xóa đói giảm nghèo, nâng cao chất lượng giáo dục, y tế và chăm lo các đối tượng chính sách, người có công, qua đó tăng cường sự gắn kết với cộng đồng. Năm 2025, Petrolimex đã trích 240 tỷ đồng từ lợi nhuận để thực hiện các hoạt động an sinh xã hội. Đánh giá về các hoạt động của Ban điều hành T ổng Giám đốc và các thành viên Ban Điều hành đã tuân thủ theo đúng phân cấp, quy định tại Điều lệ, các quy định, q",
+          "confidence": "medium"
         }
       ],
       "externalAssessments": [],
@@ -6854,8 +7552,8 @@
       ],
       "coverage": {
         "documents": 7,
-        "processedDocuments": 3,
-        "metrics": 3,
+        "processedDocuments": 4,
+        "metrics": 5,
         "canonicalMetrics": 1,
         "externalAssessments": 0
       }
@@ -6863,7 +7561,7 @@
     "PNJ": {
       "symbol": "PNJ",
       "name": "Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận",
-      "checkedAt": "2026-09-29T17:35:51.269022+00:00",
+      "checkedAt": "2026-09-29T17:43:02.985968+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6910,7 +7608,7 @@
     "POW": {
       "symbol": "POW",
       "name": "Tổng Công ty Điện lực Dầu khí Việt Nam - CTCP",
-      "checkedAt": "2026-09-29T17:35:51.269338+00:00",
+      "checkedAt": "2026-09-29T17:43:02.986336+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6962,7 +7660,7 @@
     "PVD": {
       "symbol": "PVD",
       "name": "Tổng Công ty Cổ phần Khoan và Dịch vụ khoan Dầu khí",
-      "checkedAt": "2026-09-29T17:35:51.269643+00:00",
+      "checkedAt": "2026-09-29T17:43:02.986691+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6984,7 +7682,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/pvd/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "77bbaf848a69fcab3b0b8cebcbf3b7cda70b8131ec9e5c9504eac3a0bb0026ae",
+          "processedAt": "2026-09-29T17:44:09.980283+00:00",
+          "textLength": 141
         },
         {
           "id": "c288b0e438564425958d",
@@ -7000,7 +7702,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -7009,7 +7711,7 @@
     "PVT": {
       "symbol": "PVT",
       "name": "Tổng Công ty Cổ phần Vận tải Dầu khí",
-      "checkedAt": "2026-09-29T17:35:51.269938+00:00",
+      "checkedAt": "2026-09-29T17:43:02.987057+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7031,7 +7733,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/pvt/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7da9506f096fafb11742379cc7cd697e8efe801dab02ba6a778a2e195490116e",
+          "processedAt": "2026-09-29T17:45:16.160005+00:00",
+          "textLength": 625173
         },
         {
           "id": "e870d2462a010cf6b4b4",
@@ -7042,21 +7748,162 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 212244.0,
+          "rawValue": "212.244",
+          "unit": "kWh",
+          "qualityScore": 101.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": ",4 tỷ đồng. Tổng lượng nhiên liệu tiêu thụ trong năm được kiểm soát chặt chẽ, bao gồm khoảng 45.126 tấn dầu FO, 11.341 tấn dầu DO, 301.987 lít dầu LO và gần 61.000 lít xăng. Lượng điện tiêu thụ trong hệ thống đạt 212.244 kWh, phản ánh nỗ lực tối ưu hóa sử dụng năng lượng trong hoạt động vận hành. PVTrans đảm bảo 100% lượng nước thải và chất thải phát sinh được xử lý theo đúng quy định, đồng thời không ghi nhận bất kỳ sự cố tràn dầu hoặc sự cố môi tr",
+          "confidence": "high"
+        },
+        {
+          "value": 10.0,
+          "rawValue": "10",
+          "unit": "%",
+          "qualityScore": 98.33,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "tại các vị trí quản lý, điều hành. Tỷ lệ nữ giới đặc biệt được chú trọng, trong HĐQT có 1/8 thành viên là nữ, đáp ứng thông lệ quản trị tốt về đa dạng giới. Mục tiêu đến năm 2030, tỷ lệ nữ giới tại PVTrans đạt khoảng 10% tổng số lao động, cùng với việc hoàn thiện quy chế, chính sách đào tạo và phát triển lãnh đạo nữ, hỗ trợ về công việc và gia đình, đặc biệt chú trọng đào tạo và bổ nhiệm nữ giới vào các vị trí quản lý, điều hành. Thúc đẩy Bình",
+          "confidence": "medium"
+        },
+        {
+          "value": 62.86,
+          "rawValue": "62,86",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ngũ cán bộ, nhân viên và thuyền viên theo hướng chuyên nghiệp, đáp ứng chuẩn mực quốc tế. Năm 2025, số lượt đào tạo tiếp tục duy trì trên 5.000 lượt học viên tham gia, trong đó số giờ đào tạo trung bình mỗi nhân viên đạt 62,86 giờ/người cho thấy nỗ lực của PVTrans trong việc phát triển nguồn lực nội bộ. Công tác đào tạo tại PVTrans được tổ chức đồng bộ, nội dung bám sát thực tiễn, phù hợp với từng khối công việc và chức danh, từ văn phòng đến đội",
+          "confidence": "high"
+        },
+        {
+          "value": 62.86,
+          "rawValue": "62,86",
+          "unit": "hours",
+          "qualityScore": 111.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ngũ cán bộ, nhân viên và thuyền viên theo hướng chuyên nghiệp, đáp ứng chuẩn mực quốc tế. Năm 2025, số lượt đào tạo tiếp tục duy trì trên 5.000 lượt học viên tham gia, trong đó số giờ đào tạo trung bình mỗi nhân viên đạt 62,86 giờ/người cho thấy nỗ lực của PVTrans trong việc phát triển nguồn lực nội bộ. Công tác đào tạo tại PVTrans được tổ chức đồng bộ, nội dung bám sát thực tiễn, phù hợp với từng khối công việc và chức danh, từ văn phòng đến đội tàu, tập tr",
+          "confidence": "high"
+        },
+        {
+          "value": 10.0,
+          "rawValue": "10",
+          "unit": "billion VND",
+          "qualityScore": 91.67,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "tải, đầu tư tàu hàng rời PVT Fortune trọng tải 36.000 DWT PVTrans bàn giao 200 căn nhà đại đoàn kết có tổng giá trị trên 10 tỷ đồng tại Cần Thơ lan tỏa tinh thần nhân văn, gắn kết cộng đồng PVTrans tổ chức lấy ý kiến cổ đông bằng văn bản thông qua việc tăng số lượng và bầu bổ sung thành viên HĐQT, kiện toàn cơ cấu nhân sự cấp cao, đáp ứng yêu cầu quản trị trong giai đoạn phát triển mới Tổ chức Teambuilding kết hợp Hội thảo chuyên đề “Chuyển đổi",
+          "confidence": "medium"
+        },
+        {
+          "value": 100.0,
+          "rawValue": "100",
+          "unit": "%",
+          "qualityScore": 101.0,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "lập tiếp tục khẳng định vai trò trụ cột trong việc duy trì cán cân quản trị minh bạch và bảo vệ tối đa lợi ích hợp pháp của các cổ đông. Với tỷ lệ tham dự 100% tại các kỳ họp, các thành viên độc lập đã cung cấp những góc nhìn phản biện khách quan, đóng góp chuyên môn sâu sát và thực hiện quyền biểu quyết hoàn toàn độc lập, qua đó nâng cao chất lượng và tính toàn diện trong các quyết sách chiến lược của Tổng công ty. Bên cạnh đó, với vai trò thành viên tạ",
+          "confidence": "high"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 10.0,
+          "rawValue": "10",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "tải, đầu tư tàu hàng rời PVT Fortune trọng tải 36.000 DWT PVTrans bàn giao 200 căn nhà đại đoàn kết có tổng giá trị trên 10 tỷ đồng tại Cần Thơ lan tỏa tinh thần nhân văn, gắn kết cộng đồng PVTrans tổ chức lấy ý kiến cổ đông bằng văn bản thông qua việc tăng số lượng và bầu bổ sung thành viên HĐQT, kiện toàn cơ cấu nhân sự cấp cao, đáp ứng yêu cầu quản trị trong giai đoạn phát triển mới Tổ chức Teambuilding kết hợp Hội thảo chuyên đề “Chuyển đổi",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "10",
+          "repaired": true
+        },
+        {
+          "value": 212244.0,
+          "rawValue": "212.244",
+          "unit": "kWh",
+          "qualityScore": 101.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": ",4 tỷ đồng. Tổng lượng nhiên liệu tiêu thụ trong năm được kiểm soát chặt chẽ, bao gồm khoảng 45.126 tấn dầu FO, 11.341 tấn dầu DO, 301.987 lít dầu LO và gần 61.000 lít xăng. Lượng điện tiêu thụ trong hệ thống đạt 212.244 kWh, phản ánh nỗ lực tối ưu hóa sử dụng năng lượng trong hoạt động vận hành. PVTrans đảm bảo 100% lượng nước thải và chất thải phát sinh được xử lý theo đúng quy định, đồng thời không ghi nhận bất kỳ sự cố tràn dầu hoặc sự cố môi tr",
+          "confidence": "high"
+        },
+        {
+          "value": 62.86,
+          "rawValue": "62,86",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-2/2026-04-17/no-name-1776372421.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ngũ cán bộ, nhân viên và thuyền viên theo hướng chuyên nghiệp, đáp ứng chuẩn mực quốc tế. Năm 2025, số lượt đào tạo tiếp tục duy trì trên 5.000 lượt học viên tham gia, trong đó số giờ đào tạo trung bình mỗi nhân viên đạt 62,86 giờ/người cho thấy nỗ lực của PVTrans trong việc phát triển nguồn lực nội bộ. Công tác đào tạo tại PVTrans được tổ chức đồng bộ, nội dung bám sát thực tiễn, phù hợp với từng khối công việc và chức danh, từ văn phòng đến đội tàu, tập tr",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "62,86",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 6,
+        "canonicalMetrics": 3,
         "externalAssessments": 0
       }
     },
     "REE": {
       "symbol": "REE",
       "name": "Công ty Cổ phần Cơ điện Lạnh",
-      "checkedAt": "2026-09-29T17:35:51.270232+00:00",
+      "checkedAt": "2026-09-29T17:43:02.987412+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7103,7 +7950,7 @@
     "SAB": {
       "symbol": "SAB",
       "name": "Tổng Công ty Cổ phần Bia - Rượu - Nước Giải khát Sài Gòn",
-      "checkedAt": "2026-09-29T17:35:51.270803+00:00",
+      "checkedAt": "2026-09-29T17:43:02.988096+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7171,7 +8018,7 @@
     "SBT": {
       "symbol": "SBT",
       "name": "Công ty Cổ phần Thành Thành Công - Biên Hòa",
-      "checkedAt": "2026-09-29T17:35:51.271065+00:00",
+      "checkedAt": "2026-09-29T17:43:02.988417+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7210,7 +8057,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T17:35:51.271413+00:00",
+      "checkedAt": "2026-09-29T17:43:02.988836+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -7287,7 +8134,7 @@
     "SIP": {
       "symbol": "SIP",
       "name": "Công ty Cổ phần Đầu tư Sài Gòn VRG",
-      "checkedAt": "2026-09-29T17:35:51.271745+00:00",
+      "checkedAt": "2026-09-29T17:43:02.989219+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7306,7 +8153,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/sip/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "6d4a67e0e5fc0c34d044f345f097d5d09c9f8f5c039b0bfd0bccd2a8ad21c579",
+          "processedAt": "2026-09-29T17:44:34.661112+00:00",
+          "textLength": 140569
         },
         {
           "id": "36982dc4074a59cf68eb",
@@ -7330,7 +8181,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -7339,7 +8190,7 @@
     "SJS": {
       "symbol": "SJS",
       "name": "Công ty Cổ phần SJ Group",
-      "checkedAt": "2026-09-29T17:35:51.272260+00:00",
+      "checkedAt": "2026-09-29T17:43:02.989838+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7358,7 +8209,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/sjs/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d9be419098b92a85b2c37aca39019682cb1052c2770299294a3834d66c5ba53b",
+          "processedAt": "2026-09-29T17:45:03.531896+00:00",
+          "textLength": 98
         },
         {
           "id": "559916518357b0e3ec30",
@@ -7390,7 +8245,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 5,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -7399,7 +8254,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T17:35:51.273711+00:00",
+      "checkedAt": "2026-09-29T17:43:02.991373+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -7454,7 +8309,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026 Read more",
+          "title": "Sustainability Report 2025 23/07/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -7466,7 +8321,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
+          "title": "SeABank's Annual Report 2025 01/04/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -8151,7 +9006,7 @@
     "SSI": {
       "symbol": "SSI",
       "name": "Công ty Cổ phần Chứng khoán SSI",
-      "checkedAt": "2026-09-29T17:35:51.274017+00:00",
+      "checkedAt": "2026-09-29T17:43:02.991754+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8198,7 +9053,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T17:35:51.274974+00:00",
+      "checkedAt": "2026-09-29T17:43:02.992936+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8369,7 +9224,7 @@
     "TAL": {
       "symbol": "TAL",
       "name": "Công Ty Cổ Phần Đầu Tư Bất Động Sản Taseco",
-      "checkedAt": "2026-09-29T17:35:51.275275+00:00",
+      "checkedAt": "2026-09-29T17:43:02.993300+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8391,7 +9246,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/tal/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "2e44f39b58b437fc01c7d9b82a1d9fd5d15153b49ecba129bb0a55d284404cc5",
+          "processedAt": "2026-09-29T17:43:32.097520+00:00",
+          "textLength": 530175
         },
         {
           "id": "e179d0b8d579d582aa74",
@@ -8407,7 +9266,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -8416,7 +9275,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T17:35:51.276529+00:00",
+      "checkedAt": "2026-09-29T17:43:02.994772+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8526,21 +9385,9 @@
           "textLength": 375765
         },
         {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "See all ESG solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
-        },
-        {
           "id": "5f8da544b07832ede0e2",
           "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Overview",
+          "title": "Sustainability",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability",
           "year": null,
           "type": "esg_web_content",
@@ -8560,6 +9407,18 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
+        },
+        {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "Our Solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -8958,7 +9817,7 @@
     "TCH": {
       "symbol": "TCH",
       "name": "Công ty Cổ phần Đầu tư Dịch vụ Tài chính Hoàng Huy",
-      "checkedAt": "2026-09-29T17:35:51.276835+00:00",
+      "checkedAt": "2026-09-29T17:43:02.995134+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9005,7 +9864,7 @@
     "TCX": {
       "symbol": "TCX",
       "name": "Công ty Cổ phần Chứng khoán Kỹ Thương",
-      "checkedAt": "2026-09-29T17:35:51.277167+00:00",
+      "checkedAt": "2026-09-29T17:43:02.995537+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9060,7 +9919,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T17:35:51.278317+00:00",
+      "checkedAt": "2026-09-29T17:43:02.996912+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -9325,7 +10184,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T17:35:51.279172+00:00",
+      "checkedAt": "2026-09-29T17:43:02.997917+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -9864,7 +10723,7 @@
     "VCG": {
       "symbol": "VCG",
       "name": "Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.279477+00:00",
+      "checkedAt": "2026-09-29T17:43:02.998284+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9886,7 +10745,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vcg/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "19fdd2dd501e88d579e5faac757fbc7fbf9206723827f6db290b737d8b90d4dd",
+          "processedAt": "2026-09-29T17:44:59.395363+00:00",
+          "textLength": 569796
         },
         {
           "id": "60359bb6a2693215b225",
@@ -9897,21 +10760,70 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 0.725,
+          "rawValue": "725",
+          "unit": "billion VND",
+          "qualityScore": 105.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971848.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ứng yêu cầu của chủ đầu tư. Doanh nghiệp có đóng góp cho sự phát triển của địa phương, không gây ảnh hưởng đến môi trường Năm 2026, VINACONEX đóng góp trên 725 triệu đồng cho các hoạt động xã hội từ thiện, như: ủng hộ, đóng góp các quỹ từ thiện, nhân đạo, quỹ Đền ơn đáp nghĩa, thăm hỏi, tặng quà gia đình chính sách, phụng dưỡng 05 bà mẹ Việt Nam anh hùng. Cộng đồng Trước và trong quá trình triển khai các dự án, VINACONEX luôn tuân thủ quy định của phá",
+          "confidence": "high"
+        },
+        {
+          "value": 0.0,
+          "rawValue": "0",
+          "unit": "%",
+          "qualityScore": 68,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971848.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "tácThời gian CHỨC DANH THÀNH VIÊN HĐQT NẮM GIỮ TẠI CÁC CÔNG TY KHÁC XÂY NHỮNG GIÁ TRỊ DỰNG NHỮNG ƯỚC MƠ HOẠT ĐỘNG SẢN XUẤT KINH DOANHBÁO CÁO THƯỜNG NIÊN2025 100 101 Ông LÊ MINH TÚ Thành viên độc lập Hội đồng quản trị Tỷ lệ sở hữu cổ phần có quyền biểu quyết và các chứng khoán khác do Tổng công ty phát hành: 0 cổ phần (tỷ lệ 0%) Quyền hạn, nhiệm vụ: • Thực hiện nhiệm vụ thành viên HĐQT theo quy định tại Điều lệ của Tổng công ty, Quy chế hoạt động của HĐQT",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 0.725,
+          "rawValue": "725",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971848.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "ứng yêu cầu của chủ đầu tư. Doanh nghiệp có đóng góp cho sự phát triển của địa phương, không gây ảnh hưởng đến môi trường Năm 2026, VINACONEX đóng góp trên 725 triệu đồng cho các hoạt động xã hội từ thiện, như: ủng hộ, đóng góp các quỹ từ thiện, nhân đạo, quỹ Đền ơn đáp nghĩa, thăm hỏi, tặng quà gia đình chính sách, phụng dưỡng 05 bà mẹ Việt Nam anh hùng. Cộng đồng Trước và trong quá trình triển khai các dự án, VINACONEX luôn tuân thủ quy định của phá",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "725",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 2,
+        "canonicalMetrics": 1,
         "externalAssessments": 0
       }
     },
     "VCI": {
       "symbol": "VCI",
       "name": "Công ty Cổ phần Chứng khoán Vietcap",
-      "checkedAt": "2026-09-29T17:35:51.279822+00:00",
+      "checkedAt": "2026-09-29T17:43:02.998694+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9966,7 +10878,7 @@
     "VCK": {
       "symbol": "VCK",
       "name": "Công ty Cổ phần Chứng Khoán VPS",
-      "checkedAt": "2026-09-29T17:35:51.280159+00:00",
+      "checkedAt": "2026-09-29T17:43:02.999103+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10021,7 +10933,7 @@
     "VGC": {
       "symbol": "VGC",
       "name": "Tổng Công ty Viglacera - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:35:51.280535+00:00",
+      "checkedAt": "2026-09-29T17:43:02.999551+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10073,7 +10985,7 @@
     "VHC": {
       "symbol": "VHC",
       "name": "Công ty Cổ phần Vĩnh Hoàn",
-      "checkedAt": "2026-09-29T17:35:51.280860+00:00",
+      "checkedAt": "2026-09-29T17:43:02.999944+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10092,7 +11004,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vhc/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d034f0b71204afec2486520a825803400d84d7ce5df625f03cc8c50dbc34495b",
+          "processedAt": "2026-09-29T17:43:43.343180+00:00",
+          "textLength": 146198
         },
         {
           "id": "6979fc4bbae7a4e4f29e",
@@ -10116,7 +11032,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -10125,7 +11041,7 @@
     "VHM": {
       "symbol": "VHM",
       "name": "Công ty Cổ phần Vinhomes",
-      "checkedAt": "2026-09-29T17:35:51.281120+00:00",
+      "checkedAt": "2026-09-29T17:43:03.000260+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10161,7 +11077,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T17:35:51.282220+00:00",
+      "checkedAt": "2026-09-29T17:43:03.001577+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -10287,7 +11203,7 @@
     "VIC": {
       "symbol": "VIC",
       "name": "Tập đoàn Vingroup - Công ty CP",
-      "checkedAt": "2026-09-29T17:35:51.282523+00:00",
+      "checkedAt": "2026-09-29T17:43:03.001949+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10334,7 +11250,7 @@
     "VIX": {
       "symbol": "VIX",
       "name": "Công ty Cổ phần Chứng khoán VIX",
-      "checkedAt": "2026-09-29T17:35:51.282784+00:00",
+      "checkedAt": "2026-09-29T17:43:03.002255+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10356,7 +11272,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vix/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "f5721338bbff5a0528b3587605ed01f4254c6fc84dc5c7d715df0f28e2bdbe16",
+          "processedAt": "2026-09-29T17:45:10.601671+00:00",
+          "textLength": 233
         }
       ],
       "metrics": [],
@@ -10364,7 +11284,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -10373,7 +11293,7 @@
     "VJC": {
       "symbol": "VJC",
       "name": "Công ty Cổ phần Hàng không Vietjet",
-      "checkedAt": "2026-09-29T17:35:51.283096+00:00",
+      "checkedAt": "2026-09-29T17:43:03.002621+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10392,7 +11312,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vjc/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "cbdd0065096affd79463f5e0b63989302ada9bc5d18a47b6694d630a11dfccac",
+          "processedAt": "2026-09-29T17:43:43.958415+00:00",
+          "textLength": 356
         },
         {
           "id": "6dcb6fd179e61e2a9df5",
@@ -10416,7 +11340,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -10425,7 +11349,7 @@
     "VND": {
       "symbol": "VND",
       "name": "Công ty Cổ phần Chứng khoán VNDIRECT",
-      "checkedAt": "2026-09-29T17:35:51.283460+00:00",
+      "checkedAt": "2026-09-29T17:43:03.003053+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10444,7 +11368,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vnd/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "f46ffabfd9a171a22f3b90c0dc1f1ef4610a8054619f34a3b1a6a131f7d009da",
+          "processedAt": "2026-09-29T17:43:47.111256+00:00",
+          "textLength": 353
         },
         {
           "id": "f6a1a4e44bfa79aea1a8",
@@ -10476,7 +11404,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 5,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -10485,7 +11413,7 @@
     "VNM": {
       "symbol": "VNM",
       "name": "Công ty Cổ phần Sữa Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.283858+00:00",
+      "checkedAt": "2026-09-29T17:43:03.003503+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10544,7 +11472,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T17:35:51.284325+00:00",
+      "checkedAt": "2026-09-29T17:43:03.004059+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -10839,7 +11767,7 @@
     "VPI": {
       "symbol": "VPI",
       "name": "Công ty Cổ phần Phát triển Bất động sản Văn Phú",
-      "checkedAt": "2026-09-29T17:35:51.284633+00:00",
+      "checkedAt": "2026-09-29T17:43:03.004421+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10924,7 +11852,7 @@
     "VPL": {
       "symbol": "VPL",
       "name": "Công ty Cổ phần Vinpearl",
-      "checkedAt": "2026-09-29T17:35:51.284956+00:00",
+      "checkedAt": "2026-09-29T17:43:03.004816+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10976,7 +11904,7 @@
     "VPX": {
       "symbol": "VPX",
       "name": "Công ty Cổ phần Chứng khoán VPBank",
-      "checkedAt": "2026-09-29T17:35:51.285295+00:00",
+      "checkedAt": "2026-09-29T17:43:03.005221+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11031,7 +11959,7 @@
     "VRE": {
       "symbol": "VRE",
       "name": "Công ty Cổ phần Vincom Retail",
-      "checkedAt": "2026-09-29T17:35:51.285616+00:00",
+      "checkedAt": "2026-09-29T17:43:03.005588+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11083,7 +12011,7 @@
     "VSC": {
       "symbol": "VSC",
       "name": "Công ty Cổ phần Container Việt Nam",
-      "checkedAt": "2026-09-29T17:35:51.285871+00:00",
+      "checkedAt": "2026-09-29T17:43:03.005908+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11105,7 +12033,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vsc/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "1676e92e3660913abf9bb6225d19caa60ec8b991258114cde6b915e1b3e9b2b1",
+          "processedAt": "2026-09-29T17:45:08.658043+00:00",
+          "textLength": 316
         }
       ],
       "metrics": [],
@@ -11113,7 +12045,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -11122,7 +12054,7 @@
     "VTP": {
       "symbol": "VTP",
       "name": "Tổng Công ty Cổ phần Bưu chính Viettel",
-      "checkedAt": "2026-09-29T17:35:51.286168+00:00",
+      "checkedAt": "2026-09-29T17:43:03.006257+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11144,7 +12076,11 @@
           "title": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
           "sourcePage": "https://24hmoney.vn/stock/vtp/financial-report",
           "year": 2025,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "11032a57564b21813c140433b8f8502e5ae510f403323527330d114118135411",
+          "processedAt": "2026-09-29T17:45:02.233104+00:00",
+          "textLength": 220232
         },
         {
           "id": "ac4ab15010a8e82e7171",
@@ -11155,13 +12091,29 @@
           "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 0.04,
+          "rawValue": "40",
+          "unit": "billion VND",
+          "qualityScore": 68,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cdn.24hmoney.vn/upload/file/2026-3/2026-07-14/no-name-1783971395.pdf",
+          "sourceTitle": "Báo cáo tài chính thường niên năm 2025 Báo cáo tài chính",
+          "sourceType": "annual_report",
+          "snippet": "em tại 05 điểm trường khó khăn số tiền trên 40 triệu đồng. - Các cấp Hội và nhiều hội viên tích cực đóng góp và hỗ trợ đồng bào bị thiên tai, bão lũ, các hoàn cảnh khó khăn trong cộng đồng; đỡ đầu 05 điểm trường đặc biệt khó khăn; nhận phụng dưỡng 01 Mẹ Việt Nam Anh hùng. Qua các hoạt động xã hội đã khơi dậy và phát huy được tinh thần tương thân, tương ái, vì cộng đồng, có ý nghĩa giáo dục sâu sắc, thắt chặt tình đoàn kết quân dân, tạo thuận lợ",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
-        "metrics": 0,
+        "processedDocuments": 2,
+        "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
       }
@@ -11183,16 +12135,6 @@
       "textLength": 89099
     },
     {
-      "id": "c3ae1e1e5c89eec1b45b",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "SUSBA-2023-Report-Final.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2024,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
       "id": "b005c22b2a54ead2319b",
       "url": "https://www.wwf.sg/susba/reports/",
       "title": "Reports",
@@ -11207,11 +12149,11 @@
       "textLength": 4043
     },
     {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "Above-Board_Final.pdf",
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2024,
+      "year": 2023,
       "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
@@ -11232,6 +12174,16 @@
     },
     {
       "id": "abbe2ce24605a50fc5f0",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "abbe2ce24605a50fc5f0",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
       "title": "2023 Assessment of Banks' Seafood Sector Policies",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -11243,46 +12195,6 @@
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
       "processedAt": "2026-09-29T16:43:00.475375+00:00",
       "textLength": 61879
-    },
-    {
-      "id": "952a7cf2c85642395465",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
-      "title": "report-2020.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
-      "id": "1ba16d784121888b47f1",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
-      "title": "report-2019-compressed.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
-      "id": "5a3092bae6468b8e3d31",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "report-2018-compressed.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
-      "id": "c6d164862c0327932c55",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
-      "title": "report-2017-compressed.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
     },
     {
       "id": "736d1a258096fff8e0cd",
@@ -11362,6 +12274,16 @@
     },
     {
       "id": "952a7cf2c85642395465",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
+      "title": "2020 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2020,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "952a7cf2c85642395465",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
       "title": "2020 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -11373,6 +12295,16 @@
       "contentHash": "0c585eb7beb104bffac9414be6ee273ab3b757b0693cb5d55292ed0a4890e08f",
       "processedAt": "2026-09-28T23:59:25.902919+00:00",
       "textLength": 82015
+    },
+    {
+      "id": "1ba16d784121888b47f1",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
+      "title": "2019 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2019,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "1ba16d784121888b47f1",
@@ -11390,6 +12322,16 @@
     },
     {
       "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "2018 Updated Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2018,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
       "title": "2018 Updated Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -11401,6 +12343,16 @@
       "contentHash": "70eb5195f4e8faeea609ac94531b2547740cfee1be547c7280d046ba35706e11",
       "processedAt": "2026-09-28T23:59:31.294583+00:00",
       "textLength": 167687
+    },
+    {
+      "id": "c6d164862c0327932c55",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
+      "title": "2017 Full Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2017,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "c6d164862c0327932c55",
@@ -12569,7 +13521,7 @@
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
       "status": "ok",
-      "documents": 0,
+      "documents": 1,
       "symbol": "LPB"
     },
     {
@@ -12700,8 +13652,8 @@
     },
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-      "status": "ok",
-      "documents": 18,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "OCB"
     },
     {
@@ -12827,7 +13779,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "SSB"
     },
     {
@@ -13146,7 +14098,7 @@
     {
       "url": "https://www.wwf.sg/susba/about/",
       "status": "ok",
-      "documents": 2,
+      "documents": 10,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -13182,11 +14134,11 @@
   "run": {
     "mode": "recent",
     "documentsProcessed": 24,
-    "backlogBeforeRun": 242,
-    "activeBacklogBeforeRun": 220,
-    "backlogRemaining": 196,
-    "eligibleBacklog": 233,
-    "recentBacklog": 220,
+    "backlogBeforeRun": 218,
+    "activeBacklogBeforeRun": 196,
+    "backlogRemaining": 172,
+    "eligibleBacklog": 209,
+    "recentBacklog": 196,
     "historicalBacklog": 7,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 24,
