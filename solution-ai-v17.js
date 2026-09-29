@@ -40,7 +40,7 @@
     },
     required: ["direct_answer", "model_read", "external_evidence", "integrated_outlook"],
   };
-  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [], quotaUntil: 0 };
+  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [], quotaUntil: 0, geminiHealth: "LOCAL", lastGeminiStatus: null };
 
   function sessionSecret() {
     if (state.directKey) return state.directKey;
@@ -57,16 +57,55 @@
   function forgetSession() {
     state.directKey = "";
     state.model = "";
+    state.modelCandidates = [];
+    state.quotaUntil = 0;
+    state.geminiHealth = "LOCAL";
+    state.lastGeminiStatus = null;
     try { sessionStorage.removeItem(SESSION_KEY); }
     catch { /* an in-memory key has already been cleared */ }
   }
 
   function providerMessage(status, details = "") {
-    if (status === 401 || status === 403) return "Khóa Google không hợp lệ, đã bị thu hồi hoặc chưa có quyền sử dụng Gemini.";
-    if (status === 429) return "Google Gemini đã hết hạn mức hoặc cần kiểm tra giới hạn sử dụng.";
-    if (status === 404) return "Mô hình Gemini chưa khả dụng với dự án Google hiện tại.";
-    if (status >= 500) return "Google Gemini đang tạm thời gián đoạn; vui lòng thử lại.";
+    if (status === 401) return "Khóa Google không hợp lệ hoặc đã bị thu hồi. Hãy thay bằng Gemini Auth key mới.";
+    if (status === 403) return "Khóa Google không còn quyền gọi Gemini. Nếu đây là Standard key cũ, hãy tạo Auth key mới trong Google AI Studio.";
+    if (status === 429) return "Project Google đang bị giới hạn quota (429). Đổi key trong cùng project không reset quota; có thể cần Auth key thuộc project có quota/billing hợp lệ.";
+    if (status === 404) return "Mô hình Gemini chưa khả dụng với project Google hiện tại.";
+    if (status >= 500) return "Google Gemini đang tạm thời gián đoạn; SoluTION.AI sẽ tiếp tục bằng forecast local.";
     return details || `Kết nối Gemini chưa sẵn sàng (${status}).`;
+  }
+
+  function geminiIssue(error, fromStoredKey = false) {
+    const status = Number(error?.status || 0) || null;
+    state.lastGeminiStatus = status;
+    if (status === 401 || status === 403) {
+      if (fromStoredKey) forgetSession();
+      else {
+        state.model = "";
+        state.modelCandidates = [];
+        state.quotaUntil = 0;
+        state.geminiHealth = "KEY_REJECTED";
+      }
+      return {
+        health: "KEY_REJECTED",
+        label: "Key cũ/không hợp lệ đã bị ngắt. Hãy tạo Gemini Auth key mới trong AI Studio rồi dán lại; SoluTION.AI local vẫn hoạt động.",
+        status: "Gemini key cần thay · Local vẫn hoạt động",
+      };
+    }
+    if (status === 429) {
+      state.geminiHealth = "PROJECT_QUOTA";
+      state.quotaUntil = Date.now() + 15 * 60_000;
+      return {
+        health: "PROJECT_QUOTA",
+        label: "Gemini trả 429 ở cấp project. SoluTION.AI tạm ngừng gọi lại key này trong 15 phút để tránh spam quota. Nếu lỗi kéo dài, hãy dùng Auth key của project có quota/billing hợp lệ.",
+        status: "Gemini quota/project bị giới hạn · Local vẫn hoạt động",
+      };
+    }
+    state.geminiHealth = status && status >= 500 ? "UPSTREAM" : "UNAVAILABLE";
+    return {
+      health: state.geminiHealth,
+      label: error?.message || "Gemini tạm thời chưa sẵn sàng; SoluTION.AI local vẫn hoạt động.",
+      status: "Gemini gián đoạn · Local vẫn hoạt động",
+    };
   }
 
   async function fetchGeminiBounded(url, options = {}, timeoutMs = 24000) {
@@ -1357,7 +1396,9 @@
           }
         } catch (error) {
           const connection = $("#solutionAiConnectionState");
-          if (connection) connection.textContent = error?.message || "Gemini tạm thời không phản hồi.";
+          const issue = geminiIssue(error, false);
+          syncConnectionUi(false);
+          if (connection) connection.textContent = issue.label;
           const integratedFallback = rankOpenSources(integratedSources(context), question).slice(0, 10);
           const fallbackSources = Array.isArray(error?.sources) && error.sources.length
             ? error.sources
@@ -1368,7 +1409,7 @@
           sources = fallbackSources;
           meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nguồn công khai", "Gemini gián đoạn"];
           if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
-          setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Nguồn mở · chờ Gemini đọc sâu");
+          setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast · Gemini tạm không khả dụng" : "Nguồn mở · Gemini tạm không khả dụng");
         }
       } else {
         const openSources = intent.shouldSearch
@@ -1421,9 +1462,11 @@
   function syncConnectionUi(connected) {
     const panel = $("#solutionAiConnect");
     const disconnect = $("#solutionAiDisconnect");
+    const replace = $("#solutionAiReplaceKey");
     const settings = $("#solutionAiSettings");
     panel?.classList.toggle("connected", connected);
     if (disconnect) disconnect.hidden = !connected;
+    if (replace) replace.hidden = !Boolean(sessionSecret());
     settings?.classList.toggle("connected", connected);
     settings?.setAttribute("aria-label", connected ? "Xem trạng thái kết nối Gemini" : "Kết nối Google Gemini");
   }
@@ -1437,16 +1480,26 @@
     const label = $("#solutionAiConnectionState");
     const secret = sessionSecret();
     if (secret) {
+      if (state.geminiHealth === "PROJECT_QUOTA" && state.quotaUntil > Date.now()) {
+        syncConnectionUi(false);
+        if (label) label.textContent = "Gemini project đang bị giới hạn quota; chưa gọi lại để tránh lặp 429. Bạn có thể bấm Thay key Gemini hoặc tiếp tục dùng SoluTION.AI local.";
+        if (!silent) setStatus("Gemini quota/project bị giới hạn · Local vẫn hoạt động");
+        return false;
+      }
       try {
         state.model = await validateGemini(secret);
+        state.geminiHealth = "OK";
+        state.lastGeminiStatus = null;
+        state.quotaUntil = 0;
         syncConnectionUi(true);
         if (label) label.textContent = `Đã kết nối ${state.model}; khóa chỉ tồn tại trong tab này.`;
         setStatus("Gemini · đã kết nối trực tiếp");
         return true;
       } catch (error) {
+        const issue = geminiIssue(error, true);
         syncConnectionUi(false);
-        if (label) label.textContent = error?.message || "Kết nối Gemini chưa sẵn sàng.";
-        if (!silent) setStatus("Chưa kết nối được Gemini");
+        if (label) label.textContent = issue.label;
+        if (!silent) setStatus(issue.status);
         return false;
       }
     }
@@ -1472,6 +1525,8 @@
       rememberSession(secret);
       state.model = model;
       state.quotaUntil = 0;
+      state.geminiHealth = "OK";
+      state.lastGeminiStatus = null;
       input.value = "";
       syncConnectionUi(true);
       if (label) label.textContent = `Đã kết nối ${model}; khóa chỉ tồn tại trong tab này.`;
@@ -1483,9 +1538,10 @@
       }, 900);
       return true;
     } catch (error) {
+      const issue = geminiIssue(error, false);
       syncConnectionUi(false);
-      if (label) label.textContent = error?.message || "Google Gemini chưa chấp nhận khóa này.";
-      setStatus("Chưa kết nối được Gemini");
+      if (label) label.textContent = issue.label;
+      setStatus(issue.status);
       return false;
     }
   }
@@ -1715,6 +1771,19 @@
     setStatus("Phân tích từ dữ liệu hiện có");
   }
 
+  function replaceGeminiKey() {
+    forgetSession();
+    const panel = $("#solutionAiConnect");
+    const input = $("#solutionAiKey");
+    if (panel) panel.hidden = false;
+    syncConnectionUi(false);
+    const label = $("#solutionAiConnectionState");
+    if (label) label.textContent = "Đã gỡ key cũ khỏi tab. Hãy dán Gemini Auth key mới; nên dùng project có quota/billing hợp lệ nếu key cũ liên tục báo 429.";
+    setStatus("Sẵn sàng nhận Gemini Auth key mới · Local vẫn hoạt động");
+    input?.focus?.();
+    scrollMessages();
+  }
+
   function configure() {
     const panel = $("#solutionAiConnect");
     if (!panel) return;
@@ -1734,6 +1803,7 @@
     $("#solutionAiGeminiWeb")?.addEventListener("click", openGeminiWeb);
     $("#solutionAiRetry")?.addEventListener("click", () => connectGemini());
     $("#solutionAiDisconnect")?.addEventListener("click", disconnectGemini);
+    $("#solutionAiReplaceKey")?.addEventListener("click", replaceGeminiKey);
     $("#solutionAiKey")?.addEventListener("keydown", event => {
       if (event.key === "Enter") { event.preventDefault(); void connectGemini(); }
     });
@@ -1768,6 +1838,9 @@
       reviewHorizons: state.context?.reviewHorizons || [],
       geminiKeyStored: Boolean(sessionSecret()),
       geminiModel: state.model || null,
+      geminiHealth: state.geminiHealth,
+      geminiLastStatus: state.lastGeminiStatus,
+      geminiQuotaBlocked: state.quotaUntil > Date.now(),
       busy: state.busy,
     });
   }
