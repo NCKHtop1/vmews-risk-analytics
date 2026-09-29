@@ -76,9 +76,32 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(set(registry),{x['symbol'] for x in core})
         self.assertEqual(sum(x['entityType']=='bank' for x in registry.values()),18)
         self.assertIn('https://24hmoney.vn/stock/fpt/report',registry['FPT']['seed_urls'])
-        self.assertIn('https://24hmoney.vn/stock/fpt/financial-report',registry['FPT']['seed_urls'])
+        self.assertFalse(any('/financial-report' in u for u in registry['FPT']['seed_urls']))
         self.assertIn('https://24hmoney.vn/stock/acb/report',registry['ACB']['seed_urls'])
         self.assertIn('acb.com.vn',' '.join(registry['ACB']['seed_urls']))
+
+    def test_corporate_esg_prunes_plain_financial_statement_noise(self):
+        quarterly={
+            'title':'FPT Báo cáo tài chính hợp nhất Quý 2/2026',
+            'url':'https://cdn.example/fpt-q2-2026.pdf',
+            'sourcePage':'https://24hmoney.vn/stock/fpt/financial-report',
+            'type':'esg_other',
+        }
+        annual={
+            'title':'FPT Báo cáo tài chính thường niên năm 2025',
+            'url':'https://cdn.example/fpt-annual-2025.pdf',
+            'sourcePage':'https://24hmoney.vn/stock/fpt/report',
+            'type':'annual_report',
+        }
+        sustainability={
+            'title':'VNM Báo cáo phát triển bền vững 2025',
+            'url':'https://cdn.example/vnm-esg-2025.pdf',
+            'sourcePage':'https://24hmoney.vn/stock/vnm/report',
+            'type':'sustainability_report',
+        }
+        self.assertFalse(esm.esg_document_candidate(quarterly))
+        self.assertTrue(esm.esg_document_candidate(annual))
+        self.assertTrue(esm.esg_document_candidate(sustainability))
 
     def test_corporate_esg_discovery_follows_generic_download_redirects(self):
         seed='https://bank.example/reports'
