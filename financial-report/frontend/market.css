@@ -259,3 +259,10 @@ body.dolphin-modal-open{overflow:hidden}
 .tech-tags{display:flex;gap:4px;flex-wrap:wrap}.tech-tag{display:inline-flex;border-radius:999px;padding:3px 6px;font-size:7px;font-weight:700;background:#f1f4f8;color:#5e6d82}.tech-bullish,.tech-bullish_watch{background:#e9f8ef;color:#137a43}.tech-bearish,.tech-bearish_watch{background:#fff0f1;color:#b33643}.tech-confirmation{background:#eef2ff;color:#425ac0}
 .tech-empty{padding:24px;text-align:center;color:#7f8b9d;font-size:10px}.technical-scanner-note{margin:8px 0 0;font-size:8px;line-height:1.55;color:#8591a2}
 @media(max-width:760px){.technical-scanner-gate{display:block}.technical-scanner-gate form{margin-top:12px}.technical-scanner-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.technical-scanner-toolbar{display:block}.technical-scanner-filters{margin-top:8px}.technical-scanner-table-wrap{max-height:430px}}
+
+/* Tiered HOSE universe: Core financial coverage, Liquid live extension, Discovery EOD. */
+.universe-tier{display:inline-flex!important;align-items:center;margin-left:6px!important;padding:2px 5px;border-radius:999px;font-size:7px!important;font-weight:800;line-height:1.2;letter-spacing:.25px;vertical-align:middle;border:1px solid #dbe2ec;background:#f7f9fc;color:#627086}
+.universe-tier-core{border-color:#cfd8f8;background:#f1f4ff;color:#4157b5}.universe-tier-liquid{border-color:#cae8dc;background:#eef9f4;color:#247657}.universe-tier-discovery{border-color:#eadfc4;background:#fff8e9;color:#8a681a}
+.technical-scanner-universe-label{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:9px;color:#6d7b8e}.technical-scanner-universe-label select{border:1px solid #dce3ed;border-radius:9px;padding:6px 8px;font-size:9px;background:#fff;color:#43536a}
+.market-table .ticker-link>span{display:inline-flex;align-items:center;gap:2px}
+@media(max-width:760px){.technical-scanner-universe-label{margin-top:8px}.technical-scanner-universe-label select{max-width:220px}}
