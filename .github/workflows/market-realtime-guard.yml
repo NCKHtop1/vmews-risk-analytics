@@ -29,9 +29,11 @@ jobs:
               print('Outside VN live-session guard window:', local.isoformat())
               raise SystemExit(0)
 
-          url='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json'
-          with urllib.request.urlopen(url, timeout=10) as r:
+          base='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/'
+          with urllib.request.urlopen(base+'quotes.json', timeout=10) as r:
               data=json.load(r)
+          with urllib.request.urlopen(base+'technical-signals.json', timeout=10) as r:
+              scanner=json.load(r)
 
           coverage=int(data.get('coverage') or 0)
           latest=data.get('latestSourceTime')
@@ -49,4 +51,11 @@ jobs:
           age=(now-stamp).total_seconds()/60
           if age>30:
               raise SystemExit(f'Market source is stale by {age:.1f} minutes')
+          scan_coverage=int(scanner.get('coverage') or 0)
+          scan_time=scanner.get('sourceTime')
+          print('Technical scanner:',scanner.get('status'),'coverage=',scan_coverage,'matches=',scanner.get('matchCount'),'source=',scan_time)
+          if scanner.get('status')!='ok' or scan_coverage<90:
+              raise SystemExit(f'Technical scanner coverage too low: {scan_coverage}/100')
+          if not scan_time or str(scan_time)!=str(latest):
+              raise SystemExit(f'Technical scanner sourceTime does not match live market source: {scan_time} != {latest}')
           PY
