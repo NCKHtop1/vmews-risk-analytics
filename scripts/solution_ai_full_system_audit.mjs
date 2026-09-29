@@ -301,6 +301,7 @@ try {
 
   // Prove model failover before local fallback: first Gemini model fails, the
   // second model answers without surfacing an error to the user.
+  const failoverConsoleStart = consoleErrors.length;
   await page.route('https://generativelanguage.googleapis.com/**', async route => {
     const requestUrl = route.request().url();
     const body = route.request().postData() || '';
@@ -347,6 +348,11 @@ try {
   }, beforeFailover, { timeout: 12000 });
   const failoverReply = await page.evaluate(() => [...document.querySelectorAll('#solutionAiMessages .aiMessage')].at(-1)?.textContent?.trim() || '');
   assert(failoverReply.includes('MOCK_GEMINI_MODEL_FAILOVER'), `Gemini model failover did not recover: ${failoverReply.slice(0,220)}`);
+  const failoverConsole = consoleErrors.slice(failoverConsoleStart);
+  const unexpectedFailoverConsole = failoverConsole.filter(message => !/status of 503|503 \(Service Unavailable\)/i.test(message));
+  assert(unexpectedFailoverConsole.length === 0, `unexpected console errors during synthetic model failover: ${unexpectedFailoverConsole.join(' | ')}`);
+  // Expected synthetic 503s prove that the primary model actually failed.
+  consoleErrors.splice(failoverConsoleStart);
   await page.click('#solutionAiDisconnect');
   await page.unroute('https://generativelanguage.googleapis.com/**');
 
