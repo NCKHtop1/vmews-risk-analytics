@@ -66,7 +66,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/history
+          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/history
           if git diff --cached --quiet; then
             echo "No live price changes to publish"
             exit 0
@@ -90,9 +90,12 @@ jobs:
           from pathlib import Path
           p=Path('/tmp/market-live/market/quotes.json')
           data=json.loads(p.read_text())
-          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'))
+          scanner=json.loads(Path('/tmp/market-live/market/technical-signals.json').read_text())
+          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'matches=',scanner.get('matchCount'))
           if data.get('status') != 'ok' or int(data.get('coverage') or 0) < 90:
               raise SystemExit('Current-session quote coverage is below 90/100; retained data is not treated as live.')
+          if scanner.get('status') != 'ok' or int(scanner.get('coverage') or 0) < 90:
+              raise SystemExit('Technical scanner coverage is below 90/100.')
           PY
       - name: Fail if collector rejected stale data
         if: steps.session.outputs.run == 'true' && steps.collect.outcome != 'success'
