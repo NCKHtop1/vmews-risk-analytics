@@ -405,6 +405,15 @@ class MarketTests(unittest.TestCase):
         training=next(x for x in rows if x['metricId']=='training_hours')
         self.assertEqual(training['value'],417556)
 
+    def test_corporate_esg_rejects_microscopic_green_credit_false_positive(self):
+        row={
+            'metricId':'green_credit','year':2023,'value':1.2e-9,'rawValue':'1.2',
+            'unit':'billion VND','qualityScore':101,'confidence':'high',
+            'sourceType':'annual_report',
+            'snippet':'PIONEERING THE PROVISION OF GREEN CREDIT PRODUCTS VND VND billion GRI 203-2'
+        }
+        self.assertFalse(esm.metric_row_valid(row))
+
     def test_corporate_esg_validated_fallback_only_fills_missing_keys(self):
         live=[
             {'metricId':'training_hours','year':2024,'value':999999,'unit':'hours','sourceUrl':'https://live.example/report.pdf'}
