@@ -516,6 +516,11 @@ class MarketTests(unittest.TestCase):
         self.assertIn('for f in broker-research.json corporate-events.json insights-status.json event-status.json',pages)
         self.assertNotIn('rsync -a _insight-data/data/ financial-report/data/',pages)
         self.assertIn("'insightData':revision('_insight-data')",pages)
+        self.assertIn('Verify deployed financial dashboard and critical datasets',pages)
+        self.assertIn("grep -q 'DOLPHIN_V6'",pages)
+        self.assertIn('NEWS STALE:',pages)
+        self.assertIn('QUOTE STALE:',pages)
+        self.assertIn("technical-signals.json",pages)
 
     def test_investment_ideas_v6_dashboard_is_symbol_dynamic(self):
         html=(ROOT/'frontend/index.html').read_text()
