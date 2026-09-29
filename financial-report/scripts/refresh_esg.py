@@ -1252,6 +1252,38 @@ def canonical_metrics(rows):
     return [item[1] for item in sorted(chosen.values(), key=lambda x: (x[1].get("year") or 0, x[1].get("metricId") or ""))]
 
 
+def fill_validated_metrics(live_rows, cfg):
+    """Fill only missing metric/year keys with source-verified fallback rows."""
+    out = [dict(row) for row in live_rows]
+    existing = {(row.get("metricId"), row.get("year")) for row in out}
+    for raw in (cfg or {}).get("validated_metrics", []):
+        row = dict(raw)
+        key = (row.get("metricId"), row.get("year"))
+        if not all(key) or key in existing:
+            continue
+        row.setdefault("confidence", "high")
+        row.setdefault("qualityScore", 120)
+        row["validatedFallback"] = True
+        out.append(row)
+        existing.add(key)
+    return sorted(out, key=lambda x: (x.get("year") or 0, x.get("metricId") or ""))
+
+
+def fill_validated_assessments(live_rows, cfg):
+    """Fill only missing provider/type/year assessment keys with verified fallback rows."""
+    out = [dict(row) for row in live_rows]
+    existing = {(row.get("provider"), row.get("assessmentType"), row.get("year")) for row in out}
+    for raw in (cfg or {}).get("validated_assessments", []):
+        row = dict(raw)
+        key = (row.get("provider"), row.get("assessmentType"), row.get("year"))
+        if not all(key) or key in existing:
+            continue
+        row["validatedFallback"] = True
+        out.append(row)
+        existing.add(key)
+    return sorted(out, key=lambda x: (x.get("year") or 0, x.get("provider") or "", x.get("assessmentType") or ""))
+
+
 def reset_document(doc):
     row = dict(doc)
     row["type"] = classify_document((row.get("title") or "") + " " + (row.get("url") or ""))
@@ -1553,11 +1585,13 @@ def collect(config, output):
             companies[symbol]["metrics"],
             ["metricId", "year", "rawValue", "unit", "sourceUrl"],
         )
-        companies[symbol]["canonicalMetrics"] = canonical_metrics(companies[symbol]["metrics"])
-        companies[symbol]["externalAssessments"] = merge_unique(
+        live_canonical = canonical_metrics(companies[symbol]["metrics"])
+        companies[symbol]["canonicalMetrics"] = fill_validated_metrics(live_canonical, banks.get(symbol, {}))
+        live_assessments = merge_unique(
             sanitize_external_assessments(companies[symbol]["externalAssessments"]),
             ["provider", "assessmentType", "year", "value", "sourceUrl"],
         )
+        companies[symbol]["externalAssessments"] = fill_validated_assessments(live_assessments, banks.get(symbol, {}))
         companies[symbol]["coverage"] = {
             "documents": len(companies[symbol]["documents"]),
             "processedDocuments": sum(bool(d.get("processedAt")) for d in companies[symbol]["documents"]),
@@ -1574,7 +1608,7 @@ def collect(config, output):
         "methodology": {
             "compositeScore": False,
             "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
-            "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest source per metric/year.",
+            "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest live source per metric/year and fills only missing keys from source-verified fallbacks when issuer PDFs are blocked.",
         },
         "companies": companies,
         "externalDocuments": sorted(external_docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True),
