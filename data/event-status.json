@@ -1,24 +1,24 @@
 {
-  "checkedAt": "2026-09-29T09:19:07+00:00",
+  "checkedAt": "2026-09-29T09:47:28+00:00",
   "sourcesTotal": 3,
-  "sourcesReachable": 2,
+  "sourcesReachable": 3,
   "eventsDiscoveredThisRun": 3817,
   "storedEvents": 4665,
   "sources": [
     {
       "code": "VSDC",
       "name": "Tổng công ty Lưu ký và Bù trừ Chứng khoán Việt Nam",
-      "checkedAt": "2026-09-29T09:18:50+00:00",
+      "checkedAt": "2026-09-29T09:47:15+00:00",
       "kind": "health",
-      "status": "error",
+      "status": "reachable",
       "parsed": 0,
-      "reachable": 0,
-      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'vsd.vn'. (_ssl.c:1010)>"
+      "reachable": 1,
+      "httpStatus": 200
     },
     {
       "code": "HOSE",
       "name": "Sở GDCK TP.HCM",
-      "checkedAt": "2026-09-29T09:18:51+00:00",
+      "checkedAt": "2026-09-29T09:47:16+00:00",
       "kind": "health",
       "status": "reachable",
       "parsed": 0,
@@ -28,7 +28,7 @@
     {
       "code": "24HMONEY_EVENTS",
       "name": "24HMoney - sự kiện theo mã",
-      "checkedAt": "2026-09-29T09:18:53+00:00",
+      "checkedAt": "2026-09-29T09:47:18+00:00",
       "kind": "24hmoney_events",
       "status": "ok",
       "parsed": 3817,
