@@ -850,9 +850,9 @@ def repair_canonical_row(row):
         negative = r"dư\s+nợ|cho\s+vay|tín\s+dụng|giải\s+ngân|lợi\s+nhuận|thu\s+nhập|vốn\s+(?:điều\s+lệ|thực\s+góp)"
         positive = r"đóng\s+góp|dành(?:\s+cho)?|chi\s+cho|tài\s+trợ|hỗ\s+trợ|trao\s+tặng|ủng\s+hộ|từ\s+thiện|an\s+sinh|community\s+investment|community\s+development|csr"
         if not re.search(negative, snippet, re.I):
-            if year:
+            if year and re.search(r"cộng\s+đồng|an\s+sinh|community|csr", snippet, re.I):
                 yearly = re.search(
-                    rf"(?:cộng\s+đồng|an\s+sinh|community)[^.;•]{{0,220}}?riêng\s+(?:trong\s+)?năm\s+{int(year)}\s*(?:là|đạt|:)\s*" + MONEY_TEXT,
+                    rf"riêng\s+(?:trong\s+)?năm\s+{int(year)}\s*(?:là|đạt|:)\s*" + MONEY_TEXT,
                     snippet, re.I
                 )
                 if yearly:
