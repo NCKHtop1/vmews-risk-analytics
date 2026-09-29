@@ -165,7 +165,12 @@ jobs:
           git add --sparse market
           if ! git diff --cached --quiet; then
             git commit -m 'Refresh FinQuery market prices, candles and company news'
-            git push origin HEAD:refs/heads/financial-market-data
+            if ! git push origin HEAD:refs/heads/financial-market-data; then
+              echo "Market data branch advanced during this run; rebasing once and retrying."
+              git fetch origin financial-market-data
+              git rebase FETCH_HEAD
+              git push origin HEAD:refs/heads/financial-market-data
+            fi
           fi
       - name: Summarize source coverage
         if: always()
