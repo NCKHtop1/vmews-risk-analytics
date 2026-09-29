@@ -12,7 +12,7 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
   workflow_run:
-    workflows: ['Refresh FinQuery prices and company news', 'Refresh financial reports for CDN', 'Refresh investment insights']
+    workflows: ['Refresh FinQuery prices and company news', 'Refresh live VN100 prices', 'Refresh market news stream', 'Refresh financial reports for CDN', 'Refresh investment insights']
     types: [completed]
     branches: [main]
 
