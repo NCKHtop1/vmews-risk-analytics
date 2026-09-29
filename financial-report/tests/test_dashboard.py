@@ -51,6 +51,15 @@ console.log(JSON.stringify({vic:m,annual:dash.model(annual,[2020,2025]),bank:das
         self.assertAlmostEqual((b['x']-a['x'])/(c['x']-a['x']),1/3)
         self.assertEqual(g['path'].count('M'),2)
 
+    def test_platform_shell_matches_full_finquery_scope(self):
+        html=(ROOT/'frontend/index.html').read_text(encoding='utf-8')
+        self.assertIn('<title>FinQuery · Phân tích & Dự báo Cổ phiếu Việt Nam</title>',html)
+        self.assertIn('<h1>Phân tích &amp; Dự báo Cổ phiếu</h1>',html)
+        self.assertIn('Core · Liquid · Discovery',html)
+        self.assertIn('Bảng giá HOSE · Core + Liquid',html)
+        # Báo cáo tài chính vẫn là một module Core bên trong nền tảng.
+        self.assertIn('MBB <span>/ Báo cáo tài chính</span>',html)
+
     def test_forecast_link_uses_current_pages_release_not_pinned_commit(self):
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         self.assertIn('https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=MBB',html)
