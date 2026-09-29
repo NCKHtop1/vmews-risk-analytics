@@ -10,10 +10,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/refresh_esg.py'
       - 'financial-report/config/esg_sources.json'
-      - '.github/workflows/financial-market-refresh.yml'
   schedule:
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
@@ -59,6 +57,7 @@ jobs:
       - name: Collect prices, candles, publisher headlines and ESG
         id: collect
         env:
+          EVENT_NAME: ${{ github.event_name }}
           EVENT_SCHEDULE: ${{ github.event.schedule }}
           REQUESTED_MODE: ${{ inputs.mode }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -75,6 +74,9 @@ jobs:
           HISTORY_START_DATE: '1998-01-01'
         run: |
           mode="${REQUESTED_MODE:-all}"
+          # Push-triggered runs are now ESG-only. Live price/news have dedicated
+          # workflows and must never be overwritten by a generic mode=all push.
+          if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ]; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg-history; fi
