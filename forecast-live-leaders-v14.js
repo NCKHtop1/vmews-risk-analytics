@@ -87,7 +87,7 @@
       if (window.__VMEWS_FRESHNESS__?.inspect(snapshot).stale) continue;
       const forecast = snapshot?.horizons?.[String(selectedHorizon)] || {};
       const close = number(snapshot.close);
-      const expectedReturn = number(forecast.expectedSimpleReturn) ?? (number(forecast.expectedReturn) === null ? null : Math.expm1(number(forecast.expectedReturn)));
+      const expectedReturn = number(forecast.expectedSimpleReturn) ?? (number(forecast.expectedReturn) === null ? (close && number(forecast.expectedPrice) !== null ? number(forecast.expectedPrice) / close - 1 : null) : Math.expm1(number(forecast.expectedReturn)));
       const returnValidated = forecast.returnValidated === true || forecast.priceValidated === true;
       if ((options.scope === "vn30" && !members.has(symbol)) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
           || !returnValidated || forecast.validationStatus !== "PASS"
@@ -207,13 +207,15 @@
       if (!quote || number(quote.liveClose) === null || number(quote.liveClose) <= 0) return row;
       if (number(quote.rankingHorizon) !== null && number(quote.rankingHorizon) !== row.horizon) return row;
       const next = { ...row, coreClose: row.close, close: number(quote.liveClose), sessionChange: number(quote.change), sessionAt: quote.updateAt };
-      next.upside = next.target / next.close - 1;
+      // Session quotes update market context only. The sealed horizon forecast remains a return forecast
+      // and must not be reverse-engineered into a moving price target as the live price changes.
+      next.upside = next.expectedReturn;
       next.tradedValue20 = next.avgVolume20 * next.close;
       next.quality = qualityScore(next);
-      next.forecastQuality = number(quote.quality) ?? forecastQuality(next);
-      next.rankScore = number(quote.conviction) ?? rankingScore(next);
+      next.forecastQuality = forecastQuality(next);
+      next.rankScore = rankingScore(next);
       return next;
-    }).sort((left, right) => right.rankScore - left.rankScore || right.upside - left.upside || right.quality - left.quality || left.symbol.localeCompare(right.symbol));
+    }).sort((left, right) => right.rankScore - left.rankScore || right.expectedReturn - left.expectedReturn || right.quality - left.quality || left.symbol.localeCompare(right.symbol));
   }
 
   function finalLeaderboard(base, session = state.session, options = {}) {
