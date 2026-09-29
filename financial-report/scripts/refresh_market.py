@@ -1373,7 +1373,8 @@ def parse_feed(raw, publisher, feed_url, companies, current):
     for item in ET.fromstring(text).findall('.//item'):
         title = clean(item.findtext('title'))
         link = urlsplit((item.findtext('link') or '').strip())
-        if link.scheme not in ('http', 'https') or link.hostname != domain or not title:
+        official_host_ok = (publisher == 'Federal Reserve' and (link.hostname or '').endswith('federalreserve.gov')) or (publisher == 'ECB' and (link.hostname or '').endswith('ecb.europa.eu'))
+        if link.scheme not in ('http', 'https') or (link.hostname != domain and not official_host_ok) or not title:
             continue
         try:
             dt = parsedate_to_datetime(item.findtext('pubDate'))
