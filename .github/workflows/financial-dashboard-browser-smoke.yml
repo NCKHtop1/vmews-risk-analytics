@@ -2,15 +2,12 @@ name: Financial dashboard browser smoke
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/financial-dashboard-browser-smoke.yml'
-      - 'financial-report/frontend/**'
-      - 'financial-report/scripts/build_cdn.py'
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    types: [completed]
   schedule:
-    # 16:25 Vietnam time, after the completed trading session.
-    - cron: '25 9 * * 1-5'
+    # 16:35 Vietnam time, after the completed trading session and final data deploy.
+    - cron: '35 9 * * 1-5'
 
 permissions:
   contents: read
@@ -30,17 +27,31 @@ jobs:
       - name: Install browser smoke dependency
         run: pip install --disable-pip-version-check -q selenium==4.36.0
       - name: Exercise production chart, ideas, macro, scanner and Dolphin local analysis
+        if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'cancelled'
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
         shell: bash
         run: |
           python - <<'PY'
           import shutil
           import time
+          import json
+          import os
+          import urllib.request
           from selenium import webdriver
           from selenium.webdriver.chrome.options import Options
           from selenium.webdriver.chrome.service import Service
           from selenium.webdriver.support.ui import WebDriverWait
 
           URL='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/?symbol=FPT&mode=year#market'
+          DEPLOYMENT='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/deployment.json'
+          expected=os.environ.get('EXPECTED_SHA','').strip()
+          if expected:
+              with urllib.request.urlopen(DEPLOYMENT,timeout=20) as r:
+                  deployed=json.load(r)
+              actual=str(deployed.get('code') or '')
+              if actual != expected:
+                  raise AssertionError(f'Pages deployment mismatch: production={actual} expected={expected}')
 
           options=Options()
           options.add_argument('--headless=new')

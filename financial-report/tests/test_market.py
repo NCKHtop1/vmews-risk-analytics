@@ -1243,7 +1243,10 @@ class MarketTests(unittest.TestCase):
         if not path.exists():
             path=pathlib.Path('.github/workflows/financial-dashboard-browser-smoke.yml')
         flow=path.read_text()
-        self.assertIn("cron: '25 9 * * 1-5'",flow)
+        self.assertIn("cron: '35 9 * * 1-5'",flow)
+        self.assertIn("workflows: ['Deploy VMEWS Pages']",flow)
+        self.assertIn("EXPECTED_SHA:",flow)
+        self.assertIn("Pages deployment mismatch",flow)
         self.assertIn("selenium==4.36.0",flow)
         self.assertIn("finquery-technical-access",flow)
         self.assertIn("finquery-macro-access",flow)
