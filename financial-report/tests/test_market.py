@@ -87,9 +87,21 @@ class MarketTests(unittest.TestCase):
             'sourcePage':'https://24hmoney.vn/stock/fpt/financial-report',
             'type':'esg_other',
         }
-        annual={
+        annual_financial={
             'title':'FPT Báo cáo tài chính thường niên năm 2025',
-            'url':'https://cdn.example/fpt-annual-2025.pdf',
+            'url':'https://cdn.example/fpt-financial-2025.pdf',
+            'sourcePage':'https://24hmoney.vn/stock/fpt/financial-report',
+            'type':'annual_report',
+        }
+        annual_report={
+            'title':'FPT Báo cáo thường niên năm 2025',
+            'url':'https://cdn.example/fpt-annual-report-2025.pdf',
+            'sourcePage':'https://24hmoney.vn/report/annual',
+            'type':'annual_report',
+        }
+        listing={
+            'title':'FPT: Sự kiện liên quan',
+            'url':'https://24hmoney.vn/stock/fpt/report',
             'sourcePage':'https://24hmoney.vn/stock/fpt/report',
             'type':'annual_report',
         }
@@ -100,8 +112,12 @@ class MarketTests(unittest.TestCase):
             'type':'sustainability_report',
         }
         self.assertFalse(esm.esg_document_candidate(quarterly))
-        self.assertTrue(esm.esg_document_candidate(annual))
+        self.assertFalse(esm.esg_document_candidate(annual_financial))
+        self.assertFalse(esm.esg_document_candidate(listing))
+        self.assertTrue(esm.esg_document_candidate(annual_report))
         self.assertTrue(esm.esg_document_candidate(sustainability))
+        self.assertEqual(esm.classify_document('FPT Báo cáo tài chính thường niên năm 2025'),'esg_other')
+        self.assertEqual(esm.classify_document('FPT Báo cáo thường niên năm 2025'),'annual_report')
 
     def test_corporate_esg_discovery_follows_generic_download_redirects(self):
         seed='https://bank.example/reports'
@@ -310,7 +326,7 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(esm.parse_number('19.321','m3'),19321)
         mixed='Sustainability Report 2025. Green Bond Framework and Annual Report references.'
         self.assertEqual(esm.classify_document(mixed),'sustainability_report')
-        self.assertEqual(esm.classify_document('FPT Báo cáo tài chính thường niên năm 2025'),'annual_report')
+        self.assertEqual(esm.classify_document('FPT Báo cáo tài chính thường niên năm 2025'),'esg_other')
 
     def test_corporate_esg_bootstrap_prioritizes_bank_reports_over_external_archives(self):
         report={'type':'sustainability_report','year':2025,'url':'https://bank/report.pdf'}
