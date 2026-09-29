@@ -315,9 +315,12 @@ def parse_number(raw, unit=None):
         s = s.replace(".", "")
     elif s.count(".") == 1:
         left, right = s.split(".", 1)
-        # Vietnamese bank disclosures often use "." as the thousands separator
-        # for values reported in VND billions/millions (7.714 tỷ = 7,714).
-        if len(right) == 3 and any(x in unit_l for x in ("ty dong", "trieu dong", "billion vnd", "million vnd")):
+        # Vietnamese disclosures commonly use "." as a thousands separator.
+        # Preserve leading-zero decimals (0.220), but normalize 19.321 m3,
+        # 7.714 tỷ đồng, etc. to 19,321 / 7,714.
+        thousands_units = ("ty dong", "trieu dong", "billion vnd", "million vnd",
+                           "tco2e", "kwh", "mwh", "gwh", "m3", "kg", "hour", "gio")
+        if len(right) == 3 and left not in {"0", "+0", "-0"} and any(x in unit_l for x in thousands_units):
             s = left + right
     try:
         return float(s)
