@@ -38,6 +38,7 @@ jobs:
           import json
           import os
           import urllib.request
+          from datetime import datetime, timezone
           from selenium import webdriver
           from selenium.webdriver.chrome.options import Options
           from selenium.webdriver.chrome.service import Service
@@ -150,6 +151,9 @@ jobs:
                   scanner:s?.current,
                   scannerCheckedAt:s?.checkedAt,
                   macroCheckedAt:macro?.checkedAt,
+                  newsCheckedAt:m.newsCheckedAt,
+                  newsLiveFallback:m.newsLiveFallback,
+                  newsCount:(m.news||[]).length+(m.marketNews||[]).length,
                   financial:Boolean(window.FinancialReportContext.raw()),
                   ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180)
                 };
@@ -158,7 +162,16 @@ jobs:
                   raise AssertionError(f'Unexpected selected symbol: {snapshot}')
               if not snapshot.get('scanner'):
                   raise AssertionError(f'Scanner context missing: {snapshot}')
-              print('BROWSER SMOKE PASS',{'ai':results,'snapshot':snapshot})
+              checked=snapshot.get('newsCheckedAt')
+              if not checked:
+                  raise AssertionError(f'News freshness missing: {snapshot}')
+              news_time=datetime.fromisoformat(str(checked).replace('Z','+00:00')).astimezone(timezone.utc)
+              news_age=(datetime.now(timezone.utc)-news_time).total_seconds()/60
+              if news_age>25:
+                  raise AssertionError(f'News is stale in production UI: {news_age:.1f} minutes; fallback={snapshot.get("newsLiveFallback")}')
+              if int(snapshot.get('newsCount') or 0)<1:
+                  raise AssertionError(f'Production UI has no usable news: {snapshot}')
+              print('BROWSER SMOKE PASS',{'ai':results,'newsAgeMin':round(news_age,1),'snapshot':snapshot})
           finally:
               driver.quit()
           PY
