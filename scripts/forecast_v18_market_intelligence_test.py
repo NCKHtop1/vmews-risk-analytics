@@ -236,10 +236,19 @@ class IntradayCommunityPublicationTest(unittest.TestCase):
         self.assertIn("--publish-live", workflow)
         self.assertIn("community-intelligence-live-v19.json", workflow)
 
-    def test_daily_publisher_rebases_with_unstaged_generated_artifacts_safely(self) -> None:
+    def test_daily_publisher_uses_atomic_candidate_and_bounded_fast_forward_retries(self) -> None:
         workflow = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "forecast-v13-daily-refresh.yml").read_text(encoding="utf-8")
-        self.assertIn("git pull --rebase --autostash origin main", workflow)
-        self.assertNotIn("git add data/", workflow.split("git commit", 1)[1])
+        # The publisher was hardened from rebase/autostash to an isolated candidate
+        # directory plus reset-to-origin retry loop. The test must protect the new
+        # atomic contract instead of requiring the retired implementation.
+        self.assertIn('candidate_root="/tmp/vmews-forecast-publish"', workflow)
+        self.assertIn('git fetch --no-tags origin main', workflow)
+        self.assertIn('git reset --hard origin/main', workflow)
+        self.assertIn('git add "${files[@]}"', workflow)
+        self.assertIn('MAX_PUBLISH_ATTEMPTS: "4"', workflow)
+        self.assertIn("non-fast-forward|fetch first|rejected", workflow)
+        self.assertNotIn("git pull --rebase --autostash origin main", workflow)
+        self.assertNotIn("git add data/", workflow)
 
 
 if __name__ == "__main__":
