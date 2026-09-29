@@ -847,7 +847,7 @@ def repair_canonical_row(row):
                 return _apply_money_repair(out, m)
 
     if metric_id == "csr_spend":
-        negative = r"dư\s+nợ|cho\s+vay|tín\s+dụng|giải\s+ngân|lợi\s+nhuận|thu\s+nhập|vốn\s+(?:điều\s+lệ|thực\s+góp)"
+        negative = r"dư\s+nợ|cho\s+vay|tín\s+dụng|giải\s+ngân|lợi\s+nhuận|thu\s+nhập|vốn\s+(?:điều\s+lệ|thực\s+góp)|ngân\s+sách\s+nhà\s+nước|thuế|tax"
         positive = r"đóng\s+góp|dành(?:\s+cho)?|chi\s+cho|tài\s+trợ|hỗ\s+trợ|trao\s+tặng|ủng\s+hộ|từ\s+thiện|an\s+sinh|community\s+investment|community\s+development|csr"
         if not re.search(negative, snippet, re.I):
             if year and re.search(r"cộng\s+đồng|an\s+sinh|community|csr", snippet, re.I):
@@ -857,10 +857,16 @@ def repair_canonical_row(row):
                 )
                 if yearly:
                     return _apply_money_repair(out, yearly)
+                yearly_action = re.search(
+                    rf"riêng\s+(?:trong\s+)?năm\s+{int(year)}[^.;•]{{0,70}}?(?:dành|chi|tài\s+trợ|hỗ\s+trợ|đóng\s+góp)[^.;•]{{0,35}}?" + MONEY_TEXT,
+                    snippet, re.I
+                )
+                if yearly_action:
+                    return _apply_money_repair(out, yearly_action)
             patterns = [
                 r"(?:nguồn\s+kinh\s+phí|kinh\s+phí)[^.;•]{0,55}?" + MONEY_TEXT + r"[^.;•]{0,35}?(?:từ\s+ngân\s+hàng|do\s+ngân\s+hàng)",
-                rf"(?:{positive})[^.;•]{{0,100}}?" + MONEY_TEXT,
                 MONEY_TEXT + rf"[^.;•]{{0,70}}?(?:cộng\s+đồng|community|tài\s+trợ|hỗ\s+trợ|trao\s+tặng|ủng\s+hộ|từ\s+thiện|an\s+sinh)",
+                rf"(?:{positive})[^.;•]{{0,100}}?" + MONEY_TEXT,
             ]
             for pattern in patterns:
                 m = re.search(pattern, snippet, re.I)
@@ -881,6 +887,7 @@ def repair_canonical_row(row):
 
     if metric_id in {"women_management_pct", "female_board_pct"}:
         patterns = [
+            r"(?:nữ|female|women)\s+(?:quản\s+lý|lãnh\s+đạo|management|leaders?|board)[^.;•\d]{0,30}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
             r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:cán\s+bộ\s+quản\s+lý|quản\s+lý|lãnh\s+đạo|"
             r"management|leaders?|board)[^.;•]{0,40}(?:là\s+)?(?:nữ|female|women)",
             r"(?:tỷ\s+lệ\s+)?(?:nữ|female|women)[^.;•]{0,55}?(?:quản\s+lý|lãnh\s+đạo|management|board)"
@@ -958,6 +965,8 @@ def metric_row_valid(row):
         return False
 
     if metric_id == "csr_spend":
+        if re.search(r"ngân\s+sách\s+nhà\s+nước|thuế|tax", context, re.I):
+            return False
         if not row.get("repaired"):
             return False
 
