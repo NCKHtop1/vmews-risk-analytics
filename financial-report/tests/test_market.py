@@ -76,6 +76,7 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(set(registry),{x['symbol'] for x in core})
         self.assertEqual(sum(x['entityType']=='bank' for x in registry.values()),18)
         self.assertIn('https://24hmoney.vn/stock/fpt/report',registry['FPT']['seed_urls'])
+        self.assertIn('https://24hmoney.vn/stock/fpt/financial-report',registry['FPT']['seed_urls'])
         self.assertIn('https://24hmoney.vn/stock/acb/report',registry['ACB']['seed_urls'])
         self.assertIn('acb.com.vn',' '.join(registry['ACB']['seed_urls']))
 
@@ -279,13 +280,14 @@ class MarketTests(unittest.TestCase):
         self.assertLessEqual(esm.DISCOVERY_TIMEOUT,8)
         self.assertLessEqual(esm.DETAIL_TIMEOUT,6)
         self.assertLessEqual(esm.DOCUMENT_TIMEOUT,22)
-        self.assertLessEqual(esm.DOCS_PER_RUN,16)
-        self.assertLessEqual(esm.HISTORY_DOCS_PER_RUN,5)
+        self.assertLessEqual(esm.DOCS_PER_RUN,24)
+        self.assertLessEqual(esm.HISTORY_DOCS_PER_RUN,10)
         self.assertLessEqual(esm.MAX_PDF_PAGES,280)
         self.assertLessEqual(esm.MAX_TEXT_CHARS,900000)
         self.assertEqual(esm.parse_number('19.321','m3'),19321)
         mixed='Sustainability Report 2025. Green Bond Framework and Annual Report references.'
         self.assertEqual(esm.classify_document(mixed),'sustainability_report')
+        self.assertEqual(esm.classify_document('FPT Báo cáo tài chính thường niên năm 2025'),'annual_report')
 
     def test_corporate_esg_bootstrap_prioritizes_bank_reports_over_external_archives(self):
         report={'type':'sustainability_report','year':2025,'url':'https://bank/report.pdf'}
