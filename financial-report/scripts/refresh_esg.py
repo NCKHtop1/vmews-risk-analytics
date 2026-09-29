@@ -24,7 +24,10 @@ CONFIG = ROOT / "config/esg_sources.json"
 USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "1800000"))
-DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "30"))
+DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "24"))
+DISCOVERY_TIMEOUT = int(os.environ.get("ESG_DISCOVERY_TIMEOUT", "8"))
+DETAIL_TIMEOUT = int(os.environ.get("ESG_DETAIL_TIMEOUT", "6"))
+DOCUMENT_TIMEOUT = int(os.environ.get("ESG_DOCUMENT_TIMEOUT", "22"))
 EXTRACTOR_VERSION = 2
 
 
@@ -113,12 +116,14 @@ def extract_year(text):
 
 def classify_document(text):
     s = re.sub(r"[-_/]+", " ", ascii_fold(text))
-    if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
-        return "sustainable_finance_assessment"
-    if "annual report" in s or "bao cao thuong nien" in s:
-        return "annual_report"
+    # A sustainability report can discuss green-bond frameworks and annual
+    # reporting; the explicit report label is therefore the strongest signal.
     if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s:
         return "sustainability_report"
+    if "annual report" in s or "bao cao thuong nien" in s:
+        return "annual_report"
+    if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
+        return "sustainable_finance_assessment"
     if "tcfd" in s or "ifrs s2" in s or ("climate" in s and "disclosure" in s):
         return "climate_disclosure"
     if "vnsi" in s:
@@ -178,10 +183,10 @@ def doc_key(url):
     return hashlib.sha256(url.encode()).hexdigest()[:20]
 
 
-def discover_seed(seed_url, keywords):
+def discover_seed(seed_url, keywords, max_candidates=36, follow_detail_limit=12):
     documents = {}
     try:
-        raw, ctype, final_url = fetch(seed_url)
+        raw, ctype, final_url = fetch(seed_url, timeout=DISCOVERY_TIMEOUT)
     except Exception as exc:
         return [], {"url": seed_url, "status": "error", "error": str(exc)}
     if looks_pdf(final_url, ctype):
@@ -209,8 +214,9 @@ def discover_seed(seed_url, keywords):
     candidates = sorted(
         {(u, t) for u, t in candidates},
         key=lambda x: (0 if looks_pdf(x[0]) else 1, -(extract_year(x[0] + " " + x[1]) or 0))
-    )[:80]
+    )[:max_candidates]
 
+    followed = 0
     for url, label in candidates:
         combined = clean_text(f"{label} {url}")
         if looks_pdf(url):
@@ -221,8 +227,11 @@ def discover_seed(seed_url, keywords):
             }
             continue
         # One-level follow for detail pages that contain the actual PDF.
+        if followed >= follow_detail_limit:
+            continue
+        followed += 1
         try:
-            detail_raw, detail_type, detail_final = fetch(url, timeout=15)
+            detail_raw, detail_type, detail_final = fetch(url, timeout=DETAIL_TIMEOUT)
             if looks_pdf(detail_final, detail_type):
                 documents[detail_final] = {
                     "id": doc_key(detail_final), "url": detail_final, "title": label or Path(urlsplit(detail_final).path).name,
@@ -263,7 +272,7 @@ def discover_seed(seed_url, keywords):
 
 
 def extract_document_text(url):
-    raw, ctype, final_url = fetch(url, timeout=35)
+    raw, ctype, final_url = fetch(url, timeout=DOCUMENT_TIMEOUT)
     if looks_pdf(final_url, ctype) and raw.lstrip().startswith(b"%PDF"):
         try:
             from pypdf import PdfReader
@@ -637,10 +646,13 @@ def collect(config, output):
         for symbol, cfg in banks.items():
             seeds = list(cfg.get("seed_urls", []))
             for template in cfg.get("year_url_templates", []):
-                for year in range(current_year, max(2019, current_year - 4), -1):
+                # Probe only the current reporting window. Archive landing
+                # pages retain older years, while this keeps dead yearly URLs
+                # from adding tens of seconds to every refresh.
+                for year in range(current_year, current_year - 3, -1):
                     seeds.append(template.format(year=year))
             for seed in dict.fromkeys(seeds):
-                jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords)))
+                jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords, 32, 10)))
         for symbol, seed, future in jobs:
             try:
                 docs, status = future.result()
@@ -675,7 +687,7 @@ def collect(config, output):
     with ThreadPoolExecutor(max_workers=6) as pool:
         for src in config.get("external_sources", []):
             for seed in src.get("seed_urls", []):
-                ext_jobs.append((src, seed, pool.submit(discover_seed, seed, keywords)))
+                ext_jobs.append((src, seed, pool.submit(discover_seed, seed, keywords, 16, 6)))
         for src, seed, future in ext_jobs:
             try:
                 docs, status = future.result()
@@ -722,7 +734,9 @@ def collect(config, output):
                 doc["contentHash"] = hashlib.sha256(text.encode("utf-8", "ignore")).hexdigest()
                 doc["processedAt"] = now()
                 doc["textLength"] = len(text)
-                doc["type"] = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
+                discovered_type = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
+                if doc.get("type") not in {"sustainability_report", "annual_report", "climate_disclosure"}:
+                    doc["type"] = discovered_type
                 doc["year"] = infer_report_year(text, doc.get("year"))
                 doc.pop("lastError", None)
                 doc.pop("retryAfter", None)
