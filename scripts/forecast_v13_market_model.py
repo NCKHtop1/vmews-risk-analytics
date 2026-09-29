@@ -2297,11 +2297,11 @@ def economic_point_gate(audit: dict[str, Any], walk_forward: dict[str, Any]) -> 
 
 
 def preferred_ranking_horizon(model_horizons: dict[str, Any]) -> int:
-    """Choose a medium-horizon rank only from price horizons that passed."""
+    """Choose a medium-horizon rank only from return horizons that passed."""
     candidates = []
     for horizon in (3, 4, 5):
         item = model_horizons.get(str(horizon)) or {}
-        if item.get("priceStatus") != "PASS":
+        if item.get("returnStatus", item.get("priceStatus")) != "PASS":
             continue
         walk = item.get("walkForwardAudit") or {}
         candidates.append((float(walk.get("meanRankIC") or -1), -horizon, horizon))
@@ -2309,7 +2309,7 @@ def preferred_ranking_horizon(model_horizons: dict[str, Any]) -> int:
         candidates = [
             (float(((item.get("walkForwardAudit") or {}).get("meanRankIC") or -1)), -int(key), int(key))
             for key, item in model_horizons.items()
-            if item.get("priceStatus") == "PASS"
+            if item.get("returnStatus", item.get("priceStatus")) == "PASS"
         ]
     if not candidates:
         raise RuntimeError("No independently validated horizon remains for ranking")
@@ -2681,11 +2681,12 @@ def write_artifacts(
         model_horizons[key] = {
             "activeExperts": active_experts,
             "architecture": result.architecture,
-            "priceStatus": "PASS" if price_pass else "REVIEW",
+            "returnStatus": "PASS" if price_pass else "REVIEW",
+            "priceStatus": "PASS" if price_pass else "REVIEW",  # compatibility alias for older clients
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
             "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
-            "forecastPresentation": "ONE_EXECUTABLE_CENTRAL_PRICE_WITH_Q20_Q80_CONTEXT",
+            "forecastPresentation": "RETURN_FIRST_WITH_PRICE_SCENARIOS_ONLY",
             "pointDirectionSemantics": "HISTORICAL_SIGN_HIT_RATE_IS_NOT_AN_ISSUER_PROBABILITY",
             "status": "PASS" if price_pass else "REVIEW",
             "sealedAudit": audit,
@@ -2712,7 +2713,8 @@ def write_artifacts(
         back_horizons[key] = {
             "metrics": audit,
             "walkForwardAudit": walk_forward,
-            "priceStatus": "PASS" if price_pass else "REVIEW",
+            "returnStatus": "PASS" if price_pass else "REVIEW",
+            "priceStatus": "PASS" if price_pass else "REVIEW",  # compatibility alias
             "directionStatus": "PASS" if direction_pass else "REVIEW",
             "pointDirectionStatus": "PASS" if point_direction_pass else "REVIEW",
             "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
@@ -2770,10 +2772,14 @@ def write_artifacts(
             snapshots[symbol]["horizons"][key] = {
                 "alpha": raw_point,
                 "expectedReturn": exact_return,
-                "expectedPrice": point,
+                "expectedSimpleReturn": math.expm1(exact_return),
+                "expectedPrice": point,  # derived compatibility reference; UI is return-first
+                "derivedReferencePrice": point,
                 "probUp": float(probability[position]),
                 "q20": math.log(low / close),
                 "q80": math.log(high / close),
+                "q20SimpleReturn": low / close - 1.0,
+                "q80SimpleReturn": high / close - 1.0,
                 "q20Price": low,
                 "q80Price": high,
                 "expectedAbsReturn": expected_abs_return,
@@ -2790,7 +2796,8 @@ def write_artifacts(
                 "scenarioAdjustmentReturn": float(scenario_adjustment[position]),
                 "liveAdjustmentAppliedToCentralForecast": False,
                 "liveEvidence": live_priors[position],
-                "priceValidated": price_pass,
+                "returnValidated": price_pass,
+                "priceValidated": price_pass,  # compatibility alias for older clients
                 "directionValidated": direction_pass,
                 "pointDirectionValidated": point_direction_pass,
                 "historicalDirectionAccuracy": float(audit.get("directionalAccuracy") or 0),
@@ -2804,7 +2811,7 @@ def write_artifacts(
                 ),
                 "validationStatus": "PASS" if price_pass else "REVIEW",
                 "economicPointStatus": "PASS" if economic_point_pass else "LOW_CONFIDENCE",
-                "forecastPresentation": "ONE_EXECUTABLE_CENTRAL_PRICE_WITH_Q20_Q80_CONTEXT",
+                "forecastPresentation": "RETURN_FIRST_WITH_PRICE_SCENARIOS_ONLY",
                 "tickSize": tick_size(point, venue),
                 "exchange": venue,
                 "targetDate": next_trading_dates(str(row["date"].date()), horizon)[-1],
@@ -2915,11 +2922,12 @@ def write_artifacts(
     ranking_horizon = preferred_ranking_horizon(model_horizons)
     promotion = {
         "status": "PASS",
-        "directPriceHorizons": validated_horizons,
+        "directReturnHorizons": validated_horizons,
+        "directPriceHorizons": validated_horizons,  # compatibility alias for older clients
         "reviewHorizons": review_horizons,
         "preferredRankingHorizon": ranking_horizon,
         "directionHorizons": direction_horizons,
-        "rule": "Each horizon is promoted or abstained independently. A REVIEW horizon cannot drive ranking or a user decision and cannot block fresh prices for the horizons that passed.",
+        "rule": "Each horizon is promoted or abstained independently on out-of-sample return evidence. A REVIEW horizon cannot drive ranking or a user decision. Executable prices are retained only as compatibility references and scenario conversions.",
     }
     model = {
         "version": VERSION,

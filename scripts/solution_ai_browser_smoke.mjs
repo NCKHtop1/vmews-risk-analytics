@@ -57,8 +57,8 @@ try {
     }
 
     const preferred = context.horizons[context.preferredHorizon];
-    if (!preferred || preferred.releaseStatus !== 'PUBLISHED' || !Number.isFinite(Number(preferred.price))) {
-      throw new Error(`${symbol}: preferred horizon has no released point price`);
+    if (!preferred || preferred.releaseStatus !== 'PUBLISHED' || !Number.isFinite(Number(preferred.expectedReturn))) {
+      throw new Error(`${symbol}: preferred horizon has no released return forecast`);
     }
 
     const question = 'Chỉ dùng dữ liệu mô hình, phân tích đầy đủ forecast T+1 đến T+5 của mã đang xem.';
@@ -76,9 +76,9 @@ try {
       throw new Error(`${symbol}: local AI still falls into generic forecast error: ${local.slice(0, 240)}`);
     }
 
-    const preferredPrice = Number(preferred.price).toLocaleString('vi-VN');
-    if (!local.includes(preferredPrice)) {
-      throw new Error(`${symbol}: local AI answer does not contain preferred released price ${preferredPrice}`);
+    const preferredReturn = `${Number(preferred.expectedReturn) >= 0 ? '+' : ''}${(Number(preferred.expectedReturn) * 100).toFixed(2)}%`;
+    if (!local.includes(preferredReturn) || !/return kỳ vọng/i.test(local)) {
+      throw new Error(`${symbol}: local AI answer does not contain preferred released return ${preferredReturn}`);
     }
 
     // User-facing no-key path must answer locally instead of requiring Gemini.
