@@ -599,11 +599,15 @@ def migration_keep_document(doc, keywords):
 
 def backlog_priority(owner, doc):
     priorities = {
-        "sustainability_report": 6, "climate_disclosure": 6, "annual_report": 5,
-        "sustainable_finance_assessment": 5, "vnsi": 4, "susba": 4,
-        "esg_web_content": 3, "esg_other": 1,
+        "sustainability_report": 12, "climate_disclosure": 11, "annual_report": 10,
+        "sustainable_finance_assessment": 9, "vnsi": 8, "susba": 8,
+        "esg_web_content": 6, "esg_other": 2,
     }
-    return (7 if owner == "__external__" else priorities.get(doc.get("type"), 1), doc.get("year") or 0)
+    # Bootstrap the company's own disclosure history before provider archives.
+    # External ratings remain important but should not consume every bounded
+    # extraction slot while bank reports are still waiting.
+    base = 5 if owner == "__external__" else priorities.get(doc.get("type"), 1)
+    return (base, doc.get("year") or 0)
 
 
 def collect(config, output):
@@ -629,8 +633,13 @@ def collect(config, output):
 
     jobs = []
     with ThreadPoolExecutor(max_workers=10) as pool:
+        current_year = datetime.now(timezone.utc).year
         for symbol, cfg in banks.items():
-            for seed in cfg.get("seed_urls", []):
+            seeds = list(cfg.get("seed_urls", []))
+            for template in cfg.get("year_url_templates", []):
+                for year in range(current_year, max(2019, current_year - 4), -1):
+                    seeds.append(template.format(year=year))
+            for seed in dict.fromkeys(seeds):
                 jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords)))
         for symbol, seed, future in jobs:
             try:

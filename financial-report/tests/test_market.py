@@ -32,6 +32,10 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
+        self.assertTrue(cfg['banks']['VPB']['year_url_templates'])
+        self.assertTrue(cfg['banks']['CTG']['year_url_templates'])
+        self.assertTrue(cfg['banks']['VCB']['year_url_templates'])
+        self.assertIn('acb-bao-cao-phat-trien-ben-vung',' '.join(cfg['banks']['ACB']['seed_urls']))
         providers={x['provider'] for x in cfg['external_sources']}
         self.assertTrue({'WWF SUSBA','HOSE VNSI','VIS Rating','Morningstar Sustainalytics','S&P Global Ratings'}.issubset(providers))
         self.assertGreaterEqual(len(cfg['metric_rules']),15)
@@ -100,6 +104,13 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(len(canonical),1)
         self.assertEqual(canonical[0]['value'],18700)
         self.assertEqual(esm.EXTRACTOR_VERSION,2)
+
+    def test_corporate_esg_bootstrap_prioritizes_bank_reports_over_external_archives(self):
+        report={'type':'sustainability_report','year':2025,'url':'https://bank/report.pdf'}
+        annual={'type':'annual_report','year':2025,'url':'https://bank/annual.pdf'}
+        external={'type':'sustainability_report','year':2026,'url':'https://provider/project'}
+        self.assertGreater(esm.backlog_priority('TCB',report),esm.backlog_priority('__external__',external))
+        self.assertGreater(esm.backlog_priority('ACB',annual),esm.backlog_priority('__external__',external))
 
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
