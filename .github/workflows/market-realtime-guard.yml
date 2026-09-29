@@ -3,7 +3,8 @@ name: Market realtime freshness guard
 on:
   workflow_dispatch:
   schedule:
-    - cron: '7,22,37,52 2-8 * * 1-5'
+    # Run shortly after the dedicated price workflow.
+    - cron: '10,25,40,55 2-8 * * 1-5'
 
 permissions:
   contents: read
@@ -17,10 +18,35 @@ jobs:
         run: |
           python - <<'PY'
           import json, urllib.request
+          from datetime import datetime, timezone, timedelta
+
+          VN=timezone(timedelta(hours=7))
+          now=datetime.now(timezone.utc)
+          local=now.astimezone(VN)
+          minutes=local.hour*60+local.minute
+          active=local.weekday()<5 and ((9*60<=minutes<=11*60+40) or (12*60+55<=minutes<=15*60+15))
+          if not active:
+              print('Outside VN live-session guard window:', local.isoformat())
+              raise SystemExit(0)
+
           url='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json'
           with urllib.request.urlopen(url, timeout=10) as r:
               data=json.load(r)
-          print('Market snapshot checked:', data.get('checkedAt'))
+
+          coverage=int(data.get('coverage') or 0)
+          latest=data.get('latestSourceTime')
+          print('Market snapshot:', data.get('checkedAt'), 'status=',data.get('status'),'coverage=',coverage,'latest=',latest,'providers=',data.get('providers'))
           if data.get('status') != 'ok':
               raise SystemExit('Market snapshot status is not ok')
+          if coverage < 90:
+              raise SystemExit(f'Current-session coverage too low: {coverage}/100')
+          if not latest:
+              raise SystemExit('Missing latestSourceTime')
+
+          stamp=datetime.fromisoformat(str(latest).replace('Z','+00:00')).astimezone(timezone.utc)
+          if stamp.astimezone(VN).date()!=local.date():
+              raise SystemExit(f'Market source is not from current VN session: {stamp.astimezone(VN).date()}')
+          age=(now-stamp).total_seconds()/60
+          if age>30:
+              raise SystemExit(f'Market source is stale by {age:.1f} minutes')
           PY
