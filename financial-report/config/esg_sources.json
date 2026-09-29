@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -152,7 +152,10 @@
       "seed_urls": [
         "https://techcombank.com/en/investors/annual-report",
         "https://techcombank.com/en/about-us/sustainability"
-      ]
+      ],
+      "year_overrides": {
+        "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf": 2025
+      }
     },
     "TPB": {
       "name": "TPBank",
