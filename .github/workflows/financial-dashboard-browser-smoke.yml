@@ -1,0 +1,153 @@
+name: Financial dashboard browser smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
+      - 'financial-report/frontend/**'
+      - 'financial-report/scripts/build_cdn.py'
+  schedule:
+    # 16:25 Vietnam time, after the completed trading session.
+    - cron: '25 9 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: financial-dashboard-browser-smoke
+  cancel-in-progress: true
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser smoke dependency
+        run: pip install --disable-pip-version-check -q selenium==4.36.0
+      - name: Exercise production chart, ideas, macro, scanner and Dolphin local analysis
+        shell: bash
+        run: |
+          python - <<'PY'
+          import shutil
+          import time
+          from selenium import webdriver
+          from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.chrome.service import Service
+          from selenium.webdriver.support.ui import WebDriverWait
+
+          URL='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/?symbol=FPT&mode=year#market'
+
+          options=Options()
+          options.add_argument('--headless=new')
+          options.add_argument('--no-sandbox')
+          options.add_argument('--disable-dev-shm-usage')
+          options.add_argument('--disable-gpu')
+          options.add_argument('--window-size=1440,1200')
+
+          driver_path=shutil.which('chromedriver')
+          service=Service(driver_path) if driver_path else Service()
+          driver=webdriver.Chrome(service=service,options=options)
+          wait=WebDriverWait(driver,60)
+
+          try:
+              driver.get(URL)
+              # Do not store protected passcodes in CI. Authorized smoke access is
+              # enabled through the same session flags set by the successful gates.
+              driver.execute_script("""
+                sessionStorage.setItem('finquery-technical-access','1');
+                sessionStorage.setItem('finquery-macro-access','1');
+              """)
+              driver.refresh()
+
+              wait.until(lambda d:d.execute_script("""
+                return Boolean(
+                  window.FinQueryAI &&
+                  window.FinancialMarket &&
+                  window.FinancialReportContext &&
+                  window.FinTechnicalScanner &&
+                  window.FinMacro
+                );
+              """))
+
+              wait.until(lambda d:d.execute_script("""
+                const q=window.FinancialMarket?.context?.()?.quote;
+                return Boolean(q && Number(q.price)>0);
+              """))
+              wait.until(lambda d:d.execute_script("""
+                return Boolean(document.querySelector('#price-chart canvas'));
+              """))
+              wait.until(lambda d:d.execute_script("""
+                return Boolean(window.FinancialReportContext?.raw?.());
+              """))
+              wait.until(lambda d:d.execute_script("""
+                const c=window.FinMacro?.context?.();
+                return Boolean(c && c.datasets && Object.keys(c.datasets).length>=3);
+              """))
+              wait.until(lambda d:d.execute_script("""
+                const c=window.FinTechnicalScanner?.context?.();
+                return Boolean(c && c.current && c.current.symbol==='FPT');
+              """))
+              wait.until(lambda d:d.execute_script("""
+                const el=document.getElementById('idea-report-list');
+                return Boolean(el && el.textContent.trim().length>20);
+              """))
+
+              driver.execute_script("""
+                document.querySelector('[data-market-view="scanner"]')?.click();
+              """)
+              wait.until(lambda d:d.execute_script("""
+                return document.querySelectorAll('#technical-scanner-rows tr').length>0;
+              """))
+
+              checks=[
+                ('Vì sao mã này tăng hoặc giảm trong phiên hôm nay?','movement'),
+                ('Phân tích sức khỏe tài chính của doanh nghiệp này.','financial'),
+                ('Các rủi ro định lượng chính hiện tại là gì?','risk'),
+                ('So sánh kỳ gần nhất với kỳ trước và cùng kỳ.','compare'),
+                ('ROE là gì?','concept'),
+                ('Phân tích bối cảnh lãi suất và vĩ mô hiện tại.','macro'),
+              ]
+              results=[]
+              for question,expected in checks:
+                  result=driver.execute_script(
+                    "return window.FinQueryAI.analyze(arguments[0]);",question
+                  )
+                  if not isinstance(result,dict):
+                      raise AssertionError(f'AI result is not an object for {question!r}: {result!r}')
+                  actual=result.get('type')
+                  html=str(result.get('html') or '')
+                  if actual!=expected:
+                      raise AssertionError(f'AI classifier mismatch for {question!r}: {actual!r} != {expected!r}')
+                  if len(html)<80:
+                      raise AssertionError(f'AI local response too short for {question!r}: {len(html)}')
+                  if 'undefined' in html.lower() or '>nan<' in html.lower():
+                      raise AssertionError(f'AI local response contains invalid values for {question!r}')
+                  results.append((expected,len(html)))
+
+              snapshot=driver.execute_script("""
+                const m=window.FinancialMarket.context();
+                const s=window.FinTechnicalScanner.context();
+                const macro=window.FinMacro.context();
+                return {
+                  symbol:m.symbol,
+                  quote:m.quote,
+                  scanner:s?.current,
+                  scannerCheckedAt:s?.checkedAt,
+                  macroCheckedAt:macro?.checkedAt,
+                  financial:Boolean(window.FinancialReportContext.raw()),
+                  ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180)
+                };
+              """)
+              if snapshot.get('symbol')!='FPT':
+                  raise AssertionError(f'Unexpected selected symbol: {snapshot}')
+              if not snapshot.get('scanner'):
+                  raise AssertionError(f'Scanner context missing: {snapshot}')
+              print('BROWSER SMOKE PASS',{'ai':results,'snapshot':snapshot})
+          finally:
+              driver.quit()
+          PY
