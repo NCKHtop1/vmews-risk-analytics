@@ -36,6 +36,7 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('#forecastCards .forecastCard').length === 5, null, { timeout: 30000 });
 
   const structural = await page.evaluate(async () => {
+    const finite = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
     const B = await window.__VMEWS_LOAD_BASE__();
     const root = window.__VMEWS_DATA_ROOT__;
     const release = await fetch(`${root}/release-audit-v20.json?audit=${Date.now()}`, { cache: 'no-store' }).then(r => {
