@@ -70,6 +70,14 @@ class MarketTests(unittest.TestCase):
         self.assertTrue({'WWF SUSBA','HOSE VNSI','VIS Rating','Morningstar Sustainalytics','S&P Global Ratings'}.issubset(providers))
         self.assertGreaterEqual(len(cfg['metric_rules']),15)
         self.assertTrue(any(x['type']=='ESG Credit Impact Score' for x in cfg['rating_patterns']))
+        registry=esm.build_company_registry(cfg)
+        core=json.loads((ROOT/'data/companies.json').read_text())
+        self.assertEqual(len(registry),100)
+        self.assertEqual(set(registry),{x['symbol'] for x in core})
+        self.assertEqual(sum(x['entityType']=='bank' for x in registry.values()),18)
+        self.assertIn('https://24hmoney.vn/stock/fpt/report',registry['FPT']['seed_urls'])
+        self.assertIn('https://24hmoney.vn/stock/acb/report',registry['ACB']['seed_urls'])
+        self.assertIn('acb.com.vn',' '.join(registry['ACB']['seed_urls']))
 
     def test_corporate_esg_discovery_follows_generic_download_redirects(self):
         seed='https://bank.example/reports'
@@ -445,6 +453,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('options: [all, prices, news, macro, esg, esg-history, history, intraday]',flow)
         self.assertIn("cron: '47 9,14 * * 1-5'",flow)
         self.assertIn("cron: '47 2 * * 6'",flow)
+        self.assertIn("cron: '15 1 * * 1-5'",flow)
         self.assertIn('pypdf==5.1.0',flow)
         self.assertIn('cryptography>=45,<47',flow)
         self.assertIn('PyMuPDF>=1.25,<1.27',flow)
