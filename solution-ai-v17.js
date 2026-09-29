@@ -69,6 +69,31 @@
     return details || `Kết nối Gemini chưa sẵn sàng (${status}).`;
   }
 
+  async function fetchGeminiBounded(url, options = {}, timeoutMs = 24000) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    const parent = options.signal;
+    const onAbort = () => controller?.abort();
+    if (parent && controller) {
+      if (parent.aborted) controller.abort();
+      else parent.addEventListener("abort", onAbort, { once: true });
+    }
+    try {
+      return await fetch(url, { ...options, ...(controller ? { signal: controller.signal } : {}) });
+    } catch (error) {
+      if (controller?.signal.aborted && !parent?.aborted) {
+        const timeout = new Error("Gemini phản hồi quá chậm; SoluTION.AI đang chuyển sang mô hình/fallback local.");
+        timeout.status = 504;
+        timeout.code = "GEMINI_TIMEOUT";
+        throw timeout;
+      }
+      throw error;
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (parent && controller) parent.removeEventListener("abort", onAbort);
+    }
+  }
+
   function availableModels(payload) {
     const models = (payload.models || [])
       .filter(item => {
@@ -509,9 +534,9 @@
     const attempts = [["google_search", "url_context"]];
     for (let index = 0; index < attempts.length; index += 1) {
       const tools = attempts[index];
-      response = await fetch(`${GOOGLE_AI_ORIGIN}/interactions`, {
+      response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/interactions`, {
         ...common, body: JSON.stringify(interactionBody(tools)),
-      });
+      }, 24000);
       if (response.ok || response.status === 429 || ![400, 403].includes(response.status)) break;
       if (index === 0) {
         if (response.status === 400) attempts.push(["google_search"]);
@@ -520,14 +545,14 @@
       if (tools.includes("google_search") && response.status !== 400) searchLimited = true;
     }
     if ([400, 404, 405].includes(response.status)) {
-      response = await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
+      response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
         ...common, body: JSON.stringify(compatibleBody(!searchLimited)),
-      });
+      }, 24000);
       if (!searchLimited && [400, 403, 429].includes(response.status)) {
         searchLimited = true;
-        response = await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
+        response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
           ...common, body: JSON.stringify(compatibleBody(false)),
-        });
+        }, 24000);
       }
     }
     const payload = await response.json().catch(() => ({}));
@@ -562,7 +587,7 @@
       throw limited;
     }
     if (!state.modelCandidates.length) state.model = await validateGemini(secret);
-    const candidates = [...new Set([state.model, ...state.modelCandidates].filter(Boolean))].slice(0, 3);
+    const candidates = [...new Set([state.model, ...state.modelCandidates].filter(Boolean))].slice(0, 2);
     let lastError;
     for (let index = 0; index < candidates.length; index += 1) {
       state.model = candidates[index];
@@ -575,7 +600,11 @@
           state.quotaUntil = Date.now() + 60_000;
           break;
         }
-        if (index + 1 < candidates.length) setStatus("Đang thử lại bằng mô hình Gemini khác…");
+        if (index + 1 < candidates.length && [403, 404, 408, 500, 502, 503, 504].includes(Number(error?.status))) {
+          setStatus(error?.code === "GEMINI_TIMEOUT" ? "Gemini phản hồi chậm · đang chuyển mô hình…" : "Gemini gián đoạn · đang thử mô hình khác…");
+          continue;
+        }
+        break;
       }
     }
     throw lastError || new Error("Gemini tạm thời chưa phản hồi.");
