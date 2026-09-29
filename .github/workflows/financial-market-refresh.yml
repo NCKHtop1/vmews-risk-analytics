@@ -20,8 +20,8 @@ on:
     - cron: '7,22,37,52 * * * *'
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
-    # Corporate ESG source discovery: twice each business day, plus Saturday catch-up.
-    - cron: '47 9,14 * * 1-5'
+    # Corporate ESG source discovery: once each business day, plus Saturday history catch-up.
+    - cron: '47 14 * * 1-5'
     - cron: '47 2 * * 6'
     # Heavy candle history runs separately after the Vietnam close.
     - cron: '20 9 * * 1-5'
@@ -57,7 +57,7 @@ jobs:
           fi
           mkdir -p /tmp/market-publish/market
       - name: Install ESG document parser
-        if: github.event_name == 'push' || inputs.mode == 'esg' || inputs.mode == 'esg-history' || github.event.schedule == '47 9,14 * * 1-5' || github.event.schedule == '47 2 * * 6' || contains(github.event.head_commit.message, '[esg-refresh]')
+        if: github.event_name == 'push' || inputs.mode == 'esg' || inputs.mode == 'esg-history' || github.event.schedule == '47 14 * * 1-5' || github.event.schedule == '47 2 * * 6' || contains(github.event.head_commit.message, '[esg-refresh]')
         run: pip install -q pypdf==5.1.0 'cryptography>=45,<47' 'PyMuPDF>=1.25,<1.27'
       - name: Collect prices, candles, publisher headlines and ESG
         id: collect
@@ -86,7 +86,7 @@ jobs:
           if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 * * * *' ]; then mode=news-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
-          if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ]; then mode=esg; fi
+          if [ "$EVENT_SCHEDULE" = '47 14 * * 1-5' ]; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg-history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[esg-refresh\]'; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '20 9 * * 1-5' ]; then mode=history; fi
