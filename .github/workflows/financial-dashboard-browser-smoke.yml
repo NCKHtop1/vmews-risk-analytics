@@ -2,12 +2,10 @@ name: Financial dashboard browser smoke
 
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    types: [completed]
     branches: [main]
-    paths:
-      - '.github/workflows/financial-dashboard-browser-smoke.yml'
-      - 'financial-report/frontend/**'
-      - 'financial-report/scripts/build_cdn.py'
   schedule:
     # 16:25 Vietnam time, after the completed trading session.
     - cron: '25 9 * * 1-5'
@@ -21,6 +19,7 @@ concurrency:
 
 jobs:
   browser-smoke:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
