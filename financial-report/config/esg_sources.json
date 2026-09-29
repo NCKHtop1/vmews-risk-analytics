@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -74,14 +74,17 @@
         "HDBank"
       ],
       "seed_urls": [
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf",
         "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu"
       ],
       "year_overrides": {
-        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": 2024
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": 2024,
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": 2024
       },
       "type_overrides": {
-        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": "sustainability_report"
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": "sustainability_report",
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": "sustainability_report"
       }
     },
     "LPB": {
@@ -206,6 +209,10 @@
         "https://www.sacombank.com.vn/content/dam/sacombank/cf/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-2025.pdf",
         "https://www.sacombank.com.vn/trang-chu/nha-dau-tu.html",
         "https://www.sacombank.com.vn/trang-chu/nha-dau-tu/bao-cao.html"
+      ],
+      "reprocess_version": 1,
+      "reprocess_urls": [
+        "https://www.sacombank.com.vn/content/dam/sacombank/cf/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-2025.pdf"
       ]
     },
     "TCB": {
@@ -266,11 +273,18 @@
       ],
       "year_overrides": {
         "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn": 2025,
-        "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": 2024
+        "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": 2024,
+        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": 2025
       },
       "type_overrides": {
-        "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": "annual_report"
-      }
+        "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": "annual_report",
+        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": "annual_report"
+      },
+      "reprocess_version": 1,
+      "reprocess_urls": [
+        "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES",
+        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf"
+      ]
     },
     "VPB": {
       "name": "VPBank",
@@ -450,7 +464,10 @@
       "aliases": [
         "tỷ lệ nữ",
         "female employees",
-        "women in workforce"
+        "women in workforce",
+        "nhân sự là nữ",
+        "nhân sự nữ",
+        "female staff"
       ],
       "unit_hint": "%"
     },

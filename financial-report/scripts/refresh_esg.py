@@ -22,7 +22,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
-USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DEFAULT_DOC_BYTES = (96 if HISTORY_BACKFILL else 35) * 1024 * 1024
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(DEFAULT_DOC_BYTES)))
@@ -64,9 +64,14 @@ def normalize_url(url):
 
 def fetch(url, timeout=25):
     normalized_url = normalize_url(url)
+    parts = urlsplit(normalized_url)
+    referer = f"{parts.scheme}://{parts.netloc}/" if parts.scheme and parts.netloc else normalized_url
     req = Request(normalized_url, headers={
         "User-Agent": USER_AGENT,
         "Accept": "text/html,application/pdf,application/xhtml+xml,*/*",
+        "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": referer,
+        "Cache-Control": "no-cache",
     })
     with urlopen(req, timeout=timeout) as response:
         content_length = response.headers.get("Content-Length")
@@ -342,29 +347,67 @@ def discover_seed(seed_url, keywords, max_candidates=36, follow_detail_limit=12)
     return list(documents.values()), {"url": seed_url, "status": "ok", "documents": len(documents)}
 
 
+def _pdf_text_pypdf(raw):
+    from pypdf import PdfReader
+    reader = PdfReader(io.BytesIO(raw))
+    parts, size = [], 0
+    for page_number, page in enumerate(reader.pages):
+        if page_number >= MAX_PDF_PAGES:
+            break
+        try:
+            page_text = page.extract_text() or ""
+        except Exception:
+            page_text = ""
+        if page_text:
+            parts.append(page_text)
+            size += len(page_text)
+        if size >= MAX_TEXT_CHARS:
+            break
+    return clean_text(" ".join(parts))[:MAX_TEXT_CHARS]
+
+
+def _pdf_text_pymupdf(raw):
+    import fitz
+    doc = fitz.open(stream=raw, filetype="pdf")
+    parts, size = [], 0
+    try:
+        for page_number in range(min(doc.page_count, MAX_PDF_PAGES)):
+            try:
+                page_text = doc.load_page(page_number).get_text("text") or ""
+            except Exception:
+                page_text = ""
+            if page_text:
+                parts.append(page_text)
+                size += len(page_text)
+            if size >= MAX_TEXT_CHARS:
+                break
+    finally:
+        doc.close()
+    return clean_text(" ".join(parts))[:MAX_TEXT_CHARS]
+
+
 def extract_document_text(url):
     raw, ctype, final_url = fetch(url, timeout=DOCUMENT_TIMEOUT)
     if looks_pdf(final_url, ctype) and raw.lstrip().startswith(b"%PDF"):
+        primary_error = None
+        text = ""
         try:
-            from pypdf import PdfReader
+            text = _pdf_text_pypdf(raw)
         except Exception as exc:
-            raise RuntimeError("pypdf unavailable") from exc
-        reader = PdfReader(io.BytesIO(raw))
-        parts = []
-        size = 0
-        for page_number, page in enumerate(reader.pages):
-            if page_number >= MAX_PDF_PAGES:
-                break
+            primary_error = exc
+        # Some annual reports use fonts/layouts that pypdf cannot recover, and
+        # some encrypted PDFs require a second engine even when decryption works.
+        if len(text) < 200:
             try:
-                text = page.extract_text() or ""
-            except Exception:
-                text = ""
-            if text:
-                parts.append(text)
-                size += len(text)
-            if size >= MAX_TEXT_CHARS:
-                break
-        return clean_text(" ".join(parts))[:MAX_TEXT_CHARS], final_url, "pdf"
+                fallback = _pdf_text_pymupdf(raw)
+                if len(fallback) > len(text):
+                    text = fallback
+            except Exception as fallback_exc:
+                if primary_error is not None and not text:
+                    raise RuntimeError(f"{primary_error}; PyMuPDF fallback: {fallback_exc}") from fallback_exc
+        if primary_error is not None and not text:
+            raise primary_error
+        return text, final_url, "pdf"
     # Some sites return an HTML download gate from a URL ending in .pdf.
     return strip_html(raw)[:MAX_TEXT_CHARS], final_url, "html"
 
@@ -905,9 +948,10 @@ def repair_canonical_row(row):
 
     if metric_id == "csr_spend":
         total_social = re.search(
-            r"(?:tổng\s+(?:ngân\s+sách|số\s+tiền|kinh\s+phí)[^.;•]{0,70}|"
-            r"con\s+số\s+vàng\s+an\s+sinh\s+xã\s+hội[^.;•]{0,90}?)"
-            r"(?P<value>\d[\d\s.,]*\d|\d)\s*\+?\s*(?P<unit>tỷ\s+(?:đồng|VND|VNĐ)|triệu\s+đồng)",
+            r"(?:tổng\s+(?:ngân\s+sách|số\s+tiền|kinh\s+phí)[^\d.;•]{0,35}|"
+            r"con\s+số\s+vàng\s+an\s+sinh\s+xã\s+hội(?:\s+20[0-3]\d)?[^\d.;•]{0,55})"
+            r"(?:hơn|gần|khoảng|trên)?\s*(?P<value>\d[\d\s.,]*\d|\d)\s*\+?\s*"
+            r"(?P<unit>tỷ\s+(?:đồng|VND|VNĐ)|triệu\s+đồng)",
             snippet, re.I
         )
         if total_social:
@@ -940,6 +984,7 @@ def repair_canonical_row(row):
 
     if metric_id == "women_workforce_pct":
         patterns = [
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%(?=[^%]{0,120}(?:trong\s+)?(?:lực\s+lượng\s+CBNV|workforce))",
             r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%\s*(?:nhân\s+sự|nhân\s+viên|CBNV|người\s+lao\s+động|"
             r"employees?|workforce)[^.;•]{0,35}(?:là\s+)?(?:nữ|female|women)",
             r"(?:nữ|female|women)[^.;•]{0,35}?(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
@@ -1002,6 +1047,14 @@ def repair_canonical_row(row):
             return _apply_numeric_repair(out, m.group("value"), "m3")
 
     if metric_id == "training_hours":
+        table = re.search(
+            r"(?:số\s+giờ\s+đào\s+tạo|training\s+hours)\s*"
+            r"(?P<value>\d[\d\s.,]*)\s*(?:giờ|hours?)"
+            r"[^.;•]{0,70}(?:tổng\s+số\s+CBNV|total\s+employees|number\s+of\s+employees)",
+            snippet, re.I
+        )
+        if table:
+            return _apply_numeric_repair(out, table.group("value"), "hours")
         patterns = [
             r"(?:a\s+total\s+of|tổng(?:\s+số)?)\s*(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)",
             r"(?:tổng\s+số\s+giờ\s+đào\s+tạo)[^.;•]{0,90}?(?:là|đạt|:)\s*(?P<value>\d[\d\s.,]*)\s*(?:giờ)?",
@@ -1027,16 +1080,19 @@ def metric_row_valid(row):
     if metric_id in {"training_hours", "training_hours_per_employee"}:
         if re.search(r"\bGRI\s*404\b", snippet, re.I) and re.search(r"\b404(?:\.1)?\.?\b", str(row.get("rawValue") or "")):
             return False
-        if metric_id == "training_hours" and not row.get("repaired"):
+        bankwide_training = re.search(
+            r"overall\s+training|tổng\s+(?:số\s+)?giờ\s+đào\s+tạo(?:\s+trong)?\s+năm|"
+            r"total\s+(?:number\s+of\s+)?training\s+hours|"
+            r"cung\s+cấp[^.;•]{0,90}(?:triệu|nghìn)?\s*giờ\s+đào\s+tạo[^.;•]{0,50}(?:nhân\s+viên|CBNV)|"
+            r"provided[^.;•]{0,90}training\s+hours[^.;•]{0,50}employees?|"
+            r"số\s+giờ\s+đào\s+tạo\s+\d[\d\s.,]*\s*(?:giờ|hours?)[^.;•]{0,70}"
+            r"(?:tổng\s+số\s+CBNV|total\s+employees|number\s+of\s+employees)",
+            snippet, re.I
+        )
+        if metric_id == "training_hours" and not row.get("repaired") and not bankwide_training:
             return False
-        if metric_id == "training_hours":
-            overall = re.search(
-                r"overall\s+training|tổng\s+(?:số\s+)?giờ\s+đào\s+tạo(?:\s+trong)?\s+năm|"
-                r"total\s+(?:number\s+of\s+)?training\s+hours",
-                snippet, re.I
-            )
-            if not overall:
-                return False
+        if metric_id == "training_hours" and not bankwide_training:
+            return False
         if metric_id == "training_hours_per_employee" and not row.get("repaired"):
             return False
 
@@ -1055,6 +1111,13 @@ def metric_row_valid(row):
 
     if metric_id == "green_credit":
         if re.search(r"toàn\s+nền\s+kinh\s+tế|system[-\s]?wide|banking\s+system", context, re.I):
+            return False
+        raw_token = re.escape(clean_text(row.get("rawValue") or ""))
+        if raw_token and re.search(
+            rf"(?:gói\s+tín\s+dụng\s+xanh|green\s+credit\s+(?:package|program(?:me)?))"
+            rf"[^.;•]{{0,35}}{raw_token}",
+            context, re.I
+        ):
             return False
         if not row.get("repaired") and not re.search(r"tín\s+dụng\s+xanh|green\s+credit|dư\s+nợ\s+xanh", context, re.I):
             return False
@@ -1128,7 +1191,11 @@ def revive_transport_failure(doc):
     """Retry documents that failed only because older transport limits were stricter."""
     row = dict(doc)
     error = str(row.get("lastError") or "")
-    retry = "URL can't contain control characters" in error
+    retry = (
+        "URL can't contain control characters" in error
+        or "cryptography>=3.1 is required for AES algorithm" in error
+        or "PyMuPDF fallback" in error
+    )
     match = re.search(r"document too large >\s*(\d+)\s*bytes", error)
     if match and int(match.group(1)) < MAX_DOC_BYTES:
         retry = True
