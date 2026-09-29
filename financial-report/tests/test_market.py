@@ -516,6 +516,11 @@ class MarketTests(unittest.TestCase):
         self.assertIn('for f in broker-research.json corporate-events.json insights-status.json event-status.json',pages)
         self.assertNotIn('rsync -a _insight-data/data/ financial-report/data/',pages)
         self.assertIn("'insightData':revision('_insight-data')",pages)
+        self.assertIn('Verify deployed financial dashboard and critical datasets',pages)
+        self.assertIn("grep -q 'DOLPHIN_V6'",pages)
+        self.assertIn('NEWS STALE:',pages)
+        self.assertIn('QUOTE STALE:',pages)
+        self.assertIn("technical-signals.json",pages)
 
     def test_investment_ideas_v6_dashboard_is_symbol_dynamic(self):
         html=(ROOT/'frontend/index.html').read_text()
@@ -732,6 +737,18 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(rows[0]['broker'],'BSC')
         self.assertEqual(rows[0]['targetPrice'],32900)
 
+    def test_research_and_events_include_alphanumeric_vn_tickers(self):
+        insights=(ROOT/'scripts/refresh_insights.py').read_text()
+        events=(ROOT/'scripts/refresh_events.py').read_text()
+        pattern="r'[A-Z][A-Z0-9]{2}'"
+        self.assertIn(pattern,insights)
+        self.assertIn(pattern,events)
+        self.assertNotIn("re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())",insights)
+        self.assertNotIn("re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())",events)
+        # VN100 currently includes HT1, NT2 and PC1; all three must survive the universe gate.
+        companies=json.loads((ROOT/'data/companies.json').read_text())
+        symbols={str(x.get('symbol','')).upper() for x in companies}
+        self.assertTrue({'HT1','NT2','PC1'}.issubset(symbols))
     def test_research_v8_timeout_guard_is_bounded_and_incremental(self):
         script=(ROOT/'scripts/refresh_insights.py').read_text()
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
@@ -858,6 +875,19 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('FPT',rows)
         self.assertIsNone(m.number('NaN'))
 
+    def test_history_effective_status_counts_retained_usable_files(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            out=pathlib.Path(td); (out/'history').mkdir()
+            m.write(out/'history-status.json',{'success':1,'expected':2,'errors':['BBB: timeout']})
+            m.write(out/'history'/'AAA.json',{'symbol':'AAA','status':'ok','lastBar':'2026-09-29','bars':[{'time':'2026-09-29','close':10}]})
+            m.write(out/'history'/'BBB.json',{'symbol':'BBB','status':'retained','lastBar':'2026-09-29','bars':[{'time':'2026-09-29','close':20}]})
+            status=m.update_history_effective_status(out,['AAA','BBB'])
+            self.assertEqual(status['effectiveAvailable'],2)
+            self.assertEqual(status['effectiveRetained'],1)
+            self.assertEqual(status['latestBar'],'2026-09-29')
+            self.assertEqual(status['latestBarCoverage'],2)
+            self.assertEqual(status['effectiveStatus'],'ok')
     def test_current_session_filter_rejects_t_minus_one_quotes(self):
         current=datetime(2026,9,29,7,0,tzinfo=timezone.utc)
         rows={
@@ -967,6 +997,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn('pool.submit(_fetch_news_feed, publisher, url, companies, current)',script)
         self.assertIn('for future in as_completed(futures):',script)
         self.assertNotIn("cron: '7,22,37,52 2-8 * * 1-5'",workflow)
+        self.assertIn("cron: '0,15,30,45 2-8 * * 1-5'",workflow)
+        self.assertIn("cron: '7,22,37,52 * * * *'",workflow)
+        self.assertIn("mode=prices-watchdog",workflow)
+        self.assertIn("mode=news-watchdog",workflow)
+        self.assertIn("PRICE WATCHDOG",workflow)
+        self.assertIn("NEWS WATCHDOG",workflow)
+        self.assertIn("MARKET_REQUIRE_TODAY=1",workflow)
         self.assertNotIn("cron: '11,41 * * * *'",workflow)
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",price)
         self.assertIn("MARKET_REQUIRE_TODAY: '1'",price)
@@ -983,6 +1020,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn('cancel-in-progress: true',pages)
         self.assertIn("cron: '20 9 * * 1-5'",workflow)
         self.assertIn("cron: '35 9 * * 1-5'",workflow)
+        self.assertIn("HISTORY_RETRY_WORKERS: '2'",workflow)
+        self.assertIn("&& '2' || '4'",workflow)
+        self.assertIn("&& '3' || '2'",workflow)
         self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
 
     def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
@@ -1227,6 +1267,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn('quarterSnapshot',js)
         self.assertIn('riskSignals',js)
         self.assertIn('const local=analyze(q)',js)
+        self.assertIn('technicalScanner:m.scanner||null',js)
+        self.assertIn('scanner:m.scanner?.current||null',js)
+        self.assertIn('Technical Scanner đang ghi nhận:',js)
+        self.assertIn('tín hiệu sàng lọc, không phải khuyến nghị mua/bán',js)
         self.assertIn('TRANSIENT_GEMINI_STATUS',js)
         self.assertIn('geminiGenerateResilient',js)
         self.assertIn('retryDelay(attempt)',js)
@@ -1342,6 +1386,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("'scanner'",market)
         self.assertIn('FinTechnicalScanner',market)
         self.assertIn("technical-signals.json",scanner)
+        self.assertIn("current:state.data.symbols?.[symbol]||null",scanner)
         self.assertIn("macd_cross_up",scanner)
         self.assertIn("macd_near_up",scanner)
         self.assertIn("rsi_oversold",scanner)
@@ -1351,6 +1396,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('.technical-scanner-panel',css)
         self.assertIn("(front / 'technical-scanner.js').read_text()",build)
         self.assertIn('market/technical-signals.json',workflow)
+        self.assertIn('market/history-status.json',workflow)
         self.assertIn('Technical scanner coverage is below 90/100',workflow)
         self.assertIn("technical-signals.json",guard)
         self.assertIn('scanner.get(\'sourceTime\')',guard)
@@ -1597,7 +1643,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("HISTORY_PAGE_SIZE",text)
         self.assertIn("'1000'",text)
         self.assertIn("HISTORY_RETRIES:",text)
-        self.assertIn("&& '3' || '1'",text)
+        self.assertIn("&& '3' || '2'",text)
+        self.assertIn("HISTORY_RETRY_WORKERS: '2'",text)
         self.assertIn("HISTORY_KBS_FULL",text)
         self.assertIn("HISTORY_START_DATE: '1998-01-01'",text)
         self.assertNotIn('pip install -q vnstock',text)

@@ -570,7 +570,7 @@ def validate_events(value):
     if not isinstance(rows,list):raise ValueError('corporate-events.json must contain events[]')
     for row in rows:
         source=row.get('source') or {}
-        if not re.fullmatch(r'[A-Z]{3}',str(row.get('symbol','')).upper()):raise ValueError('invalid event symbol')
+        if not re.fullmatch(r'[A-Z][A-Z0-9]{2}',str(row.get('symbol','')).upper()):raise ValueError('invalid event symbol')
         if not re.fullmatch(r'20\d{2}-\d{2}-\d{2}',str(row.get('date',''))):raise ValueError('invalid event date')
         if not str(source.get('url','')).startswith('https://'):raise ValueError('event source must be https')
     return value
@@ -598,7 +598,7 @@ def discover_source(source,raw,universe):
 
 def refresh(output,max_detail=24):
     companies=read(output/'companies.json',read(ROOT/'data/companies.json',[]))
-    universe={str(x.get('symbol','')).upper() for x in companies if re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())}
+    universe={str(x.get('symbol','')).upper() for x in companies if re.fullmatch(r'[A-Z][A-Z0-9]{2}',str(x.get('symbol','')).upper())}
     research_path=output/'broker-research.json';events_path=output/'corporate-events.json'
     seeded_research=read(ROOT/'data/broker-research.json',{'version':1,'reports':[]})
     published_research=read(research_path,{'version':1,'reports':[]})

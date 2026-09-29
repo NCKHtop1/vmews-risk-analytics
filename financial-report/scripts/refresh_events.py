@@ -181,7 +181,7 @@ def refresh(output):
     output=Path(output)
     config=read(ROOT/'config/event_sources.json',{'sources':[]})
     companies=read(output/'companies.json',read(ROOT/'data/companies.json',[]))
-    symbols=[str(x.get('symbol','')).upper() for x in companies if re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())]
+    symbols=[str(x.get('symbol','')).upper() for x in companies if re.fullmatch(r'[A-Z][A-Z0-9]{2}',str(x.get('symbol','')).upper())]
     seed=read(ROOT/'data/corporate-events.json',{'events':[]})
     published=read(output/'corporate-events.json',{'events':[]})
     discovered=[];health=[]

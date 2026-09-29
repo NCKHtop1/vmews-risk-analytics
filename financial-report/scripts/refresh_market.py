@@ -788,6 +788,7 @@ def prices(out, companies):
         'latestSourceTime': newest_source_time(fresh) or newest_source_time(stale)
     })
     live_daily_merged = merge_live_daily_quotes(out, fresh)
+    history_effective = update_history_effective_status(out, symbols)
     technical_matches = build_technical_scanner(out, companies, fresh)
     available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
     write(out / 'prices-status.json', {
@@ -795,6 +796,9 @@ def prices(out, companies):
         'expected': len(symbols), 'retainedQuotes': max(0, len(quotes) - len(fresh)),
         'staleRejected': len(stale), 'latestSourceTime': newest_source_time(fresh) or newest_source_time(stale),
         'liveDailyBarsMerged': live_daily_merged,
+        'effectiveHistories': history_effective.get('effectiveAvailable'),
+        'latestHistoryBar': history_effective.get('latestBar'),
+        'latestHistoryBarCoverage': history_effective.get('latestBarCoverage'),
         'errors': errors, 'quoteRefresh': '15_minute_session_job',
         'historyRefresh': 'server_live_quote_merge_plus_client_replay_then_separate_eod_official'
     })
@@ -1040,6 +1044,37 @@ def _refresh_one_history(out, symbol, minute=False):
         return symbol, False, str(e)
 
 
+def update_history_effective_status(out, symbols):
+    """Summarize usable retained history separately from the latest upstream refresh result."""
+    path = out / 'history-status.json'
+    status = read(path, {})
+    available = retained = 0
+    last_dates = []
+    for symbol in symbols:
+        row = read(out / 'history' / (symbol + '.json'), {})
+        bars = row.get('bars') or []
+        if not bars:
+            continue
+        available += 1
+        if row.get('status') == 'retained':
+            retained += 1
+        last = row.get('lastBar') or (bars[-1].get('time') if isinstance(bars[-1], dict) else None)
+        if last:
+            last_dates.append(str(last))
+    latest = max(last_dates) if last_dates else None
+    latest_coverage = sum(1 for value in last_dates if value == latest) if latest else 0
+    status.update({
+        'effectiveAvailable': available,
+        'effectiveRetained': retained,
+        'effectiveStatus': 'ok' if available >= max(1, int(len(symbols) * 0.95)) else 'partial',
+        'latestBar': latest,
+        'latestBarCoverage': latest_coverage,
+        'effectiveUniverse': len(symbols),
+    })
+    write(path, status)
+    return status
+
+
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
@@ -1048,7 +1083,7 @@ def refresh_history_group(out, companies, minute=False):
         symbols = [s for s in all_symbols if s in forced]
     else:
         symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
-    errors, success = [], 0
+    errors, success, failed = [], 0, []
     # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
     workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -1058,10 +1093,30 @@ def refresh_history_group(out, companies, minute=False):
             if ok:
                 success += 1
             else:
-                errors.append(f'{symbol}{" intraday" if minute else ""}: {error}')
+                failed.append((symbol, error))
+    # A short second pass at lower concurrency recovers transient upstream read
+    # timeouts without forcing a full backfill or discarding retained history.
+    if failed:
+        retry_workers = max(1, min(int(os.environ.get('HISTORY_RETRY_WORKERS', '2')), workers))
+        retry_symbols = [symbol for symbol, _ in failed]
+        time.sleep(1)
+        failed = []
+        with ThreadPoolExecutor(max_workers=retry_workers) as pool:
+            futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in retry_symbols]
+            for future in as_completed(futures):
+                symbol, ok, error = future.result()
+                if ok:
+                    success += 1
+                else:
+                    failed.append((symbol, error))
+    errors = [f'{symbol}{" intraday" if minute else ""}: {error}' for symbol, error in failed]
     name = 'intraday' if minute else 'history'
-    write(out / f'{name}-status.json', {'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols), 'onlyMissing': only_missing, 'forcedSymbols': forced, 'errors': errors})
+    write(out / f'{name}-status.json', {
+        'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols),
+        'onlyMissing': only_missing, 'forcedSymbols': forced, 'retryPass': True, 'errors': errors
+    })
     if not minute:
+        update_history_effective_status(out, all_symbols)
         build_drivers(out, companies)
     print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}', flush=True)
     # Keep retained data available if a minority of requests fail. Fail only

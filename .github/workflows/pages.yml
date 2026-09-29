@@ -96,3 +96,57 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify deployed financial dashboard and critical datasets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://nckhtop1.github.io/vmews-risk-analytics/financial-report'
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year#market" -o /tmp/page.html; then
+              break
+            fi
+            sleep $((attempt * 3))
+          done
+          grep -q 'DOLPHIN_V6' /tmp/page.html
+          grep -q 'technical-scanner-access-code' /tmp/page.html
+          grep -q 'investment-ideas' /tmp/page.html
+          curl -fsSL --max-time 20 "$BASE/deployment.json" -o /tmp/deployment.json
+          curl -fsSL --max-time 20 "$BASE/market/quotes.json" -o /tmp/quotes.json
+          curl -fsSL --max-time 20 "$BASE/market/news.json" -o /tmp/news.json
+          curl -fsSL --max-time 20 "$BASE/market/technical-signals.json" -o /tmp/scanner.json
+          curl -fsSL --max-time 20 "$BASE/market/company-esg.json" -o /tmp/esg.json
+          curl -fsSL --max-time 20 "$BASE/data/manifest.json" -o /tmp/manifest.json
+          curl -fsSL --max-time 20 "$BASE/data/insights-status.json" -o /tmp/insights.json
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone, timedelta
+          def load(name):
+              return json.load(open('/tmp/'+name,encoding='utf-8'))
+          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json')
+          e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
+          assert q.get('status')=='ok' and int(q.get('coverage') or 0)>=90,q
+          assert s.get('status')=='ok' and int(s.get('coverage') or 0)>=90,s
+          assert str(s.get('sourceTime'))==str(q.get('latestSourceTime')), (s.get('sourceTime'),q.get('latestSourceTime'))
+          assert n.get('status')=='ok' and len(n.get('items') or [])>0,n
+          checked=datetime.fromisoformat(str(n.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+          news_age=(datetime.now(timezone.utc)-checked).total_seconds()/60
+          assert news_age<=35, f'NEWS STALE: {news_age:.1f} minutes'
+          assert len(e.get('companies') or {})>=18
+          cov=f.get('coverage') or {}
+          assert int(cov.get('members') or 0)==100 and int(cov.get('annual') or 0)==100 and int(cov.get('quarterly') or 0)==100,cov
+          assert int(i.get('symbolsTotal') or 0)>=97,i
+          assert all(d.get(k) for k in ('code','financialData','insightData','marketData')),d
+          VN=timezone(timedelta(hours=7)); now=datetime.now(timezone.utc); local=now.astimezone(VN); mins=local.hour*60+local.minute
+          active=local.weekday()<5 and ((9*60<=mins<=11*60+40) or (12*60+55<=mins<=15*60+15))
+          if active:
+              stamp=datetime.fromisoformat(str(q.get('latestSourceTime')).replace('Z','+00:00')).astimezone(timezone.utc)
+              age=(now-stamp).total_seconds()/60
+              assert stamp.astimezone(VN).date()==local.date(), 'QUOTE NOT CURRENT SESSION'
+              assert age<=30, f'QUOTE STALE: {age:.1f} minutes'
+          print({'deployment':d,'quotes':q.get('coverage'),'scanner':s.get('coverage'),'newsAgeMin':round(news_age,1),'financial':cov,'researchUniverse':i.get('symbolsTotal')})
+          PY

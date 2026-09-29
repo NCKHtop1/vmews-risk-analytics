@@ -1,0 +1,33 @@
+name: Forecast V19 community smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/forecast_v18_market_intelligence.py'
+      - 'scripts/forecast_v18_market_intelligence_test.py'
+      - '.github/workflows/forecast-v19-community-live.yml'
+      - '.github/workflows/forecast-v19-smoke.yml'
+  pull_request:
+    paths:
+      - 'scripts/forecast_v18_market_intelligence.py'
+      - 'scripts/forecast_v18_market_intelligence_test.py'
+      - '.github/workflows/forecast-v19-community-live.yml'
+      - '.github/workflows/forecast-v19-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check -q numpy pandas
+      - name: Validate V19 community publisher contract
+        run: python scripts/forecast_v18_market_intelligence_test.py

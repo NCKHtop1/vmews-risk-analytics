@@ -123,6 +123,7 @@ function movementNarrative(ctx){
  out.push(first);
  if(d){let second='Động lượng 5 phiên '+relationText(mom)+'. Thanh khoản đạt '+num(vol)+' lần bình quân 20 phiên.';if(top.length)second+=' Hai lực nổi bật nhất trong mô hình là '+top.map(x=>x.label.toLowerCase()+' ('+(x.contribution>0?'+':'')+num(x.contribution)+')').join(' và ')+'.';second+=' Vì vậy nhịp '+dir+' hiện được đọc chủ yếu từ '+(top[0]?.label?.toLowerCase()||'trạng thái giá và thị trường')+'.';out.push(second);}
  if(ctx.technical?.snapshot)out.push(ctx.technical.snapshot.title+'. '+ctx.technical.snapshot.detail);
+ if(ctx.scanner?.signals?.length){const labels=ctx.scanner.signals.map(x=>x.label).slice(0,4);out.push('Technical Scanner đang ghi nhận: '+labels.join('; ')+'. Mức ưu tiên '+num(ctx.scanner.priority)+'/100, RSI14 '+num(ctx.scanner.rsi14)+', volume/TB20 '+num(ctx.scanner.volumeRatio20)+'x. Đây là tín hiệu sàng lọc cần xác nhận trên chart, không phải lệnh mua/bán.');}
  if(headline){const qt=Date.parse(q.sourceTime||q.collectedAt||''),nt=Date.parse(headline.publishedAt||''),hours=Number.isFinite(qt)&&Number.isFinite(nt)?(qt-nt)/3600000:null;let timing='';if(Number.isFinite(hours))timing=hours>=0?' Tin được công bố khoảng '+num(Math.abs(hours))+' giờ trước snapshot, nên nằm trong bộ thông tin thị trường đã biết ở thời điểm giá hiện tại.':' Tin xuất hiện sau snapshot khoảng '+num(Math.abs(hours))+' giờ, vì vậy nó thuộc bối cảnh cho phiên kế tiếp chứ không giải thích phần biến động đã xảy ra trước đó.';out.push('Tin gần nhất gắn với '+state.symbol+' là “'+headline.title+'” từ '+(headline.source||'nguồn báo chí')+'.'+timing+(headline.summary?' Nội dung RSS tóm tắt: '+headline.summary:''));}
  return out;
 }
@@ -311,7 +312,7 @@ function memoHTML(question,a,q,m){
 function classify(q){const s=norm(q),concept=K.find?.(q),asksDefinition=/la gi|nghia la gi|khai niem|cong thuc|cach tinh|do cai gi|the hien gi/.test(s),stockMove=/gia co phieu|co phieu|ma nay|phien hom nay|phien nay|dong luc phien|vi sao ma|vi sao co phieu/.test(s);if(/nhnn|ngan hang nha nuoc|lai suat|overnight|\bon\b|omo|thanh khoan|ty gia|lam phat|\bgdp\b|\bpmi\b|\bfdi\b|cung tien|m2|tin dung|vi mo|\besg\b|moi truong|xa hoi|quan tri|governance|environment/.test(s))return'macro';if(concept&&asksDefinition)return'concept';if(stockMove||((/vi sao|nguyen nhan|tang|giam|bien dong/.test(s))&&!concept))return'movement';if(concept)return'concept';if(/rui ro|canh bao|bat thuong|yeu diem/.test(s))return'risk';if(/so sanh|ky truoc|cung ky|qoq|yoy/.test(s))return'compare';if(/phan tich chuyen sau|phan tich toan dien|tong hop|ho so nghien cuu|danh gia tong the|tinh hinh/.test(s))return'memo';if(/suc khoe|tai chinh|tong quan|doanh thu|loi nhuan|dong tien|no|roe|roa|bien loi nhuan|fcf|ocf|phai thu|ton kho/.test(s))return'financial';if(asksDefinition)return'concept';return'search';}
 function analyze(question){
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
- const ctx={quote:m.quote||null,driver:m.driver||null,technical:m.technical||null,news:m.news||[],marketNews:m.marketNews||[]};
+ const ctx={quote:m.quote||null,driver:m.driver||null,technical:m.technical||null,scanner:m.scanner?.current||null,news:m.news||[],marketNews:m.marketNews||[]};
  const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='financial'?financialHTML(a,q):type==='risk'?riskHTML(a,q):type==='compare'?comparisonHTML(a,q):type==='memo'?memoHTML(question,a,q,m):searchHTML(question,annual,quarterly,m);
  return{type,html:body||'<div class="analysis-empty">Câu hỏi này được neo vào các trường dữ liệu thực đang có; không có giá trị tương ứng để tính thêm trong kỳ hiện tại.</div>'};
 }
@@ -480,7 +481,7 @@ function buildLLMContext(question){
   scope:'financial-report',contextVersion:DOLPHIN_VERSION,symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,
   generatedAt:new Date().toISOString(),
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
-  marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,
+  marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,technicalScanner:m.scanner||null,
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,18),quarterRows:compactRows(quarterly,question,18)},
   macroSnapshot:macro,recentNews:companyNews,sectorNews:cleanNews(m.sectorNews||m.marketNews||[],6),
   corporateEvents:Array.isArray(insights.corporateEvents)?insights.corporateEvents.slice(0,10):[],
@@ -498,7 +499,8 @@ function dolphinSystemInstruction(){
  return[
   'Bạn là Dolphin AI của FinQuery, trợ lý nghiên cứu tài chính doanh nghiệp Việt Nam.',
   'Luôn trả lời bằng tiếng Việt tự nhiên, trực tiếp, tránh văn phong chung chung kiểu AI.',
-  'Dữ liệu trong context.localFinancialData, marketSnapshot, movementDrivers và technical là dữ liệu neo. Không tự tạo, thay đổi hoặc ước đoán số liệu nếu dữ liệu neo không có.',
+  'Dữ liệu trong context.localFinancialData, marketSnapshot, movementDrivers, technical và technicalScanner là dữ liệu neo. Không tự tạo, thay đổi hoặc ước đoán số liệu nếu dữ liệu neo không có.',
+  'technicalScanner là bộ lọc MACD/RSI/volume theo snapshot thị trường. Đây là tín hiệu sàng lọc, không phải khuyến nghị mua/bán; chỉ dùng khi sourceTime phù hợp với marketSnapshot và luôn nêu điều kiện xác nhận/rủi ro nếu người dùng hỏi về tín hiệu.',
   'Không tự tính lại ROA, ROE, biên lợi nhuận, tăng trưởng hoặc các tỷ số khi FinQuery đã cung cấp giá trị. Nếu thiếu chỉ tiêu như NIM, CIR, LDR thì nói rõ chưa có trong dữ liệu hiện tại.',
   'Luôn phân biệt số năm và số quý; gắn nhận định với kỳ cụ thể. Không annualize nếu context không cung cấp quy tắc.',
   'Nếu câu hỏi là follow-up ngắn, dùng lịch sử gần nhất và symbol hiện tại để hiểu mã này, quý này, chỉ số đó.',
