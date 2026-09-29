@@ -488,6 +488,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("ESG_HISTORY_BACKFILL=1",flow)
         self.assertIn("[esg-refresh]",flow)
         self.assertIn("github.event.schedule == '47 14 * * 1-5'",flow)
+        self.assertIn('git rebase FETCH_HEAD',flow)
+        self.assertIn('Market data branch advanced during this run',flow)
         esg=(ROOT/'scripts/refresh_esg.py').read_text()
         self.assertIn('probe_years = 5 if HISTORY_BACKFILL else 3',esg)
         self.assertIn('selected.extend(historical_backlog[:remaining])',esg)
