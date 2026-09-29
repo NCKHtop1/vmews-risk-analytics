@@ -34,7 +34,10 @@ FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('VnEconomy', 'https://vneconomy.vn/dau-tu.rss'),
          ('VnEconomy', 'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss'),
          ('Federal Reserve', 'https://www.federalreserve.gov/feeds/press_all.xml'),
-         ('ECB', 'https://mid.ecb.europa.eu/rss/mid.xml')]
+         ('ECB', 'https://mid.ecb.europa.eu/rss/mid.xml'),
+         ('Global Central Banks', 'https://news.google.com/rss/search?q=(Federal+Reserve+OR+Fed+OR+FOMC+OR+ECB+OR+BOJ+OR+PBOC)+when:1d&hl=en-US&gl=US&ceid=US:en'),
+         ('Global Markets', 'https://news.google.com/rss/search?q=(gold+OR+oil+OR+Brent+OR+WTI+OR+Treasury+OR+dollar+OR+stocks)+markets+when:1d&hl=en-US&gl=US&ceid=US:en'),
+         ('Global Risk', 'https://news.google.com/rss/search?q=(war+OR+sanctions+OR+geopolitical+OR+crisis+OR+default)+markets+when:1d&hl=en-US&gl=US&ceid=US:en')]
 FEED_TOPICS = {
     'https://baodautu.vn/chung-khoan.rss': {'stocks', 'market', 'investment'},
     'https://baodautu.vn/doanh-nghiep.rss': {'company', 'investment'},
@@ -48,6 +51,9 @@ FEED_TOPICS = {
     'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss': {'company'},
     'https://www.federalreserve.gov/feeds/press_all.xml': {'global','macro','rates','central_bank'},
     'https://mid.ecb.europa.eu/rss/mid.xml': {'global','macro','rates','central_bank'},
+    'https://news.google.com/rss/search?q=(Federal+Reserve+OR+Fed+OR+FOMC+OR+ECB+OR+BOJ+OR+PBOC)+when:1d&hl=en-US&gl=US&ceid=US:en': {'global','macro','rates','central_bank'},
+    'https://news.google.com/rss/search?q=(gold+OR+oil+OR+Brent+OR+WTI+OR+Treasury+OR+dollar+OR+stocks)+markets+when:1d&hl=en-US&gl=US&ceid=US:en': {'global','market','finance'},
+    'https://news.google.com/rss/search?q=(war+OR+sanctions+OR+geopolitical+OR+crisis+OR+default)+markets+when:1d&hl=en-US&gl=US&ceid=US:en': {'global','market','macro'},
 }
 TOPIC_PATTERNS = {
     'finance': re.compile(r'tài chính|trái phiếu|tỷ giá|bảo hiểm|ngân sách', re.I),
@@ -66,26 +72,73 @@ IMPACT_PATTERN = re.compile(
     r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|lãi suất|interest rate|rate cut|rate hike|'
     r'omo|thị trường mở|bơm ròng|hút ròng|tỷ giá|exchange rate|treasury|bond yield|cpi|inflation|'
     r'lạm phát|gdp|payroll|employment|oil|brent|wti|gold|vàng|war|conflict|geopolit|sanction|'
-    r'default|bank failure|khủng hoảng|phá sản ngân hàng', re.I)
+    r'default|bank failure|khủng hoảng|phá sản|lao dốc|giảm mạnh|tăng mạnh|tăng vọt|sụt mạnh|'
+    r'plunge|plummet|tumble|soar|surge|spike|crash|collapse|record high|record low|halt trading|'
+    r'investigation|fraud|indict|arrest|resign|delist|downgrade|upgrade', re.I)
 CENTRAL_BANK_PATTERN = re.compile(r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|central bank|monetary policy', re.I)
+POLICY_DECISION_PATTERN = re.compile(r'raise(?:s|d)? rates?|hike(?:s|d)? rates?|cut(?:s)? rates?|rate cut|rate hike|holds? rates?|leaves? rates? unchanged|tăng lãi suất|giảm lãi suất|hạ lãi suất|giữ nguyên lãi suất|bơm ròng|hút ròng|omo|tín phiếu', re.I)
 SBV_PATTERN = re.compile(r'ngân hàng nhà nước|nhnn|sbv|thị trường mở|omo|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I)
+SHOCK_MOVE_PATTERN = re.compile(r'lao dốc|giảm mạnh|giảm sốc|rơi mạnh|sụt mạnh|tăng mạnh|tăng vọt|bật tăng|lập đỉnh|kỷ lục|plunge|plummet|tumble|slump|soar|surge|spike|crash|collapse|record high|record low|biggest (?:gain|drop|fall|rise)', re.I)
+COMPANY_SHOCK_PATTERN = re.compile(r'phá sản|vỡ nợ|khởi tố|bắt tạm giam|điều tra|gian lận|lừa đảo|đình chỉ|hủy niêm yết|thu hồi|xử phạt|ceo .*từ chức|bankrupt|default|investigation|fraud|indict|arrest|halt trading|delist|recall|ceo .*resign', re.I)
+GEOPOLITICAL_PATTERN = re.compile(r'war|conflict|geopolit|sanction|missile|attack|invasion|ceasefire|chiến tranh|xung đột|trừng phạt|tên lửa|tấn công', re.I)
+COMMODITY_PATTERN = re.compile(r'gold|vàng|oil|brent|wti|dầu', re.I)
+CURRENCY_PATTERN = re.compile(r'tỷ giá|exchange rate|usd|dxy|dollar|yen|yuan|eur|vnd', re.I)
+MACRO_SURPRISE_PATTERN = re.compile(r'cpi|inflation|lạm phát|gdp|payroll|employment|jobs report|unemployment|pmi|retail sales|cpi Mỹ|việc làm Mỹ', re.I)
 
 def classify_news_meta(title, body, publisher, topics, published_at):
     text = ' '.join([title or '', body or '', publisher or ''])
-    region = 'global' if ('global' in topics or publisher in {'Federal Reserve','ECB'} or re.search(r'fed|fomc|ecb|euro area|united states|treasury|boj|pboc|china|japan|opec', text, re.I)) else 'vietnam'
+    title_text = title or ''
+    global_publishers = {'Federal Reserve','ECB','Global Central Banks','Global Markets','Global Risk'}
+    region = 'global' if ('global' in topics or publisher in global_publishers or re.search(r'fed|fomc|ecb|euro area|united states|treasury|boj|pboc|china|japan|opec', text, re.I)) else 'vietnam'
     official = 'FED' if publisher == 'Federal Reserve' else ('ECB' if publisher == 'ECB' else None)
     score = 0
-    if CENTRAL_BANK_PATTERN.search(text): score += 38
-    if SBV_PATTERN.search(text): score += 34
-    if re.search(r'lãi suất|interest rate|rate cut|rate hike|omo|bơm ròng|hút ròng|tỷ giá|exchange rate|treasury|bond yield|cpi|inflation|lạm phát|gdp|oil|brent|wti|gold|vàng', text, re.I): score += 24
-    if re.search(r'war|conflict|geopolit|sanction|default|bank failure|khủng hoảng|phá sản', text, re.I): score += 28
+    reasons = []
+    if POLICY_DECISION_PATTERN.search(text):
+        score += 46; reasons.append('quyết định chính sách tiền tệ')
+    elif CENTRAL_BANK_PATTERN.search(text):
+        score += 32; reasons.append('ngân hàng trung ương')
+    if SBV_PATTERN.search(text):
+        score += 34; reasons.append('thanh khoản/NHNN')
+    if SHOCK_MOVE_PATTERN.search(title_text):
+        score += 34; reasons.append('biến động giá mạnh')
+    elif SHOCK_MOVE_PATTERN.search(text):
+        score += 22; reasons.append('biến động đáng chú ý')
+    if COMPANY_SHOCK_PATTERN.search(title_text):
+        score += 38; reasons.append('sự kiện doanh nghiệp nghiêm trọng')
+    elif COMPANY_SHOCK_PATTERN.search(text):
+        score += 24; reasons.append('rủi ro doanh nghiệp')
+    if GEOPOLITICAL_PATTERN.search(text):
+        score += 32; reasons.append('địa chính trị')
+    if COMMODITY_PATTERN.search(text):
+        score += 18; reasons.append('hàng hóa')
+    if CURRENCY_PATTERN.search(text):
+        score += 15; reasons.append('tỷ giá')
+    if MACRO_SURPRISE_PATTERN.search(text):
+        score += 20; reasons.append('dữ liệu vĩ mô')
+    if 'stocks' in topics or 'market' in topics:
+        score += 7
+    if official:
+        score += 8
     try:
         age_h = max(0.0, (datetime.now(timezone.utc) - datetime.fromisoformat(str(published_at).replace('Z','+00:00')).astimezone(timezone.utc)).total_seconds()/3600)
-        score += 18 if age_h <= 6 else (10 if age_h <= 24 else (4 if age_h <= 72 else 0))
+        score += 20 if age_h <= 3 else (15 if age_h <= 8 else (10 if age_h <= 24 else (3 if age_h <= 48 else 0)))
     except Exception:
-        pass
-    if 'stocks' in topics or 'market' in topics: score += 8
-    return {'region': region, 'officialSource': official, 'impactScore': min(100, score), 'marketMoving': bool(score >= 45 or IMPACT_PATTERN.search(text))}
+        age_h = None
+    tag = 'THẾ GIỚI' if region == 'global' else 'VĨ MÔ'
+    if SBV_PATTERN.search(text): tag = 'NHNN'
+    elif re.search(r'\bfed\b|fomc|federal reserve', text, re.I): tag = 'FED'
+    elif re.search(r'\becb\b|european central bank', text, re.I): tag = 'ECB'
+    elif GEOPOLITICAL_PATTERN.search(text): tag = 'ĐỊA CHÍNH TRỊ'
+    elif re.search(r'gold|vàng', text, re.I): tag = 'VÀNG'
+    elif re.search(r'oil|brent|wti|dầu', text, re.I): tag = 'DẦU'
+    elif CURRENCY_PATTERN.search(text): tag = 'TỶ GIÁ'
+    elif COMPANY_SHOCK_PATTERN.search(text) or 'company' in topics: tag = 'DOANH NGHIỆP'
+    elif MACRO_SURPRISE_PATTERN.search(text): tag = 'VĨ MÔ'
+    return {
+        'region': region, 'officialSource': official, 'impactScore': min(100, score),
+        'marketMoving': bool(score >= 48 or IMPACT_PATTERN.search(text)),
+        'impactTag': tag, 'impactReasons': reasons[:4]
+    }
 
 ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng MB', 'Ngân hàng Quân đội', 'Ngân hàng Quân Đội'],
            'VCB': ['Vietcombank'], 'BID': ['BIDV'], 'CTG': ['VietinBank'],
