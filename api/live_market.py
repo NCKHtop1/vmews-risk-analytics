@@ -36,6 +36,9 @@ def _fast_request(url, payload=None, timeout=7):
         return response.read()
 
 
+market.request = _fast_request
+
+
 def _json_safe(value):
     return json.loads(json.dumps(value, ensure_ascii=False, allow_nan=False))
 
@@ -45,20 +48,15 @@ def _live_news():
     rows, sources = [], []
     workers = min(8, max(1, len(market.FEEDS)))
 
-    original_request = market.request
-    market.request = _fast_request
-    try:
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = [
-                pool.submit(market._fetch_news_feed, publisher, url, COMPANIES, current)
-                for publisher, url in market.FEEDS
-            ]
-            for future in as_completed(futures):
-                items, source = future.result()
-                rows.extend(items)
-                sources.append(source)
-    finally:
-        market.request = original_request
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [
+            pool.submit(market._fetch_news_feed, publisher, url, COMPANIES, current)
+            for publisher, url in market.FEEDS
+        ]
+        for future in as_completed(futures):
+            items, source = future.result()
+            rows.extend(items)
+            sources.append(source)
 
     source_order = {url: i for i, (_, url) in enumerate(market.FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
@@ -103,13 +101,8 @@ def _session_active():
 def _live_quotes():
     symbols = [x['symbol'] for x in COMPANIES]
     collected = datetime.now(timezone.utc).isoformat()
-    original_request = market.request
-    market.request = _fast_request
-    try:
-        payload = json.loads(market.request(market.API + 'price/symbols/getList', {'symbols': symbols}))
-        rows = market.normalize_board(payload, symbols, collected)
-    finally:
-        market.request = original_request
+    payload = json.loads(market.request(market.API + 'price/symbols/getList', {'symbols': symbols}))
+    rows = market.normalize_board(payload, symbols, collected)
 
     stale = {}
     if _session_active():
