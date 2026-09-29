@@ -542,8 +542,8 @@ def extract_metrics(text, rules, year, source_url, source_title, source_type=Non
 def vnsi_membership_context(text):
     s = ascii_fold(text)
     patterns = [
-        r"\b(?:included|selected|constituent|member)\b.{0,160}\bvnsi\b",
-        r"\bvnsi\b.{0,160}\b(?:included|selected|constituent|member)\b",
+        r"\b(?:included|selected|constituent|member|continued\s+in|remained\s+in|continues\s+in)\b.{0,160}\bvnsi\b",
+        r"\bvnsi\b.{0,160}\b(?:included|selected|constituent|member|continued|remained)\b",
         r"\b(?:top\s*20|nam trong|thuoc top|duoc lua chon|duoc chon|tiep tuc thuoc)\b.{0,180}\bvnsi\b",
         r"\bvnsi\b.{0,180}\b(?:top\s*20|nam trong|thuoc top|duoc lua chon|duoc chon)\b",
     ]
