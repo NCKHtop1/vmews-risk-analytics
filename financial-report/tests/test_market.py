@@ -891,6 +891,29 @@ class MarketTests(unittest.TestCase):
         stamp2=m._kbs_trade_time({'t':'2026-09-29 14:05:01:40'})
         self.assertEqual(stamp2,'2026-09-29T07:05:01+00:00')
 
+    def test_technical_scanner_detects_macd_rsi_and_volume_conditions(self):
+        bars=[]
+        for i in range(70):
+            close=10000 + i*i*8
+            bars.append({
+                'time':f'2026-07-{1+i:02d}' if i<31 else f'2026-08-{i-30:02d}' if i<62 else f'2026-09-{i-61:02d}',
+                'open':close-20,'high':close+80,'low':close-80,'close':close,
+                'volume':2000000 if i==69 else 1000000,
+            })
+        base=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'sourceTime':'2026-09-08T07:45:00+00:00'})
+        self.assertIsNotNone(base)
+        self.assertGreater(base['macdHistogram'],0)
+        previous={'barDate':base['barDate'],'macdHistogram':-abs(base['macdHistogram'])-1,'rsi14':base['rsi14']}
+        row=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'changePct':1.2,'sourceTime':'2026-09-08T07:45:00+00:00'},previous)
+        ids={x['id'] for x in row['signals']}
+        self.assertIn('macd_cross_up',ids)
+        self.assertIn('rsi_overbought',ids)
+        self.assertIn('volume_spike',ids)
+        self.assertAlmostEqual(row['volumeRatio20'],2.0,places=2)
+        self.assertEqual(m.TECHNICAL_SCANNER_RULES['rsi']['oversold'],30)
+        self.assertEqual(m.TECHNICAL_SCANNER_RULES['rsi']['overbought'],70)
+        self.assertEqual(m.TECHNICAL_SCANNER_RULES['macd']['nearCrossMaxSpreadPct'],0.15)
+
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
         rows=m.normalize_history(data,'MBB')
@@ -1281,6 +1304,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="ai-backdrop"',bundle)
         self.assertIn('data-market-view="peers"',bundle)
         self.assertIn('data-market-view="sector"',bundle)
+        self.assertIn('data-market-view="scanner"',bundle)
+        self.assertIn('technical-scanner-access-code',bundle)
+        self.assertIn('FinTechnicalScanner',bundle)
         self.assertIn('SECTOR_GROUPS',bundle)
         self.assertNotIn('research-ai-subtitle',bundle)
         self.assertLess(bundle.index('id="research-ai-messages"'),bundle.index('id="research-ai-form"'))
@@ -1300,6 +1326,34 @@ class MarketTests(unittest.TestCase):
         self.assertIn('Nhanh & tiết kiệm<small>Flash-Lite</small>',js)
         self.assertIn('Phân tích sâu<small>Flash</small>',js)
         self.assertNotIn('dùng nhiều quota hơn',js+html)
+
+    def test_password_gated_technical_scanner_is_wired_to_live_market_pipeline(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        scanner=(ROOT/'frontend/technical-scanner.js').read_text()
+        css=(ROOT/'frontend/market.css').read_text()
+        build=(ROOT/'scripts/build_cdn.py').read_text()
+        root=ROOT.parent
+        workflow=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        guard=(root/'.github/workflows/market-realtime-guard.yml').read_text() if (root/'.github/workflows/market-realtime-guard.yml').exists() else pathlib.Path('.github/workflows/market-realtime-guard.yml').read_text()
+        self.assertIn('data-market-view="scanner"',html)
+        self.assertIn('id="technical-scanner-access-code"',html)
+        self.assertIn('MACD · RSI · Volume',html)
+        self.assertIn("'scanner'",market)
+        self.assertIn('FinTechnicalScanner',market)
+        self.assertIn("technical-signals.json",scanner)
+        self.assertIn("macd_cross_up",scanner)
+        self.assertIn("macd_near_up",scanner)
+        self.assertIn("rsi_oversold",scanner)
+        self.assertIn("volume_spike",scanner)
+        self.assertIn("ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e'",scanner)
+        self.assertNotIn("ACCESS_HASH='13579'",scanner)
+        self.assertIn('.technical-scanner-panel',css)
+        self.assertIn("(front / 'technical-scanner.js').read_text()",build)
+        self.assertIn('market/technical-signals.json',workflow)
+        self.assertIn('Technical scanner coverage is below 90/100',workflow)
+        self.assertIn("technical-signals.json",guard)
+        self.assertIn('scanner.get(\'sourceTime\')',guard)
 
     def test_market_has_real_price_peer_and_sector_comparison_tabs(self):
         html=(ROOT/'frontend/index.html').read_text()
