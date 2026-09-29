@@ -1259,6 +1259,18 @@ class MarketTests(unittest.TestCase):
         self.assertIn("technical-scanner-rows",flow)
         self.assertIn("idea-report-list",flow)
 
+    def test_dolphin_financial_intent_precedes_generic_concept_fallback(self):
+        js=(ROOT/'frontend/research-ai.js').read_text()
+        start=js.index('function classify(q)')
+        end=js.index('function analyze(question)',start)
+        classifier=js[start:end]
+        self.assertGreater(start,-1)
+        self.assertGreater(end,start)
+        financial_pos=classifier.index("return'financial'")
+        generic_concept_pos=classifier.index("if(concept)return'concept'")
+        self.assertLess(financial_pos,generic_concept_pos)
+        self.assertIn("suc khoe|tai chinh|tong quan|doanh thu|loi nhuan",classifier)
+
     def test_dolphin_v6_retries_transient_gemini_and_keeps_valid_key_connected(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
