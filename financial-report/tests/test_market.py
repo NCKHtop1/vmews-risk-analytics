@@ -32,7 +32,11 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],5)
+        self.assertGreaterEqual(cfg['version'],6)
+        self.assertTrue(any('B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf' in u for u in cfg['banks']['BID']['seed_urls']))
+        self.assertTrue(any('Annual%20Report%202025_%20CBTT.pdf' in u for u in cfg['banks']['SSB']['seed_urls']))
+        self.assertTrue(any('20260318---nab---bao-cao-thuong-nien-nam-2025.pdf' in u for u in cfg['banks']['NAB']['seed_urls']))
+        self.assertTrue(any('HDBankESGReport2024' in u for u in cfg['banks']['HDB']['seed_urls']))
         self.assertEqual(cfg['banks']['MSB']['year_overrides']['https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/'],2025)
         self.assertEqual(cfg['banks']['SHB']['year_overrides']['https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf'],2025)
         self.assertEqual(cfg['banks']['TCB']['year_overrides']['https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf'],2025)
@@ -46,6 +50,35 @@ class MarketTests(unittest.TestCase):
         self.assertTrue({'WWF SUSBA','HOSE VNSI','VIS Rating','Morningstar Sustainalytics','S&P Global Ratings'}.issubset(providers))
         self.assertGreaterEqual(len(cfg['metric_rules']),15)
         self.assertTrue(any(x['type']=='ESG Credit Impact Score' for x in cfg['rating_patterns']))
+
+    def test_corporate_esg_discovery_follows_generic_download_redirects(self):
+        seed='https://bank.example/reports'
+        detail='https://bank.example/report-2025'
+        download='https://cdn.example/download?id=123'
+        final='https://cdn.example/report-2025.pdf'
+        pages={
+            seed:(b'<a href="/report-2025">Sustainability Report 2025</a>','text/html',seed),
+            detail:(b'<html><body>Sustainability Report 2025 <a href="https://cdn.example/download?id=123">here</a></body></html>','text/html',detail),
+            download:(b'%PDF-1.7 fake','application/pdf',final),
+        }
+        original=esm.fetch
+        try:
+            esm.fetch=lambda url,timeout=25: pages[url]
+            docs,status=esm.discover_seed(seed,['sustainability','report'])
+        finally:
+            esm.fetch=original
+        self.assertEqual(status['status'],'ok')
+        pdf=next(x for x in docs if x['url']==final)
+        self.assertEqual(pdf['year'],2025)
+        self.assertEqual(pdf['type'],'sustainability_report')
+
+    def test_corporate_esg_extracts_scaled_training_hours(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        text='ACB năm 2025 cung cấp hơn 1,05 triệu giờ đào tạo cho nhân viên.'
+        rows=esm.extract_metrics(text,cfg['metric_rules'],2025,'https://acb.example/report','ACB ESG 2025','sustainability_report')
+        row=next(x for x in rows if x['metricId']=='training_hours')
+        self.assertEqual(row['value'],1050000)
+        self.assertEqual(row['unit'],'hours')
 
     def test_corporate_esg_metric_and_rating_extraction_preserves_native_scale_and_provenance(self):
         cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
