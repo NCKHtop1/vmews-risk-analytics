@@ -178,8 +178,8 @@ try {
     }
 
     const cards = await page.locator('#forecastCards .forecastCard').allInnerTexts();
-    const publishedCards = cards.filter(text => /Giá dự báo của mô hình/.test(text));
-    if (publishedCards.length < 1) throw new Error(`${symbol}: forecast UI exposes no published point forecast`);
+    const publishedCards = cards.filter(text => /RETURN KỲ VỌNG/.test(text) && /Return Q20–Q80/.test(text));
+    if (publishedCards.length < 1) throw new Error(`${symbol}: forecast UI exposes no published return forecast`);
 
     if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
     const relevantFailed = failed.filter(line => !/cloudflareinsights|favicon|google-analytics/i.test(line));
