@@ -287,7 +287,7 @@ try {
   await page.click('#solutionAiRetry');
   await page.waitForFunction(() => /Đã kết nối/.test(document.querySelector('#solutionAiConnectionState')?.textContent || ''), null, { timeout: 8000 });
   const beforeGemini = await page.locator('#solutionAiMessages .aiMessage').count();
-  await page.fill('#solutionAiInput', 'Phân tích forecast HPG hiện tại.');
+  await page.fill('#solutionAiInput', 'Chỉ dùng dữ liệu mô hình, phân tích forecast HPG hiện tại.');
   await page.click('#solutionAiSend');
   await page.waitForFunction(count => {
     const items = [...document.querySelectorAll('#solutionAiMessages .aiMessage')];
