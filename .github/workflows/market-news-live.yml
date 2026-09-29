@@ -63,8 +63,10 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # news.json is owned by this workflow; drivers.json is owned by the price workflow
-          # to avoid cross-workflow rebase conflicts on the shared data branch.
+          # news.json is owned by this workflow; drivers.json is owned by the price workflow.
+          # refresh_market.py recalculates drivers locally, so discard that unstaged change
+          # before rebasing/publishing the news-only commit.
+          git restore --worktree market/drivers.json || true
           git add --sparse market/news.json
           if git diff --cached --quiet; then
             echo "No news changes to publish"
