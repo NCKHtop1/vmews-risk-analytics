@@ -157,6 +157,129 @@ def normalize_board(items, symbols, collected):
     return rows
 
 
+def _kbs_post(path, payload, timeout=20):
+    headers = {
+        'User-Agent': 'FinQuery/1.0 public financial dashboard',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,vi;q=0.8',
+        'Content-Type': 'application/json',
+        'x-lang': 'vi',
+        'Referer': 'https://kbbuddywts.kbsec.com.vn/',
+    }
+    req = Request(KBS_API + path, data=json.dumps(payload).encode(), headers=headers, method='POST')
+    with urlopen(req, timeout=timeout) as response:
+        return response.read()
+
+
+def _kbs_trade_time(row):
+    if not isinstance(row, dict):
+        return None
+    day = str(row.get('TD') or '').strip()
+    clock = str(row.get('FT') or '').strip()
+    if day and clock:
+        for pattern in ('%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M'):
+            try:
+                local = datetime.strptime(day + ' ' + clock, pattern).replace(tzinfo=VN)
+                return local.astimezone(timezone.utc).isoformat()
+            except ValueError:
+                pass
+    raw = str(row.get('t') or '').strip()
+    if raw:
+        # KBS can append an extra centisecond field, e.g. 14:45:04:40.
+        raw = re.sub(r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}):\d+$', r'\1', raw)
+        try:
+            local = datetime.fromisoformat(raw).replace(tzinfo=VN)
+            return local.astimezone(timezone.utc).isoformat()
+        except ValueError:
+            return None
+    return None
+
+
+def _kbs_session_probe(symbols):
+    """Verify KBS is serving the current VN trading date before trusting its board."""
+    preferred = [x for x in ('FPT', 'MBB', 'HPG', 'VCB', 'VIC', 'TCB') if x in symbols]
+    probes = preferred + [x for x in symbols if x not in preferred][:4]
+    today = datetime.now(VN).date().isoformat()
+    errors = []
+    for symbol in probes:
+        try:
+            raw = request_query(
+                f'{KBS_API}/trade/history/{symbol}',
+                {'page': 1, 'limit': 5},
+                'https://kbbuddywts.kbsec.com.vn/'
+            )
+            payload = json.loads(raw)
+            rows = payload.get('data', []) if isinstance(payload, dict) else payload
+            if isinstance(rows, dict):
+                rows = rows.get('data', []) or rows.get('items', [])
+            stamps = [_kbs_trade_time(row) for row in (rows or [])]
+            stamps = [stamp for stamp in stamps if stamp]
+            if not stamps:
+                errors.append(f'{symbol}: no trade timestamp')
+                continue
+            latest = max(stamps)
+            if source_day(latest) == today:
+                return latest, symbol
+            errors.append(f'{symbol}: latest {source_day(latest)}')
+        except Exception as exc:
+            errors.append(f'{symbol}: {exc}')
+    raise RuntimeError('KBS session probe is not current: ' + '; '.join(errors[:6]))
+
+
+def normalize_kbs_board(payload, symbols, collected, verified_source_time):
+    rows = payload
+    if isinstance(rows, dict):
+        rows = rows.get('data', rows.get('items', []))
+    if not isinstance(rows, list):
+        raise ValueError('Unexpected KBS price-board response')
+    wanted = set(symbols)
+    out = {}
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        symbol = str(item.get('SB') or item.get('symbol') or '').upper()
+        if symbol not in wanted:
+            continue
+        ref = number(item.get('RE'))
+        matched = number(item.get('CP'))
+        volume = number(item.get('TT'))
+        if volume is None:
+            volume = number(item.get('AVO'))
+        if volume is None:
+            volume = number(item.get('CV'))
+        volume = max(0, volume or 0)
+        price = matched if matched and matched > 0 else (ref if volume == 0 and ref and ref > 0 else None)
+        if price is None or price <= 0:
+            continue
+        open_price = number(item.get('OP'))
+        high = number(item.get('HI'))
+        low = number(item.get('LO'))
+        out[symbol] = {
+            'symbol': symbol, 'price': price, 'reference': ref,
+            'changePct': (price / ref - 1) * 100 if ref and ref > 0 else number(item.get('CHP')),
+            'volume': volume, 'open': open_price, 'high': high, 'low': low,
+            'sourceTime': verified_source_time, 'collectedAt': collected,
+            'source': 'KBS', 'unit': 'VND', 'status': 'ok',
+            'sourceTimeBasis': 'current_session_trade_probe'
+        }
+    if not out:
+        raise ValueError('No valid prices in KBS price-board response')
+    return out
+
+
+def kbs_current_board(symbols, collected):
+    verified_source_time, probe_symbol = _kbs_session_probe(symbols)
+    rows = {}
+    # Keep request bodies bounded; the endpoint accepts comma-separated codes.
+    for offset in range(0, len(symbols), 50):
+        batch = symbols[offset:offset + 50]
+        payload = json.loads(_kbs_post('/stock/iss', {'code': ','.join(batch)}))
+        rows.update(normalize_kbs_board(payload, batch, collected, verified_source_time))
+    for row in rows.values():
+        row['sessionProbeSymbol'] = probe_symbol
+    return rows
+
+
 def source_day(value):
     stamp = timestamp(value)
     if not stamp:
@@ -451,10 +574,21 @@ def prices(out, companies):
             fresh, stale = current_session_quotes(fresh)
             if stale:
                 sample = ','.join(sorted(stale)[:8])
-                errors.append(f'stale session quotes rejected: {len(stale)} ({sample})')
+                errors.append(f'Vietcap stale session quotes rejected: {len(stale)} ({sample})')
     except Exception as e:
         fresh = {}
-        errors.append('quotes: ' + str(e))
+        errors.append('Vietcap quotes: ' + str(e))
+
+    # KBS is the live fallback when Vietcap is stale or incomplete. A KBS board
+    # is accepted only after its trade-history endpoint proves today's session.
+    missing_current = [symbol for symbol in symbols if symbol not in fresh]
+    if require_today and missing_current:
+        try:
+            kbs_rows = kbs_current_board(missing_current, collected)
+            fresh.update(kbs_rows)
+            errors.append(f'KBS current-session fallback filled {len(kbs_rows)}/{len(missing_current)} symbols')
+        except Exception as kbs_error:
+            errors.append('KBS fallback: ' + str(kbs_error))
 
     quotes = {}
     for symbol in symbols:
@@ -465,7 +599,8 @@ def prices(out, companies):
 
     bundle_status = 'ok' if fresh else 'retained'
     write(board_path, {
-        'checkedAt': collected, 'source': 'Vietcap', 'status': bundle_status,
+        'checkedAt': collected, 'source': 'Vietcap+KBS', 'status': bundle_status,
+        'providers': sorted({row.get('source') for row in fresh.values() if row.get('source')}),
         'quotes': quotes, 'errors': errors, 'coverage': len(fresh), 'expected': len(symbols),
         'requireCurrentSession': require_today, 'staleRejected': len(stale),
         'latestSourceTime': newest_source_time(fresh) or newest_source_time(stale)
