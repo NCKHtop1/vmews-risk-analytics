@@ -1,18 +1,18 @@
 {
-  "checkedAt": "2026-09-29T03:40:30.449493+00:00",
+  "checkedAt": "2026-09-29T03:50:06.444344+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 9,
+  "sourceRegistryVersion": 10,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
     "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
-    "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest source per metric/year."
+    "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest live source per metric/year and fills only missing keys from source-verified fallbacks when issuer PDFs are blocked."
   },
   "companies": {
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T03:39:31.200840+00:00",
+      "checkedAt": "2026-09-29T03:49:53.821114+00:00",
       "documents": [
         {
           "id": "e607b3f01ae54f0d38b5",
@@ -200,7 +200,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T03:39:31.201140+00:00",
+      "checkedAt": "2026-09-29T03:49:53.821280+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -390,7 +390,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T03:39:31.201470+00:00",
+      "checkedAt": "2026-09-29T03:49:53.821464+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -729,16 +729,6 @@
         {
           "provider": "HOSE",
           "assessmentType": "VNSI membership",
-          "year": 2025,
-          "value": "VNSI",
-          "sourceUrl": "https://investor.vietinbank.vn/documents/20126/0/BCPTBV+ban+VIE.pdf/1b350fef-8ba9-9261-430c-c418db6131d5?t=1782369264059",
-          "sourceTitle": "Báo cáo phát triển bền vững 2025",
-          "snippet": "bền vững của các bên liên quan. Bên cạnh đó, với vị thế tiên phong trong cuộc cách mạng chuyển đổi số của Ngành Ngân hàng, VietinBank cũng tiên phong trong việc ứng dụng công nghệ để xây dựng mô hình kinh doanh hiện đại, giúp gia tăng năng suất làm việc cũng như giảm thiểu các tác động tiêu cực tới môi trường, từ đó góp phần thúc đẩy nền kinh tế Việt Nam phát triển bền vững. Việc 5 năm liên tiếp có mặt trong Top 20 VNSI (Chỉ số Phát triển bền vững của Sở giao dịch chứng khoán TP. HCM) là sự ghi nhận những nỗ lực không ngừng của VietinBank trong các cam kết góp sức cùng Chính phủ Việt Nam thực hiện chiến lược phát triển bền vững, đề cao tính minh bạch, trách nhiệm và kiến tạo giá trị chung ch",
-          "confidence": "medium"
-        },
-        {
-          "provider": "HOSE",
-          "assessmentType": "VNSI membership",
           "year": 2024,
           "value": "VNSI",
           "sourceUrl": "https://investor.vietinbank.vn/documents/20126/90067/BCPTBV%2B0910+%281%29.pdf/9f83d34a-e901-7122-7839-2458d4869c99?t=1762412378582",
@@ -756,6 +746,16 @@
               "sourceTitle": "VietinBank lần đầu ra mắt Báo cáo phát triển bền vững"
             }
           ]
+        },
+        {
+          "provider": "HOSE",
+          "assessmentType": "VNSI membership",
+          "year": 2025,
+          "value": "VNSI",
+          "sourceUrl": "https://investor.vietinbank.vn/documents/20126/0/BCPTBV+ban+VIE.pdf/1b350fef-8ba9-9261-430c-c418db6131d5?t=1782369264059",
+          "sourceTitle": "Báo cáo phát triển bền vững 2025",
+          "snippet": "bền vững của các bên liên quan. Bên cạnh đó, với vị thế tiên phong trong cuộc cách mạng chuyển đổi số của Ngành Ngân hàng, VietinBank cũng tiên phong trong việc ứng dụng công nghệ để xây dựng mô hình kinh doanh hiện đại, giúp gia tăng năng suất làm việc cũng như giảm thiểu các tác động tiêu cực tới môi trường, từ đó góp phần thúc đẩy nền kinh tế Việt Nam phát triển bền vững. Việc 5 năm liên tiếp có mặt trong Top 20 VNSI (Chỉ số Phát triển bền vững của Sở giao dịch chứng khoán TP. HCM) là sự ghi nhận những nỗ lực không ngừng của VietinBank trong các cam kết góp sức cùng Chính phủ Việt Nam thực hiện chiến lược phát triển bền vững, đề cao tính minh bạch, trách nhiệm và kiến tạo giá trị chung ch",
+          "confidence": "medium"
         }
       ],
       "canonicalMetrics": [
@@ -839,7 +839,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T03:39:31.201865+00:00",
+      "checkedAt": "2026-09-29T03:49:53.821680+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -1044,7 +1044,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T03:39:31.202107+00:00",
+      "checkedAt": "2026-09-29T03:49:53.821833+00:00",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -1056,6 +1056,18 @@
           "contentType": "html",
           "contentHash": "fde68d4a37a2a3f82cb6a93133de24c886e6525185db81231d136a2a191533a2",
           "processedAt": "2026-09-29T03:10:55.653288+00:00",
+          "textLength": 158
+        },
+        {
+          "id": "199897a92d47127a4507",
+          "url": "https://cdn.hdbank.com.vn/hdbank/bcptbv/2024/assets/EN_ESG_Report_2024.pdf",
+          "title": "EN_ESG_Report_2024.pdf",
+          "sourcePage": "https://cdn.hdbank.com.vn/hdbank/bcptbv/2024/assets/EN_ESG_Report_2024.pdf",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "fde68d4a37a2a3f82cb6a93133de24c886e6525185db81231d136a2a191533a2",
+          "processedAt": "2026-09-29T03:49:58.684467+00:00",
           "textLength": 158
         },
         {
@@ -1096,20 +1108,96 @@
         }
       ],
       "metrics": [],
-      "externalAssessments": [],
-      "canonicalMetrics": [],
+      "externalAssessments": [
+        {
+          "provider": "HOSE VNSI",
+          "assessmentType": "VNSI score",
+          "year": 2024,
+          "value": "81%",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
+          "sourceTitle": "HDBank Annual Report 2024",
+          "snippet": "HDBank reported a 2024 VNSI assessment score of 81%, including E 73%, S 88%, G 79%.",
+          "validatedFallback": true
+        }
+      ],
+      "canonicalMetrics": [
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2024,
+          "value": 3000,
+          "rawValue": "3.000",
+          "unit": "billion VND",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "Cuối năm 2024, HDBank phát hành thành công 3.000 tỷ đồng trái phiếu xanh theo Khung tài chính bền vững.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "value": 914910,
+          "rawValue": "914,910",
+          "unit": "hours",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "914,910 total training hours for employees in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "women_management_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ quản lý",
+          "year": 2024,
+          "value": 43,
+          "rawValue": "43",
+          "unit": "%",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "Women represented 43% of managerial positions in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "value": 63,
+          "rawValue": "63",
+          "unit": "%",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "Female employees represented 63% of HDBank's workforce in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        }
+      ],
       "coverage": {
-        "documents": 4,
-        "processedDocuments": 4,
+        "documents": 5,
+        "processedDocuments": 5,
         "metrics": 0,
-        "canonicalMetrics": 0,
-        "externalAssessments": 0
+        "canonicalMetrics": 4,
+        "externalAssessments": 1
       }
     },
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T03:39:31.202334+00:00",
+      "checkedAt": "2026-09-29T03:49:53.821953+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -1243,7 +1331,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T03:39:31.202490+00:00",
+      "checkedAt": "2026-09-29T03:49:53.822040+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -1457,7 +1545,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T03:39:31.203463+00:00",
+      "checkedAt": "2026-09-29T03:49:53.822566+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -1979,7 +2067,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T03:39:31.204626+00:00",
+      "checkedAt": "2026-09-29T03:49:53.823201+00:00",
       "documents": [
         {
           "id": "c303b3353659c3a65824",
@@ -2006,18 +2094,6 @@
           "textLength": 0
         },
         {
-          "id": "3513a04144dc75ee4ff0",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
-          "title": "Báo cáo thường niên tiếng Anh năm 2025",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
-          "processedAt": "2026-09-29T03:25:01.084606+00:00",
-          "textLength": 337
-        },
-        {
           "id": "9905202effdd869504d3",
           "url": "https://www.namabank.com.vn/bao-cao-thuong-nien",
           "title": "Báo cáo thường niên",
@@ -2040,6 +2116,18 @@
           "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
           "processedAt": "2026-09-29T03:24:41.470566+00:00",
           "textLength": 245573
+        },
+        {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "20260318---nab-2025-annual-report.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
         },
         {
           "id": "358356aafec4c64c0e15",
@@ -2102,6 +2190,18 @@
           "textLength": 87023
         },
         {
+          "id": "9a75823f7a984b02ebf5",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "title": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
+          "processedAt": "2026-09-29T03:24:53.506586+00:00",
+          "textLength": 190892
+        },
+        {
           "id": "fa5f1a67142c3668d602",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
           "title": "Báo cáo phát triển bền vững năm 2024",
@@ -2124,18 +2224,6 @@
           "contentHash": "878cc864d80b667fb012f0ba8f97aa719493ee1f3fb7848e199337bdc0a0d2ea",
           "processedAt": "2026-09-29T03:24:39.793958+00:00",
           "textLength": 213889
-        },
-        {
-          "id": "9a75823f7a984b02ebf5",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
-          "title": "20260119_esg-namabank-2024-en.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2024,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
-          "processedAt": "2026-09-29T03:24:53.506586+00:00",
-          "textLength": 190892
         },
         {
           "id": "33e5a56cd74d6d5f8f61",
@@ -2164,10 +2252,10 @@
         {
           "id": "0c9ce9572663228d1389",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "annual_report",
+          "type": "sustainability_report",
           "contentType": "pdf",
           "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
           "processedAt": "2026-09-29T03:40:21.817994+00:00",
@@ -2208,10 +2296,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "Báo cáo thường niên năm 2018",
+          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "annual_report"
+          "type": "esg_other"
         },
         {
           "id": "de8049df250aba4307c6",
@@ -2769,21 +2857,6 @@
           "confidence": "high"
         },
         {
-          "value": 1.2e-09,
-          "rawValue": "1.2",
-          "unit": "billion VND",
-          "qualityScore": 100.67,
-          "metricId": "green_credit",
-          "pillar": "E",
-          "label": "Dư nợ tín dụng xanh",
-          "year": 2023,
-          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
-          "sourceType": "annual_report",
-          "snippet": "standing loans for projects assessed and managed for E&S risks in 2023 E.1. GREEN FINANCE - ACCOMPANYING THE NATION ON THE NET ZERO JOURNEY (continued) PIONEERING THE PROVISION OF GREEN CREDIT PRODUCTS (continued)E1.2 VND VND billion GRI 203-2 CLEAN WATER AND SANITATION FORDABLE AND CLEAN ENERGY CLIMATE ACTION TERRESTRIAL RESOURCES AND ENVIRONMENT MARINE RESOURCES AND ENVIRONMENT SUSTAINABLE CITIES AND COMMUNITIES NAM A BANK 92 SUSTAINABILITY REPOR",
-          "confidence": "high"
-        },
-        {
           "value": 5810.0,
           "rawValue": "5,810",
           "unit": "m3",
@@ -2905,14 +2978,14 @@
         "documents": 22,
         "processedDocuments": 16,
         "metrics": 34,
-        "canonicalMetrics": 10,
+        "canonicalMetrics": 9,
         "externalAssessments": 0
       }
     },
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T03:39:31.205500+00:00",
+      "checkedAt": "2026-09-29T03:49:53.823836+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -2953,7 +3026,7 @@
         {
           "id": "9c0f8fa4ea6087a7f9b7",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923154047_bao-cao-phat-trien-ben-vung-2024.pdf",
-          "title": "Báo cáo phát triển bền vững 2024 2024 Ngày đăng: 23/9/2025 SEE_MORE",
+          "title": "SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "sustainability_report",
@@ -3657,7 +3730,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T03:39:31.205543+00:00",
+      "checkedAt": "2026-09-29T03:49:53.823858+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -3720,7 +3793,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T03:39:31.206112+00:00",
+      "checkedAt": "2026-09-29T03:49:53.824161+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -4458,7 +4531,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T03:39:31.206376+00:00",
+      "checkedAt": "2026-09-29T03:49:53.824301+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -4615,20 +4688,8 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T03:39:31.206877+00:00",
+      "checkedAt": "2026-09-29T03:49:53.824611+00:00",
       "documents": [
-        {
-          "id": "56ecaa75021fa68c4629",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
-          "title": "View Digital Version",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2025,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
-          "processedAt": "2026-09-29T01:24:33.017802+00:00",
-          "textLength": 192129
-        },
         {
           "id": "725b2cc303c70d1ae0c8",
           "url": "https://techcombank.com/en/about-us/sustainability/milestones",
@@ -4642,6 +4703,18 @@
           "textLength": 4813
         },
         {
+          "id": "56ecaa75021fa68c4629",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "title": "Download Report",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
+          "processedAt": "2026-09-29T01:24:33.017802+00:00",
+          "textLength": 192129
+        },
+        {
           "id": "f8a4e9fe11d18570428e",
           "url": "https://tccorp.tcbs.com.vn/esg-advisor",
           "title": "A Pioneering AI Solution for ESG Techcom Securities, in collaboration with Techcombank, helps businesses quickly and transparently assess green criteria in accordance with Decision No. 21/2025/QĐ-TTg. Find out more",
@@ -4652,27 +4725,6 @@
           "contentHash": "de24d9f8ebad2592c640b9db379c603eb0b9dd9e9bc44b5491df94ab2c84c3a5",
           "processedAt": "2026-09-29T01:34:41.575917+00:00",
           "textLength": 6
-        },
-        {
-          "id": "b462467787998773320f",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/Bao_cao_thuong_nien_nam_2019_f8470fb767_aaeeba489c.pdf",
-          "title": "Xem chi tiết",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2019,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "e6836f67365d3ca254c64d29fd0a7d014088bd5eb567f2ba956ecde32b15e825",
-          "processedAt": "2026-09-29T03:39:48.352457+00:00",
-          "textLength": 343859
-        },
-        {
-          "id": "3a04bceed126cd49f0e4",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/news",
-          "title": "View all our activities",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html"
         },
         {
           "id": "4c62a211aad9d4266a7a",
@@ -4711,6 +4763,51 @@
           "textLength": 375765
         },
         {
+          "id": "b462467787998773320f",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/Bao_cao_thuong_nien_nam_2019_f8470fb767_aaeeba489c.pdf",
+          "title": "Xem chi tiết",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2019,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "e6836f67365d3ca254c64d29fd0a7d014088bd5eb567f2ba956ecde32b15e825",
+          "processedAt": "2026-09-29T03:39:48.352457+00:00",
+          "textLength": 343859
+        },
+        {
+          "id": "3a04bceed126cd49f0e4",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/news",
+          "title": "View all our activities",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html"
+        },
+        {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "See all ESG solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
+        },
+        {
+          "id": "5f8da544b07832ede0e2",
+          "url": "https://techcombank.com/en/about-us/sustainability",
+          "title": "Overview",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
+          "processedAt": "2026-09-29T01:34:42.514584+00:00",
+          "textLength": 5751
+        },
+        {
           "id": "92a4cc6c630bcb4bdbd4",
           "url": "https://techcombank.com/en/about-us/sustainability/strategy",
           "title": "Our Strategy",
@@ -4721,18 +4818,6 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
-        },
-        {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "Our Solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -4757,18 +4842,6 @@
           "contentHash": "0d5395ce2ffe929d46fcbe9f027664b21dc9f77d509b70f1295633f5a89fee9a",
           "processedAt": "2026-09-29T01:34:42.084517+00:00",
           "textLength": 2991
-        },
-        {
-          "id": "5f8da544b07832ede0e2",
-          "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "English",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
-          "processedAt": "2026-09-29T01:34:42.514584+00:00",
-          "textLength": 5751
         },
         {
           "id": "716c7d37cb29fec64cba",
@@ -5143,7 +5216,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T03:39:31.207109+00:00",
+      "checkedAt": "2026-09-29T03:49:53.824718+00:00",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -5394,7 +5467,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T03:39:31.207381+00:00",
+      "checkedAt": "2026-09-29T03:49:53.824889+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -5766,16 +5839,6 @@
         {
           "provider": "HOSE",
           "assessmentType": "VNSI membership",
-          "year": 2025,
-          "value": "VNSI",
-          "sourceUrl": "https://www.vietcombank.com.vn/-/media/Project/VCB-Sites/VCB/Nha-Dau-tu/Bao-cao-PTBV/VN_VCB_ESG-Report-2025.pdf",
-          "sourceTitle": "VN_VCB_ESG-Report-2025.pdf",
-          "snippet": "lý rủi ro về môi trường trong hoạt động cấp tín dụng đảm bảo tuân thủ các quy định của pháp luật, quy định của NHNN, phù hợp với mục tiêu phát triển bền vững của ngân hàng đồng thời hướng tới các tiêu chuẩn, thông lệ tiên tiến về quản trị rủi ro ESG. • Hướng đến áp dụng các tiêu chuẩn chung để nâng cao thực hành ESG trong hoạt động. Tiếp tục thuộc Top 20 doanh nghiệp có Chỉ số Phát triển bền vững tốt nhất Việt Nam (VNSI) bởi Sở Giao dịch Chứng khoán TP Hồ Chí Minh (HOSE). Quản trị rủi ro môi trường và xã hội • Triển khai 28 chương trình tín dụng với mức lãi suất ưu đãi cho cả khoản vay ngắn hạn và trung dài hạn với lãi suất thấp hơn từ 0,5% đến 2,0% so với mặt bằng lãi suất bình quân. Tính r",
-          "confidence": "medium"
-        },
-        {
-          "provider": "HOSE",
-          "assessmentType": "VNSI membership",
           "year": 2024,
           "value": "VNSI",
           "sourceUrl": "https://portal.vietcombank.com.vn/VCBDigital/2024/BCPTBV/pdf/vi/VN_VCB_ESG_2024_Full.pdf",
@@ -5791,6 +5854,16 @@
           "sourceUrl": "https://portal.vietcombank.com.vn/VCBDigital/2024/BCPTBV/pdf/vi/VN_VCB_ESG_2024_Full.pdf",
           "sourceTitle": "Tải báo cáo phát triển bền vững 2024",
           "snippet": "ồm: Năng lượng tái tạo, năng lượng sạch, Giao thông bền vững, Quản lý nước bền vững, Công trình xanh, Nông - lâm - thủy sản bền vững và bảo tồn đa dạng sinh học, Quản lý chất thải và hiệu quả tài nguyên, Sử dụng năng lượng hiệu quả. Khung trái phiếu xanh của Vietcombank được tư vấn bởi tổ chức quốc tế Viện tăng trưởng xanh toàn cầu (GGGI) và được tổ chức xếp hạng tín nhiệm uy tín S&P Global đánh giá cao với xếp hạng Medium Green (mức cao thứ hai trong thang sáu bậc theo khung đánh giá Shade of Green của S&P Global). Điều này khẳng định chất lượng, sự tuân thủ, tính minh bạch ở cấp độ cao trong việc lựa chọn dự án, quản lý giải ngân nguồn tiền từ phát hành, các chế độ về quản trị và báo cáo c",
+          "confidence": "medium"
+        },
+        {
+          "provider": "HOSE",
+          "assessmentType": "VNSI membership",
+          "year": 2025,
+          "value": "VNSI",
+          "sourceUrl": "https://www.vietcombank.com.vn/-/media/Project/VCB-Sites/VCB/Nha-Dau-tu/Bao-cao-PTBV/VN_VCB_ESG-Report-2025.pdf",
+          "sourceTitle": "VN_VCB_ESG-Report-2025.pdf",
+          "snippet": "lý rủi ro về môi trường trong hoạt động cấp tín dụng đảm bảo tuân thủ các quy định của pháp luật, quy định của NHNN, phù hợp với mục tiêu phát triển bền vững của ngân hàng đồng thời hướng tới các tiêu chuẩn, thông lệ tiên tiến về quản trị rủi ro ESG. • Hướng đến áp dụng các tiêu chuẩn chung để nâng cao thực hành ESG trong hoạt động. Tiếp tục thuộc Top 20 doanh nghiệp có Chỉ số Phát triển bền vững tốt nhất Việt Nam (VNSI) bởi Sở Giao dịch Chứng khoán TP Hồ Chí Minh (HOSE). Quản trị rủi ro môi trường và xã hội • Triển khai 28 chương trình tín dụng với mức lãi suất ưu đãi cho cả khoản vay ngắn hạn và trung dài hạn với lãi suất thấp hơn từ 0,5% đến 2,0% so với mặt bằng lãi suất bình quân. Tính r",
           "confidence": "medium"
         }
       ],
@@ -5922,7 +5995,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T03:39:31.207531+00:00",
+      "checkedAt": "2026-09-29T03:49:53.824996+00:00",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -5963,6 +6036,18 @@
           "textLength": 374
         },
         {
+          "id": "dab50ee74ad419fefa4b",
+          "url": "https://static2.vietstock.vn/vietstock/2025/3/18/20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf",
+          "title": "20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf",
+          "sourcePage": "https://static2.vietstock.vn/vietstock/2025/3/18/20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "3ac0ccebeb9b6638ee6d63ae65a457b1f27872b73e6deb78edf0c758307adf8f",
+          "processedAt": "2026-09-29T03:50:06.400260+00:00",
+          "textLength": 374
+        },
+        {
           "id": "6968d1a581184f508e23",
           "url": "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien",
           "title": "Báo cáo thường niên",
@@ -5977,19 +6062,52 @@
       ],
       "metrics": [],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "value": 417556,
+          "rawValue": "417,556",
+          "unit": "hours",
+          "sourceUrl": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "VIB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "In 2024, VIB recorded 417,556 hours of training across management and employees.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "value": 54,
+          "rawValue": "54",
+          "unit": "%",
+          "sourceUrl": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "VIB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "VIB's 2024 workforce gender distribution was 54% women and 46% men.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        }
+      ],
       "coverage": {
-        "documents": 4,
-        "processedDocuments": 4,
+        "documents": 5,
+        "processedDocuments": 5,
         "metrics": 0,
-        "canonicalMetrics": 0,
+        "canonicalMetrics": 2,
         "externalAssessments": 0
       }
     },
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T03:39:31.207695+00:00",
+      "checkedAt": "2026-09-29T03:49:53.825095+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -6308,22 +6426,8 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T03:40:30.235596+00:00",
+      "processedAt": "2026-09-29T03:50:05.189155+00:00",
       "textLength": 98218
-    },
-    {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "Above-Board_Final.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "sustainability_report",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T03:40:15.687354+00:00",
-      "textLength": 61879
     },
     {
       "id": "c3ae1e1e5c89eec1b45b",
@@ -6354,14 +6458,18 @@
       "textLength": 61879
     },
     {
-      "id": "5a3092bae6468b8e3d31",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "report-2018-compressed.pdf",
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
+      "year": 2023,
+      "type": "sustainability_report",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-29T03:50:04.303716+00:00",
+      "textLength": 61879
     },
     {
       "id": "c6d164862c0327932c55",
@@ -6490,6 +6598,16 @@
       "contentHash": "1a9bc6752be7be9a2cf60d2053b68d956c2cd41c48a1ae981da2265732333305",
       "processedAt": "2026-09-28T23:59:21.037191+00:00",
       "textLength": 59978
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "2018 Updated Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2018,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "5a3092bae6468b8e3d31",
@@ -7148,7 +7266,7 @@
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessment page",
+      "title": "Assessments",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -7310,6 +7428,12 @@
       "symbol": "EIB"
     },
     {
+      "url": "https://cdn.hdbank.com.vn/hdbank/bcptbv/2024/assets/EN_ESG_Report_2024.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "HDB"
+    },
+    {
       "url": "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
       "status": "ok",
       "documents": 1,
@@ -7402,7 +7526,7 @@
     {
       "url": "https://www.namabank.com.vn/co-dong",
       "status": "ok",
-      "documents": 19,
+      "documents": 4,
       "symbol": "NAB"
     },
     {
@@ -7413,8 +7537,8 @@
     },
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 18,
       "symbol": "OCB"
     },
     {
@@ -7480,7 +7604,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 9,
+      "documents": 4,
       "symbol": "TCB"
     },
     {
@@ -7532,6 +7656,12 @@
       "symbol": "VCB"
     },
     {
+      "url": "https://static2.vietstock.vn/vietstock/2025/3/18/20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "VIB"
+    },
+    {
       "url": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
       "status": "ok",
       "documents": 1,
@@ -7576,7 +7706,7 @@
     {
       "url": "https://www.wwf.sg/susba/reports/",
       "status": "ok",
-      "documents": 4,
+      "documents": 5,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -7618,12 +7748,12 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 13,
-    "backlogBeforeRun": 32,
-    "activeBacklogBeforeRun": 13,
+    "documentsProcessed": 4,
+    "backlogBeforeRun": 23,
+    "activeBacklogBeforeRun": 4,
     "backlogRemaining": 0,
-    "eligibleBacklog": 30,
-    "recentBacklog": 13,
+    "eligibleBacklog": 21,
+    "recentBacklog": 4,
     "historicalBacklog": 11,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
