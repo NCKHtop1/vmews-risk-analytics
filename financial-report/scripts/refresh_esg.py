@@ -1421,9 +1421,9 @@ def collect(config, output):
         for symbol, cfg in banks.items():
             seeds = list(cfg.get("seed_urls", []))
             for template in cfg.get("year_url_templates", []):
-                # Routine runs probe only the current and prior reporting year.
-                # Weekend history backfill may probe one additional year.
-                probe_years = 3 if HISTORY_BACKFILL else 2
+                # Routine runs probe the current and two prior reporting years.
+                # Weekend history backfill reaches further back without unbounded discovery.
+                probe_years = 5 if HISTORY_BACKFILL else 3
                 for year in range(current_year, current_year - probe_years, -1):
                     seeds.append(template.format(year=year))
             bank_candidates, bank_follow = ((32, 8) if HISTORY_BACKFILL else (22, 4))
@@ -1528,13 +1528,25 @@ def collect(config, output):
             historical_backlog.append((owner, doc))
         else:
             skipped_backlog.append((owner, doc))
-    active_backlog = historical_backlog if HISTORY_BACKFILL else recent_backlog
-    active_backlog.sort(
+    recent_backlog.sort(
         key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
         reverse=True
     )
+    historical_backlog.sort(
+        key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
+        reverse=True
+    )
+    active_backlog = historical_backlog if HISTORY_BACKFILL else recent_backlog
     run_limit = HISTORY_DOCS_PER_RUN if HISTORY_BACKFILL else DOCS_PER_RUN
-    selected = active_backlog[:run_limit]
+    if HISTORY_BACKFILL:
+        selected = historical_backlog[:run_limit]
+    else:
+        # Never waste bounded extraction capacity: prioritize recent reports,
+        # then use any remaining slots to backfill older issuer reports.
+        selected = recent_backlog[:run_limit]
+        remaining = run_limit - len(selected)
+        if remaining > 0:
+            selected.extend(historical_backlog[:remaining])
     processed = 0
     workers = min(2 if HISTORY_BACKFILL else 4, max(1, len(selected)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
