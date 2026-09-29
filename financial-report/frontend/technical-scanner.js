@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const BASE=document.documentElement.dataset.hosting==='pages'?new URL('market/',location.href).href:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
 const ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e';
-const state={data:null,unlocked:sessionStorage.getItem('finquery-technical-access')==='1',filter:'all',search:'',loading:false};
+const state={data:null,unlocked:sessionStorage.getItem('finquery-technical-access')==='1',filter:'all',search:'',loading:false,marketSourceTime:null};
 const fmt=(v,d=2)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const time=s=>s&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short',timeStyle:'short'}):'—';
@@ -39,7 +39,7 @@ function render(){
  if(!state.data)return;
  renderSummary();
  const list=rows();
- $('technical-scanner-status').textContent='Cập nhật '+time(state.data.checkedAt)+' · nguồn giá '+time(state.data.sourceTime)+' · '+fmt(state.data.coverage,0)+'/'+fmt(state.data.universe,0)+' mã đủ dữ liệu · '+list.length+' mã theo bộ lọc.';
+ const aligned=!state.marketSourceTime||String(state.marketSourceTime)===String(state.data.sourceTime);$('technical-scanner-status').textContent='Cập nhật '+time(state.data.checkedAt)+' · nguồn giá '+time(state.data.sourceTime)+' · '+fmt(state.data.coverage,0)+'/'+fmt(state.data.universe,0)+' mã đủ dữ liệu · '+list.length+' mã theo bộ lọc.'+(aligned?'':' · ⚠ Scanner chưa đồng bộ với giá live mới nhất; chỉ dùng để tham khảo.');
  const body=$('technical-scanner-rows');
  body.innerHTML=list.map(row=>'<tr data-tech-symbol="'+esc(row.symbol)+'"><td><button type="button" class="tech-symbol" data-tech-open="'+esc(row.symbol)+'">'+esc(row.symbol)+'</button></td><td><span class="tech-bias '+esc(row.bias)+'">'+biasLabel(row.bias)+'</span><small>Ưu tiên '+fmt(row.priority,0)+'/100</small></td><td>'+fmt(row.price,0)+'<small>'+(Number(row.changePct)>=0?'+':'')+fmt(row.changePct)+'%</small></td><td>'+fmt(row.macd,2)+'<small>Signal '+fmt(row.macdSignal,2)+'</small></td><td>'+fmt(row.macdHistogram,2)+'<small>'+fmt(row.macdSpreadPct,3)+'% giá</small></td><td>'+fmt(row.rsi14,1)+'</td><td>'+fmt(row.volumeRatio20,2)+'x<small>'+fmt(row.volume,0)+' cp</small></td><td><div class="tech-tags">'+signalHTML(row)+'</div></td><td>'+time(row.sourceTime)+'</td></tr>').join('')||'<tr><td colspan="9"><div class="tech-empty">Không có mã nào khớp bộ lọc ở snapshot hiện tại.</div></td></tr>';
 }
@@ -63,5 +63,5 @@ showGate();
 if(state.unlocked)setTimeout(load,0);
 setInterval(()=>{if(state.unlocked&&!document.hidden)load();},60000);
 document.addEventListener('visibilitychange',()=>{if(state.unlocked&&!document.hidden)load();});
-window.FinTechnicalScanner={open,refresh:load,context(){if(!state.unlocked||!state.data)return null;const symbol=String(document.getElementById('ticker')?.value||'').trim().toUpperCase();return{checkedAt:state.data.checkedAt,sourceTime:state.data.sourceTime,rules:state.data.rules,current:state.data.symbols?.[symbol]||null,matches:(state.data.matches||[]).slice(0,30)};}};
+window.FinTechnicalScanner={open,refresh:load,setMarketSourceTime(value){state.marketSourceTime=value||null;if(state.data)render();},context(){if(!state.unlocked||!state.data)return null;const symbol=String(document.getElementById('ticker')?.value||'').trim().toUpperCase(),aligned=!state.marketSourceTime||String(state.marketSourceTime)===String(state.data.sourceTime);return{checkedAt:state.data.checkedAt,sourceTime:state.data.sourceTime,rules:state.data.rules,current:aligned?(state.data.symbols?.[symbol]||null):null,matches:aligned?(state.data.matches||[]).slice(0,30):[],aligned};}};
 })();
