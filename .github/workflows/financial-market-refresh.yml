@@ -15,10 +15,6 @@ on:
       - 'financial-report/config/esg_sources.json'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
-    # Fast VN100 quote board snapshots: every 15 minutes during the trading window.
-    - cron: '7,22,37,52 2-8 * * 1-5'
-    # Publisher RSS refresh.
-    - cron: '11,41 * * * *'
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
     # Corporate ESG source discovery: twice each business day, plus Saturday catch-up.
@@ -79,14 +75,10 @@ jobs:
           HISTORY_START_DATE: '1998-01-01'
         run: |
           mode="${REQUESTED_MODE:-all}"
-          if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ]; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg-history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[esg-refresh\]'; then mode=esg; fi
-          # Keep the 15-minute quote run intentionally lightweight. RSS has its
-          # own schedule and is fetched concurrently in refresh_market.py.
-          if [ "$EVENT_SCHEDULE" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi
           if [ "$EVENT_SCHEDULE" = '20 9 * * 1-5' ]; then mode=history; fi
           if [ "$EVENT_SCHEDULE" = '35 9 * * 1-5' ]; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
