@@ -1465,6 +1465,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('seed_market_histories',script)
         self.assertIn('technical-scanner-v2-tiered-hose',script)
         self.assertIn("market/universe.json",price)
+        self.assertIn("financial-report/data/universe.json",price)
         self.assertIn("math.ceil(expected*.90)",price)
         self.assertIn("financial-report/scripts/build_hose_universe.py",forecast)
         self.assertIn("financial-report/data/universe.json",forecast)
