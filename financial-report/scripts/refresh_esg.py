@@ -877,8 +877,17 @@ def collect(config, output):
     for symbol, cfg in banks.items():
         prev = previous.get("companies", {}).get(symbol, {})
         docs = {d["url"]: d for d in prev.get("documents", []) if d.get("url")}
+        report_types = {"sustainability_report", "annual_report", "climate_disclosure"}
         for url, discovered_doc in discovered[symbol].items():
-            docs[url] = {**docs.get(url, {}), **discovered_doc}
+            existing = docs.get(url, {})
+            merged = {**existing, **discovered_doc}
+            # If a stable URL is newly recognized as an actual report (rather
+            # than a framework/detail page), process it again so KPI extraction
+            # is not permanently skipped because of an earlier classification.
+            if existing.get("processedAt") and existing.get("type") not in report_types and discovered_doc.get("type") in report_types:
+                for key in ("processedAt", "contentHash", "textLength", "lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
+                    merged.pop(key, None)
+            docs[url] = merged
         ordered = sorted(docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True)
         metrics = list(prev.get("metrics", []))
         ratings = list(prev.get("externalAssessments", []))
