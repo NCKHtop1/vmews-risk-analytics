@@ -1237,6 +1237,25 @@ class MarketTests(unittest.TestCase):
             if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
             else:m.os.environ['INTRADAY_WORKERS']=old_workers
 
+    def test_live_market_api_fallback_is_fail_closed_and_frontend_gated(self):
+        api=(ROOT.parent/'api/live_market.py').read_text()
+        market=(ROOT/'frontend/market.js').read_text()
+        scanner=(ROOT/'frontend/technical-scanner.js').read_text()
+        self.assertIn("mode == 'quotes'",api)
+        self.assertIn("mode == 'news'",api)
+        self.assertIn("Current-session Vietcap coverage too low",api)
+        self.assertIn("Access-Control-Allow-Origin",api)
+        self.assertIn("LIVE_MARKET_FALLBACK_UNAVAILABLE",api)
+        self.assertIn("LIVE_FALLBACK_API='https://vmews-risk-analytics-sojd.vercel.app/api/live_market'",market)
+        self.assertIn("function newsStale(data)",market)
+        self.assertIn("liveFallback('news')",market)
+        self.assertIn("liveFallback('quotes')",market)
+        self.assertIn("newsLiveFallback",market)
+        self.assertIn("setMarketSourceTime",market)
+        self.assertIn("setMarketSourceTime(value)",scanner)
+        self.assertIn("Scanner chưa đồng bộ với giá live mới nhất",scanner)
+        self.assertIn("current:aligned?",scanner)
+
     def test_daily_browser_smoke_exercises_production_ai_and_protected_tabs(self):
         root=ROOT.parent
         path=root/'.github/workflows/financial-dashboard-browser-smoke.yml'
