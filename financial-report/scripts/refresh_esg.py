@@ -289,13 +289,40 @@ def discover_seed(seed_url, keywords, max_candidates=36, follow_detail_limit=12)
                     "type": classify_document(combined + " " + detail_text[:1000]),
                     "contentType": "html",
                 }
+                parent_kind = classify_document(combined + " " + detail_text[:5000])
+                report_parent = parent_kind in {"sustainability_report", "annual_report", "climate_disclosure"}
+                generic_followed = 0
                 for child, child_label in parse_links(detail_final, detail_raw):
-                    if looks_pdf(child) and relevant(child_label + " " + child, keywords):
+                    child_combined = clean_text(child_label + " " + child)
+                    label_fold = ascii_fold(child_label)
+                    generic_download = bool(re.search(
+                        r"\b(?:here|download|view|pdf|tai|tai ve|tai bao cao|xem|xem bao cao|report|bao cao)\b",
+                        label_fold
+                    ))
+                    if looks_pdf(child) and (relevant(child_combined, keywords) or report_parent or generic_download):
                         documents[child] = {
                             "id": doc_key(child), "url": child, "title": child_label or Path(urlsplit(child).path).name,
-                            "sourcePage": detail_final, "year": extract_year(child_label + " " + child),
-                            "type": classify_document(child_label + " " + child),
+                            "sourcePage": detail_final, "year": extract_year(combined + " " + child_combined),
+                            "type": classify_document(combined + " " + child_combined),
                         }
+                        continue
+                    # Some issuer sites expose a generic "here/download" URL that
+                    # redirects to a PDF without a .pdf suffix. Probe only a few
+                    # such links and only from a page already identified as a report.
+                    if report_parent and generic_download and generic_followed < 4:
+                        generic_followed += 1
+                        try:
+                            child_raw, child_type, child_final = fetch(child, timeout=DETAIL_TIMEOUT)
+                            if looks_pdf(child_final, child_type) and child_raw.lstrip().startswith(b"%PDF"):
+                                documents[child_final] = {
+                                    "id": doc_key(child_final), "url": child_final,
+                                    "title": child_label or Path(urlsplit(child_final).path).name,
+                                    "sourcePage": detail_final,
+                                    "year": extract_year(combined + " " + child_combined + " " + child_final),
+                                    "type": classify_document(combined + " " + child_combined + " " + child_final),
+                                }
+                        except Exception:
+                            pass
         except Exception:
             # Discovery is best-effort; seed page remains authoritative provenance.
             pass
@@ -523,6 +550,28 @@ def extract_metrics(text, rules, year, source_url, source_title, source_type=Non
                     continue
 
                 candidates = []
+                # Scaled hour disclosures such as "1,05 triệu giờ đào tạo" are
+                # common in Vietnamese ESG reports and cannot be represented by
+                # the generic VALUE_RE alone because the scale sits between the
+                # number and the hour unit.
+                if expected == "hours":
+                    for scaled in re.finditer(
+                        r"(?P<value>\d[\d\s.,]*)\s*(?P<scale>triệu|nghìn|million|thousand)\s*(?:giờ|hours?)",
+                        snippet, re.I
+                    ):
+                        value = parse_number(scaled.group("value"), "hours")
+                        scale = ascii_fold(scaled.group("scale"))
+                        if value is not None:
+                            if scale in {"trieu", "million"}:
+                                value *= 1_000_000
+                            elif scale in {"nghin", "thousand"}:
+                                value *= 1_000
+                            candidates.append({
+                                "value": value,
+                                "rawValue": clean_text(scaled.group("value") + " " + scaled.group("scale")),
+                                "unit": "hours",
+                                "qualityScore": 116,
+                            })
                 after = text[idx + len(alias):window_end]
                 alias_has_unit = (
                     expected == "hours" and ("hour" in ascii_fold(alias) or "gio" in ascii_fold(alias))
