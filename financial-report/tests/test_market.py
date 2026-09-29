@@ -1462,6 +1462,7 @@ class MarketTests(unittest.TestCase):
         pages=(root/'.github/workflows/pages.yml').read_text() if (root/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
         forecast=(root/'.github/workflows/forecast-v13-daily-refresh.yml').read_text() if (root/'.github/workflows/forecast-v13-daily-refresh.yml').exists() else pathlib.Path('.github/workflows/forecast-v13-daily-refresh.yml').read_text()
         self.assertIn('load_market_companies',script)
+        self.assertIn("if args.mode in {'prices', 'history', 'intraday', 'all'}:\\n        sync_market_universe(args.output, universe)\\n        seed_market_histories",script)
         self.assertIn('seed_market_histories',script)
         self.assertIn('technical-scanner-v2-tiered-hose',script)
         self.assertIn("market/universe.json",price)
