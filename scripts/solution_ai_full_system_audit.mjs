@@ -274,9 +274,9 @@ try {
       }) });
       return;
     }
-    if (/\/interactions$/.test(requestUrl)) {
+    if (/:generateContent/.test(requestUrl)) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
-        steps: [{ type: 'model_output', content: [{ text: `MOCK_GEMINI_SUCCESS HPG forecast ${hpg.preferredHorizon} ${hpgPriceText}. Phân tích bám đúng snapshot hiện tại.` }] }],
+        candidates: [{ content: { parts: [{ text: `MOCK_GEMINI_SUCCESS HPG forecast ${hpg.preferredHorizon} ${hpgPriceText}. Phân tích bám đúng snapshot hiện tại.` }] } }],
       }) });
       return;
     }
@@ -296,6 +296,56 @@ try {
   }, beforeGemini, { timeout: 10000 });
   const geminiReply = await page.evaluate(() => [...document.querySelectorAll('#solutionAiMessages .aiMessage')].at(-1)?.textContent?.trim() || '');
   assert(geminiReply.includes('MOCK_GEMINI_SUCCESS'), `Gemini success path did not surface provider answer: ${geminiReply.slice(0,220)}`);
+  await page.click('#solutionAiDisconnect');
+  await page.unroute('https://generativelanguage.googleapis.com/**');
+
+  // Prove model failover before local fallback: first Gemini model fails, the
+  // second model answers without surfacing an error to the user.
+  await page.route('https://generativelanguage.googleapis.com/**', async route => {
+    const requestUrl = route.request().url();
+    const body = route.request().postData() || '';
+    if (/\/models\?/.test(requestUrl)) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        models: [
+          { name: 'models/gemini-3.7-flash', supportedGenerationMethods: ['generateContent'] },
+          { name: 'models/gemini-3.5-flash', supportedGenerationMethods: ['generateContent'] },
+        ],
+      }) });
+      return;
+    }
+    if (body.includes('Reply with exactly OK')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        candidates: [{ content: { parts: [{ text: 'OK' }] } }],
+      }) });
+      return;
+    }
+    if (requestUrl.includes('gemini-3.7-flash')) {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({
+        error: { message: 'synthetic primary model outage' },
+      }) });
+      return;
+    }
+    if (requestUrl.includes('gemini-3.5-flash')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        candidates: [{ content: { parts: [{ text: `MOCK_GEMINI_MODEL_FAILOVER HPG ${hpg.preferredHorizon}` }] } }],
+      }) });
+      return;
+    }
+    await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { message: 'unexpected synthetic route' } }) });
+  });
+  await page.click('#solutionAiSettings');
+  await page.fill('#solutionAiKey', 'AIzaSyntheticFailoverAuditKey123456789012345');
+  await page.click('#solutionAiRetry');
+  await page.waitForFunction(() => /Đã kết nối/.test(document.querySelector('#solutionAiConnectionState')?.textContent || ''), null, { timeout: 8000 });
+  const beforeFailover = await page.locator('#solutionAiMessages .aiMessage').count();
+  await page.fill('#solutionAiInput', 'Chỉ dùng dữ liệu mô hình, kiểm tra đường gọi Gemini dự phòng cho HPG.');
+  await page.click('#solutionAiSend');
+  await page.waitForFunction(count => {
+    const items = [...document.querySelectorAll('#solutionAiMessages .aiMessage')];
+    return items.length > count + 1 && !items.at(-1)?.classList.contains('aiThinking');
+  }, beforeFailover, { timeout: 12000 });
+  const failoverReply = await page.evaluate(() => [...document.querySelectorAll('#solutionAiMessages .aiMessage')].at(-1)?.textContent?.trim() || '');
+  assert(failoverReply.includes('MOCK_GEMINI_MODEL_FAILOVER'), `Gemini model failover did not recover: ${failoverReply.slice(0,220)}`);
   await page.click('#solutionAiDisconnect');
   await page.unroute('https://generativelanguage.googleapis.com/**');
 
@@ -342,6 +392,7 @@ try {
       switchedSymbol: hpg.symbol,
       switchedPreferred: hpg.preferredHorizon,
       geminiSuccessPath: 'PASS',
+      geminiModelFailover: 'PASS',
       geminiWebHandoff: 'PASS',
     },
   };
