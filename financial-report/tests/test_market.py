@@ -32,7 +32,9 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],3)
+        self.assertGreaterEqual(cfg['version'],4)
+        self.assertEqual(cfg['banks']['MSB']['year_overrides']['https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/'],2025)
+        self.assertEqual(cfg['banks']['SHB']['year_overrides']['https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf'],2025)
         self.assertTrue(any('260420_SHB_BCTN_2025_Web.pdf' in u for u in cfg['banks']['SHB']['seed_urls']))
         self.assertTrue(any('bao-cao-thuong-nien-2025.pdf' in u for u in cfg['banks']['STB']['seed_urls']))
         self.assertTrue(cfg['banks']['VPB']['year_url_templates'])
@@ -193,8 +195,48 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('retryAfter',revived)
         legacy_big={'url':'https://bank/report.pdf','lastError':'document too large > 36700160 bytes','retryAfter':'2099-01-01T00:00:00+00:00'}
         revived_big=esm.revive_transport_failure(legacy_big)
-        self.assertNotIn('retryAfter',revived_big)
-        self.assertGreaterEqual(esm.MAX_DOC_BYTES,90*1024*1024)
+        if esm.HISTORY_BACKFILL:
+            self.assertNotIn('retryAfter',revived_big)
+            self.assertGreaterEqual(esm.MAX_DOC_BYTES,90*1024*1024)
+        else:
+            self.assertIn('retryAfter',revived_big)
+            self.assertLessEqual(esm.MAX_DOC_BYTES,35*1024*1024)
+
+    def test_corporate_esg_precision_rejects_systemwide_and_non_csr_money(self):
+        rows=[
+            {'metricId':'green_credit','year':2023,'value':528300,'rawValue':'528.300','unit':'billion VND','qualityScore':100,'confidence':'high','sourceType':'annual_report','snippet':'Đến 30/6/2023, dư nợ cấp tín dụng xanh tại Việt Nam đạt gần 528.300 tỷ đồng, chiếm 4,2% tổng dư nợ toàn nền kinh tế.'},
+            {'metricId':'csr_spend','year':2025,'value':300,'rawValue':'300','unit':'billion VND','qualityScore':100,'confidence':'high','sourceType':'annual_report','snippet':'Nhiều bằng khen cho hoạt động cộng đồng. Eximbank AMC có vốn thực góp 300 tỷ đồng. Lợi nhuận trước thuế năm 2025 đạt 14,5 tỷ đồng.'},
+            {'metricId':'board_independence_pct','year':2025,'value':0,'rawValue':'0.00','unit':'%','qualityScore':105,'confidence':'high','sourceType':'annual_report','snippet':'Chủ tịch HĐQT - Thành viên độc lập HĐQT 0 0.00% tỷ lệ sở hữu.'},
+            {'metricId':'csr_spend','year':2024,'value':30,'rawValue':'30','unit':'billion VND','qualityScore':100,'confidence':'high','sourceType':'annual_report','snippet':'Trong năm 2024, OCB đã dành gần 30 tỷ đồng cho các hoạt động cộng đồng, thể hiện cam kết trách nhiệm xã hội.'},
+        ]
+        canonical=esm.canonical_metrics(rows)
+        self.assertEqual(len(canonical),1)
+        self.assertEqual(canonical[0]['metricId'],'csr_spend')
+        self.assertEqual(canonical[0]['value'],30)
+
+    def test_corporate_esg_repairs_female_management_without_eating_digits(self):
+        row={'metricId':'women_management_pct','year':2023,'value':55.5,'rawValue':'55,5','unit':'%','qualityScore':107,'confidence':'high','sourceType':'annual_report','snippet':'Tỷ lệ quản lý trên tổng số CBNV là 18% Nam quản lý chiếm 55,5% Nữ quản lý chiếm 45,5%.'}
+        repaired=esm.repair_canonical_row(row)
+        self.assertEqual(repaired['value'],45.5)
+        self.assertTrue(repaired['repaired'])
+
+    def test_corporate_esg_repairs_vpbank_training_highlights(self):
+        total={'metricId':'training_hours','year':2025,'value':1,'rawValue':'1','unit':'hours','qualityScore':90,'confidence':'high','sourceType':'sustainability_report','snippet':'Tổng số giờ đào tạo trong năm 2025: 1.496.226 giờ. Tổng số khóa học 3.872.'}
+        avg={'metricId':'training_hours_per_employee','year':2025,'value':5,'rawValue':'5','unit':'hours','qualityScore':90,'confidence':'high','sourceType':'sustainability_report','snippet':'Các chỉ số nổi bật ~ 87,5 giờ học/CBNV trong năm 2025.'}
+        total_r=esm.repair_canonical_row(total)
+        avg_r=esm.repair_canonical_row(avg)
+        self.assertEqual(total_r['value'],1496226)
+        self.assertEqual(avg_r['value'],87.5)
+
+    def test_corporate_esg_report_year_prefers_explicit_title_and_overrides(self):
+        self.assertEqual(esm.explicit_report_year_hint('Báo cáo thường niên năm 2024'),2024)
+        self.assertEqual(esm.explicit_report_year_hint('260420_SHB_BCTN_2025_Web.pdf'),2025)
+        self.assertEqual(esm.infer_report_year('Older Annual Report 2016 appears in history.',2016,'Báo cáo thường niên năm 2024'),2024)
+        cfg={'year_overrides':{'https://bank/page':2025}}
+        corrected=esm.corrected_document_year({'url':'https://bank/page','title':'Phát triển bền vững','year':2026},cfg)
+        self.assertEqual(corrected['year'],2025)
+        aligned=esm.align_rows_to_document_year([{'sourceUrl':'https://bank/page','year':2026,'metricId':'green_credit'}],[corrected])
+        self.assertEqual(aligned[0]['year'],2025)
 
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()

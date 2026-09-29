@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -82,7 +82,11 @@
       ],
       "seed_urls": [
         "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/"
-      ]
+      ],
+      "year_overrides": {
+        "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/": 2025,
+        "https://www.msb.com.vn/en/about-us/sustainability/": 2025
+      }
     },
     "NAB": {
       "name": "Nam A Bank",
@@ -114,7 +118,10 @@
         "https://www.shb.com.vn/bao-cao-thuong-nien-2025/",
         "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf",
         "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/"
-      ]
+      ],
+      "year_overrides": {
+        "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf": 2025
+      }
     },
     "SSB": {
       "name": "SeABank",
