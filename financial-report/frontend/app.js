@@ -27,8 +27,10 @@ async function marketJson(file,timeout=8000){const ctl=new AbortController(),tim
 function watchChange(value){const n=Number(value);return Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—';}
 function watchMove(row){if(row?.isNew)return'<em class="watch-new">MỚI</em>';const n=Number(row?.rankChange);if(n>0)return'<em class="watch-up">↑'+Math.abs(n)+'</em>';if(n<0)return'<em class="watch-down">↓'+Math.abs(n)+'</em>';return'<em class="watch-flat">•</em>';}
 function renderTodayWatch(data){
- const box=$('quick-tickers'),track=$('quick-tickers-track'),status=$('today-watch-status');if(!box||!track)return;
+ const box=$('quick-tickers'),track=$('quick-tickers-track'),status=$('today-watch-status'),label=$('today-watch-label');if(!box||!track)return;
  const items=Array.isArray(data?.items)?data.items.filter(x=>state.companies.some(c=>c.symbol===x.symbol)).slice(0,8):[];
+ const vnDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ if(label)label.textContent=data?.sourceDate&&data.sourceDate<vnDay?'ĐÁNG XEM PHIÊN GẦN NHẤT':'ĐÁNG XEM HÔM NAY';
  if(status){const t=Date.parse(data?.checkedAt||'');status.textContent='15P'+(Number.isFinite(t)?' · '+new Date(t).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
  if(!items.length){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Chưa có tín hiệu đủ mạnh.</span>';return;}
  const rowHTML=row=>{const reasons=(row.reasons||[]).join(' · '),score=Number(row.score),title=[reasons,Number.isFinite(score)?'WatchScore '+score+'/100':'','Cập nhật 15 phút/lần'].filter(Boolean).join(' · '),chg=Number(row.changePct),cls=Number.isFinite(chg)?(chg>0?'positive':chg<0?'negative':'neutral'):'neutral';return'<button type="button" class="quick-watch-button '+cls+'" data-symbol="'+esc(row.symbol)+'" title="'+esc(title)+'"><strong>'+esc(row.symbol)+'</strong><span>'+esc(watchChange(chg))+'</span>'+watchMove(row)+'</button>';};
