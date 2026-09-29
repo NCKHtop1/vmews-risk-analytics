@@ -36,13 +36,16 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0
           timeout 8m npx playwright install chromium >/dev/null
+      - name: Run SoluTION.AI unit and frontend contracts
+        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
       - name: Wait for production Pages
         run: |
           for attempt in 1 2 3 4 5 6; do
             if curl -fsSL --max-time 20 'https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT' -o /tmp/solution-page.html; then
               if grep -Fq 'SoluTION.AI · LOCAL FIRST · GEMINI TÙY CHỌN' /tmp/solution-page.html \
                 && grep -Fq 'id="primaryForecastLabel"' /tmp/solution-page.html \
-                && grep -Fq 'forecast-final-v12.js?release=45.0' /tmp/solution-page.html; then
+                && grep -Fq 'forecast-final-v12.js?release=45.0' /tmp/solution-page.html \
+                && grep -Fq 'solution-ai-v17.js?release=38.0' /tmp/solution-page.html; then
                 exit 0
               fi
             fi
