@@ -108,6 +108,7 @@ try {
     }
 
     // Gemini upstream failure must still render a local answer instead of hanging/erroring.
+    const syntheticConsoleStart = consoleErrors.length;
     await page.route('https://generativelanguage.googleapis.com/**', async route => {
       const requestUrl = route.request().url();
       if (/\/models\?/.test(requestUrl)) {
@@ -160,6 +161,13 @@ try {
     if (degraded.text.length < 220 || !degraded.text.includes(symbol) || !degraded.text.includes(context.preferredHorizon)) {
       throw new Error(`${symbol}: Gemini 503 fallback is not useful/anchored: ${JSON.stringify(degraded)}`);
     }
+    const syntheticErrors = consoleErrors.slice(syntheticConsoleStart);
+    const unexpectedSyntheticErrors = syntheticErrors.filter(message => !/status of 503|503 \(Service Unavailable\)/i.test(message));
+    if (unexpectedSyntheticErrors.length) {
+      throw new Error(`${symbol}: unexpected console errors during synthetic Gemini outage: ${unexpectedSyntheticErrors.join(' | ')}`);
+    }
+    // The expected synthetic 503 is already validated by the local-fallback assertions above.
+    consoleErrors.splice(syntheticConsoleStart);
     await page.unroute('https://generativelanguage.googleapis.com/**');
     await page.evaluate(() => sessionStorage.removeItem('vmews_solution_ai_browser_session'));
 
