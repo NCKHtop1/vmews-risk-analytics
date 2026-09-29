@@ -1,0 +1,62 @@
+name: Refresh market news stream
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-news-live.yml'
+      - 'financial-report/scripts/refresh_market.py'
+  schedule:
+    # Continuous 15-minute publisher refresh, including evenings and weekends.
+    - cron: '2,17,32,47 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-news-live
+  cancel-in-progress: true
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore latest market branch
+        run: |
+          git fetch origin financial-market-data
+          git worktree add /tmp/market-news origin/financial-market-data
+          git -C /tmp/market-news sparse-checkout set market
+          mkdir -p /tmp/market-news/market
+      - name: Collect publisher headlines
+        run: python -u financial-report/scripts/refresh_market.py --output /tmp/market-news/market --mode news
+      - name: Publish news snapshot
+        working-directory: /tmp/market-news
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse market/news.json market/drivers.json
+          if git diff --cached --quiet; then
+            echo "No news changes to publish"
+            exit 0
+          fi
+          git commit -m 'Refresh market news stream [data-only]'
+          for attempt in 1 2 3; do
+            git fetch origin financial-market-data
+            if git rebase origin/financial-market-data && git push origin HEAD:refs/heads/financial-market-data; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish news snapshot after retries" >&2
+          exit 1
