@@ -1,13 +1,16 @@
 {
-  "checkedAt": "2026-09-29T01:26:35.229058+00:00",
+  "checkedAt": "2026-09-29T01:34:52.675817+00:00",
   "status": "ok",
   "banks": 18,
-  "sourcesOk": 31,
-  "sourcesTotal": 39,
+  "sourcesOk": 30,
+  "sourcesTotal": 37,
   "documents": 75,
-  "metrics": 36,
-  "canonicalMetrics": 13,
+  "metrics": 45,
+  "canonicalMetrics": 17,
   "externalAssessments": 6,
-  "documentsProcessedThisRun": 24,
-  "backlogRemaining": 73
+  "mode": "recent",
+  "documentsProcessedThisRun": 16,
+  "backlogRemaining": 37,
+  "recentBacklog": 53,
+  "historicalBacklog": 4
 }
