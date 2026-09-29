@@ -27,8 +27,10 @@ function snapshot(symbol, close, target, overrides = {}) {
     symbol, close, exchange: "HOSE", dataFreshness: "CURRENT", riskStatus: "GREEN", dailyVolatility: .024,
     horizons: {
       "5": {
-        expectedPrice: target, q20Price: close - 1_000, q80Price: close + 2_000,
-        tickSize: 100, priceValidated: true, validationStatus: "PASS", economicPointStatus: "PASS", directionValidated: false, pointDirectionValidated: true, magnitudeValidated: true,
+        expectedPrice: target, expectedReturn: Math.log(target / close), expectedSimpleReturn: target / close - 1,
+        q20Price: close - 1_000, q80Price: close + 2_000, q20SimpleReturn: -1_000 / close, q80SimpleReturn: 2_000 / close,
+        bearScenarioPrice: close - 1_000, bullScenarioPrice: close + 2_000,
+        tickSize: 100, returnValidated: true, priceValidated: true, validationStatus: "PASS", economicPointStatus: "PASS", directionValidated: false, pointDirectionValidated: true, magnitudeValidated: true,
       },
     },
     ...overrides,
@@ -115,10 +117,9 @@ test("latest production dashboard keeps every structurally valid forecast in the
   const structurallyValid = Object.values(dashboard.symbols).filter(item => {
     const forecast = item?.horizons?.[String(horizon)] || {};
     return item.exchange === "HOSE" && item.dataFreshness === "CURRENT"
-      && forecast.priceValidated === true && forecast.validationStatus === "PASS"
+      && (forecast.returnValidated === true || forecast.priceValidated === true) && forecast.validationStatus === "PASS"
       && forecast.pointDirectionValidated === true && forecast.magnitudeValidated === true
-      && Number(item.close) > 0 && Number(forecast.expectedPrice) > 0
-      && Number(forecast.tickSize) > 0 && Number(forecast.expectedPrice) % Number(forecast.tickSize) === 0;
+      && Number(item.close) > 0 && Number.isFinite(Number(forecast.expectedReturn));
   });
   const ranked = window.__VMEWS_BUILD_LEADERBOARD__(B, { all: true, includeNonPositive: true });
   assert.ok(structurallyValid.length > 0);
@@ -131,7 +132,7 @@ test("latest production dashboard keeps every structurally valid forecast in the
 });
 
 
-test("session overlay re-filters EOD positives that turn negative at the live cutoff", async () => {
+test("session overlay updates live context without rewriting sealed forecast returns", async () => {
   const window = await loadLeaderboard();
   const items = [snapshot("FPT", 72_000, 73_000), snapshot("MCH", 128_000, 130_000)];
   const session = {
@@ -141,11 +142,10 @@ test("session overlay re-filters EOD positives that turn negative at the live cu
     ],
   };
   const positive = window.__VMEWS_FINAL_LEADERBOARD__(base(items), session, { all: true });
-  assert.deepEqual(Array.from(positive, row => row.symbol), ["MCH"]);
+  assert.deepEqual(Array.from(positive, row => row.symbol), ["MCH", "FPT"]);
   assert.ok(positive.every(row => row.upside > 0));
-  const defensive = window.__VMEWS_FINAL_LEADERBOARD__(base([items[0]]), { symbols: [session.symbols[0]] }, { all: true, includeNonPositive: true });
-  assert.equal(defensive[0].symbol, "FPT");
-  assert.ok(defensive[0].upside < 0);
+  assert.equal(positive.find(row => row.symbol === "FPT").close, 74_000);
+  assert.equal(positive.find(row => row.symbol === "FPT").upside, items[0].horizons["5"].expectedSimpleReturn);
 });
 
 test("detail view uses the validated session close without rewriting the sealed forecast", async () => {
@@ -235,7 +235,7 @@ test("backtest result date advances by audited trading sessions rather than cale
   assert.equal(window.__VMEWS_BACKTEST_RESULT_DATE__(B, { symbol: "FPT", originDate: "2026-08-25", targetDate: "2026-09-01" }, 3), "2026-09-01");
 });
 
-test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable prices", async () => {
+test("VN30 scope rejects nonmembers and negative returns without using price-tick validity as a ranking gate", async () => {
   const window = await loadLeaderboard();
   const items = [
     snapshot("ASP", 12_000, 16_000),
@@ -246,8 +246,8 @@ test("VN30 scope rejects nonmembers, removed names, downtrends and nonexecutable
     snapshot("VHM", 49_000, 49_327),
   ];
   const rows = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { scope: "vn30" });
-  assert.deepEqual(Array.from(rows, row => row.symbol), ["MCH", "FPT"]);
-  assert.ok(rows.every(row => row.target > row.close));
+  assert.deepEqual(Array.from(rows, row => row.symbol), ["MCH", "FPT", "VHM"]);
+  assert.ok(rows.every(row => row.expectedReturn > 0));
   assert.equal(window.__VMEWS_VN30_MEMBERS__.length, 30);
 });
 
@@ -262,7 +262,7 @@ test("VN30 scope can rank validated defensive names when no positive forecast ex
   const defensive = window.__VMEWS_BUILD_LEADERBOARD__(base(items), { all: true, scope: "vn30", includeNonPositive: true });
   assert.equal(positive.length, 0);
   assert.deepEqual(Array.from(defensive, row => row.symbol), ["MCH", "FPT", "TCX"]);
-  assert.ok(defensive.every(row => row.target <= row.close));
+  assert.ok(defensive.every(row => row.expectedReturn <= 0));
 });
 
 test("published dated VN30 roster is authoritative and fewer than ten are never padded", async () => {
