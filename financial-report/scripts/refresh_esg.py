@@ -24,7 +24,10 @@ CONFIG = ROOT / "config/esg_sources.json"
 USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "1800000"))
-DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "30"))
+DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "24"))
+DISCOVERY_TIMEOUT = int(os.environ.get("ESG_DISCOVERY_TIMEOUT", "8"))
+DETAIL_TIMEOUT = int(os.environ.get("ESG_DETAIL_TIMEOUT", "6"))
+DOCUMENT_TIMEOUT = int(os.environ.get("ESG_DOCUMENT_TIMEOUT", "22"))
 EXTRACTOR_VERSION = 2
 
 
@@ -113,12 +116,14 @@ def extract_year(text):
 
 def classify_document(text):
     s = re.sub(r"[-_/]+", " ", ascii_fold(text))
-    if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
-        return "sustainable_finance_assessment"
-    if "annual report" in s or "bao cao thuong nien" in s:
-        return "annual_report"
+    # A sustainability report can discuss green-bond frameworks and annual
+    # reporting; the explicit report label is therefore the strongest signal.
     if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s:
         return "sustainability_report"
+    if "annual report" in s or "bao cao thuong nien" in s:
+        return "annual_report"
+    if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
+        return "sustainable_finance_assessment"
     if "tcfd" in s or "ifrs s2" in s or ("climate" in s and "disclosure" in s):
         return "climate_disclosure"
     if "vnsi" in s:
@@ -178,10 +183,10 @@ def doc_key(url):
     return hashlib.sha256(url.encode()).hexdigest()[:20]
 
 
-def discover_seed(seed_url, keywords):
+def discover_seed(seed_url, keywords, max_candidates=36, follow_detail_limit=12):
     documents = {}
     try:
-        raw, ctype, final_url = fetch(seed_url)
+        raw, ctype, final_url = fetch(seed_url, timeout=DISCOVERY_TIMEOUT)
     except Exception as exc:
         return [], {"url": seed_url, "status": "error", "error": str(exc)}
     if looks_pdf(final_url, ctype):
@@ -209,8 +214,9 @@ def discover_seed(seed_url, keywords):
     candidates = sorted(
         {(u, t) for u, t in candidates},
         key=lambda x: (0 if looks_pdf(x[0]) else 1, -(extract_year(x[0] + " " + x[1]) or 0))
-    )[:80]
+    )[:max_candidates]
 
+    followed = 0
     for url, label in candidates:
         combined = clean_text(f"{label} {url}")
         if looks_pdf(url):
@@ -221,8 +227,11 @@ def discover_seed(seed_url, keywords):
             }
             continue
         # One-level follow for detail pages that contain the actual PDF.
+        if followed >= follow_detail_limit:
+            continue
+        followed += 1
         try:
-            detail_raw, detail_type, detail_final = fetch(url, timeout=15)
+            detail_raw, detail_type, detail_final = fetch(url, timeout=DETAIL_TIMEOUT)
             if looks_pdf(detail_final, detail_type):
                 documents[detail_final] = {
                     "id": doc_key(detail_final), "url": detail_final, "title": label or Path(urlsplit(detail_final).path).name,
@@ -263,7 +272,7 @@ def discover_seed(seed_url, keywords):
 
 
 def extract_document_text(url):
-    raw, ctype, final_url = fetch(url, timeout=35)
+    raw, ctype, final_url = fetch(url, timeout=DOCUMENT_TIMEOUT)
     if looks_pdf(final_url, ctype) and raw.lstrip().startswith(b"%PDF"):
         try:
             from pypdf import PdfReader
@@ -306,9 +315,12 @@ def parse_number(raw, unit=None):
         s = s.replace(".", "")
     elif s.count(".") == 1:
         left, right = s.split(".", 1)
-        # Vietnamese bank disclosures often use "." as the thousands separator
-        # for values reported in VND billions/millions (7.714 tỷ = 7,714).
-        if len(right) == 3 and any(x in unit_l for x in ("ty dong", "trieu dong", "billion vnd", "million vnd")):
+        # Vietnamese disclosures commonly use "." as a thousands separator.
+        # Preserve leading-zero decimals (0.220), but normalize 19.321 m3,
+        # 7.714 tỷ đồng, etc. to 19,321 / 7,714.
+        thousands_units = ("ty dong", "trieu dong", "billion vnd", "million vnd",
+                           "tco2e", "kwh", "mwh", "gwh", "m3", "kg", "hour", "gio")
+        if len(right) == 3 and left not in {"0", "+0", "-0"} and any(x in unit_l for x in thousands_units + ("ty vnd", "trieu vnd")):
             s = left + right
     try:
         return float(s)
@@ -382,9 +394,9 @@ def normalize_metric_value(value, unit, family):
     if family == "currency":
         if "nghin ty" in s or "trillion vnd" in s:
             return value * 1000, "billion VND"
-        if "ty dong" in s or "billion vnd" in s:
+        if "ty dong" in s or "ty vnd" in s or "billion vnd" in s:
             return value, "billion VND"
-        if "trieu dong" in s or "million vnd" in s:
+        if "trieu dong" in s or "trieu vnd" in s or "million vnd" in s:
             return value / 1000, "billion VND"
         if s == "vnd":
             return value / 1_000_000_000, "billion VND"
@@ -562,10 +574,221 @@ def merge_unique(rows, key_fields):
     return out
 
 
+MONEY_TEXT = (
+    r"(?P<value>\d[\d\s.,]*\d|\d)\s*"
+    r"(?P<unit>nghìn\s+tỷ\s+đồng|tỷ\s+(?:đồng|VND|VNĐ)|triệu\s+đồng|"
+    r"trillion\s+VND|billion\s+VND|million\s+VND)"
+)
+
+
+def _apply_money_repair(row, match):
+    out = dict(row)
+    unit = clean_text(match.group("unit"))
+    value = parse_number(match.group("value"), unit)
+    value, unit = normalize_metric_value(value, unit, "currency")
+    if value is None:
+        return row
+    out["canonicalizedFromRawValue"] = row.get("rawValue")
+    out["rawValue"] = clean_text(match.group("value"))
+    out["value"] = value
+    out["unit"] = unit
+    out["qualityScore"] = max(float(out.get("qualityScore") or 0), 116)
+    out["confidence"] = "high"
+    out["repaired"] = True
+    return out
+
+
+def _apply_numeric_repair(row, raw_value, unit):
+    out = dict(row)
+    value = parse_number(raw_value, unit)
+    family = unit_family(unit)
+    value, normalized = normalize_metric_value(value, unit, family)
+    if value is None:
+        return row
+    out["canonicalizedFromRawValue"] = row.get("rawValue")
+    out["rawValue"] = clean_text(raw_value)
+    out["value"] = value
+    out["unit"] = normalized
+    out["qualityScore"] = max(float(out.get("qualityScore") or 0), 116)
+    out["confidence"] = "high"
+    out["repaired"] = True
+    return out
+
+
+def _raw_context(row, radius=95):
+    snippet = clean_text(row.get("snippet") or "")
+    raw = clean_text(row.get("rawValue") or "")
+    if not snippet or not raw:
+        return snippet
+    idx = snippet.find(raw)
+    if idx < 0:
+        compact = raw.replace(" ", "")
+        idx = snippet.replace(" ", "").find(compact)
+        if idx < 0:
+            return snippet
+    return snippet[max(0, idx-radius):min(len(snippet), idx+len(raw)+radius)]
+
+
+def repair_canonical_row(row):
+    out = dict(row)
+    snippet = clean_text(out.get("snippet") or "")
+    metric_id = out.get("metricId")
+    year = out.get("year")
+    if not snippet:
+        return out
+
+    if metric_id == "green_credit":
+        direct = re.search(
+            r"dư\s+nợ\s+tín\s+dụng\s+xanh.{0,300}?lên\s+đến\s+~?\s*"
+            r"(?P<value>\d[\d\s.,]*\d|\d)\s*(?P<unit>tỷ\s+(?:VND|VNĐ|đồng))",
+            snippet, re.I | re.S
+        )
+        if direct:
+            return _apply_money_repair(out, direct)
+        patterns = [
+            r"(?:tổng\s+)?dư\s+nợ\s+tín\s+dụng\s+xanh[^.;•]{0,260}?"
+            r"(?:lên\s+đến|lên\s+tới|đạt(?:\s+gần)?|ở\s+mức|khoảng|gần|:)\s*~?\s*" + MONEY_TEXT,
+            MONEY_TEXT + r"\s+(?:dư\s+nợ\s+)?tín\s+dụng\s+xanh",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_money_repair(out, m)
+        en = re.search(
+            r"green\s+credit(?:\s+(?:exposure|outstanding|balance))?[^.;•]{0,260}?"
+            r"(?:reached|reaching|stood\s+at|at)\s+(?:a\s+peak\s+of\s+)?"
+            r"(?:VND\s*)?(?P<value>\d[\d.,]*)\s*(?P<scale>trillion|billion|million)(?:\s+VND)?",
+            snippet, re.I
+        )
+        if en:
+            fake = re.match(
+                r"(?P<value>\d[\d.,]*)\s*(?P<unit>trillion VND|billion VND|million VND)",
+                en.group("value") + " " + en.group("scale") + " VND", re.I
+            )
+            if fake:
+                return _apply_money_repair(out, fake)
+
+    if metric_id == "sustainable_finance":
+        patterns = [
+            r"(?:tài\s+chính\s+bền\s+vững|sustainable\s+finance)[^.;•]{0,120}?" + MONEY_TEXT,
+            MONEY_TEXT + r"[^.;•]{0,55}(?:trái\s+phiếu\s+bền\s+vững|sustainability\s+bonds?|sustainable\s+bonds?)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_money_repair(out, m)
+
+    if metric_id == "csr_spend":
+        if year:
+            m = re.search(
+                rf"(?:riêng\s+)?(?:trong\s+)?năm\s+{int(year)}[^.;•]{{0,50}}?(?:là|đạt|:)\s*" + MONEY_TEXT,
+                snippet, re.I
+            )
+            if m and re.search(r"cộng\s+đồng|an\s+sinh|xã\s+hội|community|csr", snippet, re.I):
+                return _apply_money_repair(out, m)
+        m = re.search(
+            r"(?:đóng\s+góp\s+cho\s+cộng\s+đồng|an\s+sinh\s+xã\s+hội|community\s+investment|"
+            r"community\s+development|csr)[^.;•]{0,120}?" + MONEY_TEXT,
+            snippet, re.I
+        )
+        if m:
+            return _apply_money_repair(out, m)
+
+    if metric_id == "women_workforce_pct":
+        patterns = [
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:nhân\s+sự|nhân\s+viên|CBNV|người\s+lao\s+động|"
+            r"employees?|workforce)[^.;•]{0,35}(?:là\s+)?(?:nữ|female|women)",
+            r"(?:nữ|female|women)[^.;•]{0,35}(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
+            r"[^.;•]{0,35}(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "%")
+
+    if metric_id in {"women_management_pct", "female_board_pct"}:
+        patterns = [
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:cán\s+bộ\s+quản\s+lý|quản\s+lý|lãnh\s+đạo|"
+            r"management|leaders?|board)[^.;•]{0,40}(?:là\s+)?(?:nữ|female|women)",
+            r"(?:tỷ\s+lệ\s+)?(?:nữ|female|women)[^.;•]{0,55}(?:quản\s+lý|lãnh\s+đạo|management|board)"
+            r"[^.;•]{0,45}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "%")
+
+    if metric_id == "training_hours_per_employee":
+        patterns = [
+            r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
+            r"trung\s+bình\s+trên\s+một\s+cán\s+bộ|training\s+hours\s+per\s+employee|"
+            r"average\s+training\s+hours)[^.;•]{0,120}?(?:là|đạt|:)\s*"
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "hours")
+
+    if metric_id == "training_hours":
+        patterns = [
+            r"(?:a\s+total\s+of|tổng(?:\s+số)?)\s*(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)",
+            r"(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)[^.;•]{0,35}(?:were\s+recorded|được\s+ghi\s+nhận)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "hours")
+
+    return out
+
+
+def metric_row_valid(row):
+    metric_id = row.get("metricId")
+    if row.get("year") is None or row.get("value") is None:
+        return False
+    snippet = clean_text(row.get("snippet") or "")
+    context = _raw_context(row)
+    folded = ascii_fold(context)
+
+    # Reject table-of-contents/GRI disclosure codes masquerading as values.
+    if metric_id in {"training_hours", "training_hours_per_employee"}:
+        if re.search(r"\bGRI\s*404\b", snippet, re.I) and re.search(r"\b404(?:\.1)?\.?\b", str(row.get("rawValue") or "")):
+            return False
+        if metric_id == "training_hours" and not row.get("repaired"):
+            return False
+        if metric_id == "training_hours_per_employee" and not row.get("repaired"):
+            return False
+
+    if metric_id in {"women_workforce_pct", "women_management_pct", "female_board_pct"} and not row.get("repaired"):
+        return False
+
+    if metric_id == "green_credit":
+        if not row.get("repaired") and not re.search(r"tín\s+dụng\s+xanh|green\s+credit|dư\s+nợ\s+xanh", context, re.I):
+            return False
+
+    if metric_id == "sustainable_finance" and not row.get("repaired"):
+        return False
+
+    if metric_id == "csr_spend":
+        if not row.get("repaired") and not re.search(r"cộng\s+đồng|an\s+sinh|xã\s+hội|community|csr", context, re.I):
+            return False
+
+    if metric_id in {"water", "electricity"}:
+        if re.search(r"trên\s+mỗi\s+đơn\s+vị\s+doanh\s+thu|per\s+unit\s+of\s+revenue|/\s*(?:tỷ|triệu)\s+VND", context, re.I):
+            return False
+
+    # Medium-confidence generic matches are too risky for the canonical layer.
+    if not row.get("repaired") and row.get("confidence") != "high":
+        return False
+    return True
+
+
 def canonical_metrics(rows):
     chosen = {}
-    for row in rows:
-        if row.get("year") is None or row.get("metricId") is None:
+    for raw_row in rows:
+        row = repair_canonical_row(raw_row)
+        if not metric_row_valid(row):
             continue
         key = (row["metricId"], row["year"])
         score = float(row.get("qualityScore") or 0)
@@ -573,6 +796,8 @@ def canonical_metrics(rows):
             score += 8
         if row.get("confidence") == "high":
             score += 4
+        if row.get("repaired"):
+            score += 8
         current = chosen.get(key)
         if current is None or score > current[0]:
             chosen[key] = (score, row)
@@ -637,10 +862,13 @@ def collect(config, output):
         for symbol, cfg in banks.items():
             seeds = list(cfg.get("seed_urls", []))
             for template in cfg.get("year_url_templates", []):
-                for year in range(current_year, max(2019, current_year - 4), -1):
+                # Probe only the current reporting window. Archive landing
+                # pages retain older years, while this keeps dead yearly URLs
+                # from adding tens of seconds to every refresh.
+                for year in range(current_year, current_year - 3, -1):
                     seeds.append(template.format(year=year))
             for seed in dict.fromkeys(seeds):
-                jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords)))
+                jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords, 32, 10)))
         for symbol, seed, future in jobs:
             try:
                 docs, status = future.result()
@@ -656,8 +884,17 @@ def collect(config, output):
     for symbol, cfg in banks.items():
         prev = previous.get("companies", {}).get(symbol, {})
         docs = {d["url"]: d for d in prev.get("documents", []) if d.get("url")}
+        report_types = {"sustainability_report", "annual_report", "climate_disclosure"}
         for url, discovered_doc in discovered[symbol].items():
-            docs[url] = {**docs.get(url, {}), **discovered_doc}
+            existing = docs.get(url, {})
+            merged = {**existing, **discovered_doc}
+            # If a stable URL is newly recognized as an actual report (rather
+            # than a framework/detail page), process it again so KPI extraction
+            # is not permanently skipped because of an earlier classification.
+            if existing.get("processedAt") and existing.get("type") not in report_types and discovered_doc.get("type") in report_types:
+                for key in ("processedAt", "contentHash", "textLength", "lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
+                    merged.pop(key, None)
+            docs[url] = merged
         ordered = sorted(docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True)
         metrics = list(prev.get("metrics", []))
         ratings = list(prev.get("externalAssessments", []))
@@ -675,7 +912,7 @@ def collect(config, output):
     with ThreadPoolExecutor(max_workers=6) as pool:
         for src in config.get("external_sources", []):
             for seed in src.get("seed_urls", []):
-                ext_jobs.append((src, seed, pool.submit(discover_seed, seed, keywords)))
+                ext_jobs.append((src, seed, pool.submit(discover_seed, seed, keywords, 16, 6)))
         for src, seed, future in ext_jobs:
             try:
                 docs, status = future.result()
@@ -722,7 +959,9 @@ def collect(config, output):
                 doc["contentHash"] = hashlib.sha256(text.encode("utf-8", "ignore")).hexdigest()
                 doc["processedAt"] = now()
                 doc["textLength"] = len(text)
-                doc["type"] = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
+                discovered_type = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
+                if doc.get("type") not in {"sustainability_report", "annual_report", "climate_disclosure"}:
+                    doc["type"] = discovered_type
                 doc["year"] = infer_report_year(text, doc.get("year"))
                 doc.pop("lastError", None)
                 doc.pop("retryAfter", None)

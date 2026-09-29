@@ -97,13 +97,46 @@ class MarketTests(unittest.TestCase):
 
     def test_corporate_esg_v2_canonical_metric_prefers_stronger_report_source(self):
         rows=[
-            {'metricId':'green_credit','year':2025,'value':15000,'qualityScore':90,'confidence':'medium','sourceType':'esg_web_content'},
-            {'metricId':'green_credit','year':2025,'value':18700,'qualityScore':108,'confidence':'high','sourceType':'sustainability_report'},
+            {'metricId':'green_credit','year':2025,'value':15000,'rawValue':'15.000','unit':'billion VND','qualityScore':90,'confidence':'medium','sourceType':'esg_web_content','snippet':'Dư nợ tín dụng xanh đạt 15.000 tỷ đồng.'},
+            {'metricId':'green_credit','year':2025,'value':18700,'rawValue':'18.700','unit':'billion VND','qualityScore':108,'confidence':'high','sourceType':'sustainability_report','snippet':'Tổng dư nợ tín dụng xanh đạt 18.700 tỷ đồng.'},
         ]
         canonical=esm.canonical_metrics(rows)
         self.assertEqual(len(canonical),1)
         self.assertEqual(canonical[0]['value'],18700)
         self.assertEqual(esm.EXTRACTOR_VERSION,2)
+
+    def test_corporate_esg_canonical_repairs_vcb_multivalue_snippets(self):
+        rows=[
+            {'metricId':'green_credit','year':2024,'value':2000,'rawValue':'2.000','unit':'billion VND','qualityScore':68,'confidence':'medium','sourceType':'sustainability_report','snippet':'Tổng dư nợ tín dụng xanh của Vietcombank tăng trưởng trung bình hơn 4 lần qua các năm, từ hơn 11.765 tỷ VND năm 2020 lên đến ~47.600 tỷ VND tại thời điểm 31/12/2024. Phát hành thành công 2.000 tỷ đồng trái phiếu xanh.'},
+            {'metricId':'women_workforce_pct','year':2025,'value':81,'rawValue':'81','unit':'%','qualityScore':98,'confidence':'medium','sourceType':'sustainability_report','snippet':'Về cơ cấu lao động: Cơ cấu theo giới tính: 60% nhân sự là nữ, 40% là nam. Cơ cấu theo cấp bậc: 19% cán bộ thuộc nhóm lãnh đạo quản lý, trong khi 81% là chuyên viên. Trong đó, tỷ lệ nữ trong đội ngũ lãnh đạo chiếm 54%.'},
+            {'metricId':'csr_spend','year':2024,'value':2311,'rawValue':'2.311','unit':'billion VND','qualityScore':76,'confidence':'medium','sourceType':'sustainability_report','snippet':'S5. Đóng góp cho cộng đồng. Trong giai đoạn 2020 - 2024, số tiền dành cho hoạt động an sinh xã hội của Vietcombank là hơn 2.311 tỷ đồng (riêng trong năm 2024 là 571 tỷ đồng).'},
+            {'metricId':'training_hours_per_employee','year':2025,'value':49.64,'rawValue':'49,64','unit':'hours','qualityScore':112,'confidence':'high','sourceType':'sustainability_report','snippet':'Số giờ đào tạo trung bình trên một cán bộ năm 2025 là 48,96 giờ/năm. Trong đó, số giờ đào tạo trung bình trên một cán bộ quản lý là 49,64 giờ/năm/người.'},
+        ]
+        canonical={x['metricId']:x for x in esm.canonical_metrics(rows)}
+        self.assertEqual(canonical['green_credit']['value'],47600)
+        self.assertEqual(canonical['women_workforce_pct']['value'],60)
+        self.assertEqual(canonical['csr_spend']['value'],571)
+        self.assertAlmostEqual(canonical['training_hours_per_employee']['value'],48.96)
+
+    def test_corporate_esg_canonical_rejects_gri_codes_and_non_csr_money(self):
+        rows=[
+            {'metricId':'training_hours','year':2025,'value':4041,'rawValue':'404.1.','unit':'hours','qualityScore':109,'confidence':'high','sourceType':'annual_report','snippet':'GRI 404: ĐÀO TẠO VÀ GIÁO DỤC 2016 404.1. Số giờ đào tạo trung bình hằng năm của mỗi nhân viên (trang 255).'},
+            {'metricId':'csr_spend','year':2025,'value':30000,'rawValue':'30.000','unit':'billion VND','qualityScore':86,'confidence':'medium','sourceType':'annual_report','snippet':'VietinBank đã ban hành gói tín dụng ưu đãi quy mô đến 30.000 tỷ đồng dành cho chủ đầu tư và người mua nhà. Gói tài chính xanh Green UP 5.000 tỷ đồng.'},
+            {'metricId':'women_workforce_pct','year':2025,'value':25,'rawValue':'25','unit':'%','qualityScore':82,'confidence':'medium','sourceType':'annual_report','snippet':'Tỷ lệ nữ giới trong các cấp quản lý, lãnh đạo và CBNV: 57 ,25 % cán bộ quản lý là nữ giới; 61,4% nhân viên là nữ giới.'},
+        ]
+        canonical={x['metricId']:x for x in esm.canonical_metrics(rows)}
+        self.assertNotIn('training_hours',canonical)
+        self.assertNotIn('csr_spend',canonical)
+        self.assertAlmostEqual(canonical['women_workforce_pct']['value'],61.4)
+
+    def test_corporate_esg_latency_is_bounded_and_report_label_wins(self):
+        self.assertLessEqual(esm.DISCOVERY_TIMEOUT,8)
+        self.assertLessEqual(esm.DETAIL_TIMEOUT,6)
+        self.assertLessEqual(esm.DOCUMENT_TIMEOUT,22)
+        self.assertLessEqual(esm.DOCS_PER_RUN,24)
+        self.assertEqual(esm.parse_number('19.321','m3'),19321)
+        mixed='Sustainability Report 2025. Green Bond Framework and Annual Report references.'
+        self.assertEqual(esm.classify_document(mixed),'sustainability_report')
 
     def test_corporate_esg_bootstrap_prioritizes_bank_reports_over_external_archives(self):
         report={'type':'sustainability_report','year':2025,'url':'https://bank/report.pdf'}
