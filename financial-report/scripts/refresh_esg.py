@@ -949,7 +949,7 @@ def repair_canonical_row(row):
     if metric_id == "csr_spend":
         total_social = re.search(
             r"(?:tổng\s+(?:ngân\s+sách|số\s+tiền|kinh\s+phí)[^\d.;•]{0,35}|"
-            r"con\s+số\s+vàng\s+an\s+sinh\s+xã\s+hội[^\d.;•]{0,55})"
+            r"con\s+số\s+vàng\s+an\s+sinh\s+xã\s+hội(?:\s+20[0-3]\d)?[^\d.;•]{0,55})"
             r"(?:hơn|gần|khoảng|trên)?\s*(?P<value>\d[\d\s.,]*\d|\d)\s*\+?\s*"
             r"(?P<unit>tỷ\s+(?:đồng|VND|VNĐ)|triệu\s+đồng)",
             snippet, re.I
