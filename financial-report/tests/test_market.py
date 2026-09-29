@@ -732,6 +732,18 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(rows[0]['broker'],'BSC')
         self.assertEqual(rows[0]['targetPrice'],32900)
 
+    def test_research_and_events_include_alphanumeric_vn_tickers(self):
+        insights=(ROOT/'scripts/refresh_insights.py').read_text()
+        events=(ROOT/'scripts/refresh_events.py').read_text()
+        pattern="r'[A-Z][A-Z0-9]{2}'"
+        self.assertIn(pattern,insights)
+        self.assertIn(pattern,events)
+        self.assertNotIn("re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())",insights)
+        self.assertNotIn("re.fullmatch(r'[A-Z]{3}',str(x.get('symbol','')).upper())",events)
+        # VN100 currently includes HT1, NT2 and PC1; all three must survive the universe gate.
+        companies=json.loads((ROOT/'data/companies.json').read_text())
+        symbols={str(x.get('symbol','')).upper() for x in companies}
+        self.assertTrue({'HT1','NT2','PC1'}.issubset(symbols))
     def test_research_v8_timeout_guard_is_bounded_and_incremental(self):
         script=(ROOT/'scripts/refresh_insights.py').read_text()
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
