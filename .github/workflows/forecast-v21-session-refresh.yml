@@ -18,10 +18,17 @@ on:
       - "scripts/forecast_v21_session_snapshot.py"
       - "scripts/forecast_v21_publish_guard.py"
   schedule:
+    # Recovery / pre-open / post-close safety runs (UTC; Vietnam = UTC+7).
     - cron: "47 20,22 * * *"
     - cron: "15 0 * * 1-5"
-    - cron: "5 5 * * 1-5"
     - cron: "35 9 * * 1-5"
+    # Intraday price/session overlay every 15 minutes.
+    # 09:15-11:30 Vietnam time.
+    - cron: "15,30,45 2 * * 1-5"
+    - cron: "0,15,30,45 3 * * 1-5"
+    - cron: "0,15,30 4 * * 1-5"
+    # 13:00-14:45 Vietnam time.
+    - cron: "0,15,30,45 6,7 * * 1-5"
   pull_request:
     paths:
       - ".github/workflows/forecast-v21-session-refresh.yml"
