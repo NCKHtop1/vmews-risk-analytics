@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-29T16:11:45.257978+00:00",
+  "checkedAt": "2026-09-29T16:41:05.799858+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 10,
+  "sourceRegistryVersion": 11,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -12,8 +12,20 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T16:11:09.480908+00:00",
+      "checkedAt": "2026-09-29T16:40:13.636976+00:00",
       "documents": [
+        {
+          "id": "812a30d4a5173222d833",
+          "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-2025",
+          "title": "Báo cáo thường niên 2025 Về chúng tôi Nhà đầu tư Tuyển dụng ACB Rewards Thư viện An toàn Thanh lý tài sản Hỗ trợ 24/7 Hỗ trợ 24/7 (028) 38 2",
+          "sourcePage": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-2025",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "4a0f065bc871c84ef6b96fdfae6dd36d0badbd60c86d60da89a977fd03ba7d4b",
+          "processedAt": "2026-09-29T16:40:29.148291+00:00",
+          "textLength": 1254
+        },
         {
           "id": "e607b3f01ae54f0d38b5",
           "url": "https://acb.com.vn/ve-chung-toi/acb-hoan-thien-chien-luoc-phat-trien-ben-vung-dinh-hinh-nen-tang-truong-moi-01062026",
@@ -22,9 +34,9 @@
           "year": 2025,
           "type": "sustainability_report",
           "contentType": "html",
-          "reprocessVersion": 1,
+          "reprocessVersion": 2,
           "contentHash": "cd1279ebee15aab8da9a96cdcea4a327a9054360b89358dae0b8a1df6062a070",
-          "processedAt": "2026-09-29T03:10:58.192864+00:00",
+          "processedAt": "2026-09-29T16:40:29.272417+00:00",
           "textLength": 6500
         },
         {
@@ -35,9 +47,11 @@
           "year": 2024,
           "type": "annual_report",
           "contentType": "pdf",
-          "contentHash": "925422cb80fb8bc1e1b34d2aa0e98a242535469cce0a97188d22a0249b5c8497",
-          "processedAt": "2026-09-29T03:11:49.334708+00:00",
-          "textLength": 799509
+          "reprocessVersion": 2,
+          "failedAttempts": 1,
+          "lastError": "No module named 'pypdf'; PyMuPDF fallback: No module named 'fitz'",
+          "lastAttemptAt": "2026-09-29T16:41:05.722244+00:00",
+          "retryAfter": "2026-09-30T16:41:05.722270+00:00"
         },
         {
           "id": "4c50ba807f5df7eeae1a",
@@ -59,9 +73,10 @@
           "year": null,
           "type": "sustainability_report",
           "contentType": "html",
-          "contentHash": "9a88dacec3d0881ec6fd704be5b15fb571c34673d8bbf927d1288f300fb7ff6e",
-          "processedAt": "2026-09-29T00:04:21.466714+00:00",
-          "textLength": 1266
+          "reprocessVersion": 2,
+          "contentHash": "e2eeda175d4985c9e643ef3b60ecf21fd4c3ab37d6c0458c4dd43385ced55d81",
+          "processedAt": "2026-09-29T16:40:29.095879+00:00",
+          "textLength": 1258
         }
       ],
       "metrics": [
@@ -140,6 +155,246 @@
       ],
       "canonicalMetrics": [
         {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "value": 40204779,
+          "rawValue": "40.204.779",
+          "unit": "kWh",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported electricity consumption of 40,204,779 kWh for 2022 in the comparative 2022-2024 series.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2022,
+          "value": 1410000,
+          "rawValue": "1.410.000",
+          "unit": "kg",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported paper consumption of 1,410,000 kg for 2022 in the comparative series.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2022,
+          "value": 184000,
+          "rawValue": "184.000",
+          "unit": "m3",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported water consumption of 184,000 m3 for 2022 in the comparative series.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2022,
+          "value": 65,
+          "rawValue": "65",
+          "unit": "%",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported women represented 65% of employees in 2022.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2023,
+          "value": 39734459,
+          "rawValue": "39.734.459",
+          "unit": "kWh",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported electricity consumption of 39,734,459 kWh for 2023 in the comparative 2022-2024 series.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2023,
+          "value": 1455000,
+          "rawValue": "1.455.000",
+          "unit": "kg",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported paper consumption of 1,455,000 kg for 2023 in the comparative series.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "value": 264000,
+          "rawValue": "264.000",
+          "unit": "m3",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported water consumption of 264,000 m3 for 2023 in the comparative series.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2023,
+          "value": 65,
+          "rawValue": "65",
+          "unit": "%",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported women represented 65% of employees in 2023.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "value": 107,
+          "rawValue": "107",
+          "unit": "billion VND",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported approximately VND 107 billion of community and social-welfare spending in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2024,
+          "value": 41159548,
+          "rawValue": "41.159.548",
+          "unit": "kWh",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported total electricity consumption of 41,159,548 kWh in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2024,
+          "value": 1098041,
+          "rawValue": "1.098.041",
+          "unit": "kg",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported paper consumption of 1,098,041 kg in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "value": 834570,
+          "rawValue": "834.570",
+          "unit": "hours",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported 834,570 total training hours in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "value": 64,
+          "rawValue": "64",
+          "unit": "hours/employee",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported 64 average training hours per employee in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "value": 260469,
+          "rawValue": "260.469",
+          "unit": "m3",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported total water consumption of 260,469 m3 in 2024.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "value": 66,
+          "rawValue": "66",
+          "unit": "%",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "At 31 December 2024 ACB reported 13,290 employees, of whom 66% were women.",
+          "confidence": "high",
+          "qualityScore": 120,
+          "validatedFallback": true
+        },
+        {
           "value": 4.0,
           "rawValue": "4",
           "unit": "billion VND",
@@ -190,17 +445,17 @@
         }
       ],
       "coverage": {
-        "documents": 4,
+        "documents": 5,
         "processedDocuments": 4,
         "metrics": 4,
-        "canonicalMetrics": 3,
+        "canonicalMetrics": 18,
         "externalAssessments": 1
       }
     },
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T16:11:09.481137+00:00",
+      "checkedAt": "2026-09-29T16:40:13.637244+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -390,7 +645,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T16:11:09.481406+00:00",
+      "checkedAt": "2026-09-29T16:40:13.637620+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -431,7 +686,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên Báo cáo thường niên",
+          "title": "Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -443,7 +698,7 @@
         {
           "id": "4c3dd503763f24fd5927",
           "url": "https://investor.vietinbank.vn/vi/sustainabledevelopmentreports.aspx",
-          "title": "Báo cáo phát triển bền vững Báo cáo phát triển bền vững",
+          "title": "Báo cáo phát triển bền vững",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -839,7 +1094,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T16:11:09.481766+00:00",
+      "checkedAt": "2026-09-29T16:40:13.638013+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -1044,7 +1299,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T16:11:09.481974+00:00",
+      "checkedAt": "2026-09-29T16:40:13.638253+00:00",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -1197,7 +1452,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T16:11:09.482116+00:00",
+      "checkedAt": "2026-09-29T16:40:13.638502+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -1331,7 +1586,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T16:11:09.482251+00:00",
+      "checkedAt": "2026-09-29T16:40:13.638661+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -1545,7 +1800,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T16:11:09.483082+00:00",
+      "checkedAt": "2026-09-29T16:40:13.639614+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -2067,7 +2322,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T16:11:09.484070+00:00",
+      "checkedAt": "2026-09-29T16:40:13.640784+00:00",
       "documents": [
         {
           "id": "c303b3353659c3a65824",
@@ -2094,30 +2349,6 @@
           "textLength": 0
         },
         {
-          "id": "3513a04144dc75ee4ff0",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
-          "title": "Báo cáo thường niên tiếng Anh năm 2025",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
-          "processedAt": "2026-09-29T03:25:01.084606+00:00",
-          "textLength": 337
-        },
-        {
-          "id": "358356aafec4c64c0e15",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "title": "Báo cáo thường niên năm 2025",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
-          "processedAt": "2026-09-29T03:25:01.578252+00:00",
-          "textLength": 336
-        },
-        {
           "id": "9905202effdd869504d3",
           "url": "https://www.namabank.com.vn/bao-cao-thuong-nien",
           "title": "Báo cáo thường niên",
@@ -2140,6 +2371,30 @@
           "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
           "processedAt": "2026-09-29T03:24:41.470566+00:00",
           "textLength": 245573
+        },
+        {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "20260318---nab-2025-annual-report.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -2190,18 +2445,6 @@
           "textLength": 87023
         },
         {
-          "id": "9a75823f7a984b02ebf5",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
-          "title": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2024,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
-          "processedAt": "2026-09-29T03:24:53.506586+00:00",
-          "textLength": 190892
-        },
-        {
           "id": "fa5f1a67142c3668d602",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
           "title": "Báo cáo phát triển bền vững năm 2024",
@@ -2226,16 +2469,16 @@
           "textLength": 213889
         },
         {
-          "id": "33e5a56cd74d6d5f8f61",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
-          "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "id": "9a75823f7a984b02ebf5",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "title": "20260119_esg-namabank-2024-en.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2023,
-          "type": "sustainability_report",
+          "year": 2024,
+          "type": "annual_report",
           "contentType": "pdf",
-          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
-          "processedAt": "2026-09-29T03:25:05.799971+00:00",
-          "textLength": 262818
+          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
+          "processedAt": "2026-09-29T03:24:53.506586+00:00",
+          "textLength": 190892
         },
         {
           "id": "672efd9d89b939b0cb7a",
@@ -2248,6 +2491,18 @@
           "contentHash": "40ed3876c1d63034058b6deec71291540efd25040b85ba5c5b654cb4e2a7f3b0",
           "processedAt": "2026-09-29T03:39:49.092289+00:00",
           "textLength": 1251
+        },
+        {
+          "id": "33e5a56cd74d6d5f8f61",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2023",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
+          "processedAt": "2026-09-29T03:25:05.799971+00:00",
+          "textLength": 262818
         },
         {
           "id": "0c9ce9572663228d1389",
@@ -2985,8 +3240,20 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T16:11:09.485045+00:00",
+      "checkedAt": "2026-09-29T16:40:13.642021+00:00",
       "documents": [
+        {
+          "id": "8ed3ce868c1f74962d4e",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260903101122_2608-bc-ptbv-2025-en.pdf",
+          "title": "Sustainability Report 2025 2026 Date: 25/8/2026 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2025,
+          "type": "sustainability_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-29T16:40:26.257585+00:00",
+          "retryAfter": "2026-09-30T16:40:26.257605+00:00"
+        },
         {
           "id": "ef5d26c67b5ad742bf85",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408184738_20260408-ocb-bao-cao-thuong-nien-2025-website.pdf",
@@ -2998,6 +3265,18 @@
           "contentHash": "d8aa34eef82dfc41ca3eaefef2a1326d6eabbe6a24a5c28f7d54bf687c6d9f40",
           "processedAt": "2026-09-29T02:17:17.840725+00:00",
           "textLength": 202003
+        },
+        {
+          "id": "3694ba2edf3cffdc1a58",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408185157_20260408-ocb-annual-report-2025-website.pdf",
+          "title": "SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2025,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-29T16:40:27.122983+00:00",
+          "retryAfter": "2026-09-30T16:40:27.123005+00:00"
         },
         {
           "id": "4d319969b646fceb4754",
@@ -3036,6 +3315,42 @@
           "textLength": 336491
         },
         {
+          "id": "d328fb66a416709ad8a7",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923155055_sustainability-report-2024.pdf",
+          "title": "SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2024,
+          "type": "sustainability_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-29T16:40:26.265554+00:00",
+          "retryAfter": "2026-09-30T16:40:26.265571+00:00"
+        },
+        {
+          "id": "6c8fee76b6ca9bf4702e",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250408095342_ocb-annual-report-2024.pdf",
+          "title": "Annual Report 2024 2024 Date: 04/4/2025 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2024,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-29T16:40:27.956543+00:00",
+          "retryAfter": "2026-09-30T16:40:27.956563+00:00"
+        },
+        {
+          "id": "7dbc12f1505da625cb7b",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
+          "title": "Sustainability Report 2023 2023 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
+          "processedAt": "2026-09-29T16:11:45.073652+00:00",
+          "textLength": 497211
+        },
+        {
           "id": "65aab233120d3f54ae4e",
           "url": "https://ocb.com.vn/vi/ve-ocb/phat-trien-ben-vung",
           "title": "Phát triển bền vững",
@@ -3060,16 +3375,16 @@
           "textLength": 162196
         },
         {
-          "id": "7dbc12f1505da625cb7b",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
-          "title": "Báo cáo Phát triển bền vững 2023 2023 Ngày đăng: 19/9/2024 SEE_MORE",
+          "id": "ff02f9dfaa97d39cc7fc",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20240614172554_eng-bctn-2023-full.pdf",
+          "title": "Annual Report 2023 2023 Date: 12/4/2024 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
-          "processedAt": "2026-09-29T16:11:45.073652+00:00",
-          "textLength": 497211
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "No module named 'pypdf'; PyMuPDF fallback: No module named 'fitz'",
+          "lastAttemptAt": "2026-09-29T16:40:33.703153+00:00",
+          "retryAfter": "2026-09-30T16:40:33.703171+00:00"
         },
         {
           "id": "60d6e709c250aab407b8",
@@ -3084,6 +3399,14 @@
           "textLength": 0
         },
         {
+          "id": "90ffbc9baf694548f307",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20230605182531_bctnengmin.pdf",
+          "title": "Báo cáo thường niên 2022 2022 Date: 18/04/2023 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2022,
+          "type": "annual_report"
+        },
+        {
           "id": "d61129f90aacf7280ebb",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20220405180135_ocb-bctn-2021.pdf",
           "title": "Báo cáo thường niên 2021 2021 Ngày: 01/04/2022 SEE_MORE",
@@ -3096,9 +3419,17 @@
           "textLength": 0
         },
         {
+          "id": "8aab3366b6de78cb27d9",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20220715090123_ocb-bao-cao-thuong-nien-eng-copy.pdf",
+          "title": "Báo cáo thường niên 2021 2021 Date: 01/04/2022 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2021,
+          "type": "annual_report"
+        },
+        {
           "id": "256731044e6d931e4e99",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212008-2020bao-cao-thuong-nien.pdf",
-          "title": "Báo Cáo Thường Niên năm 2020 2020 Ngày: 15/04/2021 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2020 2020 Date: 15/04/2021 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2020,
           "type": "annual_report",
@@ -3110,7 +3441,7 @@
         {
           "id": "d54ee8f858581d4c1b25",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212214-2019.pdf",
-          "title": "Báo Cáo Thường Niên năm 2019 2019 Ngày: 15/04/2020 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2019 2019 Date: 15/04/2020 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2019,
           "type": "annual_report",
@@ -3122,7 +3453,7 @@
         {
           "id": "1dbba3b41b1b5920a8ac",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212254-2018.pdf",
-          "title": "Báo Cáo Thường Niên năm 2018 2018 Ngày: 17/04/2019 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2018 2018 Date: 17/04/2019 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2018,
           "type": "annual_report",
@@ -3134,7 +3465,7 @@
         {
           "id": "2a61fa318f9b274a93a2",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212306-2017.pdf",
-          "title": "Báo Cáo Thường Niên năm 2017 2017 Ngày: 30/03/2018 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2017 2017 Date: 30/03/2018 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2017,
           "type": "annual_report",
@@ -3146,7 +3477,7 @@
         {
           "id": "231a51df79bc8af57e00",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212327-2016.pdf",
-          "title": "Báo Cáo Thường Niên năm 2016 2016 Ngày: 30/03/2017 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2016 2016 Date: 30/03/2017 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2016,
           "type": "annual_report",
@@ -3158,7 +3489,7 @@
         {
           "id": "acba9e586ff983fd63e8",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211113231910-file1810352018053553f9whsmvx.pdf",
-          "title": "Báo Cáo Thường Niên năm 2015 2015 Ngày: 31/03/2016 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2015 2015 Date: 31/03/2016 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2015,
           "type": "annual_report",
@@ -3170,7 +3501,7 @@
         {
           "id": "724ea4c6def00ffe2714",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212340-2014.pdf",
-          "title": "Báo Cáo Thường Niên năm 2014 2014 Ngày: 25/03/2015 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2014 2014 Date: 25/03/2015 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2014,
           "type": "annual_report",
@@ -3182,7 +3513,7 @@
         {
           "id": "1a495e7380b2cc4dd6f6",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212354-2013.pdf",
-          "title": "Báo Cáo Thường Niên năm 2013 2013 Ngày: 28/03/2014 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2013 2013 Date: 28/03/2014 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2013,
           "type": "annual_report",
@@ -3194,7 +3525,7 @@
         {
           "id": "605fee3731fa16402eb5",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211118212405-2012.pdf",
-          "title": "Báo Cáo Thường Niên năm 2012 2012 Ngày: 29/03/2013 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2012 2012 Date: 29/03/2013 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2012,
           "type": "annual_report",
@@ -3206,7 +3537,7 @@
         {
           "id": "3df01cce37b95f284a8d",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20211122120248_2011.pdf",
-          "title": "Báo Cáo Thường Niên năm 2011 2011 Ngày: 30/03/2012 SEE_MORE",
+          "title": "Báo Cáo Thường Niên năm 2011 2011 Date: 30/03/2012 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2011,
           "type": "annual_report",
@@ -3720,7 +4051,7 @@
         }
       ],
       "coverage": {
-        "documents": 22,
+        "documents": 29,
         "processedDocuments": 22,
         "metrics": 21,
         "canonicalMetrics": 8,
@@ -3730,7 +4061,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T16:11:09.485082+00:00",
+      "checkedAt": "2026-09-29T16:40:13.642064+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -3793,7 +4124,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T16:11:09.485502+00:00",
+      "checkedAt": "2026-09-29T16:40:13.642684+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -3834,7 +4165,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026",
+          "title": "Sustainability Report 2025 23/07/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -3846,7 +4177,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026",
+          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -3894,7 +4225,7 @@
         {
           "id": "63a3abaf8b52f1a85e00",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
-          "title": "Sustainability Report 2024 05/09/2025 Read more",
+          "title": "Sustainability Report 2024 05/09/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -4531,7 +4862,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T16:11:09.485727+00:00",
+      "checkedAt": "2026-09-29T16:40:13.642941+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -4688,8 +5019,20 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T16:11:09.486191+00:00",
+      "checkedAt": "2026-09-29T16:40:13.643564+00:00",
       "documents": [
+        {
+          "id": "56ecaa75021fa68c4629",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
+          "processedAt": "2026-09-29T01:24:33.017802+00:00",
+          "textLength": 192129
+        },
         {
           "id": "725b2cc303c70d1ae0c8",
           "url": "https://techcombank.com/en/about-us/sustainability/milestones",
@@ -4701,18 +5044,6 @@
           "contentHash": "4f8cbab79fa4ad6c4ae96272b14d8d2b753d446ef994b346e2f825a24ed2bb38",
           "processedAt": "2026-09-29T01:34:40.269534+00:00",
           "textLength": 4813
-        },
-        {
-          "id": "56ecaa75021fa68c4629",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
-          "title": "Download Report",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": 2025,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
-          "processedAt": "2026-09-29T01:24:33.017802+00:00",
-          "textLength": 192129
         },
         {
           "id": "f8a4e9fe11d18570428e",
@@ -4727,47 +5058,11 @@
           "textLength": 6
         },
         {
-          "id": "4c62a211aad9d4266a7a",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/vi/listviewdocument/TCB-AR-EN-Interactive-21038b0025.pdf",
-          "title": "View Digital Version",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2023,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "93cb73a466ce129825e20949dfdfffe3727c4ed291d9a54a0daf17e87739df4e",
-          "processedAt": "2026-09-29T03:40:26.391693+00:00",
-          "textLength": 461662
-        },
-        {
-          "id": "9d64c3b583d8f2c84784",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
-          "title": "View Digital Version",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2022,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "d4bc3291bf17f166b9821602623eae689114bffe217f9c91aeee183bc51d8f0c",
-          "processedAt": "2026-09-29T03:40:18.859549+00:00",
-          "textLength": 417959
-        },
-        {
-          "id": "19b7fa17d70ba166a3b0",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/20220628_Annual_Report_2021_double_page_6ce0c20104.pdf",
-          "title": "View Digital Version",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2021,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "d16fb7b87c7d3982d73b7b3ddb6efc673f2138f03f0a2e9a8ed9c1bb2c25a47e",
-          "processedAt": "2026-09-29T03:39:48.616788+00:00",
-          "textLength": 375765
-        },
-        {
           "id": "b462467787998773320f",
           "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/Bao_cao_thuong_nien_nam_2019_f8470fb767_aaeeba489c.pdf",
           "title": "Xem chi tiết",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2019,
+          "year": null,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "e6836f67365d3ca254c64d29fd0a7d014088bd5eb567f2ba956ecde32b15e825",
@@ -4784,9 +5079,45 @@
           "contentType": "html"
         },
         {
+          "id": "4c62a211aad9d4266a7a",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/vi/listviewdocument/TCB-AR-EN-Interactive-21038b0025.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "pdf",
+          "contentHash": "93cb73a466ce129825e20949dfdfffe3727c4ed291d9a54a0daf17e87739df4e",
+          "processedAt": "2026-09-29T03:40:26.391693+00:00",
+          "textLength": 461662
+        },
+        {
+          "id": "9d64c3b583d8f2c84784",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "pdf",
+          "contentHash": "d4bc3291bf17f166b9821602623eae689114bffe217f9c91aeee183bc51d8f0c",
+          "processedAt": "2026-09-29T03:40:18.859549+00:00",
+          "textLength": 417959
+        },
+        {
+          "id": "19b7fa17d70ba166a3b0",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/20220628_Annual_Report_2021_double_page_6ce0c20104.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": null,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d16fb7b87c7d3982d73b7b3ddb6efc673f2138f03f0a2e9a8ed9c1bb2c25a47e",
+          "processedAt": "2026-09-29T03:39:48.616788+00:00",
+          "textLength": 375765
+        },
+        {
           "id": "5f8da544b07832ede0e2",
           "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Overview",
+          "title": "Sustainability",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability",
           "year": null,
           "type": "esg_web_content",
@@ -5216,7 +5547,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T16:11:09.486358+00:00",
+      "checkedAt": "2026-09-29T16:40:13.643767+00:00",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -5467,7 +5798,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T16:11:09.486615+00:00",
+      "checkedAt": "2026-09-29T16:40:13.644056+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -5995,7 +6326,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T16:11:09.486793+00:00",
+      "checkedAt": "2026-09-29T16:40:13.644308+00:00",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -6107,7 +6438,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T16:11:09.486946+00:00",
+      "checkedAt": "2026-09-29T16:40:13.644501+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -6989,7 +7320,7 @@
       "title": "ESG Regulatory Solutions",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -7358,6 +7689,18 @@
       "symbol": "ACB"
     },
     {
+      "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-2026",
+      "status": "ok",
+      "documents": 0,
+      "symbol": "ACB"
+    },
+    {
+      "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-2025",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "ACB"
+    },
+    {
       "url": "https://bidv.com.vn/wps/wcm/connect/fefc0922-870d-4585-9762-0b572c91106f/B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf?CACHEID=ROOTWORKSPACE-fefc0922-870d-4585-9762-0b572c91106f-pTY4MLM&MOD=AJPERES",
       "status": "ok",
       "documents": 1,
@@ -7443,8 +7786,8 @@
     },
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 1,
       "symbol": "LPB"
     },
     {
@@ -7540,7 +7883,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 4,
+      "documents": 6,
       "symbol": "SSB"
     },
     {
@@ -7576,7 +7919,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 5,
+      "documents": 9,
       "symbol": "TCB"
     },
     {
@@ -7678,14 +8021,14 @@
     {
       "url": "https://www.wwf.sg/susba/reports/",
       "status": "error",
-      "error": "The read operation timed out",
+      "error": "<urlopen error _ssl.c:993: The handshake operation timed out>",
       "provider": "WWF SUSBA",
       "external": true
     },
     {
       "url": "https://www.wwf.sg/susba/about/",
       "status": "error",
-      "error": "The read operation timed out",
+      "error": "<urlopen error _ssl.c:993: The handshake operation timed out>",
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -7706,7 +8049,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 3,
+      "documents": 2,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -7720,15 +8063,15 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 1,
-    "backlogBeforeRun": 20,
-    "activeBacklogBeforeRun": 1,
-    "backlogRemaining": 0,
-    "eligibleBacklog": 18,
-    "recentBacklog": 1,
-    "historicalBacklog": 11,
+    "documentsProcessed": 3,
+    "backlogBeforeRun": 30,
+    "activeBacklogBeforeRun": 9,
+    "backlogRemaining": 6,
+    "eligibleBacklog": 28,
+    "recentBacklog": 9,
+    "historicalBacklog": 13,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
-    "documentWorkers": 1
+    "documentWorkers": 4
   }
 }
