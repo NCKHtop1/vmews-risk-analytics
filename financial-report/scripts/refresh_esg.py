@@ -574,10 +574,214 @@ def merge_unique(rows, key_fields):
     return out
 
 
+MONEY_TEXT = (
+    r"(?P<value>\d[\d\s.,]*\d|\d)\s*"
+    r"(?P<unit>nghìn\s+tỷ\s+đồng|tỷ\s+(?:đồng|VND|VNĐ)|triệu\s+đồng|"
+    r"trillion\s+VND|billion\s+VND|million\s+VND)"
+)
+
+
+def _apply_money_repair(row, match):
+    out = dict(row)
+    unit = clean_text(match.group("unit"))
+    value = parse_number(match.group("value"), unit)
+    value, unit = normalize_metric_value(value, unit, "currency")
+    if value is None:
+        return row
+    out["canonicalizedFromRawValue"] = row.get("rawValue")
+    out["rawValue"] = clean_text(match.group("value"))
+    out["value"] = value
+    out["unit"] = unit
+    out["qualityScore"] = max(float(out.get("qualityScore") or 0), 116)
+    out["confidence"] = "high"
+    out["repaired"] = True
+    return out
+
+
+def _apply_numeric_repair(row, raw_value, unit):
+    out = dict(row)
+    value = parse_number(raw_value, unit)
+    family = unit_family(unit)
+    value, normalized = normalize_metric_value(value, unit, family)
+    if value is None:
+        return row
+    out["canonicalizedFromRawValue"] = row.get("rawValue")
+    out["rawValue"] = clean_text(raw_value)
+    out["value"] = value
+    out["unit"] = normalized
+    out["qualityScore"] = max(float(out.get("qualityScore") or 0), 116)
+    out["confidence"] = "high"
+    out["repaired"] = True
+    return out
+
+
+def _raw_context(row, radius=95):
+    snippet = clean_text(row.get("snippet") or "")
+    raw = clean_text(row.get("rawValue") or "")
+    if not snippet or not raw:
+        return snippet
+    idx = snippet.find(raw)
+    if idx < 0:
+        compact = raw.replace(" ", "")
+        idx = snippet.replace(" ", "").find(compact)
+        if idx < 0:
+            return snippet
+    return snippet[max(0, idx-radius):min(len(snippet), idx+len(raw)+radius)]
+
+
+def repair_canonical_row(row):
+    out = dict(row)
+    snippet = clean_text(out.get("snippet") or "")
+    metric_id = out.get("metricId")
+    year = out.get("year")
+    if not snippet:
+        return out
+
+    if metric_id == "green_credit":
+        patterns = [
+            r"(?:tổng\s+)?dư\s+nợ\s+tín\s+dụng\s+xanh[^.;•]{0,260}?"
+            r"(?:lên\s+đến|lên\s+tới|đạt(?:\s+gần)?|ở\s+mức|khoảng|gần|:)\s*~?\s*" + MONEY_TEXT,
+            MONEY_TEXT + r"\s+(?:dư\s+nợ\s+)?tín\s+dụng\s+xanh",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_money_repair(out, m)
+        en = re.search(
+            r"green\s+credit(?:\s+(?:exposure|outstanding|balance))?[^.;•]{0,260}?"
+            r"(?:reached|reaching|stood\s+at|at)\s+(?:a\s+peak\s+of\s+)?"
+            r"(?:VND\s*)?(?P<value>\d[\d.,]*)\s*(?P<scale>trillion|billion|million)(?:\s+VND)?",
+            snippet, re.I
+        )
+        if en:
+            fake = re.match(
+                r"(?P<value>\d[\d.,]*)\s*(?P<unit>trillion VND|billion VND|million VND)",
+                en.group("value") + " " + en.group("scale") + " VND", re.I
+            )
+            if fake:
+                return _apply_money_repair(out, fake)
+
+    if metric_id == "sustainable_finance":
+        patterns = [
+            r"(?:tài\s+chính\s+bền\s+vững|sustainable\s+finance)[^.;•]{0,120}?" + MONEY_TEXT,
+            MONEY_TEXT + r"[^.;•]{0,55}(?:trái\s+phiếu\s+bền\s+vững|sustainability\s+bonds?|sustainable\s+bonds?)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_money_repair(out, m)
+
+    if metric_id == "csr_spend":
+        if year:
+            m = re.search(
+                rf"(?:riêng\s+)?(?:trong\s+)?năm\s+{int(year)}[^.;•]{{0,50}}?(?:là|đạt|:)\s*" + MONEY_TEXT,
+                snippet, re.I
+            )
+            if m and re.search(r"cộng\s+đồng|an\s+sinh|xã\s+hội|community|csr", snippet, re.I):
+                return _apply_money_repair(out, m)
+        m = re.search(
+            r"(?:đóng\s+góp\s+cho\s+cộng\s+đồng|an\s+sinh\s+xã\s+hội|community\s+investment|"
+            r"community\s+development|csr)[^.;•]{0,120}?" + MONEY_TEXT,
+            snippet, re.I
+        )
+        if m:
+            return _apply_money_repair(out, m)
+
+    if metric_id == "women_workforce_pct":
+        patterns = [
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:nhân\s+sự|nhân\s+viên|CBNV|người\s+lao\s+động|"
+            r"employees?|workforce)[^.;•]{0,35}(?:là\s+)?(?:nữ|female|women)",
+            r"(?:nữ|female|women)[^.;•]{0,35}(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
+            r"[^.;•]{0,35}(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "%")
+
+    if metric_id in {"women_management_pct", "female_board_pct"}:
+        patterns = [
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:cán\s+bộ\s+quản\s+lý|quản\s+lý|lãnh\s+đạo|"
+            r"management|leaders?|board)[^.;•]{0,40}(?:là\s+)?(?:nữ|female|women)",
+            r"(?:tỷ\s+lệ\s+)?(?:nữ|female|women)[^.;•]{0,55}(?:quản\s+lý|lãnh\s+đạo|management|board)"
+            r"[^.;•]{0,45}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "%")
+
+    if metric_id == "training_hours_per_employee":
+        patterns = [
+            r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
+            r"trung\s+bình\s+trên\s+một\s+cán\s+bộ|training\s+hours\s+per\s+employee|"
+            r"average\s+training\s+hours)[^.;•]{0,120}?(?:là|đạt|:)\s*"
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "hours")
+
+    if metric_id == "training_hours":
+        patterns = [
+            r"(?:a\s+total\s+of|tổng(?:\s+số)?)\s*(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)",
+            r"(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)[^.;•]{0,35}(?:were\s+recorded|được\s+ghi\s+nhận)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, snippet, re.I)
+            if m:
+                return _apply_numeric_repair(out, m.group("value"), "hours")
+
+    return out
+
+
+def metric_row_valid(row):
+    metric_id = row.get("metricId")
+    if row.get("year") is None or row.get("value") is None:
+        return False
+    snippet = clean_text(row.get("snippet") or "")
+    context = _raw_context(row)
+    folded = ascii_fold(context)
+
+    # Reject table-of-contents/GRI disclosure codes masquerading as values.
+    if metric_id in {"training_hours", "training_hours_per_employee"}:
+        if re.search(r"\bGRI\s*404\b", snippet, re.I) and re.search(r"\b404(?:\.1)?\.?\b", str(row.get("rawValue") or "")):
+            return False
+        if metric_id == "training_hours" and not row.get("repaired"):
+            return False
+        if metric_id == "training_hours_per_employee" and not row.get("repaired"):
+            return False
+
+    if metric_id in {"women_workforce_pct", "women_management_pct", "female_board_pct"} and not row.get("repaired"):
+        return False
+
+    if metric_id == "green_credit":
+        if not row.get("repaired") and not re.search(r"tín\s+dụng\s+xanh|green\s+credit|dư\s+nợ\s+xanh", context, re.I):
+            return False
+
+    if metric_id == "sustainable_finance" and not row.get("repaired"):
+        return False
+
+    if metric_id == "csr_spend":
+        if not row.get("repaired") and not re.search(r"cộng\s+đồng|an\s+sinh|xã\s+hội|community|csr", context, re.I):
+            return False
+
+    if metric_id in {"water", "electricity"}:
+        if re.search(r"trên\s+mỗi\s+đơn\s+vị\s+doanh\s+thu|per\s+unit\s+of\s+revenue|/\s*(?:tỷ|triệu)\s+VND", context, re.I):
+            return False
+
+    # Medium-confidence generic matches are too risky for the canonical layer.
+    if not row.get("repaired") and row.get("confidence") != "high":
+        return False
+    return True
+
+
 def canonical_metrics(rows):
     chosen = {}
-    for row in rows:
-        if row.get("year") is None or row.get("metricId") is None:
+    for raw_row in rows:
+        row = repair_canonical_row(raw_row)
+        if not metric_row_valid(row):
             continue
         key = (row["metricId"], row["year"])
         score = float(row.get("qualityScore") or 0)
@@ -585,6 +789,8 @@ def canonical_metrics(rows):
             score += 8
         if row.get("confidence") == "high":
             score += 4
+        if row.get("repaired"):
+            score += 8
         current = chosen.get(key)
         if current is None or score > current[0]:
             chosen[key] = (score, row)
