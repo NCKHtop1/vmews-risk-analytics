@@ -333,7 +333,8 @@ try {
     }
     await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { message: 'unexpected synthetic route' } }) });
   });
-  await page.click('#solutionAiSettings');
+  if (await page.locator('#solutionAiConnect').isHidden()) await page.click('#solutionAiSettings');
+  await page.waitForFunction(() => !document.querySelector('#solutionAiConnect')?.hidden, null, { timeout: 5000 });
   await page.fill('#solutionAiKey', 'AIzaSyntheticFailoverAuditKey123456789012345');
   await page.click('#solutionAiRetry');
   await page.waitForFunction(() => /Đã kết nối/.test(document.querySelector('#solutionAiConnectionState')?.textContent || ''), null, { timeout: 8000 });
