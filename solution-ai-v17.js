@@ -94,8 +94,19 @@
     }
   }
 
+  const TRANSIENT_GEMINI_STATUS = new Set([408, 429, 500, 502, 503]);
+
+  function transientGemini(status) {
+    return TRANSIENT_GEMINI_STATUS.has(Number(status));
+  }
+
+  function modelVersionScore(name) {
+    const match = String(name || "").match(/gemini-(\d+)(?:\.(\d+))?/i);
+    return match ? Number(match[1]) * 100 + Number(match[2] || 0) : 0;
+  }
+
   function availableModels(payload) {
-    const models = (payload.models || [])
+    return (payload.models || [])
       .filter(item => {
         const name = String(item.name || "").replace(/^models\//, "");
         const supported = item.supportedGenerationMethods || item.supportedActions || [];
@@ -104,66 +115,109 @@
           && !/image|audio|tts|live|embedding|robotics/i.test(name)
           && (supported.length === 0 || supported.includes("generateContent") || supported.includes("generate_content"));
       })
-      .map(item => String(item.name).replace(/^models\//, ""));
-    const ordered = [];
-    for (const preferred of ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash"]) {
-      const selected = models.find(model => model === preferred) || models.find(model => model.startsWith(`${preferred}-`));
-      if (selected && !ordered.includes(selected)) ordered.push(selected);
-    }
-    for (const model of models) if (!ordered.includes(model)) ordered.push(model);
-    return ordered;
+      .map(item => String(item.name).replace(/^models\//, ""))
+      .sort((left, right) => {
+        const score = name => {
+          const stable = /preview|experimental|exp-/i.test(name) ? 0 : 10000;
+          const full = /flash/i.test(name) && !/flash[-_.]?lite/i.test(name) ? 1000 : 0;
+          return stable + full + modelVersionScore(name);
+        };
+        return score(right) - score(left);
+      });
   }
 
-  function availableModel(payload) {
-    return availableModels(payload)[0] || "";
+  function modelPlan() {
+    const pool = [...new Set(state.modelCandidates || [])];
+    const plan = [];
+    if (state.model && pool.includes(state.model)) plan.push(state.model);
+    for (const model of pool) if (!plan.includes(model)) plan.push(model);
+    return plan.slice(0, 6);
+  }
+
+  function retryDelay(attempt) {
+    return Math.min(2600, 500 * (2 ** attempt)) + Math.floor(Math.random() * 180);
+  }
+
+  function waitGemini(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function geminiFetchResilient(url, options = {}, timeoutMs = 16000, attempts = 2) {
+    let lastResponse = null;
+    let lastError = null;
+    for (let attempt = 0; attempt < Math.max(1, attempts); attempt += 1) {
+      try {
+        const response = await fetchGeminiBounded(url, options, timeoutMs);
+        lastResponse = response;
+        if (response.ok || !transientGemini(response.status) || attempt >= attempts - 1) return response;
+      } catch (error) {
+        lastError = error;
+        // A hard timeout switches model immediately; retrying the same timed-out
+        // endpoint makes the UI feel hung. Network failures get one bounded retry.
+        if (error?.code === "GEMINI_TIMEOUT" || attempt >= attempts - 1) throw error;
+      }
+      setStatus(`Gemini đang bận · tự thử lại ${attempt + 2}/${attempts}…`);
+      await waitGemini(retryDelay(attempt));
+    }
+    if (lastResponse) return lastResponse;
+    throw lastError || new Error("Gemini tạm thời chưa phản hồi.");
   }
 
   async function validateGemini(secret) {
-    const timeout = typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(15000) : undefined;
-    const response = await fetch(`${GOOGLE_AI_ORIGIN}/models?pageSize=100`, {
+    const response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/models?pageSize=100`, {
       method: "GET", mode: "cors", cache: "no-store",
       headers: { "x-goog-api-key": secret },
-      ...(timeout ? { signal: timeout } : {}),
-    });
+    }, 15000);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(providerMessage(response.status, payload.error?.message));
       error.status = response.status;
       throw error;
     }
-    state.modelCandidates = availableModels(payload);
-    const model = state.modelCandidates[0] || availableModel(payload);
-    if (!model) throw new Error("Dự án Google chưa có mô hình Gemini Flash khả dụng.");
 
-    // Do not report a false-positive connection from models.list alone.
-    // A tiny real generateContent probe proves that this key/model can answer now.
-    const probeTimeout = typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(18000) : undefined;
-    const probe = await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
-      method: "POST", mode: "cors", cache: "no-store",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: "Reply with exactly OK" }] }],
-        generationConfig: { maxOutputTokens: 16, temperature: 0 },
-      }),
-      ...(probeTimeout ? { signal: probeTimeout } : {}),
-    });
-    const probePayload = await probe.json().catch(() => ({}));
-    if (!probe.ok) {
-      const error = new Error(providerMessage(probe.status, probePayload.error?.message));
-      error.status = probe.status;
-      throw error;
+    state.modelCandidates = availableModels(payload);
+    if (!state.modelCandidates.length) throw new Error("Dự án Google chưa có mô hình Gemini Flash hỗ trợ generateContent.");
+
+    // Mirror Dolphin's resilient connection semantics: a key is "connected"
+    // only after a real generateContent probe succeeds, and a broken model is
+    // skipped automatically instead of making the entire AI appear offline.
+    const errors = [];
+    for (const model of modelPlan().slice(0, 4)) {
+      try {
+        const probe = await geminiFetchResilient(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
+          method: "POST", mode: "cors", cache: "no-store",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: "Reply with exactly OK" }] }],
+            generationConfig: { maxOutputTokens: 32, temperature: 0 },
+          }),
+        }, 16000, 2);
+        const probePayload = await probe.json().catch(() => ({}));
+        if (!probe.ok) {
+          const error = new Error(providerMessage(probe.status, probePayload.error?.message));
+          error.status = probe.status;
+          throw error;
+        }
+        const probeText = (probePayload.candidates || [])
+          .flatMap(candidate => candidate.content?.parts || [])
+          .map(part => part.text || "")
+          .join("")
+          .trim();
+        if (!probeText) {
+          const error = new Error("Gemini đã nhận khóa nhưng model chưa trả nội dung.");
+          error.status = 503;
+          throw error;
+        }
+        state.model = model;
+        return model;
+      } catch (error) {
+        errors.push(`${model} · ${String(error?.message || error)}`);
+        if (error?.status === 401) throw error;
+      }
     }
-    const probeText = (probePayload.candidates || [])
-      .flatMap(candidate => candidate.content?.parts || [])
-      .map(part => part.text || "")
-      .join("")
-      .trim();
-    if (!probeText) {
-      const error = new Error("Gemini đã nhận khóa nhưng chưa trả được nội dung generateContent.");
-      error.status = 503;
-      throw error;
-    }
-    return model;
+    const failure = new Error(errors.at(-1) || "Gemini không trả lời probe generateContent.");
+    failure.status = 503;
+    throw failure;
   }
 
   function systemInstruction() {
@@ -517,44 +571,33 @@
       method: "POST", mode: "cors", cache: "no-store",
       headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
     };
-    const interactionBody = tools => ({
-      model, input, system_instruction: systemInstruction(), store: false,
-      generation_config: { max_output_tokens: 4200, temperature: .18, ...((intent.useSnapshot || intent.shouldSearch) ? { thinking_level: "high" } : {}) },
-      ...(tools.length ? { tools: tools.map(type => type === "google_search" ? GOOGLE_SEARCH_TOOL : URL_CONTEXT_TOOL) } : {}),
-      ...(responseFormat(model) ? { response_format: responseFormat(model) } : {}),
-    });
     const compatibleBody = search => ({
       systemInstruction: { parts: [{ text: systemInstruction() }] },
       contents: [{ role: "user", parts: [{ text: input }] }],
       generationConfig: { maxOutputTokens: 4200, temperature: .18 },
       ...(search ? { tools: [{ googleSearch: {} }] } : {}),
     });
+
+    // Use the same stable Gemini surface as Dolphin: generateContent first.
+    // Open-source evidence is already embedded in the prompt; Google Search is
+    // an enhancement, never a single point of failure.
     let searchLimited = false;
-    let response;
-    const attempts = [["google_search", "url_context"]];
-    for (let index = 0; index < attempts.length; index += 1) {
-      const tools = attempts[index];
-      response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/interactions`, {
-        ...common, body: JSON.stringify(interactionBody(tools)),
-      }, 24000);
-      if (response.ok || response.status === 429 || ![400, 403].includes(response.status)) break;
-      if (index === 0) {
-        if (response.status === 400) attempts.push(["google_search"]);
-        attempts.push(["url_context"], []);
-      }
-      if (tools.includes("google_search") && response.status !== 400) searchLimited = true;
+    let response = await geminiFetchResilient(
+      `${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`,
+      { ...common, body: JSON.stringify(compatibleBody(intent.shouldSearch || intent.useSnapshot)) },
+      16000,
+      2,
+    );
+    if ((intent.shouldSearch || intent.useSnapshot) && [400, 403].includes(response.status)) {
+      searchLimited = true;
+      response = await geminiFetchResilient(
+        `${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`,
+        { ...common, body: JSON.stringify(compatibleBody(false)) },
+        16000,
+        2,
+      );
     }
-    if ([400, 404, 405].includes(response.status)) {
-      response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
-        ...common, body: JSON.stringify(compatibleBody(!searchLimited)),
-      }, 24000);
-      if (!searchLimited && [400, 403, 429].includes(response.status)) {
-        searchLimited = true;
-        response = await fetchGeminiBounded(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
-          ...common, body: JSON.stringify(compatibleBody(false)),
-        }, 24000);
-      }
-    }
+
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       const failure = new Error(providerMessage(response.status, payload.error?.message));
@@ -563,7 +606,12 @@
       throw failure;
     }
     const result = providerAnswer(payload);
-    if (!result.text) throw new Error("Gemini chưa trả về nội dung phân tích.");
+    if (!result.text) {
+      const failure = new Error("Gemini chưa trả về nội dung phân tích.");
+      failure.status = 503;
+      failure.sources = openSources;
+      throw failure;
+    }
     const structured = parseStructuredAnswer(result.text);
     if (structured) result.text = formatStructuredAnswer(structured);
     const known = new Set(result.sources.map(item => item.url));
@@ -587,13 +635,13 @@
       throw limited;
     }
     if (!state.modelCandidates.length) state.model = await validateGemini(secret);
-    const candidates = [...new Set([state.model, ...state.modelCandidates].filter(Boolean))].slice(0, 2);
+    const candidates = modelPlan().slice(0, 3);
     let lastError;
     for (let index = 0; index < candidates.length; index += 1) {
       state.model = candidates[index];
       try {
         const result = await directAnalysis(question, context, secret, intent);
-        return { ...result, modelFallbacks: index };
+        return { ...result, modelFallbacks: index, model: state.model };
       } catch (error) {
         lastError = error;
         if (error?.status === 429) {
@@ -601,7 +649,9 @@
           break;
         }
         if (index + 1 < candidates.length && [403, 404, 408, 500, 502, 503, 504].includes(Number(error?.status))) {
-          setStatus(error?.code === "GEMINI_TIMEOUT" ? "Gemini phản hồi chậm · đang chuyển mô hình…" : "Gemini gián đoạn · đang thử mô hình khác…");
+          setStatus(error?.code === "GEMINI_TIMEOUT"
+            ? "Gemini phản hồi chậm · đang chuyển model dự phòng…"
+            : "Gemini gián đoạn · đang chuyển model dự phòng…");
           continue;
         }
         break;
