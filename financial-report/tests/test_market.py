@@ -1645,6 +1645,16 @@ class MarketTests(unittest.TestCase):
         for forbidden in ('bond','swap','yield_curve','short_term_benchmark'):
             self.assertNotIn(forbidden,joined)
 
+    def test_world_bank_esg_refresh_cadence_is_weekly_and_cache_aware(self):
+        self.assertEqual(m.WORLD_BANK_ESG_REFRESH_HOURS,168)
+        recent={'collectedAt':datetime.now(timezone.utc).isoformat()}
+        age=m.dataset_age_hours(recent)
+        self.assertIsNotNone(age)
+        self.assertLess(age,1)
+        script=(ROOT/'scripts/refresh_market.py').read_text()
+        self.assertIn("'status': 'cached'",script)
+        self.assertIn("'refreshCadenceHours': WORLD_BANK_ESG_REFRESH_HOURS",script)
+
     def test_world_bank_esg_vietnam_keeps_all_available_years_and_dynamic_catalog(self):
         original=m._world_bank_json
         calls=[]

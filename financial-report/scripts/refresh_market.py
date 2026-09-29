@@ -161,6 +161,7 @@ VBMA_TABLES = {
 WORLD_BANK_API = 'https://api.worldbank.org/v2'
 WORLD_BANK_ESG_SOURCE = '75'
 WORLD_BANK_ESG_PROFILE = 'https://esgdata.worldbank.org/data/countries?iso3=VNM'
+WORLD_BANK_ESG_REFRESH_HOURS = int(os.environ.get('WORLD_BANK_ESG_REFRESH_HOURS', str(24 * 7)))
 
 
 def now():
@@ -1555,6 +1556,17 @@ def _world_bank_indicator_chunks(codes, max_count=45, max_chars=2200):
         yield chunk
 
 
+def dataset_age_hours(dataset):
+    raw = (dataset or {}).get('collectedAt') or (dataset or {}).get('checkedAt')
+    if not raw:
+        return None
+    try:
+        stamp = datetime.fromisoformat(str(raw).replace('Z', '+00:00')).astimezone(timezone.utc)
+        return max(0.0, (datetime.now(timezone.utc) - stamp).total_seconds() / 3600)
+    except (ValueError, TypeError):
+        return None
+
+
 def world_bank_esg_vietnam():
     """Fetch every ESG series published in World Bank DataBank source 75 for Viet Nam.
 
@@ -1643,19 +1655,41 @@ def macro(out, companies=None):
                 datasets[key] = {**retained, 'status': 'retained', 'error': str(e)}
             sources.append({'id': key, 'provider': 'VBMA', 'url': url, 'status': 'error', 'error': str(e)})
 
-    try:
-        esg = world_bank_esg_vietnam()
-        datasets['esg_world_bank'] = esg
+    retained_esg = previous.get('datasets', {}).get('esg_world_bank')
+    retained_age = dataset_age_hours(retained_esg)
+    if retained_esg and retained_age is not None and retained_age < WORLD_BANK_ESG_REFRESH_HOURS:
+        datasets['esg_world_bank'] = {
+            **retained_esg,
+            'status': 'cached',
+            'cacheCheckedAt': now(),
+            'refreshCadenceHours': WORLD_BANK_ESG_REFRESH_HOURS,
+        }
         sources.append({
             'id': 'esg_world_bank', 'provider': 'World Bank ESG', 'url': WORLD_BANK_ESG_PROFILE,
-            'status': 'ok', 'rows': len(esg['rows']), 'indicators': esg['indicatorCount']
+            'status': 'cached', 'rows': len(retained_esg.get('rows', [])),
+            'indicators': retained_esg.get('indicatorCount', 0),
+            'ageHours': round(retained_age, 1),
+            'refreshCadenceHours': WORLD_BANK_ESG_REFRESH_HOURS,
         })
-    except Exception as e:
-        retained = previous.get('datasets', {}).get('esg_world_bank')
-        if retained:
-            datasets['esg_world_bank'] = {**retained, 'status': 'retained', 'error': str(e)}
-        sources.append({'id': 'esg_world_bank', 'provider': 'World Bank ESG', 'url': WORLD_BANK_ESG_PROFILE,
-                        'status': 'error', 'error': str(e)})
+    else:
+        try:
+            esg = world_bank_esg_vietnam()
+            esg['refreshCadenceHours'] = WORLD_BANK_ESG_REFRESH_HOURS
+            datasets['esg_world_bank'] = esg
+            sources.append({
+                'id': 'esg_world_bank', 'provider': 'World Bank ESG', 'url': WORLD_BANK_ESG_PROFILE,
+                'status': 'ok', 'rows': len(esg['rows']), 'indicators': esg['indicatorCount'],
+                'refreshCadenceHours': WORLD_BANK_ESG_REFRESH_HOURS,
+            })
+        except Exception as e:
+            if retained_esg:
+                datasets['esg_world_bank'] = {
+                    **retained_esg, 'status': 'retained', 'error': str(e),
+                    'refreshCadenceHours': WORLD_BANK_ESG_REFRESH_HOURS,
+                }
+            sources.append({'id': 'esg_world_bank', 'provider': 'World Bank ESG', 'url': WORLD_BANK_ESG_PROFILE,
+                            'status': 'error', 'error': str(e),
+                            'refreshCadenceHours': WORLD_BANK_ESG_REFRESH_HOURS})
 
     ok = any(x['status'] == 'ok' for x in sources)
     providers = sorted({x.get('provider') for x in sources if x.get('provider') and (x['status'] == 'ok' or x['id'] in datasets)})
