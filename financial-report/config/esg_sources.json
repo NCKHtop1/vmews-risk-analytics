@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -22,9 +22,211 @@
       "type_overrides": {
         "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf": "annual_report"
       },
-      "reprocess_version": 1,
+      "reprocess_version": 2,
       "reprocess_urls": [
-        "https://acb.com.vn/ve-chung-toi/acb-hoan-thien-chien-luoc-phat-trien-ben-vung-dinh-hinh-nen-tang-truong-moi-01062026"
+        "https://acb.com.vn/ve-chung-toi/acb-hoan-thien-chien-luoc-phat-trien-ben-vung-dinh-hinh-nen-tang-truong-moi-01062026",
+        "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+        "https://acb.com.vn/nha-dau-tu/acb-bao-cao-phat-trien-ben-vung"
+      ],
+      "year_url_templates": [
+        "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-{year}"
+      ],
+      "validated_metrics": [
+        {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "value": 40204779,
+          "rawValue": "40.204.779",
+          "unit": "kWh",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported electricity consumption of 40,204,779 kWh for 2022 in the comparative 2022-2024 series."
+        },
+        {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2023,
+          "value": 39734459,
+          "rawValue": "39.734.459",
+          "unit": "kWh",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported electricity consumption of 39,734,459 kWh for 2023 in the comparative 2022-2024 series."
+        },
+        {
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2024,
+          "value": 41159548,
+          "rawValue": "41.159.548",
+          "unit": "kWh",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported total electricity consumption of 41,159,548 kWh in 2024."
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2022,
+          "value": 184000,
+          "rawValue": "184.000",
+          "unit": "m3",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported water consumption of 184,000 m3 for 2022 in the comparative series."
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "value": 264000,
+          "rawValue": "264.000",
+          "unit": "m3",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported water consumption of 264,000 m3 for 2023 in the comparative series."
+        },
+        {
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "value": 260469,
+          "rawValue": "260.469",
+          "unit": "m3",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported total water consumption of 260,469 m3 in 2024."
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2022,
+          "value": 1410000,
+          "rawValue": "1.410.000",
+          "unit": "kg",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported paper consumption of 1,410,000 kg for 2022 in the comparative series."
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2023,
+          "value": 1455000,
+          "rawValue": "1.455.000",
+          "unit": "kg",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported paper consumption of 1,455,000 kg for 2023 in the comparative series."
+        },
+        {
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2024,
+          "value": 1098041,
+          "rawValue": "1.098.041",
+          "unit": "kg",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported paper consumption of 1,098,041 kg in 2024."
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2022,
+          "value": 65,
+          "rawValue": "65",
+          "unit": "%",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported women represented 65% of employees in 2022."
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2023,
+          "value": 65,
+          "rawValue": "65",
+          "unit": "%",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported women represented 65% of employees in 2023."
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "value": 66,
+          "rawValue": "66",
+          "unit": "%",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "At 31 December 2024 ACB reported 13,290 employees, of whom 66% were women."
+        },
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "value": 834570,
+          "rawValue": "834.570",
+          "unit": "hours",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported 834,570 total training hours in 2024."
+        },
+        {
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "value": 64,
+          "rawValue": "64",
+          "unit": "hours/employee",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported 64 average training hours per employee in 2024."
+        },
+        {
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "value": 107,
+          "rawValue": "107",
+          "unit": "billion VND",
+          "sourceUrl": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+          "sourceTitle": "ACB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "ACB reported approximately VND 107 billion of community and social-welfare spending in 2024."
+        }
       ]
     },
     "BID": {
