@@ -12,7 +12,7 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
   workflow_run:
-    workflows: ['Refresh FinQuery prices and company news', 'Refresh live VN100 prices', 'Refresh market news stream', 'Refresh financial reports for CDN', 'Refresh investment insights']
+    workflows: ['Refresh FinQuery prices and company news', 'Refresh live HOSE Core + Liquid prices', 'Refresh market news stream', 'Refresh financial reports for CDN', 'Refresh investment insights']
     types: [completed]
     branches: [main]
 
@@ -119,6 +119,7 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/quotes.json" -o /tmp/quotes.json
           curl -fsSL --max-time 20 "$BASE/market/news.json" -o /tmp/news.json
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json" -o /tmp/scanner.json
+          curl -fsSL --max-time 20 "$BASE/market/universe.json" -o /tmp/universe.json
           curl -fsSL --max-time 20 "$BASE/market/company-esg.json" -o /tmp/esg.json
           curl -fsSL --max-time 20 "$BASE/data/manifest.json" -o /tmp/manifest.json
           curl -fsSL --max-time 20 "$BASE/data/insights-status.json" -o /tmp/insights.json
@@ -127,10 +128,17 @@ jobs:
           from datetime import datetime, timezone, timedelta
           def load(name):
               return json.load(open('/tmp/'+name,encoding='utf-8'))
-          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json')
+          import math
+          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); u=load('universe.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
-          assert q.get('status')=='ok' and int(q.get('coverage') or 0)>=90,q
-          assert s.get('status')=='ok' and int(s.get('coverage') or 0)>=90,s
+          q_expected=max(1,int(q.get('expected') or 0)); q_required=max(1,math.ceil(q_expected*.90))
+          s_universe=max(1,int(s.get('universe') or 0)); s_required=max(1,math.ceil(s_universe*.90))
+          assert q.get('status')=='ok' and int(q.get('coverage') or 0)>=q_required,(q.get('coverage'),q_expected)
+          assert s.get('status')=='ok' and int(s.get('coverage') or 0)>=s_required,(s.get('coverage'),s_universe)
+          counts=u.get('counts') or {}
+          assert int(counts.get('core') or 0)==100,counts
+          assert int(counts.get('liveMarket') or 0)>=100,counts
+          assert int(counts.get('scannerEligible') or 0)>=int(counts.get('liveMarket') or 0),counts
           assert str(s.get('sourceTime'))==str(q.get('latestSourceTime')), (s.get('sourceTime'),q.get('latestSourceTime'))
           assert n.get('status')=='ok' and len(n.get('items') or [])>0,n
           checked=datetime.fromisoformat(str(n.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
