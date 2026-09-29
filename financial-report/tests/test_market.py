@@ -503,6 +503,8 @@ class MarketTests(unittest.TestCase):
     def test_events_v6_has_official_registry_schedule_and_pages_trigger(self):
         sources=json.loads((ROOT/'config/event_sources.json').read_text())
         kinds={x['kind'] for x in sources['sources'] if x.get('enabled')}
+        registry={x['code']:x for x in sources['sources']}
+        self.assertEqual(registry['VSDC']['url'],'https://vsdc.vn/vi/')
         self.assertIn('24hmoney_events',kinds)
         self.assertIn('health',kinds)
         flow=(ROOT.parent/'.github/workflows/research-timeline-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/research-timeline-refresh.yml').exists() else pathlib.Path('.github/workflows/research-timeline-refresh.yml').read_text()
@@ -595,6 +597,9 @@ class MarketTests(unittest.TestCase):
         codes={x['code'] for x in sources['sources'] if x.get('enabled')}
         self.assertTrue({'MBS','VIETCAP','FPTS','ACBS','SHS','BSC','VCBS','KBSV','MIRAE','DSC','SSI','YUANTA'}.issubset(codes))
         self.assertGreaterEqual(len(codes),15)
+        rows={x['code']:x for x in sources['sources']}
+        self.assertEqual(rows['BSC']['url'],'https://www.bsc.com.vn/trung-tam-bao-cao-phan-tich/')
+        self.assertEqual(rows['SSI']['url'],'https://research.ssi.com.vn/tim-kiem')
         companies=json.loads((ROOT/'data/companies.json').read_text())
         self.assertEqual(len(companies),100)
         self.assertTrue(all(len(x['symbol'])==3 for x in companies))
