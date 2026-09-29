@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-29T02:31:46.396328+00:00",
+  "checkedAt": "2026-09-29T02:33:35.670998+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 5,
   "status": "ok",
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T02:31:28.257199+00:00",
+      "checkedAt": "2026-09-29T02:32:44.968763+00:00",
       "documents": [
         {
           "id": "4c50ba807f5df7eeae1a",
@@ -53,7 +53,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T02:31:28.257324+00:00",
+      "checkedAt": "2026-09-29T02:32:44.968931+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -91,7 +91,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T02:31:28.257550+00:00",
+      "checkedAt": "2026-09-29T02:32:44.969305+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -540,7 +540,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T02:31:28.257815+00:00",
+      "checkedAt": "2026-09-29T02:32:44.969711+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -548,7 +548,11 @@
           "title": "Báo cáo tài chính năm 2025 đã kiểm toán (30/03/2026) Báo cáo tài chính riêng lẻ năm 2025 đã kiểm toán",
           "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
           "year": 2025,
-          "type": "esg_other"
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "processedAt": "2026-09-29T02:33:31.795066+00:00",
+          "textLength": 0
         },
         {
           "id": "7067e3bb54f26cf304e3",
@@ -556,7 +560,11 @@
           "title": "Báo cáo tài chính năm 2025 đã kiểm toán (30/03/2026) Báo cáo tài chính hợp nhất năm 2025 đã kiểm toán",
           "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
           "year": 2025,
-          "type": "esg_other"
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "processedAt": "2026-09-29T02:33:35.640584+00:00",
+          "textLength": 0
         },
         {
           "id": "7622881a4555adbcc1d3",
@@ -728,7 +736,7 @@
       ],
       "coverage": {
         "documents": 5,
-        "processedDocuments": 3,
+        "processedDocuments": 5,
         "metrics": 5,
         "canonicalMetrics": 3,
         "externalAssessments": 0
@@ -737,7 +745,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T02:31:28.257908+00:00",
+      "checkedAt": "2026-09-29T02:32:44.969838+00:00",
       "documents": [
         {
           "id": "154efe68d916615a36dd",
@@ -766,7 +774,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T02:31:28.257989+00:00",
+      "checkedAt": "2026-09-29T02:32:44.969909+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -795,7 +803,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T02:31:28.258058+00:00",
+      "checkedAt": "2026-09-29T02:32:44.970015+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -824,7 +832,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T02:31:28.258759+00:00",
+      "checkedAt": "2026-09-29T02:32:44.970942+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -1346,7 +1354,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T02:31:28.258765+00:00",
+      "checkedAt": "2026-09-29T02:32:44.970952+00:00",
       "documents": [],
       "metrics": [],
       "externalAssessments": [],
@@ -1362,12 +1370,12 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T02:31:28.259534+00:00",
+      "checkedAt": "2026-09-29T02:32:44.972013+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408184738_20260408-ocb-bao-cao-thuong-nien-2025-website.pdf",
-          "title": "SEE_MORE",
+          "title": "Báo cáo thường niên 2025 2025 Ngày đăng: 08/4/2026 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2025,
           "type": "annual_report",
@@ -2061,7 +2069,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T02:31:28.259561+00:00",
+      "checkedAt": "2026-09-29T02:32:44.972048+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -2124,7 +2132,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T02:31:28.259751+00:00",
+      "checkedAt": "2026-09-29T02:32:44.972358+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -2237,7 +2245,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T02:31:28.259811+00:00",
+      "checkedAt": "2026-09-29T02:32:44.972461+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -2324,7 +2332,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T02:31:28.260061+00:00",
+      "checkedAt": "2026-09-29T02:32:44.972832+00:00",
       "documents": [
         {
           "id": "725b2cc303c70d1ae0c8",
@@ -2372,18 +2380,6 @@
           "contentType": "html"
         },
         {
-          "id": "5f8da544b07832ede0e2",
-          "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Sustainability",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
-          "processedAt": "2026-09-29T01:34:42.514584+00:00",
-          "textLength": 5751
-        },
-        {
           "id": "b29212c4fc9f6ede5273",
           "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
           "title": "See all ESG solutions",
@@ -2394,6 +2390,18 @@
           "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
           "processedAt": "2026-09-29T01:34:42.419679+00:00",
           "textLength": 3469
+        },
+        {
+          "id": "5f8da544b07832ede0e2",
+          "url": "https://techcombank.com/en/about-us/sustainability",
+          "title": "Overview",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
+          "processedAt": "2026-09-29T01:34:42.514584+00:00",
+          "textLength": 5751
         },
         {
           "id": "92a4cc6c630bcb4bdbd4",
@@ -2593,7 +2601,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T02:31:28.260127+00:00",
+      "checkedAt": "2026-09-29T02:32:44.972905+00:00",
       "documents": [
         {
           "id": "247e91a06e927e5991e3",
@@ -2634,7 +2642,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T02:31:28.260307+00:00",
+      "checkedAt": "2026-09-29T02:32:44.973163+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -3162,7 +3170,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T02:31:28.260337+00:00",
+      "checkedAt": "2026-09-29T02:32:44.973208+00:00",
       "documents": [
         {
           "id": "6968d1a581184f508e23",
@@ -3191,7 +3199,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T02:31:28.260442+00:00",
+      "checkedAt": "2026-09-29T02:32:44.973429+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -3491,7 +3499,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T02:17:32.676504+00:00",
+      "processedAt": "2026-09-29T02:31:46.118632+00:00",
       "textLength": 98218
     },
     {
@@ -3505,7 +3513,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T02:31:46.118632+00:00",
+      "processedAt": "2026-09-29T02:33:04.288655+00:00",
       "textLength": 98218
     },
     {
@@ -3519,7 +3527,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T02:28:26.903462+00:00",
+      "processedAt": "2026-09-29T02:31:44.712106+00:00",
       "textLength": 61879
     },
     {
@@ -3533,7 +3541,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T02:31:44.712106+00:00",
+      "processedAt": "2026-09-29T02:33:01.576965+00:00",
       "textLength": 61879
     },
     {
@@ -3791,7 +3799,10 @@
       "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "9711627e61313734dcaca203b3ff11e9fb7c67624a93d5a287999913df0d87b8",
+      "processedAt": "2026-09-29T02:32:53.540322+00:00",
+      "textLength": 157
     },
     {
       "id": "eabd2926347c36adb365",
@@ -3802,7 +3813,10 @@
       "type": "sustainable_finance_assessment",
       "contentType": "html",
       "provider": "VIS Rating",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "58b07feb42ad37a1219722a743db92f2327f4ba018b1ce7fafbb8ff5451fd850",
+      "processedAt": "2026-09-29T02:32:55.715650+00:00",
+      "textLength": 6246
     },
     {
       "id": "c61ffa15b70931ac2f41",
@@ -3880,7 +3894,7 @@
       "title": "Nature Data",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -4188,9 +4202,13 @@
       "title": "Climate and Net Zero Aligned Solutions",
       "sourcePage": "https://www.sustainalytics.com/investor-solutions/esg-research/climate-solutions/carbon-emissions-data",
       "year": null,
-      "type": "esg_other",
+      "type": "climate_disclosure",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentType": "pdf",
+      "contentHash": "86987d4f39f2a2caedd6de1a523dfacaf54847f1392481978f7a822e45731dc5",
+      "processedAt": "2026-09-29T02:32:56.556945+00:00",
+      "textLength": 8657
     },
     {
       "id": "07a4bc0aa0b3e0817306",
@@ -4212,7 +4230,7 @@
       "title": "Climate Solutions Overview",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -4312,12 +4330,16 @@
       "year": null,
       "type": "sustainability_report",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentType": "pdf",
+      "contentHash": "b8e719a00d0d7f00c23ceedc0d79e4640abb338845e6399cb3a93ab9abb2e461",
+      "processedAt": "2026-09-29T02:32:59.906010+00:00",
+      "textLength": 335260
     },
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessments",
+      "title": "Assessment page",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -4343,6 +4365,20 @@
       "textLength": 243
     },
     {
+      "id": "74772c7c9928d238a390",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/analytical-approach-climate-bonds-initiative-external-reviews-s101660515",
+      "title": "Analytical Approach: Climate Bonds Initiative External Reviews",
+      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
+      "year": null,
+      "type": "esg_other",
+      "contentType": "html",
+      "provider": "S&P Global Ratings",
+      "externalKind": "second_party_opinion",
+      "contentHash": "71a9fc8e36e08e5e4309476b90c722dcc7a7e1abac0108f7092d163f0b1c89d1",
+      "processedAt": "2026-09-29T02:31:40.862539+00:00",
+      "textLength": 243
+    },
+    {
       "id": "a36ae78ae420a207f574",
       "url": "https://www.spglobal.com/ratings/en/regulatory/article/230727-analytical-approach-second-party-opinions-use-of-proceeds-s12775313",
       "title": "Analytical Approach for Second Party Opinions",
@@ -4355,20 +4391,6 @@
       "contentHash": "b0c0881b4a975993e8c79578ab47902091be4b03e394b2a42f4055a7635d62ba",
       "processedAt": "2026-09-29T02:31:42.515482+00:00",
       "textLength": 236
-    },
-    {
-      "id": "74772c7c9928d238a390",
-      "url": "https://www.spglobal.com/ratings/en/regulatory/article/analytical-approach-climate-bonds-initiative-external-reviews-s101660515",
-      "title": "Analytical Approach for Climate Bond Initiative External Reviews",
-      "sourcePage": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
-      "year": null,
-      "type": "esg_other",
-      "contentType": "html",
-      "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion",
-      "contentHash": "71a9fc8e36e08e5e4309476b90c722dcc7a7e1abac0108f7092d163f0b1c89d1",
-      "processedAt": "2026-09-29T02:31:40.862539+00:00",
-      "textLength": 243
     },
     {
       "id": "0d9d1e8d0b9ea09f21ba",
@@ -4388,11 +4410,15 @@
       "id": "5278c75be602879a63b2",
       "url": "https://connect.sustainalytics.com/hubfs/INV/Climate%20Solutions/Carbon%20Emissions/2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
       "title": "2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
-      "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-research",
       "year": null,
-      "type": "esg_other",
+      "type": "climate_disclosure",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentType": "pdf",
+      "contentHash": "f78c039c11a0e83b5fc6d80eb9d3e5528aba9e8ae564513f14ebc2eeab039c6d",
+      "processedAt": "2026-09-29T02:32:57.067957+00:00",
+      "textLength": 9646
     }
   ],
   "sources": [
@@ -4458,8 +4484,8 @@
     },
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
-      "status": "ok",
-      "documents": 1,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "LPB"
     },
     {
@@ -4643,7 +4669,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 2,
+      "documents": 3,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -4657,12 +4683,12 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 16,
-    "backlogBeforeRun": 35,
-    "activeBacklogBeforeRun": 23,
-    "backlogRemaining": 7,
-    "eligibleBacklog": 34,
-    "recentBacklog": 23,
+    "documentsProcessed": 9,
+    "backlogBeforeRun": 21,
+    "activeBacklogBeforeRun": 9,
+    "backlogRemaining": 0,
+    "eligibleBacklog": 20,
+    "recentBacklog": 9,
     "historicalBacklog": 5,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
