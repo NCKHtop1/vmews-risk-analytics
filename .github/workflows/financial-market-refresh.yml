@@ -13,6 +13,10 @@ on:
       - 'financial-report/scripts/refresh_esg.py'
       - 'financial-report/config/esg_sources.json'
   schedule:
+    # Fallback watchdogs for the dedicated live workflows. They run only when
+    # the published snapshot is stale, so missed GitHub cron events self-heal.
+    - cron: '0,15,30,45 2-8 * * 1-5'
+    - cron: '7,22,37,52 * * * *'
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
     # Corporate ESG source discovery: twice each business day, plus Saturday catch-up.
@@ -78,6 +82,8 @@ jobs:
           # Push-triggered runs are now ESG-only. Live price/news have dedicated
           # workflows and must never be overwritten by a generic mode=all push.
           if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
+          if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
+          if [ "$EVENT_SCHEDULE" = '7,22,37,52 * * * *' ]; then mode=news-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ]; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg-history; fi
@@ -87,10 +93,61 @@ jobs:
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-refresh\]'; then mode=history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
+          if [ "$mode" = 'prices-watchdog' ]; then
+            if python - <<'PY'
+          import json
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          VN=timezone(timedelta(hours=7)); now=datetime.now(timezone.utc); local=now.astimezone(VN)
+          mins=local.hour*60+local.minute
+          active=local.weekday()<5 and ((9*60<=mins<=11*60+40) or (12*60+55<=mins<=15*60+15))
+          if not active: raise SystemExit(0)
+          try: d=json.loads(Path('/tmp/market-publish/market/quotes.json').read_text())
+          except Exception: raise SystemExit(1)
+          raw=d.get('latestSourceTime') or d.get('checkedAt')
+          try: stamp=datetime.fromisoformat(str(raw).replace('Z','+00:00')).astimezone(timezone.utc)
+          except Exception: raise SystemExit(1)
+          age=(now-stamp).total_seconds()/60
+          same_day=stamp.astimezone(VN).date()==local.date()
+          fresh=d.get('status')=='ok' and int(d.get('coverage') or 0)>=90 and same_day and age<=30
+          print('PRICE WATCHDOG',{'fresh':fresh,'ageMin':round(age,1),'source':raw})
+          raise SystemExit(0 if fresh else 1)
+          PY
+            then
+              echo "Dedicated price snapshot is fresh; watchdog skipped."
+              exit 0
+            else
+              mode=prices
+            fi
+          fi
+          if [ "$mode" = 'news-watchdog' ]; then
+            if python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          now=datetime.now(timezone.utc)
+          try: d=json.loads(Path('/tmp/market-publish/market/news.json').read_text())
+          except Exception: raise SystemExit(1)
+          try: stamp=datetime.fromisoformat(str(d.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+          except Exception: raise SystemExit(1)
+          age=(now-stamp).total_seconds()/60
+          fresh=d.get('status')=='ok' and bool(d.get('items')) and age<=20
+          print('NEWS WATCHDOG',{'fresh':fresh,'ageMin':round(age,1),'checkedAt':d.get('checkedAt')})
+          raise SystemExit(0 if fresh else 1)
+          PY
+            then
+              echo "Dedicated news snapshot is fresh; watchdog skipped."
+              exit 0
+            else
+              mode=news
+            fi
+          fi
           if [ "$mode" = 'esg' ]; then
             python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
           elif [ "$mode" = 'esg-history' ]; then
             ESG_HISTORY_BACKFILL=1 python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
+          elif [ "$mode" = 'prices' ]; then
+            MARKET_REQUIRE_TODAY=1 python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode prices
           else
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
           fi
