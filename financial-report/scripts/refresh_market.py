@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urlencode, urlsplit, urlunsplit
+from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +32,9 @@ FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('VnEconomy', 'https://vneconomy.vn/chung-khoan.rss'),
          ('VnEconomy', 'https://vneconomy.vn/thi-truong.rss'),
          ('VnEconomy', 'https://vneconomy.vn/dau-tu.rss'),
-         ('VnEconomy', 'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss')]
+         ('VnEconomy', 'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss'),
+         ('Federal Reserve', 'https://www.federalreserve.gov/feeds/press_all.xml'),
+         ('ECB', 'https://mid.ecb.europa.eu/rss/mid.xml')]
 FEED_TOPICS = {
     'https://baodautu.vn/chung-khoan.rss': {'stocks', 'market', 'investment'},
     'https://baodautu.vn/doanh-nghiep.rss': {'company', 'investment'},
@@ -44,6 +46,8 @@ FEED_TOPICS = {
     'https://vneconomy.vn/thi-truong.rss': {'market'},
     'https://vneconomy.vn/dau-tu.rss': {'investment', 'market'},
     'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss': {'company'},
+    'https://www.federalreserve.gov/feeds/press_all.xml': {'global','macro','rates','central_bank'},
+    'https://mid.ecb.europa.eu/rss/mid.xml': {'global','macro','rates','central_bank'},
 }
 TOPIC_PATTERNS = {
     'finance': re.compile(r'tài chính|trái phiếu|tỷ giá|bảo hiểm|ngân sách', re.I),
@@ -52,8 +56,37 @@ TOPIC_PATTERNS = {
     'stocks': re.compile(r'chứng khoán|cổ phiếu|vn-?index|hose|hnx|upcom|phái sinh', re.I),
     'banking': re.compile(r'ngân hàng|tín dụng|tiền gửi', re.I),
     'investment': re.compile(r'đầu tư|fdi|giải ngân|dự án|quỹ đầu tư', re.I),
-    'macro': re.compile(r'gdp|cpi|lạm phát|kinh tế|xuất khẩu|nhập khẩu|tăng trưởng', re.I),
+    'macro': re.compile(r'gdp|cpi|lạm phát|kinh tế|xuất khẩu|nhập khẩu|tăng trưởng|inflation|economic|growth|payroll|employment|pmi', re.I),
+    'global': re.compile(r'fed|federal reserve|fomc|ecb|european central bank|boj|pboc|treasury|wall street|euro area|eurozone|united states|china|japan|opec|brent|wti|geopolit', re.I),
+    'central_bank': re.compile(r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|central bank|monetary policy', re.I),
+    'sbv': re.compile(r'ngân hàng nhà nước|nhnn|sbv|thị trường mở|omo|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I),
 }
+
+IMPACT_PATTERN = re.compile(
+    r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|lãi suất|interest rate|rate cut|rate hike|'
+    r'omo|thị trường mở|bơm ròng|hút ròng|tỷ giá|exchange rate|treasury|bond yield|cpi|inflation|'
+    r'lạm phát|gdp|payroll|employment|oil|brent|wti|gold|vàng|war|conflict|geopolit|sanction|'
+    r'default|bank failure|khủng hoảng|phá sản ngân hàng', re.I)
+CENTRAL_BANK_PATTERN = re.compile(r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|central bank|monetary policy', re.I)
+SBV_PATTERN = re.compile(r'ngân hàng nhà nước|nhnn|sbv|thị trường mở|omo|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I)
+
+def classify_news_meta(title, body, publisher, topics, published_at):
+    text = ' '.join([title or '', body or '', publisher or ''])
+    region = 'global' if ('global' in topics or publisher in {'Federal Reserve','ECB'} or re.search(r'fed|fomc|ecb|euro area|united states|treasury|boj|pboc|china|japan|opec', text, re.I)) else 'vietnam'
+    official = 'FED' if publisher == 'Federal Reserve' else ('ECB' if publisher == 'ECB' else None)
+    score = 0
+    if CENTRAL_BANK_PATTERN.search(text): score += 38
+    if SBV_PATTERN.search(text): score += 34
+    if re.search(r'lãi suất|interest rate|rate cut|rate hike|omo|bơm ròng|hút ròng|tỷ giá|exchange rate|treasury|bond yield|cpi|inflation|lạm phát|gdp|oil|brent|wti|gold|vàng', text, re.I): score += 24
+    if re.search(r'war|conflict|geopolit|sanction|default|bank failure|khủng hoảng|phá sản', text, re.I): score += 28
+    try:
+        age_h = max(0.0, (datetime.now(timezone.utc) - datetime.fromisoformat(str(published_at).replace('Z','+00:00')).astimezone(timezone.utc)).total_seconds()/3600)
+        score += 18 if age_h <= 6 else (10 if age_h <= 24 else (4 if age_h <= 72 else 0))
+    except Exception:
+        pass
+    if 'stocks' in topics or 'market' in topics: score += 8
+    return {'region': region, 'officialSource': official, 'impactScore': min(100, score), 'marketMoving': bool(score >= 45 or IMPACT_PATTERN.search(text))}
+
 ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng MB', 'Ngân hàng Quân đội', 'Ngân hàng Quân Đội'],
            'VCB': ['Vietcombank'], 'BID': ['BIDV'], 'CTG': ['VietinBank'],
            'TCB': ['Techcombank'], 'VPB': ['VPBank'], 'STB': ['Sacombank'],
@@ -1340,7 +1373,8 @@ def parse_feed(raw, publisher, feed_url, companies, current):
     for item in ET.fromstring(text).findall('.//item'):
         title = clean(item.findtext('title'))
         link = urlsplit((item.findtext('link') or '').strip())
-        if link.scheme not in ('http', 'https') or link.hostname != domain or not title:
+        official_host_ok = (publisher == 'Federal Reserve' and (link.hostname or '').endswith('federalreserve.gov')) or (publisher == 'ECB' and (link.hostname or '').endswith('ecb.europa.eu'))
+        if link.scheme not in ('http', 'https') or (link.hostname != domain and not official_host_ok) or not title:
             continue
         try:
             dt = parsedate_to_datetime(item.findtext('pubDate'))
@@ -1358,7 +1392,8 @@ def parse_feed(raw, publisher, feed_url, companies, current):
                 topics.add(topic)
         if matched:
             topics.add('company')
-        rows.append({'title': title, 'summary': body[:900], 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics)})
+        meta = classify_news_meta(title, body, publisher, topics, dt.isoformat())
+        rows.append({'title': title, 'summary': body[:900], 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics), **meta})
     return rows
 
 
@@ -1583,6 +1618,54 @@ def macro(out, companies=None):
         raise RuntimeError('Macro and ESG collection failed and no retained data is available')
 
 
+SBV_NEWS_URL = 'https://www.sbv.gov.vn/webcenter/portal/vi/menu/trangchu/ttsk'
+
+def _fetch_sbv_news(current):
+    try:
+        raw = request(SBV_NEWS_URL)
+        text = raw.decode('utf-8-sig', errors='ignore') if isinstance(raw, bytes) else str(raw)
+        rows, seen = [], set()
+        # The SBV portal is server-rendered but does not expose a stable public RSS endpoint.
+        # Extract article links containing dDocName and require a nearby dd/mm/yyyy date.
+        pattern = re.compile(r'<a[^>]+href=["\']([^"\']*dDocName=[^"\']+)["\'][^>]*>(.*?)</a>', re.I | re.S)
+        for match in pattern.finditer(text):
+            title = clean(match.group(2))
+            if len(title) < 18:
+                continue
+            href = html.unescape(match.group(1))
+            link = urljoin(SBV_NEWS_URL, href)
+            if 'sbv.gov.vn' not in (urlsplit(link).hostname or ''):
+                continue
+            context = clean(text[max(0, match.start()-260):min(len(text), match.end()+260)])
+            date_match = re.search(r'(\d{1,2})/(\d{1,2})/(\d{4})', context)
+            if not date_match:
+                continue
+            day, month, year = map(int, date_match.groups())
+            try:
+                dt = datetime(year, month, day, 1, 0, tzinfo=VN).astimezone(timezone.utc)
+            except ValueError:
+                continue
+            if dt > current + timedelta(days=1) or dt < current - timedelta(days=30):
+                continue
+            key = title.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            topics = {'vietnam','banking','macro','central_bank','sbv'}
+            for topic, topic_pattern in TOPIC_PATTERNS.items():
+                if topic_pattern.search(title):
+                    topics.add(topic)
+            meta = classify_news_meta(title, '', 'Ngân hàng Nhà nước Việt Nam', topics, dt.isoformat())
+            meta['officialSource'] = 'SBV'
+            meta['impactScore'] = max(meta['impactScore'], 52 if SBV_PATTERN.search(title) else 36)
+            rows.append({'title': title, 'summary': '', 'url': link, 'source': 'Ngân hàng Nhà nước Việt Nam',
+                         'publishedAt': dt.isoformat(), 'symbols': [], 'topics': sorted(topics), **meta})
+        rows.sort(key=lambda row: row['publishedAt'], reverse=True)
+        return rows[:80], {'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL, 'status': 'ok', 'items': len(rows[:80])}
+    except Exception as e:
+        return [], {'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL, 'status': 'error', 'error': str(e)}
+
+
 def _fetch_news_feed(publisher, url, companies, current):
     try:
         items = parse_feed(request(url), publisher, url, companies, current)
@@ -1607,6 +1690,9 @@ def news(out, companies):
             items, source = future.result()
             rows.extend(items)
             sources.append(source)
+    sbv_items, sbv_source = _fetch_sbv_news(current)
+    rows.extend(sbv_items)
+    sources.append(sbv_source)
     source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
     unique = {}
