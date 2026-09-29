@@ -11,6 +11,8 @@ on:
       - 'solution-ai-v17.js'
       - 'forecast-final.html'
       - 'scripts/solution_ai_browser_smoke.mjs'
+      - 'scripts/solution_ai_v17_test.mjs'
+      - 'scripts/solution_ai_frontend_v17_test.mjs'
       - 'scripts/solution_ai_full_system_audit.mjs'
       - '.github/workflows/solution-ai-production-smoke.yml'
 
