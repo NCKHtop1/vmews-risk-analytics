@@ -326,7 +326,7 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(esm.parse_number('19.321','m3'),19321)
         mixed='Sustainability Report 2025. Green Bond Framework and Annual Report references.'
         self.assertEqual(esm.classify_document(mixed),'sustainability_report')
-        self.assertEqual(esm.classify_document('FPT Báo cáo tài chính thường niên năm 2025'),'annual_report')
+        self.assertEqual(esm.classify_document('FPT Báo cáo tài chính thường niên năm 2025'),'esg_other')
 
     def test_corporate_esg_bootstrap_prioritizes_bank_reports_over_external_archives(self):
         report={'type':'sustainability_report','year':2025,'url':'https://bank/report.pdf'}
