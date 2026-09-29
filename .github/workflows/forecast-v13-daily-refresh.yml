@@ -92,7 +92,6 @@ permissions:
 concurrency:
   group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: false
-  queue: max
 
 jobs:
   update-validated-forecast:
