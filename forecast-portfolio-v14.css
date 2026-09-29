@@ -364,7 +364,8 @@ body::before {
 .forecastCard:hover::after, .forecastCard.active::after { opacity: 1; }
 .forecastCard.active { border-color: rgba(168, 235, 101, .64); background: linear-gradient(155deg, rgba(28, 39, 21, .89), rgba(13, 16, 11, .96)); }
 .forecastCard strong { margin-top: 5px; font-size: 24px; letter-spacing: -.045em; }
-.forecastCard.active strong { color: #c6f394; }
+.forecastCard.active strong.good { color: #c6f394; }
+.forecastCard.active strong.bad { color: #e17875; }
 
 .proof, .bt { margin-top: 20px; }
 .proofGrid { gap: 11px; }
