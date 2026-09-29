@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -7,10 +7,16 @@
         "ACB"
       ],
       "seed_urls": [
+        "https://acb.com.vn/ve-chung-toi/acb-hoan-thien-chien-luoc-phat-trien-ben-vung-dinh-hinh-nen-tang-truong-moi-01062026",
+        "https://acb.com.vn/acbwebsite/files/ESG_2024.pdf",
         "https://acb.com.vn/nha-dau-tu/acb-bao-cao-phat-trien-ben-vung",
         "https://acb.com.vn/nha-dau-tu",
         "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien"
-      ]
+      ],
+      "year_overrides": {
+        "https://acb.com.vn/ve-chung-toi/acb-hoan-thien-chien-luoc-phat-trien-ben-vung-dinh-hinh-nen-tang-truong-moi-01062026": 2025,
+        "https://acb.com.vn/acbwebsite/files/ESG_2024.pdf": 2024
+      }
     },
     "BID": {
       "name": "BIDV",
@@ -19,9 +25,13 @@
         "Bank for Investment and Development of Vietnam"
       ],
       "seed_urls": [
+        "https://bidv.com.vn/wps/wcm/connect/fefc0922-870d-4585-9762-0b572c91106f/B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf?CACHEID=ROOTWORKSPACE-fefc0922-870d-4585-9762-0b572c91106f-pTY4MLM&MOD=AJPERES",
         "https://bidv.com.vn/vn/quan-he-nha-dau-tu/bao-cao-va-tai-lieu/",
         "https://bidv.com.vn/vn/ve-bidv/phat-trien-ben-vung"
-      ]
+      ],
+      "year_overrides": {
+        "https://bidv.com.vn/wps/wcm/connect/fefc0922-870d-4585-9762-0b572c91106f/B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf?CACHEID=ROOTWORKSPACE-fefc0922-870d-4585-9762-0b572c91106f-pTY4MLM&MOD=AJPERES": 2025
+      }
     },
     "CTG": {
       "name": "VietinBank",
@@ -51,8 +61,12 @@
         "HDBank"
       ],
       "seed_urls": [
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf",
         "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu"
-      ]
+      ],
+      "year_overrides": {
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": 2024
+      }
     },
     "LPB": {
       "name": "LPBank",
@@ -60,8 +74,14 @@
         "LPBank"
       ],
       "seed_urls": [
+        "https://cafef.vn/du-lieu/lpb-2671081/lpb-bao-cao-thuong-nien-nam-2025.chn",
+        "https://lpbank.com.vn/api/content-file/public/file/view/5bb2a4bb-a070-415a-8eea-54b36c848de6",
         "https://lpbank.com.vn/nha-dau-tu"
-      ]
+      ],
+      "year_overrides": {
+        "https://cafef.vn/du-lieu/lpb-2671081/lpb-bao-cao-thuong-nien-nam-2025.chn": 2025,
+        "https://lpbank.com.vn/api/content-file/public/file/view/5bb2a4bb-a070-415a-8eea-54b36c848de6": 2024
+      }
     },
     "MBB": {
       "name": "MB Bank",
@@ -71,8 +91,12 @@
         "Ngân hàng Quân đội"
       ],
       "seed_urls": [
+        "https://cmsv5.fiingroup.vn/medialib/FG/2026/2026-03/2026-03-31/MBB/20260330--MBB--Bao-cao-thuong-nien-2025.pdf",
         "https://www.mbbank.com.vn/Investor/bao-cao-thuong-nen"
-      ]
+      ],
+      "year_overrides": {
+        "https://cmsv5.fiingroup.vn/medialib/FG/2026/2026-03/2026-03-31/MBB/20260330--MBB--Bao-cao-thuong-nien-2025.pdf": 2025
+      }
     },
     "MSB": {
       "name": "MSB",
@@ -94,9 +118,15 @@
         "Nam A Bank"
       ],
       "seed_urls": [
+        "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+        "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
         "https://www.namabank.com.vn/co-dong",
         "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1"
-      ]
+      ],
+      "year_overrides": {
+        "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf": 2025,
+        "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf": 2024
+      }
     },
     "OCB": {
       "name": "OCB",
@@ -129,9 +159,13 @@
         "SeABank"
       ],
       "seed_urls": [
+        "https://cloud-cdn.seabank.com.vn/seabank-web/Annual%20Report%202025_%20CBTT.pdf",
         "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
         "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-"
-      ]
+      ],
+      "year_overrides": {
+        "https://cloud-cdn.seabank.com.vn/seabank-web/Annual%20Report%202025_%20CBTT.pdf": 2025
+      }
     },
     "STB": {
       "name": "Sacombank",
@@ -163,8 +197,12 @@
         "TPBank"
       ],
       "seed_urls": [
+        "https://tpb.vn/wps/wcm/connect/3b271427-af6d-4927-85f5-b1f138cf2692/BCTN%2B2024%2BVIEW%2B17-4-2025%2BWEB.pdf?CACHEID=ROOTWORKSPACE-3b271427-af6d-4927-85f5-b1f138cf2692-pqw4yMx&CONVERT_TO=url&MOD=AJPERES",
         "https://tpb.vn/nha-dau-tu"
-      ]
+      ],
+      "year_overrides": {
+        "https://tpb.vn/wps/wcm/connect/3b271427-af6d-4927-85f5-b1f138cf2692/BCTN%2B2024%2BVIEW%2B17-4-2025%2BWEB.pdf?CACHEID=ROOTWORKSPACE-3b271427-af6d-4927-85f5-b1f138cf2692-pqw4yMx&CONVERT_TO=url&MOD=AJPERES": 2024
+      }
     },
     "VCB": {
       "name": "Vietcombank",
@@ -187,8 +225,12 @@
         "Vietnam International Bank"
       ],
       "seed_urls": [
+        "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn",
         "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien"
-      ]
+      ],
+      "year_overrides": {
+        "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn": 2025
+      }
     },
     "VPB": {
       "name": "VPBank",
