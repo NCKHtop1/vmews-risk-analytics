@@ -1177,6 +1177,10 @@ def metric_row_valid(row):
             return False
 
     if metric_id == "green_credit":
+        # Reject microscopic currency values caused by a bare VND token being
+        # normalized to billion VND (e.g. "VND 1.2" -> 1.2e-9 billion).
+        if 0 < float(row.get("value") or 0) < 0.01:
+            return False
         if not row.get("repaired") and re.search(
             r"toàn\s+nền\s+kinh\s+tế|dư\s+nợ\s+tín\s+dụng\s+xanh\s+của\s+cả\s+nước|"
             r"system[-\s]?wide|banking\s+system",
