@@ -236,19 +236,29 @@ class IntradayCommunityPublicationTest(unittest.TestCase):
         self.assertIn("--publish-live", workflow)
         self.assertIn("community-intelligence-live-v19.json", workflow)
 
-    def test_intraday_publisher_rebases_with_unstaged_generated_artifacts_safely(self) -> None:
+    def test_intraday_publisher_uses_atomic_reset_copy_without_rebasing_generated_artifacts(self) -> None:
         root = Path(__file__).resolve().parents[1] / ".github" / "workflows"
         workflow = (root / "forecast-v19-community-live.yml").read_text(encoding="utf-8")
         full_model = (root / "forecast-v13-daily-refresh.yml").read_text(encoding="utf-8")
-        self.assertIn("git pull --rebase --autostash origin main", workflow)
-        self.assertIn("git add data/fireant-intelligence-v18.json data/research-news-v10.json data/community-intelligence-live-v19.json", workflow)
-        self.assertNotIn("git add data/", workflow.split("git commit", 1)[1])
-        # The full model moved to an atomic reset-and-copy publisher; do not
-        # require the old rebase implementation there.
+        self.assertIn("MAX_PUBLISH_ATTEMPTS", workflow)
+        self.assertIn('candidate_root="/tmp/vmews-community-publish"', workflow)
+        self.assertIn("git fetch --no-tags origin main", workflow)
+        self.assertIn("git reset --hard origin/main", workflow)
+        self.assertIn('git add "${files[@]}"', workflow)
+        self.assertIn("git push origin HEAD:main", workflow)
+        self.assertIn("Remote community overlay is same-session and same/newer generation; keep remote.", workflow)
+        self.assertIn("without rebasing generated JSON", workflow)
+        self.assertNotIn("git pull --rebase --autostash", workflow)
+        self.assertIn("data/fireant-intelligence-v18.json", workflow)
+        self.assertIn("data/research-news-v10.json", workflow)
+        self.assertIn("data/community-intelligence-live-v19.json", workflow)
+        # The full model and the intraday overlay both use reset-and-copy
+        # publication, so generated JSON is never rebased through concurrent runs.
         self.assertIn("git fetch --no-tags origin main", full_model)
         self.assertIn("git reset --hard origin/main", full_model)
         self.assertIn('git add "${files[@]}"', full_model)
-        self.assertNotIn("git add data/", full_model.split("Persist the validated market snapshot", 1)[1])
+        self.assertNotIn("git pull --rebase --autostash", full_model)
+
 
 
 if __name__ == "__main__":
