@@ -24,7 +24,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
 CORE_COMPANIES = ROOT / "data/companies.json"
 GENERIC_DISCLOSURE_TEMPLATE = "https://24hmoney.vn/stock/{symbol}/report"
-GENERIC_FINANCIAL_REPORT_TEMPLATE = "https://24hmoney.vn/stock/{symbol}/financial-report"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DEFAULT_DOC_BYTES = (96 if HISTORY_BACKFILL else 35) * 1024 * 1024
@@ -85,10 +84,6 @@ def build_company_registry(config):
         generic = GENERIC_DISCLOSURE_TEMPLATE.format(symbol=symbol.lower())
         if generic not in seeds:
             seeds.append(generic)
-        if symbol not in curated:
-            financial = GENERIC_FINANCIAL_REPORT_TEMPLATE.format(symbol=symbol.lower())
-            if financial not in seeds:
-                seeds.append(financial)
         cfg["seed_urls"] = seeds
         cfg["entityType"] = "bank" if symbol in curated else "company"
         cfg["sourcePolicy"] = "curated+disclosure-index" if symbol in curated else "disclosure-index"
@@ -1400,7 +1395,41 @@ def align_rows_to_document_year(rows, documents):
     return out
 
 
+def esg_document_candidate(doc):
+    """Reject pure financial-statement noise while retaining annual/ESG disclosures."""
+    title = ascii_fold(doc.get("title") or "")
+    url = ascii_fold(doc.get("url") or "")
+    source_page = ascii_fold(doc.get("sourcePage") or "")
+    text = " ".join([title, url, source_page])
+
+    positive = bool(re.search(
+        r"bao cao (?:tai chinh )?thuong nien|bao cao phat trien ben vung|"
+        r"annual report|sustainab|\besg\b|climate|tcfd|integrated report|"
+        r"green bond|sustainable finance|second party opinion|\bvnsi\b|\bsusba\b",
+        text, re.I
+    ))
+    pure_financial = bool(re.search(
+        r"bao cao tai chinh|financial statements?|financial report",
+        title, re.I
+    )) and not positive
+    periodic = bool(re.search(
+        r"\b(?:quy\s*[1-4]|quy\s*(?:i|ii|iii|iv)|ban nien|6 thang|9 thang|"
+        r"quarter(?:ly)?|half[- ]year|interim)\b",
+        title, re.I
+    )) and not positive
+
+    if pure_financial or periodic:
+        return False
+    # A broad financial-report listing should never make its ordinary statement
+    # links eligible for ESG extraction; explicit annual/ESG documents still pass.
+    if "/financial-report" in source_page and not positive:
+        return False
+    return True
+
+
 def migration_keep_document(doc, keywords):
+    if not esg_document_candidate(doc):
+        return False
     kind = doc.get("type") or classify_document((doc.get("title") or "") + " " + (doc.get("url") or ""))
     path = urlsplit(doc.get("url") or "").path.lower()
     if kind == "esg_web_content" and any(x in path for x in ("/giai-thuong", "/award", "/tin-tuc", "/news", "/su-kien")):
@@ -1488,15 +1517,21 @@ def collect(config, output):
         prev = previous.get("companies", {}).get(symbol, {})
         docs = {}
         for old_doc in prev.get("documents", []):
-            if not old_doc.get("url"):
+            if not old_doc.get("url") or not esg_document_candidate(old_doc):
                 continue
             restored = corrected_document_year(revive_transport_failure(old_doc), cfg)
             restored["url"] = normalize_url(restored.get("url"))
+            if not esg_document_candidate(restored):
+                continue
             docs[restored["url"]] = restored
         report_types = {"sustainability_report", "annual_report", "climate_disclosure"}
         for url, discovered_doc in discovered[symbol].items():
+            if not esg_document_candidate(discovered_doc):
+                continue
             existing = docs.get(url, {})
             merged = corrected_document_year({**existing, **discovered_doc}, cfg)
+            if not esg_document_candidate(merged):
+                continue
             # If a stable URL is newly recognized as an actual report (rather
             # than a framework/detail page), process it again so KPI extraction
             # is not permanently skipped because of an earlier classification.
@@ -1505,8 +1540,15 @@ def collect(config, output):
                     merged.pop(key, None)
             docs[url] = merged
         ordered = sorted(docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True)
-        metrics = align_rows_to_document_year(prev.get("metrics", []), ordered)
-        ratings = align_rows_to_document_year(prev.get("externalAssessments", []), ordered)
+        allowed_urls = {normalize_url(d.get("url")) for d in ordered if d.get("url")}
+        metrics = [
+            row for row in align_rows_to_document_year(prev.get("metrics", []), ordered)
+            if normalize_url(row.get("sourceUrl")) in allowed_urls
+        ]
+        ratings = [
+            row for row in align_rows_to_document_year(prev.get("externalAssessments", []), ordered)
+            if normalize_url(row.get("sourceUrl")) in allowed_urls
+        ]
         for doc in ordered:
             if not doc.get("processedAt"):
                 backlog.append((symbol, doc))
