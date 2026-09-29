@@ -2,6 +2,12 @@ name: Forecast V19 live FireAnt and 24HMoney intelligence
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/forecast-v19-community-live.yml'
+      - 'scripts/forecast_v18_market_intelligence.py'
+      - 'scripts/forecast_v18_market_intelligence_test.py'
   schedule:
     - cron: "*/15 2-8 * * 1-5"
     - cron: "0,30 1,9-15 * * 1-5"
@@ -47,4 +53,8 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh FireAnt, 24HMoney and bounded live market intelligence [data-only]"
+          # main may advance from another publisher or a human commit while this
+          # short-lived overlay job is running. Rebase safely and keep generated
+          # unstaged files out of the published commit.
+          git pull --rebase --autostash origin main
           git push
