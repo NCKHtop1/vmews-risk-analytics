@@ -1473,7 +1473,10 @@
 
   function scrollMessages() {
     const messages = $("#solutionAiMessages");
-    if (messages) requestAnimationFrame(() => { messages.scrollTop = messages.scrollHeight; });
+    if (!messages) return;
+    const scroll = () => { messages.scrollTop = messages.scrollHeight; };
+    if (typeof globalThis.requestAnimationFrame === "function") globalThis.requestAnimationFrame(scroll);
+    else scroll();
   }
 
   async function checkConnection(silent = false) {
