@@ -155,8 +155,8 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <strong>AI local luôn sẵn sàng</strong>
     <p>SoluTION.AI đọc forecast và trả lời ngay từ dữ liệu VMEWS. Gemini chỉ dùng để tăng cường nghiên cứu web, không còn là điều kiện để dự báo hoạt động.</p>
     <label class="aiSecretField" for="solutionAiKey"><span>GEMINI AUTH KEY · NÂNG CAO</span><input id="solutionAiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Dán khóa API của bạn"></label>
-    <div class="aiConnectActions"><button id="solutionAiGeminiWeb" class="aiConnectPrimary" type="button">Tiếp tục trên Gemini Web ↗</button><button id="solutionAiRetry" type="button">Tăng cường bằng API key</button><a id="solutionAiGoogle" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Quản lý key ↗</a><button id="solutionAiDisconnect" type="button" hidden>Ngắt kết nối</button></div>
-    <small id="solutionAiConnectionState">SoluTION.AI local đang sẵn sàng; khóa Gemini nếu dùng chỉ tồn tại trong tab hiện tại.</small>
+    <div class="aiConnectActions"><button id="solutionAiGeminiWeb" class="aiConnectPrimary" type="button">Tiếp tục trên Gemini Web ↗</button><button id="solutionAiRetry" type="button">Kiểm tra / kết nối key</button><button id="solutionAiReplaceKey" type="button" hidden>Thay key Gemini</button><a id="solutionAiGoogle" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Tạo / quản lý Auth key ↗</a><button id="solutionAiDisconnect" type="button" hidden>Ngắt kết nối</button></div>
+    <small id="solutionAiConnectionState">SoluTION.AI local đang sẵn sàng. Nếu Gemini báo 401/403, hãy thay bằng Auth key mới; nếu báo 429 kéo dài, cần kiểm tra quota/billing của project vì đổi key cùng project không reset quota.</small>
   </section>
   <div id="solutionAiMessages" class="solutionAiMessages" role="log" aria-live="polite"><article class="aiMessage aiWelcome"><span class="aiRole">SoluTION.AI</span><p>Tôi đọc forecast đang xem ngay cả khi chưa kết nối Gemini. Nếu bật Gemini, tôi sẽ dùng thêm nguồn công khai để đối chiếu và mở rộng phân tích.</p></article></div>
   <div id="solutionAiSuggestions" class="solutionAiSuggestions"><button type="button" data-ai-prompt="Phân tích đầy đủ mã cổ phiếu đang xem, đọc đường forecast T+1 đến T+5, kết hợp thông tin mới nhất từ nguồn công khai và kết luận đúng trọng tâm.">Phân tích tích hợp</button><button type="button" data-ai-prompt="Tìm thông tin mới về kinh tế vĩ mô, lãi suất và các yếu tố đang ảnh hưởng đến thị trường Việt Nam.">Vĩ mô & tin mới</button><button type="button" data-ai-prompt="Danh mục quỹ, dòng tiền và các yếu tố chính đang tác động đến dự báo như thế nào?">Quỹ & dòng tiền</button><button type="button" data-ai-prompt="Tìm và đối chiếu thông tin mới cho mã đang xem; đánh giá từng nguồn đang ủng hộ, mâu thuẫn hay chưa đủ rõ đối với forecast hiện tại.">Đối chiếu nguồn mới</button><button type="button" data-ai-prompt="Đánh giá chất lượng kiểm định, đường T+1 đến T+5, vùng bất định và các giới hạn của forecast mã đang xem.">Kiểm định forecast</button><button type="button" data-ai-prompt="So sánh các mã HOSE có dự báo tăng tốt nhất trong kỳ được mô hình chọn.">Top HOSE</button></div>
@@ -167,7 +167,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 <script src="./forecast-polish-v12.js?release=20.0"></script>
 <script src="./forecast-portfolio-v14.js?release=42.0"></script>
 <script src="./forecast-live-leaders-v14.js?release=42.0"></script>
-<script src="./solution-ai-v17.js?release=38.0"></script>
+<script src="./solution-ai-v17.js?release=39.0"></script>
 <script src="./forecast-deep-dive-v24.js?release=25.0"></script>
 </body>
 </html>
