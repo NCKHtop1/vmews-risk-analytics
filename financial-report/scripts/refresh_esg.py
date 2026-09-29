@@ -848,11 +848,12 @@ def repair_canonical_row(row):
 
     if metric_id == "csr_spend":
         negative = r"dư\s+nợ|cho\s+vay|tín\s+dụng|giải\s+ngân|lợi\s+nhuận|thu\s+nhập|vốn\s+(?:điều\s+lệ|thực\s+góp)"
-        positive = r"đóng\s+góp|dành\s+cho|chi\s+cho|tài\s+trợ|hỗ\s+trợ|từ\s+thiện|an\s+sinh|community\s+investment|community\s+development|csr"
+        positive = r"đóng\s+góp|dành(?:\s+cho)?|chi\s+cho|tài\s+trợ|hỗ\s+trợ|trao\s+tặng|ủng\s+hộ|từ\s+thiện|an\s+sinh|community\s+investment|community\s+development|csr"
         if not re.search(negative, snippet, re.I):
             patterns = [
+                r"(?:nguồn\s+kinh\s+phí|kinh\s+phí)[^.;•]{0,55}?" + MONEY_TEXT + r"[^.;•]{0,35}?(?:từ\s+ngân\s+hàng|do\s+ngân\s+hàng)",
                 rf"(?:{positive})[^.;•]{{0,100}}?" + MONEY_TEXT,
-                MONEY_TEXT + rf"[^.;•]{{0,70}}?(?:cộng\s+đồng|community|tài\s+trợ|hỗ\s+trợ|từ\s+thiện|an\s+sinh)",
+                MONEY_TEXT + rf"[^.;•]{{0,70}}?(?:cộng\s+đồng|community|tài\s+trợ|hỗ\s+trợ|trao\s+tặng|ủng\s+hộ|từ\s+thiện|an\s+sinh)",
             ]
             for pattern in patterns:
                 m = re.search(pattern, snippet, re.I)
