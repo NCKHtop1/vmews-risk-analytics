@@ -1175,7 +1175,7 @@
     if (validationQuestion) {
       lines.push(
         "### Kiểm định và giới hạn",
-        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian ${anchorLabel || "kỳ ưu tiên"} ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Gate chiều ${anchorLabel || "kỳ ưu tiên"}: PASS." : "Gate chiều ${anchorLabel || "kỳ ưu tiên"}: chưa PASS; cần đọc cùng kỹ thuật, dòng tiền và vùng bất định thay vì suy diễn thêm một xác suất."}`,
+        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian ${anchorLabel || "kỳ ưu tiên"} ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? `Gate chiều ${anchorLabel || "kỳ ưu tiên"}: PASS.` : `Gate chiều ${anchorLabel || "kỳ ưu tiên"}: chưa PASS; cần đọc cùng kỹ thuật, dòng tiền và vùng bất định thay vì suy diễn thêm một xác suất.`}`,
         `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Đọc vùng bất định cùng điều kiện xác nhận/vô hiệu; nếu dữ liệu còn thiếu, nêu đúng phần thiếu và tác động của nó lên kết luận.`,
       );
     }
