@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-29T16:41:05.799858+00:00",
+  "checkedAt": "2026-09-29T16:43:44.127159+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 11,
   "status": "ok",
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T16:40:13.636976+00:00",
+      "checkedAt": "2026-09-29T16:42:46.391263+00:00",
       "documents": [
         {
           "id": "812a30d4a5173222d833",
@@ -48,10 +48,9 @@
           "type": "annual_report",
           "contentType": "pdf",
           "reprocessVersion": 2,
-          "failedAttempts": 1,
-          "lastError": "No module named 'pypdf'; PyMuPDF fallback: No module named 'fitz'",
-          "lastAttemptAt": "2026-09-29T16:41:05.722244+00:00",
-          "retryAfter": "2026-09-30T16:41:05.722270+00:00"
+          "contentHash": "925422cb80fb8bc1e1b34d2aa0e98a242535469cce0a97188d22a0249b5c8497",
+          "processedAt": "2026-09-29T16:43:43.850428+00:00",
+          "textLength": 799509
         },
         {
           "id": "4c50ba807f5df7eeae1a",
@@ -446,7 +445,7 @@
       ],
       "coverage": {
         "documents": 5,
-        "processedDocuments": 4,
+        "processedDocuments": 5,
         "metrics": 4,
         "canonicalMetrics": 18,
         "externalAssessments": 1
@@ -455,7 +454,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T16:40:13.637244+00:00",
+      "checkedAt": "2026-09-29T16:42:46.391632+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -645,7 +644,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T16:40:13.637620+00:00",
+      "checkedAt": "2026-09-29T16:42:46.391953+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -1094,7 +1093,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T16:40:13.638013+00:00",
+      "checkedAt": "2026-09-29T16:42:46.392420+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -1299,7 +1298,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T16:40:13.638253+00:00",
+      "checkedAt": "2026-09-29T16:42:46.392662+00:00",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -1452,7 +1451,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T16:40:13.638502+00:00",
+      "checkedAt": "2026-09-29T16:42:46.392873+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -1586,7 +1585,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T16:40:13.638661+00:00",
+      "checkedAt": "2026-09-29T16:42:46.393033+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -1800,7 +1799,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T16:40:13.639614+00:00",
+      "checkedAt": "2026-09-29T16:42:46.393964+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -2322,7 +2321,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T16:40:13.640784+00:00",
+      "checkedAt": "2026-09-29T16:42:46.395085+00:00",
       "documents": [
         {
           "id": "c303b3353659c3a65824",
@@ -2551,10 +2550,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "Báo cáo thường niên năm 2018",
+          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "annual_report"
+          "type": "esg_other"
         },
         {
           "id": "de8049df250aba4307c6",
@@ -3240,7 +3239,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T16:40:13.642021+00:00",
+      "checkedAt": "2026-09-29T16:42:46.396483+00:00",
       "documents": [
         {
           "id": "8ed3ce868c1f74962d4e",
@@ -3267,18 +3266,6 @@
           "textLength": 202003
         },
         {
-          "id": "3694ba2edf3cffdc1a58",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408185157_20260408-ocb-annual-report-2025-website.pdf",
-          "title": "SEE_MORE",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2025,
-          "type": "annual_report",
-          "failedAttempts": 1,
-          "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T16:40:27.122983+00:00",
-          "retryAfter": "2026-09-30T16:40:27.123005+00:00"
-        },
-        {
           "id": "4d319969b646fceb4754",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260826145747_2608-bc-ptbv-2025-vn.pdf",
           "title": "Báo cáo phát triển bền vững 2025 2025 Ngày đăng: 25/8/2026 SEE_MORE",
@@ -3289,6 +3276,30 @@
           "contentHash": "82e907d9796b6a3d3424d003347267ddb0da534e79304878750993e68b9fcf79",
           "processedAt": "2026-09-29T02:14:42.736706+00:00",
           "textLength": 257038
+        },
+        {
+          "id": "3694ba2edf3cffdc1a58",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408185157_20260408-ocb-annual-report-2025-website.pdf",
+          "title": "Annual Report 2025 2025 Date: 08/4/2026 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2025,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-29T16:40:27.122983+00:00",
+          "retryAfter": "2026-09-30T16:40:27.123005+00:00"
+        },
+        {
+          "id": "d328fb66a416709ad8a7",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923155055_sustainability-report-2024.pdf",
+          "title": "Sustainability Report 2024 2025 Date: 23/9/2025 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2024,
+          "type": "sustainability_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-29T16:40:26.265554+00:00",
+          "retryAfter": "2026-09-30T16:40:26.265571+00:00"
         },
         {
           "id": "88d59fff5e021267b7ac",
@@ -3315,21 +3326,9 @@
           "textLength": 336491
         },
         {
-          "id": "d328fb66a416709ad8a7",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923155055_sustainability-report-2024.pdf",
-          "title": "SEE_MORE",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2024,
-          "type": "sustainability_report",
-          "failedAttempts": 1,
-          "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T16:40:26.265554+00:00",
-          "retryAfter": "2026-09-30T16:40:26.265571+00:00"
-        },
-        {
           "id": "6c8fee76b6ca9bf4702e",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250408095342_ocb-annual-report-2024.pdf",
-          "title": "Annual Report 2024 2024 Date: 04/4/2025 SEE_MORE",
+          "title": "SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "annual_report",
@@ -3341,10 +3340,10 @@
         {
           "id": "7dbc12f1505da625cb7b",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
-          "title": "Sustainability Report 2023 2023 SEE_MORE",
+          "title": "SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2023,
-          "type": "sustainability_report",
+          "type": "esg_other",
           "contentType": "pdf",
           "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
           "processedAt": "2026-09-29T16:11:45.073652+00:00",
@@ -3381,10 +3380,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2023,
           "type": "annual_report",
-          "failedAttempts": 1,
-          "lastError": "No module named 'pypdf'; PyMuPDF fallback: No module named 'fitz'",
-          "lastAttemptAt": "2026-09-29T16:40:33.703153+00:00",
-          "retryAfter": "2026-09-30T16:40:33.703171+00:00"
+          "contentType": "pdf",
+          "contentHash": "4842d1dad6946ad497f0d24c9ecdfb723207a799bf35ad54a2f08197c73fcc3e",
+          "processedAt": "2026-09-29T16:43:17.716527+00:00",
+          "textLength": 172999
         },
         {
           "id": "60d6e709c250aab407b8",
@@ -3898,6 +3897,51 @@
           "sourceType": "annual_report",
           "snippet": "đồng, hợp tác với các tổ chức thiện nguyện để hỗ trợ những hoàn cảnh khó khăn, góp phần nâng cao chất lượng cuộc sống. Trong năm 2024, OCB đã dành gần 30 tỷ đồng cho các hoạt động cộng đồng, thể hiện cam kết mạnh mẽ với trách nhiệm xã hội. Trên tinh thần đó, ngân hàng đã triển khai chuỗi chương trình ý nghĩa trên toàn quốc, tập trung vào các mục tiêu sau: Mục đích tài trợ Tỷ lệ Nâng cao chất lượng giáo dục Xây dựng cộng đồng bền vững Khắc phục h",
           "confidence": "high"
+        },
+        {
+          "value": 528300.0,
+          "rawValue": "528,300",
+          "unit": "billion VND",
+          "qualityScore": 95.67,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20240614172554_eng-bctn-2023-full.pdf",
+          "sourceTitle": "Annual Report 2023 2023 Date: 12/4/2024 SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "of outstanding green credit debt at the end of 2021–2022, 2023, reached 11.2%–9.1% and nearly 9% of total outstanding debt, respectively). Meanwhile, by June 30, 2023, outstanding green credit loans in Vietnam had reached nearly VND 528,300 billion, accounting for about 4.2% of the total outstanding loans of the entire economy. 87OCB - Trust and Prosperity Development of banking products and services takes into account environmental and social bene",
+          "confidence": "medium"
+        },
+        {
+          "value": 56.0,
+          "rawValue": "56",
+          "unit": "%",
+          "qualityScore": 101.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2023,
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20240614172554_eng-bctn-2023-full.pdf",
+          "sourceTitle": "Annual Report 2023 2023 Date: 12/4/2024 SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "agers account for 44.5%. 4,853 employees (71%) belong to Region 1 1,363 employees (20%) belong to Region 2 600 employees (8%) belong to Region 3 employees3.743 The total number of female employees is accounting for 56% 106 Annual Report 2023 employees1.818 The number of newly recruited male employees is accounting for 52.8% employees1.621 accounting for 47,2% the number of newly recruited female employees is In 2023: the total number of new hires is 3.",
+          "confidence": "high"
+        },
+        {
+          "value": 27.8,
+          "rawValue": "27,8",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20240614172554_eng-bctn-2023-full.pdf",
+          "sourceTitle": "Annual Report 2023 2023 Date: 12/4/2024 SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "mber of training hours for female employees The average number of training hours for male employees The average number of training hours for Management Level The average number of training hours for Staff Level 27,8 hours 15,5 hours 12,3 hours 41,71 hours 25,56 hours Orient Commercial Joint Stock Bank (OCB), a pioneering brand that proactively and actively implements community responsibility through a series of functional social security and voluntee",
+          "confidence": "high"
         }
       ],
       "externalAssessments": [
@@ -3945,6 +3989,23 @@
           "snippet": "74 chiếm 3,0% nhân sự2.936 Tổng số nhân sự nam là chiếm 44,0% nhân sự3.743 chiếm 56,0% Tổng số nhân sự nữ là Tỷ lệ quản lý trên tổng số CBNV của OCB là 18% Nam quản lý chiếm 55,5% Nữ quản lý chiếm 45,5% 4.853 nhân viên (71,0%) thuộc Vùng 1 1.363 nhân viên (20,0%) thuộc Vùng 2 600 nhân viên (8,0%) thuộc Vùng 3 106 Báo cáo thường niên 2023 nhân viên1.818 Tổng số nhân viên nam tuyển mới là chiếm 52,8% nhân viên1.621 chiếm 47,2% Tổng số nhân viên nữ",
           "confidence": "high",
           "canonicalizedFromRawValue": "55,5",
+          "repaired": true
+        },
+        {
+          "value": 56.0,
+          "rawValue": "56",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2023,
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20240614172554_eng-bctn-2023-full.pdf",
+          "sourceTitle": "Annual Report 2023 2023 Date: 12/4/2024 SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "agers account for 44.5%. 4,853 employees (71%) belong to Region 1 1,363 employees (20%) belong to Region 2 600 employees (8%) belong to Region 3 employees3.743 The total number of female employees is accounting for 56% 106 Annual Report 2023 employees1.818 The number of newly recruited male employees is accounting for 52.8% employees1.621 accounting for 47,2% the number of newly recruited female employees is In 2023: the total number of new hires is 3.",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "56",
           "repaired": true
         },
         {
@@ -4052,16 +4113,16 @@
       ],
       "coverage": {
         "documents": 29,
-        "processedDocuments": 22,
-        "metrics": 21,
-        "canonicalMetrics": 8,
+        "processedDocuments": 23,
+        "metrics": 24,
+        "canonicalMetrics": 9,
         "externalAssessments": 1
       }
     },
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T16:40:13.642064+00:00",
+      "checkedAt": "2026-09-29T16:42:46.396529+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -4124,7 +4185,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T16:40:13.642684+00:00",
+      "checkedAt": "2026-09-29T16:42:46.397059+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -4165,7 +4226,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026 Read more",
+          "title": "Sustainability Report 2025 23/07/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -4177,7 +4238,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
+          "title": "SeABank's Annual Report 2025 01/04/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -4225,7 +4286,7 @@
         {
           "id": "63a3abaf8b52f1a85e00",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
-          "title": "Sustainability Report 2024 05/09/2025",
+          "title": "Sustainability Report 2024 05/09/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -4862,7 +4923,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T16:40:13.642941+00:00",
+      "checkedAt": "2026-09-29T16:42:46.397374+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -5019,7 +5080,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T16:40:13.643564+00:00",
+      "checkedAt": "2026-09-29T16:42:46.397949+00:00",
       "documents": [
         {
           "id": "56ecaa75021fa68c4629",
@@ -5127,6 +5188,18 @@
           "textLength": 5751
         },
         {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "See all ESG solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
+        },
+        {
           "id": "92a4cc6c630bcb4bdbd4",
           "url": "https://techcombank.com/en/about-us/sustainability/strategy",
           "title": "Our Strategy",
@@ -5137,18 +5210,6 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
-        },
-        {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "Our Solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -5547,7 +5608,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T16:40:13.643767+00:00",
+      "checkedAt": "2026-09-29T16:42:46.398175+00:00",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -5798,7 +5859,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T16:40:13.644056+00:00",
+      "checkedAt": "2026-09-29T16:42:46.398468+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -6326,7 +6387,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T16:40:13.644308+00:00",
+      "checkedAt": "2026-09-29T16:42:46.398690+00:00",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -6438,7 +6499,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T16:40:13.644501+00:00",
+      "checkedAt": "2026-09-29T16:42:46.398874+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -6761,6 +6822,20 @@
       "textLength": 98218
     },
     {
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "climate_disclosure",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
+      "processedAt": "2026-09-29T16:43:02.414449+00:00",
+      "textLength": 98218
+    },
+    {
       "id": "abbe2ce24605a50fc5f0",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
       "title": "2023 Assessment of Banks' Seafood Sector Policies",
@@ -6772,6 +6847,20 @@
       "contentType": "pdf",
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
       "processedAt": "2026-09-29T03:50:04.303716+00:00",
+      "textLength": 61879
+    },
+    {
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "sustainability_report",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-29T16:43:00.475375+00:00",
       "textLength": 61879
     },
     {
@@ -6860,7 +6949,7 @@
       "title": "2020 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2020,
-      "type": "esg_other",
+      "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -6884,7 +6973,7 @@
       "title": "2019 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2019,
-      "type": "esg_other",
+      "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -6908,7 +6997,7 @@
       "title": "2018 Updated Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2018,
-      "type": "esg_other",
+      "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -7180,7 +7269,7 @@
       "title": "Global Access - Sustainability Research Database",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -7841,7 +7930,7 @@
     {
       "url": "https://www.namabank.com.vn/co-dong",
       "status": "ok",
-      "documents": 19,
+      "documents": 4,
       "symbol": "NAB"
     },
     {
@@ -7919,7 +8008,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 9,
+      "documents": 8,
       "symbol": "TCB"
     },
     {
@@ -8020,15 +8109,15 @@
     },
     {
       "url": "https://www.wwf.sg/susba/reports/",
-      "status": "error",
-      "error": "<urlopen error _ssl.c:993: The handshake operation timed out>",
+      "status": "ok",
+      "documents": 5,
       "provider": "WWF SUSBA",
       "external": true
     },
     {
       "url": "https://www.wwf.sg/susba/about/",
-      "status": "error",
-      "error": "<urlopen error _ssl.c:993: The handshake operation timed out>",
+      "status": "ok",
+      "documents": 10,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -8063,12 +8152,12 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 3,
-    "backlogBeforeRun": 30,
-    "activeBacklogBeforeRun": 9,
-    "backlogRemaining": 6,
-    "eligibleBacklog": 28,
-    "recentBacklog": 9,
+    "documentsProcessed": 4,
+    "backlogBeforeRun": 29,
+    "activeBacklogBeforeRun": 4,
+    "backlogRemaining": 0,
+    "eligibleBacklog": 23,
+    "recentBacklog": 4,
     "historicalBacklog": 13,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
