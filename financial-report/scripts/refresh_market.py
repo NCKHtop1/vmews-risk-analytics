@@ -489,6 +489,188 @@ def build_drivers(out, companies):
     return symbols
 
 
+
+TECHNICAL_SCANNER_RULES = {
+    'timeframe': '1D-live',
+    'refreshMinutes': 15,
+    'macd': {'fast': 12, 'slow': 26, 'signal': 9, 'nearCrossMaxSpreadPct': 0.15},
+    'rsi': {'period': 14, 'oversold': 30, 'overbought': 70},
+    'volume': {'averagePeriods': 20, 'elevatedRatio': 1.2, 'spikeRatio': 1.5},
+}
+
+
+def _technical_indicator_rows(bars):
+    """Match the frontend chart-math EMA/MACD/RSI conventions for daily bars."""
+    out = []
+    fast = slow = signal = gain = loss = None
+    rsi_n = TECHNICAL_SCANNER_RULES['rsi']['period']
+    fast_n = TECHNICAL_SCANNER_RULES['macd']['fast']
+    slow_n = TECHNICAL_SCANNER_RULES['macd']['slow']
+    signal_n = TECHNICAL_SCANNER_RULES['macd']['signal']
+    for i, bar in enumerate(bars):
+        close = number(bar.get('close'))
+        if close is None or close <= 0:
+            continue
+        fast = close if fast is None else fast + 2 / (fast_n + 1) * (close - fast)
+        slow = close if slow is None else slow + 2 / (slow_n + 1) * (close - slow)
+        macd = fast - slow
+        signal = macd if signal is None else signal + 2 / (signal_n + 1) * (macd - signal)
+        hist = macd - signal
+
+        delta = close - number(bars[i - 1].get('close')) if i else 0
+        up, down = max(0, delta), max(0, -delta)
+        if i == rsi_n:
+            total_gain = total_loss = 0.0
+            valid = True
+            for j in range(1, i + 1):
+                a, b = number(bars[j - 1].get('close')), number(bars[j].get('close'))
+                if a is None or b is None:
+                    valid = False
+                    break
+                d = b - a
+                total_gain += max(0, d)
+                total_loss += max(0, -d)
+            if valid:
+                gain, loss = total_gain / rsi_n, total_loss / rsi_n
+        elif i > rsi_n and gain is not None and loss is not None:
+            gain = (gain * (rsi_n - 1) + up) / rsi_n
+            loss = (loss * (rsi_n - 1) + down) / rsi_n
+
+        rsi = None
+        if i >= rsi_n and gain is not None and loss is not None:
+            rsi = 50 if gain == 0 and loss == 0 else 100 if loss == 0 else 100 - 100 / (1 + gain / loss)
+        out.append({
+            'time': bar.get('time'), 'close': close, 'macd': macd, 'signal': signal,
+            'hist': hist, 'rsi': rsi, 'volume': max(0, number(bar.get('volume')) or 0)
+        })
+    return out
+
+
+def _technical_signal(label, signal_id, direction, strength):
+    return {'id': signal_id, 'label': label, 'direction': direction, 'strength': strength}
+
+
+def technical_scan_symbol(symbol, bars, quote=None, previous=None):
+    rows = _technical_indicator_rows(bars)
+    if len(rows) < 35:
+        return None
+    current, daily_prev = rows[-1], rows[-2]
+    close = current['close']
+    if not close:
+        return None
+
+    # Prefer the previous 15-minute scanner snapshot when it belongs to the same
+    # live daily bar; otherwise fall back to the previous completed daily bar.
+    scan_prev_ok = (
+        isinstance(previous, dict)
+        and previous.get('barDate') == current.get('time')
+        and number(previous.get('macdHistogram')) is not None
+    )
+    prev_hist = number(previous.get('macdHistogram')) if scan_prev_ok else daily_prev['hist']
+    prev_rsi = number(previous.get('rsi14')) if scan_prev_ok else daily_prev['rsi']
+    hist = current['hist']
+    hist_pct = hist / close * 100 if close else None
+    near_limit = TECHNICAL_SCANNER_RULES['macd']['nearCrossMaxSpreadPct']
+
+    completed = [max(0, number(row.get('volume')) or 0) for row in bars[-21:-1]]
+    avg_volume20 = sum(completed) / len(completed) if len(completed) == 20 and any(completed) else None
+    volume_ratio = current['volume'] / avg_volume20 if avg_volume20 else None
+
+    signals = []
+    cross_up = prev_hist is not None and prev_hist <= 0 < hist
+    cross_down = prev_hist is not None and prev_hist >= 0 > hist
+    if cross_up:
+        signals.append(_technical_signal('MACD vừa cắt lên Signal', 'macd_cross_up', 'bullish', 'high'))
+    elif cross_down:
+        signals.append(_technical_signal('MACD vừa cắt xuống Signal', 'macd_cross_down', 'bearish', 'high'))
+    elif prev_hist is not None and hist_pct is not None:
+        if hist < 0 and prev_hist < 0 and hist > prev_hist and abs(hist_pct) <= near_limit:
+            signals.append(_technical_signal('MACD đang tiến sát giao cắt lên', 'macd_near_up', 'bullish', 'medium'))
+        elif hist > 0 and prev_hist > 0 and hist < prev_hist and abs(hist_pct) <= near_limit:
+            signals.append(_technical_signal('MACD đang tiến sát giao cắt xuống', 'macd_near_down', 'bearish', 'medium'))
+
+    rsi = current['rsi']
+    if rsi is not None:
+        if rsi <= TECHNICAL_SCANNER_RULES['rsi']['oversold']:
+            signals.append(_technical_signal('RSI đang ở vùng quá bán', 'rsi_oversold', 'bullish_watch', 'medium'))
+        elif rsi >= TECHNICAL_SCANNER_RULES['rsi']['overbought']:
+            signals.append(_technical_signal('RSI đang ở vùng quá mua', 'rsi_overbought', 'bearish_watch', 'medium'))
+        if prev_rsi is not None and prev_rsi < 30 <= rsi:
+            signals.append(_technical_signal('RSI vừa thoát vùng quá bán', 'rsi_exit_oversold', 'bullish', 'high'))
+        if prev_rsi is not None and prev_rsi > 70 >= rsi:
+            signals.append(_technical_signal('RSI vừa rời vùng quá mua', 'rsi_exit_overbought', 'bearish', 'high'))
+
+    if volume_ratio is not None and volume_ratio >= TECHNICAL_SCANNER_RULES['volume']['spikeRatio']:
+        signals.append(_technical_signal('Khối lượng tích lũy ≥ 1,5x TB20', 'volume_spike', 'confirmation', 'high'))
+    elif volume_ratio is not None and volume_ratio >= TECHNICAL_SCANNER_RULES['volume']['elevatedRatio']:
+        signals.append(_technical_signal('Khối lượng tích lũy ≥ 1,2x TB20', 'volume_elevated', 'confirmation', 'medium'))
+
+    bullish = sum(x['direction'] in {'bullish', 'bullish_watch'} for x in signals)
+    bearish = sum(x['direction'] in {'bearish', 'bearish_watch'} for x in signals)
+    bias = 'bullish' if bullish > bearish else 'bearish' if bearish > bullish else 'mixed' if bullish and bearish else 'neutral'
+
+    priority = 0
+    weights = {
+        'macd_cross_up': 60, 'macd_cross_down': 60,
+        'macd_near_up': 42, 'macd_near_down': 42,
+        'rsi_exit_oversold': 40, 'rsi_exit_overbought': 40,
+        'rsi_oversold': 28, 'rsi_overbought': 28,
+        'volume_spike': 22, 'volume_elevated': 12,
+    }
+    for sig in signals:
+        priority += weights.get(sig['id'], 0)
+    priority = min(100, priority)
+
+    quote = quote or {}
+    return {
+        'symbol': symbol, 'barDate': current.get('time'),
+        'sourceTime': quote.get('sourceTime') or quote.get('collectedAt'),
+        'price': number(quote.get('price')) or close,
+        'changePct': number(quote.get('changePct')),
+        'rsi14': round(rsi, 2) if rsi is not None else None,
+        'previousRsi14': round(prev_rsi, 2) if prev_rsi is not None else None,
+        'macd': round(current['macd'], 4), 'macdSignal': round(current['signal'], 4),
+        'macdHistogram': round(hist, 4),
+        'macdSpreadPct': round(hist_pct, 4) if hist_pct is not None else None,
+        'previousMacdHistogram': round(prev_hist, 4) if prev_hist is not None else None,
+        'volume': current['volume'],
+        'averageVolume20': round(avg_volume20) if avg_volume20 is not None else None,
+        'volumeRatio20': round(volume_ratio, 3) if volume_ratio is not None else None,
+        'bias': bias, 'priority': priority, 'signals': signals,
+        'matched': bool(signals),
+    }
+
+
+def build_technical_scanner(out, companies, quotes):
+    path = out / 'technical-signals.json'
+    old = read(path, {'symbols': {}})
+    previous_symbols = old.get('symbols') or {}
+    symbols, matches = {}, []
+    for company in companies:
+        symbol = company['symbol']
+        bars = read(out / 'history' / (symbol + '.json'), {}).get('bars') or []
+        row = technical_scan_symbol(symbol, bars, quotes.get(symbol), previous_symbols.get(symbol))
+        if not row:
+            continue
+        symbols[symbol] = row
+        if row['matched']:
+            matches.append(row)
+    matches.sort(key=lambda row: (-row.get('priority', 0), row['symbol']))
+    stamp = now()
+    write(path, {
+        'checkedAt': stamp,
+        'sourceTime': newest_source_time(quotes),
+        'status': 'ok' if symbols else 'retained',
+        'methodVersion': 'technical-scanner-v1',
+        'universe': len(companies), 'coverage': len(symbols),
+        'matchCount': len(matches), 'refreshEveryMinutes': 15,
+        'rules': TECHNICAL_SCANNER_RULES,
+        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Confirm price, liquidity, trend context and risk before acting.',
+        'matches': matches, 'symbols': symbols,
+    })
+    return matches
+
+
 def merge_live_daily_quotes(out, quotes):
     """Persist the current trading-day OHLCV into retained daily history.
 
@@ -606,6 +788,7 @@ def prices(out, companies):
         'latestSourceTime': newest_source_time(fresh) or newest_source_time(stale)
     })
     live_daily_merged = merge_live_daily_quotes(out, fresh)
+    technical_matches = build_technical_scanner(out, companies, fresh)
     available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
     write(out / 'prices-status.json', {
         'checkedAt': now(), 'status': bundle_status, 'quotes': len(fresh), 'histories': available_histories,
@@ -616,7 +799,7 @@ def prices(out, companies):
         'historyRefresh': 'server_live_quote_merge_plus_client_replay_then_separate_eod_official'
     })
     drivers = build_drivers(out, companies)
-    print(f'Prices: {len(fresh)}/{len(symbols)} current-session; stale rejected: {len(stale)}; live daily bars: {live_daily_merged}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
+    print(f'Prices: {len(fresh)}/{len(symbols)} current-session; stale rejected: {len(stale)}; live daily bars: {live_daily_merged}; technical matches: {len(technical_matches)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
     if not fresh:
         raise RuntimeError('Current-session quote collection incomplete; previous successful data retained')
 
