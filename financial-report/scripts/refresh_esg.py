@@ -320,7 +320,7 @@ def parse_number(raw, unit=None):
         # 7.714 tỷ đồng, etc. to 19,321 / 7,714.
         thousands_units = ("ty dong", "trieu dong", "billion vnd", "million vnd",
                            "tco2e", "kwh", "mwh", "gwh", "m3", "kg", "hour", "gio")
-        if len(right) == 3 and left not in {"0", "+0", "-0"} and any(x in unit_l for x in thousands_units):
+        if len(right) == 3 and left not in {"0", "+0", "-0"} and any(x in unit_l for x in thousands_units + ("ty vnd", "trieu vnd")):
             s = left + right
     try:
         return float(s)
@@ -394,9 +394,9 @@ def normalize_metric_value(value, unit, family):
     if family == "currency":
         if "nghin ty" in s or "trillion vnd" in s:
             return value * 1000, "billion VND"
-        if "ty dong" in s or "billion vnd" in s:
+        if "ty dong" in s or "ty vnd" in s or "billion vnd" in s:
             return value, "billion VND"
-        if "trieu dong" in s or "million vnd" in s:
+        if "trieu dong" in s or "trieu vnd" in s or "million vnd" in s:
             return value / 1000, "billion VND"
         if s == "vnd":
             return value / 1_000_000_000, "billion VND"
@@ -638,6 +638,13 @@ def repair_canonical_row(row):
         return out
 
     if metric_id == "green_credit":
+        direct = re.search(
+            r"dư\s+nợ\s+tín\s+dụng\s+xanh[^.;•]{0,300}?lên\s+đến\s+~?\s*"
+            r"(?P<value>\d[\d\s.,]*\d|\d)\s*(?P<unit>tỷ\s+(?:VND|VNĐ|đồng))",
+            snippet, re.I
+        )
+        if direct:
+            return _apply_money_repair(out, direct)
         patterns = [
             r"(?:tổng\s+)?dư\s+nợ\s+tín\s+dụng\s+xanh[^.;•]{0,260}?"
             r"(?:lên\s+đến|lên\s+tới|đạt(?:\s+gần)?|ở\s+mức|khoảng|gần|:)\s*~?\s*" + MONEY_TEXT,
