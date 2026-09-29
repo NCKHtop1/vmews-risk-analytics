@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -7,8 +7,9 @@
         "ACB"
       ],
       "seed_urls": [
-        "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien",
-        "https://acb.com.vn/ve-chung-toi"
+        "https://acb.com.vn/nha-dau-tu/acb-bao-cao-phat-trien-ben-vung",
+        "https://acb.com.vn/nha-dau-tu",
+        "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien"
       ]
     },
     "BID": {
@@ -28,7 +29,11 @@
         "VietinBank"
       ],
       "seed_urls": [
-        "https://investor.vietinbank.vn/"
+        "https://investor.vietinbank.vn/vi/sustainabledevelopmentreports.aspx",
+        "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025"
+      ],
+      "year_url_templates": [
+        "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-{year}"
       ]
     },
     "EIB": {
@@ -152,7 +157,12 @@
         "Vietcombank"
       ],
       "seed_urls": [
+        "https://portal.vietcombank.com.vn/VCBDigital/2024/BCPTBV/vi/",
+        "https://www.vietcombank.com.vn/-/media/Project/VCB-Sites/VCB/Nha-Dau-tu/Bao-cao-PTBV/VN_VCB_ESG-Report-2025.pdf",
         "https://portal.vietcombank.com.vn/en-us/Investors/Pages/investor-detail.aspx?ItemID=4"
+      ],
+      "year_url_templates": [
+        "https://portal.vietcombank.com.vn/VCBDigital/{year}/BCPTBV/vi/"
       ]
     },
     "VIB": {
@@ -172,7 +182,10 @@
       ],
       "seed_urls": [
         "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung",
-        "https://www.vpbank.com.vn/ve-chung-toi/phat-trien-ben-vung"
+        "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung/bao-cao-phat-trien-ben-vung-2025"
+      ],
+      "year_url_templates": [
+        "https://www.vpbank.com.vn/quan-he-nha-dau-tu/bao-cao-phat-trien-ben-vung/bao-cao-phat-trien-ben-vung-{year}"
       ]
     }
   },
