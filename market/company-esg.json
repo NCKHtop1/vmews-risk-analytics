@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-29T02:17:44.057327+00:00",
+  "checkedAt": "2026-09-29T02:28:31.826063+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 3,
+  "sourceRegistryVersion": 4,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T02:13:15.202340+00:00",
+      "checkedAt": "2026-09-29T02:28:09.463222+00:00",
       "documents": [
         {
           "id": "4c50ba807f5df7eeae1a",
@@ -53,7 +53,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T02:13:15.202396+00:00",
+      "checkedAt": "2026-09-29T02:28:09.463381+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -91,7 +91,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T02:13:15.202466+00:00",
+      "checkedAt": "2026-09-29T02:28:09.463713+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -132,7 +132,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên Báo cáo thường niên",
+          "title": "Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -540,7 +540,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T02:13:15.202552+00:00",
+      "checkedAt": "2026-09-29T02:28:09.464132+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -575,7 +575,7 @@
           "url": "https://media.eximbank.com.vn/exim/files/20250416%20-%20EIB%20-%20Bao%20cao%20thuong%20nien%20nam%202024.pdf",
           "title": "Báo cáo thường niên năm 2024",
           "sourcePage": "https://eximbank.com.vn/nha-dau-tu",
-          "year": 2016,
+          "year": 2024,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "22a10e45cabc2e5bf63b4601fa511b87926f0d7992e28d2e88575c1a68e1a1b6",
@@ -649,7 +649,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2016,
+          "year": 2024,
           "sourceUrl": "https://media.eximbank.com.vn/exim/files/20250416%20-%20EIB%20-%20Bao%20cao%20thuong%20nien%20nam%202024.pdf",
           "sourceTitle": "Báo cáo thường niên năm 2024",
           "sourceType": "annual_report",
@@ -664,7 +664,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2016,
+          "year": 2024,
           "sourceUrl": "https://media.eximbank.com.vn/exim/files/20250416%20-%20EIB%20-%20Bao%20cao%20thuong%20nien%20nam%202024.pdf",
           "sourceTitle": "Báo cáo thường niên năm 2024",
           "sourceType": "annual_report",
@@ -675,35 +675,54 @@
       "externalAssessments": [],
       "canonicalMetrics": [
         {
-          "value": 0.0,
-          "rawValue": "0.00",
-          "unit": "%",
-          "qualityScore": 105.33,
-          "metricId": "board_independence_pct",
-          "pillar": "G",
-          "label": "Tỷ lệ thành viên HĐQT độc lập",
-          "year": 2025,
-          "sourceUrl": "https://media.eximbank.com.vn/exim/files/EXIMBANK%20BCTN%202025%20TV%203.pdf",
-          "sourceTitle": "Báo cáo thường niên năm 2025",
-          "sourceType": "annual_report",
-          "snippet": "25 như sau: STT Họ và tên Chức vụ tại Eximbank Số lượng cổ phần của cá nhân ngày 31/12/2025 Tỷ lệ sở hữu Chức vụ quản lý tại công ty khác 1 Bà Phạm Thị Huyền Trang Chủ tịch HĐQT - Thành viên độc lập HĐQT 0 0.00% Không có 2 Ông Nguyễn Cảnh Anh Thành viên HĐQT 0 0.00% Không có 3 Bà Đỗ Hà Phương Thành viên HĐQT 0 0.00% Không có 4 Ông Phạm Tuấn Anh Thành viên HĐQT 0 0.00% Không có 5 Ông Hoàng Thế Hưng Thành viên độc lập HĐQT 0 0.00% Thành viên HĐQT Công ty c",
-          "confidence": "high"
-        },
-        {
-          "value": 14.5,
-          "rawValue": "14,5",
+          "value": 0.05,
+          "rawValue": "50",
           "unit": "billion VND",
           "qualityScore": 116,
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://media.eximbank.com.vn/exim/files/20250416%20-%20EIB%20-%20Bao%20cao%20thuong%20nien%20nam%202024.pdf",
+          "sourceTitle": "Báo cáo thường niên năm 2024",
+          "sourceType": "annual_report",
+          "snippet": "c Ngân hàng TP. Hồ Chí Minh (HUB), Eximbank đã tham gia và trao tặng học bổng trị giá 50 triệu đồng cho các sinh viên có thành tích xuất sắc của trường. Đây không chỉ là hoạt động cộng đồng mang tính truyền thống của Eximbank mà còn là một phần quan trọng trong chuỗi giá trị mà ngân hàng luôn theo đuổi, hướng tới tương lai của thế hệ trẻ và nền giáo dục nước nhà. Tại Ngày hội chào đón tân sinh viên của Trường Đại học Khoa học Xã hội và Nhân văn",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "50",
+          "repaired": true
+        },
+        {
+          "value": 192165.0,
+          "rawValue": "192.165",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://media.eximbank.com.vn/exim/files/20250416%20-%20EIB%20-%20Bao%20cao%20thuong%20nien%20nam%202024.pdf",
+          "sourceTitle": "Báo cáo thường niên năm 2024",
+          "sourceType": "annual_report",
+          "snippet": "u có cơ hội được đào tạo, cập nhật kiến thức và kỹ năng mới trong lĩnh vực chuyên môn, giúp nâng cao năng lực và đáp ứng yêu cầu công việc, cụ thể: Quy mô đào tạo mở rộng: Tổng số giờ đào tạo năm 2024 đạt 192.165 giờ, bình quân 32,27 giờ/người. Ứng dụng công nghệ trong đào tạo: Đầu tư hệ thống LMS & E-learning, giúp nâng cao trải nghiệm học tập và cá nhân hóa lộ trình phát triển của từng nhân viên. Phát triển đội ngũ giảng viên nội bộ: Chú trọng x",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "192.165",
+          "repaired": true
+        },
+        {
+          "value": 205984.0,
+          "rawValue": "205.984",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
           "year": 2025,
           "sourceUrl": "https://media.eximbank.com.vn/exim/files/EXIMBANK%20BCTN%202025%20TV%203.pdf",
           "sourceTitle": "Báo cáo thường niên năm 2025",
           "sourceType": "annual_report",
-          "snippet": "h nghiệp xuất sắc Châu Á; (8) Top 10 Nơi làm việc tốt nhất Việt Nam – ngành Ngân hàng; (9) Top 50 Công ty Kinh doanh hiệu quả nhất Việt Nam; cùng nhiều bằng khen cho các hoạt động cộng đồng. Công ty TNHH Một thành viên Quản lý nợ và khai thác tài sản - Ngân hàng TMCP Xuất Nhập khẩu Việt Nam (gọi tắt là Eximbank AMC) có vốn thực góp đến ngày 31/12/2025 là 300 tỷ đồng. Lợi nhuận trước thuế năm 2025 đạt 14,5 tỷ đồng, giảm 64,5% so với năm 2024. Kết",
+          "snippet": "ộng, giúp nhân sự chủ động tiếp cận chương trình học mọi lúc, mọi nơi và phù hợp với lộ trình phát triển của từng vị trí. Quy mô đào tạo tiếp tục được mở rộng mạnh mẽ, với tổng số giờ đào tạo năm 2025 đạt 205.984 giờ, bình quân 35,17 giờ cho mỗi nhân sự. Hệ thống đào tạo mới giúp gia tăng đáng kể số lượng chương trình được triển khai, bao phủ các lĩnh vực trọng tâm như kinh doanh, quản trị rủi ro, vận hành, tín dụng cũng như các khóa nâng cao năng",
           "confidence": "high",
-          "canonicalizedFromRawValue": "300",
+          "canonicalizedFromRawValue": "205.984",
           "repaired": true
         }
       ],
@@ -711,14 +730,14 @@
         "documents": 5,
         "processedDocuments": 3,
         "metrics": 5,
-        "canonicalMetrics": 2,
+        "canonicalMetrics": 3,
         "externalAssessments": 0
       }
     },
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T02:13:15.202571+00:00",
+      "checkedAt": "2026-09-29T02:28:09.464260+00:00",
       "documents": [
         {
           "id": "154efe68d916615a36dd",
@@ -747,7 +766,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T02:13:15.202585+00:00",
+      "checkedAt": "2026-09-29T02:28:09.464330+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -776,7 +795,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T02:13:15.202601+00:00",
+      "checkedAt": "2026-09-29T02:28:09.464431+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -805,7 +824,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T02:13:15.202748+00:00",
+      "checkedAt": "2026-09-29T02:28:09.465377+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -818,18 +837,6 @@
           "contentHash": "e9f3821fe06689d320b630c22ab7309243bbb1047000164ff097f92cb1b9592b",
           "processedAt": "2026-09-29T01:25:19.594192+00:00",
           "textLength": 4548
-        },
-        {
-          "id": "e50ce1da20ab602e51f8",
-          "url": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
-          "title": "Phát triển bền vững",
-          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
-          "year": 2026,
-          "type": "sustainability_report",
-          "contentType": "html",
-          "contentHash": "9fb3442cadb1c3b9723ff9a1a99a74da2681af32799bfc021a252d2db12cfa4c",
-          "processedAt": "2026-09-29T01:34:42.777295+00:00",
-          "textLength": 6049
         },
         {
           "id": "9466614cb69363a439e2",
@@ -854,6 +861,18 @@
           "contentHash": "4d8f666c2d2879200b864c3fd249683072157d383bcdc84224fa461d6cfdfd88",
           "processedAt": "2026-09-29T02:13:36.447666+00:00",
           "textLength": 221440
+        },
+        {
+          "id": "e50ce1da20ab602e51f8",
+          "url": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "title": "Phát triển bền vững",
+          "sourcePage": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "9fb3442cadb1c3b9723ff9a1a99a74da2681af32799bfc021a252d2db12cfa4c",
+          "processedAt": "2026-09-29T01:34:42.777295+00:00",
+          "textLength": 6049
         },
         {
           "id": "ae0207434d6a5cdc8572",
@@ -943,7 +962,7 @@
           "metricId": "green_credit",
           "pillar": "E",
           "label": "Dư nợ tín dụng xanh",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
           "sourceTitle": "Phát triển bền vững",
           "sourceType": "sustainability_report",
@@ -958,7 +977,7 @@
           "metricId": "sustainable_finance",
           "pillar": "E",
           "label": "Tài chính bền vững",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
           "sourceTitle": "Phát triển bền vững",
           "sourceType": "sustainability_report",
@@ -973,7 +992,7 @@
           "metricId": "ghg_total",
           "pillar": "E",
           "label": "Tổng phát thải KNK",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
           "sourceTitle": "Phát triển bền vững",
           "sourceType": "sustainability_report",
@@ -988,7 +1007,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
           "sourceTitle": "Phát triển bền vững",
           "sourceType": "sustainability_report",
@@ -1190,10 +1209,10 @@
       ],
       "canonicalMetrics": [
         {
-          "value": 14.0,
-          "rawValue": "14",
+          "value": 2365.0,
+          "rawValue": "2.365",
           "unit": "billion VND",
-          "qualityScore": 107.67,
+          "qualityScore": 116,
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
@@ -1202,7 +1221,9 @@
           "sourceTitle": "Tải báo cáo 2025",
           "sourceType": "sustainability_report",
           "snippet": "P 18% TRONG NƯỚC - 78% NGOÀI NƯỚC - 22% 1.896 tỷ đồng 13.602 TỶ ĐỒNG Được phân bố cho các bên liên quan CHÍNH PHỦ 14% THUẾ CTCT - 5% THUẾ TNDN - 75% THUẾ PHÍ KHÁC - 20% 14 tỷ đồng CỘNG ĐỒNG 0,10% CỔ ĐÔNG 6.818 tỷ đồng (50%) TÀI TRỢ, HỖ TRỢ CỘNG ĐỒNG - 40% HOẠT ĐỘNG XÃ HỘI TỪ THIỆN - 60% 2.365 tỷ đồng CÁN BỘ NHÂN VIÊN 17% ĐÀO TẠO - 1% KHÁC - 7% ĐÓNG GÓP THEO LƯƠNG - 9% LƯƠNG, PHỤ CẤP - 83% • Triển khai Quyết định số 1491/QĐ-NHNN của Thống đốc NHN",
-          "confidence": "high"
+          "confidence": "high",
+          "canonicalizedFromRawValue": "14",
+          "repaired": true
         },
         {
           "value": 9274032.0,
@@ -1217,6 +1238,21 @@
           "sourceTitle": "Tải báo cáo 2025",
           "sourceType": "sustainability_report",
           "snippet": "g phát thải khí nhà kính Phạm vi 3 năm 2025 là 3.210.064 tấn CO2eq, trong đó 99.8% phát sinh từ lượng phát thải của khách hàng doanh nghiệp trong danh mục cho vay của MSB. • Lượng điện tiêu thụ: 9.274.032 kWH/năm, giảm 1% so với 2024 • Lượng nước tiêu thụ: 157.305 m3/năm tăng 4% so với 2024 do số lượng CBNV tăng 5,32% • Tổng lượng chất thải rắn: 126,5 tấn/năm, giảm 0,24% so với 2024 • Tổng năng lượng được tiêu thụ trên doanh thu trong 2025 là 335 kW",
+          "confidence": "high"
+        },
+        {
+          "value": 3218052.0,
+          "rawValue": "3.218.052",
+          "unit": "tCO2e",
+          "qualityScore": 107.67,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "sourceTitle": "Phát triển bền vững",
+          "sourceType": "sustainability_report",
+          "snippet": "Lần lượt là tổng dư nợ các khoản tín dụng xanh và giá trị giải ngân cho doanh nghiệp do phụ nữ làm chủ 13.602 tỷ đồng Phân bổ giá trị kinh tế cho các bên liên quan 3.218.052 tCO2e Tổng phát thải cả 3 Phạm vi của MSB Hoàn thiện hệ thống ESMS Cho cấp tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vững Phát hành 680 tỷ đồng trái phiếu bền vững Báo cáo phát triển bền vững Xem thêm",
           "confidence": "high"
         },
         {
@@ -1275,10 +1311,10 @@
           "pillar": "E",
           "label": "Tài chính bền vững",
           "year": 2025,
-          "sourceUrl": "https://www.msb.com.vn/msb-website/MSB-Bao-cao-phat-trien-ben-vung-2025.pdf",
-          "sourceTitle": "Tải báo cáo 2025",
+          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
+          "sourceTitle": "Phát triển bền vững",
           "sourceType": "sustainability_report",
-          "snippet": "nh vực nông nghiệp bền vững thích ứng với biến đổi khí hậu. Bên cạnh đó, vào tháng 7/2025, MSB đã phát hành thành công 680 tỷ đồng trái phiếu bền vững kỳ hạn 5 năm, tuân thủ Khung Tài chính Bền vững (Sustainable Finance Framework – SFF) năm 2025 của Ngân hàng. Khung này Số lượng hồ sơ qua hệ thống Eprocument: 6.4. TÍN DỤNG XANH HUY ĐỘNG VỐN XANH SỐ VĂN BẢN TRÌNH TRÊN EDOCMAN 30000 25000 20000 15000 10000 5000 0 17.772 2023 20.446 2024 26.279 2025 SỐ LƯỢN",
+          "snippet": "2e Tổng phát thải cả 3 Phạm vi của MSB Hoàn thiện hệ thống ESMS Cho cấp tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vững Phát hành 680 tỷ đồng trái phiếu bền vững Báo cáo phát triển bền vững Xem thêm Báo cáo Phát triển bền vững năm của MSB được phát hành độc lập &amp; áp dụng bộ tiêu chuẩn GRI Tải báo cáo 2025 Quản trị phát triển bền vững Xem thêm Bản cam kết tuân thủ quy định",
           "confidence": "high",
           "canonicalizedFromRawValue": "680",
           "repaired": true
@@ -1314,52 +1350,20 @@
           "sourceType": "sustainability_report",
           "snippet": "O2eq, trong đó 99.8% phát sinh từ lượng phát thải của khách hàng doanh nghiệp trong danh mục cho vay của MSB. • Lượng điện tiêu thụ: 9.274.032 kWH/năm, giảm 1% so với 2024 • Lượng nước tiêu thụ: 157.305 m3/năm tăng 4% so với 2024 do số lượng CBNV tăng 5,32% • Tổng lượng chất thải rắn: 126,5 tấn/năm, giảm 0,24% so với 2024 • Tổng năng lượng được tiêu thụ trên doanh thu trong 2025 là 335 kWH/tỷ, giảm so với 395 kWH/tỷ năm 2024 • Tổng lượng nước công t",
           "confidence": "high"
-        },
-        {
-          "value": 3218052.0,
-          "rawValue": "3.218.052",
-          "unit": "tCO2e",
-          "qualityScore": 107.67,
-          "metricId": "ghg_total",
-          "pillar": "E",
-          "label": "Tổng phát thải KNK",
-          "year": 2026,
-          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
-          "sourceTitle": "Phát triển bền vững",
-          "sourceType": "sustainability_report",
-          "snippet": "Lần lượt là tổng dư nợ các khoản tín dụng xanh và giá trị giải ngân cho doanh nghiệp do phụ nữ làm chủ 13.602 tỷ đồng Phân bổ giá trị kinh tế cho các bên liên quan 3.218.052 tCO2e Tổng phát thải cả 3 Phạm vi của MSB Hoàn thiện hệ thống ESMS Cho cấp tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vững Phát hành 680 tỷ đồng trái phiếu bền vững Báo cáo phát triển bền vững Xem thêm",
-          "confidence": "high"
-        },
-        {
-          "value": 680.0,
-          "rawValue": "680",
-          "unit": "billion VND",
-          "qualityScore": 116,
-          "metricId": "sustainable_finance",
-          "pillar": "E",
-          "label": "Tài chính bền vững",
-          "year": 2026,
-          "sourceUrl": "https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/",
-          "sourceTitle": "Phát triển bền vững",
-          "sourceType": "sustainability_report",
-          "snippet": "2e Tổng phát thải cả 3 Phạm vi của MSB Hoàn thiện hệ thống ESMS Cho cấp tín dụng và tài trợ thương mại Hơn 14 tỷ đồng Dành cho các hoạt động vì phát triển cộng đồng Ban hành Khung Tài chính bền vững Phát hành 680 tỷ đồng trái phiếu bền vững Báo cáo phát triển bền vững Xem thêm Báo cáo Phát triển bền vững năm của MSB được phát hành độc lập &amp; áp dụng bộ tiêu chuẩn GRI Tải báo cáo 2025 Quản trị phát triển bền vững Xem thêm Bản cam kết tuân thủ quy định",
-          "confidence": "high",
-          "canonicalizedFromRawValue": "680",
-          "repaired": true
         }
       ],
       "coverage": {
         "documents": 9,
         "processedDocuments": 5,
         "metrics": 18,
-        "canonicalMetrics": 10,
+        "canonicalMetrics": 9,
         "externalAssessments": 1
       }
     },
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T02:13:15.202754+00:00",
+      "checkedAt": "2026-09-29T02:28:09.465387+00:00",
       "documents": [],
       "metrics": [],
       "externalAssessments": [],
@@ -1375,7 +1379,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T02:13:15.202961+00:00",
+      "checkedAt": "2026-09-29T02:28:09.466209+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -1616,6 +1620,18 @@
           "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "processedAt": "2026-09-29T01:26:05.674858+00:00",
           "textLength": 0
+        },
+        {
+          "id": "fef4417441ae9670c283",
+          "url": "https://ocb.com.vn/vi/404",
+          "title": "Tin tức - Sự kiện Tuyển dụng Về OCB Dịch vụ CSKH 24/7 OCB_BRANCHES en Cá nhân Doanh nghiệp Ngân hàng ưu tiên Nhà đầu tư Mở sổ Tiết kiệm Mở t",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "b4200761c61830a15273dc7232443558e15e5db4290870c0f26f2723a7c990fb",
+          "processedAt": "2026-09-29T02:28:18.041914+00:00",
+          "textLength": 1707
         }
       ],
       "metrics": [
@@ -1949,25 +1965,8 @@
       ],
       "canonicalMetrics": [
         {
-          "value": 528300.0,
-          "rawValue": "528.300",
-          "unit": "billion VND",
-          "qualityScore": 116,
-          "metricId": "green_credit",
-          "pillar": "E",
-          "label": "Dư nợ tín dụng xanh",
-          "year": 2023,
-          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20240412153819_1204-fa-bctn-2023.pdf",
-          "sourceTitle": "Báo cáo thường niên 2023 2023 Ngày đăng: 12/4/2024 SEE_MORE",
-          "sourceType": "annual_report",
-          "snippet": "ong tổng quy mô dư nợ tín dụng toàn hàng (tỷ trọng dư nợ tín dụng xanh cuối năm 2021-2022-2023 lần lượt đạt 11,2%-9,1% và gần 9%/tổng dư nợ, trong khi đó: đến 30/6/2023, dư nợ cấp tín dụng xanh tại Việt Nam đạt gần 528.300 tỷ đồng, chiếm tỷ trọng khoảng 4,2% tổng dư nợ toàn nền kinh tế. 87OCB - Niềm tin và thịnh vượng Phát triển các sản phẩm, dịch vụ ngân hàng có xét tới lợi ích về MT&XH. Là một trong những ngân hàng đầu tiên thực hiện chiến lược ch",
-          "confidence": "high",
-          "canonicalizedFromRawValue": "528.300",
-          "repaired": true
-        },
-        {
-          "value": 5.0,
-          "rawValue": "5",
+          "value": 18.0,
+          "rawValue": "18",
           "unit": "%",
           "qualityScore": 116,
           "metricId": "women_management_pct",
@@ -1983,19 +1982,21 @@
           "repaired": true
         },
         {
-          "value": 2900.0,
-          "rawValue": "2.900",
+          "value": 30.0,
+          "rawValue": "30",
           "unit": "billion VND",
-          "qualityScore": 106.33,
+          "qualityScore": 116,
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
           "year": 2024,
-          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20250923154047_bao-cao-phat-trien-ben-vung-2024.pdf",
-          "sourceTitle": "Báo cáo phát triển bền vững 2024 2024 Ngày đăng: 23/9/2025 SEE_MORE",
-          "sourceType": "sustainability_report",
-          "snippet": "4 Ngân hàng đồng hành cùng DNNVV tiêu biểu Giải thưởng Dư nợ cho vay phát triển giáo dục đào tạo so với năm 2023 Tăng hơn 170% Dư nợ cho xây dựng công trình xử lý nước cấp phục vụ cộng đồng Hơn 2.900 tỷ đồng Dư nợ phát triển NƠXH so với năm 2023 Tăng hơn 135% Giải ngân cho lĩnh vực nông nghiệp thông minh Hơn 1.900 tỷ đồng Dư nợ cho ngành nông nghiệp, lâm nghiệp và thủy sản Hơn 4.200 tỷ đồng Giải ngân cho các cán bộ và giáo viên phục vụ mục đích",
-          "confidence": "high"
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20250408095036_ocb-bao-cao-thuong-nien-nam-2024.pdf",
+          "sourceTitle": "SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "đồng, hợp tác với các tổ chức thiện nguyện để hỗ trợ những hoàn cảnh khó khăn, góp phần nâng cao chất lượng cuộc sống. Trong năm 2024, OCB đã dành gần 30 tỷ đồng cho các hoạt động cộng đồng, thể hiện cam kết mạnh mẽ với trách nhiệm xã hội. Trên tinh thần đó, ngân hàng đã triển khai chuỗi chương trình ý nghĩa trên toàn quốc, tập trung vào các mục tiêu sau: Mục đích tài trợ Tỷ lệ Nâng cao chất lượng giáo dục Xây dựng cộng đồng bền vững Khắc phục h",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "30",
+          "repaired": true
         },
         {
           "value": 19000.0,
@@ -2030,21 +2031,6 @@
           "confidence": "high",
           "canonicalizedFromRawValue": "37",
           "repaired": true
-        },
-        {
-          "value": 0.0291,
-          "rawValue": "29,1",
-          "unit": "billion VND",
-          "qualityScore": 100.0,
-          "metricId": "csr_spend",
-          "pillar": "S",
-          "label": "Chi cho cộng đồng/CSR",
-          "year": 2025,
-          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20260826145747_2608-bc-ptbv-2025-vn.pdf",
-          "sourceTitle": "Báo cáo phát triển bền vững 2025 2025 Ngày đăng: 25/8/2026 SEE_MORE",
-          "sourceType": "sustainability_report",
-          "snippet": "và cơ quan pháp luật về vi phạm quyền con người • 56% tỷ lệ CBNV là nữ giới • Hơn 29% tỷ lệ quản lý là nữ giới • Thu nhập bình quân CBNV đạt 29,1 triệu đồng Xây dựng và phát triển cộng đồng bền vững • Đồng hành hỗ trợ các hoạt động, dự án bền vững tại địa phương như trồng cây xanh, hỗ trợ xử lý rác thải, bảo vệ nguồn nước và các chương trình cải thiện sinh kế của người dân địa phương • Nâng cao trách nhiệm xã hội của Ngân hàng. Đảm bảo rằng mọi",
-          "confidence": "high"
         },
         {
           "value": 21000.0,
@@ -2082,42 +2068,80 @@
         }
       ],
       "coverage": {
-        "documents": 20,
-        "processedDocuments": 20,
+        "documents": 21,
+        "processedDocuments": 21,
         "metrics": 21,
-        "canonicalMetrics": 8,
+        "canonicalMetrics": 6,
         "externalAssessments": 1
       }
     },
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T02:13:15.202968+00:00",
+      "checkedAt": "2026-09-29T02:28:09.466240+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
           "url": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf",
           "title": "260420_SHB_BCTN_2025_Web.pdf",
           "sourcePage": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf",
-          "year": 2026,
-          "type": "esg_other"
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "b4e453d3212850c7d527adeef9d88431cfc17fbea4981e8185ccd763d6fa7042",
+          "processedAt": "2026-09-29T02:28:29.023899+00:00",
+          "textLength": 491400
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 256.0,
+          "rawValue": "256",
+          "unit": "billion VND",
+          "qualityScore": 89.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf",
+          "sourceTitle": "260420_SHB_BCTN_2025_Web.pdf",
+          "sourceType": "annual_report",
+          "snippet": "lực lũy kế dành cho các hoạt động an sinh xã hội của SHB trong giai đoạn 2019 – 2025 đã vượt mốc 1.000 tỷ đồng, đánh dấu hành trình bền bỉ của ngân hàng trong việc đồng hành cùng cộng đồng và xã hội. Riêng trong năm 2025, SHB dành ngân sách hơn 256 tỷ đồng cho các hoạt động an sinh xã hội và đồng hành cùng Quốc gia phát triển văn hóa, thể thao, xã hội. Trên nền tảng những đóng góp đó, SHB từng bước hiện thực hóa định hướng Ngân hàng hạnh phúc –",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 1000.0,
+          "rawValue": "1.000",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf",
+          "sourceTitle": "260420_SHB_BCTN_2025_Web.pdf",
+          "sourceType": "annual_report",
+          "snippet": "lực lũy kế dành cho các hoạt động an sinh xã hội của SHB trong giai đoạn 2019 – 2025 đã vượt mốc 1.000 tỷ đồng, đánh dấu hành trình bền bỉ của ngân hàng trong việc đồng hành cùng cộng đồng và xã hội. Riêng trong năm 2025, SHB dành ngân sách hơn 256 tỷ đồng cho các hoạt động an sinh xã hội và đồng hành cùng Quốc gia phát triển văn hóa, thể thao, xã hội. Trên nền tảng những đóng góp đó, SHB từng bước hiện thực hóa định hướng Ngân hàng hạnh phúc –",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "256",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 1,
-        "processedDocuments": 0,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 1,
+        "metrics": 1,
+        "canonicalMetrics": 1,
         "externalAssessments": 0
       }
     },
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T02:13:15.203045+00:00",
+      "checkedAt": "2026-09-29T02:28:09.466493+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -2134,7 +2158,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026",
+          "title": "Sustainability Report 2025 23/07/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -2146,7 +2170,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026",
+          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -2170,7 +2194,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
+          "title": "SeABank's Annual Report 2024 08/04/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -2230,7 +2254,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T02:13:15.203062+00:00",
+      "checkedAt": "2026-09-29T02:28:09.466583+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -2317,7 +2341,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T02:13:15.203159+00:00",
+      "checkedAt": "2026-09-29T02:28:09.466975+00:00",
       "documents": [
         {
           "id": "56ecaa75021fa68c4629",
@@ -2377,6 +2401,18 @@
           "textLength": 5751
         },
         {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "See all ESG solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
+        },
+        {
           "id": "92a4cc6c630bcb4bdbd4",
           "url": "https://techcombank.com/en/about-us/sustainability/strategy",
           "title": "Our Strategy",
@@ -2387,18 +2423,6 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
-        },
-        {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "Our Solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -2418,7 +2442,7 @@
           "title": "Green Loans Find out more",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability",
           "year": null,
-          "type": "climate_disclosure",
+          "type": "esg_web_content",
           "contentType": "html",
           "contentHash": "0d5395ce2ffe929d46fcbe9f027664b21dc9f77d509b70f1295633f5a89fee9a",
           "processedAt": "2026-09-29T01:34:42.084517+00:00",
@@ -2446,7 +2470,7 @@
           "metricId": "green_credit",
           "pillar": "E",
           "label": "Dư nợ tín dụng xanh",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2461,7 +2485,7 @@
           "metricId": "sustainable_finance",
           "pillar": "E",
           "label": "Tài chính bền vững",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2476,7 +2500,7 @@
           "metricId": "water",
           "pillar": "E",
           "label": "Nước tiêu thụ",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2491,7 +2515,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2503,7 +2527,7 @@
         {
           "provider": "HOSE",
           "assessmentType": "VNSI membership",
-          "year": 2025,
+          "year": 2026,
           "value": "VNSI",
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
@@ -2531,7 +2555,7 @@
           "metricId": "green_credit",
           "pillar": "E",
           "label": "Dư nợ tín dụng xanh",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2548,7 +2572,7 @@
           "metricId": "sustainable_finance",
           "pillar": "E",
           "label": "Tài chính bền vững",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2565,7 +2589,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2586,7 +2610,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T02:13:15.203185+00:00",
+      "checkedAt": "2026-09-29T02:28:09.467064+00:00",
       "documents": [
         {
           "id": "247e91a06e927e5991e3",
@@ -2627,7 +2651,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T02:13:15.203233+00:00",
+      "checkedAt": "2026-09-29T02:28:09.467317+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -3095,6 +3119,23 @@
           "repaired": true
         },
         {
+          "value": 15000.0,
+          "rawValue": "15.000",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://www.vietcombank.com.vn/-/media/Project/VCB-Sites/VCB/Nha-Dau-tu/Bao-cao-PTBV/VN_VCB_ESG-Report-2025.pdf",
+          "sourceTitle": "VN_VCB_ESG-Report-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "m xã hội của một thương hiệu lớn và có nhiều đóng góp cho nền kinh tế. Ngân hàng đã triển khai nhiều chương trình an sinh xã hội quy mô lớn, tập trung vào giáo dục, y tế và hỗ trợ cộng đồng yếu thế. Đóng góp cho Ngân sách Nhà nước đạt khoảng 15.000 tỷ đồng, tiếp tục nằm trong nhóm doanh nghiệp đóng góp lớn nhất cả nước. T ầm nhìn và cam kết phát triển bền vững Với nền tảng tài chính vững mạnh, hệ thống công nghệ hiện đại, cùng đội ngũ nhân sự tà",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "15.000",
+          "repaired": true
+        },
+        {
           "value": 1793632.0,
           "rawValue": "1.793.632",
           "unit": "kWh",
@@ -3148,14 +3189,14 @@
         "documents": 4,
         "processedDocuments": 4,
         "metrics": 21,
-        "canonicalMetrics": 7,
+        "canonicalMetrics": 8,
         "externalAssessments": 3
       }
     },
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T02:13:15.203243+00:00",
+      "checkedAt": "2026-09-29T02:28:09.467362+00:00",
       "documents": [
         {
           "id": "6968d1a581184f508e23",
@@ -3184,7 +3225,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T02:13:15.203267+00:00",
+      "checkedAt": "2026-09-29T02:28:09.467512+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -3369,6 +3410,23 @@
       ],
       "canonicalMetrics": [
         {
+          "value": 2.4,
+          "rawValue": "2,4",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://www.vpbank.com.vn/-/media/vpbank-latest/cac-thu-khac/VIE-BCPTBV.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "2025, VPBank tiếp tục đồng hành cùng chương trình “Cặp lá yêu thương” với nguồn kinh phí duy trì gần 2,4 tỷ đồng từ ngân hàng, đồng thời huy động thêm 5 tỷ đồng từ các đối tác và cộng đồng nhằm xây dựng và sửa chữa gần 15 điểm trường vùng cao bao gồm Quảng Trị, Sơn La, Điện Biên, Tuyên Quang, Lào Cai,... VPBank cũng triển khai nhiều khoản hỗ trợ thiết thực cho giáo dục địa phương, góp phần giúp đỡ những học sinh có hoàn cảnh khó khăn có thể duy",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "5",
+          "repaired": true
+        },
+        {
           "value": 39052.0,
           "rawValue": "3 9.0 5 2",
           "unit": "billion VND",
@@ -3383,6 +3441,23 @@
           "snippet": "41 tỷ đồng 35,4% YTD Tỷ lệ an toàn vốn 14,35% Dẫn đầu ngành ngân hàng tỷ đồng Đóng góp 5.570 Ngân sách nhà nước 30.625 tỷ đồng Lợi nhuận trước thuế 53% YoY 3 9.0 5 2 tỷ đồng Dư nợ tín dụng xanh 78% YoY 4.000 tỷ đồng Hoàn thành chi trả cổ tức bằng tiền mặt ~ tỷ lệ 5% 16 3.872 51,6% 1.496.226 Hoạt động CSR để tài trợ xây dựng và cải tạo 15 điểm trường 5 tỷ đồng Triển khai Tổng số khóa học thực hiện trong năm 2025 Tỷ lệ nữ giới trong cấp quản lý trong",
           "confidence": "high",
           "canonicalizedFromRawValue": "2",
+          "repaired": true
+        },
+        {
+          "value": 1496226.0,
+          "rawValue": "1.496.226",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://www.vpbank.com.vn/-/media/vpbank-latest/cac-thu-khac/VIE-BCPTBV.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "g trình truyền thông, sự kiện nội bộ. • Phát triển năng lực và sự nghiệp dài hạn cho người lao động thông qua hệ thống đào tạo, bồi dưỡng và lộ trình phát triển phù hợp. • Tổng số giờ đào tạo trong năm 2025: 1.496.226 giờ • Tổng số khóa học được thực hiện trong năm 2025: 3.872 khóa học • Tổng số giờ học trung bình/CBNV: 87 ,5 giờ • Các chương trình đào tạo nổi bật: chương trình iLEAD, Swiss BET để nâng cao năng lực lãnh đạo và chương trình CloudLe",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "1.496.226",
           "repaired": true
         },
         {
@@ -3405,7 +3480,7 @@
         "documents": 3,
         "processedDocuments": 3,
         "metrics": 8,
-        "canonicalMetrics": 2,
+        "canonicalMetrics": 4,
         "externalAssessments": 2
       }
     }
@@ -3440,23 +3515,9 @@
       "textLength": 4043
     },
     {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "Above-Board_Final.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "sustainability_report",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T02:16:59.611964+00:00",
-      "textLength": 61879
-    },
-    {
       "id": "c3ae1e1e5c89eec1b45b",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "2023 Summary Report",
+      "title": "SUSBA-2023-Report-Final.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
       "type": "climate_disclosure",
@@ -3464,7 +3525,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T01:34:50.536163+00:00",
+      "processedAt": "2026-09-29T02:28:31.664480+00:00",
       "textLength": 98218
     },
     {
@@ -3496,14 +3557,18 @@
       "textLength": 61879
     },
     {
-      "id": "1ba16d784121888b47f1",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
-      "title": "report-2019-compressed.pdf",
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
+      "year": 2023,
+      "type": "sustainability_report",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-29T02:28:26.903462+00:00",
+      "textLength": 61879
     },
     {
       "id": "c6d164862c0327932c55",
@@ -3518,16 +3583,6 @@
       "contentHash": "950ff0da90cee4ccece587f82b729d943e04db3b43756ad9576d1a1abf09eb1a",
       "processedAt": "2026-09-28T23:59:03.775156+00:00",
       "textLength": 239941
-    },
-    {
-      "id": "c6d164862c0327932c55",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
-      "title": "report-2017-compressed.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
     },
     {
       "id": "736d1a258096fff8e0cd",
@@ -3621,6 +3676,16 @@
     },
     {
       "id": "1ba16d784121888b47f1",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
+      "title": "2019 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2019,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "1ba16d784121888b47f1",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
       "title": "2019 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -3658,6 +3723,16 @@
       "textLength": 167687
     },
     {
+      "id": "c6d164862c0327932c55",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
+      "title": "2017 Full Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2017,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
       "id": "544a08968ebda8495b75",
       "url": "https://www.swissre.com/dam/jcr:e73ee7c3-7f83-4c17-a2b8-8ef23a8d3312/swiss-re-institute-expertise-publication-economics-of-climate-change.pdf",
       "title": "https://www.swissre.com/dam/jcr:e73ee7c3-7f83-4c17-a2b8-8ef23a8d3312/swiss-re-institute-expertise-publication-economics-of-climate-change.pdf",
@@ -3677,10 +3752,13 @@
       "title": "Top-Rated Companies",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "7d4bbb491934c46e27e7fa84a62301e0ac780a9dec76215fb1733e81bbf5c55a",
+      "processedAt": "2026-09-29T02:28:23.387039+00:00",
+      "textLength": 9049
     },
     {
       "id": "407e8b826b8c2351210a",
@@ -3688,10 +3766,13 @@
       "title": "Sustainable Finance and Lending",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "sustainable_finance_assessment",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "d07806c420daac8df6a98f11b871eb1b3b49e6aae0aec70eac945ed230081762",
+      "processedAt": "2026-09-29T02:28:23.018848+00:00",
+      "textLength": 7112
     },
     {
       "id": "ce2041d78fec770e7787",
@@ -3768,10 +3849,13 @@
       "title": "Resource Center",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "88b3d8cc48c349cc3f18cc1e6a1eeadd511bdad52a85664d6f0fa87b22c4910e",
+      "processedAt": "2026-09-29T02:28:21.661442+00:00",
+      "textLength": 12053
     },
     {
       "id": "c83f1aa8de4d1a6574f0",
@@ -3793,10 +3877,13 @@
       "title": "Partner Platforms",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "3fd47808e447ef125692373cc84063fb6886c1cd6cf50e0232448807edb35bc1",
+      "processedAt": "2026-09-29T02:28:20.869337+00:00",
+      "textLength": 8174
     },
     {
       "id": "e1243c368c2fb34d4a6a",
@@ -3804,10 +3891,13 @@
       "title": "News and Events",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "a7b9a5694b3a225bdc10c6056c923e6af63f629fff1fdf7eb6816b9d6745408f",
+      "processedAt": "2026-09-29T02:28:22.237881+00:00",
+      "textLength": 9014
     },
     {
       "id": "e5f4375a00a3d9abaa50",
@@ -3815,10 +3905,13 @@
       "title": "Nature Data",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "f0e4db1a6d78db74662085a3dff75b14e2c617e638832ed25bd2668fcc1e8052",
+      "processedAt": "2026-09-29T02:28:18.329718+00:00",
+      "textLength": 9283
     },
     {
       "id": "17dae3d5867dc53c6c62",
@@ -3864,10 +3957,13 @@
       "title": "Global Access - Sustainability Research Database",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "5c2d24c5980260f3e18ee9aa0da20a6103582d6a73d01a3d2bc0145a41d59994",
+      "processedAt": "2026-09-29T02:28:23.823665+00:00",
+      "textLength": 9414
     },
     {
       "id": "d2f04de6958bd270795d",
@@ -3950,10 +4046,13 @@
       "title": "ESG Risk Ratings",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "f4bbc78261c26494558a32cfe72296a3fac7633b92d18bd1f060916a2bc2a062",
+      "processedAt": "2026-09-29T02:28:22.585176+00:00",
+      "textLength": 13784
     },
     {
       "id": "d784c03b639912e747d2",
@@ -4105,10 +4204,13 @@
       "title": "Climate Transition Toolkit",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "c6b8da49726b78e494a132677c7c8d4afeb9c853b409450a761f148303a74a59",
+      "processedAt": "2026-09-29T02:28:19.287398+00:00",
+      "textLength": 13906
     },
     {
       "id": "fb1914e56c43c11300e8",
@@ -4116,10 +4218,13 @@
       "title": "Climate Solutions Overview",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "01e742ae200b87e63029945ec3009e22a128872c315212fb246e66b398079a29",
+      "processedAt": "2026-09-29T02:28:19.745994+00:00",
+      "textLength": 9205
     },
     {
       "id": "3f2555008f362dfd2ec6",
@@ -4127,10 +4232,13 @@
       "title": "Climate Solutions",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "01e742ae200b87e63029945ec3009e22a128872c315212fb246e66b398079a29",
+      "processedAt": "2026-09-29T02:28:20.317514+00:00",
+      "textLength": 9205
     },
     {
       "id": "f90b4cde231295f63671",
@@ -4141,7 +4249,10 @@
       "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "efa5f227e7f7df78214b9bbaa9f1ab136cf84f21ba93a9f58b279a1b93ecf299",
+      "processedAt": "2026-09-29T02:28:18.946838+00:00",
+      "textLength": 18137
     },
     {
       "id": "b9524879a618512c8388",
@@ -4369,7 +4480,7 @@
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
       "status": "ok",
-      "documents": 18,
+      "documents": 1,
       "symbol": "OCB"
     },
     {
@@ -4393,7 +4504,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 3,
+      "documents": 2,
       "symbol": "SSB"
     },
     {
@@ -4429,7 +4540,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 4,
+      "documents": 5,
       "symbol": "TCB"
     },
     {
@@ -4523,7 +4634,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 3,
+      "documents": 2,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -4538,11 +4649,11 @@
   "run": {
     "mode": "recent",
     "documentsProcessed": 16,
-    "backlogBeforeRun": 62,
-    "activeBacklogBeforeRun": 50,
-    "backlogRemaining": 34,
-    "eligibleBacklog": 61,
-    "recentBacklog": 50,
+    "backlogBeforeRun": 49,
+    "activeBacklogBeforeRun": 37,
+    "backlogRemaining": 21,
+    "eligibleBacklog": 48,
+    "recentBacklog": 37,
     "historicalBacklog": 5,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
