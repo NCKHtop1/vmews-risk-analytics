@@ -1,6 +1,6 @@
 """Config-driven corporate ESG discovery and extraction for FinQuery.
 
-The collector keeps a registry of official bank/provider source pages, discovers
+The collector keeps a registry of official issuer/provider source pages, discovers
 new sustainability/annual-report documents, extracts common ESG KPI mentions,
 and preserves provenance. It intentionally does not manufacture a composite ESG
 score because provider methodologies are not comparable.
@@ -22,6 +22,8 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
+CORE_COMPANIES = ROOT / "data/companies.json"
+GENERIC_DISCLOSURE_TEMPLATE = "https://24hmoney.vn/stock/{symbol}/report"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DEFAULT_DOC_BYTES = (96 if HISTORY_BACKFILL else 35) * 1024 * 1024
@@ -52,6 +54,41 @@ def write(path, payload):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def build_company_registry(config):
+    """Return all FinQuery Core 100 issuers with official sources preferred.
+
+    The curated bank registry keeps issuer-direct URLs and verified overrides.
+    Every remaining Core issuer receives a deterministic public disclosure-index
+    fallback so Corporate ESG is available across the whole Core universe.
+    """
+    core = read(CORE_COMPANIES, [])
+    symbols = {str(row.get("symbol") or "").strip().upper() for row in core}
+    symbols.discard("")
+    if len(symbols) != 100:
+        raise RuntimeError(f"Expected 100 Core companies, got {len(symbols)}")
+
+    curated = config.get("banks", {})
+    out = {}
+    for item in core:
+        symbol = str(item.get("symbol") or "").strip().upper()
+        cfg = dict(curated.get(symbol, {}))
+        cfg["name"] = cfg.get("name") or item.get("name") or symbol
+        aliases = list(cfg.get("aliases", []))
+        for alias in (symbol, item.get("name")):
+            if alias and alias not in aliases:
+                aliases.append(alias)
+        cfg["aliases"] = aliases
+        seeds = list(cfg.get("seed_urls", []))
+        generic = GENERIC_DISCLOSURE_TEMPLATE.format(symbol=symbol.lower())
+        if generic not in seeds:
+            seeds.append(generic)
+        cfg["seed_urls"] = seeds
+        cfg["entityType"] = "bank" if symbol in curated else "company"
+        cfg["sourcePolicy"] = "curated+disclosure-index" if symbol in curated else "disclosure-index"
+        out[symbol] = cfg
+    return out
 
 
 def normalize_url(url):
@@ -1396,7 +1433,7 @@ def backlog_priority(owner, doc):
 
 def collect(config, output):
     previous = read(output / "company-esg.json", {"companies": {}, "externalDocuments": []})
-    banks = config["banks"]
+    banks = build_company_registry(config)
     keywords = config["document_keywords"]
     if previous.get("extractorVersion") != EXTRACTOR_VERSION:
         # A stricter extractor must never keep KPI rows produced by an older,
@@ -1470,6 +1507,7 @@ def collect(config, output):
                 backlog.append((symbol, doc))
         companies[symbol] = {
             "symbol": symbol, "name": cfg["name"], "checkedAt": now(),
+            "entityType": cfg.get("entityType", "company"), "sourcePolicy": cfg.get("sourcePolicy"),
             "documents": ordered, "metrics": metrics, "externalAssessments": ratings,
         }
 
@@ -1623,6 +1661,8 @@ def collect(config, output):
         "status": "ok" if any(s.get("status") == "ok" for s in source_status) else "retained",
         "methodology": {
             "compositeScore": False,
+            "universe": "FinQuery Core 100",
+            "discoveryPolicy": "Issuer-direct sources are preferred. A deterministic public disclosure index is used as a fallback for Core issuers without a curated source registry.",
             "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
             "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest live source per metric/year and fills only missing keys from source-verified fallbacks when issuer PDFs are blocked.",
         },
@@ -1646,7 +1686,10 @@ def collect(config, output):
     write(output / "company-esg.json", payload)
     write(output / "esg-status.json", {
         "checkedAt": payload["checkedAt"], "status": payload["status"],
-        "banks": len(companies),
+        "companies": len(companies),
+        "banks": sum(v.get("entityType") == "bank" for v in companies.values()),
+        "coreUniverse": 100,
+        "companiesWithMetrics": sum(bool(v.get("canonicalMetrics")) for v in companies.values()),
         "sourcesOk": sum(s.get("status") == "ok" for s in source_status),
         "sourcesTotal": len(source_status),
         "documents": sum(v["coverage"]["documents"] for v in companies.values()),
@@ -1660,7 +1703,7 @@ def collect(config, output):
         "historicalBacklog": payload["run"]["historicalBacklog"],
     })
     print(
-        f"Corporate ESG: {len(companies)} banks; "
+        f"Corporate ESG: {len(companies)} Core companies; "
         f"{sum(v['coverage']['documents'] for v in companies.values())} docs; "
         f"{sum(v['coverage']['metrics'] for v in companies.values())} metrics; "
         f"{sum(v['coverage']['externalAssessments'] for v in companies.values())} external assessments; "
