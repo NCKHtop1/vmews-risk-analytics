@@ -1237,6 +1237,28 @@ class MarketTests(unittest.TestCase):
             if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
             else:m.os.environ['INTRADAY_WORKERS']=old_workers
 
+    def test_daily_browser_smoke_exercises_production_ai_and_protected_tabs(self):
+        root=ROOT.parent
+        path=root/'.github/workflows/financial-dashboard-browser-smoke.yml'
+        if not path.exists():
+            path=pathlib.Path('.github/workflows/financial-dashboard-browser-smoke.yml')
+        flow=path.read_text()
+        self.assertIn("cron: '25 9 * * 1-5'",flow)
+        self.assertIn("selenium==4.36.0",flow)
+        self.assertIn("finquery-technical-access",flow)
+        self.assertIn("finquery-macro-access",flow)
+        self.assertNotIn("13579",flow)
+        self.assertIn("window.FinQueryAI.analyze(arguments[0])",flow)
+        self.assertIn("Vì sao mã này tăng hoặc giảm trong phiên hôm nay?",flow)
+        self.assertIn("Phân tích sức khỏe tài chính của doanh nghiệp này.",flow)
+        self.assertIn("Các rủi ro định lượng chính hiện tại là gì?",flow)
+        self.assertIn("So sánh kỳ gần nhất với kỳ trước và cùng kỳ.",flow)
+        self.assertIn("ROE là gì?",flow)
+        self.assertIn("Phân tích bối cảnh lãi suất và vĩ mô hiện tại.",flow)
+        self.assertIn("document.querySelector('#price-chart canvas')",flow)
+        self.assertIn("technical-scanner-rows",flow)
+        self.assertIn("idea-report-list",flow)
+
     def test_dolphin_v6_retries_transient_gemini_and_keeps_valid_key_connected(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
         html=(ROOT/'frontend/index.html').read_text()
