@@ -188,6 +188,60 @@ test("CDN connects directly to Google and keeps the key only in tab session stor
 });
 
 
+test("stored rejected Gemini key is removed from the current tab", async () => {
+  let requests = 0;
+  const { window, nodes, session } = await setup(async () => {
+    requests += 1;
+    return { ok: false, status: 403, json: async () => ({ error: { message: "standard key rejected" } }) };
+  });
+  session.set("vmews_solution_ai_browser_session", "AIzaOldStandardKeySynthetic1234567890");
+
+  assert.equal(await window.__SOLUTION_AI_CHECK_CONNECTION__(), false);
+  assert.equal(requests, 1);
+  assert.equal(session.has("vmews_solution_ai_browser_session"), false);
+  assert.match(nodes.get("#solutionAiConnectionState").textContent, /Auth key mới|Key cũ/);
+  const health = window.__SOLUTION_AI_HEALTH__();
+  assert.equal(health.geminiKeyStored, false);
+  assert.equal(health.geminiHealth, "LOCAL");
+});
+
+test("Gemini project quota 429 is circuit-broken instead of retried on every panel open", async () => {
+  let requests = 0;
+  const { window, nodes, session } = await setup(async () => {
+    requests += 1;
+    return { ok: false, status: 429, json: async () => ({ error: { message: "RESOURCE_EXHAUSTED" } }) };
+  });
+  session.set("vmews_solution_ai_browser_session", "AQ.synthetic-quota-project-key-1234567890");
+
+  assert.equal(await window.__SOLUTION_AI_CHECK_CONNECTION__(), false);
+  assert.equal(requests, 1);
+  assert.equal(await window.__SOLUTION_AI_CHECK_CONNECTION__(), false);
+  assert.equal(requests, 1);
+  assert.equal(session.has("vmews_solution_ai_browser_session"), true);
+  assert.match(nodes.get("#solutionAiConnectionState").textContent, /quota|giới hạn/i);
+  const health = window.__SOLUTION_AI_HEALTH__();
+  assert.equal(health.geminiHealth, "PROJECT_QUOTA");
+  assert.equal(health.geminiLastStatus, 429);
+  assert.equal(health.geminiQuotaBlocked, true);
+});
+
+test("replace Gemini key clears the blocked key and resets local health", async () => {
+  const { window, nodes, session } = await setup(async () => ({
+    ok: false, status: 429, json: async () => ({ error: { message: "RESOURCE_EXHAUSTED" } }),
+  }));
+  session.set("vmews_solution_ai_browser_session", "AQ.synthetic-old-quota-key-1234567890");
+  await window.__SOLUTION_AI_CHECK_CONNECTION__();
+
+  nodes.get("#solutionAiReplaceKey").listeners.get("click")();
+
+  assert.equal(session.has("vmews_solution_ai_browser_session"), false);
+  assert.match(nodes.get("#solutionAiConnectionState").textContent, /Đã gỡ key cũ/);
+  const health = window.__SOLUTION_AI_HEALTH__();
+  assert.equal(health.geminiKeyStored, false);
+  assert.equal(health.geminiHealth, "LOCAL");
+  assert.equal(health.geminiQuotaBlocked, false);
+});
+
 test("direct Gemini receives audited context and guardrails without exposing the key in prompts", async () => {
   const requests = [];
   const secret = "AQ.synthetic-grounded-context-secret-123456789";
