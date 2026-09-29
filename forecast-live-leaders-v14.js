@@ -69,7 +69,7 @@
 
   function rankingHorizon(base) {
     const promotion = base?.model?.promotion || base?.dash?.promotion || {};
-    const promoted = new Set((promotion.directReturnHorizons || promotion.directPriceHorizons || []).map(Number));
+    const promoted = new Set((promotion.directPriceHorizons || []).map(Number));
     const preferred = Number(promotion.preferredRankingHorizon || 5);
     if (!promoted.size || promoted.has(preferred)) return preferred;
     return [3, 4, 5, 2, 1].find(horizon => promoted.has(horizon)) || 5;
@@ -87,12 +87,13 @@
       if (window.__VMEWS_FRESHNESS__?.inspect(snapshot).stale) continue;
       const forecast = snapshot?.horizons?.[String(selectedHorizon)] || {};
       const close = number(snapshot.close);
-      const expectedReturn = number(forecast.expectedSimpleReturn) ?? (number(forecast.expectedReturn) === null ? (close && number(forecast.expectedPrice) !== null ? number(forecast.expectedPrice) / close - 1 : null) : Math.expm1(number(forecast.expectedReturn)));
-      const returnValidated = forecast.returnValidated === true || forecast.priceValidated === true;
+      const target = number(forecast.expectedPrice);
+      const tickSize = number(forecast.tickSize);
       if ((options.scope === "vn30" && !members.has(symbol)) || snapshot.exchange !== "HOSE" || snapshot.dataFreshness !== "CURRENT"
-          || !returnValidated || forecast.validationStatus !== "PASS"
+          || forecast.priceValidated !== true || forecast.validationStatus !== "PASS"
           || forecast.pointDirectionValidated !== true || forecast.magnitudeValidated !== true
-          || !close || expectedReturn === null || (!options.includeNonPositive && expectedReturn <= 0)) continue;
+          || !close || !target || (!options.includeNonPositive && target <= close)
+          || !tickSize || target % tickSize !== 0) continue;
 
       const sessions = (histories[symbol] || []).slice(-20);
       const volumes = sessions.map(session => number(session.volume)).filter(volume => volume !== null && volume >= 0);
@@ -101,8 +102,6 @@
       const news = snapshot.newsFeatures || {};
       const flow = snapshot.flow || {};
       const fund = snapshot.fundContext || {};
-      const q20Return = number(forecast.q20SimpleReturn) ?? (number(forecast.q20) === null ? null : Math.expm1(number(forecast.q20)));
-      const q80Return = number(forecast.q80SimpleReturn) ?? (number(forecast.q80) === null ? null : Math.expm1(number(forecast.q80)));
       const row = {
         symbol,
         horizon: selectedHorizon,
@@ -110,18 +109,13 @@
         forecast,
         history: histories[symbol] || [],
         close,
-        target: number(forecast.derivedReferencePrice) ?? number(forecast.expectedPrice),
-        upside: expectedReturn,
-        expectedReturn,
-        q20Return,
-        q80Return,
-        bearScenarioPrice: number(forecast.bearScenarioPrice),
-        bullScenarioPrice: number(forecast.bullScenarioPrice),
+        target,
+        upside: target / close - 1,
         probUp: number(forecast.probUp),
         directionValidated: forecast.directionValidated === true && number(forecast.probUp) !== null,
         q20: number(forecast.q20Price),
         q80: number(forecast.q80Price),
-        intervalWidth: q20Return !== null && q80Return !== null ? q80Return - q20Return : Math.max(Math.abs(expectedReturn), .012),
+        intervalWidth: (number(forecast.q80Price) - number(forecast.q20Price)) / close,
         avgVolume20,
         tradedValue20,
         newsCount: (number(news.count5) || 0) + (number(news.pendingDecisionEvents) || 0),
@@ -146,7 +140,7 @@
       rows.push(row);
     }
 
-    rows.sort((left, right) => right.rankScore - left.rankScore || right.expectedReturn - left.expectedReturn || left.symbol.localeCompare(right.symbol));
+    rows.sort((left, right) => right.rankScore - left.rankScore || right.upside - left.upside || (right.probUp || 0) - (left.probUp || 0) || left.symbol.localeCompare(right.symbol));
     return options.all ? rows : rows.slice(0, 10);
   }
 
@@ -207,15 +201,13 @@
       if (!quote || number(quote.liveClose) === null || number(quote.liveClose) <= 0) return row;
       if (number(quote.rankingHorizon) !== null && number(quote.rankingHorizon) !== row.horizon) return row;
       const next = { ...row, coreClose: row.close, close: number(quote.liveClose), sessionChange: number(quote.change), sessionAt: quote.updateAt };
-      // Session quotes update market context only. The sealed horizon forecast remains a return forecast
-      // and must not be reverse-engineered into a moving price target as the live price changes.
-      next.upside = next.expectedReturn;
+      next.upside = next.target / next.close - 1;
       next.tradedValue20 = next.avgVolume20 * next.close;
       next.quality = qualityScore(next);
-      next.forecastQuality = forecastQuality(next);
-      next.rankScore = rankingScore(next);
+      next.forecastQuality = number(quote.quality) ?? forecastQuality(next);
+      next.rankScore = number(quote.conviction) ?? rankingScore(next);
       return next;
-    }).sort((left, right) => right.rankScore - left.rankScore || right.expectedReturn - left.expectedReturn || right.quality - left.quality || left.symbol.localeCompare(right.symbol));
+    }).sort((left, right) => right.rankScore - left.rankScore || right.upside - left.upside || right.quality - left.quality || left.symbol.localeCompare(right.symbol));
   }
 
   function finalLeaderboard(base, session = state.session, options = {}) {
@@ -250,8 +242,8 @@
     if (summary) summary.textContent = stale ? "Chờ dữ liệu phiên hoàn tất mới nhất; tạm ẩn xếp hạng từ bộ dự báo cũ." : state.session?.forecastAlignment?.rankingEligible === false
       ? "Giá thị trường mới đã được xác thực; bảng xếp hạng giữ nguyên forecast EOD và chờ lõi mô hình cập nhật."
       : defensive
-      ? `Chưa có mã HOSE đủ điều kiện return dương T+${horizon}; đang hiển thị nhóm return ít âm nhất để theo dõi rủi ro.`
-      : `Top 10 toàn HOSE theo return dự báo T+${horizon} đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.`;
+      ? `Chưa có mã HOSE đủ điều kiện có mục tiêu T+${horizon} cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro.`
+      : `Top 10 toàn HOSE theo forecast T+${horizon} đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.`;
     if (primaryFilter) primaryFilter.textContent = defensive ? "HOSE phòng thủ" : "HOSE forecast tăng";
     if (deck) deck.setAttribute("aria-label", defensive
       ? `Các cổ phiếu HOSE có mức giảm dự báo T+${horizon} thấp nhất`
@@ -329,16 +321,11 @@
 
     deck.innerHTML = state.rows.map((row, index) => {
       const illiquid = row.tradedValue20 < 1e9;
-      const direction = row.expectedReturn > 0 ? "tăng" : "giảm";
-      const returnTone = row.expectedReturn > 0 ? "signalUp" : "signalDown";
-      const returnLabel = state.defensive ? "RETURN ÍT ÂM NHẤT HOSE" : `RETURN KỲ VỌNG T+${row.horizon}`;
-      const scenario = row.bearScenarioPrice && row.bullScenarioPrice
-        ? `<div class="signalBand"><span>KỊCH BẢN GIẢM / TĂNG</span><b>${money(row.bearScenarioPrice)} / ${money(row.bullScenarioPrice)}</b></div>`
-        : "";
-      const returnBand = row.q20Return !== null && row.q80Return !== null
-        ? `<span>Q20–Q80 ${signed(row.q20Return, 1)} → ${signed(row.q80Return, 1)}</span>`
-        : "";
-      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, return dự báo ${direction} ${percent(Math.abs(row.expectedReturn), 2)} tại T+${row.horizon}" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.expectedReturn, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>Giá T0 <b>${money(row.close)}</b></span><span>${shortDate(row.targetDate)}</span></div>${scenario}<div class="signalFacts">${returnBand}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
+      const probability = row.directionValidated ? percent(row.probUp, 1) : "—";
+      const direction = row.upside > 0 ? "tăng" : "giảm";
+      const returnTone = row.upside > 0 ? "signalUp" : "signalDown";
+      const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRÊN HOSE" : `TRIỂN VỌNG T+${row.horizon}`;
+      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} tại T+${row.horizon}" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.upside, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
     $("#leaderDots").innerHTML = state.rows.map((row, index) => `<button type="button" class="leaderDot" data-dot="${index}" aria-label="Xem ${escapeHTML(row.symbol)}" title="${escapeHTML(row.symbol)}"></button>`).join("");
@@ -375,7 +362,7 @@
       dot.setAttribute("aria-pressed", String(index === state.index));
     });
     $("#carouselPosition").textContent = `${String(state.index + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`;
-    window.__VMEWS_LEADERBOARD__ = { mode: state.defensive ? "defensive" : "positive", filter: state.filter, selected: state.rows[state.index].symbol, session: state.session?.session || "EOD", rows: state.rows.map(row => ({ symbol: row.symbol, close: row.close, coreClose: row.coreClose || row.close, expectedReturn: row.expectedReturn, upside: row.expectedReturn, bearScenarioPrice: row.bearScenarioPrice, bullScenarioPrice: row.bullScenarioPrice, rankScore: row.rankScore, quality: row.quality, tradedValue20: row.tradedValue20, risk: row.risk, sessionAt: row.sessionAt || null })) };
+    window.__VMEWS_LEADERBOARD__ = { mode: state.defensive ? "defensive" : "positive", filter: state.filter, selected: state.rows[state.index].symbol, session: state.session?.session || "EOD", rows: state.rows.map(row => ({ symbol: row.symbol, close: row.close, coreClose: row.coreClose || row.close, target: row.target, upside: row.upside, rankScore: row.rankScore, quality: row.quality, tradedValue20: row.tradedValue20, risk: row.risk, sessionAt: row.sessionAt || null })) };
   }
 
   function drawSparkline(canvas, history) {
@@ -430,27 +417,30 @@
   }
 
   function corridorMarkup(row) {
-    if (row.q20Return === null || row.q80Return === null) return '<div class="detailEmpty">Khoảng return chưa đủ dữ liệu.</div>';
-    const scenario = row.bearScenarioPrice && row.bullScenarioPrice
-      ? `<div class="corridorNumbers"><span>Giảm <b>${money(row.bearScenarioPrice)}</b></span><span>Tăng <b>${money(row.bullScenarioPrice)}</b></span></div>`
-      : "";
-    return `${scenario}<div class="returnScenarioBand"><strong>${signed(row.q20Return, 2)}</strong><span>RETURN Q20–Q80</span><strong>${signed(row.q80Return, 2)}</strong></div><div class="corridorLegend"><span>Giá chỉ là kịch bản quy đổi</span><span>Không phải price target</span></div>`;
+    if (!row.q20 || !row.q80 || row.q80 <= row.q20) return '<div class="detailEmpty">Khoảng dự báo chưa đủ dữ liệu.</div>';
+    const span = row.q80 - row.q20;
+    const current = clamp((row.close - row.q20) / span * 100, 0, 100);
+    const target = clamp((row.target - row.q20) / span * 100, 0, 100);
+    return `<div class="corridorNumbers"><span>Q20 <b>${money(row.q20)}</b></span><span>Q80 <b>${money(row.q80)}</b></span></div><div class="priceCorridor"><i class="corridorCurrent" style="left:${current}%" title="Giá hiện tại ${money(row.close)}"></i><i class="corridorTarget" style="left:${target}%" title="Dự báo ${money(row.target)}"></i></div><div class="corridorLegend"><span><i></i>Hiện tại</span><span><i></i>Mục tiêu T+${row.horizon}</span></div>`;
   }
 
   function renderDetail() {
     const row = state.rows[state.index];
     if (!row) return;
+    const downside = row.q20 ? row.q20 / row.close - 1 : null;
     const flow = row.snapshot.flow || {};
     const flowStatus = row.flowFresh ? "Dữ liệu mới" : row.flowAge !== null ? `Cũ ${row.flowAge} phiên` : "Chưa xác minh mới";
     const warnings = [];
     if (row.tradedValue20 < 1e9) warnings.push("Thanh khoản dưới 1 tỷ đồng/phiên");
     if (row.risk !== "GREEN") warnings.push(`Trạng thái ${row.risk}`);
+    if (!row.directionValidated) warnings.push("Chưa đủ cơ sở cho xác suất hướng");
+    else if (row.probUp < .5) warnings.push("P(tăng) dưới 50%");
     if (!row.flowFresh) warnings.push("Dòng tiền tổ chức chưa mới");
     if (row.fundAvailable && !row.fundModelEligible) warnings.push("Dữ liệu quỹ chưa đủ điều kiện sử dụng");
     if (!row.newsCount) warnings.push("Không có tin trong 5 phiên");
     else if (!(row.snapshot.evidence?.decisionRecent || row.snapshot.evidence?.recent || []).some(item => issuerNewsMatches(row, item) && (item.decisionTimeEligible || belongsToLastFiveSessions(row, item)))) warnings.push("Chưa có tin gần đây khớp doanh nghiệp");
 
-    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+${row.horizon}</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở return dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Xem đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">CÁC YẾU TỐ CHÍNH</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">RETURN & KỊCH BẢN GIÁ T+${row.horizon}</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>Return kỳ vọng T+${row.horizon}</span><b class="${row.expectedReturn >= 0 ? "factorPositive" : "factorNegative"}">${signed(row.expectedReturn, 2)}</b></article><article><span>Biên return</span><b>${row.q20Return !== null && row.q80Return !== null ? `${signed(row.q20Return, 1)} → ${signed(row.q80Return, 1)}` : "—"}</b></article><article><span>Thanh khoản 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cp/phiên</small></article><article><span>Quỹ nắm giữ</span><b>${row.fundAvailable ? `${row.fundCount} quỹ` : "—"}</b><small>${row.fundAvailable && row.fundWeight !== null ? `Bình quân ${percent(row.fundWeight, 1)}/quỹ` : escapeHTML(flowStatus)}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN GẦN ĐÂY · ${row.newsCount} BÀI</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : ""}`;
+    $("#leaderDetail").innerHTML = `<div class="detailTopline"><div><span class="detailIndex">${escapeHTML(row.symbol)} · T+${row.horizon}</span><h3>${escapeHTML(row.symbol)} <span>· cơ sở dự báo</span></h3></div><button class="detailAnalyze" type="button" data-analyze="${escapeHTML(row.symbol)}">Xem đầy đủ ↗</button></div><div class="detailLayout"><div class="detailColumn"><div class="detailLabel">CÁC YẾU TỐ CHÍNH</div><div class="factorList">${contributionsMarkup(row)}</div><div class="corridorBlock"><div class="detailLabel">VÙNG GIÁ T+${row.horizon}</div>${corridorMarkup(row)}</div></div><div class="detailColumn"><div class="evidenceTiles"><article><span>P(tăng) T+${row.horizon}</span><b>${row.directionValidated ? percent(row.probUp, 1) : "—"}</b></article><article><span>Biên dưới</span><b class="${downside < 0 ? "factorNegative" : "factorPositive"}">${signed(downside, 1)}</b><small>${money(row.q20)}</small></article><article><span>Thanh khoản 20 phiên</span><b>${valueLabel(row.tradedValue20)}</b><small>${money(Math.round(row.avgVolume20))} cp/phiên</small></article><article><span>Quỹ nắm giữ</span><b>${row.fundAvailable ? `${row.fundCount} quỹ` : "—"}</b><small>${row.fundAvailable && row.fundWeight !== null ? `Bình quân ${percent(row.fundWeight, 1)}/quỹ` : escapeHTML(flowStatus)}</small></article></div><div class="evidenceNews"><div class="detailLabel">TIN GẦN ĐÂY · ${row.newsCount} BÀI</div>${newsMarkup(row)}</div></div></div>${warnings.length ? `<div class="signalWarnings"><span>LƯU Ý</span>${warnings.map(warning => `<i>${escapeHTML(warning)}</i>`).join("")}</div>` : ""}`;
   }
 
   function select(index, manual = false) {
