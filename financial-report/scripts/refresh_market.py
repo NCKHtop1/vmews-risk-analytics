@@ -1639,8 +1639,8 @@ if __name__ == '__main__':
     if len({c['symbol'] for c in companies}) < 100:
         raise RuntimeError('Tiered HOSE market universe cannot be smaller than Core 100')
     universe = universe or fallback_market_universe(companies)
-    sync_market_universe(args.output, universe)
     if args.mode in {'prices', 'history', 'intraday', 'all'}:
+        sync_market_universe(args.output, universe)
         seed_market_histories(args.output, universe, companies)
     errors = []
     for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
