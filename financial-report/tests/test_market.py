@@ -476,7 +476,7 @@ class MarketTests(unittest.TestCase):
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
         self.assertIn('options: [all, prices, news, macro, esg, esg-history, history, intraday]',flow)
-        self.assertIn("cron: '47 9,14 * * 1-5'",flow)
+        self.assertIn("cron: '47 14 * * 1-5'",flow)
         self.assertIn("cron: '47 2 * * 6'",flow)
         self.assertIn("cron: '15 1 * * 1-5'",flow)
         self.assertIn('pypdf==5.1.0',flow)
@@ -487,7 +487,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("mode=esg-history",flow)
         self.assertIn("ESG_HISTORY_BACKFILL=1",flow)
         self.assertIn("[esg-refresh]",flow)
-        self.assertIn("github.event.schedule == '47 9,14 * * 1-5'",flow)
+        self.assertIn("github.event.schedule == '47 14 * * 1-5'",flow)
         esg=(ROOT/'scripts/refresh_esg.py').read_text()
         self.assertIn('probe_years = 5 if HISTORY_BACKFILL else 3',esg)
         self.assertIn('selected.extend(historical_backlog[:remaining])',esg)
