@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-29T17:51:30.044509+00:00",
+  "checkedAt": "2026-09-29T17:58:59.818396+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 13,
   "status": "ok",
@@ -14,7 +14,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T17:50:15.125748+00:00",
+      "checkedAt": "2026-09-29T17:58:43.316643+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -470,7 +470,7 @@
     "ANV": {
       "symbol": "ANV",
       "name": "Công ty Cổ phần Nam Việt",
-      "checkedAt": "2026-09-29T17:50:15.125909+00:00",
+      "checkedAt": "2026-09-29T17:58:43.316826+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -481,7 +481,10 @@
           "sourcePage": "https://24hmoney.vn/stock/anv/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "92d5b7704baab5ce851d114874a8e0aecd4c9bb212746bad2fddd10f4c4668db",
+          "processedAt": "2026-09-29T17:58:58.498822+00:00",
+          "textLength": 3047
         }
       ],
       "metrics": [],
@@ -489,7 +492,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 1,
-        "processedDocuments": 0,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -498,7 +501,7 @@
     "BAF": {
       "symbol": "BAF",
       "name": "Công ty Cổ phần Nông nghiệp BAF Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.125981+00:00",
+      "checkedAt": "2026-09-29T17:58:43.316834+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -516,7 +519,7 @@
     "BCM": {
       "symbol": "BCM",
       "name": "Tập đoàn Đầu tư và Phát triển Công nghiệp Becamex - CTCP",
-      "checkedAt": "2026-09-29T17:50:15.126570+00:00",
+      "checkedAt": "2026-09-29T17:58:43.317741+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -527,7 +530,10 @@
           "sourcePage": "https://24hmoney.vn/stock/bcm/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "f762cfd816bc9cde4999bc5546a3f03311efdafe3af18bad914de2bc014664f6",
+          "processedAt": "2026-09-29T17:58:54.028473+00:00",
+          "textLength": 3112
         },
         {
           "id": "3b3b45387bd5eeadacd3",
@@ -706,7 +712,7 @@
       ],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 3,
+        "processedDocuments": 4,
         "metrics": 6,
         "canonicalMetrics": 2,
         "externalAssessments": 1
@@ -715,7 +721,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T17:50:15.127174+00:00",
+      "checkedAt": "2026-09-29T17:58:43.318640+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -907,7 +913,7 @@
     "BMP": {
       "symbol": "BMP",
       "name": "Công ty Cổ phần Nhựa Bình Minh",
-      "checkedAt": "2026-09-29T17:50:15.127466+00:00",
+      "checkedAt": "2026-09-29T17:58:43.319083+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -918,7 +924,10 @@
           "sourcePage": "https://24hmoney.vn/stock/bmp/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "b13856d78132cb4a6746c5462bbae3fe286bdcde06ec49cad39c6071e929d3c1",
+          "processedAt": "2026-09-29T17:58:57.282756+00:00",
+          "textLength": 3186
         },
         {
           "id": "999e8d5737b77a24fc44",
@@ -1049,7 +1058,7 @@
       ],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 4,
         "canonicalMetrics": 3,
         "externalAssessments": 0
@@ -1058,7 +1067,7 @@
     "BSI": {
       "symbol": "BSI",
       "name": "Công ty Cổ phần Chứng khoán BIDV",
-      "checkedAt": "2026-09-29T17:50:15.127514+00:00",
+      "checkedAt": "2026-09-29T17:58:43.319094+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1076,7 +1085,7 @@
     "BSR": {
       "symbol": "BSR",
       "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.127560+00:00",
+      "checkedAt": "2026-09-29T17:58:43.319102+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1094,7 +1103,7 @@
     "BVH": {
       "symbol": "BVH",
       "name": "Tập đoàn Bảo Việt",
-      "checkedAt": "2026-09-29T17:50:15.127799+00:00",
+      "checkedAt": "2026-09-29T17:58:43.319469+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1137,7 +1146,7 @@
     "BWE": {
       "symbol": "BWE",
       "name": "Công ty Cổ phần - Tổng công ty Nước - Môi trường Bình Dương",
-      "checkedAt": "2026-09-29T17:50:15.127859+00:00",
+      "checkedAt": "2026-09-29T17:58:43.319475+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1155,7 +1164,7 @@
     "CII": {
       "symbol": "CII",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-09-29T17:50:15.127864+00:00",
+      "checkedAt": "2026-09-29T17:58:43.319480+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1173,7 +1182,7 @@
     "CMG": {
       "symbol": "CMG",
       "name": "Công ty Cổ phần Tập đoàn Công nghệ CMC",
-      "checkedAt": "2026-09-29T17:50:15.128323+00:00",
+      "checkedAt": "2026-09-29T17:58:43.320174+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1196,7 +1205,10 @@
           "sourcePage": "https://24hmoney.vn/stock/cmg/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "1c61b4a574cf319cf882bda0821e3d5df4f8f14757e3027a969b42363916c3ef",
+          "processedAt": "2026-09-29T17:58:54.031271+00:00",
+          "textLength": 3008
         },
         {
           "id": "c4b88f4047ba8168be8f",
@@ -1216,7 +1228,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -1225,7 +1237,7 @@
     "CTD": {
       "symbol": "CTD",
       "name": "Công ty Cổ phần Xây dựng Coteccons",
-      "checkedAt": "2026-09-29T17:50:15.128344+00:00",
+      "checkedAt": "2026-09-29T17:58:43.320180+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1243,7 +1255,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T17:50:15.128879+00:00",
+      "checkedAt": "2026-09-29T17:58:43.320879+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -1286,7 +1298,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên Báo cáo thường niên",
+          "title": "Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2024",
           "year": null,
           "type": "sustainability_report",
@@ -1694,7 +1706,7 @@
     "CTR": {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
-      "checkedAt": "2026-09-29T17:50:15.129174+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321311+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1737,7 +1749,7 @@
     "CTS": {
       "symbol": "CTS",
       "name": "Công ty Cổ phần Chứng khoán Vietinbank",
-      "checkedAt": "2026-09-29T17:50:15.129221+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321317+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1755,7 +1767,7 @@
     "DBC": {
       "symbol": "DBC",
       "name": "Công ty Cổ phần Tập đoàn Dabaco Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.129266+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321321+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1773,7 +1785,7 @@
     "DCM": {
       "symbol": "DCM",
       "name": "Công ty Cổ phần - Tổng Công ty Phân bón Dầu Khí Cà Mau",
-      "checkedAt": "2026-09-29T17:50:15.129311+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321325+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1791,7 +1803,7 @@
     "DGW": {
       "symbol": "DGW",
       "name": "Công ty Cổ phần Thế Giới Số",
-      "checkedAt": "2026-09-29T17:50:15.129355+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321329+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1809,7 +1821,7 @@
     "DIG": {
       "symbol": "DIG",
       "name": "Tổng Công ty Cổ phần Đầu tư Phát triển Xây dựng",
-      "checkedAt": "2026-09-29T17:50:15.129387+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321333+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1827,7 +1839,7 @@
     "DPM": {
       "symbol": "DPM",
       "name": "Tổng Công ty Phân bón và Hóa chất Dầu khí - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:50:15.129722+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321830+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1838,7 +1850,10 @@
           "sourcePage": "https://24hmoney.vn/stock/dpm/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "388ee8a0ba22aad81b857f429ed3dabba4a6eafa3e263895fc7da22c3c6e2465",
+          "processedAt": "2026-09-29T17:58:58.298369+00:00",
+          "textLength": 3276
         },
         {
           "id": "5ce145576c35688bc5ea",
@@ -1858,7 +1873,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -1867,7 +1882,7 @@
     "DSE": {
       "symbol": "DSE",
       "name": "Công ty Cổ phần Chứng khoán DNSE",
-      "checkedAt": "2026-09-29T17:50:15.129784+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321836+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1885,7 +1900,7 @@
     "DXG": {
       "symbol": "DXG",
       "name": "Công ty Cổ phần Bluemarq Group",
-      "checkedAt": "2026-09-29T17:50:15.129817+00:00",
+      "checkedAt": "2026-09-29T17:58:43.321839+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1903,7 +1918,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T17:50:15.130315+00:00",
+      "checkedAt": "2026-09-29T17:58:43.322573+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -2086,7 +2101,7 @@
     "EVF": {
       "symbol": "EVF",
       "name": "Công ty Tài chính Tổng hợp Cổ phần Điện Lực",
-      "checkedAt": "2026-09-29T17:50:15.130363+00:00",
+      "checkedAt": "2026-09-29T17:58:43.322579+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2104,7 +2119,7 @@
     "FPT": {
       "symbol": "FPT",
       "name": "Công ty Cổ phần FPT",
-      "checkedAt": "2026-09-29T17:50:15.130396+00:00",
+      "checkedAt": "2026-09-29T17:58:43.322583+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2122,7 +2137,7 @@
     "FRT": {
       "symbol": "FRT",
       "name": "Công ty Cổ phần Bán lẻ Kỹ thuật số FPT",
-      "checkedAt": "2026-09-29T17:50:15.130709+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323027+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2133,7 +2148,10 @@
           "sourcePage": "https://24hmoney.vn/stock/frt/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "3c84798b4bf4624a88860a98d4cb18e158ea1ca89ff753d061857b71ca96bb88",
+          "processedAt": "2026-09-29T17:58:57.687430+00:00",
+          "textLength": 3141
         },
         {
           "id": "359c583bd2a0ca21b6dc",
@@ -2202,7 +2220,7 @@
       ],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 2,
         "canonicalMetrics": 1,
         "externalAssessments": 0
@@ -2211,7 +2229,7 @@
     "FTS": {
       "symbol": "FTS",
       "name": "Công ty Cổ phần Chứng khoán FPT",
-      "checkedAt": "2026-09-29T17:50:15.130755+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323032+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2229,7 +2247,7 @@
     "GAS": {
       "symbol": "GAS",
       "name": "Tổng Công ty Khí Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:50:15.130801+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323036+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2247,7 +2265,7 @@
     "GEE": {
       "symbol": "GEE",
       "name": "Công ty Cổ phần Điện lực Gelex",
-      "checkedAt": "2026-09-29T17:50:15.130859+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323040+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2265,7 +2283,7 @@
     "GEX": {
       "symbol": "GEX",
       "name": "Công ty Cổ phần Tập đoàn Gelex",
-      "checkedAt": "2026-09-29T17:50:15.130903+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323044+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2283,7 +2301,7 @@
     "GMD": {
       "symbol": "GMD",
       "name": "Công ty Cổ phần Tập đoàn Gemadept",
-      "checkedAt": "2026-09-29T17:50:15.130961+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323076+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2301,7 +2319,7 @@
     "GVR": {
       "symbol": "GVR",
       "name": "Tập đoàn Công nghiệp Cao su Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:50:15.131282+00:00",
+      "checkedAt": "2026-09-29T17:58:43.323567+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2312,7 +2330,10 @@
           "sourcePage": "https://24hmoney.vn/stock/gvr/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "b5845550605248c02eed90ec3a038a9431cb073b88ce2504477c0395b236958e",
+          "processedAt": "2026-09-29T17:58:56.455711+00:00",
+          "textLength": 3059
         },
         {
           "id": "d6d9ba51cf97bff811ae",
@@ -2348,7 +2369,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -2357,7 +2378,7 @@
     "HAG": {
       "symbol": "HAG",
       "name": "Công ty Cổ phần Hoàng Anh Gia Lai",
-      "checkedAt": "2026-09-29T17:50:15.131592+00:00",
+      "checkedAt": "2026-09-29T17:58:43.324115+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2368,7 +2389,10 @@
           "sourcePage": "https://24hmoney.vn/stock/hag/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "89f5b08e3336d0ffce8c2ab099338a940fed4508d068999cbad12b62997d4738",
+          "processedAt": "2026-09-29T17:58:57.273695+00:00",
+          "textLength": 3206
         },
         {
           "id": "ba39990f8e4921e826d6",
@@ -2388,7 +2412,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -2397,7 +2421,7 @@
     "HCM": {
       "symbol": "HCM",
       "name": "Công ty Cổ phần Chứng khoán Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-09-29T17:50:15.131648+00:00",
+      "checkedAt": "2026-09-29T17:58:43.324126+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2415,7 +2439,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T17:50:15.132552+00:00",
+      "checkedAt": "2026-09-29T17:58:43.325594+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -2570,7 +2594,7 @@
     "HDG": {
       "symbol": "HDG",
       "name": "Công ty Cổ phần Tập đoàn Hà Đô",
-      "checkedAt": "2026-09-29T17:50:15.132837+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326011+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2581,7 +2605,10 @@
           "sourcePage": "https://24hmoney.vn/stock/hdg/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "3e317a79e86ffbf7c812f75e68a52d02ae24d0f6e0c85a694fb6f017d6c0cdf1",
+          "processedAt": "2026-09-29T17:58:55.077357+00:00",
+          "textLength": 3110
         },
         {
           "id": "ad34b583f08fa3fd712f",
@@ -2601,7 +2628,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -2610,7 +2637,7 @@
     "HHV": {
       "symbol": "HHV",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Giao thông Đèo Cả",
-      "checkedAt": "2026-09-29T17:50:15.132900+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326017+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2628,7 +2655,7 @@
     "HPG": {
       "symbol": "HPG",
       "name": "Công ty Cổ phần Tập đoàn Hòa Phát",
-      "checkedAt": "2026-09-29T17:50:15.132932+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326021+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2646,7 +2673,7 @@
     "HSG": {
       "symbol": "HSG",
       "name": "Công ty Cổ phần Tập đoàn Hoa Sen",
-      "checkedAt": "2026-09-29T17:50:15.132974+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326024+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2664,7 +2691,7 @@
     "HT1": {
       "symbol": "HT1",
       "name": "Công ty Cổ phần Xi măng VICEM Hà Tiên",
-      "checkedAt": "2026-09-29T17:50:15.133006+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326028+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2682,7 +2709,7 @@
     "KBC": {
       "symbol": "KBC",
       "name": "Tổng Công ty Phát triển Đô thị Kinh Bắc - CTCP",
-      "checkedAt": "2026-09-29T17:50:15.133339+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326570+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2693,7 +2720,10 @@
           "sourcePage": "https://24hmoney.vn/stock/kbc/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "dbbf76457530c1fbe825f96b729a0914862a8636a83593728b35f4048e40faad",
+          "processedAt": "2026-09-29T17:58:58.504895+00:00",
+          "textLength": 3454
         },
         {
           "id": "2545ac215716e7f0d744",
@@ -2713,7 +2743,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -2722,7 +2752,7 @@
     "KDC": {
       "symbol": "KDC",
       "name": "Công ty Cổ phần Tập đoàn KIDO",
-      "checkedAt": "2026-09-29T17:50:15.133615+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326992+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2733,7 +2763,10 @@
           "sourcePage": "https://24hmoney.vn/stock/kdc/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "20b7bfd3839c2bd8aada2c2af00d65aa3384e1294ebcc3d67749e9ec92b51a0a",
+          "processedAt": "2026-09-29T17:58:55.246525+00:00",
+          "textLength": 3115
         },
         {
           "id": "a47dff6be1f840d1df3b",
@@ -2769,7 +2802,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 1,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -2778,7 +2811,7 @@
     "KDH": {
       "symbol": "KDH",
       "name": "Công ty Cổ phần Đầu tư và Kinh doanh nhà Khang Điền",
-      "checkedAt": "2026-09-29T17:50:15.133660+00:00",
+      "checkedAt": "2026-09-29T17:58:43.326998+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2796,7 +2829,7 @@
     "KOS": {
       "symbol": "KOS",
       "name": "Công ty Cổ phần KOSY",
-      "checkedAt": "2026-09-29T17:50:15.133982+00:00",
+      "checkedAt": "2026-09-29T17:58:43.327485+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2807,7 +2840,10 @@
           "sourcePage": "https://24hmoney.vn/stock/kos/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "27f36e9561e5f294a4ae13be82491270a3f784a90f66bbc4f2396d9c261f8d1a",
+          "processedAt": "2026-09-29T17:58:55.042939+00:00",
+          "textLength": 3183
         },
         {
           "id": "95e260654d1d7fde4a05",
@@ -2827,7 +2863,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -2836,7 +2872,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T17:50:15.134503+00:00",
+      "checkedAt": "2026-09-29T17:58:43.328128+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -2972,7 +3008,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T17:50:15.134984+00:00",
+      "checkedAt": "2026-09-29T17:58:43.328835+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3188,7 +3224,7 @@
     "MCH": {
       "symbol": "MCH",
       "name": "Công ty Cổ phần Hàng Tiêu Dùng MaSan",
-      "checkedAt": "2026-09-29T17:50:15.135274+00:00",
+      "checkedAt": "2026-09-29T17:58:43.329282+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3231,7 +3267,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T17:50:15.137226+00:00",
+      "checkedAt": "2026-09-29T17:58:43.332349+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3755,7 +3791,7 @@
     "MSN": {
       "symbol": "MSN",
       "name": "Công ty Cổ phần Tập đoàn Masan",
-      "checkedAt": "2026-09-29T17:50:15.137275+00:00",
+      "checkedAt": "2026-09-29T17:58:43.332358+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3773,7 +3809,7 @@
     "MWG": {
       "symbol": "MWG",
       "name": "Công ty Cổ phần Đầu tư Thế Giới Di Động",
-      "checkedAt": "2026-09-29T17:50:15.137308+00:00",
+      "checkedAt": "2026-09-29T17:58:43.332363+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3791,7 +3827,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T17:50:15.139634+00:00",
+      "checkedAt": "2026-09-29T17:58:43.335949+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3928,6 +3964,18 @@
           "textLength": 190892
         },
         {
+          "id": "33e5a56cd74d6d5f8f61",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
+          "processedAt": "2026-09-29T03:25:05.799971+00:00",
+          "textLength": 262818
+        },
+        {
           "id": "672efd9d89b939b0cb7a",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2023/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2023.pdf",
           "title": "Báo cáo thường niên năm 2023",
@@ -3938,18 +3986,6 @@
           "contentHash": "40ed3876c1d63034058b6deec71291540efd25040b85ba5c5b654cb4e2a7f3b0",
           "processedAt": "2026-09-29T03:39:49.092289+00:00",
           "textLength": 1251
-        },
-        {
-          "id": "33e5a56cd74d6d5f8f61",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
-          "processedAt": "2026-09-29T03:25:05.799971+00:00",
-          "textLength": 262818
         },
         {
           "id": "0c9ce9572663228d1389",
@@ -4014,10 +4050,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "Báo cáo thường niên năm 2018",
+          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "annual_report",
+          "type": "esg_other",
           "contentType": "pdf"
         },
         {
@@ -4708,7 +4744,7 @@
     "NKG": {
       "symbol": "NKG",
       "name": "Công ty Cổ phần Thép Nam Kim",
-      "checkedAt": "2026-09-29T17:50:15.139670+00:00",
+      "checkedAt": "2026-09-29T17:58:43.335959+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4726,7 +4762,7 @@
     "NLG": {
       "symbol": "NLG",
       "name": "Công ty Cổ phần Đầu tư Nam Long",
-      "checkedAt": "2026-09-29T17:50:15.139715+00:00",
+      "checkedAt": "2026-09-29T17:58:43.335964+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4744,7 +4780,7 @@
     "NT2": {
       "symbol": "NT2",
       "name": "Công ty Cổ phần Điện lực Dầu khí Nhơn Trạch 2",
-      "checkedAt": "2026-09-29T17:50:15.140027+00:00",
+      "checkedAt": "2026-09-29T17:58:43.336407+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4755,7 +4791,10 @@
           "sourcePage": "https://24hmoney.vn/stock/nt2/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "694aa515723d3231574b9acd27591b012853156848457c481494e28a579564ae",
+          "processedAt": "2026-09-29T17:58:59.742739+00:00",
+          "textLength": 3021
         },
         {
           "id": "487f1e9d37a45b38bba1",
@@ -4775,7 +4814,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -4784,7 +4823,7 @@
     "NVL": {
       "symbol": "NVL",
       "name": "Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va",
-      "checkedAt": "2026-09-29T17:50:15.140031+00:00",
+      "checkedAt": "2026-09-29T17:58:43.336413+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4802,7 +4841,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T17:50:15.142408+00:00",
+      "checkedAt": "2026-09-29T17:58:43.339970+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -5757,7 +5796,7 @@
     "PAN": {
       "symbol": "PAN",
       "name": "Công ty Cổ phần Tập đoàn PAN",
-      "checkedAt": "2026-09-29T17:50:15.142466+00:00",
+      "checkedAt": "2026-09-29T17:58:43.339979+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5775,7 +5814,7 @@
     "PC1": {
       "symbol": "PC1",
       "name": "Công ty Cổ phần Tập đoàn PC1",
-      "checkedAt": "2026-09-29T17:50:15.142521+00:00",
+      "checkedAt": "2026-09-29T17:58:43.339984+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5793,7 +5832,7 @@
     "PDR": {
       "symbol": "PDR",
       "name": "Công ty Cổ phần Phát triển Bất động sản Phát Đạt",
-      "checkedAt": "2026-09-29T17:50:15.142564+00:00",
+      "checkedAt": "2026-09-29T17:58:43.339988+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5811,7 +5850,7 @@
     "PHR": {
       "symbol": "PHR",
       "name": "Công ty Cổ phần Cao su Phước Hòa",
-      "checkedAt": "2026-09-29T17:50:15.142605+00:00",
+      "checkedAt": "2026-09-29T17:58:43.339991+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5829,7 +5868,7 @@
     "PLX": {
       "symbol": "PLX",
       "name": "Tập đoàn Xăng dầu Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.143389+00:00",
+      "checkedAt": "2026-09-29T17:58:43.341213+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5840,7 +5879,10 @@
           "sourcePage": "https://24hmoney.vn/stock/plx/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "4bc07209569d3e7152708d7e166d687b583b390aeba11fd8e5a7ae54c8fe22a6",
+          "processedAt": "2026-09-29T17:58:54.041040+00:00",
+          "textLength": 3114
         },
         {
           "id": "b9fbe2a974d3bc23cfde",
@@ -5990,7 +6032,7 @@
       ],
       "coverage": {
         "documents": 5,
-        "processedDocuments": 4,
+        "processedDocuments": 5,
         "metrics": 5,
         "canonicalMetrics": 1,
         "externalAssessments": 0
@@ -5999,7 +6041,7 @@
     "PNJ": {
       "symbol": "PNJ",
       "name": "Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận",
-      "checkedAt": "2026-09-29T17:50:15.143437+00:00",
+      "checkedAt": "2026-09-29T17:58:43.341221+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6017,7 +6059,7 @@
     "POW": {
       "symbol": "POW",
       "name": "Tổng Công ty Điện lực Dầu khí Việt Nam - CTCP",
-      "checkedAt": "2026-09-29T17:50:15.143715+00:00",
+      "checkedAt": "2026-09-29T17:58:43.341616+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6028,7 +6070,10 @@
           "sourcePage": "https://24hmoney.vn/stock/pow/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "6ab3c778e05b6b0a10065e2147e226f3e5e1ad805102451c12a6fddb505d89ec",
+          "processedAt": "2026-09-29T17:58:58.714540+00:00",
+          "textLength": 3174
         },
         {
           "id": "7781f09a8fae3a6fe8a9",
@@ -6048,7 +6093,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -6057,7 +6102,7 @@
     "PVD": {
       "symbol": "PVD",
       "name": "Tổng Công ty Cổ phần Khoan và Dịch vụ khoan Dầu khí",
-      "checkedAt": "2026-09-29T17:50:15.143760+00:00",
+      "checkedAt": "2026-09-29T17:58:43.341621+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6075,7 +6120,7 @@
     "PVT": {
       "symbol": "PVT",
       "name": "Tổng Công ty Cổ phần Vận tải Dầu khí",
-      "checkedAt": "2026-09-29T17:50:15.143824+00:00",
+      "checkedAt": "2026-09-29T17:58:43.341625+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6093,7 +6138,7 @@
     "REE": {
       "symbol": "REE",
       "name": "Công ty Cổ phần Cơ điện Lạnh",
-      "checkedAt": "2026-09-29T17:50:15.143874+00:00",
+      "checkedAt": "2026-09-29T17:58:43.341629+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6111,7 +6156,7 @@
     "SAB": {
       "symbol": "SAB",
       "name": "Tổng Công ty Cổ phần Bia - Rượu - Nước Giải khát Sài Gòn",
-      "checkedAt": "2026-09-29T17:50:15.144453+00:00",
+      "checkedAt": "2026-09-29T17:58:43.342532+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6122,7 +6167,10 @@
           "sourcePage": "https://24hmoney.vn/stock/sab/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "eb997c8b91b3e2f6edcef61871cdfd9b509e1382e18bd7d586ab6c12903b4160",
+          "processedAt": "2026-09-29T17:58:57.295079+00:00",
+          "textLength": 3187
         },
         {
           "id": "7c4e49c1adb5c736e19d",
@@ -6166,7 +6214,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 3,
+        "processedDocuments": 4,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -6175,7 +6223,7 @@
     "SBT": {
       "symbol": "SBT",
       "name": "Công ty Cổ phần Thành Thành Công - Biên Hòa",
-      "checkedAt": "2026-09-29T17:50:15.144486+00:00",
+      "checkedAt": "2026-09-29T17:58:43.342539+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6193,7 +6241,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T17:50:15.144650+00:00",
+      "checkedAt": "2026-09-29T17:58:43.342761+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -6258,7 +6306,7 @@
     "SIP": {
       "symbol": "SIP",
       "name": "Công ty Cổ phần Đầu tư Sài Gòn VRG",
-      "checkedAt": "2026-09-29T17:50:15.144943+00:00",
+      "checkedAt": "2026-09-29T17:58:43.343178+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6269,7 +6317,10 @@
           "sourcePage": "https://24hmoney.vn/stock/sip/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "23138ff0faa7fe7fd039608d591863534c4ab1ceb974793fffdadf629e801f46",
+          "processedAt": "2026-09-29T17:58:55.239209+00:00",
+          "textLength": 3268
         },
         {
           "id": "36982dc4074a59cf68eb",
@@ -6289,7 +6340,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -6298,7 +6349,7 @@
     "SJS": {
       "symbol": "SJS",
       "name": "Công ty Cổ phần SJ Group",
-      "checkedAt": "2026-09-29T17:50:15.145434+00:00",
+      "checkedAt": "2026-09-29T17:58:43.343888+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6309,7 +6360,10 @@
           "sourcePage": "https://24hmoney.vn/stock/sjs/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "af7c6b433a52215e65ba46f657c4b5375d39a246a5bddc48fbf32887c01e06d9",
+          "processedAt": "2026-09-29T17:58:54.024045+00:00",
+          "textLength": 3350
         },
         {
           "id": "559916518357b0e3ec30",
@@ -6341,7 +6395,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 2,
+        "processedDocuments": 3,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -6350,7 +6404,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T17:50:15.146696+00:00",
+      "checkedAt": "2026-09-29T17:58:43.345635+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -6393,7 +6447,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026 Read more",
+          "title": "Sustainability Report 2025 23/07/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -6465,7 +6519,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
+          "title": "SeABank's Annual Report 2024 08/04/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -7090,7 +7144,7 @@
     "SSI": {
       "symbol": "SSI",
       "name": "Công ty Cổ phần Chứng khoán SSI",
-      "checkedAt": "2026-09-29T17:50:15.146743+00:00",
+      "checkedAt": "2026-09-29T17:58:43.345642+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7108,7 +7162,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T17:50:15.147577+00:00",
+      "checkedAt": "2026-09-29T17:58:43.346896+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -7267,7 +7321,7 @@
     "TAL": {
       "symbol": "TAL",
       "name": "Công Ty Cổ Phần Đầu Tư Bất Động Sản Taseco",
-      "checkedAt": "2026-09-29T17:50:15.147622+00:00",
+      "checkedAt": "2026-09-29T17:58:43.346904+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7285,22 +7339,10 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T17:50:15.149093+00:00",
+      "checkedAt": "2026-09-29T17:58:43.348842+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
-        {
-          "id": "56ecaa75021fa68c4629",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
-          "title": "View Digital Version",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
-          "year": 2025,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
-          "processedAt": "2026-09-29T01:24:33.017802+00:00",
-          "textLength": 192129
-        },
         {
           "id": "725b2cc303c70d1ae0c8",
           "url": "https://techcombank.com/en/about-us/sustainability/milestones",
@@ -7312,6 +7354,18 @@
           "contentHash": "4f8cbab79fa4ad6c4ae96272b14d8d2b753d446ef994b346e2f825a24ed2bb38",
           "processedAt": "2026-09-29T01:34:40.269534+00:00",
           "textLength": 4813
+        },
+        {
+          "id": "56ecaa75021fa68c4629",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "title": "Download Report",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
+          "processedAt": "2026-09-29T01:24:33.017802+00:00",
+          "textLength": 192129
         },
         {
           "id": "f8a4e9fe11d18570428e",
@@ -7815,7 +7869,7 @@
     "TCH": {
       "symbol": "TCH",
       "name": "Công ty Cổ phần Đầu tư Dịch vụ Tài chính Hoàng Huy",
-      "checkedAt": "2026-09-29T17:50:15.149140+00:00",
+      "checkedAt": "2026-09-29T17:58:43.348849+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7833,7 +7887,7 @@
     "TCX": {
       "symbol": "TCX",
       "name": "Công ty Cổ phần Chứng khoán Kỹ Thương",
-      "checkedAt": "2026-09-29T17:50:15.149195+00:00",
+      "checkedAt": "2026-09-29T17:58:43.348854+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7851,7 +7905,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T17:50:15.150233+00:00",
+      "checkedAt": "2026-09-29T17:58:43.350476+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8104,7 +8158,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T17:50:15.151018+00:00",
+      "checkedAt": "2026-09-29T17:58:43.351537+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8634,7 +8688,7 @@
     "VCG": {
       "symbol": "VCG",
       "name": "Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.151077+00:00",
+      "checkedAt": "2026-09-29T17:58:43.351635+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8652,7 +8706,7 @@
     "VCI": {
       "symbol": "VCI",
       "name": "Công ty Cổ phần Chứng khoán Vietcap",
-      "checkedAt": "2026-09-29T17:50:15.151134+00:00",
+      "checkedAt": "2026-09-29T17:58:43.351641+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8670,7 +8724,7 @@
     "VCK": {
       "symbol": "VCK",
       "name": "Công ty Cổ phần Chứng Khoán VPS",
-      "checkedAt": "2026-09-29T17:50:15.151190+00:00",
+      "checkedAt": "2026-09-29T17:58:43.351645+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8688,7 +8742,7 @@
     "VGC": {
       "symbol": "VGC",
       "name": "Tổng Công ty Viglacera - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T17:50:15.151538+00:00",
+      "checkedAt": "2026-09-29T17:58:43.352160+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8699,7 +8753,10 @@
           "sourcePage": "https://24hmoney.vn/stock/vgc/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "9d798581f1f444f5a57bc0fc5ba478af416883322fbbe2510e4f3da4a66d0f47",
+          "processedAt": "2026-09-29T17:58:59.541487+00:00",
+          "textLength": 3221
         },
         {
           "id": "b6008e895b6a44052679",
@@ -8719,7 +8776,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -8728,7 +8785,7 @@
     "VHC": {
       "symbol": "VHC",
       "name": "Công ty Cổ phần Vĩnh Hoàn",
-      "checkedAt": "2026-09-29T17:50:15.151822+00:00",
+      "checkedAt": "2026-09-29T17:58:43.352574+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8739,7 +8796,10 @@
           "sourcePage": "https://24hmoney.vn/stock/vhc/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "378dae24182f49a0f4356c478c4e8a35e850e08e03b49d702baa8690d0af97f7",
+          "processedAt": "2026-09-29T17:58:56.266069+00:00",
+          "textLength": 3114
         },
         {
           "id": "6979fc4bbae7a4e4f29e",
@@ -8759,7 +8819,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -8768,7 +8828,7 @@
     "VHM": {
       "symbol": "VHM",
       "name": "Công ty Cổ phần Vinhomes",
-      "checkedAt": "2026-09-29T17:50:15.151863+00:00",
+      "checkedAt": "2026-09-29T17:58:43.352581+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8786,7 +8846,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T17:50:15.152820+00:00",
+      "checkedAt": "2026-09-29T17:58:43.354131+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8900,7 +8960,7 @@
     "VIC": {
       "symbol": "VIC",
       "name": "Tập đoàn Vingroup - Công ty CP",
-      "checkedAt": "2026-09-29T17:50:15.152873+00:00",
+      "checkedAt": "2026-09-29T17:58:43.354138+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8918,7 +8978,7 @@
     "VIX": {
       "symbol": "VIX",
       "name": "Công ty Cổ phần Chứng khoán VIX",
-      "checkedAt": "2026-09-29T17:50:15.152904+00:00",
+      "checkedAt": "2026-09-29T17:58:43.354143+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8936,7 +8996,7 @@
     "VJC": {
       "symbol": "VJC",
       "name": "Công ty Cổ phần Hàng không Vietjet",
-      "checkedAt": "2026-09-29T17:50:15.153179+00:00",
+      "checkedAt": "2026-09-29T17:58:43.354555+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8947,7 +9007,10 @@
           "sourcePage": "https://24hmoney.vn/stock/vjc/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "3d890bbae89e99eb509bb3200da0ecf6ed7b27970c1589bc0c6f96484c308d4c",
+          "processedAt": "2026-09-29T17:58:56.258628+00:00",
+          "textLength": 3255
         },
         {
           "id": "6dcb6fd179e61e2a9df5",
@@ -8967,7 +9030,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -8976,7 +9039,7 @@
     "VND": {
       "symbol": "VND",
       "name": "Công ty Cổ phần Chứng khoán VNDIRECT",
-      "checkedAt": "2026-09-29T17:50:15.153488+00:00",
+      "checkedAt": "2026-09-29T17:58:43.354984+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8987,7 +9050,10 @@
           "sourcePage": "https://24hmoney.vn/stock/vnd/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "36a0dea935a11059622ed3a7ea55e252027fe07f671d3a52b461d1f5ae3a648d",
+          "processedAt": "2026-09-29T17:58:56.272121+00:00",
+          "textLength": 3343
         },
         {
           "id": "f6a1a4e44bfa79aea1a8",
@@ -9007,7 +9073,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -9016,7 +9082,7 @@
     "VNM": {
       "symbol": "VNM",
       "name": "Công ty Cổ phần Sữa Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.153857+00:00",
+      "checkedAt": "2026-09-29T17:58:43.355551+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9059,7 +9125,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T17:50:15.154153+00:00",
+      "checkedAt": "2026-09-29T17:58:43.355982+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -9342,7 +9408,7 @@
     "VPI": {
       "symbol": "VPI",
       "name": "Công ty Cổ phần Phát triển Bất động sản Văn Phú",
-      "checkedAt": "2026-09-29T17:50:15.154204+00:00",
+      "checkedAt": "2026-09-29T17:58:43.355988+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9360,7 +9426,7 @@
     "VPL": {
       "symbol": "VPL",
       "name": "Công ty Cổ phần Vinpearl",
-      "checkedAt": "2026-09-29T17:50:15.154491+00:00",
+      "checkedAt": "2026-09-29T17:58:43.356468+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9371,7 +9437,10 @@
           "sourcePage": "https://24hmoney.vn/stock/vpl/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "2f6d057fb43b4486fd54f78f12099a906b33fbeb0d71b5f7d56298ea0517632a",
+          "processedAt": "2026-09-29T17:58:59.513411+00:00",
+          "textLength": 3013
         },
         {
           "id": "7b882e32a21bc1050df6",
@@ -9545,7 +9614,7 @@
       ],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 6,
         "canonicalMetrics": 4,
         "externalAssessments": 0
@@ -9554,7 +9623,7 @@
     "VPX": {
       "symbol": "VPX",
       "name": "Công ty Cổ phần Chứng khoán VPBank",
-      "checkedAt": "2026-09-29T17:50:15.154549+00:00",
+      "checkedAt": "2026-09-29T17:58:43.356475+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9572,7 +9641,7 @@
     "VRE": {
       "symbol": "VRE",
       "name": "Công ty Cổ phần Vincom Retail",
-      "checkedAt": "2026-09-29T17:50:15.154825+00:00",
+      "checkedAt": "2026-09-29T17:58:43.356911+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9583,7 +9652,10 @@
           "sourcePage": "https://24hmoney.vn/stock/vre/report",
           "year": 2025,
           "type": "annual_report",
-          "contentType": "html"
+          "contentType": "html",
+          "contentHash": "b222127a44ed7ef276e8540f96613de0110fb896bf82ee379d4d4b48141fee50",
+          "processedAt": "2026-09-29T17:58:59.325238+00:00",
+          "textLength": 3137
         },
         {
           "id": "aea37f4f2830a5ea84be",
@@ -9664,7 +9736,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 4,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -9673,7 +9745,7 @@
     "VSC": {
       "symbol": "VSC",
       "name": "Công ty Cổ phần Container Việt Nam",
-      "checkedAt": "2026-09-29T17:50:15.154864+00:00",
+      "checkedAt": "2026-09-29T17:58:43.356917+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9691,7 +9763,7 @@
     "VTP": {
       "symbol": "VTP",
       "name": "Tổng Công ty Cổ phần Bưu chính Viettel",
-      "checkedAt": "2026-09-29T17:50:15.154911+00:00",
+      "checkedAt": "2026-09-29T17:58:43.356921+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9723,16 +9795,6 @@
       "textLength": 89099
     },
     {
-      "id": "c3ae1e1e5c89eec1b45b",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "SUSBA-2023-Report-Final.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2024,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
       "id": "b005c22b2a54ead2319b",
       "url": "https://www.wwf.sg/susba/reports/",
       "title": "Reports",
@@ -9747,11 +9809,11 @@
       "textLength": 4043
     },
     {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "Above-Board_Final.pdf",
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2024,
+      "year": 2023,
       "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
@@ -9772,6 +9834,16 @@
     },
     {
       "id": "abbe2ce24605a50fc5f0",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "abbe2ce24605a50fc5f0",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
       "title": "2023 Assessment of Banks' Seafood Sector Policies",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -9783,16 +9855,6 @@
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
       "processedAt": "2026-09-29T16:43:00.475375+00:00",
       "textLength": 61879
-    },
-    {
-      "id": "5a3092bae6468b8e3d31",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "report-2018-compressed.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
     },
     {
       "id": "736d1a258096fff8e0cd",
@@ -9876,7 +9938,7 @@
       "title": "2020 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2020,
-      "type": "esg_other",
+      "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -9917,6 +9979,16 @@
       "contentHash": "1a9bc6752be7be9a2cf60d2053b68d956c2cd41c48a1ae981da2265732333305",
       "processedAt": "2026-09-28T23:59:21.037191+00:00",
       "textLength": 59978
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "2018 Updated Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2018,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "5a3092bae6468b8e3d31",
@@ -11109,7 +11181,7 @@
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
       "status": "ok",
-      "documents": 1,
+      "documents": 0,
       "symbol": "LPB"
     },
     {
@@ -11367,7 +11439,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "SSB"
     },
     {
@@ -11427,7 +11499,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 9,
+      "documents": 6,
       "symbol": "TCB"
     },
     {
@@ -11686,14 +11758,14 @@
     {
       "url": "https://www.wwf.sg/susba/about/",
       "status": "ok",
-      "documents": 2,
+      "documents": 10,
       "provider": "WWF SUSBA",
       "external": true
     },
     {
       "url": "https://www.hsx.vn/",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "<urlopen error timed out>",
       "provider": "HOSE VNSI",
       "external": true
     },
@@ -11707,7 +11779,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 8,
+      "documents": 2,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -11722,11 +11794,11 @@
   "run": {
     "mode": "recent",
     "documentsProcessed": 24,
-    "backlogBeforeRun": 74,
-    "activeBacklogBeforeRun": 52,
-    "backlogRemaining": 28,
-    "eligibleBacklog": 65,
-    "recentBacklog": 52,
+    "backlogBeforeRun": 50,
+    "activeBacklogBeforeRun": 28,
+    "backlogRemaining": 4,
+    "eligibleBacklog": 41,
+    "recentBacklog": 28,
     "historicalBacklog": 7,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 24,
