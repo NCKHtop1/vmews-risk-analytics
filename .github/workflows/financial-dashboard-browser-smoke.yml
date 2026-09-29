@@ -2,6 +2,12 @@ name: Financial dashboard browser smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
+      - 'financial-report/frontend/**'
+      - 'financial-report/scripts/build_cdn.py'
   schedule:
     # 16:25 Vietnam time, after the completed trading session.
     - cron: '25 9 * * 1-5'
