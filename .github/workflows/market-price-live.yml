@@ -1,0 +1,101 @@
+name: Refresh live VN100 prices
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-price-live.yml'
+      - 'financial-report/scripts/refresh_market.py'
+  schedule:
+    # Dedicated 15-minute cadence. It no longer shares the heavy ESG/history concurrency queue.
+    - cron: '5,20,35,50 2-8 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-price-live
+  cancel-in-progress: true
+
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Vietnam trading window
+        id: session
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
+          if { [ "$hhmm" -ge 0905 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1515 ]; }; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Outside VN trading refresh window: $hhmm"
+          fi
+      - name: Restore latest market branch
+        if: steps.session.outputs.run == 'true'
+        run: |
+          git fetch origin financial-market-data
+          git worktree add /tmp/market-live origin/financial-market-data
+          git -C /tmp/market-live sparse-checkout set market
+          mkdir -p /tmp/market-live/market
+      - name: Collect current-session prices
+        if: steps.session.outputs.run == 'true'
+        id: collect
+        continue-on-error: true
+        env:
+          MARKET_REQUIRE_TODAY: '1'
+        run: python -u financial-report/scripts/refresh_market.py --output /tmp/market-live/market --mode prices
+      - name: Publish live price snapshot
+        if: steps.session.outputs.run == 'true'
+        working-directory: /tmp/market-live
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/history
+          if git diff --cached --quiet; then
+            echo "No live price changes to publish"
+            exit 0
+          fi
+          git commit -m 'Refresh live VN100 prices [data-only]'
+          for attempt in 1 2 3; do
+            git fetch origin financial-market-data
+            if git rebase origin/financial-market-data && git push origin HEAD:refs/heads/financial-market-data; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish live price snapshot after retries" >&2
+          exit 1
+      - name: Enforce current-session freshness
+        if: steps.session.outputs.run == 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/market-live/market/quotes.json')
+          data=json.loads(p.read_text())
+          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'))
+          if data.get('status') != 'ok' or int(data.get('coverage') or 0) < 90:
+              raise SystemExit('Current-session quote coverage is below 90/100; retained data is not treated as live.')
+          PY
+      - name: Fail if collector rejected stale data
+        if: steps.session.outputs.run == 'true' && steps.collect.outcome != 'success'
+        run: |
+          echo "Live price collector rejected stale/incomplete data. Retained snapshot remains available but is not live." >&2
+          exit 1

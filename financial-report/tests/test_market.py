@@ -858,6 +858,39 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('FPT',rows)
         self.assertIsNone(m.number('NaN'))
 
+    def test_current_session_filter_rejects_t_minus_one_quotes(self):
+        current=datetime(2026,9,29,7,0,tzinfo=timezone.utc)
+        rows={
+            'FPT':{'sourceTime':'2026-09-29T06:45:00+00:00','price':64000},
+            'MBB':{'sourceTime':'2026-09-28T07:45:00+00:00','price':19800},
+        }
+        fresh,stale=m.current_session_quotes(rows,current)
+        self.assertIn('FPT',fresh)
+        self.assertIn('MBB',stale)
+        self.assertEqual(m.newest_source_time(fresh),'2026-09-29T06:45:00+00:00')
+
+    def test_kbs_board_normalization_preserves_vnd_and_verified_session_time(self):
+        payload=[
+            {'SB':'FPT','RE':63700,'CP':64100,'TT':1234567,'OP':63800,'HI':64500,'LO':63600,'CHP':0.63},
+            {'SB':'MBB','RE':19800,'CP':0,'TT':0,'OP':0,'HI':0,'LO':0,'CHP':0},
+        ]
+        verified='2026-09-29T06:45:00+00:00'
+        rows=m.normalize_kbs_board(payload,['FPT','MBB'],'2026-09-29T06:46:00+00:00',verified)
+        self.assertEqual(rows['FPT']['price'],64100)
+        self.assertEqual(rows['FPT']['reference'],63700)
+        self.assertEqual(rows['FPT']['volume'],1234567)
+        self.assertEqual(rows['FPT']['source'],'KBS')
+        self.assertEqual(rows['FPT']['sourceTime'],verified)
+        self.assertEqual(rows['MBB']['price'],19800)
+        self.assertEqual(rows['MBB']['volume'],0)
+        self.assertEqual(rows['MBB']['sourceTimeBasis'],'current_session_trade_probe')
+
+    def test_kbs_trade_timestamp_parses_trade_date_and_time(self):
+        stamp=m._kbs_trade_time({'TD':'29/09/2026','FT':'14:05:01'})
+        self.assertEqual(stamp,'2026-09-29T07:05:01+00:00')
+        stamp2=m._kbs_trade_time({'t':'2026-09-29 14:05:01:40'})
+        self.assertEqual(stamp2,'2026-09-29T07:05:01+00:00')
+
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
         rows=m.normalize_history(data,'MBB')
@@ -900,21 +933,29 @@ class MarketTests(unittest.TestCase):
         self.assertTrue({'finance','rates','banking','stocks'}.issubset(set(rows[0]['topics'])))
         self.assertIn('summary',rows[0])
 
-    def test_news_refresh_is_concurrent_and_price_cron_is_quote_only(self):
+    def test_news_and_price_refreshes_are_independent_from_heavy_market_jobs(self):
         script=(ROOT/'scripts/refresh_market.py').read_text()
-        workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        root=ROOT.parent
+        workflow=(root/'.github/workflows/financial-market-refresh.yml').read_text() if (root/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        price=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        news=(root/'.github/workflows/market-news-live.yml').read_text() if (root/'.github/workflows/market-news-live.yml').exists() else pathlib.Path('.github/workflows/market-news-live.yml').read_text()
+        pages=(root/'.github/workflows/pages.yml').read_text() if (root/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
         self.assertIn('with ThreadPoolExecutor(max_workers=workers) as pool:',script)
         self.assertIn('pool.submit(_fetch_news_feed, publisher, url, companies, current)',script)
         self.assertIn('for future in as_completed(futures):',script)
-        self.assertIn("if [ \"$EVENT_SCHEDULE\" = '7,22,37,52 2-8 * * 1-5' ]; then mode=prices; fi",workflow)
+        self.assertNotIn("cron: '7,22,37,52 2-8 * * 1-5'",workflow)
+        self.assertNotIn("cron: '11,41 * * * *'",workflow)
+        self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",price)
+        self.assertIn("MARKET_REQUIRE_TODAY: '1'",price)
+        self.assertIn('group: market-price-live',price)
+        self.assertIn("cron: '12,27,42,57 * * * *'",news)
+        self.assertIn('group: market-news-live',news)
+        self.assertIn('Refresh live VN100 prices',pages)
+        self.assertIn('Refresh market news stream',pages)
+        self.assertIn('cancel-in-progress: true',pages)
         self.assertIn("cron: '20 9 * * 1-5'",workflow)
         self.assertIn("cron: '35 9 * * 1-5'",workflow)
         self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
-        self.assertIn("history-refresh",workflow)
-        self.assertNotIn("cron: '20 8 * * 1-5'",workflow)
-        self.assertNotIn("cron: '35 8 * * 1-5'",workflow)
-        self.assertNotIn('also_news=1',workflow)
-        self.assertNotIn('if [ "$also_news" = \'1\' ]',workflow)
 
     def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
         quote={'price':110,'changePct':5,'volume':2500,'high':112,'low':100,'status':'ok'}
@@ -1191,18 +1232,23 @@ class MarketTests(unittest.TestCase):
         self.assertIn('Dữ liệu giá và biểu đồ đang lệch nhau',chart)
         self.assertIn('.chart-data-mismatch',css)
 
-    def test_live_daily_chart_merges_15_minute_quote_and_replays_after_history_load(self):
+    def test_live_daily_chart_merges_only_fresh_session_quotes(self):
         chart=(ROOT/'frontend/chart-engine.js').read_text()
         market=(ROOT/'frontend/market.js').read_text()
-        workflow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
+        html=(ROOT/'frontend/index.html').read_text()
+        root=ROOT.parent
+        workflow=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
         self.assertIn('mergeDailyQuote(q,force=false)',chart)
         self.assertIn("this.baseBars.push({time:day,open,high,low,close:price",chart)
         self.assertIn("openEstimated:!(Number.isFinite(openLive)&&openLive>0)",chart)
         self.assertIn("if(!M.intraday(this.tf))this.mergeDailyQuote(this.lastMarketQuote,true)",chart)
         self.assertIn("Snapshot live · ",chart)
-        self.assertIn("chartController.snapshot(currentQuote)",market)
-        self.assertIn("setInterval(()=>{if(!document.hidden)refresh();},60000)",market)
-        self.assertIn("cron: '7,22,37,52 2-8 * * 1-5'",workflow)
+        self.assertIn("currentQuote&&!quoteStale(currentQuote)",market)
+        self.assertIn("if(currentQuoteLive)chartController.snapshot(currentQuote)",market)
+        self.assertIn("quote:quoteStale(state.quotes[state.symbol])?null",market)
+        self.assertIn('marketSessionActive()',market)
+        self.assertIn('id="quote-freshness"',html)
+        self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",workflow)
 
     def test_chart_ui_hides_verbose_status_and_moves_tradingview_attribution_to_footer(self):
         html=(ROOT/'frontend/index.html').read_text()
