@@ -55,12 +55,10 @@ def write(path, payload):
 def normalize_url(url):
     """Percent-encode unsafe URL characters without double-encoding existing escapes."""
     parts = urlsplit(str(url or "").strip())
-    path = quote(parts.path, safe="/%:@!def fetch(url, timeout=25):
-    req = Request(url, headers={'()*+,;=-._~")
+    path = quote(parts.path, safe="/%:@!$&'()*+,;=-._~")
     query = quote(parts.query, safe="=&%:@/?+,-._~")
     fragment = quote(parts.fragment, safe="%:@/?+,-._~")
     return urlunsplit((parts.scheme, parts.netloc, path, query, fragment))
-
 
 def fetch(url, timeout=25):
     normalized_url = normalize_url(url)
