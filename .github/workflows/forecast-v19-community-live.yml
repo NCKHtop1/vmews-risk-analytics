@@ -44,17 +44,96 @@ jobs:
       - name: Publish only bounded point-in-time community signals
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Persist the current public-source overlay
+        env:
+          MAX_PUBLISH_ATTEMPTS: "4"
         run: |
+          set -euo pipefail
+          files=(
+            data/fireant-intelligence-v18.json
+            data/research-news-v10.json
+            data/community-intelligence-live-v19.json
+          )
+          candidate_root="/tmp/vmews-community-publish"
+          rm -rf "$candidate_root"
+          mkdir -p "$candidate_root"
+          for path in "${files[@]}"; do
+            mkdir -p "$candidate_root/$(dirname "$path")"
+            cp "$path" "$candidate_root/$path"
+          done
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/fireant-intelligence-v18.json data/research-news-v10.json data/community-intelligence-live-v19.json
-          if git diff --cached --quiet; then
-            echo "No public market-intelligence change detected."
-            exit 0
-          fi
-          git commit -m "Refresh FireAnt, 24HMoney and bounded live market intelligence [data-only]"
-          # main may advance from another publisher or a human commit while this
-          # short-lived overlay job is running. Rebase safely and keep generated
-          # unstaged files out of the published commit.
-          git pull --rebase --autostash origin main
-          git push
+
+          for attempt in $(seq 1 "$MAX_PUBLISH_ATTEMPTS"); do
+            echo "Atomic community publish attempt ${attempt}/${MAX_PUBLISH_ATTEMPTS}"
+            git fetch --no-tags origin main
+            git reset --hard origin/main
+
+            set +e
+            PUBLISHED_COMMUNITY="data/community-intelligence-live-v19.json" CANDIDATE_COMMUNITY="$candidate_root/data/community-intelligence-live-v19.json" python - <<'PY'
+          import json
+          import os
+          from datetime import datetime
+
+          def parse_dt(value):
+              try:
+                  return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+              except Exception:
+                  return None
+
+          candidate=json.load(open(os.environ["CANDIDATE_COMMUNITY"],encoding="utf-8"))
+          try:
+              published=json.load(open(os.environ["PUBLISHED_COMMUNITY"],encoding="utf-8"))
+          except Exception:
+              raise SystemExit(0)
+
+          candidate_asof=str(candidate.get("asOf") or "")
+          published_asof=str(published.get("asOf") or "")
+          candidate_time=parse_dt(candidate.get("generatedAt") or candidate.get("modelDecisionAt"))
+          published_time=parse_dt(published.get("generatedAt") or published.get("modelDecisionAt"))
+
+          if published_asof > candidate_asof:
+              print("Remote community overlay is from a newer session; keep remote.")
+              raise SystemExit(10)
+          if published_asof == candidate_asof and candidate_time and published_time and published_time >= candidate_time:
+              print("Remote community overlay is same-session and same/newer generation; keep remote.")
+              raise SystemExit(10)
+          PY
+            guard_rc=$?
+            set -e
+            if [ "$guard_rc" -eq 10 ]; then
+              exit 0
+            fi
+            if [ "$guard_rc" -ne 0 ]; then
+              echo "Community publish freshness guard failed."
+              exit "$guard_rc"
+            fi
+
+            for path in "${files[@]}"; do
+              cp "$candidate_root/$path" "$path"
+            done
+            git add "${files[@]}"
+            if git diff --cached --quiet; then
+              echo "No public market-intelligence change detected."
+              exit 0
+            fi
+            git commit -m "Refresh FireAnt, 24HMoney and bounded live market intelligence [data-only]"
+
+            set +e
+            push_output=$(git push origin HEAD:main 2>&1)
+            push_rc=$?
+            set -e
+            printf '%s\n' "$push_output"
+            if [ "$push_rc" -eq 0 ]; then
+              echo "Community overlay published by fast-forward."
+              exit 0
+            fi
+            if printf '%s\n' "$push_output" | grep -Eqi 'non-fast-forward|fetch first|rejected'; then
+              echo "main advanced during community publish; retrying from the new remote head without rebasing generated JSON."
+              continue
+            fi
+            exit "$push_rc"
+          done
+
+          echo "main advanced through all bounded community publish attempts."
+          exit 75
