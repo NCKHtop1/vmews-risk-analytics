@@ -119,7 +119,7 @@ jobs:
         env:
           V20_FLOW_WORKERS: "12"
         run: |
-          python scripts/refresh_institutional_flow_v20_v28.py || echo "Institutional provider unavailable; audited history remains intact and freshness stays explicit."
+          timeout 240s python scripts/refresh_institutional_flow_v20_v28.py || echo "Institutional provider unavailable; audited history remains intact and freshness stays explicit."
       - name: Refresh point-in-time news for the full current HOSE universe
         run: python scripts/refresh_hose_news_v14.py || echo "Publisher coverage gate failed; prior audited news archive remains intact."
       - name: Collect verified public FireAnt and 24HMoney market intelligence
@@ -134,7 +134,7 @@ jobs:
         continue-on-error: true
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
-        run: python scripts/forecast_v16_external_data.py --collect-funds
+        run: timeout 120s python scripts/forecast_v16_external_data.py --collect-funds
       - name: Report unavailable optional fund context
         if: steps.optional_funds.outcome == 'failure'
         run: echo "::warning::Fund context unavailable; retaining dated history. Core EOD price and forecast validation remain mandatory."

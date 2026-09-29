@@ -21,7 +21,7 @@ window.__VMEWS_DATA_ROOT__=ROOT;
 window.__VMEWS_DATA_REF__=DATA_REF;
 window.__VMEWS_ASSET_REF__=CDN_REF||"LOCAL_DEPLOYMENT";
 function assertProduction(B){if(B.gates?.status!=="PASS")throw Error("Bộ kiểm soát dữ liệu chưa đạt; dự báo đang tạm khóa.");if(B.model?.promotion?.status!=="PASS")throw Error("Mô hình chưa vượt điều kiện phát hành; dự báo đang tạm khóa.")}
-function h(z,n){const q=z?.horizons?.[String(n)]||{};return z?.staleForecast?{...q,priceValidated:false,directionValidated:false}:q}
+function h(z,n){const q=z?.horizons?.[String(n)]||{};return z?.staleForecast?{}:q}
 function forecastAvailable(q){return q?.priceValidated===true&&finite(q?.expectedPrice)&&finite(q?.q20Price)&&finite(q?.q80Price)}
 function validatedPrice(q){return q?.priceValidated===true&&finite(q.expectedPrice)&&finite(q.q20Price)&&finite(q.q80Price)}
 function reliablePoint(q){return q?.economicPointStatus==="PASS"}
@@ -207,7 +207,7 @@ function renderSource(B,sym){
   const flowDetail=item=>item?.available?`${item.latestDate||"Phiên gần nhất"}${finite(item.net5)?` · 5P ${+item.net5>=0?"+":""}${(+item.net5/1e9).toFixed(1)} tỷ`:""}`:"Phiên gần nhất · lũy kế 5/20 phiên";
   const tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0);
   const communitySource=rumorAudit.source?.publishers?.join(" · ")||"Nguồn cộng đồng";
-  const priceDetail=z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
+  const priceDetail=window.__VMEWS_FRESHNESS__?.inspect(z).stale?"Cần cập nhật phiên mới":z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
   const fundValue=fund.available?`${fund.fundCount||0} quỹ`:"Mở dữ liệu quỹ";
   const fundDetail=fund.available&&finite(fund.weightedNavMomentum20)?`NAV 20P ${+fund.weightedNavMomentum20>=0?"+":""}${pct(fund.weightedNavMomentum20,1)}`:"Danh mục · tỷ trọng · NAV · biến động";
   const financialValue=financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Mở BCTC";

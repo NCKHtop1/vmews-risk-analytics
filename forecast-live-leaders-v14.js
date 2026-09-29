@@ -156,6 +156,8 @@
   }
 
   function sessionUsableNow(payload) {
+    const expected=window.__VMEWS_FRESHNESS__?.expectedSession();
+    if(expected && String(payload?.coverage?.expectedQuoteDate||"")<expected)return false;
     const cutoff = new Date(payload?.cutoffAt || payload?.generatedAt || "");
     if (Number.isNaN(+cutoff)) return false;
     const age = Date.now() - +cutoff;
@@ -235,8 +237,9 @@
     const summary = $("#leaderSummary");
     const primaryFilter = $('[data-filter="all"]');
     const deck = $("#signalDeck");
-    if (command) command.textContent = defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : `HOSE · T+${horizon}`;
-    if (summary) summary.textContent = state.session?.forecastAlignment?.rankingEligible === false
+    const stale = window.__VMEWS_FRESHNESS__?.inspect({date:state.base?.dash?.asOf}).stale;
+    if (command) command.textContent = stale ? "HOSE · ĐANG CẬP NHẬT" : defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : `HOSE · T+${horizon}`;
+    if (summary) summary.textContent = stale ? "Chờ dữ liệu phiên hoàn tất mới nhất; tạm ẩn xếp hạng từ bộ dự báo cũ." : state.session?.forecastAlignment?.rankingEligible === false
       ? "Giá thị trường mới đã được xác thực; bảng xếp hạng giữ nguyên forecast EOD và chờ lõi mô hình cập nhật."
       : defensive
       ? `Chưa có mã HOSE đủ điều kiện có mục tiêu T+${horizon} cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro.`
