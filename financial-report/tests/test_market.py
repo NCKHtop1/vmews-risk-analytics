@@ -32,7 +32,13 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],9)
+        self.assertGreaterEqual(cfg['version'],10)
+        self.assertTrue(any('EN_ESG_Report_2024.pdf' in u for u in cfg['banks']['HDB']['seed_urls']))
+        self.assertTrue(any('static2.vietstock.vn' in u for u in cfg['banks']['VIB']['seed_urls']))
+        self.assertEqual(next(x for x in cfg['banks']['HDB']['validated_metrics'] if x['metricId']=='training_hours')['value'],914910)
+        self.assertEqual(next(x for x in cfg['banks']['HDB']['validated_metrics'] if x['metricId']=='women_workforce_pct')['value'],63)
+        self.assertEqual(next(x for x in cfg['banks']['VIB']['validated_metrics'] if x['metricId']=='training_hours')['value'],417556)
+        self.assertEqual(next(x for x in cfg['banks']['VIB']['validated_metrics'] if x['metricId']=='women_workforce_pct')['value'],54)
         self.assertTrue(any('20250620_HDBANK_AR-2024_190326_EN.pdf' in u for u in cfg['banks']['HDB']['seed_urls']))
         self.assertTrue(any('Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf' in u for u in cfg['banks']['VIB']['seed_urls']))
         training_rule=next(x for x in cfg['metric_rules'] if x['id']=='training_hours')
@@ -398,6 +404,32 @@ class MarketTests(unittest.TestCase):
         rows=esm.extract_metrics(text,cfg['metric_rules'],2024,'https://vib.example/ar.pdf','VIB Annual Report 2024','annual_report')
         training=next(x for x in rows if x['metricId']=='training_hours')
         self.assertEqual(training['value'],417556)
+
+    def test_corporate_esg_validated_fallback_only_fills_missing_keys(self):
+        live=[
+            {'metricId':'training_hours','year':2024,'value':999999,'unit':'hours','sourceUrl':'https://live.example/report.pdf'}
+        ]
+        cfg={'validated_metrics':[
+            {'metricId':'training_hours','year':2024,'value':417556,'unit':'hours','sourceUrl':'https://official.example/ar.pdf'},
+            {'metricId':'women_workforce_pct','year':2024,'value':54,'unit':'%','sourceUrl':'https://official.example/ar.pdf'}
+        ]}
+        filled=esm.fill_validated_metrics(live,cfg)
+        by_key={(x['metricId'],x['year']):x for x in filled}
+        self.assertEqual(by_key[('training_hours',2024)]['value'],999999)
+        self.assertFalse(by_key[('training_hours',2024)].get('validatedFallback',False))
+        self.assertEqual(by_key[('women_workforce_pct',2024)]['value'],54)
+        self.assertTrue(by_key[('women_workforce_pct',2024)]['validatedFallback'])
+
+        ratings=[{'provider':'HOSE VNSI','assessmentType':'VNSI score','year':2024,'value':'82%'}]
+        rcfg={'validated_assessments':[
+            {'provider':'HOSE VNSI','assessmentType':'VNSI score','year':2024,'value':'81%'},
+            {'provider':'Moody\'s','assessmentType':'ESG Credit Impact Score','year':2024,'value':'CIS-2'}
+        ]}
+        filled_r=esm.fill_validated_assessments(ratings,rcfg)
+        keys={(x['provider'],x['assessmentType'],x['year']):x for x in filled_r}
+        self.assertEqual(keys[('HOSE VNSI','VNSI score',2024)]['value'],'82%')
+        self.assertEqual(keys[("Moody's",'ESG Credit Impact Score',2024)]['value'],'CIS-2')
+        self.assertTrue(keys[("Moody's",'ESG Credit Impact Score',2024)]['validatedFallback'])
 
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
