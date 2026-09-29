@@ -39,7 +39,11 @@ jobs:
         run: |
           for attempt in 1 2 3 4 5 6; do
             if curl -fsSL --max-time 20 'https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT' -o /tmp/solution-page.html; then
-              grep -Fq 'SoluTION.AI · LOCAL FIRST · GEMINI TÙY CHỌN' /tmp/solution-page.html && exit 0
+              if grep -Fq 'SoluTION.AI · LOCAL FIRST · GEMINI TÙY CHỌN' /tmp/solution-page.html \
+                && grep -Fq 'id="primaryForecastLabel"' /tmp/solution-page.html \
+                && grep -Fq 'forecast-final-v12.js?release=45.0' /tmp/solution-page.html; then
+                exit 0
+              fi
             fi
             sleep $((attempt * 5))
           done
