@@ -71,7 +71,7 @@
 
   async function fetchGeminiBounded(url, options = {}, timeoutMs = 24000) {
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    const timer = controller && typeof globalThis.setTimeout === "function" ? globalThis.setTimeout(() => controller.abort(), timeoutMs) : null;
     const parent = options.signal;
     const onAbort = () => controller?.abort();
     if (parent && controller) {
@@ -89,7 +89,7 @@
       }
       throw error;
     } finally {
-      if (timer) clearTimeout(timer);
+      if (timer && typeof globalThis.clearTimeout === "function") globalThis.clearTimeout(timer);
       if (parent && controller) parent.removeEventListener("abort", onAbort);
     }
   }
@@ -139,7 +139,10 @@
   }
 
   function waitGemini(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => {
+      if (typeof globalThis.setTimeout === "function") globalThis.setTimeout(resolve, ms);
+      else resolve();
+    });
   }
 
   async function geminiFetchResilient(url, options = {}, timeoutMs = 16000, attempts = 2) {
@@ -571,28 +574,36 @@
       method: "POST", mode: "cors", cache: "no-store",
       headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
     };
-    const compatibleBody = search => ({
-      systemInstruction: { parts: [{ text: systemInstruction() }] },
-      contents: [{ role: "user", parts: [{ text: input }] }],
-      generationConfig: { maxOutputTokens: 4200, temperature: .18 },
-      ...(search ? { tools: [{ googleSearch: {} }] } : {}),
-    });
+    const compatibleBody = (search, urlContext) => {
+      const tools = [];
+      if (search) tools.push({ googleSearch: {} });
+      if (urlContext) tools.push({ urlContext: {} });
+      return {
+        systemInstruction: { parts: [{ text: systemInstruction() }] },
+        contents: [{ role: "user", parts: [{ text: input }] }],
+        generationConfig: { maxOutputTokens: 4200, temperature: .18 },
+        ...(tools.length ? { tools } : {}),
+      };
+    };
 
     // Use the same stable Gemini surface as Dolphin: generateContent first.
-    // Open-source evidence is already embedded in the prompt; Google Search is
-    // an enhancement, never a single point of failure.
+    // A pure forecast/snapshot question does not pay the latency/quota cost of
+    // Search. Search/URL Context are enabled only when the user's intent needs
+    // fresh external evidence or an explicit public URL.
+    const wantsSearch = intent.shouldSearch === true;
+    const wantsUrlContext = Array.isArray(intent.urls) && intent.urls.length > 0;
     let searchLimited = false;
     let response = await geminiFetchResilient(
       `${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`,
-      { ...common, body: JSON.stringify(compatibleBody(intent.shouldSearch || intent.useSnapshot)) },
+      { ...common, body: JSON.stringify(compatibleBody(wantsSearch, wantsUrlContext)) },
       16000,
       2,
     );
-    if ((intent.shouldSearch || intent.useSnapshot) && [400, 403].includes(response.status)) {
+    if ((wantsSearch || wantsUrlContext) && [400, 403].includes(response.status)) {
       searchLimited = true;
       response = await geminiFetchResilient(
         `${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`,
-        { ...common, body: JSON.stringify(compatibleBody(false)) },
+        { ...common, body: JSON.stringify(compatibleBody(false, false)) },
         16000,
         2,
       );
