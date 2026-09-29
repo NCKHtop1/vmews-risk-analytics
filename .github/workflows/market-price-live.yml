@@ -1,4 +1,4 @@
-name: Refresh live VN100 prices
+name: Refresh live HOSE Core + Liquid prices
 
 on:
   workflow_dispatch:
@@ -66,12 +66,12 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/history-status.json market/history
+          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/universe.json market/history-status.json market/history
           if git diff --cached --quiet; then
             echo "No live price changes to publish"
             exit 0
           fi
-          git commit -m 'Refresh live VN100 prices [data-only]'
+          git commit -m 'Refresh live HOSE Core + Liquid prices [data-only]'
           for attempt in 1 2 3; do
             git fetch origin financial-market-data
             if git rebase origin/financial-market-data && git push origin HEAD:refs/heads/financial-market-data; then
@@ -92,10 +92,15 @@ jobs:
           data=json.loads(p.read_text())
           scanner=json.loads(Path('/tmp/market-live/market/technical-signals.json').read_text())
           print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'matches=',scanner.get('matchCount'))
-          if data.get('status') != 'ok' or int(data.get('coverage') or 0) < 90:
-              raise SystemExit('Current-session quote coverage is below 90/100; retained data is not treated as live.')
-          if scanner.get('status') != 'ok' or int(scanner.get('coverage') or 0) < 90:
-              raise SystemExit('Technical scanner coverage is below 90/100.')
+          import math
+          expected=max(1,int(data.get('expected') or 0))
+          quote_required=max(1,math.ceil(expected*.90))
+          scanner_universe=max(1,int(scanner.get('universe') or 0))
+          scanner_required=max(1,math.ceil(scanner_universe*.90))
+          if data.get('status') != 'ok' or int(data.get('coverage') or 0) < quote_required:
+              raise SystemExit(f'Current-session quote coverage is below 90%: {data.get("coverage")}/{expected}; retained data is not treated as live.')
+          if scanner.get('status') != 'ok' or int(scanner.get('coverage') or 0) < scanner_required:
+              raise SystemExit(f'Technical scanner coverage is below 90%: {scanner.get("coverage")}/{scanner_universe}.')
           PY
       - name: Fail if collector rejected stale data
         if: steps.session.outputs.run == 'true' && steps.collect.outcome != 'success'
