@@ -94,15 +94,50 @@
   }
 
   async function validateGemini(secret) {
+    const timeout = typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(15000) : undefined;
     const response = await fetch(`${GOOGLE_AI_ORIGIN}/models?pageSize=100`, {
       method: "GET", mode: "cors", cache: "no-store",
       headers: { "x-goog-api-key": secret },
+      ...(timeout ? { signal: timeout } : {}),
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(providerMessage(response.status, payload.error?.message));
+    if (!response.ok) {
+      const error = new Error(providerMessage(response.status, payload.error?.message));
+      error.status = response.status;
+      throw error;
+    }
     state.modelCandidates = availableModels(payload);
     const model = state.modelCandidates[0] || availableModel(payload);
     if (!model) throw new Error("Dự án Google chưa có mô hình Gemini Flash khả dụng.");
+
+    // Do not report a false-positive connection from models.list alone.
+    // A tiny real generateContent probe proves that this key/model can answer now.
+    const probeTimeout = typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(18000) : undefined;
+    const probe = await fetch(`${GOOGLE_AI_ORIGIN}/models/${encodeURIComponent(model)}:generateContent`, {
+      method: "POST", mode: "cors", cache: "no-store",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: "Reply with exactly OK" }] }],
+        generationConfig: { maxOutputTokens: 16, temperature: 0 },
+      }),
+      ...(probeTimeout ? { signal: probeTimeout } : {}),
+    });
+    const probePayload = await probe.json().catch(() => ({}));
+    if (!probe.ok) {
+      const error = new Error(providerMessage(probe.status, probePayload.error?.message));
+      error.status = probe.status;
+      throw error;
+    }
+    const probeText = (probePayload.candidates || [])
+      .flatMap(candidate => candidate.content?.parts || [])
+      .map(part => part.text || "")
+      .join("")
+      .trim();
+    if (!probeText) {
+      const error = new Error("Gemini đã nhận khóa nhưng chưa trả được nội dung generateContent.");
+      error.status = 503;
+      throw error;
+    }
     return model;
   }
 
@@ -624,19 +659,29 @@
     const snapshot = base.dash.symbols?.[symbol];
     if (!snapshot) throw new Error(`Chưa có dữ liệu cho ${symbol}.`);
     const sessionQuote = (window.__VMEWS_SESSION__?.symbols || []).find(item => item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false) || null;
+    const promotion = base.model?.promotion || base.dash?.promotion || {};
+    const promoted = new Set((promotion.directPriceHorizons || []).map(value => Number(value)).filter(Number.isFinite));
+    const review = new Set((promotion.reviewHorizons || []).map(value => Number(value)).filter(Number.isFinite));
+    const preferredRankingHorizon = Number(promotion.preferredRankingHorizon) || [...promoted].sort((a, b) => a - b)[0] || 3;
     const horizons = {};
     for (const [key, forecast] of Object.entries(snapshot.horizons || {})) {
-      if (forecast.priceValidated !== true) continue;
+      const horizonNo = Number(key);
       const audit = base.model.horizons?.[String(key)] || {};
+      const published = forecast.priceValidated === true && (forecast.validationStatus || "PASS") === "PASS";
       horizons[`T+${key}`] = {
-        price: forecast.expectedPrice, expectedReturn: forecast.expectedReturn,
-        remainingReturnFromSession: sessionQuote && number(sessionQuote.liveClose) > 0 ? forecast.expectedPrice / number(sessionQuote.liveClose) - 1 : null,
-        lowerPrice: forecast.q20Price, upperPrice: forecast.q80Price,
-        expectedAbsReturn: number(forecast.expectedAbsReturn),
-        bearScenarioPrice: number(forecast.bearScenarioPrice),
-        bullScenarioPrice: number(forecast.bullScenarioPrice),
+        releaseStatus: published ? "PUBLISHED" : "REVIEW",
+        globallyPromoted: promoted.has(horizonNo),
+        globallyReview: review.has(horizonNo),
+        price: published ? forecast.expectedPrice : null,
+        expectedReturn: published ? forecast.expectedReturn : null,
+        remainingReturnFromSession: published && sessionQuote && number(sessionQuote.liveClose) > 0 ? forecast.expectedPrice / number(sessionQuote.liveClose) - 1 : null,
+        lowerPrice: published ? forecast.q20Price : null,
+        upperPrice: published ? forecast.q80Price : null,
+        expectedAbsReturn: published ? number(forecast.expectedAbsReturn) : null,
+        bearScenarioPrice: published ? number(forecast.bearScenarioPrice) : null,
+        bullScenarioPrice: published ? number(forecast.bullScenarioPrice) : null,
         magnitudeValidated: forecast.magnitudeValidated === true,
-        probabilityUp: forecast.directionValidated === true ? forecast.probUp : null,
+        probabilityUp: published && forecast.directionValidated === true ? forecast.probUp : null,
         directionValidated: forecast.directionValidated === true,
         pointDirectionValidated: forecast.pointDirectionValidated === true,
         historicalDirectionAccuracy: number(forecast.historicalDirectionAccuracy),
@@ -645,11 +690,12 @@
         crossSectionalRankValidated: forecast.crossSectionalRankValidated === true,
         conditionalValueValidated: forecast.conditionalValueValidated === true,
         decisionDiscipline: forecast.decisionDiscipline || null,
-        factors: forecast.expertContributions || {},
-        liveEvidence: forecast.liveEvidence?.components || {},
+        factors: published ? (forecast.expertContributions || {}) : {},
+        liveEvidence: published ? (forecast.liveEvidence?.components || {}) : {},
         targetDate: forecast.targetDate,
         validation: {
-          priceStatus: audit.priceStatus || null,
+          priceStatus: audit.priceStatus || (published ? "PASS" : "REVIEW"),
+          symbolValidationStatus: forecast.validationStatus || null,
           directionStatus: audit.directionStatus || null,
           holdoutRows: audit.sealedAudit?.n ?? null,
           rankIC: audit.sealedAudit?.rankIC ?? null,
@@ -676,12 +722,12 @@
       .map(row => ({
         symbol: row.symbol,
         close: row.close,
-        forecast: row.target || row.horizons?.["5"]?.expectedPrice,
-        return: row.upside ?? row.horizons?.["5"]?.expectedReturn,
+        forecast: row.target || row.horizons?.[String(preferredRankingHorizon)]?.expectedPrice,
+        return: row.upside ?? row.horizons?.[String(preferredRankingHorizon)]?.expectedReturn,
       }))
       .filter(row => row.close > 0 && row.forecast > row.close && number(row.return) !== null)
       .slice(0, 10);
-    const modelAudit = base.model.horizons?.["5"] || {};
+    const modelAudit = base.model.horizons?.[String(preferredRankingHorizon)] || base.model.horizons?.["5"] || {};
     const chartHistory = base.dash.charts?.[symbol] || [];
     const currentRankIndex = ranked.findIndex(row => String(row?.symbol || "").toUpperCase() === symbol);
     const currentRankRow = currentRankIndex >= 0 ? ranked[currentRankIndex] : null;
@@ -691,6 +737,10 @@
       close: snapshot.close, sector: snapshot.sector, riskStatus: snapshot.riskStatus,
       dataFreshness: snapshot.dataFreshness || null,
       dailyVolatility: snapshot.dailyVolatility, horizons,
+      preferredHorizon: `T+${preferredRankingHorizon}`,
+      rankingHorizon: preferredRankingHorizon,
+      publishedHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus === "PUBLISHED").map(([label]) => label),
+      reviewHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus !== "PUBLISHED").map(([label]) => label),
       session: sessionQuote ? { session: window.__VMEWS_SESSION__?.session || null, cutoffAt: window.__VMEWS_SESSION__?.cutoffAt || null, liveClose: number(sessionQuote.liveClose), change: number(sessionQuote.change), updateAt: sessionQuote.updateAt || null, sourceMode: sessionQuote.updateMode || null } : null,
       technical: technicalContext(chartHistory),
       fund: fund.available ? {
@@ -741,6 +791,7 @@
       })),
       communityUpdatedAt: window.__VMEWS_COMMUNITY_LIVE__?.generatedAt || null,
       validation: {
+        horizon: preferredRankingHorizon,
         priceValidated: modelAudit.priceStatus === "PASS",
         directionValidated: modelAudit.directionStatus === "PASS",
         holdoutRows: modelAudit.sealedAudit?.n,
@@ -767,14 +818,28 @@
     };
   }
 
+  async function buildContextResilient(attempts = 4) {
+    let lastError;
+    for (let attempt = 0; attempt < Math.max(1, attempts); attempt += 1) {
+      try { return await buildContext(); }
+      catch (error) {
+        lastError = error;
+        if (attempt < attempts - 1) await new Promise(resolve => setTimeout(resolve, 180 * (attempt + 1)));
+      }
+    }
+    const selected = String($("#symbol")?.value || new URLSearchParams(location.search).get("symbol") || "").trim().toUpperCase();
+    if (state.context && (!selected || state.context.symbol === selected)) return state.context;
+    throw lastError || new Error("Forecast chưa sẵn sàng; hãy thử lại sau khi dashboard tải xong.");
+  }
+
   function updateContextBar(context) {
     if (!context) return;
     const holder = $("#solutionAiContext");
     holder.querySelector("strong").textContent = context.symbol;
-    const five = context.horizons["T+5"];
-    holder.querySelector("small").textContent = five
-      ? `${money(context.close)} → ${money(five.price)} · ${pct(five.expectedReturn)}`
-      : `Giá hiện tại ${money(context.close)}`;
+    const anchor = preferredForecast(context);
+    holder.querySelector("small").textContent = anchor
+      ? `${anchor.label} · ${money(context.close)} → ${money(anchor.horizon.price)} · ${pct(anchor.horizon.expectedReturn)}`
+      : `Giá hiện tại ${money(context.close)} · chưa có kỳ đủ gate phát hành điểm giá`;
     state.context = context;
   }
 
@@ -914,17 +979,50 @@
     return "";
   }
 
+  function horizonNumber(label) {
+    const match = String(label || "").match(/^T\+([1-5])$/);
+    return match ? Number(match[1]) : null;
+  }
+
+  function releasedHorizons(context) {
+    return Object.entries(context?.horizons || {})
+      .filter(([label, horizon]) => horizonNumber(label) !== null && horizon?.releaseStatus === "PUBLISHED" && number(horizon?.price) !== null)
+      .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]));
+  }
+
+  function preferredForecast(context) {
+    const preferred = String(context?.preferredHorizon || "");
+    const preferredItem = context?.horizons?.[preferred];
+    if (preferredItem?.releaseStatus === "PUBLISHED" && number(preferredItem.price) !== null) {
+      return { label: preferred, horizon: preferredItem };
+    }
+    const published = releasedHorizons(context);
+    if (!published.length) return null;
+    const middle = published.find(([label]) => label === "T+3");
+    const chosen = middle || published.at(-1);
+    return { label: chosen[0], horizon: chosen[1] };
+  }
+
   function forecastPath(context) {
     return Object.entries(context?.horizons || {})
-      .sort((left, right) => Number(left[0].replace("T+", "")) - Number(right[0].replace("T+", "")))
-      .map(([label, horizon]) => `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`);
+      .filter(([label]) => horizonNumber(label) !== null)
+      .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]))
+      .map(([label, horizon]) => {
+        if (horizon?.releaseStatus !== "PUBLISHED" || number(horizon?.price) === null) {
+          const status = horizon?.validation?.priceStatus || horizon?.validation?.symbolValidationStatus || "REVIEW";
+          return `- **${label}:** chưa phát hành điểm giá · gate ${status}. Hệ thống giữ kỳ này ở chế độ REVIEW thay vì xuất một con số chưa đủ kiểm định.`;
+        }
+        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`;
+      });
   }
 
   function localAnalysis(input, context) {
     const question = String(input || "").toLowerCase();
-    const five = context.horizons["T+5"];
+    const anchor = preferredForecast(context);
+    const anchorLabel = anchor?.label || null;
+    const anchorForecast = anchor?.horizon || null;
     const activeClose = number(context.session?.liveClose) ?? number(context.close);
-    const remainingT5 = five && activeClose > 0 ? five.price / activeClose - 1 : five?.expectedReturn;
+    const remainingAnchor = anchorForecast && activeClose > 0 ? anchorForecast.price / activeClose - 1 : anchorForecast?.expectedReturn;
     const lines = [];
     const knowledge = knowledgeAnswer(question);
     const detailed = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|mô hình|phân tích|đánh giá|bổ sung/.test(question);
@@ -936,34 +1034,41 @@
 
     if (pathQuestion) {
       const ordered = Object.entries(context.horizons || {})
-        .filter(([label, horizon]) => /^T\+[1-5]$/.test(label) && number(horizon?.price) !== null)
-        .sort((left, right) => Number(left[0].slice(2)) - Number(right[0].slice(2)));
-      if (!ordered.length) return `Chưa có đủ đường forecast T+1→T+5 cho ${context.symbol}.`;
-      const path = ordered.map(([label, horizon], index) => {
-        const prior = index === 0 ? activeClose : number(ordered[index - 1][1]?.price);
-        const price = number(horizon.price);
-        const step = prior > 0 && price !== null ? price / prior - 1 : null;
-        const missing = [];
-        if (horizon.directionValidated === false || horizon.pointDirectionValidated === false) missing.push("chiều");
-        if (horizon.magnitudeValidated === false) missing.push("độ lớn");
-        return { label, horizon, price, step, missing };
-      });
-      lines.push(`### Đường forecast ${context.symbol}`);
-      for (const row of path) {
-        lines.push(`- **${row.label}:** ${money(row.price)} (${pct(row.horizon.expectedReturn)})${row.step === null ? "" : ` · nhịp từ mốc trước ${pct(row.step)}`}${number(row.horizon.lowerPrice) === null || number(row.horizon.upperPrice) === null ? "" : ` · vùng ${money(row.horizon.lowerPrice)}–${money(row.horizon.upperPrice)}`}.`);
+        .filter(([label]) => /^T\+[1-5]$/.test(label))
+        .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]));
+      if (!ordered.length) return `Chưa tải được cấu trúc forecast T+1→T+5 cho ${context.symbol}; hãy thử lại sau khi dashboard tải xong.`;
+
+      lines.push(`### Đường forecast ${context.symbol}`, ...forecastPath(context));
+      const published = ordered
+        .filter(([, horizon]) => horizon.releaseStatus === "PUBLISHED" && number(horizon.price) !== null)
+        .map(([label, horizon]) => ({ label, horizon, price: number(horizon.price) }));
+
+      if (!published.length) {
+        lines.push(
+          "### Trạng thái phát hành",
+          "Mô hình có dữ liệu cho các horizon nhưng hiện chưa có kỳ nào đủ gate để phát hành điểm giá. Đây là cơ chế abstention có chủ đích, không phải lỗi tải forecast.",
+        );
+        return lines.join("\n");
       }
+
       const rhythm = [];
-      for (let index = 1; index < path.length; index += 1) {
-        const current = path[index], previous = path[index - 1];
-        if (current.step === null) continue;
+      for (let index = 0; index < published.length; index += 1) {
+        const current = published[index];
+        const priorPrice = index === 0 ? activeClose : published[index - 1].price;
+        const priorStep = index <= 1
+          ? null
+          : published[index - 1].price / published[index - 2].price - 1;
+        const step = priorPrice > 0 ? current.price / priorPrice - 1 : null;
+        if (step === null) continue;
         let stateLabel = "giữ nhịp";
-        if (Math.abs(current.step) < .0015) stateLabel = "chững lại";
-        else if (previous.step !== null && current.step - previous.step > .0015) stateLabel = "tăng tốc";
-        else if (previous.step !== null && current.step - previous.step < -.0015) stateLabel = "giảm tốc";
-        rhythm.push(`- **${previous.label} → ${current.label}: ${stateLabel}** · bước ${pct(current.step)}${previous.step === null ? "" : ` so với ${pct(previous.step)} ở nhịp trước`}.`);
+        if (Math.abs(step) < .0015) stateLabel = "chững lại";
+        else if (priorStep !== null && step - priorStep > .0015) stateLabel = "tăng tốc";
+        else if (priorStep !== null && step - priorStep < -.0015) stateLabel = "giảm tốc";
+        rhythm.push(`- **${current.label}: ${stateLabel}** · bước từ mốc phát hành trước ${pct(step)}${priorStep === null ? "" : ` so với ${pct(priorStep)} ở nhịp trước`}.`);
       }
-      if (rhythm.length) lines.push("### Nhịp forecast", ...rhythm);
-      const missingRows = path.filter(row => row.missing.length);
+      if (rhythm.length) lines.push("### Nhịp giữa các kỳ đã phát hành", ...rhythm);
+
+      const reviewRows = ordered.filter(([, horizon]) => horizon.releaseStatus !== "PUBLISHED");
       const technical = context.technical || {};
       const confirmations = [];
       if (number(technical.rsi14) !== null) confirmations.push(`RSI14 ${Number(technical.rsi14).toFixed(1)}`);
@@ -972,10 +1077,8 @@
       if (number(technical.volumeRatio20) !== null) confirmations.push(`khối lượng ${Number(technical.volumeRatio20).toFixed(2)}× MA20`);
       lines.push("### Xác nhận hiện tại");
       if (confirmations.length) lines.push(`- Kỹ thuật: ${confirmations.join(" · ")}.`);
-      if (missingRows.length) {
-        lines.push(`- Gate còn yếu: ${missingRows.map(row => `${row.label} (${row.missing.join(" + ")})`).join("; ")}. Đây là nơi cần thêm xác nhận từ giá/khối lượng/dòng tiền, không phải lý do để bỏ toàn bộ đường forecast.`);
-      } else {
-        lines.push("- Snapshot hiện tại không có kỳ nào bị đánh dấu fail rõ ở gate chiều/độ lớn; trọng tâm là xem các nhịp forecast có được giá, MACD/OBV và dòng tiền xác nhận hay không.");
+      if (reviewRows.length) {
+        lines.push(`- Kỳ REVIEW: ${reviewRows.map(([label, horizon]) => `${label} (${horizon.validation?.priceStatus || "REVIEW"})`).join("; ")}. Các kỳ này không bị gọi là “lỗi”; SoluTION.AI chỉ không xuất điểm giá chưa đủ kiểm định.`);
       }
       if (context.flow?.foreign?.available || context.flow?.proprietary?.available) {
         const flowBits = [];
@@ -987,7 +1090,7 @@
     }
 
     if (rankQuestion) {
-      lines.push("### Xếp hạng HOSE", "Các mã HOSE có mức dự báo T+5 nổi bật nhất sau khi áp dữ liệu phiên hợp lệ:");
+      lines.push("### Xếp hạng HOSE", `Các mã HOSE nổi bật theo kỳ T+${context.rankingHorizon || 3} đã qua gate phát hành:`);
       for (const [index, row] of context.topMovers.slice(0, 7).entries()) {
         lines.push(`${index + 1}. ${row.symbol}: ${money(row.close)} → ${money(row.forecast)} (${pct(row.return)}).`);
       }
@@ -995,25 +1098,30 @@
     }
     if (knowledge && !detailed && !fundQuestion && !flowQuestion) return knowledge;
 
-    if (five) {
-      const stance = remainingT5 > .003 ? "nghiêng tăng" : remainingT5 < -.003 ? "nghiêng giảm" : "gần như đi ngang";
+    if (anchorForecast) {
+      const stance = remainingAnchor > .003 ? "nghiêng tăng" : remainingAnchor < -.003 ? "nghiêng giảm" : "gần như đi ngang";
       lines.push(
         `### Kết luận cho ${context.symbol}`,
-        `${context.symbol} đang có đường dự báo ${stance}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm T+5 ${money(five.price)}; khoảng cách còn lại ${pct(remainingT5)} và vùng bất định ${money(five.lowerPrice)}–${money(five.upperPrice)}. Core forecast được niêm phong theo dữ liệu ngày ${context.asOf || "chưa rõ"}; giá phiên chỉ dùng để đo lại khoảng cách tới mục tiêu, không tự sửa mô hình.`,
+        `${context.symbol} đang có forecast đã phát hành tại ${anchorLabel}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm ${money(anchorForecast.price)}; khoảng cách còn lại ${pct(remainingAnchor)} và vùng bất định ${money(anchorForecast.lowerPrice)}–${money(anchorForecast.upperPrice)}. Đây là kỳ ưu tiên đã qua gate; các kỳ REVIEW vẫn được hiển thị trạng thái nhưng không bị biến thành lỗi.`,
       );
-      if (number(five.expectedAbsReturn) !== null) {
+      if (number(anchorForecast.expectedAbsReturn) !== null) {
         lines.push(
           "### Biên độ và hai kịch bản thực tế",
-          `Mô hình biên độ ước tính mức dịch chuyển hai chiều ±${pct(five.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(five.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(five.bullScenarioPrice)}. Giá kỳ vọng ${money(five.price)} là trung tâm có điều kiện, không đồng nghĩa thị trường chỉ biến động đúng mức đó. ${validationQuestion ? (five.directionValidated ? "Gate chiều T+5 đang PASS." : "Gate chiều T+5 hiện chưa PASS; phần xác nhận hướng vì vậy yếu hơn phần ước lượng biên độ.") : ""}`,
+          `Mô hình biên độ tại ${anchorLabel} ước tính mức dịch chuyển hai chiều ±${pct(anchorForecast.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(anchorForecast.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(anchorForecast.bullScenarioPrice)}. Giá kỳ vọng ${money(anchorForecast.price)} là trung tâm có điều kiện. ${validationQuestion ? (anchorForecast.directionValidated ? `Gate chiều ${anchorLabel} đang PASS.` : `Gate chiều ${anchorLabel} hiện chưa PASS; phần xác nhận hướng yếu hơn phần ước lượng biên độ.`) : ""}`,
         );
       }
-      if (five.conditionalValueValidated === false) {
-        const evidence = five.validation?.costAwareLongAudit;
+      if (anchorForecast.conditionalValueValidated === false) {
+        const evidence = anchorForecast.validation?.costAwareLongAudit;
         lines.push(
           "### Kỷ luật sau phí",
-          `Chỉ nên theo dõi và đánh giá rủi ro: mô hình chưa chứng minh lợi thế giao dịch sau chi phí${number(evidence?.meanNetRealizedReturn) === null ? "" : `; trung bình ngoài mẫu sau giả định phí ${((evidence.roundTripCostBps || 0) / 100).toFixed(2)}% là ${pct(evidence.meanNetRealizedReturn, 3)}`}. Khi lợi thế sau phí chưa được xác nhận, trạng thái phù hợp là theo dõi điều kiện xác nhận thay vì suy diễn thêm từ một con số đơn lẻ.`,
+          `Chỉ nên theo dõi và đánh giá rủi ro: mô hình chưa chứng minh lợi thế giao dịch sau chi phí${number(evidence?.meanNetRealizedReturn) === null ? "" : `; trung bình ngoài mẫu sau giả định phí ${((evidence.roundTripCostBps || 0) / 100).toFixed(2)}% là ${pct(evidence.meanNetRealizedReturn, 3)}`}.`,
         );
       }
+    } else {
+      lines.push(
+        `### Kết luận cho ${context.symbol}`,
+        "Dashboard đã tải dữ liệu mô hình nhưng hiện chưa có horizon nào đủ gate phát hành điểm giá. SoluTION.AI vẫn phân tích kỹ thuật, dòng tiền, tài chính và trạng thái kiểm định thay vì trả lỗi chung chung.",
+      );
     }
 
     if (detailed) {
@@ -1032,7 +1140,7 @@
 
     if (fundQuestion || detailed) {
       if (context.fund) {
-        const contribution = five?.liveEvidence?.FUND;
+        const contribution = anchorForecast?.liveEvidence?.FUND;
         const topHolders = context.fund.holders.slice(0, 4).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ");
         lines.push("### Quỹ nắm giữ", `Có ${context.fund.fundCount} quỹ trong dữ liệu hiện có; NAV 20 phiên ${pct(context.fund.navMomentum20)}${topHolders ? `; tỷ trọng nổi bật: ${topHolders}` : ""}${number(contribution) === null ? "" : `; tín hiệu quỹ trong kịch bản T+5 ${pct(contribution)}`}.`);
         if (fundQuestion) lines.push(`Các tỷ trọng cao nhất: ${context.fund.holders.slice(0, 5).map(holder => `${holder.code || holder.name} ${(holder.weight * 100).toFixed(2)}%`).join("; ")}.`);
@@ -1053,8 +1161,8 @@
       lines.push("### Tài chính doanh nghiệp", "Snapshot tích hợp chưa chứa kỳ BCTC đủ chi tiết cho câu hỏi này. SoluTION.AI sẽ ưu tiên truy vấn báo cáo/công bố công khai mới nhất khi kết nối nghiên cứu web khả dụng.");
     }
 
-    const drivers = primaryDrivers(five);
-    if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push("### Yếu tố mô hình", `Các đóng góp lớn nhất tại T+5: ${drivers.join("; ")}.`);
+    const drivers = primaryDrivers(anchorForecast);
+    if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push("### Yếu tố mô hình", `Các đóng góp lớn nhất tại ${anchorLabel || "kỳ ưu tiên"}: ${drivers.join("; ")}.`);
     if (context.news.length && /tin|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) lines.push("### Tin trong dữ liệu hiện có", ...context.news.slice(0, 4).map(item => `- ${item.title} — ${item.publisher || "chưa rõ nguồn"}${item.date ? `, ${item.date}` : ""}.`));
 
     if ((context.communitySignals.length || context.communityMonitoring.length) && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ|phân tích|kết hợp|forecast/.test(question)) {
@@ -1067,7 +1175,7 @@
     if (validationQuestion) {
       lines.push(
         "### Kiểm định và giới hạn",
-        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian T+5 ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Gate chiều T+5: PASS." : "Gate chiều T+5: chưa PASS; cần đọc cùng kỹ thuật, dòng tiền và vùng bất định thay vì suy diễn thêm một xác suất."}`,
+        `Trạng thái rủi ro ${context.riskStatus || "chưa xác định"}; giá ${context.validation.priceValidated ? "đã qua kiểm tra phát hành" : "chưa đạt điều kiện phát hành"}; mô hình ${context.validation.modelPromotionStatus === "PASS" ? "đạt điều kiện phát hành" : "chưa đạt điều kiện phát hành"}; mẫu kiểm tra ngoài thời gian ${anchorLabel || "kỳ ưu tiên"} ${number(context.validation.holdoutRows) === null ? "chưa rõ" : money(context.validation.holdoutRows)}. ${context.validation.directionValidated ? "Gate chiều ${anchorLabel || "kỳ ưu tiên"}: PASS." : "Gate chiều ${anchorLabel || "kỳ ưu tiên"}: chưa PASS; cần đọc cùng kỹ thuật, dòng tiền và vùng bất định thay vì suy diễn thêm một xác suất."}`,
         `Độ mới snapshot: ${context.asOf || "chưa rõ"}${context.dataFreshness ? ` · ${context.dataFreshness}` : ""}. Đọc vùng bất định cùng điều kiện xác nhận/vô hiệu; nếu dữ liệu còn thiếu, nêu đúng phần thiếu và tác động của nó lên kết luận.`,
       );
     }
@@ -1079,7 +1187,7 @@
     if (!intent.useSnapshot) return text;
     const hasSymbol = new RegExp(`(^|[^A-Za-z0-9])${context.symbol}([^A-Za-z0-9]|$)`, "i").test(text);
     const hasForecast = /T\+1|T\+2|T\+3|T\+4|T\+5|forecast|dự báo|vùng (?:giá|bất định)/i.test(text);
-    const hasModelNumber = Object.values(context.horizons || {}).some(item => text.includes(money(item.price)));
+    const hasModelNumber = Object.values(context.horizons || {}).some(item => item?.releaseStatus === "PUBLISHED" && number(item?.price) !== null && text.includes(money(item.price)));
     const genericEssay = /khung phân tích tích hợp|quy trình đa chiều|nguyên tắc kết hợp thông tin|để đánh giá toàn diện.*cần tiếp cận|phương pháp và khung phân tích/i.test(text);
     const forecastQuestion = /forecast|dự báo|T\+\d|target|mục tiêu|vùng giá|tăng tốc|chững|thiếu xác nhận|đường giá/i.test(question);
     if (genericEssay) return localAnalysis(question, context);
@@ -1090,7 +1198,7 @@
     }
     if ([hasSymbol, hasForecast, hasModelNumber].filter(Boolean).length < 2) return localAnalysis(question, context);
     const needsFullPath = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|các kỳ|T\+1.*T\+5|tăng tốc|chững|thiếu xác nhận/i.test(question);
-    const missingPrices = Object.values(context.horizons || {}).filter(item => number(item?.price) !== null && !text.includes(money(item.price)));
+    const missingPrices = Object.values(context.horizons || {}).filter(item => item?.releaseStatus === "PUBLISHED" && number(item?.price) !== null && !text.includes(money(item.price)));
     if (needsFullPath && missingPrices.length) {
       return [
         `### Snapshot forecast ${context.symbol}`,
@@ -1128,7 +1236,7 @@
     setStatus("Đang tìm hiểu câu hỏi…");
     const waiting = message("assistant", "Đang tìm hiểu câu hỏi và lựa chọn nguồn thông tin phù hợp…", "aiThinking");
     try {
-      const context = await buildContext();
+      const context = await buildContextResilient();
       updateContextBar(context);
       const intent = researchIntent(question, context);
       const secret = sessionSecret();
@@ -1160,7 +1268,12 @@
         } catch (error) {
           const connection = $("#solutionAiConnectionState");
           if (connection) connection.textContent = error?.message || "Gemini tạm thời không phản hồi.";
-          const fallbackSources = Array.isArray(error?.sources) ? error.sources : await collectOpenSources(question, intent, context).catch(() => []);
+          const integratedFallback = rankOpenSources(integratedSources(context), question).slice(0, 10);
+          const fallbackSources = Array.isArray(error?.sources) && error.sources.length
+            ? error.sources
+            : intent.useSnapshot
+              ? integratedFallback
+              : await collectOpenSources(question, intent, context).catch(() => []);
           answer = sourceFallback(question, context, intent, fallbackSources, error?.message || "Gemini tạm thời không phản hồi.");
           sources = fallbackSources;
           meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nguồn công khai", "Gemini gián đoạn"];
@@ -1168,7 +1281,11 @@
           setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Nguồn mở · chờ Gemini đọc sâu");
         }
       } else {
-        const openSources = intent.shouldSearch ? await collectOpenSources(question, intent, context).catch(() => []) : [];
+        const openSources = intent.shouldSearch
+          ? (intent.useSnapshot
+            ? rankOpenSources(integratedSources(context), question).slice(0, 10)
+            : await collectOpenSources(question, intent, context).catch(() => []))
+          : [];
         answer = intent.useSnapshot || knowledgeAnswer(question.toLowerCase())
           ? localAnalysis(question, context)
           : sourceFallback(question, context, intent, openSources, "Kết nối Gemini để đọc sâu và tổng hợp nội dung các nguồn.");
@@ -1198,7 +1315,7 @@
     $("#solutionAiPanel").classList.add("open");
     $("#solutionAiPanel").setAttribute("aria-hidden", "false");
     $("#solutionAiLauncher").setAttribute("aria-expanded", "true");
-    try { updateContextBar(await buildContext()); } catch { /* dashboard is still loading */ }
+    try { updateContextBar(await buildContextResilient()); } catch { /* dashboard is still loading */ }
     void checkConnection(true);
     $("#solutionAiInput").focus();
   }
@@ -1244,8 +1361,8 @@
       }
     }
     syncConnectionUi(false);
-    if (label) label.textContent = "Khóa API chỉ tồn tại trong tab hiện tại và không được ghi vào mã nguồn.";
-    if (!silent) setStatus("Mở Gemini Web hoặc nhập khóa Google");
+    if (label) label.textContent = "SoluTION.AI local luôn hoạt động từ forecast; Gemini là lớp tăng cường tùy chọn. Khóa API chỉ tồn tại trong tab hiện tại.";
+    if (!silent) setStatus("SoluTION.AI local sẵn sàng · Gemini là lớp tăng cường");
     return false;
   }
 
@@ -1480,8 +1597,9 @@
     if (button) { button.disabled = true; button.textContent = "Đang chuẩn bị…"; }
     try {
       let context = state.context;
-      try { context = await buildContext(); updateContextBar(context); } catch { context = state.context || {}; }
-      const text = externalGeminiPrompt("", context);
+      try { context = await buildContextResilient(); updateContextBar(context); } catch { context = state.context || {}; }
+      const currentQuestion = String($("#solutionAiInput")?.value || [...state.messages].reverse().find(item => item.role === "user")?.content || "").trim();
+      const text = externalGeminiPrompt(currentQuestion, context);
       const copied = await copyHandoffText(text);
       renderGeminiHandoffState(context, text, copied, Boolean(popup));
       if (label) label.textContent = copied ? "Forecast và câu hỏi hiện tại đã được sao chép sang phiên Gemini." : "Gemini đã mở; trình duyệt đang chặn clipboard.";
@@ -1535,10 +1653,10 @@
     });
     document.addEventListener("keydown", event => { if (event.key === "Escape" && state.opened) close(); });
     window.addEventListener("vmews:symbol-changed", async () => {
-      try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
+      try { updateContextBar(await buildContextResilient()); } catch { /* selected symbol unavailable */ }
     });
     window.addEventListener("vmews:community-updated", async () => {
-      try { updateContextBar(await buildContext()); } catch { /* selected symbol unavailable */ }
+      try { updateContextBar(await buildContextResilient()); } catch { /* selected symbol unavailable */ }
     });
     window.__SOLUTION_AI_BUILD_CONTEXT__ = buildContext;
     window.__SOLUTION_AI_ASK__ = async question => { await open(); return ask(question); };
@@ -1548,6 +1666,16 @@
     window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__ = (question = "", context = state.context || {}) => geminiHandoffPayload(context, question);
     window.__SOLUTION_AI_LAST_GEMINI_HANDOFF__ = () => ({ text: lastGeminiHandoffText, context: lastGeminiHandoffContext });
     window.__SOLUTION_AI_CHECK_CONNECTION__ = checkConnection;
+    window.__SOLUTION_AI_HEALTH__ = () => ({
+      contextReady: Boolean(state.context?.symbol),
+      symbol: state.context?.symbol || null,
+      preferredHorizon: state.context?.preferredHorizon || null,
+      publishedHorizons: state.context?.publishedHorizons || [],
+      reviewHorizons: state.context?.reviewHorizons || [],
+      geminiKeyStored: Boolean(sessionSecret()),
+      geminiModel: state.model || null,
+      busy: state.busy,
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
