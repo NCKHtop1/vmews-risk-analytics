@@ -23,8 +23,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
 USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
-MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "1800000"))
-DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "24"))
+MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "900000"))
+MAX_PDF_PAGES = int(os.environ.get("ESG_MAX_PDF_PAGES", "280"))
+DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "16"))
+HISTORY_DOCS_PER_RUN = int(os.environ.get("ESG_HISTORY_DOCS_PER_RUN", "5"))
+RECENT_YEARS = int(os.environ.get("ESG_RECENT_YEARS", "4"))
+HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DISCOVERY_TIMEOUT = int(os.environ.get("ESG_DISCOVERY_TIMEOUT", "8"))
 DETAIL_TIMEOUT = int(os.environ.get("ESG_DETAIL_TIMEOUT", "6"))
 DOCUMENT_TIMEOUT = int(os.environ.get("ESG_DOCUMENT_TIMEOUT", "22"))
@@ -54,6 +58,14 @@ def fetch(url, timeout=25):
         "Accept": "text/html,application/pdf,application/xhtml+xml,*/*",
     })
     with urlopen(req, timeout=timeout) as response:
+        content_length = response.headers.get("Content-Length")
+        if content_length:
+            try:
+                if int(content_length) > MAX_DOC_BYTES:
+                    raise ValueError(f"document too large > {MAX_DOC_BYTES} bytes")
+            except ValueError as exc:
+                if str(exc).startswith("document too large"):
+                    raise
         raw = response.read(MAX_DOC_BYTES + 1)
         if len(raw) > MAX_DOC_BYTES:
             raise ValueError(f"document too large > {MAX_DOC_BYTES} bytes")
@@ -281,7 +293,9 @@ def extract_document_text(url):
         reader = PdfReader(io.BytesIO(raw))
         parts = []
         size = 0
-        for page in reader.pages:
+        for page_number, page in enumerate(reader.pages):
+            if page_number >= MAX_PDF_PAGES:
+                break
             try:
                 text = page.extract_text() or ""
             except Exception:
