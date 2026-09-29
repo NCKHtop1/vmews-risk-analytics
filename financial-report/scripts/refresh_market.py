@@ -962,6 +962,7 @@ def build_today_watchlist(out, companies, quotes):
         if row.get('cadence') != 'LIVE_15M' or quote.get('status') != 'ok':
             continue
         signals = row.get('signals') or []
+        signal_ids = {signal.get('id') for signal in signals}
         change = number(quote.get('changePct'))
         volume_ratio = number(row.get('volumeRatio20'))
         rsi = number(row.get('rsi14'))
@@ -971,6 +972,10 @@ def build_today_watchlist(out, companies, quotes):
         if change is not None and change <= -3:
             continue
         if bias == 'bearish':
+            continue
+        # Plain oversold is a watch condition, not proof of recovery. Require
+        # an actual exit/rebound signal before an RSI<30 name can enter the list.
+        if rsi is not None and rsi < 30 and 'rsi_exit_oversold' not in signal_ids:
             continue
 
         score = 0.0
@@ -1074,6 +1079,7 @@ def build_today_watchlist(out, companies, quotes):
             'requiresPositiveTechnicalEvidence': True,
             'excludesBearishBias': True,
             'excludesChangePctAtOrBelow': -3,
+            'excludesUnconfirmedOversold': True,
             'minimumScore': 28,
             'maxItems': 8,
             'inputs': ['MACD', 'RSI', 'volume/TB20', 'intraday change', 'technical bias'],

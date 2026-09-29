@@ -1051,18 +1051,21 @@ class MarketTests(unittest.TestCase):
             {'symbol':'HSG','coreMember':True,'tier':'CORE'},
             {'symbol':'VIB','coreMember':True,'tier':'CORE'},
             {'symbol':'BAD','coreMember':True,'tier':'CORE'},
+            {'symbol':'FALL','coreMember':True,'tier':'CORE'},
             {'symbol':'LIQ','coreMember':False,'tier':'LIQUID'},
         ]
         quotes={
             'HSG':{'status':'ok','price':20000,'changePct':1.5,'sourceTime':'2026-09-30T03:00:00+00:00'},
             'VIB':{'status':'ok','price':18000,'changePct':1.0,'sourceTime':'2026-09-30T03:00:00+00:00'},
             'BAD':{'status':'ok','price':10000,'changePct':-1.0,'sourceTime':'2026-09-30T03:00:00+00:00'},
+            'FALL':{'status':'ok','price':9000,'changePct':-1.2,'sourceTime':'2026-09-30T03:00:00+00:00'},
             'LIQ':{'status':'ok','price':12000,'changePct':3.0,'sourceTime':'2026-09-30T03:00:00+00:00'},
         }
         first={
             'HSG':{'symbol':'HSG','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':52,'volumeRatio20':1.6,'signals':[{'id':'macd_cross_up','label':'MACD vừa cắt lên Signal','direction':'bullish','strength':'high'},{'id':'volume_spike','label':'Khối lượng tích lũy ≥ 1,5x TB20','direction':'confirmation','strength':'high'}]},
             'VIB':{'symbol':'VIB','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':50,'volumeRatio20':1.0,'signals':[{'id':'macd_near_up','label':'MACD đang tiến sát giao cắt lên','direction':'bullish','strength':'medium'}]},
             'BAD':{'symbol':'BAD','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bearish','rsi14':55,'volumeRatio20':2.0,'signals':[{'id':'macd_cross_down','label':'MACD vừa cắt xuống Signal','direction':'bearish','strength':'high'}]},
+            'FALL':{'symbol':'FALL','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':22,'volumeRatio20':1.5,'signals':[{'id':'macd_near_up','label':'MACD đang tiến sát giao cắt lên','direction':'bullish','strength':'medium'},{'id':'rsi_oversold','label':'RSI đang ở vùng quá bán','direction':'bullish_watch','strength':'medium'}]},
             'LIQ':{'symbol':'LIQ','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':55,'volumeRatio20':2.0,'signals':[{'id':'macd_cross_up','label':'MACD vừa cắt lên Signal','direction':'bullish','strength':'high'}]},
         }
         with tempfile.TemporaryDirectory() as tmp:
