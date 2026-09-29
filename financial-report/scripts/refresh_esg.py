@@ -1177,6 +1177,10 @@ def metric_row_valid(row):
             return False
 
     if metric_id == "green_credit":
+        # Reject microscopic currency values caused by a bare VND token being
+        # normalized to billion VND (e.g. "VND 1.2" -> 1.2e-9 billion).
+        if 0 < float(row.get("value") or 0) < 0.01:
+            return False
         if not row.get("repaired") and re.search(
             r"toàn\s+nền\s+kinh\s+tế|dư\s+nợ\s+tín\s+dụng\s+xanh\s+của\s+cả\s+nước|"
             r"system[-\s]?wide|banking\s+system",
@@ -1250,6 +1254,38 @@ def canonical_metrics(rows):
         if current is None or score > current[0]:
             chosen[key] = (score, row)
     return [item[1] for item in sorted(chosen.values(), key=lambda x: (x[1].get("year") or 0, x[1].get("metricId") or ""))]
+
+
+def fill_validated_metrics(live_rows, cfg):
+    """Fill only missing metric/year keys with source-verified fallback rows."""
+    out = [dict(row) for row in live_rows]
+    existing = {(row.get("metricId"), row.get("year")) for row in out}
+    for raw in (cfg or {}).get("validated_metrics", []):
+        row = dict(raw)
+        key = (row.get("metricId"), row.get("year"))
+        if not all(key) or key in existing:
+            continue
+        row.setdefault("confidence", "high")
+        row.setdefault("qualityScore", 120)
+        row["validatedFallback"] = True
+        out.append(row)
+        existing.add(key)
+    return sorted(out, key=lambda x: (x.get("year") or 0, x.get("metricId") or ""))
+
+
+def fill_validated_assessments(live_rows, cfg):
+    """Fill only missing provider/type/year assessment keys with verified fallback rows."""
+    out = [dict(row) for row in live_rows]
+    existing = {(row.get("provider"), row.get("assessmentType"), row.get("year")) for row in out}
+    for raw in (cfg or {}).get("validated_assessments", []):
+        row = dict(raw)
+        key = (row.get("provider"), row.get("assessmentType"), row.get("year"))
+        if not all(key) or key in existing:
+            continue
+        row["validatedFallback"] = True
+        out.append(row)
+        existing.add(key)
+    return sorted(out, key=lambda x: (x.get("year") or 0, x.get("provider") or "", x.get("assessmentType") or ""))
 
 
 def reset_document(doc):
@@ -1553,11 +1589,13 @@ def collect(config, output):
             companies[symbol]["metrics"],
             ["metricId", "year", "rawValue", "unit", "sourceUrl"],
         )
-        companies[symbol]["canonicalMetrics"] = canonical_metrics(companies[symbol]["metrics"])
-        companies[symbol]["externalAssessments"] = merge_unique(
+        live_canonical = canonical_metrics(companies[symbol]["metrics"])
+        companies[symbol]["canonicalMetrics"] = fill_validated_metrics(live_canonical, banks.get(symbol, {}))
+        live_assessments = merge_unique(
             sanitize_external_assessments(companies[symbol]["externalAssessments"]),
             ["provider", "assessmentType", "year", "value", "sourceUrl"],
         )
+        companies[symbol]["externalAssessments"] = fill_validated_assessments(live_assessments, banks.get(symbol, {}))
         companies[symbol]["coverage"] = {
             "documents": len(companies[symbol]["documents"]),
             "processedDocuments": sum(bool(d.get("processedAt")) for d in companies[symbol]["documents"]),
@@ -1574,7 +1612,7 @@ def collect(config, output):
         "methodology": {
             "compositeScore": False,
             "note": "Provider scores/assessments are preserved on their native scales; FinQuery does not manufacture a cross-provider ESG score.",
-            "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest source per metric/year.",
+            "metricConfidence": "KPI rows require unit-compatible evidence; canonicalMetrics selects the strongest live source per metric/year and fills only missing keys from source-verified fallbacks when issuer PDFs are blocked.",
         },
         "companies": companies,
         "externalDocuments": sorted(external_docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True),
