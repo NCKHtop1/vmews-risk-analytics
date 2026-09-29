@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -74,6 +74,7 @@
         "HDBank"
       ],
       "seed_urls": [
+        "https://cdn.hdbank.com.vn/hdbank/bcptbv/2024/assets/EN_ESG_Report_2024.pdf",
         "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf",
@@ -82,12 +83,79 @@
       "year_overrides": {
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": 2024,
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": 2024,
-        "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf": 2024
+        "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf": 2024,
+        "https://cdn.hdbank.com.vn/hdbank/bcptbv/2024/assets/EN_ESG_Report_2024.pdf": 2024
       },
       "type_overrides": {
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": "sustainability_report",
-        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": "sustainability_report"
-      }
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": "sustainability_report",
+        "https://cdn.hdbank.com.vn/hdbank/bcptbv/2024/assets/EN_ESG_Report_2024.pdf": "sustainability_report"
+      },
+      "validated_metrics": [
+        {
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2024,
+          "value": 3000,
+          "rawValue": "3.000",
+          "unit": "billion VND",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "Cuối năm 2024, HDBank phát hành thành công 3.000 tỷ đồng trái phiếu xanh theo Khung tài chính bền vững."
+        },
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "value": 914910,
+          "rawValue": "914,910",
+          "unit": "hours",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "914,910 total training hours for employees in 2024."
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "value": 63,
+          "rawValue": "63",
+          "unit": "%",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "Female employees represented 63% of HDBank's workforce in 2024."
+        },
+        {
+          "metricId": "women_management_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ quản lý",
+          "year": 2024,
+          "value": 43,
+          "rawValue": "43",
+          "unit": "%",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "sourceTitle": "HDBank ESG Report 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "Women represented 43% of managerial positions in 2024."
+        }
+      ],
+      "validated_assessments": [
+        {
+          "provider": "HOSE VNSI",
+          "assessmentType": "VNSI score",
+          "year": 2024,
+          "value": "81%",
+          "sourceUrl": "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
+          "sourceTitle": "HDBank Annual Report 2024",
+          "snippet": "HDBank reported a 2024 VNSI assessment score of 81%, including E 73%, S 88%, G 79%."
+        }
+      ]
     },
     "LPB": {
       "name": "LPBank",
@@ -269,6 +337,7 @@
         "Vietnam International Bank"
       ],
       "seed_urls": [
+        "https://static2.vietstock.vn/vietstock/2025/3/18/20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf",
         "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES",
         "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn",
@@ -278,16 +347,46 @@
         "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn": 2025,
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": 2024,
         "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": 2025,
-        "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES": 2024
+        "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES": 2024,
+        "https://static2.vietstock.vn/vietstock/2025/3/18/20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf": 2024
       },
       "type_overrides": {
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": "annual_report",
-        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": "annual_report"
+        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": "annual_report",
+        "https://static2.vietstock.vn/vietstock/2025/3/18/20250318_20250317___vib___bao_cao_thuong_nien_2024.pdf": "annual_report"
       },
       "reprocess_version": 1,
       "reprocess_urls": [
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES",
         "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf"
+      ],
+      "validated_metrics": [
+        {
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "value": 417556,
+          "rawValue": "417,556",
+          "unit": "hours",
+          "sourceUrl": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "VIB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "In 2024, VIB recorded 417,556 hours of training across management and employees."
+        },
+        {
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "value": 54,
+          "rawValue": "54",
+          "unit": "%",
+          "sourceUrl": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "VIB Annual Report 2024",
+          "sourceType": "annual_report",
+          "snippet": "VIB's 2024 workforce gender distribution was 54% women and 46% men."
+        }
       ]
     },
     "VPB": {
