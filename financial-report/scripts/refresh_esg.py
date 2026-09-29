@@ -14,6 +14,7 @@ import re
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import quote, urljoin, urlsplit, urlunsplit
@@ -119,7 +120,7 @@ def strip_html(raw):
     text = raw.decode("utf-8", "ignore")
     text = re.sub(r"(?is)<script.*?</script>|<style.*?</style>", " ", text)
     text = re.sub(r"(?s)<[^>]+>", " ", text)
-    return clean_text(text)
+    return clean_text(unescape(text))
 
 
 def looks_pdf(url, ctype=""):
@@ -140,7 +141,8 @@ def classify_document(text):
     s = re.sub(r"[-_/]+", " ", ascii_fold(text))
     # A sustainability report can discuss green-bond frameworks and annual
     # reporting; the explicit report label is therefore the strongest signal.
-    if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s:
+    compact = re.sub(r"[^a-z0-9]+", "", s)
+    if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s or "esgreport" in compact:
         return "sustainability_report"
     if "annual report" in s or "bao cao thuong nien" in s or re.search(r"\bbctn\b", s):
         return "annual_report"
@@ -548,6 +550,12 @@ def extract_metrics(text, rules, year, source_url, source_title, source_type=Non
                 ):
                     start = idx + len(alias_l)
                     continue
+                if rule["id"] == "green_credit":
+                    package_context = re.search(r"\b(?:goi|package|program(?:me)?)\s+(?:tin dung xanh|green credit)", snippet_fold)
+                    outstanding_context = re.search(r"du no\s+(?:tin dung\s+)?xanh|green credit\s+(?:outstanding|balance|exposure)", snippet_fold)
+                    if package_context and not outstanding_context:
+                        start = idx + len(alias_l)
+                        continue
 
                 candidates = []
                 # Scaled hour disclosures such as "1,05 triệu giờ đào tạo" are
@@ -832,6 +840,13 @@ def repair_canonical_row(row):
         return out
 
     if metric_id == "green_credit":
+        outstanding = re.search(
+            r"(?:dư\s+nợ\s+(?:tín\s+dụng\s+)?xanh|green\s+credit\s+(?:outstanding|balance|exposure))"
+            r"[^.;•]{0,90}?(?:đạt|reached|stood\s+at|:)?\s*(?:VND\s*)?" + MONEY_TEXT,
+            snippet, re.I
+        )
+        if outstanding:
+            return _apply_money_repair(out, outstanding)
         tcb_layout = re.search(
             r"(?P<scale>trillion|billion)\s+VND\s*(?P<value>\d[\d.,]*)\s+green\s+credit\s+exposure",
             snippet, re.I
@@ -896,6 +911,14 @@ def repair_canonical_row(row):
                 return _apply_money_repair(out, m)
 
     if metric_id == "csr_spend":
+        total_social = re.search(
+            r"(?:tổng\s+(?:ngân\s+sách|số\s+tiền|kinh\s+phí)[^.;•]{0,70}|"
+            r"(?:con\s+số\s+vàng\s+)?an\s+sinh\s+xã\s+hội[^.;•]{0,90}?)"
+            r"(?P<value>\d[\d\s.,]*\d|\d)\s*\+?\s*(?P<unit>tỷ\s+(?:đồng|VND|VNĐ)|triệu\s+đồng)",
+            snippet, re.I
+        )
+        if total_social:
+            return _apply_money_repair(out, total_social)
         negative = r"dư\s+nợ|cho\s+vay|tín\s+dụng|giải\s+ngân|lợi\s+nhuận|thu\s+nhập|vốn\s+(?:điều\s+lệ|thực\s+góp)|ngân\s+sách\s+nhà\s+nước|thuế|tax"
         positive = r"đóng\s+góp|dành(?:\s+cho)?|chi\s+cho|tài\s+trợ|hỗ\s+trợ|trao\s+tặng|ủng\s+hộ|từ\s+thiện|an\s+sinh|community\s+investment|community\s+development|csr"
         if not re.search(negative, snippet, re.I):
@@ -928,6 +951,7 @@ def repair_canonical_row(row):
             r"employees?|workforce)[^.;•]{0,35}(?:là\s+)?(?:nữ|female|women)",
             r"(?:nữ|female|women)[^.;•]{0,35}?(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
             r"[^.;•\d]{0,35}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%[^.;•]{0,45}(?:trong\s+)?(?:lực\s+lượng\s+CBNV|workforce)",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
@@ -950,15 +974,39 @@ def repair_canonical_row(row):
     if metric_id == "training_hours_per_employee":
         patterns = [
             r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
+            r"training\s+hours\s+per\s+employee|average\s+training\s+hours)"
+            r"[^.;•]{0,150}?\d+\s*[,\.]?\s*\d*\s*(?:giờ|hours?)\s+"
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
+            r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
             r"trung\s+bình\s+trên\s+một\s+cán\s+bộ|training\s+hours\s+per\s+employee|"
             r"average\s+training\s+hours)[^.;•]{0,120}?(?:là|đạt|:)\s*"
             r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)[^.;•]{0,20}"
+            r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|average\s+training\s+hours)",
             r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ\s+học|giờ|hours?)\s*/\s*(?:CBNV|employee)",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
             if m:
                 return _apply_numeric_repair(out, m.group("value"), "hours")
+
+    if metric_id == "electricity":
+        m = re.search(
+            r"(?:total\s+electricity\s+consumption|tổng\s+(?:lượng\s+)?điện\s+(?:tiêu\s+thụ|sử\s+dụng))"
+            r"[^.;•]{0,90}?(?:was|is|đạt|là|:)\s*(?P<value>\d[\d\s.,]*)\s*(?:kWh)",
+            snippet, re.I
+        )
+        if m:
+            return _apply_numeric_repair(out, m.group("value"), "kWh")
+
+    if metric_id == "water":
+        m = re.search(
+            r"(?:total\s+water\s+consumption|tổng\s+(?:lượng\s+)?nước\s+(?:tiêu\s+thụ|sử\s+dụng))"
+            r"[^.;•]{0,90}?(?:was|is|đạt|là|:)\s*(?P<value>\d[\d\s.,]*)\s*(?:m3|m³)",
+            snippet, re.I
+        )
+        if m:
+            return _apply_numeric_repair(out, m.group("value"), "m3")
 
     if metric_id == "training_hours":
         patterns = [
@@ -988,6 +1036,14 @@ def metric_row_valid(row):
             return False
         if metric_id == "training_hours" and not row.get("repaired"):
             return False
+        if metric_id == "training_hours":
+            overall = re.search(
+                r"overall\s+training|tổng\s+(?:số\s+)?giờ\s+đào\s+tạo(?:\s+trong)?\s+năm|"
+                r"total\s+(?:number\s+of\s+)?training\s+hours",
+                snippet, re.I
+            )
+            if not overall:
+                return False
         if metric_id == "training_hours_per_employee" and not row.get("repaired"):
             return False
 
@@ -1020,7 +1076,25 @@ def metric_row_valid(row):
             return False
 
     if metric_id in {"water", "electricity"}:
-        if re.search(r"trên\s+mỗi\s+đơn\s+vị\s+doanh\s+thu|per\s+unit\s+of\s+revenue|/\s*(?:tỷ|triệu)\s+VND", context, re.I):
+        if re.search(
+            r"trên\s+mỗi\s+đơn\s+vị\s+doanh\s+thu|per\s+unit\s+of\s+revenue|"
+            r"per\s+(?:employee|capita)|/\s*(?:employee|CBNV)|"
+            r"(?:kWh|m3|m³)\s*/\s*(?:employee|CBNV)|intensity\s+per\s+revenue|"
+            r"/\s*(?:tỷ|triệu)\s+VND",
+            context, re.I
+        ):
+            return False
+
+    if metric_id == "ghg_total":
+        if not re.search(
+            r"tổng\s+(?:lượng\s+)?phát\s+thải|total\s+(?:ghg|greenhouse\s+gas)?\s*emissions|"
+            r"total\s+emissions|tổng\s+phát\s+thải\s+cả\s+3",
+            snippet, re.I
+        ):
+            return False
+
+    if metric_id in {"scope1", "scope2", "scope3", "ghg_total", "water", "electricity"}:
+        if re.search(r"riêng\s+hội\s+sở|head\s+office\s+only|only\s+at\s+head\s+office", snippet, re.I):
             return False
 
     # Medium-confidence generic matches are too risky for the canonical layer.
@@ -1073,15 +1147,29 @@ def revive_transport_failure(doc):
 
 def corrected_document_year(doc, cfg=None):
     row = dict(doc)
+    cfg = cfg or {}
     url = normalize_url(row.get("url"))
-    overrides = (cfg or {}).get("year_overrides", {})
-    override = overrides.get(url) or overrides.get(row.get("url") or "")
+    raw_url = row.get("url") or ""
+    overrides = cfg.get("year_overrides", {})
+    override = overrides.get(url) or overrides.get(raw_url)
     if override is not None:
         row["year"] = int(override)
-        return row
-    title_year = explicit_report_year_hint(row.get("title") or "")
-    if title_year is not None:
-        row["year"] = title_year
+    else:
+        title_year = explicit_report_year_hint(row.get("title") or "")
+        if title_year is not None:
+            row["year"] = title_year
+
+    type_overrides = cfg.get("type_overrides", {})
+    type_override = type_overrides.get(url) or type_overrides.get(raw_url)
+    if type_override:
+        row["type"] = type_override
+
+    target_reprocess_version = int(cfg.get("reprocess_version") or 0)
+    reprocess_urls = {normalize_url(x) for x in cfg.get("reprocess_urls", [])}
+    if target_reprocess_version and url in reprocess_urls and int(row.get("reprocessVersion") or 0) < target_reprocess_version:
+        for key in ("processedAt", "contentHash", "textLength", "lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
+            row.pop(key, None)
+        row["reprocessVersion"] = target_reprocess_version
     return row
 
 
@@ -1201,7 +1289,7 @@ def collect(config, output):
             # If a stable URL is newly recognized as an actual report (rather
             # than a framework/detail page), process it again so KPI extraction
             # is not permanently skipped because of an earlier classification.
-            if existing.get("processedAt") and existing.get("type") not in report_types and discovered_doc.get("type") in report_types:
+            if existing.get("processedAt") and existing.get("type") not in report_types and merged.get("type") in report_types:
                 for key in ("processedAt", "contentHash", "textLength", "lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
                     merged.pop(key, None)
             docs[url] = merged
