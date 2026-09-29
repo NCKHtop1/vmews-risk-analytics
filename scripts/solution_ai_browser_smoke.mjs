@@ -1,0 +1,138 @@
+import { chromium } from 'playwright';
+
+const base = process.env.SOLUTION_AI_BROWSER_URL
+  || process.env.V12_BROWSER_URL
+  || 'http://127.0.0.1:8000/forecast-final.html?symbol=FPT';
+
+const symbols = (process.env.SOLUTION_AI_SYMBOLS || 'FPT,ACB,HPG,VIC')
+  .split(',')
+  .map(x => x.trim().toUpperCase())
+  .filter(Boolean);
+
+const browser = await chromium.launch({ headless: true });
+const results = [];
+
+function withSymbol(url, symbol) {
+  const target = new URL(url);
+  target.searchParams.set('symbol', symbol);
+  return target.href;
+}
+
+try {
+  for (const symbol of symbols) {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const consoleErrors = [];
+    const failed = [];
+    page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('pageerror', error => consoleErrors.push(String(error)));
+    page.on('requestfailed', request => failed.push(`${request.method()} ${request.url()} ${request.failure()?.errorText || ''}`));
+
+    const url = withSymbol(base, symbol);
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 70000 });
+    await page.waitForFunction(() => Boolean(
+      window.__SOLUTION_AI_BUILD_CONTEXT__
+      && window.__SOLUTION_AI_LOCAL_ANALYSIS__
+      && window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__
+      && window.__SOLUTION_AI_ASK__
+      && window.__SOLUTION_AI_HEALTH__
+      && window.__VMEWS_LOAD_BASE__
+    ), null, { timeout: 30000 });
+
+    await page.waitForFunction(() => document.querySelectorAll('#forecastCards .forecastCard').length === 5, null, { timeout: 30000 });
+
+    const context = await page.evaluate(async () => window.__SOLUTION_AI_BUILD_CONTEXT__());
+    if (context.symbol !== symbol) throw new Error(`SoluTION.AI context symbol mismatch: expected ${symbol}, got ${context.symbol}`);
+
+    const labels = Object.keys(context.horizons || {}).sort();
+    const expectedLabels = ['T+1', 'T+2', 'T+3', 'T+4', 'T+5'];
+    if (JSON.stringify(labels) !== JSON.stringify(expectedLabels)) {
+      throw new Error(`${symbol}: AI context must preserve all five horizon states, got ${labels.join(',')}`);
+    }
+
+    if (!Array.isArray(context.publishedHorizons) || context.publishedHorizons.length < 1) {
+      throw new Error(`${symbol}: no published forecast horizon available to AI`);
+    }
+    if (!context.preferredHorizon || !context.publishedHorizons.includes(context.preferredHorizon)) {
+      throw new Error(`${symbol}: preferred horizon is not a published horizon: ${JSON.stringify({ preferred: context.preferredHorizon, published: context.publishedHorizons })}`);
+    }
+
+    const preferred = context.horizons[context.preferredHorizon];
+    if (!preferred || preferred.releaseStatus !== 'PUBLISHED' || !Number.isFinite(Number(preferred.price))) {
+      throw new Error(`${symbol}: preferred horizon has no released point price`);
+    }
+
+    const question = 'Chỉ dùng dữ liệu mô hình, phân tích đầy đủ forecast T+1 đến T+5 của mã đang xem.';
+    const local = await page.evaluate(({ q, ctx }) => window.__SOLUTION_AI_LOCAL_ANALYSIS__(q, ctx), { q: question, ctx: context });
+    if (typeof local !== 'string' || local.length < 300) {
+      throw new Error(`${symbol}: local AI answer too short: ${String(local).length}`);
+    }
+    if (!local.includes(symbol) || !local.includes(context.preferredHorizon)) {
+      throw new Error(`${symbol}: local AI answer is not anchored to symbol/preferred horizon`);
+    }
+    for (const label of expectedLabels) {
+      if (!local.includes(label)) throw new Error(`${symbol}: local AI full-path answer missing ${label}`);
+    }
+    if (/Chưa có đủ đường forecast|Chưa thể tải dữ liệu phân tích/.test(local)) {
+      throw new Error(`${symbol}: local AI still falls into generic forecast error: ${local.slice(0, 240)}`);
+    }
+
+    const preferredPrice = Number(preferred.price).toLocaleString('vi-VN');
+    if (!local.includes(preferredPrice)) {
+      throw new Error(`${symbol}: local AI answer does not contain preferred released price ${preferredPrice}`);
+    }
+
+    // User-facing no-key path must answer locally instead of requiring Gemini.
+    await page.evaluate(() => sessionStorage.removeItem('vmews_solution_ai_browser_session'));
+    await page.evaluate(async q => { await window.__SOLUTION_AI_ASK__(q); }, question);
+    await page.waitForFunction(() => {
+      const items = [...document.querySelectorAll('#solutionAiMessages .aiMessage')];
+      return items.length >= 3 && !items.at(-1)?.classList.contains('aiThinking');
+    }, null, { timeout: 20000 });
+
+    const ui = await page.evaluate(() => {
+      const items = [...document.querySelectorAll('#solutionAiMessages .aiMessage')];
+      const last = items.at(-1);
+      return {
+        text: last?.textContent?.trim() || '',
+        className: last?.className || '',
+        status: document.querySelector('#solutionAiStatus')?.textContent?.trim() || '',
+        health: window.__SOLUTION_AI_HEALTH__(),
+      };
+    });
+    if (ui.className.includes('aiError')) throw new Error(`${symbol}: no-key AI rendered aiError: ${ui.text}`);
+    if (ui.text.length < 250 || !ui.text.includes(symbol) || !ui.text.includes(context.preferredHorizon)) {
+      throw new Error(`${symbol}: no-key UI answer is not useful/anchored: ${JSON.stringify(ui)}`);
+    }
+    if (!/forecast|dữ liệu VMEWS|SoluTION\.AI local|Phân tích từ dữ liệu/i.test(ui.status)) {
+      throw new Error(`${symbol}: no-key status does not communicate local readiness: ${ui.status}`);
+    }
+
+    const handoffQuestion = `Tiếp tục phân tích ${symbol} và giải thích kỳ ${context.preferredHorizon}.`;
+    const handoff = await page.evaluate(({ q, ctx }) => window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__(q, ctx), { q: handoffQuestion, ctx: context });
+    for (const token of [symbol, handoffQuestion, context.preferredHorizon, 'publishedHorizons', 'reviewHorizons']) {
+      if (!handoff.includes(token)) throw new Error(`${symbol}: Gemini handoff missing ${token}`);
+    }
+
+    const cards = await page.locator('#forecastCards .forecastCard').allInnerTexts();
+    const publishedCards = cards.filter(text => /Giá dự báo của mô hình/.test(text));
+    if (publishedCards.length < 1) throw new Error(`${symbol}: forecast UI exposes no published point forecast`);
+
+    if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
+    const relevantFailed = failed.filter(line => !/cloudflareinsights|favicon|google-analytics/i.test(line));
+    if (relevantFailed.length) throw new Error(`${symbol}: failed requests: ${relevantFailed.join(' | ')}`);
+
+    results.push({
+      symbol,
+      preferredHorizon: context.preferredHorizon,
+      publishedHorizons: context.publishedHorizons,
+      reviewHorizons: context.reviewHorizons,
+      localChars: local.length,
+      uiChars: ui.text.length,
+    });
+    await page.close();
+  }
+
+  console.log(JSON.stringify({ solutionAiBrowserSmoke: 'PASS', base, results }, null, 2));
+} finally {
+  await browser.close();
+}
