@@ -23,7 +23,8 @@ concurrency:
 
 jobs:
   browser:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    # Run even when an unrelated post-deploy verifier fails. This smoke verifies
+    # whether SoluTION.AI production itself is actually available and correct.
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
