@@ -318,6 +318,8 @@ function classify(q){
  const explicitMemo=/phan tich chuyen sau|phan tich toan dien|tong hop|ho so nghien cuu|danh gia tong the|tinh hinh/.test(s);
  const explicitFinancial=/suc khoe|tai chinh|tong quan|doanh thu|loi nhuan|dong tien|\bno\b|roe|roa|bien loi nhuan|fcf|ocf|phai thu|ton kho/.test(s);
  const explicitMacro=/nhnn|ngan hang nha nuoc|lai suat|overnight|\bon\b|omo|ty gia|lam phat|\bgdp\b|\bpmi\b|\bfdi\b|cung tien|m2|vi mo|\besg\b|moi truong|xa hoi|quan tri|governance|environment/.test(s);
+ const pureRiskDefinition=/rui ro (la gi|nghia la gi)|khai niem rui ro/.test(s);
+ if(explicitRisk&&!pureRiskDefinition)return'risk';
  if(concept&&asksDefinition)return'concept';
  if(explicitRisk)return'risk';
  if(explicitCompare)return'compare';
