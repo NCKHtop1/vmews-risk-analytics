@@ -355,6 +355,119 @@ def write(path, data):
     temp.replace(path)
 
 
+def load_market_universe():
+    return read(ROOT / 'data/universe.json', {})
+
+
+def load_market_companies(core_companies):
+    """Return Core + dynamically promoted HOSE Liquid names for live market jobs."""
+    universe = load_market_universe()
+    core = {str(row.get('symbol') or '').upper(): dict(row) for row in core_companies if row.get('symbol')}
+    records = universe.get('symbols') if isinstance(universe.get('symbols'), dict) else {}
+    live_symbols = universe.get('liveMarketSymbols') if isinstance(universe.get('liveMarketSymbols'), list) else []
+    if not live_symbols or not records:
+        return [{**row, 'tier': 'CORE', 'coreMember': True} for row in core.values()], universe
+    companies = []
+    for symbol in live_symbols:
+        symbol = str(symbol).upper()
+        meta = records.get(symbol) or {}
+        base = core.get(symbol) or {}
+        companies.append({
+            'symbol': symbol,
+            'name': base.get('name') or meta.get('name') or symbol,
+            'exchange': 'HOSE',
+            'tier': meta.get('tier') or ('CORE' if symbol in core else 'LIQUID'),
+            'coreMember': symbol in core,
+            'medianTurnover20': meta.get('medianTurnover20'),
+            'forecastEligible': bool(meta.get('forecastEligible')),
+        })
+    # Fail safe: Core financial-report names can never disappear because of a
+    # malformed/stale dynamic universe file.
+    present = {row['symbol'] for row in companies}
+    for symbol, row in core.items():
+        if symbol not in present:
+            companies.append({**row, 'tier': 'CORE', 'coreMember': True})
+    companies.sort(key=lambda row: (0 if row.get('tier') == 'CORE' else 1, row['symbol']))
+    return companies, universe
+
+
+def public_universe_payload(universe):
+    if not isinstance(universe, dict):
+        return {}
+    output = {key: value for key, value in universe.items() if key not in {'discoveryTechnical'}}
+    records = {}
+    for symbol, row in (universe.get('symbols') or {}).items():
+        if not isinstance(row, dict):
+            continue
+        records[symbol] = {key: value for key, value in row.items() if key != 'seedBars'}
+    output['symbols'] = records
+    return output
+
+
+def sync_market_universe(out, universe):
+    if universe:
+        write(out / 'universe.json', public_universe_payload(universe))
+
+
+def seed_market_histories(out, universe, companies):
+    """Seed newly promoted Liquid names from the already validated forecast history.
+
+    This makes the first live scanner run useful immediately instead of waiting
+    for the nightly history job. Newer market-branch bars always win.
+    """
+    records = universe.get('symbols') if isinstance(universe, dict) else {}
+    if not isinstance(records, dict):
+        return 0
+    seeded = 0
+    for company in companies:
+        symbol = company['symbol']
+        meta = records.get(symbol) or {}
+        raw_bars = meta.get('seedBars') if isinstance(meta, dict) else None
+        if not isinstance(raw_bars, list) or not raw_bars:
+            continue
+        incoming = []
+        for row in raw_bars:
+            if not isinstance(row, dict):
+                continue
+            day = str(row.get('time') or row.get('date') or '')[:10]
+            close = number(row.get('close'))
+            volume = number(row.get('volume'))
+            if len(day) != 10 or close is None or close <= 0 or volume is None or volume < 0:
+                continue
+            open_ = number(row.get('open')) or close
+            high = number(row.get('high')) or max(open_, close)
+            low = number(row.get('low')) or min(open_, close)
+            incoming.append({'time': day, 'open': open_, 'high': max(high, open_, close), 'low': min(low, open_, close), 'close': close, 'volume': volume})
+        if not incoming:
+            continue
+        path = out / 'history' / (symbol + '.json')
+        previous = read(path, {})
+        existing = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+        merged = {bar['time']: bar for bar in incoming}
+        merged.update({bar['time']: bar for bar in existing})
+        bars = [merged[key] for key in sorted(merged)]
+        if existing and bars[-1]['time'] <= existing[-1]['time'] and len(bars) == len(existing):
+            continue
+        stamp = now()
+        write(path, {
+            **previous,
+            'symbol': symbol,
+            'source': previous.get('source') or 'Validated forecast universe seed',
+            'unit': 'VND',
+            'interval': '1D',
+            'collectedAt': previous.get('collectedAt') or stamp,
+            'checkedAt': stamp,
+            'status': previous.get('status') or 'ok',
+            'barCount': len(bars),
+            'firstBar': bars[0]['time'],
+            'lastBar': bars[-1]['time'],
+            'bars': bars,
+            'universeSeed': True,
+        })
+        seeded += 1
+    return seeded
+
+
 POSITIVE_NEWS = re.compile(r'tăng|tăng trưởng|lãi|lợi nhuận|kỷ lục|vượt kế hoạch|ký kết|trúng thầu|cổ tức|mua vào|nâng hạng|mở rộng|phục hồi|khởi sắc', re.I)
 NEGATIVE_NEWS = re.compile(r'giảm|sụt|lỗ|thua lỗ|xử phạt|điều tra|bán ra|hạ dự báo|rủi ro|nợ xấu|chậm thanh toán|thu hồi|cảnh báo|khởi tố', re.I)
 DRIVER_WEIGHTS = {'market': .20, 'relative': .28, 'volume': .22, 'momentum': .15, 'news': .15}
@@ -652,20 +765,47 @@ def build_technical_scanner(out, companies, quotes):
         row = technical_scan_symbol(symbol, bars, quotes.get(symbol), previous_symbols.get(symbol))
         if not row:
             continue
+        row['tier'] = company.get('tier') or 'CORE'
+        row['cadence'] = 'LIVE_15M'
         symbols[symbol] = row
         if row['matched']:
             matches.append(row)
+
+    # Discovery stays fail-closed for live price/forecast decisions, but its
+    # validated EOD technical snapshot remains searchable in the scanner.
+    universe = load_market_universe()
+    discovery = universe.get('discoveryTechnical') if isinstance(universe, dict) else {}
+    records = universe.get('symbols') if isinstance(universe, dict) else {}
+    if isinstance(discovery, dict):
+        for symbol, source in discovery.items():
+            if symbol in symbols or not isinstance(source, dict):
+                continue
+            meta = (records or {}).get(symbol) or {}
+            if not meta.get('scannerEligible'):
+                continue
+            row = {**source, 'symbol': symbol, 'tier': 'DISCOVERY', 'cadence': 'EOD'}
+            symbols[symbol] = row
+            if row.get('matched'):
+                matches.append(row)
+
     matches.sort(key=lambda row: (-row.get('priority', 0), row['symbol']))
     stamp = now()
+    scanner_universe = universe.get('scannerSymbols') if isinstance(universe, dict) else None
+    live_coverage = sum(row.get('cadence') == 'LIVE_15M' for row in symbols.values())
+    discovery_coverage = sum(row.get('cadence') == 'EOD' for row in symbols.values())
     write(path, {
         'checkedAt': stamp,
         'sourceTime': newest_source_time(quotes),
         'status': 'ok' if symbols else 'retained',
-        'methodVersion': 'technical-scanner-v1',
-        'universe': len(companies), 'coverage': len(symbols),
+        'methodVersion': 'technical-scanner-v2-tiered-hose',
+        'universe': len(scanner_universe) if isinstance(scanner_universe, list) and scanner_universe else len(companies),
+        'coverage': len(symbols),
+        'liveCoverage': live_coverage,
+        'discoveryCoverage': discovery_coverage,
+        'liveUniverse': len(companies),
         'matchCount': len(matches), 'refreshEveryMinutes': 15,
         'rules': TECHNICAL_SCANNER_RULES,
-        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Confirm price, liquidity, trend context and risk before acting.',
+        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses live 15-minute snapshots; Discovery is EOD-only until promotion.',
         'matches': matches, 'symbols': symbols,
     })
     return matches
@@ -735,6 +875,9 @@ def prices(out, companies):
     response from T-1 is not accepted as a successful refresh and is never
     merged into today's candle.
     """
+    universe = load_market_universe()
+    sync_market_universe(out, universe)
+    seeded_histories = seed_market_histories(out, universe, companies)
     symbols = [c['symbol'] for c in companies]
     board_path = out / 'quotes.json'
     old = read(board_path, {'quotes': {}})
@@ -800,10 +943,13 @@ def prices(out, companies):
         'latestHistoryBar': history_effective.get('latestBar'),
         'latestHistoryBarCoverage': history_effective.get('latestBarCoverage'),
         'errors': errors, 'quoteRefresh': '15_minute_session_job',
-        'historyRefresh': 'server_live_quote_merge_plus_client_replay_then_separate_eod_official'
+        'historyRefresh': 'server_live_quote_merge_plus_client_replay_then_separate_eod_official',
+        'universeVersion': universe.get('version') if isinstance(universe, dict) else None,
+        'universeCounts': universe.get('counts') if isinstance(universe, dict) else None,
+        'seededHistories': seeded_histories,
     })
     drivers = build_drivers(out, companies)
-    print(f'Prices: {len(fresh)}/{len(symbols)} current-session; stale rejected: {len(stale)}; live daily bars: {live_daily_merged}; technical matches: {len(technical_matches)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
+    print(f'Prices: {len(fresh)}/{len(symbols)} current-session; stale rejected: {len(stale)}; seeded histories: {seeded_histories}; live daily bars: {live_daily_merged}; technical matches: {len(technical_matches)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
     if not fresh:
         raise RuntimeError('Current-session quote collection incomplete; previous successful data retained')
 
@@ -1452,9 +1598,15 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--mode', choices=['prices', 'history', 'intraday', 'news', 'macro', 'all'], default='all')
     args = parser.parse_args()
-    companies = read(ROOT / 'data/companies.json', [])
-    if len({c['symbol'] for c in companies}) != 100:
-        raise RuntimeError('Expected 100 unique VN100 symbols')
+    core_companies = read(ROOT / 'data/companies.json', [])
+    if len({c['symbol'] for c in core_companies}) != 100:
+        raise RuntimeError('Expected 100 unique VN100 Core symbols')
+    companies, universe = load_market_companies(core_companies)
+    if len({c['symbol'] for c in companies}) < 100:
+        raise RuntimeError('Tiered HOSE market universe cannot be smaller than Core 100')
+    sync_market_universe(args.output, universe)
+    if args.mode in {'prices', 'history', 'intraday', 'all'}:
+        seed_market_histories(args.output, universe, companies)
     errors = []
     for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
         try:
