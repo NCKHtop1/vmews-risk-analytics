@@ -11,6 +11,7 @@ on:
       - 'solution-ai-v17.js'
       - 'forecast-final.html'
       - 'scripts/solution_ai_browser_smoke.mjs'
+      - 'scripts/solution_ai_full_system_audit.mjs'
       - '.github/workflows/solution-ai-production-smoke.yml'
 
 permissions:
@@ -49,3 +50,7 @@ jobs:
           SOLUTION_AI_BROWSER_URL: https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT
           SOLUTION_AI_SYMBOLS: FPT,ACB,HPG,VIC
         run: node scripts/solution_ai_browser_smoke.mjs
+      - name: Audit all published symbols, UI flow, freshness and AI provider routes
+        env:
+          SOLUTION_AI_FULL_AUDIT_URL: https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT
+        run: node scripts/solution_ai_full_system_audit.mjs
