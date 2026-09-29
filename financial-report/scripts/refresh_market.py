@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urlencode, urlsplit, urlunsplit
+from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1617,6 +1617,54 @@ def macro(out, companies=None):
         raise RuntimeError('Macro and ESG collection failed and no retained data is available')
 
 
+SBV_NEWS_URL = 'https://www.sbv.gov.vn/webcenter/portal/vi/menu/trangchu/ttsk'
+
+def _fetch_sbv_news(current):
+    try:
+        raw = request(SBV_NEWS_URL)
+        text = raw.decode('utf-8-sig', errors='ignore') if isinstance(raw, bytes) else str(raw)
+        rows, seen = [], set()
+        # The SBV portal is server-rendered but does not expose a stable public RSS endpoint.
+        # Extract article links containing dDocName and require a nearby dd/mm/yyyy date.
+        pattern = re.compile(r'<a[^>]+href=["\']([^"\']*dDocName=[^"\']+)["\'][^>]*>(.*?)</a>', re.I | re.S)
+        for match in pattern.finditer(text):
+            title = clean(match.group(2))
+            if len(title) < 18:
+                continue
+            href = html.unescape(match.group(1))
+            link = urljoin(SBV_NEWS_URL, href)
+            if 'sbv.gov.vn' not in (urlsplit(link).hostname or ''):
+                continue
+            context = clean(text[max(0, match.start()-260):min(len(text), match.end()+260)])
+            date_match = re.search(r'(\d{1,2})/(\d{1,2})/(\d{4})', context)
+            if not date_match:
+                continue
+            day, month, year = map(int, date_match.groups())
+            try:
+                dt = datetime(year, month, day, 1, 0, tzinfo=VN).astimezone(timezone.utc)
+            except ValueError:
+                continue
+            if dt > current + timedelta(days=1) or dt < current - timedelta(days=30):
+                continue
+            key = title.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            topics = {'vietnam','banking','macro','central_bank','sbv'}
+            for topic, topic_pattern in TOPIC_PATTERNS.items():
+                if topic_pattern.search(title):
+                    topics.add(topic)
+            meta = classify_news_meta(title, '', 'Ngân hàng Nhà nước Việt Nam', topics, dt.isoformat())
+            meta['officialSource'] = 'SBV'
+            meta['impactScore'] = max(meta['impactScore'], 52 if SBV_PATTERN.search(title) else 36)
+            rows.append({'title': title, 'summary': '', 'url': link, 'source': 'Ngân hàng Nhà nước Việt Nam',
+                         'publishedAt': dt.isoformat(), 'symbols': [], 'topics': sorted(topics), **meta})
+        rows.sort(key=lambda row: row['publishedAt'], reverse=True)
+        return rows[:80], {'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL, 'status': 'ok', 'items': len(rows[:80])}
+    except Exception as e:
+        return [], {'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL, 'status': 'error', 'error': str(e)}
+
+
 def _fetch_news_feed(publisher, url, companies, current):
     try:
         items = parse_feed(request(url), publisher, url, companies, current)
@@ -1641,6 +1689,9 @@ def news(out, companies):
             items, source = future.result()
             rows.extend(items)
             sources.append(source)
+    sbv_items, sbv_source = _fetch_sbv_news(current)
+    rows.extend(sbv_items)
+    sources.append(sbv_source)
     source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
     unique = {}
