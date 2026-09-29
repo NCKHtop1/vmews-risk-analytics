@@ -1038,7 +1038,7 @@ def build_today_watchlist(out, companies, quotes):
         bar_date = row.get('barDate')
         candidates.append({
             'symbol': symbol,
-            'score': round(score),
+            'score': max(0, min(100, round(score))),
             'price': number(quote.get('price')),
             'changePct': round(change, 2) if change is not None else None,
             'rsi14': round(rsi, 2) if rsi is not None else None,
