@@ -623,7 +623,7 @@ test("single-symbol forecast comparison stays on that symbol instead of routing 
   assert.match(answer, /Đường forecast FPT/);
   assert.match(answer, /T\+1/);
   assert.match(answer, /T\+5/);
-  assert.match(answer, /Nhịp forecast/);
+  assert.match(answer, /Nhịp giữa các kỳ đã phát hành/);
   assert.match(answer, /tăng tốc|giảm tốc|chững lại|giữ nhịp/);
   assert.doesNotMatch(answer, /Xếp hạng HOSE|Các mã HOSE có mức dự báo/);
   assert.doesNotMatch(answer, /Xác suất hướng T\+5 chưa đủ độ tin cậy nên không được công bố|Chiều tăng\/giảm chưa đủ độ tin cậy để công bố xác suất/);
