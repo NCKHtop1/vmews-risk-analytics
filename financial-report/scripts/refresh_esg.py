@@ -16,13 +16,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
 USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
-MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
+MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(96 * 1024 * 1024)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "900000"))
 MAX_PDF_PAGES = int(os.environ.get("ESG_MAX_PDF_PAGES", "280"))
 DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "16"))
@@ -52,8 +52,17 @@ def write(path, payload):
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def normalize_url(url):
+    """Percent-encode unsafe URL characters without double-encoding existing escapes."""
+    parts = urlsplit(str(url or "").strip())
+    path = quote(parts.path, safe="/%:@!$&'()*+,;=-._~")
+    query = quote(parts.query, safe="=&%:@/?+,-._~")
+    fragment = quote(parts.fragment, safe="%:@/?+,-._~")
+    return urlunsplit((parts.scheme, parts.netloc, path, query, fragment))
+
 def fetch(url, timeout=25):
-    req = Request(url, headers={
+    normalized_url = normalize_url(url)
+    req = Request(normalized_url, headers={
         "User-Agent": USER_AGENT,
         "Accept": "text/html,application/pdf,application/xhtml+xml,*/*",
     })
@@ -550,12 +559,91 @@ def vnsi_membership_context(text):
     return any(re.search(pattern, s, re.S) for pattern in patterns)
 
 
+def infer_vnsi_year(text):
+    """Infer the reporting year nearest the VNSI evidence phrase."""
+    raw = clean_text(text)
+    if not raw:
+        return None
+    marker = raw.lower().find("vnsi")
+    years = []
+    for match in re.finditer(r"\b(20[0-3]\d)\b", raw):
+        year = int(match.group(1))
+        distance = abs(match.start() - marker) if marker >= 0 else match.start()
+        years.append((distance, -year, year))
+    return min(years)[2] if years else None
+
+
+def assessment_source_score(row):
+    path = urlsplit(row.get("sourceUrl") or "").path.lower()
+    title = ascii_fold(row.get("sourceTitle") or "")
+    score = 0
+    if ".pdf" in path:
+        score += 40
+    if "bao cao phat trien ben vung" in title or "sustainability report" in title:
+        score += 30
+    if "bao cao thuong nien" in title or "annual report" in title:
+        score += 20
+    if row.get("year") is not None:
+        score += 5
+    return score
+
+
 def sanitize_external_assessments(rows):
-    out = []
-    for row in rows:
-        if row.get("assessmentType") == "VNSI membership" and not vnsi_membership_context(row.get("snippet") or ""):
+    cleaned = []
+    for raw_row in rows:
+        row = dict(raw_row)
+        if row.get("assessmentType") == "VNSI membership":
+            if not vnsi_membership_context(row.get("snippet") or ""):
+                continue
+            if row.get("year") is None:
+                inferred = infer_vnsi_year(row.get("snippet") or "")
+                if inferred is not None:
+                    row["year"] = inferred
+                    row["yearInferred"] = True
+        cleaned.append(row)
+
+    groups = {}
+    for row in cleaned:
+        if row.get("assessmentType") != "VNSI membership":
             continue
-        out.append(row)
+        key = (
+            row.get("provider"),
+            row.get("assessmentType"),
+            row.get("year"),
+            ascii_fold(row.get("value") or ""),
+        )
+        groups.setdefault(key, []).append(row)
+
+    out, emitted = [], set()
+    for row in cleaned:
+        if row.get("assessmentType") != "VNSI membership":
+            out.append(row)
+            continue
+        key = (
+            row.get("provider"),
+            row.get("assessmentType"),
+            row.get("year"),
+            ascii_fold(row.get("value") or ""),
+        )
+        if key in emitted:
+            continue
+        emitted.add(key)
+        group = groups[key]
+        primary = dict(max(group, key=assessment_source_score))
+        evidence, seen_urls = [], set()
+        for item in sorted(group, key=assessment_source_score, reverse=True):
+            url = item.get("sourceUrl")
+            if not url or url in seen_urls:
+                continue
+            seen_urls.add(url)
+            evidence.append({
+                "sourceUrl": url,
+                "sourceTitle": item.get("sourceTitle"),
+            })
+        if len(evidence) > 1:
+            primary["evidenceCount"] = len(evidence)
+            primary["evidenceSources"] = evidence
+        out.append(primary)
     return out
 
 
@@ -871,6 +959,20 @@ def reset_document(doc):
     return row
 
 
+def revive_transport_failure(doc):
+    """Retry documents that failed only because older transport limits were stricter."""
+    row = dict(doc)
+    error = str(row.get("lastError") or "")
+    retry = "URL can't contain control characters" in error
+    match = re.search(r"document too large >\s*(\d+)\s*bytes", error)
+    if match and int(match.group(1)) < MAX_DOC_BYTES:
+        retry = True
+    if retry:
+        for key in ("lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
+            row.pop(key, None)
+    return row
+
+
 def migration_keep_document(doc, keywords):
     kind = doc.get("type") or classify_document((doc.get("title") or "") + " " + (doc.get("url") or ""))
     path = urlsplit(doc.get("url") or "").path.lower()
@@ -950,13 +1052,20 @@ def collect(config, output):
             status["symbol"] = symbol
             source_status.append(status)
             for doc in docs:
+                doc["url"] = normalize_url(doc.get("url"))
                 discovered[symbol][doc["url"]] = doc
 
     companies = {}
     backlog = []
     for symbol, cfg in banks.items():
         prev = previous.get("companies", {}).get(symbol, {})
-        docs = {d["url"]: d for d in prev.get("documents", []) if d.get("url")}
+        docs = {}
+        for old_doc in prev.get("documents", []):
+            if not old_doc.get("url"):
+                continue
+            restored = revive_transport_failure(old_doc)
+            restored["url"] = normalize_url(restored.get("url"))
+            docs[restored["url"]] = restored
         report_types = {"sustainability_report", "annual_report", "climate_disclosure"}
         for url, discovered_doc in discovered[symbol].items():
             existing = docs.get(url, {})
@@ -980,7 +1089,13 @@ def collect(config, output):
         }
 
     # External provider discovery.
-    external_docs = {d["url"]: d for d in previous.get("externalDocuments", []) if d.get("url")}
+    external_docs = {}
+    for old_doc in previous.get("externalDocuments", []):
+        if not old_doc.get("url"):
+            continue
+        restored = revive_transport_failure(old_doc)
+        restored["url"] = normalize_url(restored.get("url"))
+        external_docs[restored["url"]] = restored
     ext_jobs = []
     with ThreadPoolExecutor(max_workers=6) as pool:
         ext_candidates, ext_follow = ((16, 6) if HISTORY_BACKFILL else (8, 2))
@@ -997,6 +1112,7 @@ def collect(config, output):
             for doc in docs:
                 doc["provider"] = src["provider"]
                 doc["externalKind"] = src["kind"]
+                doc["url"] = normalize_url(doc.get("url"))
                 external_docs[doc["url"]] = {**external_docs.get(doc["url"], {}), **doc}
     for doc in external_docs.values():
         if not doc.get("processedAt"):

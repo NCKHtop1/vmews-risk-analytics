@@ -32,6 +32,9 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
+        self.assertGreaterEqual(cfg['version'],3)
+        self.assertTrue(any('260420_SHB_BCTN_2025_Web.pdf' in u for u in cfg['banks']['SHB']['seed_urls']))
+        self.assertTrue(any('bao-cao-thuong-nien-2025.pdf' in u for u in cfg['banks']['STB']['seed_urls']))
         self.assertTrue(cfg['banks']['VPB']['year_url_templates'])
         self.assertTrue(cfg['banks']['CTG']['year_url_templates'])
         self.assertTrue(cfg['banks']['VCB']['year_url_templates'])
@@ -167,12 +170,31 @@ class MarketTests(unittest.TestCase):
 
     def test_corporate_esg_vnsi_reference_is_not_membership(self):
         reference={'provider':'HOSE','assessmentType':'VNSI membership','year':2024,'value':'VNSI','snippet':'Báo cáo tham chiếu các khung GRI, UN SDGs, VNSI và quy định pháp luật.'}
-        actual={'provider':'HOSE','assessmentType':'VNSI membership','year':2025,'value':'VNSI','snippet':'Năm thứ 5 liên tiếp VietinBank nằm trong Top 20 VNSI.'}
-        continued={'provider':'HOSE','assessmentType':'VNSI membership','year':2025,'value':'VNSI','snippet':'VPBank continued in VNSI in 2025.'}
-        cleaned=esm.sanitize_external_assessments([reference,actual,continued])
-        self.assertNotIn(reference,cleaned)
-        self.assertIn(actual,cleaned)
-        self.assertIn(continued,cleaned)
+        actual={'provider':'HOSE','assessmentType':'VNSI membership','year':2025,'value':'VNSI','sourceUrl':'https://bank/report-2025.pdf','sourceTitle':'Báo cáo phát triển bền vững 2025','snippet':'Năm thứ 5 liên tiếp VietinBank nằm trong Top 20 VNSI.'}
+        continued={'provider':'HOSE','assessmentType':'VNSI membership','year':2025,'value':'VNSI','sourceUrl':'https://bank/milestones','sourceTitle':'Milestones','snippet':'VPBank continued in VNSI in 2025.'}
+        unknown_year={'provider':'HOSE','assessmentType':'VNSI membership','year':None,'value':'VNSI','sourceUrl':'https://bank/detail','sourceTitle':'VietinBank lần đầu ra mắt Báo cáo phát triển bền vững','snippet':'Giải thưởng tín dụng xanh 2024 - Năm thứ 4 liên tiếp VietinBank nằm trong TOP 20 VNSI.'}
+        cleaned=esm.sanitize_external_assessments([reference,actual,continued,unknown_year])
+        self.assertFalse(any(x.get('snippet')==reference['snippet'] for x in cleaned))
+        rows_2025=[x for x in cleaned if x.get('year')==2025]
+        self.assertEqual(len(rows_2025),1)
+        self.assertEqual(rows_2025[0]['sourceUrl'],'https://bank/report-2025.pdf')
+        self.assertEqual(rows_2025[0]['evidenceCount'],2)
+        row_2024=next(x for x in cleaned if x.get('year')==2024)
+        self.assertTrue(row_2024.get('yearInferred'))
+        self.assertEqual(esm.infer_vnsi_year(row_2024['snippet']),2024)
+
+    def test_corporate_esg_normalizes_unsafe_urls_and_revives_transport_failures(self):
+        raw='https://media.eximbank.com.vn/exim/files/EXIMBANK BCTN 2025 TV 3.pdf'
+        normalized=esm.normalize_url(raw)
+        self.assertIn('EXIMBANK%20BCTN%202025%20TV%203.pdf',normalized)
+        self.assertEqual(esm.normalize_url(normalized),normalized)
+        failed={'url':raw,'lastError':"URL can't contain control characters. '/exim/files/EXIMBANK BCTN 2025 TV 3.pdf'",'retryAfter':'2099-01-01T00:00:00+00:00','failedAttempts':2}
+        revived=esm.revive_transport_failure(failed)
+        self.assertNotIn('retryAfter',revived)
+        legacy_big={'url':'https://bank/report.pdf','lastError':'document too large > 36700160 bytes','retryAfter':'2099-01-01T00:00:00+00:00'}
+        revived_big=esm.revive_transport_failure(legacy_big)
+        self.assertNotIn('retryAfter',revived_big)
+        self.assertGreaterEqual(esm.MAX_DOC_BYTES,90*1024*1024)
 
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
