@@ -51,7 +51,7 @@ test("configured Gemini request receives only grounded current context", async (
   let request;
   globalThis.fetch = async (url, options) => {
     request = { url, options, body: JSON.parse(options.body) };
-    return { ok: true, json: async () => ({ outputs: [{ text: "FPT đang có tín hiệu quỹ hỗ trợ." }] }) };
+    return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: "FPT đang có tín hiệu quỹ hỗ trợ." }] } }] }) };
   };
   const output = response();
   await handler({
@@ -60,10 +60,11 @@ test("configured Gemini request receives only grounded current context", async (
   }, output);
   assert.equal(output.code, 200);
   assert.match(output.payload.answer, /tín hiệu quỹ/);
-  assert.match(request.url, /interactions$/);
+  assert.match(request.url, /models\/gemini-.*:generateContent$/);
   assert.equal(request.options.headers["x-goog-api-key"], "server-only-test-secret");
-  assert.match(request.body.input, /68300/);
-  assert.equal(request.body.store, false);
+  assert.match(request.body.contents[0].parts[0].text, /68300/);
+  assert.deepEqual(request.body.tools, [{ googleSearch: {} }]);
+  assert.match(request.body.systemInstruction.parts[0].text, /không tự tạo giá/);
   assert.equal(JSON.stringify(output.payload).includes("server-only-test-secret"), false);
 });
 
