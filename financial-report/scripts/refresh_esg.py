@@ -24,14 +24,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
 CORE_COMPANIES = ROOT / "data/companies.json"
 GENERIC_DISCLOSURE_TEMPLATE = "https://24hmoney.vn/stock/{symbol}/report"
+GENERIC_FINANCIAL_REPORT_TEMPLATE = "https://24hmoney.vn/stock/{symbol}/financial-report"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DEFAULT_DOC_BYTES = (96 if HISTORY_BACKFILL else 35) * 1024 * 1024
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(DEFAULT_DOC_BYTES)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "900000"))
 MAX_PDF_PAGES = int(os.environ.get("ESG_MAX_PDF_PAGES", "280"))
-DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "16"))
-HISTORY_DOCS_PER_RUN = int(os.environ.get("ESG_HISTORY_DOCS_PER_RUN", "5"))
+DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "24"))
+HISTORY_DOCS_PER_RUN = int(os.environ.get("ESG_HISTORY_DOCS_PER_RUN", "10"))
 RECENT_YEARS = int(os.environ.get("ESG_RECENT_YEARS", "4"))
 DISCOVERY_TIMEOUT = int(os.environ.get("ESG_DISCOVERY_TIMEOUT", "8"))
 DETAIL_TIMEOUT = int(os.environ.get("ESG_DETAIL_TIMEOUT", "6"))
@@ -84,6 +85,10 @@ def build_company_registry(config):
         generic = GENERIC_DISCLOSURE_TEMPLATE.format(symbol=symbol.lower())
         if generic not in seeds:
             seeds.append(generic)
+        if symbol not in curated:
+            financial = GENERIC_FINANCIAL_REPORT_TEMPLATE.format(symbol=symbol.lower())
+            if financial not in seeds:
+                seeds.append(financial)
         cfg["seed_urls"] = seeds
         cfg["entityType"] = "bank" if symbol in curated else "company"
         cfg["sourcePolicy"] = "curated+disclosure-index" if symbol in curated else "disclosure-index"
@@ -186,7 +191,7 @@ def classify_document(text):
     compact = re.sub(r"[^a-z0-9]+", "", s)
     if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s or "esgreport" in compact:
         return "sustainability_report"
-    if "annual report" in s or "bao cao thuong nien" in s or re.search(r"\bbctn\b", s):
+    if "annual report" in s or "bao cao thuong nien" in s or "bao cao tai chinh thuong nien" in s or re.search(r"\bbctn\b", s):
         return "annual_report"
     if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
         return "sustainable_finance_assessment"
@@ -207,7 +212,7 @@ def explicit_report_year_hint(title):
     folded = ascii_fold(raw)
     patterns = [
         r"(?:annual\s+report|sustainability\s+report|esg\s+report)[^0-9]{0,24}(20[0-3]\d)",
-        r"(?:bao\s+cao\s+thuong\s+nien|bao\s+cao\s+phat\s+trien\s+ben\s+vung)[^0-9]{0,24}(20[0-3]\d)",
+        r"(?:bao\s+cao\s+(?:tai\s+chinh\s+)?thuong\s+nien|bao\s+cao\s+phat\s+trien\s+ben\s+vung)[^0-9]{0,24}(20[0-3]\d)",
         r"(?:^|[^a-z0-9])bctn[^0-9]{0,24}(20[0-3]\d)",
     ]
     for pattern in patterns:
