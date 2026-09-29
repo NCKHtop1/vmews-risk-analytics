@@ -57,8 +57,8 @@ try {
     }
 
     const preferred = context.horizons[context.preferredHorizon];
-    if (!preferred || preferred.releaseStatus !== 'PUBLISHED' || !Number.isFinite(Number(preferred.expectedReturn))) {
-      throw new Error(`${symbol}: preferred horizon has no released return forecast`);
+    if (!preferred || preferred.releaseStatus !== 'PUBLISHED' || !Number.isFinite(Number(preferred.price))) {
+      throw new Error(`${symbol}: preferred horizon has no released point price`);
     }
 
     const question = 'Chỉ dùng dữ liệu mô hình, phân tích đầy đủ forecast T+1 đến T+5 của mã đang xem.';
@@ -76,9 +76,9 @@ try {
       throw new Error(`${symbol}: local AI still falls into generic forecast error: ${local.slice(0, 240)}`);
     }
 
-    const preferredReturn = `${Number(preferred.expectedReturn) >= 0 ? '+' : ''}${(Number(preferred.expectedReturn) * 100).toFixed(2)}%`;
-    if (!local.includes(preferredReturn) || !/return kỳ vọng/i.test(local)) {
-      throw new Error(`${symbol}: local AI answer does not contain preferred released return ${preferredReturn}`);
+    const preferredPrice = Number(preferred.price).toLocaleString('vi-VN');
+    if (!local.includes(preferredPrice)) {
+      throw new Error(`${symbol}: local AI answer does not contain preferred released price ${preferredPrice}`);
     }
 
     // User-facing no-key path must answer locally instead of requiring Gemini.
@@ -178,8 +178,8 @@ try {
     }
 
     const cards = await page.locator('#forecastCards .forecastCard').allInnerTexts();
-    const publishedCards = cards.filter(text => /RETURN KỲ VỌNG/.test(text) && /Return Q20–Q80/.test(text));
-    if (publishedCards.length < 1) throw new Error(`${symbol}: forecast UI exposes no published return forecast`);
+    const publishedCards = cards.filter(text => /Giá dự báo của mô hình/.test(text));
+    if (publishedCards.length < 1) throw new Error(`${symbol}: forecast UI exposes no published point forecast`);
 
     if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
     const relevantFailed = failed.filter(line => !/cloudflareinsights|favicon|google-analytics/i.test(line));
