@@ -23,8 +23,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
 USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
 MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(35 * 1024 * 1024)))
-MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "1800000"))
-DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "24"))
+MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "900000"))
+MAX_PDF_PAGES = int(os.environ.get("ESG_MAX_PDF_PAGES", "280"))
+DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "16"))
+HISTORY_DOCS_PER_RUN = int(os.environ.get("ESG_HISTORY_DOCS_PER_RUN", "5"))
+RECENT_YEARS = int(os.environ.get("ESG_RECENT_YEARS", "4"))
+HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DISCOVERY_TIMEOUT = int(os.environ.get("ESG_DISCOVERY_TIMEOUT", "8"))
 DETAIL_TIMEOUT = int(os.environ.get("ESG_DETAIL_TIMEOUT", "6"))
 DOCUMENT_TIMEOUT = int(os.environ.get("ESG_DOCUMENT_TIMEOUT", "22"))
@@ -54,6 +58,14 @@ def fetch(url, timeout=25):
         "Accept": "text/html,application/pdf,application/xhtml+xml,*/*",
     })
     with urlopen(req, timeout=timeout) as response:
+        content_length = response.headers.get("Content-Length")
+        if content_length:
+            try:
+                if int(content_length) > MAX_DOC_BYTES:
+                    raise ValueError(f"document too large > {MAX_DOC_BYTES} bytes")
+            except ValueError as exc:
+                if str(exc).startswith("document too large"):
+                    raise
         raw = response.read(MAX_DOC_BYTES + 1)
         if len(raw) > MAX_DOC_BYTES:
             raise ValueError(f"document too large > {MAX_DOC_BYTES} bytes")
@@ -281,7 +293,9 @@ def extract_document_text(url):
         reader = PdfReader(io.BytesIO(raw))
         parts = []
         size = 0
-        for page in reader.pages:
+        for page_number, page in enumerate(reader.pages):
+            if page_number >= MAX_PDF_PAGES:
+                break
             try:
                 text = page.extract_text() or ""
             except Exception:
@@ -525,6 +539,26 @@ def extract_metrics(text, rules, year, source_url, source_title, source_type=Non
     return results
 
 
+def vnsi_membership_context(text):
+    s = ascii_fold(text)
+    patterns = [
+        r"\b(?:included|selected|constituent|member|continued\s+in|remained\s+in|continues\s+in)\b.{0,160}\bvnsi\b",
+        r"\bvnsi\b.{0,160}\b(?:included|selected|constituent|member|continued|remained)\b",
+        r"\b(?:top\s*20|nam trong|thuoc top|duoc lua chon|duoc chon|tiep tuc thuoc)\b.{0,180}\bvnsi\b",
+        r"\bvnsi\b.{0,180}\b(?:top\s*20|nam trong|thuoc top|duoc lua chon|duoc chon)\b",
+    ]
+    return any(re.search(pattern, s, re.S) for pattern in patterns)
+
+
+def sanitize_external_assessments(rows):
+    out = []
+    for row in rows:
+        if row.get("assessmentType") == "VNSI membership" and not vnsi_membership_context(row.get("snippet") or ""):
+            continue
+        out.append(row)
+    return out
+
+
 def extract_ratings(text, patterns, year, source_url, source_title, provider_hint=None):
     out = []
     for row in patterns:
@@ -537,6 +571,8 @@ def extract_ratings(text, patterns, year, source_url, source_title, provider_hin
         context = text[start:end]
         context_pattern = row.get("context_pattern")
         if not provider_hint and context_pattern and not re.search(context_pattern, context, re.I):
+            continue
+        if row.get("type") == "VNSI membership" and not vnsi_membership_context(context):
             continue
         out.append({
             "provider": row["provider"], "assessmentType": row["type"],
@@ -638,6 +674,17 @@ def repair_canonical_row(row):
         return out
 
     if metric_id == "green_credit":
+        tcb_layout = re.search(
+            r"(?P<scale>trillion|billion)\s+VND\s*(?P<value>\d[\d.,]*)\s+green\s+credit\s+exposure",
+            snippet, re.I
+        )
+        if tcb_layout:
+            fake = re.match(
+                r"(?P<value>\d[\d.,]*)\s*(?P<unit>trillion VND|billion VND)",
+                tcb_layout.group("value") + " " + tcb_layout.group("scale") + " VND", re.I
+            )
+            if fake:
+                return _apply_money_repair(out, fake)
         direct = re.search(
             r"dư\s+nợ\s+tín\s+dụng\s+xanh.{0,300}?lên\s+đến\s+~?\s*"
             r"(?P<value>\d[\d\s.,]*\d|\d)\s*(?P<unit>tỷ\s+(?:VND|VNĐ|đồng))",
@@ -669,6 +716,18 @@ def repair_canonical_row(row):
                 return _apply_money_repair(out, fake)
 
     if metric_id == "sustainable_finance":
+        english_bond = re.search(
+            r"sustainable\s+finance.{0,220}?VND\s*(?P<value>\d[\d.,]*)\s*"
+            r"(?P<scale>trillion|billion|million)\s+(?:green\s+bond|sustainability\s+bond|sustainable\s+bond)",
+            snippet, re.I | re.S
+        )
+        if english_bond:
+            fake = re.match(
+                r"(?P<value>\d[\d.,]*)\s*(?P<unit>trillion VND|billion VND|million VND)",
+                english_bond.group("value") + " " + english_bond.group("scale") + " VND", re.I
+            )
+            if fake:
+                return _apply_money_repair(out, fake)
         patterns = [
             r"(?:tài\s+chính\s+bền\s+vững|sustainable\s+finance)[^.;•]{0,120}?" + MONEY_TEXT,
             MONEY_TEXT + r"[^.;•]{0,55}(?:trái\s+phiếu\s+bền\s+vững|sustainability\s+bonds?|sustainable\s+bonds?)",
@@ -822,6 +881,19 @@ def migration_keep_document(doc, keywords):
     return True
 
 
+def backlog_bucket(owner, doc, current_year):
+    path = urlsplit(doc.get("url") or "").path.lower()
+    if owner != "__external__" and doc.get("type") == "esg_web_content" and any(
+        token in path for token in ("/giai-thuong", "/award", "/tin-tuc", "/news", "/su-kien")
+    ):
+        return "skip"
+    year = doc.get("year")
+    recent_floor = current_year - RECENT_YEARS + 1
+    if year is not None and year < recent_floor:
+        return "history"
+    return "recent"
+
+
 def backlog_priority(owner, doc):
     priorities = {
         "sustainability_report": 12, "climate_disclosure": 11, "annual_report": 10,
@@ -862,13 +934,14 @@ def collect(config, output):
         for symbol, cfg in banks.items():
             seeds = list(cfg.get("seed_urls", []))
             for template in cfg.get("year_url_templates", []):
-                # Probe only the current reporting window. Archive landing
-                # pages retain older years, while this keeps dead yearly URLs
-                # from adding tens of seconds to every refresh.
-                for year in range(current_year, current_year - 3, -1):
+                # Routine runs probe only the current and prior reporting year.
+                # Weekend history backfill may probe one additional year.
+                probe_years = 3 if HISTORY_BACKFILL else 2
+                for year in range(current_year, current_year - probe_years, -1):
                     seeds.append(template.format(year=year))
+            bank_candidates, bank_follow = ((32, 8) if HISTORY_BACKFILL else (22, 4))
             for seed in dict.fromkeys(seeds):
-                jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords, 32, 10)))
+                jobs.append((symbol, seed, pool.submit(discover_seed, seed, keywords, bank_candidates, bank_follow)))
         for symbol, seed, future in jobs:
             try:
                 docs, status = future.result()
@@ -910,9 +983,10 @@ def collect(config, output):
     external_docs = {d["url"]: d for d in previous.get("externalDocuments", []) if d.get("url")}
     ext_jobs = []
     with ThreadPoolExecutor(max_workers=6) as pool:
+        ext_candidates, ext_follow = ((16, 6) if HISTORY_BACKFILL else (8, 2))
         for src in config.get("external_sources", []):
             for seed in src.get("seed_urls", []):
-                ext_jobs.append((src, seed, pool.submit(discover_seed, seed, keywords, 16, 6)))
+                ext_jobs.append((src, seed, pool.submit(discover_seed, seed, keywords, ext_candidates, ext_follow)))
         for src, seed, future in ext_jobs:
             try:
                 docs, status = future.result()
@@ -933,21 +1007,35 @@ def collect(config, output):
     # every subsequent run.
     current = datetime.now(timezone.utc)
     eligible_backlog = []
+    recent_backlog = []
+    historical_backlog = []
+    skipped_backlog = []
+    current_year = current.year
     for owner, doc in backlog:
         retry_after = doc.get("retryAfter")
         try:
             blocked = retry_after and datetime.fromisoformat(retry_after) > current
         except (ValueError, TypeError):
             blocked = False
-        if not blocked:
-            eligible_backlog.append((owner, doc))
-    eligible_backlog.sort(
+        if blocked:
+            continue
+        eligible_backlog.append((owner, doc))
+        bucket = backlog_bucket(owner, doc, current_year)
+        if bucket == "recent":
+            recent_backlog.append((owner, doc))
+        elif bucket == "history":
+            historical_backlog.append((owner, doc))
+        else:
+            skipped_backlog.append((owner, doc))
+    active_backlog = historical_backlog if HISTORY_BACKFILL else recent_backlog
+    active_backlog.sort(
         key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
         reverse=True
     )
-    selected = eligible_backlog[:DOCS_PER_RUN]
+    run_limit = HISTORY_DOCS_PER_RUN if HISTORY_BACKFILL else DOCS_PER_RUN
+    selected = active_backlog[:run_limit]
     processed = 0
-    workers = min(4, max(1, len(selected)))
+    workers = min(2 if HISTORY_BACKFILL else 4, max(1, len(selected)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(extract_document_text, doc["url"]): (owner, doc) for owner, doc in selected}
         for future in as_completed(futures):
@@ -1002,7 +1090,7 @@ def collect(config, output):
         )
         companies[symbol]["canonicalMetrics"] = canonical_metrics(companies[symbol]["metrics"])
         companies[symbol]["externalAssessments"] = merge_unique(
-            companies[symbol]["externalAssessments"],
+            sanitize_external_assessments(companies[symbol]["externalAssessments"]),
             ["provider", "assessmentType", "year", "value", "sourceUrl"],
         )
         companies[symbol]["coverage"] = {
@@ -1027,11 +1115,16 @@ def collect(config, output):
         "externalDocuments": sorted(external_docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True),
         "sources": source_status,
         "run": {
+            "mode": "history" if HISTORY_BACKFILL else "recent",
             "documentsProcessed": processed,
             "backlogBeforeRun": len(backlog),
-            "backlogRemaining": max(0, len(backlog) - processed),
+            "activeBacklogBeforeRun": len(active_backlog),
+            "backlogRemaining": max(0, len(active_backlog) - processed),
             "eligibleBacklog": len(eligible_backlog),
-            "maxDocumentsPerRun": DOCS_PER_RUN,
+            "recentBacklog": len(recent_backlog),
+            "historicalBacklog": len(historical_backlog),
+            "skippedBacklog": len(skipped_backlog),
+            "maxDocumentsPerRun": run_limit,
             "documentWorkers": workers,
         },
     }
@@ -1045,8 +1138,11 @@ def collect(config, output):
         "metrics": sum(v["coverage"]["metrics"] for v in companies.values()),
         "canonicalMetrics": sum(v["coverage"]["canonicalMetrics"] for v in companies.values()),
         "externalAssessments": sum(v["coverage"]["externalAssessments"] for v in companies.values()),
+        "mode": payload["run"]["mode"],
         "documentsProcessedThisRun": processed,
         "backlogRemaining": payload["run"]["backlogRemaining"],
+        "recentBacklog": payload["run"]["recentBacklog"],
+        "historicalBacklog": payload["run"]["historicalBacklog"],
     })
     print(
         f"Corporate ESG: {len(companies)} banks; "

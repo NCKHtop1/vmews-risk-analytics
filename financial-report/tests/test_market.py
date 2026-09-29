@@ -133,7 +133,10 @@ class MarketTests(unittest.TestCase):
         self.assertLessEqual(esm.DISCOVERY_TIMEOUT,8)
         self.assertLessEqual(esm.DETAIL_TIMEOUT,6)
         self.assertLessEqual(esm.DOCUMENT_TIMEOUT,22)
-        self.assertLessEqual(esm.DOCS_PER_RUN,24)
+        self.assertLessEqual(esm.DOCS_PER_RUN,16)
+        self.assertLessEqual(esm.HISTORY_DOCS_PER_RUN,5)
+        self.assertLessEqual(esm.MAX_PDF_PAGES,280)
+        self.assertLessEqual(esm.MAX_TEXT_CHARS,900000)
         self.assertEqual(esm.parse_number('19.321','m3'),19321)
         mixed='Sustainability Report 2025. Green Bond Framework and Annual Report references.'
         self.assertEqual(esm.classify_document(mixed),'sustainability_report')
@@ -145,14 +148,42 @@ class MarketTests(unittest.TestCase):
         self.assertGreater(esm.backlog_priority('TCB',report),esm.backlog_priority('__external__',external))
         self.assertGreater(esm.backlog_priority('ACB',annual),esm.backlog_priority('__external__',external))
 
+    def test_corporate_esg_recent_fast_path_separates_old_history(self):
+        self.assertEqual(esm.backlog_bucket('TCB',{'type':'sustainability_report','year':2025,'url':'https://bank/2025.pdf'},2026),'recent')
+        self.assertEqual(esm.backlog_bucket('OCB',{'type':'annual_report','year':2021,'url':'https://bank/2021.pdf'},2026),'history')
+        self.assertEqual(esm.backlog_bucket('MSB',{'type':'esg_web_content','year':2026,'url':'https://bank/tin-tuc/esg'},2026),'skip')
+        self.assertEqual(esm.backlog_bucket('__external__',{'type':'susba','year':None,'url':'https://provider/report'},2026),'recent')
+
+    def test_corporate_esg_tcb_pdf_layout_is_repaired_canonically(self):
+        rows=[
+            {'metricId':'green_credit','year':2025,'value':1.87e-8,'rawValue':'18.7','unit':'billion VND','qualityScore':108,'confidence':'high','sourceType':'sustainability_report','snippet':'In 2025, Techcombank green credit exposure reached nearly 15% compared with 2024 Trillion VND18.7 Green credit exposure 2024 (VND billion) 4,463 Green credit exposure 2025 (VND billion) 10,535.'},
+            {'metricId':'sustainable_finance','year':2025,'value':500,'rawValue':'500','unit':'billion VND','qualityScore':98,'confidence':'medium','sourceType':'sustainability_report','snippet':'In 2025, Techcombank continued to advance sustainable finance through the new issuance of VND 500 billion Green Bond, reinforcing its commitment.'},
+        ]
+        canonical={x['metricId']:x for x in esm.canonical_metrics(rows)}
+        self.assertEqual(canonical['green_credit']['value'],18700)
+        self.assertEqual(canonical['green_credit']['unit'],'billion VND')
+        self.assertEqual(canonical['sustainable_finance']['value'],500)
+        self.assertTrue(canonical['sustainable_finance']['repaired'])
+
+    def test_corporate_esg_vnsi_reference_is_not_membership(self):
+        reference={'provider':'HOSE','assessmentType':'VNSI membership','year':2024,'value':'VNSI','snippet':'Báo cáo tham chiếu các khung GRI, UN SDGs, VNSI và quy định pháp luật.'}
+        actual={'provider':'HOSE','assessmentType':'VNSI membership','year':2025,'value':'VNSI','snippet':'Năm thứ 5 liên tiếp VietinBank nằm trong Top 20 VNSI.'}
+        continued={'provider':'HOSE','assessmentType':'VNSI membership','year':2025,'value':'VNSI','snippet':'VPBank continued in VNSI in 2025.'}
+        cleaned=esm.sanitize_external_assessments([reference,actual,continued])
+        self.assertNotIn(reference,cleaned)
+        self.assertIn(actual,cleaned)
+        self.assertIn(continued,cleaned)
+
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
-        self.assertIn('options: [all, prices, news, macro, esg, history, intraday]',flow)
+        self.assertIn('options: [all, prices, news, macro, esg, esg-history, history, intraday]',flow)
         self.assertIn("cron: '47 9,14 * * 1-5'",flow)
         self.assertIn("cron: '47 2 * * 6'",flow)
         self.assertIn('pypdf==5.1.0',flow)
         self.assertIn('refresh_esg.py',flow)
         self.assertIn("mode=esg",flow)
+        self.assertIn("mode=esg-history",flow)
+        self.assertIn("ESG_HISTORY_BACKFILL=1",flow)
         self.assertIn("[esg-refresh]",flow)
         self.assertIn("github.event.schedule == '47 9,14 * * 1-5'",flow)
         self.assertIn("'company-esg.json','esg-status.json'",flow)
