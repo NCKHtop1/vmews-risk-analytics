@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "sources": [
     {
       "code": "MBS",
@@ -44,7 +44,7 @@
     {
       "code": "BSC",
       "name": "BIDV Securities",
-      "url": "https://www.bsc.com.vn/bao-cao-phan-tich",
+      "url": "https://www.bsc.com.vn/trung-tam-bao-cao-phan-tich/",
       "mode": "public_html",
       "adapter": "generic_anchors",
       "enabled": true
@@ -84,7 +84,7 @@
     {
       "code": "SSI",
       "name": "SSI Research",
-      "url": "https://research.ssi.com.vn/",
+      "url": "https://research.ssi.com.vn/tim-kiem",
       "mode": "account_or_public_subset",
       "adapter": "health_only",
       "enabled": true
