@@ -6,17 +6,17 @@
     "symbols": 367,
     "forecasts": 1835,
     "flowRows": 322033,
-    "headlines": 22997,
+    "headlines": 23001,
     "headlineSources": {
       "community-claims": 6,
       "community-watchlist": 156,
       "dashboard-communityWatchlist": 237,
-      "dashboard-decisionNews": 17,
-      "dashboard-decisionRecent": 4224,
-      "dashboard-recent": 4224,
-      "fireant": 1058,
+      "dashboard-decisionNews": 14,
+      "dashboard-decisionRecent": 4225,
+      "dashboard-recent": 4225,
+      "fireant": 1059,
       "research-news": 1286,
-      "research-news-v10": 11789
+      "research-news-v10": 11793
     }
   },
   "calendar": {
@@ -35,7 +35,7 @@
     },
     "staleSymbols": 0,
     "chartMismatches": 0,
-    "flatPointForecasts": 64,
+    "flatPointForecasts": 61,
     "crossSource": {
       "status": "PASS",
       "method": "SAME_COMPLETED_SESSION_VNDIRECT_VS_TRADINGVIEW_CLOSE",
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "PASS",
       "sessionDate": "2026-09-29",
-      "observedAt": "2026-09-29T18:03:46+07:00",
+      "observedAt": "2026-09-29T18:23:53+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.91067,
@@ -156,7 +156,7 @@
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.024075026486031992,
+      "executableMAESkill": 0.02407638850964533,
       "magnitudeMAESkill": 0.02287839504420497,
       "directionalAccuracy": 0.5653175928321144,
       "directionStatus": "PASS",
@@ -167,7 +167,7 @@
     },
     "4": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.020332095539185358,
+      "executableMAESkill": 0.020330172589885565,
       "magnitudeMAESkill": 0.0030583891403607177,
       "directionalAccuracy": 0.5745207740988719,
       "directionStatus": "PASS",
