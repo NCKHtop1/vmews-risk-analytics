@@ -109,7 +109,10 @@ jobs:
           except Exception: raise SystemExit(1)
           age=(now-stamp).total_seconds()/60
           same_day=stamp.astimezone(VN).date()==local.date()
-          fresh=d.get('status')=='ok' and int(d.get('coverage') or 0)>=90 and same_day and age<=30
+          import math
+          expected=max(1,int(d.get('expected') or 0))
+          required=max(1,math.ceil(expected*.90))
+          fresh=d.get('status')=='ok' and int(d.get('coverage') or 0)>=required and same_day and age<=30
           print('PRICE WATCHDOG',{'fresh':fresh,'ageMin':round(age,1),'source':raw})
           raise SystemExit(0 if fresh else 1)
           PY
