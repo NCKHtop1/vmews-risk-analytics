@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-29T03:25:11.853911+00:00",
+  "checkedAt": "2026-09-29T03:40:30.449493+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 8,
+  "sourceRegistryVersion": 9,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T03:24:04.198042+00:00",
+      "checkedAt": "2026-09-29T03:39:31.200840+00:00",
       "documents": [
         {
           "id": "e607b3f01ae54f0d38b5",
@@ -200,7 +200,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T03:24:04.198199+00:00",
+      "checkedAt": "2026-09-29T03:39:31.201140+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -390,7 +390,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T03:24:04.198375+00:00",
+      "checkedAt": "2026-09-29T03:39:31.201470+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -431,7 +431,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên Báo cáo thường niên",
+          "title": "Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -839,7 +839,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T03:24:04.198582+00:00",
+      "checkedAt": "2026-09-29T03:39:31.201865+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -1044,7 +1044,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T03:24:04.198681+00:00",
+      "checkedAt": "2026-09-29T03:39:31.202107+00:00",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -1071,6 +1071,18 @@
           "textLength": 158
         },
         {
+          "id": "8c4d976481710fa13f74",
+          "url": "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
+          "title": "20250620_HDBANK_AR-2024_190326_EN.pdf",
+          "sourcePage": "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
+          "year": 2024,
+          "type": "esg_other",
+          "contentType": "html",
+          "contentHash": "fde68d4a37a2a3f82cb6a93133de24c886e6525185db81231d136a2a191533a2",
+          "processedAt": "2026-09-29T03:40:27.629278+00:00",
+          "textLength": 158
+        },
+        {
           "id": "154efe68d916615a36dd",
           "url": "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu",
           "title": "Báo cáo thường niên ngân hàng HDBank Cá nhân Doanh nghiệp Khách hàng đặc biệt Nhà đầu tư Đăng nhập Đăng ký Vn English 日本 Đăng ký Khách hàng",
@@ -1087,8 +1099,8 @@
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
-        "documents": 3,
-        "processedDocuments": 3,
+        "documents": 4,
+        "processedDocuments": 4,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -1097,7 +1109,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T03:24:04.198795+00:00",
+      "checkedAt": "2026-09-29T03:39:31.202334+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -1231,7 +1243,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T03:24:04.198880+00:00",
+      "checkedAt": "2026-09-29T03:39:31.202490+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -1445,7 +1457,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T03:24:04.199382+00:00",
+      "checkedAt": "2026-09-29T03:39:31.203463+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -1967,7 +1979,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T03:24:04.199714+00:00",
+      "checkedAt": "2026-09-29T03:39:31.204626+00:00",
       "documents": [
         {
           "id": "c303b3353659c3a65824",
@@ -1975,7 +1987,11 @@
           "title": "Giải trình biến động lợi nhuận sau thuế 6 tháng đầu năm 2026",
           "sourcePage": "https://www.namabank.com.vn/co-dong",
           "year": 2026,
-          "type": "esg_other"
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "processedAt": "2026-09-29T03:40:29.028028+00:00",
+          "textLength": 0
         },
         {
           "id": "f451421cc4de68afdcc6",
@@ -1983,7 +1999,11 @@
           "title": "Báo cáo tài chính Bán niên - 2026 (Riêng lẻ)",
           "sourcePage": "https://www.namabank.com.vn/co-dong",
           "year": 2026,
-          "type": "esg_other"
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "processedAt": "2026-09-29T03:40:29.754166+00:00",
+          "textLength": 0
         },
         {
           "id": "3513a04144dc75ee4ff0",
@@ -2082,18 +2102,6 @@
           "textLength": 87023
         },
         {
-          "id": "9a75823f7a984b02ebf5",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
-          "title": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2024,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
-          "processedAt": "2026-09-29T03:24:53.506586+00:00",
-          "textLength": 190892
-        },
-        {
           "id": "fa5f1a67142c3668d602",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
           "title": "Báo cáo phát triển bền vững năm 2024",
@@ -2118,6 +2126,18 @@
           "textLength": 213889
         },
         {
+          "id": "9a75823f7a984b02ebf5",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "title": "20260119_esg-namabank-2024-en.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
+          "processedAt": "2026-09-29T03:24:53.506586+00:00",
+          "textLength": 190892
+        },
+        {
           "id": "33e5a56cd74d6d5f8f61",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
           "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
@@ -2135,7 +2155,11 @@
           "title": "Báo cáo thường niên năm 2023",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "40ed3876c1d63034058b6deec71291540efd25040b85ba5c5b654cb4e2a7f3b0",
+          "processedAt": "2026-09-29T03:39:49.092289+00:00",
+          "textLength": 1251
         },
         {
           "id": "0c9ce9572663228d1389",
@@ -2143,7 +2167,11 @@
           "title": "20250804_ESG NAMABANK 2023 EN.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "annual_report"
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
+          "processedAt": "2026-09-29T03:40:21.817994+00:00",
+          "textLength": 251546
         },
         {
           "id": "656e569b13a9f118e6e9",
@@ -2180,10 +2208,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
+          "title": "Báo cáo thường niên năm 2018",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "esg_other"
+          "type": "annual_report"
         },
         {
           "id": "de8049df250aba4307c6",
@@ -2614,6 +2642,96 @@
           "sourceType": "annual_report",
           "snippet": "s under Basel III; received notable awards including: Best Digital Bank in Vietnam, Most Beautiful Banking Excellence Vietnam, Best Bank for Risk Management Vietnam, Best Bank for CSR in Vietnam, Inspirational Brand in Asia, Outstanding Entrepreneur in Asia, and Best Workplace in Asia. - 2023: Increased charter capital to VND 10,580 billion; total assets reached nearly VND 210,000 billion, ranking among Vietnam's Top 20 Largest Banks by As",
           "confidence": "medium"
+        },
+        {
+          "value": 1.2e-09,
+          "rawValue": "1.2",
+          "unit": "billion VND",
+          "qualityScore": 100.67,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "standing loans for projects assessed and managed for E&S risks in 2023 E.1. GREEN FINANCE - ACCOMPANYING THE NATION ON THE NET ZERO JOURNEY (continued) PIONEERING THE PROVISION OF GREEN CREDIT PRODUCTS (continued)E1.2 VND VND billion GRI 203-2 CLEAN WATER AND SANITATION FORDABLE AND CLEAN ENERGY CLIMATE ACTION TERRESTRIAL RESOURCES AND ENVIRONMENT MARINE RESOURCES AND ENVIRONMENT SUSTAINABLE CITIES AND COMMUNITIES NAM A BANK 92 SUSTAINABILITY REPOR",
+          "confidence": "high"
+        },
+        {
+          "value": 5068.0,
+          "rawValue": "5,068",
+          "unit": "tCO2e",
+          "qualityScore": 68,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "ainable Growth Society (S): Building a Competent Workforce Governance (G): Transparent and Effective Governance REDUCING GREENHOUSE GAS EMISSIONS FOR A GREENER FUTURE 2023 Scope 1 Scope 2 Total Emissions (tCO2e) 1,167 3,901 5,068 Emissions per Employee (tCO2e/person) 0.23 0.77 1.00 Total emissions in 2023 5,068 tCO2e Total average emissions per employee (tons of CO₂ equivalent/person) in 2023. 1.00tCO2e/person Reducing GHG emissions not only m",
+          "confidence": "medium"
+        },
+        {
+          "value": 5068.0,
+          "rawValue": "5,068",
+          "unit": "tCO2e",
+          "qualityScore": 105.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "vernance REDUCING GREENHOUSE GAS EMISSIONS FOR A GREENER FUTURE 2023 Scope 1 Scope 2 Total Emissions (tCO2e) 1,167 3,901 5,068 Emissions per Employee (tCO2e/person) 0.23 0.77 1.00 Total emissions in 2023 5,068 tCO2e Total average emissions per employee (tons of CO₂ equivalent/person) in 2023. 1.00tCO2e/person Reducing GHG emissions not only mitigates environmental impact and combats climate change but also lowers operational costs, accelerates digital",
+          "confidence": "high"
+        },
+        {
+          "value": 5810.0,
+          "rawValue": "5,810",
+          "unit": "m3",
+          "qualityScore": 105.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "6, and SMEWW standards. These assessments help identify potential improvements and ensure that discharged water remains within permissible environmental thresholds. 5,810 m3 Total Water Consumption in 2023 E.3.2 E.3.3 GRI 301, GRI 303, GRI 306 (2020) RESPONSIBLE CONSUMPTION AND PRODUCTION CLEAN WATER AND SANITATION FORDABLE AND CLEAN ENERGY CLIMATE ACTION TERRESTRIAL RESOURCES AND ENVIRONMENT MARINE RESOURCES AND ENVIRONMENT NAM A BANK 106 SUSTAINABILIT",
+          "confidence": "high"
+        },
+        {
+          "value": 152.0,
+          "rawValue": "152",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "of water and sanitation for all. 4 5 6 QUALITY EDUCATION GENDER EQUALITY CLEAN WATER AND SANITATION 9 Focused on training employees in professional skills, with an average of 152 training hours per employee in 2023. 9 Provided scholarships to underprivileged students and funded educational infrastructure in economically challenged areas, with a total sponsorship value of VND 2.515 billion in 2023. 9 Women accounted for 54.1% of Nam A Bank’s workforc",
+          "confidence": "high"
+        },
+        {
+          "value": 152.0,
+          "rawValue": "152",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "of water and sanitation for all. 4 5 6 QUALITY EDUCATION GENDER EQUALITY CLEAN WATER AND SANITATION 9 Focused on training employees in professional skills, with an average of 152 training hours per employee in 2023. 9 Provided scholarships to underprivileged students and funded educational infrastructure in economically challenged areas, with a total sponsorship value of VND 2.515 billion in 2023. 9 Women accounted for 54.1% of Nam A Bank’s workforce. 9 Regularl",
+          "confidence": "high"
         }
       ],
       "externalAssessments": [],
@@ -2636,6 +2754,51 @@
           "repaired": true
         },
         {
+          "value": 5068.0,
+          "rawValue": "5,068",
+          "unit": "tCO2e",
+          "qualityScore": 105.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "vernance REDUCING GREENHOUSE GAS EMISSIONS FOR A GREENER FUTURE 2023 Scope 1 Scope 2 Total Emissions (tCO2e) 1,167 3,901 5,068 Emissions per Employee (tCO2e/person) 0.23 0.77 1.00 Total emissions in 2023 5,068 tCO2e Total average emissions per employee (tons of CO₂ equivalent/person) in 2023. 1.00tCO2e/person Reducing GHG emissions not only mitigates environmental impact and combats climate change but also lowers operational costs, accelerates digital",
+          "confidence": "high"
+        },
+        {
+          "value": 1.2e-09,
+          "rawValue": "1.2",
+          "unit": "billion VND",
+          "qualityScore": 100.67,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "standing loans for projects assessed and managed for E&S risks in 2023 E.1. GREEN FINANCE - ACCOMPANYING THE NATION ON THE NET ZERO JOURNEY (continued) PIONEERING THE PROVISION OF GREEN CREDIT PRODUCTS (continued)E1.2 VND VND billion GRI 203-2 CLEAN WATER AND SANITATION FORDABLE AND CLEAN ENERGY CLIMATE ACTION TERRESTRIAL RESOURCES AND ENVIRONMENT MARINE RESOURCES AND ENVIRONMENT SUSTAINABLE CITIES AND COMMUNITIES NAM A BANK 92 SUSTAINABILITY REPOR",
+          "confidence": "high"
+        },
+        {
+          "value": 5810.0,
+          "rawValue": "5,810",
+          "unit": "m3",
+          "qualityScore": 105.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "sourceTitle": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourceType": "annual_report",
+          "snippet": "6, and SMEWW standards. These assessments help identify potential improvements and ensure that discharged water remains within permissible environmental thresholds. 5,810 m3 Total Water Consumption in 2023 E.3.2 E.3.3 GRI 301, GRI 303, GRI 306 (2020) RESPONSIBLE CONSUMPTION AND PRODUCTION CLEAN WATER AND SANITATION FORDABLE AND CLEAN ENERGY CLIMATE ACTION TERRESTRIAL RESOURCES AND ENVIRONMENT MARINE RESOURCES AND ENVIRONMENT NAM A BANK 106 SUSTAINABILIT",
+          "confidence": "high"
+        },
+        {
           "value": 32.4,
           "rawValue": "32,4",
           "unit": "billion VND",
@@ -2653,8 +2816,8 @@
           "repaired": true
         },
         {
-          "value": 46.0,
-          "rawValue": "46",
+          "value": 240132.0,
+          "rawValue": "240,132",
           "unit": "hours",
           "qualityScore": 117.67,
           "metricId": "training_hours",
@@ -2665,7 +2828,9 @@
           "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
           "sourceType": "sustainability_report",
           "snippet": "5, 406, 410-1; SDG 4,8 REFERENCE S.1. HR INVESTMENT AND DEVELOPMENT 216 training courses organized 29 training courses offered, including 25 newly added topics 240,132 hours Total training hours 46 hours Average training hours per employee 85% of security personnel are fully equipped with human rights knowledge and required professional skills. Nam A Bank also shared knowledge, skills, and practical workplace case studies through e-books and handbook",
-          "confidence": "high"
+          "confidence": "high",
+          "canonicalizedFromRawValue": "46",
+          "repaired": true
         },
         {
           "value": 46.0,
@@ -2719,8 +2884,8 @@
           "repaired": true
         },
         {
-          "value": 372367.0,
-          "rawValue": "372.367",
+          "value": 70.94,
+          "rawValue": "70,94",
           "unit": "hours",
           "qualityScore": 116.67,
           "metricId": "training_hours_per_employee",
@@ -2738,16 +2903,16 @@
       ],
       "coverage": {
         "documents": 22,
-        "processedDocuments": 12,
-        "metrics": 28,
-        "canonicalMetrics": 7,
+        "processedDocuments": 16,
+        "metrics": 34,
+        "canonicalMetrics": 10,
         "externalAssessments": 0
       }
     },
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T03:24:04.200162+00:00",
+      "checkedAt": "2026-09-29T03:39:31.205500+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -3345,6 +3510,23 @@
       ],
       "canonicalMetrics": [
         {
+          "value": 528300.0,
+          "rawValue": "528.300",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20240412153819_1204-fa-bctn-2023.pdf",
+          "sourceTitle": "Báo cáo thường niên 2023 2023 Ngày đăng: 12/4/2024 SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "ong tổng quy mô dư nợ tín dụng toàn hàng (tỷ trọng dư nợ tín dụng xanh cuối năm 2021-2022-2023 lần lượt đạt 11,2%-9,1% và gần 9%/tổng dư nợ, trong khi đó: đến 30/6/2023, dư nợ cấp tín dụng xanh tại Việt Nam đạt gần 528.300 tỷ đồng, chiếm tỷ trọng khoảng 4,2% tổng dư nợ toàn nền kinh tế. 87OCB - Niềm tin và thịnh vượng Phát triển các sản phẩm, dịch vụ ngân hàng có xét tới lợi ích về MT&XH. Là một trong những ngân hàng đầu tiên thực hiện chiến lược ch",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "528.300",
+          "repaired": true
+        },
+        {
           "value": 45.5,
           "rawValue": "45,5",
           "unit": "%",
@@ -3396,10 +3578,10 @@
           "repaired": true
         },
         {
-          "value": 255062.0,
-          "rawValue": "255.062",
+          "value": 2024255062.0,
+          "rawValue": "2024 255.062",
           "unit": "hours",
-          "qualityScore": 115.0,
+          "qualityScore": 116,
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
@@ -3408,7 +3590,9 @@
           "sourceTitle": "SEE_MORE",
           "sourceType": "annual_report",
           "snippet": "000 LƯỢT ỨNG VIÊN Tổ chức 525 KHÓA ĐÀO TẠO 26% so với năm 2023 100% CBNV được đào tạo, nâng cao năng lực Do Careerviet tổ chức Giải thưởng EMPLOYER CHOICE 2024 255.062 GIỜ Tổng số giờ đào tạo trong năm 37 GIỜ Bình quân số giờ đào tạo trên mỗi CBNV >30% so với năm 2023 Tuyển dụng công khai và minh bạch Hoạt động tuyển dụng của OCB được xây dựng dựa trên nguyên tắc tuyển dụng công khai và minh bạch trên toàn hệ thống. Quy định tuyển dụng nêu rõ các",
-          "confidence": "high"
+          "confidence": "high",
+          "canonicalizedFromRawValue": "255.062",
+          "repaired": true
         },
         {
           "value": 37.0,
@@ -3466,14 +3650,14 @@
         "documents": 22,
         "processedDocuments": 22,
         "metrics": 21,
-        "canonicalMetrics": 7,
+        "canonicalMetrics": 8,
         "externalAssessments": 1
       }
     },
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T03:24:04.200184+00:00",
+      "checkedAt": "2026-09-29T03:39:31.205543+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -3536,7 +3720,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T03:24:04.200466+00:00",
+      "checkedAt": "2026-09-29T03:39:31.206112+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -3637,7 +3821,7 @@
         {
           "id": "63a3abaf8b52f1a85e00",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
-          "title": "Sustainability Report 2024 05/09/2025",
+          "title": "Sustainability Report 2024 05/09/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -3649,7 +3833,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
+          "title": "SeABank's Annual Report 2024 08/04/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -4274,7 +4458,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T03:24:04.200595+00:00",
+      "checkedAt": "2026-09-29T03:39:31.206376+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -4431,8 +4615,20 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T03:24:04.202209+00:00",
+      "checkedAt": "2026-09-29T03:39:31.206877+00:00",
       "documents": [
+        {
+          "id": "56ecaa75021fa68c4629",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
+          "processedAt": "2026-09-29T01:24:33.017802+00:00",
+          "textLength": 192129
+        },
         {
           "id": "725b2cc303c70d1ae0c8",
           "url": "https://techcombank.com/en/about-us/sustainability/milestones",
@@ -4444,18 +4640,6 @@
           "contentHash": "4f8cbab79fa4ad6c4ae96272b14d8d2b753d446ef994b346e2f825a24ed2bb38",
           "processedAt": "2026-09-29T01:34:40.269534+00:00",
           "textLength": 4813
-        },
-        {
-          "id": "56ecaa75021fa68c4629",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
-          "title": "Download Report",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": 2025,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
-          "processedAt": "2026-09-29T01:24:33.017802+00:00",
-          "textLength": 192129
         },
         {
           "id": "f8a4e9fe11d18570428e",
@@ -4470,6 +4654,18 @@
           "textLength": 6
         },
         {
+          "id": "b462467787998773320f",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/Bao_cao_thuong_nien_nam_2019_f8470fb767_aaeeba489c.pdf",
+          "title": "Xem chi tiết",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2019,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "e6836f67365d3ca254c64d29fd0a7d014088bd5eb567f2ba956ecde32b15e825",
+          "processedAt": "2026-09-29T03:39:48.352457+00:00",
+          "textLength": 343859
+        },
+        {
           "id": "3a04bceed126cd49f0e4",
           "url": "https://techcombank.com/en/about-us/sustainability/solutions/news",
           "title": "View all our activities",
@@ -4479,28 +4675,40 @@
           "contentType": "html"
         },
         {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "See all ESG solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
+          "id": "4c62a211aad9d4266a7a",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/vi/listviewdocument/TCB-AR-EN-Interactive-21038b0025.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "93cb73a466ce129825e20949dfdfffe3727c4ed291d9a54a0daf17e87739df4e",
+          "processedAt": "2026-09-29T03:40:26.391693+00:00",
+          "textLength": 461662
         },
         {
-          "id": "5f8da544b07832ede0e2",
-          "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Overview",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
-          "processedAt": "2026-09-29T01:34:42.514584+00:00",
-          "textLength": 5751
+          "id": "9d64c3b583d8f2c84784",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2022,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d4bc3291bf17f166b9821602623eae689114bffe217f9c91aeee183bc51d8f0c",
+          "processedAt": "2026-09-29T03:40:18.859549+00:00",
+          "textLength": 417959
+        },
+        {
+          "id": "19b7fa17d70ba166a3b0",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/20220628_Annual_Report_2021_double_page_6ce0c20104.pdf",
+          "title": "View Digital Version",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability/milestones",
+          "year": 2021,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d16fb7b87c7d3982d73b7b3ddb6efc673f2138f03f0a2e9a8ed9c1bb2c25a47e",
+          "processedAt": "2026-09-29T03:39:48.616788+00:00",
+          "textLength": 375765
         },
         {
           "id": "92a4cc6c630bcb4bdbd4",
@@ -4513,6 +4721,18 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
+        },
+        {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "Our Solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -4537,6 +4757,18 @@
           "contentHash": "0d5395ce2ffe929d46fcbe9f027664b21dc9f77d509b70f1295633f5a89fee9a",
           "processedAt": "2026-09-29T01:34:42.084517+00:00",
           "textLength": 2991
+        },
+        {
+          "id": "5f8da544b07832ede0e2",
+          "url": "https://techcombank.com/en/about-us/sustainability",
+          "title": "English",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
+          "processedAt": "2026-09-29T01:34:42.514584+00:00",
+          "textLength": 5751
         },
         {
           "id": "716c7d37cb29fec64cba",
@@ -4623,6 +4855,141 @@
           "sourceType": "sustainability_report",
           "snippet": "inability report 2025 SocialChapter 5 47 5.2.6 | Employee Development Overall training In 2025, each Techcombank employee averaged 53.6 hours spent in training. A total of 866,193 training hours were recorded, with future capability development programs related to technology, data, digitisation and agility accounted for ~15% of training time or 147,881 hours. • Corporate and Institutional Banking Group has implemented a dedicated capability uplift pr",
           "confidence": "high"
+        },
+        {
+          "value": 65.0,
+          "rawValue": "65",
+          "unit": "billion VND",
+          "qualityScore": 98.67,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2019,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/Bao_cao_thuong_nien_nam_2019_f8470fb767_aaeeba489c.pdf",
+          "sourceTitle": "Xem chi tiết",
+          "sourceType": "annual_report",
+          "snippet": "2019, khi Techcombank Marathon 2019 thành công vượt trội về số người tham dự và số km hoàn thành thì 2 tỷ đồng cũng đã được tặng vào các quỹ từ thiện, nâng tổng ngân sách dành cho cộng đồng của ngân hàng năm 2019 lên 65 tỷ đồng (tăng 30% so với 2018). Với tổng số 65 tỷ đồng này, 5 trường học mới đã được tặng cho các em học sinh ở vùng dân cư khó khăn, 151 nhà tình thương khang trang đã trở thành mái ấm mới của nhiều hộ nghèo góp phần giúp Techco",
+          "confidence": "medium"
+        },
+        {
+          "value": 400.0,
+          "rawValue": "400",
+          "unit": "billion VND",
+          "qualityScore": 95.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2021,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/20220628_Annual_Report_2021_double_page_6ce0c20104.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "L REPORT THE POWER OF TECH 2021 ANNUAL REPORT THE POWER OF TECH 91 Chapter IV The Foundation of Tech90 Chapter IV The Foundation of Tech ESG SUSTAINABILITY COVID Support and other CSR (continued) In 2021, we donated about VND 400 billion for over 1,000 pieces of medical equipment especially for hospital in the southern region which was hit the most during wave 4, and funded COVID-19 hospital constructions in Hanoi and the northern province",
+          "confidence": "medium"
+        },
+        {
+          "value": 3417400.0,
+          "rawValue": "3,417,400",
+          "unit": "kWh",
+          "qualityScore": 107.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "uidelines (regulations, strategy etc.) Electricity consumption in 2022 Water supply and amount of water used Water consumption during business activities in 2022 119 Tran Duy Hung Electricity consumption: 3,417,400 KWh All water (100%) was from the city’s water supply Total water consumption: 14,400 m3 191 Ba Trieu Electricity consumption: 1,754,383 KWh All water (100%) was from the city’s water supply Total water consumption: 8,816 m3 94 95 Chap 05 | The fou",
+          "confidence": "high"
+        },
+        {
+          "value": 14400.0,
+          "rawValue": "14,400",
+          "unit": "m3",
+          "qualityScore": 107.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "of water used Water consumption during business activities in 2022 119 Tran Duy Hung Electricity consumption: 3,417,400 KWh All water (100%) was from the city’s water supply Total water consumption: 14,400 m3 191 Ba Trieu Electricity consumption: 1,754,383 KWh All water (100%) was from the city’s water supply Total water consumption: 8,816 m3 94 95 Chap 05 | The foundation of TECH ESG Sustainability STRONGER, FURTHER, TOGETHER2022 ANNUAL REPORT VND 2 BI",
+          "confidence": "high"
+        },
+        {
+          "value": 68.6,
+          "rawValue": "68.6",
+          "unit": "%",
+          "qualityScore": 102.33,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "quality standards. A culture of inclusivity helps us attract and retain talented people from all parts of the community. Female employees 8,464 equivalent to 68.6% total employees Female employees at leadership level 643 equivalent to 54.6% of leaders Number of expatriates employed 60 Customer protection and product responsibility Our policies and procedures set standards to ensure we consider and meet customers’ needs. According to YouGov, Techcombank",
+          "confidence": "high"
+        },
+        {
+          "value": 70.0,
+          "rawValue": "70",
+          "unit": "hours",
+          "qualityScore": 110.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "ment Our ‘Learning Champions’ program aims to ensure we remain a learning organisation. We offered quarterly recognition for our Top 10 Learning Champions across the Bank. Average learning hours per employee was over 70 hours for the year. Work efficiency and Collaboration for common objectives ‘Be Greater Techcomers’ encourages appreciation of fellow colleagues who contribute to our greater success. In addition to traditional email, the Yammer Prais",
+          "confidence": "high"
+        },
+        {
+          "value": 2.0,
+          "rawValue": "2",
+          "unit": "billion VND",
+          "qualityScore": 88.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "m3 94 95 Chap 05 | The foundation of TECH ESG Sustainability STRONGER, FURTHER, TOGETHER2022 ANNUAL REPORT VND 2 BILLION “For Greater Vietnam” foundation Techcombank donated over CSR – Relationships with local communities Our “Change banking, Change lives” vision drives Techcombank’s deep commitment to being a socially responsible bank. Throughout the year, we ran activities and invested in programs that delivered positive impacts to the",
+          "confidence": "medium"
+        },
+        {
+          "value": 1100.0,
+          "rawValue": "1.1",
+          "unit": "billion VND",
+          "qualityScore": 103.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/vi/listviewdocument/TCB-AR-EN-Interactive-21038b0025.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "reen agriculture, renewable and clean energy, and other environmentally friendly sectors. This has significantly improved from our exposure level of VND 1.1 trillion in 2022. 2023 green credit exposure (VND Tn, %) Renewable, clean energy Green construction projects Green agriculture Sustainable forestry Sustainable transportation Other green areas 13.9 0.4 1.7 4.3 1.80.4 5.3 Diversity and inclusion Gender structure (11.6K employees) Gender diversit",
+          "confidence": "high"
+        },
+        {
+          "value": 915000.0,
+          "rawValue": "915,000",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/vi/listviewdocument/TCB-AR-EN-Interactive-21038b0025.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "continued to invest in training programs for our employees so they could gain new skills and reach their full potential. Across the Bank, employees received approximately 915,000 hours of training in 2023, equivalent to around 82 hours each, up 17.1% Y o Y (2022: 70 hours each), which evidences our continued efforts in talent development. The focus on training and recruitment of top talent, coupled with the investment in Digital and Data technologies,",
+          "confidence": "high"
         }
       ],
       "externalAssessments": [
@@ -4649,6 +5016,70 @@
         }
       ],
       "canonicalMetrics": [
+        {
+          "value": 2.0,
+          "rawValue": "2",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2019,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/Bao_cao_thuong_nien_nam_2019_f8470fb767_aaeeba489c.pdf",
+          "sourceTitle": "Xem chi tiết",
+          "sourceType": "annual_report",
+          "snippet": "2019, khi Techcombank Marathon 2019 thành công vượt trội về số người tham dự và số km hoàn thành thì 2 tỷ đồng cũng đã được tặng vào các quỹ từ thiện, nâng tổng ngân sách dành cho cộng đồng của ngân hàng năm 2019 lên 65 tỷ đồng (tăng 30% so với 2018). Với tổng số 65 tỷ đồng này, 5 trường học mới đã được tặng cho các em học sinh ở vùng dân cư khó khăn, 151 nhà tình thương khang trang đã trở thành mái ấm mới của nhiều hộ nghèo góp phần giúp Techco",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "65",
+          "repaired": true
+        },
+        {
+          "value": 3417400.0,
+          "rawValue": "3,417,400",
+          "unit": "kWh",
+          "qualityScore": 107.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "uidelines (regulations, strategy etc.) Electricity consumption in 2022 Water supply and amount of water used Water consumption during business activities in 2022 119 Tran Duy Hung Electricity consumption: 3,417,400 KWh All water (100%) was from the city’s water supply Total water consumption: 14,400 m3 191 Ba Trieu Electricity consumption: 1,754,383 KWh All water (100%) was from the city’s water supply Total water consumption: 8,816 m3 94 95 Chap 05 | The fou",
+          "confidence": "high"
+        },
+        {
+          "value": 14400.0,
+          "rawValue": "14,400",
+          "unit": "m3",
+          "qualityScore": 116,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/imported-assets/ENG-Book-TCB-AR-22-Web-a51923978f.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "of water used Water consumption during business activities in 2022 119 Tran Duy Hung Electricity consumption: 3,417,400 KWh All water (100%) was from the city’s water supply Total water consumption: 14,400 m3 191 Ba Trieu Electricity consumption: 1,754,383 KWh All water (100%) was from the city’s water supply Total water consumption: 8,816 m3 94 95 Chap 05 | The foundation of TECH ESG Sustainability STRONGER, FURTHER, TOGETHER2022 ANNUAL REPORT VND 2 BI",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "14,400",
+          "repaired": true
+        },
+        {
+          "value": 1100.0,
+          "rawValue": "1.1",
+          "unit": "billion VND",
+          "qualityScore": 103.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/vi/listviewdocument/TCB-AR-EN-Interactive-21038b0025.pdf",
+          "sourceTitle": "View Digital Version",
+          "sourceType": "annual_report",
+          "snippet": "reen agriculture, renewable and clean energy, and other environmentally friendly sectors. This has significantly improved from our exposure level of VND 1.1 trillion in 2022. 2023 green credit exposure (VND Tn, %) Renewable, clean energy Green construction projects Green agriculture Sustainable forestry Sustainable transportation Other green areas 13.9 0.4 1.7 4.3 1.80.4 5.3 Diversity and inclusion Gender structure (11.6K employees) Gender diversit",
+          "confidence": "high"
+        },
         {
           "value": 18700.0,
           "rawValue": "18.7",
@@ -4702,17 +5133,17 @@
         }
       ],
       "coverage": {
-        "documents": 11,
-        "processedDocuments": 9,
-        "metrics": 4,
-        "canonicalMetrics": 3,
+        "documents": 15,
+        "processedDocuments": 13,
+        "metrics": 13,
+        "canonicalMetrics": 7,
         "externalAssessments": 1
       }
     },
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T03:24:04.202293+00:00",
+      "checkedAt": "2026-09-29T03:39:31.207109+00:00",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -4884,10 +5315,10 @@
       ],
       "canonicalMetrics": [
         {
-          "value": 680000.0,
-          "rawValue": "680.000",
+          "value": 7371.0,
+          "rawValue": "7.371",
           "unit": "billion VND",
-          "qualityScore": 101.0,
+          "qualityScore": 116,
           "metricId": "green_credit",
           "pillar": "E",
           "label": "Dư nợ tín dụng xanh",
@@ -4896,13 +5327,15 @@
           "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
           "sourceType": "sustainability_report",
           "snippet": "g tin chi ti ết về việc phân bổ vốn và các tác động môi trường mà các dự án/phương án được tài trợ đã mang lại (nếu có). 4.1.3 Kết quả tín dụng xanh Tính tới cuối năm 2024, dư n ợ tín dụng xanh c ủa cả nước khoảng 680.000 tỷ đồng, chiếm hơn 4,3% t ổng dư nợ toàn nền kinh t ế. Đóng góp vào k ết quả này, tính đến ngày 31/12/2024, TPBank đã cấp tín dụng xanh cho 158 khách hàng, với tổng dư nợ vay và đầu tư TPDN đạt 7.371 tỷ đồng, trong đó: • Dư nợ cho",
-          "confidence": "high"
+          "confidence": "high",
+          "canonicalizedFromRawValue": "680.000",
+          "repaired": true
         },
         {
-          "value": 391680.0,
-          "rawValue": "391,68",
+          "value": 406190.0,
+          "rawValue": "406,19",
           "unit": "kg",
-          "qualityScore": 105.33,
+          "qualityScore": 116,
           "metricId": "paper",
           "pillar": "E",
           "label": "Giấy tiêu thụ",
@@ -4911,7 +5344,9 @@
           "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
           "sourceType": "sustainability_report",
           "snippet": "năng suất lao động và chất lượng phục vụ khách hàng, giảm thiểu việc sử dụng giấy tờ, tiết kiệm năng lượng và chi phí quản trị. Số liệu về sử dụng giấy 2024 2023 Đơn vị tính Lượng giấy tiêu thụ 406,19 391,68 Tấn Hiệu su ất s ử dụng gi ấy bình quân theo đ ầu người 0,052 0,049 Tấn/nhân sự Hiệu suất sử dụng giấy bình quân theo lợi nhuận 0,053 0,07 Tấn/Tỷ VND 4.2.2 Tiêu thụ năng lượng hiệu quả Tham chiếu GRI 302 TPBank đã ban hành chính sách ti ết ki ệm",
-          "confidence": "high"
+          "confidence": "high",
+          "canonicalizedFromRawValue": "391,68",
+          "repaired": true
         },
         {
           "value": 295905.0,
@@ -4931,10 +5366,10 @@
           "repaired": true
         },
         {
-          "value": 203025.0,
-          "rawValue": "203.025",
+          "value": 203379.0,
+          "rawValue": "203.379",
           "unit": "m3",
-          "qualityScore": 105.0,
+          "qualityScore": 116,
           "metricId": "water",
           "pillar": "E",
           "label": "Nước tiêu thụ",
@@ -4943,7 +5378,9 @@
           "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
           "sourceType": "sustainability_report",
           "snippet": "ản lý và đảm bảo hiệu quả trong việc thực hành tiết kiệm nước, góp ph ần giảm thiểu lãng phí tài nguyên và b ảo vệ môi trường. Số liệu về tiêu thụ nước 2024 2023 Đơn vị tính Lượng nước tiêu thụ 203.379 203.025 m3 Hiệu suất sử dụng nước bình quân theo đầu người 25,81 25,57 m3/nhân sự Hiệu suất sử dụng nước bình quân theo lợi nhuận 26,76 36,33 m3/tỷ VND Báo cáo Phát triển bền vững 2024 1. Giới thiệu 2. Kinh tế 3. Quản trị 4. Môi trường 5. Xã hội Phụ l",
-          "confidence": "high"
+          "confidence": "high",
+          "canonicalizedFromRawValue": "203.025",
+          "repaired": true
         }
       ],
       "coverage": {
@@ -4957,7 +5394,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T03:24:04.202436+00:00",
+      "checkedAt": "2026-09-29T03:39:31.207381+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -5485,7 +5922,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T03:24:04.202506+00:00",
+      "checkedAt": "2026-09-29T03:39:31.207531+00:00",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -5514,6 +5951,18 @@
           "textLength": 374
         },
         {
+          "id": "6dc859a5937284504802",
+          "url": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+          "title": "Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf",
+          "sourcePage": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+          "year": 2024,
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "656969d289abab39fbef1e18f2a39285a633559d74f69b79a302eee4d4b646bd",
+          "processedAt": "2026-09-29T03:40:27.033993+00:00",
+          "textLength": 374
+        },
+        {
           "id": "6968d1a581184f508e23",
           "url": "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien",
           "title": "Báo cáo thường niên",
@@ -5530,8 +5979,8 @@
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
-        "documents": 3,
-        "processedDocuments": 3,
+        "documents": 4,
+        "processedDocuments": 4,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -5540,7 +5989,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T03:24:04.202593+00:00",
+      "checkedAt": "2026-09-29T03:39:31.207695+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -5849,14 +6298,32 @@
       "textLength": 4043
     },
     {
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "SUSBA-2023-Report-Final.pdf",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "climate_disclosure",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
+      "processedAt": "2026-09-29T03:40:30.235596+00:00",
+      "textLength": 98218
+    },
+    {
       "id": "abbe2ce24605a50fc5f0",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
       "title": "Above-Board_Final.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2024,
-      "type": "susba",
+      "year": 2023,
+      "type": "sustainability_report",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-29T03:40:15.687354+00:00",
+      "textLength": 61879
     },
     {
       "id": "c3ae1e1e5c89eec1b45b",
@@ -5873,16 +6340,6 @@
       "textLength": 98218
     },
     {
-      "id": "c3ae1e1e5c89eec1b45b",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "2023 Summary Report",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
       "id": "abbe2ce24605a50fc5f0",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
       "title": "2023 Assessment of Banks' Seafood Sector Policies",
@@ -5895,6 +6352,16 @@
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
       "processedAt": "2026-09-29T03:11:11.033620+00:00",
       "textLength": 61879
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "report-2018-compressed.pdf",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2022,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "c6d164862c0327932c55",
@@ -6026,16 +6493,6 @@
     },
     {
       "id": "5a3092bae6468b8e3d31",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "2018 Updated Report",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2018,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
-      "id": "5a3092bae6468b8e3d31",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
       "title": "2018 Updated Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -6064,9 +6521,13 @@
       "title": "https://www.swissre.com/dam/jcr:e73ee7c3-7f83-4c17-a2b8-8ef23a8d3312/swiss-re-institute-expertise-publication-economics-of-climate-change.pdf",
       "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions/physical-climate-risk-metrics",
       "year": null,
-      "type": "esg_other",
+      "type": "climate_disclosure",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentType": "pdf",
+      "contentHash": "c1b50ed31cb5d37c0b5754d132ee99305a849295f766c32e020572469502ddb5",
+      "processedAt": "2026-09-29T03:40:25.643752+00:00",
+      "textLength": 107576
     },
     {
       "id": "3f657328348bfec1bf88",
@@ -6214,7 +6675,7 @@
       "title": "Partner Platforms",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -6687,7 +7148,7 @@
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessments",
+      "title": "Assessment page",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -6849,6 +7310,12 @@
       "symbol": "EIB"
     },
     {
+      "url": "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "HDB"
+    },
+    {
       "url": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
       "status": "ok",
       "documents": 1,
@@ -6946,8 +7413,8 @@
     },
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-      "status": "ok",
-      "documents": 1,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "OCB"
     },
     {
@@ -7013,7 +7480,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 6,
+      "documents": 9,
       "symbol": "TCB"
     },
     {
@@ -7065,6 +7532,12 @@
       "symbol": "VCB"
     },
     {
+      "url": "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "VIB"
+    },
+    {
       "url": "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES",
       "status": "ok",
       "documents": 1,
@@ -7103,7 +7576,7 @@
     {
       "url": "https://www.wwf.sg/susba/reports/",
       "status": "ok",
-      "documents": 5,
+      "documents": 4,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -7131,7 +7604,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 3,
+      "documents": 2,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -7145,12 +7618,12 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 16,
-    "backlogBeforeRun": 42,
-    "activeBacklogBeforeRun": 23,
-    "backlogRemaining": 7,
-    "eligibleBacklog": 40,
-    "recentBacklog": 23,
+    "documentsProcessed": 13,
+    "backlogBeforeRun": 32,
+    "activeBacklogBeforeRun": 13,
+    "backlogRemaining": 0,
+    "eligibleBacklog": 30,
+    "recentBacklog": 13,
     "historicalBacklog": 11,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
