@@ -599,7 +599,7 @@ class MarketTests(unittest.TestCase):
         self.assertGreaterEqual(len(codes),15)
         rows={x['code']:x for x in sources['sources']}
         self.assertEqual(rows['BSC']['url'],'https://www.bsc.com.vn/trung-tam-bao-cao-phan-tich/')
-        self.assertEqual(rows['SSI']['url'],'https://research.ssi.com.vn/tim-kiem')
+        self.assertEqual(rows['SSI']['url'],'https://www.ssi.com.vn/khach-hang-ca-nhan/bao-cao-cong-ty')
         companies=json.loads((ROOT/'data/companies.json').read_text())
         self.assertEqual(len(companies),100)
         self.assertTrue(all(len(x['symbol'])==3 for x in companies))
