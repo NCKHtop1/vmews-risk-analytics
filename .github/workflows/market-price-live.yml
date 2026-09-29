@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/market-price-live.yml'
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/data/universe.json'
   schedule:
     # Dedicated 15-minute cadence. It no longer shares the heavy ESG/history concurrency queue.
     - cron: '5,20,35,50 2-8 * * 1-5'
