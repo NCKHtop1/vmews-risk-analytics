@@ -63,5 +63,5 @@ showGate();
 if(state.unlocked)setTimeout(load,0);
 setInterval(()=>{if(state.unlocked&&!document.hidden)load();},60000);
 document.addEventListener('visibilitychange',()=>{if(state.unlocked&&!document.hidden)load();});
-window.FinTechnicalScanner={open,refresh:load,context(){return state.unlocked&&state.data?{checkedAt:state.data.checkedAt,sourceTime:state.data.sourceTime,rules:state.data.rules,matches:(state.data.matches||[]).slice(0,30)}:null;}};
+window.FinTechnicalScanner={open,refresh:load,context(){if(!state.unlocked||!state.data)return null;const symbol=String(document.getElementById('ticker')?.value||'').trim().toUpperCase();return{checkedAt:state.data.checkedAt,sourceTime:state.data.sourceTime,rules:state.data.rules,current:state.data.symbols?.[symbol]||null,matches:(state.data.matches||[]).slice(0,30)};}};
 })();
