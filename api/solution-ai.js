@@ -127,26 +127,32 @@ async function callGemini(question, context, history, secret, sources = [], mode
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": secret },
   };
-  const interaction = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-    ...common,
-    body: JSON.stringify({ model, input, system_instruction: systemInstruction(), store: false, tools: [{ type: "google_search" }] }),
-    signal: AbortSignal.timeout(24_000),
+  const body = search => ({
+    systemInstruction: { parts: [{ text: systemInstruction() }] },
+    contents: [{ role: "user", parts: [{ text: input }] }],
+    generationConfig: { maxOutputTokens: 1800, temperature: .18 },
+    ...(search ? { tools: [{ googleSearch: {} }] } : {}),
   });
-  if (interaction.ok) return responseText(await interaction.json());
-  if (![400, 404, 405].includes(interaction.status)) {
-    throw new Error(`GEMINI_UPSTREAM_${interaction.status}`);
-  }
-  const compatible = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-    ...common,
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemInstruction() }] },
-      contents: [{ role: "user", parts: [{ text: input }] }],
-      generationConfig: { maxOutputTokens: 1200 },
-    }),
-    signal: AbortSignal.timeout(24_000),
-  });
-  if (!compatible.ok) throw new Error(`GEMINI_UPSTREAM_${compatible.status}`);
-  return responseText(await compatible.json());
+  const invoke = async search => fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+    {
+      ...common,
+      body: JSON.stringify(body(search)),
+      signal: AbortSignal.timeout(18_000),
+    },
+  );
+
+  let response = await invoke(true);
+  // Search entitlement/billing is optional; the grounded request must still be
+  // answerable from the supplied audited context.
+  if ([400, 403].includes(response.status)) response = await invoke(false);
+  // One bounded retry covers transient provider overload without delaying
+  // provider-chain failover on quota exhaustion.
+  if ([500, 502, 503].includes(response.status)) response = await invoke(false);
+  if (!response.ok) throw new Error(`GEMINI_UPSTREAM_${response.status}`);
+  const answer = responseText(await response.json());
+  if (!answer) throw new Error("GEMINI_EMPTY_RESPONSE");
+  return answer;
 }
 
 async function callCompatible(provider, question, context, history, sources) {
