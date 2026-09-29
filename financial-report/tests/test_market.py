@@ -858,6 +858,19 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('FPT',rows)
         self.assertIsNone(m.number('NaN'))
 
+    def test_history_effective_status_counts_retained_usable_files(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            out=pathlib.Path(td); (out/'history').mkdir()
+            m.write(out/'history-status.json',{'success':1,'expected':2,'errors':['BBB: timeout']})
+            m.write(out/'history'/'AAA.json',{'symbol':'AAA','status':'ok','lastBar':'2026-09-29','bars':[{'time':'2026-09-29','close':10}]})
+            m.write(out/'history'/'BBB.json',{'symbol':'BBB','status':'retained','lastBar':'2026-09-29','bars':[{'time':'2026-09-29','close':20}]})
+            status=m.update_history_effective_status(out,['AAA','BBB'])
+            self.assertEqual(status['effectiveAvailable'],2)
+            self.assertEqual(status['effectiveRetained'],1)
+            self.assertEqual(status['latestBar'],'2026-09-29')
+            self.assertEqual(status['latestBarCoverage'],2)
+            self.assertEqual(status['effectiveStatus'],'ok')
     def test_current_session_filter_rejects_t_minus_one_quotes(self):
         current=datetime(2026,9,29,7,0,tzinfo=timezone.utc)
         rows={
@@ -983,6 +996,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn('cancel-in-progress: true',pages)
         self.assertIn("cron: '20 9 * * 1-5'",workflow)
         self.assertIn("cron: '35 9 * * 1-5'",workflow)
+        self.assertIn("HISTORY_RETRY_WORKERS: '2'",workflow)
+        self.assertIn("&& '2' || '4'",workflow)
+        self.assertIn("&& '3' || '2'",workflow)
         self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
 
     def test_movement_driver_exposes_weighted_evidence_without_claiming_causality(self):
@@ -1351,6 +1367,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('.technical-scanner-panel',css)
         self.assertIn("(front / 'technical-scanner.js').read_text()",build)
         self.assertIn('market/technical-signals.json',workflow)
+        self.assertIn('market/history-status.json',workflow)
         self.assertIn('Technical scanner coverage is below 90/100',workflow)
         self.assertIn("technical-signals.json",guard)
         self.assertIn('scanner.get(\'sourceTime\')',guard)
