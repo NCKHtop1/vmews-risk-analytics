@@ -5,6 +5,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - ".github/workflows/cdn-smoke.yml"
+      - ".github/workflows/forecast-v12-cdn-smoke.yml"
+      - "scripts/forecast_freshness_audit.py"
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
@@ -36,6 +39,9 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/forecast-v13-daily-refresh.yml"
+      - ".github/workflows/cdn-smoke.yml"
+      - ".github/workflows/forecast-v12-cdn-smoke.yml"
+      - "scripts/forecast_freshness_audit.py"
       - "forecast-final.html"
       - "forecast-final-v12.js"
       - "solution-ai-v17.js"
@@ -74,6 +80,8 @@ on:
       - "scripts/solution_ai_frontend_v17_test.mjs"
       - "api/solution-ai.js"
   schedule:
+    # Recovery at 03:17 and 05:17 Vietnam time, including Saturday after Friday.
+    - cron: "17 20,22 * * *"
     - cron: "0 0 * * 1-5"
     - cron: "15 9 * * 1-5"
     - cron: "30 10 * * 1-5"
@@ -101,6 +109,8 @@ jobs:
         run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener
       - name: Verify strict current-session freshness and exchange calendar
         run: |
+          python scripts/forecast_freshness_test.py
+          node scripts/forecast_freshness_test.cjs
           python scripts/forecast_release_regression_test.py
           python scripts/run_forecast_v9_deployable_test.py
           python scripts/forecast_v28_postclose_bridge_test.py
@@ -120,9 +130,14 @@ jobs:
       - name: Remove cross-issuer contamination from every current intelligence artifact
         run: python scripts/sanitize_intelligence_v20.py
       - name: Archive disclosed fund holdings and NAV context
+        id: optional_funds
+        continue-on-error: true
         env:
           FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
         run: python scripts/forecast_v16_external_data.py --collect-funds
+      - name: Report unavailable optional fund context
+        if: steps.optional_funds.outcome == 'failure'
+        run: echo "::warning::Fund context unavailable; retaining dated history. Core EOD price and forecast validation remain mandatory."
       - name: Bind forecast cross-source audit to latest completed session
         run: python scripts/prepare_forecast_scan_v28.py
       - name: Refresh every HOSE EOD and publish only independently validated forecasts
@@ -164,6 +179,8 @@ jobs:
           bridge=(market.get('sources') or {}).get('postCloseBridge') or {}
           if expected==now.date().isoformat() and bridge.get('status')!='PASS': raise SystemExit(f"CURRENT SESSION NOT INDEPENDENTLY VERIFIED: {bridge}")
           PY
+      - name: Audit every symbol and every target session
+        run: python scripts/forecast_freshness_audit.py --output data/forecast-freshness-audit.json
       - name: Persist the validated market snapshot
         if: github.event_name != 'pull_request'
         env:
@@ -171,6 +188,7 @@ jobs:
         run: |
           set -euo pipefail
           files=(
+            data/forecast-freshness-audit.json
             data/v16-eod-refresh-cache.json.gz
             data/flow-v12.json
             data/flow-audit-v12.json

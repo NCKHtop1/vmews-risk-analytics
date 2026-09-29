@@ -84,6 +84,7 @@
     const rows = [];
 
     for (const [symbol, snapshot] of Object.entries(snapshots)) {
+      if (window.__VMEWS_FRESHNESS__?.inspect(snapshot).stale) continue;
       const forecast = snapshot?.horizons?.[String(selectedHorizon)] || {};
       const close = number(snapshot.close);
       const target = number(forecast.expectedPrice);

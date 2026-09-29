@@ -18,6 +18,7 @@ downloaded holdings report from being copied backwards into historical rows.
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import math
 import os
@@ -475,19 +476,28 @@ def latest_fund_context(path: Path = FUND_HISTORY_PATH) -> tuple[dict[str, dict[
     }
 
 
+def load_fund_universe(path: Path) -> set[str]:
+    # Fund mapping uses listed securities, not the smaller forecast-eligible set.
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8") as stream:
+        source = json.load(stream)
+    raw = source.get("currentHOSESymbols") or source.get("symbols") or {}
+    universe = {str(symbol).upper() for symbol in raw}
+    if len(universe) < 100 or any(not re.fullmatch(r"[A-Z][A-Z0-9]{2}", symbol) for symbol in universe):
+        raise SourceError(f"invalid HOSE universe: {len(universe)} symbols")
+    return universe
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--collect-funds", action="store_true")
-    parser.add_argument("--universe", default=str(DATA / "forecast-dashboard-v12.json"))
+    parser.add_argument("--universe", default=str(DATA / "v12-frozen-source.json.gz"))
     parser.add_argument("--output", default=str(FUND_HISTORY_PATH))
     parser.add_argument("--max-funds", type=int)
     arguments = parser.parse_args()
     if not arguments.collect_funds:
         parser.error("choose --collect-funds")
-    source = json.loads(Path(arguments.universe).read_text(encoding="utf-8"))
-    universe = {str(symbol).upper() for symbol in (source.get("symbols") or {})}
-    if len(universe) < 390:
-        raise SourceError(f"invalid HOSE universe: {len(universe)} symbols")
+    universe = load_fund_universe(Path(arguments.universe))
     snapshot = collect_fmarket_snapshot(universe, max_funds=arguments.max_funds)
     history = append_fund_snapshot(snapshot, Path(arguments.output))
     print(

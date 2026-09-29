@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const {expectedSession,inspect}=require('../forecast-freshness.js');
+assert.equal(expectedSession(new Date('2026-09-29T06:00:00+07:00')),'2026-09-28');
+assert.equal(expectedSession(new Date('2026-09-28T06:00:00+07:00')),'2026-09-25');
+assert.equal(expectedSession(new Date('2026-09-28T15:04:00+07:00')),'2026-09-25');
+assert.equal(expectedSession(new Date('2026-09-28T15:05:00+07:00')),'2026-09-28');
+assert.equal(expectedSession(new Date('2026-09-02T16:00:00+07:00')),'2026-08-28');
+assert.equal(inspect({date:'2026-09-25'},new Date('2026-09-29T06:00:00+07:00')).stale,true);
+assert.equal(expectedSession(new Date('2027-01-04T06:00:00+07:00')),null);
+console.log('Freshness calendar and stale snapshot checks passed');

@@ -18,6 +18,7 @@ on:
       - "scripts/forecast_v21_session_snapshot.py"
       - "scripts/forecast_v21_publish_guard.py"
   schedule:
+    - cron: "47 20,22 * * *"
     - cron: "15 0 * * 1-5"
     - cron: "5 5 * * 1-5"
     - cron: "35 9 * * 1-5"

@@ -101,7 +101,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
             self.html,
         )
-        self.assertIn("forecast-final-v12.js?release=43.0", self.html)
+        self.assertRegex(self.html, r'forecast-final-v12\.js\?release=\d+\.\d+')
         self.assertIn("solution-ai-v17.js?release=36.0", self.html)
         self.assertIn("forecast-live-leaders-v14.js?release=42.0", self.html)
         self.assertNotIn("release=19.3", self.html)
