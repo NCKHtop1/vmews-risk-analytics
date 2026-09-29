@@ -789,26 +789,23 @@
     if (!snapshot) throw new Error(`Chưa có dữ liệu cho ${symbol}.`);
     const sessionQuote = (window.__VMEWS_SESSION__?.symbols || []).find(item => item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false) || null;
     const promotion = base.model?.promotion || base.dash?.promotion || {};
-    const promoted = new Set((promotion.directReturnHorizons || promotion.directPriceHorizons || []).map(value => Number(value)).filter(Number.isFinite));
+    const promoted = new Set((promotion.directPriceHorizons || []).map(value => Number(value)).filter(Number.isFinite));
     const review = new Set((promotion.reviewHorizons || []).map(value => Number(value)).filter(Number.isFinite));
     const preferredRankingHorizon = Number(promotion.preferredRankingHorizon) || [...promoted].sort((a, b) => a - b)[0] || 3;
     const horizons = {};
     for (const [key, forecast] of Object.entries(snapshot.horizons || {})) {
       const horizonNo = Number(key);
       const audit = base.model.horizons?.[String(key)] || {};
-      const published = (forecast.returnValidated === true || forecast.priceValidated === true) && Number.isFinite(Number(forecast.expectedReturn)) && (forecast.validationStatus || "PASS") === "PASS";
+      const published = forecast.priceValidated === true && (forecast.validationStatus || "PASS") === "PASS";
       horizons[`T+${key}`] = {
         releaseStatus: published ? "PUBLISHED" : "REVIEW",
-        forecastSemantics: "RETURN_FIRST_PRICE_SCENARIOS_ONLY",
         globallyPromoted: promoted.has(horizonNo),
         globallyReview: review.has(horizonNo),
         price: published ? forecast.expectedPrice : null,
-        expectedReturn: published ? (number(forecast.expectedSimpleReturn) ?? Math.expm1(Number(forecast.expectedReturn))) : null,
-        logReturn: published ? number(forecast.expectedReturn) : null,
-        returnLower: published ? (number(forecast.q20SimpleReturn) ?? (number(forecast.q20) === null ? null : Math.expm1(number(forecast.q20)))) : null,
-        returnUpper: published ? (number(forecast.q80SimpleReturn) ?? (number(forecast.q80) === null ? null : Math.expm1(number(forecast.q80)))) : null,
-        lowerPrice: published ? forecast.bearScenarioPrice : null,
-        upperPrice: published ? forecast.bullScenarioPrice : null,
+        expectedReturn: published ? forecast.expectedReturn : null,
+        remainingReturnFromSession: published && sessionQuote && number(sessionQuote.liveClose) > 0 ? forecast.expectedPrice / number(sessionQuote.liveClose) - 1 : null,
+        lowerPrice: published ? forecast.q20Price : null,
+        upperPrice: published ? forecast.q80Price : null,
         expectedAbsReturn: published ? number(forecast.expectedAbsReturn) : null,
         bearScenarioPrice: published ? number(forecast.bearScenarioPrice) : null,
         bullScenarioPrice: published ? number(forecast.bullScenarioPrice) : null,
@@ -854,11 +851,10 @@
       .map(row => ({
         symbol: row.symbol,
         close: row.close,
-        return: row.expectedReturn ?? row.upside ?? row.horizons?.[String(preferredRankingHorizon)]?.expectedSimpleReturn ?? row.horizons?.[String(preferredRankingHorizon)]?.expectedReturn,
-        bearScenarioPrice: row.bearScenarioPrice ?? row.horizons?.[String(preferredRankingHorizon)]?.bearScenarioPrice,
-        bullScenarioPrice: row.bullScenarioPrice ?? row.horizons?.[String(preferredRankingHorizon)]?.bullScenarioPrice,
+        forecast: row.target || row.horizons?.[String(preferredRankingHorizon)]?.expectedPrice,
+        return: row.upside ?? row.horizons?.[String(preferredRankingHorizon)]?.expectedReturn,
       }))
-      .filter(row => row.close > 0 && number(row.return) !== null && number(row.return) > 0)
+      .filter(row => row.close > 0 && row.forecast > row.close && number(row.return) !== null)
       .slice(0, 10);
     const modelAudit = base.model.horizons?.[String(preferredRankingHorizon)] || base.model.horizons?.["5"] || {};
     const chartHistory = base.dash.charts?.[symbol] || [];
@@ -971,8 +967,8 @@
     holder.querySelector("strong").textContent = context.symbol;
     const anchor = preferredForecast(context);
     holder.querySelector("small").textContent = anchor
-      ? `${anchor.label} · Return ${pct(anchor.horizon.expectedReturn)} · kịch bản ${money(anchor.horizon.bearScenarioPrice)} / ${money(anchor.horizon.bullScenarioPrice)}`
-      : `Giá hiện tại ${money(context.close)} · chưa có kỳ đủ gate phát hành return`;
+      ? `${anchor.label} · ${money(context.close)} → ${money(anchor.horizon.price)} · ${pct(anchor.horizon.expectedReturn)}`
+      : `Giá hiện tại ${money(context.close)} · chưa có kỳ đủ gate phát hành điểm giá`;
     state.context = context;
   }
 
@@ -1108,7 +1104,7 @@
     if (/\brsi\b/.test(question)) return "RSI đo động lượng giá trên thang 0–100. Vùng dưới 30 thường cho thấy trạng thái quá bán, trên 70 thường cho thấy quá mua; cần đối chiếu xu hướng, thanh khoản và biến động thay vì sử dụng RSI đơn lẻ.";
     if (/\b(macd)\b/.test(question)) return "MACD phản ánh tương quan giữa hai đường trung bình động và động lượng giá. Khi MACD vượt đường tín hiệu, động lượng ngắn hạn thường cải thiện; độ tin cậy phụ thuộc xu hướng, thanh khoản và vị trí giá.";
     if (/\b(p\/e|pe|p\/b|pb|roe|roa|eps)\b/.test(question)) return "P/E so sánh giá với lợi nhuận; P/B so sánh giá với giá trị sổ sách; ROE và ROA phản ánh hiệu quả sử dụng vốn và tài sản; EPS là lợi nhuận trên mỗi cổ phiếu. Các tỷ lệ cần được đối chiếu ngành, tăng trưởng và chu kỳ kinh doanh.";
-    if (/\b(q20|q80|vùng giá|khoảng giá|vùng return|khoảng return)\b/.test(question)) return "Q20–Q80 được dùng như vùng bất định của return. Giá hiển thị chỉ là kịch bản quy đổi từ biên độ return để dễ hình dung, không phải price target hay cam kết giá.";
+    if (/\b(q20|q80|vùng giá|khoảng giá)\b/.test(question)) return "Vùng giá dự báo thể hiện khoảng kết quả có cơ sở từ phân phối sai số lịch sử, không phải cam kết giá sẽ nằm trong vùng. Biên rộng cho thấy bất định lớn hơn; trọng tâm là mức dự báo trung tâm trên lưới giá giao dịch hợp lệ.";
     return "";
   }
 
@@ -1119,14 +1115,14 @@
 
   function releasedHorizons(context) {
     return Object.entries(context?.horizons || {})
-      .filter(([label, horizon]) => horizonNumber(label) !== null && horizon?.releaseStatus === "PUBLISHED" && number(horizon?.expectedReturn) !== null)
+      .filter(([label, horizon]) => horizonNumber(label) !== null && horizon?.releaseStatus === "PUBLISHED" && number(horizon?.price) !== null)
       .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]));
   }
 
   function preferredForecast(context) {
     const preferred = String(context?.preferredHorizon || "");
     const preferredItem = context?.horizons?.[preferred];
-    if (preferredItem?.releaseStatus === "PUBLISHED" && number(preferredItem.expectedReturn) !== null) {
+    if (preferredItem?.releaseStatus === "PUBLISHED" && number(preferredItem.price) !== null) {
       return { label: preferred, horizon: preferredItem };
     }
     const published = releasedHorizons(context);
@@ -1141,13 +1137,11 @@
       .filter(([label]) => horizonNumber(label) !== null)
       .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]))
       .map(([label, horizon]) => {
-        if (horizon?.releaseStatus !== "PUBLISHED" || number(horizon?.expectedReturn) === null) {
+        if (horizon?.releaseStatus !== "PUBLISHED" || number(horizon?.price) === null) {
           const status = horizon?.validation?.priceStatus || horizon?.validation?.symbolValidationStatus || "REVIEW";
-          return `- **${label}:** chưa phát hành return · gate ${status}. Hệ thống giữ kỳ này ở chế độ REVIEW.`;
+          return `- **${label}:** chưa phát hành điểm giá · gate ${status}. Hệ thống giữ kỳ này ở chế độ REVIEW thay vì xuất một con số chưa đủ kiểm định.`;
         }
-        const range = number(horizon.returnLower) !== null && number(horizon.returnUpper) !== null ? `; Q20–Q80 ${pct(horizon.returnLower)} → ${pct(horizon.returnUpper)}` : "";
-        const scenario = number(horizon.bearScenarioPrice) !== null && number(horizon.bullScenarioPrice) !== null ? `; kịch bản giá giảm/tăng ${money(horizon.bearScenarioPrice)} / ${money(horizon.bullScenarioPrice)}` : "";
-        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** return kỳ vọng ${pct(horizon.expectedReturn)}${range}${scenario}.`;
+        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`;
       });
   }
 
@@ -1157,7 +1151,7 @@
     const anchorLabel = anchor?.label || null;
     const anchorForecast = anchor?.horizon || null;
     const activeClose = number(context.session?.liveClose) ?? number(context.close);
-    const remainingAnchor = anchorForecast?.expectedReturn;
+    const remainingAnchor = anchorForecast && activeClose > 0 ? anchorForecast.price / activeClose - 1 : anchorForecast?.expectedReturn;
     const lines = [];
     const knowledge = knowledgeAnswer(question);
     const detailed = /đầy đủ|toàn bộ|tổng hợp|kết hợp|kết quả phân tích|tình hình dự báo|forecast|mô hình|phân tích|đánh giá|bổ sung/.test(question);
@@ -1175,13 +1169,13 @@
 
       lines.push(`### Đường forecast ${context.symbol}`, ...forecastPath(context));
       const published = ordered
-        .filter(([, horizon]) => horizon.releaseStatus === "PUBLISHED" && number(horizon.expectedReturn) !== null)
-        .map(([label, horizon]) => ({ label, horizon, expectedReturn: number(horizon.expectedReturn) }));
+        .filter(([, horizon]) => horizon.releaseStatus === "PUBLISHED" && number(horizon.price) !== null)
+        .map(([label, horizon]) => ({ label, horizon, price: number(horizon.price) }));
 
       if (!published.length) {
         lines.push(
           "### Trạng thái phát hành",
-          "Mô hình có dữ liệu cho các horizon nhưng hiện chưa có kỳ nào đủ gate để phát hành return. Đây là cơ chế abstention có chủ đích, không phải lỗi tải forecast.",
+          "Mô hình có dữ liệu cho các horizon nhưng hiện chưa có kỳ nào đủ gate để phát hành điểm giá. Đây là cơ chế abstention có chủ đích, không phải lỗi tải forecast.",
         );
         return lines.join("\n");
       }
@@ -1237,12 +1231,12 @@
       const stance = remainingAnchor > .003 ? "nghiêng tăng" : remainingAnchor < -.003 ? "nghiêng giảm" : "gần như đi ngang";
       lines.push(
         `### Kết luận cho ${context.symbol}`,
-        `${context.symbol} đang có return forecast đã phát hành tại ${anchorLabel}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, return kỳ vọng ${pct(remainingAnchor)}${number(anchorForecast.returnLower) !== null && number(anchorForecast.returnUpper) !== null ? `; Q20–Q80 ${pct(anchorForecast.returnLower)} → ${pct(anchorForecast.returnUpper)}` : ""}. Đây là kỳ ưu tiên đã qua gate; các kỳ REVIEW vẫn giữ ở chế độ ẩn/không phát hành.`,
+        `${context.symbol} đang có forecast đã phát hành tại ${anchorLabel}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm ${money(anchorForecast.price)}; khoảng cách còn lại ${pct(remainingAnchor)} và vùng bất định ${money(anchorForecast.lowerPrice)}–${money(anchorForecast.upperPrice)}. Đây là kỳ ưu tiên đã qua gate; các kỳ REVIEW vẫn được hiển thị trạng thái nhưng không bị biến thành lỗi.`,
       );
       if (number(anchorForecast.expectedAbsReturn) !== null) {
         lines.push(
           "### Biên độ và hai kịch bản thực tế",
-          `Mô hình biên độ tại ${anchorLabel} ước tính mức dịch chuyển hai chiều ±${pct(anchorForecast.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(anchorForecast.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(anchorForecast.bullScenarioPrice)}. Hai mức giá này chỉ là kịch bản quy đổi từ biên độ return, không phải price target.`,
+          `Mô hình biên độ tại ${anchorLabel} ước tính mức dịch chuyển hai chiều ±${pct(anchorForecast.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(anchorForecast.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(anchorForecast.bullScenarioPrice)}. Giá kỳ vọng ${money(anchorForecast.price)} là trung tâm có điều kiện. ${validationQuestion ? (anchorForecast.directionValidated ? `Gate chiều ${anchorLabel} đang PASS.` : `Gate chiều ${anchorLabel} hiện chưa PASS; phần xác nhận hướng yếu hơn phần ước lượng biên độ.`) : ""}`,
         );
       }
       if (anchorForecast.conditionalValueValidated === false) {
