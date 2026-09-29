@@ -1,0 +1,51 @@
+name: SoluTION.AI production browser smoke
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'solution-ai-v17.js'
+      - 'forecast-final.html'
+      - 'scripts/solution_ai_browser_smoke.mjs'
+      - '.github/workflows/solution-ai-production-smoke.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solution-ai-production-browser-smoke
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          timeout 8m npx playwright install chromium >/dev/null
+      - name: Wait for production Pages
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fsSL --max-time 20 'https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT' -o /tmp/solution-page.html; then
+              grep -Fq 'SoluTION.AI · LOCAL FIRST · GEMINI TÙY CHỌN' /tmp/solution-page.html && exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          echo 'Production Pages has not reached the local-first SoluTION.AI release.' >&2
+          exit 1
+      - name: Exercise production SoluTION.AI across representative symbols
+        env:
+          SOLUTION_AI_BROWSER_URL: https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT
+          SOLUTION_AI_SYMBOLS: FPT,ACB,HPG,VIC
+        run: node scripts/solution_ai_browser_smoke.mjs
