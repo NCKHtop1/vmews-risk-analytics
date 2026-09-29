@@ -15,6 +15,19 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
         self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
 
+    def test_workflow_refreshes_intraday_overlay_every_15_minutes(self):
+        workflow = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "forecast-v21-session-refresh.yml").read_text(encoding="utf-8")
+        # UTC schedules map to 09:15-11:30 and 13:00-14:45 Asia/Ho_Chi_Minh.
+        for cron in (
+            'cron: "15,30,45 2 * * 1-5"',
+            'cron: "0,15,30,45 3 * * 1-5"',
+            'cron: "0,15,30 4 * * 1-5"',
+            'cron: "0,15,30,45 6,7 * * 1-5"',
+        ):
+            self.assertIn(cron, workflow)
+        self.assertIn("coreForecastUnchanged", workflow)
+        self.assertIn("cutoffFreshCoverageRatio", workflow)
+
     def test_cdn_smokes_run_after_the_publisher_on_the_published_main_sha(self):
         workflow_dir = Path(__file__).resolve().parents[1] / ".github" / "workflows"
         publisher = (workflow_dir / "forecast-v13-daily-refresh.yml").read_text(encoding="utf-8")
