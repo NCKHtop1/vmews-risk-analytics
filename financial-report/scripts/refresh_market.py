@@ -391,6 +391,40 @@ def load_market_companies(core_companies):
     return companies, universe
 
 
+def fallback_market_universe(companies):
+    """Core-only safety universe used until the validated dynamic universe exists."""
+    rows={}
+    for company in companies:
+        symbol=str(company.get('symbol') or '').upper()
+        if not symbol:
+            continue
+        rows[symbol]={
+            'symbol':symbol,
+            'name':company.get('name') or symbol,
+            'exchange':'HOSE',
+            'tier':'CORE',
+            'coreMember':True,
+            'fresh':True,
+            'dataSufficient':True,
+            'liveMarketEligible':True,
+            'scannerEligible':True,
+            'forecastEligible':True,
+            'liquidityGatePassed':False,
+        }
+    symbols=sorted(rows)
+    return {
+        'version':'FINQUERY-HOSE-UNIVERSE-CORE-FALLBACK',
+        'generatedAt':now(),
+        'asOf':None,
+        'policy':{'fallback':True,'description':'Core 100 safety universe until validated HOSE promotion data is published.'},
+        'counts':{'listedHOSE':len(symbols),'core':len(symbols),'liquid':0,'discovery':0,'liveMarket':len(symbols),'scannerEligible':len(symbols),'forecastEligible':len(symbols),'discoveryTechnical':0},
+        'liveMarketSymbols':symbols,
+        'scannerSymbols':symbols,
+        'forecastEligibleSymbols':symbols,
+        'symbols':rows,
+    }
+
+
 def public_universe_payload(universe):
     if not isinstance(universe, dict):
         return {}
@@ -875,7 +909,7 @@ def prices(out, companies):
     response from T-1 is not accepted as a successful refresh and is never
     merged into today's candle.
     """
-    universe = load_market_universe()
+    universe = load_market_universe() or fallback_market_universe(companies)
     sync_market_universe(out, universe)
     seeded_histories = seed_market_histories(out, universe, companies)
     symbols = [c['symbol'] for c in companies]
@@ -1604,6 +1638,7 @@ if __name__ == '__main__':
     companies, universe = load_market_companies(core_companies)
     if len({c['symbol'] for c in companies}) < 100:
         raise RuntimeError('Tiered HOSE market universe cannot be smaller than Core 100')
+    universe = universe or fallback_market_universe(companies)
     sync_market_universe(args.output, universe)
     if args.mode in {'prices', 'history', 'intraday', 'all'}:
         seed_market_histories(args.output, universe, companies)
