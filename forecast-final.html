@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>SoluTION.AI define market. · Dự báo cổ phiếu HOSE</title>
-<meta name="description" content="Dự báo cổ phiếu HOSE T+1 đến T+5 với trọng tâm giá, vùng dự báo và dữ liệu kiểm định.">
+<meta name="description" content="Dự báo return cổ phiếu HOSE T+1 đến T+5; giá chỉ dùng làm kịch bản quy đổi từ biên độ return.">
 <script>
 (()=>{
   const parts=location.pathname.split("/").filter(Boolean);
@@ -48,9 +48,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <a href="#symbolSelector">Chọn mã</a>
   <a href="#overview">Tổng quan</a>
   <a href="#forecast">Biểu đồ</a>
-  <a href="#validation">Kiểm định</a>
   <a href="#events">Tin tức</a>
-  <a href="#backtest">Kiểm chứng</a>
   <button id="solutionAiNav" class="navAi" type="button" aria-controls="solutionAiPanel">SoluTION.AI</button>
   <span class="sectionNavHint"><kbd>/</kbd> tìm mã</span>
 </nav>
@@ -64,7 +62,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <div id="marketPulse" class="marketPulseGrid" aria-label="Tổng quan tín hiệu toàn sàn HOSE"><div class="pulsePlaceholder">Đang cập nhật toàn sàn HOSE…</div></div>
     <section class="marketTape" id="marketTape" aria-label="Giá đóng cửa các cổ phiếu HOSE"><span class="marketTapeLabel"><i></i> HOSE</span><div class="marketTapeViewport"><div id="tapeTrack" class="marketTapeTrack"></div></div></section>
     <div class="leaderToolbar">
-      <div class="leaderFilters" role="group" aria-label="Bộ lọc cổ phiếu HOSE theo forecast"><button type="button" class="filterChip active" data-filter="all" aria-pressed="true">HOSE forecast tăng</button><button type="button" class="filterChip" data-filter="liquid" aria-pressed="false">Thanh khoản cao</button><button type="button" class="filterChip" data-filter="green" aria-pressed="false">Rủi ro thấp</button></div>
+      <div class="leaderFilters" role="group" aria-label="Bộ lọc cổ phiếu HOSE theo forecast"><button type="button" class="filterChip active" data-filter="all" aria-pressed="true">HOSE return dương</button><button type="button" class="filterChip" data-filter="liquid" aria-pressed="false">Thanh khoản cao</button><button type="button" class="filterChip" data-filter="green" aria-pressed="false">Rủi ro thấp</button></div>
       <div class="carouselControls"><button id="carouselPrev" class="carouselArrow" type="button" aria-label="Xem mã trước">←</button><span id="carouselPosition">00 / 10</span><button id="carouselNext" class="carouselArrow" type="button" aria-label="Xem mã tiếp theo">→</button><button id="carouselAutoplay" class="carouselPlay" type="button" aria-label="Tạm dừng carousel" aria-pressed="false">❚❚</button></div>
     </div>
     <div id="signalDeck" class="signalDeck" role="region" aria-roledescription="carousel" aria-label="Các cổ phiếu HOSE nổi bật ở kỳ dự báo được mô hình chọn" tabindex="0"><div class="deckEmpty">Đang xác định tín hiệu trên toàn HOSE…</div></div>
@@ -93,16 +91,16 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
       <div id="summary" class="summary">—</div>
       <div class="stats">
         <div class="stat"><span>Giá hiện tại</span><b id="close">—</b><small id="quoteAsOf"></small></div>
-        <div class="stat"><span>Giá dự báo T+1</span><b id="t1">—</b></div>
-        <div class="stat"><span>Giá dự báo T+3</span><b id="t3">—</b></div>
-        <div class="stat"><span>Giá dự báo T+5</span><b id="t5">—</b></div>
-        <div class="stat statRange"><span id="primaryForecastLabel">Mức dự báo ưu tiên</span><b id="range5">—</b></div>
-        <div class="stat"><span id="primaryProbabilityLabel">Xác suất tăng kỳ ưu tiên</span><b id="pup">—</b></div>
+        <div class="stat"><span>Return T+1</span><b id="t1">—</b></div>
+        <div class="stat"><span>Return T+3</span><b id="t3">—</b></div>
+        <div class="stat"><span>Return T+5</span><b id="t5">—</b></div>
+        <div class="stat statRange"><span id="primaryForecastLabel">Return kỳ vọng ưu tiên</span><b id="range5">—</b></div>
+        <div class="stat"><span id="primaryProbabilityLabel">Vùng return Q20–Q80</span><b id="pup">—</b></div>
         <div class="stat"><span>Trạng thái rủi ro</span><b id="risk">—</b></div>
       </div>
       <section id="scenarioBoard" class="scenarioBoard" aria-label="Biên độ và các kịch bản giá kỳ dự báo ưu tiên">
         <div class="scenarioHeading"><span id="scenarioHeadingLabel">BIÊN ĐỘ THỊ TRƯỜNG ĐÃ HỌC · KỲ ƯU TIÊN</span><strong id="move5">—</strong></div>
-        <div class="scenarioOutcomes"><article class="scenarioBear"><span>Nếu diễn biến giảm</span><b id="bear5">—</b></article><article class="scenarioCenter"><span>Giá kỳ vọng trung tâm</span><b id="scenarioCenter5">—</b></article><article class="scenarioBull"><span>Nếu diễn biến tăng</span><b id="bull5">—</b></article></div>
+        <div class="scenarioOutcomes"><article class="scenarioBear"><span>Kịch bản giảm</span><b id="bear5">—</b></article><article class="scenarioCenter"><span>Return kỳ vọng</span><b id="scenarioCenter5">—</b></article><article class="scenarioBull"><span>Kịch bản tăng</span><b id="bull5">—</b></article></div>
         <p id="scenarioCaveat" class="scenarioCaveat">Đang đối chiếu độ lớn biến động và kiểm định chiều giá.</p>
       </section>
     </div>
@@ -113,18 +111,18 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   </section>
 
   <section class="panel mainChart" id="forecast">
-    <div class="panelHead"><div><div class="eyebrow">Diễn biến & dự báo</div><h2 id="chartTitle">—</h2></div><div class="chartTools"><div class="chartRanges" role="group" aria-label="Khoảng lịch sử biểu đồ"><button type="button" data-range="30">1T</button><button type="button" data-range="65" class="active">3T</button><button type="button" data-range="125">6T</button></div></div></div>
+    <div class="panelHead"><div><div class="eyebrow">Diễn biến & kịch bản</div><h2 id="chartTitle">—</h2></div><div class="chartTools"><div class="chartRanges" role="group" aria-label="Khoảng lịch sử biểu đồ"><button type="button" data-range="30">1T</button><button type="button" data-range="65" class="active">3T</button><button type="button" data-range="125">6T</button></div></div></div>
     <div class="chartWrap"><canvas id="chart" aria-label="Biểu đồ giá lịch sử và kịch bản dự báo T+1 đến T+5"></canvas><canvas id="chartOverlay" class="chartOverlay" aria-hidden="true"></canvas><div id="tooltip" class="tooltip"></div></div>
-    <div class="legend"><span><i style="background:#c9d1bc"></i>Giá lịch sử</span><span><i style="background:#a8eb65"></i>Dự báo T+1 → T+5</span><span><i style="background:#82956d"></i>Vùng xác suất Q20–Q80</span><span><i style="background:#b1a1e8"></i>Giá tại T0</span></div>
+    <div class="legend"><span><i style="background:#c9d1bc"></i>Giá lịch sử</span><span><i style="background:#82956d"></i>Kịch bản giá giảm/tăng từ biên độ return</span><span><i style="background:#b1a1e8"></i>Giá tại T0</span></div>
     <div id="forecastCards" class="forecastCards"></div>
   </section>
 
-  <section class="panel proof" id="validation">
+  <section class="panel proof" id="validation" hidden aria-hidden="true">
     <div class="panelHead"><div><div class="eyebrow">Kiểm định lịch sử</div><h2>Kết quả kiểm định</h2></div></div>
     <div id="methodProof" class="proofGrid"><div class="empty">Đang tải bằng chứng kiểm định…</div></div>
   </section>
 
-  <section class="panel proof" id="eventImpactPanel" data-section="events">
+  <section class="panel proof" id="eventImpactPanel" data-section="events" hidden aria-hidden="true">
     <div class="panelHead"><div><div class="eyebrow">Tin & giá</div><h2>Phản ứng sau sự kiện</h2></div><div id="eventImpactMeta" class="proofIntro"></div></div>
     <div id="eventImpact" class="proofGrid"><div class="empty">Đang đối chiếu sự kiện và giá thực tế…</div></div>
   </section>
@@ -135,7 +133,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <div class="panel"><div class="eyebrow">Dữ liệu</div><h2>Nguồn & độ phủ</h2><div id="sourceAudit" class="sourceGrid"></div></div>
   </section>
 
-  <section class="panel bt" id="backtest">
+  <section class="panel bt" id="backtest" hidden aria-hidden="true">
     <div class="panelHead"><div><div class="eyebrow">Kiểm định quá khứ</div><h2>Dự báo và kết quả thực tế</h2></div><div id="btMeta" class="meta">—</div></div>
     <div id="tabs" class="tabs"></div>
     <div id="metrics" class="metrics"></div>
@@ -163,11 +161,11 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, nguồn mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
 </aside>
 <script src="./forecast-freshness.js?release=44.0"></script>
-<script src="./forecast-final-v12.js?release=45.0"></script>
+<script src="./forecast-final-v12.js?release=46.0"></script>
 <script src="./forecast-polish-v12.js?release=20.0"></script>
 <script src="./forecast-portfolio-v14.js?release=42.0"></script>
-<script src="./forecast-live-leaders-v14.js?release=42.0"></script>
-<script src="./solution-ai-v17.js?release=39.0"></script>
+<script src="./forecast-live-leaders-v14.js?release=43.0"></script>
+<script src="./solution-ai-v17.js?release=40.0"></script>
 <script src="./forecast-deep-dive-v24.js?release=25.0"></script>
 </body>
 </html>
