@@ -1046,6 +1046,59 @@ class MarketTests(unittest.TestCase):
         self.assertTrue({'finance','rates','banking','stocks'}.issubset(set(rows[0]['topics'])))
         self.assertIn('summary',rows[0])
 
+    def test_today_watchlist_ranks_positive_core_and_tracks_snapshot_changes(self):
+        companies=[
+            {'symbol':'HSG','coreMember':True,'tier':'CORE'},
+            {'symbol':'VIB','coreMember':True,'tier':'CORE'},
+            {'symbol':'BAD','coreMember':True,'tier':'CORE'},
+            {'symbol':'LIQ','coreMember':False,'tier':'LIQUID'},
+        ]
+        quotes={
+            'HSG':{'status':'ok','price':20000,'changePct':1.5,'sourceTime':'2026-09-30T03:00:00+00:00'},
+            'VIB':{'status':'ok','price':18000,'changePct':1.0,'sourceTime':'2026-09-30T03:00:00+00:00'},
+            'BAD':{'status':'ok','price':10000,'changePct':-1.0,'sourceTime':'2026-09-30T03:00:00+00:00'},
+            'LIQ':{'status':'ok','price':12000,'changePct':3.0,'sourceTime':'2026-09-30T03:00:00+00:00'},
+        }
+        first={
+            'HSG':{'symbol':'HSG','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':52,'volumeRatio20':1.6,'signals':[{'id':'macd_cross_up','label':'MACD vừa cắt lên Signal','direction':'bullish','strength':'high'},{'id':'volume_spike','label':'Khối lượng tích lũy ≥ 1,5x TB20','direction':'confirmation','strength':'high'}]},
+            'VIB':{'symbol':'VIB','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':50,'volumeRatio20':1.0,'signals':[{'id':'macd_near_up','label':'MACD đang tiến sát giao cắt lên','direction':'bullish','strength':'medium'}]},
+            'BAD':{'symbol':'BAD','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bearish','rsi14':55,'volumeRatio20':2.0,'signals':[{'id':'macd_cross_down','label':'MACD vừa cắt xuống Signal','direction':'bearish','strength':'high'}]},
+            'LIQ':{'symbol':'LIQ','cadence':'LIVE_15M','barDate':'2026-09-30','bias':'bullish','rsi14':55,'volumeRatio20':2.0,'signals':[{'id':'macd_cross_up','label':'MACD vừa cắt lên Signal','direction':'bullish','strength':'high'}]},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            (out/'technical-signals.json').write_text(json.dumps({'symbols':first}),encoding='utf-8')
+            rows=m.build_today_watchlist(out,companies,quotes)
+            self.assertEqual([x['symbol'] for x in rows],['HSG','VIB'])
+            payload=json.loads((out/'watch-today.json').read_text())
+            self.assertEqual(payload['refreshEveryMinutes'],15)
+            self.assertEqual(payload['universe'],'VN100/Core')
+            self.assertTrue(all(x['isNew'] for x in payload['items']))
+            second=dict(first)
+            second['HSG']={**first['HSG'],'signals':[{'id':'macd_near_up','label':'MACD đang tiến sát giao cắt lên','direction':'bullish','strength':'medium'}],'volumeRatio20':.9}
+            second['VIB']={**first['VIB'],'signals':[{'id':'macd_cross_up','label':'MACD vừa cắt lên Signal','direction':'bullish','strength':'high'},{'id':'volume_spike','label':'Khối lượng tích lũy ≥ 1,5x TB20','direction':'confirmation','strength':'high'}],'volumeRatio20':1.7}
+            (out/'technical-signals.json').write_text(json.dumps({'symbols':second}),encoding='utf-8')
+            rows=m.build_today_watchlist(out,companies,quotes)
+            self.assertEqual(rows[0]['symbol'],'VIB')
+            self.assertEqual(rows[0]['rankChange'],1)
+            self.assertEqual(rows[1]['symbol'],'HSG')
+            self.assertEqual(rows[1]['rankChange'],-1)
+
+    def test_today_watch_ticker_is_dynamic_and_published_with_live_price_job(self):
+        html=(ROOT/'frontend/index.html').read_text()
+        app=(ROOT/'frontend/app.js').read_text()
+        css=(ROOT/'frontend/style.css').read_text()
+        root=ROOT.parent
+        price=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        self.assertIn('ĐÁNG XEM HÔM NAY',html)
+        self.assertIn('id="quick-tickers-track"',html)
+        self.assertNotIn('<button data-symbol="MBB">MBB</button><button data-symbol="FPT">FPT</button>',html)
+        self.assertIn("marketJson('watch-today.json')",app)
+        self.assertIn('rankChange',app)
+        self.assertIn('setInterval(loadTodayWatch,5*60*1000)',app)
+        self.assertIn('finqueryQuickWatch',css)
+        self.assertIn('market/watch-today.json',price)
+
     def test_news_and_price_refreshes_are_independent_from_heavy_market_jobs(self):
         script=(ROOT/'scripts/refresh_market.py').read_text()
         root=ROOT.parent
@@ -1067,6 +1120,7 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn("cron: '11,41 * * * *'",workflow)
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",price)
         self.assertIn("MARKET_REQUIRE_TODAY: '1'",price)
+        self.assertIn('market/watch-today.json',price)
         self.assertIn('group: market-price-live',price)
         self.assertIn("cron: '12,27,42,57 * * * *'",news)
         self.assertIn('group: market-news-live',news)

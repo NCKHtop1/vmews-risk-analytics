@@ -932,6 +932,158 @@ def build_technical_scanner(out, companies, quotes):
     return matches
 
 
+def build_today_watchlist(out, companies, quotes):
+    """Rank Core/VN100 names worth reviewing from the latest live technical snapshot.
+
+    This is a transparent screening list, not an investment recommendation. It
+    updates with the 15-minute live price/scanner job and preserves prior ranks
+    so the UI can show NEW / rank-up / rank-down changes between snapshots.
+    """
+    path = out / 'watch-today.json'
+    previous = read(path, {'items': []})
+    scanner = read(out / 'technical-signals.json', {'symbols': {}})
+    rows = scanner.get('symbols') or {}
+    core_symbols = {
+        str(company.get('symbol') or '').upper()
+        for company in companies
+        if company.get('coreMember') or str(company.get('tier') or '').upper() == 'CORE'
+    }
+    previous_source_date = previous.get('sourceDate')
+    previous_ranks = {
+        row.get('symbol'): int(row.get('rank'))
+        for row in previous.get('items', [])
+        if row.get('symbol') and isinstance(row.get('rank'), int)
+    }
+
+    candidates = []
+    for symbol in sorted(core_symbols):
+        row = rows.get(symbol) or {}
+        quote = quotes.get(symbol) or {}
+        if row.get('cadence') != 'LIVE_15M' or quote.get('status') != 'ok':
+            continue
+        signals = row.get('signals') or []
+        change = number(quote.get('changePct'))
+        volume_ratio = number(row.get('volumeRatio20'))
+        rsi = number(row.get('rsi14'))
+        bias = str(row.get('bias') or 'neutral')
+
+        # Avoid presenting sharp downside/clear bearish setups as "good today".
+        if change is not None and change <= -3:
+            continue
+        if bias == 'bearish':
+            continue
+
+        score = 0.0
+        reasons = []
+        has_positive_signal = False
+        for signal in signals:
+            direction = signal.get('direction')
+            strength = signal.get('strength')
+            label = signal.get('label')
+            if direction == 'bullish':
+                score += 34 if strength == 'high' else 18
+                has_positive_signal = True
+                if label:
+                    reasons.append(label)
+            elif direction == 'bullish_watch':
+                score += 10
+                if signal.get('id') == 'rsi_exit_oversold':
+                    has_positive_signal = True
+                if label:
+                    reasons.append(label)
+            elif direction == 'confirmation':
+                score += 16 if strength == 'high' else 8
+                if label:
+                    reasons.append(label)
+            elif direction == 'bearish':
+                score -= 30 if strength == 'high' else 16
+            elif direction == 'bearish_watch':
+                score -= 10
+
+        if bias == 'bullish':
+            score += 20
+        elif bias == 'mixed':
+            score += 2
+
+        if change is not None:
+            if change > 0:
+                score += min(15, change * 4)
+            elif change < 0:
+                score += max(-12, change * 3)
+
+        if volume_ratio is not None:
+            if volume_ratio >= 1.5:
+                score += 10
+            elif volume_ratio >= 1.2:
+                score += 5
+
+        if rsi is not None:
+            if 45 <= rsi <= 68:
+                score += 6
+            elif rsi > 75:
+                score -= 12
+
+        momentum_breakout = bool(
+            change is not None and change >= 1
+            and volume_ratio is not None and volume_ratio >= 1.2
+            and (rsi is None or 35 <= rsi <= 72)
+        )
+        if momentum_breakout:
+            has_positive_signal = True
+            reasons.append('Giá tăng kèm thanh khoản cao')
+
+        if not has_positive_signal or score < 28:
+            continue
+
+        bar_date = row.get('barDate')
+        candidates.append({
+            'symbol': symbol,
+            'score': max(0, min(100, round(score))),
+            'price': number(quote.get('price')),
+            'changePct': round(change, 2) if change is not None else None,
+            'rsi14': round(rsi, 2) if rsi is not None else None,
+            'volumeRatio20': round(volume_ratio, 2) if volume_ratio is not None else None,
+            'bias': bias,
+            'barDate': bar_date,
+            'sourceTime': quote.get('sourceTime') or quote.get('collectedAt'),
+            'reasons': list(dict.fromkeys(reasons))[:3],
+        })
+
+    candidates.sort(key=lambda row: (-row['score'], -(row.get('changePct') or 0), row['symbol']))
+    selected = candidates[:8]
+    source_dates = [row.get('barDate') for row in selected if row.get('barDate')]
+    source_date = max(source_dates) if source_dates else None
+    same_session = bool(source_date and source_date == previous_source_date)
+    for rank, row in enumerate(selected, start=1):
+        old_rank = previous_ranks.get(row['symbol']) if same_session else None
+        row['rank'] = rank
+        row['previousRank'] = old_rank
+        row['rankChange'] = (old_rank - rank) if old_rank is not None else None
+        row['isNew'] = old_rank is None
+
+    stamp = now()
+    write(path, {
+        'checkedAt': stamp,
+        'sourceTime': newest_source_time(quotes),
+        'sourceDate': source_date,
+        'status': 'ok' if selected else 'empty',
+        'universe': 'VN100/Core',
+        'refreshEveryMinutes': 15,
+        'methodVersion': 'finquery-today-watch-v1',
+        'rules': {
+            'requiresPositiveTechnicalEvidence': True,
+            'excludesBearishBias': True,
+            'excludesChangePctAtOrBelow': -3,
+            'minimumScore': 28,
+            'maxItems': 8,
+            'inputs': ['MACD', 'RSI', 'volume/TB20', 'intraday change', 'technical bias'],
+        },
+        'disclaimer': 'Danh sách sàng lọc để xem nhanh, không phải khuyến nghị mua/bán.',
+        'items': selected,
+    })
+    return selected
+
+
 def merge_live_daily_quotes(out, quotes):
     """Persist the current trading-day OHLCV into retained daily history.
 
@@ -1054,6 +1206,7 @@ def prices(out, companies):
     live_daily_merged = merge_live_daily_quotes(out, fresh)
     history_effective = update_history_effective_status(out, symbols)
     technical_matches = build_technical_scanner(out, companies, fresh)
+    today_watch = build_today_watchlist(out, companies, fresh)
     available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
     write(out / 'prices-status.json', {
         'checkedAt': now(), 'status': bundle_status, 'quotes': len(fresh), 'histories': available_histories,
@@ -1070,7 +1223,7 @@ def prices(out, companies):
         'seededHistories': seeded_histories,
     })
     drivers = build_drivers(out, companies)
-    print(f'Prices: {len(fresh)}/{len(symbols)} current-session; stale rejected: {len(stale)}; seeded histories: {seeded_histories}; live daily bars: {live_daily_merged}; technical matches: {len(technical_matches)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
+    print(f'Prices: {len(fresh)}/{len(symbols)} current-session; stale rejected: {len(stale)}; seeded histories: {seeded_histories}; live daily bars: {live_daily_merged}; technical matches: {len(technical_matches)}; today watch: {len(today_watch)}; retained histories: {available_histories}/{len(symbols)}; drivers: {len(drivers)}', flush=True)
     if not fresh:
         raise RuntimeError('Current-session quote collection incomplete; previous successful data retained')
 
