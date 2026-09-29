@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-29T03:50:06.444344+00:00",
+  "checkedAt": "2026-09-29T16:11:45.257978+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 10,
   "status": "ok",
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T03:49:53.821114+00:00",
+      "checkedAt": "2026-09-29T16:11:09.480908+00:00",
       "documents": [
         {
           "id": "e607b3f01ae54f0d38b5",
@@ -200,7 +200,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T03:49:53.821280+00:00",
+      "checkedAt": "2026-09-29T16:11:09.481137+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -390,7 +390,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T03:49:53.821464+00:00",
+      "checkedAt": "2026-09-29T16:11:09.481406+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -431,7 +431,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên",
+          "title": "Báo cáo thường niên Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -443,7 +443,7 @@
         {
           "id": "4c3dd503763f24fd5927",
           "url": "https://investor.vietinbank.vn/vi/sustainabledevelopmentreports.aspx",
-          "title": "Báo cáo phát triển bền vững",
+          "title": "Báo cáo phát triển bền vững Báo cáo phát triển bền vững",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -839,7 +839,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T03:49:53.821680+00:00",
+      "checkedAt": "2026-09-29T16:11:09.481766+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -1044,7 +1044,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T03:49:53.821833+00:00",
+      "checkedAt": "2026-09-29T16:11:09.481974+00:00",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -1197,7 +1197,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T03:49:53.821953+00:00",
+      "checkedAt": "2026-09-29T16:11:09.482116+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -1331,7 +1331,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T03:49:53.822040+00:00",
+      "checkedAt": "2026-09-29T16:11:09.482251+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -1545,7 +1545,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T03:49:53.822566+00:00",
+      "checkedAt": "2026-09-29T16:11:09.483082+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -2067,7 +2067,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T03:49:53.823201+00:00",
+      "checkedAt": "2026-09-29T16:11:09.484070+00:00",
       "documents": [
         {
           "id": "c303b3353659c3a65824",
@@ -2094,6 +2094,30 @@
           "textLength": 0
         },
         {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "Báo cáo thường niên tiếng Anh năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "Báo cáo thường niên năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
+        },
+        {
           "id": "9905202effdd869504d3",
           "url": "https://www.namabank.com.vn/bao-cao-thuong-nien",
           "title": "Báo cáo thường niên",
@@ -2116,30 +2140,6 @@
           "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
           "processedAt": "2026-09-29T03:24:41.470566+00:00",
           "textLength": 245573
-        },
-        {
-          "id": "3513a04144dc75ee4ff0",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
-          "title": "20260318---nab-2025-annual-report.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
-          "processedAt": "2026-09-29T03:25:01.084606+00:00",
-          "textLength": 337
-        },
-        {
-          "id": "358356aafec4c64c0e15",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
-          "processedAt": "2026-09-29T03:25:01.578252+00:00",
-          "textLength": 336
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -2252,10 +2252,10 @@
         {
           "id": "0c9ce9572663228d1389",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
+          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "sustainability_report",
+          "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
           "processedAt": "2026-09-29T03:40:21.817994+00:00",
@@ -2272,7 +2272,7 @@
         {
           "id": "bf618c3dc088db37aaf4",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn-2021/bao-cao-thuong-nien-2021.pdf",
-          "title": "Báo cáo thường niên năm 2021",
+          "title": "bao-cao-thuong-nien-2021.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2021,
           "type": "annual_report"
@@ -2296,10 +2296,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
+          "title": "Báo cáo thường niên năm 2018",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "esg_other"
+          "type": "annual_report"
         },
         {
           "id": "de8049df250aba4307c6",
@@ -2985,12 +2985,12 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T03:49:53.823836+00:00",
+      "checkedAt": "2026-09-29T16:11:09.485045+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408184738_20260408-ocb-bao-cao-thuong-nien-2025-website.pdf",
-          "title": "Báo cáo thường niên 2025 2025 Ngày đăng: 08/4/2026 SEE_MORE",
+          "title": "SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2025,
           "type": "annual_report",
@@ -3036,18 +3036,6 @@
           "textLength": 336491
         },
         {
-          "id": "7dbc12f1505da625cb7b",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
-          "title": "SEE_MORE",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2023,
-          "type": "esg_other",
-          "contentType": "pdf",
-          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
-          "processedAt": "2026-09-29T02:15:57.267747+00:00",
-          "textLength": 497211
-        },
-        {
           "id": "65aab233120d3f54ae4e",
           "url": "https://ocb.com.vn/vi/ve-ocb/phat-trien-ben-vung",
           "title": "Phát triển bền vững",
@@ -3070,6 +3058,18 @@
           "contentHash": "44dfecab7d8b460f8868651b3866fa0023b905c044dfe64fd24dbb366a8cc53c",
           "processedAt": "2026-09-29T00:04:45.555474+00:00",
           "textLength": 162196
+        },
+        {
+          "id": "7dbc12f1505da625cb7b",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
+          "title": "Báo cáo Phát triển bền vững 2023 2023 Ngày đăng: 19/9/2024 SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
+          "processedAt": "2026-09-29T16:11:45.073652+00:00",
+          "textLength": 497211
         },
         {
           "id": "60d6e709c250aab407b8",
@@ -3730,7 +3730,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T03:49:53.823858+00:00",
+      "checkedAt": "2026-09-29T16:11:09.485082+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -3793,7 +3793,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T03:49:53.824161+00:00",
+      "checkedAt": "2026-09-29T16:11:09.485502+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -3834,7 +3834,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026 Read more",
+          "title": "Sustainability Report 2025 23/07/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -3846,7 +3846,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
+          "title": "SeABank's Annual Report 2025 01/04/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -3906,7 +3906,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025",
+          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -4531,7 +4531,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T03:49:53.824301+00:00",
+      "checkedAt": "2026-09-29T16:11:09.485727+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -4688,7 +4688,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T03:49:53.824611+00:00",
+      "checkedAt": "2026-09-29T16:11:09.486191+00:00",
       "documents": [
         {
           "id": "725b2cc303c70d1ae0c8",
@@ -4784,18 +4784,6 @@
           "contentType": "html"
         },
         {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "See all ESG solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
-        },
-        {
           "id": "5f8da544b07832ede0e2",
           "url": "https://techcombank.com/en/about-us/sustainability",
           "title": "Overview",
@@ -4818,6 +4806,18 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
+        },
+        {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "Our Solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -5216,7 +5216,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T03:49:53.824718+00:00",
+      "checkedAt": "2026-09-29T16:11:09.486358+00:00",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -5467,7 +5467,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T03:49:53.824889+00:00",
+      "checkedAt": "2026-09-29T16:11:09.486615+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -5995,7 +5995,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T03:49:53.824996+00:00",
+      "checkedAt": "2026-09-29T16:11:09.486793+00:00",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -6107,7 +6107,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T03:49:53.825095+00:00",
+      "checkedAt": "2026-09-29T16:11:09.486946+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -6418,20 +6418,6 @@
     {
       "id": "c3ae1e1e5c89eec1b45b",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "SUSBA-2023-Report-Final.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "climate_disclosure",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T03:50:05.189155+00:00",
-      "textLength": 98218
-    },
-    {
-      "id": "c3ae1e1e5c89eec1b45b",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
       "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
@@ -6442,20 +6428,6 @@
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
       "processedAt": "2026-09-29T03:11:18.444186+00:00",
       "textLength": 98218
-    },
-    {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "2023 Assessment of Banks' Seafood Sector Policies",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "sustainability_report",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T03:11:11.033620+00:00",
-      "textLength": 61879
     },
     {
       "id": "abbe2ce24605a50fc5f0",
@@ -6961,7 +6933,7 @@
       "title": "ESG Solutions",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -7171,7 +7143,7 @@
       "title": "Climate Solutions",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -7337,9 +7309,9 @@
       "id": "5278c75be602879a63b2",
       "url": "https://connect.sustainalytics.com/hubfs/INV/Climate%20Solutions/Carbon%20Emissions/2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
       "title": "2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
-      "sourcePage": "https://www.sustainalytics.com/esg-research",
+      "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions",
       "year": null,
-      "type": "esg_web_content",
+      "type": "esg_other",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
       "contentType": "pdf",
@@ -7471,8 +7443,8 @@
     },
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
-      "status": "ok",
-      "documents": 1,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "LPB"
     },
     {
@@ -7526,7 +7498,7 @@
     {
       "url": "https://www.namabank.com.vn/co-dong",
       "status": "ok",
-      "documents": 4,
+      "documents": 19,
       "symbol": "NAB"
     },
     {
@@ -7568,7 +7540,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "SSB"
     },
     {
@@ -7604,7 +7576,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 4,
+      "documents": 5,
       "symbol": "TCB"
     },
     {
@@ -7705,15 +7677,15 @@
     },
     {
       "url": "https://www.wwf.sg/susba/reports/",
-      "status": "ok",
-      "documents": 5,
+      "status": "error",
+      "error": "The read operation timed out",
       "provider": "WWF SUSBA",
       "external": true
     },
     {
       "url": "https://www.wwf.sg/susba/about/",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "The read operation timed out",
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -7734,7 +7706,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 2,
+      "documents": 3,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -7748,15 +7720,15 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 4,
-    "backlogBeforeRun": 23,
-    "activeBacklogBeforeRun": 4,
+    "documentsProcessed": 1,
+    "backlogBeforeRun": 20,
+    "activeBacklogBeforeRun": 1,
     "backlogRemaining": 0,
-    "eligibleBacklog": 21,
-    "recentBacklog": 4,
+    "eligibleBacklog": 18,
+    "recentBacklog": 1,
     "historicalBacklog": 11,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
-    "documentWorkers": 4
+    "documentWorkers": 1
   }
 }
