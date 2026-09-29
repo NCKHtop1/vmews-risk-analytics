@@ -5,7 +5,7 @@ on:
       mode:
         description: Dataset to refresh
         type: choice
-        options: [all, prices, news, macro, esg, history, intraday]
+        options: [all, prices, news, macro, esg, esg-history, history, intraday]
         default: all
   push:
     branches: [main]
@@ -58,7 +58,7 @@ jobs:
           fi
           mkdir -p /tmp/market-publish/market
       - name: Install ESG document parser
-        if: inputs.mode == 'esg' || github.event.schedule == '47 9,14 * * 1-5' || github.event.schedule == '47 2 * * 6' || contains(github.event.head_commit.message, '[esg-refresh]')
+        if: inputs.mode == 'esg' || inputs.mode == 'esg-history' || github.event.schedule == '47 9,14 * * 1-5' || github.event.schedule == '47 2 * * 6' || contains(github.event.head_commit.message, '[esg-refresh]')
         run: pip install -q pypdf==5.1.0
       - name: Collect prices, candles, publisher headlines and ESG
         id: collect
@@ -81,7 +81,8 @@ jobs:
           mode="${REQUESTED_MODE:-all}"
           if [ "$EVENT_SCHEDULE" = '11,41 * * * *' ]; then mode=news; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
-          if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ] || [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg; fi
+          if [ "$EVENT_SCHEDULE" = '47 9,14 * * 1-5' ]; then mode=esg; fi
+          if [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg-history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[esg-refresh\]'; then mode=esg; fi
           # Keep the 15-minute quote run intentionally lightweight. RSS has its
           # own schedule and is fetched concurrently in refresh_market.py.
@@ -93,6 +94,8 @@ jobs:
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
           if [ "$mode" = 'esg' ]; then
             python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
+          elif [ "$mode" = 'esg-history' ]; then
+            ESG_HISTORY_BACKFILL=1 python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
           else
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
           fi
