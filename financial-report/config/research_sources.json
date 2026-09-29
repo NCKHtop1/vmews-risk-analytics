@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "sources": [
     {
       "code": "MBS",
@@ -84,7 +84,7 @@
     {
       "code": "SSI",
       "name": "SSI Research",
-      "url": "https://research.ssi.com.vn/tim-kiem",
+      "url": "https://www.ssi.com.vn/khach-hang-ca-nhan/bao-cao-cong-ty",
       "mode": "account_or_public_subset",
       "adapter": "health_only",
       "enabled": true
