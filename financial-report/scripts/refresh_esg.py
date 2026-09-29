@@ -883,6 +883,14 @@ def repair_canonical_row(row):
         return out
 
     if metric_id == "green_credit":
+        bank_specific_after_systemwide = re.search(
+            r"TPBank[^.;•]{0,140}?cấp\s+tín\s+dụng\s+xanh[^.;•]{0,180}?"
+            r"(?:tổng\s+dư\s+nợ\s+vay\s+và\s+đầu\s+tư\s+TPDN|tổng\s+dư\s+nợ|dư\s+nợ)"
+            r"[^.;•]{0,70}?(?:đạt|là|ở\s+mức)\s*" + MONEY_TEXT,
+            snippet, re.I
+        )
+        if bank_specific_after_systemwide:
+            return _apply_money_repair(out, bank_specific_after_systemwide)
         tcb_layout = re.search(
             r"(?P<scale>trillion|billion)\s+VND\s*(?P<value>\d[\d.,]*)\s+green\s+credit\s+exposure",
             snippet, re.I
@@ -934,6 +942,18 @@ def repair_canonical_row(row):
             fake = re.match(
                 r"(?P<value>\d[\d.,]*)\s*(?P<unit>trillion VND|billion VND|million VND)",
                 english_bond.group("value") + " " + english_bond.group("scale") + " VND", re.I
+            )
+            if fake:
+                return _apply_money_repair(out, fake)
+        reverse_green_bond = re.search(
+            r"(?:issued|phát\s+hành)[^.;•]{0,120}?VND\s*(?P<value>\d[\d.,]*)\s*"
+            r"(?P<scale>trillion|billion|million)[^.;•]{0,80}?green\s+bonds?",
+            snippet, re.I
+        )
+        if reverse_green_bond:
+            fake = re.match(
+                r"(?P<value>\d[\d.,]*)\s*(?P<unit>trillion VND|billion VND|million VND)",
+                reverse_green_bond.group("value") + " " + reverse_green_bond.group("scale") + " VND", re.I
             )
             if fake:
                 return _apply_money_repair(out, fake)
@@ -1011,6 +1031,7 @@ def repair_canonical_row(row):
 
     if metric_id == "training_hours_per_employee":
         patterns = [
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*(?:giờ|hours?)\s*/\s*(?:CBNV|employee)",
             r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
             r"training\s+hours\s+per\s+employee|average\s+training\s+hours)"
             r"[^.;•]{0,150}?\d+\s*[,\.]?\s*\d*\s*(?:giờ|hours?)\s+"
@@ -1038,6 +1059,14 @@ def repair_canonical_row(row):
             return _apply_numeric_repair(out, m.group("value"), "kWh")
 
     if metric_id == "water":
+        if year:
+            table = re.search(
+                rf"{int(year)}\s+{int(year)-1}[^.;•]{{0,140}}?(?:Lượng\s+nước\s+tiêu\s+thụ|water\s+consumption)"
+                rf"\s+(?P<value>\d[\d\s.,]*)\s+\d[\d\s.,]*\s*(?:m3|m³)",
+                snippet, re.I
+            )
+            if table:
+                return _apply_numeric_repair(out, table.group("value"), "m3")
         m = re.search(
             r"(?:total\s+water\s+consumption|tổng\s+(?:lượng\s+)?nước\s+(?:tiêu\s+thụ|sử\s+dụng))"
             r"[^.;•]{0,90}?(?:was|is|đạt|là|:)\s*(?P<value>\d[\d\s.,]*)\s*(?:m3|m³)",
@@ -1046,7 +1075,43 @@ def repair_canonical_row(row):
         if m:
             return _apply_numeric_repair(out, m.group("value"), "m3")
 
+    if metric_id == "paper":
+        if year:
+            table = re.search(
+                rf"{int(year)}\s+{int(year)-1}[^.;•]{{0,140}}?(?:Lượng\s+giấy\s+tiêu\s+thụ|paper\s+consumption)"
+                rf"\s+(?P<value>\d[\d\s.,]*)\s+\d[\d\s.,]*\s*(?P<unit>Tấn|tons?|kg)",
+                snippet, re.I
+            )
+            if table:
+                unit = "tons" if ascii_fold(table.group("unit")).startswith(("tan","ton")) else "kg"
+                return _apply_numeric_repair(out, table.group("value"), unit)
+
+    if metric_id == "electricity":
+        if year:
+            table = re.search(
+                rf"{int(year)}\s+{int(year)-1}[^.;•]{{0,140}}?(?:Lượng\s+điện\s+tiêu\s+thụ|electricity\s+consumption)"
+                rf"\s+(?P<value>\d[\d\s.,]*)\s+\d[\d\s.,]*\s*(?:kWh)",
+                snippet, re.I
+            )
+            if table:
+                return _apply_numeric_repair(out, table.group("value"), "kWh")
+
     if metric_id == "training_hours":
+        nab_total = re.search(
+            r"\d+(?:\s*[,\.]\s*\d+)?\s*(?:giờ|hours?)\s*/\s*(?:CBNV|employee)"
+            r"\s+(?P<value>\d[\d\s.,]*)\s*(?:giờ|hours?)[^.;•]{0,100}"
+            r"(?:Tổng\s+thời\s+lượng\s+đào\s+tạo|total\s+training\s+duration)",
+            snippet, re.I
+        )
+        if nab_total:
+            return _apply_numeric_repair(out, nab_total.group("value"), "hours")
+        reverse_total = re.search(
+            r"(?P<value>\d[\d\s.,]*)\s*(?:hours?|giờ)\s+"
+            r"(?:Total\s+training\s+hours|Tổng\s+số\s+giờ\s+đào\s+tạo)",
+            snippet, re.I
+        )
+        if reverse_total:
+            return _apply_numeric_repair(out, reverse_total.group("value"), "hours")
         table = re.search(
             r"(?:số\s+giờ\s+đào\s+tạo|training\s+hours)\s*"
             r"(?P<value>\d[\d\s.,]*)\s*(?:giờ|hours?)"
@@ -1095,6 +1160,8 @@ def metric_row_valid(row):
             return False
         if metric_id == "training_hours_per_employee" and not row.get("repaired"):
             return False
+        if metric_id == "training_hours_per_employee" and float(row.get("value") or 0) > 500:
+            return False
 
     if metric_id in {"women_workforce_pct", "women_management_pct", "female_board_pct"} and not row.get("repaired"):
         return False
@@ -1110,7 +1177,13 @@ def metric_row_valid(row):
             return False
 
     if metric_id == "green_credit":
-        if re.search(r"toàn\s+nền\s+kinh\s+tế|system[-\s]?wide|banking\s+system", context, re.I):
+        if not row.get("repaired") and re.search(
+            r"toàn\s+nền\s+kinh\s+tế|dư\s+nợ\s+tín\s+dụng\s+xanh\s+của\s+cả\s+nước|"
+            r"system[-\s]?wide|banking\s+system",
+            snippet, re.I
+        ):
+            return False
+        if re.search(r"toàn\s+nền\s+kinh\s+tế|system[-\s]?wide|banking\s+system", context, re.I) and not row.get("repaired"):
             return False
         raw_token = re.escape(clean_text(row.get("rawValue") or ""))
         if raw_token and re.search(
@@ -1131,7 +1204,7 @@ def metric_row_valid(row):
         if not row.get("repaired"):
             return False
 
-    if metric_id in {"water", "electricity"}:
+    if metric_id in {"water", "electricity", "paper"}:
         if re.search(
             r"trên\s+mỗi\s+đơn\s+vị\s+doanh\s+thu|per\s+unit\s+of\s+revenue|"
             r"per\s+(?:employee|capita)|/\s*(?:employee|CBNV)|"

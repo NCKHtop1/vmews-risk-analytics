@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -74,13 +74,15 @@
         "HDBank"
       ],
       "seed_urls": [
+        "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf",
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf",
         "https://hdbank.com.vn/vi/investor/editor/bao-cao-thuong-nien/ban-tin-nha-dau-tu"
       ],
       "year_overrides": {
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": 2024,
-        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": 2024
+        "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf": 2024,
+        "https://cdn.hdbank.com.vn/hdbank-file/uploads/f384d1892df010445b09b5b08cfbe0ad/20250620_HDBANK_AR-2024_190326_EN.pdf": 2024
       },
       "type_overrides": {
         "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf": "sustainability_report",
@@ -267,6 +269,7 @@
         "Vietnam International Bank"
       ],
       "seed_urls": [
+        "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES",
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES",
         "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn",
         "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien"
@@ -274,7 +277,8 @@
       "year_overrides": {
         "https://cafef.vn/du-lieu/vib-2425264/vib-bao-cao-thuong-nien-nam-2025.chn": 2025,
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": 2024,
-        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": 2025
+        "https://cafef1.mediacdn.vn/download/230326/vib-bao-cao-thuong-nien-nam-2025-0.pdf": 2025,
+        "https://www.vib.com.vn/wps/wcm/connect/6308b458-f92a-45ef-8fed-50d7a0c18451/Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf?CACHEID=ROOTWORKSPACE-6308b458-f92a-45ef-8fed-50d7a0c18451-pmB4rl4&CONVERT_TO=url&MOD=AJPERES": 2024
       },
       "type_overrides": {
         "https://www.vib.com.vn/wps/wcm/connect/18df9fff-6977-460f-880f-853e65abbae8/Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf?CACHEID=ROOTWORKSPACE-18df9fff-6977-460f-880f-853e65abbae8-pmAVKE0&CONVERT_TO=url&MOD=AJPERES": "annual_report",
@@ -489,7 +493,8 @@
       "aliases": [
         "giờ đào tạo",
         "training hours",
-        "learning hours"
+        "learning hours",
+        "hours of training"
       ],
       "unit_hint": "hours"
     },

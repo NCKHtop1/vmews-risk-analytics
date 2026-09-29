@@ -32,7 +32,11 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],8)
+        self.assertGreaterEqual(cfg['version'],9)
+        self.assertTrue(any('20250620_HDBANK_AR-2024_190326_EN.pdf' in u for u in cfg['banks']['HDB']['seed_urls']))
+        self.assertTrue(any('Annual%2Breport%2B2024%2BENG%2B-%2Bscan.pdf' in u for u in cfg['banks']['VIB']['seed_urls']))
+        training_rule=next(x for x in cfg['metric_rules'] if x['id']=='training_hours')
+        self.assertIn('hours of training',training_rule['aliases'])
         self.assertTrue(any('ENESGReport2024' in u for u in cfg['banks']['HDB']['seed_urls']))
         self.assertEqual(cfg['banks']['STB']['reprocess_version'],1)
         self.assertEqual(cfg['banks']['VIB']['reprocess_version'],1)
@@ -370,6 +374,30 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(esm.repair_canonical_row(msb)['value'],14)
         self.assertFalse(esm.metric_row_valid(esm.repair_canonical_row(vcb_tax)))
         self.assertEqual(esm.repair_canonical_row(ocb)['value'],45.5)
+
+    def test_corporate_esg_final_round3_semantic_repairs(self):
+        tpb={'metricId':'green_credit','year':2024,'value':680000,'rawValue':'680.000','unit':'billion VND','qualityScore':108,'confidence':'high','sourceType':'sustainability_report','snippet':'Tính tới cuối năm 2024, dư nợ tín dụng xanh của cả nước khoảng 680.000 tỷ đồng, chiếm hơn 4,3% tổng dư nợ toàn nền kinh tế. Đóng góp vào kết quả này, tính đến ngày 31/12/2024, TPBank đã cấp tín dụng xanh cho 158 khách hàng, với tổng dư nợ vay và đầu tư TPDN đạt 7.371 tỷ đồng.'}
+        nab_avg={'metricId':'training_hours_per_employee','year':2025,'value':372367,'rawValue':'372.367','unit':'hours','qualityScore':108,'confidence':'high','sourceType':'sustainability_report','snippet':'70,94 giờ/CBNV 372.367 giờ Số giờ đào tạo trung bình cho từng nhân viên Tổng thời lượng đào tạo thực tế tăng cao so với năm 2024.'}
+        nab_total={'metricId':'training_hours','year':2025,'value':70.94,'rawValue':'70,94','unit':'hours','qualityScore':108,'confidence':'high','sourceType':'sustainability_report','snippet':'70,94 giờ/CBNV 372.367 giờ Số giờ đào tạo trung bình cho từng nhân viên Tổng thời lượng đào tạo thực tế tăng cao so với năm 2024.'}
+        water={'metricId':'water','year':2024,'value':203025,'rawValue':'203.025','unit':'m3','qualityScore':107,'confidence':'high','sourceType':'sustainability_report','snippet':'Số liệu về tiêu thụ nước 2024 2023 Đơn vị tính Lượng nước tiêu thụ 203.379 203.025 m3 Hiệu suất sử dụng nước bình quân theo đầu người 25,81 25,57 m3/nhân sự.'}
+        paper={'metricId':'paper','year':2024,'value':391680,'rawValue':'391,68','unit':'kg','qualityScore':107,'confidence':'high','sourceType':'sustainability_report','snippet':'Số liệu về sử dụng giấy 2024 2023 Đơn vị tính Lượng giấy tiêu thụ 406,19 391,68 Tấn Hiệu suất sử dụng giấy bình quân theo đầu người 0,052 0,049 Tấn/nhân sự.'}
+        hdb={'metricId':'sustainable_finance','year':2024,'value':3,'rawValue':'3','unit':'billion VND','qualityScore':90,'confidence':'medium','sourceType':'annual_report','snippet':'HDBank successfully issued VND 3 trillion in domestic green bonds under the Sustainable Finance Framework, compliant with ICMA and LMA standards.'}
+        self.assertEqual(esm.repair_canonical_row(tpb)['value'],7371)
+        self.assertEqual(esm.repair_canonical_row(nab_avg)['value'],70.94)
+        self.assertEqual(esm.repair_canonical_row(nab_total)['value'],372367)
+        self.assertEqual(esm.repair_canonical_row(water)['value'],203379)
+        self.assertEqual(esm.repair_canonical_row(paper)['value'],406190)
+        self.assertEqual(esm.repair_canonical_row(hdb)['value'],3000)
+        self.assertTrue(esm.metric_row_valid(esm.repair_canonical_row(tpb)))
+        bad_avg=dict(nab_avg); bad_avg['snippet']='372.367 giờ/CBNV'
+        self.assertFalse(esm.metric_row_valid(bad_avg))
+
+    def test_corporate_esg_vib_hours_of_training_alias(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        text='In 2024, employees completed 1,854 training courses, totaling 417,556 hours of training.'
+        rows=esm.extract_metrics(text,cfg['metric_rules'],2024,'https://vib.example/ar.pdf','VIB Annual Report 2024','annual_report')
+        training=next(x for x in rows if x['metricId']=='training_hours')
+        self.assertEqual(training['value'],417556)
 
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
