@@ -186,7 +186,7 @@ def classify_document(text):
     compact = re.sub(r"[^a-z0-9]+", "", s)
     if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s or "esgreport" in compact:
         return "sustainability_report"
-    if "annual report" in s or "bao cao thuong nien" in s or "bao cao tai chinh thuong nien" in s or re.search(r"\bbctn\b", s):
+    if "annual report" in s or "bao cao thuong nien" in s or re.search(r"\bbctn\b", s):
         return "annual_report"
     if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
         return "sustainable_finance_assessment"
@@ -207,7 +207,7 @@ def explicit_report_year_hint(title):
     folded = ascii_fold(raw)
     patterns = [
         r"(?:annual\s+report|sustainability\s+report|esg\s+report)[^0-9]{0,24}(20[0-3]\d)",
-        r"(?:bao\s+cao\s+(?:tai\s+chinh\s+)?thuong\s+nien|bao\s+cao\s+phat\s+trien\s+ben\s+vung)[^0-9]{0,24}(20[0-3]\d)",
+        r"(?:bao\s+cao\s+thuong\s+nien|bao\s+cao\s+phat\s+trien\s+ben\s+vung)[^0-9]{0,24}(20[0-3]\d)",
         r"(?:^|[^a-z0-9])bctn[^0-9]{0,24}(20[0-3]\d)",
     ]
     for pattern in patterns:
@@ -1396,14 +1396,28 @@ def align_rows_to_document_year(rows, documents):
 
 
 def esg_document_candidate(doc):
-    """Reject pure financial-statement noise while retaining annual/ESG disclosures."""
+    """Reject listing pages and financial statements; retain real annual/ESG disclosures."""
     title = ascii_fold(doc.get("title") or "")
     url = ascii_fold(doc.get("url") or "")
     source_page = ascii_fold(doc.get("sourcePage") or "")
     text = " ".join([title, url, source_page])
 
+    # Discovery/index pages are useful seeds, never extraction documents.
+    path = urlsplit(doc.get("url") or "").path.lower().rstrip("/")
+    if re.fullmatch(r"/stock/[^/]+/(?:report|financial-report)", path):
+        return False
+
+    # 24HMoney's "Báo cáo tài chính thường niên" means annual financial
+    # statements, not the issuer's annual report (BCTN). It is not an ESG source.
+    if "/financial-report" in source_page or re.search(
+        r"bao cao tai chinh(?:\s+(?:hop nhat|rieng))?\s+thuong nien|"
+        r"annual financial statements?|annual financial report",
+        title, re.I
+    ):
+        return False
+
     positive = bool(re.search(
-        r"bao cao (?:tai chinh )?thuong nien|bao cao phat trien ben vung|"
+        r"bao cao thuong nien|bao cao phat trien ben vung|"
         r"annual report|sustainab|\besg\b|climate|tcfd|integrated report|"
         r"green bond|sustainable finance|second party opinion|\bvnsi\b|\bsusba\b",
         text, re.I
@@ -1418,13 +1432,7 @@ def esg_document_candidate(doc):
         title, re.I
     )) and not positive
 
-    if pure_financial or periodic:
-        return False
-    # A broad financial-report listing should never make its ordinary statement
-    # links eligible for ESG extraction; explicit annual/ESG documents still pass.
-    if "/financial-report" in source_page and not positive:
-        return False
-    return True
+    return not (pure_financial or periodic)
 
 
 def migration_keep_document(doc, keywords):
