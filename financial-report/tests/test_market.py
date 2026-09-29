@@ -32,7 +32,12 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],6)
+        self.assertGreaterEqual(cfg['version'],7)
+        self.assertTrue(any('2025.11.03%2BTPBank' in u for u in cfg['banks']['TPB']['seed_urls']))
+        self.assertTrue(any('Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf' in u for u in cfg['banks']['VIB']['seed_urls']))
+        self.assertTrue(any('20260127_esg-namabank-2024_vn_view.pdf' in u for u in cfg['banks']['NAB']['seed_urls']))
+        self.assertEqual(cfg['banks']['HDB']['type_overrides'][next(u for u in cfg['banks']['HDB']['seed_urls'] if 'HDBankESGReport2024' in u)],'sustainability_report')
+        self.assertEqual(cfg['banks']['LPB']['type_overrides']['https://lpbank.com.vn/api/content-file/public/file/view/5bb2a4bb-a070-415a-8eea-54b36c848de6'],'annual_report')
         self.assertTrue(any('B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf' in u for u in cfg['banks']['BID']['seed_urls']))
         self.assertTrue(any('Annual%20Report%202025_%20CBTT.pdf' in u for u in cfg['banks']['SSB']['seed_urls']))
         self.assertTrue(any('20260318---nab---bao-cao-thuong-nien-nam-2025.pdf' in u for u in cfg['banks']['NAB']['seed_urls']))
@@ -79,6 +84,57 @@ class MarketTests(unittest.TestCase):
         row=next(x for x in rows if x['metricId']=='training_hours')
         self.assertEqual(row['value'],1050000)
         self.assertEqual(row['unit'],'hours')
+
+    def test_corporate_esg_html_entities_are_unescaped_before_extraction(self):
+        raw='''<p>cung cấp hơn 1,05 triệu giờ đ&agrave;o tạo cho nh&acirc;n vi&ecirc;n; ủng hộ 4 tỷ đồng cho cộng đồng.</p>'''.encode()
+        text=esm.strip_html(raw)
+        self.assertIn('đào tạo',text)
+        self.assertIn('nhân viên',text)
+
+    def test_corporate_esg_green_credit_prefers_outstanding_over_product_package(self):
+        cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
+        text='''BIDV triển khai gói tín dụng xanh 10.000 tỷ đồng. Quy mô tín dụng xanh qua các năm: 2025 Dư nợ tín dụng xanh đạt 82.332 tỷ đồng, tỷ lệ 3,5%.'''
+        rows=esm.extract_metrics(text,cfg['metric_rules'],2025,'https://bank/report.pdf','BIDV PTBV 2025','sustainability_report')
+        row=next(x for x in rows if x['metricId']=='green_credit')
+        repaired=esm.repair_canonical_row(row)
+        self.assertEqual(repaired['value'],82332)
+
+    def test_corporate_esg_semantics_distinguish_totals_from_intensity_and_subtotals(self):
+        rows=[
+            {'metricId':'electricity','year':2024,'value':330942,'rawValue':'330,942','unit':'kWh','qualityScore':100,'confidence':'high','sourceType':'sustainability_report','snippet':'As of December 31, 2024, the total electricity consumption across the bank was 7 ,330,942 kWh.'},
+            {'metricId':'electricity','year':2025,'value':1385.7,'rawValue':'1,385.7','unit':'kWh','qualityScore':103,'confidence':'high','sourceType':'annual_report','snippet':'In 2025, electricity consumption per employee reached 1,385.7 kWh/employee.'},
+            {'metricId':'water','year':2025,'value':7.5,'rawValue':'7,5','unit':'m3','qualityScore':100,'confidence':'high','sourceType':'annual_report','snippet':'Water consumption per employee in 2025: ~7,5 m3/employee.'},
+            {'metricId':'ghg_total','year':2025,'value':4957,'rawValue':'4,957','unit':'tCO2e','qualityScore':101,'confidence':'high','sourceType':'sustainability_report','snippet':'Direct emissions (scope 1): 716 tCO2e. Indirect emissions (scope 2): 4,957 tCO2e.'},
+            {'metricId':'training_hours','year':2025,'value':600,'rawValue':'600','unit':'hours','qualityScore':116,'confidence':'high','sourceType':'sustainability_report','snippet':'Training: organized 30 service-quality classes in 9 regions. A total of 600 training hours were delivered.'},
+            {'metricId':'scope1','year':2025,'value':624,'rawValue':'624','unit':'tCO2e','qualityScore':107,'confidence':'high','sourceType':'annual_report','snippet':'Direct emissions (Scope 1): 624 tCO2eq for SeABank.'},
+        ]
+        canonical={x['metricId']:x for x in esm.canonical_metrics(rows)}
+        self.assertEqual(canonical['electricity']['value'],7330942)
+        self.assertNotIn('water',canonical)
+        self.assertNotIn('ghg_total',canonical)
+        self.assertNotIn('training_hours',canonical)
+        self.assertEqual(canonical['scope1']['value'],624)
+
+    def test_corporate_esg_repairs_bidv_total_csr_and_infographic_workforce(self):
+        bid={'metricId':'csr_spend','year':2025,'value':95,'rawValue':'95','unit':'billion VND','qualityScore':103,'confidence':'high','sourceType':'sustainability_report','snippet':'CON SỐ VÀNG AN SINH XÃ HỘI 2025 DẤU ẤN VÌ CỘNG ĐỒNG 500+ tỷ đồng 95 tỷ đồng 8 tỷ đồng.'}
+        mbb_women={'metricId':'women_workforce_pct','year':2025,'value':2.5,'rawValue':'2,5','unit':'%','qualityScore':70,'confidence':'medium','sourceType':'annual_report','snippet':'Tỷ lệ nữ giới Mạng lưới Dự án HiGreen 2,5% so với năm 2024 620 1.696 61% trong lực lượng CBNV (tính riêng MB).'}
+        mbb_training={'metricId':'training_hours_per_employee','year':2025,'value':70.73,'rawValue':'70,73','unit':'hours','qualityScore':105,'confidence':'high','sourceType':'annual_report','snippet':'Số giờ đào tạo trung bình mỗi năm (Đơn vị tính: giờ/người/năm) 70,73 giờ 82,91 giờ 17%.'}
+        self.assertEqual(esm.repair_canonical_row(bid)['value'],500)
+        self.assertEqual(esm.repair_canonical_row(mbb_women)['value'],61)
+        self.assertEqual(esm.repair_canonical_row(mbb_training)['value'],82.91)
+
+    def test_corporate_esg_type_override_and_targeted_reprocess_are_one_time(self):
+        url='https://bank.example/report'
+        cfg={'year_overrides':{url:2024},'type_overrides':{url:'sustainability_report'},'reprocess_version':2,'reprocess_urls':[url]}
+        old={'url':url,'year':2025,'type':'esg_other','processedAt':'2026-01-01T00:00:00+00:00','contentHash':'x','textLength':1,'reprocessVersion':1}
+        row=esm.corrected_document_year(old,cfg)
+        self.assertEqual(row['year'],2024)
+        self.assertEqual(row['type'],'sustainability_report')
+        self.assertNotIn('processedAt',row)
+        self.assertEqual(row['reprocessVersion'],2)
+        row['processedAt']='2026-01-02T00:00:00+00:00'
+        same=esm.corrected_document_year(row,cfg)
+        self.assertIn('processedAt',same)
 
     def test_corporate_esg_metric_and_rating_extraction_preserves_native_scale_and_provenance(self):
         cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
