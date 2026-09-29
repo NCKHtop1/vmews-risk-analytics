@@ -950,6 +950,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('group: market-price-live',price)
         self.assertIn("cron: '12,27,42,57 * * * *'",news)
         self.assertIn('group: market-news-live',news)
+        self.assertIn('git restore --worktree market/drivers.json',news)
         self.assertIn('git add --sparse market/news.json',news)
         self.assertNotIn('git add --sparse market/news.json market/drivers.json',news)
         self.assertIn('Validate news freshness',news)
