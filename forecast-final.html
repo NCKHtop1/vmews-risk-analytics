@@ -96,12 +96,12 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
         <div class="stat"><span>Giá dự báo T+1</span><b id="t1">—</b></div>
         <div class="stat"><span>Giá dự báo T+3</span><b id="t3">—</b></div>
         <div class="stat"><span>Giá dự báo T+5</span><b id="t5">—</b></div>
-        <div class="stat statRange"><span>Mức dự báo T+5</span><b id="range5">—</b></div>
-        <div class="stat"><span>Xác suất tăng T+5</span><b id="pup">—</b></div>
+        <div class="stat statRange"><span id="primaryForecastLabel">Mức dự báo ưu tiên</span><b id="range5">—</b></div>
+        <div class="stat"><span id="primaryProbabilityLabel">Xác suất tăng kỳ ưu tiên</span><b id="pup">—</b></div>
         <div class="stat"><span>Trạng thái rủi ro</span><b id="risk">—</b></div>
       </div>
-      <section id="scenarioBoard" class="scenarioBoard" aria-label="Biên độ và các kịch bản giá T cộng 5">
-        <div class="scenarioHeading"><span>BIÊN ĐỘ THỊ TRƯỜNG ĐÃ HỌC · T+5</span><strong id="move5">—</strong></div>
+      <section id="scenarioBoard" class="scenarioBoard" aria-label="Biên độ và các kịch bản giá kỳ dự báo ưu tiên">
+        <div class="scenarioHeading"><span id="scenarioHeadingLabel">BIÊN ĐỘ THỊ TRƯỜNG ĐÃ HỌC · KỲ ƯU TIÊN</span><strong id="move5">—</strong></div>
         <div class="scenarioOutcomes"><article class="scenarioBear"><span>Nếu diễn biến giảm</span><b id="bear5">—</b></article><article class="scenarioCenter"><span>Giá kỳ vọng trung tâm</span><b id="scenarioCenter5">—</b></article><article class="scenarioBull"><span>Nếu diễn biến tăng</span><b id="bull5">—</b></article></div>
         <p id="scenarioCaveat" class="scenarioCaveat">Đang đối chiếu độ lớn biến động và kiểm định chiều giá.</p>
       </section>
@@ -163,7 +163,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, nguồn mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
 </aside>
 <script src="./forecast-freshness.js?release=44.0"></script>
-<script src="./forecast-final-v12.js?release=44.0"></script>
+<script src="./forecast-final-v12.js?release=45.0"></script>
 <script src="./forecast-polish-v12.js?release=20.0"></script>
 <script src="./forecast-portfolio-v14.js?release=42.0"></script>
 <script src="./forecast-live-leaders-v14.js?release=42.0"></script>
