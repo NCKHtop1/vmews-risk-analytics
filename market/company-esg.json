@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-29T03:11:51.846332+00:00",
+  "checkedAt": "2026-09-29T03:25:11.853911+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 7,
+  "sourceRegistryVersion": 8,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T03:10:49.938110+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198042+00:00",
       "documents": [
         {
           "id": "e607b3f01ae54f0d38b5",
@@ -172,20 +172,35 @@
           "confidence": "high",
           "canonicalizedFromRawValue": "395,6",
           "repaired": true
+        },
+        {
+          "value": 1050000.0,
+          "rawValue": "1,05 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://acb.com.vn/ve-chung-toi/acb-hoan-thien-chien-luoc-phat-trien-ben-vung-dinh-hinh-nen-tang-truong-moi-01062026",
+          "sourceTitle": "ACB HOÀN THIỆN CHIẾN LƯỢC PHÁT TRIỂN BỀN VỮNG, ĐỊNH HÌNH NỀN TĂNG TRƯỞNG MỚI Về chúng tôi Nhà đầu tư Tuyển dụng ACB Rewards Thư viện An toàn",
+          "sourceType": "sustainability_report",
+          "snippet": "i nghiệm khách hàng, phát triển nguồn nhân lực và đóng góp cho cộng đồng. Năm 2025, ngân hàng tiếp nhận và xử lý hơn 2,3 triệu lượt yêu cầu của khách hàng; cung cấp hơn 1,05 triệu giờ đào tạo cho nhân viên; triển khai chuỗi hoạt động cộng đồng như trao 500 suất học bổng, 100 thẻ bảo hiểm y tế, ủng hộ 4 tỷ đồng hỗ trợ khắc phục hậu quả bão lụt và gần 1 tỷ đồng hỗ trợ người nghèo trên cả nước... Ở trụ cột Quản trị, ACB tăng cường năng lực tuân thủ v",
+          "confidence": "high"
         }
       ],
       "coverage": {
         "documents": 4,
         "processedDocuments": 4,
         "metrics": 4,
-        "canonicalMetrics": 2,
+        "canonicalMetrics": 3,
         "externalAssessments": 1
       }
     },
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T03:10:49.938367+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198199+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -205,7 +220,7 @@
           "title": "B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf",
           "sourcePage": "https://bidv.com.vn/wps/wcm/connect/fefc0922-870d-4585-9762-0b572c91106f/B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf?CACHEID=ROOTWORKSPACE-fefc0922-870d-4585-9762-0b572c91106f-pTY4MLM&MOD=AJPERES",
           "year": 2025,
-          "type": "sustainability_report",
+          "type": "esg_other",
           "contentType": "pdf",
           "reprocessVersion": 1,
           "contentHash": "860c2d8d7d642dfb17d19f3feadb0c12b981582b22ec9fdb2db5425c16663953",
@@ -349,8 +364,8 @@
           "repaired": true
         },
         {
-          "value": 10000.0,
-          "rawValue": "10.000",
+          "value": 82332.0,
+          "rawValue": "82.332",
           "unit": "billion VND",
           "qualityScore": 107.67,
           "metricId": "green_credit",
@@ -360,7 +375,7 @@
           "sourceUrl": "https://bidv.com.vn/wps/wcm/connect/fefc0922-870d-4585-9762-0b572c91106f/B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf?CACHEID=ROOTWORKSPACE-fefc0922-870d-4585-9762-0b572c91106f-pTY4MLM&MOD=AJPERES",
           "sourceTitle": "B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf",
           "sourceType": "sustainability_report",
-          "snippet": "ực thi định hướng môi trường qua hai nhóm giải pháp cốt lõi: • Dòng vốn ưu tiên: năng lượng tái tạo, nông nghiệp sạch và các ngành phát thải carbon thấp • Sản phẩm tiên phong: gói tín dụng xanh 10.000 tỷ đồng, trái phiếu ESG và Khung Khoản vay bền vững phiên bản 2.0 theo tiêu chuẩn quốc tế • Quản trị rủi ro: Lồng ghép đánh giá rủi ro môi trường xã hội vào 100% quy trình cấp tín dụng và áp dụng Hệ thống ESMS trên toàn hệ thống • Ngân hàng số không gi",
+          "snippet": "trình xanh Số tiền chưa phân bổ Năng lượng tái tạo Số khách hàng: 1.764 Số khách hàng: 1.789 Số khách hàng: 1.600 2023 2024 2025 Tỷ lệ dư nợ tín dụng xanh/ Tổng dư nợ: 3,5% Dư nợ tín dụng xanh 82.332 tỷ đồng Tỷ lệ dư nợ tín dụng xanh/ Tổng dư nợ: 4,0% Dư nợ tín dụng xanh 80.870 tỷ đồng Tỷ lệ dư nợ tín dụng xanh/ Tổng dư nợ: 4,2% Dư nợ tín dụng xanh 74.177 tỷ đồng Số dự án/phương án: 2. 134 Số dự án/phương án: 1.982 Số dự án/phương án: 2.502 Tốc độ",
           "confidence": "high"
         }
       ],
@@ -375,7 +390,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T03:10:49.938686+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198375+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -416,7 +431,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên",
+          "title": "Báo cáo thường niên Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2025",
           "year": null,
           "type": "sustainability_report",
@@ -824,7 +839,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T03:10:49.939106+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198582+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -1029,7 +1044,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T03:10:49.939270+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198681+00:00",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -1041,6 +1056,18 @@
           "contentType": "html",
           "contentHash": "fde68d4a37a2a3f82cb6a93133de24c886e6525185db81231d136a2a191533a2",
           "processedAt": "2026-09-29T03:10:55.653288+00:00",
+          "textLength": 158
+        },
+        {
+          "id": "dc6a9aff2c55c86c4e47",
+          "url": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "title": "ENESGReport2024_1753325716430.pdf",
+          "sourcePage": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "fde68d4a37a2a3f82cb6a93133de24c886e6525185db81231d136a2a191533a2",
+          "processedAt": "2026-09-29T03:24:41.114267+00:00",
           "textLength": 158
         },
         {
@@ -1060,8 +1087,8 @@
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
-        "documents": 2,
-        "processedDocuments": 2,
+        "documents": 3,
+        "processedDocuments": 3,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -1070,7 +1097,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T03:10:49.939422+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198795+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -1204,7 +1231,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T03:10:49.939580+00:00",
+      "checkedAt": "2026-09-29T03:24:04.198880+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -1341,8 +1368,8 @@
       "externalAssessments": [],
       "canonicalMetrics": [
         {
-          "value": 0.0,
-          "rawValue": "0",
+          "value": 620.0,
+          "rawValue": "620",
           "unit": "billion VND",
           "qualityScore": 116,
           "metricId": "csr_spend",
@@ -1388,20 +1415,37 @@
           "confidence": "high",
           "canonicalizedFromRawValue": "70,73",
           "repaired": true
+        },
+        {
+          "value": 61.0,
+          "rawValue": "61",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://cmsv5.fiingroup.vn/medialib/FG/2026/2026-03/2026-03-31/MBB/20260330--MBB--Bao-cao-thuong-nien-2025.pdf",
+          "sourceTitle": "20260330--MBB--Bao-cao-thuong-nien-2025.pdf",
+          "sourceType": "annual_report",
+          "snippet": "TRIỂN BỀN VỮNG CHƯƠNG 5 • BÁO CÁO PHÁT TRIỂN BỀN VỮNG • 145 Xã hội Đóng góp An sinh xã hội, phát triển cộng đồng: Thực hiện 137 chương trình với tổng kinh phí hơn App Thiện nguyện Tỷ lệ nữ giới Mạng lưới Dự án HiGreen – Trường Sa 3,7 triệu lượt ủng hộ 327 điểm giao dịch trên cả nước 3.675 chiến dịch 2,5% so với năm 2024 872.000 thành viên 620 1.696 61% 1.134 160 TỶ VNĐ TỶ VNĐ trong lực lượng CBNV (tính riêng MB) điểm giao dịch ATM/CRM TỶ VNĐ 55",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "2,5",
+          "repaired": true
         }
       ],
       "coverage": {
         "documents": 2,
         "processedDocuments": 2,
         "metrics": 7,
-        "canonicalMetrics": 3,
+        "canonicalMetrics": 4,
         "externalAssessments": 0
       }
     },
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T03:10:49.940525+00:00",
+      "checkedAt": "2026-09-29T03:24:04.199382+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -1923,8 +1967,72 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T03:10:49.940577+00:00",
+      "checkedAt": "2026-09-29T03:24:04.199714+00:00",
       "documents": [
+        {
+          "id": "c303b3353659c3a65824",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2026/ban-nien/2026_cv-2414_giai-trinh-bien-dong-loi-nhuan.pdf",
+          "title": "Giải trình biến động lợi nhuận sau thuế 6 tháng đầu năm 2026",
+          "sourcePage": "https://www.namabank.com.vn/co-dong",
+          "year": 2026,
+          "type": "esg_other"
+        },
+        {
+          "id": "f451421cc4de68afdcc6",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2026/ban-nien/namabank_2026_soat-xet_bctc-rl.pdf",
+          "title": "Báo cáo tài chính Bán niên - 2026 (Riêng lẻ)",
+          "sourcePage": "https://www.namabank.com.vn/co-dong",
+          "year": 2026,
+          "type": "esg_other"
+        },
+        {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "Báo cáo thường niên tiếng Anh năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
+        },
+        {
+          "id": "9905202effdd869504d3",
+          "url": "https://www.namabank.com.vn/bao-cao-thuong-nien",
+          "title": "Báo cáo thường niên",
+          "sourcePage": "https://www.namabank.com.vn/co-dong",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "261ff2503bee247941c8f465e942ba7d091e74992d855f8a8db664ed9341325a",
+          "processedAt": "2026-09-29T03:24:10.560739+00:00",
+          "textLength": 2026
+        },
+        {
+          "id": "cb1c397ec3520bb13cc7",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
+          "processedAt": "2026-09-29T03:24:41.470566+00:00",
+          "textLength": 245573
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
+        },
         {
           "id": "2290a0dd8e19254302c4",
           "url": "https://web.stockbiz.vn/Handlers/DownloadAttachedFile.ashx?NewsID=1865683",
@@ -1936,23 +2044,710 @@
           "contentHash": "66ea9825457c84cd7a55a1c0c51d1fc0a22f128803c01f7705a3dc11c28c88ab",
           "processedAt": "2026-09-29T03:11:00.373548+00:00",
           "textLength": 900000
+        },
+        {
+          "id": "51c5991dbc185eb77ca4",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "title": "bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourcePage": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "f150af1a55c8160da49cac5e7012b9e0ce5ae53bddc05f5b6112c1d15020229d",
+          "processedAt": "2026-09-29T03:24:40.515511+00:00",
+          "textLength": 204822
+        },
+        {
+          "id": "3dbf24380879ac81d3c7",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bctn-2024_ta.pdf",
+          "title": "Báo cáo thường niên tiếng Anh năm 2024",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "0fccf84d4f751de8a59f65370ede34c8686c41ea389644daf1c70b13c4c6e8de",
+          "processedAt": "2026-09-29T03:25:11.814497+00:00",
+          "textLength": 81780
+        },
+        {
+          "id": "3531289bfe2e7f3a31b9",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bctn-2024_tv.pdf",
+          "title": "Báo cáo thường niên năm 2024",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "4409484e33695f8a78b88c9d7e3b61fa6cc07627597c4e629b2829d808fed6e5",
+          "processedAt": "2026-09-29T03:25:10.806155+00:00",
+          "textLength": 87023
+        },
+        {
+          "id": "9a75823f7a984b02ebf5",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "title": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
+          "processedAt": "2026-09-29T03:24:53.506586+00:00",
+          "textLength": 190892
+        },
+        {
+          "id": "fa5f1a67142c3668d602",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2024",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "878cc864d80b667fb012f0ba8f97aa719493ee1f3fb7848e199337bdc0a0d2ea",
+          "processedAt": "2026-09-29T03:24:33.117643+00:00",
+          "textLength": 213889
+        },
+        {
+          "id": "2396ea6caba31b938b84",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
+          "title": "20260119_esg-namabank-2024.pdf",
+          "sourcePage": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "878cc864d80b667fb012f0ba8f97aa719493ee1f3fb7848e199337bdc0a0d2ea",
+          "processedAt": "2026-09-29T03:24:39.793958+00:00",
+          "textLength": 213889
+        },
+        {
+          "id": "33e5a56cd74d6d5f8f61",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
+          "processedAt": "2026-09-29T03:25:05.799971+00:00",
+          "textLength": 262818
+        },
+        {
+          "id": "672efd9d89b939b0cb7a",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2023/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2023.pdf",
+          "title": "Báo cáo thường niên năm 2023",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "annual_report"
+        },
+        {
+          "id": "0c9ce9572663228d1389",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "annual_report"
+        },
+        {
+          "id": "656e569b13a9f118e6e9",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2022/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2022.pdf",
+          "title": "Báo cáo thường niên năm 2022",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2022,
+          "type": "annual_report"
+        },
+        {
+          "id": "bf618c3dc088db37aaf4",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn-2021/bao-cao-thuong-nien-2021.pdf",
+          "title": "Báo cáo thường niên năm 2021",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2021,
+          "type": "annual_report"
+        },
+        {
+          "id": "b65b8a78c9ec7ae41ca4",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2020.pdf",
+          "title": "Báo cáo thường niên năm 2020",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2020,
+          "type": "annual_report"
+        },
+        {
+          "id": "a6b090befaba3b1b5a10",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/CaNhan/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2019.pdf",
+          "title": "Báo cáo thường niên năm 2019",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2019,
+          "type": "annual_report"
+        },
+        {
+          "id": "f2f7d0b1b48ff8c4045f",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
+          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2018,
+          "type": "esg_other"
+        },
+        {
+          "id": "de8049df250aba4307c6",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/co-dong/bao-cao-thuong-nien/2208bctn2017.pdf",
+          "title": "Báo cáo thường niên năm 2017",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien",
+          "year": 2017,
+          "type": "annual_report"
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 584.0,
+          "rawValue": "584",
+          "unit": "billion VND",
+          "qualityScore": 99.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "chương trình cho vay mua xe ô tô điện – góp phần thay đổi tư duy của người tiêu dùng, hướng Khách hàng đến việc sử dụng các sản phẩm thân thiện với môi trường. NÔNG NGHIỆP XANH TỪ TÍN DỤNG XANH ĐẾN TĂNG TRƯỞNG XANHE.1.1 584 tỷ đồng tăng 147 tỷ so với năm 2023 1.521 tỷ đồng tăng 1.521 tỷ đồng so với năm 2023 tài trợ cho các dự án đạt chứng chỉ quốc tế như EDGE, LEED, LOTUS. CÔNG TRÌNH XÂY DỰNG XANH 58 tỷ đồng GIAO THÔNG BỀN VỮNG 9190 BÁO CÁO PHÁT TRI",
+          "confidence": "medium"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "e nghề nghiệp 75-82 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 60-74 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 60-74 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 60-74 GRI 405: Sự đa d",
+          "confidence": "high"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "e nghề nghiệp 75-82 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 60-74 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 60-74 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 60-74 GRI 405: Sự đa dạng và cơ h",
+          "confidence": "high"
+        },
+        {
+          "value": 32.4,
+          "rawValue": "32,4",
+          "unit": "billion VND",
+          "qualityScore": 106.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "riển cộng đồng địa phương • Biến đổi khí hậu và giảm phát thải • Lan tỏa các hoạt động bảo vệ môi trường và hướng tới cộng đồng • Tổng chi cho các hoạt động an sinh xã hội, hỗ trợ cộng đồng đạt 32,4 tỷ đồng • Chủ động triển khai và tham gia vào các chương trình hỗ trợ cộng đồng, các hoạt động xã hội và thiện nguyện • Phát triển các sáng kiến có tác động tích cực đến cộng đồng • Cung cấp báo cáo minh bạch về các hoạt động và tác động của Nam A Ba",
+          "confidence": "high"
+        },
+        {
+          "value": 584.0,
+          "rawValue": "584",
+          "unit": "billion VND",
+          "qualityScore": 99.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
+          "sourceTitle": "20260119_esg-namabank-2024.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "chương trình cho vay mua xe ô tô điện – góp phần thay đổi tư duy của người tiêu dùng, hướng Khách hàng đến việc sử dụng các sản phẩm thân thiện với môi trường. NÔNG NGHIỆP XANH TỪ TÍN DỤNG XANH ĐẾN TĂNG TRƯỞNG XANHE.1.1 584 tỷ đồng tăng 147 tỷ so với năm 2023 1.521 tỷ đồng tăng 1.521 tỷ đồng so với năm 2023 tài trợ cho các dự án đạt chứng chỉ quốc tế như EDGE, LEED, LOTUS. CÔNG TRÌNH XÂY DỰNG XANH 58 tỷ đồng GIAO THÔNG BỀN VỮNG 9190 BÁO CÁO PHÁT TRI",
+          "confidence": "medium"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
+          "sourceTitle": "20260119_esg-namabank-2024.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "e nghề nghiệp 75-82 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 60-74 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 60-74 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 60-74 GRI 405: Sự đa d",
+          "confidence": "high"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
+          "sourceTitle": "20260119_esg-namabank-2024.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "e nghề nghiệp 75-82 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 60-74 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 60-74 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 60-74 GRI 405: Sự đa dạng và cơ h",
+          "confidence": "high"
+        },
+        {
+          "value": 32.4,
+          "rawValue": "32,4",
+          "unit": "billion VND",
+          "qualityScore": 106.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
+          "sourceTitle": "20260119_esg-namabank-2024.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "riển cộng đồng địa phương • Biến đổi khí hậu và giảm phát thải • Lan tỏa các hoạt động bảo vệ môi trường và hướng tới cộng đồng • Tổng chi cho các hoạt động an sinh xã hội, hỗ trợ cộng đồng đạt 32,4 tỷ đồng • Chủ động triển khai và tham gia vào các chương trình hỗ trợ cộng đồng, các hoạt động xã hội và thiện nguyện • Phát triển các sáng kiến có tác động tích cực đến cộng đồng • Cung cấp báo cáo minh bạch về các hoạt động và tác động của Nam A Ba",
+          "confidence": "high"
+        },
+        {
+          "value": 584.0,
+          "rawValue": "584",
+          "unit": "billion VND",
+          "qualityScore": 99.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "chương trình cho vay mua xe ô tô điện – góp phần thay đổi tư duy của người tiêu dùng, hướng Khách hàng đến việc sử dụng các sản phẩm thân thiện với môi trường. NÔNG NGHIỆP XANH TỪ TÍN DỤNG XANH ĐẾN TĂNG TRƯỞNG XANHE.1.1 584 tỷ đồng tăng 147 tỷ so với năm 2023 1.521 tỷ đồng tăng 1.521 tỷ đồng so với năm 2023 tài trợ cho các dự án đạt chứng chỉ quốc tế như EDGE, LEED, LOTUS. CÔNG TRÌNH XÂY DỰNG XANH 58 tỷ đồng GIAO THÔNG BỀN VỮNG 9190 BÁO CÁO PHÁT TRI",
+          "confidence": "medium"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "e nghề nghiệp 75-82 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 60-74 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 60-74 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 60-74 GRI 405: Sự đa d",
+          "confidence": "high"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "e nghề nghiệp 75-82 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 60-74 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 60-74 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 60-74 GRI 405: Sự đa dạng và cơ h",
+          "confidence": "high"
+        },
+        {
+          "value": 32.4,
+          "rawValue": "32,4",
+          "unit": "billion VND",
+          "qualityScore": 106.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-2024-vn.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "riển cộng đồng địa phương • Biến đổi khí hậu và giảm phát thải • Lan tỏa các hoạt động bảo vệ môi trường và hướng tới cộng đồng • Tổng chi cho các hoạt động an sinh xã hội, hỗ trợ cộng đồng đạt 32,4 tỷ đồng • Chủ động triển khai và tham gia vào các chương trình hỗ trợ cộng đồng, các hoạt động xã hội và thiện nguyện • Phát triển các sáng kiến có tác động tích cực đến cộng đồng • Cung cấp báo cáo minh bạch về các hoạt động và tác động của Nam A Ba",
+          "confidence": "high"
+        },
+        {
+          "value": 15460.0,
+          "rawValue": "15.460",
+          "unit": "billion VND",
+          "qualityScore": 105.67,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2025,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "UAN VỀ BÁO CÁO PHÁT TRIỂN BỀN VỮNG GIỚI THIỆU VỀ NAM A BANK HÀNH TRÌNH PHÁT TRIỂN BỀN VỮNG THÔNG ĐIỆP CỦA TỔNG GIÁM ĐỐC QUẢN TRỊ (G) MÔI TRƯỜNG (E) XÃ HỘI (S) 15.460 tỷ đồng dư nợ tín dụng xanh tính đến 31/12/2025 TỔNG DƯ NỢ TÍN DỤNG XANH Công trình xây dựng xanh 2.974 tỷ đồng Nông nghiệp xanh 5.533 tỷ đồng Năng lượng tái tạo, năng lượng sạch 6.677 tỷ đồng Giao thông bền vững 172 tỷ đồng Xử lý chất thải và phòng chống ô nhiễm104 tỷ đồng 100% tuân th",
+          "confidence": "high"
+        },
+        {
+          "value": 372367.0,
+          "rawValue": "372.367",
+          "unit": "hours",
+          "qualityScore": 116.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "4.474 154.917 217.450 2025 2024 45,35 46,07 66,49 74,49 Chương trình đào tạo Cán bộ quản lý ngân hàng cấp cao do Cục Kinh tế Liên bang Thụy Sỹ (SECO) 70,94 giờ/CBNV 372.367 giờ Số giờ đào tạo trung bình cho từng nhân viên Tổng thời lượng đào tạo thực tế tăng cao so với năm 2024 124 BÁO CÁO PHÁT TRIỂN BỀN VỮNG NĂM 2025 125125 XÃ HỘI (S)125 125 TỔNG QUAN VỀ BÁO CÁO PHÁT TRIỂN BỀN VỮNG GIỚI THIỆU VỀ NAM A BANK HÀNH TRÌNH PHÁT TRIỂN BỀN VỮNG THÔNG ĐIỆ",
+          "confidence": "high"
+        },
+        {
+          "value": 372367.0,
+          "rawValue": "372.367",
+          "unit": "hours",
+          "qualityScore": 116.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "4.474 154.917 217.450 2025 2024 45,35 46,07 66,49 74,49 Chương trình đào tạo Cán bộ quản lý ngân hàng cấp cao do Cục Kinh tế Liên bang Thụy Sỹ (SECO) 70,94 giờ/CBNV 372.367 giờ Số giờ đào tạo trung bình cho từng nhân viên Tổng thời lượng đào tạo thực tế tăng cao so với năm 2024 124 BÁO CÁO PHÁT TRIỂN BỀN VỮNG NĂM 2025 125125 XÃ HỘI (S)125 125 TỔNG QUAN VỀ BÁO CÁO PHÁT TRIỂN BỀN VỮNG GIỚI THIỆU VỀ NAM A BANK HÀNH TRÌNH PHÁT TRIỂN BỀN VỮNG THÔNG ĐIỆP CỦA TỔNG",
+          "confidence": "high"
+        },
+        {
+          "value": 31.2,
+          "rawValue": "31,2",
+          "unit": "billion VND",
+          "qualityScore": 103.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "ề nghiệp 68 giờ/CBNV bình quân trên mỗi CBNV 372.367 giờ Tổng số giờ đào tạo trong năm 2025 >1.000 tỷ đồng thực nộp vào Ngân sách nhà nước trong năm 2025 31,2 tỷ đồng Đóng góp cho cộng đồng trong năm 2025 36,2% 17,6% 27,9% 9,6% 8,3% Tài trợ cho giáo dục 5,5 tỷ đồng Hỗ trợ các hộ nghèo và gia đình có hoàn cảnh khó khăn8,7 tỷ đồng Tài trợ khắc phục hậu quả thiên tai2,6 tỷ đồng Tài trợ tổ chức các chương trình, sự kiện gắn kết3,0 tỷ đồng Các hoạt đ",
+          "confidence": "high"
+        },
+        {
+          "value": 1521.0,
+          "rawValue": "1,521",
+          "unit": "billion VND",
+          "qualityScore": 93.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "tted for PRA consultation Top 10 9 Green & Sustainable Enterprise 9 Vietnam green brand In 2024, Nam A Bank continues to maintain its outstanding green credit balance Expansion of green credit portfolio: 9 Green construction projects: : VND 1,521 billion 9 Green agriculture: VND 584 billion $ $ $ A reduction of 12 SUSTAINABILITY REPORT 2024 OVERVIEW OF THE SUSTAINABILITY REPORT Overview Of The Sustainability Report Overview Of Nam A Bank The Journe",
+          "confidence": "medium"
+        },
+        {
+          "value": 5943.0,
+          "rawValue": "5.943",
+          "unit": "m3",
+          "qualityScore": 68,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "s of effective water usage. 9 Conduct periodic inspection and maintenance of water pipes, storage and supply equipment to ensure no damage, leakage, or loss 9 Strictly controlling water consumption at the headquarters, the Administration Department conducts periodic inspections in common areas to ensure all faucets are turned off after use and checks water meter reading to control consumption. 5.943 m3 Total water input of Nam A Bank in 2024 This data i",
+          "confidence": "medium"
+        },
+        {
+          "value": 55.6,
+          "rawValue": "55.6",
+          "unit": "%",
+          "qualityScore": 103.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "iculties, financing school facilities in economically underdeveloped areas with total value of VND 2.84 billion in 2024. Achieve gender equality and empower all women and girls. • Female employees account for 55.6% at Nam A Bank. • 3/7 members of the BOD are female. Implementation of Principle 2 under United Nations Principles for Responsible Banking (Principle 2 –UN PRB) GRI 2-12, 2-13, 2-14, 2-16, GRI 3-3, GRI 201-2 REFERENCE SUSTAINABILITY GOVERNANC",
+          "confidence": "high"
+        },
+        {
+          "value": 46.0,
+          "rawValue": "46",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "5, 406, 410-1; SDG 4,8 REFERENCE S.1. HR INVESTMENT AND DEVELOPMENT 216 training courses organized 29 training courses offered, including 25 newly added topics 240,132 hours Total training hours 46 hours Average training hours per employee 85% of security personnel are fully equipped with human rights knowledge and required professional skills. Nam A Bank also shared knowledge, skills, and practical workplace case studies through e-books and handbook",
+          "confidence": "high"
+        },
+        {
+          "value": 46.0,
+          "rawValue": "46",
+          "unit": "hours",
+          "qualityScore": 115.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "S.1. HR INVESTMENT AND DEVELOPMENT 216 training courses organized 29 training courses offered, including 25 newly added topics 240,132 hours Total training hours 46 hours Average training hours per employee 85% of security personnel are fully equipped with human rights knowledge and required professional skills. Nam A Bank also shared knowledge, skills, and practical workplace case studies through e-books and handbooks, helping employees easily access and retain",
+          "confidence": "high"
+        },
+        {
+          "value": 11962.0,
+          "rawValue": "11.962",
+          "unit": "billion VND",
+          "qualityScore": 96.33,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "lực duy trì tổng dư nợ cho vay các dự án xanh ở mức gần 12.000 tỷ đồng và thuộc top 10 Ngân hàng thương mại có dư nợ tín dụng xanh lớn nhất trong toàn hệ thống ngân hàng. Tỷ trọng tín dụng xanh được cấp cho các dự án đầu tư vào 11.962 tỷ đồng Dư nợ cho vay đối với các lĩnh vực xanh tính đến ngày 31/12/2023 tăng 2.413 tỷ đồng so với năm 2022: 9.549 tỷ đồng 8,46% Tỷ trọng dư nợ cho vay các dự án xanh tại ngày 31/12/2023 tăng 0,47 điểm % so với 31/12/2",
+          "confidence": "medium"
+        },
+        {
+          "value": 152.0,
+          "rawValue": "152",
+          "unit": "hours",
+          "qualityScore": 110.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "trường cho tất cả mọi người. 4 5 6 GIÁO DỤC CÓ CHẤT LƯỢNG BÌNH ĐẲNG GIỚI NƯỚC SẠCH VÀ VỆ SINH 9 Chú trọng vào công tác đào tạo nghiệp vụ và kỹ năng cho người lao động với tổng số giờ đào tạo bình quân năm 2023 là 152 giờ/nhân viên 9 Thực hiện các chương trình tài trợ học bổng cho học sinh nghèo vượt khó và cơ sở vật chất cho một số trường học tại địa phương thuộc địa bàn kinh tế khó khăn với tổng giá trị đã tài trợ trong năm 2023 là 2,515 tỷ đồng",
+          "confidence": "high"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "nghề nghiệp 125-134 403-9 Thương tật liên quan đến công việc Không phát sinh 403-10 Sức khỏe kém liên quan đến công việc Không phát sinh GRI 404: Giáo dục và đào tạo 2016 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên 113-124 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp 113-124 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phát triển nghề nghiệp 113-124 GRI 405: Sự đa dạng v",
+          "confidence": "high"
+        },
+        {
+          "value": 32.5,
+          "rawValue": "32.5",
+          "unit": "billion VND",
+          "qualityScore": 106.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "và phản hồi từ cộng đồng về các chương trình và dự án 9Đề xuất các giải pháp để giải quyết các vấn đề phát sinh trong cộng đồng 9Tổng chi cho các hoạt động an sinh xã hội, hỗ trợ cộng đồng đạt 32.5 tỷ đồng 9Người dân tại 25 tỉnh thành trên cả nước nhận được lợi ích từ các chương trình, hoạt động này 9Chủ động triển khai và tham gia vào các chương trình hỗ trợ cộng đồng, các hoạt động xã hội và thiện nguyện 9Phát triển các sáng kiến có tác động",
+          "confidence": "high"
+        },
+        {
+          "value": 4564.0,
+          "rawValue": "4,564",
+          "unit": "billion VND",
+          "qualityScore": 92.67,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bctn-2024_ta.pdf",
+          "sourceTitle": "Báo cáo thường niên tiếng Anh năm 2024",
+          "sourceType": "annual_report",
+          "snippet": "nt and customer satisfaction; received a certificate of merit from the Governor of the State Bank of Vietnam for outstanding achievements (2017-2018); recognized as an Outstanding Green Credit Bank. 2 - 2020: Increased charter capital to VND 4,564 billion; commenced share trading on IIPCOM; honoured as Asia's Fastest - Growing and Excellent Enterprise 2020; obtained CEN/TS 16880:2015 Service Excellence certification; recognized as the only bank wit",
+          "confidence": "medium"
+        },
+        {
+          "value": 240132.0,
+          "rawValue": "240,132",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bctn-2024_ta.pdf",
+          "sourceTitle": "Báo cáo thường niên tiếng Anh năm 2024",
+          "sourceType": "annual_report",
+          "snippet": "ss opportunities and quickly adapt to challenges in volatile economic-social conditions' Focusing on professional and skill training programs for employees with a total of 240,132 training hours in 2024. In 2024, Narn A Bank won the \"Best Workplace in Asia 2024\" awardby HR Asia. - S.2 Ensuring social welfare and remuneration policy for employees The Bank always maintains competitive and fair remuneration and benefits for employees, creates appropriat",
+          "confidence": "high"
+        },
+        {
+          "value": 10580.0,
+          "rawValue": "10,580",
+          "unit": "billion VND",
+          "qualityScore": 68,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bctn-2024_ta.pdf",
+          "sourceTitle": "Báo cáo thường niên tiếng Anh năm 2024",
+          "sourceType": "annual_report",
+          "snippet": "s under Basel III; received notable awards including: Best Digital Bank in Vietnam, Most Beautiful Banking Excellence Vietnam, Best Bank for Risk Management Vietnam, Best Bank for CSR in Vietnam, Inspirational Brand in Asia, Outstanding Entrepreneur in Asia, and Best Workplace in Asia. - 2023: Increased charter capital to VND 10,580 billion; total assets reached nearly VND 210,000 billion, ranking among Vietnam's Top 20 Largest Banks by As",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 32.5,
+          "rawValue": "32.5",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceTitle": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "và phản hồi từ cộng đồng về các chương trình và dự án 9Đề xuất các giải pháp để giải quyết các vấn đề phát sinh trong cộng đồng 9Tổng chi cho các hoạt động an sinh xã hội, hỗ trợ cộng đồng đạt 32.5 tỷ đồng 9Người dân tại 25 tỉnh thành trên cả nước nhận được lợi ích từ các chương trình, hoạt động này 9Chủ động triển khai và tham gia vào các chương trình hỗ trợ cộng đồng, các hoạt động xã hội và thiện nguyện 9Phát triển các sáng kiến có tác động",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "32.5",
+          "repaired": true
+        },
+        {
+          "value": 32.4,
+          "rawValue": "32,4",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "riển cộng đồng địa phương • Biến đổi khí hậu và giảm phát thải • Lan tỏa các hoạt động bảo vệ môi trường và hướng tới cộng đồng • Tổng chi cho các hoạt động an sinh xã hội, hỗ trợ cộng đồng đạt 32,4 tỷ đồng • Chủ động triển khai và tham gia vào các chương trình hỗ trợ cộng đồng, các hoạt động xã hội và thiện nguyện • Phát triển các sáng kiến có tác động tích cực đến cộng đồng • Cung cấp báo cáo minh bạch về các hoạt động và tác động của Nam A Ba",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "32,4",
+          "repaired": true
+        },
+        {
+          "value": 46.0,
+          "rawValue": "46",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "5, 406, 410-1; SDG 4,8 REFERENCE S.1. HR INVESTMENT AND DEVELOPMENT 216 training courses organized 29 training courses offered, including 25 newly added topics 240,132 hours Total training hours 46 hours Average training hours per employee 85% of security personnel are fully equipped with human rights knowledge and required professional skills. Nam A Bank also shared knowledge, skills, and practical workplace case studies through e-books and handbook",
+          "confidence": "high"
+        },
+        {
+          "value": 46.0,
+          "rawValue": "46",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "S.1. HR INVESTMENT AND DEVELOPMENT 216 training courses organized 29 training courses offered, including 25 newly added topics 240,132 hours Total training hours 46 hours Average training hours per employee 85% of security personnel are fully equipped with human rights knowledge and required professional skills. Nam A Bank also shared knowledge, skills, and practical workplace case studies through e-books and handbooks, helping employees easily access and retain",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "46",
+          "repaired": true
+        },
+        {
+          "value": 55.6,
+          "rawValue": "55.6",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "iculties, financing school facilities in economically underdeveloped areas with total value of VND 2.84 billion in 2024. Achieve gender equality and empower all women and girls. • Female employees account for 55.6% at Nam A Bank. • 3/7 members of the BOD are female. Implementation of Principle 2 under United Nations Principles for Responsible Banking (Principle 2 –UN PRB) GRI 2-12, 2-13, 2-14, 2-16, GRI 3-3, GRI 201-2 REFERENCE SUSTAINABILITY GOVERNANC",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "55.6",
+          "repaired": true
+        },
+        {
+          "value": 15460.0,
+          "rawValue": "15.460",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2025,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "UAN VỀ BÁO CÁO PHÁT TRIỂN BỀN VỮNG GIỚI THIỆU VỀ NAM A BANK HÀNH TRÌNH PHÁT TRIỂN BỀN VỮNG THÔNG ĐIỆP CỦA TỔNG GIÁM ĐỐC QUẢN TRỊ (G) MÔI TRƯỜNG (E) XÃ HỘI (S) 15.460 tỷ đồng dư nợ tín dụng xanh tính đến 31/12/2025 TỔNG DƯ NỢ TÍN DỤNG XANH Công trình xây dựng xanh 2.974 tỷ đồng Nông nghiệp xanh 5.533 tỷ đồng Năng lượng tái tạo, năng lượng sạch 6.677 tỷ đồng Giao thông bền vững 172 tỷ đồng Xử lý chất thải và phòng chống ô nhiễm104 tỷ đồng 100% tuân th",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "15.460",
+          "repaired": true
+        },
+        {
+          "value": 372367.0,
+          "rawValue": "372.367",
+          "unit": "hours",
+          "qualityScore": 116.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260722_esg-namabank-2025_vn_compressed.pdf",
+          "sourceTitle": "Báo cáo phát triển bền vững năm 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "4.474 154.917 217.450 2025 2024 45,35 46,07 66,49 74,49 Chương trình đào tạo Cán bộ quản lý ngân hàng cấp cao do Cục Kinh tế Liên bang Thụy Sỹ (SECO) 70,94 giờ/CBNV 372.367 giờ Số giờ đào tạo trung bình cho từng nhân viên Tổng thời lượng đào tạo thực tế tăng cao so với năm 2024 124 BÁO CÁO PHÁT TRIỂN BỀN VỮNG NĂM 2025 125125 XÃ HỘI (S)125 125 TỔNG QUAN VỀ BÁO CÁO PHÁT TRIỂN BỀN VỮNG GIỚI THIỆU VỀ NAM A BANK HÀNH TRÌNH PHÁT TRIỂN BỀN VỮNG THÔNG ĐIỆP CỦA TỔNG",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "372.367",
+          "repaired": true
+        }
+      ],
       "coverage": {
-        "documents": 1,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "documents": 22,
+        "processedDocuments": 12,
+        "metrics": 28,
+        "canonicalMetrics": 7,
         "externalAssessments": 0
       }
     },
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T03:10:49.941459+00:00",
+      "checkedAt": "2026-09-29T03:24:04.200162+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -2211,8 +3006,8 @@
           "url": "https://ocb.com.vn/en/about-ocb/sustainable-development",
           "title": "Sustainable Development",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2023,
-          "type": "sustainability_report",
+          "year": null,
+          "type": "esg_other",
           "contentType": "html",
           "contentHash": "a2c63a01c85cdca0abbcecc2a64a9ee49241d4a8d54c281596917fbbbf5f930d",
           "processedAt": "2026-09-29T03:11:18.638112+00:00",
@@ -2601,6 +3396,21 @@
           "repaired": true
         },
         {
+          "value": 255062.0,
+          "rawValue": "255.062",
+          "unit": "hours",
+          "qualityScore": 115.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://webocb-api.ocb.com.vn/Resources/Files/20250408095036_ocb-bao-cao-thuong-nien-nam-2024.pdf",
+          "sourceTitle": "SEE_MORE",
+          "sourceType": "annual_report",
+          "snippet": "000 LƯỢT ỨNG VIÊN Tổ chức 525 KHÓA ĐÀO TẠO 26% so với năm 2023 100% CBNV được đào tạo, nâng cao năng lực Do Careerviet tổ chức Giải thưởng EMPLOYER CHOICE 2024 255.062 GIỜ Tổng số giờ đào tạo trong năm 37 GIỜ Bình quân số giờ đào tạo trên mỗi CBNV >30% so với năm 2023 Tuyển dụng công khai và minh bạch Hoạt động tuyển dụng của OCB được xây dựng dựa trên nguyên tắc tuyển dụng công khai và minh bạch trên toàn hệ thống. Quy định tuyển dụng nêu rõ các",
+          "confidence": "high"
+        },
+        {
           "value": 37.0,
           "rawValue": "37",
           "unit": "hours",
@@ -2656,14 +3466,14 @@
         "documents": 22,
         "processedDocuments": 22,
         "metrics": 21,
-        "canonicalMetrics": 6,
+        "canonicalMetrics": 7,
         "externalAssessments": 1
       }
     },
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T03:10:49.941502+00:00",
+      "checkedAt": "2026-09-29T03:24:04.200184+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -2726,7 +3536,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T03:10:49.942071+00:00",
+      "checkedAt": "2026-09-29T03:24:04.200466+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -2779,7 +3589,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026",
+          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -2827,7 +3637,7 @@
         {
           "id": "63a3abaf8b52f1a85e00",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
-          "title": "Sustainability Report 2024 05/09/2025 Read more",
+          "title": "Sustainability Report 2024 05/09/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -2839,7 +3649,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025",
+          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -3464,7 +4274,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T03:10:49.942328+00:00",
+      "checkedAt": "2026-09-29T03:24:04.200595+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -3474,8 +4284,9 @@
           "year": 2025,
           "type": "annual_report",
           "contentType": "pdf",
+          "reprocessVersion": 1,
           "contentHash": "db8d1393846893b6a3b53ae3793cf4fc62b9aa44a799e67236e83cb14ae8ab39",
-          "processedAt": "2026-09-29T02:15:31.604128+00:00",
+          "processedAt": "2026-09-29T03:24:54.785787+00:00",
           "textLength": 465140
         },
         {
@@ -3572,22 +4383,55 @@
           "sourceType": "annual_report",
           "snippet": "i năm 2024, thuộc top các ngân hàng có đóng góp ngân sách Nhà nước lớn nhất. • Lương thưởng/thù lao cho nhân viên: 7.337 tỷ đồng. � SACOMBANK thường xuyên triển khai các hoạt động cộng đồng thường niên, các chương trình kết nối, hỗ trợ doanh nghiệp, cá nhân thông qua ưu đãi phí, lãi suất trên cả nước thúc đẩy tăng trưởng tín dụng, chia sẻ khó khăn với cộng đồng doanh nghiệp và nền kinh tế. Qua đó, ngân hàng đã ghi nhận kết quả tích cực: huy động",
           "confidence": "medium"
+        },
+        {
+          "value": 49.15,
+          "rawValue": "49,15",
+          "unit": "%",
+          "qualityScore": 107.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://www.sacombank.com.vn/content/dam/sacombank/cf/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-2025.pdf",
+          "sourceTitle": "bao-cao-thuong-nien-2025.pdf",
+          "sourceType": "annual_report",
+          "snippet": "chương trình nâng cao nghiệp vụ, phát triển kỹ năng và đặc biệt là chương trình bồi dưỡng, nâng cao năng lực dành cho các chức danh Cán bộ quản lý tiềm năng và hiện hữu. � 49,15% nhân sự là nữ ở cấp nhân viên. Tối ưu và nâng cao chất lượng nguồn nhân lực CUỘC SỐNG KHỎE MẠNH GIÁO DỤC CHẤT LƯỢNG CAO BÌNH ĐẲNG GIỚI Trọng tâm 4: Minh bạch trong quản trị - Hiệu quả trong vận hànhTrọng tâm 3: Nhân sự là nền tảng cho sự phát triển � 100% được khám sức kho",
+          "confidence": "high"
         }
       ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 49.15,
+          "rawValue": "49,15",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://www.sacombank.com.vn/content/dam/sacombank/cf/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-2025.pdf",
+          "sourceTitle": "bao-cao-thuong-nien-2025.pdf",
+          "sourceType": "annual_report",
+          "snippet": "chương trình nâng cao nghiệp vụ, phát triển kỹ năng và đặc biệt là chương trình bồi dưỡng, nâng cao năng lực dành cho các chức danh Cán bộ quản lý tiềm năng và hiện hữu. � 49,15% nhân sự là nữ ở cấp nhân viên. Tối ưu và nâng cao chất lượng nguồn nhân lực CUỘC SỐNG KHỎE MẠNH GIÁO DỤC CHẤT LƯỢNG CAO BÌNH ĐẲNG GIỚI Trọng tâm 4: Minh bạch trong quản trị - Hiệu quả trong vận hànhTrọng tâm 3: Nhân sự là nền tảng cho sự phát triển � 100% được khám sức kho",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "49,15",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 5,
         "processedDocuments": 5,
-        "metrics": 3,
-        "canonicalMetrics": 0,
+        "metrics": 4,
+        "canonicalMetrics": 1,
         "externalAssessments": 0
       }
     },
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T03:10:49.942747+00:00",
+      "checkedAt": "2026-09-29T03:24:04.202209+00:00",
       "documents": [
         {
           "id": "725b2cc303c70d1ae0c8",
@@ -3635,6 +4479,18 @@
           "contentType": "html"
         },
         {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "See all ESG solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
+        },
+        {
           "id": "5f8da544b07832ede0e2",
           "url": "https://techcombank.com/en/about-us/sustainability",
           "title": "Overview",
@@ -3657,18 +4513,6 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
-        },
-        {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "Our Solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -3868,7 +4712,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T03:10:49.942874+00:00",
+      "checkedAt": "2026-09-29T03:24:04.202293+00:00",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -3889,10 +4733,10 @@
           "sourcePage": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
           "year": 2024,
           "type": "sustainability_report",
-          "failedAttempts": 1,
-          "lastError": "cryptography>=3.1 is required for AES algorithm",
-          "lastAttemptAt": "2026-09-29T03:11:17.042659+00:00",
-          "retryAfter": "2026-09-30T03:11:17.042677+00:00"
+          "contentType": "pdf",
+          "contentHash": "9560f886cb46d3922eb9ce4ad11b963cd982e8eb3ef301050983de7905b04a5f",
+          "processedAt": "2026-09-29T03:24:58.173351+00:00",
+          "textLength": 247085
         },
         {
           "id": "247e91a06e927e5991e3",
@@ -3919,21 +4763,201 @@
           "textLength": 1679
         }
       ],
-      "metrics": [],
-      "externalAssessments": [],
-      "canonicalMetrics": [],
+      "metrics": [
+        {
+          "value": 680000.0,
+          "rawValue": "680.000",
+          "unit": "billion VND",
+          "qualityScore": 101.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "g tin chi ti ết về việc phân bổ vốn và các tác động môi trường mà các dự án/phương án được tài trợ đã mang lại (nếu có). 4.1.3 Kết quả tín dụng xanh Tính tới cuối năm 2024, dư n ợ tín dụng xanh c ủa cả nước khoảng 680.000 tỷ đồng, chiếm hơn 4,3% t ổng dư nợ toàn nền kinh t ế. Đóng góp vào k ết quả này, tính đến ngày 31/12/2024, TPBank đã cấp tín dụng xanh cho 158 khách hàng, với tổng dư nợ vay và đầu tư TPDN đạt 7.371 tỷ đồng, trong đó: • Dư nợ cho",
+          "confidence": "high"
+        },
+        {
+          "value": 52811.0,
+          "rawValue": "52.811",
+          "unit": "billion VND",
+          "qualityScore": 68,
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "hẩm và dịch vụ Vận hành nội bộ Tích hợp ESG trong vận hành nội bộ ngân hàng • Môi trường • Xã hội • Quản trị Định hướng phát triển bền vững của TPBank được thể hiện qua chính sách tài chính bền vững, đặc biệt là trong việc hỗ trợ hoạt động kinh doanh của khách hàng nhằm thúc đẩy kinh tế - xã hội bền vững. TPBank dành sự quan tâm đặc biệt đến các doanh nghiệp SMEs. Năm 2024, dư nợ tín dụng cho các doanh nghiệp SMEs đạt 52.811 tỷ đồng, chiếm 20,2% tổng dư",
+          "confidence": "medium"
+        },
+        {
+          "value": 203025.0,
+          "rawValue": "203.025",
+          "unit": "m3",
+          "qualityScore": 105.0,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "ản lý và đảm bảo hiệu quả trong việc thực hành tiết kiệm nước, góp ph ần giảm thiểu lãng phí tài nguyên và b ảo vệ môi trường. Số liệu về tiêu thụ nước 2024 2023 Đơn vị tính Lượng nước tiêu thụ 203.379 203.025 m3 Hiệu suất sử dụng nước bình quân theo đầu người 25,81 25,57 m3/nhân sự Hiệu suất sử dụng nước bình quân theo lợi nhuận 26,76 36,33 m3/tỷ VND Báo cáo Phát triển bền vững 2024 1. Giới thiệu 2. Kinh tế 3. Quản trị 4. Môi trường 5. Xã hội Phụ l",
+          "confidence": "high"
+        },
+        {
+          "value": 391680.0,
+          "rawValue": "391,68",
+          "unit": "kg",
+          "qualityScore": 105.33,
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "năng suất lao động và chất lượng phục vụ khách hàng, giảm thiểu việc sử dụng giấy tờ, tiết kiệm năng lượng và chi phí quản trị. Số liệu về sử dụng giấy 2024 2023 Đơn vị tính Lượng giấy tiêu thụ 406,19 391,68 Tấn Hiệu su ất s ử dụng gi ấy bình quân theo đ ầu người 0,052 0,049 Tấn/nhân sự Hiệu suất sử dụng giấy bình quân theo lợi nhuận 0,053 0,07 Tấn/Tỷ VND 4.2.2 Tiêu thụ năng lượng hiệu quả Tham chiếu GRI 302 TPBank đã ban hành chính sách ti ết ki ệm",
+          "confidence": "high"
+        },
+        {
+          "value": 295905.0,
+          "rawValue": "295.905",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "chuyển √ √ Thuyết trình, bài giảng √ √ √ √ Nghiên cứu tình huống √ √ √ Tham dự hội nghị, hội thảo √ √ √ Số giờ đào tạo trung bình mỗi năm cho mỗi CBNV Chỉ tiêu Năm 2024 Đơn vị Số giờ đào tạo 295.905 Giờ Tổng số CBNV 7.880 Người Số giờ đào tạo trung bình 37,55 Giờ/người/năm Tỷ lệ CBNV được đánh giá sau đào tạo2 100% % Số giờ đào tạo theo giới tính Chỉ tiêu Nam Nữ Tổng Số giờ đào tạo năm 2024 (giờ) 114.476 181.429 295.905 Tỷ lệ đào tạo năm 2024 (%)",
+          "confidence": "high"
+        },
+        {
+          "value": 37.55,
+          "rawValue": "37,55",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "ứu tình huống √ √ √ Tham dự hội nghị, hội thảo √ √ √ Số giờ đào tạo trung bình mỗi năm cho mỗi CBNV Chỉ tiêu Năm 2024 Đơn vị Số giờ đào tạo 295.905 Giờ Tổng số CBNV 7.880 Người Số giờ đào tạo trung bình 37,55 Giờ/người/năm Tỷ lệ CBNV được đánh giá sau đào tạo2 100% % Số giờ đào tạo theo giới tính Chỉ tiêu Nam Nữ Tổng Số giờ đào tạo năm 2024 (giờ) 114.476 181.429 295.905 Tỷ lệ đào tạo năm 2024 (%) 38,69% 61,31% 100% Số giờ đào tạo theo cấp bậc quản lý Chỉ tiê",
+          "confidence": "high"
+        },
+        {
+          "value": 3.146,
+          "rawValue": "3.146",
+          "unit": "billion VND",
+          "qualityScore": 79.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "Trong năm 2024, mặc dù phải đối mặt với nhiều thách thức kinh tế, TPBank vẫn duy trì cam kết bằng việc triển khai nhiều sáng kiến nhằm đóng góp tích cực cho xã hội, môi trường và cộng đồng. Ngân sách thực chi cho các chương trình an sinh xã hội và hoạt động thiện nguyện đạt 3.146 triệu đồng. 2.3 Tuân thủ nghĩa vụ thuế Tham chiếu GRI 207 Trong năm 2024, TPBank đã thực hiện nghĩa vụ thuế 2.132 tỷ đồng đối với Ngân sách Nhà nước TPBank luôn coi vi",
+          "confidence": "medium"
+        }
+      ],
+      "externalAssessments": [
+        {
+          "provider": "Moody's",
+          "assessmentType": "ESG Credit Impact Score",
+          "year": 2024,
+          "value": "CIS-3",
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "snippet": "tín nhi ệm độc lập uy tín nhất thế giới. Năm 2022 và 2023 TPBank đã vinh dự góp mặt trong danh sách 20 doanh nghi ệp, bao gồm cả ngân hàng, có chỉ số PTBV tốt nhất trên thị trường chứng khoán do HOSE công bố, khẳng định cam kết bền vững của TPBank nhằm hướng đến mục tiêu PTBV, đề cao tính minh bạch và sự đóng góp vì cộng đồng. Tổ chức 2018 2019 2020 2021 2022 2023 Moody’s B1 B1 B1 B1 Ba3 Ba3 Moody’s ESG Chưa áp dụng CIS-3 E-3, S-3, G-3 CIS-3 E-3, S-3, G-3 Báo cáo Phát triển bền vững 2024 1. Giới thiệu 2. Kinh tế 3. Quản trị 4. Môi trường 5. Xã hội Phụ lục 12 1.4.6 Lĩnh vực và địa điểm kinh doanh Tham chiếu GRI 2-6 TPBank thực hiện các hoạt động ngân hàng và kinh doanh khác theo quy định của ",
+          "confidence": "medium"
+        }
+      ],
+      "canonicalMetrics": [
+        {
+          "value": 680000.0,
+          "rawValue": "680.000",
+          "unit": "billion VND",
+          "qualityScore": 101.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "g tin chi ti ết về việc phân bổ vốn và các tác động môi trường mà các dự án/phương án được tài trợ đã mang lại (nếu có). 4.1.3 Kết quả tín dụng xanh Tính tới cuối năm 2024, dư n ợ tín dụng xanh c ủa cả nước khoảng 680.000 tỷ đồng, chiếm hơn 4,3% t ổng dư nợ toàn nền kinh t ế. Đóng góp vào k ết quả này, tính đến ngày 31/12/2024, TPBank đã cấp tín dụng xanh cho 158 khách hàng, với tổng dư nợ vay và đầu tư TPDN đạt 7.371 tỷ đồng, trong đó: • Dư nợ cho",
+          "confidence": "high"
+        },
+        {
+          "value": 391680.0,
+          "rawValue": "391,68",
+          "unit": "kg",
+          "qualityScore": 105.33,
+          "metricId": "paper",
+          "pillar": "E",
+          "label": "Giấy tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "năng suất lao động và chất lượng phục vụ khách hàng, giảm thiểu việc sử dụng giấy tờ, tiết kiệm năng lượng và chi phí quản trị. Số liệu về sử dụng giấy 2024 2023 Đơn vị tính Lượng giấy tiêu thụ 406,19 391,68 Tấn Hiệu su ất s ử dụng gi ấy bình quân theo đ ầu người 0,052 0,049 Tấn/nhân sự Hiệu suất sử dụng giấy bình quân theo lợi nhuận 0,053 0,07 Tấn/Tỷ VND 4.2.2 Tiêu thụ năng lượng hiệu quả Tham chiếu GRI 302 TPBank đã ban hành chính sách ti ết ki ệm",
+          "confidence": "high"
+        },
+        {
+          "value": 295905.0,
+          "rawValue": "295.905",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "chuyển √ √ Thuyết trình, bài giảng √ √ √ √ Nghiên cứu tình huống √ √ √ Tham dự hội nghị, hội thảo √ √ √ Số giờ đào tạo trung bình mỗi năm cho mỗi CBNV Chỉ tiêu Năm 2024 Đơn vị Số giờ đào tạo 295.905 Giờ Tổng số CBNV 7.880 Người Số giờ đào tạo trung bình 37,55 Giờ/người/năm Tỷ lệ CBNV được đánh giá sau đào tạo2 100% % Số giờ đào tạo theo giới tính Chỉ tiêu Nam Nữ Tổng Số giờ đào tạo năm 2024 (giờ) 114.476 181.429 295.905 Tỷ lệ đào tạo năm 2024 (%)",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "295.905",
+          "repaired": true
+        },
+        {
+          "value": 203025.0,
+          "rawValue": "203.025",
+          "unit": "m3",
+          "qualityScore": 105.0,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://tpb.vn/wps/wcm/connect/36035be7-468c-459e-a586-fc20f694f0c0/2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf?CACHEID=ROOTWORKSPACE-36035be7-468c-459e-a586-fc20f694f0c0-pFhGccW&CONVERT_TO=url&MOD=AJPERES",
+          "sourceTitle": "2025.11.03%2BTPBank%2B_%2BB%C3%A1o%2Bc%C3%A1o%2Bph%C3%A1t%2Btri%E1%BB%83n%2Bb%E1%BB%81n%2Bv%E1%BB%AFng%2Bn%C4%83m%2B2024%2BBOD%2Bph%C3%AA%2Bduy%E1%BB%87t.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "ản lý và đảm bảo hiệu quả trong việc thực hành tiết kiệm nước, góp ph ần giảm thiểu lãng phí tài nguyên và b ảo vệ môi trường. Số liệu về tiêu thụ nước 2024 2023 Đơn vị tính Lượng nước tiêu thụ 203.379 203.025 m3 Hiệu suất sử dụng nước bình quân theo đầu người 25,81 25,57 m3/nhân sự Hiệu suất sử dụng nước bình quân theo lợi nhuận 26,76 36,33 m3/tỷ VND Báo cáo Phát triển bền vững 2024 1. Giới thiệu 2. Kinh tế 3. Quản trị 4. Môi trường 5. Xã hội Phụ l",
+          "confidence": "high"
+        }
+      ],
       "coverage": {
         "documents": 4,
-        "processedDocuments": 3,
-        "metrics": 0,
-        "canonicalMetrics": 0,
-        "externalAssessments": 0
+        "processedDocuments": 4,
+        "metrics": 7,
+        "canonicalMetrics": 4,
+        "externalAssessments": 1
       }
     },
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T03:10:49.943188+00:00",
+      "checkedAt": "2026-09-29T03:24:04.202436+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -4461,7 +5485,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T03:10:49.943308+00:00",
+      "checkedAt": "2026-09-29T03:24:04.202506+00:00",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -4471,9 +5495,10 @@
           "year": 2025,
           "type": "annual_report",
           "contentType": "pdf",
-          "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "processedAt": "2026-09-29T02:58:11.026915+00:00",
-          "textLength": 0
+          "reprocessVersion": 1,
+          "contentHash": "7cf2981c33662b0d6d2dce1c4d7f4127d724debefedefb366bd782f64fed1df4",
+          "processedAt": "2026-09-29T03:25:04.278086+00:00",
+          "textLength": 381
         },
         {
           "id": "4756fcbfe9adbcdccbf3",
@@ -4483,9 +5508,10 @@
           "year": 2024,
           "type": "annual_report",
           "contentType": "pdf",
-          "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "processedAt": "2026-09-29T03:10:56.453318+00:00",
-          "textLength": 0
+          "reprocessVersion": 1,
+          "contentHash": "3ac0ccebeb9b6638ee6d63ae65a457b1f27872b73e6deb78edf0c758307adf8f",
+          "processedAt": "2026-09-29T03:25:04.372092+00:00",
+          "textLength": 374
         },
         {
           "id": "6968d1a581184f508e23",
@@ -4514,7 +5540,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T03:10:49.943470+00:00",
+      "checkedAt": "2026-09-29T03:24:04.202593+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -4823,18 +5849,14 @@
       "textLength": 4043
     },
     {
-      "id": "c3ae1e1e5c89eec1b45b",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "2023 Summary Report",
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "Above-Board_Final.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "climate_disclosure",
+      "year": 2024,
+      "type": "susba",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T02:58:31.851466+00:00",
-      "textLength": 98218
+      "externalKind": "bank_assessment"
     },
     {
       "id": "c3ae1e1e5c89eec1b45b",
@@ -4851,18 +5873,14 @@
       "textLength": 98218
     },
     {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
-      "type": "sustainability_report",
+      "type": "susba",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T02:58:27.859508+00:00",
-      "textLength": 61879
+      "externalKind": "bank_assessment"
     },
     {
       "id": "abbe2ce24605a50fc5f0",
@@ -4964,7 +5982,7 @@
       "title": "2020 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2020,
-      "type": "susba",
+      "type": "esg_other",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -4988,7 +6006,7 @@
       "title": "2019 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2019,
-      "type": "susba",
+      "type": "esg_other",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -5048,11 +6066,7 @@
       "year": null,
       "type": "esg_other",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion",
-      "failedAttempts": 1,
-      "lastError": "cryptography>=3.1 is required for AES algorithm",
-      "lastAttemptAt": "2026-09-28T23:59:14.265679+00:00",
-      "retryAfter": "2026-09-29T23:59:14.265701+00:00"
+      "externalKind": "second_party_opinion"
     },
     {
       "id": "3f657328348bfec1bf88",
@@ -5172,7 +6186,7 @@
       "title": "Resource Center",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -5673,7 +6687,7 @@
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessment page",
+      "title": "Assessments",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -5744,9 +6758,9 @@
       "id": "5278c75be602879a63b2",
       "url": "https://connect.sustainalytics.com/hubfs/INV/Climate%20Solutions/Carbon%20Emissions/2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
       "title": "2026_PCAF_Reporting_Guide_ShortForm_V2B.pdf",
-      "sourcePage": "https://www.sustainalytics.com/investor-solutions/climate-solutions/climate-transition-toolkit/climate-reporting-tcfd",
+      "sourcePage": "https://www.sustainalytics.com/esg-research",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
       "contentType": "pdf",
@@ -5835,6 +6849,12 @@
       "symbol": "EIB"
     },
     {
+      "url": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/efPq2iRJuNTtKb1x6xVf20250724095239/ENESGReport2024_1753325716430.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "HDB"
+    },
+    {
       "url": "https://cdn.hdbank.com.vn/hdbank-file/investor/editor/Cgb8aLIqqhfiP1MJgfPS20250521180545/HDBankESGReport202420250521_1747825711189.pdf",
       "status": "ok",
       "documents": 1,
@@ -5860,8 +6880,8 @@
     },
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 1,
       "symbol": "LPB"
     },
     {
@@ -5884,14 +6904,14 @@
     },
     {
       "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 1,
       "symbol": "NAB"
     },
     {
       "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024.pdf",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 1,
       "symbol": "NAB"
     },
     {
@@ -5902,26 +6922,26 @@
     },
     {
       "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 1,
       "symbol": "NAB"
     },
     {
       "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/bao-cao-phat-trien-ben-vung-2024-vn.pdf",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 1,
       "symbol": "NAB"
     },
     {
       "url": "https://www.namabank.com.vn/co-dong",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 19,
       "symbol": "NAB"
     },
     {
       "url": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 15,
       "symbol": "NAB"
     },
     {
@@ -5993,7 +7013,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 4,
+      "documents": 6,
       "symbol": "TCB"
     },
     {
@@ -6059,7 +7079,7 @@
     {
       "url": "https://www.vib.com.vn/vn/nha-dau-tu/bao-cao-thuong-nien",
       "status": "ok",
-      "documents": 1,
+      "documents": 0,
       "symbol": "VIB"
     },
     {
@@ -6090,7 +7110,7 @@
     {
       "url": "https://www.wwf.sg/susba/about/",
       "status": "ok",
-      "documents": 10,
+      "documents": 2,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -6117,21 +7137,21 @@
     },
     {
       "url": "https://www.spglobal.com/ratings/en/products/second-party-opinions",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "provider": "S&P Global Ratings",
       "external": true
     }
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 10,
-    "backlogBeforeRun": 25,
-    "activeBacklogBeforeRun": 12,
-    "backlogRemaining": 2,
-    "eligibleBacklog": 23,
-    "recentBacklog": 12,
-    "historicalBacklog": 5,
+    "documentsProcessed": 16,
+    "backlogBeforeRun": 42,
+    "activeBacklogBeforeRun": 23,
+    "backlogRemaining": 7,
+    "eligibleBacklog": 40,
+    "recentBacklog": 23,
+    "historicalBacklog": 11,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
     "documentWorkers": 4
