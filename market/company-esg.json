@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-29T02:28:31.826063+00:00",
+  "checkedAt": "2026-09-29T02:31:46.396328+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 4,
+  "sourceRegistryVersion": 5,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -12,7 +12,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T02:28:09.463222+00:00",
+      "checkedAt": "2026-09-29T02:31:28.257199+00:00",
       "documents": [
         {
           "id": "4c50ba807f5df7eeae1a",
@@ -53,7 +53,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T02:28:09.463381+00:00",
+      "checkedAt": "2026-09-29T02:31:28.257324+00:00",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -91,7 +91,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T02:28:09.463713+00:00",
+      "checkedAt": "2026-09-29T02:31:28.257550+00:00",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -540,7 +540,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T02:28:09.464132+00:00",
+      "checkedAt": "2026-09-29T02:31:28.257815+00:00",
       "documents": [
         {
           "id": "f6b18311f04c295e3f80",
@@ -737,7 +737,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T02:28:09.464260+00:00",
+      "checkedAt": "2026-09-29T02:31:28.257908+00:00",
       "documents": [
         {
           "id": "154efe68d916615a36dd",
@@ -766,7 +766,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T02:28:09.464330+00:00",
+      "checkedAt": "2026-09-29T02:31:28.257989+00:00",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -795,7 +795,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T02:28:09.464431+00:00",
+      "checkedAt": "2026-09-29T02:31:28.258058+00:00",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -824,7 +824,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T02:28:09.465377+00:00",
+      "checkedAt": "2026-09-29T02:31:28.258759+00:00",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -1209,23 +1209,6 @@
       ],
       "canonicalMetrics": [
         {
-          "value": 2365.0,
-          "rawValue": "2.365",
-          "unit": "billion VND",
-          "qualityScore": 116,
-          "metricId": "csr_spend",
-          "pillar": "S",
-          "label": "Chi cho cộng đồng/CSR",
-          "year": 2025,
-          "sourceUrl": "https://www.msb.com.vn/msb-website/MSB-Bao-cao-phat-trien-ben-vung-2025.pdf",
-          "sourceTitle": "Tải báo cáo 2025",
-          "sourceType": "sustainability_report",
-          "snippet": "P 18% TRONG NƯỚC - 78% NGOÀI NƯỚC - 22% 1.896 tỷ đồng 13.602 TỶ ĐỒNG Được phân bố cho các bên liên quan CHÍNH PHỦ 14% THUẾ CTCT - 5% THUẾ TNDN - 75% THUẾ PHÍ KHÁC - 20% 14 tỷ đồng CỘNG ĐỒNG 0,10% CỔ ĐÔNG 6.818 tỷ đồng (50%) TÀI TRỢ, HỖ TRỢ CỘNG ĐỒNG - 40% HOẠT ĐỘNG XÃ HỘI TỪ THIỆN - 60% 2.365 tỷ đồng CÁN BỘ NHÂN VIÊN 17% ĐÀO TẠO - 1% KHÁC - 7% ĐÓNG GÓP THEO LƯƠNG - 9% LƯƠNG, PHỤ CẤP - 83% • Triển khai Quyết định số 1491/QĐ-NHNN của Thống đốc NHN",
-          "confidence": "high",
-          "canonicalizedFromRawValue": "14",
-          "repaired": true
-        },
-        {
           "value": 9274032.0,
           "rawValue": "9.274.032",
           "unit": "kWh",
@@ -1356,14 +1339,14 @@
         "documents": 9,
         "processedDocuments": 5,
         "metrics": 18,
-        "canonicalMetrics": 9,
+        "canonicalMetrics": 8,
         "externalAssessments": 1
       }
     },
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T02:28:09.465387+00:00",
+      "checkedAt": "2026-09-29T02:31:28.258765+00:00",
       "documents": [],
       "metrics": [],
       "externalAssessments": [],
@@ -1379,7 +1362,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T02:28:09.466209+00:00",
+      "checkedAt": "2026-09-29T02:31:28.259534+00:00",
       "documents": [
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -1420,7 +1403,7 @@
         {
           "id": "9c0f8fa4ea6087a7f9b7",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923154047_bao-cao-phat-trien-ben-vung-2024.pdf",
-          "title": "Báo cáo phát triển bền vững 2024 2024 Ngày đăng: 23/9/2025 SEE_MORE",
+          "title": "SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "sustainability_report",
@@ -1428,6 +1411,18 @@
           "contentHash": "9357a7a944ab77d4378e12daa40218c6a1122dbb26f020401eddedfa104b0cbc",
           "processedAt": "2026-09-29T02:15:24.665503+00:00",
           "textLength": 336491
+        },
+        {
+          "id": "7dbc12f1505da625cb7b",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
+          "title": "SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2023,
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
+          "processedAt": "2026-09-29T02:15:57.267747+00:00",
+          "textLength": 497211
         },
         {
           "id": "65aab233120d3f54ae4e",
@@ -1452,18 +1447,6 @@
           "contentHash": "44dfecab7d8b460f8868651b3866fa0023b905c044dfe64fd24dbb366a8cc53c",
           "processedAt": "2026-09-29T00:04:45.555474+00:00",
           "textLength": 162196
-        },
-        {
-          "id": "7dbc12f1505da625cb7b",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
-          "title": "Báo cáo Phát triển bền vững 2023 2023 Ngày đăng: 19/9/2024 SEE_MORE",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
-          "processedAt": "2026-09-29T02:15:57.267747+00:00",
-          "textLength": 497211
         },
         {
           "id": "60d6e709c250aab407b8",
@@ -1965,8 +1948,8 @@
       ],
       "canonicalMetrics": [
         {
-          "value": 18.0,
-          "rawValue": "18",
+          "value": 45.5,
+          "rawValue": "45,5",
           "unit": "%",
           "qualityScore": 116,
           "metricId": "women_management_pct",
@@ -2078,7 +2061,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T02:28:09.466240+00:00",
+      "checkedAt": "2026-09-29T02:31:28.259561+00:00",
       "documents": [
         {
           "id": "2dc85ac7632258f7ec86",
@@ -2113,8 +2096,8 @@
       "externalAssessments": [],
       "canonicalMetrics": [
         {
-          "value": 1000.0,
-          "rawValue": "1.000",
+          "value": 256.0,
+          "rawValue": "256",
           "unit": "billion VND",
           "qualityScore": 116,
           "metricId": "csr_spend",
@@ -2141,7 +2124,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T02:28:09.466493+00:00",
+      "checkedAt": "2026-09-29T02:31:28.259751+00:00",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -2158,7 +2141,7 @@
         {
           "id": "26377bb1b058fa962fc1",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2025",
-          "title": "Sustainability Report 2025 23/07/2026 Read more",
+          "title": "Sustainability Report 2025 23/07/2026",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -2194,7 +2177,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025",
+          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -2254,7 +2237,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T02:28:09.466583+00:00",
+      "checkedAt": "2026-09-29T02:31:28.259811+00:00",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -2341,31 +2324,31 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T02:28:09.466975+00:00",
+      "checkedAt": "2026-09-29T02:31:28.260061+00:00",
       "documents": [
-        {
-          "id": "56ecaa75021fa68c4629",
-          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
-          "title": "Download Report",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": 2026,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
-          "processedAt": "2026-09-29T01:24:33.017802+00:00",
-          "textLength": 192129
-        },
         {
           "id": "725b2cc303c70d1ae0c8",
           "url": "https://techcombank.com/en/about-us/sustainability/milestones",
           "title": "Our Milestones",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability",
           "year": 2025,
-          "type": "sustainability_report",
+          "type": "esg_web_content",
           "contentType": "html",
           "contentHash": "4f8cbab79fa4ad6c4ae96272b14d8d2b753d446ef994b346e2f825a24ed2bb38",
           "processedAt": "2026-09-29T01:34:40.269534+00:00",
           "textLength": 4813
+        },
+        {
+          "id": "56ecaa75021fa68c4629",
+          "url": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
+          "title": "Download Report",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "71dbfbfa2b9c5402461a4d3a64827baad8a71fa2e40ff91af5d9f61585add769",
+          "processedAt": "2026-09-29T01:24:33.017802+00:00",
+          "textLength": 192129
         },
         {
           "id": "f8a4e9fe11d18570428e",
@@ -2470,7 +2453,7 @@
           "metricId": "green_credit",
           "pillar": "E",
           "label": "Dư nợ tín dụng xanh",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2485,7 +2468,7 @@
           "metricId": "sustainable_finance",
           "pillar": "E",
           "label": "Tài chính bền vững",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2500,7 +2483,7 @@
           "metricId": "water",
           "pillar": "E",
           "label": "Nước tiêu thụ",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2515,7 +2498,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2527,7 +2510,7 @@
         {
           "provider": "HOSE",
           "assessmentType": "VNSI membership",
-          "year": 2026,
+          "year": 2025,
           "value": "VNSI",
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
@@ -2555,7 +2538,7 @@
           "metricId": "green_credit",
           "pillar": "E",
           "label": "Dư nợ tín dụng xanh",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2572,7 +2555,7 @@
           "metricId": "sustainable_finance",
           "pillar": "E",
           "label": "Tài chính bền vững",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2589,7 +2572,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2026,
+          "year": 2025,
           "sourceUrl": "https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf",
           "sourceTitle": "Download Report",
           "sourceType": "sustainability_report",
@@ -2610,7 +2593,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T02:28:09.467064+00:00",
+      "checkedAt": "2026-09-29T02:31:28.260127+00:00",
       "documents": [
         {
           "id": "247e91a06e927e5991e3",
@@ -2651,7 +2634,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T02:28:09.467317+00:00",
+      "checkedAt": "2026-09-29T02:31:28.260307+00:00",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -3119,23 +3102,6 @@
           "repaired": true
         },
         {
-          "value": 15000.0,
-          "rawValue": "15.000",
-          "unit": "billion VND",
-          "qualityScore": 116,
-          "metricId": "csr_spend",
-          "pillar": "S",
-          "label": "Chi cho cộng đồng/CSR",
-          "year": 2025,
-          "sourceUrl": "https://www.vietcombank.com.vn/-/media/Project/VCB-Sites/VCB/Nha-Dau-tu/Bao-cao-PTBV/VN_VCB_ESG-Report-2025.pdf",
-          "sourceTitle": "VN_VCB_ESG-Report-2025.pdf",
-          "sourceType": "sustainability_report",
-          "snippet": "m xã hội của một thương hiệu lớn và có nhiều đóng góp cho nền kinh tế. Ngân hàng đã triển khai nhiều chương trình an sinh xã hội quy mô lớn, tập trung vào giáo dục, y tế và hỗ trợ cộng đồng yếu thế. Đóng góp cho Ngân sách Nhà nước đạt khoảng 15.000 tỷ đồng, tiếp tục nằm trong nhóm doanh nghiệp đóng góp lớn nhất cả nước. T ầm nhìn và cam kết phát triển bền vững Với nền tảng tài chính vững mạnh, hệ thống công nghệ hiện đại, cùng đội ngũ nhân sự tà",
-          "confidence": "high",
-          "canonicalizedFromRawValue": "15.000",
-          "repaired": true
-        },
-        {
           "value": 1793632.0,
           "rawValue": "1.793.632",
           "unit": "kWh",
@@ -3189,14 +3155,14 @@
         "documents": 4,
         "processedDocuments": 4,
         "metrics": 21,
-        "canonicalMetrics": 8,
+        "canonicalMetrics": 7,
         "externalAssessments": 3
       }
     },
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T02:28:09.467362+00:00",
+      "checkedAt": "2026-09-29T02:31:28.260337+00:00",
       "documents": [
         {
           "id": "6968d1a581184f508e23",
@@ -3225,7 +3191,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T02:28:09.467512+00:00",
+      "checkedAt": "2026-09-29T02:31:28.260442+00:00",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -3517,7 +3483,7 @@
     {
       "id": "c3ae1e1e5c89eec1b45b",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
       "type": "climate_disclosure",
@@ -3525,7 +3491,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T02:28:31.664480+00:00",
+      "processedAt": "2026-09-29T02:17:32.676504+00:00",
       "textLength": 98218
     },
     {
@@ -3539,22 +3505,8 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T02:17:32.676504+00:00",
+      "processedAt": "2026-09-29T02:31:46.118632+00:00",
       "textLength": 98218
-    },
-    {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "2023 Assessment of Banks' Seafood Sector Policies",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "sustainability_report",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-28T23:58:50.588124+00:00",
-      "textLength": 61879
     },
     {
       "id": "abbe2ce24605a50fc5f0",
@@ -3569,6 +3521,30 @@
       "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
       "processedAt": "2026-09-29T02:28:26.903462+00:00",
       "textLength": 61879
+    },
+    {
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2023,
+      "type": "sustainability_report",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-29T02:31:44.712106+00:00",
+      "textLength": 61879
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "report-2018-compressed.pdf",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2022,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "c6d164862c0327932c55",
@@ -3700,16 +3676,6 @@
     },
     {
       "id": "5a3092bae6468b8e3d31",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "2018 Updated Report",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2018,
-      "type": "esg_other",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
-    },
-    {
-      "id": "5a3092bae6468b8e3d31",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
       "title": "2018 Updated Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -3752,7 +3718,7 @@
       "title": "Top-Rated Companies",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -3783,7 +3749,10 @@
       "type": "esg_other",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "70593690ee0d9320f81be513ccab2f737a0f3c73ed13911c03722b034feea7f0",
+      "processedAt": "2026-09-29T02:31:44.381261+00:00",
+      "textLength": 242
     },
     {
       "id": "ecbd237d832e5c94c231",
@@ -3808,7 +3777,10 @@
       "type": "esg_web_content",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "7546759ddeaa6c919533bafdfe93173ab59458ff44b25443dffc0a5818fd2162",
+      "processedAt": "2026-09-29T02:31:45.199922+00:00",
+      "textLength": 17092
     },
     {
       "id": "2253af34ca58229eee04",
@@ -3841,7 +3813,10 @@
       "type": "esg_web_content",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "351cfb98966746f6e7d134ea4c7f882437027ae70ddc78a64510ebdad4223148",
+      "processedAt": "2026-09-29T02:31:39.402565+00:00",
+      "textLength": 37
     },
     {
       "id": "f18cce432e71dda5c16e",
@@ -3935,7 +3910,11 @@
       "year": null,
       "type": "esg_web_content",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentType": "pdf",
+      "contentHash": "c9c4e5d35d9ddcb78d602b56f568b8153f8e015bc16c119b8f5ff8984167c0a9",
+      "processedAt": "2026-09-29T02:31:45.540572+00:00",
+      "textLength": 21787
     },
     {
       "id": "fb7817d479af9c9cdbcc",
@@ -3974,7 +3953,10 @@
       "type": "sustainable_finance_assessment",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "1e3f6a15a46eb3fca929cca36e2fe3491a8ac0d7e53fbb6ff5a0970a37848439",
+      "processedAt": "2026-09-29T02:31:46.372678+00:00",
+      "textLength": 242
     },
     {
       "id": "fa7b705eef8393bd1aa8",
@@ -3985,7 +3967,10 @@
       "type": "esg_other",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "ffa087f88f387add2d9d62d4f7135b61b1f41992b6486e42848b2cfee4c56102",
+      "processedAt": "2026-09-29T02:31:41.147969+00:00",
+      "textLength": 242
     },
     {
       "id": "0e820c912bcf6a847c6a",
@@ -4035,10 +4020,13 @@
       "title": "ESG Solutions",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "dbaa82db207e2c8c78941575aacf3a5447b0a51a4de67e29dc4659d0b3b7948a",
+      "processedAt": "2026-09-29T02:31:39.289173+00:00",
+      "textLength": 11314
     },
     {
       "id": "30d4c1d2e71ee6afe923",
@@ -4060,10 +4048,13 @@
       "title": "ESG Risk Ratings",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "fb3f08c8e13a271d11f10eb1adfe78dafb77c24f5e58df2c105bec2ab2b3296c",
+      "processedAt": "2026-09-29T02:31:39.440425+00:00",
+      "textLength": 12958
     },
     {
       "id": "3f921833b945471d9931",
@@ -4113,10 +4104,13 @@
       "title": "ESG Licenses",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "esg_web_content",
+      "type": "climate_disclosure",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "dbaa82db207e2c8c78941575aacf3a5447b0a51a4de67e29dc4659d0b3b7948a",
+      "processedAt": "2026-09-29T02:31:39.170487+00:00",
+      "textLength": 11314
     },
     {
       "id": "79f94a834fd991b95215",
@@ -4263,7 +4257,10 @@
       "type": "esg_web_content",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "1f3b47529477703397c4fcb875911523bb891b7aac57d288513d7185c728a4e9",
+      "processedAt": "2026-09-29T02:31:40.347756+00:00",
+      "textLength": 19411
     },
     {
       "id": "df200cc89058aa8a2d0b",
@@ -4274,7 +4271,10 @@
       "type": "esg_web_content",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "1783d4178ed1f433f97e9d105d985577c39e46054155e82150bd950cf13f342a",
+      "processedAt": "2026-09-29T02:31:39.871933+00:00",
+      "textLength": 21660
     },
     {
       "id": "2ad35fb952b12dcde702",
@@ -4317,7 +4317,7 @@
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessment page",
+      "title": "Assessments",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -4337,7 +4337,10 @@
       "type": "esg_other",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "e745354a8d17185477e077923cb7221ea514872bb1e6c7bde494373dd8832955",
+      "processedAt": "2026-09-29T02:31:41.578160+00:00",
+      "textLength": 243
     },
     {
       "id": "a36ae78ae420a207f574",
@@ -4348,7 +4351,10 @@
       "type": "sustainable_finance_assessment",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "b0c0881b4a975993e8c79578ab47902091be4b03e394b2a42f4055a7635d62ba",
+      "processedAt": "2026-09-29T02:31:42.515482+00:00",
+      "textLength": 236
     },
     {
       "id": "74772c7c9928d238a390",
@@ -4359,7 +4365,10 @@
       "type": "esg_other",
       "contentType": "html",
       "provider": "S&P Global Ratings",
-      "externalKind": "second_party_opinion"
+      "externalKind": "second_party_opinion",
+      "contentHash": "71a9fc8e36e08e5e4309476b90c722dcc7a7e1abac0108f7092d163f0b1c89d1",
+      "processedAt": "2026-09-29T02:31:40.862539+00:00",
+      "textLength": 243
     },
     {
       "id": "0d9d1e8d0b9ea09f21ba",
@@ -4449,8 +4458,8 @@
     },
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 1,
       "symbol": "LPB"
     },
     {
@@ -4480,7 +4489,7 @@
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
       "status": "ok",
-      "documents": 1,
+      "documents": 18,
       "symbol": "OCB"
     },
     {
@@ -4504,7 +4513,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 2,
+      "documents": 3,
       "symbol": "SSB"
     },
     {
@@ -4613,7 +4622,7 @@
     {
       "url": "https://www.wwf.sg/susba/about/",
       "status": "ok",
-      "documents": 2,
+      "documents": 5,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -4649,11 +4658,11 @@
   "run": {
     "mode": "recent",
     "documentsProcessed": 16,
-    "backlogBeforeRun": 49,
-    "activeBacklogBeforeRun": 37,
-    "backlogRemaining": 21,
-    "eligibleBacklog": 48,
-    "recentBacklog": 37,
+    "backlogBeforeRun": 35,
+    "activeBacklogBeforeRun": 23,
+    "backlogRemaining": 7,
+    "eligibleBacklog": 34,
+    "recentBacklog": 23,
     "historicalBacklog": 5,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 16,
