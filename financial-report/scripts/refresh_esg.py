@@ -22,13 +22,14 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/esg_sources.json"
 USER_AGENT = "FinQuery/1.0 ESG collector (+public sources only)"
-MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(96 * 1024 * 1024)))
+HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
+DEFAULT_DOC_BYTES = (96 if HISTORY_BACKFILL else 35) * 1024 * 1024
+MAX_DOC_BYTES = int(os.environ.get("ESG_MAX_DOC_BYTES", str(DEFAULT_DOC_BYTES)))
 MAX_TEXT_CHARS = int(os.environ.get("ESG_MAX_TEXT_CHARS", "900000"))
 MAX_PDF_PAGES = int(os.environ.get("ESG_MAX_PDF_PAGES", "280"))
 DOCS_PER_RUN = int(os.environ.get("ESG_DOCS_PER_RUN", "16"))
 HISTORY_DOCS_PER_RUN = int(os.environ.get("ESG_HISTORY_DOCS_PER_RUN", "5"))
 RECENT_YEARS = int(os.environ.get("ESG_RECENT_YEARS", "4"))
-HISTORY_BACKFILL = os.environ.get("ESG_HISTORY_BACKFILL", "0") == "1"
 DISCOVERY_TIMEOUT = int(os.environ.get("ESG_DISCOVERY_TIMEOUT", "8"))
 DETAIL_TIMEOUT = int(os.environ.get("ESG_DETAIL_TIMEOUT", "6"))
 DOCUMENT_TIMEOUT = int(os.environ.get("ESG_DOCUMENT_TIMEOUT", "22"))
@@ -141,7 +142,7 @@ def classify_document(text):
     # reporting; the explicit report label is therefore the strongest signal.
     if "sustainability report" in s or "bao cao phat trien ben vung" in s or "esg report" in s:
         return "sustainability_report"
-    if "annual report" in s or "bao cao thuong nien" in s:
+    if "annual report" in s or "bao cao thuong nien" in s or re.search(r"\bbctn\b", s):
         return "annual_report"
     if "second party opinion" in s or "green bond framework" in s or "sustainable finance framework" in s:
         return "sustainable_finance_assessment"
@@ -156,14 +157,34 @@ def classify_document(text):
     return "esg_other"
 
 
-def infer_report_year(text, fallback=None):
-    """Prefer a reporting year explicitly tied to a report/disclosure label."""
+def explicit_report_year_hint(title):
+    """Return a year only when the document title itself explicitly labels the report."""
+    raw = clean_text(title)
+    folded = ascii_fold(raw)
+    patterns = [
+        r"(?:annual\s+report|sustainability\s+report|esg\s+report)[^0-9]{0,24}(20[0-3]\d)",
+        r"(?:bao\s+cao\s+thuong\s+nien|bao\s+cao\s+phat\s+trien\s+ben\s+vung)[^0-9]{0,24}(20[0-3]\d)",
+        r"(?:^|[^a-z0-9])bctn[^0-9]{0,24}(20[0-3]\d)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, folded, re.I)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def infer_report_year(text, fallback=None, title=None):
+    """Prefer an explicit report-title year, then a year tied to the disclosure body."""
+    title_year = explicit_report_year_hint(title or "")
+    if title_year is not None:
+        return title_year
     sample = clean_text(text[:50000])
     patterns = [
         r"(?:Sustainability|ESG|Annual)\s+Report\s+(20[0-3]\d)",
         r"(20[0-3]\d)\s+(?:Sustainability|ESG|Annual)\s+Report",
         r"Báo\s+cáo\s+(?:phát\s+triển\s+bền\s+vững|thường\s+niên)[^\d]{0,30}(20[0-3]\d)",
         r"(?:reporting|financial)\s+(?:year|period)[^\d]{0,20}(20[0-3]\d)",
+        r"(?:Tải\s+báo\s+cáo|Download\s+(?:the\s+)?report)[^\d]{0,20}(20[0-3]\d)",
     ]
     for pattern in patterns:
         match = re.search(pattern, sample, re.I)
@@ -826,27 +847,24 @@ def repair_canonical_row(row):
                 return _apply_money_repair(out, m)
 
     if metric_id == "csr_spend":
-        if year:
-            m = re.search(
-                rf"(?:riêng\s+)?(?:trong\s+)?năm\s+{int(year)}[^.;•]{{0,50}}?(?:là|đạt|:)\s*" + MONEY_TEXT,
-                snippet, re.I
-            )
-            if m and re.search(r"cộng\s+đồng|an\s+sinh|xã\s+hội|community|csr", snippet, re.I):
-                return _apply_money_repair(out, m)
-        m = re.search(
-            r"(?:đóng\s+góp\s+cho\s+cộng\s+đồng|an\s+sinh\s+xã\s+hội|community\s+investment|"
-            r"community\s+development|csr)[^.;•]{0,120}?" + MONEY_TEXT,
-            snippet, re.I
-        )
-        if m:
-            return _apply_money_repair(out, m)
+        negative = r"dư\s+nợ|cho\s+vay|tín\s+dụng|giải\s+ngân|lợi\s+nhuận|thu\s+nhập|vốn\s+(?:điều\s+lệ|thực\s+góp)"
+        positive = r"đóng\s+góp|dành\s+cho|chi\s+cho|tài\s+trợ|hỗ\s+trợ|từ\s+thiện|an\s+sinh|community\s+investment|community\s+development|csr"
+        if not re.search(negative, snippet, re.I):
+            patterns = [
+                rf"(?:{positive})[^.;•]{{0,100}}?" + MONEY_TEXT,
+                MONEY_TEXT + rf"[^.;•]{{0,70}}?(?:cộng\s+đồng|community|tài\s+trợ|hỗ\s+trợ|từ\s+thiện|an\s+sinh)",
+            ]
+            for pattern in patterns:
+                m = re.search(pattern, snippet, re.I)
+                if m:
+                    return _apply_money_repair(out, m)
 
     if metric_id == "women_workforce_pct":
         patterns = [
             r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:nhân\s+sự|nhân\s+viên|CBNV|người\s+lao\s+động|"
             r"employees?|workforce)[^.;•]{0,35}(?:là\s+)?(?:nữ|female|women)",
-            r"(?:nữ|female|women)[^.;•]{0,35}(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
-            r"[^.;•]{0,35}(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+            r"(?:nữ|female|women)[^.;•]{0,35}?(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
+            r"[^.;•\d]{0,35}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
@@ -857,8 +875,8 @@ def repair_canonical_row(row):
         patterns = [
             r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:cán\s+bộ\s+quản\s+lý|quản\s+lý|lãnh\s+đạo|"
             r"management|leaders?|board)[^.;•]{0,40}(?:là\s+)?(?:nữ|female|women)",
-            r"(?:tỷ\s+lệ\s+)?(?:nữ|female|women)[^.;•]{0,55}(?:quản\s+lý|lãnh\s+đạo|management|board)"
-            r"[^.;•]{0,45}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+            r"(?:tỷ\s+lệ\s+)?(?:nữ|female|women)[^.;•]{0,55}?(?:quản\s+lý|lãnh\s+đạo|management|board)"
+            r"[^.;•\d]{0,45}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
@@ -871,6 +889,7 @@ def repair_canonical_row(row):
             r"trung\s+bình\s+trên\s+một\s+cán\s+bộ|training\s+hours\s+per\s+employee|"
             r"average\s+training\s+hours)[^.;•]{0,120}?(?:là|đạt|:)\s*"
             r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
+            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ\s+học|giờ|hours?)\s*/\s*(?:CBNV|employee)",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
@@ -880,6 +899,7 @@ def repair_canonical_row(row):
     if metric_id == "training_hours":
         patterns = [
             r"(?:a\s+total\s+of|tổng(?:\s+số)?)\s*(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)",
+            r"(?:tổng\s+số\s+giờ\s+đào\s+tạo)[^.;•]{0,90}?(?:là|đạt|:)\s*(?P<value>\d[\d\s.,]*)\s*(?:giờ)?",
             r"(?P<value>\d[\d\s.,]*)\s*(?:training\s+hours?|giờ\s+đào\s+tạo)[^.;•]{0,35}(?:were\s+recorded|được\s+ghi\s+nhận)",
         ]
         for pattern in patterns:
@@ -910,7 +930,19 @@ def metric_row_valid(row):
     if metric_id in {"women_workforce_pct", "women_management_pct", "female_board_pct"} and not row.get("repaired"):
         return False
 
+    if metric_id == "board_independence_pct":
+        direct = re.search(
+            r"(?:tỷ\s+lệ|percentage|proportion)[^.;•]{0,60}(?:thành\s+viên\s+HĐQT\s+độc\s+lập|independent\s+(?:board|director))"
+            r"[^.;•]{0,40}\d+[,.]?\d*\s*%|"
+            r"\d+[,.]?\d*\s*%[^.;•]{0,60}(?:thành\s+viên\s+HĐQT\s+độc\s+lập|independent\s+(?:board|director))",
+            context, re.I
+        )
+        if not direct:
+            return False
+
     if metric_id == "green_credit":
+        if re.search(r"toàn\s+nền\s+kinh\s+tế|system[-\s]?wide|banking\s+system", context, re.I):
+            return False
         if not row.get("repaired") and not re.search(r"tín\s+dụng\s+xanh|green\s+credit|dư\s+nợ\s+xanh", context, re.I):
             return False
 
@@ -918,7 +950,7 @@ def metric_row_valid(row):
         return False
 
     if metric_id == "csr_spend":
-        if not row.get("repaired") and not re.search(r"cộng\s+đồng|an\s+sinh|xã\s+hội|community|csr", context, re.I):
+        if not row.get("repaired"):
             return False
 
     if metric_id in {"water", "electricity"}:
@@ -971,6 +1003,36 @@ def revive_transport_failure(doc):
         for key in ("lastError", "lastAttemptAt", "retryAfter", "failedAttempts"):
             row.pop(key, None)
     return row
+
+
+def corrected_document_year(doc, cfg=None):
+    row = dict(doc)
+    url = normalize_url(row.get("url"))
+    overrides = (cfg or {}).get("year_overrides", {})
+    override = overrides.get(url) or overrides.get(row.get("url") or "")
+    if override is not None:
+        row["year"] = int(override)
+        return row
+    title_year = explicit_report_year_hint(row.get("title") or "")
+    if title_year is not None:
+        row["year"] = title_year
+    return row
+
+
+def align_rows_to_document_year(rows, documents):
+    years = {
+        normalize_url(doc.get("url")): doc.get("year")
+        for doc in documents
+        if doc.get("url") and doc.get("year") is not None
+    }
+    out = []
+    for raw in rows:
+        row = dict(raw)
+        year = years.get(normalize_url(row.get("sourceUrl")))
+        if year is not None:
+            row["year"] = year
+        out.append(row)
+    return out
 
 
 def migration_keep_document(doc, keywords):
@@ -1063,13 +1125,13 @@ def collect(config, output):
         for old_doc in prev.get("documents", []):
             if not old_doc.get("url"):
                 continue
-            restored = revive_transport_failure(old_doc)
+            restored = corrected_document_year(revive_transport_failure(old_doc), cfg)
             restored["url"] = normalize_url(restored.get("url"))
             docs[restored["url"]] = restored
         report_types = {"sustainability_report", "annual_report", "climate_disclosure"}
         for url, discovered_doc in discovered[symbol].items():
             existing = docs.get(url, {})
-            merged = {**existing, **discovered_doc}
+            merged = corrected_document_year({**existing, **discovered_doc}, cfg)
             # If a stable URL is newly recognized as an actual report (rather
             # than a framework/detail page), process it again so KPI extraction
             # is not permanently skipped because of an earlier classification.
@@ -1078,8 +1140,8 @@ def collect(config, output):
                     merged.pop(key, None)
             docs[url] = merged
         ordered = sorted(docs.values(), key=lambda d: (d.get("year") or 0, d.get("title") or ""), reverse=True)
-        metrics = list(prev.get("metrics", []))
-        ratings = list(prev.get("externalAssessments", []))
+        metrics = align_rows_to_document_year(prev.get("metrics", []), ordered)
+        ratings = align_rows_to_document_year(prev.get("externalAssessments", []), ordered)
         for doc in ordered:
             if not doc.get("processedAt"):
                 backlog.append((symbol, doc))
@@ -1166,7 +1228,7 @@ def collect(config, output):
                 discovered_type = classify_document((doc.get("title") or "") + " " + final_url + " " + text[:5000])
                 if doc.get("type") not in {"sustainability_report", "annual_report", "climate_disclosure"}:
                     doc["type"] = discovered_type
-                doc["year"] = infer_report_year(text, doc.get("year"))
+                doc["year"] = infer_report_year(text, doc.get("year"), doc.get("title"))
                 doc.pop("lastError", None)
                 doc.pop("retryAfter", None)
                 if owner == "__external__":
