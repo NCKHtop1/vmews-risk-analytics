@@ -107,6 +107,62 @@ try {
       throw new Error(`${symbol}: no-key status does not communicate local readiness: ${ui.status}`);
     }
 
+    // Gemini upstream failure must still render a local answer instead of hanging/erroring.
+    await page.route('https://generativelanguage.googleapis.com/**', async route => {
+      const requestUrl = route.request().url();
+      if (/\/models\?/.test(requestUrl)) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            models: [{ name: 'models/gemini-2.5-flash', supportedGenerationMethods: ['generateContent'] }],
+          }),
+        });
+        return;
+      }
+      if (/:generateContent/.test(requestUrl)) {
+        const body = route.request().postData() || '';
+        if (body.includes('Reply with exactly OK')) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] }),
+          });
+          return;
+        }
+      }
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: { message: 'synthetic upstream outage' } }),
+      });
+    });
+    await page.evaluate(() => {
+      sessionStorage.setItem('vmews_solution_ai_browser_session', 'AIzaSyntheticRegressionKey1234567890');
+    });
+    const beforeFailureCount = await page.locator('#solutionAiMessages .aiMessage').count();
+    const failureQuestion = 'Dựa trên forecast hiện có, nếu Gemini đang lỗi thì vẫn phân tích mã đang xem.';
+    await page.evaluate(async q => { await window.__SOLUTION_AI_ASK__(q); }, failureQuestion);
+    await page.waitForFunction(count => {
+      const items = [...document.querySelectorAll('#solutionAiMessages .aiMessage')];
+      return items.length > count && !items.at(-1)?.classList.contains('aiThinking');
+    }, beforeFailureCount, { timeout: 20000 });
+    const degraded = await page.evaluate(() => {
+      const items = [...document.querySelectorAll('#solutionAiMessages .aiMessage')];
+      const last = items.at(-1);
+      return {
+        text: last?.textContent?.trim() || '',
+        className: last?.className || '',
+        status: document.querySelector('#solutionAiStatus')?.textContent?.trim() || '',
+      };
+    });
+    if (degraded.className.includes('aiError')) throw new Error(`${symbol}: Gemini 503 produced aiError instead of local fallback: ${degraded.text}`);
+    if (degraded.text.length < 220 || !degraded.text.includes(symbol) || !degraded.text.includes(context.preferredHorizon)) {
+      throw new Error(`${symbol}: Gemini 503 fallback is not useful/anchored: ${JSON.stringify(degraded)}`);
+    }
+    await page.unroute('https://generativelanguage.googleapis.com/**');
+    await page.evaluate(() => sessionStorage.removeItem('vmews_solution_ai_browser_session'));
+
     const handoffQuestion = `Tiếp tục phân tích ${symbol} và giải thích kỳ ${context.preferredHorizon}.`;
     const handoff = await page.evaluate(({ q, ctx }) => window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__(q, ctx), { q: handoffQuestion, ctx: context });
     for (const token of [symbol, handoffQuestion, context.preferredHorizon, 'publishedHorizons', 'reviewHorizons']) {
