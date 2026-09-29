@@ -639,9 +639,9 @@ def repair_canonical_row(row):
 
     if metric_id == "green_credit":
         direct = re.search(
-            r"dư\s+nợ\s+tín\s+dụng\s+xanh[^.;•]{0,300}?lên\s+đến\s+~?\s*"
+            r"dư\s+nợ\s+tín\s+dụng\s+xanh.{0,300}?lên\s+đến\s+~?\s*"
             r"(?P<value>\d[\d\s.,]*\d|\d)\s*(?P<unit>tỷ\s+(?:VND|VNĐ|đồng))",
-            snippet, re.I
+            snippet, re.I | re.S
         )
         if direct:
             return _apply_money_repair(out, direct)
