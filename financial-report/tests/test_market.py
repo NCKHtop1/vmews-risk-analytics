@@ -1267,7 +1267,11 @@ class MarketTests(unittest.TestCase):
         self.assertGreater(start,-1)
         self.assertGreater(end,start)
         financial_pos=classifier.index("return'financial'")
+        risk_pos=classifier.index("return'risk'")
+        compare_pos=classifier.index("return'compare'")
         generic_concept_pos=classifier.index("if(concept)return'concept'")
+        self.assertLess(risk_pos,generic_concept_pos)
+        self.assertLess(compare_pos,generic_concept_pos)
         self.assertLess(financial_pos,generic_concept_pos)
         self.assertIn("suc khoe|tai chinh|tong quan|doanh thu|loi nhuan",classifier)
 
