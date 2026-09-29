@@ -32,7 +32,12 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],7)
+        self.assertGreaterEqual(cfg['version'],8)
+        self.assertTrue(any('ENESGReport2024' in u for u in cfg['banks']['HDB']['seed_urls']))
+        self.assertEqual(cfg['banks']['STB']['reprocess_version'],1)
+        self.assertEqual(cfg['banks']['VIB']['reprocess_version'],1)
+        women_rule=next(x for x in cfg['metric_rules'] if x['id']=='women_workforce_pct')
+        self.assertIn('nhân sự là nữ',women_rule['aliases'])
         self.assertTrue(any('2025.11.03%2BTPBank' in u for u in cfg['banks']['TPB']['seed_urls']))
         self.assertTrue(any('Bao%2Bcao%2Bthuong%2Bnien%2B2024%2BVN.pdf' in u for u in cfg['banks']['VIB']['seed_urls']))
         self.assertTrue(any('20260127_esg-namabank-2024_vn_view.pdf' in u for u in cfg['banks']['NAB']['seed_urls']))
@@ -135,6 +140,34 @@ class MarketTests(unittest.TestCase):
         row['processedAt']='2026-01-02T00:00:00+00:00'
         same=esm.corrected_document_year(row,cfg)
         self.assertIn('processedAt',same)
+
+    def test_corporate_esg_final_canonical_prefers_outstanding_and_bankwide_training(self):
+        rows=[
+            {'metricId':'green_credit','year':2025,'value':10000,'rawValue':'10.000','unit':'billion VND','qualityScore':108,'confidence':'high','sourceType':'sustainability_report','snippet':'Sản phẩm tiên phong: gói tín dụng xanh 10.000 tỷ đồng, trái phiếu ESG.'},
+            {'metricId':'green_credit','year':2025,'value':82332,'rawValue':'82.332','unit':'billion VND','qualityScore':106,'confidence':'high','sourceType':'sustainability_report','snippet':'Tỷ lệ dư nợ tín dụng xanh/Tổng dư nợ: 3,5%. Dư nợ tín dụng xanh 82.332 tỷ đồng.'},
+            {'metricId':'training_hours','year':2025,'value':1050000,'rawValue':'1,05 triệu','unit':'hours','qualityScore':116,'confidence':'high','sourceType':'sustainability_report','snippet':'Năm 2025, ngân hàng cung cấp hơn 1,05 triệu giờ đào tạo cho nhân viên.'},
+        ]
+        canonical={(x['metricId'],x['year']):x for x in esm.canonical_metrics(rows)}
+        self.assertEqual(canonical[('green_credit',2025)]['value'],82332)
+        self.assertEqual(canonical[('training_hours',2025)]['value'],1050000)
+
+    def test_corporate_esg_repairs_mbb_csr_and_nearest_workforce_percentage(self):
+        csr={'metricId':'csr_spend','year':2025,'value':1696,'rawValue':'1.696','unit':'billion VND','qualityScore':103,'confidence':'high','sourceType':'annual_report','snippet':'Năm 2025, MB đã triển khai 137 chương trình an sinh xã hội với tổng kinh phí hơn 620 tỷ đồng. Đồng thời, thông qua Nền tảng Thiện nguyện, MB cùng các đối tác và cộng đồng đã huy động 1.696 tỷ đồng.'}
+        women={'metricId':'women_workforce_pct','year':2025,'value':2.5,'rawValue':'2,5','unit':'%','qualityScore':70,'confidence':'medium','sourceType':'annual_report','snippet':'Tỷ lệ nữ giới Mạng lưới Dự án HiGreen 2,5% so với năm 2024 620 1.696 61% trong lực lượng CBNV (tính riêng MB).'}
+        self.assertEqual(esm.repair_canonical_row(csr)['value'],620)
+        self.assertEqual(esm.repair_canonical_row(women)['value'],61)
+
+    def test_corporate_esg_repairs_tpb_bankwide_training_table(self):
+        row={'metricId':'training_hours','year':2024,'value':905,'rawValue':'905','unit':'hours','qualityScore':95,'confidence':'medium','sourceType':'sustainability_report','snippet':'Số giờ đào tạo 295.905 Giờ Tổng số CBNV 7.880 Người. Số giờ đào tạo bình quân 37,55 giờ/người.'}
+        repaired=esm.repair_canonical_row(row)
+        self.assertEqual(repaired['value'],295905)
+        self.assertTrue(esm.metric_row_valid(repaired))
+
+    def test_corporate_esg_revives_aes_pdf_failures(self):
+        failed={'url':'https://bank/report.pdf','lastError':'cryptography>=3.1 is required for AES algorithm','retryAfter':'2099-01-01T00:00:00+00:00','failedAttempts':1}
+        revived=esm.revive_transport_failure(failed)
+        self.assertNotIn('retryAfter',revived)
+        self.assertNotIn('lastError',revived)
 
     def test_corporate_esg_metric_and_rating_extraction_preserves_native_scale_and_provenance(self):
         cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
@@ -344,6 +377,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("cron: '47 9,14 * * 1-5'",flow)
         self.assertIn("cron: '47 2 * * 6'",flow)
         self.assertIn('pypdf==5.1.0',flow)
+        self.assertIn('cryptography>=45,<47',flow)
+        self.assertIn('PyMuPDF>=1.25,<1.27',flow)
         self.assertIn('refresh_esg.py',flow)
         self.assertIn("mode=esg",flow)
         self.assertIn("mode=esg-history",flow)
