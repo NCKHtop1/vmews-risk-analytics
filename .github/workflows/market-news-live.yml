@@ -38,13 +38,34 @@ jobs:
           mkdir -p /tmp/market-news/market
       - name: Collect publisher headlines
         run: python -u financial-report/scripts/refresh_market.py --output /tmp/market-news/market --mode news
+      - name: Validate news freshness
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          data=json.loads(Path('/tmp/market-news/market/news.json').read_text())
+          if data.get('status')!='ok':
+              raise SystemExit('news.json status is not ok')
+          checked=datetime.fromisoformat(str(data.get('checkedAt')).replace('Z','+00:00'))
+          if checked.tzinfo is None:
+              checked=checked.replace(tzinfo=timezone.utc)
+          age=(datetime.now(timezone.utc)-checked.astimezone(timezone.utc)).total_seconds()
+          if age>20*60:
+              raise SystemExit(f'news snapshot stale: {age:.0f}s')
+          if not data.get('items'):
+              raise SystemExit('news snapshot has no items')
+          print('NEWS OK',len(data.get('items') or []),data.get('checkedAt'))
+          PY
       - name: Publish news snapshot
         working-directory: /tmp/market-news
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse market/news.json market/drivers.json
+          # news.json is owned by this workflow; drivers.json is owned by the price workflow
+          # to avoid cross-workflow rebase conflicts on the shared data branch.
+          git add --sparse market/news.json
           if git diff --cached --quiet; then
             echo "No news changes to publish"
             exit 0
