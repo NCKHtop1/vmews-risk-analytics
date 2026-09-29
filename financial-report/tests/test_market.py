@@ -32,9 +32,10 @@ class MarketTests(unittest.TestCase):
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
         self.assertTrue(required.issubset(set(cfg['banks'])))
         self.assertTrue(all(cfg['banks'][s]['seed_urls'] for s in required))
-        self.assertGreaterEqual(cfg['version'],4)
+        self.assertGreaterEqual(cfg['version'],5)
         self.assertEqual(cfg['banks']['MSB']['year_overrides']['https://www.msb.com.vn/ve-chung-toi/phat-trien-ben-vung/'],2025)
         self.assertEqual(cfg['banks']['SHB']['year_overrides']['https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf'],2025)
+        self.assertEqual(cfg['banks']['TCB']['year_overrides']['https://techcombank.com/content/dam/techcombank/public-site/documents/bao-cao-phat-trien-ben-vung-2026-eng-15052026.pdf'],2025)
         self.assertTrue(any('260420_SHB_BCTN_2025_Web.pdf' in u for u in cfg['banks']['SHB']['seed_urls']))
         self.assertTrue(any('bao-cao-thuong-nien-2025.pdf' in u for u in cfg['banks']['STB']['seed_urls']))
         self.assertTrue(cfg['banks']['VPB']['year_url_templates'])
@@ -237,6 +238,16 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(corrected['year'],2025)
         aligned=esm.align_rows_to_document_year([{'sourceUrl':'https://bank/page','year':2026,'metricId':'green_credit'}],[corrected])
         self.assertEqual(aligned[0]['year'],2025)
+
+    def test_corporate_esg_final_semantic_audit_cases(self):
+        shb={'metricId':'csr_spend','year':2025,'value':256,'rawValue':'256','unit':'billion VND','qualityScore':89,'confidence':'medium','sourceType':'annual_report','snippet':'Nguồn lực lũy kế dành cho các hoạt động an sinh xã hội giai đoạn 2019 – 2025 đã vượt mốc 1.000 tỷ đồng. Riêng trong năm 2025, SHB dành ngân sách hơn 256 tỷ đồng cho các hoạt động an sinh xã hội.'}
+        msb={'metricId':'csr_spend','year':2025,'value':14,'rawValue':'14','unit':'billion VND','qualityScore':107,'confidence':'high','sourceType':'sustainability_report','snippet':'13.602 TỶ ĐỒNG phân bố cho các bên liên quan. 14 tỷ đồng CỘNG ĐỒNG 0,10% CỔ ĐÔNG 6.818 tỷ đồng (50%) TÀI TRỢ, HỖ TRỢ CỘNG ĐỒNG - 40% HOẠT ĐỘNG XÃ HỘI TỪ THIỆN - 60% 2.365 tỷ đồng CÁN BỘ NHÂN VIÊN 17%.'}
+        vcb_tax={'metricId':'csr_spend','year':2025,'value':15000,'rawValue':'15.000','unit':'billion VND','qualityScore':95,'confidence':'high','sourceType':'sustainability_report','snippet':'Ngân hàng triển khai các chương trình an sinh xã hội, hỗ trợ cộng đồng yếu thế. Đóng góp cho Ngân sách Nhà nước đạt khoảng 15.000 tỷ đồng.'}
+        ocb={'metricId':'women_management_pct','year':2023,'value':55.5,'rawValue':'55,5','unit':'%','qualityScore':107,'confidence':'high','sourceType':'annual_report','snippet':'Tỷ lệ quản lý trên tổng số CBNV của OCB là 18% Nam quản lý chiếm 55,5% Nữ quản lý chiếm 45,5%.'}
+        self.assertEqual(esm.repair_canonical_row(shb)['value'],256)
+        self.assertEqual(esm.repair_canonical_row(msb)['value'],14)
+        self.assertFalse(esm.metric_row_valid(esm.repair_canonical_row(vcb_tax)))
+        self.assertEqual(esm.repair_canonical_row(ocb)['value'],45.5)
 
     def test_corporate_esg_workflow_is_scheduled_and_bounded(self):
         flow=(ROOT.parent/'.github/workflows/financial-market-refresh.yml').read_text() if (ROOT.parent/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
