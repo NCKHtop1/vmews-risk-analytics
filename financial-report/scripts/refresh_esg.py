@@ -840,13 +840,6 @@ def repair_canonical_row(row):
         return out
 
     if metric_id == "green_credit":
-        outstanding = re.search(
-            r"(?:dư\s+nợ\s+(?:tín\s+dụng\s+)?xanh|green\s+credit\s+(?:outstanding|balance|exposure))"
-            r"[^.;•]{0,90}?(?:đạt|reached|stood\s+at|:)?\s*(?:VND\s*)?" + MONEY_TEXT,
-            snippet, re.I
-        )
-        if outstanding:
-            return _apply_money_repair(out, outstanding)
         tcb_layout = re.search(
             r"(?P<scale>trillion|billion)\s+VND\s*(?P<value>\d[\d.,]*)\s+green\s+credit\s+exposure",
             snippet, re.I
@@ -947,11 +940,11 @@ def repair_canonical_row(row):
 
     if metric_id == "women_workforce_pct":
         patterns = [
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:nhân\s+sự|nhân\s+viên|CBNV|người\s+lao\s+động|"
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%\s*(?:nhân\s+sự|nhân\s+viên|CBNV|người\s+lao\s+động|"
             r"employees?|workforce)[^.;•]{0,35}(?:là\s+)?(?:nữ|female|women)",
             r"(?:nữ|female|women)[^.;•]{0,35}?(?:nhân\s+sự|nhân\s+viên|employees?|workforce)"
-            r"[^.;•\d]{0,35}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%[^.;•]{0,45}(?:trong\s+)?(?:lực\s+lượng\s+CBNV|workforce)",
+            r"[^.;•\d]{0,35}(?:chiếm|là|at)?\s*(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%",
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%[^.;•]{0,45}(?:trong\s+)?(?:lực\s+lượng\s+CBNV|workforce)",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
@@ -960,11 +953,11 @@ def repair_canonical_row(row):
 
     if metric_id in {"women_management_pct", "female_board_pct"}:
         patterns = [
-            r"(?:nữ|female|women)\s+(?:quản\s+lý|lãnh\s+đạo|management|leaders?|board)[^.;•\d]{0,30}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*%\s*(?:cán\s+bộ\s+quản\s+lý|quản\s+lý|lãnh\s+đạo|"
+            r"(?:nữ|female|women)\s+(?:quản\s+lý|lãnh\s+đạo|management|leaders?|board)[^.;•\d]{0,30}(?:chiếm|là|at)?\s*(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%",
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%\s*(?:cán\s+bộ\s+quản\s+lý|quản\s+lý|lãnh\s+đạo|"
             r"management|leaders?|board)[^.;•]{0,40}(?:là\s+)?(?:nữ|female|women)",
             r"(?:tỷ\s+lệ\s+)?(?:nữ|female|women)[^.;•]{0,55}?(?:quản\s+lý|lãnh\s+đạo|management|board)"
-            r"[^.;•\d]{0,45}(?:chiếm|là|at)?\s*(?P<value>\d+\s*[,\.]?\s*\d*)\s*%",
+            r"[^.;•\d]{0,45}(?:chiếm|là|at)?\s*(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*%",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
@@ -976,14 +969,14 @@ def repair_canonical_row(row):
             r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
             r"training\s+hours\s+per\s+employee|average\s+training\s+hours)"
             r"[^.;•]{0,150}?\d+\s*[,\.]?\s*\d*\s*(?:giờ|hours?)\s+"
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*(?:giờ|hours?)",
             r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|giờ\s+đào\s+tạo\s+trung\s+bình|"
             r"trung\s+bình\s+trên\s+một\s+cán\s+bộ|training\s+hours\s+per\s+employee|"
             r"average\s+training\s+hours)[^.;•]{0,120}?(?:là|đạt|:)\s*"
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)",
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ|hours?)[^.;•]{0,20}"
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*(?:giờ|hours?)",
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*(?:giờ|hours?)[^.;•]{0,20}"
             r"(?:số\s+giờ\s+đào\s+tạo\s+trung\s+bình|average\s+training\s+hours)",
-            r"(?P<value>\d+\s*[,\.]?\s*\d*)\s*(?:giờ\s+học|giờ|hours?)\s*/\s*(?:CBNV|employee)",
+            r"(?P<value>\d+(?:\s*[,\.]\s*\d+)?)\s*(?:giờ\s+học|giờ|hours?)\s*/\s*(?:CBNV|employee)",
         ]
         for pattern in patterns:
             m = re.search(pattern, snippet, re.I)
