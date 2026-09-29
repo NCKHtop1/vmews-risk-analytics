@@ -95,11 +95,13 @@ function renderAssessments(){
  const metricSources=metrics.filter(x=>x.metricId===state.metric).sort((a,b)=>(b.year||0)-(a.year||0));
  const ratings=(company.externalAssessments||[]).slice().sort((a,b)=>(b.year||0)-(a.year||0)).slice(0,8);
  const years=[...new Set(metrics.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
+ const metricIds=[...new Set(metrics.map(x=>x.metricId).filter(Boolean))];
  const sourceCount=new Set(metrics.map(x=>x.sourceUrl).filter(Boolean)).size;
- const pillarCounts=metrics.reduce((acc,x)=>{const p=x.pillar||'—';acc[p]=(acc[p]||0)+1;return acc;},{});
+ const pillarMetricIds=metrics.reduce((acc,x)=>{const p=x.pillar||'—';acc[p]??=new Set();if(x.metricId)acc[p].add(x.metricId);return acc;},{});
+ const pillarCounts=Object.fromEntries(Object.entries(pillarMetricIds).map(([k,v])=>[k,v.size]));
  const docsRaw=(company.documents||[]).filter(d=>d.processedAt&&d.url&&d.year).sort((a,b)=>(b.year||0)-(a.year||0));
  const seenDocs=new Set(),docs=[];for(const d of docsRaw){const key=(d.type||'')+'|'+(d.year||'');if(seenDocs.has(key))continue;seenDocs.add(key);docs.push(d);if(docs.length>=4)break;}
- const coverage='<div class="macro-esg-summary"><span><b>'+metrics.length+'</b> KPI</span><span><b>'+years.length+'</b> năm</span><span><b>'+sourceCount+'</b> nguồn KPI</span><span><b>'+(ratings.length||0)+'</b> đánh giá ngoài</span></div>';
+ const coverage='<div class="macro-esg-summary"><span><b>'+metricIds.length+'</b> chỉ tiêu</span><span><b>'+metrics.length+'</b> điểm dữ liệu</span><span><b>'+years.length+'</b> năm</span><span><b>'+sourceCount+'</b> nguồn</span><span><b>'+(ratings.length||0)+'</b> đánh giá ngoài</span></div>';
  const pillars='<div class="macro-esg-pillars"><span class="e">E · '+(pillarCounts.E||0)+'</span><span class="s">S · '+(pillarCounts.S||0)+'</span><span class="g">G · '+(pillarCounts.G||0)+'</span></div>';
  const selected=metricSources.length?'<div class="macro-esg-metric-sources"><strong>KPI đang xem · '+esc(metricLabel(ds,state.metric))+'</strong>'+metricSources.map(x=>'<a href="'+esc(x.sourceUrl||'#')+'" target="_blank" rel="noopener"><span>'+esc(String(x.year||'—'))+'</span><b>'+esc(fmt(x.value))+(x.unit?' '+esc(x.unit):'')+'</b><small>'+esc(conciseSourceTitle(x))+'</small></a>').join('')+'</div>':'';
  const ratingBlock=ratings.length?'<div class="macro-esg-section-title">Đánh giá bên ngoài</div><div class="macro-esg-rating-grid">'+ratings.map(x=>'<article><span>'+esc(x.provider||'Nguồn ngoài')+' · '+esc(String(x.year||'—'))+'</span><strong>'+esc(x.value||x.assessmentType||'Đã công bố')+'</strong><small>'+esc(x.assessmentType||'')+'</small>'+(x.sourceUrl?'<a href="'+esc(x.sourceUrl)+'" target="_blank" rel="noopener">Mở nguồn ↗</a>':'')+'</article>').join('')+'</div>':'';
