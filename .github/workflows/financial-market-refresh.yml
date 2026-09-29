@@ -59,7 +59,7 @@ jobs:
           mkdir -p /tmp/market-publish/market
       - name: Install ESG document parser
         if: inputs.mode == 'esg' || inputs.mode == 'esg-history' || github.event.schedule == '47 9,14 * * 1-5' || github.event.schedule == '47 2 * * 6' || contains(github.event.head_commit.message, '[esg-refresh]')
-        run: pip install -q pypdf==5.1.0
+        run: pip install -q pypdf==5.1.0 'cryptography>=45,<47' 'PyMuPDF>=1.25,<1.27'
       - name: Collect prices, candles, publisher headlines and ESG
         id: collect
         env:
