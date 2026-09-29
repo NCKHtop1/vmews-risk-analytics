@@ -971,8 +971,8 @@
     holder.querySelector("strong").textContent = context.symbol;
     const anchor = preferredForecast(context);
     holder.querySelector("small").textContent = anchor
-      ? `${anchor.label} · ${money(context.close)} → ${money(anchor.horizon.price)} · ${pct(anchor.horizon.expectedReturn)}`
-      : `Giá hiện tại ${money(context.close)} · chưa có kỳ đủ gate phát hành điểm giá`;
+      ? `${anchor.label} · Return ${pct(anchor.horizon.expectedReturn)} · kịch bản ${money(anchor.horizon.bearScenarioPrice)} / ${money(anchor.horizon.bullScenarioPrice)}`
+      : `Giá hiện tại ${money(context.close)} · chưa có kỳ đủ gate phát hành return`;
     state.context = context;
   }
 
@@ -1141,11 +1141,13 @@
       .filter(([label]) => horizonNumber(label) !== null)
       .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]))
       .map(([label, horizon]) => {
-        if (horizon?.releaseStatus !== "PUBLISHED" || number(horizon?.price) === null) {
+        if (horizon?.releaseStatus !== "PUBLISHED" || number(horizon?.expectedReturn) === null) {
           const status = horizon?.validation?.priceStatus || horizon?.validation?.symbolValidationStatus || "REVIEW";
-          return `- **${label}:** chưa phát hành điểm giá · gate ${status}. Hệ thống giữ kỳ này ở chế độ REVIEW thay vì xuất một con số chưa đủ kiểm định.`;
+          return `- **${label}:** chưa phát hành return · gate ${status}. Hệ thống giữ kỳ này ở chế độ REVIEW.`;
         }
-        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`;
+        const range = number(horizon.returnLower) !== null && number(horizon.returnUpper) !== null ? `; Q20–Q80 ${pct(horizon.returnLower)} → ${pct(horizon.returnUpper)}` : "";
+        const scenario = number(horizon.bearScenarioPrice) !== null && number(horizon.bullScenarioPrice) !== null ? `; kịch bản giá giảm/tăng ${money(horizon.bearScenarioPrice)} / ${money(horizon.bullScenarioPrice)}` : "";
+        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** return kỳ vọng ${pct(horizon.expectedReturn)}${range}${scenario}.`;
       });
   }
 
@@ -1235,12 +1237,12 @@
       const stance = remainingAnchor > .003 ? "nghiêng tăng" : remainingAnchor < -.003 ? "nghiêng giảm" : "gần như đi ngang";
       lines.push(
         `### Kết luận cho ${context.symbol}`,
-        `${context.symbol} đang có forecast đã phát hành tại ${anchorLabel}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm ${money(anchorForecast.price)}; khoảng cách còn lại ${pct(remainingAnchor)} và vùng bất định ${money(anchorForecast.lowerPrice)}–${money(anchorForecast.upperPrice)}. Đây là kỳ ưu tiên đã qua gate; các kỳ REVIEW vẫn được hiển thị trạng thái nhưng không bị biến thành lỗi.`,
+        `${context.symbol} đang có return forecast đã phát hành tại ${anchorLabel}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, return kỳ vọng ${pct(remainingAnchor)}${number(anchorForecast.returnLower) !== null && number(anchorForecast.returnUpper) !== null ? `; Q20–Q80 ${pct(anchorForecast.returnLower)} → ${pct(anchorForecast.returnUpper)}` : ""}. Đây là kỳ ưu tiên đã qua gate; các kỳ REVIEW vẫn giữ ở chế độ ẩn/không phát hành.`,
       );
       if (number(anchorForecast.expectedAbsReturn) !== null) {
         lines.push(
           "### Biên độ và hai kịch bản thực tế",
-          `Mô hình biên độ tại ${anchorLabel} ước tính mức dịch chuyển hai chiều ±${pct(anchorForecast.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(anchorForecast.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(anchorForecast.bullScenarioPrice)}. Giá kỳ vọng ${money(anchorForecast.price)} là trung tâm có điều kiện. ${validationQuestion ? (anchorForecast.directionValidated ? `Gate chiều ${anchorLabel} đang PASS.` : `Gate chiều ${anchorLabel} hiện chưa PASS; phần xác nhận hướng yếu hơn phần ước lượng biên độ.`) : ""}`,
+          `Mô hình biên độ tại ${anchorLabel} ước tính mức dịch chuyển hai chiều ±${pct(anchorForecast.expectedAbsReturn).replace(/^\+/, "")}; nếu diễn biến giảm, kịch bản khoảng ${money(anchorForecast.bearScenarioPrice)}; nếu diễn biến tăng, khoảng ${money(anchorForecast.bullScenarioPrice)}. Hai mức giá này chỉ là kịch bản quy đổi từ biên độ return, không phải price target.`,
         );
       }
       if (anchorForecast.conditionalValueValidated === false) {
