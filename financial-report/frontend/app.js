@@ -28,10 +28,13 @@ function watchChange(value){const n=Number(value);return Number.isFinite(n)?(n>0
 function watchMove(row){if(row?.isNew)return'<em class="watch-new">MỚI</em>';const n=Number(row?.rankChange);if(n>0)return'<em class="watch-up">↑'+Math.abs(n)+'</em>';if(n<0)return'<em class="watch-down">↓'+Math.abs(n)+'</em>';return'<em class="watch-flat">•</em>';}
 function renderTodayWatch(data){
  const box=$('quick-tickers'),track=$('quick-tickers-track'),status=$('today-watch-status'),label=$('today-watch-label');if(!box||!track)return;
- const items=Array.isArray(data?.items)?data.items.filter(x=>state.companies.some(c=>c.symbol===x.symbol)).slice(0,8):[];
+ const now=Date.now(),sourceTime=Date.parse(data?.sourceTime||''),checkedAt=Date.parse(data?.checkedAt||''),futureSource=Number.isFinite(sourceTime)&&sourceTime>now+5*60*1000,futureCheck=Number.isFinite(checkedAt)&&checkedAt>now+5*60*1000;
  const vnDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
- if(label)label.textContent=data?.sourceDate&&data.sourceDate<vnDay?'ĐÁNG XEM PHIÊN GẦN NHẤT':'ĐÁNG XEM HÔM NAY';
- if(status){const t=Date.parse(data?.checkedAt||'');status.textContent='15P'+(Number.isFinite(t)?' · '+new Date(t).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
+ const futureDate=Boolean(data?.sourceDate&&data.sourceDate>vnDay),invalidFuture=futureSource||futureCheck||futureDate;
+ const items=!invalidFuture&&Array.isArray(data?.items)?data.items.filter(x=>state.companies.some(c=>c.symbol===x.symbol)).slice(0,8):[];
+ if(label)label.textContent=invalidFuture?'ĐANG CHỜ PHIÊN MỚI':data?.sourceDate&&data.sourceDate<vnDay?'ĐÁNG XEM PHIÊN GẦN NHẤT':'ĐÁNG XEM HÔM NAY';
+ if(status){status.textContent=invalidFuture?'CHƯA LIVE':'15P'+(Number.isFinite(checkedAt)?' · '+new Date(checkedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
+ if(invalidFuture){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Snapshot nguồn có thời gian chưa hợp lệ; chờ dữ liệu phiên thực.</span>';return;}
  if(!items.length){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Chưa có tín hiệu đủ mạnh.</span>';return;}
  const rowHTML=row=>{const reasons=(row.reasons||[]).join(' · '),score=Number(row.score),title=[reasons,Number.isFinite(score)?'WatchScore '+score+'/100':'','Cập nhật 15 phút/lần'].filter(Boolean).join(' · '),chg=Number(row.changePct),cls=Number.isFinite(chg)?(chg>0?'positive':chg<0?'negative':'neutral'):'neutral';return'<button type="button" class="quick-watch-button '+cls+'" data-symbol="'+esc(row.symbol)+'" title="'+esc(title)+'"><strong>'+esc(row.symbol)+'</strong><span>'+esc(watchChange(chg))+'</span>'+watchMove(row)+'</button>';};
  const pieces=items.map(rowHTML);track.innerHTML=(pieces.length>3?pieces.concat(pieces):pieces).join('');track.classList.toggle('is-running',pieces.length>3);
