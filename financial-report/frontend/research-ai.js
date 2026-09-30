@@ -507,8 +507,19 @@ function buildLLMContext(question){
   macroSnapshot:macro,recentNews:companyNews,sectorNews:cleanNews(m.sectorNews||m.marketNews||[],6),
   corporateEvents:Array.isArray(insights.corporateEvents)?insights.corporateEvents.slice(0,10):[],
   brokerResearch:Array.isArray(insights.brokerResearch)?insights.brokerResearch.slice(0,8):[],brokerConsensus:insights.consensus||null,
-  researchSourceHealth:Array.isArray(insights.sourceHealth)?insights.sourceHealth.slice(0,20):[],eventSourceHealth:Array.isArray(insights.eventSourceHealth)?insights.eventSourceHealth.slice(0,12):[]
+  researchSourceHealth:Array.isArray(insights.sourceHealth)?insights.sourceHealth.slice(0,20):[],eventSourceHealth:Array.isArray(insights.eventSourceHealth)?insights.eventSourceHealth.slice(0,12):[],provenance:provenanceAnchors()
  };
+}
+function provenanceAnchors(){
+ const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
+ return[
+  {tag:'BCTC',label:'BCTC FinQuery',asOf:annual?.updatedAt||annual?.checkedAt||latest(annual)||null},
+  {tag:'QUARTER',label:'BCTC quý',asOf:quarterly?.updatedAt||quarterly?.checkedAt||latest(quarterly)||null},
+  {tag:'MARKET',label:'Giá thị trường',asOf:m.quote?.sourceTime||m.quote?.collectedAt||null},
+  {tag:'SCANNER',label:'Technical Scanner',asOf:m.scanner?.sourceTime||m.scanner?.checkedAt||null},
+  {tag:'NEWS',label:'Tin doanh nghiệp',asOf:m.newsCheckedAt||null},
+  {tag:'RESEARCH',label:'Báo cáo CTCK / sự kiện',asOf:insights.updatedAt||null}
+ ].filter(x=>x.asOf);
 }
 function sourcesForLLM(){
  const m=market(),insights=window.FinInsights?.context?.()||{},company=cleanNews(m.news||[],5).map(x=>({...x,category:'COMPANY'})),sector=cleanNews(m.sectorNews||m.marketNews||[],4).map(x=>({...x,category:'SECTOR'}));
@@ -526,6 +537,7 @@ function dolphinSystemInstruction(){
   'Luôn phân biệt số năm và số quý; gắn nhận định với kỳ cụ thể. Không annualize nếu context không cung cấp quy tắc.',
   'Nếu câu hỏi là follow-up ngắn, dùng lịch sử gần nhất và symbol hiện tại để hiểu mã này, quý này, chỉ số đó.',
   'Tin và Google Search chỉ là lớp bằng chứng bổ sung. Không dùng nguồn web để ghi đè số BCTC hoặc giá đã neo trong FinQuery.',
+  'Mỗi đoạn có số liệu hoặc nhận định thực chứng phải gắn nguồn ở cuối câu bằng một hoặc nhiều tag [BCTC], [QUARTER], [MARKET], [SCANNER], [NEWS], [RESEARCH] hoặc [WEB]. Không gắn tag nếu câu chỉ là giải thích khái niệm.',
   'Phân biệt recentNews là tin doanh nghiệp đã lọc chặt với sectorNews là bối cảnh ngành. Không được gọi sectorNews là tin của doanh nghiệp.',
   'corporateEvents là các sự kiện có ngày và nguồn; khi nhắc tới phải giữ đúng ngày/loại sự kiện và không tự suy diễn tác động.',
   'brokerResearch là quan điểm của công ty chứng khoán bên thứ ba. Luôn nêu rõ tên CTCK và ngày báo cáo khi dùng khuyến nghị, giá mục tiêu, luận điểm hoặc rủi ro.',
@@ -597,7 +609,7 @@ async function callGeminiModel(question,secret,model,allowSearch=true){
  const result=providerAnswer(payload);
  if(!result.text){const err=new Error('Gemini chưa trả về nội dung phân tích.');err.status=503;err.model=model;throw err;}
  state.geminiReady=true;state.lastGeminiError='';state.model=model;
- return{answer:result.text,provider:'Gemini',model,sourceMode:result.searched?'NATIVE_WEB_SEARCH':'FINQUERY_GROUNDED',sources:result.sources,queries:result.queries};
+ return{answer:result.text,provider:'Gemini',model,sourceMode:result.searched?'NATIVE_WEB_SEARCH':'FINQUERY_GROUNDED',sources:result.sources,queries:result.queries,anchors:provenanceAnchors()};
 }
 async function callLLM(question){
  const secret=sessionSecret();
@@ -625,7 +637,7 @@ async function callLLM(question){
  throw lastError||new Error('Gemini tạm thời chưa phản hồi.');
 }
 function inlineMarkdown(value){
- let out=esc(String(value||''));out=out.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');return out;
+ let out=esc(String(value||''));out=out.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');out=out.replace(/\[(BCTC|QUARTER|MARKET|SCANNER|NEWS|RESEARCH|WEB)\]/g,'<span class="ai-source-tag">$1</span>');return out;
 }
 function llmHTML(answer,meta={}){
  const lines=String(answer||'').trim().split(/\n/),blocks=[];let bullets=[];
@@ -634,7 +646,8 @@ function llmHTML(answer,meta={}){
  flush();
  const mode=meta.sourceMode==='NATIVE_WEB_SEARCH'?'FinQuery + Gemini + Web':'FinQuery + Gemini';
  const sources=(meta.sources||[]).slice(0,6).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||url)+'</a>':'';}).filter(Boolean);
- return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel())+'</small></section>';
+ const anchors=(meta.anchors||[]).map(a=>'<span class="ai-anchor"><b>'+esc(a.tag)+'</b>'+esc(a.label)+' · '+esc(String(a.asOf))+'</span>').join('');
+ return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(anchors?'<div class="ai-provenance"><strong>Dấu vết dữ liệu</strong>'+anchors+'</div>':'')+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel())+'</small></section>';
 }
 function nearBottom(box){return !box||box.scrollHeight-box.scrollTop-box.clientHeight<120;}
 function scrollIfNeeded(box,wasNear=true){if(box&&wasNear)box.scrollTop=box.scrollHeight;}
