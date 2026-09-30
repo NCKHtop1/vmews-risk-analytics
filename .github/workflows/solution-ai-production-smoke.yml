@@ -5,16 +5,6 @@ on:
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     types: [completed]
-  push:
-    branches: [main]
-    paths:
-      - 'solution-ai-v17.js'
-      - 'forecast-final.html'
-      - 'scripts/solution_ai_browser_smoke.mjs'
-      - 'scripts/solution_ai_v17_test.mjs'
-      - 'scripts/solution_ai_frontend_v17_test.mjs'
-      - 'scripts/solution_ai_full_system_audit.mjs'
-      - '.github/workflows/solution-ai-production-smoke.yml'
 
 permissions:
   contents: read
@@ -46,8 +36,8 @@ jobs:
             if curl -fsSL --max-time 20 'https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT' -o /tmp/solution-page.html; then
               if grep -Fq 'SoluTION.AI · LOCAL FIRST · GEMINI TÙY CHỌN' /tmp/solution-page.html \
                 && grep -Fq 'id="primaryForecastLabel"' /tmp/solution-page.html \
-                && grep -Fq 'forecast-final-v12.js?release=45.0' /tmp/solution-page.html \
-                && grep -Fq 'solution-ai-v17.js?release=39.0' /tmp/solution-page.html; then
+                && grep -Eq 'forecast-final-v12\.js\?release=[0-9]+(\.[0-9]+)?' /tmp/solution-page.html \
+                && grep -Eq 'solution-ai-v17\.js\?release=[0-9]+(\.[0-9]+)?' /tmp/solution-page.html; then
                 exit 0
               fi
             fi

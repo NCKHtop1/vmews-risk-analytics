@@ -948,16 +948,28 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(status['latestBar'],'2026-09-29')
             self.assertEqual(status['latestBarCoverage'],2)
             self.assertEqual(status['effectiveStatus'],'ok')
-    def test_current_session_filter_rejects_t_minus_one_quotes(self):
+    def test_current_session_filter_rejects_t_minus_one_and_future_quotes(self):
         current=datetime(2026,9,29,7,0,tzinfo=timezone.utc)
         rows={
             'FPT':{'sourceTime':'2026-09-29T06:45:00+00:00','price':64000},
             'MBB':{'sourceTime':'2026-09-28T07:45:00+00:00','price':19800},
+            'VIC':{'sourceTime':'2026-09-29T10:45:00+00:00','price':90000},
         }
         fresh,stale=m.current_session_quotes(rows,current)
         self.assertIn('FPT',fresh)
         self.assertIn('MBB',stale)
+        self.assertIn('VIC',stale)
         self.assertEqual(m.newest_source_time(fresh),'2026-09-29T06:45:00+00:00')
+
+    def test_kbs_session_probe_rejects_future_same_day_trade(self):
+        original=m.request_query
+        try:
+            m.request_query=lambda *args,**kwargs: json.dumps({'data':[{'TD':'29/09/2026','FT':'14:45:00'}]}).encode()
+            current=datetime(2026,9,29,1,50,tzinfo=timezone.utc)  # 08:50 Vietnam
+            with self.assertRaisesRegex(RuntimeError,'future timestamp'):
+                m._kbs_session_probe(['FPT'],current=current)
+        finally:
+            m.request_query=original
 
     def test_kbs_board_normalization_preserves_vnd_and_verified_session_time(self):
         payload=[
@@ -1122,6 +1134,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("MARKET_REQUIRE_TODAY=1",workflow)
         self.assertNotIn("cron: '11,41 * * * *'",workflow)
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",price)
+        self.assertIn('github.event_name }}" = "workflow_dispatch"',price)
+        self.assertNotIn('github.event_name }}" != "schedule"',price)
         self.assertIn("MARKET_REQUIRE_TODAY: '1'",price)
         self.assertIn('market/watch-today.json',price)
         self.assertIn('group: market-price-live',price)

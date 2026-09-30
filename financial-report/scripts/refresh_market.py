@@ -282,11 +282,20 @@ def _kbs_trade_time(row):
     return None
 
 
-def _kbs_session_probe(symbols):
-    """Verify KBS is serving the current VN trading date before trusting its board."""
+def _kbs_session_probe(symbols, current=None):
+    """Verify KBS is serving a real current-session timestamp before trusting its board.
+
+    Some public boards can expose rows stamped later in the same trading date.
+    A same-day check alone would incorrectly treat those future rows as live.
+    """
+    current = current or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    current = current.astimezone(timezone.utc)
+    future_limit = current + timedelta(minutes=5)
     preferred = [x for x in ('FPT', 'MBB', 'HPG', 'VCB', 'VIC', 'TCB') if x in symbols]
     probes = preferred + [x for x in symbols if x not in preferred][:4]
-    today = datetime.now(VN).date().isoformat()
+    today = current.astimezone(VN).date().isoformat()
     errors = []
     for symbol in probes:
         try:
@@ -305,6 +314,14 @@ def _kbs_session_probe(symbols):
                 errors.append(f'{symbol}: no trade timestamp')
                 continue
             latest = max(stamps)
+            try:
+                latest_dt = datetime.fromisoformat(latest).astimezone(timezone.utc)
+            except (ValueError, TypeError):
+                errors.append(f'{symbol}: invalid timestamp')
+                continue
+            if latest_dt > future_limit:
+                errors.append(f'{symbol}: future timestamp {latest}')
+                continue
             if source_day(latest) == today:
                 return latest, symbol
             errors.append(f'{symbol}: latest {source_day(latest)}')
@@ -378,13 +395,22 @@ def source_day(value):
 
 
 def current_session_quotes(rows, current=None):
-    """Split board rows into today's VN trading-date rows and stale rows."""
+    """Split board rows into actually observed current-session rows and stale/invalid rows."""
     current = current or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    current = current.astimezone(timezone.utc)
     today = current.astimezone(VN).date().isoformat()
+    future_limit = current + timedelta(minutes=5)
     fresh, stale = {}, {}
     for symbol, row in (rows or {}).items():
-        day = source_day(row.get('sourceTime'))
-        if day == today:
+        stamp = timestamp(row.get('sourceTime'))
+        day = source_day(stamp)
+        try:
+            observed = datetime.fromisoformat(stamp).astimezone(timezone.utc) if stamp else None
+        except (ValueError, TypeError):
+            observed = None
+        if day == today and observed is not None and observed <= future_limit:
             fresh[symbol] = row
         else:
             stale[symbol] = row
