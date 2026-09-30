@@ -16,6 +16,7 @@ spec.loader.exec_module(market)
 
 VN = timezone(timedelta(hours=7))
 COMPANIES = json.loads((ROOT / 'financial-report' / 'data' / 'companies.json').read_text(encoding='utf-8'))
+FORECAST_DASHBOARD = ROOT / 'data' / 'forecast-dashboard-v12.json'
 
 
 def _fast_request(url, payload=None, timeout=7):
@@ -98,32 +99,80 @@ def _session_active():
     )
 
 
+def _current_quote_day():
+    """Current trading date once the market has opened, including the lunch break."""
+    local = datetime.now(VN)
+    mins = local.hour * 60 + local.minute
+    return local.weekday() < 5 and 9 * 60 <= mins <= 15 * 60 + 15
+
+
+def _forecast_symbols():
+    """Use the published forecast universe instead of limiting live quotes to the old Core-100 list."""
+    try:
+        dashboard = json.loads(FORECAST_DASHBOARD.read_text(encoding='utf-8'))
+        rows = dashboard.get('symbols') or {}
+        symbols = [
+            str(symbol).upper()
+            for symbol, snapshot in rows.items()
+            if isinstance(snapshot, dict)
+            and snapshot.get('exchange') == 'HOSE'
+            and snapshot.get('dataFreshness') == 'CURRENT'
+        ]
+        if len(symbols) >= 100:
+            return sorted(set(symbols))
+    except Exception:
+        pass
+    return sorted({str(x['symbol']).upper() for x in COMPANIES if x.get('symbol')})
+
+
 def _live_quotes():
-    symbols = [x['symbol'] for x in COMPANIES]
+    symbols = _forecast_symbols()
     collected = datetime.now(timezone.utc).isoformat()
-    payload = json.loads(market.request(market.API + 'price/symbols/getList', {'symbols': symbols}))
-    rows = market.normalize_board(payload, symbols, collected)
-
+    fresh = {}
     stale = {}
-    if _session_active():
-        rows, stale = market.current_session_quotes(rows)
-        if len(rows) < 90:
-            raise RuntimeError(f'Current-session Vietcap coverage too low: {len(rows)}/100')
-    if not rows:
-        raise RuntimeError('No usable live quotes')
+    errors = []
 
+    try:
+        payload = json.loads(market.request(market.API + 'price/symbols/getList', {'symbols': symbols}))
+        fresh = market.normalize_board(payload, symbols, collected)
+        if _current_quote_day():
+            fresh, stale = market.current_session_quotes(fresh)
+            if stale:
+                errors.append(f'Vietcap stale session quotes rejected: {len(stale)}')
+    except Exception as exc:
+        fresh = {}
+        errors.append('Vietcap quotes: ' + str(exc))
+
+    missing = [symbol for symbol in symbols if symbol not in fresh]
+    if _current_quote_day() and missing:
+        try:
+            kbs_rows = market.kbs_current_board(missing, collected)
+            fresh.update(kbs_rows)
+            errors.append(f'KBS current-session fallback filled {len(kbs_rows)}/{len(missing)} symbols')
+        except Exception as exc:
+            errors.append('KBS fallback: ' + str(exc))
+
+    expected = len(symbols)
+    required = max(1, int(expected * .90 + .999999))
+    if not fresh:
+        raise RuntimeError('No usable live quotes')
+    if _current_quote_day() and len(fresh) < required:
+        raise RuntimeError(f'Current-session quote coverage too low: {len(fresh)}/{expected}; ' + '; '.join(errors[:3]))
+
+    providers = sorted({row.get('source') for row in fresh.values() if row.get('source')})
     return {
         'mode': 'quotes',
         'checkedAt': collected,
         'status': 'ok',
         'liveFallback': True,
-        'source': 'Vietcap live API fallback',
-        'providers': ['Vietcap'],
-        'coverage': len(rows),
-        'expected': len(symbols),
-        'latestSourceTime': market.newest_source_time(rows),
+        'source': 'Vietcap + KBS live API fallback',
+        'providers': providers,
+        'coverage': len(fresh),
+        'expected': expected,
+        'latestSourceTime': market.newest_source_time(fresh),
         'staleRejected': len(stale),
-        'quotes': rows,
+        'errors': errors,
+        'quotes': fresh,
     }
 
 
