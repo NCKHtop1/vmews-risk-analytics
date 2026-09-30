@@ -5,6 +5,7 @@ on:
   workflow_run:
     workflows:
       - Forecast V20.1 immutable-price audit and market intelligence
+      - Refresh live HOSE Core + Liquid prices
     branches:
       - main
     types:
