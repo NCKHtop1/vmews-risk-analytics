@@ -44,6 +44,23 @@ for(const file of files){
  const previous=sameLiveBar?oldRow.current:dailyPrevious;
  symbols[symbol]={symbol,tier,cadence:tier==='DISCOVERY'?'EOD':'LIVE_15M',barDate,sourceTime:q.sourceTime||q.collectedAt||null,current,previous};
 }
+// Discovery names are intentionally EOD-only in the market branch. Merge their
+// validated technical snapshot so Strategy Lab can scan the full HOSE universe
+// without fabricating indicators that are not available for those names.
+for(const [symbol,d] of Object.entries(universe.discoveryTechnical||{})){
+ if(symbols[symbol]||!d)continue;
+ const current={
+  price:num(d.price),changePct:num(d.changePct),rsi14:num(d.rsi14),
+  macd:num(d.macd),macdSignal:num(d.macdSignal),macdHistogram:num(d.macdHistogram),
+  volume:num(d.volume),volumeSma20:num(d.averageVolume20),volumeRatio20:num(d.volumeRatio20)
+ };
+ const previous={
+  price:null,changePct:null,rsi14:num(d.previousRsi14),
+  macd:null,macdSignal:null,macdHistogram:num(d.previousMacdHistogram),
+  volume:null,volumeSma20:null,volumeRatio20:null
+ };
+ symbols[symbol]={symbol,tier:'DISCOVERY',cadence:'EOD',barDate:d.barDate||null,sourceTime:null,current,previous,partial:true};
+}
 const rows=Object.values(symbols),payload={
  version:'FINQUERY-STRATEGY-SNAPSHOT-1.0',
  checkedAt:new Date().toISOString(),
