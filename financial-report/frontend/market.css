@@ -315,7 +315,7 @@ body.dolphin-modal-open{overflow:hidden}
 .collapse-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0}
 .section-chevron,.strategy-chevron{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid #dbe3ef;border-radius:10px;background:#fff;color:#5b6b83;font-size:18px;line-height:1;cursor:pointer}
 .section-chevron:hover,.strategy-chevron:hover{border-color:#a9b9db;background:#f8faff;color:#3659ba}
-.collapsible-section-body,.strategy-builder-body{margin-top:14px}
+.collapsible-section-body,.strategy-builder-body{margin-top:0}
 .strategy-builder-section.is-collapsed,.investment-ideas-section.is-collapsed,.macro-section.is-collapsed{background:#fff}
 .strategy-builder-section.is-collapsed{padding-top:18px;padding-bottom:18px}
 .strategy-builder-section.is-collapsed .strategy-builder-head{align-items:center}
