@@ -178,8 +178,15 @@ try {
     }
 
     const cards = await page.locator('#forecastCards .forecastCard').allInnerTexts();
-    const publishedCards = cards.filter(text => /Giá dự báo của mô hình/.test(text));
-    if (publishedCards.length < 1) throw new Error(`${symbol}: forecast UI exposes no published point forecast`);
+    const publishedCards = cards.filter(text => /Giá dự báo (?:của mô hình|trung tâm)/.test(text));
+    const reviewCards = cards.filter(text => /CHƯA ĐẠT KIỂM ĐỊNH HORIZON|CHƯA CÓ DỮ LIỆU|ĐANG CẬP NHẬT/.test(text));
+    const publishedHorizons = Array.isArray(context.publishedHorizons) ? context.publishedHorizons : [];
+    if (publishedHorizons.length && publishedCards.length < 1) {
+      throw new Error(`${symbol}: validated forecast exists in context but UI exposes no published point forecast`);
+    }
+    if (!publishedHorizons.length && reviewCards.length < 1) {
+      throw new Error(`${symbol}: no validated forecast is published, but UI does not expose the validation-gated review state`);
+    }
 
     if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
     const relevantFailed = failed.filter(line => !/cloudflareinsights|favicon|google-analytics/i.test(line));
