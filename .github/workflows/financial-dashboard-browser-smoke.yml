@@ -91,11 +91,12 @@ jobs:
                 return {
                   strategy:document.getElementById('strategy-body')?.hidden===true,
                   ideas:document.getElementById('investment-ideas-body')?.hidden===true,
-                  macro:document.getElementById('macro-body')?.hidden===true
+                  macro:document.getElementById('macro-body')?.hidden===true,
+                  chevrons:document.querySelectorAll('.section-chevron-icon svg').length
                 };
               """)
-              if not all(collapsed.values()):
-                  raise AssertionError(f'Feature sections are not collapsed by default: {collapsed}')
+              if not all([collapsed.get('strategy'),collapsed.get('ideas'),collapsed.get('macro')]) or int(collapsed.get('chevrons') or 0)!=3:
+                  raise AssertionError(f'Feature accordion defaults/icons are incorrect: {collapsed}')
 
               driver.execute_script("""
                 document.getElementById('strategy-toggle')?.click();
@@ -106,7 +107,8 @@ jobs:
                 return (
                   document.getElementById('strategy-body')?.hidden===false &&
                   document.getElementById('investment-ideas-body')?.hidden===false &&
-                  document.getElementById('macro-body')?.hidden===false
+                  document.getElementById('macro-body')?.hidden===false &&
+                  document.querySelectorAll('.section-chevron.is-open,.strategy-chevron.is-open').length===3
                 );
               """))
 
