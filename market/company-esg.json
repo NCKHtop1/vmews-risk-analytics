@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-29T18:04:22.854711+00:00",
+  "checkedAt": "2026-09-30T19:46:23.259619+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 13,
   "status": "ok",
@@ -14,7 +14,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-09-29T18:02:59.816749+00:00",
+      "checkedAt": "2026-09-30T19:44:11.680856+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -470,7 +470,7 @@
     "ANV": {
       "symbol": "ANV",
       "name": "Công ty Cổ phần Nam Việt",
-      "checkedAt": "2026-09-29T18:02:59.816962+00:00",
+      "checkedAt": "2026-09-30T19:44:11.681070+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -501,7 +501,7 @@
     "BAF": {
       "symbol": "BAF",
       "name": "Công ty Cổ phần Nông nghiệp BAF Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.816972+00:00",
+      "checkedAt": "2026-09-30T19:44:11.681079+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -519,7 +519,7 @@
     "BCM": {
       "symbol": "BCM",
       "name": "Tập đoàn Đầu tư và Phát triển Công nghiệp Becamex - CTCP",
-      "checkedAt": "2026-09-29T18:02:59.818021+00:00",
+      "checkedAt": "2026-09-30T19:44:11.682154+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -721,7 +721,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-09-29T18:02:59.819104+00:00",
+      "checkedAt": "2026-09-30T19:44:11.683231+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -913,7 +913,7 @@
     "BMP": {
       "symbol": "BMP",
       "name": "Công ty Cổ phần Nhựa Bình Minh",
-      "checkedAt": "2026-09-29T18:02:59.819672+00:00",
+      "checkedAt": "2026-09-30T19:44:11.683801+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1067,7 +1067,7 @@
     "BSI": {
       "symbol": "BSI",
       "name": "Công ty Cổ phần Chứng khoán BIDV",
-      "checkedAt": "2026-09-29T18:02:59.819682+00:00",
+      "checkedAt": "2026-09-30T19:44:11.683811+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1085,7 +1085,7 @@
     "BSR": {
       "symbol": "BSR",
       "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.819688+00:00",
+      "checkedAt": "2026-09-30T19:44:11.683817+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1103,7 +1103,7 @@
     "BVH": {
       "symbol": "BVH",
       "name": "Tập đoàn Bảo Việt",
-      "checkedAt": "2026-09-29T18:02:59.820105+00:00",
+      "checkedAt": "2026-09-30T19:44:11.684240+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1146,7 +1146,7 @@
     "BWE": {
       "symbol": "BWE",
       "name": "Công ty Cổ phần - Tổng công ty Nước - Môi trường Bình Dương",
-      "checkedAt": "2026-09-29T18:02:59.820113+00:00",
+      "checkedAt": "2026-09-30T19:44:11.684248+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1164,7 +1164,7 @@
     "CII": {
       "symbol": "CII",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-09-29T18:02:59.820119+00:00",
+      "checkedAt": "2026-09-30T19:44:11.684253+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1182,7 +1182,7 @@
     "CMG": {
       "symbol": "CMG",
       "name": "Công ty Cổ phần Tập đoàn Công nghệ CMC",
-      "checkedAt": "2026-09-29T18:02:59.820941+00:00",
+      "checkedAt": "2026-09-30T19:44:11.685074+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1218,9 +1218,11 @@
           "year": 2025,
           "type": "annual_report",
           "failedAttempts": 1,
-          "lastError": "The read operation timed out",
           "lastAttemptAt": "2026-09-29T17:07:11.626532+00:00",
-          "retryAfter": "2026-09-30T17:07:11.626565+00:00"
+          "contentType": "pdf",
+          "contentHash": "27c0248ac4955395722291cf0339adb285739e6d8ab143c5d7a03f483d1075dc",
+          "processedAt": "2026-09-30T19:44:27.896510+00:00",
+          "textLength": 10720
         }
       ],
       "metrics": [],
@@ -1228,7 +1230,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 3,
-        "processedDocuments": 2,
+        "processedDocuments": 3,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -1237,7 +1239,7 @@
     "CTD": {
       "symbol": "CTD",
       "name": "Công ty Cổ phần Xây dựng Coteccons",
-      "checkedAt": "2026-09-29T18:02:59.820951+00:00",
+      "checkedAt": "2026-09-30T19:44:11.685084+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1255,7 +1257,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-09-29T18:02:59.821846+00:00",
+      "checkedAt": "2026-09-30T19:44:11.685969+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -1706,7 +1708,7 @@
     "CTR": {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
-      "checkedAt": "2026-09-29T18:02:59.822362+00:00",
+      "checkedAt": "2026-09-30T19:44:11.686480+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1730,26 +1732,124 @@
           "year": 2025,
           "type": "sustainability_report",
           "failedAttempts": 1,
-          "lastError": "The read operation timed out",
           "lastAttemptAt": "2026-09-29T17:06:48.330010+00:00",
-          "retryAfter": "2026-09-30T17:06:48.330028+00:00"
+          "contentType": "pdf",
+          "contentHash": "7ff98b6a027f511137ccce0ba7b46b283e8290525efb026fc2d9349d3e35f5e3",
+          "processedAt": "2026-09-30T19:44:25.714720+00:00",
+          "textLength": 105764
         }
       ],
-      "metrics": [],
+      "metrics": [
+        {
+          "value": 5.0,
+          "rawValue": "5",
+          "unit": "%",
+          "qualityScore": 97.0,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-07/2026-07-30/CTR/20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceTitle": "20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "iới chiếm số lớn (trên 94% quân số), => tỷ lệ thôi việc theo giới tính và độ tuổi không đồng đều. Biểu đồ: Nhân sự tăng mới 2025 1. GIỚI TÍNH 3. KHU VỰC 2. ĐỘ TUỔI Năm Nam Nữ Tổng Tỷ lệ nữ Tỷ lệ nam Năm 2021 1487 73 1560 5% 95% Năm 2022 2316 103 2419 4% 96% Năm 2023 1440 84 1524 6% 94% Năm 2024 1372 100 1472 7% 93% Năm 2025 1289 93 1382 7% 93% Tổng: 6417 380 6797 6% 94% Năm Miền Bắc Miền Nam Miền Trung Tổng Tỷ lệ nam Năm 2021 838 462 260 1560 9",
+          "confidence": "medium"
+        },
+        {
+          "value": 739645.0,
+          "rawValue": "739.645",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-07/2026-07-30/CTR/20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceTitle": "20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "èo: 1 tỷ đồng ▶Ủng hộ 0.56 tỷ đồng “Quỹ bảo trợ trẻ em” ▶Áp dụng tiêu chuẩn ISO 14001:2015 - Hệ thống quản lý môi trường ▶100% nước sử dụng đạt chuẩn ▶5.133 khóa đào tạo ~ 739.645 giờ đào tạo cho CBNV ▶Không phân biệt đối xử ▶5,1 % lao động nữ năm 2025 ~ 533 người giảm 1,48 % so với năm 2024 BÁO CÁO PHÁT TRIỂN BỀN VỮNG 2025 - VIETTEL CONSTRUCTION TRANG 17 10 13 14 15 16 17 9 11 12 GIẢM BẤT BÌNH ĐẲNG ỨNG PHÓ VỚI BIẾN ĐỔI KHÍ HẬU ĐỜI SỐNG DƯỚI NƯỚC",
+          "confidence": "high"
+        },
+        {
+          "value": 83.64,
+          "rawValue": "83,64",
+          "unit": "hours",
+          "qualityScore": 108.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-07/2026-07-30/CTR/20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceTitle": "20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "thành công phần mềm học tập chủ động CALS, Số khóa học trong năm là 1.383 khóa, với hàng nghìn bài giảng điện tử được thực hiện, phù hợp với xu thế đào tạo trong kỷ nguyên mới. Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên: 83,64 giờ/năm. Các chương trình đào tạo nâng cao nhận thức, kỹ năng cho Cán bộ nhân viên năm 2025 tập trung vào 4 nhóm: » Đào tạo giá trị cốt lõi, khung tuân thủ. » Đào tạo nâng cao kỹ năng, chuyên môn, nghiệp vụ » Đào tạo kỹ năng q",
+          "confidence": "high"
+        },
+        {
+          "value": 0.106,
+          "rawValue": "106",
+          "unit": "billion VND",
+          "qualityScore": 81.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-07/2026-07-30/CTR/20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceTitle": "20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "ham gia phong trào thi đua lao động sản xuất, kinh do- anh; tổ chức hiệu quả các hoạt động kỷ niệm các ngày lễ lớn như 26/3, 08/3, 28/6, 20/10. Công tác vận động CBNV tham gia các hoạt động xã hội, từ thiện đạt kết quả thiết thực, với tổng số tiền đóng góp: Quỹ Bảo trợ trẻ em 106 triệu đồng; Quỹ Mái ấm Công đoàn – Nghĩa tình đồng đội 244 triệu đồng; Quỹ Vì người nghèo 2,821 tỷ đồng. Đồng thời, triển khai kế hoạch hoạt động gắn kết nội bộ trong toàn Tổn",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 0.106,
+          "rawValue": "106",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-07/2026-07-30/CTR/20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceTitle": "20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "ham gia phong trào thi đua lao động sản xuất, kinh do- anh; tổ chức hiệu quả các hoạt động kỷ niệm các ngày lễ lớn như 26/3, 08/3, 28/6, 20/10. Công tác vận động CBNV tham gia các hoạt động xã hội, từ thiện đạt kết quả thiết thực, với tổng số tiền đóng góp: Quỹ Bảo trợ trẻ em 106 triệu đồng; Quỹ Mái ấm Công đoàn – Nghĩa tình đồng đội 244 triệu đồng; Quỹ Vì người nghèo 2,821 tỷ đồng. Đồng thời, triển khai kế hoạch hoạt động gắn kết nội bộ trong toàn Tổn",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "106",
+          "repaired": true
+        },
+        {
+          "value": 83.64,
+          "rawValue": "83,64",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-07/2026-07-30/CTR/20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceTitle": "20260730CTRBaocaophattrienbenvung2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "thành công phần mềm học tập chủ động CALS, Số khóa học trong năm là 1.383 khóa, với hàng nghìn bài giảng điện tử được thực hiện, phù hợp với xu thế đào tạo trong kỷ nguyên mới. Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên: 83,64 giờ/năm. Các chương trình đào tạo nâng cao nhận thức, kỹ năng cho Cán bộ nhân viên năm 2025 tập trung vào 4 nhóm: » Đào tạo giá trị cốt lõi, khung tuân thủ. » Đào tạo nâng cao kỹ năng, chuyên môn, nghiệp vụ » Đào tạo kỹ năng q",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "83,64",
+          "repaired": true
+        }
+      ],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "processedDocuments": 2,
+        "metrics": 4,
+        "canonicalMetrics": 2,
         "externalAssessments": 0
       }
     },
     "CTS": {
       "symbol": "CTS",
       "name": "Công ty Cổ phần Chứng khoán Vietinbank",
-      "checkedAt": "2026-09-29T18:02:59.822372+00:00",
+      "checkedAt": "2026-09-30T19:44:11.686489+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1767,7 +1867,7 @@
     "DBC": {
       "symbol": "DBC",
       "name": "Công ty Cổ phần Tập đoàn Dabaco Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.822378+00:00",
+      "checkedAt": "2026-09-30T19:44:11.686494+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1785,7 +1885,7 @@
     "DCM": {
       "symbol": "DCM",
       "name": "Công ty Cổ phần - Tổng Công ty Phân bón Dầu Khí Cà Mau",
-      "checkedAt": "2026-09-29T18:02:59.822383+00:00",
+      "checkedAt": "2026-09-30T19:44:11.686499+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1803,7 +1903,7 @@
     "DGW": {
       "symbol": "DGW",
       "name": "Công ty Cổ phần Thế Giới Số",
-      "checkedAt": "2026-09-29T18:02:59.822387+00:00",
+      "checkedAt": "2026-09-30T19:44:11.686503+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1821,7 +1921,7 @@
     "DIG": {
       "symbol": "DIG",
       "name": "Tổng Công ty Cổ phần Đầu tư Phát triển Xây dựng",
-      "checkedAt": "2026-09-29T18:02:59.822392+00:00",
+      "checkedAt": "2026-09-30T19:44:11.686509+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1839,7 +1939,7 @@
     "DPM": {
       "symbol": "DPM",
       "name": "Tổng Công ty Phân bón và Hóa chất Dầu khí - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T18:02:59.822980+00:00",
+      "checkedAt": "2026-09-30T19:44:11.687109+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1882,7 +1982,7 @@
     "DSE": {
       "symbol": "DSE",
       "name": "Công ty Cổ phần Chứng khoán DNSE",
-      "checkedAt": "2026-09-29T18:02:59.822988+00:00",
+      "checkedAt": "2026-09-30T19:44:11.687116+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1900,7 +2000,7 @@
     "DXG": {
       "symbol": "DXG",
       "name": "Công ty Cổ phần Bluemarq Group",
-      "checkedAt": "2026-09-29T18:02:59.822993+00:00",
+      "checkedAt": "2026-09-30T19:44:11.687122+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1918,7 +2018,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-09-29T18:02:59.823894+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688012+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -2101,7 +2201,7 @@
     "EVF": {
       "symbol": "EVF",
       "name": "Công ty Tài chính Tổng hợp Cổ phần Điện Lực",
-      "checkedAt": "2026-09-29T18:02:59.823905+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688021+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2119,7 +2219,7 @@
     "FPT": {
       "symbol": "FPT",
       "name": "Công ty Cổ phần FPT",
-      "checkedAt": "2026-09-29T18:02:59.823910+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688027+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2137,7 +2237,7 @@
     "FRT": {
       "symbol": "FRT",
       "name": "Công ty Cổ phần Bán lẻ Kỹ thuật số FPT",
-      "checkedAt": "2026-09-29T18:02:59.824491+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688674+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2229,7 +2329,7 @@
     "FTS": {
       "symbol": "FTS",
       "name": "Công ty Cổ phần Chứng khoán FPT",
-      "checkedAt": "2026-09-29T18:02:59.824500+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688685+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2247,7 +2347,7 @@
     "GAS": {
       "symbol": "GAS",
       "name": "Tổng Công ty Khí Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T18:02:59.824506+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688690+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2265,7 +2365,7 @@
     "GEE": {
       "symbol": "GEE",
       "name": "Công ty Cổ phần Điện lực Gelex",
-      "checkedAt": "2026-09-29T18:02:59.824511+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688695+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2283,7 +2383,7 @@
     "GEX": {
       "symbol": "GEX",
       "name": "Công ty Cổ phần Tập đoàn Gelex",
-      "checkedAt": "2026-09-29T18:02:59.824517+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688700+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2301,7 +2401,7 @@
     "GMD": {
       "symbol": "GMD",
       "name": "Công ty Cổ phần Tập đoàn Gemadept",
-      "checkedAt": "2026-09-29T18:02:59.824522+00:00",
+      "checkedAt": "2026-09-30T19:44:11.688705+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2319,7 +2419,7 @@
     "GVR": {
       "symbol": "GVR",
       "name": "Tập đoàn Công nghiệp Cao su Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T18:02:59.825074+00:00",
+      "checkedAt": "2026-09-30T19:44:11.689235+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2378,7 +2478,7 @@
     "HAG": {
       "symbol": "HAG",
       "name": "Công ty Cổ phần Hoàng Anh Gia Lai",
-      "checkedAt": "2026-09-29T18:02:59.825649+00:00",
+      "checkedAt": "2026-09-30T19:44:11.689830+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2421,7 +2521,7 @@
     "HCM": {
       "symbol": "HCM",
       "name": "Công ty Cổ phần Chứng khoán Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-09-29T18:02:59.825658+00:00",
+      "checkedAt": "2026-09-30T19:44:11.689840+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2439,7 +2539,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-09-29T18:02:59.827347+00:00",
+      "checkedAt": "2026-09-30T19:44:11.691617+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -2594,7 +2694,7 @@
     "HDG": {
       "symbol": "HDG",
       "name": "Công ty Cổ phần Tập đoàn Hà Đô",
-      "checkedAt": "2026-09-29T18:02:59.827838+00:00",
+      "checkedAt": "2026-09-30T19:44:11.692108+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2637,7 +2737,7 @@
     "HHV": {
       "symbol": "HHV",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Giao thông Đèo Cả",
-      "checkedAt": "2026-09-29T18:02:59.827846+00:00",
+      "checkedAt": "2026-09-30T19:44:11.692117+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2655,7 +2755,7 @@
     "HPG": {
       "symbol": "HPG",
       "name": "Công ty Cổ phần Tập đoàn Hòa Phát",
-      "checkedAt": "2026-09-29T18:02:59.827852+00:00",
+      "checkedAt": "2026-09-30T19:44:11.692123+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2673,7 +2773,7 @@
     "HSG": {
       "symbol": "HSG",
       "name": "Công ty Cổ phần Tập đoàn Hoa Sen",
-      "checkedAt": "2026-09-29T18:02:59.827856+00:00",
+      "checkedAt": "2026-09-30T19:44:11.692128+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2691,7 +2791,7 @@
     "HT1": {
       "symbol": "HT1",
       "name": "Công ty Cổ phần Xi măng VICEM Hà Tiên",
-      "checkedAt": "2026-09-29T18:02:59.827861+00:00",
+      "checkedAt": "2026-09-30T19:44:11.692132+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2709,7 +2809,7 @@
     "KBC": {
       "symbol": "KBC",
       "name": "Tổng Công ty Phát triển Đô thị Kinh Bắc - CTCP",
-      "checkedAt": "2026-09-29T18:02:59.828482+00:00",
+      "checkedAt": "2026-09-30T19:44:11.692776+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2752,7 +2852,7 @@
     "KDC": {
       "symbol": "KDC",
       "name": "Công ty Cổ phần Tập đoàn KIDO",
-      "checkedAt": "2026-09-29T18:02:59.828968+00:00",
+      "checkedAt": "2026-09-30T19:44:11.693273+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2811,7 +2911,7 @@
     "KDH": {
       "symbol": "KDH",
       "name": "Công ty Cổ phần Đầu tư và Kinh doanh nhà Khang Điền",
-      "checkedAt": "2026-09-29T18:02:59.828977+00:00",
+      "checkedAt": "2026-09-30T19:44:11.693280+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2829,7 +2929,7 @@
     "KOS": {
       "symbol": "KOS",
       "name": "Công ty Cổ phần KOSY",
-      "checkedAt": "2026-09-29T18:02:59.829514+00:00",
+      "checkedAt": "2026-09-30T19:44:11.693848+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2872,7 +2972,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-09-29T18:02:59.830253+00:00",
+      "checkedAt": "2026-09-30T19:44:11.694592+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3008,7 +3108,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-09-29T18:02:59.831109+00:00",
+      "checkedAt": "2026-09-30T19:44:11.695446+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3224,7 +3324,7 @@
     "MCH": {
       "symbol": "MCH",
       "name": "Công ty Cổ phần Hàng Tiêu Dùng MaSan",
-      "checkedAt": "2026-09-29T18:02:59.831628+00:00",
+      "checkedAt": "2026-09-30T19:44:11.695953+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3248,9 +3348,11 @@
           "year": 2025,
           "type": "sustainability_report",
           "failedAttempts": 1,
-          "lastError": "The read operation timed out",
           "lastAttemptAt": "2026-09-29T17:06:48.327330+00:00",
-          "retryAfter": "2026-09-30T17:06:48.327359+00:00"
+          "contentType": "pdf",
+          "contentHash": "232e04e52f76dea438194e4f65448d9241ed0e8f6f83029ccef69ccc9e391ac9",
+          "processedAt": "2026-09-30T19:44:33.937075+00:00",
+          "textLength": 469927
         }
       ],
       "metrics": [],
@@ -3258,7 +3360,7 @@
       "canonicalMetrics": [],
       "coverage": {
         "documents": 2,
-        "processedDocuments": 1,
+        "processedDocuments": 2,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -3267,7 +3369,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-09-29T18:02:59.835224+00:00",
+      "checkedAt": "2026-09-30T19:44:11.699522+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -3791,7 +3893,7 @@
     "MSN": {
       "symbol": "MSN",
       "name": "Công ty Cổ phần Tập đoàn Masan",
-      "checkedAt": "2026-09-29T18:02:59.835235+00:00",
+      "checkedAt": "2026-09-30T19:44:11.699533+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3809,7 +3911,7 @@
     "MWG": {
       "symbol": "MWG",
       "name": "Công ty Cổ phần Đầu tư Thế Giới Di Động",
-      "checkedAt": "2026-09-29T18:02:59.835241+00:00",
+      "checkedAt": "2026-09-30T19:44:11.699540+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3827,10 +3929,22 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-09-29T18:02:59.839822+00:00",
+      "checkedAt": "2026-09-30T19:44:11.704160+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
+        {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "Báo cáo thường niên tiếng Anh năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
+        },
         {
           "id": "358356aafec4c64c0e15",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
@@ -3866,18 +3980,6 @@
           "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
           "processedAt": "2026-09-29T03:24:41.470566+00:00",
           "textLength": 245573
-        },
-        {
-          "id": "3513a04144dc75ee4ff0",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
-          "title": "20260318---nab-2025-annual-report.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
-          "processedAt": "2026-09-29T03:25:01.084606+00:00",
-          "textLength": 337
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -3964,6 +4066,18 @@
           "textLength": 190892
         },
         {
+          "id": "33e5a56cd74d6d5f8f61",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
+          "processedAt": "2026-09-29T03:25:05.799971+00:00",
+          "textLength": 262818
+        },
+        {
           "id": "672efd9d89b939b0cb7a",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2023/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2023.pdf",
           "title": "Báo cáo thường niên năm 2023",
@@ -3978,26 +4092,14 @@
         {
           "id": "0c9ce9572663228d1389",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
+          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "sustainability_report",
+          "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
           "processedAt": "2026-09-29T03:40:21.817994+00:00",
           "textLength": 251546
-        },
-        {
-          "id": "33e5a56cd74d6d5f8f61",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
-          "processedAt": "2026-09-29T03:25:05.799971+00:00",
-          "textLength": 262818
         },
         {
           "id": "656e569b13a9f118e6e9",
@@ -4747,7 +4849,7 @@
     "NKG": {
       "symbol": "NKG",
       "name": "Công ty Cổ phần Thép Nam Kim",
-      "checkedAt": "2026-09-29T18:02:59.839834+00:00",
+      "checkedAt": "2026-09-30T19:44:11.704171+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4765,7 +4867,7 @@
     "NLG": {
       "symbol": "NLG",
       "name": "Công ty Cổ phần Đầu tư Nam Long",
-      "checkedAt": "2026-09-29T18:02:59.839840+00:00",
+      "checkedAt": "2026-09-30T19:44:11.704177+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4783,7 +4885,7 @@
     "NT2": {
       "symbol": "NT2",
       "name": "Công ty Cổ phần Điện lực Dầu khí Nhơn Trạch 2",
-      "checkedAt": "2026-09-29T18:02:59.840382+00:00",
+      "checkedAt": "2026-09-30T19:44:11.704717+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4826,7 +4928,7 @@
     "NVL": {
       "symbol": "NVL",
       "name": "Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va",
-      "checkedAt": "2026-09-29T18:02:59.840391+00:00",
+      "checkedAt": "2026-09-30T19:44:11.704726+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4844,7 +4946,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-09-29T18:02:59.844827+00:00",
+      "checkedAt": "2026-09-30T19:44:11.709232+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -4855,10 +4957,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2025,
           "type": "sustainability_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T16:40:26.257585+00:00",
-          "retryAfter": "2026-09-30T16:40:26.257605+00:00"
+          "lastAttemptAt": "2026-09-30T19:44:18.553389+00:00",
+          "retryAfter": "2026-10-01T19:44:18.553410+00:00"
         },
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -4891,10 +4993,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2025,
           "type": "annual_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T16:40:27.122983+00:00",
-          "retryAfter": "2026-09-30T16:40:27.123005+00:00"
+          "lastAttemptAt": "2026-09-30T19:44:20.067318+00:00",
+          "retryAfter": "2026-10-01T19:44:20.067334+00:00"
         },
         {
           "id": "d328fb66a416709ad8a7",
@@ -4903,10 +5005,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "sustainability_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T16:40:26.265554+00:00",
-          "retryAfter": "2026-09-30T16:40:26.265571+00:00"
+          "lastAttemptAt": "2026-09-30T19:44:19.329716+00:00",
+          "retryAfter": "2026-10-01T19:44:19.329731+00:00"
         },
         {
           "id": "6c8fee76b6ca9bf4702e",
@@ -4915,10 +5017,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "annual_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T16:40:27.956543+00:00",
-          "retryAfter": "2026-09-30T16:40:27.956563+00:00"
+          "lastAttemptAt": "2026-09-30T19:44:30.660062+00:00",
+          "retryAfter": "2026-10-01T19:44:30.660083+00:00"
         },
         {
           "id": "9c0f8fa4ea6087a7f9b7",
@@ -4935,7 +5037,7 @@
         {
           "id": "88d59fff5e021267b7ac",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250408095036_ocb-bao-cao-thuong-nien-nam-2024.pdf",
-          "title": "SEE_MORE",
+          "title": "Báo cáo thường niên 2024 2024 Ngày đăng: 04/4/2025 SEE_MORE",
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "annual_report",
@@ -4943,6 +5045,18 @@
           "contentHash": "6528d36b62d2aa2676a2a1c421cd9d4cffe4bac2b3905b3d88531589c70c8ef7",
           "processedAt": "2026-09-29T02:17:23.263618+00:00",
           "textLength": 203768
+        },
+        {
+          "id": "7dbc12f1505da625cb7b",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
+          "title": "SEE_MORE",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2023,
+          "type": "esg_other",
+          "contentType": "pdf",
+          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
+          "processedAt": "2026-09-29T18:04:15.307228+00:00",
+          "textLength": 497211
         },
         {
           "id": "65aab233120d3f54ae4e",
@@ -4967,18 +5081,6 @@
           "contentHash": "44dfecab7d8b460f8868651b3866fa0023b905c044dfe64fd24dbb366a8cc53c",
           "processedAt": "2026-09-29T00:04:45.555474+00:00",
           "textLength": 162196
-        },
-        {
-          "id": "7dbc12f1505da625cb7b",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250319141014_bao-cao-ptbv-2023.pdf",
-          "title": "Báo cáo Phát triển bền vững 2023 2023 Ngày đăng: 19/9/2024 SEE_MORE",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "d549bfdcf851241932bc88d0a4a9a7547a494e9e886f8e325b5fca7739bc2acf",
-          "processedAt": "2026-09-29T18:04:15.307228+00:00",
-          "textLength": 497211
         },
         {
           "id": "ff02f9dfaa97d39cc7fc",
@@ -5799,7 +5901,7 @@
     "PAN": {
       "symbol": "PAN",
       "name": "Công ty Cổ phần Tập đoàn PAN",
-      "checkedAt": "2026-09-29T18:02:59.844839+00:00",
+      "checkedAt": "2026-09-30T19:44:11.709243+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5817,7 +5919,7 @@
     "PC1": {
       "symbol": "PC1",
       "name": "Công ty Cổ phần Tập đoàn PC1",
-      "checkedAt": "2026-09-29T18:02:59.844845+00:00",
+      "checkedAt": "2026-09-30T19:44:11.709249+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5835,7 +5937,7 @@
     "PDR": {
       "symbol": "PDR",
       "name": "Công ty Cổ phần Phát triển Bất động sản Phát Đạt",
-      "checkedAt": "2026-09-29T18:02:59.844850+00:00",
+      "checkedAt": "2026-09-30T19:44:11.709254+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5853,7 +5955,7 @@
     "PHR": {
       "symbol": "PHR",
       "name": "Công ty Cổ phần Cao su Phước Hòa",
-      "checkedAt": "2026-09-29T18:02:59.844854+00:00",
+      "checkedAt": "2026-09-30T19:44:11.709258+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5871,7 +5973,7 @@
     "PLX": {
       "symbol": "PLX",
       "name": "Tập đoàn Xăng dầu Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.846234+00:00",
+      "checkedAt": "2026-09-30T19:44:11.710697+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6044,7 +6146,7 @@
     "PNJ": {
       "symbol": "PNJ",
       "name": "Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận",
-      "checkedAt": "2026-09-29T18:02:59.846244+00:00",
+      "checkedAt": "2026-09-30T19:44:11.710706+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6062,7 +6164,7 @@
     "POW": {
       "symbol": "POW",
       "name": "Tổng Công ty Điện lực Dầu khí Việt Nam - CTCP",
-      "checkedAt": "2026-09-29T18:02:59.846717+00:00",
+      "checkedAt": "2026-09-30T19:44:11.711189+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6105,7 +6207,7 @@
     "PVD": {
       "symbol": "PVD",
       "name": "Tổng Công ty Cổ phần Khoan và Dịch vụ khoan Dầu khí",
-      "checkedAt": "2026-09-29T18:02:59.846724+00:00",
+      "checkedAt": "2026-09-30T19:44:11.711196+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6123,7 +6225,7 @@
     "PVT": {
       "symbol": "PVT",
       "name": "Tổng Công ty Cổ phần Vận tải Dầu khí",
-      "checkedAt": "2026-09-29T18:02:59.846730+00:00",
+      "checkedAt": "2026-09-30T19:44:11.711201+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6141,7 +6243,7 @@
     "REE": {
       "symbol": "REE",
       "name": "Công ty Cổ phần Cơ điện Lạnh",
-      "checkedAt": "2026-09-29T18:02:59.846735+00:00",
+      "checkedAt": "2026-09-30T19:44:11.711205+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6159,7 +6261,7 @@
     "SAB": {
       "symbol": "SAB",
       "name": "Tổng Công ty Cổ phần Bia - Rượu - Nước Giải khát Sài Gòn",
-      "checkedAt": "2026-09-29T18:02:59.847781+00:00",
+      "checkedAt": "2026-09-30T19:44:11.712038+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6226,7 +6328,7 @@
     "SBT": {
       "symbol": "SBT",
       "name": "Công ty Cổ phần Thành Thành Công - Biên Hòa",
-      "checkedAt": "2026-09-29T18:02:59.847790+00:00",
+      "checkedAt": "2026-09-30T19:44:11.712047+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6244,10 +6346,22 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-09-29T18:02:59.848051+00:00",
+      "checkedAt": "2026-09-30T19:44:11.713601+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
+        {
+          "id": "03dad30e4551a54698e3",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web-1.pdf",
+          "title": "Báo cáo thường niên 2025",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "f9702b9ab0b1dace8d5dbdad8b0afa8b018211432546a7eae012505edf51a456",
+          "processedAt": "2026-09-30T19:44:36.014927+00:00",
+          "textLength": 491611
+        },
         {
           "id": "2dc85ac7632258f7ec86",
           "url": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web.pdf",
@@ -6259,6 +6373,171 @@
           "contentHash": "b4e453d3212850c7d527adeef9d88431cfc17fbea4981e8185ccd763d6fa7042",
           "processedAt": "2026-09-29T02:28:29.023899+00:00",
           "textLength": 491400
+        },
+        {
+          "id": "e438cf2c7781ef6a39c5",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2024/04/SHB_Ba%CC%81o-ca%CC%81o-thu%CC%9Bo%CC%9B%CC%80ng-nie%CC%82n-2023.pdf",
+          "title": "Kính mời tải về tại đây",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2024,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "document too large > 36700160 bytes",
+          "lastAttemptAt": "2026-09-30T19:44:28.523588+00:00",
+          "retryAfter": "2026-10-01T19:44:28.523607+00:00"
+        },
+        {
+          "id": "f1bb7663c0f166602708",
+          "url": "https://www.shb.com.vn/bao-cao-thuong-nien-2024/",
+          "title": "Báo cáo thường niên 2024",
+          "sourcePage": "https://www.shb.com.vn/bao-cao-thuong-nien-2025/",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "ac9b40a880223b7bba12d4e2e2cf0f625bf445ac4d10756cfa17f6fe64c9767b",
+          "processedAt": "2026-09-30T19:44:29.812522+00:00",
+          "textLength": 3843
+        },
+        {
+          "id": "b118b477589cd39497f4",
+          "url": "https://www.shb.com.vn/BCTN2024/",
+          "title": "Báo cáo thường niên 2024",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "f66e62c623e2055cad156e76fcae704fb9e1441eef812081f6534674f1247180",
+          "processedAt": "2026-09-30T19:44:18.841243+00:00",
+          "textLength": 10840
+        },
+        {
+          "id": "e89d7372eb91fd637f10",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "title": "250318_SHB-BCTN_2024.pdf",
+          "sourcePage": "https://www.shb.com.vn/bao-cao-thuong-nien-2024/",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "be329ca81486285fd210b321b5a7b3d29ddf7e927c399c1442473f8d94960ac7",
+          "processedAt": "2026-09-30T19:45:45.120186+00:00",
+          "textLength": 482513
+        },
+        {
+          "id": "3d6e41b7551313a86fd7",
+          "url": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "title": "Tải xuống Báo cáo thường niên 2023",
+          "sourcePage": "https://www.shb.com.vn/BCTN2023/index.html",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "ddaa4337bc8ec1366e75a0aeed5920882b41a5ed0db079ddd2c3cc2c3145878f",
+          "processedAt": "2026-09-30T19:45:13.467859+00:00",
+          "textLength": 416253
+        },
+        {
+          "id": "741c092cb112b3971218",
+          "url": "https://www.shb.com.vn/bao-cao-thuong-nien-2023/",
+          "title": "Báo cáo thường niên 2023",
+          "sourcePage": "https://www.shb.com.vn/bao-cao-thuong-nien-2025/",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "fbcdba959058dcf80a7fd29dbdc215fbd584806fde49d3d600f2e17e9313e8ba",
+          "processedAt": "2026-09-30T19:44:33.393896+00:00",
+          "textLength": 3843
+        },
+        {
+          "id": "0cbeab37a386fe5d5bd4",
+          "url": "https://www.shb.com.vn/BCTN2023/index.html",
+          "title": "Báo cáo thường niên 2023",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "64200aa2691965d5094f002ea63e189b7374e1311394033d2ddf4765a458f9a3",
+          "processedAt": "2026-09-30T19:44:19.292745+00:00",
+          "textLength": 894
+        },
+        {
+          "id": "447be704e9915f09aeb8",
+          "url": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "title": "Tải BCTN 2022",
+          "sourcePage": "https://www.shb.com.vn/BCTN2022/index.html",
+          "year": 2022,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "821d0130f466867cc5ae9c9a1b010a698d07b89f962e9e40e8f0fe302c598a2e",
+          "processedAt": "2026-09-30T19:46:23.034435+00:00",
+          "textLength": 413259
+        },
+        {
+          "id": "f6a7d3e8ecfe52f0b94c",
+          "url": "https://www.shb.com.vn/bao-cao-thuong-nien-2022/",
+          "title": "Báo cáo thường niên 2022",
+          "sourcePage": "https://www.shb.com.vn/bao-cao-thuong-nien-2025/",
+          "year": 2022,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "d0198858b68a862cbbac1df759b783fa0ef4ef2b4db8968c679e27639763ab9f",
+          "processedAt": "2026-09-30T19:45:14.291139+00:00",
+          "textLength": 3843
+        },
+        {
+          "id": "290ab7e801c84c110056",
+          "url": "https://www.shb.com.vn/BCTN2022/index.html",
+          "title": "Báo cáo thường niên 2022",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2022,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "42a0cd2bab3809ac59420e36f45539ba9390492d813609156af7ba86aafab8fb",
+          "processedAt": "2026-09-30T19:45:13.013845+00:00",
+          "textLength": 2322
+        },
+        {
+          "id": "a3a800aec015843ff3b3",
+          "url": "https://www.shb.com.vn/bao-cao-thuong-nien-2021/",
+          "title": "Báo cáo thường niên 2021",
+          "sourcePage": "https://www.shb.com.vn/bao-cao-thuong-nien-2025/",
+          "year": 2021,
+          "type": "annual_report",
+          "contentType": "html"
+        },
+        {
+          "id": "b91ee7258b7e92969440",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "title": "Báo cáo thường niên 2021",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2021,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7e528e7f7da1655c03754fa726f595e7674f04f77b5cdbaae526b363e55b5f5a",
+          "processedAt": "2026-09-30T19:46:04.691774+00:00",
+          "textLength": 380134
+        },
+        {
+          "id": "43a6d45e832899dd8131",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2021/07/BCTN-2020_SHB_view_Final.pdf",
+          "title": "Báo cáo thường niên 2020",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2020,
+          "type": "annual_report"
+        },
+        {
+          "id": "0a67c675c78b9d81f349",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2020/10/BCTN-2019_VN.pdf",
+          "title": "Báo cáo Thường niên 2019",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2019,
+          "type": "annual_report"
+        },
+        {
+          "id": "c9a044483035528aac00",
+          "url": "https://www.shb.com.vn/wp-content/uploads/2018/06/BCTN-2018_VN_FA_Web.pdf",
+          "title": "Báo cáo Thường niên 2017",
+          "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
+          "year": 2017,
+          "type": "annual_report"
         }
       ],
       "metrics": [
@@ -6276,10 +6555,439 @@
           "sourceType": "annual_report",
           "snippet": "lực lũy kế dành cho các hoạt động an sinh xã hội của SHB trong giai đoạn 2019 – 2025 đã vượt mốc 1.000 tỷ đồng, đánh dấu hành trình bền bỉ của ngân hàng trong việc đồng hành cùng cộng đồng và xã hội. Riêng trong năm 2025, SHB dành ngân sách hơn 256 tỷ đồng cho các hoạt động an sinh xã hội và đồng hành cùng Quốc gia phát triển văn hóa, thể thao, xã hội. Trên nền tảng những đóng góp đó, SHB từng bước hiện thực hóa định hướng Ngân hàng hạnh phúc –",
           "confidence": "medium"
+        },
+        {
+          "value": 256.0,
+          "rawValue": "256",
+          "unit": "billion VND",
+          "qualityScore": 89.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2026/04/260420_SHB_BCTN_2025_Web-1.pdf",
+          "sourceTitle": "Báo cáo thường niên 2025",
+          "sourceType": "annual_report",
+          "snippet": "lực lũy kế dành cho các hoạt động an sinh xã hội của SHB trong giai đoạn 2019 – 2025 đã vượt mốc 1.000 tỷ đồng, đánh dấu hành trình bền bỉ của ngân hàng trong việc đồng hành cùng cộng đồng và xã hội. Riêng trong năm 2025, SHB dành ngân sách hơn 256 tỷ đồng cho các hoạt động an sinh xã hội và đồng hành cùng Quốc gia phát triển văn hóa, thể thao, xã hội. Trên nền tảng những đóng góp đó, SHB từng bước hiện thực hóa định hướng Ngân hàng hạnh phúc –",
+          "confidence": "medium"
+        },
+        {
+          "value": 39036.0,
+          "rawValue": "39.036",
+          "unit": "billion VND",
+          "qualityScore": 98.0,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "phần tăng trưởng bền vững và bảo vệ môi trường. Giai đoạn 2020 - 2023, SHB đã gặt hái được nhiều kết quả khả quan với khoảng 300.000 hợp đồng tài trợ tín dụng xanh với tổng dư nợ tín dụng xanh tại thời điểm 31/12/2023 đạt 39.036 tỷ đồng. Đặc biệt, dư nợ SHB tài trợ trong lĩnh vực nông, lâm, thủy sản cuối năm 2023 đạt 4.264 tỷ đồng, trong đó tập trung 80% chủ yếu ở mục đích tài trợ các dự án nông nghiệp sạch. Trong thời gian qua, SHB đặc biệt ưu tiê",
+          "confidence": "medium"
+        },
+        {
+          "value": 369490.0,
+          "rawValue": "369,490",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "đều có cơ hội được đào tạo và phát triển SHB - BÁO CÁO THƯỜNG NIÊN 2023 124 125 VI. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Tổng số giờ đào tạo năm 2023 của SHB là 369,490 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 63.7 giờ/người/năm. Đối tượng Tổng số giờ đào tạo đã thực hiện Số giờ đào tạo trung bình/một nhân viên/năm Nhân viên 309,345 65.6 Cán bộ quản lý 60,145 55.6 Toàn SHB 369,490 63.7 Các chương trình đào tạo được xây dựng theo",
+          "confidence": "high"
+        },
+        {
+          "value": 369490.0,
+          "rawValue": "369,490",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "đều có cơ hội được đào tạo và phát triển SHB - BÁO CÁO THƯỜNG NIÊN 2023 124 125 VI. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Tổng số giờ đào tạo năm 2023 của SHB là 369,490 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 63.7 giờ/người/năm. Đối tượng Tổng số giờ đào tạo đã thực hiện Số giờ đào tạo trung bình/một nhân viên/năm Nhân viên 309,345 65.6 Cán bộ quản lý 60,145 55.6 Toàn SHB 369,490 63.7 Các chương trình đào tạo được xây dựng theo từng nhóm đ",
+          "confidence": "high"
+        },
+        {
+          "value": 87.0,
+          "rawValue": "87",
+          "unit": "billion VND",
+          "qualityScore": 96.67,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "giai đoạn 5 năm 2019 - 2023, số tiền dành cho hoạt động an sinh xã hội của SHB là lên tới 490 tỷ đồng. Riêng năm 2023, SHB đã dành hơn 87 tỷ đồng cho các chương trình tài trợ cho cộng đồng. 2. TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG VÌ TƯƠNG LAI VIỆT NAM Hoạt động ASXH giai đoạn 2019 - 2023 490 TỶ ĐỒNG 10 TỶ ĐỒNG Quỹ hỗ trợ tài chính Ươm mầm tài năng SHB 3,5 TỶ ĐỒNG Trao tặng 150 bộ máy tính cho trường Đại học Thái Bình Đúng như quan điểm của",
+          "confidence": "medium"
+        },
+        {
+          "value": 52300.0,
+          "rawValue": "52.300",
+          "unit": "billion VND",
+          "qualityScore": 102.33,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "sourceTitle": "250318_SHB-BCTN_2024.pdf",
+          "sourceType": "annual_report",
+          "snippet": "vay sang các dự án thân thiện với môi trường. Việc triển khai cho vay các dự án tín dụng xanh: Tổng dư nợ tín dụng xanh tại thời điểm 31/12/2024 đạt 52.300 tỷ đồng. Tỷ trọng dư nợ tín dụng xanh chiếm trên 10% tổng dư nợ. Trong thời gian qua, SHB đặc biệt ưu tiên cho các khách hàng hoạt động trong lĩnh vực nông nghiệp nông thôn, các dự án xanh… với các gói giải pháp đặc thù, ưu đãi lãi suất, miễn/giảm phí trả nợ trước hạn, ưu đãi các phí dịch vụ, lin",
+          "confidence": "high"
+        },
+        {
+          "value": 327488.0,
+          "rawValue": "327.488",
+          "unit": "hours",
+          "qualityScore": 111.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "sourceTitle": "250318_SHB-BCTN_2024.pdf",
+          "sourceType": "annual_report",
+          "snippet": "nghệ thông tin; (2) Hiệu quả cá nhân và quản lý, (3) Marketing- bán hàng- dịch vụ, (4) Pháp luật và tuân thủ, (5) Rủi ro và tài chính, (6) Sản phẩm và quy trình. Năm 2024, tổng số giờ đào tạo SHB đã thực hiện là 327.488 giờ, tương đương số giờ học tập trung bình của mỗi một nhân viên tại SHB là 54,6 giờ/ người/ năm. Đối tượng Tổng số giờ đào tạo đã thực hiện Số giờ đào tạo trung bình/một nhân viên/năm Nhân viên 255.215 52 Cán bộ quản lý 72.273 66,",
+          "confidence": "high"
+        },
+        {
+          "value": 54.6,
+          "rawValue": "54,6",
+          "unit": "hours",
+          "qualityScore": 98.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "sourceTitle": "250318_SHB-BCTN_2024.pdf",
+          "sourceType": "annual_report",
+          "snippet": "đào tạo SHB đã thực hiện là 327.488 giờ, tương đương số giờ học tập trung bình của mỗi một nhân viên tại SHB là 54,6 giờ/ người/ năm. Đối tượng Tổng số giờ đào tạo đã thực hiện Số giờ đào tạo trung bình/một nhân viên/năm Nhân viên 255.215 52 Cán bộ quản lý 72.273 66,3 Toàn SHB 327.488 54,6 SHB thực hiện đào tạo trên cơ sở khung tiêu chuẩn năng lực của từng chức danh và theo cấp độ năng lực yêu cầu của từng vị trí. Các chương trình đào tạo đa dạng, liên tục c",
+          "confidence": "medium"
+        },
+        {
+          "value": 717.0,
+          "rawValue": "717",
+          "unit": "billion VND",
+          "qualityScore": 97.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "sourceTitle": "250318_SHB-BCTN_2024.pdf",
+          "sourceType": "annual_report",
+          "snippet": "cho cộng đồng, gấp đôi ngân sách năm 2023, theo đó tổng số tiền cho hoạt động an sinh xã hội của SHB trong giai đoạn 2019 – 2024 lên hơn 717 tỷ đồng. TỶ ĐỒNG dành cho hoạt động vì cộng đồng từ 2019 717 VI. Báo cáo phát triển bền vững 164 | SHB Báo cáo thường niên 2024 Song song với đó, SHB cũng đã dành tặng hàng trăm suất học bổng cho các em học sinh nghèo vượt khó tại Na Hang (Tuyên Quang), sinh viên thủ khoa, sinh viên có hoàn cảnh khó khăn và",
+          "confidence": "medium"
+        },
+        {
+          "value": 207622.0,
+          "rawValue": "207.622",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2021,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "sourceTitle": "Báo cáo thường niên 2021",
+          "sourceType": "annual_report",
+          "snippet": "á chất lượng các chương trình đào tạo đạt 4.02/5 (so với yêu cầu chất lượng tối thiểu là 3.75/5). Tổng số giờ đào tạo năm 2021 của CBNV toàn Ngân hàng: 207.622 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB năm 2021 là 38 giờ/Nhân viên. SHB đã thực hiện ứng dụng tối đa công nghệ trong hoạt động đào tạo theo khả năng và điều kiện cho phép nhằm cải tiến, nâng cao chất lượng bài giảng trực tuyến với các chuyên đề/nội dung đào tạo đã",
+          "confidence": "high"
+        },
+        {
+          "value": 207622.0,
+          "rawValue": "207.622",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2021,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "sourceTitle": "Báo cáo thường niên 2021",
+          "sourceType": "annual_report",
+          "snippet": "á chất lượng các chương trình đào tạo đạt 4.02/5 (so với yêu cầu chất lượng tối thiểu là 3.75/5). Tổng số giờ đào tạo năm 2021 của CBNV toàn Ngân hàng: 207.622 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB năm 2021 là 38 giờ/Nhân viên. SHB đã thực hiện ứng dụng tối đa công nghệ trong hoạt động đào tạo theo khả năng và điều kiện cho phép nhằm cải tiến, nâng cao chất lượng bài giảng trực tuyến với các chuyên đề/nội dung đào tạo đã được số hó",
+          "confidence": "high"
+        },
+        {
+          "value": 19.0,
+          "rawValue": "19",
+          "unit": "billion VND",
+          "qualityScore": 99.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2021,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "sourceTitle": "Báo cáo thường niên 2021",
+          "sourceType": "annual_report",
+          "snippet": "lớn đến đời sống xã hội, Ngân hàng SHB đã triển khai chiến dịch lớn rất thiết thực, theo đó tặng 100,000 bộ kit xét nghiệm trị giá lên tới gần 19 tỷ đồng cho khách hàng, CBNV, và cộng đồng. Xóa đói giảm nghèo, khắc phục hậu quả thiên tai Nối tiếp những hoạt động trách nhiệm xã hội của những năm trước, với tinh thần lá lành đùm lá rách, tương thân tương ái, trong năm 2021, SHB dành hơn 14,6 tỷ đồng tiếp tục duy trì các hoạt động hỗ trợ an sinh x",
+          "confidence": "medium"
+        },
+        {
+          "value": 166006.0,
+          "rawValue": "166.006",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2022,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "sourceTitle": "Tải BCTN 2022",
+          "sourceType": "annual_report",
+          "snippet": "trợ học bổng cho sinh viên xuất sắc, trao đổi thông tin, tham gia hội chợ việc làm để mở rộng nguồn tuyển dụng. Tổng số giờ đào tạo năm 2022 của SHB là 166.006 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 29,2 giờ/người/năm. www.shb.com.vn 125124 SHB - BÁO CÁO THƯỜNG NIÊN 2022 PHÁT TRIỂN CÙNG ĐẤT NƯỚC 7. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Trong những năm qua, SHB được biết đến là một trong những ngân hàng thương mại luôn hoạt động",
+          "confidence": "high"
+        },
+        {
+          "value": 166006.0,
+          "rawValue": "166.006",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2022,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "sourceTitle": "Tải BCTN 2022",
+          "sourceType": "annual_report",
+          "snippet": "trợ học bổng cho sinh viên xuất sắc, trao đổi thông tin, tham gia hội chợ việc làm để mở rộng nguồn tuyển dụng. Tổng số giờ đào tạo năm 2022 của SHB là 166.006 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 29,2 giờ/người/năm. www.shb.com.vn 125124 SHB - BÁO CÁO THƯỜNG NIÊN 2022 PHÁT TRIỂN CÙNG ĐẤT NƯỚC 7. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Trong những năm qua, SHB được biết đến là một trong những ngân hàng thương mại luôn hoạt động hiệu quả, k",
+          "confidence": "high"
+        },
+        {
+          "value": 80.0,
+          "rawValue": "80",
+          "unit": "billion VND",
+          "qualityScore": 95.67,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "sourceTitle": "Tải BCTN 2022",
+          "sourceType": "annual_report",
+          "snippet": "cực thực hiện trách nhiệm cộng đồng với hàng loạt các chương trình xã hội thiết thực và ý nghĩa. Năm 2022, SHB đã dành ngân sách gần 80 tỷ đồng cho các hoạt động tài trợ hướng tới cộng đồng xã hội, bao gồm các hoạt động tài trợ văn hóa xã hội, công trình văn hóa tâm linh, hỗ trợ người nghèo, hoàn cảnh khó khăn và phát triển thế hệ trẻ. Trước đó, năm 2021, khi đại dịch Covid-19 đang diễn biến phức tạp, mọi hoạt động kinh tế xã hội bị đình trệ, cu",
+          "confidence": "medium"
         }
       ],
       "externalAssessments": [],
       "canonicalMetrics": [
+        {
+          "value": 19.0,
+          "rawValue": "19",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2021,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "sourceTitle": "Báo cáo thường niên 2021",
+          "sourceType": "annual_report",
+          "snippet": "lớn đến đời sống xã hội, Ngân hàng SHB đã triển khai chiến dịch lớn rất thiết thực, theo đó tặng 100,000 bộ kit xét nghiệm trị giá lên tới gần 19 tỷ đồng cho khách hàng, CBNV, và cộng đồng. Xóa đói giảm nghèo, khắc phục hậu quả thiên tai Nối tiếp những hoạt động trách nhiệm xã hội của những năm trước, với tinh thần lá lành đùm lá rách, tương thân tương ái, trong năm 2021, SHB dành hơn 14,6 tỷ đồng tiếp tục duy trì các hoạt động hỗ trợ an sinh x",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "19",
+          "repaired": true
+        },
+        {
+          "value": 207622.0,
+          "rawValue": "207.622",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2021,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "sourceTitle": "Báo cáo thường niên 2021",
+          "sourceType": "annual_report",
+          "snippet": "á chất lượng các chương trình đào tạo đạt 4.02/5 (so với yêu cầu chất lượng tối thiểu là 3.75/5). Tổng số giờ đào tạo năm 2021 của CBNV toàn Ngân hàng: 207.622 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB năm 2021 là 38 giờ/Nhân viên. SHB đã thực hiện ứng dụng tối đa công nghệ trong hoạt động đào tạo theo khả năng và điều kiện cho phép nhằm cải tiến, nâng cao chất lượng bài giảng trực tuyến với các chuyên đề/nội dung đào tạo đã",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "207.622",
+          "repaired": true
+        },
+        {
+          "value": 38.0,
+          "rawValue": "38",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2021,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2022/04/BCTN-2021_VN_Web-2.pdf",
+          "sourceTitle": "Báo cáo thường niên 2021",
+          "sourceType": "annual_report",
+          "snippet": "á chất lượng các chương trình đào tạo đạt 4.02/5 (so với yêu cầu chất lượng tối thiểu là 3.75/5). Tổng số giờ đào tạo năm 2021 của CBNV toàn Ngân hàng: 207.622 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB năm 2021 là 38 giờ/Nhân viên. SHB đã thực hiện ứng dụng tối đa công nghệ trong hoạt động đào tạo theo khả năng và điều kiện cho phép nhằm cải tiến, nâng cao chất lượng bài giảng trực tuyến với các chuyên đề/nội dung đào tạo đã được số hó",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "207.622",
+          "repaired": true
+        },
+        {
+          "value": 80.0,
+          "rawValue": "80",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "sourceTitle": "Tải BCTN 2022",
+          "sourceType": "annual_report",
+          "snippet": "cực thực hiện trách nhiệm cộng đồng với hàng loạt các chương trình xã hội thiết thực và ý nghĩa. Năm 2022, SHB đã dành ngân sách gần 80 tỷ đồng cho các hoạt động tài trợ hướng tới cộng đồng xã hội, bao gồm các hoạt động tài trợ văn hóa xã hội, công trình văn hóa tâm linh, hỗ trợ người nghèo, hoàn cảnh khó khăn và phát triển thế hệ trẻ. Trước đó, năm 2021, khi đại dịch Covid-19 đang diễn biến phức tạp, mọi hoạt động kinh tế xã hội bị đình trệ, cu",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "80",
+          "repaired": true
+        },
+        {
+          "value": 166006.0,
+          "rawValue": "166.006",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2022,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "sourceTitle": "Tải BCTN 2022",
+          "sourceType": "annual_report",
+          "snippet": "trợ học bổng cho sinh viên xuất sắc, trao đổi thông tin, tham gia hội chợ việc làm để mở rộng nguồn tuyển dụng. Tổng số giờ đào tạo năm 2022 của SHB là 166.006 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 29,2 giờ/người/năm. www.shb.com.vn 125124 SHB - BÁO CÁO THƯỜNG NIÊN 2022 PHÁT TRIỂN CÙNG ĐẤT NƯỚC 7. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Trong những năm qua, SHB được biết đến là một trong những ngân hàng thương mại luôn hoạt động",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "166.006",
+          "repaired": true
+        },
+        {
+          "value": 29.2,
+          "rawValue": "29,2",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2022,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2022/pdf/AR-SHB-2022.pdf",
+          "sourceTitle": "Tải BCTN 2022",
+          "sourceType": "annual_report",
+          "snippet": "trợ học bổng cho sinh viên xuất sắc, trao đổi thông tin, tham gia hội chợ việc làm để mở rộng nguồn tuyển dụng. Tổng số giờ đào tạo năm 2022 của SHB là 166.006 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 29,2 giờ/người/năm. www.shb.com.vn 125124 SHB - BÁO CÁO THƯỜNG NIÊN 2022 PHÁT TRIỂN CÙNG ĐẤT NƯỚC 7. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Trong những năm qua, SHB được biết đến là một trong những ngân hàng thương mại luôn hoạt động hiệu quả, k",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "166.006",
+          "repaired": true
+        },
+        {
+          "value": 87.0,
+          "rawValue": "87",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "giai đoạn 5 năm 2019 - 2023, số tiền dành cho hoạt động an sinh xã hội của SHB là lên tới 490 tỷ đồng. Riêng năm 2023, SHB đã dành hơn 87 tỷ đồng cho các chương trình tài trợ cho cộng đồng. 2. TRÁCH NHIỆM ĐỐI VỚI CỘNG ĐỒNG ĐỊA PHƯƠNG VÌ TƯƠNG LAI VIỆT NAM Hoạt động ASXH giai đoạn 2019 - 2023 490 TỶ ĐỒNG 10 TỶ ĐỒNG Quỹ hỗ trợ tài chính Ươm mầm tài năng SHB 3,5 TỶ ĐỒNG Trao tặng 150 bộ máy tính cho trường Đại học Thái Bình Đúng như quan điểm của",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "87",
+          "repaired": true
+        },
+        {
+          "value": 39036.0,
+          "rawValue": "39.036",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "phần tăng trưởng bền vững và bảo vệ môi trường. Giai đoạn 2020 - 2023, SHB đã gặt hái được nhiều kết quả khả quan với khoảng 300.000 hợp đồng tài trợ tín dụng xanh với tổng dư nợ tín dụng xanh tại thời điểm 31/12/2023 đạt 39.036 tỷ đồng. Đặc biệt, dư nợ SHB tài trợ trong lĩnh vực nông, lâm, thủy sản cuối năm 2023 đạt 4.264 tỷ đồng, trong đó tập trung 80% chủ yếu ở mục đích tài trợ các dự án nông nghiệp sạch. Trong thời gian qua, SHB đặc biệt ưu tiê",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "39.036",
+          "repaired": true
+        },
+        {
+          "value": 369490.0,
+          "rawValue": "369,490",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "đều có cơ hội được đào tạo và phát triển SHB - BÁO CÁO THƯỜNG NIÊN 2023 124 125 VI. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Tổng số giờ đào tạo năm 2023 của SHB là 369,490 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 63.7 giờ/người/năm. Đối tượng Tổng số giờ đào tạo đã thực hiện Số giờ đào tạo trung bình/một nhân viên/năm Nhân viên 309,345 65.6 Cán bộ quản lý 60,145 55.6 Toàn SHB 369,490 63.7 Các chương trình đào tạo được xây dựng theo",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "369,490",
+          "repaired": true
+        },
+        {
+          "value": 63.7,
+          "rawValue": "63.7",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2023,
+          "sourceUrl": "https://www.shb.com.vn/BCTN2023/pdf/BCTN-SHB-2023.pdf",
+          "sourceTitle": "Tải xuống Báo cáo thường niên 2023",
+          "sourceType": "annual_report",
+          "snippet": "đều có cơ hội được đào tạo và phát triển SHB - BÁO CÁO THƯỜNG NIÊN 2023 124 125 VI. BÁO CÁO PHÁT TRIỂN BỀN VỮNG Tổng số giờ đào tạo năm 2023 của SHB là 369,490 giờ, tương đương số giờ đào tạo trung bình/một nhân viên tại SHB là 63.7 giờ/người/năm. Đối tượng Tổng số giờ đào tạo đã thực hiện Số giờ đào tạo trung bình/một nhân viên/năm Nhân viên 309,345 65.6 Cán bộ quản lý 60,145 55.6 Toàn SHB 369,490 63.7 Các chương trình đào tạo được xây dựng theo từng nhóm đ",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "369,490",
+          "repaired": true
+        },
+        {
+          "value": 717.0,
+          "rawValue": "717",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "sourceTitle": "250318_SHB-BCTN_2024.pdf",
+          "sourceType": "annual_report",
+          "snippet": "cho cộng đồng, gấp đôi ngân sách năm 2023, theo đó tổng số tiền cho hoạt động an sinh xã hội của SHB trong giai đoạn 2019 – 2024 lên hơn 717 tỷ đồng. TỶ ĐỒNG dành cho hoạt động vì cộng đồng từ 2019 717 VI. Báo cáo phát triển bền vững 164 | SHB Báo cáo thường niên 2024 Song song với đó, SHB cũng đã dành tặng hàng trăm suất học bổng cho các em học sinh nghèo vượt khó tại Na Hang (Tuyên Quang), sinh viên thủ khoa, sinh viên có hoàn cảnh khó khăn và",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "717",
+          "repaired": true
+        },
+        {
+          "value": 52300.0,
+          "rawValue": "52.300",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "green_credit",
+          "pillar": "E",
+          "label": "Dư nợ tín dụng xanh",
+          "year": 2024,
+          "sourceUrl": "https://www.shb.com.vn/wp-content/uploads/2025/04/250318_SHB-BCTN_2024.pdf",
+          "sourceTitle": "250318_SHB-BCTN_2024.pdf",
+          "sourceType": "annual_report",
+          "snippet": "vay sang các dự án thân thiện với môi trường. Việc triển khai cho vay các dự án tín dụng xanh: Tổng dư nợ tín dụng xanh tại thời điểm 31/12/2024 đạt 52.300 tỷ đồng. Tỷ trọng dư nợ tín dụng xanh chiếm trên 10% tổng dư nợ. Trong thời gian qua, SHB đặc biệt ưu tiên cho các khách hàng hoạt động trong lĩnh vực nông nghiệp nông thôn, các dự án xanh… với các gói giải pháp đặc thù, ưu đãi lãi suất, miễn/giảm phí trả nợ trước hạn, ưu đãi các phí dịch vụ, lin",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "52.300",
+          "repaired": true
+        },
         {
           "value": 256.0,
           "rawValue": "256",
@@ -6299,17 +7007,17 @@
         }
       ],
       "coverage": {
-        "documents": 1,
-        "processedDocuments": 1,
-        "metrics": 1,
-        "canonicalMetrics": 1,
+        "documents": 17,
+        "processedDocuments": 12,
+        "metrics": 16,
+        "canonicalMetrics": 13,
         "externalAssessments": 0
       }
     },
     "SIP": {
       "symbol": "SIP",
       "name": "Công ty Cổ phần Đầu tư Sài Gòn VRG",
-      "checkedAt": "2026-09-29T18:02:59.848544+00:00",
+      "checkedAt": "2026-09-30T19:44:11.714103+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6352,7 +7060,7 @@
     "SJS": {
       "symbol": "SJS",
       "name": "Công ty Cổ phần SJ Group",
-      "checkedAt": "2026-09-29T18:02:59.849398+00:00",
+      "checkedAt": "2026-09-30T19:44:11.714991+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6407,7 +7115,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-09-29T18:02:59.851720+00:00",
+      "checkedAt": "2026-09-30T19:44:11.717149+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -6462,7 +7170,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026",
+          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -6502,10 +7210,10 @@
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
           "year": 2024,
           "type": "annual_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-09-29T03:10:59.351843+00:00",
-          "retryAfter": "2026-09-30T03:10:59.351869+00:00"
+          "lastAttemptAt": "2026-09-30T19:44:32.006234+00:00",
+          "retryAfter": "2026-10-01T19:44:32.006252+00:00"
         },
         {
           "id": "63a3abaf8b52f1a85e00",
@@ -6522,7 +7230,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025",
+          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -7147,7 +7855,7 @@
     "SSI": {
       "symbol": "SSI",
       "name": "Công ty Cổ phần Chứng khoán SSI",
-      "checkedAt": "2026-09-29T18:02:59.851730+00:00",
+      "checkedAt": "2026-09-30T19:44:11.717159+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7165,7 +7873,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-09-29T18:02:59.853269+00:00",
+      "checkedAt": "2026-09-30T19:44:11.718710+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -7324,7 +8032,7 @@
     "TAL": {
       "symbol": "TAL",
       "name": "Công Ty Cổ Phần Đầu Tư Bất Động Sản Taseco",
-      "checkedAt": "2026-09-29T18:02:59.853278+00:00",
+      "checkedAt": "2026-09-30T19:44:11.718719+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7342,7 +8050,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-09-29T18:02:59.855651+00:00",
+      "checkedAt": "2026-09-30T19:44:11.720951+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -7442,7 +8150,7 @@
         {
           "id": "5f8da544b07832ede0e2",
           "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Overview",
+          "title": "Sustainability",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability",
           "year": null,
           "type": "esg_web_content",
@@ -7506,10 +8214,10 @@
           "sourcePage": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking/green-loan",
           "year": null,
           "type": "esg_web_content",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 404: Not Found",
-          "lastAttemptAt": "2026-09-29T02:58:21.638342+00:00",
-          "retryAfter": "2026-09-30T02:58:21.638363+00:00"
+          "lastAttemptAt": "2026-09-30T19:44:35.006948+00:00",
+          "retryAfter": "2026-10-01T19:44:35.006964+00:00"
         },
         {
           "id": "df135628ad25b6fd26ba",
@@ -7872,7 +8580,7 @@
     "TCH": {
       "symbol": "TCH",
       "name": "Công ty Cổ phần Đầu tư Dịch vụ Tài chính Hoàng Huy",
-      "checkedAt": "2026-09-29T18:02:59.855662+00:00",
+      "checkedAt": "2026-09-30T19:44:11.720961+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7890,7 +8598,7 @@
     "TCX": {
       "symbol": "TCX",
       "name": "Công ty Cổ phần Chứng khoán Kỹ Thương",
-      "checkedAt": "2026-09-29T18:02:59.855667+00:00",
+      "checkedAt": "2026-09-30T19:44:11.720967+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7908,7 +8616,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-09-29T18:02:59.857576+00:00",
+      "checkedAt": "2026-09-30T19:44:11.722883+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8161,7 +8869,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-09-29T18:02:59.858854+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724256+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8691,7 +9399,7 @@
     "VCG": {
       "symbol": "VCG",
       "name": "Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.858864+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724266+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8709,7 +9417,7 @@
     "VCI": {
       "symbol": "VCI",
       "name": "Công ty Cổ phần Chứng khoán Vietcap",
-      "checkedAt": "2026-09-29T18:02:59.858869+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724271+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8727,7 +9435,7 @@
     "VCK": {
       "symbol": "VCK",
       "name": "Công ty Cổ phần Chứng Khoán VPS",
-      "checkedAt": "2026-09-29T18:02:59.858962+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724277+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8745,7 +9453,7 @@
     "VGC": {
       "symbol": "VGC",
       "name": "Tổng Công ty Viglacera - Công ty Cổ phần",
-      "checkedAt": "2026-09-29T18:02:59.859565+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724629+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8788,7 +9496,7 @@
     "VHC": {
       "symbol": "VHC",
       "name": "Công ty Cổ phần Vĩnh Hoàn",
-      "checkedAt": "2026-09-29T18:02:59.860040+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724906+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8831,7 +9539,7 @@
     "VHM": {
       "symbol": "VHM",
       "name": "Công ty Cổ phần Vinhomes",
-      "checkedAt": "2026-09-29T18:02:59.860048+00:00",
+      "checkedAt": "2026-09-30T19:44:11.724914+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8849,7 +9557,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-09-29T18:02:59.861745+00:00",
+      "checkedAt": "2026-09-30T19:44:11.726713+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -8963,7 +9671,7 @@
     "VIC": {
       "symbol": "VIC",
       "name": "Tập đoàn Vingroup - Công ty CP",
-      "checkedAt": "2026-09-29T18:02:59.861754+00:00",
+      "checkedAt": "2026-09-30T19:44:11.726724+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8981,7 +9689,7 @@
     "VIX": {
       "symbol": "VIX",
       "name": "Công ty Cổ phần Chứng khoán VIX",
-      "checkedAt": "2026-09-29T18:02:59.861759+00:00",
+      "checkedAt": "2026-09-30T19:44:11.726730+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8999,7 +9707,7 @@
     "VJC": {
       "symbol": "VJC",
       "name": "Công ty Cổ phần Hàng không Vietjet",
-      "checkedAt": "2026-09-29T18:02:59.862247+00:00",
+      "checkedAt": "2026-09-30T19:44:11.726998+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9042,7 +9750,7 @@
     "VND": {
       "symbol": "VND",
       "name": "Công ty Cổ phần Chứng khoán VNDIRECT",
-      "checkedAt": "2026-09-29T18:02:59.862728+00:00",
+      "checkedAt": "2026-09-30T19:44:11.727272+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9085,7 +9793,7 @@
     "VNM": {
       "symbol": "VNM",
       "name": "Công ty Cổ phần Sữa Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.863346+00:00",
+      "checkedAt": "2026-09-30T19:44:11.727633+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9128,7 +9836,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-09-29T18:02:59.863849+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728143+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated+disclosure-index",
       "documents": [
@@ -9411,7 +10119,7 @@
     "VPI": {
       "symbol": "VPI",
       "name": "Công ty Cổ phần Phát triển Bất động sản Văn Phú",
-      "checkedAt": "2026-09-29T18:02:59.863857+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728151+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9429,7 +10137,7 @@
     "VPL": {
       "symbol": "VPL",
       "name": "Công ty Cổ phần Vinpearl",
-      "checkedAt": "2026-09-29T18:02:59.864406+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728560+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9626,7 +10334,7 @@
     "VPX": {
       "symbol": "VPX",
       "name": "Công ty Cổ phần Chứng khoán VPBank",
-      "checkedAt": "2026-09-29T18:02:59.864414+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728570+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9644,7 +10352,7 @@
     "VRE": {
       "symbol": "VRE",
       "name": "Công ty Cổ phần Vincom Retail",
-      "checkedAt": "2026-09-29T18:02:59.864988+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728885+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9748,7 +10456,7 @@
     "VSC": {
       "symbol": "VSC",
       "name": "Công ty Cổ phần Container Việt Nam",
-      "checkedAt": "2026-09-29T18:02:59.864998+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728892+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9766,7 +10474,7 @@
     "VTP": {
       "symbol": "VTP",
       "name": "Tổng Công ty Cổ phần Bưu chính Viettel",
-      "checkedAt": "2026-09-29T18:02:59.865003+00:00",
+      "checkedAt": "2026-09-30T19:44:11.728897+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9812,20 +10520,6 @@
       "textLength": 4043
     },
     {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "Above-Board_Final.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "sustainability_report",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-09-29T18:03:10.562133+00:00",
-      "textLength": 61879
-    },
-    {
       "id": "c3ae1e1e5c89eec1b45b",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
       "title": "2023 Summary Report",
@@ -9836,7 +10530,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T18:03:17.481240+00:00",
+      "processedAt": "2026-09-29T16:48:15.057188+00:00",
       "textLength": 98218
     },
     {
@@ -9850,7 +10544,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-09-29T16:48:15.057188+00:00",
+      "processedAt": "2026-09-30T19:45:21.421947+00:00",
       "textLength": 98218
     },
     {
@@ -9868,18 +10562,18 @@
       "textLength": 61879
     },
     {
-      "id": "c6d164862c0327932c55",
-      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
-      "title": "report-2017-compressed.pdf",
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "climate_disclosure",
+      "year": 2023,
+      "type": "sustainability_report",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment",
       "contentType": "pdf",
-      "contentHash": "950ff0da90cee4ccece587f82b729d943e04db3b43756ad9576d1a1abf09eb1a",
-      "processedAt": "2026-09-29T18:03:30.823722+00:00",
-      "textLength": 239941
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-09-30T19:45:09.860879+00:00",
+      "textLength": 61879
     },
     {
       "id": "736d1a258096fff8e0cd",
@@ -9908,20 +10602,6 @@
       "contentHash": "26266fb705f0fe142702d4f5fb1d89284bb5be6a3648119074e673cc949bcd04",
       "processedAt": "2026-09-28T23:58:58.570532+00:00",
       "textLength": 34895
-    },
-    {
-      "id": "6a7e0d05d95a47e318e1",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
-      "title": "SUSBA-2021-FINAL.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2021,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "d13a158220109f8ae074db8921c911842dd5c386b8bccba007d5c8483766c238",
-      "processedAt": "2026-09-29T18:03:12.546244+00:00",
-      "textLength": 69470
     },
     {
       "id": "75115a3050a133626083",
@@ -9966,18 +10646,24 @@
       "textLength": 69470
     },
     {
-      "id": "952a7cf2c85642395465",
-      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
-      "title": "2020 Summary Report",
+      "id": "6a7e0d05d95a47e318e1",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
+      "title": "2021 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2019,
+      "year": 2021,
       "type": "susba",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "0c585eb7beb104bffac9414be6ee273ab3b757b0693cb5d55292ed0a4890e08f",
-      "processedAt": "2026-09-29T18:04:22.069636+00:00",
-      "textLength": 82015
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "952a7cf2c85642395465",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
+      "title": "2020 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2020,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "952a7cf2c85642395465",
@@ -10004,36 +10690,8 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "1a9bc6752be7be9a2cf60d2053b68d956c2cd41c48a1ae981da2265732333305",
-      "processedAt": "2026-09-29T18:04:10.576625+00:00",
-      "textLength": 59978
-    },
-    {
-      "id": "1ba16d784121888b47f1",
-      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
-      "title": "2019 Summary Report",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2018,
-      "type": "esg_web_content",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1a9bc6752be7be9a2cf60d2053b68d956c2cd41c48a1ae981da2265732333305",
       "processedAt": "2026-09-28T23:59:21.037191+00:00",
       "textLength": 59978
-    },
-    {
-      "id": "5a3092bae6468b8e3d31",
-      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "report-2018-compressed.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2017,
-      "type": "climate_disclosure",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "70eb5195f4e8faeea609ac94531b2547740cfee1be547c7280d046ba35706e11",
-      "processedAt": "2026-09-29T18:04:00.776459+00:00",
-      "textLength": 167687
     },
     {
       "id": "5a3092bae6468b8e3d31",
@@ -10489,7 +11147,7 @@
       "title": "ESG Licenses",
       "sourcePage": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "year": null,
-      "type": "climate_disclosure",
+      "type": "esg_web_content",
       "contentType": "html",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
@@ -10786,10 +11444,10 @@
       "type": "esg_web_content",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
-      "failedAttempts": 1,
+      "failedAttempts": 2,
       "lastError": "HTTP Error 404: Not Found",
-      "lastAttemptAt": "2026-09-29T18:03:13.290090+00:00",
-      "retryAfter": "2026-09-30T18:03:13.290109+00:00"
+      "lastAttemptAt": "2026-09-30T19:45:11.716744+00:00",
+      "retryAfter": "2026-10-01T19:45:11.716764+00:00"
     },
     {
       "id": "5278c75be602879a63b2",
@@ -11223,8 +11881,8 @@
     },
     {
       "url": "https://lpbank.com.vn/nha-dau-tu",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 0,
       "symbol": "LPB"
     },
     {
@@ -11428,7 +12086,7 @@
     {
       "url": "https://24hmoney.vn/stock/sab/report",
       "status": "ok",
-      "documents": 4,
+      "documents": 2,
       "symbol": "SAB"
     },
     {
@@ -11439,8 +12097,8 @@
     },
     {
       "url": "https://www.shb.com.vn/bao-cao-thuong-nien-2025/",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 5,
       "symbol": "SHB"
     },
     {
@@ -11451,8 +12109,8 @@
     },
     {
       "url": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
-      "status": "error",
-      "error": "HTTP Error 403: Forbidden",
+      "status": "ok",
+      "documents": 11,
       "symbol": "SHB"
     },
     {
@@ -11482,7 +12140,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "SSB"
     },
     {
@@ -11523,14 +12181,14 @@
     },
     {
       "url": "https://24hmoney.vn/stock/stb/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "STB"
     },
     {
       "url": "https://24hmoney.vn/stock/tal/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "TAL"
     },
     {
@@ -11542,25 +12200,25 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 6,
+      "documents": 5,
       "symbol": "TCB"
     },
     {
       "url": "https://24hmoney.vn/stock/tcb/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "TCB"
     },
     {
       "url": "https://24hmoney.vn/stock/tch/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "TCH"
     },
     {
       "url": "https://24hmoney.vn/stock/tcx/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "TCX"
     },
     {
@@ -11583,8 +12241,8 @@
     },
     {
       "url": "https://24hmoney.vn/stock/tpb/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "TPB"
     },
     {
@@ -11607,8 +12265,8 @@
     },
     {
       "url": "https://24hmoney.vn/stock/vcb/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VCB"
     },
     {
@@ -11625,38 +12283,38 @@
     },
     {
       "url": "https://24hmoney.vn/stock/vcg/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VCG"
     },
     {
       "url": "https://24hmoney.vn/stock/vci/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VCI"
     },
     {
       "url": "https://24hmoney.vn/stock/vck/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VCK"
     },
     {
       "url": "https://24hmoney.vn/stock/vgc/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VGC"
     },
     {
       "url": "https://24hmoney.vn/stock/vhc/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VHC"
     },
     {
       "url": "https://24hmoney.vn/stock/vhm/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VHM"
     },
     {
@@ -11691,38 +12349,38 @@
     },
     {
       "url": "https://24hmoney.vn/stock/vib/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VIB"
     },
     {
       "url": "https://24hmoney.vn/stock/vic/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VIC"
     },
     {
       "url": "https://24hmoney.vn/stock/vix/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VIX"
     },
     {
       "url": "https://24hmoney.vn/stock/vjc/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VJC"
     },
     {
       "url": "https://24hmoney.vn/stock/vnd/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VND"
     },
     {
       "url": "https://24hmoney.vn/stock/vnm/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VNM"
     },
     {
@@ -11739,8 +12397,8 @@
     },
     {
       "url": "https://24hmoney.vn/stock/vpb/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VPB"
     },
     {
@@ -11757,38 +12415,38 @@
     },
     {
       "url": "https://24hmoney.vn/stock/vpi/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VPI"
     },
     {
       "url": "https://24hmoney.vn/stock/vpl/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VPL"
     },
     {
       "url": "https://24hmoney.vn/stock/vpx/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VPX"
     },
     {
       "url": "https://24hmoney.vn/stock/vre/report",
-      "status": "ok",
-      "documents": 2,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VRE"
     },
     {
       "url": "https://24hmoney.vn/stock/vsc/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VSC"
     },
     {
       "url": "https://24hmoney.vn/stock/vtp/report",
-      "status": "ok",
-      "documents": 0,
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VTP"
     },
     {
@@ -11822,7 +12480,7 @@
     {
       "url": "https://www.sustainalytics.com/corporate-solutions/sustainable-finance-and-lending/published-projects",
       "status": "ok",
-      "documents": 3,
+      "documents": 2,
       "provider": "Morningstar Sustainalytics",
       "external": true
     },
@@ -11836,13 +12494,13 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 11,
-    "backlogBeforeRun": 27,
-    "activeBacklogBeforeRun": 6,
-    "backlogRemaining": 0,
-    "eligibleBacklog": 18,
-    "recentBacklog": 6,
-    "historicalBacklog": 6,
+    "documentsProcessed": 16,
+    "backlogBeforeRun": 36,
+    "activeBacklogBeforeRun": 20,
+    "backlogRemaining": 4,
+    "eligibleBacklog": 36,
+    "recentBacklog": 20,
+    "historicalBacklog": 10,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 24,
     "documentWorkers": 4
