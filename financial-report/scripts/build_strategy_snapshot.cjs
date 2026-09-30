@@ -17,8 +17,8 @@ function currentChange(bars,i){if(i<1)return null;const a=num(bars[i-1]?.close),
 function normalizeBars(rows){
  return (rows||[]).map(b=>({time:b.time,open:num(b.open),high:num(b.high),low:num(b.low),close:num(b.close),volume:Math.max(0,num(b.volume)||0)})).filter(math.validBar);
 }
-const universe=read(path.join(out,'universe.json'),{}),quotes=read(path.join(out,'quotes.json'),{}),old=read(path.join(out,'strategy-indicators.json'),{symbols:{}});
-const records=universe.symbols||{},files=fs.existsSync(path.join(out,'history'))?fs.readdirSync(path.join(out,'history')).filter(f=>f.endsWith('.json')):[];
+const universe=read(path.join(out,'universe.json'),{}),canonical=read(path.resolve(process.argv[3]||'financial-report/data/universe.json'),{}),quotes=read(path.join(out,'quotes.json'),{}),old=read(path.join(out,'strategy-indicators.json'),{symbols:{}});
+const records=universe.symbols||canonical.symbols||{},discoveryTechnical=universe.discoveryTechnical||canonical.discoveryTechnical||{},files=fs.existsSync(path.join(out,'history'))?fs.readdirSync(path.join(out,'history')).filter(f=>f.endsWith('.json')):[];
 const symbols={};
 for(const file of files){
  const symbol=path.basename(file,'.json').toUpperCase(),bars=normalizeBars(read(path.join(out,'history',file),{}).bars);
@@ -47,7 +47,7 @@ for(const file of files){
 // Discovery names are intentionally EOD-only in the market branch. Merge their
 // validated technical snapshot so Strategy Lab can scan the full HOSE universe
 // without fabricating indicators that are not available for those names.
-for(const [symbol,d] of Object.entries(universe.discoveryTechnical||{})){
+for(const [symbol,d] of Object.entries(discoveryTechnical)){
  if(symbols[symbol]||!d)continue;
  const current={
   price:num(d.price),changePct:num(d.changePct),rsi14:num(d.rsi14),
