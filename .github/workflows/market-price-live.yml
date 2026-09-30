@@ -8,6 +8,16 @@ on:
       - '.github/workflows/market-price-live.yml'
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/data/universe.json'
+  workflow_run:
+    # GitHub scheduled workflows can be delayed or occasionally skipped under load.
+    # The continuously-running news publisher is an independent 15-minute heartbeat
+    # that re-triggers prices during the VN trading window.
+    workflows:
+      - Refresh market news stream
+    branches:
+      - main
+    types:
+      - completed
   schedule:
     # Dedicated 15-minute cadence. It no longer shares the heavy ESG/history concurrency queue.
     - cron: '5,20,35,50 2-8 * * 1-5'
@@ -21,6 +31,7 @@ concurrency:
 
 jobs:
   prices:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
