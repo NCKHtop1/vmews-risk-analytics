@@ -80,6 +80,16 @@ def ids_for(rows, bars, i):
 def main(out):
     today = datetime.now(VN).date().isoformat()
     histories = sorted((Path(out) / "history").glob("*.json"))
+    existing = read(Path(out) / "technical-evidence.json", {})
+    latest_candidates = []
+    for path in histories:
+        bars = read(path, {}).get("bars") or []
+        completed = [b for b in bars if b.get("time") and b.get("time") != today and m.number(b.get("close"))]
+        if completed: latest_candidates.append(str(completed[-1].get("time") or ""))
+    latest_available = max(latest_candidates, default=None)
+    if existing.get("status") == "ok" and existing.get("sourceDate") == latest_available and existing.get("signals"):
+        print(json.dumps({"status":"cached","sourceDate":latest_available,"signals":len(existing.get("signals") or {})}))
+        return
     samples = defaultdict(lambda: defaultdict(list))
     baseline = defaultdict(list)
     symbols_used = 0
