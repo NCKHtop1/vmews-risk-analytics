@@ -82,6 +82,7 @@ jobs:
                   window.FinancialMarket &&
                   window.FinancialReportContext &&
                   window.FinTechnicalScanner &&
+                  window.FinStrategyBuilder &&
                   window.FinMacro
                 );
               """))
@@ -107,6 +108,17 @@ jobs:
               wait.until(lambda d:d.execute_script("""
                 const el=document.getElementById('idea-report-list');
                 return Boolean(el && el.textContent.trim().length>20);
+              """))
+              wait.until(lambda d:d.execute_script("""
+                const c=window.FinStrategyBuilder?.context?.();
+                return Boolean(c && c.snapshot && Object.keys(c.snapshot.symbols||{}).length>=100 && document.querySelectorAll('[data-strategy-indicator]').length>=20);
+              """))
+              driver.execute_script("""
+                document.querySelector('[data-strategy-preset="macd_rsi"]')?.click();
+              """)
+              wait.until(lambda d:d.execute_script("""
+                const c=window.FinStrategyBuilder?.context?.();
+                return Boolean(c && c.strategy && c.strategy.conditions && c.strategy.conditions.length===2);
               """))
 
               driver.execute_script("""
@@ -155,13 +167,17 @@ jobs:
                   newsLiveFallback:m.newsLiveFallback,
                   newsCount:(m.news||[]).length+(m.marketNews||[]).length,
                   financial:Boolean(window.FinancialReportContext.raw()),
-                  ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180)
+                  ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180),
+                  strategyCoverage:window.FinStrategyBuilder?.context?.()?.snapshot?.coverage||0,
+                  strategyConditions:window.FinStrategyBuilder?.context?.()?.strategy?.conditions?.length||0
                 };
               """)
               if snapshot.get('symbol')!='FPT':
                   raise AssertionError(f'Unexpected selected symbol: {snapshot}')
               if not snapshot.get('scanner'):
                   raise AssertionError(f'Scanner context missing: {snapshot}')
+              if int(snapshot.get('strategyCoverage') or 0)<100 or int(snapshot.get('strategyConditions') or 0)!=2:
+                  raise AssertionError(f'Strategy Lab context missing or incomplete: {snapshot}')
               checked=snapshot.get('newsCheckedAt')
               if not checked:
                   raise AssertionError(f'News freshness missing: {snapshot}')
