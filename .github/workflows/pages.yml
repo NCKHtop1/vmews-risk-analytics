@@ -129,7 +129,7 @@ jobs:
           set -euo pipefail
           BASE='https://nckhtop1.github.io/vmews-risk-analytics/financial-report'
           for attempt in 1 2 3 4 5; do
-            if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year#market" -o /tmp/page.html; then
+            if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}#market" -o /tmp/page.html; then
               break
             fi
             sleep $((attempt * 3))
@@ -137,14 +137,14 @@ jobs:
           grep -q 'DOLPHIN_V6' /tmp/page.html
           grep -q 'technical-scanner-access-code' /tmp/page.html
           grep -q 'investment-ideas' /tmp/page.html
-          curl -fsSL --max-time 20 "$BASE/deployment.json" -o /tmp/deployment.json
-          curl -fsSL --max-time 20 "$BASE/market/quotes.json" -o /tmp/quotes.json
-          curl -fsSL --max-time 20 "$BASE/market/news.json" -o /tmp/news.json
-          curl -fsSL --max-time 20 "$BASE/market/technical-signals.json" -o /tmp/scanner.json
-          curl -fsSL --max-time 20 "$BASE/market/universe.json" -o /tmp/universe.json
-          curl -fsSL --max-time 20 "$BASE/market/company-esg.json" -o /tmp/esg.json
-          curl -fsSL --max-time 20 "$BASE/data/manifest.json" -o /tmp/manifest.json
-          curl -fsSL --max-time 20 "$BASE/data/insights-status.json" -o /tmp/insights.json
+          curl -fsSL --max-time 20 "$BASE/deployment.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/deployment.json
+          curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
+          curl -fsSL --max-time 20 "$BASE/market/news.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
+          curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
+          curl -fsSL --max-time 20 "$BASE/market/universe.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/universe.json
+          curl -fsSL --max-time 20 "$BASE/market/company-esg.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/esg.json
+          curl -fsSL --max-time 20 "$BASE/data/manifest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/manifest.json
+          curl -fsSL --max-time 20 "$BASE/data/insights-status.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/insights.json
           python - <<'PY'
           import json
           from datetime import datetime, timezone, timedelta
