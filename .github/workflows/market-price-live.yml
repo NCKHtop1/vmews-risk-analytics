@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/market-price-live.yml'
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/build_technical_evidence.py'
       - 'financial-report/data/universe.json'
   workflow_run:
     # GitHub scheduled workflows can be delayed or occasionally skipped under load.
@@ -70,7 +71,9 @@ jobs:
         continue-on-error: true
         env:
           MARKET_REQUIRE_TODAY: '1'
-        run: python -u financial-report/scripts/refresh_market.py --output /tmp/market-live/market --mode prices
+        run: |
+          python -u financial-report/scripts/refresh_market.py --output /tmp/market-live/market --mode prices
+          python -u financial-report/scripts/build_technical_evidence.py --output /tmp/market-live/market
       - name: Publish live price snapshot
         if: steps.session.outputs.run == 'true'
         working-directory: /tmp/market-live
@@ -78,7 +81,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/watch-today.json market/universe.json market/history-status.json market/history
+          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/technical-evidence.json market/watch-today.json market/universe.json market/history-status.json market/history
           if git diff --cached --quiet; then
             echo "No live price changes to publish"
             exit 0

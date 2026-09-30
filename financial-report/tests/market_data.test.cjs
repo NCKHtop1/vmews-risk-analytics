@@ -11,8 +11,28 @@ test('a renderer exception releases refresh lock and the next refresh succeeds',
  const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  const refresh=source.slice(source.indexOf('async function refresh(){'),source.indexOf('window.FinancialMarket='));
  const button={},status={},state={quotes:{},companies:[],coreCompanies:[],symbol:'ACB',refreshing:false};let calls=0,broken=true;
- const ctx={state,$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,marketSessionActive:()=>false,showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},chartController:{loading:true},window:{FinTechnicalScanner:{},FinQueryAI:{sync(){}}}};
+ const ctx={state,$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,quoteAgeMinutes:()=>5,quoteNeedsFallback:()=>false,marketSessionActive:()=>false,showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},document:{dispatchEvent(){}},chartController:{loading:true},window:{FinTechnicalScanner:{},FinQueryAI:{sync(){}}}};
  vm.runInNewContext(refresh+';this.run=refresh',ctx);
  await ctx.run();assert.equal(state.refreshing,false);assert.equal(button.disabled,false);
  broken=false;await ctx.run();assert.equal(calls,8);assert.equal(state.initialized,true);assert.equal(state.refreshing,false);
+});
+
+test('intraday freshness policy fails over before a quote is declared stale',()=>{
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ assert.match(source,/quoteNeedsFallback[\s\S]*18\*60\*1000/);
+ assert.match(source,/quoteStale[\s\S]*25\*60\*1000/);
+ assert.match(source,/finquery:market-refresh/);
+});
+test('technical scanner rules remain unchanged and evidence is additive',()=>{
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
+ assert.match(source,/'macd_cross_up': 60/);
+ assert.match(source,/'rsi_oversold': 28/);
+ assert.match(source,/'volume_spike': 22/);
+ const ui=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
+ assert.match(ui,/Rule priority/);
+ assert.match(ui,/EOD proxy T\+3/);
+});
+test('data health and saved alert modules are bundled in production builder',()=>{
+ const build=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_cdn.py'),'utf8');
+ assert.match(build,/data-health\.js/);assert.match(build,/alert-center\.js/);
 });
