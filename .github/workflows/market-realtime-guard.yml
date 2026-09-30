@@ -9,7 +9,12 @@ on:
   schedule:
     - cron: '10,25,40,55 * * * *'
   workflow_run:
-    workflows: ['Forecast V19 live FireAnt and 24HMoney intelligence']
+    # A second independent recovery chain: when either the live-intelligence
+    # job or the generic FinQuery market watchdog finishes, re-check the
+    # published snapshots. Fresh data is a no-op; stale data is re-dispatched.
+    workflows:
+      - Forecast V19 live FireAnt and 24HMoney intelligence
+      - Refresh FinQuery prices and company news
     branches: [main]
     types: [completed]
 
