@@ -35,21 +35,29 @@ async function refreshLiveQuotes(force=false){
   if(document.hidden&&!force)return false;
   if(LIVE_QUOTES_REFRESHING)return LIVE_QUOTES_REFRESHING;
   LIVE_QUOTES_REFRESHING=(async()=>{
+    const revision=Math.floor(Date.now()/30_000);
+    const sources=[
+      `${LIVE_MARKET_BASE}/api/live_market?mode=quotes&refresh=${revision}`,
+      `https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json?refresh=${revision}`
+    ];
     try{
-      const revision=Math.floor(Date.now()/30_000);
-      const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),5500);
-      const response=await fetch(`${LIVE_MARKET_BASE}/api/live_market?mode=quotes&refresh=${revision}`,{cache:"no-store",signal:controller.signal});
-      clearTimeout(timeout);
-      if(!response.ok)return false;
-      const payload=await response.json();
-      if(!liveQuotePayloadUsable(payload))return false;
-      LIVE_QUOTES=payload;
-      window.__VMEWS_LIVE_QUOTES__=payload;
-      window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload}}));
-      return true;
-    }catch{return false}
-    finally{LIVE_QUOTES_REFRESHING=null}
+      for(const url of sources){
+        try{
+          const controller=new AbortController();
+          const timeout=setTimeout(()=>controller.abort(),url.includes("/api/live_market")?4500:3500);
+          const response=await fetch(url,{cache:"no-store",signal:controller.signal});
+          clearTimeout(timeout);
+          if(!response.ok)continue;
+          const payload=await response.json();
+          if(!liveQuotePayloadUsable(payload))continue;
+          LIVE_QUOTES=payload;
+          window.__VMEWS_LIVE_QUOTES__=payload;
+          window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload}}));
+          return true;
+        }catch{}
+      }
+      return false;
+    }finally{LIVE_QUOTES_REFRESHING=null}
   })();
   return LIVE_QUOTES_REFRESHING;
 }
