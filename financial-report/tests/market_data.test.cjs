@@ -32,7 +32,9 @@ test('technical scanner rules remain unchanged and evidence is additive',()=>{
  assert.match(ui,/Rule priority/);
  assert.match(ui,/EOD proxy T\+3/);
 });
-test('data health and saved alert modules are bundled in production builder',()=>{
+test('Strategy Lab replaces visible Data Health and simple rule form',()=>{
  const build=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_cdn.py'),'utf8');
- assert.match(build,/data-health\.js/);assert.match(build,/alert-center\.js/);
+ const html=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ assert.match(build,/strategy-engine\.js/);assert.match(build,/alert-center\.js/);assert.doesNotMatch(build,/front \/ 'data-health\.js'/);
+ assert.match(html,/id="strategy-builder"/);assert.doesNotMatch(html,/id="data-health"/);assert.doesNotMatch(html,/Cảnh báo chạy khi trang đang mở/);
 });
