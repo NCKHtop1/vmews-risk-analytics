@@ -120,11 +120,21 @@
 <p id="news-status" class="market-subtitle"></p><div id="news-list"></div></aside></div>
 <section class="market-board" aria-label="Bảng giá HOSE Core và Liquid"><div class="market-top"><h3>Bảng giá HOSE · Core + Liquid</h3><span id="market-count" class="market-subtitle"></span></div><div class="market-toolbar"><input id="market-filter" type="search" placeholder="Tìm mã hoặc doanh nghiệp" aria-label="Lọc bảng giá"><label><input id="watch-only" type="checkbox">Đang theo dõi</label><label>Phạm vi <select id="market-universe-filter"><option value="all">Core + Liquid</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option></select></label><label>Sắp xếp <select id="market-sort"><option value="symbol">Mã A–Z</option><option value="change">Tăng giá nhiều nhất</option></select></label></div><div class="market-table-wrap"><table class="market-table"><thead><tr><th>Theo dõi</th><th>Mã</th><th>Giá (đ)</th><th>Tham chiếu</th><th>Thay đổi</th><th>Khối lượng (CP)</th><th>Động lực / hệ số</th><th>Thời điểm nguồn</th></tr></thead><tbody id="market-rows"></tbody></table></div></section>
 </section>
-<section id="strategy-builder" class="strategy-builder-section" aria-label="Strategy Builder và TA Screener">
+<section id="strategy-builder" class="strategy-builder-section is-collapsed" aria-label="Strategy Builder và TA Screener">
 <div class="strategy-builder-head">
-<div><span class="research-ai-label">STRATEGY LAB · TA SCREENER</span><h2>Kéo thả chiến lược kỹ thuật</h2><p>Ghép indicator theo logic của bạn, quét toàn HOSE và lưu strategy để theo dõi tín hiệu.</p></div>
-<div class="strategy-head-actions"><span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span><button id="strategy-refresh" type="button">Cập nhật ↻</button><button id="strategy-notifications" type="button">Bật thông báo</button></div>
+<button id="strategy-toggle" class="strategy-head-toggle" type="button" aria-expanded="false" aria-controls="strategy-body">
+<span class="research-ai-label">STRATEGY LAB · TA SCREENER</span>
+<h2>Kéo thả chiến lược kỹ thuật</h2>
+<p>Ghép indicator theo logic của bạn, quét toàn HOSE và lưu strategy để theo dõi tín hiệu.</p>
+</button>
+<div class="strategy-head-actions">
+<span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span>
+<button id="strategy-refresh" type="button">Cập nhật ↻</button>
+<button id="strategy-notifications" type="button">Bật thông báo</button>
+<button id="strategy-chevron" class="strategy-chevron" type="button" aria-label="Mở Strategy Lab" aria-controls="strategy-body" aria-expanded="false">⌄</button>
 </div>
+</div>
+<div id="strategy-body" class="strategy-builder-body" hidden>
 <div class="strategy-presets" aria-label="Gợi ý chiến lược">
 <span>Gợi ý nhanh</span>
 <button type="button" data-strategy-preset="macd_rsi">MACD + RSI</button>
@@ -154,6 +164,7 @@
 <section class="strategy-result-panel"><div class="strategy-section-title"><div><span>SCREENER RESULT</span><h3>Mã đang khớp</h3></div><small id="strategy-result-meta" aria-live="polite">Chưa quét</small></div><div id="strategy-results" aria-live="polite"></div></section>
 <section class="strategy-saved-panel"><div class="strategy-section-title"><div><span>SAVED STRATEGIES</span><h3>Strategy đã lưu</h3></div></div><div id="strategy-saved"></div></section>
 <section class="strategy-hit-panel"><div class="strategy-section-title"><div><span>NEW SIGNALS</span><h3>Tín hiệu mới</h3></div></div><div id="strategy-hits"></div></section>
+</div>
 </div>
 </section>
 <section id="investment-ideas" class="investment-ideas-section" aria-label="Investment Ideas">
