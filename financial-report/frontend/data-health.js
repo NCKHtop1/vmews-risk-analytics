@@ -22,7 +22,8 @@ function render(x){
  cards.push(card('Technical Scanner',x.scannerCoverage?x.scannerCoverage+'/'+x.scannerUniverse:'—',x.scannerAligned?'Đồng bộ sourceTime với giá':'Chưa đồng bộ snapshot',x.scannerTone));
  cards.push(card('Tin tức',Number.isFinite(x.newsAge)?fmt(x.newsAge)+' phút':'—',x.newsSources+' nguồn phản hồi',x.newsTone));
  cards.push(card('Evidence scanner',x.evidenceSignals?x.evidenceSignals+' rule':'—',x.evidenceReady?'Backtest lịch sử đã sẵn sàng':'Đang chờ evidence',x.evidenceTone));
- cards.push(card('Live OOS model',fmt(x.liveMatured,0)+' matured',fmt(x.livePending,0)+' pending · '+x.liveStatus,x.liveTone));
+ cards.push(card('Forecast live OOS',x.forecastOrigins?fmt(x.forecastOrigins,0)+' origins':'—',x.forecastHit!==null?'T+3 hit '+fmt(x.forecastHit*100,1)+'% · '+x.forecastEvidence:'Đang tích lũy prequential record',x.forecastTone));
+ cards.push(card('Risk live track',fmt(x.liveMatured,0)+' matured',fmt(x.livePending,0)+' pending · '+x.liveStatus,x.liveTone));
  grid.innerHTML=cards.join('');
  const worst=[x.quoteTone,x.selectedTone,x.scannerTone,x.newsTone,x.evidenceTone,x.liveTone].sort((a,b)=>toneRank(b)-toneRank(a))[0]||'neutral';
  setStatus(worst,worst==='bad'?'Cần chú ý':worst==='warn'?'Có độ trễ':'Hệ thống ổn');
@@ -31,9 +32,9 @@ function render(x){
 async function refresh(){
  if(state.loading)return;state.loading=true;setStatus('neutral','Đang kiểm tra…');
  try{
-  const urls=[MARKET_BASE+'quotes.json',MARKET_BASE+'news.json',MARKET_BASE+'technical-signals.json',MARKET_BASE+'technical-evidence.json',DATA_BASE+'live-track/track-record.json'];
+  const urls=[MARKET_BASE+'quotes.json',MARKET_BASE+'news.json',MARKET_BASE+'technical-signals.json',MARKET_BASE+'technical-evidence.json',DATA_BASE+'live-track/track-record.json',DATA_BASE+'forecast-live-v10/evaluation.json'];
   const rs=await Promise.allSettled(urls.map(get));
-  const quotes=rs[0].status==='fulfilled'?rs[0].value:{},news=rs[1].status==='fulfilled'?rs[1].value:{},scanner=rs[2].status==='fulfilled'?rs[2].value:{},evidence=rs[3].status==='fulfilled'?rs[3].value:{},track=rs[4].status==='fulfilled'?rs[4].value:{};
+  const quotes=rs[0].status==='fulfilled'?rs[0].value:{},news=rs[1].status==='fulfilled'?rs[1].value:{},scanner=rs[2].status==='fulfilled'?rs[2].value:{},evidence=rs[3].status==='fulfilled'?rs[3].value:{},track=rs[4].status==='fulfilled'?rs[4].value:{},forecastLive=rs[5].status==='fulfilled'?rs[5].value:{};
   const active=activeSession(),rows=Object.values(quotes.quotes||{}).filter(q=>q&&q.status!=='retained'&&sameVnDay(q.sourceTime||q.collectedAt));
   const ages=rows.map(q=>ageMinutes(q.sourceTime||q.collectedAt)).filter(Number.isFinite);
   const med=quantile(ages,.5),p95=quantile(ages,.95),coverage=Number(quotes.coverage||rows.length||0),expected=Number(quotes.expected||0);
@@ -48,7 +49,9 @@ async function refresh(){
   const live=track.tDayLiveTrack||{},cal=track.calibrationLiveMonitor||{},liveMatured=Number(live.maturedSignals||0),livePending=Number(live.pendingSignals||0);
   const liveStatus=liveMatured>=100?(cal.stable?'đủ mẫu · calibration ổn':'đủ mẫu · cần review'):'đang tích lũy live OOS';
   const liveTone=liveMatured>=100?(cal.stable?'good':'warn'):'warn';
-  render({sessionActive:active,quoteCoverage:coverage,quoteExpected:expected,quoteMedianAge:med,quoteP95Age:p95,quoteTone,selectedAge,selectedFresh,selectedFallback:Boolean(lm.usedQuoteFallback),selectedTone,scannerCoverage,scannerUniverse,scannerAligned,scannerTone,newsAge,newsSources:newsOk+'/'+newsTotal,newsTone,evidenceSignals,evidenceReady,evidenceTone,liveMatured,livePending,liveStatus,liveTone});
+  const f3=forecastLive?.summary?.['3']||{},forecastOrigins=Number(f3.matureOrigins||0),forecastHit=Number.isFinite(Number(f3.directionHitRate))?Number(f3.directionHitRate):null,forecastEvidence=String(f3.evidenceState||'EARLY');
+  const forecastTone=forecastOrigins>=20?(forecastHit!==null&&forecastHit>=.5?'good':'warn'):'warn';
+  render({sessionActive:active,quoteCoverage:coverage,quoteExpected:expected,quoteMedianAge:med,quoteP95Age:p95,quoteTone,selectedAge,selectedFresh,selectedFallback:Boolean(lm.usedQuoteFallback),selectedTone,scannerCoverage,scannerUniverse,scannerAligned,scannerTone,newsAge,newsSources:newsOk+'/'+newsTotal,newsTone,evidenceSignals,evidenceReady,evidenceTone,forecastOrigins,forecastHit,forecastEvidence,forecastTone,liveMatured,livePending,liveStatus,liveTone});
  }catch(e){setStatus('bad','Không kiểm tra được');}
  finally{state.loading=false;}
 }
