@@ -282,3 +282,6 @@ body.dolphin-modal-open{overflow:hidden}
 .tech-priority-help{display:block;margin-top:3px;font-size:9px;color:#8a94a5}.tech-evidence{display:block;margin-top:4px;font-size:9px;color:#5e6c84}.tech-evidence strong{color:#344a73}
 @media(max-width:1100px){.data-health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.alert-center-grid{grid-template-columns:1fr 1fr}.alert-form{grid-column:1/-1}}
 @media(max-width:700px){.data-health-grid,.alert-center-grid{grid-template-columns:1fr}.alert-form{grid-template-columns:1fr}.alert-form button{grid-column:auto}.data-health-panel,.alert-center-section{padding:14px}}
+
+.ai-source-tag{display:inline-flex;align-items:center;margin-left:4px;padding:1px 5px;border:1px solid #dce4f3;border-radius:999px;background:#f5f8fe;color:#4f65a0;font-size:8px;font-weight:800;letter-spacing:.04em;vertical-align:1px}
+.ai-provenance{margin-top:12px;padding:10px;border:1px solid #e7ebf4;border-radius:9px;background:#fafbfe}.ai-provenance>strong{display:block;margin-bottom:7px;font-size:10px;color:#52617a}.ai-anchor{display:inline-flex;align-items:center;gap:4px;margin:3px 5px 3px 0;padding:4px 6px;border-radius:7px;background:#fff;border:1px solid #e5eaf3;font-size:9px;color:#6f7c91}.ai-anchor b{color:#405d9c;font-size:8px}
