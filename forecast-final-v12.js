@@ -11,7 +11,7 @@ const PAGES_HOST=location.hostname==="nckhtop1.github.io"&&location.pathname.sta
 const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HOST?"main":"LOCAL_DEPLOYMENT",ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data",CDN_REVISION=Math.floor(Date.now()/60000);
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
-const LIVE_MARKET_BASE=(PAGES_HOST||CDN_REF)?"https://vmews-risk-analytics-sojd.vercel.app":location.origin;
+const LIVE_MARKET_BASE=PAGES_HOST?"https://vmews-risk-analytics-sojd.vercel.app":CDN_REF?"":location.origin;
 let LIVE_QUOTES=null,LIVE_QUOTES_REFRESHING=null;
 
 function vnDateKey(value){
@@ -31,6 +31,7 @@ function liveQuotePayloadUsable(payload,now=new Date()){
   return true;
 }
 async function refreshLiveQuotes(force=false){
+  if(!LIVE_MARKET_BASE)return false;
   if(document.hidden&&!force)return false;
   if(LIVE_QUOTES_REFRESHING)return LIVE_QUOTES_REFRESHING;
   LIVE_QUOTES_REFRESHING=(async()=>{
