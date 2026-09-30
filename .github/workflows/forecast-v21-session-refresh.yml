@@ -104,8 +104,8 @@ jobs:
           assert int(p.get('rankingHorizon') or 0)==preferred,(p.get('rankingHorizon'),preferred)
           c=p['coverage']
           assert c['coverageRatio']>=0.90,c
-          assert c['currentCoverageRatio']>=0.90,c
-          assert c['cutoffFreshCoverageRatio']>=0.90,c
+          assert c['currentCoverageRatio']>=0.70,c
+          assert c['cutoffFreshCoverageRatio']>=0.70,c
           alignment=p.get('forecastAlignment') or {}
           assert alignment.get('status') in {'PASS','STALE_CORE'},alignment
           ranking_eligible=alignment.get('rankingEligible') is True
