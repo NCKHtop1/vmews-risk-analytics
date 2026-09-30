@@ -111,7 +111,8 @@ jobs:
           p=Path('/tmp/market-live/market/quotes.json')
           data=json.loads(p.read_text())
           scanner=json.loads(Path('/tmp/market-live/market/technical-signals.json').read_text())
-          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'matches=',scanner.get('matchCount'))
+          strategy=json.loads(Path('/tmp/market-live/market/strategy-indicators.json').read_text())
+          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'strategy=',strategy.get('coverage'),'matches=',scanner.get('matchCount'))
           import math
           expected=max(1,int(data.get('expected') or 0))
           quote_required=max(1,math.ceil(expected*.90))
@@ -121,6 +122,8 @@ jobs:
               raise SystemExit(f'Current-session quote coverage is below 90%: {data.get("coverage")}/{expected}; retained data is not treated as live.')
           if scanner.get('status') != 'ok' or int(scanner.get('coverage') or 0) < scanner_required:
               raise SystemExit(f'Technical scanner coverage is below 90%: {scanner.get("coverage")}/{scanner_universe}.')
+          if strategy.get('status') != 'ok' or int(strategy.get('coverage') or 0) < scanner_required:
+              raise SystemExit(f'Strategy snapshot coverage is below 90%: {strategy.get("coverage")}/{scanner_universe}.')
           PY
       - name: Fail if collector rejected stale data
         if: steps.session.outputs.run == 'true' && steps.collect.outcome != 'success'
