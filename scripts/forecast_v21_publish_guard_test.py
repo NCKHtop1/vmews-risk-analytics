@@ -72,8 +72,8 @@ class ForecastV21PublishGuardTest(unittest.TestCase):
 
     def test_guard_rejects_failed_coverage_instead_of_hiding_it(self):
         candidate = self.snapshot()
-        candidate["coverage"]["currentCoverageRatio"] = 0.89
-        with self.assertRaisesRegex(RuntimeError, "below 0.90"):
+        candidate["coverage"]["currentCoverageRatio"] = 0.69
+        with self.assertRaisesRegex(RuntimeError, "below 0.70"):
             decide(candidate, None, self.dashboard())
 
     def test_cli_exit_code_distinguishes_publish_and_stale_skip(self):

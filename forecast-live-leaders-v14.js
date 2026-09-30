@@ -184,7 +184,7 @@
       if (!["PASS", "STALE_CORE"].includes(alignment.status)) return null;
       if (alignment.rankingEligible !== (alignment.status === "PASS")) return null;
       const coverage = payload.coverage || {};
-      if (number(coverage.coverageRatio) < .90 || number(coverage.currentCoverageRatio) < .90 || number(coverage.cutoffFreshCoverageRatio) < .90) return null;
+      if (number(coverage.coverageRatio) < .90 || number(coverage.currentCoverageRatio) < .70 || number(coverage.cutoffFreshCoverageRatio) < .70) return null;
       if (!sessionUsableNow(payload)) return null;
       return payload;
     } catch {

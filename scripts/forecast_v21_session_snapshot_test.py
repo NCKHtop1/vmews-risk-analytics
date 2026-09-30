@@ -119,6 +119,33 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertTrue(all(row["quoteCurrent"] and row["freshForCutoff"] for row in payload["leaders"]))
 
 
+    def test_publishes_partial_intraday_snapshot_but_ranks_only_fresh_quotes(self):
+        now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
+        frame = self.frame(now=now)
+        stale = datetime(2026, 8, 24, 14, 30, tzinfo=VN_TZ).astimezone(timezone.utc).timestamp()
+        frame.loc[frame.index[:30], "update_time"] = stale
+
+        payload = build_payload(self.dashboard(), frame, now)
+
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["coverage"]["currentQuoteDate"], 90)
+        self.assertAlmostEqual(payload["coverage"]["currentCoverageRatio"], 0.75)
+        self.assertAlmostEqual(payload["coverage"]["cutoffFreshCoverageRatio"], 0.75)
+        self.assertTrue(payload["leaders"])
+        self.assertTrue(all(row["quoteCurrent"] and row["freshForCutoff"] for row in payload["leaders"]))
+
+    def test_rejects_intraday_snapshot_when_fresh_coverage_drops_below_safe_floor(self):
+        now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
+        frame = self.frame(now=now)
+        stale = datetime(2026, 8, 24, 14, 30, tzinfo=VN_TZ).astimezone(timezone.utc).timestamp()
+        frame.loc[frame.index[:40], "update_time"] = stale
+
+        payload = build_payload(self.dashboard(), frame, now)
+
+        self.assertEqual(payload["status"], "DEGRADED")
+        self.assertLess(payload["coverage"]["currentCoverageRatio"], 0.70)
+        self.assertLess(payload["coverage"]["cutoffFreshCoverageRatio"], 0.70)
+
     def test_rejects_partial_provider_coverage(self):
         now = datetime(2026, 8, 25, 12, 5, tzinfo=VN_TZ)
         payload = build_payload(self.dashboard(), self.frame(count=60, now=now), now)

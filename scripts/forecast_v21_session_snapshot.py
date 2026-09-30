@@ -14,8 +14,8 @@ OUT = ROOT / "data" / "forecast-session-v21.json"
 VN_TZ = timezone(timedelta(hours=7))
 VERSION = "VMEWS-FORECAST-SESSION-21.4"
 MIN_COVERAGE = 0.90
-MIN_CURRENT_COVERAGE = 0.90
-MIN_CUTOFF_FRESH_COVERAGE = 0.90
+MIN_CURRENT_COVERAGE = 0.70
+MIN_CUTOFF_FRESH_COVERAGE = 0.70
 
 
 def num(value, default=None):

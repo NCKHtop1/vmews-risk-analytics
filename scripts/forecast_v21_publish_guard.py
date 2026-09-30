@@ -6,6 +6,8 @@ from pathlib import Path
 PUBLISH = 0
 SKIP = 10
 MIN_COVERAGE = 0.90
+MIN_CURRENT_COVERAGE = 0.70
+MIN_CUTOFF_FRESH_COVERAGE = 0.70
 
 
 def load_json(path):
@@ -50,13 +52,18 @@ def validate_candidate(candidate, dashboard):
         }
 
     coverage = candidate.get("coverage") or {}
-    for field in ("coverageRatio", "currentCoverageRatio", "cutoffFreshCoverageRatio"):
+    thresholds = {
+        "coverageRatio": MIN_COVERAGE,
+        "currentCoverageRatio": MIN_CURRENT_COVERAGE,
+        "cutoffFreshCoverageRatio": MIN_CUTOFF_FRESH_COVERAGE,
+    }
+    for field, threshold in thresholds.items():
         try:
             value = float(coverage.get(field))
         except (TypeError, ValueError) as exc:
             raise RuntimeError(f"Candidate {field} is invalid: {coverage.get(field)!r}") from exc
-        if value < MIN_COVERAGE:
-            raise RuntimeError(f"Candidate {field} below {MIN_COVERAGE:.2f}: {value:.6f}")
+        if value < threshold:
+            raise RuntimeError(f"Candidate {field} below {threshold:.2f}: {value:.6f}")
 
     promotion = dashboard.get("promotion") or {}
     promoted = {int(value) for value in promotion.get("directPriceHorizons") or []}
