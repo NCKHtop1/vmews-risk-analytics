@@ -54,6 +54,8 @@ jobs:
           sparse-checkout: market
       - name: Bootstrap Technical Scanner evidence from completed EOD history
         run: python financial-report/scripts/build_technical_evidence.py --output _market-data/market
+      - name: Generate strategy indicator snapshot
+        run: node financial-report/scripts/build_strategy_snapshot.cjs _market-data/market
       - name: Validate main and market HOSE universe consistency
         run: |
           python - <<'PY'
@@ -63,6 +65,7 @@ jobs:
           market=json.loads(Path('_market-data/market/universe.json').read_text())
           quotes=json.loads(Path('_market-data/market/quotes.json').read_text())
           scanner=json.loads(Path('_market-data/market/technical-signals.json').read_text())
+          strategy=json.loads(Path('_market-data/market/strategy-indicators.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -74,7 +77,8 @@ jobs:
           assert int(quotes.get('coverage') or 0)>=int(quotes.get('expected') or 0)*.90,(quotes.get('coverage'),quotes.get('expected'))
           assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
           assert int(scanner.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(scanner.get('coverage'),scanner.get('universe'))
-          print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage')})
+          assert int(strategy.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(strategy.get('coverage'),scanner.get('universe'))
+          print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage')})
           PY
       - name: Build site with same-origin financial and market data
         shell: bash

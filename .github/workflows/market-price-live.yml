@@ -8,6 +8,7 @@ on:
       - '.github/workflows/market-price-live.yml'
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/build_technical_evidence.py'
+      - 'financial-report/scripts/build_strategy_snapshot.cjs'
       - 'financial-report/data/universe.json'
   workflow_run:
     # GitHub scheduled workflows can be delayed or occasionally skipped under load.
@@ -43,6 +44,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Check Vietnam trading window
         id: session
         shell: bash
@@ -74,6 +78,7 @@ jobs:
         run: |
           python -u financial-report/scripts/refresh_market.py --output /tmp/market-live/market --mode prices
           python -u financial-report/scripts/build_technical_evidence.py --output /tmp/market-live/market
+          node financial-report/scripts/build_strategy_snapshot.cjs /tmp/market-live/market
       - name: Publish live price snapshot
         if: steps.session.outputs.run == 'true'
         working-directory: /tmp/market-live
@@ -81,7 +86,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/technical-evidence.json market/watch-today.json market/universe.json market/history-status.json market/history
+          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/technical-evidence.json market/strategy-indicators.json market/watch-today.json market/universe.json market/history-status.json market/history
           if git diff --cached --quiet; then
             echo "No live price changes to publish"
             exit 0
@@ -106,7 +111,8 @@ jobs:
           p=Path('/tmp/market-live/market/quotes.json')
           data=json.loads(p.read_text())
           scanner=json.loads(Path('/tmp/market-live/market/technical-signals.json').read_text())
-          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'matches=',scanner.get('matchCount'))
+          strategy=json.loads(Path('/tmp/market-live/market/strategy-indicators.json').read_text())
+          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'strategy=',strategy.get('coverage'),'matches=',scanner.get('matchCount'))
           import math
           expected=max(1,int(data.get('expected') or 0))
           quote_required=max(1,math.ceil(expected*.90))
@@ -116,6 +122,8 @@ jobs:
               raise SystemExit(f'Current-session quote coverage is below 90%: {data.get("coverage")}/{expected}; retained data is not treated as live.')
           if scanner.get('status') != 'ok' or int(scanner.get('coverage') or 0) < scanner_required:
               raise SystemExit(f'Technical scanner coverage is below 90%: {scanner.get("coverage")}/{scanner_universe}.')
+          if strategy.get('status') != 'ok' or int(strategy.get('coverage') or 0) < scanner_required:
+              raise SystemExit(f'Strategy snapshot coverage is below 90%: {strategy.get("coverage")}/{scanner_universe}.')
           PY
       - name: Fail if collector rejected stale data
         if: steps.session.outputs.run == 'true' && steps.collect.outcome != 'success'
