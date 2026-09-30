@@ -156,7 +156,7 @@
   }
 
   function sessionUsableNow(payload) {
-    const expected=window.__VMEWS_FRESHNESS__?.expectedSession();
+    const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.();
     if(expected && String(payload?.coverage?.expectedQuoteDate||"")<expected)return false;
     const cutoff = new Date(payload?.cutoffAt || payload?.generatedAt || "");
     if (Number.isNaN(+cutoff)) return false;
@@ -193,11 +193,25 @@
   }
 
   function applySessionOverlay(rows, session = state.session) {
-    if (!session?.symbols?.length) return rows.slice();
-    if (session?.forecastAlignment?.rankingEligible === false) return rows.slice();
-    const live = new Map(session.symbols.filter(item => item.quoteCurrent && item.freshForCutoff !== false).map(item => [item.symbol, item]));
+    const direct = window.__VMEWS_LIVE_QUOTES__?.quotes || {};
+    const expected = window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.();
+    const sessionLive = new Map((session?.symbols || []).filter(item => item.quoteCurrent && item.freshForCutoff !== false).map(item => [item.symbol, item]));
     return rows.map(row => {
-      const quote = live.get(row.symbol);
+      let quote = null;
+      const live = direct[row.symbol];
+      if (live && number(live.price) !== null && number(live.price) > 0) {
+        const stamp = live.sourceTime || window.__VMEWS_LIVE_QUOTES__?.latestSourceTime;
+        const date = stamp ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(stamp)) : "";
+        if (!expected || date === expected) quote = {
+          liveClose: number(live.price),
+          change: number(live.changePct) === null ? null : number(live.changePct) / 100,
+          updateAt: stamp,
+          quality: null,
+          conviction: null,
+          rankingHorizon: row.horizon
+        };
+      }
+      if (!quote && session?.forecastAlignment?.rankingEligible !== false) quote = sessionLive.get(row.symbol) || null;
       if (!quote || number(quote.liveClose) === null || number(quote.liveClose) <= 0) return row;
       if (number(quote.rankingHorizon) !== null && number(quote.rankingHorizon) !== row.horizon) return row;
       const next = { ...row, coreClose: row.close, close: number(quote.liveClose), sessionChange: number(quote.change), sessionAt: quote.updateAt };
@@ -527,6 +541,19 @@
         state.rows.forEach((row, index) => drawSparkline($(`[data-spark="${index}"]`), row.history));
       });
     }, { passive: true });
+    window.addEventListener("vmews:live-quotes-updated", () => {
+      if (!state.base) return;
+      const selected = state.rows[state.index]?.symbol;
+      state.candidates = finalLeaderboard(state.base, state.session, { all: true, includeNonPositive: true });
+      state.universe = finalLeaderboard(state.base, state.session, { all: true });
+      state.defensive = state.universe.length === 0;
+      state.rows = finalLeaderboard(state.base, state.session, { filter: state.filter, includeNonPositive: state.defensive });
+      state.index = Math.max(0, state.rows.findIndex(row => row.symbol === selected));
+      refreshMode();
+      renderPulse();
+      renderCards();
+      scheduleRotation();
+    });
     window.addEventListener("vmews:community-updated", event => {
       if (!event.detail?.forecastUpdates || !state.base) return;
       const selected = state.rows[state.index]?.symbol;
