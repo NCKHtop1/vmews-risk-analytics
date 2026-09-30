@@ -240,7 +240,14 @@
   function renderMarketTape(base) {
     const track = document.querySelector("#tapeTrack");
     if (!track || !base?.dash?.symbols) return;
-    const preferred = ["FPT", "VCB", "HPG", "MBB", "FRT", "PNJ", "VNM", "SSI", "GEE", "TCB", "ACB", "VIC"];
+    const liveRows = Object.values(window.__VMEWS_LIVE_QUOTES__?.quotes || {})
+      .filter(row => base.dash.symbols?.[row.symbol] && number(row.price) !== null)
+      .sort((a, b) => Math.abs(number(b.changePct) || 0) - Math.abs(number(a.changePct) || 0));
+    const ranked = typeof window.__VMEWS_FINAL_LEADERBOARD__ === "function"
+      ? window.__VMEWS_FINAL_LEADERBOARD__(base, window.__VMEWS_SESSION__, { all: true, includeNonPositive: true }).map(row => row.symbol)
+      : [];
+    const fallback = ["FPT", "VCB", "HPG", "MBB", "FRT", "PNJ", "VNM", "SSI", "GEE", "TCB", "ACB", "VIC"];
+    const preferred = [...new Set([...liveRows.slice(0, 12).map(row => row.symbol), ...ranked.slice(0, 12), ...fallback])].slice(0, 12);
     const fragments = preferred.flatMap(symbol => {
       const snapshot = base.dash.symbols[symbol];
       const rows = base.dash.charts?.[symbol] || [];
@@ -283,6 +290,7 @@
       document.body.classList.add("appLoaded");
       renderMarketTape(base);
       window.addEventListener("vmews:session-updated", () => renderMarketTape(base));
+      window.addEventListener("vmews:live-quotes-updated", () => renderMarketTape(base));
       const suggestions = document.querySelector("#symbolSuggestions");
       if (suggestions) {
         const fragment = document.createDocumentFragment();
