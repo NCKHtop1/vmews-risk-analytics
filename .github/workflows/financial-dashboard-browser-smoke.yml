@@ -87,8 +87,13 @@ jobs:
               """))
 
               wait.until(lambda d:d.execute_script("""
-                const q=window.FinancialMarket?.context?.()?.quote;
-                return Boolean(q && Number(q.price)>0);
+                const m=window.FinancialMarket?.context?.();
+                const warning=document.getElementById('quote-freshness');
+                return Boolean(
+                  m && m.symbol==='FPT' &&
+                  ((m.quote && Number(m.quote.price)>0) ||
+                   (warning && !warning.hidden && warning.textContent.trim().length>0))
+                );
               """))
               wait.until(lambda d:d.execute_script("""
                 return Boolean(document.querySelector('#price-chart canvas'));
@@ -102,7 +107,7 @@ jobs:
               """))
               wait.until(lambda d:d.execute_script("""
                 const c=window.FinTechnicalScanner?.context?.();
-                return Boolean(c && c.current && c.current.symbol==='FPT');
+                return Boolean(c && c.checkedAt && c.sourceTime);
               """))
               wait.until(lambda d:d.execute_script("""
                 const el=document.getElementById('idea-report-list');
@@ -149,7 +154,10 @@ jobs:
                   symbol:m.symbol,
                   quote:m.quote,
                   scanner:s?.current,
+                  scannerAligned:Boolean(s?.aligned),
                   scannerCheckedAt:s?.checkedAt,
+                  quoteWarning:(document.getElementById('quote-freshness')?.textContent||'').trim(),
+                  quoteWarningHidden:Boolean(document.getElementById('quote-freshness')?.hidden),
                   macroCheckedAt:macro?.checkedAt,
                   newsCheckedAt:m.newsCheckedAt,
                   newsLiveFallback:m.newsLiveFallback,
@@ -160,8 +168,22 @@ jobs:
               """)
               if snapshot.get('symbol')!='FPT':
                   raise AssertionError(f'Unexpected selected symbol: {snapshot}')
-              if not snapshot.get('scanner'):
-                  raise AssertionError(f'Scanner context missing: {snapshot}')
+              if not snapshot.get('scannerCheckedAt'):
+                  raise AssertionError(f'Scanner snapshot missing: {snapshot}')
+              quote=snapshot.get('quote')
+              if quote:
+                  if float(quote.get('price') or 0)<=0:
+                      raise AssertionError(f'Live quote is invalid: {snapshot}')
+                  source=quote.get('sourceTime') or quote.get('collectedAt')
+                  if source:
+                      observed=datetime.fromisoformat(str(source).replace('Z','+00:00')).astimezone(timezone.utc)
+                      if observed > datetime.now(timezone.utc) + __import__('datetime').timedelta(minutes=5):
+                          raise AssertionError(f'Future quote leaked into production context: {snapshot}')
+              else:
+                  if snapshot.get('quoteWarningHidden') or 'không dùng như giá live' not in str(snapshot.get('quoteWarning') or ''):
+                      raise AssertionError(f'No live quote without explicit fail-closed warning: {snapshot}')
+              if snapshot.get('scannerAligned') and snapshot.get('scanner') and snapshot['scanner'].get('symbol')!='FPT':
+                  raise AssertionError(f'Unexpected aligned scanner symbol: {snapshot}')
               checked=snapshot.get('newsCheckedAt')
               if not checked:
                   raise AssertionError(f'News freshness missing: {snapshot}')
