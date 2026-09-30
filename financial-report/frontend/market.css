@@ -308,3 +308,29 @@ body.dolphin-modal-open{overflow:hidden}
 .strategy-hit{display:flex;width:100%;justify-content:space-between;align-items:center;gap:8px;border:0;border-top:1px solid #edf1f5;background:transparent;padding:9px 0;text-align:left;cursor:pointer}.strategy-hit:first-child{border-top:0}.strategy-hit span{font-size:9px;color:#3d4d65}.strategy-hit small{font-size:8px;color:#8a95a6}
 @media(max-width:1180px){.strategy-output-grid{grid-template-columns:1fr 1fr}.strategy-result-panel{grid-column:1/-1}.strategy-builder-grid{grid-template-columns:240px minmax(0,1fr)}}
 @media(max-width:820px){.strategy-builder-section{padding:16px}.strategy-builder-grid,.strategy-output-grid{grid-template-columns:1fr}.strategy-library-panel{max-height:none}.strategy-config-bar{grid-template-columns:1fr}.strategy-condition-controls{grid-template-columns:1fr}.strategy-result-panel{grid-column:auto}.strategy-builder-head h2{font-size:23px}}
+
+/* Compact default-collapsed feature sections */
+.collapse-head-toggle,.strategy-head-toggle{display:block;flex:1;min-width:0;border:0;background:transparent;padding:0;text-align:left;cursor:pointer;color:inherit}
+.collapse-head-toggle:focus-visible,.strategy-head-toggle:focus-visible,.section-chevron:focus-visible,.strategy-chevron:focus-visible{outline:2px solid #7894eb;outline-offset:4px;border-radius:8px}
+.collapse-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0}
+.section-chevron,.strategy-chevron{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid #dbe3ef;border-radius:10px;background:#fff;color:#5b6b83;font-size:18px;line-height:1;cursor:pointer}
+.section-chevron:hover,.strategy-chevron:hover{border-color:#a9b9db;background:#f8faff;color:#3659ba}
+.collapsible-section-body,.strategy-builder-body{margin-top:14px}
+.strategy-builder-section.is-collapsed,.investment-ideas-section.is-collapsed,.macro-section.is-collapsed{background:#fff}
+.strategy-builder-section.is-collapsed{padding-top:18px;padding-bottom:18px}
+.strategy-builder-section.is-collapsed .strategy-builder-head{align-items:center}
+.strategy-builder-section.is-collapsed .strategy-builder-head h2{margin-bottom:3px}
+.strategy-head-toggle h2{margin:5px 0 3px;color:#263752;font-size:28px}.strategy-head-toggle p{margin:0;color:#7b8798;font-size:12px}
+.investment-ideas-section.is-collapsed .idea-section-head{margin-bottom:0;align-items:center}
+.investment-ideas-section.is-collapsed{padding-top:16px;padding-bottom:16px}
+.idea-section-head .collapse-head-toggle h2{margin:5px 0 4px;font-size:20px;color:#283c57}.idea-section-head .collapse-head-toggle p{margin:0;font-size:10px;color:#7c8797;line-height:1.5}
+.macro-section.is-collapsed{padding-top:17px;padding-bottom:17px;margin-bottom:24px}
+.macro-section.is-collapsed .macro-head{align-items:center}
+.macro-head .collapse-head-toggle h2{margin:4px 0 0;font-size:20px;color:#263755}
+.macro-head .collapse-head-actions>span{font-size:9px;color:#8190a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}
+@media(max-width:820px){
+ .collapse-head-actions,.strategy-head-actions{width:100%;justify-content:flex-start}
+ .strategy-builder-head,.idea-section-head,.macro-head{align-items:flex-start}
+ .strategy-head-toggle h2{font-size:23px}
+ .macro-head .collapse-head-actions>span{max-width:calc(100vw - 120px)}
+}
