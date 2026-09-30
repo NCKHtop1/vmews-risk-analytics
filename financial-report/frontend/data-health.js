@@ -25,7 +25,7 @@ function render(x){
  cards.push(card('Forecast live OOS',x.forecastOrigins?fmt(x.forecastOrigins,0)+' origins':'—',x.forecastHit!==null?'T+3 hit '+fmt(x.forecastHit*100,1)+'% · '+x.forecastEvidence:'Đang tích lũy prequential record',x.forecastTone));
  cards.push(card('Risk live track',fmt(x.liveMatured,0)+' matured',fmt(x.livePending,0)+' pending · '+x.liveStatus,x.liveTone));
  grid.innerHTML=cards.join('');
- const worst=[x.quoteTone,x.selectedTone,x.scannerTone,x.newsTone,x.evidenceTone,x.liveTone].sort((a,b)=>toneRank(b)-toneRank(a))[0]||'neutral';
+ const worst=[x.quoteTone,x.selectedTone,x.scannerTone,x.newsTone,x.evidenceTone,x.forecastTone,x.liveTone].sort((a,b)=>toneRank(b)-toneRank(a))[0]||'neutral';
  setStatus(worst,worst==='bad'?'Cần chú ý':worst==='warn'?'Có độ trễ':'Hệ thống ổn');
  if(meta)meta.textContent='SLO intraday: xanh ≤18p · vàng 18–25p · đỏ >25p. SourceTime được ưu tiên hơn thời điểm trình duyệt tải.';
 }
