@@ -1111,8 +1111,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("marketJson('watch-today.json')",app)
         self.assertIn('rankChange',app)
         self.assertIn('futureSource=Number.isFinite(sourceTime)',app)
-        self.assertIn("label.textContent=invalidFuture?'ĐANG CHỜ PHIÊN MỚI'",app)
-        self.assertIn('setInterval(loadTodayWatch,5*60*1000)',app)
+        self.assertIn("label.textContent=invalidFuture?'DỮ LIỆU CHƯA HỢP LỆ'",app)
+        self.assertIn('if(!document.hidden)loadTodayWatch();},60000)',app)
         self.assertIn('finqueryQuickWatch',css)
         self.assertIn('market/watch-today.json',price)
 
@@ -1371,7 +1371,7 @@ class MarketTests(unittest.TestCase):
         scanner=(ROOT/'frontend/technical-scanner.js').read_text()
         self.assertIn("mode == 'quotes'",api)
         self.assertIn("mode == 'news'",api)
-        self.assertIn("Current-session Vietcap coverage too low",api)
+        self.assertIn("Current-session quote coverage too low",api)
         self.assertIn("Access-Control-Allow-Origin",api)
         self.assertIn("LIVE_MARKET_FALLBACK_UNAVAILABLE",api)
         self.assertIn("LIVE_FALLBACK_API='https://vmews-risk-analytics-sojd.vercel.app/api/live_market'",market)
@@ -1507,7 +1507,7 @@ class MarketTests(unittest.TestCase):
         chart=(ROOT/'frontend/chart-engine.js').read_text()
         insights=(ROOT/'frontend/insights.js').read_text()
         css=(ROOT/'frontend/market.css').read_text()
-        self.assertIn('id="quote-time" class="market-subtitle" hidden',html)
+        self.assertIn('id="quote-time" class="market-subtitle">',html)
         self.assertIn('id="chart-range-label" hidden',html)
         self.assertIn('id="chart-status" class="market-subtitle" hidden',html)
         self.assertNotIn('class="chart-credit"',html)
@@ -1580,7 +1580,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('market/history-status.json',workflow)
         self.assertIn('Technical scanner coverage is below 90%',workflow)
         self.assertIn("technical-signals.json",guard)
-        self.assertIn('scanner.get(\'sourceTime\')',guard)
+        self.assertIn("d.get('sourceTime')!=q.get('latestSourceTime')",guard)
 
     def test_tiered_hose_universe_is_wired_end_to_end(self):
         script=(ROOT/'scripts/refresh_market.py').read_text()

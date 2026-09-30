@@ -31,6 +31,7 @@ jobs:
       - run: python -m unittest discover -s financial-report/tests -v
       - run: python -m py_compile api/live_market.py
       - run: node --check financial-report/frontend/chart-math.js && node --check financial-report/frontend/chart-engine.js && node --check financial-report/frontend/market.js && node --check financial-report/frontend/technical-scanner.js && node --check financial-report/frontend/insights.js && node --check financial-report/frontend/macro.js && node --check financial-report/frontend/knowledge-base.js && node --check financial-report/frontend/research-ai.js && node --check financial-report/frontend/dashboard.js && node --check financial-report/frontend/app.js && node --check financial-report/frontend/xlsx.js && node --check financial-report/frontend/metrics.js && node --check api/solution-ai.js
+      - run: node --test financial-report/tests/market_data.test.cjs
       - run: node financial-report/tests/knowledge.test.cjs
       - uses: actions/upload-artifact@v4
         with:
