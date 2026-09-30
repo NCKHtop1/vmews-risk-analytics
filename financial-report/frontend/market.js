@@ -14,7 +14,7 @@ const companyLogoFallback=symbol=>'https://cdn.simplize.vn/simplizevn/logo/'+enc
 const companyLogoFallback2=symbol=>'https://companiesmarketcap.com/img/company-logos/64/'+encodeURIComponent(symbol)+'.VN.png';
 function placeholderLogo(symbol){const label=String(symbol||'VN').slice(0,3).toUpperCase(),svg=`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef6ff"/><stop offset="1" stop-color="#e8e8ff"/></linearGradient></defs><rect width="64" height="64" rx="17" fill="url(#g)"/><circle cx="49" cy="15" r="10" fill="#ffffff88"/><text x="32" y="39" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#315dcc">${label}</text></svg>`;return'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);}
 function logoHTML(symbol,name,size='sm'){return `<span class="ticker-logo ticker-logo-${size}"><img src="${companyLogoUrl(symbol)}" data-logo-stage="0" data-logo-alt="${companyLogoFallback(symbol)}" data-logo-alt2="${companyLogoFallback2(symbol)}" data-logo-placeholder="${placeholderLogo(symbol)}" alt="${esc(name||symbol)} logo" loading="lazy" decoding="async"><b>${esc(symbol)}</b></span>`;}
-async function get(file){const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),15000);try{const r=await fetch(BASE+file+'?v='+Math.floor(Date.now()/60000),{signal:ctl.signal,cache:'no-cache'});if(!r.ok)throw Error('HTTP '+r.status);return await r.json();}finally{clearTimeout(t);}}
+async function get(file){return window.FinMarketData.get(file);}
 function mergeUniverseCompanies(core,universe){
  const coreRows=Array.isArray(core)?core:[],coreMap=new Map(coreRows.map(row=>[String(row.symbol||'').toUpperCase(),{...row,tier:'CORE',coreMember:true}]));
  const records=universe?.symbols&&typeof universe.symbols==='object'?universe.symbols:{},live=Array.isArray(universe?.liveMarketSymbols)?universe.liveMarketSymbols:[...coreMap.keys()];
@@ -203,13 +203,14 @@ function news(){
 async function refresh(){
  if(state.refreshing)return;
  state.refreshing=true;const refreshButton=$('market-refresh');if(refreshButton)refreshButton.disabled=true;
+ try{
  const previousNewsMax=Math.max(0,...(state.news?.items||[]).map(x=>Date.parse(x.publishedAt)||0));
  const results=await Promise.allSettled([get('quotes.json'),get('news.json'),get('drivers.json'),get('universe.json')]);
  if(results[0].status==='fulfilled'&&results[0].value.quotes){
-  for(const [symbol,q]of Object.entries(results[0].value.quotes)){const old=state.quotes[symbol];if(!old?.sourceTime||!q.sourceTime||Date.parse(q.sourceTime)>=Date.parse(old.sourceTime))state.quotes[symbol]=q;}
+  window.FinMarketData.mergeQuotes(state.quotes,results[0].value.quotes);
  }
  let staticNews=results[1].status==='fulfilled'&&Array.isArray(results[1].value.items)?results[1].value:null;
- if(staticNews)state.news=staticNews;
+ if(staticNews&&(!state.news||window.FinMarketData.revision(staticNews)>=window.FinMarketData.revision(state.news)))state.news=staticNews;
  if(results[2].status==='fulfilled'&&results[2].value.symbols)state.drivers=results[2].value;
  if(results[3].status==='fulfilled'&&results[3].value?.symbols){state.universe=results[3].value;state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);}
  let usedNewsFallback=false,usedQuoteFallback=false;
@@ -220,11 +221,12 @@ async function refresh(){
  if(marketSessionActive()&&quoteStale(selected)){
   try{
    const live=await liveFallback('quotes');
-   for(const [symbol,q]of Object.entries(live.quotes||{})){const old=state.quotes[symbol];if(!old?.sourceTime||!q.sourceTime||Date.parse(q.sourceTime)>=Date.parse(old.sourceTime))state.quotes[symbol]=q;}
+   window.FinMarketData.mergeQuotes(state.quotes,live.quotes);
    usedQuoteFallback=true;
   }catch{}
  }
  showQuote();board();news();
+ if(state.symbol&&!chartController.loading&&(!state.lastHistoryRefresh||Date.now()-state.lastHistoryRefresh>=15*60000)){state.lastHistoryRefresh=Date.now();void chartController.load(true);}
  const currentQuote=state.quotes[state.symbol],currentQuoteLive=currentQuote&&!quoteStale(currentQuote);
  window.FinTechnicalScanner?.setMarketSourceTime?.(currentQuote?.sourceTime||null);
  if(currentQuoteLive)chartController.snapshot(currentQuote);
@@ -232,11 +234,11 @@ async function refresh(){
  state.initialized=true;window.FinQueryAI?.sync(state.symbol);
  const degraded=results.some(r=>r.status==='rejected');
  const refreshStatus=$('market-refresh-status');if(refreshStatus)refreshStatus.textContent=currentQuote&&!currentQuoteLive&&marketSessionActive()?'Giá đang là bản gần nhất, chưa đạt điều kiện live của phiên hiện tại.':degraded?'Một phần dữ liệu chưa tải được; giữ bản gần nhất nếu có.':'';
- state.refreshing=false;if(refreshButton)refreshButton.disabled=false;
+ }catch(error){console.error('Market refresh failed',error);const status=$('market-refresh-status');if(status)status.textContent='Cập nhật bị gián đoạn; hệ thống sẽ tự thử lại.';}finally{state.refreshing=false;if(refreshButton)refreshButton.disabled=false;}
 }
 window.FinancialMarket={select(symbol,companies){state.coreCompanies=Array.isArray(companies)?companies:state.coreCompanies;state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);state.symbol=symbol;showQuote();board();news();chartController.select(symbol,watch);window.FinInsights?.select?.(symbol);if(['peers','sector'].includes(state.marketView))void renderMarketCompare();if(state.marketView==='scanner')window.FinTechnicalScanner?.open?.();window.FinTechnicalScanner?.setMarketSourceTime?.(state.quotes[symbol]?.sourceTime||null);window.FinQueryAI?.sync(symbol);},context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=quoteStale(state.quotes[state.symbol])?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!quote||String(scan.sourceTime)===String(quote.sourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
 document.querySelectorAll('[data-market-view]').forEach(btn=>btn.addEventListener('click',()=>setMarketView(btn.dataset.marketView)));
 $('watch-toggle').addEventListener('click',()=>toggleWatch(state.symbol));$('market-rows').addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||!img.closest('.ticker-logo'))return;const stage=Number(img.dataset.logoStage||0);if(stage===0&&img.dataset.logoAlt){img.dataset.logoStage='1';img.src=img.dataset.logoAlt;return;}if(stage===1&&img.dataset.logoAlt2){img.dataset.logoStage='2';img.src=img.dataset.logoAlt2;return;}if(stage<=2&&img.dataset.logoPlaceholder){img.dataset.logoStage='3';img.src=img.dataset.logoPlaceholder;return;}img.hidden=true;},true);$('market-rows').addEventListener('click',e=>{const star=e.target.closest('[data-watch]'),ticker=e.target.closest('[data-market-symbol]'),driver=e.target.closest('[data-driver]');if(star)toggleWatch(star.dataset.watch);if(driver){state.driverOpen=state.driverOpen===driver.dataset.driver?'':driver.dataset.driver;board();return;}if(ticker){const symbol=ticker.dataset.marketSymbol,company=state.companies.find(x=>x.symbol===symbol);if(company?.tier&&company.tier!=='CORE'){openForecastSymbol(symbol);return;}$('ticker').value=symbol;$('company-form').requestSubmit();}});$('market-filter').addEventListener('input',board);$('market-universe-filter')?.addEventListener('change',e=>{state.universeFilter=e.target.value;board();});$('watch-only').addEventListener('change',e=>{state.watchOnly=e.target.checked;board();});$('market-sort').addEventListener('change',e=>{state.sort=e.target.value;board();});$('market-refresh')?.addEventListener('click',()=>{refresh();window.FinInsights?.reload?.();window.FinTechnicalScanner?.refresh?.();if(state.symbol)chartController.load(true);});$('news-mode').addEventListener('change',e=>{state.newsMode=e.target.value;news();});document.querySelectorAll('[data-news-tab]').forEach(btn=>btn.addEventListener('click',()=>{state.newsMode=btn.dataset.newsTab;news();}));
-const chartController=window.FinChart.create(BASE,q=>{const previous=state.quotes[q.symbol];if(previous?.sourceTime&&Date.parse(previous.sourceTime)>Date.parse(q.sourceTime))return;state.quotes[q.symbol]={...previous,...q,changePct:Number.isFinite(q.changePct)?q.changePct:(q.reference||previous?.reference)>0?(q.price/(q.reference||previous.reference)-1)*100:null,unit:'VND',source:'WebSocket',status:'ok',collectedAt:new Date().toISOString()};showQuote();board();});
+const chartController=window.FinChart.create(BASE,q=>{const previous=state.quotes[q.symbol];if(window.FinMarketData.stamp(q.sourceTime)===null)return;if(previous?.sourceTime&&window.FinMarketData.stamp(previous.sourceTime)!==null&&Date.parse(previous.sourceTime)>Date.parse(q.sourceTime))return;state.quotes[q.symbol]={...previous,...q,changePct:Number.isFinite(q.changePct)?q.changePct:(q.reference||previous?.reference)>0?(q.price/(q.reference||previous.reference)-1)*100:null,unit:'VND',source:'WebSocket',status:'ok',collectedAt:new Date().toISOString()};showQuote();board();});
 setMarketView('price');refresh();setInterval(()=>{if(!document.hidden)refresh();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 })();

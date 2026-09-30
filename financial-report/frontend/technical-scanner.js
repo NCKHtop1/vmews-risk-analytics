@@ -7,7 +7,7 @@ const fmt=(v,d=2)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{max
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const time=s=>s&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short',timeStyle:'short'}):'—';
 async function digest(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-async function fetchData(){const r=await fetch(BASE+'technical-signals.json?v='+Math.floor(Date.now()/60000),{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data?.symbols||!Array.isArray(data.matches))throw Error('Invalid scanner data');return data;}
+async function fetchData(){const data=await window.FinMarketData.get('technical-signals.json');if(!data?.symbols||!Array.isArray(data.matches))throw Error('Invalid scanner data');return data;}
 function showGate(){
  const gate=$('technical-scanner-gate'),work=$('technical-scanner-workspace');
  if(gate){gate.hidden=state.unlocked;gate.style.display=state.unlocked?'none':'';}

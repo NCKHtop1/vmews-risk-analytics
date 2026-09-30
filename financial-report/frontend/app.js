@@ -23,7 +23,7 @@ function syncCompanyIdentity(symbol,name='',exchange='HOSE'){
  if(meta)meta.textContent=(exchange||'HOSE')+' · VN100 · Dữ liệu tài chính & thị trường';
 }
 async function json(url,signal,timeout=12000){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeout);const abort=()=>ctl.abort();signal?.addEventListener('abort',abort,{once:true});try{const r=await fetch(url,{signal:ctl.signal,cache:'no-cache'});if(!r.ok)throw Error('Dữ liệu tạm thời chưa tải được. Vui lòng thử lại.');return await r.json();}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}}
-async function marketJson(file,timeout=8000){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeout);try{const r=await fetch(MARKET_BASE+file+'?v='+Math.floor(Date.now()/300000),{signal:ctl.signal,cache:'no-cache'});if(!r.ok)throw Error('HTTP '+r.status);return await r.json();}finally{clearTimeout(timer);}}
+async function marketJson(file,timeout=8000){return window.FinMarketData.get(file,{timeout});}
 function watchChange(value){const n=Number(value);return Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—';}
 function watchMove(row){if(row?.isNew)return'<em class="watch-new">MỚI</em>';const n=Number(row?.rankChange);if(n>0)return'<em class="watch-up">↑'+Math.abs(n)+'</em>';if(n<0)return'<em class="watch-down">↓'+Math.abs(n)+'</em>';return'<em class="watch-flat">•</em>';}
 function renderTodayWatch(data){
@@ -32,8 +32,9 @@ function renderTodayWatch(data){
  const vnDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const futureDate=Boolean(data?.sourceDate&&data.sourceDate>vnDay),invalidFuture=futureSource||futureCheck||futureDate;
  const items=!invalidFuture&&Array.isArray(data?.items)?data.items.filter(x=>state.companies.some(c=>c.symbol===x.symbol)).slice(0,8):[];
- if(label)label.textContent=invalidFuture?'ĐANG CHỜ PHIÊN MỚI':data?.sourceDate&&data.sourceDate<vnDay?'ĐÁNG XEM PHIÊN GẦN NHẤT':'ĐÁNG XEM HÔM NAY';
- if(status){status.textContent=invalidFuture?'CHƯA LIVE':'15P'+(Number.isFinite(checkedAt)?' · '+new Date(checkedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
+ if(label)label.textContent=invalidFuture?'DỮ LIỆU CHƯA HỢP LỆ':data?.sourceDate&&data.sourceDate<vnDay?'ĐÁNG XEM PHIÊN GẦN NHẤT':'ĐÁNG XEM HÔM NAY';
+ const stale=!Number.isFinite(checkedAt)||now-checkedAt>30*60000;
+ if(status){status.textContent=invalidFuture?'CHƯA LIVE':(stale?'BẢN GẦN NHẤT':'15P')+(Number.isFinite(checkedAt)?' · '+new Date(checkedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
  if(invalidFuture){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Snapshot nguồn có thời gian chưa hợp lệ; chờ dữ liệu phiên thực.</span>';return;}
  if(!items.length){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Chưa có tín hiệu đủ mạnh.</span>';return;}
  const rowHTML=row=>{const reasons=(row.reasons||[]).join(' · '),score=Number(row.score),title=[reasons,Number.isFinite(score)?'WatchScore '+score+'/100':'','Cập nhật 15 phút/lần'].filter(Boolean).join(' · '),chg=Number(row.changePct),cls=Number.isFinite(chg)?(chg>0?'positive':chg<0?'negative':'neutral'):'neutral';return'<button type="button" class="quick-watch-button '+cls+'" data-symbol="'+esc(row.symbol)+'" title="'+esc(title)+'"><strong>'+esc(row.symbol)+'</strong><span>'+esc(watchChange(chg))+'</span>'+watchMove(row)+'</button>';};
@@ -123,7 +124,7 @@ function companyOptions(){ $('company-options').innerHTML=state.companies.map(c=
 window.FinancialReportContext={raw(){if(!state.bundle&&!state.data)return null;return{symbol:state.bundle?.symbol||state.data?.symbol,name:state.bundle?.name||state.data?.name||'',mode:state.mode,updatedAt:state.data?.updatedAt||state.bundle?.updatedAt||null,selectedPeriods:[...state.years],data:state.data,annual:state.bundle||null,quarterly:state.bundle?.quarterly||null};}};
 async function init(){
  try{state.companies=BOOT.companies||await json(DATA_BASE+'companies.json',null);companyOptions();$('company-description').textContent='100 doanh nghiệp thuộc VN100.';}catch{error('Chưa tải được danh sách VN100. Vui lòng tải lại trang.');return;}
- loadTodayWatch();setInterval(loadTodayWatch,5*60*1000);
+ loadTodayWatch();setInterval(()=>{if(!document.hidden)loadTodayWatch();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTodayWatch();});window.addEventListener('online',loadTodayWatch);
  // Membership updates do not block a company request, and a failed manifest
  // never disables live financial data fetching.
  json(liveUrl('companies.json'),null,6000).then(list=>{if(Array.isArray(list)&&new Set(list.map(c=>c.symbol)).size===100){state.companies=list;companyOptions();}}).catch(()=>{});

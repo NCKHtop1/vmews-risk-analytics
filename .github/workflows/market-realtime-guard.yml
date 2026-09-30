@@ -2,60 +2,83 @@ name: Market realtime freshness guard
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-realtime-guard.yml'
   schedule:
-    # Run shortly after the dedicated price workflow.
-    - cron: '10,25,40,55 2-8 * * 1-5'
+    - cron: '10,25,40,55 * * * *'
+  workflow_run:
+    workflows: ['Forecast V19 live FireAnt and 24HMoney intelligence']
+    branches: [main]
+    types: [completed]
 
 permissions:
   contents: read
+  actions: write
+
+concurrency:
+  group: market-realtime-freshness-recovery
+  cancel-in-progress: false
 
 jobs:
   freshness:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Check latest market snapshot freshness
+      - name: Detect stale snapshots and restart their publishers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           python - <<'PY'
-          import json, urllib.request
+          import json, math, os, subprocess, urllib.request
           from datetime import datetime, timezone, timedelta
-
-          VN=timezone(timedelta(hours=7))
           now=datetime.now(timezone.utc)
-          local=now.astimezone(VN)
-          minutes=local.hour*60+local.minute
-          active=local.weekday()<5 and ((9*60<=minutes<=11*60+40) or (12*60+55<=minutes<=15*60+15))
-          if not active:
-              print('Outside VN live-session guard window:', local.isoformat())
-              raise SystemExit(0)
-
-          base='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/'
-          with urllib.request.urlopen(base+'quotes.json', timeout=10) as r:
-              data=json.load(r)
-          with urllib.request.urlopen(base+'technical-signals.json', timeout=10) as r:
-              scanner=json.load(r)
-
-          coverage=int(data.get('coverage') or 0)
-          latest=data.get('latestSourceTime')
-          print('Market snapshot:', data.get('checkedAt'), 'status=',data.get('status'),'coverage=',coverage,'latest=',latest,'providers=',data.get('providers'))
-          if data.get('status') != 'ok':
-              raise SystemExit('Market snapshot status is not ok')
-          if coverage < 90:
-              raise SystemExit(f'Current-session coverage too low: {coverage}/100')
-          if not latest:
-              raise SystemExit('Missing latestSourceTime')
-
-          stamp=datetime.fromisoformat(str(latest).replace('Z','+00:00')).astimezone(timezone.utc)
-          if stamp.astimezone(VN).date()!=local.date():
-              raise SystemExit(f'Market source is not from current VN session: {stamp.astimezone(VN).date()}')
-          age=(now-stamp).total_seconds()/60
-          if age>30:
-              raise SystemExit(f'Market source is stale by {age:.1f} minutes')
-          scan_coverage=int(scanner.get('coverage') or 0)
-          scan_time=scanner.get('sourceTime')
-          print('Technical scanner:',scanner.get('status'),'coverage=',scan_coverage,'matches=',scanner.get('matchCount'),'source=',scan_time)
-          if scanner.get('status')!='ok' or scan_coverage<90:
-              raise SystemExit(f'Technical scanner coverage too low: {scan_coverage}/100')
-          if not scan_time or str(scan_time)!=str(latest):
-              raise SystemExit(f'Technical scanner sourceTime does not match live market source: {scan_time} != {latest}')
+          local=now.astimezone(timezone(timedelta(hours=7)))
+          mins=local.hour*60+local.minute
+          active=local.weekday()<5 and (545<=mins<=690 or 780<=mins<=915)
+          base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/financial-market-data/market/'
+          def get(file):
+              with urllib.request.urlopen(base+file+'?guard='+str(int(now.timestamp())),timeout=15) as r:
+                  return json.load(r)
+          def age(value):
+              t=datetime.fromisoformat(str(value).replace('Z','+00:00'))
+              if t.tzinfo is None: raise ValueError('Timestamp has no timezone')
+              minutes=(now-t).total_seconds()/60
+              if minutes < -5: raise ValueError('Future timestamp')
+              return minutes
+          def trigger(workflow):
+              # Never cancel a collector that is already running or queued.
+              raw=subprocess.check_output(['gh','api',f'repos/{os.environ["GH_REPO"]}/actions/workflows/{workflow}/runs?per_page=10'],text=True)
+              runs=json.loads(raw).get('workflow_runs',[])
+              if any(r.get('status') in ('queued','in_progress','waiting','pending','requested') for r in runs):
+                  print(workflow, 'already active'); return
+              subprocess.run(['gh','workflow','run',workflow,'--ref','main'],check=True)
+              print('Recovery dispatched:',workflow)
+          stale=[]
+          try:
+              n=get('news.json')
+              if n.get('status')!='ok' or not n.get('items') or age(n.get('checkedAt'))>20:
+                  raise ValueError('News older than 20 minutes or unavailable')
+              print('News age minutes:',round(age(n['checkedAt']),1))
+          except Exception as e:
+              print('::warning::News freshness:',e); stale.append('market-news-live.yml')
+          if active:
+              try:
+                  q=get('quotes.json'); s=get('technical-signals.json'); w=get('watch-today.json')
+                  expected=max(1,int(q.get('expected') or 0))
+                  fresh=[v for v in q.get('quotes',{}).values() if v.get('status')!='retained' and age(v.get('sourceTime'))<=30]
+                  if q.get('status')!='ok' or len(fresh)<math.ceil(expected*.90):
+                      raise ValueError(f'Fresh quotes below 90%: {len(fresh)}/{expected}')
+                  for label,d in [('scanner',s),('watch',w)]:
+                      if d.get('status')!='ok' or age(d.get('checkedAt'))>30 or d.get('sourceTime')!=q.get('latestSourceTime'):
+                          raise ValueError(label+' stale or not aligned with quotes')
+                  print('Price/scanner/watch freshness OK')
+              except Exception as e:
+                  print('::warning::Market freshness:',e); stale.append('market-price-live.yml')
+          for workflow in stale: trigger(workflow)
+          if stale:
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+                  f.write('Stale data detected; recovery requested (completion is verified on the next guard run): '+', '.join(stale)+'\n')
           PY
