@@ -334,3 +334,58 @@ body.dolphin-modal-open{overflow:hidden}
  .strategy-head-toggle h2{font-size:23px}
  .macro-head .collapse-head-actions>span{max-width:calc(100vw - 120px)}
 }
+
+/* Refined accordion chevrons */
+.section-chevron,
+.strategy-chevron{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  padding:0;
+  border:1px solid #d9e2ef;
+  border-radius:12px;
+  background:linear-gradient(180deg,#ffffff 0%,#f8faff 100%);
+  color:#5f6f87;
+  box-shadow:0 1px 2px rgba(24,38,66,.04),0 7px 18px rgba(32,52,91,.055);
+  cursor:pointer;
+  transition:border-color .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease,transform .16s ease;
+}
+.section-chevron:hover,
+.strategy-chevron:hover{
+  border-color:#b9c7df;
+  background:linear-gradient(180deg,#ffffff 0%,#f1f5ff 100%);
+  color:#365ab8;
+  box-shadow:0 2px 5px rgba(24,38,66,.06),0 10px 24px rgba(54,86,160,.10);
+}
+.section-chevron:active,
+.strategy-chevron:active{transform:scale(.96)}
+.section-chevron-icon{
+  display:inline-flex;
+  width:18px;
+  height:18px;
+  align-items:center;
+  justify-content:center;
+  transition:transform .24s cubic-bezier(.22,.8,.26,1);
+}
+.section-chevron-icon svg{display:block;width:18px;height:18px}
+.section-chevron-icon path{
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.section-chevron.is-open .section-chevron-icon,
+.strategy-chevron.is-open .section-chevron-icon{transform:rotate(180deg)}
+.section-chevron:focus-visible,
+.strategy-chevron:focus-visible{
+  outline:none;
+  border-color:#9db1e3;
+  box-shadow:0 0 0 3px rgba(83,112,205,.14),0 10px 24px rgba(54,86,160,.10);
+}
+@media (prefers-reduced-motion:reduce){
+  .section-chevron,.strategy-chevron,.section-chevron-icon{transition:none}
+}
