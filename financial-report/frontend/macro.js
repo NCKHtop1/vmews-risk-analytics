@@ -119,7 +119,7 @@ function showWorkspace(){
  if(gate){gate.hidden=true;gate.style.display='none';}
  if(workspace){workspace.hidden=false;workspace.style.display='block';}
  if(input)input.value='';
- requestAnimationFrame(()=>workspace?.scrollIntoView({behavior:'smooth',block:'start'}));
+ if(window.FinSectionCollapse?.isOpen?.('macro'))requestAnimationFrame(()=>workspace?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
 async function unlock(code){
  const button=$('macro-unlock-form')?.querySelector('button[type=submit]');

@@ -5,7 +5,7 @@
 <title>FinQuery · Phân tích & Dự báo Cổ phiếu Việt Nam</title>
 <meta name="description" content="Nền tảng phân tích cổ phiếu Việt Nam: tài chính doanh nghiệp, thị trường, Technical Scanner, dự báo, tin tức, vĩ mô và ESG."><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css">
-<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="alert-center.js"></script><script defer src="insights.js"></script><script defer src="macro.js"></script><script defer src="knowledge-base.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script>
+<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="alert-center.js"></script><script defer src="section-collapse.js"></script><script defer src="insights.js"></script><script defer src="macro.js"></script><script defer src="knowledge-base.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script>
 </head>
 <body>
 <header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market">Thị trường</a><a href="#strategy-builder">Strategy Lab</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Core · Liquid · Discovery</span></div></header>
@@ -120,11 +120,21 @@
 <p id="news-status" class="market-subtitle"></p><div id="news-list"></div></aside></div>
 <section class="market-board" aria-label="Bảng giá HOSE Core và Liquid"><div class="market-top"><h3>Bảng giá HOSE · Core + Liquid</h3><span id="market-count" class="market-subtitle"></span></div><div class="market-toolbar"><input id="market-filter" type="search" placeholder="Tìm mã hoặc doanh nghiệp" aria-label="Lọc bảng giá"><label><input id="watch-only" type="checkbox">Đang theo dõi</label><label>Phạm vi <select id="market-universe-filter"><option value="all">Core + Liquid</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option></select></label><label>Sắp xếp <select id="market-sort"><option value="symbol">Mã A–Z</option><option value="change">Tăng giá nhiều nhất</option></select></label></div><div class="market-table-wrap"><table class="market-table"><thead><tr><th>Theo dõi</th><th>Mã</th><th>Giá (đ)</th><th>Tham chiếu</th><th>Thay đổi</th><th>Khối lượng (CP)</th><th>Động lực / hệ số</th><th>Thời điểm nguồn</th></tr></thead><tbody id="market-rows"></tbody></table></div></section>
 </section>
-<section id="strategy-builder" class="strategy-builder-section" aria-label="Strategy Builder và TA Screener">
+<section id="strategy-builder" class="strategy-builder-section is-collapsed" aria-label="Strategy Builder và TA Screener">
 <div class="strategy-builder-head">
-<div><span class="research-ai-label">STRATEGY LAB · TA SCREENER</span><h2>Kéo thả chiến lược kỹ thuật</h2><p>Ghép indicator theo logic của bạn, quét toàn HOSE và lưu strategy để theo dõi tín hiệu.</p></div>
-<div class="strategy-head-actions"><span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span><button id="strategy-refresh" type="button">Cập nhật ↻</button><button id="strategy-notifications" type="button">Bật thông báo</button></div>
+<button id="strategy-toggle" class="strategy-head-toggle" type="button" aria-expanded="false" aria-controls="strategy-body">
+<span class="research-ai-label">STRATEGY LAB · TA SCREENER</span>
+<h2>Kéo thả chiến lược kỹ thuật</h2>
+<p>Ghép indicator theo logic của bạn, quét toàn HOSE và lưu strategy để theo dõi tín hiệu.</p>
+</button>
+<div class="strategy-head-actions">
+<span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span>
+<button id="strategy-refresh" type="button">Cập nhật ↻</button>
+<button id="strategy-notifications" type="button">Bật thông báo</button>
+<button id="strategy-chevron" class="strategy-chevron" type="button" aria-label="Mở Strategy Lab" aria-controls="strategy-body" aria-expanded="false">⌄</button>
 </div>
+</div>
+<div id="strategy-body" class="strategy-builder-body" hidden>
 <div class="strategy-presets" aria-label="Gợi ý chiến lược">
 <span>Gợi ý nhanh</span>
 <button type="button" data-strategy-preset="macd_rsi">MACD + RSI</button>
@@ -155,9 +165,16 @@
 <section class="strategy-saved-panel"><div class="strategy-section-title"><div><span>SAVED STRATEGIES</span><h3>Strategy đã lưu</h3></div></div><div id="strategy-saved"></div></section>
 <section class="strategy-hit-panel"><div class="strategy-section-title"><div><span>NEW SIGNALS</span><h3>Tín hiệu mới</h3></div></div><div id="strategy-hits"></div></section>
 </div>
+</div>
 </section>
-<section id="investment-ideas" class="investment-ideas-section" aria-label="Investment Ideas">
-<div class="idea-section-head"><div><span class="research-ai-label">INVESTMENT IDEAS</span><h2 id="idea-title">Ý tưởng đầu tư</h2><p id="idea-health">Đang đồng bộ báo cáo CTCK và sự kiện doanh nghiệp…</p></div><span id="idea-consensus-badge" class="idea-consensus-badge">Đang tải</span></div>
+<section id="investment-ideas" class="investment-ideas-section is-collapsed" aria-label="Investment Ideas">
+<div class="idea-section-head">
+<button id="investment-ideas-toggle" class="collapse-head-toggle" type="button" aria-expanded="false" aria-controls="investment-ideas-body">
+<span class="research-ai-label">INVESTMENT IDEAS</span><h2 id="idea-title">Ý tưởng đầu tư</h2><p id="idea-health">Đang đồng bộ báo cáo CTCK và sự kiện doanh nghiệp…</p>
+</button>
+<div class="collapse-head-actions"><span id="idea-consensus-badge" class="idea-consensus-badge">Đang tải</span><button id="investment-ideas-chevron" class="section-chevron" type="button" aria-label="Mở Investment Ideas" aria-controls="investment-ideas-body" aria-expanded="false">⌄</button></div>
+</div>
+<div id="investment-ideas-body" class="collapsible-section-body" hidden>
 <div class="idea-dashboard">
 <div class="idea-overview-card">
 <div class="idea-overview-title"><div><span>TỔNG QUAN</span><h3 id="idea-symbol-title">Mã đang xem · Báo cáo phân tích</h3><p>Tổng hợp các báo cáo CTCK và sự kiện doanh nghiệp đã chuẩn hóa.</p></div></div>
@@ -187,9 +204,14 @@
 <div id="idea-event-list" class="idea-event-list"></div>
 </div>
 </div>
+</div>
 </section>
-<section id="macro" class="macro-section" aria-label="Dữ liệu vĩ mô">
-<div class="macro-head"><div><span class="research-ai-label">MACRO & ESG DATA</span><h2>Vĩ mô & ESG doanh nghiệp</h2></div><span id="macro-source-status"></span></div>
+<section id="macro" class="macro-section is-collapsed" aria-label="Dữ liệu vĩ mô">
+<div class="macro-head">
+<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="false" aria-controls="macro-body"><span class="research-ai-label">MACRO & ESG DATA</span><h2>Vĩ mô & ESG doanh nghiệp</h2></button>
+<div class="collapse-head-actions"><span id="macro-source-status"></span><button id="macro-chevron" class="section-chevron" type="button" aria-label="Mở Macro & ESG" aria-controls="macro-body" aria-expanded="false">⌄</button></div>
+</div>
+<div id="macro-body" class="collapsible-section-body" hidden>
 <div id="macro-gate" class="macro-gate"><div><strong>Khu vực dữ liệu giới hạn</strong><p>Nhập mã truy cập để mở dữ liệu vĩ mô và ESG doanh nghiệp.</p></div><form id="macro-unlock-form"><input id="macro-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập dữ liệu vĩ mô"><button type="submit">Mở dữ liệu</button></form><p id="macro-gate-error" role="status"></p></div>
 <div id="macro-workspace" class="macro-workspace" hidden>
 <div class="macro-tabs" id="macro-tabs"></div>
@@ -198,7 +220,9 @@
 <div id="macro-esg-assessments" class="macro-esg-assessments" hidden></div>
 <div class="macro-chart-card"><div class="macro-chart-head"><div><h3 id="macro-chart-title">Dữ liệu vĩ mô</h3><span id="macro-chart-subtitle"></span></div></div><div id="macro-chart"></div></div>
 <div class="macro-table-wrap"><table class="macro-table"><thead id="macro-table-head"></thead><tbody id="macro-table-body"></tbody></table></div>
-</div></section>
+</div>
+</div>
+</section>
 <button id="ai-fab" class="ai-fab" type="button" aria-controls="research-ai" aria-expanded="false"><span class="ai-fab-orb" aria-hidden="true"><svg class="dolphin-logo" viewBox="0 0 72 72"><defs><radialGradient id="dolphin-bg" cx="27%" cy="18%" r="86%"><stop stop-color="#c8fbff"/><stop offset=".32" stop-color="#66c9ff"/><stop offset=".68" stop-color="#5577ff"/><stop offset="1" stop-color="#6942cf"/></radialGradient></defs><circle cx="36" cy="36" r="34" fill="url(#dolphin-bg)"/><path d="M16.8 39.7c4.5-9.6 14.5-16.8 26.2-17.6 5.9-.4 10.9 1.1 14.8 4.1-4.5-.2-8.5 1.4-10.9 4.6-1.6 2.1-1.8 4.3-.4 6.2 1.4 1.8 4 2.5 7 1.8-4.7 7.3-12.2 12.1-21.5 13.2l-4.8 5.8-3.3-6.7c-4.5-2.2-7-6.1-7.1-11.4Z" fill="white"/><path d="M23.5 31.1c-2.7-3.1-6.4-4.1-10.6-3.6 2.4 3.4 5.1 5.5 8.5 6.3" fill="#e7fbff"/><circle cx="40.8" cy="28.7" r="2" fill="#3154c9"/></svg></span><span class="ai-fab-copy"><strong>Dolphin AI</strong><small>FinQuery Intelligence</small></span></button>
 <div id="ai-backdrop" class="ai-backdrop" hidden></div>
 <section id="research-ai" class="research-ai ai-drawer ai-modal" role="dialog" aria-modal="true" aria-label="Phân tích chuyên sâu" hidden>

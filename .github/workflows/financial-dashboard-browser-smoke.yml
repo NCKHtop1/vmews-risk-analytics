@@ -83,7 +83,30 @@ jobs:
                   window.FinancialReportContext &&
                   window.FinTechnicalScanner &&
                   window.FinStrategyBuilder &&
+                  window.FinSectionCollapse &&
                   window.FinMacro
+                );
+              """))
+              collapsed=driver.execute_script("""
+                return {
+                  strategy:document.getElementById('strategy-body')?.hidden===true,
+                  ideas:document.getElementById('investment-ideas-body')?.hidden===true,
+                  macro:document.getElementById('macro-body')?.hidden===true
+                };
+              """)
+              if not all(collapsed.values()):
+                  raise AssertionError(f'Feature sections are not collapsed by default: {collapsed}')
+
+              driver.execute_script("""
+                document.getElementById('strategy-toggle')?.click();
+                document.getElementById('investment-ideas-toggle')?.click();
+                document.getElementById('macro-toggle')?.click();
+              """)
+              wait.until(lambda d:d.execute_script("""
+                return (
+                  document.getElementById('strategy-body')?.hidden===false &&
+                  document.getElementById('investment-ideas-body')?.hidden===false &&
+                  document.getElementById('macro-body')?.hidden===false
                 );
               """))
 
