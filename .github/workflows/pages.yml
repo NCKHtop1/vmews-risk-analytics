@@ -54,6 +54,8 @@ jobs:
           sparse-checkout: market
       - name: Bootstrap Technical Scanner evidence from completed EOD history
         run: python financial-report/scripts/build_technical_evidence.py --output _market-data/market
+      - name: Generate strategy indicator snapshot
+        run: node financial-report/scripts/build_strategy_snapshot.cjs _market-data/market
       - name: Validate main and market HOSE universe consistency
         run: |
           python - <<'PY'
