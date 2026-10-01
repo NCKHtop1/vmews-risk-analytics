@@ -11,6 +11,16 @@ function clone(v){try{return JSON.parse(JSON.stringify(v));}catch{return null;}}
 function pick(obj,keys){const out={};for(const k of keys)if(obj&&obj[k]!==undefined)out[k]=obj[k];return out;}
 function trimArray(v,n=8){return Array.isArray(v)?v.slice(0,n):[];}
 function summarizeNews(items,n=6){return trimArray(items,n).map(x=>pick(x,['title','source','publisher','publishedAt','date','url','summary','symbols','topics']));}
+function activeSymbol(){return String(root.FinancialReportContext?.raw?.()?.symbol||root.FinancialMarket?.context?.()?.symbol||'').toUpperCase();}
+function resolveTargetSymbol(question){try{return String(root.FinancialReportContext?.resolveSymbol?.(question)||'').toUpperCase();}catch{return'';}}
+async function prepare(question){
+ const requestedSymbol=resolveTargetSymbol(question),before=activeSymbol();
+ if(!requestedSymbol||requestedSymbol===before)return{requestedSymbol:requestedSymbol||before,beforeSymbol:before,activeSymbol:before,switched:false,status:'ok'};
+ if(!root.FinancialReportContext?.select){return{requestedSymbol,beforeSymbol:before,activeSymbol:before,switched:false,status:'unsupported'};}
+ const loaded=await root.FinancialReportContext.select(requestedSymbol),after=String(loaded?.symbol||activeSymbol()).toUpperCase();
+ if(after!==requestedSymbol){const error=new Error('Khong nap duoc du lieu '+requestedSymbol+' theo yeu cau.');error.code='SYMBOL_SWITCH_FAILED';throw error;}
+ return{requestedSymbol,beforeSymbol:before,activeSymbol:after,switched:true,status:'ok'};
+}
 function classify(question){
  const s=norm(question);
  if(/la gi|nghia la gi|cong thuc|cach tinh|do cai gi|the hien gi/.test(s))return'concept';
@@ -36,7 +46,7 @@ function plan(question){
  if(/co ban|tai chinh|doanh thu|loi nhuan|dong tien|roe|roa/.test(s))tools.add('financial');
  if(/tin|su kien|ctck|bao cao chung khoan/.test(s)){tools.add('insights');tools.add('news');}
  if(/du bao|forecast|t\+3|t\+4|t\+5/.test(s)){tools.add('forecast');tools.add('market');tools.add('scanner');tools.add('financial');}
- return{intent,tools:[...tools]};
+ return{intent,tools:[...tools],targetSymbol:resolveTargetSymbol(question)};
 }
 function marketTool(){
  const m=root.FinancialMarket?.context?.()||{};
@@ -98,20 +108,21 @@ function buildContext(question,planInfo,results,validation,baseContext,sources){
  const evidence={};for(const [name,record] of Object.entries(results)){if(record.status==='ok')evidence[name]=name==='scanner'?scannerSafe:record.result;}
  const cleanBase={...(baseContext||{})};
  if(scannerSafe?.discardedCurrent)cleanBase.technicalScanner=null;
- return{...cleanBase,agent:{version:VERSION,intent:planInfo.intent,plan:planInfo.tools,validation,evidence,sourceHints:trimArray(sources||[],12),policy:{numbers:'FINQUERY_ANCHORED_ONLY',staleScanner:'EXCLUDE_CURRENT',missing:'STATE_MISSING_DO_NOT_INVENT',recommendations:'NO_BUY_SELL_ADVICE'}}};
+ return{...cleanBase,agent:{version:VERSION,intent:planInfo.intent,targetSymbol:planInfo.targetSymbol||cleanBase.symbol||null,plan:planInfo.tools,validation,evidence,sourceHints:trimArray(sources||[],12),policy:{numbers:'FINQUERY_ANCHORED_ONLY',staleScanner:'EXCLUDE_CURRENT',missing:'STATE_MISSING_DO_NOT_INVENT',recommendations:'NO_BUY_SELL_ADVICE'}}};
 }
 async function run(question,options={}){
- const q=String(question||'').trim(),planInfo=plan(q),startedAt=new Date().toISOString(),scratchpad=[];
- scratchpad.push({type:'plan',intent:planInfo.intent,tools:planInfo.tools});
+ const q=String(question||'').trim(),prepared=options.prepared||await prepare(q),planInfo=plan(q),startedAt=new Date().toISOString(),scratchpad=[];
+ scratchpad.push({type:'symbol',requestedSymbol:prepared.requestedSymbol||null,beforeSymbol:prepared.beforeSymbol||null,activeSymbol:prepared.activeSymbol||null,switched:Boolean(prepared.switched)});
+ scratchpad.push({type:'plan',intent:planInfo.intent,tools:planInfo.tools,targetSymbol:planInfo.targetSymbol||prepared.activeSymbol||null});
  const calls=await Promise.all(planInfo.tools.map(name=>execute(name,{question:q,baseContext:options.baseContext||null})));
  const results=Object.fromEntries(calls.map(x=>[x.name,x]));
  for(const call of calls)scratchpad.push({type:'tool',name:call.name,status:call.status,durationMs:call.durationMs,error:call.error||null});
  const validation=validate(q,planInfo.intent,results,options.baseContext||null);scratchpad.push({type:'validate',status:validation.status,warnings:validation.warnings});
  const context=buildContext(q,planInfo,results,validation,options.baseContext||null,options.sources||[]);
- const audit={version:VERSION,intent:planInfo.intent,plan:planInfo.tools,iterations:2,tools:calls.map(x=>({name:x.name,status:x.status,durationMs:x.durationMs,error:x.error||null})),validation,scratchpad:scratchpad.slice(-MAX_AUDIT_ITEMS),startedAt,completedAt:new Date().toISOString()};
+ const audit={version:VERSION,intent:planInfo.intent,targetSymbol:planInfo.targetSymbol||prepared.activeSymbol||null,symbol:prepared,plan:planInfo.tools,iterations:2,tools:calls.map(x=>({name:x.name,status:x.status,durationMs:x.durationMs,error:x.error||null})),validation,scratchpad:scratchpad.slice(-MAX_AUDIT_ITEMS),startedAt,completedAt:new Date().toISOString()};
  lastRun={context,audit};try{sessionStorage.setItem('finquery_research_agent_last',JSON.stringify(audit));}catch{}
  return lastRun;
 }
 function status(){return{version:VERSION,tools:Object.keys(TOOL_REGISTRY),lastRun:lastRun?.audit||null};}
-root.FinResearchAgent={version:VERSION,run,plan,classify,status,lastRun:()=>lastRun,tools:()=>Object.keys(TOOL_REGISTRY)};
+root.FinResearchAgent={version:VERSION,run,prepare,resolveTargetSymbol,plan,classify,status,lastRun:()=>lastRun,tools:()=>Object.keys(TOOL_REGISTRY)};
 })(typeof window==='undefined'?globalThis:window);
