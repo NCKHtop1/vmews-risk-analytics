@@ -30,12 +30,73 @@ install_v41_refined(market_model)
 _original_load_histories=market_model.load_histories
 _bridge_metadata={}; _historical_scan_as_of=""
 
+def _legacy_snapshot_rows(session_date: str) -> dict[str, list[dict]]:
+    """Independent same-session fallback from the archived live snapshot.
+
+    This source is used only to CONFIRM VNDIRECT close prices when TradingView
+    coverage collapses. It never supplies synthetic OHLC or replaces the primary
+    EOD history used by the model.
+    """
+    path=Path(__file__).resolve().parents[1]/"data"/"forecast-live-v10"/"snapshots"/f"{session_date}.json"
+    if not path.exists():
+        return {}
+    payload=json.loads(path.read_text(encoding="utf-8"))
+    if str(payload.get("asOf") or "")[:10] != session_date:
+        return {}
+    rows={}
+    for item in payload.get("predictions") or []:
+        symbol=str(item.get("symbol") or "").upper().strip()
+        close=item.get("close")
+        try:
+            close=float(close)
+        except (TypeError,ValueError):
+            continue
+        if symbol and close>0:
+            rows[symbol]=[{"date":session_date,"close":close}]
+    return rows
+
+def _frame_from_vndirect(rows_by_symbol: dict[str, list[dict]], session_date: str):
+    """Build a verified primary OHLC frame from VNDIRECT same-session bars."""
+    import pandas as pd
+    rows=[]
+    for symbol,items in rows_by_symbol.items():
+        matches=[x for x in (items or []) if str(x.get("date") or "")[:10]==session_date]
+        if not matches:
+            continue
+        row=matches[-1]
+        rows.append({
+            "name":symbol,"exchange":"HOSE","date":session_date,
+            "open":row.get("open"),"high":row.get("high"),"low":row.get("low"),
+            "close":row.get("close"),"volume":row.get("volume"),"update_time":None,
+        })
+    return pd.DataFrame(rows)
+
 def _load_histories_with_current_session(*args,**kwargs):
     global _bridge_metadata,_historical_scan_as_of
     histories,freshness=_original_load_histories(*args,**kwargs)
     _historical_scan_as_of=str(freshness.get("marketScanAsOf") or "")[:10]
     secondary=market_model._vn_direct_hose_rows()
-    histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
+    try:
+        histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
+    except RuntimeError as primary_error:
+        from datetime import datetime
+        from vn_exchange_calendar import VN_TZ, latest_completed_session
+        session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
+        fallback_secondary=_legacy_snapshot_rows(session_date)
+        fallback_frame=_frame_from_vndirect(secondary,session_date)
+        if len(fallback_secondary) < max(1,int(len(freshness.get("currentHOSESymbols") or histories)*.70)):
+            raise primary_error
+        histories,freshness=bridge_completed_session(
+            histories,freshness,
+            frame=fallback_frame,
+            secondary_rows=fallback_secondary,
+            secondary_coverage_scope="primary",
+            primary_name="VNDIRECT_PUBLIC_EOD",
+            secondary_name="YAHOO_LEGACY_SNAPSHOT_CONFIRMATION",
+            provider_label="VNDIRECT completed-session OHLC, Yahoo-snapshot-confirmed close",
+            provider_code="VNDIRECT_POST_CLOSE_YAHOO_CONFIRMED",
+        )
+        freshness.setdefault("postCloseBridge",{})["fallbackFrom"]=str(primary_error)
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
