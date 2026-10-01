@@ -44,5 +44,25 @@ function point(bars,i,p,prev){
  return r;
 }
 function indicators(bars,p){const out=[];for(let i=0;i<bars.length;i++)out.push(point(bars,i,p,out[i-1]));return out;}
-const api={intraday,validBar,cleanBars,bucket,aggregate,point,indicators,average,weighted,trueRange,dxAt};root.FinChartMath=api;if(typeof module!=='undefined')module.exports=api;
+function liquiditySignal(volumeRatio){
+ const ratio=Number(volumeRatio);if(!Number.isFinite(ratio)||ratio<0)return null;
+ const deltaPct=(ratio-1)*100;
+ if(ratio>=1.5)return{ratio,deltaPct,level:'surge',confirmation:'strong'};
+ if(ratio>=1.2)return{ratio,deltaPct,level:'elevated',confirmation:'moderate'};
+ if(ratio>=1.05)return{ratio,deltaPct,level:'mildly_elevated',confirmation:'light'};
+ if(ratio>=.9)return{ratio,deltaPct,level:'near_average',confirmation:'neutral'};
+ if(ratio>=.7)return{ratio,deltaPct,level:'thin',confirmation:'weak'};
+ return{ratio,deltaPct,level:'very_thin',confirmation:'very_weak'};
+}
+function moneyFlowSignal(current,previous){
+ const c=current||{},p=previous||{},parts=[];let score=0;
+ if(Number.isFinite(c.cmf)){const v=Number(c.cmf);const vote=v>=.1?2:v>0?1:v<=-.1?-2:-1;score+=vote;parts.push({name:'CMF',value:v,vote});}
+ if(Number.isFinite(c.mfi)){const v=Number(c.mfi);const vote=v>=55?1:v<=45?-1:0;score+=vote;parts.push({name:'MFI',value:v,vote,extreme:v>=80?'high':v<=20?'low':null});}
+ if(Number.isFinite(c.obv)&&Number.isFinite(p.obv)){const d=Number(c.obv)-Number(p.obv),vote=d>0?1:d<0?-1:0;score+=vote;parts.push({name:'OBV',value:Number(c.obv),delta:d,vote});}
+ if(!parts.length)return null;
+ const direction=score>=2?'accumulation':score<=-2?'distribution':'mixed';
+ const confidence=parts.length>=3?'high':parts.length===2?'medium':'low';
+ return{direction,confidence,score,parts};
+}
+const api={intraday,validBar,cleanBars,bucket,aggregate,point,indicators,average,weighted,trueRange,dxAt,liquiditySignal,moneyFlowSignal};root.FinChartMath=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);
