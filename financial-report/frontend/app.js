@@ -4,6 +4,41 @@ const DATA_BASE=new URL(document.currentScript.dataset.base||'../data/',document
 const BOOT=JSON.parse(document.getElementById('financial-bootstrap')?.textContent||'{}');
 const LIVE_BASE=document.documentElement.dataset.hosting==='pages'?DATA_BASE:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-report-data/data/';
 const MARKET_BASE=document.documentElement.dataset.hosting==='pages'?new URL('market/',location.href).href:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
+const SITE_ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e';
+const TERM_INFO={
+ 'technical-signals':{title:'Cách đọc tín hiệu kỹ thuật',html:'<p>FinQuery không coi một chỉ báo riêng lẻ là đủ. Tín hiệu được đọc theo 4 lớp: <b>xu hướng</b>, <b>động lượng</b>, <b>thanh khoản</b> và <b>dòng tiền</b>.</p><p>Volume/TB20 cho biết mức độ tham gia của thị trường, còn hướng dòng tiền cần thêm CMF, MFI và OBV. Vì vậy khối lượng tăng không tự động đồng nghĩa với dòng tiền vào.</p>'},
+ 'volume-ratio':{title:'KL/TB20 · Mức xác nhận thanh khoản',html:'<ul><li><b>≥ 1,5x:</b> xác nhận mạnh — thanh khoản cao hơn nền 20 phiên ít nhất 50%.</li><li><b>1,2–1,5x:</b> xác nhận khá — mức tham gia cải thiện rõ.</li><li><b>1,05–1,2x:</b> cải thiện nhẹ — có thêm xác nhận nhưng chưa phải bùng nổ.</li><li><b>0,9–1,05x:</b> gần nền — thanh khoản chưa tạo thêm nhiều xác nhận.</li><li><b>&lt; 0,9x:</b> thanh khoản yếu dần — tín hiệu giá cần thận trọng hơn.</li></ul><p class="term-info-note">Đây là thang <b>mức độ tham gia/thanh khoản</b>, không phải kết luận dòng tiền vào/ra. Dòng tiền được đối chiếu thêm CMF, MFI và OBV.</p>'},
+ 'scanner-bias':{title:'Bias & Rule priority',html:'<p><b>Bias</b> là hướng nghiêng kỹ thuật do bộ rule hiện tại tổng hợp từ MACD, RSI, volume và các điều kiện liên quan.</p><p><b>Rule priority</b> là điểm heuristic dùng để sắp xếp tín hiệu cần chú ý trước; nó <b>không phải xác suất thắng</b>, không phải dự báo lợi nhuận và không thay thế việc kiểm tra chart/bối cảnh.</p>'}
+};
+async function siteDigest(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+function setSiteAccess(unlocked){
+ document.body.classList.toggle('site-locked',!unlocked);
+ const form=$('site-unlock-form'),error=$('site-access-error');
+ if(form)form.hidden=unlocked;
+ if(error&&unlocked)error.textContent='';
+ if(!unlocked)setTimeout(()=>$('site-access-code')?.focus(),0);
+}
+async function unlockSite(code){
+ if(await siteDigest(String(code||'').trim())!==SITE_ACCESS_HASH){const error=$('site-access-error');if(error)error.textContent='Mã truy cập không đúng.';return false;}
+ sessionStorage.setItem('finquery-site-access','1');setSiteAccess(true);return true;
+}
+function closeTermInfo(){
+ const pop=$('term-info-popover');if(pop)pop.hidden=true;
+ document.querySelectorAll('[data-info-key][aria-expanded=true]').forEach(b=>b.setAttribute('aria-expanded','false'));
+}
+function openTermInfo(button){
+ const item=TERM_INFO[button?.dataset?.infoKey];const pop=$('term-info-popover');if(!item||!pop)return;
+ $('term-info-title').textContent=item.title;$('term-info-body').innerHTML=item.html;
+ document.querySelectorAll('[data-info-key]').forEach(b=>b.setAttribute('aria-expanded',String(b===button)));
+ pop.hidden=false;pop.style.left='12px';pop.style.top='12px';
+ const rect=button.getBoundingClientRect(),width=Math.min(370,window.innerWidth-24),left=Math.max(12,Math.min(window.innerWidth-width-12,rect.right-width)),height=pop.offsetHeight,below=rect.bottom+8,top=below+height<=window.innerHeight-12?below:Math.max(12,rect.top-height-8);
+ pop.style.left=left+'px';pop.style.top=top+'px';
+}
+setSiteAccess(sessionStorage.getItem('finquery-site-access')==='1');
+$('site-unlock-form')?.addEventListener('submit',e=>{e.preventDefault();unlockSite($('site-access-code')?.value);});
+$('term-info-close')?.addEventListener('click',closeTermInfo);
+document.addEventListener('click',e=>{const button=e.target.closest?.('[data-info-key]');if(button){e.preventDefault();e.stopPropagation();const pop=$('term-info-popover');if(!pop.hidden&&button.getAttribute('aria-expanded')==='true')closeTermInfo();else openTermInfo(button);return;}const pop=$('term-info-popover');if(pop&&!pop.hidden&&!pop.contains(e.target))closeTermInfo();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTermInfo();});
 const state={bundle:null,data:null,companies:[],years:[],reports:[],active:'balance_sheet',chartMetric:'profit',overviewPeriod:null,overviewCompare:null,loading:false,controller:null,mode:new URLSearchParams(location.search).get('mode')==='year'?'year':'quarter',fallback:false};
 const names={balance_sheet:'Cân đối kế toán',income_statement:'Kết quả kinh doanh',cash_flow:'Lưu chuyển tiền tệ',ratios:'Chỉ số từ nguồn',derived_ratios:'Chỉ số tính từ BCTC',notes:'Thuyết minh',off_balance:'Ngoại bảng'};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

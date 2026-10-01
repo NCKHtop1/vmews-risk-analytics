@@ -48,3 +48,26 @@ test('market quote subtitle is timestamp-only and legacy nearest-session title i
  assert.doesNotMatch(app,/ĐÁNG XEM PHIÊN GẦN NHẤT/);
  assert.match(app,/label\.hidden=!invalidFuture&&priorSession/);
 });
+
+
+test('site access gate and contextual info controls are wired without changing feature modules',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
+ assert.match(index,/<body class="site-locked">/);
+ assert.match(index,/id="site-unlock-form"/);
+ assert.match(index,/id="site-access-code"[^>]+inputmode="numeric"/);
+ assert.match(app,/SITE_ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e'/);
+ assert.match(app,/sessionStorage\.setItem\('finquery-site-access','1'\)/);
+ assert.match(style,/\.site-locked \.workspace/);
+ assert.match(index,/data-info-key="volume-ratio"/);
+ assert.match(index,/data-info-key="scanner-bias"/);
+ assert.match(index,/data-info-key="technical-signals"/);
+ assert.match(app,/≥ 1,5x:/);
+ assert.match(app,/1,2–1,5x:/);
+ assert.match(app,/1,05–1,2x:/);
+ assert.match(app,/0,9–1,05x:/);
+ assert.match(app,/&lt; 0,9x:/);
+ assert.match(app,/không phải kết luận dòng tiền vào\/ra/i);
+ assert.match(app,/không phải xác suất thắng/i);
+});
