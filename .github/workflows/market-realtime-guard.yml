@@ -5,9 +5,13 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/market-realtime-guard.yml'
+      - 'financial-report/**'
+      - '.github/workflows/market-*.yml'
+      - '.github/workflows/pages.yml'
   schedule:
-    - cron: '10,25,40,55 * * * *'
+    # Lightweight heartbeat. GitHub can delay/drop individual cron events, so
+    # a 5-minute guard gives several chances to recover before news exceeds 20m.
+    - cron: '*/5 * * * *'
   workflow_run:
     # A second independent recovery chain: when either the live-intelligence
     # job or the generic FinQuery market watchdog finishes, re-check the
@@ -15,6 +19,8 @@ on:
     workflows:
       - Forecast V19 live FireAnt and 24HMoney intelligence
       - Refresh FinQuery prices and company news
+      - Refresh live HOSE Core + Liquid prices
+      - Deploy VMEWS Pages
     branches: [main]
     types: [completed]
 
