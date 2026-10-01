@@ -178,7 +178,7 @@ jobs:
           assert int(i.get('symbolsTotal') or 0)>=97,i
           assert all(d.get(k) for k in ('code','financialData','insightData','marketData')),d
           VN=timezone(timedelta(hours=7)); now=datetime.now(timezone.utc); local=now.astimezone(VN); mins=local.hour*60+local.minute
-          active=local.weekday()<5 and ((9*60<=mins<=11*60+40) or (12*60+55<=mins<=15*60+15))
+          active=local.weekday()<5 and ((9*60<=mins<=11*60+30) or (13*60<=mins<=14*60+45))
           if active:
               stamp=datetime.fromisoformat(str(q.get('latestSourceTime')).replace('Z','+00:00')).astimezone(timezone.utc)
               age=(now-stamp).total_seconds()/60
