@@ -1,8 +1,101 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-01T06:07:55+00:00",
+  "updatedAt": "2026-10-01T13:30:38+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-PC1-2026-10-01-001b1c7b",
+      "symbol": "PC1",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-01",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Xây dựng và Vật liệu xây dựng: Lãnh đạo đăng ký mua, đăng ký bán – có phải điểm mua, điểm bán tốt? Thống kê 828 sự kiện tại 39 doanh nghiệp, 2018–9/2026 NTP PC1 #Giao dịch nội bộ #Ngàn",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo PC1 ngày 01/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MIRAE-MBB-2026-10-01-dcd5456b",
+      "symbol": "MBB",
+      "broker": "MIRAE",
+      "brokerName": "MIRAE",
+      "publishedAt": "2026-10-01",
+      "title": "MBB: Khuyến nghị MUA với giá mục tiêu 28,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-28-200-dong-co-phieu-rpid6094.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 28200,
+      "summary": "MIRAE có báo cáo MBB ngày 01/10/2026 với khuyến nghị MUA, giá mục tiêu 28.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VPX-MBB-2026-09-30-25c1777b",
+      "symbol": "MBB",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-09-30",
+      "title": "MBB: Khuyến nghị MUA với giá mục tiêu 25,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-25-400-dong-co-phieu-rpid6100.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 25400,
+      "summary": "VPX có báo cáo MBB ngày 30/09/2026 với khuyến nghị MUA, giá mục tiêu 25.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-VPB-2026-09-30-30b44095",
+      "symbol": "VPB",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-09-30",
+      "title": "VPB: Khuyến nghị KHẢ QUAN với giá mục tiêu 30,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-30-500-dong-co-phieu-rpid6095.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 30500,
+      "summary": "VNDIRECT có báo cáo VPB ngày 30/09/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 30.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIKKIBANKS-FRT-2026-09-30-bf35449f",
+      "symbol": "FRT",
+      "broker": "VIKKIBANKS",
+      "brokerName": "VikkiBankS",
+      "publishedAt": "2026-09-30",
+      "title": "FRT: Khuyến nghị THEO DÕI với giá mục tiêu 157,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/frt-khuyen-nghi-theo-doi-voi-gia-muc-tieu-157-000-dong-co-phieu-rpid6099.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 157000,
+      "summary": "VIKKIBANKS có báo cáo FRT ngày 30/09/2026 với giá mục tiêu 157.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-OCB-2026-09-30-607ae95f",
+      "symbol": "OCB",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-09-30",
+      "title": "OCB: Khuyến nghị TÍCH LŨY với giá mục tiêu 11,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ocb-khuyen-nghi-tich-luy-voi-gia-muc-tieu-11-300-dong-co-phieu-rpid6097.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 11300,
+      "summary": "VDSC có báo cáo OCB ngày 30/09/2026 với giá mục tiêu 11.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-MSB-2026-09-30-1ae4766a",
+      "symbol": "MSB",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-09-30",
+      "title": "MSB: Khuyến nghị GIẢM TỶ TRỌNG với giá mục tiêu 13,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/msb-khuyen-nghi-giam-ty-trong-voi-gia-muc-tieu-13-200-dong-co-phieu-rpid6096.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 13200,
+      "summary": "VDSC có báo cáo MSB ngày 30/09/2026 với giá mục tiêu 13.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-FRT-2026-09-30-001b1c7b",
       "symbol": "FRT",
@@ -14,6 +107,18 @@
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "recommendation": "BÁN",
       "summary": "TCBS có báo cáo FRT ngày 30/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-DGW-2026-09-30-001b1c7b",
+      "symbol": "DGW",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-30",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Bán lẻ: Lãnh đạo đăng ký mua, đăng ký bán – có phải điểm mua, điểm bán tốt? Thống kê 384 sự kiện tại 10 doanh nghiệp, 7/2014–9/2026 MWG MCH MSN PNJ FRT DGW #Giao dịch nội bộ #Ngành bán",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "BÁN",
+      "summary": "TCBS có báo cáo DGW ngày 30/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "MIRAE-MSN-2026-09-30-5488955a",
@@ -28,6 +133,18 @@
       "recommendation": "MUA",
       "targetPrice": 89200,
       "summary": "MIRAE có báo cáo MSN ngày 30/09/2026 với khuyến nghị MUA, giá mục tiêu 89.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BETA-GMD-2026-09-30-fcd516b2",
+      "symbol": "GMD",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-09-30",
+      "title": "GMD: Báo cáo cập nhật KQKD Q2/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gmd-bao-cao-cap-nhat-kqkd-q2-2026-rpid6098.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BETA có báo cáo GMD ngày 30/09/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-DCM-2026-09-29-d91bb4ed",
