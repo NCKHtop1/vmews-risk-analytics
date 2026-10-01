@@ -1,4 +1,4 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),M=require('../frontend/chart-math.js');
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),M=require('../frontend/chart-math.js');
 const p={sma:3,ema:3,wma:3,vwma:3,rsi:3,fast:2,slow:4,signal:3,bb:3,deviation:2,vma:3,atr:3,adx:3,stoch:3,stochSignal:2,cci:3,roc:2,willr:3,mfi:3,cmf:3,supertrend:3,supertrendFactor:2};
 const rows=Array.from({length:20},(_,i)=>({time:`2026-09-${String(i+1).padStart(2,'0')}`,open:100+i,high:102+i,low:99+i,close:101+i,volume:100+i}));
 test('Aggregation preserves first open, last close, high/low and total volume',()=>{const r=M.aggregate(rows,'1mo')[0];assert.equal(r.open,100);assert.equal(r.close,120);assert.equal(r.high,121);assert.equal(r.low,99);assert.equal(r.volume,2190);});
