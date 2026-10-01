@@ -32,7 +32,7 @@
 </div>
 <section id="chart-terminal" aria-label="Biểu đồ chứng khoán chuyên nghiệp">
 <div class="market-controls"><button id="indicator-open" class="indicator-open" type="button"><span>ƒx</span> Các chỉ báo</button><label>Khung nến <select id="chart-interval"><option value="1m">1 phút</option><option value="5m">5 phút</option><option value="15m">15 phút</option><option value="30m">30 phút</option><option value="1h">1 giờ</option><option value="1d" selected>Ngày</option><option value="1w">Tuần</option><option value="1mo">Tháng</option></select></label><label>Kiểu <select id="chart-type"><option value="candles">Nến</option><option value="line">Đường</option><option value="area">Vùng</option></select></label><label>Khoảng xem <select id="chart-period"><option value="1">1 tháng</option><option value="3">3 tháng</option><option value="6">6 tháng</option><option value="12">1 năm</option><option value="60">5 năm</option><option value="0" selected>Tất cả</option></select></label><button id="chart-zoom-in" type="button" aria-label="Phóng to biểu đồ">+</button><button id="chart-zoom-out" type="button" aria-label="Thu nhỏ biểu đồ">−</button><button id="chart-fit" type="button">Vừa khung</button><button id="chart-marker-toggle" type="button" aria-pressed="false" title="Hiện hoặc ẩn mốc sự kiện và báo cáo trên biểu đồ">Mốc: tắt</button><button id="chart-fullscreen" type="button">Toàn màn hình</button></div>
-<div class="signal-center"><div class="signal-center-head"><div><span>FINQUERY SIGNALS</span><strong id="signal-title">Theo dõi tín hiệu kỹ thuật</strong></div><div class="signal-center-meta"><small id="signal-status">Tự đánh giá khi snapshot giá mới xuất hiện</small><button class="term-info-button" type="button" data-info-key="technical-signals" aria-label="Giải thích cách đọc tín hiệu kỹ thuật">i</button></div></div><div id="signal-feed" class="signal-feed"><p>Chưa có tín hiệu mới.</p></div></div>
+<div class="signal-center"><div class="signal-center-head"><div><span>FINQUERY SIGNALS</span><div class="signal-title-row"><strong id="signal-title">Theo dõi tín hiệu kỹ thuật</strong><button class="term-info-button" type="button" data-info-key="technical-signals" aria-label="Giải thích cách đọc tín hiệu kỹ thuật">i</button></div></div><div class="signal-center-meta"><small id="signal-status">Tự đánh giá khi snapshot giá mới xuất hiện</small></div></div><div id="signal-feed" class="signal-feed"><p>Chưa có tín hiệu mới.</p></div></div>
 <div id="signal-toast-stack" class="signal-toast-stack" aria-live="polite"></div>
 <dialog id="chart-indicators" class="indicator-dialog">
 <div class="indicator-dialog-shell">
@@ -87,7 +87,7 @@
 <section id="technical-scanner-panel" class="technical-scanner-panel" hidden aria-label="Technical Scanner HOSE">
 <div id="technical-scanner-gate" class="technical-scanner-gate"><div><span class="research-ai-label">TECHNICAL SCANNER · HOSE</span><strong>Khu vực tín hiệu kỹ thuật giới hạn</strong><p>Scanner cập nhật theo snapshot giá 15 phút. Nhập mã truy cập để xem các mã đang khớp MACD, RSI và volume.</p></div><form id="technical-scanner-unlock-form"><input id="technical-scanner-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập Technical Scanner"><button type="submit">Mở scanner</button></form><p id="technical-scanner-error" role="status"></p></div>
 <div id="technical-scanner-workspace" class="technical-scanner-workspace" hidden>
-<div class="technical-scanner-head"><div><span class="research-ai-label">LIVE TECHNICAL SCANNER</span><h4>MACD · RSI · Volume</h4><p id="technical-scanner-status">Đang tải scanner HOSE…</p></div><div class="technical-scanner-head-actions"><button class="term-info-button" type="button" data-info-key="scanner-bias" aria-label="Giải thích Bias và Rule priority">i</button><button id="technical-scanner-refresh" type="button">Cập nhật ↻</button></div></div>
+<div class="technical-scanner-head"><div><span class="research-ai-label">LIVE TECHNICAL SCANNER</span><div class="technical-scanner-title-row"><h4>MACD · RSI · Volume</h4><button class="term-info-button" type="button" data-info-key="scanner-bias" aria-label="Giải thích Bias và Rule priority">i</button></div><p id="technical-scanner-status">Đang tải scanner HOSE…</p></div><div class="technical-scanner-head-actions"><button id="technical-scanner-refresh" type="button">Cập nhật ↻</button></div></div>
 <div id="technical-scanner-summary" class="technical-scanner-summary"></div>
 <div class="technical-scanner-toolbar"><input id="technical-scanner-search" type="search" placeholder="Tìm mã…" aria-label="Tìm mã trong technical scanner"><label class="technical-scanner-universe-label">Phạm vi <select id="technical-scanner-universe"><option value="all">Toàn HOSE đủ dữ liệu</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option><option value="DISCOVERY">Discovery EOD</option></select></label><div id="technical-scanner-filters" class="technical-scanner-filters" role="group" aria-label="Lọc tín hiệu kỹ thuật">
 <button type="button" class="active" data-tech-filter="all">Tất cả</button><button type="button" data-tech-filter="macd_cross_up">MACD cắt ↑</button><button type="button" data-tech-filter="macd_cross_down">MACD cắt ↓</button><button type="button" data-tech-filter="macd_near_up">Sắp cắt ↑</button><button type="button" data-tech-filter="macd_near_down">Sắp cắt ↓</button><button type="button" data-tech-filter="rsi_oversold">RSI ≤ 30</button><button type="button" data-tech-filter="rsi_overbought">RSI ≥ 70</button><button type="button" data-tech-filter="volume">Volume mạnh</button>
@@ -122,11 +122,14 @@
 </section>
 <section id="strategy-builder" class="strategy-builder-section is-collapsed" aria-label="Strategy Builder và TA Screener">
 <div class="strategy-builder-head">
-<button id="strategy-toggle" class="strategy-head-toggle" type="button" aria-expanded="false" aria-controls="strategy-body">
+<div class="strategy-head-copy">
 <span class="research-ai-label">STRATEGY LAB · TA SCREENER</span>
-<h2>Kéo thả chiến lược kỹ thuật</h2>
+<div class="strategy-title-row">
+<button id="strategy-toggle" class="strategy-head-toggle strategy-title-toggle" type="button" aria-expanded="false" aria-controls="strategy-body"><h2>Kéo thả chiến lược kỹ thuật</h2></button>
+<button class="term-info-button" type="button" data-info-key="strategy-builder" aria-label="Hướng dẫn sử dụng Strategy Lab">i</button>
+</div>
 <p>Ghép indicator theo logic của bạn, quét toàn HOSE và lưu strategy để theo dõi tín hiệu.</p>
-</button>
+</div>
 <div class="strategy-head-actions">
 <span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span>
 <button id="strategy-refresh" type="button">Cập nhật ↻</button>
