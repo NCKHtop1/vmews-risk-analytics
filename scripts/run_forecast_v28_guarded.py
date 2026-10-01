@@ -18,7 +18,7 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
 from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
-from forecast_v28_postclose_bridge import bridge_completed_session  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
 # V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
@@ -71,6 +71,36 @@ def _frame_from_vndirect(rows_by_symbol: dict[str, list[dict]], session_date: st
         })
     return pd.DataFrame(rows)
 
+def _tradingview_confirmation_rows(session_date: str) -> dict[str, list[dict]]:
+    """Extract same-session TradingView closes for independent confirmation only."""
+    from datetime import datetime, timezone
+    rows={}
+    try:
+        frame=fetch_tradingview_quotes()
+    except Exception:
+        return rows
+    for _,item in frame.iterrows():
+        symbol=str(item.get("name") or item.get("ticker") or "").upper().split(":")[-1].strip()
+        exchange=str(item.get("exchange") or "").upper().strip()
+        if exchange in {"HSX","HOCHIMINH"}:
+            exchange="HOSE"
+        if not symbol or exchange!="HOSE":
+            continue
+        raw_time=item.get("update_time")
+        try:
+            stamp=float(raw_time)
+            if stamp>1e12: stamp/=1000.0
+            observed=datetime.fromtimestamp(stamp,timezone.utc).astimezone(market_model.VN_TZ).date().isoformat()
+        except Exception:
+            observed=str(item.get("date") or "")[:10]
+        try:
+            close=float(item.get("close"))
+        except (TypeError,ValueError):
+            continue
+        if observed==session_date and close>0:
+            rows[symbol]=[{"date":session_date,"close":close}]
+    return rows
+
 def _load_histories_with_current_session(*args,**kwargs):
     global _bridge_metadata,_historical_scan_as_of
     histories,freshness=_original_load_histories(*args,**kwargs)
@@ -82,37 +112,40 @@ def _load_histories_with_current_session(*args,**kwargs):
         from datetime import datetime
         from vn_exchange_calendar import VN_TZ, latest_completed_session
         session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
-        fallback_secondary=_legacy_snapshot_rows(session_date)
-        verified_symbols=sorted(
-            set(fallback_secondary)
-            & set(secondary)
-            & set(freshness.get("currentHOSESymbols") or histories)
-        )
+        yahoo_secondary=_legacy_snapshot_rows(session_date)
+        tv_secondary=_tradingview_confirmation_rows(session_date)
         original_symbols=sorted(set(freshness.get("currentHOSESymbols") or histories))
-        if len(verified_symbols) < max(1,int(len(original_symbols)*.70)):
+        composite_secondary=dict(tv_secondary)
+        for symbol,rows in yahoo_secondary.items():
+            if symbol not in composite_secondary:
+                composite_secondary[symbol]=rows
+        verified_symbols=sorted(
+            set(composite_secondary)
+            & set(secondary)
+            & set(original_symbols)
+        )
+        if len(verified_symbols) < max(1,int(len(original_symbols)*.90)):
             raise primary_error
         fallback_frame=_frame_from_vndirect(
-            {symbol:secondary[symbol] for symbol in verified_symbols},
+            {symbol:secondary[symbol] for symbol in original_symbols if symbol in secondary},
             session_date,
         )
-        fallback_freshness=dict(freshness)
-        fallback_freshness["currentHOSESymbols"]=verified_symbols
-        fallback_freshness["currentHOSECount"]=len(verified_symbols)
         histories,freshness=bridge_completed_session(
-            histories,fallback_freshness,
+            histories,freshness,
             frame=fallback_frame,
-            secondary_rows={symbol:fallback_secondary[symbol] for symbol in verified_symbols},
+            secondary_rows={symbol:composite_secondary[symbol] for symbol in verified_symbols},
             primary_name="VNDIRECT_PUBLIC_EOD",
-            secondary_name="YAHOO_LEGACY_SNAPSHOT_CONFIRMATION",
-            provider_label="VNDIRECT completed-session OHLC, Yahoo-snapshot-confirmed close",
-            provider_code="VNDIRECT_POST_CLOSE_YAHOO_CONFIRMED",
+            secondary_name="TRADINGVIEW_PLUS_YAHOO_CONFIRMATION",
+            provider_label="VNDIRECT completed-session OHLC, independently confirmed close",
+            provider_code="VNDIRECT_POST_CLOSE_COMPOSITE_CONFIRMED",
         )
         bridge=freshness.setdefault("postCloseBridge",{})
         bridge["fallbackFrom"]=str(primary_error)
         bridge["originalUniverseSymbols"]=len(original_symbols)
+        bridge["tradingViewConfirmedSymbols"]=len(set(tv_secondary)&set(original_symbols))
+        bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
-        bridge["fallbackExcludedSymbols"]=len(original_symbols)-len(verified_symbols)
-        bridge["fallbackPolicy"]="ONLY_INDEPENDENTLY_CONFIRMED_SYMBOLS_ENTER_CURRENT_FORECAST_UNIVERSE"
+        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
