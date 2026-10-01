@@ -121,7 +121,27 @@ for(const event of ['pointerover','focusin'])$('trend-chart').addEventListener(e
 $('copyright-year').textContent=new Date().getFullYear();
 $('report-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;const ids=state.data?.sections.filter(s=>state.reports.includes(s.id)).map(s=>s.id)||[];if(!ids.length)return;e.preventDefault();state.active=ids[(ids.indexOf(state.active)+(e.key==='ArrowRight'?1:ids.length-1))%ids.length];renderPreview();$('tab-'+state.active)?.focus();});$('download').addEventListener('click',download);
 function companyOptions(){ $('company-options').innerHTML=state.companies.map(c=>`<option value="${esc(c.symbol)}">${esc(c.name)}</option>`).join(''); }
-window.FinancialReportContext={raw(){if(!state.bundle&&!state.data)return null;return{symbol:state.bundle?.symbol||state.data?.symbol,name:state.bundle?.name||state.data?.name||'',mode:state.mode,updatedAt:state.data?.updatedAt||state.bundle?.updatedAt||null,selectedPeriods:[...state.years],data:state.data,annual:state.bundle||null,quarterly:state.bundle?.quarterly||null};}};
+function normCompanyLookup(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function resolveCompanySymbol(value){
+ const raw=String(value||'').trim();if(!raw)return'';
+ const upper=raw.toUpperCase(),exact=state.companies.find(c=>c.symbol===upper||String(c.name||'').toLowerCase()===raw.toLowerCase());if(exact)return exact.symbol;
+ const tokens=upper.match(/(^|[^A-Z0-9])([A-Z]{3})(?=[^A-Z0-9]|$)/g)||[];
+ for(const token of tokens){const symbol=token.replace(/[^A-Z]/g,'');const hit=state.companies.find(c=>c.symbol===symbol);if(hit)return hit.symbol;}
+ const normalized=normCompanyLookup(raw);
+ const byName=state.companies.find(c=>{const name=normCompanyLookup(c.name||'');return name.length>=6&&normalized.includes(name);});
+ return byName?.symbol||'';
+}
+function reportContextRaw(){if(!state.bundle&&!state.data)return null;return{symbol:state.bundle?.symbol||state.data?.symbol,name:state.bundle?.name||state.data?.name||'',mode:state.mode,updatedAt:state.data?.updatedAt||state.bundle?.updatedAt||null,selectedPeriods:[...state.years],data:state.data,annual:state.bundle||null,quarterly:state.bundle?.quarterly||null};}
+window.FinancialReportContext={
+ raw:reportContextRaw,
+ companies(){return state.companies.map(c=>({symbol:c.symbol,name:c.name,exchange:c.exchange||'HOSE'}));},
+ resolveSymbol:resolveCompanySymbol,
+ async select(value){
+  const symbol=resolveCompanySymbol(value)||String(value||'').trim().toUpperCase();if(!symbol)return null;
+  const current=reportContextRaw();if(current?.symbol===symbol)return current;
+  await loadCompany(symbol);return reportContextRaw();
+ }
+};
 async function init(){
  try{state.companies=BOOT.companies||await json(DATA_BASE+'companies.json',null);companyOptions();$('company-description').textContent='100 doanh nghiệp thuộc VN100.';}catch{error('Chưa tải được danh sách VN100. Vui lòng tải lại trang.');return;}
  loadTodayWatch();setInterval(()=>{if(!document.hidden)loadTodayWatch();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTodayWatch();});window.addEventListener('online',loadTodayWatch);
