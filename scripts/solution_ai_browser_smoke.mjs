@@ -49,6 +49,38 @@ try {
       throw new Error(`${symbol}: AI context must preserve all five horizon states, got ${labels.join(',')}`);
     }
 
+    if (context.forecastFresh === false) {
+      if (!Array.isArray(context.publishedHorizons) || context.publishedHorizons.length !== 0) {
+        throw new Error(`${symbol}: stale forecast must not expose published point prices`);
+      }
+      const staleQuestion = 'Chỉ dùng dữ liệu mô hình, phân tích đường forecast T+1 đến T+5 của mã đang xem.';
+      const staleLocal = await page.evaluate(({ q, ctx }) => window.__SOLUTION_AI_LOCAL_ANALYSIS__(q, ctx), { q: staleQuestion, ctx: context });
+      if (typeof staleLocal !== 'string' || staleLocal.length < 250 || !staleLocal.includes(symbol)) {
+        throw new Error(`${symbol}: stale-mode local AI is not useful: ${String(staleLocal).slice(0, 240)}`);
+      }
+      for (const label of expectedLabels) {
+        if (!staleLocal.includes(label)) throw new Error(`${symbol}: stale-mode AI missing ${label}`);
+      }
+      if (!/REVIEW|chưa phát hành|abstention|đang cập nhật/i.test(staleLocal)) {
+        throw new Error(`${symbol}: stale-mode AI does not communicate gated forecast state`);
+      }
+      const cards = await page.locator('#forecastCards .forecastCard').allInnerTexts();
+      if (!cards.some(text => /ĐANG CẬP NHẬT|CHƯA ĐẠT KIỂM ĐỊNH HORIZON|CHƯA CÓ DỮ LIỆU/.test(text))) {
+        throw new Error(`${symbol}: stale forecast UI does not expose update/review state`);
+      }
+      if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
+      results.push({
+        symbol,
+        preferredHorizon: context.preferredHorizon,
+        publishedHorizons: context.publishedHorizons,
+        reviewHorizons: context.reviewHorizons,
+        forecastFresh: false,
+        localChars: staleLocal.length,
+      });
+      await page.close();
+      continue;
+    }
+
     if (!Array.isArray(context.publishedHorizons) || context.publishedHorizons.length < 1) {
       throw new Error(`${symbol}: no published forecast horizon available to AI`);
     }
