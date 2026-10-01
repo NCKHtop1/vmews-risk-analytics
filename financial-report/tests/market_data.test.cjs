@@ -38,3 +38,13 @@ test('Strategy Lab replaces visible Data Health and simple rule form',()=>{
  assert.match(build,/strategy-engine\.js/);assert.match(build,/alert-center\.js/);assert.doesNotMatch(build,/front \/ 'data-health\.js'/);
  assert.match(html,/id="strategy-builder"/);assert.doesNotMatch(html,/id="data-health"/);assert.doesNotMatch(html,/Cảnh báo chạy khi trang đang mở/);
 });
+
+
+test('market quote subtitle is timestamp-only and legacy nearest-session title is removed',()=>{
+ const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ assert.match(market,/function quoteTime\(q\)\{if\(!q\)return'Chưa có';return date\(q\.sourceTime\|\|q\.collectedAt\);\}/);
+ assert.doesNotMatch(market,/Vietcap.*quoteTime|Giá chốt phiên gần nhất|Cập nhật trong phiên khoảng 15 phút\/lần/);
+ assert.doesNotMatch(app,/ĐÁNG XEM PHIÊN GẦN NHẤT/);
+ assert.match(app,/label\.hidden=!invalidFuture&&priorSession/);
+});

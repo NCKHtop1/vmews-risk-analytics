@@ -41,6 +41,7 @@ jobs:
           import time
           import json
           import os
+          import re
           import urllib.request
           from datetime import datetime, timezone, timedelta
           from selenium import webdriver
@@ -131,11 +132,15 @@ jobs:
               """)
               if not freshness_ui.get('warningHidden') or 'Nguồn quá' in freshness_ui.get('warningText','') or 'không dùng như giá live' in freshness_ui.get('warningText',''):
                   raise AssertionError(f'Legacy minute-age live warning resurfaced: {freshness_ui}')
-              local=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7)))
-              mins=local.hour*60+local.minute
-              live_window=local.weekday()<5 and ((9*60<=mins<=11*60+30) or (13*60<=mins<=14*60+45))
-              if not live_window and 'giá chốt phiên' not in freshness_ui.get('quoteTime','').lower():
-                  raise AssertionError(f'Outside session must show session-close semantics: {freshness_ui}')
+              quote_time=freshness_ui.get('quoteTime','')
+              lowered=quote_time.lower()
+              if any(x in lowered for x in ['vietcap','giá chốt phiên','cập nhật trong phiên','giá chốt phiên gần nhất']):
+                  raise AssertionError(f'Quote subtitle must contain timestamp only: {freshness_ui}')
+              if not re.search(r'\d{1,2}:\d{2}.*\d{1,2}/\d{1,2}/\d{2,4}',quote_time):
+                  raise AssertionError(f'Quote subtitle is missing timestamp: {freshness_ui}')
+              watch_label=(driver.find_element('id','today-watch-label').text or '').strip()
+              if 'ĐÁNG XEM PHIÊN GẦN NHẤT' in watch_label:
+                  raise AssertionError(f'Legacy nearest-session watch title resurfaced: {watch_label}')
               wait.until(lambda d:d.execute_script("""
                 return Boolean(document.querySelector('#price-chart canvas'));
               """))
