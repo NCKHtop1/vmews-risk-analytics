@@ -2,6 +2,10 @@ name: Financial dashboard browser smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     types: [completed]
