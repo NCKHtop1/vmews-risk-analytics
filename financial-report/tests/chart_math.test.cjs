@@ -7,3 +7,25 @@ test('SMA RSI Bollinger volume MA known results',()=>{const r=M.indicators(rows,
 test('Expanded pandas-ta compatible indicators produce deterministic values',()=>{const r=M.indicators(rows,p);assert.equal(r[2].wma,(101+2*102+3*103)/6);assert.ok(r[2].vwma>102&&r[2].vwma<103);assert.ok(Math.abs(r[2].roc-200/101)<1e-12);assert.equal(r[1].obv,101);assert.ok(Number.isFinite(r[4].atr));assert.ok(Number.isFinite(r[4].stoch));assert.ok(Number.isFinite(r[4].cci));assert.ok(Number.isFinite(r[4].willr));assert.ok(Number.isFinite(r[4].mfi));assert.ok(Number.isFinite(r[4].cmf));assert.ok(Number.isFinite(r[4].supertrend));});
 test('Replacing last candle gives same indicators as full recomputation',()=>{const before=M.indicators(rows,p);const changed=rows.map(b=>({...b}));changed[19].close=115;changed[19].low=114;const incremental=M.point(changed,19,p,before[18]);assert.deepEqual(incremental,M.indicators(changed,p)[19]);const appended=[...changed,{...rows[19],time:'2026-09-21',close:121}];assert.deepEqual(M.point(appended,20,p,incremental),M.indicators(appended,p)[20]);});
 test('Bad OHLC dropped and duplicated timestamps deduplicated',()=>{assert.equal(M.cleanBars([rows[0],{...rows[0],close:102}, {...rows[1],low:999}],false).length,1);});
+
+test('Liquidity interpretation distinguishes mild confirmation from average volume',()=>{
+ const x=M.liquiditySignal(1.17);
+ assert.equal(x.level,'mildly_elevated');
+ assert.equal(x.confirmation,'light');
+ assert.ok(Math.abs(x.deltaPct-17)<1e-9);
+ assert.equal(M.liquiditySignal(1.2).level,'elevated');
+ assert.equal(M.liquiditySignal(1.5).level,'surge');
+ assert.equal(M.liquiditySignal(.82).level,'thin');
+});
+test('Money-flow interpretation requires CMF MFI OBV agreement instead of volume alone',()=>{
+ assert.equal(M.moneyFlowSignal({cmf:.14,mfi:61,obv:120},{obv:100}).direction,'accumulation');
+ assert.equal(M.moneyFlowSignal({cmf:-.16,mfi:38,obv:80},{obv:100}).direction,'distribution');
+ assert.equal(M.moneyFlowSignal({cmf:.04,mfi:42,obv:120},{obv:100}).direction,'mixed');
+});
+test('Technical narrative no longer calls 0.7x-1.2x volume normal money flow',()=>{
+ const src=fs.readFileSync(require('node:path').join(__dirname,'../frontend/chart-engine.js'),'utf8');
+ assert.doesNotMatch(src,/dòng tiền ở mức bình thường/i);
+ assert.match(src,/thanh khoản cải thiện nhẹ/i);
+ assert.match(src,/chưa đồng thuận, chưa nên kết luận dòng tiền vào hoặc ra rõ/i);
+ assert.match(src,/cao hơn.*SMA|thấp hơn.*SMA/i);
+});
