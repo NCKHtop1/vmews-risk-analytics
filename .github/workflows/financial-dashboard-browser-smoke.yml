@@ -116,6 +116,22 @@ jobs:
                 const q=window.FinancialMarket?.context?.()?.quote;
                 return Boolean(q && Number(q.price)>0);
               """))
+              freshness_ui=driver.execute_script("""
+                const warning=document.getElementById('quote-freshness');
+                const quoteTime=(document.getElementById('quote-time')?.textContent||'').trim();
+                return {
+                  warningHidden:warning?.hidden===true,
+                  warningText:(warning?.textContent||'').trim(),
+                  quoteTime
+                };
+              """)
+              if not freshness_ui.get('warningHidden') or 'Nguồn quá' in freshness_ui.get('warningText','') or 'không dùng như giá live' in freshness_ui.get('warningText',''):
+                  raise AssertionError(f'Legacy minute-age live warning resurfaced: {freshness_ui}')
+              local=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7)))
+              mins=local.hour*60+local.minute
+              live_window=local.weekday()<5 and ((9*60<=mins<=11*60+30) or (13*60<=mins<=14*60+45))
+              if not live_window and 'giá chốt phiên' not in freshness_ui.get('quoteTime','').lower():
+                  raise AssertionError(f'Outside session must show session-close semantics: {freshness_ui}')
               wait.until(lambda d:d.execute_script("""
                 return Boolean(document.querySelector('#price-chart canvas'));
               """))
