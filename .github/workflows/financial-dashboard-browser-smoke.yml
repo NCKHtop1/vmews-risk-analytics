@@ -76,6 +76,7 @@ jobs:
               # Do not store protected passcodes in CI. Authorized smoke access is
               # enabled through the same session flags set by the successful gates.
               driver.execute_script("""
+                sessionStorage.setItem('finquery-site-access','1');
                 sessionStorage.setItem('finquery-technical-access','1');
                 sessionStorage.setItem('finquery-macro-access','1');
               """)
