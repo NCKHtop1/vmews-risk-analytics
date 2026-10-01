@@ -26,6 +26,8 @@ async function json(url,signal,timeout=12000){const ctl=new AbortController(),ti
 async function marketJson(file,timeout=8000){return window.FinMarketData.get(file,{timeout});}
 function watchChange(value){const n=Number(value);return Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—';}
 function watchMove(row){if(row?.isNew)return'<em class="watch-new">MỚI</em>';const n=Number(row?.rankChange);if(n>0)return'<em class="watch-up">↑'+Math.abs(n)+'</em>';if(n<0)return'<em class="watch-down">↓'+Math.abs(n)+'</em>';return'<em class="watch-flat">•</em>';}
+function vnMarketPhase(ts=Date.now()){const d=new Date(ts),p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d).filter(x=>x.type!=='literal').map(x=>[x.type,x.value])),minutes=Number(p.hour)*60+Number(p.minute);if(['Sat','Sun'].includes(p.weekday))return'CLOSED';if(minutes<9*60)return'PREOPEN';if(minutes<=11*60+30)return'MORNING';if(minutes<13*60)return'LUNCH';if(minutes<=14*60+45)return'AFTERNOON';return'CLOSED';}
+function vnMarketLive(){const phase=vnMarketPhase();return phase==='MORNING'||phase==='AFTERNOON';}
 function renderTodayWatch(data){
  const box=$('quick-tickers'),track=$('quick-tickers-track'),status=$('today-watch-status'),label=$('today-watch-label');if(!box||!track)return;
  const now=Date.now(),sourceTime=Date.parse(data?.sourceTime||''),checkedAt=Date.parse(data?.checkedAt||''),futureSource=Number.isFinite(sourceTime)&&sourceTime>now+5*60*1000,futureCheck=Number.isFinite(checkedAt)&&checkedAt>now+5*60*1000;
@@ -33,8 +35,8 @@ function renderTodayWatch(data){
  const futureDate=Boolean(data?.sourceDate&&data.sourceDate>vnDay),invalidFuture=futureSource||futureCheck||futureDate;
  const items=!invalidFuture&&Array.isArray(data?.items)?data.items.filter(x=>state.companies.some(c=>c.symbol===x.symbol)).slice(0,8):[];
  if(label)label.textContent=invalidFuture?'DỮ LIỆU CHƯA HỢP LỆ':data?.sourceDate&&data.sourceDate<vnDay?'ĐÁNG XEM PHIÊN GẦN NHẤT':'ĐÁNG XEM HÔM NAY';
- const stale=!Number.isFinite(checkedAt)||now-checkedAt>30*60000;
- if(status){status.textContent=invalidFuture?'CHƯA LIVE':(stale?'BẢN GẦN NHẤT':'15P')+(Number.isFinite(checkedAt)?' · '+new Date(checkedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
+ const live=vnMarketLive(),stale=live&&(!Number.isFinite(checkedAt)||now-checkedAt>30*60000),phase=vnMarketPhase();
+ if(status){const mode=invalidFuture?'CHƯA LIVE':live?(stale?'ĐANG ĐỒNG BỘ':'15P'):(phase==='LUNCH'?'CHỐT PHIÊN SÁNG':'CHỐT PHIÊN');status.textContent=mode+(Number.isFinite(checkedAt)?' · '+new Date(checkedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):'');}
  if(invalidFuture){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Snapshot nguồn có thời gian chưa hợp lệ; chờ dữ liệu phiên thực.</span>';return;}
  if(!items.length){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Chưa có tín hiệu đủ mạnh.</span>';return;}
  const rowHTML=row=>{const reasons=(row.reasons||[]).join(' · '),score=Number(row.score),title=[reasons,Number.isFinite(score)?'WatchScore '+score+'/100':'','Cập nhật 15 phút/lần'].filter(Boolean).join(' · '),chg=Number(row.changePct),cls=Number.isFinite(chg)?(chg>0?'positive':chg<0?'negative':'neutral'):'neutral';return'<button type="button" class="quick-watch-button '+cls+'" data-symbol="'+esc(row.symbol)+'" title="'+esc(title)+'"><strong>'+esc(row.symbol)+'</strong><span>'+esc(watchChange(chg))+'</span>'+watchMove(row)+'</button>';};
