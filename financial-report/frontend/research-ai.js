@@ -557,13 +557,13 @@ function inferredQuestionMode(question){
  const s=norm(question);
  return /phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|doi chieu nguon/.test(s)?'deep':null;
 }
-function geminiPrompt(question){
+function geminiPrompt(question,agentContext=null){
  return[
   'CÂU HỎI NGƯỜI DÙNG:\n'+question,
   'LỊCH SỬ GẦN NHẤT:\n'+JSON.stringify(state.history.slice(-8)),
-  'FINQUERY CONTEXT:\n'+JSON.stringify(buildLLMContext(question)),
+  'FINQUERY CONTEXT:\n'+JSON.stringify(agentContext||buildLLMContext(question)),
   'NGUỒN ĐÃ CÓ TRONG TRANG:\n'+JSON.stringify(sourcesForLLM()),
-  'Hãy trả lời câu hỏi dựa trên dữ liệu neo trước. Nếu có tìm kiếm web, chỉ dùng để bổ sung bằng chứng và nêu thời điểm khi cần.'
+  'Hãy trả lời câu hỏi dựa trên dữ liệu neo trước. Nếu FINQUERY CONTEXT có agent.validation, phải tuân theo cảnh báo validation và không sử dụng evidence đã bị loại. Nếu có tìm kiếm web, chỉ dùng để bổ sung bằng chứng và nêu thời điểm khi cần.'
  ].join('\n\n');
 }
 function safeExternalUrl(url){
@@ -596,8 +596,8 @@ function providerAnswer(payload){
  const text=(payload?.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').filter(Boolean).join('\n').trim();
  return{text,sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
 }
-async function callGeminiModel(question,secret,model,allowSearch=true){
- const search=allowSearch&&shouldSearchWeb(question),input=geminiPrompt(question),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
+async function callGeminiModel(question,secret,model,allowSearch=true,agentContext=null){
+ const search=allowSearch&&shouldSearchWeb(question),input=geminiPrompt(question,agentContext),deep=state.mode==='deep'&&!/flash[-_.]?lite/i.test(model);
  const generation={maxOutputTokens:deep?2200:1400,temperature:deep?.16:.12,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:deep?'medium':'low'}}:{})};
  const body=withSearch=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:generation,...(withSearch?{tools:[{googleSearch:{}}]}:{})});
  let payload;
@@ -615,12 +615,22 @@ async function callLLM(question){
  const secret=sessionSecret();
  if(!secret){const err=new Error('Dolphin chưa kết nối Gemini.');err.code='NO_GEMINI_KEY';throw err;}
  if(!state.modelCandidates.length||!state.geminiReady)await validateGemini(secret);
+ const baseContext=buildLLMContext(question),sourceHints=sourcesForLLM();
+ let agentContext=baseContext,agentAudit=null;
+ if(window.FinResearchAgent?.run){
+  try{
+   const agentRun=await window.FinResearchAgent.run(question,{baseContext,sources:sourceHints});
+   agentContext=agentRun?.context||baseContext;agentAudit=agentRun?.audit||null;
+  }catch(error){
+   agentContext={...baseContext,agent:{version:'FINQUERY_RESEARCH_AGENT_V1',status:'error',error:String(error?.message||error).slice(0,240)}};
+  }
+ }
  const candidates=modelPlan(state.mode);
  if(!candidates.length)throw new Error('Không tìm thấy Gemini Flash phù hợp.');
  let lastError;const attempted=[];
  for(let i=0;i<candidates.length;i++){
   const model=candidates[i];state.model=model;attempted.push(model);
-  try{return await callGeminiModel(question,secret,model,i===0);}
+  try{const answer=await callGeminiModel(question,secret,model,i===0,agentContext);return{...answer,agentAudit};}}
   catch(error){
    lastError=error;state.lastGeminiError=String(error?.message||error);
    if(error?.name==='AbortError')throw error;
