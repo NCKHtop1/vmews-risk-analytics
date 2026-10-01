@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "updatedAt": "2026-09-30T12:46:30+00:00",
+  "updatedAt": "2026-10-01T06:07:55+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-FRT-2026-09-30-001b1c7b",
+      "symbol": "FRT",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-30",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Bán lẻ: Lãnh đạo đăng ký mua, đăng ký bán — có phải điểm mua, điểm bán tốt? Thống kê 384 sự kiện tại 10 doanh nghiệp, 7/2014–9/2026 MWG MCH MSN PNJ FRT DGW #Giao dịch nội bộ #Ngành bán",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "BÁN",
+      "summary": "TCBS có báo cáo FRT ngày 30/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "MIRAE-MSN-2026-09-30-5488955a",
       "symbol": "MSN",
@@ -77,6 +89,17 @@
       "brokerName": "Techcom Securities",
       "publishedAt": "2026-09-29",
       "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — VIC · Tập đoàn Vingroup — Công ty Cổ phần Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VIC ngày 29/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VIC-2026-09-29-001b1c7b",
+      "symbol": "VIC",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-29",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — VIC · Tập đoàn Vingroup — Công ty Cổ phần VIC #Phân tích lần đầu #Ngành BĐS dân cư Xem báo cáo Tải file",
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VIC ngày 29/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
@@ -169,6 +192,17 @@
       "brokerName": "Techcom Securities",
       "publishedAt": "2026-09-28",
       "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — BSR · Công ty CP – Tổng Công ty Lọc Hoá dầu Việt Nam Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BSR ngày 28/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BSR-2026-09-28-001b1c7b",
+      "symbol": "BSR",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-28",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — BSR · Công ty CP – Tổng Công ty Lọc Hoá dầu Việt Nam BSR #Phân tích lần đầu #Ngành dầu khí Xem báo cáo Tải file",
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo BSR ngày 28/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
