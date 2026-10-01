@@ -396,3 +396,8 @@ body.dolphin-modal-open{overflow:hidden}
 .technical-scanner-head .term-info-button:hover{border-color:#91a0d4;background:#f3f5ff;color:#4358cf}
 .strategy-head-copy{flex:1;min-width:0}.strategy-title-row{display:flex;align-items:center;gap:7px;min-width:0}.strategy-title-row .strategy-head-toggle{flex:0 1 auto;width:auto}.strategy-title-row .term-info-button{margin-top:2px}.strategy-head-copy>p{margin:0;color:#7b8798;font-size:12px}
 .signal-title-row{display:flex;align-items:center;gap:6px}.signal-title-row strong{margin-top:2px}
+
+/* Keep contextual help aligned even inside table/head button styles */
+.market-board-title-row,.signal-title-row,.technical-scanner-title-row,.strategy-title-row{align-items:center}
+.signal-title-row strong{margin-top:0}
+.technical-scanner-table th .term-info-button,.market-table th .term-info-button{display:inline-grid!important;padding:0!important;vertical-align:1px!important}
