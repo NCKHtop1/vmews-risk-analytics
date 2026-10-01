@@ -340,7 +340,7 @@ function analyze(question){
 
 const GOOGLE_AI_ORIGIN='https://generativelanguage.googleapis.com/v1beta';
 const GEMINI_SESSION_KEY='vmews_solution_ai_browser_session';
-const STABLE_MODEL_ORDER={normal:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'],deep:['gemini-3.8-flash','gemini-3.5-flash-lite','gemini-3.7-flash','gemini-3.1-flash-lite','gemini-3.6-flash','gemini-3.5-flash']};
+const STABLE_MODEL_ORDER={normal:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'],deep:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite']};
 const TRANSIENT_GEMINI_STATUS=new Set([408,429,500,502,503,504]);
 const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
 function restoreAIMode(){try{state.mode=localStorage.getItem(AI_MODE_KEY)==='deep'?'deep':'normal';}catch{state.mode='normal';}}
@@ -500,16 +500,29 @@ function cleanNews(items,limit=8){
  for(const item of items||[]){const url=String(item?.url||'');if(!/^https?:\/\//i.test(url)||seen.has(url))continue;seen.add(url);out.push({title:String(item.title||'').slice(0,240),url,source:String(item.source||item.publisher||'').slice(0,100),publishedAt:String(item.publishedAt||item.date||'').slice(0,40),summary:String(item.summary||'').slice(0,500),topics:Array.isArray(item.topics)?item.topics.slice(0,8):[]});if(out.length>=limit)break;}
  return out;
 }
+function researchKnowledge(question,annual,quarterly,deep=false){
+ const kb=window.FinQueryKnowledge;if(!kb)return{framework:'general',concepts:[]};
+ const all=[...rows(annual),...rows(quarterly)],labels=norm(all.map(r=>r.label||'').join(' '));
+ const bank=/thu nhap lai thuan|tien gui khach hang|cho vay khach hang|du phong rui ro tin dung|no xau/.test(labels);
+ const selected=new Map(),add=c=>{if(c?.id&&!selected.has(c.id))selected.set(c.id,c);};
+ for(const hit of kb.search?.(question,deep?12:6)||[])add(hit.c);
+ const ids=bank
+  ?['nii','nim','casa','costOfFunds','ldr','npl','llr','creditCost','cir','car','roe','roa','pb','bvps']
+  :['grossMargin','netMargin','operatingMargin','ocf','fcf','capex','receivables','inventory','workingCapital','liabilitiesAssets','roic','roe','roa','pe','evEbitda'];
+ if(deep)for(const id of ids)add(kb.byId?.[id]);
+ return{framework:bank?'bank':'corporate',concepts:[...selected.values()].slice(0,deep?20:8).map(c=>({id:c.id,title:c.title,definition:c.definition,formula:c.formula,read:c.read}))};
+}
 function buildLLMContext(question){
  const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
- const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',rowLimit=deep?90:24;
- const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],deep?12:8),macro=compactMacro(question);
+ const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',rowLimit=deep?140:24;
+ const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep);
  return{
   scope:'financial-report',contextVersion:DOLPHIN_VERSION,symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,researchDepth:deep?'deep':'normal',
   generatedAt:new Date().toISOString(),
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
   marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,technicalScanner:m.scanner||null,
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,rowLimit,deep),quarterRows:compactRows(quarterly,question,rowLimit,deep)},
+  knowledgeBase:knowledge,
   macroSnapshot:macro,recentNews:companyNews,sectorNews:cleanNews(m.sectorNews||m.marketNews||[],deep?10:6),
   corporateEvents:Array.isArray(insights.corporateEvents)?insights.corporateEvents.slice(0,deep?16:10):[],
   brokerResearch:Array.isArray(insights.brokerResearch)?insights.brokerResearch.slice(0,deep?12:8):[],brokerConsensus:insights.consensus||null,
@@ -528,10 +541,10 @@ function provenanceAnchors(){
  ].filter(x=>x.asOf);
 }
 function sourcesForLLM(){
- const m=market(),insights=window.FinInsights?.context?.()||{},company=cleanNews(m.news||[],5).map(x=>({...x,category:'COMPANY'})),sector=cleanNews(m.sectorNews||m.marketNews||[],4).map(x=>({...x,category:'SECTOR'}));
- const research=(insights.brokerResearch||[]).filter(x=>/^https?:\/\//i.test(x.sourceUrl||'')).slice(0,4).map(x=>({title:(x.broker||'CTCK')+' · '+(x.title||state.symbol),url:x.sourceUrl,publisher:x.broker||'CTCK',publishedAt:x.publishedAt||'',category:'BROKER_RESEARCH'}));
- const events=(insights.corporateEvents||[]).filter(x=>/^https?:\/\//i.test(x.source?.url||'')).slice(0,3).map(x=>({title:x.title||'Sự kiện doanh nghiệp',url:x.source.url,publisher:x.source.publisher||'Nguồn doanh nghiệp',publishedAt:x.date||'',category:'CORPORATE_EVENT'}));
- return [...research,...events,...company,...sector].slice(0,12).map(x=>({title:x.title,url:x.url,publisher:x.publisher||x.source,publishedAt:x.publishedAt,category:x.category}));
+ const deep=state.mode==='deep',m=market(),insights=window.FinInsights?.context?.()||{},company=cleanNews(m.news||[],deep?10:5).map(x=>({...x,category:'COMPANY'})),sector=cleanNews(m.sectorNews||m.marketNews||[],deep?8:4).map(x=>({...x,category:'SECTOR'}));
+ const research=(insights.brokerResearch||[]).filter(x=>/^https?:\/\//i.test(x.sourceUrl||'')).slice(0,deep?8:4).map(x=>({title:(x.broker||'CTCK')+' · '+(x.title||state.symbol),url:x.sourceUrl,publisher:x.broker||'CTCK',publishedAt:x.publishedAt||'',category:'BROKER_RESEARCH'}));
+ const events=(insights.corporateEvents||[]).filter(x=>/^https?:\/\//i.test(x.source?.url||'')).slice(0,deep?6:3).map(x=>({title:x.title||'Sự kiện doanh nghiệp',url:x.source.url,publisher:x.source.publisher||'Nguồn doanh nghiệp',publishedAt:x.date||'',category:'CORPORATE_EVENT'}));
+ return [...research,...events,...company,...sector].slice(0,deep?28:12).map(x=>({title:x.title,url:x.url,publisher:x.publisher||x.source,publishedAt:x.publishedAt,category:x.category}));
 }
 function dolphinSystemInstruction(){
  return[
@@ -553,7 +566,10 @@ function dolphinSystemInstruction(){
   'Nếu dữ liệu không đủ, nêu đúng dữ liệu nào đang thiếu và vẫn trả lời phần có thể kiểm chứng.',
   'Không đưa ra khuyến nghị mua/bán hoặc cam kết lợi nhuận. Có thể phân tích kịch bản, rủi ro, điều kiện xác nhận và điểm cần theo dõi.',
   'Trả lời theo cấu trúc phù hợp với câu hỏi; không ép mọi câu trả lời vào cùng một mẫu.',
-  state.mode==='deep'?'Ở chế độ Phân tích sâu, phải tận dụng tối đa dữ liệu thực tế có trong FinQuery và các nguồn web đáng tin cậy; không dừng phân tích chỉ vì thiếu một vài chỉ tiêu. Hãy phân tích dài, có chiều sâu, đi từ xu hướng số liệu đến nguyên nhân, chất lượng tăng trưởng, rủi ro, catalyst, kỹ thuật và các kịch bản cần theo dõi. Nếu dữ liệu đủ, ưu tiên khoảng 1.500-2.500 từ thay vì trả lời ngắn.':'Ở chế độ nhanh, ưu tiên trực tiếp và đủ ý nhưng vẫn dùng dữ liệu thực tế thay vì nhận xét chung chung.',
+  'knowledgeBase trong context là khung kiến thức tài chính dùng để diễn giải số liệu đúng bản chất. Không được dùng định nghĩa chung thay cho bằng chứng thực tế của doanh nghiệp.',
+  'Nếu knowledgeBase.framework là bank, đọc theo khung ngân hàng: tăng trưởng tín dụng và huy động; NII/NIM và chi phí vốn; CASA/LDR; chất lượng tài sản NPL, nợ nhóm 2, dự phòng và LLR; credit cost; CIR; CAR; ROA/ROE; P/B/BVPS nếu có. Không áp máy móc OCF/FCF như doanh nghiệp sản xuất.',
+  'Nếu knowledgeBase.framework là corporate, đọc theo khung doanh nghiệp: tăng trưởng doanh thu/lợi nhuận; biên gộp/hoạt động/ròng; vốn lưu động; OCF/FCF và CAPEX; đòn bẩy; hiệu quả vốn ROE/ROA/ROIC; định giá và chu kỳ ngành nếu dữ liệu có.',
+  state.mode==='deep'?'Ở chế độ Phân tích sâu, phải tận dụng tối đa dữ liệu thực tế có trong FinQuery và các nguồn web đáng tin cậy; không dừng phân tích chỉ vì thiếu một vài chỉ tiêu. Hãy viết như một equity research note có luận điểm trung tâm, bằng chứng nhiều kỳ, chất lượng lợi nhuận/tăng trưởng, yếu tố ngành-vĩ mô, catalyst, rủi ro, kỹ thuật và các kịch bản cần theo dõi. Nếu dữ liệu đủ, ưu tiên khoảng 1.800-3.000 từ thay vì trả lời ngắn.':'Ở chế độ nhanh, ưu tiên trực tiếp và đủ ý nhưng vẫn dùng dữ liệu thực tế thay vì nhận xét chung chung.',
   state.mode==='deep'?'Khi có URL báo cáo CTCK, sự kiện hoặc bài tin trong context, hãy đọc nội dung nguồn bằng URL Context nếu công cụ khả dụng; đồng thời dùng Google Search để tìm thông tin mới hơn, ưu tiên công bố doanh nghiệp, HOSE/HNX/SSC, cơ quan nhà nước, báo cáo CTCK và nguồn báo chí tài chính uy tín. Đối chiếu ngày dữ liệu và ngày xuất bản trước khi kết luận.':''
  ].join('\n');
 }
@@ -566,7 +582,7 @@ function inferredQuestionMode(question){
  const s=norm(question);
  return /phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|doi chieu nguon/.test(s)?'deep':null;
 }
-function geminiPrompt(question,agentContext=null){
+function geminiPrompt(question,agentContext=null,researchDossier=null){
  const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',sources=sourcesForLLM();
  const researchBrief=deep
   ?'YÊU CẦU PHÂN TÍCH SÂU: Hãy đọc toàn bộ dữ liệu liên quan trong FINQUERY CONTEXT, đặc biệt các dòng BCTC năm/quý, market, technical, scanner, sự kiện, báo cáo CTCK và tin tức. Sau đó dùng Google Search để bổ sung dữ liệu mới và dùng URL Context để đọc sâu các URL trong danh sách nguồn khi công cụ khả dụng. Ưu tiên nguồn gốc/primary source. Bài trả lời phải dài, chi tiết, có cấu trúc theo luận điểm, chỉ ra xu hướng nhiều kỳ, chất lượng tăng trưởng, rủi ro, catalyst và kịch bản; không trả lời kiểu vài đoạn tổng quát.'
@@ -576,8 +592,9 @@ function geminiPrompt(question,agentContext=null){
   'LỊCH SỬ GẦN NHẤT:\n'+JSON.stringify(state.history.slice(-8)),
   'FINQUERY CONTEXT:\n'+JSON.stringify(agentContext||buildLLMContext(question)),
   'NGUỒN ĐÃ CÓ TRONG TRANG - HÃY ĐỌC URL KHI PHÂN TÍCH SÂU:\n'+JSON.stringify(sources),
+  researchDossier?('RESEARCH DOSSIER TỪ VÒNG NGHIÊN CỨU TRƯỚC:\n'+researchDossier):'',
   researchBrief,
-  'Hãy trả lời câu hỏi dựa trên dữ liệu neo trước. Nếu FINQUERY CONTEXT có agent.validation, phải tuân theo cảnh báo validation và không sử dụng evidence đã bị loại. Web là lớp bổ sung/cross-check, không được ghi đè số BCTC hoặc giá neo của FinQuery nếu không chỉ rõ khác biệt thời điểm.'
+  'Hãy trả lời câu hỏi dựa trên dữ liệu neo trước. Nếu có RESEARCH DOSSIER, coi đó là bản đồ bằng chứng chứ không phải kết luận bắt buộc: phải kiểm tra lại với FINQUERY CONTEXT, chỉ giữ luận điểm có bằng chứng và nêu rõ mâu thuẫn/độ không chắc chắn. Nếu FINQUERY CONTEXT có agent.validation, phải tuân theo cảnh báo validation và không sử dụng evidence đã bị loại. Web là lớp bổ sung/cross-check, không được ghi đè số BCTC hoặc giá neo của FinQuery nếu không chỉ rõ khác biệt thời điểm.'
  ].join('\n\n');
 }
 function safeExternalUrl(url){
@@ -613,10 +630,36 @@ function providerAnswer(payload){
  const text=(payload?.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').filter(Boolean).join('\n').trim();
  return{text,sources:sources.slice(0,8),searched,readUrls,queries:[...new Set(queries)].slice(0,5)};
 }
-async function callGeminiModel(question,secret,model,allowSearch=true,agentContext=null){
+function mergeSources(...groups){
+ const seen=new Set(),out=[];for(const group of groups)for(const item of group||[]){const url=safeExternalUrl(item?.url);if(!url||seen.has(url))continue;seen.add(url);out.push({...item,url});}
+ return out.slice(0,12);
+}
+async function callResearchDossier(question,secret,model,agentContext){
+ const sources=agentContext?.agent?.sourceHints||sourcesForLLM(),hasUrls=sources.some(x=>/^https?:\/\//i.test(x?.url||''));
+ const prompt=[
+  'Bạn là research analyst vòng 1 của Dolphin AI. Nhiệm vụ là lập HỒ SƠ BẰNG CHỨNG, không viết câu trả lời cuối cùng và không trình bày chuỗi suy nghĩ.',
+  'CÂU HỎI: '+question,
+  'FINQUERY CONTEXT: '+JSON.stringify(agentContext),
+  'NGUỒN CÓ URL: '+JSON.stringify(sources),
+  'Hãy đọc dữ liệu theo nhiều kỳ, dùng Google Search để bổ sung thông tin mới và URL Context để đọc nguồn đã có khi khả dụng.',
+  'Trả về research dossier bằng tiếng Việt, tập trung vào: (1) phạm vi và độ mới dữ liệu; (2) các xu hướng tài chính quan trọng nhiều kỳ; (3) chất lượng tăng trưởng/lợi nhuận; (4) framework ngân hàng hoặc doanh nghiệp tương ứng; (5) market/technical/scanner; (6) sự kiện, tin, báo cáo CTCK và bối cảnh ngành-vĩ mô; (7) bằng chứng ủng hộ và phản bác các luận điểm; (8) mâu thuẫn dữ liệu; (9) dữ liệu còn thiếu; (10) danh sách 5-10 insight có giá trị nhất cho senior analyst.',
+  'Chỉ ghi nhận dữ kiện, so sánh và bất định có thể kiểm chứng. Không đưa khuyến nghị mua/bán.'
+ ].join('\n\n');
+ const generation={maxOutputTokens:3200,temperature:.08,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:'medium'}}:{})};
+ const toolPlans=hasUrls?[[{googleSearch:{}},{urlContext:{}}],[{googleSearch:{}}],[]]:[[{googleSearch:{}}],[]];
+ let payload=null,lastError=null;
+ for(const tools of toolPlans){
+  try{payload=await geminiGenerateResilient(secret,model,{systemInstruction:{parts:[{text:'Bạn là analyst nghiên cứu dữ liệu. Không tiết lộ chuỗi suy nghĩ; chỉ xuất hồ sơ bằng chứng có thể kiểm tra.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:generation,...(tools.length?{tools}:{})},52000,2);break;}
+  catch(error){lastError=error;if(error?.name==='AbortError'||![400,403,404,429,500,502,503,504].includes(Number(error?.status)))throw error;}
+ }
+ if(!payload)throw lastError||new Error('Không tạo được research dossier.');
+ const result=providerAnswer(payload);if(!result.text)throw new Error('Research dossier trống.');
+ return{...result,model};
+}
+async function callGeminiModel(question,secret,model,allowSearch=true,agentContext=null,researchDossier=null){
  const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',search=allowSearch&&shouldSearchWeb(question),knownSources=agentContext?.agent?.sourceHints||sourcesForLLM(),readKnown=allowSearch&&deep&&knownSources.some(x=>/^https?:\/\//i.test(x?.url||''));
- const input=geminiPrompt(question,agentContext);
- const generation={maxOutputTokens:deep?5200:1800,temperature:deep?.18:.12,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:deep?'medium':'low'}}:{})};
+ const input=geminiPrompt(question,agentContext,researchDossier);
+ const generation={maxOutputTokens:deep?7000:1800,temperature:deep?.16:.12,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:deep?'medium':'low'}}:{})};
  const body=tools=>({systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:input}]}],generationConfig:generation,...(tools.length?{tools}:{})});
  const toolPlans=[];
  if(search&&readKnown)toolPlans.push([{googleSearch:{}},{urlContext:{}}]);
@@ -625,7 +668,7 @@ async function callGeminiModel(question,secret,model,allowSearch=true,agentConte
  toolPlans.push([]);
  let payload=null,lastError=null;
  for(const tools of toolPlans){
-  try{payload=await geminiGenerateResilient(secret,model,body(tools),deep?52000:36000,2);break;}
+  try{payload=await geminiGenerateResilient(secret,model,body(tools),deep?62000:36000,2);break;}
   catch(error){lastError=error;if(![400,403,404,429,500,502,503,504].includes(Number(error?.status)))throw error;}
  }
  if(!payload)throw lastError||new Error('Gemini chưa phản hồi.');
@@ -657,10 +700,26 @@ async function callLLM(question){
  }
  const candidates=modelPlan(state.mode);
  if(!candidates.length)throw new Error('Không tìm thấy Gemini Flash phù hợp.');
+ const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep';
+ let dossier=null,dossierMeta=null;
+ if(deep){
+  try{
+   renderGeminiStatus('Đang đọc toàn bộ dữ liệu liên quan và lập research dossier…');
+   dossierMeta=await callResearchDossier(question,secret,candidates[0],agentContext);
+   dossier=dossierMeta.text;
+   renderGeminiStatus('Research dossier xong · đang tổng hợp như senior analyst…');
+  }catch(error){
+   if(error?.name==='AbortError')throw error;
+   if(agentAudit)agentAudit.researchPass={status:'fallback',error:String(error?.message||error).slice(0,220)};
+  }
+ }
  let lastError;const attempted=[];
  for(let i=0;i<candidates.length;i++){
   const model=candidates[i];state.model=model;attempted.push(model);
-  try{const answer=await callGeminiModel(question,secret,model,state.mode==='deep'||i===0,agentContext);return{...answer,agentAudit};}
+  try{
+   const answer=await callGeminiModel(question,secret,model,!dossier&&(deep||i===0),agentContext,dossier);
+   return{...answer,agentAudit,researchPass:dossier?{status:'ok',model:dossierMeta?.model||candidates[0]}:{status:'fallback'},sources:mergeSources(dossierMeta?.sources,answer.sources),queries:[...new Set([...(dossierMeta?.queries||[]),...(answer.queries||[])])].slice(0,8)};
+  }
   catch(error){
    lastError=error;state.lastGeminiError=String(error?.message||error);
    if(error?.name==='AbortError')throw error;
@@ -693,7 +752,7 @@ function nearBottom(box){return !box||box.scrollHeight-box.scrollTop-box.clientH
 function scrollIfNeeded(box,wasNear=true){if(box&&wasNear)box.scrollTop=box.scrollHeight;}
 function addUser(text){const box=$('research-ai-messages');if(!box)return;const was=nearBottom(box),a=document.createElement('article');a.className='research-ai-message user';a.innerHTML='<strong>Câu hỏi</strong><p>'+esc(text)+'</p>';box.append(a);scrollIfNeeded(box,was);}
 function addAnalysis(result){const box=$('research-ai-messages');if(!box)return;const was=nearBottom(box),a=document.createElement('article');a.className='research-ai-message assistant analysis-result';a.innerHTML=result.html;box.append(a);scrollIfNeeded(box,was);return a;}
-function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>'+(state.mode==='deep'?'Dolphin đang phân tích dữ liệu và đối chiếu nguồn…':'Dolphin đang phân tích '+esc(state.symbol||'mã đang xem')+'…')+'</p></div>'});}
+function addThinking(){return addAnalysis({html:'<div class="analysis-empty"><span class="loading-ring"></span><p>'+(state.mode==='deep'?'Dolphin đang đọc BCTC, market, research, tin và nguồn web trước khi lập luận…':'Dolphin đang phân tích '+esc(state.symbol||'mã đang xem')+'…')+'</p></div>'});}
 function mountGeminiUI(){
  const drawer=$('research-ai');if(!drawer||$('dolphin-gemini-connect'))return;
  const box=document.createElement('section');box.id='dolphin-gemini-connect';box.className='dolphin-connect-card';
