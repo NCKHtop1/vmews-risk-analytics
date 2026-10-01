@@ -72,6 +72,11 @@ def bridge_completed_session(
     secondary_rows=None,
     min_coverage=MIN_POSTCLOSE_COVERAGE,
     min_secondary_coverage=MIN_SECONDARY_COVERAGE,
+    secondary_coverage_scope="universe",
+    primary_name="TRADINGVIEW_VIETNAM_SCREEN",
+    secondary_name="VNDIRECT_PUBLIC_EOD",
+    provider_label="TradingView completed-session OHLC, VNDIRECT-confirmed close",
+    provider_code="TRADINGVIEW_POST_CLOSE_VNDIRECT_CONFIRMED",
 ):
     now = (now or datetime.now(VN_TZ)).astimezone(VN_TZ)
     session_date = latest_completed_session(now).isoformat()
@@ -92,8 +97,9 @@ def bridge_completed_session(
         "alreadyCurrentSymbols": 0,
         "staleSymbols": 0,
         "staleSymbolSample": [],
-        "primary": "TRADINGVIEW_VIETNAM_SCREEN",
-        "secondary": "VNDIRECT_PUBLIC_EOD",
+        "primary": primary_name,
+        "secondary": secondary_name,
+        "secondaryCoverageScope": secondary_coverage_scope,
         "realOHLCRequired": True,
         "inferenceOnly": True,
     }
@@ -123,12 +129,13 @@ def bridge_completed_session(
     for _, row in frame.iterrows():
         symbol = _symbol(row.get("name") or row.get("ticker"))
         updated = _quote_time(row.get("update_time"))
+        source_date = str(row.get("date") or "")[:10]
+        observed_date = source_date if re.fullmatch(r"\d{4}-\d{2}-\d{2}", source_date) else (updated.date().isoformat() if updated else "")
         if (
             symbol not in current
             or _exchange(row.get("exchange")) != "HOSE"
             or symbol in primary
-            or not updated
-            or updated.date().isoformat() != session_date
+            or observed_date != session_date
         ):
             continue
         o, h, l, c = (_num(row.get(k)) for k in ("open", "high", "low", "close"))
@@ -159,7 +166,8 @@ def bridge_completed_session(
             secondary[symbol] = candidates[-1]
 
     common = set(primary) & set(secondary)
-    sec_coverage = len(common) / len(current)
+    secondary_base = len(primary) if secondary_coverage_scope == "primary" else len(current)
+    sec_coverage = len(common) / max(1, secondary_base)
     mismatches = []
     for symbol in sorted(common):
         p = float(primary[symbol]["close"])
@@ -170,6 +178,7 @@ def bridge_completed_session(
 
     audit.update({
         "secondarySameDayQuotes": len(common),
+        "secondaryCoverageBase": secondary_base,
         "secondaryCoverage": round(sec_coverage, 6),
         "mismatchCount": len(mismatches),
         "mismatches": mismatches[:20],
@@ -201,12 +210,12 @@ def bridge_completed_session(
             "close": quote["close"],
             "modelClose": quote["close"],
             "volume": quote["volume"],
-            "provider": "TradingView completed-session OHLC, VNDIRECT-confirmed close",
+            "provider": provider_label,
             "exchange": "HOSE",
             "ohlcUnavailable": False,
             "closeIndependentlyConfirmed": symbol in common,
         })
-        provider[symbol] = "TRADINGVIEW_POST_CLOSE_VNDIRECT_CONFIRMED"
+        provider[symbol] = provider_code
         appended += 1
 
     stale = sorted(
