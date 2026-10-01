@@ -21,7 +21,9 @@ on:
     types:
       - completed
   schedule:
-    # Dedicated 15-minute cadence. It no longer shares the heavy ESG/history concurrency queue.
+    # 15-minute intraday cadence. The 11:35 and 14:50 runs intentionally occur
+    # just after the official morning (11:30) and afternoon (14:45) closes so
+    # the branch persists the latest session-close snapshot.
     - cron: '5,20,35,50 2-8 * * 1-5'
 
 permissions:
@@ -56,7 +58,11 @@ jobs:
             exit 0
           fi
           hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
-          if { [ "$hhmm" -ge 0905 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1515 ]; }; then
+          # Collection windows extend slightly beyond the actual HOSE live
+          # sessions (09:00-11:30 and 13:00-14:45) only to capture the final
+          # morning/afternoon close. Frontend freshness never treats the
+          # post-close extension as live trading.
+          if { [ "$hhmm" -ge 0905 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
