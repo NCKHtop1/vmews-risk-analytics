@@ -68,6 +68,24 @@ test('site access gate and contextual info controls are wired without changing f
  assert.match(app,/1,05–1,2x:/);
  assert.match(app,/0,9–1,05x:/);
  assert.match(app,/&lt; 0,9x:/);
- assert.match(app,/không phải kết luận dòng tiền vào\/ra/i);
- assert.match(app,/không phải xác suất thắng/i);
+ assert.match(app,/không tự nói tiền đang vào hay ra/i);
+ assert.match(app,/không có nghĩa là xác suất thắng cao/i);
+});
+
+
+test('context help is compact, plain-language and Strategy Lab has usage guide',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
+ const marketCss=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.css'),'utf8');
+ assert.match(index,/class="signal-title-row"/);
+ assert.match(index,/class="technical-scanner-title-row"/);
+ assert.match(index,/data-info-key="strategy-builder"/);
+ assert.match(index,/class="strategy-title-row"/);
+ assert.doesNotMatch(app,/FinQuery không coi một chỉ báo riêng lẻ là đủ/);
+ assert.match(app,/Xu hướng:<\/b> giá đang đi lên hay đi xuống/);
+ assert.match(app,/Kéo hoặc bấm một chỉ báo/);
+ assert.match(app,/Lưu strategy \+ alert/);
+ assert.match(style,/width:16px;height:16px/);
+ assert.match(marketCss,/technical-scanner-head \.term-info-button/);
 });

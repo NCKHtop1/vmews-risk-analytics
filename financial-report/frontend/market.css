@@ -389,3 +389,10 @@ body.dolphin-modal-open{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   .section-chevron,.strategy-chevron,.section-chevron-icon{transition:none}
 }
+
+/* Compact contextual help buttons */
+.technical-scanner-title-row{display:flex;align-items:center;gap:6px}.technical-scanner-title-row h4{margin:4px 0 3px}
+.technical-scanner-head .term-info-button{display:inline-grid;place-items:center;width:16px;height:16px;min-width:16px;padding:0;border:1px solid #cfd7e7;border-radius:50%;background:#fff;color:#6c7d9b;font:700 9px/1 Arial,sans-serif}
+.technical-scanner-head .term-info-button:hover{border-color:#91a0d4;background:#f3f5ff;color:#4358cf}
+.strategy-head-copy{flex:1;min-width:0}.strategy-title-row{display:flex;align-items:center;gap:7px;min-width:0}.strategy-title-row .strategy-head-toggle{flex:0 1 auto;width:auto}.strategy-title-row .term-info-button{margin-top:2px}.strategy-head-copy>p{margin:0;color:#7b8798;font-size:12px}
+.signal-title-row{display:flex;align-items:center;gap:6px}.signal-title-row strong{margin-top:2px}
