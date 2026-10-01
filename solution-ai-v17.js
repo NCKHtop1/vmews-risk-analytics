@@ -788,6 +788,8 @@
     const snapshot = base.dash.symbols?.[symbol];
     if (!snapshot) throw new Error(`Chưa có dữ liệu cho ${symbol}.`);
     const sessionQuote = (window.__VMEWS_SESSION__?.symbols || []).find(item => item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false) || null;
+    const freshness = window.__VMEWS_FRESHNESS__?.inspect(snapshot) || { stale: false, expected: snapshot.date, actual: snapshot.date };
+    const forecastFresh = freshness.stale !== true;
     const promotion = base.model?.promotion || base.dash?.promotion || {};
     const promoted = new Set((promotion.directPriceHorizons || []).map(value => Number(value)).filter(Number.isFinite));
     const review = new Set((promotion.reviewHorizons || []).map(value => Number(value)).filter(Number.isFinite));
@@ -796,7 +798,7 @@
     for (const [key, forecast] of Object.entries(snapshot.horizons || {})) {
       const horizonNo = Number(key);
       const audit = base.model.horizons?.[String(key)] || {};
-      const published = forecast.priceValidated === true && (forecast.validationStatus || "PASS") === "PASS";
+      const published = forecastFresh && forecast.priceValidated === true && (forecast.validationStatus || "PASS") === "PASS";
       horizons[`T+${key}`] = {
         releaseStatus: published ? "PUBLISHED" : "REVIEW",
         globallyPromoted: promoted.has(horizonNo),
@@ -863,8 +865,9 @@
     const fiveSnapshot = snapshot.horizons?.["5"] || {};
     return {
       brand: "SoluTION.AI", symbol, asOf: snapshot.date, decisionAt: base.dash.marketForecast?.decisionAt,
-      close: snapshot.close, sector: snapshot.sector, riskStatus: snapshot.riskStatus,
-      dataFreshness: snapshot.dataFreshness || null,
+      close: sessionQuote && number(sessionQuote.liveClose) > 0 ? number(sessionQuote.liveClose) : (forecastFresh ? snapshot.close : null), coreClose: snapshot.close, sector: snapshot.sector, riskStatus: snapshot.riskStatus,
+      forecastFresh, expectedForecastSession: freshness.expected || null, actualForecastSession: freshness.actual || snapshot.date || null,
+      dataFreshness: forecastFresh ? (snapshot.dataFreshness || null) : "STALE_FORECAST",
       dailyVolatility: snapshot.dailyVolatility, horizons,
       preferredHorizon: `T+${preferredRankingHorizon}`,
       rankingHorizon: preferredRankingHorizon,
