@@ -89,3 +89,30 @@ test('context help is compact, plain-language and Strategy Lab has usage guide',
  assert.match(style,/width:16px;height:16px/);
  assert.match(marketCss,/technical-scanner-head \.term-info-button/);
 });
+
+
+test('full contextual-help audit covers site-specific terms without oversized info buttons',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
+ for(const key of ['technical-signals','scanner-guide','scanner-bias','volume-ratio','strategy-builder','universe-tiers','market-driver','broker-consensus'])assert.match(index,new RegExp('data-info-key="'+key+'"'));
+ assert.match(app,/Cách dùng Technical Scanner/);
+ assert.match(app,/Core · Liquid · Discovery/);
+ assert.match(app,/Động lực \/ hệ số/);
+ assert.match(app,/Lấy giá mục tiêu gần nhất của từng CTCK/);
+ assert.match(style,/button\.term-info-button\{[^}]*width:16px!important/);
+});
+
+test('news freshness has scheduler recovery and browser fallback retry',()=>{
+ const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ const guard=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-realtime-guard.yml'),'utf8');
+ const news=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-news-live.yml'),'utf8');
+ assert.match(guard,/cron: '\*\/5 \* \* \* \*'/);
+ assert.match(guard,/Refresh live HOSE Core \+ Liquid prices/);
+ assert.match(guard,/Deploy VMEWS Pages/);
+ assert.match(guard,/financial-report\/\*\*/);
+ assert.match(news,/market-realtime-guard\.yml/);
+ assert.match(news,/12,27,42,57 \* \* \* \*/);
+ assert.match(market,/for\(let attempt=0;attempt<2;attempt\+\+\)/);
+ assert.match(market,/&v='\+Math\.floor\(Date\.now\(\)\/60000\)/);
+});

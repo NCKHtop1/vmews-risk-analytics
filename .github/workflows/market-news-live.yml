@@ -6,9 +6,12 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/market-news-live.yml'
+      - '.github/workflows/market-realtime-guard.yml'
       - 'financial-report/scripts/refresh_market.py'
   schedule:
-    # Continuous 15-minute publisher refresh, including evenings and weekends.
+    # Primary publisher cadence: every 15 minutes, including evenings/weekends.
+    # market-realtime-guard is a separate 5-minute recovery heartbeat because
+    # GitHub scheduled events can occasionally be delayed or skipped.
     - cron: '12,27,42,57 * * * *'
 
 permissions:
