@@ -630,7 +630,7 @@ async function callLLM(question){
  let lastError;const attempted=[];
  for(let i=0;i<candidates.length;i++){
   const model=candidates[i];state.model=model;attempted.push(model);
-  try{const answer=await callGeminiModel(question,secret,model,i===0,agentContext);return{...answer,agentAudit};}}
+  try{const answer=await callGeminiModel(question,secret,model,i===0,agentContext);return{...answer,agentAudit};}
   catch(error){
    lastError=error;state.lastGeminiError=String(error?.message||error);
    if(error?.name==='AbortError')throw error;
