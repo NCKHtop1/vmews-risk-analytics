@@ -83,20 +83,36 @@ def _load_histories_with_current_session(*args,**kwargs):
         from vn_exchange_calendar import VN_TZ, latest_completed_session
         session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
         fallback_secondary=_legacy_snapshot_rows(session_date)
-        fallback_frame=_frame_from_vndirect(secondary,session_date)
-        if len(fallback_secondary) < max(1,int(len(freshness.get("currentHOSESymbols") or histories)*.70)):
+        verified_symbols=sorted(
+            set(fallback_secondary)
+            & set(secondary)
+            & set(freshness.get("currentHOSESymbols") or histories)
+        )
+        original_symbols=sorted(set(freshness.get("currentHOSESymbols") or histories))
+        if len(verified_symbols) < max(1,int(len(original_symbols)*.70)):
             raise primary_error
+        fallback_frame=_frame_from_vndirect(
+            {symbol:secondary[symbol] for symbol in verified_symbols},
+            session_date,
+        )
+        fallback_freshness=dict(freshness)
+        fallback_freshness["currentHOSESymbols"]=verified_symbols
+        fallback_freshness["currentHOSECount"]=len(verified_symbols)
         histories,freshness=bridge_completed_session(
-            histories,freshness,
+            histories,fallback_freshness,
             frame=fallback_frame,
-            secondary_rows=fallback_secondary,
-            secondary_coverage_scope="primary",
+            secondary_rows={symbol:fallback_secondary[symbol] for symbol in verified_symbols},
             primary_name="VNDIRECT_PUBLIC_EOD",
             secondary_name="YAHOO_LEGACY_SNAPSHOT_CONFIRMATION",
             provider_label="VNDIRECT completed-session OHLC, Yahoo-snapshot-confirmed close",
             provider_code="VNDIRECT_POST_CLOSE_YAHOO_CONFIRMED",
         )
-        freshness.setdefault("postCloseBridge",{})["fallbackFrom"]=str(primary_error)
+        bridge=freshness.setdefault("postCloseBridge",{})
+        bridge["fallbackFrom"]=str(primary_error)
+        bridge["originalUniverseSymbols"]=len(original_symbols)
+        bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
+        bridge["fallbackExcludedSymbols"]=len(original_symbols)-len(verified_symbols)
+        bridge["fallbackPolicy"]="ONLY_INDEPENDENTLY_CONFIRMED_SYMBOLS_ENTER_CURRENT_FORECAST_UNIVERSE"
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
