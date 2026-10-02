@@ -133,7 +133,7 @@ window.__VMEWS_SESSION_POSITION__=sessionPosition;
 function decision(B,z){
   const n=primaryHorizon(B,z),q=h(z,n),usable=forecastUsableForDecision(q,z),move=usable?pointMove(q,z.close):null;
   if(!move){
-    if(z.staleForecast)return{label:"GIÁ LIVE · CHƯA CÓ FORECAST MỚI",tone:"warning",text:`Giá SoluTION.AI hiện tại là ${price(z.close)}. Core forecast gần nhất ở phiên ${z.date||B.dash.asOf||"trước"}; các mục tiêu còn lại либо đã đến hạn hoặc chưa đủ gate. Hệ thống giữ giá live và không bịa forecast mới trong lúc chờ core phiên ${z.freshnessExpected||"mới nhất"}.`};
+    if(z.staleForecast)return{label:"GIÁ LIVE · CHƯA CÓ FORECAST MỚI",tone:"warning",text:`Giá SoluTION.AI hiện tại là ${price(z.close)}. Core forecast gần nhất ở phiên ${z.date||B.dash.asOf||"trước"}; các mục tiêu còn lại đã đến hạn hoặc chưa đủ gate. Hệ thống giữ giá live và không bịa forecast mới trong lúc chờ core phiên ${z.freshnessExpected||"mới nhất"}.`};
     return{label:"CHƯA CÓ GIÁ DỰ BÁO",tone:"warning",text:`Chưa đủ đầu vào để tính giá dự báo T+${n}.`}
   }
   const absolute=price(Math.abs(move.delta)),rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,probability=validatedDirection(q)?` Xác suất tăng ${pct(q.probUp,0)}.`:"",range=finite(q.q20Price)&&finite(q.q80Price)?` Vùng tham khảo ${price(q.q20Price)} – ${price(q.q80Price)}.`:"",tone=move.delta>0?"positive":move.delta<0?"negative":"neutral";
