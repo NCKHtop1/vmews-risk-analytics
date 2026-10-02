@@ -79,7 +79,7 @@ function dashboard() {
 async function setup(fetch = async () => { throw new Error("Unexpected network request"); }, options = {}) {
   const source = await readFile(new URL("../solution-ai-v17.js", import.meta.url), "utf8");
   const routedFetch = async (url, requestOptions) => {
-    if (String(url).includes("/api/solution-ai-live")) {
+    if (String(url).includes("/solution-ai-live-data/solution-ai/live.json")) {
       const price = Number(options.livePrice ?? 72000);
       return {
         ok: true,
@@ -87,15 +87,18 @@ async function setup(fetch = async () => { throw new Error("Unexpected network r
         json: async () => ({
           status: "ok",
           scope: "solution-ai",
-          fetchedAt: "2026-08-25T07:31:00.000Z",
+          coverage: 700,
+          expected: 700,
+          generatedAt: new Date().toISOString(),
+          sourceTime: new Date().toISOString(),
           quotes: {
             FPT: {
               symbol: "FPT",
               price,
               changePct: 0.69,
               source: "Synthetic SoluTION live",
-              sourceMode: "solution_ai_direct",
-              observedAt: new Date().toISOString(),
+              sourceMode: "solution_ai_publisher",
+              updateAt: new Date().toISOString(),
             },
           },
         }),
@@ -186,7 +189,7 @@ test("SoluTION.AI refreshes its own live quote independently and rebuilds contex
   assert.equal(context.close, 73500);
   assert.equal(context.coreClose, 72000);
   assert.equal(context.session.liveClose, 73500);
-  assert.equal(context.session.sourceMode, "solution_ai_direct");
+  assert.equal(context.session.sourceMode, "solution_ai_publisher");
   assert.equal(context.solutionLive.health, "OK");
   assert.equal(health.liveHealth, "OK");
   assert.equal(health.livePrice, 73500);
