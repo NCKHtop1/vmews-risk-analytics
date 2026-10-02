@@ -7,6 +7,7 @@ on:
     paths:
       - 'scripts/solution_ai_core_confirmation.py'
       - 'scripts/solution_ai_core_confirmation_test.py'
+      - 'scripts/forecast_v13_market_model_test_v28.py'
       - '.github/workflows/solution-ai-core-refresh.yml'
   schedule:
     - cron: '20 8 * * 1-5'   # 15:20 Vietnam
