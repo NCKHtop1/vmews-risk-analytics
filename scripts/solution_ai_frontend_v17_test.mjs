@@ -181,6 +181,26 @@ test("browser context includes observed holdings/news but withholds unvalidated 
   assert.ok(evidence.topMovers[0].forecast > evidence.topMovers[0].close);
 });
 
+test("stale core keeps sealed direction probability as historical forecast metadata", async () => {
+  const { window } = await setup();
+  const base = dashboard();
+  base.dash.symbols.FPT.horizons["5"].directionValidated = true;
+  base.model.horizons["5"].directionStatus = "PASS";
+  window.__VMEWS_LOAD_BASE__ = async () => base;
+  window.__VMEWS_FRESHNESS__ = {
+    inspect: () => ({ stale: true, expected: "2026-08-24", actual: "2026-08-21" }),
+  };
+
+  const evidence = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  assert.equal(evidence.forecastFresh, false);
+  assert.equal(evidence.horizons["T+5"].releaseStatus, "SEALED_REFERENCE");
+  assert.equal(evidence.horizons["T+5"].probabilityUp, .81);
+  assert.equal(evidence.horizons["T+5"].validation.priceStatus, "PASS");
+  assert.equal(evidence.horizons["T+5"].validation.directionStatus, "PASS");
+  assert.equal(evidence.publishedHorizons.length, 0);
+  assert.equal(evidence.sealedHorizons.join(","), "T+5");
+});
+
 test("SoluTION.AI refreshes its own live quote independently and rebuilds context", async () => {
   const { window } = await setup(async () => { throw new Error("Unexpected non-SoluTION request"); }, { livePrice: 73500 });
   await window.__SOLUTION_AI_REFRESH_LIVE__(true);

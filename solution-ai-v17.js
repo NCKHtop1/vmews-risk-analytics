@@ -979,7 +979,7 @@
         bearScenarioPrice: sealed ? number(forecast.bearScenarioPrice) : null,
         bullScenarioPrice: sealed ? number(forecast.bullScenarioPrice) : null,
         magnitudeValidated: forecast.magnitudeValidated === true,
-        probabilityUp: published && forecast.directionValidated === true ? forecast.probUp : null,
+        probabilityUp: sealed && forecast.directionValidated === true ? forecast.probUp : null,
         directionValidated: forecast.directionValidated === true,
         pointDirectionValidated: forecast.pointDirectionValidated === true,
         historicalDirectionAccuracy: number(forecast.historicalDirectionAccuracy),
@@ -992,7 +992,7 @@
         liveEvidence: sealed ? (forecast.liveEvidence?.components || {}) : {},
         targetDate: forecast.targetDate,
         validation: {
-          priceStatus: audit.priceStatus || (published ? "PASS" : "REVIEW"),
+          priceStatus: audit.priceStatus || (sealed ? "PASS" : "REVIEW"),
           symbolValidationStatus: forecast.validationStatus || null,
           directionStatus: audit.directionStatus || null,
           holdoutRows: audit.sealedAudit?.n ?? null,
