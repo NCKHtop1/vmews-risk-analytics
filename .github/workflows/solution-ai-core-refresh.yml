@@ -45,6 +45,27 @@ jobs:
           set -euo pipefail
           timeout 360s python scripts/solution_ai_core_confirmation.py --workers 12 || echo "::warning::Yahoo confirmation incomplete; existing independent gates remain mandatory."
 
+      - name: Refresh current SoluTION institutional context
+        env:
+          V20_FLOW_WORKERS: '12'
+        run: |
+          timeout 90s python scripts/refresh_institutional_flow_v20_v28.py --symbols VN30 || echo "::warning::Institutional provider incomplete; genuine stale rows remain visible and are masked from current flow signal."
+
+      - name: Refresh current SoluTION news and market intelligence
+        env:
+          V18_FIREANT_TIMEOUT: '4'
+          V19_SOCIAL_TIMEOUT: '8'
+        run: |
+          python scripts/refresh_hose_news_v14.py || echo "::warning::News publisher refresh unavailable; prior audited archive remains."
+          python scripts/forecast_v18_market_intelligence.py --collect-community || echo "::warning::Public community intelligence unavailable; no private content is fabricated."
+          python scripts/sanitize_intelligence_v20.py
+
+      - name: Refresh optional SoluTION fund context
+        continue-on-error: true
+        env:
+          FMARKET_BEARER_TOKEN: ${{ secrets.FMARKET_BEARER_TOKEN }}
+        run: timeout 120s python scripts/forecast_v16_external_data.py --collect-funds
+
       - name: Bind forecast scan to latest completed session
         run: |
           python scripts/forecast_freshness_test.py
