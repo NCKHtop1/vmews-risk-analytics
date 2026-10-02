@@ -10,8 +10,10 @@ works when a workflow runs after midnight, on a weekend, or during an exchange
 holiday. No synthetic OHLC is created.
 """
 from __future__ import annotations
-import math, os, re
+import importlib.util, math, os, re, time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from vn_exchange_calendar import latest_completed_session
 
@@ -61,6 +63,51 @@ def fetch_tradingview_quotes():
     if frame is None or len(frame) < 500:
         raise RuntimeError(f"TradingView Vietnam screener returned only {0 if frame is None else len(frame)} rows")
     return frame
+
+
+def _load_finquery_market_helper():
+    path = Path(__file__).resolve().parents[1] / "financial-report" / "scripts" / "refresh_market.py"
+    spec = importlib.util.spec_from_file_location("finquery_market_refresh_for_forecast", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Unable to load FinQuery market helper")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def fetch_vietcap_confirmation_rows(session_date, symbols, *, max_workers=8, history_fetcher=None):
+    """Fetch same-session daily closes from Vietcap for independent confirmation.
+
+    This is a bounded gap-fill source used only when TradingView coverage is
+    insufficient. The caller should pass only symbols still missing from the
+    existing independent confirmation set.
+    """
+    symbols = sorted({str(x or "").upper().strip() for x in symbols if str(x or "").strip()})
+    if not symbols:
+        return {}
+    if history_fetcher is None:
+        market = _load_finquery_market_helper()
+        def history_fetcher(symbol):
+            return market._history_page(symbol, "ONE_DAY", int(time.time()), 10, minute=False)
+    rows = {}
+    workers = max(1, min(int(max_workers or 1), 12))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(history_fetcher, symbol): symbol for symbol in symbols}
+        for future in as_completed(futures):
+            symbol = futures[future]
+            try:
+                bars = future.result() or []
+            except Exception:
+                continue
+            candidates = [
+                bar for bar in bars
+                if str(bar.get("time") or bar.get("date") or "")[:10] == session_date
+                and _num(bar.get("close"), 0) > 0
+            ]
+            if candidates:
+                close = float(candidates[-1]["close"])
+                rows[symbol] = [{"date": session_date, "close": close}]
+    return rows
 
 
 def bridge_completed_session(
@@ -169,12 +216,22 @@ def bridge_completed_session(
     secondary_base = len(primary) if secondary_coverage_scope == "primary" else len(current)
     sec_coverage = len(common) / max(1, secondary_base)
     mismatches = []
+    mismatch_details = []
     for symbol in sorted(common):
         p = float(primary[symbol]["close"])
         s = float(secondary[symbol]["close"])
         tolerance = max(MAX_LOG_GAP, 2 * _tick(p) / p)
-        if abs(math.log(p / s)) > tolerance:
+        gap = abs(math.log(p / s))
+        if gap > tolerance:
             mismatches.append(symbol)
+            if len(mismatch_details) < 20:
+                mismatch_details.append({
+                    "symbol": symbol,
+                    "primaryClose": p,
+                    "secondaryClose": s,
+                    "logGap": round(gap, 6),
+                    "tolerance": round(tolerance, 6),
+                })
 
     audit.update({
         "secondarySameDayQuotes": len(common),
@@ -182,12 +239,13 @@ def bridge_completed_session(
         "secondaryCoverage": round(sec_coverage, 6),
         "mismatchCount": len(mismatches),
         "mismatches": mismatches[:20],
+        "mismatchDetails": mismatch_details,
     })
     if sec_coverage + 1e-12 < min_secondary_coverage or mismatches:
         audit["status"] = "REJECTED_SECOND_SOURCE"
         freshness["postCloseBridge"] = audit
         raise RuntimeError(
-            f"Post-close independent confirmation for {session_date} failed: coverage={sec_coverage:.1%}, mismatches={mismatches[:20]}"
+            f"Post-close independent confirmation for {session_date} failed: coverage={sec_coverage:.1%}, mismatchDetails={mismatch_details}"
         )
 
     provider = freshness.setdefault("providerBySymbol", {})

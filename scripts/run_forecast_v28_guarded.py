@@ -18,7 +18,7 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
 from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
-from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes, fetch_vietcap_confirmation_rows  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
 # V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
@@ -112,19 +112,30 @@ def _load_histories_with_current_session(*args,**kwargs):
         from datetime import datetime
         from vn_exchange_calendar import VN_TZ, latest_completed_session
         session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
-        yahoo_secondary=_legacy_snapshot_rows(session_date)
+        archive_secondary=_legacy_snapshot_rows(session_date)
         tv_secondary=_tradingview_confirmation_rows(session_date)
         original_symbols=sorted(set(freshness.get("currentHOSESymbols") or histories))
         composite_secondary=dict(tv_secondary)
-        for symbol,rows in yahoo_secondary.items():
+        for symbol,rows in archive_secondary.items():
             if symbol not in composite_secondary:
                 composite_secondary[symbol]=rows
-        verified_symbols=sorted(
-            set(composite_secondary)
-            & set(secondary)
-            & set(original_symbols)
-        )
-        if len(verified_symbols) < max(1,int(len(original_symbols)*.90)):
+
+        required=max(1,int(len(original_symbols)*.90))
+        verified_symbols=sorted(set(composite_secondary)&set(secondary)&set(original_symbols))
+        if len(verified_symbols) < required:
+            missing=[
+                symbol for symbol in original_symbols
+                if symbol in secondary and symbol not in composite_secondary
+            ]
+            vietcap_secondary=fetch_vietcap_confirmation_rows(session_date,missing,max_workers=8)
+            for symbol,rows in vietcap_secondary.items():
+                if symbol not in composite_secondary:
+                    composite_secondary[symbol]=rows
+            verified_symbols=sorted(set(composite_secondary)&set(secondary)&set(original_symbols))
+        else:
+            vietcap_secondary={}
+
+        if len(verified_symbols) < required:
             raise primary_error
         fallback_frame=_frame_from_vndirect(
             {symbol:secondary[symbol] for symbol in original_symbols if symbol in secondary},
@@ -135,7 +146,7 @@ def _load_histories_with_current_session(*args,**kwargs):
             frame=fallback_frame,
             secondary_rows={symbol:composite_secondary[symbol] for symbol in verified_symbols},
             primary_name="VNDIRECT_PUBLIC_EOD",
-            secondary_name="TRADINGVIEW_PLUS_YAHOO_CONFIRMATION",
+            secondary_name="TRADINGVIEW_PLUS_ARCHIVE_PLUS_VIETCAP_CONFIRMATION",
             provider_label="VNDIRECT completed-session OHLC, independently confirmed close",
             provider_code="VNDIRECT_POST_CLOSE_COMPOSITE_CONFIRMED",
         )
@@ -143,9 +154,10 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["fallbackFrom"]=str(primary_error)
         bridge["originalUniverseSymbols"]=len(original_symbols)
         bridge["tradingViewConfirmedSymbols"]=len(set(tv_secondary)&set(original_symbols))
-        bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
+        bridge["archiveFillSymbols"]=len((set(archive_secondary)-set(tv_secondary))&set(original_symbols))
+        bridge["vietcapFillSymbols"]=len((set(vietcap_secondary)-set(tv_secondary)-set(archive_secondary))&set(original_symbols))
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
-        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
+        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_ARCHIVE_AND_VIETCAP_CONFIRMATION"
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
