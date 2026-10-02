@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: Install SoluTION.AI core dependencies
         run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener vnstock
