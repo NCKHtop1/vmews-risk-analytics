@@ -961,6 +961,19 @@ class MarketTests(unittest.TestCase):
         self.assertIn('VIC',stale)
         self.assertEqual(m.newest_source_time(fresh),'2026-09-29T06:45:00+00:00')
 
+    def test_current_session_filter_rejects_frozen_same_day_quotes_when_live_age_is_required(self):
+        current=datetime(2026,10,2,4,0,tzinfo=timezone.utc)  # 11:00 Vietnam
+        rows={
+            'FPT':{'sourceTime':'2026-10-02T03:55:00+00:00','price':64000},
+            'MBB':{'sourceTime':'2026-10-02T02:35:00+00:00','price':19800},
+        }
+        fresh,stale=m.current_session_quotes(rows,current,max_age_minutes=18)
+        self.assertIn('FPT',fresh)
+        self.assertIn('MBB',stale)
+        fresh_eod,stale_eod=m.current_session_quotes(rows,current)
+        self.assertIn('MBB',fresh_eod)
+        self.assertNotIn('MBB',stale_eod)
+
     def test_kbs_session_probe_rejects_future_same_day_trade(self):
         original=m.request_query
         try:
