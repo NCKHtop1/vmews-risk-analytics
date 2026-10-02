@@ -15,15 +15,21 @@ const results = [];
 
 function solutionAiConsoleErrors(messages, failedRequests = []) {
   const liveMarketFailed = failedRequests.some(line => /vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+  const solutionLiveFailed = !requireLive && failedRequests.some(line => /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live/i.test(line));
   return messages.filter(message => {
     if (/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message)) return false;
-    if (liveMarketFailed && /Failed to load resource:\s*net::ERR_FAILED/i.test(message)) return false;
+    if (!requireLive && /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live|Access to fetch at .*\/api\/solution-ai-live/i.test(message)) return false;
+    if ((liveMarketFailed || solutionLiveFailed) && /Failed to load resource:\s*net::ERR_FAILED/i.test(message)) return false;
     return true;
   });
 }
 
 function solutionAiFailedRequests(lines) {
-  return lines.filter(line => !/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+  return lines.filter(line => {
+    if (/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line)) return false;
+    if (!requireLive && /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live/i.test(line)) return false;
+    return true;
+  });
 }
 
 function withSymbol(url, symbol) {
