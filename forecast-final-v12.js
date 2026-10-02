@@ -8,7 +8,11 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&
 const CDN_PATH=location.pathname.split("/").filter(Boolean),CDN_REF=location.hostname==="cdn.githubraw.com"&&CDN_PATH.length>=4?CDN_PATH[2]:"";
 const DATA_QUERY=new URLSearchParams(location.search||""),safeDataRef=value=>{const ref=String(value||"").trim();return ref&&/^[A-Za-z0-9._/-]{1,120}$/.test(ref)&&!ref.includes("..")?ref:""},encodeRef=ref=>String(ref).split("/").map(encodeURIComponent).join("/");
 const PAGES_HOST=location.hostname==="nckhtop1.github.io"&&location.pathname.startsWith("/vmews-risk-analytics/");
-const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HOST?"main":"LOCAL_DEPLOYMENT",ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data",CDN_REVISION=Math.floor(Date.now()/60000);
+const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HOST?"main":"LOCAL_DEPLOYMENT";
+const ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data";
+const SOLUTION_CORE_ROOT=PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data":"";
+const SOLUTION_CORE_FILES=new Set(["forecast-dashboard-v12.json","forecast-current-v12.json","forecast-market-v13.json","forecast-model-v12.json","forecast-backtest-v12.json","data-audit-v12.json","phase-gates-v12.json"]);
+const CDN_REVISION=Math.floor(Date.now()/60000);
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
 const SOLUTION_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-live-data/solution-ai/live.json";
@@ -57,12 +61,31 @@ async function refreshLiveQuotes(force=false){
 }
 window.__VMEWS_REFRESH_LIVE_QUOTES__=refreshLiveQuotes;
 
-async function json(name){if(JSON_PROMISES.has(name))return JSON_PROMISES.get(name);const request=(async()=>{const r=await fetch(`${ROOT}/${name}?refresh=${CDN_REVISION}`,{cache:"no-store"});if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);return r.json()})();JSON_PROMISES.set(name,request);try{return await request}catch(error){JSON_PROMISES.delete(name);throw error}}
+async function json(name){
+  if(JSON_PROMISES.has(name))return JSON_PROMISES.get(name);
+  const request=(async()=>{
+    const roots=SOLUTION_CORE_ROOT&&SOLUTION_CORE_FILES.has(name)?[SOLUTION_CORE_ROOT,ROOT]:[ROOT];
+    let lastError=null;
+    for(const root of roots){
+      try{
+        const r=await fetch(`${root}/${name}?refresh=${CDN_REVISION}`,{cache:"no-store"});
+        if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);
+        const payload=await r.json();
+        if(root===SOLUTION_CORE_ROOT)window.__SOLUTION_AI_CORE_SOURCE__={root,asOf:payload?.asOf||null,generatedAt:payload?.generatedAt||null};
+        return payload;
+      }catch(error){lastError=error}
+    }
+    throw lastError||Error(`${name}: unavailable`);
+  })();
+  JSON_PROMISES.set(name,request);
+  try{return await request}catch(error){JSON_PROMISES.delete(name);throw error}
+}
 async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})();return LEADER_BASE_PROMISE}
 async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})();return BASE_PROMISE}
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
+window.__SOLUTION_AI_CORE_ROOT__=SOLUTION_CORE_ROOT;
 window.__VMEWS_DATA_REF__=DATA_REF;
 window.__VMEWS_ASSET_REF__=CDN_REF||"LOCAL_DEPLOYMENT";
 function assertProduction(B){if(B.gates?.status!=="PASS")throw Error("Bộ kiểm soát dữ liệu chưa đạt; dự báo đang tạm khóa.");if(B.model?.promotion?.status!=="PASS")throw Error("Mô hình chưa vượt điều kiện phát hành; dự báo đang tạm khóa.")}
