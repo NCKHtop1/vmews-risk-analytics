@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-02T05:50:31+00:00",
+  "updatedAt": "2026-10-02T12:49:00+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VNM-2026-10-02-001b1c7b",
+      "symbol": "VNM",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-02",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – VNM · CTCP Sữa Việt Nam Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VNM ngày 02/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "TCBS-PC1-2026-10-01-001b1c7b",
       "symbol": "PC1",
@@ -332,6 +343,17 @@
       "brokerName": "Techcom Securities",
       "publishedAt": "2026-09-28",
       "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — BSR · Công ty CP – Tổng Công ty Lọc Hoá dầu Việt Nam BSR #Phân tích lần đầu #Ngành dầu khí Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BSR ngày 28/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BSR-2026-09-28-001b1c7b",
+      "symbol": "BSR",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-28",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – BSR · Công ty CP – Tổng Công ty Lọc Hoá dầu Việt Nam BSR #Phân tích lần đầu #Ngành dầu khí Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('",
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo BSR ngày 28/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
