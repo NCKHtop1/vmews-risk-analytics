@@ -189,7 +189,8 @@ try {
       generatedAt: B.dash?.generatedAt || null,
       releaseVersion: release.version,
       releaseStatus: release.status,
-      releaseSymbols: Number(release.symbols || 0),
+      releaseSymbols: Number(release.scope?.symbols || 0),
+      releaseForecasts: Number(release.scope?.forecasts || 0),
       direct,
       review,
       preferred,
@@ -223,6 +224,8 @@ try {
   assert(expectedReleasedSymbols >= 300, `release audit universe unexpectedly small: ${expectedReleasedSymbols}`);
   assert(structural.symbolStats.total === expectedReleasedSymbols,
     `published universe ${structural.symbolStats.total} != release audit universe ${expectedReleasedSymbols}`);
+  assert(structural.releaseForecasts === expectedReleasedSymbols * 5,
+    `release forecast count ${structural.releaseForecasts} != ${expectedReleasedSymbols * 5}`);
   assert(structural.symbolStats.stale === 0, `stale symbols leaked: ${structural.symbolStats.stale}`);
   assert(structural.phaseGates === 'PASS' && structural.releaseStatus === 'PASS', 'gates/release are not PASS');
   assert(structural.direct.includes(structural.preferred), 'preferred horizon is not released');
