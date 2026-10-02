@@ -33,7 +33,9 @@ permissions:
 
 concurrency:
   group: market-price-live
-  cancel-in-progress: true
+  # A live-session publisher is intentionally long-lived. New heartbeat triggers
+  # may queue, but must never cancel the active publisher mid-session.
+  cancel-in-progress: false
 
 jobs:
   prices:
