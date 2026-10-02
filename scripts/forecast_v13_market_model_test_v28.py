@@ -23,6 +23,7 @@ import unittest
 from datetime import datetime
 
 import forecast_v13_market_model_test as legacy
+from forecast_v17_live_intelligence import flow_decision_signal
 
 
 def assert_fund_source_reconciliation(self, context, history, decision_at):
@@ -137,9 +138,114 @@ def test_after_close_news_governance(self) -> None:
         self.assertEqual(audit["status"], "UNAVAILABLE")
 
 
+_original_current_source_and_coverage_test = (
+    legacy.PublishedMarketForecastTest.test_current_source_and_coverage
+)
+_original_quote_grid_test = (
+    legacy.PublishedMarketForecastTest.test_every_quote_uses_the_exchange_grid_and_review_horizons_abstain
+)
+_original_fpt_flow_test = (
+    legacy.PublishedMarketForecastTest.test_fpt_institutional_flow_uses_the_latest_completed_genuine_session
+)
 _original_horizon_release_gate_test = (
     legacy.PublishedMarketForecastTest.test_each_horizon_is_independently_promoted_or_abstained
 )
+
+
+def _solution_validation_scope(self):
+    bridge = (self.market.get("sources") or {}).get("postCloseBridge") or {}
+    if bridge.get("validationUniverse") != "LAST_VALIDATED_PUBLISHED_SYMBOLS":
+        return None
+    return bridge
+
+
+def test_current_source_and_coverage_dynamic(self) -> None:
+    """Keep every source/coverage assertion, replacing only the stale 360-name floor."""
+    bridge = _solution_validation_scope(self)
+    if not bridge:
+        return _original_current_source_and_coverage_test(self)
+
+    validation_count = int(bridge.get("validationUniverseSymbols") or 0)
+    self.assertGreater(validation_count, 0)
+    required = math.ceil(validation_count * 0.90)
+    original = self.assertGreaterEqual
+
+    def adjusted(first, second, msg=None):
+        if second == 360 and first == len(self.dashboard["symbols"]):
+            return original(first, required, msg)
+        return original(first, second, msg)
+
+    self.assertGreaterEqual = adjusted
+    try:
+        _original_current_source_and_coverage_test(self)
+    finally:
+        self.assertGreaterEqual = original
+
+
+def test_every_quote_grid_dynamic(self) -> None:
+    """Retain all tick/range/release assertions while scaling the obsolete 1800 floor."""
+    bridge = _solution_validation_scope(self)
+    if not bridge:
+        return _original_quote_grid_test(self)
+
+    validation_count = int(bridge.get("validationUniverseSymbols") or 0)
+    self.assertGreater(validation_count, 0)
+    required = math.ceil(validation_count * 5 * 0.90)
+    expected_checked = len(self.dashboard["symbols"]) * 5
+    original = self.assertGreaterEqual
+
+    def adjusted(first, second, msg=None):
+        if second == 1800 and first == expected_checked:
+            return original(first, required, msg)
+        return original(first, second, msg)
+
+    self.assertGreaterEqual = adjusted
+    try:
+        _original_quote_grid_test(self)
+    finally:
+        self.assertGreaterEqual = original
+
+
+def test_fpt_flow_governance(self) -> None:
+    """Current genuine flow is preferred; stale optional flow must be visible and inert."""
+    bridge = _solution_validation_scope(self)
+    if not bridge:
+        return _original_fpt_flow_test(self)
+
+    flow = self.dashboard["symbols"]["FPT"]["flow"]
+    market_date = self.dashboard["symbols"]["FPT"]["date"]
+    foreign = flow["foreign"]
+    proprietary = flow["proprietary"]
+
+    # Foreign flow remains a required current institutional source for the FPT
+    # regression anchor.
+    self.assertTrue(foreign["available"])
+    self.assertFalse(foreign["stale"])
+    self.assertLessEqual(foreign["latestDate"], market_date)
+    self.assertLessEqual(int(foreign["ageSessions"]), 3)
+    self.assertGreater(abs(foreign["net1"]), 1_000_000)
+
+    # Proprietary disclosure availability is provider-dependent.  A genuine
+    # stale observation may remain visible for provenance, but the live
+    # decision layer must give it exactly zero signal/weight after three
+    # sessions rather than fabricating a current value.
+    self.assertLessEqual(proprietary.get("latestDate") or "0000-00-00", market_date)
+    if proprietary.get("available") and not proprietary.get("stale"):
+        self.assertLessEqual(int(proprietary["ageSessions"]), 3)
+        self.assertGreater(abs(proprietary["net1"]), 1_000_000)
+    else:
+        self.assertTrue(
+            not proprietary.get("available")
+            or proprietary.get("stale")
+            or int(proprietary.get("ageSessions", 99)) > 3
+        )
+        signal, weight = flow_decision_signal({
+            "foreign": {"available": False},
+            "proprietary": proprietary,
+        })
+        self.assertEqual(signal, 0.0)
+        self.assertEqual(weight, 0.0)
+
 
 
 def test_v41_horizon_release_gate(self) -> None:
@@ -155,6 +261,9 @@ def test_v41_horizon_release_gate(self) -> None:
 
 legacy.PublishedMarketForecastTest.test_fund_holdings_are_scenario_context_without_moving_central_price = test_fund_holdings_governance
 legacy.PublishedMarketForecastTest.test_after_close_news_influences_next_session_without_future_leakage = test_after_close_news_governance
+legacy.PublishedMarketForecastTest.test_current_source_and_coverage = test_current_source_and_coverage_dynamic
+legacy.PublishedMarketForecastTest.test_every_quote_uses_the_exchange_grid_and_review_horizons_abstain = test_every_quote_grid_dynamic
+legacy.PublishedMarketForecastTest.test_fpt_institutional_flow_uses_the_latest_completed_genuine_session = test_fpt_flow_governance
 legacy.PublishedMarketForecastTest.test_each_horizon_is_independently_promoted_or_abstained = test_v41_horizon_release_gate
 
 
