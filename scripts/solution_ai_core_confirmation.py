@@ -6,6 +6,7 @@ not publish to main and does not weaken the existing forecast validation gates.
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import time
 import urllib.parse
@@ -63,7 +64,23 @@ def yahoo_close(symbol: str, session_date: str, timeout: float = 6.0) -> float |
     return None
 
 
-def load_symbols(dashboard_path: Path) -> list[str]:
+def load_symbols(dashboard_path: Path, frozen_source_path: Path | None = None) -> list[str]:
+    frozen_source_path = frozen_source_path or (dashboard_path.parent / "v12-frozen-source.json.gz")
+    if frozen_source_path.exists():
+        try:
+            with gzip.open(frozen_source_path, "rt", encoding="utf-8") as stream:
+                frozen = json.load(stream)
+            current = {
+                str(symbol).upper().strip()
+                for symbol in (frozen.get("currentHOSESymbols") or [])
+                if str(symbol).upper().strip().isalnum()
+                and 2 <= len(str(symbol).upper().strip()) <= 5
+            }
+            if current:
+                return sorted(current)
+        except Exception:
+            pass
+
     payload = json.loads(dashboard_path.read_text(encoding="utf-8"))
     return sorted(
         symbol for symbol in (payload.get("symbols") or {})
@@ -103,12 +120,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dashboard", default="data/forecast-dashboard-v12.json")
     parser.add_argument("--output", default="")
+    parser.add_argument("--frozen-source", default="data/v12-frozen-source.json.gz")
     parser.add_argument("--workers", type=int, default=12)
     parser.add_argument("--session-date", default="")
     args = parser.parse_args()
 
     dashboard = Path(args.dashboard)
-    symbols = load_symbols(dashboard)
+    symbols = load_symbols(dashboard, Path(args.frozen_source))
     session_date = args.session_date or latest_completed_session(datetime.now(VN_TZ)).isoformat()
     output = Path(args.output or f"data/forecast-live-v10/snapshots/{session_date}.json")
     output.parent.mkdir(parents=True, exist_ok=True)
