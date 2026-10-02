@@ -52,8 +52,13 @@ jobs:
           local=now.astimezone(timezone(timedelta(hours=7)))
           mins=local.hour*60+local.minute
           active=local.weekday()<5 and (540<=mins<=690 or 775<=mins<=915)
-          base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/financial-market-data/market/'
+          market_sha=subprocess.check_output([
+              'gh','api',f'repos/{os.environ["GH_REPO"]}/git/ref/heads/financial-market-data',
+              '--jq','.object.sha'
+          ],text=True).strip()
+          base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/'+market_sha+'/market/'
           main_base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/main/'
+          print('Pinned market snapshot SHA:',market_sha)
           def get(file):
               with urllib.request.urlopen(base+file+'?guard='+str(int(now.timestamp())),timeout=15) as r:
                   return json.load(r)
