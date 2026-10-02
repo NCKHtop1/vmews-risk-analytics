@@ -59,7 +59,8 @@ try {
     const finite = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
     const B = await window.__VMEWS_LOAD_BASE__();
     const root = window.__VMEWS_DATA_ROOT__;
-    const release = await fetch(`${root}/release-audit-v20.json?audit=${Date.now()}`, { cache: 'no-store' }).then(r => {
+    const coreRoot = window.__SOLUTION_AI_CORE_ROOT__ || root;
+    const release = await fetch(`${coreRoot}/release-audit-v20.json?audit=${Date.now()}`, { cache: 'no-store' }).then(r => {
       if (!r.ok) throw new Error(`release-audit-v20.json HTTP ${r.status}`);
       return r.json();
     });
