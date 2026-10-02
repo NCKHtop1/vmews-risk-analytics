@@ -158,8 +158,6 @@ def _load_histories_with_current_session(*args,**kwargs):
             & set(secondary)
             & set(original_symbols)
         )
-        if len(verified_symbols) < max(1,int(len(original_symbols)*.90)):
-            raise primary_error
         fallback_frame=_frame_from_vndirect(
             {symbol:secondary[symbol] for symbol in original_symbols if symbol in secondary},
             session_date,
@@ -172,6 +170,7 @@ def _load_histories_with_current_session(*args,**kwargs):
             secondary_name="TRADINGVIEW_PLUS_YAHOO_VCI_TCBS_CONFIRMATION",
             provider_label="VNDIRECT completed-session OHLC, independently confirmed close",
             provider_code="VNDIRECT_POST_CLOSE_COMPOSITE_CONFIRMED",
+            secondary_coverage_scope="primary",
         )
         bridge=freshness.setdefault("postCloseBridge",{})
         bridge["fallbackFrom"]=str(primary_error)
