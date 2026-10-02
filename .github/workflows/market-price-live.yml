@@ -9,6 +9,7 @@ on:
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/build_technical_evidence.py'
       - 'financial-report/scripts/build_strategy_snapshot.cjs'
+      - 'financial-report/scripts/live_session_publisher.sh'
       - 'financial-report/data/universe.json'
   workflow_run:
     # GitHub scheduled workflows can be delayed or occasionally skipped under load.
@@ -28,6 +29,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: market-price-live
@@ -37,7 +39,7 @@ jobs:
   prices:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 200
     steps:
       - uses: actions/checkout@v4
         with:
@@ -68,71 +70,12 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
             echo "Outside VN trading refresh window: $hhmm"
           fi
-      - name: Restore latest market branch
+      - name: Run resilient current-session publisher
         if: steps.session.outputs.run == 'true'
-        run: |
-          git fetch origin financial-market-data
-          git worktree add /tmp/market-live origin/financial-market-data
-          git -C /tmp/market-live sparse-checkout set market
-          mkdir -p /tmp/market-live/market
-      - name: Collect current-session prices
-        if: steps.session.outputs.run == 'true'
-        id: collect
-        continue-on-error: true
         env:
-          MARKET_REQUIRE_TODAY: '1'
-        run: |
-          python -u financial-report/scripts/refresh_market.py --output /tmp/market-live/market --mode prices
-          python -u financial-report/scripts/build_technical_evidence.py --output /tmp/market-live/market
-          node financial-report/scripts/build_strategy_snapshot.cjs /tmp/market-live/market
-      - name: Publish live price snapshot
-        if: steps.session.outputs.run == 'true'
-        working-directory: /tmp/market-live
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse market/quotes.json market/prices-status.json market/drivers.json market/technical-signals.json market/technical-evidence.json market/strategy-indicators.json market/watch-today.json market/universe.json market/history-status.json market/history
-          if git diff --cached --quiet; then
-            echo "No live price changes to publish"
-            exit 0
-          fi
-          git commit -m 'Refresh live HOSE Core + Liquid prices [data-only]'
-          for attempt in 1 2 3; do
-            git fetch origin financial-market-data
-            if git rebase origin/financial-market-data && git push origin HEAD:refs/heads/financial-market-data; then
-              exit 0
-            fi
-            git rebase --abort || true
-            sleep $((attempt * 2))
-          done
-          echo "Unable to publish live price snapshot after retries" >&2
-          exit 1
-      - name: Enforce current-session freshness
-        if: steps.session.outputs.run == 'true'
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('/tmp/market-live/market/quotes.json')
-          data=json.loads(p.read_text())
-          scanner=json.loads(Path('/tmp/market-live/market/technical-signals.json').read_text())
-          strategy=json.loads(Path('/tmp/market-live/market/strategy-indicators.json').read_text())
-          print('status=',data.get('status'),'coverage=',data.get('coverage'),'providers=',data.get('providers'),'latest=',data.get('latestSourceTime'),'scanner=',scanner.get('coverage'),'strategy=',strategy.get('coverage'),'matches=',scanner.get('matchCount'))
-          import math
-          expected=max(1,int(data.get('expected') or 0))
-          quote_required=max(1,math.ceil(expected*.90))
-          scanner_universe=max(1,int(scanner.get('universe') or 0))
-          scanner_required=max(1,math.ceil(scanner_universe*.90))
-          if data.get('status') != 'ok' or int(data.get('coverage') or 0) < quote_required:
-              raise SystemExit(f'Current-session quote coverage is below 90%: {data.get("coverage")}/{expected}; retained data is not treated as live.')
-          if scanner.get('status') != 'ok' or int(scanner.get('coverage') or 0) < scanner_required:
-              raise SystemExit(f'Technical scanner coverage is below 90%: {scanner.get("coverage")}/{scanner_universe}.')
-          if strategy.get('status') != 'ok' or int(strategy.get('coverage') or 0) < scanner_required:
-              raise SystemExit(f'Strategy snapshot coverage is below 90%: {strategy.get("coverage")}/{scanner_universe}.')
-          PY
-      - name: Fail if collector rejected stale data
-        if: steps.session.outputs.run == 'true' && steps.collect.outcome != 'success'
-        run: |
-          echo "Live price collector rejected stale/incomplete data. Retained snapshot remains available but is not live." >&2
-          exit 1
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          FORCE_ONESHOT: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
+          MARKET_LOOP_SECONDS: '300'
+          MARKET_MAX_QUOTE_AGE_MINUTES: '18'
+        run: bash financial-report/scripts/live_session_publisher.sh
