@@ -431,7 +431,8 @@ async function refreshCore(){
   if(document.hidden)return;
   if(last)rerender(last.B,last.sym,last.z);
   try{
-    const response=await fetch(`${ROOT}/forecast-dashboard-v12.json?refresh=${Date.now()}`,{cache:"no-store"});
+    const coreRoot=SOLUTION_CORE_ROOT||ROOT;
+    const response=await fetch(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,{cache:"no-store"});
     if(!response.ok)return;
     const next=await response.json();
     if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
