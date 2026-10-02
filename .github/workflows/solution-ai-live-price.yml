@@ -1,0 +1,124 @@
+name: SoluTION.AI independent live prices
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/solution_ai_live_snapshot.py'
+      - '.github/workflows/solution-ai-live-price.yml'
+  schedule:
+    - cron: '55 1 * * 1-5'   # 08:55 Vietnam
+    - cron: '55 5 * * 1-5'   # 12:55 Vietnam
+
+permissions:
+  contents: write
+
+concurrency:
+  group: solution-ai-live-price-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 190
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install SoluTION.AI quote provider
+        run: pip install --disable-pip-version-check -q pandas tradingview-screener==3.2.1
+      - name: Prepare dedicated SoluTION.AI data branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin solution-ai-live-data
+          rm -rf /tmp/solution-ai-live-data
+          git worktree add /tmp/solution-ai-live-data origin/solution-ai-live-data
+          git -C /tmp/solution-ai-live-data config user.name 'github-actions[bot]'
+          git -C /tmp/solution-ai-live-data config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Publish resilient live snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          vn_hhmm() { TZ=Asia/Ho_Chi_Minh date +%H%M; }
+
+          session_end() {
+            local hhmm="$1"
+            if [ "$hhmm" -ge 0855 ] && [ "$hhmm" -le 1140 ]; then echo 1140; return 0; fi
+            if [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1510 ]; then echo 1510; return 0; fi
+            return 1
+          }
+
+          publish_once() {
+            local out=/tmp/solution-ai-live-data/solution-ai/live.json
+            local ok=0
+            for attempt in 1 2 3; do
+              if python -u scripts/solution_ai_live_snapshot.py --output "$out"; then
+                ok=1
+                break
+              fi
+              echo "::warning::SoluTION.AI live collection attempt $attempt failed"
+              sleep $((attempt * 5))
+            done
+            if [ "$ok" -ne 1 ]; then
+              return 1
+            fi
+
+            python - "$out" <<'PY'
+          import json,sys
+          p=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert p.get('scope')=='solution-ai',p
+          assert p.get('status')=='ok',p
+          assert int(p.get('coverage') or 0)>=500,p.get('coverage')
+          assert isinstance(p.get('quotes'),dict) and len(p['quotes'])>=500
+          print({'coverage':p['coverage'],'sourceTime':p.get('sourceTime'),'exchangeCounts':p.get('exchangeCounts')})
+          PY
+
+            git -C /tmp/solution-ai-live-data add solution-ai/live.json
+            if git -C /tmp/solution-ai-live-data diff --cached --quiet; then
+              return 0
+            fi
+
+            if git -C /tmp/solution-ai-live-data log -1 --pretty=%s | grep -q '^Refresh SoluTION.AI live prices'; then
+              git -C /tmp/solution-ai-live-data commit --amend -m 'Refresh SoluTION.AI live prices [ephemeral]'
+            else
+              git -C /tmp/solution-ai-live-data commit -m 'Refresh SoluTION.AI live prices [ephemeral]'
+            fi
+            git -C /tmp/solution-ai-live-data push --force origin HEAD:refs/heads/solution-ai-live-data
+          }
+
+          now="$(vn_hhmm)"
+          if end="$(session_end "$now")"; then
+            oneshot=0
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ]; then
+            end="$now"
+            oneshot=1
+          else
+            echo "Outside SoluTION.AI live window: $now"
+            exit 0
+          fi
+
+          iterations=0
+          failures=0
+          while true; do
+            iterations=$((iterations+1))
+            if ! publish_once; then
+              failures=$((failures+1))
+            fi
+
+            now="$(vn_hhmm)"
+            if [ "$oneshot" -eq 1 ] || [ "$now" -ge "$end" ]; then
+              break
+            fi
+            sleep 60
+          done
+
+          echo "SoluTION.AI publisher finished: iterations=$iterations failures=$failures"
+          if [ "$iterations" -gt 0 ] && [ "$failures" -ge "$iterations" ]; then
+            exit 1
+          fi
