@@ -55,19 +55,19 @@ jobs:
         id: session
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
           hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
-          # Collection windows extend slightly beyond the actual HOSE live
-          # sessions (09:00-11:30 and 13:00-14:45) only to capture the final
-          # morning/afternoon close. Frontend freshness never treats the
-          # post-close extension as live trading.
-          if { [ "$hhmm" -ge 0905 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
+          # During a live/close-catch window every trigger becomes a persistent
+          # session publisher. This includes workflow_dispatch recoveries from
+          # the freshness guard, so one recovery run cannot go stale again.
+          if { [ "$hhmm" -ge 0900 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "oneshot=0" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "oneshot=1" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "oneshot=1" >> "$GITHUB_OUTPUT"
             echo "Outside VN trading refresh window: $hhmm"
           fi
       - name: Run resilient current-session publisher
@@ -75,7 +75,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          FORCE_ONESHOT: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
+          FORCE_ONESHOT: ${{ steps.session.outputs.oneshot }}
           MARKET_LOOP_SECONDS: '300'
           MARKET_MAX_QUOTE_AGE_MINUTES: '18'
         run: bash financial-report/scripts/live_session_publisher.sh
