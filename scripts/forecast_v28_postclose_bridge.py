@@ -63,6 +63,41 @@ def fetch_tradingview_quotes():
     return frame
 
 
+def tradingview_close_confirmation(row, session_date: str, *, today=None):
+    """Return an independently observed close for the requested completed session.
+
+    TradingView replaces most rows with the new live session shortly after the
+    next market opens. In that case its current close and percentage change
+    still encode the immediately previous close. Use that relation only for
+    close confirmation; never create OHLC from it.
+    """
+    close = _num(row.get("close"))
+    if close is None or close <= 0:
+        return None, None
+
+    updated = _quote_time(row.get("update_time"))
+    source_date = str(row.get("date") or "")[:10]
+    observed_date = source_date if re.fullmatch(r"\d{4}-\d{2}-\d{2}", source_date) else (updated.date().isoformat() if updated else "")
+    if observed_date == session_date:
+        return float(close), "SAME_SESSION_CLOSE"
+
+    day_value = today or datetime.now(VN_TZ).date()
+    current_day = day_value.isoformat() if hasattr(day_value, "isoformat") else str(day_value)
+    if observed_date != current_day or not session_date or session_date >= current_day:
+        return None, None
+
+    change = _num(row.get("change"))
+    if change is None:
+        return None, None
+    denominator = 1.0 + change / 100.0
+    if denominator <= 0:
+        return None, None
+    previous_close = close / denominator
+    if not math.isfinite(previous_close) or previous_close <= 0:
+        return None, None
+    return float(previous_close), "CURRENT_SESSION_CHANGE_IMPLIED_PREVIOUS_CLOSE"
+
+
 def bridge_completed_session(
     histories,
     freshness,
