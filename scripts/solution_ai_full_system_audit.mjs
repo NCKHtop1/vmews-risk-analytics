@@ -230,6 +230,7 @@ try {
       price: ctx.horizons?.[ctx.preferredHorizon]?.price,
       forecastFresh: ctx.forecastFresh,
       publishedHorizons: ctx.publishedHorizons,
+      sealedHorizons: ctx.sealedHorizons,
       reviewHorizons: ctx.reviewHorizons,
       session: ctx.session,
       solutionLive: ctx.solutionLive,
@@ -241,7 +242,8 @@ try {
   assert(primaryPrice.solutionLive?.health === 'OK', `SoluTION context live health is not OK: ${JSON.stringify(primaryPrice.solutionLive)}`);
   if (upstreamDegraded) {
     assert(primaryPrice.forecastFresh === false, 'stale upstream core was not gated by SoluTION.AI');
-    assert(Array.isArray(primaryPrice.publishedHorizons) && primaryPrice.publishedHorizons.length === 0, 'stale upstream core leaked published point forecasts into SoluTION.AI');
+    assert(Array.isArray(primaryPrice.publishedHorizons) && primaryPrice.publishedHorizons.length === 0, 'stale upstream core leaked current published forecasts into SoluTION.AI');
+    assert(Array.isArray(primaryPrice.sealedHorizons) && primaryPrice.sealedHorizons.length >= 1, 'stale upstream core removed all validated sealed references');
     assert(primaryPrice.upstreamHealth === 'STALE_CORE', `unexpected upstream health: ${primaryPrice.upstreamHealth}`);
   } else {
     assert(primaryPrice.forecastFresh !== false, 'fresh upstream unexpectedly marked stale');
@@ -255,8 +257,8 @@ try {
     cards: [...document.querySelectorAll('#forecastCards .forecastCard')].map(x => x.textContent.trim()),
   }));
   if (upstreamDegraded) {
-    assert(/ĐANG CẬP NHẬT|CHƯA CÓ GIÁ DỰ BÁO/.test(overview.decision), `stale-core UI does not fail closed: ${overview.decision}`);
-    assert(overview.cards.some(card => /ĐANG CẬP NHẬT|CHƯA ĐẠT KIỂM ĐỊNH|CHƯA CÓ DỮ LIỆU/.test(card)), 'stale-core UI exposes no review/update state');
+    assert(/FORECAST NIÊM PHONG|GIÁ LIVE/.test(overview.decision), `stale-core UI is not useful/sealed-aware: ${overview.decision}`);
+    assert(overview.cards.some(card => /Forecast niêm phong|ĐÃ ĐẾN HẠN|CHƯA ĐẠT KIỂM ĐỊNH|CHƯA CÓ DỮ LIỆU/.test(card)), 'stale-core UI exposes no sealed/review state');
   } else {
     assert(overview.decision.includes(primaryPrice.preferred), `decision not on preferred horizon: ${overview.decision}`);
     assert(overview.forecastLabel.includes(primaryPrice.preferred), `overview forecast label stale: ${overview.forecastLabel}`);
@@ -301,7 +303,8 @@ try {
   assert(hpg.symbol === 'HPG', `symbol switch failed: ${hpg.symbol}`);
   assert(hpg.session && finite(hpg.session.liveClose), 'HPG independent live price did not refresh');
   if (upstreamDegraded) {
-    assert(hpg.forecastFresh === false && hpg.publishedHorizons.length === 0, 'HPG stale core leaked published forecast after symbol switch');
+    assert(hpg.forecastFresh === false && hpg.publishedHorizons.length === 0, 'HPG stale core leaked current published forecast after symbol switch');
+    assert(Array.isArray(hpg.sealedHorizons) && hpg.sealedHorizons.length >= 1, 'HPG stale core lost all sealed references after symbol switch');
   } else {
     assert(hpg.publishedHorizons.includes(hpg.preferredHorizon), 'HPG preferred horizon is not published');
   }
@@ -447,7 +450,7 @@ try {
   assert(String(handoff.openUrl || '').includes('gemini.google.com'), `Gemini Web did not open: ${handoff.openUrl}`);
   const handoffText = handoff.clipboard || handoff.last?.text || '';
   assert(handoffText.includes('HPG') && handoffText.includes(hpg.preferredHorizon), 'Gemini handoff lost HPG/preferred horizon');
-  assert(handoffText.includes('publishedHorizons') && handoffText.includes('reviewHorizons'), 'Gemini handoff lost release-state contract');
+  assert(handoffText.includes('publishedHorizons') && handoffText.includes('sealedHorizons') && handoffText.includes('reviewHorizons'), 'Gemini handoff lost release-state contract');
 
   const relevantFailed = solutionAiFailedRequests(failedRequests);
   const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors, failedRequests);
