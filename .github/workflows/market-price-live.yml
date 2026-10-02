@@ -17,14 +17,19 @@ on:
     # that re-triggers prices during the VN trading window.
     workflows:
       - Refresh market news stream
+      - Forecast V20.1 immutable-price audit and market intelligence
+      - Forecast V21 guarded session overlay
     branches:
       - main
     types:
       - completed
   schedule:
-    # 15-minute intraday cadence. The 11:35 and 14:50 runs intentionally occur
-    # just after the official morning (11:30) and afternoon (14:45) closes so
-    # the branch persists the latest session-close snapshot.
+    # Redundant session bootstraps. Scheduled events can be delayed, so the
+    # long-lived publisher also receives workflow_run heartbeats above.
+    - cron: '0 2 * * 1-5'   # 09:00 Vietnam
+    - cron: '55 5 * * 1-5'  # 12:55 Vietnam
+    # Backup cadence + close catches. Once one run starts, concurrency keeps it
+    # alive and later triggers queue instead of cancelling the active publisher.
     - cron: '5,20,35,50 2-8 * * 1-5'
 
 permissions:
