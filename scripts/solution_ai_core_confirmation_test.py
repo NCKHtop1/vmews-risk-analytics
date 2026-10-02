@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from solution_ai_core_confirmation import load_symbols, parse_tcbs_payload, parse_yahoo_payload
+from solution_ai_core_confirmation import load_symbols, normalize_vn_close, parse_tcbs_payload, parse_yahoo_payload
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -61,6 +61,11 @@ class SolutionAICoreConfirmationTest(unittest.TestCase):
     def test_tcbs_parser_rejects_other_session(self):
         payload = {"data": [{"tradingDate": "2026-10-01T00:00:00", "close": 62000}]}
         self.assertIsNone(parse_tcbs_payload(payload, "2026-10-02"))
+
+    def test_normalize_vci_thousand_unit_close(self):
+        self.assertEqual(normalize_vn_close(62.1), 62100.0)
+        self.assertEqual(normalize_vn_close(62100), 62100.0)
+        self.assertIsNone(normalize_vn_close(None))
 
 
 if __name__ == "__main__":
