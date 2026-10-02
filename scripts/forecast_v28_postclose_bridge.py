@@ -82,8 +82,19 @@ def tradingview_close_confirmation(row, session_date: str, *, today=None):
         return float(close), "SAME_SESSION_CLOSE"
 
     day_value = today or datetime.now(VN_TZ).date()
-    current_day = day_value.isoformat() if hasattr(day_value, "isoformat") else str(day_value)
+    if not hasattr(day_value, "isoformat"):
+        try:
+            day_value = datetime.fromisoformat(str(day_value)).date()
+        except Exception:
+            return None, None
+    current_day = day_value.isoformat()
     if observed_date != current_day or not session_date or session_date >= current_day:
+        return None, None
+    # The implied previous close is valid only for the certified latest
+    # completed session before this live day. Never back-cast across two or
+    # more sessions, weekends, or holidays.
+    live_probe = datetime(day_value.year, day_value.month, day_value.day, 10, 0, tzinfo=VN_TZ)
+    if session_date != latest_completed_session(live_probe).isoformat():
         return None, None
 
     change = _num(row.get("change"))
