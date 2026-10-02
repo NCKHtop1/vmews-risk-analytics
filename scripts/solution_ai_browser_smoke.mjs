@@ -81,7 +81,10 @@ try {
 
     if (context.forecastFresh === false) {
       if (!Array.isArray(context.publishedHorizons) || context.publishedHorizons.length !== 0) {
-        throw new Error(`${symbol}: stale forecast must not expose published point prices`);
+        throw new Error(`${symbol}: stale core must not masquerade sealed references as current published forecasts`);
+      }
+      if (!Array.isArray(context.sealedHorizons) || context.sealedHorizons.length < 1) {
+        throw new Error(`${symbol}: stale core should retain at least one independently validated sealed reference`);
       }
       const staleQuestion = 'Chỉ dùng dữ liệu mô hình, phân tích đường forecast T+1 đến T+5 của mã đang xem.';
       const staleLocal = await page.evaluate(({ q, ctx }) => window.__SOLUTION_AI_LOCAL_ANALYSIS__(q, ctx), { q: staleQuestion, ctx: context });
@@ -91,12 +94,12 @@ try {
       for (const label of expectedLabels) {
         if (!staleLocal.includes(label)) throw new Error(`${symbol}: stale-mode AI missing ${label}`);
       }
-      if (!/REVIEW|chưa phát hành|abstention|đang cập nhật/i.test(staleLocal)) {
-        throw new Error(`${symbol}: stale-mode AI does not communicate gated forecast state`);
+      if (!/niêm phong|REVIEW|chưa phát hành|abstention/i.test(staleLocal)) {
+        throw new Error(`${symbol}: stale-mode AI does not communicate sealed/review forecast state`);
       }
       const cards = await page.locator('#forecastCards .forecastCard').allInnerTexts();
-      if (!cards.some(text => /ĐANG CẬP NHẬT|CHƯA ĐẠT KIỂM ĐỊNH HORIZON|CHƯA CÓ DỮ LIỆU/.test(text))) {
-        throw new Error(`${symbol}: stale forecast UI does not expose update/review state`);
+      if (!cards.some(text => /Forecast niêm phong|ĐÃ ĐẾN HẠN|CHƯA ĐẠT KIỂM ĐỊNH HORIZON|CHƯA CÓ DỮ LIỆU/.test(text))) {
+        throw new Error(`${symbol}: stale forecast UI does not expose sealed/review state`);
       }
       const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors, failed);
       if (relevantConsoleErrors.length) throw new Error(`${symbol}: console errors: ${relevantConsoleErrors.join(' | ')}`);
@@ -104,6 +107,7 @@ try {
         symbol,
         preferredHorizon: context.preferredHorizon,
         publishedHorizons: context.publishedHorizons,
+        sealedHorizons: context.sealedHorizons,
         reviewHorizons: context.reviewHorizons,
         forecastFresh: false,
         liveHealth: liveHealth.liveHealth,
