@@ -1,0 +1,70 @@
+name: SoluTION.AI live freshness guard
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 2-8 * * 1-5'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: solution-ai-live-freshness-guard
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check SoluTION.AI live snapshot and recover publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, subprocess, urllib.request
+          from datetime import datetime, timezone, timedelta
+
+          now=datetime.now(timezone.utc)
+          vn=now.astimezone(timezone(timedelta(hours=7)))
+          mins=vn.hour*60+vn.minute
+          active=vn.weekday()<5 and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
+          if not active:
+              print('Outside SoluTION.AI live window; no recovery required.')
+              raise SystemExit(0)
+
+          url=f'https://raw.githubusercontent.com/{os.environ["GH_REPO"]}/solution-ai-live-data/solution-ai/live.json?guard={int(now.timestamp())}'
+          stale=True
+          reason='snapshot unavailable'
+          try:
+              with urllib.request.urlopen(url,timeout=12) as response:
+                  data=json.load(response)
+              stamp=datetime.fromisoformat(str(data.get('generatedAt') or '').replace('Z','+00:00')).astimezone(timezone.utc)
+              age=(now-stamp).total_seconds()/60
+              coverage=int(data.get('coverage') or 0)
+              stale=not (data.get('scope')=='solution-ai' and data.get('status')=='ok' and coverage>=500 and age<=4)
+              reason=f'age={age:.1f}m coverage={coverage} status={data.get("status")}'
+          except Exception as exc:
+              reason=str(exc)
+
+          print('SoluTION.AI live guard:',reason)
+          if not stale:
+              raise SystemExit(0)
+
+          raw=subprocess.check_output([
+              'gh','api',f'repos/{os.environ["GH_REPO"]}/actions/workflows/solution-ai-live-price.yml/runs?per_page=10'
+          ],text=True)
+          runs=json.loads(raw).get('workflow_runs',[])
+          if any(run.get('status') in {'queued','in_progress','waiting','pending','requested'} for run in runs):
+              print('SoluTION.AI live publisher already active; recovery not duplicated.')
+              raise SystemExit(0)
+
+          subprocess.run([
+              'gh','workflow','run','solution-ai-live-price.yml','--repo',os.environ['GH_REPO'],'--ref','main'
+          ],check=True)
+          print('SoluTION.AI live publisher recovery dispatched.')
+          PY

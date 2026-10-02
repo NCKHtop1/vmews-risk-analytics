@@ -5,10 +5,12 @@ on:
   pull_request:
     paths:
       - 'solution-ai-v17.js'
-      - 'api/solution-ai*.js'
       - 'scripts/solution_ai_*.mjs'
+      - 'scripts/solution_ai_live_*.py'
       - 'forecast-final.html'
       - '.github/workflows/solution-ai-production-smoke.yml'
+      - '.github/workflows/solution-ai-live-price.yml'
+      - '.github/workflows/solution-ai-live-guard.yml'
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     types: [completed]
@@ -29,8 +31,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Run SoluTION.AI contracts on the PR head
-        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/solution_ai_live_endpoint_test.mjs
+        run: |
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          python scripts/solution_ai_live_snapshot_test.py
+      - name: Probe independent SoluTION.AI market source
+        run: |
+          pip install --disable-pip-version-check -q pandas tradingview-screener==3.2.1
+          python scripts/solution_ai_live_snapshot.py --output /tmp/solution-ai-live.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/solution-ai-live.json',encoding='utf-8'))
+          assert d.get('scope')=='solution-ai'
+          assert d.get('status')=='ok'
+          assert int(d.get('coverage') or 0)>=500
+          print({'coverage':d.get('coverage'),'sourceTime':d.get('sourceTime'),'exchangeCounts':d.get('exchangeCounts')})
+          PY
 
   browser:
     if: github.event_name != 'pull_request'
@@ -43,12 +62,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Install Playwright Chromium
         run: |
           npm install --no-save playwright@1.55.0
           timeout 8m npx playwright install chromium >/dev/null
       - name: Run SoluTION.AI unit and frontend contracts
-        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/solution_ai_live_endpoint_test.mjs
+        run: |
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          python scripts/solution_ai_live_snapshot_test.py
       - name: Wait for production Pages
         run: |
           for attempt in 1 2 3 4 5 6; do
@@ -64,21 +88,25 @@ jobs:
           done
           echo 'Production Pages has not reached the local-first SoluTION.AI release.' >&2
           exit 1
-      - name: Verify dedicated SoluTION.AI live endpoint
+      - name: Verify dedicated SoluTION.AI live data channel
         shell: bash
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
-            if curl -fsSL --max-time 12 "https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai-live?symbol=FPT&verify=${GITHUB_RUN_ID}-${attempt}" -o /tmp/solution-live.json; then
+            if curl -fsSL --max-time 12 "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-live-data/solution-ai/live.json?verify=${GITHUB_RUN_ID}-${attempt}" -o /tmp/solution-live.json; then
               if python - <<'PY'
           import json
+          from datetime import datetime, timezone
           d=json.load(open('/tmp/solution-live.json',encoding='utf-8'))
           q=(d.get('quotes') or {}).get('FPT') or {}
           assert d.get('scope')=='solution-ai',d
-          assert d.get('status') in {'ok','partial'},d
+          assert d.get('status')=='ok',d
+          assert int(d.get('coverage') or 0)>=500,d.get('coverage')
           assert float(q.get('price') or 0)>0,q
-          assert q.get('sourceMode') in {'solution_ai_direct','solution_ai_fallback'},q
-          print({'status':d.get('status'),'price':q.get('price'),'source':q.get('source'),'latencyMs':d.get('latencyMs')})
+          stamp=datetime.fromisoformat(str(d.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+          age=(datetime.now(timezone.utc)-stamp).total_seconds()/60
+          assert -5<=age<=10,age
+          print({'status':d.get('status'),'coverage':d.get('coverage'),'price':q.get('price'),'source':q.get('source'),'ageMin':round(age,1)})
           PY
               then
                 exit 0
@@ -86,7 +114,7 @@ jobs:
             fi
             sleep 5
           done
-          echo 'Dedicated SoluTION.AI live endpoint is not ready.' >&2
+          echo 'Dedicated SoluTION.AI live data channel is not ready or fresh.' >&2
           exit 1
       - name: Exercise production SoluTION.AI across representative symbols
         env:

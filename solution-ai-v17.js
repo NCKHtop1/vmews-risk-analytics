@@ -15,10 +15,10 @@
   const GOOGLE_SEARCH_TOOL = { type: "google_search" };
   const URL_CONTEXT_TOOL = { type: "url_context" };
   const SESSION_KEY = "vmews_solution_ai_browser_session";
-  const SOLUTION_LIVE_API = "https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai-live";
+  const SOLUTION_LIVE_API = "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-live-data/solution-ai/live.json";
   const SOLUTION_LIVE_REFRESH_MS = 30_000;
   const SOLUTION_LIVE_SOFT_TTL_MS = 20_000;
-  const SOLUTION_LIVE_HARD_TTL_MS = 120_000;
+  const SOLUTION_LIVE_HARD_TTL_MS = 20 * 60_000;
   const ANALYSIS_SCHEMA = {
     type: "object",
     properties: {
@@ -805,6 +805,34 @@
     return age >= -5 * 60_000 ? Math.max(0, age) : Infinity;
   }
 
+  function solutionVnClock(value = Date.now()) {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit",
+      weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date(value)).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+    return {
+      day: `${parts.year}-${parts.month}-${parts.day}`,
+      weekday: parts.weekday,
+      minutes: Number(parts.hour) * 60 + Number(parts.minute),
+    };
+  }
+
+  function solutionQuoteUsable(quote = state.liveQuote) {
+    if (!quote || number(quote.liveClose) === null || number(quote.liveClose) <= 0) return false;
+    const stamp = Date.parse(quote.updateAt || quote.observedAt || "");
+    if (!Number.isFinite(stamp) || stamp > Date.now() + 5 * 60_000) return false;
+    const now = solutionVnClock();
+    const source = solutionVnClock(stamp);
+    const age = Math.max(0, Date.now() - stamp);
+    const weekday = !["Sat", "Sun"].includes(now.weekday);
+    if (!weekday) return age <= 96 * 60 * 60_000;
+    if ((now.minutes >= 9 * 60 && now.minutes <= 11 * 60 + 30) || (now.minutes >= 13 * 60 && now.minutes <= 14 * 60 + 45)) {
+      return source.day === now.day && age <= SOLUTION_LIVE_HARD_TTL_MS;
+    }
+    if (now.minutes > 11 * 60 + 30) return source.day === now.day;
+    return age <= 36 * 60 * 60_000;
+  }
+
   function pageSessionQuote(symbol) {
     return (window.__VMEWS_SESSION__?.symbols || []).find(item =>
       item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false && number(item.liveClose) > 0
@@ -812,7 +840,7 @@
   }
 
   function effectiveSessionQuote(symbol) {
-    if (state.liveQuote && state.liveSymbol === symbol && number(state.liveQuote.liveClose) > 0 && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_HARD_TTL_MS) {
+    if (state.liveQuote && state.liveSymbol === symbol && solutionQuoteUsable(state.liveQuote)) {
       return state.liveQuote;
     }
     return pageSessionQuote(symbol);
@@ -834,7 +862,7 @@
           ? globalThis.setTimeout(() => controller.abort(), 6_000)
           : null;
         try {
-          const response = await fetch(`${SOLUTION_LIVE_API}?symbol=${encodeURIComponent(symbol)}&v=${Date.now()}&attempt=${attempt}`, {
+          const response = await fetch(`${SOLUTION_LIVE_API}?v=${Date.now()}&attempt=${attempt}`, {
             method: "GET",
             mode: "cors",
             cache: "no-store",
@@ -846,6 +874,13 @@
             throw error;
           }
           const payload = await response.json();
+          if (payload?.scope !== "solution-ai" || payload?.status !== "ok" || number(payload?.coverage) === null || number(payload.coverage) < 500) {
+            throw new Error("SoluTION live snapshot chưa sẵn sàng.");
+          }
+          const snapshotAt = Date.parse(payload.generatedAt || "");
+          if (!Number.isFinite(snapshotAt) || Date.now() - snapshotAt > 5 * 60_000 || snapshotAt > Date.now() + 5 * 60_000) {
+            throw new Error("SoluTION live publisher đang trễ quá ngưỡng.");
+          }
           const quote = payload?.quotes?.[symbol];
           if (!quote || number(quote.price) === null || number(quote.price) <= 0) throw new Error("SoluTION live chưa trả giá hợp lệ.");
           state.liveQuote = {
@@ -853,9 +888,9 @@
             liveClose: number(quote.price),
             change: number(quote.changePct) === null ? null : number(quote.changePct) / 100,
             volume: number(quote.volume),
-            updateAt: quote.observedAt || payload.fetchedAt || new Date().toISOString(),
-            sourceMode: quote.sourceMode || "solution_ai_direct",
-            source: quote.source || "SoluTION.AI live",
+            updateAt: quote.updateAt || quote.observedAt || payload.sourceTime || payload.generatedAt || new Date().toISOString(),
+            sourceMode: quote.sourceMode || "solution_ai_publisher",
+            source: quote.source || "SoluTION.AI independent publisher",
           };
           state.liveSymbol = symbol;
           state.liveHealth = "OK";
