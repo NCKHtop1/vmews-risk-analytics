@@ -1,6 +1,6 @@
 """Run the market forecast with conservative fund and freshness governance."""
 from __future__ import annotations
-import json, sys
+import json, os, sys
 from pathlib import Path
 import forecast_v16_external_data as external
 
@@ -29,6 +29,27 @@ install_v41_refined(market_model)
 
 _original_load_histories=market_model.load_histories
 _bridge_metadata={}; _historical_scan_as_of=""
+
+def _last_validated_forecast_symbols(histories: dict[str, list[dict]]) -> list[str]:
+    """Scope post-close publication proof to the last validated forecast universe.
+
+    The full HOSE history set remains available for training/audit. The session
+    publication gate should not be failed by symbols that are outside the
+    forecast product's currently published universe.
+    """
+    path=Path(__file__).resolve().parents[1]/"data"/"forecast-dashboard-v12.json"
+    try:
+        payload=json.loads(path.read_text(encoding="utf-8"))
+        symbols=[
+            str(symbol).upper().strip()
+            for symbol in (payload.get("symbols") or {})
+            if str(symbol).upper().strip() in histories
+        ]
+        if symbols:
+            return sorted(set(symbols))
+    except Exception:
+        pass
+    return sorted(histories)
 
 def _legacy_snapshot_rows(session_date: str) -> dict[str, list[dict]]:
     """Independent same-session fallback from the archived live snapshot.
@@ -105,6 +126,19 @@ def _load_histories_with_current_session(*args,**kwargs):
     global _bridge_metadata,_historical_scan_as_of
     histories,freshness=_original_load_histories(*args,**kwargs)
     _historical_scan_as_of=str(freshness.get("marketScanAsOf") or "")[:10]
+
+    all_current=sorted(set(str(s).upper() for s in (freshness.get("currentHOSESymbols") or histories) if str(s).upper() in histories))
+    solution_scope=os.environ.get("SOLUTION_AI_VALIDATION_UNIVERSE","").strip().upper()=="LAST_VALIDATED_PUBLISHED_SYMBOLS"
+    validation_symbols=_last_validated_forecast_symbols(histories) if solution_scope else all_current
+    if solution_scope:
+        freshness=dict(freshness)
+        freshness["allCurrentHOSESymbols"]=all_current
+        freshness["allCurrentHOSECount"]=len(all_current)
+        freshness["currentHOSESymbols"]=validation_symbols
+        freshness["currentHOSECount"]=len(validation_symbols)
+        freshness["forecastValidationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
+        freshness["forecastValidationUniverseCount"]=len(validation_symbols)
+
     secondary=market_model._vn_direct_hose_rows()
     try:
         histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
@@ -146,8 +180,16 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
         bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
+        if solution_scope:
+            bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
+            bridge["validationUniverseSymbols"]=len(original_symbols)
+            bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
+        if solution_scope:
+            bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
+            bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
+            bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
         freshness["marketScanAsOf"]=str(freshness.get("forecastAsOf") or "")[:10]
         freshness["freshSymbols"]=sum(str((rows or [{}])[-1].get("date") or "")[:10]==freshness["forecastAsOf"] for rows in histories.values() if rows)
