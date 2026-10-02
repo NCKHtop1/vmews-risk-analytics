@@ -284,13 +284,9 @@ def test_fpt_flow_governance(self) -> None:
         self.assertEqual(proprietary.get("sourceUnit"), "billion_VND")
         value = float(proprietary.get("net1") or 0)
         self.assertTrue(math.isfinite(value))
-        if value == 0:
-            signal, weight = flow_decision_signal({
-                "foreign": {"available": False},
-                "proprietary": proprietary,
-            })
-            self.assertEqual(signal, 0.0)
-            self.assertGreaterEqual(weight, 0.0)
+        # net1 can legitimately be zero while longer proprietary-flow windows
+        # remain informative; validity comes from provenance/date/unit, not a
+        # forced non-zero one-session observation.
     else:
         self.assertTrue(
             not proprietary.get("available")
@@ -322,16 +318,9 @@ def test_archived_flow_and_financial_governance(self) -> None:
         value = float(proprietary.get("net1") or 0)
         self.assertTrue(math.isfinite(value))
         self.assertEqual(proprietary.get("sourceUnit"), "billion_VND")
-        # A genuine zero proprietary net flow is a neutral observation, not a
-        # missing-data condition. Provenance/date/unit are what make it valid.
+        # A genuine zero net1 is allowed: longer lookback windows can still
+        # carry a valid non-zero flow signal.  Keep date/unit/provenance gates.
         self.assertLessEqual(proprietary.get("latestDate") or "0000-00-00", acb["date"])
-        if value == 0:
-            signal, weight = flow_decision_signal({
-                "foreign": {"available": False},
-                "proprietary": proprietary,
-            })
-            self.assertEqual(signal, 0.0)
-            self.assertGreaterEqual(weight, 0.0)
     else:
         signal, weight = flow_decision_signal({
             "foreign": {"available": False},
