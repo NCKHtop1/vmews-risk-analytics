@@ -1417,6 +1417,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("setMarketSourceTime(value)",scanner)
         self.assertIn("Scanner live chưa đồng bộ với giá mới nhất",scanner)
         self.assertIn("current:aligned?",scanner)
+        self.assertIn("quoteBundleSourceTime",market)
 
     def test_daily_browser_smoke_exercises_production_ai_and_protected_tabs(self):
         root=ROOT.parent
@@ -1434,6 +1435,8 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn("13579",flow)
         self.assertIn("window.FinQueryAI.analyze(arguments[0])",flow)
         self.assertIn("Vì sao mã này tăng hoặc giảm trong phiên hôm nay?",flow)
+        self.assertIn("quoteBundleSourceTime:m.quoteBundleSourceTime||null",flow)
+        self.assertIn("bundle_source=snapshot.get('quoteBundleSourceTime')",flow)
         self.assertIn("Phân tích sức khỏe tài chính của doanh nghiệp này.",flow)
         self.assertIn("Các rủi ro định lượng chính hiện tại là gì?",flow)
         self.assertIn("So sánh kỳ gần nhất với kỳ trước và cùng kỳ.",flow)
@@ -1531,7 +1534,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn("quote=quoteStale(state.quotes[state.symbol])?null",market)
         self.assertIn("futureTimestamp(raw)",market)
         self.assertIn("age < -5 ? Infinity : age",market)
-        self.assertIn("scanner:scan&&(!quote||String(scan.sourceTime)===String(quote.sourceTime))?scan:null",market)
+        self.assertIn("quoteBundleSourceTime:state.quoteBundleSourceTime||null",market)
+        self.assertIn("setMarketSourceTime?.(state.quoteBundleSourceTime||null)",market)
+        self.assertIn("scanner:scan&&(!state.quoteBundleSourceTime||String(scan.sourceTime)===String(state.quoteBundleSourceTime))?scan:null",market)
         self.assertIn('marketSessionActive()',market)
         self.assertIn('id="quote-freshness"',html)
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",workflow)
