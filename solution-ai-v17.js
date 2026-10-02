@@ -1631,7 +1631,7 @@
         riskStatus: context.riskStatus || null,
         dataFreshness: context.dataFreshness || null,
         dailyVolatility: context.dailyVolatility ?? null,
-        sealedCoreClose: number(context.close),
+        sealedCoreClose: number(context.coreClose ?? context.close),
         activePrice,
         session: context.session || null,
         preferredHorizon: context.preferredHorizon || null,
