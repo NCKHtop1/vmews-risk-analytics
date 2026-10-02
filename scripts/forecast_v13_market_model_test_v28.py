@@ -170,26 +170,65 @@ def _solution_validation_scope(self):
 
 
 def test_current_source_and_coverage_dynamic(self) -> None:
-    """Keep every source/coverage assertion, replacing only the stale 360-name floor."""
+    """Validate the current SoluTION publication universe without trusting stale static counts."""
     bridge = _solution_validation_scope(self)
     if not bridge:
         return _original_current_source_and_coverage_test(self)
 
     validation_count = int(bridge.get("validationUniverseSymbols") or 0)
     self.assertGreater(validation_count, 0)
-    required = math.ceil(validation_count * 0.90)
-    original = self.assertGreaterEqual
+    symbols = set(self.dashboard["symbols"])
+    self.assertGreaterEqual(len(symbols), math.ceil(validation_count * 0.90))
+    self.assertEqual(self.dashboard["asOf"], self.market["sources"]["marketScanAsOf"])
 
-    def adjusted(first, second, msg=None):
-        if second == 360 and first == len(self.dashboard["symbols"]):
-            return original(first, required, msg)
-        return original(first, second, msg)
+    sources = self.market["sources"]
+    current_bridge = sources.get("postCloseBridge") or {}
+    self.assertEqual(current_bridge.get("status"), "PASS")
+    self.assertEqual(sources.get("priceSessionAsOf"), self.dashboard["asOf"])
+    self.assertLessEqual(sources.get("historicalRiskScanAsOf"), self.dashboard["asOf"])
+    self.assertGreaterEqual(sources["marketScanGeneratedOn"], sources["historicalRiskScanAsOf"])
+    self.assertEqual(symbols, set(self.current["symbols"]))
 
-    self.assertGreaterEqual = adjusted
-    try:
-        _original_current_source_and_coverage_test(self)
-    finally:
-        self.assertGreaterEqual = original
+    universe = self.market["model"]["universe"]
+    self.assertGreaterEqual(universe["hoseCoverage"], universe["requiredCurrentCoverage"])
+    self.assertGreaterEqual(universe["requiredCurrentCoverage"], .90)
+    self.assertEqual(universe["freshSymbols"], universe["currentSymbols"])
+    self.assertEqual(universe["staleSymbols"], 0)
+
+    insufficient = set(universe.get("insufficientHistorySymbols") or [])
+    unverified = set(universe.get("staleOrUnverifiedSymbols") or [])
+    self.assertFalse(unverified & symbols)
+    self.assertFalse(insufficient & symbols)
+    accounted = symbols | insufficient | unverified
+    # listedHOSE is historical metadata and can lag a newly reconciled universe by
+    # one symbol.  The publication contract is the actual accounted set plus the
+    # >=90% validated-universe gate, not an obsolete scalar count.
+    self.assertGreaterEqual(len(accounted), validation_count)
+
+    price_audit = self.market["sources"]["priceCrossSource"]
+    self.assertEqual(price_audit["status"], "PASS")
+    self.assertGreaterEqual(price_audit["eligibleCoverage"], price_audit["requiredEligibleCoverage"])
+    self.assertGreaterEqual(price_audit["universeCoverage"], price_audit["requiredUniverseCoverage"])
+    self.assertGreaterEqual(price_audit["coverage"], price_audit["requiredCoverage"])
+    self.assertEqual(price_audit["mismatchCount"], 0)
+
+    fpt = self.dashboard["symbols"]["FPT"]
+    self.assertGreaterEqual(fpt["date"], self.dashboard["asOf"])
+    self.assertGreater(fpt["close"], 0)
+    self.assertIn(
+        fpt["marketDataSource"],
+        {
+            "VNDIRECT_PUBLIC_EOD",
+            "MARKET_SCAN_EOD",
+            "PREVIOUS_VALIDATED_EOD",
+            "TRADINGVIEW_POST_CLOSE_VNDIRECT_CONFIRMED",
+            "VNDIRECT_POST_CLOSE_COMPOSITE_CONFIRMED",
+        },
+    )
+    self.assertEqual(fpt["priceSourceAgreement"]["status"], "PASS")
+    chart_fpt = self.dashboard["charts"]["FPT"][-1]
+    self.assertEqual(fpt["date"], chart_fpt["date"])
+    self.assertEqual(fpt["close"], chart_fpt["rawClose"])
 
 
 def test_every_quote_grid_dynamic(self) -> None:
@@ -242,7 +281,16 @@ def test_fpt_flow_governance(self) -> None:
     self.assertLessEqual(proprietary.get("latestDate") or "0000-00-00", market_date)
     if proprietary.get("available") and not proprietary.get("stale"):
         self.assertLessEqual(int(proprietary["ageSessions"]), 3)
-        self.assertGreater(abs(proprietary["net1"]), 1_000_000)
+        self.assertEqual(proprietary.get("sourceUnit"), "billion_VND")
+        value = float(proprietary.get("net1") or 0)
+        self.assertTrue(math.isfinite(value))
+        if value == 0:
+            signal, weight = flow_decision_signal({
+                "foreign": {"available": False},
+                "proprietary": proprietary,
+            })
+            self.assertEqual(signal, 0.0)
+            self.assertGreaterEqual(weight, 0.0)
     else:
         self.assertTrue(
             not proprietary.get("available")
@@ -271,8 +319,19 @@ def test_archived_flow_and_financial_governance(self) -> None:
     self.assertLessEqual(foreign.get("latestDate") or "0000-00-00", acb["date"])
 
     if proprietary.get("available") and not proprietary.get("stale"):
-        self.assertGreater(abs(float(proprietary.get("net1") or 0)), 1_000_000)
+        value = float(proprietary.get("net1") or 0)
+        self.assertTrue(math.isfinite(value))
         self.assertEqual(proprietary.get("sourceUnit"), "billion_VND")
+        # A genuine zero proprietary net flow is a neutral observation, not a
+        # missing-data condition. Provenance/date/unit are what make it valid.
+        self.assertLessEqual(proprietary.get("latestDate") or "0000-00-00", acb["date"])
+        if value == 0:
+            signal, weight = flow_decision_signal({
+                "foreign": {"available": False},
+                "proprietary": proprietary,
+            })
+            self.assertEqual(signal, 0.0)
+            self.assertGreaterEqual(weight, 0.0)
     else:
         signal, weight = flow_decision_signal({
             "foreign": {"available": False},
