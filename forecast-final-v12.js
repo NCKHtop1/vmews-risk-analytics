@@ -11,7 +11,7 @@ const PAGES_HOST=location.hostname==="nckhtop1.github.io"&&location.pathname.sta
 const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HOST?"main":"LOCAL_DEPLOYMENT";
 const ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data";
 const SOLUTION_CORE_ROOT=PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data":"";
-const SOLUTION_CORE_FILES=new Set(["forecast-dashboard-v12.json","forecast-current-v12.json","forecast-market-v13.json","forecast-model-v12.json","forecast-backtest-v12.json","data-audit-v12.json","phase-gates-v12.json"]);
+const SOLUTION_CORE_FILES=new Set(["forecast-dashboard-v12.json","forecast-current-v12.json","forecast-market-v13.json","forecast-model-v12.json","forecast-backtest-v12.json","data-audit-v12.json","phase-gates-v12.json","release-audit-v20.json"]);
 const CDN_REVISION=Math.floor(Date.now()/60000);
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
