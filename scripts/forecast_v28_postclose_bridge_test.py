@@ -1,10 +1,10 @@
 from __future__ import annotations
 import sys, unittest
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))
-from forecast_v28_postclose_bridge import bridge_completed_session
+from forecast_v28_postclose_bridge import bridge_completed_session, tradingview_close_confirmation
 VN_TZ=timezone(timedelta(hours=7))
 
 def frame_for(symbols,date_text="2026-08-28"):
@@ -26,6 +26,27 @@ def histories(symbols,as_of="2026-08-27"):
     return {s:[{"date":as_of,"open":49000,"high":51000,"low":48500,"close":50000,"modelClose":50000,"volume":900000,"provider":"fixture","exchange":"HOSE"}] for s in symbols}
 
 class PostCloseBridgeTest(unittest.TestCase):
+    def test_tradingview_current_session_change_confirms_previous_close(self):
+        current_close=101000.0
+        previous_close=100000.0
+        change=(current_close/previous_close-1.0)*100.0
+        ts=datetime(2026,10,2,10,15,tzinfo=VN_TZ).timestamp()
+        row={"close":current_close,"change":change,"update_time":ts}
+        close,mode=tradingview_close_confirmation(row,"2026-10-01",today=date(2026,10,2))
+        self.assertAlmostEqual(close,previous_close,places=6)
+        self.assertEqual(mode,"CURRENT_SESSION_CHANGE_IMPLIED_PREVIOUS_CLOSE")
+
+    def test_tradingview_confirmation_rejects_unrelated_or_invalid_session(self):
+        ts=datetime(2026,10,3,10,15,tzinfo=VN_TZ).timestamp()
+        row={"close":101000.0,"change":1.0,"update_time":ts}
+        close,mode=tradingview_close_confirmation(row,"2026-10-01",today=date(2026,10,3))
+        self.assertIsNone(close)
+        self.assertIsNone(mode)
+        bad={"close":101000.0,"change":-100.0,"update_time":datetime(2026,10,2,10,15,tzinfo=VN_TZ).timestamp()}
+        close,mode=tradingview_close_confirmation(bad,"2026-10-01",today=date(2026,10,2))
+        self.assertIsNone(close)
+        self.assertIsNone(mode)
+
     def test_advances_only_after_two_source_same_day_proof(self):
         symbols=[f"S{i:02d}" for i in range(10)]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9,min_secondary_coverage=.9)

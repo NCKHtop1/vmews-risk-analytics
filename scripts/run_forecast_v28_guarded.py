@@ -18,7 +18,7 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
 from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
-from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes, tradingview_close_confirmation  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
 # V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
@@ -72,8 +72,12 @@ def _frame_from_vndirect(rows_by_symbol: dict[str, list[dict]], session_date: st
     return pd.DataFrame(rows)
 
 def _tradingview_confirmation_rows(session_date: str) -> dict[str, list[dict]]:
-    """Extract same-session TradingView closes for independent confirmation only."""
-    from datetime import datetime, timezone
+    """Use TradingView only as an independent completed-session close confirmer.
+
+    If TradingView has already rolled to today's session, recover the immediately
+    previous close from current close + percentage change. This confirms VNDIRECT
+    EOD without pretending that today's live row is yesterday's OHLC.
+    """
     rows={}
     try:
         frame=fetch_tradingview_quotes()
@@ -86,19 +90,9 @@ def _tradingview_confirmation_rows(session_date: str) -> dict[str, list[dict]]:
             exchange="HOSE"
         if not symbol or exchange!="HOSE":
             continue
-        raw_time=item.get("update_time")
-        try:
-            stamp=float(raw_time)
-            if stamp>1e12: stamp/=1000.0
-            observed=datetime.fromtimestamp(stamp,timezone.utc).astimezone(market_model.VN_TZ).date().isoformat()
-        except Exception:
-            observed=str(item.get("date") or "")[:10]
-        try:
-            close=float(item.get("close"))
-        except (TypeError,ValueError):
-            continue
-        if observed==session_date and close>0:
-            rows[symbol]=[{"date":session_date,"close":close}]
+        close,mode=tradingview_close_confirmation(item,session_date)
+        if close is not None and close>0:
+            rows[symbol]=[{"date":session_date,"close":close,"confirmationMode":mode}]
     return rows
 
 def _load_histories_with_current_session(*args,**kwargs):
@@ -135,7 +129,7 @@ def _load_histories_with_current_session(*args,**kwargs):
             frame=fallback_frame,
             secondary_rows={symbol:composite_secondary[symbol] for symbol in verified_symbols},
             primary_name="VNDIRECT_PUBLIC_EOD",
-            secondary_name="TRADINGVIEW_PLUS_YAHOO_CONFIRMATION",
+            secondary_name="TRADINGVIEW_PREVIOUS_CLOSE_PLUS_YAHOO_CONFIRMATION",
             provider_label="VNDIRECT completed-session OHLC, independently confirmed close",
             provider_code="VNDIRECT_POST_CLOSE_COMPOSITE_CONFIRMED",
         )
@@ -143,9 +137,13 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["fallbackFrom"]=str(primary_error)
         bridge["originalUniverseSymbols"]=len(original_symbols)
         bridge["tradingViewConfirmedSymbols"]=len(set(tv_secondary)&set(original_symbols))
+        bridge["tradingViewPreviousCloseSymbols"]=sum(
+            1 for symbol in set(tv_secondary)&set(original_symbols)
+            if (tv_secondary[symbol] or [{}])[-1].get("confirmationMode")=="CURRENT_SESSION_CHANGE_IMPLIED_PREVIOUS_CLOSE"
+        )
         bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
-        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
+        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_SAME_OR_IMPLIED_PREVIOUS_CLOSE_CONFIRMATION_AND_YAHOO_GAP_FILL"
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
