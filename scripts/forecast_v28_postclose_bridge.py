@@ -216,12 +216,22 @@ def bridge_completed_session(
     secondary_base = len(primary) if secondary_coverage_scope == "primary" else len(current)
     sec_coverage = len(common) / max(1, secondary_base)
     mismatches = []
+    mismatch_details = []
     for symbol in sorted(common):
         p = float(primary[symbol]["close"])
         s = float(secondary[symbol]["close"])
         tolerance = max(MAX_LOG_GAP, 2 * _tick(p) / p)
-        if abs(math.log(p / s)) > tolerance:
+        gap = abs(math.log(p / s))
+        if gap > tolerance:
             mismatches.append(symbol)
+            if len(mismatch_details) < 20:
+                mismatch_details.append({
+                    "symbol": symbol,
+                    "primaryClose": p,
+                    "secondaryClose": s,
+                    "logGap": round(gap, 6),
+                    "tolerance": round(tolerance, 6),
+                })
 
     audit.update({
         "secondarySameDayQuotes": len(common),
@@ -229,12 +239,13 @@ def bridge_completed_session(
         "secondaryCoverage": round(sec_coverage, 6),
         "mismatchCount": len(mismatches),
         "mismatches": mismatches[:20],
+        "mismatchDetails": mismatch_details,
     })
     if sec_coverage + 1e-12 < min_secondary_coverage or mismatches:
         audit["status"] = "REJECTED_SECOND_SOURCE"
         freshness["postCloseBridge"] = audit
         raise RuntimeError(
-            f"Post-close independent confirmation for {session_date} failed: coverage={sec_coverage:.1%}, mismatches={mismatches[:20]}"
+            f"Post-close independent confirmation for {session_date} failed: coverage={sec_coverage:.1%}, mismatchDetails={mismatch_details}"
         )
 
     provider = freshness.setdefault("providerBySymbol", {})
