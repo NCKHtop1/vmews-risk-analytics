@@ -862,7 +862,7 @@
           state.liveSuccessAt = Date.now();
           state.liveFailures = 0;
           state.liveError = "";
-          window.dispatchEvent?.(new CustomEvent("solutionai:live-updated", { detail: { symbol, quote: state.liveQuote } }));
+          if (typeof CustomEvent !== "undefined") window.dispatchEvent?.(new CustomEvent("solutionai:live-updated", { detail: { symbol, quote: state.liveQuote } }));
           return state.liveQuote;
         } catch (error) {
           lastError = error;
@@ -1898,7 +1898,11 @@
     if (button) { button.disabled = true; button.textContent = "Đang chuẩn bị…"; }
     try {
       let context = state.context;
-      try { context = await buildContextResilient(); updateContextBar(context); } catch { context = state.context || {}; }
+      try {
+        await fetchSolutionLive(false).catch(() => null);
+        context = await buildContextResilient();
+        updateContextBar(context);
+      } catch { context = state.context || {}; }
       const currentQuestion = String($("#solutionAiInput")?.value || [...state.messages].reverse().find(item => item.role === "user")?.content || "").trim();
       const text = externalGeminiPrompt(currentQuestion, context);
       const copied = await copyHandoffText(text);
@@ -1967,16 +1971,14 @@
       if (button) ask(button.dataset.aiPrompt);
     });
     document.addEventListener("keydown", event => { if (event.key === "Escape" && state.opened) close(); });
-    window.addEventListener("vmews:symbol-changed", async () => {
-      try { updateContextBar(await buildContextResilient()); } catch { /* selected symbol unavailable */ }
-    });
-    window.addEventListener("vmews:community-updated", async () => {
-      try { updateContextBar(await buildContextResilient()); } catch { /* selected symbol unavailable */ }
-    });
     window.addEventListener("vmews:symbol-changed", () => {
       state.liveQuote = null;
       state.liveSymbol = "";
       if (state.opened) void refreshSolutionContext(true).catch(() => {});
+      else void buildContextResilient().then(updateContextBar).catch(() => {});
+    });
+    window.addEventListener("vmews:community-updated", async () => {
+      try { updateContextBar(await buildContextResilient()); } catch { /* selected symbol unavailable */ }
     });
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden && state.opened) void refreshSolutionContext(true).catch(() => {});
