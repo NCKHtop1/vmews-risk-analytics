@@ -805,6 +805,34 @@
     return age >= -5 * 60_000 ? Math.max(0, age) : Infinity;
   }
 
+  function solutionVnClock(value = Date.now()) {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit",
+      weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date(value)).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+    return {
+      day: `${parts.year}-${parts.month}-${parts.day}`,
+      weekday: parts.weekday,
+      minutes: Number(parts.hour) * 60 + Number(parts.minute),
+    };
+  }
+
+  function solutionQuoteUsable(quote = state.liveQuote) {
+    if (!quote || number(quote.liveClose) === null || number(quote.liveClose) <= 0) return false;
+    const stamp = Date.parse(quote.updateAt || quote.observedAt || "");
+    if (!Number.isFinite(stamp) || stamp > Date.now() + 5 * 60_000) return false;
+    const now = solutionVnClock();
+    const source = solutionVnClock(stamp);
+    const age = Math.max(0, Date.now() - stamp);
+    const weekday = !["Sat", "Sun"].includes(now.weekday);
+    if (!weekday) return age <= 96 * 60 * 60_000;
+    if ((now.minutes >= 9 * 60 && now.minutes <= 11 * 60 + 30) || (now.minutes >= 13 * 60 && now.minutes <= 14 * 60 + 45)) {
+      return source.day === now.day && age <= SOLUTION_LIVE_HARD_TTL_MS;
+    }
+    if (now.minutes > 11 * 60 + 30) return source.day === now.day;
+    return age <= 36 * 60 * 60_000;
+  }
+
   function pageSessionQuote(symbol) {
     return (window.__VMEWS_SESSION__?.symbols || []).find(item =>
       item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false && number(item.liveClose) > 0
@@ -812,7 +840,7 @@
   }
 
   function effectiveSessionQuote(symbol) {
-    if (state.liveQuote && state.liveSymbol === symbol && number(state.liveQuote.liveClose) > 0 && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_HARD_TTL_MS) {
+    if (state.liveQuote && state.liveSymbol === symbol && solutionQuoteUsable(state.liveQuote)) {
       return state.liveQuote;
     }
     return pageSessionQuote(symbol);
