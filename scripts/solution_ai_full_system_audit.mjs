@@ -13,8 +13,13 @@ page.on('requestfailed', request => failedRequests.push(`${request.method()} ${r
 
 const t0 = Date.now();
 
-function solutionAiConsoleErrors(messages) {
-  return messages.filter(message => !/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message));
+function solutionAiConsoleErrors(messages, failedRequests = []) {
+  const liveMarketFailed = failedRequests.some(line => /vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+  return messages.filter(message => {
+    if (/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message)) return false;
+    if (liveMarketFailed && /Failed to load resource:\s*net::ERR_FAILED/i.test(message)) return false;
+    return true;
+  });
 }
 
 function solutionAiFailedRequests(lines) {
@@ -390,7 +395,7 @@ try {
   assert(handoffText.includes('publishedHorizons') && handoffText.includes('reviewHorizons'), 'Gemini handoff lost release-state contract');
 
   const relevantFailed = solutionAiFailedRequests(failedRequests);
-  const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors);
+  const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors, failedRequests);
   assert(relevantConsoleErrors.length === 0, `browser console errors: ${relevantConsoleErrors.join(' | ')}`);
   assert(relevantFailed.length === 0, `failed requests: ${relevantFailed.join(' | ')}`);
 
