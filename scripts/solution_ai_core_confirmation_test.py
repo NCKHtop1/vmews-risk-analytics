@@ -1,8 +1,12 @@
+import gzip
+import json
+import tempfile
 import unittest
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from solution_ai_core_confirmation import parse_yahoo_payload
+from solution_ai_core_confirmation import load_symbols, parse_yahoo_payload
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -34,6 +38,16 @@ class SolutionAICoreConfirmationTest(unittest.TestCase):
             }
         }
         self.assertIsNone(parse_yahoo_payload(payload, "2026-10-02"))
+
+    def test_current_hose_universe_from_frozen_source_has_priority(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dashboard = root / "forecast-dashboard-v12.json"
+            dashboard.write_text(json.dumps({"symbols": {"FPT": {}, "HPG": {}}}), encoding="utf-8")
+            frozen = root / "v12-frozen-source.json.gz"
+            with gzip.open(frozen, "wt", encoding="utf-8") as stream:
+                json.dump({"currentHOSESymbols": ["FPT", "HPG", "VCB", "MBB"]}, stream)
+            self.assertEqual(load_symbols(dashboard, frozen), ["FPT", "HPG", "MBB", "VCB"])
 
 
 if __name__ == "__main__":
