@@ -1,0 +1,115 @@
+name: SoluTION.AI independent core forecast
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/solution_ai_core_confirmation.py'
+      - 'scripts/solution_ai_core_confirmation_test.py'
+      - '.github/workflows/solution-ai-core-refresh.yml'
+  schedule:
+    - cron: '20 8 * * 1-5'   # 15:20 Vietnam
+    - cron: '10 9 * * 1-5'   # 16:10 Vietnam
+    - cron: '20 10 * * 1-5'  # 17:20 Vietnam recovery
+
+permissions:
+  contents: write
+
+concurrency:
+  group: solution-ai-core-forecast
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SoluTION.AI core dependencies
+        run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener
+
+      - name: Test independent confirmation parser
+        run: python scripts/solution_ai_core_confirmation_test.py
+
+      - name: Build independent Yahoo close confirmation
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 360s python scripts/solution_ai_core_confirmation.py --workers 12 || echo "::warning::Yahoo confirmation incomplete; existing independent gates remain mandatory."
+
+      - name: Bind forecast scan to latest completed session
+        run: |
+          python scripts/forecast_freshness_test.py
+          python scripts/vn_exchange_calendar_test.py
+          python scripts/prepare_forecast_scan_v28.py
+
+      - name: Refresh SoluTION.AI core with unchanged validation gates
+        env:
+          V14_EOD_WORKERS: '8'
+          V28_POSTCLOSE_MIN_COVERAGE: '0.90'
+          V28_POSTCLOSE_MIN_SECONDARY_COVERAGE: '0.90'
+          V28_POSTCLOSE_MAX_LOG_GAP: '0.003'
+        run: python scripts/run_forecast_v28_guarded.py --refresh-symbols ALL --publish
+
+      - name: Verify SoluTION.AI core before publication
+        run: |
+          python scripts/forecast_v28_postclose_bridge_test.py
+          python scripts/forecast_v13_market_model_test_v28.py
+          python scripts/forecast_v20_release_audit_v28.py
+          python - <<'PY'
+          import json,sys
+          from datetime import datetime
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          from vn_exchange_calendar import VN_TZ,latest_completed_session
+          expected=latest_completed_session(datetime.now(VN_TZ)).isoformat()
+          dash=json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8'))
+          if str(dash.get('asOf')) != expected:
+              raise SystemExit(f'SOLUTION CORE STALE: {dash.get("asOf")} expected={expected}')
+          market=json.loads(Path('data/forecast-market-v13.json').read_text(encoding='utf-8'))
+          bridge=((market.get('sources') or {}).get('postCloseBridge') or {})
+          if bridge.get('status') != 'PASS':
+              raise SystemExit(f'SOLUTION CORE BRIDGE NOT PASS: {bridge}')
+          print({'asOf':dash.get('asOf'),'generatedAt':dash.get('generatedAt'),'bridge':bridge.get('status')})
+          PY
+
+      - name: Publish only to dedicated SoluTION.AI core branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin solution-ai-core-data
+          rm -rf /tmp/solution-ai-core-data
+          git worktree add /tmp/solution-ai-core-data origin/solution-ai-core-data
+          git -C /tmp/solution-ai-core-data config user.name 'github-actions[bot]'
+          git -C /tmp/solution-ai-core-data config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          files=(
+            data/forecast-dashboard-v12.json
+            data/forecast-current-v12.json
+            data/forecast-market-v13.json
+            data/forecast-model-v12.json
+            data/forecast-backtest-v12.json
+            data/data-audit-v12.json
+            data/phase-gates-v12.json
+            data/release-audit-v20.json
+          )
+          for path in "${files[@]}"; do
+            mkdir -p "/tmp/solution-ai-core-data/$(dirname "$path")"
+            cp "$path" "/tmp/solution-ai-core-data/$path"
+          done
+
+          git -C /tmp/solution-ai-core-data add "${files[@]}"
+          if git -C /tmp/solution-ai-core-data diff --cached --quiet; then
+            echo 'SoluTION.AI core branch already has this validated session.'
+            exit 0
+          fi
+          git -C /tmp/solution-ai-core-data commit -m 'Refresh SoluTION.AI validated core forecast [solution-ai-core]'
+          git -C /tmp/solution-ai-core-data push origin HEAD:solution-ai-core-data
