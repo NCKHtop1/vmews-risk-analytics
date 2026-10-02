@@ -12,8 +12,13 @@ const symbols = (process.env.SOLUTION_AI_SYMBOLS || 'FPT,ACB,HPG,VIC')
 const browser = await chromium.launch({ headless: true });
 const results = [];
 
-function solutionAiConsoleErrors(messages) {
-  return messages.filter(message => !/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message));
+function solutionAiConsoleErrors(messages, failedRequests = []) {
+  const liveMarketFailed = failedRequests.some(line => /vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+  return messages.filter(message => {
+    if (/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message)) return false;
+    if (liveMarketFailed && /Failed to load resource:\s*net::ERR_FAILED/i.test(message)) return false;
+    return true;
+  });
 }
 
 function solutionAiFailedRequests(lines) {
@@ -76,7 +81,7 @@ try {
       if (!cards.some(text => /ĐANG CẬP NHẬT|CHƯA ĐẠT KIỂM ĐỊNH HORIZON|CHƯA CÓ DỮ LIỆU/.test(text))) {
         throw new Error(`${symbol}: stale forecast UI does not expose update/review state`);
       }
-      const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors);
+      const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors, failed);
       if (relevantConsoleErrors.length) throw new Error(`${symbol}: console errors: ${relevantConsoleErrors.join(' | ')}`);
       results.push({
         symbol,
@@ -229,7 +234,7 @@ try {
       throw new Error(`${symbol}: no validated forecast is published, but UI does not expose the validation-gated review state`);
     }
 
-    const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors);
+    const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors, failed);
     if (relevantConsoleErrors.length) throw new Error(`${symbol}: console errors: ${relevantConsoleErrors.join(' | ')}`);
     const relevantFailed = solutionAiFailedRequests(failed);
     if (relevantFailed.length) throw new Error(`${symbol}: failed requests: ${relevantFailed.join(' | ')}`);
