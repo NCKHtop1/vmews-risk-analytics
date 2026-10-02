@@ -622,6 +622,8 @@ test("Gemini Web handoff distinguishes a fresh SESSION quote from the sealed EOD
     symbols: [{ symbol: "FPT", quoteCurrent: true, freshForCutoff: true, liveClose: 72500, change: .0069, updateAt: "2026-08-25T14:31:00+07:00", updateMode: "delayed_streaming_900" }],
   };
   const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  assert.equal(context.coreClose, 72000);
+  assert.equal(context.close, 72500);
   const payload = window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__("Đánh giá lại khoảng cách tới target", context);
   assert.equal(payload.handoff.dataMode, "SESSION");
   assert.equal(payload.forecast.sealedCoreClose, 72000);
