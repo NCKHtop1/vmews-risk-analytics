@@ -77,15 +77,32 @@ jobs:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
           if active:
               try:
-                  q=get('quotes.json'); s=get('technical-signals.json'); w=get('watch-today.json')
+                  q=get('quotes.json')
+                  s=get('technical-signals.json')
+                  strategy=get('strategy-indicators.json')
+                  w=get('watch-today.json')
+                  drivers=get('drivers.json')
+                  ps=get('prices-status.json')
                   expected=max(1,int(q.get('expected') or 0))
-                  fresh=[v for v in q.get('quotes',{}).values() if v.get('status')!='retained' and age(v.get('sourceTime'))<=30]
+                  fresh=[v for v in q.get('quotes',{}).values() if v.get('status')!='retained' and age(v.get('sourceTime') or v.get('collectedAt'))<=18]
                   if q.get('status')!='ok' or len(fresh)<math.ceil(expected*.90):
                       raise ValueError(f'Fresh quotes below 90%: {len(fresh)}/{expected}')
-                  for label,d in [('scanner',s),('watch',w)]:
-                      if d.get('status')!='ok' or age(d.get('checkedAt'))>30 or d.get('sourceTime')!=q.get('latestSourceTime'):
+                  if age(q.get('checkedAt'))>10 or age(q.get('latestSourceTime'))>18:
+                      raise ValueError('Quote publisher heartbeat/sourceTime is stale')
+                  for label,d in [('scanner',s),('strategy',strategy),('watch',w)]:
+                      if d.get('status')!='ok' or age(d.get('checkedAt'))>10 or d.get('sourceTime')!=q.get('latestSourceTime'):
                           raise ValueError(label+' stale or not aligned with quotes')
-                  print('Price/scanner/watch freshness OK')
+                  if ps.get('status')!='ok' or age(ps.get('checkedAt'))>10 or ps.get('latestSourceTime')!=q.get('latestSourceTime'):
+                      raise ValueError('prices-status stale or not aligned with quotes')
+                  driver_symbols=drivers.get('symbols') or {}
+                  if age(drivers.get('generatedAt'))>10 or len(driver_symbols)<math.ceil(expected*.90):
+                      raise ValueError(f'drivers stale/incomplete: {len(driver_symbols)}/{expected}')
+                  print('Market pipeline freshness OK',{
+                      'quotes':len(fresh),'expected':expected,
+                      'sourceTime':q.get('latestSourceTime'),
+                      'scanner':s.get('coverage'),'strategy':strategy.get('coverage'),
+                      'watch':len(w.get('items') or []),'drivers':len(driver_symbols)
+                  })
               except Exception as e:
                   print('::warning::Market freshness:',e); stale.append('market-price-live.yml')
           for workflow in stale: trigger(workflow)
