@@ -212,6 +212,7 @@ jobs:
                   symbol:m.symbol,
                   quote:m.quote,
                   quoteSourceTime:m.quote?.sourceTime||null,
+                  quoteBundleSourceTime:m.quoteBundleSourceTime||null,
                   scanner:s?.current,
                   scannerCheckedAt:s?.checkedAt,
                   scannerSourceTime:s?.sourceTime||null,
@@ -244,18 +245,19 @@ jobs:
               active=local.weekday()<5 and ((9*60<=mins<=11*60+30) or (13*60<=mins<=14*60+45))
               if active:
                   quote_source=snapshot.get('quoteSourceTime')
-                  if not quote_source:
-                      raise AssertionError(f'Active session has no usable live quote: {snapshot}')
+                  bundle_source=snapshot.get('quoteBundleSourceTime')
+                  if not quote_source or not bundle_source:
+                      raise AssertionError(f'Active session has no usable live quote/snapshot: {snapshot}')
                   qt=datetime.fromisoformat(str(quote_source).replace('Z','+00:00')).astimezone(timezone.utc)
                   quote_age=(datetime.now(timezone.utc)-qt).total_seconds()/60
                   if quote_age>20:
                       raise AssertionError(f'Active-session quote is stale: {quote_age:.1f} minutes; snapshot={snapshot}')
-                  if str(snapshot.get('scannerSourceTime') or '')!=str(quote_source):
-                      raise AssertionError(f'Scanner is not aligned with live quote: {snapshot}')
-                  if str(snapshot.get('strategySourceTime') or '')!=str(quote_source):
-                      raise AssertionError(f'Strategy snapshot is not aligned with live quote: {snapshot}')
-                  if watch.get('error') or str(watch.get('sourceTime') or '')!=str(quote_source):
-                      raise AssertionError(f'Today-watch is not aligned with live quote: watch={watch} snapshot={snapshot}')
+                  if str(snapshot.get('scannerSourceTime') or '')!=str(bundle_source):
+                      raise AssertionError(f'Scanner is not aligned with quote snapshot: {snapshot}')
+                  if str(snapshot.get('strategySourceTime') or '')!=str(bundle_source):
+                      raise AssertionError(f'Strategy snapshot is not aligned with quote snapshot: {snapshot}')
+                  if watch.get('error') or str(watch.get('sourceTime') or '')!=str(bundle_source):
+                      raise AssertionError(f'Today-watch is not aligned with quote snapshot: watch={watch} snapshot={snapshot}')
               checked=snapshot.get('newsCheckedAt')
               if not checked:
                   raise AssertionError(f'News freshness missing: {snapshot}')
