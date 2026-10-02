@@ -189,6 +189,7 @@ try {
       generatedAt: B.dash?.generatedAt || null,
       releaseVersion: release.version,
       releaseStatus: release.status,
+      releaseSymbols: Number(release.symbols || 0),
       direct,
       review,
       preferred,
@@ -218,7 +219,10 @@ try {
 
   assert(structural.errors.length === 0, `SoluTION structural audit failed: ${structural.errors.slice(0, 12).join(' | ')}`);
   const upstreamDegraded = structural.upstreamIssues.length > 0;
-  assert(structural.symbolStats.total >= 350, `published universe unexpectedly small: ${structural.symbolStats.total}`);
+  const expectedReleasedSymbols = Number(structural.releaseSymbols || 0);
+  assert(expectedReleasedSymbols >= 300, `release audit universe unexpectedly small: ${expectedReleasedSymbols}`);
+  assert(structural.symbolStats.total === expectedReleasedSymbols,
+    `published universe ${structural.symbolStats.total} != release audit universe ${expectedReleasedSymbols}`);
   assert(structural.symbolStats.stale === 0, `stale symbols leaked: ${structural.symbolStats.stale}`);
   assert(structural.phaseGates === 'PASS' && structural.releaseStatus === 'PASS', 'gates/release are not PASS');
   assert(structural.direct.includes(structural.preferred), 'preferred horizon is not released');
