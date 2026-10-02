@@ -1939,5 +1939,19 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(rows[0]['symbols'],['MBB'])
         self.assertEqual(rows[0]['url'],'https://vnexpress.net/a.html')
 
+
+    def test_forecast_v21_uses_news_as_live_heartbeat_without_running_outside_session(self):
+        root=ROOT.parent
+        path=root/'.github/workflows/forecast-v21-session-refresh.yml'
+        if not path.exists():
+            path=pathlib.Path('.github/workflows/forecast-v21-session-refresh.yml')
+        flow=path.read_text()
+        self.assertIn('Refresh market news stream',flow)
+        self.assertIn('Gate workflow heartbeat to Vietnam live session',flow)
+        self.assertIn('[ "$hhmm" -ge 0900 ] && [ "$hhmm" -le 1130 ]',flow)
+        self.assertIn('[ "$hhmm" -ge 1300 ] && [ "$hhmm" -le 1445 ]',flow)
+        self.assertIn("if: steps.session.outputs.run == 'true'",flow)
+        self.assertIn("if: steps.session.outputs.run == 'true' && success()",flow)
+
 if __name__=='__main__': unittest.main()
 
