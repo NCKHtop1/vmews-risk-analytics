@@ -106,6 +106,16 @@ def _current_quote_day():
     return local.weekday() < 5 and 9 * 60 <= mins <= 15 * 60 + 15
 
 
+def _strict_live_session():
+    """Only the actual continuous trading windows require minute-level freshness."""
+    local = datetime.now(VN)
+    mins = local.hour * 60 + local.minute
+    return local.weekday() < 5 and (
+        9 * 60 <= mins <= 11 * 60 + 30 or
+        13 * 60 <= mins <= 14 * 60 + 45
+    )
+
+
 def _forecast_symbols():
     """Use the published forecast universe instead of limiting live quotes to the old Core-100 list."""
     try:
@@ -136,7 +146,8 @@ def _live_quotes():
         payload = json.loads(market.request(market.API + 'price/symbols/getList', {'symbols': symbols}))
         fresh = market.normalize_board(payload, symbols, collected)
         if _current_quote_day():
-            fresh, stale = market.current_session_quotes(fresh)
+            max_age = 18 if _strict_live_session() else None
+            fresh, stale = market.current_session_quotes(fresh, max_age_minutes=max_age)
             if stale:
                 errors.append(f'Vietcap stale session quotes rejected: {len(stale)}')
     except Exception as exc:

@@ -19,7 +19,9 @@ permissions:
 
 concurrency:
   group: market-news-live
-  cancel-in-progress: true
+  # News runs are short, but overlapping recovery/schedule triggers must not
+  # cancel a publisher that is already validating/pushing a fresh snapshot.
+  cancel-in-progress: false
 
 jobs:
   news:
