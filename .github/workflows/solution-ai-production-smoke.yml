@@ -2,6 +2,13 @@ name: SoluTION.AI production browser smoke
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'solution-ai-v17.js'
+      - 'api/solution-ai*.js'
+      - 'scripts/solution_ai_*.mjs'
+      - 'forecast-final.html'
+      - '.github/workflows/solution-ai-production-smoke.yml'
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     types: [completed]
@@ -14,7 +21,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  contracts:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run SoluTION.AI contracts on the PR head
+        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/solution_ai_live_endpoint_test.mjs
+
   browser:
+    if: github.event_name != 'pull_request'
     # Run even when an unrelated post-deploy verifier fails. This smoke verifies
     # whether SoluTION.AI production itself is actually available and correct.
     runs-on: ubuntu-latest
