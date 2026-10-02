@@ -92,6 +92,7 @@ jobs:
         env:
           SOLUTION_AI_BROWSER_URL: https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT
           SOLUTION_AI_SYMBOLS: FPT,ACB,HPG,VIC
+          SOLUTION_AI_REQUIRE_LIVE: '1'
         run: node scripts/solution_ai_browser_smoke.mjs
       - name: Audit all published symbols, UI flow, freshness and AI provider routes
         env:
