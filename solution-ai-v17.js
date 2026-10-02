@@ -15,6 +15,10 @@
   const GOOGLE_SEARCH_TOOL = { type: "google_search" };
   const URL_CONTEXT_TOOL = { type: "url_context" };
   const SESSION_KEY = "vmews_solution_ai_browser_session";
+  const SOLUTION_LIVE_API = "https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai-live";
+  const SOLUTION_LIVE_REFRESH_MS = 30_000;
+  const SOLUTION_LIVE_SOFT_TTL_MS = 20_000;
+  const SOLUTION_LIVE_HARD_TTL_MS = 120_000;
   const ANALYSIS_SCHEMA = {
     type: "object",
     properties: {
@@ -40,7 +44,14 @@
     },
     required: ["direct_answer", "model_read", "external_evidence", "integrated_outlook"],
   };
-  const state = { opened: false, busy: false, messages: [], context: null, directKey: "", model: "", modelCandidates: [], quotaUntil: 0, geminiHealth: "LOCAL", lastGeminiStatus: null };
+  const state = {
+    opened: false, busy: false, messages: [], context: null,
+    directKey: "", model: "", modelCandidates: [], quotaUntil: 0,
+    geminiHealth: "LOCAL", lastGeminiStatus: null,
+    liveQuote: null, liveSymbol: "", liveHealth: "IDLE",
+    liveAttemptAt: 0, liveSuccessAt: 0, liveFailures: 0,
+    liveError: "", liveRefreshing: null, liveTimer: null,
+  };
 
   function sessionSecret() {
     if (state.directKey) return state.directKey;
@@ -782,12 +793,117 @@
     return true;
   }
 
+
+  function selectedSymbol() {
+    return String($("#symbol")?.value || new URLSearchParams(location.search).get("symbol") || "FPT").trim().toUpperCase();
+  }
+
+  function liveAgeMs(quote = state.liveQuote) {
+    const stamp = Date.parse(quote?.updateAt || quote?.observedAt || "");
+    if (!Number.isFinite(stamp)) return Infinity;
+    const age = Date.now() - stamp;
+    return age >= -5 * 60_000 ? Math.max(0, age) : Infinity;
+  }
+
+  function pageSessionQuote(symbol) {
+    return (window.__VMEWS_SESSION__?.symbols || []).find(item =>
+      item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false && number(item.liveClose) > 0
+    ) || null;
+  }
+
+  function effectiveSessionQuote(symbol) {
+    if (state.liveQuote && state.liveSymbol === symbol && number(state.liveQuote.liveClose) > 0 && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_HARD_TTL_MS) {
+      return state.liveQuote;
+    }
+    return pageSessionQuote(symbol);
+  }
+
+  async function fetchSolutionLive(force = false) {
+    const symbol = selectedSymbol();
+    if (!symbol) return null;
+    if (!force && state.liveQuote && state.liveSymbol === symbol && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_SOFT_TTL_MS) return state.liveQuote;
+    if (state.liveRefreshing) return state.liveRefreshing;
+
+    state.liveRefreshing = (async () => {
+      state.liveAttemptAt = Date.now();
+      state.liveHealth = "REFRESHING";
+      let lastError = null;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timer = controller && typeof globalThis.setTimeout === "function"
+          ? globalThis.setTimeout(() => controller.abort(), 6_000)
+          : null;
+        try {
+          const response = await fetch(`${SOLUTION_LIVE_API}?symbol=${encodeURIComponent(symbol)}&v=${Date.now()}&attempt=${attempt}`, {
+            method: "GET",
+            mode: "cors",
+            cache: "no-store",
+            signal: controller?.signal,
+          });
+          if (!response.ok) {
+            const error = new Error(`SoluTION live HTTP ${response.status}`);
+            error.status = response.status;
+            throw error;
+          }
+          const payload = await response.json();
+          const quote = payload?.quotes?.[symbol];
+          if (!quote || number(quote.price) === null || number(quote.price) <= 0) throw new Error("SoluTION live chưa trả giá hợp lệ.");
+          state.liveQuote = {
+            symbol,
+            liveClose: number(quote.price),
+            change: number(quote.changePct) === null ? null : number(quote.changePct) / 100,
+            volume: number(quote.volume),
+            updateAt: quote.observedAt || payload.fetchedAt || new Date().toISOString(),
+            sourceMode: quote.sourceMode || "solution_ai_direct",
+            source: quote.source || "SoluTION.AI live",
+          };
+          state.liveSymbol = symbol;
+          state.liveHealth = "OK";
+          state.liveSuccessAt = Date.now();
+          state.liveFailures = 0;
+          state.liveError = "";
+          window.dispatchEvent?.(new CustomEvent("solutionai:live-updated", { detail: { symbol, quote: state.liveQuote } }));
+          return state.liveQuote;
+        } catch (error) {
+          lastError = error;
+          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 450));
+        } finally {
+          if (timer) globalThis.clearTimeout?.(timer);
+        }
+      }
+      state.liveFailures += 1;
+      state.liveError = String(lastError?.message || lastError || "SoluTION live unavailable").slice(0, 180);
+      state.liveHealth = state.liveQuote && state.liveSymbol === symbol && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_HARD_TTL_MS
+        ? "DEGRADED"
+        : "UNAVAILABLE";
+      return effectiveSessionQuote(symbol);
+    })();
+
+    try { return await state.liveRefreshing; }
+    finally { state.liveRefreshing = null; }
+  }
+
+  async function refreshSolutionContext(force = false) {
+    try { await fetchSolutionLive(force); } catch { /* last-known-good context remains usable */ }
+    const context = await buildContextResilient(3);
+    updateContextBar(context);
+    return context;
+  }
+
+  function startSolutionRefreshLoop() {
+    if (state.liveTimer || typeof window.setInterval !== "function") return;
+    state.liveTimer = window.setInterval(() => {
+      if (!state.opened || document.hidden) return;
+      void refreshSolutionContext(false).catch(() => {});
+    }, SOLUTION_LIVE_REFRESH_MS);
+  }
+
   async function buildContext() {
     const base = await window.__VMEWS_LOAD_BASE__();
     const symbol = String($("#symbol")?.value || new URLSearchParams(location.search).get("symbol") || "FPT").trim().toUpperCase();
     const snapshot = base.dash.symbols?.[symbol];
     if (!snapshot) throw new Error(`Chưa có dữ liệu cho ${symbol}.`);
-    const sessionQuote = (window.__VMEWS_SESSION__?.symbols || []).find(item => item.symbol === symbol && item.quoteCurrent && item.freshForCutoff !== false) || null;
+    const sessionQuote = effectiveSessionQuote(symbol);
     const freshness = window.__VMEWS_FRESHNESS__?.inspect(snapshot) || { stale: false, expected: snapshot.date, actual: snapshot.date };
     const forecastFresh = freshness.stale !== true;
     const promotion = base.model?.promotion || base.dash?.promotion || {};
@@ -873,7 +989,26 @@
       rankingHorizon: preferredRankingHorizon,
       publishedHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus === "PUBLISHED").map(([label]) => label),
       reviewHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus !== "PUBLISHED").map(([label]) => label),
-      session: sessionQuote ? { session: window.__VMEWS_SESSION__?.session || null, cutoffAt: window.__VMEWS_SESSION__?.cutoffAt || null, liveClose: number(sessionQuote.liveClose), change: number(sessionQuote.change), updateAt: sessionQuote.updateAt || null, sourceMode: sessionQuote.updateMode || null } : null,
+      session: sessionQuote ? {
+        session: window.__VMEWS_SESSION__?.session || "LIVE",
+        cutoffAt: window.__VMEWS_SESSION__?.cutoffAt || null,
+        liveClose: number(sessionQuote.liveClose),
+        change: number(sessionQuote.change),
+        updateAt: sessionQuote.updateAt || null,
+        sourceMode: sessionQuote.sourceMode || sessionQuote.updateMode || null,
+        source: sessionQuote.source || null,
+      } : null,
+      solutionLive: {
+        health: state.liveHealth,
+        symbol: state.liveSymbol || null,
+        price: state.liveSymbol === symbol ? number(state.liveQuote?.liveClose) : null,
+        source: state.liveSymbol === symbol ? state.liveQuote?.source || null : null,
+        updateAt: state.liveSymbol === symbol ? state.liveQuote?.updateAt || null : null,
+        ageSeconds: state.liveSymbol === symbol && Number.isFinite(liveAgeMs(state.liveQuote)) ? Math.round(liveAgeMs(state.liveQuote) / 1000) : null,
+        failures: state.liveFailures,
+        lastError: state.liveError || null,
+      },
+      upstreamHealth: forecastFresh ? "OK" : "STALE_CORE",
       technical: technicalContext(chartHistory),
       fund: fund.available ? {
         fundCount: fund.fundCount, averageWeight: fund.averageReportedWeight,
@@ -1368,6 +1503,7 @@
     setStatus("Đang tìm hiểu câu hỏi…");
     const waiting = message("assistant", "Đang tìm hiểu câu hỏi và lựa chọn nguồn thông tin phù hợp…", "aiThinking");
     try {
+      await fetchSolutionLive(false).catch(() => null);
       const context = await buildContextResilient();
       updateContextBar(context);
       const intent = researchIntent(question, context);
@@ -1449,7 +1585,16 @@
     $("#solutionAiPanel").classList.add("open");
     $("#solutionAiPanel").setAttribute("aria-hidden", "false");
     $("#solutionAiLauncher").setAttribute("aria-expanded", "true");
-    try { updateContextBar(await buildContextResilient()); } catch { /* dashboard is still loading */ }
+    setStatus("Đang đồng bộ dữ liệu SoluTION.AI…");
+    try {
+      const context = await refreshSolutionContext(true);
+      const live = context?.solutionLive;
+      setStatus(live?.health === "OK"
+        ? "SoluTION.AI sẵn sàng · giá live đã đồng bộ"
+        : "SoluTION.AI sẵn sàng · đang dùng dữ liệu gần nhất");
+    } catch {
+      try { updateContextBar(await buildContextResilient()); } catch { /* dashboard is still loading */ }
+    }
     void checkConnection(true);
     $("#solutionAiInput").focus();
   }
@@ -1828,6 +1973,18 @@
     window.addEventListener("vmews:community-updated", async () => {
       try { updateContextBar(await buildContextResilient()); } catch { /* selected symbol unavailable */ }
     });
+    window.addEventListener("vmews:symbol-changed", () => {
+      state.liveQuote = null;
+      state.liveSymbol = "";
+      if (state.opened) void refreshSolutionContext(true).catch(() => {});
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && state.opened) void refreshSolutionContext(true).catch(() => {});
+    });
+    window.addEventListener("focus", () => {
+      if (state.opened) void refreshSolutionContext(true).catch(() => {});
+    });
+    startSolutionRefreshLoop();
     window.__SOLUTION_AI_BUILD_CONTEXT__ = buildContext;
     window.__SOLUTION_AI_ASK__ = async question => { await open(); return ask(question); };
     window.__SOLUTION_AI_RESEARCH_INTENT__ = (question, context = state.context || {}) => researchIntent(question, context);
@@ -1847,6 +2004,16 @@
       geminiHealth: state.geminiHealth,
       geminiLastStatus: state.lastGeminiStatus,
       geminiQuotaBlocked: state.quotaUntil > Date.now(),
+      liveHealth: state.liveHealth,
+      liveSymbol: state.liveSymbol || null,
+      livePrice: number(state.liveQuote?.liveClose),
+      liveSource: state.liveQuote?.source || null,
+      liveUpdatedAt: state.liveQuote?.updateAt || null,
+      liveAgeSeconds: Number.isFinite(liveAgeMs(state.liveQuote)) ? Math.round(liveAgeMs(state.liveQuote) / 1000) : null,
+      liveFailures: state.liveFailures,
+      liveLastError: state.liveError || null,
+      forecastFresh: state.context?.forecastFresh ?? null,
+      upstreamHealth: state.context?.upstreamHealth || null,
       busy: state.busy,
     });
   }
