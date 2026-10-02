@@ -6,7 +6,9 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from solution_ai_core_confirmation import load_symbols, parse_tcbs_payload, parse_vci_payload, parse_yahoo_payload
+from unittest.mock import patch
+
+from solution_ai_core_confirmation import build_snapshot, load_symbols, parse_tcbs_payload, parse_vci_payload, parse_yahoo_payload
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -73,6 +75,35 @@ class SolutionAICoreConfirmationTest(unittest.TestCase):
     def test_parse_vci_row_payload_rejects_other_session(self):
         stamp = int(datetime(2026, 10, 1, 9, 0, tzinfo=VN).timestamp())
         self.assertIsNone(parse_vci_payload([{"t": stamp, "c": 62000}], "2026-10-02"))
+
+    def test_build_snapshot_uses_independent_gap_fill_in_order(self):
+        symbols = ["AAA", "BBB", "CCC"]
+
+        def yahoo(symbol, session_date):
+            return {"AAA": 10000}.get(symbol)
+
+        def vci(symbol, session_date):
+            return {"BBB": 20000}.get(symbol)
+
+        def tcbs(symbol, session_date):
+            return {"CCC": 30000}.get(symbol)
+
+        with patch("solution_ai_core_confirmation.yahoo_close", side_effect=yahoo), \
+             patch("solution_ai_core_confirmation.vci_close", side_effect=vci), \
+             patch("solution_ai_core_confirmation.tcbs_close", side_effect=tcbs):
+            snapshot = build_snapshot(symbols, "2026-10-02", workers=3)
+
+        self.assertEqual(snapshot["coverage"], 3)
+        self.assertEqual(snapshot["expected"], 3)
+        self.assertEqual(snapshot["coverageRatio"], 1.0)
+        self.assertEqual(snapshot["sourceCounts"]["YAHOO_FINANCE_DAILY"], 1)
+        self.assertEqual(snapshot["sourceCounts"]["VCI_VNSTOCK_DAILY_GAPFILL"], 1)
+        self.assertEqual(snapshot["sourceCounts"]["TCBS_PUBLIC_DAILY_GAPFILL"], 1)
+        by_symbol = {row["symbol"]: row for row in snapshot["predictions"]}
+        self.assertEqual(by_symbol["AAA"]["source"], "YAHOO_FINANCE_DAILY")
+        self.assertEqual(by_symbol["BBB"]["source"], "VCI_VNSTOCK_DAILY_GAPFILL")
+        self.assertEqual(by_symbol["CCC"]["source"], "TCBS_PUBLIC_DAILY_GAPFILL")
+
 
 
 if __name__ == "__main__":
