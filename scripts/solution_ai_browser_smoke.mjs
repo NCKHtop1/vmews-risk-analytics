@@ -48,13 +48,22 @@ try {
       && window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__
       && window.__SOLUTION_AI_ASK__
       && window.__SOLUTION_AI_HEALTH__
+      && window.__SOLUTION_AI_REFRESH_LIVE__
       && window.__VMEWS_LOAD_BASE__
     ), null, { timeout: 30000 });
 
     await page.waitForFunction(() => document.querySelectorAll('#forecastCards .forecastCard').length === 5, null, { timeout: 30000 });
 
+    await page.evaluate(async () => window.__SOLUTION_AI_REFRESH_LIVE__(true));
+    const liveHealth = await page.evaluate(() => window.__SOLUTION_AI_HEALTH__());
+    if (liveHealth.liveHealth !== 'OK' || !Number.isFinite(Number(liveHealth.livePrice)) || Number(liveHealth.livePrice) <= 0) {
+      throw new Error(`${symbol}: independent SoluTION.AI live feed unavailable: ${JSON.stringify(liveHealth)}`);
+    }
     const context = await page.evaluate(async () => window.__SOLUTION_AI_BUILD_CONTEXT__());
     if (context.symbol !== symbol) throw new Error(`SoluTION.AI context symbol mismatch: expected ${symbol}, got ${context.symbol}`);
+    if (!context.session || Number(context.session.liveClose) !== Number(liveHealth.livePrice)) {
+      throw new Error(`${symbol}: context did not adopt independent live price: ${JSON.stringify({ context: context.session, health: liveHealth })}`);
+    }
 
     const labels = Object.keys(context.horizons || {}).sort();
     const expectedLabels = ['T+1', 'T+2', 'T+3', 'T+4', 'T+5'];
@@ -89,6 +98,9 @@ try {
         publishedHorizons: context.publishedHorizons,
         reviewHorizons: context.reviewHorizons,
         forecastFresh: false,
+        liveHealth: liveHealth.liveHealth,
+        livePrice: liveHealth.livePrice,
+        liveSource: liveHealth.liveSource,
         localChars: staleLocal.length,
       });
       await page.close();
@@ -244,6 +256,9 @@ try {
       preferredHorizon: context.preferredHorizon,
       publishedHorizons: context.publishedHorizons,
       reviewHorizons: context.reviewHorizons,
+      liveHealth: liveHealth.liveHealth,
+      livePrice: liveHealth.livePrice,
+      liveSource: liveHealth.liveSource,
       localChars: local.length,
       uiChars: ui.text.length,
     });
