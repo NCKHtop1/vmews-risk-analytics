@@ -39,7 +39,7 @@ jobs:
   prices:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 200
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,7 +59,7 @@ jobs:
           # During a live/close-catch window every trigger becomes a persistent
           # session publisher. This includes workflow_dispatch recoveries from
           # the freshness guard, so one recovery run cannot go stale again.
-          if { [ "$hhmm" -ge 0900 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
+          if [ "$hhmm" -ge 0900 ] && [ "$hhmm" -le 1505 ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "oneshot=0" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
