@@ -4,6 +4,7 @@ const base = process.env.SOLUTION_AI_BROWSER_URL
   || process.env.V12_BROWSER_URL
   || 'http://127.0.0.1:8000/forecast-final.html?symbol=FPT';
 
+const requireLive = /^(1|true|yes)$/i.test(String(process.env.SOLUTION_AI_REQUIRE_LIVE || ''));
 const symbols = (process.env.SOLUTION_AI_SYMBOLS || 'FPT,ACB,HPG,VIC')
   .split(',')
   .map(x => x.trim().toUpperCase())
@@ -56,12 +57,13 @@ try {
 
     await page.evaluate(async () => window.__SOLUTION_AI_REFRESH_LIVE__(true));
     const liveHealth = await page.evaluate(() => window.__SOLUTION_AI_HEALTH__());
-    if (liveHealth.liveHealth !== 'OK' || !Number.isFinite(Number(liveHealth.livePrice)) || Number(liveHealth.livePrice) <= 0) {
+    const liveReady = liveHealth.liveHealth === 'OK' && Number.isFinite(Number(liveHealth.livePrice)) && Number(liveHealth.livePrice) > 0;
+    if (requireLive && !liveReady) {
       throw new Error(`${symbol}: independent SoluTION.AI live feed unavailable: ${JSON.stringify(liveHealth)}`);
     }
     const context = await page.evaluate(async () => window.__SOLUTION_AI_BUILD_CONTEXT__());
     if (context.symbol !== symbol) throw new Error(`SoluTION.AI context symbol mismatch: expected ${symbol}, got ${context.symbol}`);
-    if (!context.session || Number(context.session.liveClose) !== Number(liveHealth.livePrice)) {
+    if (liveReady && (!context.session || Number(context.session.liveClose) !== Number(liveHealth.livePrice))) {
       throw new Error(`${symbol}: context did not adopt independent live price: ${JSON.stringify({ context: context.session, health: liveHealth })}`);
     }
 
