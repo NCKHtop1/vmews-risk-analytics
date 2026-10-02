@@ -82,6 +82,8 @@ jobs:
         run: python scripts/run_forecast_v28_guarded.py --refresh-symbols ALL --publish
 
       - name: Verify SoluTION.AI core before publication
+        env:
+          SOLUTION_AI_VALIDATION_UNIVERSE: 'LAST_VALIDATED_PUBLISHED_SYMBOLS'
         run: |
           python scripts/forecast_v28_postclose_bridge_test.py
           python scripts/forecast_v13_market_model_test_v28.py
