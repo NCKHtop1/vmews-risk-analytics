@@ -963,19 +963,21 @@
     for (const [key, forecast] of Object.entries(snapshot.horizons || {})) {
       const horizonNo = Number(key);
       const audit = base.model.horizons?.[String(key)] || {};
-      const published = forecastFresh && forecast.priceValidated === true && (forecast.validationStatus || "PASS") === "PASS";
+      const sealed = forecast.priceValidated === true && (forecast.validationStatus || "PASS") === "PASS";
+      const published = forecastFresh && sealed;
+      const releaseStatus = published ? "PUBLISHED" : sealed ? "SEALED_REFERENCE" : "REVIEW";
       horizons[`T+${key}`] = {
-        releaseStatus: published ? "PUBLISHED" : "REVIEW",
+        releaseStatus,
         globallyPromoted: promoted.has(horizonNo),
         globallyReview: review.has(horizonNo),
-        price: published ? forecast.expectedPrice : null,
-        expectedReturn: published ? forecast.expectedReturn : null,
-        remainingReturnFromSession: published && sessionQuote && number(sessionQuote.liveClose) > 0 ? forecast.expectedPrice / number(sessionQuote.liveClose) - 1 : null,
-        lowerPrice: published ? forecast.q20Price : null,
-        upperPrice: published ? forecast.q80Price : null,
-        expectedAbsReturn: published ? number(forecast.expectedAbsReturn) : null,
-        bearScenarioPrice: published ? number(forecast.bearScenarioPrice) : null,
-        bullScenarioPrice: published ? number(forecast.bullScenarioPrice) : null,
+        price: sealed ? forecast.expectedPrice : null,
+        expectedReturn: sealed ? forecast.expectedReturn : null,
+        remainingReturnFromSession: sealed && sessionQuote && number(sessionQuote.liveClose) > 0 ? forecast.expectedPrice / number(sessionQuote.liveClose) - 1 : null,
+        lowerPrice: sealed ? forecast.q20Price : null,
+        upperPrice: sealed ? forecast.q80Price : null,
+        expectedAbsReturn: sealed ? number(forecast.expectedAbsReturn) : null,
+        bearScenarioPrice: sealed ? number(forecast.bearScenarioPrice) : null,
+        bullScenarioPrice: sealed ? number(forecast.bullScenarioPrice) : null,
         magnitudeValidated: forecast.magnitudeValidated === true,
         probabilityUp: published && forecast.directionValidated === true ? forecast.probUp : null,
         directionValidated: forecast.directionValidated === true,
@@ -986,8 +988,8 @@
         crossSectionalRankValidated: forecast.crossSectionalRankValidated === true,
         conditionalValueValidated: forecast.conditionalValueValidated === true,
         decisionDiscipline: forecast.decisionDiscipline || null,
-        factors: published ? (forecast.expertContributions || {}) : {},
-        liveEvidence: published ? (forecast.liveEvidence?.components || {}) : {},
+        factors: sealed ? (forecast.expertContributions || {}) : {},
+        liveEvidence: sealed ? (forecast.liveEvidence?.components || {}) : {},
         targetDate: forecast.targetDate,
         validation: {
           priceStatus: audit.priceStatus || (published ? "PASS" : "REVIEW"),
@@ -1037,7 +1039,8 @@
       preferredHorizon: `T+${preferredRankingHorizon}`,
       rankingHorizon: preferredRankingHorizon,
       publishedHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus === "PUBLISHED").map(([label]) => label),
-      reviewHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus !== "PUBLISHED").map(([label]) => label),
+      sealedHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus === "SEALED_REFERENCE").map(([label]) => label),
+      reviewHorizons: Object.entries(horizons).filter(([, item]) => item.releaseStatus === "REVIEW").map(([label]) => label),
       session: sessionQuote ? {
         session: window.__VMEWS_SESSION__?.session || "LIVE",
         cutoffAt: window.__VMEWS_SESSION__?.cutoffAt || null,
@@ -1154,7 +1157,7 @@
     holder.querySelector("strong").textContent = context.symbol;
     const anchor = preferredForecast(context);
     holder.querySelector("small").textContent = anchor
-      ? `${anchor.label} · ${money(context.close)} → ${money(anchor.horizon.price)} · ${pct(anchor.horizon.expectedReturn)}`
+      ? `${anchor.label}${anchor.horizon.releaseStatus === "SEALED_REFERENCE" ? ` · NIÊM PHONG ${context.actualForecastSession || context.asOf || ""}` : ""} · ${money(context.close)} → ${money(anchor.horizon.price)} · ${pct(anchor.horizon.remainingReturnFromSession ?? anchor.horizon.expectedReturn)}`
       : `Giá hiện tại ${money(context.close)} · chưa có kỳ đủ gate phát hành điểm giá`;
     state.context = context;
   }
@@ -1302,14 +1305,14 @@
 
   function releasedHorizons(context) {
     return Object.entries(context?.horizons || {})
-      .filter(([label, horizon]) => horizonNumber(label) !== null && horizon?.releaseStatus === "PUBLISHED" && number(horizon?.price) !== null)
+      .filter(([label, horizon]) => horizonNumber(label) !== null && ["PUBLISHED","SEALED_REFERENCE"].includes(horizon?.releaseStatus) && number(horizon?.price) !== null)
       .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]));
   }
 
   function preferredForecast(context) {
     const preferred = String(context?.preferredHorizon || "");
     const preferredItem = context?.horizons?.[preferred];
-    if (preferredItem?.releaseStatus === "PUBLISHED" && number(preferredItem.price) !== null) {
+    if (["PUBLISHED","SEALED_REFERENCE"].includes(preferredItem?.releaseStatus) && number(preferredItem.price) !== null) {
       return { label: preferred, horizon: preferredItem };
     }
     const published = releasedHorizons(context);
@@ -1324,11 +1327,12 @@
       .filter(([label]) => horizonNumber(label) !== null)
       .sort((left, right) => horizonNumber(left[0]) - horizonNumber(right[0]))
       .map(([label, horizon]) => {
-        if (horizon?.releaseStatus !== "PUBLISHED" || number(horizon?.price) === null) {
+        if (horizon?.releaseStatus === "REVIEW" || number(horizon?.price) === null) {
           const status = horizon?.validation?.priceStatus || horizon?.validation?.symbolValidationStatus || "REVIEW";
           return `- **${label}:** chưa phát hành điểm giá · gate ${status}. Hệ thống giữ kỳ này ở chế độ REVIEW thay vì xuất một con số chưa đủ kiểm định.`;
         }
-        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.expectedReturn)})${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`;
+        const sealed = horizon.releaseStatus === "SEALED_REFERENCE" ? " · forecast niêm phong gần nhất" : "";
+        return `- **${label}${horizon.targetDate ? ` · ${horizon.targetDate}` : ""}:** trọng tâm ${money(horizon.price)} (${pct(horizon.remainingReturnFromSession ?? horizon.expectedReturn)})${sealed}${number(horizon.expectedAbsReturn) === null ? "" : `; biên độ hai chiều ±${pct(horizon.expectedAbsReturn).replace(/^\+/, "")}`}, vùng ${money(horizon.lowerPrice)}–${money(horizon.upperPrice)}${horizon.directionValidated && number(horizon.probabilityUp) !== null ? `, xác suất tăng ${pct(horizon.probabilityUp, 0).replace(/^\+/, "")}` : ""}.`;
       });
   }
 
@@ -1418,7 +1422,7 @@
       const stance = remainingAnchor > .003 ? "nghiêng tăng" : remainingAnchor < -.003 ? "nghiêng giảm" : "gần như đi ngang";
       lines.push(
         `### Kết luận cho ${context.symbol}`,
-        `${context.symbol} đang có forecast đã phát hành tại ${anchorLabel}: ${context.session ? `giá phiên ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm ${money(anchorForecast.price)}; khoảng cách còn lại ${pct(remainingAnchor)} và vùng bất định ${money(anchorForecast.lowerPrice)}–${money(anchorForecast.upperPrice)}. Đây là kỳ ưu tiên đã qua gate; các kỳ REVIEW vẫn được hiển thị trạng thái nhưng không bị biến thành lỗi.`,
+        `${context.symbol} đang có ${anchorForecast.releaseStatus === "SEALED_REFERENCE" ? `forecast niêm phong gần nhất từ phiên ${context.actualForecastSession || context.asOf || "trước"}` : "forecast đã phát hành"} tại ${anchorLabel}: ${context.session ? `giá SoluTION.AI ${money(activeClose)} (${context.session.session || "session"})` : `giá đóng cửa ${money(context.close)}`}, trọng tâm ${money(anchorForecast.price)}; khoảng cách còn lại ${pct(remainingAnchor)} và vùng bất định ${money(anchorForecast.lowerPrice)}–${money(anchorForecast.upperPrice)}. ${anchorForecast.releaseStatus === "SEALED_REFERENCE" ? "Đây là tham chiếu đã qua gate và chưa bị core mới thay thế; không được hiểu là forecast tái tính từ phiên hiện tại." : "Đây là kỳ ưu tiên đã qua gate."} Các kỳ REVIEW vẫn được hiển thị trạng thái nhưng không bị biến thành lỗi.`,
       );
       if (number(anchorForecast.expectedAbsReturn) !== null) {
         lines.push(
@@ -1831,7 +1835,9 @@
         preferredHorizon: context.preferredHorizon || null,
         rankingHorizon: context.rankingHorizon || null,
         publishedHorizons: context.publishedHorizons || [],
+        sealedHorizons: context.sealedHorizons || [],
         reviewHorizons: context.reviewHorizons || [],
+        upstreamHealth: context.upstreamHealth || null,
         horizons: context.horizons || {},
         marketRanking: context.marketRanking || null,
         topHOSECandidates: context.topMovers || [],
