@@ -6,7 +6,7 @@ on:
     paths:
       - 'solution-ai-v17.js'
       - 'scripts/solution_ai_*.mjs'
-      - 'scripts/solution_ai_live_snapshot.py'
+      - 'scripts/solution_ai_live_*.py'
       - 'forecast-final.html'
       - '.github/workflows/solution-ai-production-smoke.yml'
       - '.github/workflows/solution-ai-live-price.yml'
@@ -31,8 +31,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Run SoluTION.AI contracts on the PR head
-        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+        run: |
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          python scripts/solution_ai_live_snapshot_test.py
 
   browser:
     if: github.event_name != 'pull_request'
@@ -45,12 +50,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Install Playwright Chromium
         run: |
           npm install --no-save playwright@1.55.0
           timeout 8m npx playwright install chromium >/dev/null
       - name: Run SoluTION.AI unit and frontend contracts
-        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+        run: |
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          python scripts/solution_ai_live_snapshot_test.py
       - name: Wait for production Pages
         run: |
           for attempt in 1 2 3 4 5 6; do
