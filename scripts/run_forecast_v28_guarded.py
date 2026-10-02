@@ -51,8 +51,8 @@ def _last_validated_forecast_symbols(histories: dict[str, list[dict]]) -> list[s
         pass
     return sorted(histories)
 
-def _legacy_snapshot_rows(session_date: str) -> dict[str, list[dict]]:
-    """Independent same-session fallback from the archived live snapshot.
+def _independent_snapshot_rows(session_date: str) -> dict[str, list[dict]]:
+    """Independent same-session close fallback built from Yahoo/VCI/TCBS.
 
     This source is used only to CONFIRM VNDIRECT close prices when TradingView
     coverage collapses. It never supplies synthetic OHLC or replaces the primary
@@ -73,7 +73,7 @@ def _legacy_snapshot_rows(session_date: str) -> dict[str, list[dict]]:
         except (TypeError,ValueError):
             continue
         if symbol and close>0:
-            rows[symbol]=[{"date":session_date,"close":close}]
+            rows[symbol]=[{"date":session_date,"close":close,"source":item.get("source") or "INDEPENDENT_CLOSE_CONFIRMATION"}]
     return rows
 
 def _frame_from_vndirect(rows_by_symbol: dict[str, list[dict]], session_date: str):
@@ -146,11 +146,11 @@ def _load_histories_with_current_session(*args,**kwargs):
         from datetime import datetime
         from vn_exchange_calendar import VN_TZ, latest_completed_session
         session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
-        yahoo_secondary=_legacy_snapshot_rows(session_date)
+        independent_secondary=_independent_snapshot_rows(session_date)
         tv_secondary=_tradingview_confirmation_rows(session_date)
         original_symbols=sorted(set(freshness.get("currentHOSESymbols") or histories))
         composite_secondary=dict(tv_secondary)
-        for symbol,rows in yahoo_secondary.items():
+        for symbol,rows in independent_secondary.items():
             if symbol not in composite_secondary:
                 composite_secondary[symbol]=rows
         verified_symbols=sorted(
@@ -169,7 +169,7 @@ def _load_histories_with_current_session(*args,**kwargs):
             frame=fallback_frame,
             secondary_rows={symbol:composite_secondary[symbol] for symbol in verified_symbols},
             primary_name="VNDIRECT_PUBLIC_EOD",
-            secondary_name="TRADINGVIEW_PLUS_YAHOO_CONFIRMATION",
+            secondary_name="TRADINGVIEW_PLUS_YAHOO_VCI_TCBS_CONFIRMATION",
             provider_label="VNDIRECT completed-session OHLC, independently confirmed close",
             provider_code="VNDIRECT_POST_CLOSE_COMPOSITE_CONFIRMED",
         )
@@ -177,9 +177,16 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["fallbackFrom"]=str(primary_error)
         bridge["originalUniverseSymbols"]=len(original_symbols)
         bridge["tradingViewConfirmedSymbols"]=len(set(tv_secondary)&set(original_symbols))
-        bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
+        independent_gap_fill=(set(independent_secondary)-set(tv_secondary))&set(original_symbols)
+        independent_source_counts={}
+        for symbol in independent_gap_fill:
+            source=str((independent_secondary.get(symbol) or [{}])[-1].get("source") or "UNKNOWN")
+            independent_source_counts[source]=independent_source_counts.get(source,0)+1
+        bridge["independentConfirmedSymbols"]=len(set(independent_secondary)&set(original_symbols))
+        bridge["independentGapFillSymbols"]=len(independent_gap_fill)
+        bridge["independentGapFillSourceCounts"]=independent_source_counts
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
-        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
+        bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_AND_YAHOO_VCI_TCBS_CLOSE_CONFIRMATION"
         if solution_scope:
             bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
             bridge["validationUniverseSymbols"]=len(original_symbols)
