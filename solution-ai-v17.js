@@ -1995,6 +1995,8 @@
     window.__SOLUTION_AI_GEMINI_HANDOFF_PAYLOAD__ = (question = "", context = state.context || {}) => geminiHandoffPayload(context, question);
     window.__SOLUTION_AI_LAST_GEMINI_HANDOFF__ = () => ({ text: lastGeminiHandoffText, context: lastGeminiHandoffContext });
     window.__SOLUTION_AI_CHECK_CONNECTION__ = checkConnection;
+    window.__SOLUTION_AI_REFRESH_LIVE__ = (force = true) => fetchSolutionLive(Boolean(force));
+    window.__SOLUTION_AI_REFRESH_CONTEXT__ = (force = true) => refreshSolutionContext(Boolean(force));
     window.__SOLUTION_AI_HEALTH__ = () => ({
       contextReady: Boolean(state.context?.symbol),
       symbol: state.context?.symbol || null,
