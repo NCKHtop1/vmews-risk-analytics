@@ -128,9 +128,14 @@ def _load_histories_with_current_session(*args,**kwargs):
     _historical_scan_as_of=str(freshness.get("marketScanAsOf") or "")[:10]
 
     all_current=sorted(set(str(s).upper() for s in (freshness.get("currentHOSESymbols") or histories) if str(s).upper() in histories))
-    solution_scope=os.environ.get("SOLUTION_AI_VALIDATION_UNIVERSE","").strip().upper()=="LAST_VALIDATED_PUBLISHED_SYMBOLS"
-    validation_symbols=_last_validated_forecast_symbols(histories) if solution_scope else all_current
-    if solution_scope:
+    validation_policy=(
+        os.environ.get("V28_POSTCLOSE_VALIDATION_UNIVERSE")
+        or os.environ.get("SOLUTION_AI_VALIDATION_UNIVERSE")
+        or ""
+    ).strip().upper()
+    published_scope=validation_policy=="LAST_VALIDATED_PUBLISHED_SYMBOLS"
+    validation_symbols=_last_validated_forecast_symbols(histories) if published_scope else all_current
+    if published_scope:
         freshness=dict(freshness)
         freshness["allCurrentHOSESymbols"]=all_current
         freshness["allCurrentHOSECount"]=len(all_current)
@@ -186,13 +191,13 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["independentGapFillSourceCounts"]=independent_source_counts
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
         bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_AND_YAHOO_VCI_TCBS_CLOSE_CONFIRMATION"
-        if solution_scope:
+        if published_scope:
             bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
             bridge["validationUniverseSymbols"]=len(original_symbols)
             bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
-        if solution_scope:
+        if published_scope:
             bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
             bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
             bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
