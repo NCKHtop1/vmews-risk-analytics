@@ -100,6 +100,39 @@ def tcbs_close(symbol: str, session_date: str, timeout: float = 6.0) -> float | 
         return None
 
 
+def normalize_vn_close(value) -> float | None:
+    try:
+        close = float(value)
+    except (TypeError, ValueError):
+        return None
+    if close <= 0:
+        return None
+    return close * 1000.0 if close < 1000 else close
+
+
+def vci_close(symbol: str, session_date: str) -> float | None:
+    try:
+        from vnstock import Vnstock
+        end_date = (datetime.fromisoformat(session_date) + timedelta(days=1)).date().isoformat()
+        stock = Vnstock().stock(symbol=symbol, source="VCI")
+        frame = stock.quote.history(start=session_date, end=end_date, interval="1D")
+        if frame is None or len(frame) == 0:
+            return None
+        for _, row in frame.iloc[::-1].iterrows():
+            raw_time = row.get("time") if hasattr(row, "get") else None
+            if raw_time is None:
+                raw_time = row.get("date") if hasattr(row, "get") else None
+            observed = str(raw_time)[:10]
+            if observed != session_date:
+                continue
+            close = normalize_vn_close(row.get("close") if hasattr(row, "get") else None)
+            if close:
+                return close
+    except Exception:
+        return None
+    return None
+
+
 def load_symbols(dashboard_path: Path, frozen_source_path: Path | None = None) -> list[str]:
     frozen_source_path = frozen_source_path or (dashboard_path.parent / "v12-frozen-source.json.gz")
     if frozen_source_path.exists():
@@ -141,7 +174,21 @@ def build_snapshot(symbols: list[str], session_date: str, workers: int = 12) -> 
 
     missing = [symbol for symbol in symbols if symbol not in rows]
     if missing:
-        with ThreadPoolExecutor(max_workers=max(1, min(workers, 10))) as pool:
+        with ThreadPoolExecutor(max_workers=max(1, min(workers, 6))) as pool:
+            futures = {pool.submit(vci_close, symbol, session_date): symbol for symbol in missing}
+            for future in as_completed(futures):
+                symbol = futures[future]
+                try:
+                    close = future.result()
+                except Exception:
+                    close = None
+                if close:
+                    rows[symbol] = close
+                    source_by_symbol[symbol] = "VCI_VNSTOCK_DAILY_GAPFILL"
+
+    missing = [symbol for symbol in symbols if symbol not in rows]
+    if missing:
+        with ThreadPoolExecutor(max_workers=max(1, min(workers, 8))) as pool:
             futures = {pool.submit(tcbs_close, symbol, session_date): symbol for symbol in missing}
             for future in as_completed(futures):
                 symbol = futures[future]
@@ -155,12 +202,13 @@ def build_snapshot(symbols: list[str], session_date: str, workers: int = 12) -> 
 
     counts = {
         "YAHOO_FINANCE_DAILY": sum(value == "YAHOO_FINANCE_DAILY" for value in source_by_symbol.values()),
+        "VCI_VNSTOCK_DAILY_GAPFILL": sum(value == "VCI_VNSTOCK_DAILY_GAPFILL" for value in source_by_symbol.values()),
         "TCBS_PUBLIC_DAILY_GAPFILL": sum(value == "TCBS_PUBLIC_DAILY_GAPFILL" for value in source_by_symbol.values()),
     }
     return {
-        "version": "SOLUTION-AI-INDEPENDENT-CLOSE-CONFIRM-2",
+        "version": "SOLUTION-AI-INDEPENDENT-CLOSE-CONFIRM-3",
         "scope": "solution-ai",
-        "provider": "Yahoo Finance daily close + TCBS public daily gap-fill",
+        "provider": "Yahoo Finance daily close + VCI/Vnstock gap-fill + TCBS last-resort gap-fill",
         "asOf": session_date,
         "generatedAt": datetime.now(VN_TZ).isoformat(),
         "coverage": len(rows),
