@@ -1147,6 +1147,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("mode=prices-watchdog",workflow)
         self.assertIn("mode=news-watchdog",workflow)
         self.assertIn("PRICE WATCHDOG",workflow)
+        self.assertIn("age<=18 and checked_age<=10",workflow)
         self.assertIn("NEWS WATCHDOG",workflow)
         self.assertIn("MARKET_REQUIRE_TODAY=1",workflow)
         self.assertNotIn("cron: '11,41 * * * *'",workflow)
@@ -1623,6 +1624,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("Refresh market news stream",guard)
         self.assertIn("age(q.get('checkedAt'))>10",guard)
         self.assertIn("age(q.get('latestSourceTime'))>18",guard)
+        self.assertIn("540<=mins<=690 or 775<=mins<=915",guard)
         self.assertIn("d.get('sourceTime')!=q.get('latestSourceTime')",guard)
 
     def test_tiered_hose_universe_is_wired_end_to_end(self):

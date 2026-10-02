@@ -109,15 +109,18 @@ jobs:
           try: d=json.loads(Path('/tmp/market-publish/market/quotes.json').read_text())
           except Exception: raise SystemExit(1)
           raw=d.get('latestSourceTime') or d.get('checkedAt')
-          try: stamp=datetime.fromisoformat(str(raw).replace('Z','+00:00')).astimezone(timezone.utc)
+          try:
+              stamp=datetime.fromisoformat(str(raw).replace('Z','+00:00')).astimezone(timezone.utc)
+              checked=datetime.fromisoformat(str(d.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
           except Exception: raise SystemExit(1)
           age=(now-stamp).total_seconds()/60
+          checked_age=(now-checked).total_seconds()/60
           same_day=stamp.astimezone(VN).date()==local.date()
           import math
           expected=max(1,int(d.get('expected') or 0))
           required=max(1,math.ceil(expected*.90))
-          fresh=d.get('status')=='ok' and int(d.get('coverage') or 0)>=required and same_day and age<=30
-          print('PRICE WATCHDOG',{'fresh':fresh,'ageMin':round(age,1),'source':raw})
+          fresh=d.get('status')=='ok' and int(d.get('coverage') or 0)>=required and same_day and age<=18 and checked_age<=10
+          print('PRICE WATCHDOG',{'fresh':fresh,'ageMin':round(age,1),'checkedAgeMin':round(checked_age,1),'source':raw})
           raise SystemExit(0 if fresh else 1)
           PY
             then
