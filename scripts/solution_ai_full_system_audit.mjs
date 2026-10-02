@@ -432,6 +432,13 @@ try {
   if (await page.locator('#solutionAiConnect').isHidden()) await page.click('#solutionAiSettings');
   await page.fill('#solutionAiInput', 'Tiếp tục kiểm tra HPG trên Gemini Web.');
   await page.click('#solutionAiGeminiWeb');
+  await page.waitForFunction(({ symbol, preferred }) => {
+    const handoff = window.__SOLUTION_AI_LAST_GEMINI_HANDOFF__?.();
+    return handoff?.context?.symbol === symbol
+      && typeof handoff?.text === 'string'
+      && handoff.text.includes(symbol)
+      && handoff.text.includes(preferred);
+  }, { symbol: hpg.symbol, preferred: hpg.preferredHorizon }, { timeout: 10000 });
   const handoff = await page.evaluate(() => ({
     openUrl: window.__FULL_AUDIT_OPEN_URL__,
     clipboard: window.__FULL_AUDIT_CLIPBOARD__,
