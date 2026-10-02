@@ -78,6 +78,26 @@ class PostCloseBridgeTest(unittest.TestCase):
         self.assertEqual(out["S09"][-1]["date"],"2026-08-27")
         self.assertNotIn("ohlcUnavailable",out["S09"][-1])
 
+    def test_secondary_confirmation_scope_can_follow_verified_primary_bars(self):
+        symbols=[f"S{i:02d}" for i in range(20)]
+        primary=symbols[:18]  # 90% of the listed/current universe
+        confirmed=primary[:17]  # 94.4% of actual primary bars, but only 85% of all listed names
+        h=histories(symbols)
+        freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
+        out,meta=bridge_completed_session(
+            h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),
+            frame=frame_for(primary),secondary_rows=secondary_for(confirmed),
+            min_coverage=.9,min_secondary_coverage=.9,secondary_coverage_scope="primary",
+        )
+        bridge=meta["postCloseBridge"]
+        self.assertEqual(bridge["status"],"PASS")
+        self.assertEqual(bridge["coverage"],.9)
+        self.assertEqual(bridge["secondaryCoverageBase"],18)
+        self.assertAlmostEqual(bridge["secondaryCoverage"],17/18,places=6)
+        self.assertEqual(bridge["secondaryCoverageScope"],"primary")
+        self.assertEqual(bridge["staleSymbols"],2)
+        self.assertEqual(meta["forecastAsOf"],"2026-08-28")
+
     def test_preopen_keeps_already_completed_session(self):
         symbols=["FPT","VCB"]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,8,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9)
