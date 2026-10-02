@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from solution_ai_core_confirmation import load_symbols, parse_yahoo_payload
+from solution_ai_core_confirmation import load_symbols, parse_tcbs_payload, parse_yahoo_payload
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -48,6 +48,19 @@ class SolutionAICoreConfirmationTest(unittest.TestCase):
             with gzip.open(frozen, "wt", encoding="utf-8") as stream:
                 json.dump({"currentHOSESymbols": ["FPT", "HPG", "VCB", "MBB"]}, stream)
             self.assertEqual(load_symbols(dashboard, frozen), ["FPT", "HPG", "MBB", "VCB"])
+
+    def test_tcbs_parser_extracts_matching_session_close(self):
+        payload = {
+            "data": [
+                {"tradingDate": "2026-10-01T00:00:00", "close": 62000},
+                {"tradingDate": "2026-10-02T00:00:00", "close": 62100},
+            ]
+        }
+        self.assertEqual(parse_tcbs_payload(payload, "2026-10-02"), 62100)
+
+    def test_tcbs_parser_rejects_other_session(self):
+        payload = {"data": [{"tradingDate": "2026-10-01T00:00:00", "close": 62000}]}
+        self.assertIsNone(parse_tcbs_payload(payload, "2026-10-02"))
 
 
 if __name__ == "__main__":
