@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))
-from forecast_v28_postclose_bridge import bridge_completed_session
+from forecast_v28_postclose_bridge import bridge_completed_session, fetch_vietcap_confirmation_rows
 VN_TZ=timezone(timedelta(hours=7))
 
 def frame_for(symbols,date_text="2026-08-28"):
@@ -82,6 +82,22 @@ class PostCloseBridgeTest(unittest.TestCase):
         symbols=["FPT","VCB"]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,8,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9)
         self.assertEqual(meta["forecastAsOf"],"2026-08-27"); self.assertEqual(meta["postCloseBridge"]["status"],"NOT_APPLICABLE_ALREADY_CURRENT"); self.assertEqual(out["FPT"][-1]["date"],"2026-08-27")
+
+    def test_vietcap_confirmation_gap_fill_uses_only_same_session_closes(self):
+        rows={
+            "AAA":[{"time":"2026-08-27","close":9900},{"time":"2026-08-28","close":10000}],
+            "BBB":[{"time":"2026-08-28","close":20000}],
+            "CCC":[{"time":"2026-08-27","close":30000}],
+        }
+        def fake_history(symbol):
+            return rows.get(symbol,[])
+        out=fetch_vietcap_confirmation_rows(
+            "2026-08-28",["AAA","BBB","CCC","DDD"],
+            max_workers=2,history_fetcher=fake_history,
+        )
+        self.assertEqual(set(out),{"AAA","BBB"})
+        self.assertEqual(out["AAA"][-1]["close"],10000.0)
+        self.assertEqual(out["BBB"][-1]["date"],"2026-08-28")
 
     def test_weekend_and_holiday_bridge_friday_completed_session(self):
         symbols=["FPT","VCB"]
