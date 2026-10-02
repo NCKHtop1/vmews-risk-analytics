@@ -96,17 +96,31 @@ jobs:
             if curl -fsSL --max-time 12 "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-live-data/solution-ai/live.json?verify=${GITHUB_RUN_ID}-${attempt}" -o /tmp/solution-live.json; then
               if python - <<'PY'
           import json
-          from datetime import datetime, timezone
+          from datetime import datetime, timezone, timedelta
           d=json.load(open('/tmp/solution-live.json',encoding='utf-8'))
           q=(d.get('quotes') or {}).get('FPT') or {}
           assert d.get('scope')=='solution-ai',d
           assert d.get('status')=='ok',d
           assert int(d.get('coverage') or 0)>=500,d.get('coverage')
           assert float(q.get('price') or 0)>0,q
+          now=datetime.now(timezone.utc)
+          vn=now.astimezone(timezone(timedelta(hours=7)))
           stamp=datetime.fromisoformat(str(d.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
-          age=(datetime.now(timezone.utc)-stamp).total_seconds()/60
-          assert -5<=age<=10,age
-          print({'status':d.get('status'),'coverage':d.get('coverage'),'price':q.get('price'),'source':q.get('source'),'ageMin':round(age,1)})
+          source_vn=stamp.astimezone(timezone(timedelta(hours=7)))
+          age=(now-stamp).total_seconds()/60
+          mins=vn.hour*60+vn.minute
+          weekday=vn.weekday()<5
+          live_window=weekday and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
+          if live_window:
+              assert -5<=age<=10,age
+              freshness='LIVE_FRESH'
+          elif weekday and mins>=11*60+40:
+              assert source_vn.date()==vn.date(),(source_vn.isoformat(),vn.isoformat())
+              freshness='SAME_DAY_CLOSE'
+          else:
+              assert -5<=age<=96*60,age
+              freshness='LAST_COMPLETED_CLOSE'
+          print({'status':d.get('status'),'coverage':d.get('coverage'),'price':q.get('price'),'source':q.get('source'),'ageMin':round(age,1),'freshness':freshness})
           PY
               then
                 exit 0
