@@ -28,6 +28,7 @@ on:
     - cron: '35 9 * * 1-5'
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: financial-market-data-publisher
   cancel-in-progress: false
@@ -78,6 +79,8 @@ jobs:
           HISTORY_RECENT_COUNT: '80'
           HISTORY_KBS_FULL: ${{ (contains(github.event.head_commit.message, '[history-full]') || inputs.mode == 'history') && '1' || '0' }}
           HISTORY_START_DATE: '1998-01-01'
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           mode="${REQUESTED_MODE:-all}"
           # Push-triggered runs are now ESG-only. Live price/news have dedicated
@@ -121,7 +124,14 @@ jobs:
               echo "Dedicated price snapshot is fresh; watchdog skipped."
               exit 0
             else
-              mode=prices
+              active=$(gh run list --repo "$GH_REPO" --workflow market-price-live.yml --limit 10 --json status --jq 'any(.[]; .status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")' 2>/dev/null || echo false)
+              if [ "$active" != "true" ]; then
+                gh workflow run market-price-live.yml --repo "$GH_REPO" --ref main
+                echo "PRICE WATCHDOG dispatched dedicated live publisher."
+              else
+                echo "PRICE WATCHDOG found dedicated live publisher already active."
+              fi
+              exit 0
             fi
           fi
           if [ "$mode" = 'news-watchdog' ]; then
@@ -143,7 +153,14 @@ jobs:
               echo "Dedicated news snapshot is fresh; watchdog skipped."
               exit 0
             else
-              mode=news
+              active=$(gh run list --repo "$GH_REPO" --workflow market-news-live.yml --limit 10 --json status --jq 'any(.[]; .status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")' 2>/dev/null || echo false)
+              if [ "$active" != "true" ]; then
+                gh workflow run market-news-live.yml --repo "$GH_REPO" --ref main
+                echo "NEWS WATCHDOG dispatched dedicated news publisher."
+              else
+                echo "NEWS WATCHDOG found dedicated news publisher already active."
+              fi
+              exit 0
             fi
           fi
           if [ "$mode" = 'esg' ]; then
