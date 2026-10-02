@@ -146,7 +146,7 @@ function applySessionView(symbol,snapshot,session=window.__VMEWS_SESSION__){
     session:isDirect?(window.__VMEWS_FRESHNESS__?.quoteMode?.()||"LIVE"):(session?.session||null),
     cutoffAt:isDirect?(quote.updateAt||null):(session?.cutoffAt||null),updateAt:quote.updateAt||null,change:finite(quote.change)?+quote.change:null,
     coreAsOf:session?.coreAsOf||snapshot.date||null,expectedCoreAsOf:alignment.expectedCoreAsOf||freshness?.expected||snapshot.date||null,
-    forecastAligned:freshness?.stale!==true,source:quote.source||null,sourceMode:quote.updateMode||null
+    forecastAligned:isDirect?freshness?.stale!==true:alignment.rankingEligible!==false,source:quote.source||null,sourceMode:quote.updateMode||null
   }}
 }
 function sessionPosition(q,close){if(!validatedPrice(q)||!finite(close))return"";if(finite(q.bullScenarioPrice)&&+close>+q.bullScenarioPrice)return"ABOVE_BULL";if(+close>+q.q80Price)return"ABOVE_Q80";if(finite(q.bearScenarioPrice)&&+close<+q.bearScenarioPrice)return"BELOW_BEAR";if(+close<+q.q20Price)return"BELOW_Q20";return"INSIDE"}
