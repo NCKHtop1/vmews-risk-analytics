@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from solution_ai_core_confirmation import load_symbols, normalize_vn_close, parse_tcbs_payload, parse_yahoo_payload
+from solution_ai_core_confirmation import load_symbols, parse_tcbs_payload, parse_vci_payload, parse_yahoo_payload
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -62,10 +62,17 @@ class SolutionAICoreConfirmationTest(unittest.TestCase):
         payload = {"data": [{"tradingDate": "2026-10-01T00:00:00", "close": 62000}]}
         self.assertIsNone(parse_tcbs_payload(payload, "2026-10-02"))
 
-    def test_normalize_vci_thousand_unit_close(self):
-        self.assertEqual(normalize_vn_close(62.1), 62100.0)
-        self.assertEqual(normalize_vn_close(62100), 62100.0)
-        self.assertIsNone(normalize_vn_close(None))
+    def test_parse_vci_vector_payload_for_matching_session(self):
+        stamps = [
+            int(datetime(2026, 10, 1, 9, 0, tzinfo=VN).timestamp()),
+            int(datetime(2026, 10, 2, 9, 0, tzinfo=VN).timestamp()),
+        ]
+        payload = [{"t": stamps, "c": [62000, 62100]}]
+        self.assertEqual(parse_vci_payload(payload, "2026-10-02"), 62100)
+
+    def test_parse_vci_row_payload_rejects_other_session(self):
+        stamp = int(datetime(2026, 10, 1, 9, 0, tzinfo=VN).timestamp())
+        self.assertIsNone(parse_vci_payload([{"t": stamp, "c": 62000}], "2026-10-02"))
 
 
 if __name__ == "__main__":

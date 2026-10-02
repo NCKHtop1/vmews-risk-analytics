@@ -34,7 +34,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install SoluTION.AI core dependencies
-        run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener vnstock
+        run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener
 
       - name: Test independent confirmation parser
         run: python scripts/solution_ai_core_confirmation_test.py

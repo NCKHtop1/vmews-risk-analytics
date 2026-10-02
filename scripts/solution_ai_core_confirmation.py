@@ -100,37 +100,67 @@ def tcbs_close(symbol: str, session_date: str, timeout: float = 6.0) -> float | 
         return None
 
 
-def normalize_vn_close(value) -> float | None:
-    try:
-        close = float(value)
-    except (TypeError, ValueError):
+def parse_vci_payload(payload, session_date: str) -> float | None:
+    if isinstance(payload, dict) and "data" in payload:
+        payload = payload.get("data")
+    if not isinstance(payload, list) or not payload:
         return None
-    if close <= 0:
-        return None
-    return close * 1000.0 if close < 1000 else close
+
+    rows = []
+    first = payload[0]
+    if isinstance(first, dict) and isinstance(first.get("t"), list):
+        stamps = first.get("t") or []
+        closes = first.get("c") or []
+        rows = [{"t": stamps[i], "c": closes[i]} for i in range(min(len(stamps), len(closes)))]
+    else:
+        rows = payload
+
+    chosen = None
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        try:
+            stamp = float(row.get("t"))
+            close = float(row.get("c"))
+        except (TypeError, ValueError):
+            continue
+        if stamp > 1e12:
+            stamp /= 1000.0
+        if close <= 0:
+            continue
+        observed = datetime.fromtimestamp(stamp, VN).date().isoformat()
+        if observed == session_date:
+            chosen = close
+    return chosen
 
 
-def vci_close(symbol: str, session_date: str) -> float | None:
+def vci_close(symbol: str, session_date: str, timeout: float = 6.0) -> float | None:
+    session = datetime.fromisoformat(session_date).replace(tzinfo=VN)
+    to_stamp = int((session + timedelta(days=2)).timestamp())
+    url = "https://trading.vietcap.com.vn/api/chart/OHLCChart/gap-chart"
+    body = json.dumps({
+        "timeFrame": "ONE_DAY",
+        "symbols": [symbol],
+        "to": to_stamp,
+        "countBack": 5,
+    }).encode("utf-8")
+    headers = {
+        "User-Agent": UA,
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9,vi-VN;q=0.8,vi;q=0.7",
+        "Content-Type": "application/json",
+        "Origin": "https://trading.vietcap.com.vn",
+        "Referer": "https://trading.vietcap.com.vn/",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+    }
+    req = urllib.request.Request(url, data=body, headers=headers, method="POST")
     try:
-        from vnstock import Vnstock
-        end_date = (datetime.fromisoformat(session_date) + timedelta(days=1)).date().isoformat()
-        stock = Vnstock().stock(symbol=symbol, source="VCI")
-        frame = stock.quote.history(start=session_date, end=end_date, interval="1D")
-        if frame is None or len(frame) == 0:
-            return None
-        for _, row in frame.iloc[::-1].iterrows():
-            raw_time = row.get("time") if hasattr(row, "get") else None
-            if raw_time is None:
-                raw_time = row.get("date") if hasattr(row, "get") else None
-            observed = str(raw_time)[:10]
-            if observed != session_date:
-                continue
-            close = normalize_vn_close(row.get("close") if hasattr(row, "get") else None)
-            if close:
-                return close
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        return parse_vci_payload(payload, session_date)
     except Exception:
         return None
-    return None
 
 
 def load_symbols(dashboard_path: Path, frozen_source_path: Path | None = None) -> list[str]:
