@@ -11,7 +11,7 @@ const PAGES_HOST=location.hostname==="nckhtop1.github.io"&&location.pathname.sta
 const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HOST?"main":"LOCAL_DEPLOYMENT",ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data",CDN_REVISION=Math.floor(Date.now()/60000);
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
-const LIVE_MARKET_BASE=PAGES_HOST?"https://vmews-risk-analytics-sojd.vercel.app":CDN_REF?"":location.origin;
+const SOLUTION_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-live-data/solution-ai/live.json";
 let LIVE_QUOTES=null,LIVE_QUOTES_REFRESHING=null;
 
 function vnDateKey(value){
@@ -20,44 +20,38 @@ function vnDateKey(value){
   return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Ho_Chi_Minh",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
 }
 function liveQuotePayloadUsable(payload,now=new Date()){
-  if(payload?.status!=="ok"||!payload?.quotes||typeof payload.quotes!=="object")return false;
-  const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.(now);
-  const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now);
-  const stamp=new Date(payload.latestSourceTime||payload.checkedAt||"");
+  if(payload?.status!=="ok"||payload?.scope!=="solution-ai"||!payload?.quotes||typeof payload.quotes!=="object")return false;
+  const stamp=new Date(payload.sourceTime||payload.generatedAt||payload.latestSourceTime||payload.checkedAt||"");
   if(Number.isNaN(+stamp)||+stamp>Date.now()+5*60_000)return false;
+  const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.(now)||vnDateKey(now);
+  const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
+  const age=+now-+stamp;
   if(expected&&["LIVE","LUNCH","POST_CLOSE"].includes(mode)&&vnDateKey(stamp)!==expected)return false;
-  const coverage=Number(payload.coverage||0),total=Number(payload.expected||0);
-  if(["LIVE","LUNCH"].includes(mode)&&total>0&&coverage/total<.90)return false;
+  if(mode==="LIVE"&&age>10*60_000)return false;
+  if(mode==="LUNCH"&&age>100*60_000)return false;
+  const coverage=Number(payload.coverage||0);
+  if(coverage<500)return false;
   return true;
 }
 async function refreshLiveQuotes(force=false){
-  if(!LIVE_MARKET_BASE)return false;
   if(document.hidden&&!force)return false;
   if(LIVE_QUOTES_REFRESHING)return LIVE_QUOTES_REFRESHING;
   LIVE_QUOTES_REFRESHING=(async()=>{
     const revision=Math.floor(Date.now()/30_000);
-    const sources=[
-      `${LIVE_MARKET_BASE}/api/live_market?mode=quotes&refresh=${revision}`,
-      `https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json?refresh=${revision}`
-    ];
     try{
-      for(const url of sources){
-        try{
-          const controller=new AbortController();
-          const timeout=setTimeout(()=>controller.abort(),url.includes("/api/live_market")?4500:3500);
-          const response=await fetch(url,{cache:"no-store",signal:controller.signal});
-          clearTimeout(timeout);
-          if(!response.ok)continue;
-          const payload=await response.json();
-          if(!liveQuotePayloadUsable(payload))continue;
-          LIVE_QUOTES=payload;
-          window.__VMEWS_LIVE_QUOTES__=payload;
-          window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload}}));
-          return true;
-        }catch{}
-      }
-      return false;
-    }finally{LIVE_QUOTES_REFRESHING=null}
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),5000);
+      const response=await fetch(`${SOLUTION_LIVE_URL}?refresh=${revision}`,{cache:"no-store",signal:controller.signal});
+      clearTimeout(timeout);
+      if(!response.ok)return false;
+      const payload=await response.json();
+      if(!liveQuotePayloadUsable(payload))return false;
+      LIVE_QUOTES=payload;
+      window.__VMEWS_LIVE_QUOTES__=payload;
+      window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload,scope:"solution-ai"}}));
+      return true;
+    }catch{return false}
+    finally{LIVE_QUOTES_REFRESHING=null}
   })();
   return LIVE_QUOTES_REFRESHING;
 }
@@ -72,12 +66,31 @@ window.__VMEWS_DATA_ROOT__=ROOT;
 window.__VMEWS_DATA_REF__=DATA_REF;
 window.__VMEWS_ASSET_REF__=CDN_REF||"LOCAL_DEPLOYMENT";
 function assertProduction(B){if(B.gates?.status!=="PASS")throw Error("Bộ kiểm soát dữ liệu chưa đạt; dự báo đang tạm khóa.");if(B.model?.promotion?.status!=="PASS")throw Error("Mô hình chưa vượt điều kiện phát hành; dự báo đang tạm khóa.")}
-function h(z,n){const q=z?.horizons?.[String(n)]||{};return z?.staleForecast?{}:q}
+function h(z,n){return z?.horizons?.[String(n)]||{}}
 function forecastAvailable(q){return q?.priceValidated===true&&finite(q?.expectedPrice)&&finite(q?.q20Price)&&finite(q?.q80Price)}
 function validatedPrice(q){return q?.priceValidated===true&&finite(q.expectedPrice)&&finite(q.q20Price)&&finite(q.q80Price)}
 function reliablePoint(q){return q?.economicPointStatus==="PASS"}
 function validatedDirection(q){return q?.directionValidated===true&&finite(q.probUp)}
-function primaryHorizon(B,z=null){const promotion=B?.model?.promotion||B?.dash?.promotion||{},promoted=(promotion.directPriceHorizons||[]).map(Number).filter(n=>n>=1&&n<=5),preferred=Number(promotion.preferredRankingHorizon||promoted[0]||3),candidates=[preferred,...promoted,3,2,1,4,5].filter((n,index,list)=>list.indexOf(n)===index);return candidates.find(n=>!z||forecastAvailable(h(z,n)))||3}
+function forecastTargetState(q,now=new Date()){
+  const target=String(q?.targetDate||"").slice(0,10);
+  if(!target)return"UNKNOWN";
+  const today=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.(now)||vnDateKey(now);
+  if(!today)return"UNKNOWN";
+  if(target<today)return"PAST";
+  if(target>today)return"FUTURE";
+  const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
+  return mode==="POST_CLOSE"?"PAST":"ACTIVE_TODAY";
+}
+function forecastUsableForDecision(q,z,now=new Date()){
+  if(!forecastAvailable(q))return false;
+  if(!z?.staleForecast)return true;
+  const state=forecastTargetState(q,now);
+  return state==="FUTURE"||state==="ACTIVE_TODAY";
+}
+function primaryHorizon(B,z=null){
+  const promotion=B?.model?.promotion||B?.dash?.promotion||{},promoted=(promotion.directPriceHorizons||[]).map(Number).filter(n=>n>=1&&n<=5),preferred=Number(promotion.preferredRankingHorizon||promoted[0]||3),candidates=[preferred,...promoted,3,2,1,4,5].filter((n,index,list)=>list.indexOf(n)===index);
+  return candidates.find(n=>!z||forecastUsableForDecision(h(z,n),z))||candidates.find(n=>!z||forecastAvailable(h(z,n)))||3
+}
 function pointMove(q,close){if(!forecastAvailable(q)||!finite(close))return null;const target=+q.expectedPrice,delta=target-(+close),rate=delta/(+close),direction=delta>0?"TĂNG":delta<0?"GIẢM":"ĐI NGANG",tone=delta>0?"good":delta<0?"bad":"";return{target,delta,rate,direction,tone}}
 function backtestResultDate(B,x,horizon){const explicit=x?.targetDate||x?.actualDate||x?.realizedDate;if(explicit)return String(explicit).slice(0,10);const history=B?.dash?.charts?.[x?.symbol]||[],dates=history.map(item=>String(item?.date||"").slice(0,10)).filter(Boolean),origin=String(x?.originDate||"").slice(0,10),index=dates.indexOf(origin),steps=Math.max(1,Number(horizon)||1);return index>=0&&index+steps<dates.length?dates[index+steps]:"—"}
 window.__VMEWS_PRIMARY_HORIZON__=primaryHorizon;
@@ -93,22 +106,63 @@ function sessionQuote(symbol,session=window.__VMEWS_SESSION__){
   const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.();
   const live=(LIVE_QUOTES||window.__VMEWS_LIVE_QUOTES__)?.quotes?.[symbol];
   if(live&&finite(live.price)){
-    const stamp=live.sourceTime||LIVE_QUOTES?.latestSourceTime||window.__VMEWS_LIVE_QUOTES__?.latestSourceTime;
-    if(!expected||vnDateKey(stamp)===expected)return{symbol,liveClose:+live.price,change:finite(live.changePct)?+live.changePct/100:null,updateAt:stamp,quoteCurrent:true,freshForCutoff:true,updateMode:"live_api",source:live.source||"LIVE"};
+    const stamp=live.updateAt||live.observedAt||live.sourceTime||LIVE_QUOTES?.sourceTime||LIVE_QUOTES?.generatedAt||window.__VMEWS_LIVE_QUOTES__?.sourceTime||window.__VMEWS_LIVE_QUOTES__?.generatedAt;
+    if(!expected||vnDateKey(stamp)===expected)return{symbol,liveClose:+live.price,change:finite(live.changePct)?+live.changePct/100:null,updateAt:stamp,quoteCurrent:true,freshForCutoff:true,updateMode:"solution_ai_publisher",source:live.source||"SoluTION.AI"};
   }
   if(expected&&String(session?.coverage?.expectedQuoteDate||"")!==expected)return null;
   return(session?.symbols||[]).find(item=>item.symbol===symbol&&item.quoteCurrent&&item.freshForCutoff!==false&&finite(item.liveClose))||null
 }
-function applySessionView(symbol,snapshot,session=window.__VMEWS_SESSION__){const quote=sessionQuote(symbol,session),freshness=window.__VMEWS_FRESHNESS__?.inspect(snapshot);if(!quote||+quote.liveClose<=0){if(freshness?.stale===true)return{...snapshot,coreClose:+snapshot.close,close:null,quoteUnavailable:true,liveSession:null};return snapshot}const alignment=session?.forecastAlignment||{},isDirect=quote.updateMode==="live_api";return{...snapshot,coreClose:+snapshot.close,close:+quote.liveClose,quoteUnavailable:false,liveSession:{session:isDirect?(window.__VMEWS_FRESHNESS__?.quoteMode?.()||"LIVE"):(session?.session||null),cutoffAt:isDirect?(quote.updateAt||null):(session?.cutoffAt||null),updateAt:quote.updateAt||null,change:finite(quote.change)?+quote.change:null,coreAsOf:session?.coreAsOf||snapshot.date||null,expectedCoreAsOf:alignment.expectedCoreAsOf||snapshot.date||null,forecastAligned:isDirect?freshness?.stale!==true:alignment.rankingEligible!==false,source:quote.source||null}}}
+function applySessionView(symbol,snapshot,session=window.__VMEWS_SESSION__){
+  const quote=sessionQuote(symbol,session),freshness=window.__VMEWS_FRESHNESS__?.inspect(snapshot);
+  if(!quote||+quote.liveClose<=0){
+    if(freshness?.stale===true)return{...snapshot,coreClose:+snapshot.close,close:null,quoteUnavailable:true,liveSession:null};
+    return snapshot
+  }
+  const alignment=session?.forecastAlignment||{},isDirect=["solution_ai_publisher","live_api"].includes(quote.updateMode);
+  return{...snapshot,coreClose:+snapshot.close,close:+quote.liveClose,quoteUnavailable:false,liveSession:{
+    session:isDirect?(window.__VMEWS_FRESHNESS__?.quoteMode?.()||"LIVE"):(session?.session||null),
+    cutoffAt:isDirect?(quote.updateAt||null):(session?.cutoffAt||null),updateAt:quote.updateAt||null,change:finite(quote.change)?+quote.change:null,
+    coreAsOf:session?.coreAsOf||snapshot.date||null,expectedCoreAsOf:alignment.expectedCoreAsOf||freshness?.expected||snapshot.date||null,
+    forecastAligned:freshness?.stale!==true,source:quote.source||null,sourceMode:quote.updateMode||null
+  }}
+}
 function sessionPosition(q,close){if(!validatedPrice(q)||!finite(close))return"";if(finite(q.bullScenarioPrice)&&+close>+q.bullScenarioPrice)return"ABOVE_BULL";if(+close>+q.q80Price)return"ABOVE_Q80";if(finite(q.bearScenarioPrice)&&+close<+q.bearScenarioPrice)return"BELOW_BEAR";if(+close<+q.q20Price)return"BELOW_Q20";return"INSIDE"}
 window.__VMEWS_APPLY_SESSION_VIEW__=applySessionView;
 window.__VMEWS_SESSION_POSITION__=sessionPosition;
 
-function decision(B,z){if(z.staleForecast)return{label:"DỰ BÁO ĐANG CẬP NHẬT",tone:"warning",text:`Bộ dự báo đang ở phiên ${z.date||B.dash.asOf}; phiên cần có là ${z.freshnessExpected||"phiên hoàn tất mới nhất"}. Tạm ẩn giá dự báo cũ để tránh nhầm T+1…T+5.`};const n=primaryHorizon(B,z),q=h(z,n),move=pointMove(q,z.close);if(!move)return{label:"CHƯA CÓ GIÁ DỰ BÁO",tone:"warning",text:`Chưa đủ đầu vào để tính giá dự báo T+${n}.`};if(z.liveSession?.forecastAligned===false)return{label:"GIÁ MỚI · DỰ BÁO ĐANG CẬP NHẬT",tone:"warning",text:`Giá mới nhất là ${price(z.close)}; dữ liệu dự báo đang được cập nhật từ phiên ${z.liveSession.coreAsOf||"trước"} sang ${z.liveSession.expectedCoreAsOf||"phiên hoàn tất mới nhất"}.`};const absolute=price(Math.abs(move.delta)),rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,probability=validatedDirection(q)?` Xác suất tăng ${pct(q.probUp,0)}.`:"",range=finite(q.q20Price)&&finite(q.q80Price)?` Vùng tham khảo ${price(q.q20Price)} – ${price(q.q80Price)}.`:"",tone=move.delta>0?"positive":move.delta<0?"negative":"neutral";return{label:`T+${n} · ${move.direction} ${absolute} → ${price(move.target)}`,tone,text:`Giá hiện tại ${price(z.close)}; mô hình dự báo T+${n} ở ${price(move.target)}, ${move.direction.toLowerCase()} ${absolute} (${rate}).${probability}${range}`}}
+function decision(B,z){
+  const n=primaryHorizon(B,z),q=h(z,n),usable=forecastUsableForDecision(q,z),move=usable?pointMove(q,z.close):null;
+  if(!move){
+    if(z.staleForecast)return{label:"GIÁ LIVE · CHƯA CÓ FORECAST MỚI",tone:"warning",text:`Giá SoluTION.AI hiện tại là ${price(z.close)}. Core forecast gần nhất ở phiên ${z.date||B.dash.asOf||"trước"}; các mục tiêu còn lại либо đã đến hạn hoặc chưa đủ gate. Hệ thống giữ giá live và không bịa forecast mới trong lúc chờ core phiên ${z.freshnessExpected||"mới nhất"}.`};
+    return{label:"CHƯA CÓ GIÁ DỰ BÁO",tone:"warning",text:`Chưa đủ đầu vào để tính giá dự báo T+${n}.`}
+  }
+  const absolute=price(Math.abs(move.delta)),rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,probability=validatedDirection(q)?` Xác suất tăng ${pct(q.probUp,0)}.`:"",range=finite(q.q20Price)&&finite(q.q80Price)?` Vùng tham khảo ${price(q.q20Price)} – ${price(q.q80Price)}.`:"",tone=move.delta>0?"positive":move.delta<0?"negative":"neutral";
+  if(z.staleForecast)return{label:`FORECAST NIÊM PHONG · T+${n} → ${price(move.target)}`,tone:"warning",text:`Giá SoluTION.AI hiện tại ${price(z.close)}. Forecast này được niêm phong từ phiên ${z.date||B.dash.asOf||"trước"} cho mục tiêu ${q.targetDate||`T+${n}`}; khoảng cách còn lại ${absolute} (${rate}). Core phiên ${z.freshnessExpected||"mới nhất"} chưa vượt gate nên chưa được phép ghi đè forecast đã kiểm định.${probability}${range}`};
+  if(z.liveSession?.forecastAligned===false)return{label:"GIÁ MỚI · FORECAST NIÊM PHONG",tone:"warning",text:`Giá mới nhất là ${price(z.close)}; forecast trung tâm vẫn là snapshot đã niêm phong cho tới khi core phiên mới vượt gate.`};
+  return{label:`T+${n} · ${move.direction} ${absolute} → ${price(move.target)}`,tone,text:`Giá hiện tại ${price(z.close)}; mô hình dự báo T+${n} ở ${price(move.target)}, ${move.direction.toLowerCase()} ${absolute} (${rate}).${probability}${range}`}
+}
 
 function renderDrivers(z,horizon=5){const q=h(z,horizon),box=$("#drivers");box.replaceChildren();setText("#driverTitle",`Các yếu tố chính · T+${horizon}`);setText("#expertMeta","");if(!forecastAvailable(q)){box.innerHTML='<div class="empty">Horizon này đang REVIEW ở kiểm định toàn thị trường nên chưa phát hành giá chính thức. Đây không phải lỗi riêng của mã đang xem.</div>';return}const c=q.expertContributions||{},entries=Object.entries(c).filter(([,value])=>Math.abs(+value||0)>1e-7).sort((a,b)=>Math.abs(+b[1])-Math.abs(+a[1])),max=Math.max(...entries.map(x=>Math.abs(+x[1]||0)),1e-6);for(const[name,val]of entries){const e=document.createElement("article");e.className="driver";e.innerHTML=`<span>${esc(expertLabel(name))}</span><b class="${driverTone(+val)}">${+val>=0?"+":""}${pct(val)}</b><div class="driverBar ${driverTone(+val)}"><i style="width:${Math.min(100,Math.abs(+val)/max*100)}%"></i></div>`;box.append(e)}if(!entries.length)box.innerHTML='<div class="empty">Chưa có yếu tố đủ nổi bật.</div>'}
 
-function renderForecastCards(B,z){const box=$("#forecastCards"),primary=primaryHorizon(B,z);box.replaceChildren();for(let n=1;n<=5;n++){const q=h(z,n),e=document.createElement("article"),modelHorizon=B?.model?.horizons?.[String(n)]||{};e.className="forecastCard"+(n===primary?" active":"");e.setAttribute("role","button");e.tabIndex=0;e.setAttribute("aria-label",`Xem phân tích kỳ T+${n}`);if(!forecastAvailable(q)){const review=finite(q?.expectedPrice),date=q?.targetDate?new Date(`${q.targetDate}T00:00:00`).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"}):"";e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${z.staleForecast?"ĐANG CẬP NHẬT":review?"CHƯA ĐẠT KIỂM ĐỊNH HORIZON":"CHƯA CÓ DỮ LIỆU"}</strong><small>${z.staleForecast?`Chờ dữ liệu phiên ${z.freshnessExpected||"mới nhất"}`:review?`T+${n} đang ${modelHorizon.priceStatus||q.validationStatus||"REVIEW"} ở kiểm định toàn thị trường; không phải lỗi riêng ${esc(z.symbol||"mã này")}.`:"Không đủ đầu vào để ước lượng"}</small>`}else{const move=pointMove(q,z.close),date=q.targetDate?new Date(`${q.targetDate}T00:00:00`).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"}):"",rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,scenario=finite(q.expectedAbsReturn)&&finite(q.bearScenarioPrice)&&finite(q.bullScenarioPrice)?`<small>Biên độ tuyệt đối kỳ vọng quanh T0 ±${pct(q.expectedAbsReturn,2)}</small><small>Kịch bản |move| quanh T0: ${price(q.bearScenarioPrice)} / ${price(q.bullScenarioPrice)}</small>`:"";e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong class="${move.tone}">${move.direction} ${price(Math.abs(move.delta))} → ${price(move.target)}</strong><small>Giá dự báo trung tâm · ${rate}</small><small>Vùng xác suất Q20–Q80: ${price(q.q20Price)} – ${price(q.q80Price)}</small>${scenario}<small>${pupText(q,0)}</small>`}const activate=()=>{document.querySelectorAll(".forecastCard").forEach(x=>x.classList.remove("active"));e.classList.add("active");renderDrivers(z,n);if(last){renderEventImpact(last.B,z,n);draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[],false)}};e.onclick=activate;e.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();activate()}};box.append(e)}}
+function renderForecastCards(B,z){
+  const box=$("#forecastCards"),primary=primaryHorizon(B,z);box.replaceChildren();
+  for(let n=1;n<=5;n++){
+    const q=h(z,n),e=document.createElement("article"),modelHorizon=B?.model?.horizons?.[String(n)]||{},date=q?.targetDate?new Date(`${q.targetDate}T00:00:00`).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"}):"";
+    e.className="forecastCard"+(n===primary?" active":"");e.setAttribute("role","button");e.tabIndex=0;e.setAttribute("aria-label",`Xem phân tích kỳ T+${n}`);
+    const validated=forecastAvailable(q),usable=forecastUsableForDecision(q,z),targetState=forecastTargetState(q);
+    if(z.staleForecast&&validated&&!usable){
+      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>ĐÃ ĐẾN HẠN</strong><small>Forecast niêm phong từ phiên ${esc(z.date||B.dash.asOf||"trước")}: ${price(q.expectedPrice)}. Không dùng như forecast mới cho phiên hiện tại.</small>`;
+    }else if(!validated){
+      const review=finite(q?.expectedPrice);
+      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${review?"CHƯA ĐẠT KIỂM ĐỊNH HORIZON":"CHƯA CÓ DỮ LIỆU"}</strong><small>${review?`T+${n} đang ${modelHorizon.priceStatus||q.validationStatus||"REVIEW"} ở kiểm định toàn thị trường; không phải lỗi riêng ${esc(z.symbol||"mã này")}.`:"Không đủ đầu vào để ước lượng"}</small>`;
+    }else{
+      const move=pointMove(q,z.close),rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,scenario=finite(q.expectedAbsReturn)&&finite(q.bearScenarioPrice)&&finite(q.bullScenarioPrice)?`<small>Biên độ tuyệt đối kỳ vọng quanh T0 ±${pct(q.expectedAbsReturn,2)}</small><small>Kịch bản |move| quanh T0: ${price(q.bearScenarioPrice)} / ${price(q.bullScenarioPrice)}</small>`:"",sealed=z.staleForecast?`<small>Forecast niêm phong từ phiên ${esc(z.date||B.dash.asOf||"trước")} · khoảng cách tính lại theo giá SoluTION.AI hiện tại</small>`:"";
+      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong class="${move.tone}">${move.direction} ${price(Math.abs(move.delta))} → ${price(move.target)}</strong><small>Giá dự báo trung tâm · ${rate}</small><small>Vùng xác suất Q20–Q80: ${price(q.q20Price)} – ${price(q.q80Price)}</small>${scenario}<small>${pupText(q,0)}</small>${sealed}`;
+    }
+    const activate=()=>{document.querySelectorAll(".forecastCard").forEach(x=>x.classList.remove("active"));e.classList.add("active");renderDrivers(z,n);if(last){renderEventImpact(last.B,z,n);draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[],false)}};
+    e.onclick=activate;e.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();activate()}};box.append(e)
+  }
+}
 
 function traceCurve(context,points){if(!points.length)return;context.moveTo(points[0].x,points[0].y);if(points.length===1)return;for(let index=1;index<points.length-1;index++){const point=points[index],next=points[index+1];context.quadraticCurveTo(point.x,point.y,(point.x+next.x)/2,(point.y+next.y)/2)}const final=points.at(-1);context.lineTo(final.x,final.y)}
 
@@ -122,7 +176,7 @@ function draw(sym,z,history,animate=true){
   const hist=(history||[]).slice(-chartRange);if(hist.length<2)return;
   if(!finite(z.close)||+z.close<=0){hoverPoints=[];chartBounds=null;context.clearRect(0,0,width,height);context.fillStyle="#8da4ae";context.font="12px ui-sans-serif,system-ui";context.textAlign="center";context.fillText("Đang đồng bộ giá đúng phiên — không hiển thị giá cũ",width/2,height/2);context.textAlign="left";return}
   const current=+z.close,forecasts=[];
-  for(let n=1;n<=5;n++){const item=h(z,n);if(forecastAvailable(item))forecasts.push({n,price:+item.expectedPrice,lo:+item.q20Price,hi:+item.q80Price,p:+item.probUp,dir:validatedDirection(item),validated:validatedPrice(item)&&reliablePoint(item),ret:+item.expectedReturn,active:item.activeExperts||[],contrib:item.expertContributions||{},calN:item.calibrationN})}
+  for(let n=1;n<=5;n++){const item=h(z,n);if(forecastUsableForDecision(item,z))forecasts.push({n,price:+item.expectedPrice,lo:+item.q20Price,hi:+item.q80Price,p:+item.probUp,dir:validatedDirection(item),validated:validatedPrice(item)&&reliablePoint(item),ret:+item.expectedReturn,active:item.activeExperts||[],contrib:item.expertContributions||{},calN:item.calibrationN})}
   const values=hist.map(item=>+item.close).concat(forecasts.flatMap(item=>[item.lo,item.price,item.hi]),[current]);
   let minimum=Math.min(...values),maximum=Math.max(...values);const gutter=(maximum-minimum)*.11||1;minimum-=gutter;maximum+=gutter;
   const innerWidth=width-padding.left-padding.right,historyWidth=innerWidth*(compact?.62:.69),forecastWidth=innerWidth-historyWidth;
@@ -295,11 +349,11 @@ function renderBacktestDetail(B,x,horizon){const box=$("#btDetail");if(!box)retu
 
 function renderSummary(B,sym,z){
   const primary=primaryHorizon(B,z),d=decision(B,z),de=$("#decision");de.textContent=d.label;de.className=`decision ${d.tone}`;setText("#summary",d.text);setText("#close",price(z.close));setText("#quoteAsOf",z.liveSession?.updateAt?`Giá nguồn: ${new Date(z.liveSession.updateAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}`:`Giá trong bộ dự báo: ${z.date||B.dash.asOf||"—"}`);
-  for(const n of [1,3,5]){const q=h(z,n),move=pointMove(q,z.close);setText(`#t${n}`,move?`${price(move.target)} · ${move.direction} ${price(Math.abs(move.delta))}`:"—")}
-  const qp=h(z,primary),audit=B.model.horizons?.[String(primary)]?.sealedAudit||{},ratio=finite(qp.magnitudeCalibrationRatio)?+qp.magnitudeCalibrationRatio:finite(audit.medianExpectedAbsMove)&&finite(audit.realizedMedianAbs)?+audit.medianExpectedAbsMove/Math.max(+audit.realizedMedianAbs,1e-12):null,signValidated=qp.pointDirectionValidated===true||(+audit.directionalAccuracy||0)>=.52&&(audit.chronologicalFolds||[]).filter(item=>(+item.directionalAccuracy||0)>.5).length>=3,signRate=finite(qp.historicalDirectionAccuracy)?+qp.historicalDirectionAccuracy:+audit.directionalAccuracy,rank=qp.crossSectionalRankValidated===true&&finite(qp.crossSectionalRankPercentile)?` ${sym} thuộc nhóm ${Math.max(1,Math.ceil((1-+qp.crossSectionalRankPercentile)*100))}% có xếp hạng mạnh nhất toàn HOSE.`:"",liveScenario=qp.liveScenarioOverlay?.scenarioPrice?" Thông tin mới chỉ được lưu thành kịch bản tham khảo và không làm thay đổi giá trung tâm.":"",position=z.liveSession?.forecastAligned===false?"":sessionPosition(qp,z.close),livePosition=position==="ABOVE_BULL"?` Giá phiên ${price(z.close)} đã vượt cả kịch bản tăng ${price(qp.bullScenarioPrice)}; đây là cảnh báo vượt mô hình cũ, không phải forecast mới.`:position==="ABOVE_Q80"?` Giá phiên ${price(z.close)} đã vượt Q80 ${price(qp.q80Price)}; cần định vị lại trước khi ra quyết định.`:position==="BELOW_BEAR"?` Giá phiên ${price(z.close)} đã thấp hơn kịch bản giảm ${price(qp.bearScenarioPrice)}; rủi ro đã vượt mô hình cũ.`:position==="BELOW_Q20"?` Giá phiên ${price(z.close)} đã thấp hơn Q20 ${price(qp.q20Price)}.`:"";
-  setText("#primaryForecastLabel",`Mức dự báo T+${primary}`);setText("#primaryProbabilityLabel",`Xác suất tăng T+${primary}`);setText("#scenarioHeadingLabel",`BIÊN ĐỘ THỊ TRƯỜNG ĐÃ HỌC · T+${primary}`);$("#scenarioBoard")?.setAttribute("aria-label",`Biên độ và các kịch bản giá T cộng ${primary}`);
+  for(const n of [1,3,5]){const q=h(z,n),move=forecastUsableForDecision(q,z)?pointMove(q,z.close):null;setText(`#t${n}`,move?`${price(move.target)} · ${move.direction} ${price(Math.abs(move.delta))}`:(z.staleForecast&&forecastAvailable(q)?"ĐÃ ĐẾN HẠN":"—"))}
+  const qp=h(z,primary),audit=B.model.horizons?.[String(primary)]?.sealedAudit||{},ratio=finite(qp.magnitudeCalibrationRatio)?+qp.magnitudeCalibrationRatio:finite(audit.medianExpectedAbsMove)&&finite(audit.realizedMedianAbs)?+audit.medianExpectedAbsMove/Math.max(+audit.realizedMedianAbs,1e-12):null,signValidated=qp.pointDirectionValidated===true||(+audit.directionalAccuracy||0)>=.52&&(audit.chronologicalFolds||[]).filter(item=>(+item.directionalAccuracy||0)>.5).length>=3,signRate=finite(qp.historicalDirectionAccuracy)?+qp.historicalDirectionAccuracy:+audit.directionalAccuracy,rank=qp.crossSectionalRankValidated===true&&finite(qp.crossSectionalRankPercentile)?` ${sym} thuộc nhóm ${Math.max(1,Math.ceil((1-+qp.crossSectionalRankPercentile)*100))}% có xếp hạng mạnh nhất toàn HOSE.`:"",liveScenario=qp.liveScenarioOverlay?.scenarioPrice?" Thông tin mới chỉ được lưu thành kịch bản tham khảo và không làm thay đổi giá trung tâm.":"",position=forecastUsableForDecision(qp,z)?sessionPosition(qp,z.close):"",livePosition=position==="ABOVE_BULL"?` Giá phiên ${price(z.close)} đã vượt cả kịch bản tăng ${price(qp.bullScenarioPrice)}; đây là cảnh báo vượt mô hình cũ, không phải forecast mới.`:position==="ABOVE_Q80"?` Giá phiên ${price(z.close)} đã vượt Q80 ${price(qp.q80Price)}; cần định vị lại trước khi ra quyết định.`:position==="BELOW_BEAR"?` Giá phiên ${price(z.close)} đã thấp hơn kịch bản giảm ${price(qp.bearScenarioPrice)}; rủi ro đã vượt mô hình cũ.`:position==="BELOW_Q20"?` Giá phiên ${price(z.close)} đã thấp hơn Q20 ${price(qp.q20Price)}.`:"";
+  setText("#primaryForecastLabel",`${z.staleForecast?"Forecast niêm phong":"Mức dự báo"} T+${primary}`);setText("#primaryProbabilityLabel",`Xác suất tăng T+${primary}`);setText("#scenarioHeadingLabel",`${z.staleForecast?"BIÊN ĐỘ FORECAST NIÊM PHONG":"BIÊN ĐỘ THỊ TRƯỜNG ĐÃ HỌC"} · T+${primary}`);$("#scenarioBoard")?.setAttribute("aria-label",`Biên độ và các kịch bản giá T cộng ${primary}`);
   setText("#range5",forecastAvailable(qp)?price(qp.expectedPrice):"—");setText("#pup",validatedDirection(qp)?`P(tăng) ${pct(qp.probUp,0)}`:signValidated?`Đúng chiều lịch sử ${pct(signRate,0)}`:"CHƯA ĐỦ KIỂM ĐỊNH");setText("#move5",finite(qp.expectedAbsReturn)?`±${pct(qp.expectedAbsReturn,2)}`:"—");setText("#bear5",finite(qp.bearScenarioPrice)?price(qp.bearScenarioPrice):"—");setText("#scenarioCenter5",forecastAvailable(qp)?price(qp.expectedPrice):"—");setText("#bull5",finite(qp.bullScenarioPrice)?price(qp.bullScenarioPrice):"—");
-  setText("#scenarioCaveat",`${finite(ratio)?`Biên độ mô hình bám ${pct(ratio,0)} mức biến động ngoài mẫu. `:""}${validatedDirection(qp)?"Xác suất tăng được ước lượng từ dữ liệu kiểm định; vùng giá vẫn có thể bị vượt.":signValidated?`Dự báo đúng chiều ${pct(signRate,1)} trong mẫu lịch sử; hai kịch bản vẫn có thể xảy ra.`:"Chưa đủ dữ liệu để hiển thị xác suất tăng; hai kịch bản thể hiện biên độ có thể xảy ra."}${livePosition}${liveScenario}${rank}`);setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",`${sym} · ${price(z.close)} → T+1…T+5`);setText("#modelBadge",`HOSE · ${B.dash.asOf||z.date||"—"} · DỰ BÁO T+${primary}${z.liveSession?` · ${z.liveSession.session||"PHIÊN"}`:""}${z.liveSession?.forecastAligned===false?" · ĐANG CẬP NHẬT":""}`)
+  setText("#scenarioCaveat",`${z.staleForecast?`Forecast đang dùng là snapshot niêm phong phiên ${z.date||B.dash.asOf||"trước"}; giá hiện tại lấy từ kênh SoluTION.AI riêng. `:""}${finite(ratio)?`Biên độ mô hình bám ${pct(ratio,0)} mức biến động ngoài mẫu. `:""}${validatedDirection(qp)?"Xác suất tăng được ước lượng từ dữ liệu kiểm định; vùng giá vẫn có thể bị vượt.":signValidated?`Dự báo đúng chiều ${pct(signRate,1)} trong mẫu lịch sử; hai kịch bản vẫn có thể xảy ra.`:"Chưa đủ dữ liệu để hiển thị xác suất tăng; hai kịch bản thể hiện biên độ có thể xảy ra."}${livePosition}${liveScenario}${rank}`);setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",z.staleForecast?`${sym} · ${price(z.close)} · các mục tiêu niêm phong còn hiệu lực`:`${sym} · ${price(z.close)} → T+1…T+5`);setText("#modelBadge",z.staleForecast?`HOSE · CORE ${B.dash.asOf||z.date||"—"} · GIÁ SoluTION.AI · FORECAST NIÊM PHONG`:`HOSE · ${B.dash.asOf||z.date||"—"} · DỰ BÁO T+${primary}${z.liveSession?` · ${z.liveSession.session||"PHIÊN"}`:""}`)
 }
 function quickButtons(B){const box=$("#quick");box.replaceChildren();for(const s of ["FPT","VCB","HPG","MBB","FRT","PNJ","VNM","SSI"]){if(!B.dash.symbols?.[s])continue;const b=document.createElement("button");b.textContent=s;b.onclick=()=>{$("#symbol").value=s;renderSymbol(s)};box.append(b)}}
 function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
@@ -360,7 +414,7 @@ async function refreshCore(){
     if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
   }catch{}
 }
-async function init(){try{const B=await loadBase();assertProduction(B);quickButtons(B);await refreshLiveQuotes(true);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},60000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}}
+async function init(){try{const B=await loadBase();assertProduction(B);quickButtons(B);await refreshLiveQuotes(true);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}}
 function showError(e){console.error(e);setText("#status",String(e?.message||e));const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 window.addEventListener?.("vmews:session-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · dữ liệu ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}`)}});
 window.addEventListener?.("vmews:live-quotes-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · forecast ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"LIVE"} ${price(view.close)}`:""}`)}});
