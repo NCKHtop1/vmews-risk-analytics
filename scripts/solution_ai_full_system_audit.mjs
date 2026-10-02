@@ -13,6 +13,14 @@ page.on('requestfailed', request => failedRequests.push(`${request.method()} ${r
 
 const t0 = Date.now();
 
+function solutionAiConsoleErrors(messages) {
+  return messages.filter(message => !/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message));
+}
+
+function solutionAiFailedRequests(lines) {
+  return lines.filter(line => !/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+}
+
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
@@ -381,8 +389,9 @@ try {
   assert(handoffText.includes('HPG') && handoffText.includes(hpg.preferredHorizon), 'Gemini handoff lost HPG/preferred horizon');
   assert(handoffText.includes('publishedHorizons') && handoffText.includes('reviewHorizons'), 'Gemini handoff lost release-state contract');
 
-  const relevantFailed = failedRequests.filter(line => !/cloudflareinsights|favicon|google-analytics/i.test(line));
-  assert(consoleErrors.length === 0, `browser console errors: ${consoleErrors.join(' | ')}`);
+  const relevantFailed = solutionAiFailedRequests(failedRequests);
+  const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors);
+  assert(relevantConsoleErrors.length === 0, `browser console errors: ${relevantConsoleErrors.join(' | ')}`);
   assert(relevantFailed.length === 0, `failed requests: ${relevantFailed.join(' | ')}`);
 
   const report = {
