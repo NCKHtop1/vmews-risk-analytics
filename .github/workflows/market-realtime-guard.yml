@@ -51,7 +51,7 @@ jobs:
           now=datetime.now(timezone.utc)
           local=now.astimezone(timezone(timedelta(hours=7)))
           mins=local.hour*60+local.minute
-          active=local.weekday()<5 and (545<=mins<=690 or 780<=mins<=915)
+          active=local.weekday()<5 and (540<=mins<=690 or 775<=mins<=915)
           base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/financial-market-data/market/'
           def get(file):
               with urllib.request.urlopen(base+file+'?guard='+str(int(now.timestamp())),timeout=15) as r:
