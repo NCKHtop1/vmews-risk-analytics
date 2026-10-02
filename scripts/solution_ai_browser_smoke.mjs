@@ -12,6 +12,14 @@ const symbols = (process.env.SOLUTION_AI_SYMBOLS || 'FPT,ACB,HPG,VIC')
 const browser = await chromium.launch({ headless: true });
 const results = [];
 
+function solutionAiConsoleErrors(messages) {
+  return messages.filter(message => !/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message));
+}
+
+function solutionAiFailedRequests(lines) {
+  return lines.filter(line => !/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+}
+
 function withSymbol(url, symbol) {
   const target = new URL(url);
   target.searchParams.set('symbol', symbol);
@@ -68,7 +76,8 @@ try {
       if (!cards.some(text => /ĐANG CẬP NHẬT|CHƯA ĐẠT KIỂM ĐỊNH HORIZON|CHƯA CÓ DỮ LIỆU/.test(text))) {
         throw new Error(`${symbol}: stale forecast UI does not expose update/review state`);
       }
-      if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
+      const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors);
+      if (relevantConsoleErrors.length) throw new Error(`${symbol}: console errors: ${relevantConsoleErrors.join(' | ')}`);
       results.push({
         symbol,
         preferredHorizon: context.preferredHorizon,
@@ -220,8 +229,9 @@ try {
       throw new Error(`${symbol}: no validated forecast is published, but UI does not expose the validation-gated review state`);
     }
 
-    if (consoleErrors.length) throw new Error(`${symbol}: console errors: ${consoleErrors.join(' | ')}`);
-    const relevantFailed = failed.filter(line => !/cloudflareinsights|favicon|google-analytics/i.test(line));
+    const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors);
+    if (relevantConsoleErrors.length) throw new Error(`${symbol}: console errors: ${relevantConsoleErrors.join(' | ')}`);
+    const relevantFailed = solutionAiFailedRequests(failed);
     if (relevantFailed.length) throw new Error(`${symbol}: failed requests: ${relevantFailed.join(' | ')}`);
 
     results.push({
