@@ -830,7 +830,22 @@
       return source.day === now.day && age <= SOLUTION_LIVE_HARD_TTL_MS;
     }
     if (now.minutes > 11 * 60 + 30) return source.day === now.day;
-    return age <= 36 * 60 * 60_000;
+    return age <= 96 * 60 * 60_000;
+  }
+
+  function solutionSnapshotUsable(payload, nowValue = Date.now()) {
+    const stamp = Date.parse(payload?.generatedAt || "");
+    if (!Number.isFinite(stamp) || stamp > nowValue + 5 * 60_000) return false;
+    const now = solutionVnClock(nowValue);
+    const source = solutionVnClock(stamp);
+    const age = Math.max(0, nowValue - stamp);
+    const weekday = !["Sat", "Sun"].includes(now.weekday);
+    if (!weekday) return age <= 96 * 60 * 60_000;
+    const publisherLive = (now.minutes >= 8 * 60 + 55 && now.minutes <= 11 * 60 + 40)
+      || (now.minutes >= 12 * 60 + 55 && now.minutes <= 15 * 60 + 10);
+    if (publisherLive) return source.day === now.day && age <= 5 * 60_000;
+    if (now.minutes >= 11 * 60 + 40) return source.day === now.day;
+    return age <= 96 * 60 * 60_000;
   }
 
   function pageSessionQuote(symbol) {
@@ -849,7 +864,7 @@
   async function fetchSolutionLive(force = false) {
     const symbol = selectedSymbol();
     if (!symbol) return null;
-    if (!force && state.liveQuote && state.liveSymbol === symbol && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_SOFT_TTL_MS) return state.liveQuote;
+    if (!force && state.liveQuote && state.liveSymbol === symbol && state.liveSuccessAt > 0 && Date.now() - state.liveSuccessAt <= SOLUTION_LIVE_SOFT_TTL_MS) return state.liveQuote;
     if (state.liveRefreshing) return state.liveRefreshing;
 
     state.liveRefreshing = (async () => {
@@ -877,9 +892,8 @@
           if (payload?.scope !== "solution-ai" || payload?.status !== "ok" || number(payload?.coverage) === null || number(payload.coverage) < 500) {
             throw new Error("SoluTION live snapshot chưa sẵn sàng.");
           }
-          const snapshotAt = Date.parse(payload.generatedAt || "");
-          if (!Number.isFinite(snapshotAt) || Date.now() - snapshotAt > 5 * 60_000 || snapshotAt > Date.now() + 5 * 60_000) {
-            throw new Error("SoluTION live publisher đang trễ quá ngưỡng.");
+          if (!solutionSnapshotUsable(payload)) {
+            throw new Error("SoluTION live publisher đang trễ so với trạng thái phiên hiện tại.");
           }
           const quote = payload?.quotes?.[symbol];
           if (!quote || number(quote.price) === null || number(quote.price) <= 0) throw new Error("SoluTION live chưa trả giá hợp lệ.");
@@ -908,7 +922,7 @@
       }
       state.liveFailures += 1;
       state.liveError = String(lastError?.message || lastError || "SoluTION live unavailable").slice(0, 180);
-      state.liveHealth = state.liveQuote && state.liveSymbol === symbol && liveAgeMs(state.liveQuote) <= SOLUTION_LIVE_HARD_TTL_MS
+      state.liveHealth = state.liveQuote && state.liveSymbol === symbol && solutionQuoteUsable(state.liveQuote)
         ? "DEGRADED"
         : "UNAVAILABLE";
       return effectiveSessionQuote(symbol);
@@ -2032,6 +2046,7 @@
     window.__SOLUTION_AI_CHECK_CONNECTION__ = checkConnection;
     window.__SOLUTION_AI_REFRESH_LIVE__ = (force = true) => fetchSolutionLive(Boolean(force));
     window.__SOLUTION_AI_REFRESH_CONTEXT__ = (force = true) => refreshSolutionContext(Boolean(force));
+    window.__SOLUTION_AI_SNAPSHOT_USABLE__ = (payload, nowValue) => solutionSnapshotUsable(payload, nowValue);
     window.__SOLUTION_AI_HEALTH__ = () => ({
       contextReady: Boolean(state.context?.symbol),
       symbol: state.context?.symbol || null,

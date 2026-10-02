@@ -196,6 +196,20 @@ test("SoluTION.AI refreshes its own live quote independently and rebuilds contex
   assert.equal(health.liveSource, "Synthetic SoluTION live");
 });
 
+test("SoluTION.AI requires fresh publisher heartbeat in-session but retains same-day close after session", async () => {
+  const { window } = await setup();
+  const usable = window.__SOLUTION_AI_SNAPSHOT_USABLE__;
+  assert.equal(typeof usable, "function");
+
+  const liveNow = Date.parse("2026-10-02T03:00:00Z"); // 10:00 Vietnam
+  assert.equal(usable({ generatedAt: "2026-10-02T02:58:00Z" }, liveNow), true);
+  assert.equal(usable({ generatedAt: "2026-10-02T02:54:00Z" }, liveNow), false);
+
+  const postCloseNow = Date.parse("2026-10-02T09:30:00Z"); // 16:30 Vietnam
+  assert.equal(usable({ generatedAt: "2026-10-02T08:10:00Z" }, postCloseNow), true);
+  assert.equal(usable({ generatedAt: "2026-10-01T08:10:00Z" }, postCloseNow), false);
+});
+
 
 test("CDN connects directly to Google and keeps the key only in tab session storage", async () => {
   const requests = [];
