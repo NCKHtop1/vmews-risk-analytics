@@ -4,6 +4,7 @@ const base = process.env.SOLUTION_AI_BROWSER_URL
   || process.env.V12_BROWSER_URL
   || 'http://127.0.0.1:8000/forecast-final.html?symbol=FPT';
 
+const requireLive = /^(1|true|yes)$/i.test(String(process.env.SOLUTION_AI_REQUIRE_LIVE || ''));
 const symbols = (process.env.SOLUTION_AI_SYMBOLS || 'FPT,ACB,HPG,VIC')
   .split(',')
   .map(x => x.trim().toUpperCase())
@@ -14,15 +15,21 @@ const results = [];
 
 function solutionAiConsoleErrors(messages, failedRequests = []) {
   const liveMarketFailed = failedRequests.some(line => /vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+  const solutionLiveFailed = !requireLive && failedRequests.some(line => /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live/i.test(line));
   return messages.filter(message => {
     if (/vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market|Access to fetch at .*\/api\/live_market/i.test(message)) return false;
-    if (liveMarketFailed && /Failed to load resource:\s*net::ERR_FAILED/i.test(message)) return false;
+    if (!requireLive && /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live|Access to fetch at .*\/api\/solution-ai-live/i.test(message)) return false;
+    if ((liveMarketFailed || solutionLiveFailed) && /Failed to load resource:\s*net::ERR_FAILED/i.test(message)) return false;
     return true;
   });
 }
 
 function solutionAiFailedRequests(lines) {
-  return lines.filter(line => !/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line));
+  return lines.filter(line => {
+    if (/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line)) return false;
+    if (!requireLive && /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live/i.test(line)) return false;
+    return true;
+  });
 }
 
 function withSymbol(url, symbol) {
@@ -48,13 +55,23 @@ try {
       && window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__
       && window.__SOLUTION_AI_ASK__
       && window.__SOLUTION_AI_HEALTH__
+      && window.__SOLUTION_AI_REFRESH_LIVE__
       && window.__VMEWS_LOAD_BASE__
     ), null, { timeout: 30000 });
 
     await page.waitForFunction(() => document.querySelectorAll('#forecastCards .forecastCard').length === 5, null, { timeout: 30000 });
 
+    await page.evaluate(async () => window.__SOLUTION_AI_REFRESH_LIVE__(true));
+    const liveHealth = await page.evaluate(() => window.__SOLUTION_AI_HEALTH__());
+    const liveReady = liveHealth.liveHealth === 'OK' && Number.isFinite(Number(liveHealth.livePrice)) && Number(liveHealth.livePrice) > 0;
+    if (requireLive && !liveReady) {
+      throw new Error(`${symbol}: independent SoluTION.AI live feed unavailable: ${JSON.stringify(liveHealth)}`);
+    }
     const context = await page.evaluate(async () => window.__SOLUTION_AI_BUILD_CONTEXT__());
     if (context.symbol !== symbol) throw new Error(`SoluTION.AI context symbol mismatch: expected ${symbol}, got ${context.symbol}`);
+    if (liveReady && (!context.session || Number(context.session.liveClose) !== Number(liveHealth.livePrice))) {
+      throw new Error(`${symbol}: context did not adopt independent live price: ${JSON.stringify({ context: context.session, health: liveHealth })}`);
+    }
 
     const labels = Object.keys(context.horizons || {}).sort();
     const expectedLabels = ['T+1', 'T+2', 'T+3', 'T+4', 'T+5'];
@@ -89,6 +106,9 @@ try {
         publishedHorizons: context.publishedHorizons,
         reviewHorizons: context.reviewHorizons,
         forecastFresh: false,
+        liveHealth: liveHealth.liveHealth,
+        livePrice: liveHealth.livePrice,
+        liveSource: liveHealth.liveSource,
         localChars: staleLocal.length,
       });
       await page.close();
@@ -244,6 +264,9 @@ try {
       preferredHorizon: context.preferredHorizon,
       publishedHorizons: context.publishedHorizons,
       reviewHorizons: context.reviewHorizons,
+      liveHealth: liveHealth.liveHealth,
+      livePrice: liveHealth.livePrice,
+      liveSource: liveHealth.liveSource,
       localChars: local.length,
       uiChars: ui.text.length,
     });

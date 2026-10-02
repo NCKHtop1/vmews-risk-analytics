@@ -45,8 +45,15 @@ try {
     && window.__SOLUTION_AI_BUILD_CONTEXT__
     && window.__SOLUTION_AI_ASK__
     && window.__SOLUTION_AI_BUILD_GEMINI_HANDOFF__
+    && window.__SOLUTION_AI_REFRESH_LIVE__
+    && window.__SOLUTION_AI_HEALTH__
   ), null, { timeout: 30000 });
   await page.waitForFunction(() => document.querySelectorAll('#forecastCards .forecastCard').length === 5, null, { timeout: 30000 });
+
+  await page.evaluate(async () => window.__SOLUTION_AI_REFRESH_LIVE__(true));
+  const initialLiveHealth = await page.evaluate(() => window.__SOLUTION_AI_HEALTH__());
+  assert(initialLiveHealth.liveHealth === 'OK' && finite(initialLiveHealth.livePrice) && Number(initialLiveHealth.livePrice) > 0,
+    `independent SoluTION.AI live feed is not healthy: ${JSON.stringify(initialLiveHealth)}`);
 
   const structural = await page.evaluate(async () => {
     const finite = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
@@ -68,6 +75,7 @@ try {
       .filter(([, item]) => item?.priceStatus !== 'PASS')
       .map(([key]) => Number(key));
     const errors = [];
+    const upstreamIssues = [];
     const warnings = [];
     const symbolStats = {
       total: 0,
@@ -84,7 +92,7 @@ try {
     if (B.gates?.status !== 'PASS') errors.push(`phase gates not PASS: ${B.gates?.status}`);
     if (promotion.status !== 'PASS') errors.push(`model promotion not PASS: ${promotion.status}`);
     const expectedSession = window.__VMEWS_FRESHNESS__.expectedSession();
-    if (String(B.dash?.asOf || '') !== String(expectedSession || '')) errors.push(`dashboard stale: ${B.dash?.asOf} vs expected ${expectedSession}`);
+    if (String(B.dash?.asOf || '') !== String(expectedSession || '')) upstreamIssues.push(`dashboard stale: ${B.dash?.asOf} vs expected ${expectedSession}`);
     if (String(release.asOf || '') !== String(B.dash?.asOf || '')) errors.push(`release audit asOf mismatch: ${release.asOf} vs ${B.dash?.asOf}`);
     if (release.status !== 'PASS') errors.push(`release audit status ${release.status}`);
     if (JSON.stringify([...direct].sort()) !== JSON.stringify([...passFromRelease].sort())) errors.push(`promotion/release PASS mismatch: direct=${direct} release=${passFromRelease}`);
@@ -163,7 +171,10 @@ try {
       if (Number(session.coverage?.coverageRatio || 0) < .9 || Number(session.coverage?.currentCoverageRatio || 0) < .9 || Number(session.coverage?.cutoffFreshCoverageRatio || 0) < .9) {
         errors.push(`session coverage below 90%: ${JSON.stringify(session.coverage)}`);
       }
-      if (session.forecastAlignment?.rankingEligible !== true) errors.push(`session ranking not aligned: ${JSON.stringify(session.forecastAlignment)}`);
+      if (session.forecastAlignment?.rankingEligible !== true) {
+        if (session.forecastAlignment?.status === 'STALE_CORE') upstreamIssues.push(`session ranking not aligned: ${JSON.stringify(session.forecastAlignment)}`);
+        else errors.push(`session ranking not aligned: ${JSON.stringify(session.forecastAlignment)}`);
+      }
       for (const leader of session.leaders || []) {
         if (Number(leader.rankingHorizon || 0) !== preferred) errors.push(`leader ${leader.symbol} uses T+${leader.rankingHorizon} instead of T+${preferred}`);
       }
@@ -198,12 +209,14 @@ try {
         leaders: (session.leaders || []).map(x => x.symbol),
       } : null,
       errors,
+      upstreamIssues: upstreamIssues.slice(0, 20),
       warnings: warnings.slice(0, 50),
       warningCount: warnings.length,
     };
   });
 
-  assert(structural.errors.length === 0, `structural/data audit failed: ${structural.errors.slice(0, 12).join(' | ')}`);
+  assert(structural.errors.length === 0, `SoluTION structural audit failed: ${structural.errors.slice(0, 12).join(' | ')}`);
+  const upstreamDegraded = structural.upstreamIssues.length > 0;
   assert(structural.symbolStats.total >= 350, `published universe unexpectedly small: ${structural.symbolStats.total}`);
   assert(structural.symbolStats.stale === 0, `stale symbols leaked: ${structural.symbolStats.stale}`);
   assert(structural.phaseGates === 'PASS' && structural.releaseStatus === 'PASS', 'gates/release are not PASS');
@@ -211,9 +224,28 @@ try {
 
   const primaryPrice = await page.evaluate(async () => {
     const ctx = await window.__SOLUTION_AI_BUILD_CONTEXT__();
-    return { symbol: ctx.symbol, preferred: ctx.preferredHorizon, price: ctx.horizons?.[ctx.preferredHorizon]?.price };
+    return {
+      symbol: ctx.symbol,
+      preferred: ctx.preferredHorizon,
+      price: ctx.horizons?.[ctx.preferredHorizon]?.price,
+      forecastFresh: ctx.forecastFresh,
+      publishedHorizons: ctx.publishedHorizons,
+      reviewHorizons: ctx.reviewHorizons,
+      session: ctx.session,
+      solutionLive: ctx.solutionLive,
+      upstreamHealth: ctx.upstreamHealth,
+    };
   });
-  const expectedPriceText = Number(primaryPrice.price).toLocaleString('vi-VN');
+  const expectedPriceText = finite(primaryPrice.price) ? Number(primaryPrice.price).toLocaleString('vi-VN') : null;
+  assert(primaryPrice.session && finite(primaryPrice.session.liveClose), `SoluTION context lost live price: ${JSON.stringify(primaryPrice)}`);
+  assert(primaryPrice.solutionLive?.health === 'OK', `SoluTION context live health is not OK: ${JSON.stringify(primaryPrice.solutionLive)}`);
+  if (upstreamDegraded) {
+    assert(primaryPrice.forecastFresh === false, 'stale upstream core was not gated by SoluTION.AI');
+    assert(Array.isArray(primaryPrice.publishedHorizons) && primaryPrice.publishedHorizons.length === 0, 'stale upstream core leaked published point forecasts into SoluTION.AI');
+    assert(primaryPrice.upstreamHealth === 'STALE_CORE', `unexpected upstream health: ${primaryPrice.upstreamHealth}`);
+  } else {
+    assert(primaryPrice.forecastFresh !== false, 'fresh upstream unexpectedly marked stale');
+  }
   const overview = await page.evaluate(() => ({
     decision: document.querySelector('#decision')?.textContent?.trim() || '',
     forecastLabel: document.querySelector('#primaryForecastLabel')?.textContent?.trim() || '',
@@ -222,11 +254,16 @@ try {
     primaryValue: document.querySelector('#range5')?.textContent?.trim() || '',
     cards: [...document.querySelectorAll('#forecastCards .forecastCard')].map(x => x.textContent.trim()),
   }));
-  assert(overview.decision.includes(primaryPrice.preferred), `decision not on preferred horizon: ${overview.decision}`);
-  assert(overview.forecastLabel.includes(primaryPrice.preferred), `overview forecast label stale: ${overview.forecastLabel}`);
-  assert(overview.probabilityLabel.includes(primaryPrice.preferred), `overview probability label stale: ${overview.probabilityLabel}`);
-  assert(overview.scenarioLabel.includes(primaryPrice.preferred), `scenario label stale: ${overview.scenarioLabel}`);
-  assert(overview.primaryValue.includes(expectedPriceText), `overview primary value ${overview.primaryValue} != ${expectedPriceText}`);
+  if (upstreamDegraded) {
+    assert(/ĐANG CẬP NHẬT|CHƯA CÓ GIÁ DỰ BÁO/.test(overview.decision), `stale-core UI does not fail closed: ${overview.decision}`);
+    assert(overview.cards.some(card => /ĐANG CẬP NHẬT|CHƯA ĐẠT KIỂM ĐỊNH|CHƯA CÓ DỮ LIỆU/.test(card)), 'stale-core UI exposes no review/update state');
+  } else {
+    assert(overview.decision.includes(primaryPrice.preferred), `decision not on preferred horizon: ${overview.decision}`);
+    assert(overview.forecastLabel.includes(primaryPrice.preferred), `overview forecast label stale: ${overview.forecastLabel}`);
+    assert(overview.probabilityLabel.includes(primaryPrice.preferred), `overview probability label stale: ${overview.probabilityLabel}`);
+    assert(overview.scenarioLabel.includes(primaryPrice.preferred), `scenario label stale: ${overview.scenarioLabel}`);
+    assert(expectedPriceText && overview.primaryValue.includes(expectedPriceText), `overview primary value ${overview.primaryValue} != ${expectedPriceText}`);
+  }
   for (const h of structural.review) {
     const card = overview.cards[h - 1] || '';
     assert(/CHƯA ĐẠT KIỂM ĐỊNH|CHƯA CÓ DỮ LIỆU|ĐANG CẬP NHẬT/.test(card), `T+${h} REVIEW leaks as published UI: ${card}`);
@@ -246,7 +283,8 @@ try {
   }, null, { timeout: 12000 });
   const localLatencyMs = Date.now() - localStart;
   const localReply = await page.evaluate(() => [...document.querySelectorAll('#solutionAiMessages .aiMessage')].at(-1)?.textContent?.trim() || '');
-  assert(localReply.includes('FPT') && localReply.includes(primaryPrice.preferred), `local form reply not grounded: ${localReply.slice(0,220)}`);
+  assert(localReply.includes('FPT') && localReply.length >= 220, `local form reply not grounded/useful: ${localReply.slice(0,220)}`);
+  if (!upstreamDegraded) assert(localReply.includes(primaryPrice.preferred), `fresh local form reply lost preferred horizon: ${localReply.slice(0,220)}`);
   assert(localLatencyMs < 10000, `local AI too slow: ${localLatencyMs}ms`);
 
   // Actual symbol-change UI must also refresh the AI context.
@@ -255,9 +293,18 @@ try {
   await page.click('#go');
   await page.waitForFunction(() => document.querySelector('#solutionAiContext strong')?.textContent?.trim() === 'HPG', null, { timeout: 10000 });
   const switchLatencyMs = Date.now() - switchStart;
+  await page.waitForFunction(() => {
+    const health = window.__SOLUTION_AI_HEALTH__?.();
+    return health?.liveSymbol === 'HPG' && health?.liveHealth === 'OK' && Number(health?.livePrice) > 0;
+  }, null, { timeout: 12000 });
   const hpg = await page.evaluate(async () => window.__SOLUTION_AI_BUILD_CONTEXT__());
   assert(hpg.symbol === 'HPG', `symbol switch failed: ${hpg.symbol}`);
-  assert(hpg.publishedHorizons.includes(hpg.preferredHorizon), 'HPG preferred horizon is not published');
+  assert(hpg.session && finite(hpg.session.liveClose), 'HPG independent live price did not refresh');
+  if (upstreamDegraded) {
+    assert(hpg.forecastFresh === false && hpg.publishedHorizons.length === 0, 'HPG stale core leaked published forecast after symbol switch');
+  } else {
+    assert(hpg.publishedHorizons.includes(hpg.preferredHorizon), 'HPG preferred horizon is not published');
+  }
   assert(switchLatencyMs < 10000, `symbol switch too slow: ${switchLatencyMs}ms`);
 
   // Suggestion button is a user-facing route, not a private helper.
@@ -271,7 +318,8 @@ try {
   assert(suggestionReply.includes('HPG') && suggestionReply.includes(hpg.preferredHorizon), 'forecast suggestion lost current symbol/horizon');
 
   // Exercise actual Gemini connection/success path with a deterministic provider stub.
-  const hpgPriceText = Number(hpg.horizons[hpg.preferredHorizon].price).toLocaleString('vi-VN');
+  const hpgAnchorPrice = hpg.horizons[hpg.preferredHorizon]?.price ?? hpg.session?.liveClose ?? hpg.close ?? hpg.coreClose;
+  const hpgPriceText = Number(hpgAnchorPrice).toLocaleString('vi-VN');
   await page.route('https://generativelanguage.googleapis.com/**', async route => {
     const requestUrl = route.request().url();
     const body = route.request().postData() || '';
@@ -401,6 +449,9 @@ try {
 
   const report = {
     solutionAiFullSystemAudit: 'PASS',
+    solutionAiHealth: 'PASS',
+    upstreamDataHealth: upstreamDegraded ? 'DEGRADED' : 'OK',
+    upstreamIssues: structural.upstreamIssues,
     url,
     pageLoadMs: Date.now() - t0,
     localLatencyMs,

@@ -78,6 +78,31 @@ function dashboard() {
 
 async function setup(fetch = async () => { throw new Error("Unexpected network request"); }, options = {}) {
   const source = await readFile(new URL("../solution-ai-v17.js", import.meta.url), "utf8");
+  const routedFetch = async (url, requestOptions) => {
+    if (String(url).includes("/api/solution-ai-live")) {
+      const price = Number(options.livePrice ?? 72000);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: "ok",
+          scope: "solution-ai",
+          fetchedAt: "2026-08-25T07:31:00.000Z",
+          quotes: {
+            FPT: {
+              symbol: "FPT",
+              price,
+              changePct: 0.69,
+              source: "Synthetic SoluTION live",
+              sourceMode: "solution_ai_direct",
+              observedAt: new Date().toISOString(),
+            },
+          },
+        }),
+      };
+    }
+    return fetch(url, requestOptions);
+  };
   const nodes = new Map();
   const listeners = new Map();
   const session = new Map();
@@ -118,7 +143,7 @@ async function setup(fetch = async () => { throw new Error("Unexpected network r
       setItem: (key, value) => session.set(key, value),
       removeItem: key => session.delete(key),
     },
-    fetch, URLSearchParams, URL, console,
+    fetch: routedFetch, URLSearchParams, URL, console,
   });
   vm.runInContext(source, context);
   listeners.get("DOMContentLoaded")();
@@ -151,6 +176,21 @@ test("browser context includes observed holdings/news but withholds unvalidated 
   assert.equal(evidence.topMovers.length, 1);
   assert.equal(evidence.topMovers[0].symbol, "FPT");
   assert.ok(evidence.topMovers[0].forecast > evidence.topMovers[0].close);
+});
+
+test("SoluTION.AI refreshes its own live quote independently and rebuilds context", async () => {
+  const { window } = await setup(async () => { throw new Error("Unexpected non-SoluTION request"); }, { livePrice: 73500 });
+  await window.__SOLUTION_AI_REFRESH_LIVE__(true);
+  const context = await window.__SOLUTION_AI_BUILD_CONTEXT__();
+  const health = window.__SOLUTION_AI_HEALTH__();
+  assert.equal(context.close, 73500);
+  assert.equal(context.coreClose, 72000);
+  assert.equal(context.session.liveClose, 73500);
+  assert.equal(context.session.sourceMode, "solution_ai_direct");
+  assert.equal(context.solutionLive.health, "OK");
+  assert.equal(health.liveHealth, "OK");
+  assert.equal(health.livePrice, 73500);
+  assert.equal(health.liveSource, "Synthetic SoluTION live");
 });
 
 

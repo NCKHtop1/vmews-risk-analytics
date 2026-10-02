@@ -2,6 +2,13 @@ name: SoluTION.AI production browser smoke
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'solution-ai-v17.js'
+      - 'api/solution-ai*.js'
+      - 'scripts/solution_ai_*.mjs'
+      - 'forecast-final.html'
+      - '.github/workflows/solution-ai-production-smoke.yml'
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     types: [completed]
@@ -14,7 +21,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  contracts:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run SoluTION.AI contracts on the PR head
+        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/solution_ai_live_endpoint_test.mjs
+
   browser:
+    if: github.event_name != 'pull_request'
     # Run even when an unrelated post-deploy verifier fails. This smoke verifies
     # whether SoluTION.AI production itself is actually available and correct.
     runs-on: ubuntu-latest
@@ -29,7 +48,7 @@ jobs:
           npm install --no-save playwright@1.55.0
           timeout 8m npx playwright install chromium >/dev/null
       - name: Run SoluTION.AI unit and frontend contracts
-        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+        run: node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/solution_ai_live_endpoint_test.mjs
       - name: Wait for production Pages
         run: |
           for attempt in 1 2 3 4 5 6; do
@@ -45,10 +64,35 @@ jobs:
           done
           echo 'Production Pages has not reached the local-first SoluTION.AI release.' >&2
           exit 1
+      - name: Verify dedicated SoluTION.AI live endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if curl -fsSL --max-time 12 "https://vmews-risk-analytics-sojd.vercel.app/api/solution-ai-live?symbol=FPT&verify=${GITHUB_RUN_ID}-${attempt}" -o /tmp/solution-live.json; then
+              if python - <<'PY'
+          import json
+          d=json.load(open('/tmp/solution-live.json',encoding='utf-8'))
+          q=(d.get('quotes') or {}).get('FPT') or {}
+          assert d.get('scope')=='solution-ai',d
+          assert d.get('status') in {'ok','partial'},d
+          assert float(q.get('price') or 0)>0,q
+          assert q.get('sourceMode') in {'solution_ai_direct','solution_ai_fallback'},q
+          print({'status':d.get('status'),'price':q.get('price'),'source':q.get('source'),'latencyMs':d.get('latencyMs')})
+          PY
+              then
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Dedicated SoluTION.AI live endpoint is not ready.' >&2
+          exit 1
       - name: Exercise production SoluTION.AI across representative symbols
         env:
           SOLUTION_AI_BROWSER_URL: https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT
           SOLUTION_AI_SYMBOLS: FPT,ACB,HPG,VIC
+          SOLUTION_AI_REQUIRE_LIVE: '1'
         run: node scripts/solution_ai_browser_smoke.mjs
       - name: Audit all published symbols, UI flow, freshness and AI provider routes
         env:
