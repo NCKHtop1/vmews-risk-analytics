@@ -394,14 +394,26 @@ def source_day(value):
         return None
 
 
-def current_session_quotes(rows, current=None):
-    """Split board rows into actually observed current-session rows and stale/invalid rows."""
+def current_session_quotes(rows, current=None, max_age_minutes=None):
+    """Split board rows into current-session rows and stale/invalid rows.
+
+    max_age_minutes is optional so EOD/manual uses can still accept the latest
+    same-day trade. Intraday publishers set it explicitly; this prevents a frozen
+    provider board (for example, 09:35 data returned at 11:00) from being treated
+    as live merely because the timestamp belongs to today's session.
+    """
     current = current or datetime.now(timezone.utc)
     if current.tzinfo is None:
         current = current.replace(tzinfo=timezone.utc)
     current = current.astimezone(timezone.utc)
     today = current.astimezone(VN).date().isoformat()
     future_limit = current + timedelta(minutes=5)
+    max_age = None
+    try:
+        if max_age_minutes is not None:
+            max_age = max(0.0, float(max_age_minutes))
+    except (ValueError, TypeError):
+        max_age = None
     fresh, stale = {}, {}
     for symbol, row in (rows or {}).items():
         stamp = timestamp(row.get('sourceTime'))
@@ -410,7 +422,9 @@ def current_session_quotes(rows, current=None):
             observed = datetime.fromisoformat(stamp).astimezone(timezone.utc) if stamp else None
         except (ValueError, TypeError):
             observed = None
-        if day == today and observed is not None and observed <= future_limit:
+        age_minutes = ((current - observed).total_seconds() / 60) if observed is not None else None
+        current_enough = max_age is None or (age_minutes is not None and age_minutes <= max_age)
+        if day == today and observed is not None and observed <= future_limit and current_enough:
             fresh[symbol] = row
         else:
             stale[symbol] = row
@@ -1201,7 +1215,8 @@ def prices(out, companies):
             except Exception as retry_error:
                 errors.append(f'quote retry {len(missing)} symbols: {retry_error}')
         if require_today:
-            fresh, stale = current_session_quotes(fresh)
+            max_quote_age = os.environ.get('MARKET_MAX_QUOTE_AGE_MINUTES')
+            fresh, stale = current_session_quotes(fresh, max_age_minutes=max_quote_age)
             if stale:
                 sample = ','.join(sorted(stale)[:8])
                 errors.append(f'Vietcap stale session quotes rejected: {len(stale)} ({sample})')

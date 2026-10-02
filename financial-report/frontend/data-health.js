@@ -19,7 +19,7 @@ function render(x){
  state.last=x;const grid=$('data-health-grid'),meta=$('data-health-meta');if(!grid)return;
  const cards=[];
  cards.push(card('Giá HOSE',x.quoteCoverage+'/'+x.quoteExpected,x.sessionActive?('P50 '+fmt(x.quoteMedianAge)+'p · P95 '+fmt(x.quoteP95Age)+'p'):(x.marketPhase==='LUNCH'?'Giữ giá chốt phiên sáng':'Giữ giá chốt phiên gần nhất'),x.quoteTone));
- cards.push(card('Mã đang xem',x.sessionActive?(x.selectedAge===null?'—':fmt(x.selectedAge)+' phút'):(x.marketPhase==='LUNCH'?'Chốt sáng':'Giá chốt'),x.selectedFallback?'Đã dùng nguồn trực tiếp':x.sessionActive?(x.selectedFresh?'Đúng nhịp nguồn':'Đang đồng bộ'):'Snapshot chốt phiên',x.selectedTone));
+ cards.push(card('Mã đang xem',x.sessionActive?(x.selectedAge===null?'—':fmt(x.selectedAge)+' phút'):(x.marketPhase==='LUNCH'?'Chốt sáng':'Giá chốt'),x.selectedFallback?'Đã dùng nguồn trực tiếp':x.quoteFallbackError?'Nguồn trực tiếp lỗi · đang tự thử lại':x.sessionActive?(x.selectedFresh?'Đúng nhịp nguồn':'Đang đồng bộ'):'Snapshot chốt phiên',x.selectedTone));
  cards.push(card('Technical Scanner',x.scannerCoverage?x.scannerCoverage+'/'+x.scannerUniverse:'—',x.scannerAligned?'Đồng bộ sourceTime với giá':'Chưa đồng bộ snapshot',x.scannerTone));
  cards.push(card('Tin tức',Number.isFinite(x.newsAge)?fmt(x.newsAge)+' phút':'—',x.newsSources+' nguồn phản hồi',x.newsTone));
  cards.push(card('Evidence scanner',x.evidenceSignals?x.evidenceSignals+' rule':'—',x.evidenceReady?'Backtest lịch sử đã sẵn sàng':'Đang chờ evidence',x.evidenceTone));
@@ -52,7 +52,7 @@ async function refresh(){
   const liveTone=liveMatured>=100?(cal.stable?'good':'warn'):'warn';
   const f3=forecastLive?.summary?.['3']||{},forecastOrigins=Number(f3.matureOrigins||0),forecastHit=Number.isFinite(Number(f3.directionHitRate))?Number(f3.directionHitRate):null,forecastEvidence=String(f3.evidenceState||'EARLY');
   const forecastTone=forecastOrigins>=20?(forecastHit!==null&&forecastHit>=.5?'good':'warn'):'warn';
-  render({sessionActive:active,marketPhase:marketPhase(),quoteCoverage:coverage,quoteExpected:expected,quoteMedianAge:med,quoteP95Age:p95,quoteTone,selectedAge,selectedFresh,selectedFallback:Boolean(lm.usedQuoteFallback),selectedTone,scannerCoverage,scannerUniverse,scannerAligned,scannerTone,newsAge,newsSources:newsOk+'/'+newsTotal,newsTone,evidenceSignals,evidenceReady,evidenceTone,forecastOrigins,forecastHit,forecastEvidence,forecastTone,liveMatured,livePending,liveStatus,liveTone});
+  render({sessionActive:active,marketPhase:marketPhase(),quoteCoverage:coverage,quoteExpected:expected,quoteMedianAge:med,quoteP95Age:p95,quoteTone,selectedAge,selectedFresh,selectedFallback:Boolean(lm.usedQuoteFallback),quoteFallbackError:lm.quoteFallbackError||'',selectedTone,scannerCoverage,scannerUniverse,scannerAligned,scannerTone,newsAge,newsSources:newsOk+'/'+newsTotal,newsTone,evidenceSignals,evidenceReady,evidenceTone,forecastOrigins,forecastHit,forecastEvidence,forecastTone,liveMatured,livePending,liveStatus,liveTone});
  }catch(e){setStatus('bad','Không kiểm tra được');}
  finally{state.loading=false;}
 }

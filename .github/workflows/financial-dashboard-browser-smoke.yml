@@ -211,8 +211,10 @@ jobs:
                 return {
                   symbol:m.symbol,
                   quote:m.quote,
+                  quoteSourceTime:m.quote?.sourceTime||null,
                   scanner:s?.current,
                   scannerCheckedAt:s?.checkedAt,
+                  scannerSourceTime:s?.sourceTime||null,
                   macroCheckedAt:macro?.checkedAt,
                   newsCheckedAt:m.newsCheckedAt,
                   newsLiveFallback:m.newsLiveFallback,
@@ -220,6 +222,7 @@ jobs:
                   financial:Boolean(window.FinancialReportContext.raw()),
                   ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180),
                   strategyCoverage:window.FinStrategyBuilder?.context?.()?.snapshot?.coverage||0,
+                  strategySourceTime:window.FinStrategyBuilder?.context?.()?.snapshot?.sourceTime||null,
                   strategyConditions:window.FinStrategyBuilder?.context?.()?.strategy?.conditions?.length||0
                 };
               """)
@@ -229,6 +232,30 @@ jobs:
                   raise AssertionError(f'Scanner context missing: {snapshot}')
               if int(snapshot.get('strategyCoverage') or 0)<100 or int(snapshot.get('strategyConditions') or 0)!=2:
                   raise AssertionError(f'Strategy Lab context missing or incomplete: {snapshot}')
+
+              watch=driver.execute_async_script("""
+                const done=arguments[arguments.length-1];
+                window.FinMarketData.get('watch-today.json')
+                  .then(x=>done({status:x.status,checkedAt:x.checkedAt,sourceTime:x.sourceTime,items:(x.items||[]).length}))
+                  .catch(e=>done({error:String(e)}));
+              """)
+              local=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7)))
+              mins=local.hour*60+local.minute
+              active=local.weekday()<5 and ((9*60<=mins<=11*60+30) or (13*60<=mins<=14*60+45))
+              if active:
+                  quote_source=snapshot.get('quoteSourceTime')
+                  if not quote_source:
+                      raise AssertionError(f'Active session has no usable live quote: {snapshot}')
+                  qt=datetime.fromisoformat(str(quote_source).replace('Z','+00:00')).astimezone(timezone.utc)
+                  quote_age=(datetime.now(timezone.utc)-qt).total_seconds()/60
+                  if quote_age>20:
+                      raise AssertionError(f'Active-session quote is stale: {quote_age:.1f} minutes; snapshot={snapshot}')
+                  if str(snapshot.get('scannerSourceTime') or '')!=str(quote_source):
+                      raise AssertionError(f'Scanner is not aligned with live quote: {snapshot}')
+                  if str(snapshot.get('strategySourceTime') or '')!=str(quote_source):
+                      raise AssertionError(f'Strategy snapshot is not aligned with live quote: {snapshot}')
+                  if watch.get('error') or str(watch.get('sourceTime') or '')!=str(quote_source):
+                      raise AssertionError(f'Today-watch is not aligned with live quote: watch={watch} snapshot={snapshot}')
               checked=snapshot.get('newsCheckedAt')
               if not checked:
                   raise AssertionError(f'News freshness missing: {snapshot}')

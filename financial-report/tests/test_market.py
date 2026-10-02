@@ -961,6 +961,19 @@ class MarketTests(unittest.TestCase):
         self.assertIn('VIC',stale)
         self.assertEqual(m.newest_source_time(fresh),'2026-09-29T06:45:00+00:00')
 
+    def test_current_session_filter_rejects_frozen_same_day_quotes_when_live_age_is_required(self):
+        current=datetime(2026,10,2,4,0,tzinfo=timezone.utc)  # 11:00 Vietnam
+        rows={
+            'FPT':{'sourceTime':'2026-10-02T03:55:00+00:00','price':64000},
+            'MBB':{'sourceTime':'2026-10-02T02:35:00+00:00','price':19800},
+        }
+        fresh,stale=m.current_session_quotes(rows,current,max_age_minutes=18)
+        self.assertIn('FPT',fresh)
+        self.assertIn('MBB',stale)
+        fresh_eod,stale_eod=m.current_session_quotes(rows,current)
+        self.assertIn('MBB',fresh_eod)
+        self.assertNotIn('MBB',stale_eod)
+
     def test_kbs_session_probe_rejects_future_same_day_trade(self):
         original=m.request_query
         try:
@@ -1105,6 +1118,7 @@ class MarketTests(unittest.TestCase):
         css=(ROOT/'frontend/style.css').read_text()
         root=ROOT.parent
         price=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        session=(ROOT/'scripts/live_session_publisher.sh').read_text()
         self.assertIn('ĐÁNG XEM HÔM NAY',html)
         self.assertIn('id="quick-tickers-track"',html)
         self.assertNotIn('<button data-symbol="MBB">MBB</button><button data-symbol="FPT">FPT</button>',html)
@@ -1114,13 +1128,14 @@ class MarketTests(unittest.TestCase):
         self.assertIn("label.textContent=invalidFuture?'DỮ LIỆU CHƯA HỢP LỆ'",app)
         self.assertIn('if(!document.hidden)loadTodayWatch();},60000)',app)
         self.assertIn('finqueryQuickWatch',css)
-        self.assertIn('market/watch-today.json',price)
+        self.assertIn('market/watch-today.json',session)
 
     def test_news_and_price_refreshes_are_independent_from_heavy_market_jobs(self):
         script=(ROOT/'scripts/refresh_market.py').read_text()
         root=ROOT.parent
         workflow=(root/'.github/workflows/financial-market-refresh.yml').read_text() if (root/'.github/workflows/financial-market-refresh.yml').exists() else pathlib.Path('.github/workflows/financial-market-refresh.yml').read_text()
         price=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        session=(ROOT/'scripts/live_session_publisher.sh').read_text()
         news=(root/'.github/workflows/market-news-live.yml').read_text() if (root/'.github/workflows/market-news-live.yml').exists() else pathlib.Path('.github/workflows/market-news-live.yml').read_text()
         pages=(root/'.github/workflows/pages.yml').read_text() if (root/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
         self.assertIn('with ThreadPoolExecutor(max_workers=workers) as pool:',script)
@@ -1138,9 +1153,16 @@ class MarketTests(unittest.TestCase):
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",price)
         self.assertIn('github.event_name }}" = "workflow_dispatch"',price)
         self.assertNotIn('github.event_name }}" != "schedule"',price)
-        self.assertIn("MARKET_REQUIRE_TODAY: '1'",price)
-        self.assertIn('market/watch-today.json',price)
+        self.assertIn('live_session_publisher.sh',price)
+        self.assertIn("MARKET_REQUIRE_TODAY=1",session)
+        self.assertIn('MARKET_MAX_QUOTE_AGE_MINUTES',session)
+        self.assertIn('sleep "$INTERVAL_SECONDS"',session)
+        self.assertIn('validate_snapshot',session)
+        self.assertIn('sourceTime is not aligned with quotes',session)
+        self.assertIn('market/watch-today.json',session)
         self.assertIn('group: market-price-live',price)
+        self.assertIn('timeout-minutes: 200',price)
+        self.assertIn('actions: write',price)
         self.assertIn("cron: '12,27,42,57 * * * *'",news)
         self.assertIn('group: market-news-live',news)
         self.assertIn('git restore --worktree market/drivers.json',news)
@@ -1559,6 +1581,7 @@ class MarketTests(unittest.TestCase):
         build=(ROOT/'scripts/build_cdn.py').read_text()
         root=ROOT.parent
         workflow=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        session=(ROOT/'scripts/live_session_publisher.sh').read_text()
         guard=(root/'.github/workflows/market-realtime-guard.yml').read_text() if (root/'.github/workflows/market-realtime-guard.yml').exists() else pathlib.Path('.github/workflows/market-realtime-guard.yml').read_text()
         self.assertIn('data-market-view="scanner"',html)
         self.assertIn('id="technical-scanner-access-code"',html)
@@ -1576,9 +1599,9 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn("ACCESS_HASH='13579'",scanner)
         self.assertIn('.technical-scanner-panel',css)
         self.assertIn("(front / 'technical-scanner.js').read_text()",build)
-        self.assertIn('market/technical-signals.json',workflow)
-        self.assertIn('market/history-status.json',workflow)
-        self.assertIn('Technical scanner coverage is below 90%',workflow)
+        self.assertIn('market/technical-signals.json',session)
+        self.assertIn('market/history-status.json',session)
+        self.assertIn('scanner coverage below 90%',session)
         self.assertIn("technical-signals.json",guard)
         self.assertIn("d.get('sourceTime')!=q.get('latestSourceTime')",guard)
 
@@ -1589,6 +1612,7 @@ class MarketTests(unittest.TestCase):
         scanner=(ROOT/'frontend/technical-scanner.js').read_text()
         root=ROOT.parent
         price=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
+        session=(ROOT/'scripts/live_session_publisher.sh').read_text()
         pages=(root/'.github/workflows/pages.yml').read_text() if (root/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
         forecast=(root/'.github/workflows/forecast-v13-daily-refresh.yml').read_text() if (root/'.github/workflows/forecast-v13-daily-refresh.yml').exists() else pathlib.Path('.github/workflows/forecast-v13-daily-refresh.yml').read_text()
         self.assertIn('load_market_companies',script)
@@ -1597,9 +1621,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn("        seed_market_histories(args.output, universe, companies)",script)
         self.assertIn('seed_market_histories',script)
         self.assertIn('technical-scanner-v2-tiered-hose',script)
-        self.assertIn("market/universe.json",price)
+        self.assertIn("market/universe.json",session)
         self.assertIn("financial-report/data/universe.json",price)
-        self.assertIn("math.ceil(expected*.90)",price)
+        self.assertIn("math.ceil(expected*.90)",session)
         self.assertIn("financial-report/scripts/build_hose_universe.py",forecast)
         self.assertIn("financial-report/data/universe.json",forecast)
         self.assertIn("market/universe.json",pages)
