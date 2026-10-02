@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: solution-ai-live-price-publisher
@@ -121,4 +122,12 @@ jobs:
           echo "SoluTION.AI publisher finished: iterations=$iterations failures=$failures"
           if [ "$iterations" -gt 0 ] && [ "$failures" -ge "$iterations" ]; then
             exit 1
+          fi
+
+          # Kick the SoluTION-only core refresh immediately after the afternoon
+          # close. Scheduled core runs remain as recovery checkpoints.
+          final_now="$(vn_hhmm)"
+          if [ "$oneshot" -eq 0 ] && [ "$end" = "1510" ] && [ "$final_now" -ge 1510 ]; then
+            echo "Dispatching SoluTION.AI core refresh after afternoon close."
+            gh workflow run solution-ai-core-refresh.yml --ref main
           fi
