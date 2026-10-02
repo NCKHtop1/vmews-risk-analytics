@@ -216,9 +216,9 @@ async function refresh(){
  if(staticNews&&(!state.news||window.FinMarketData.revision(staticNews)>=window.FinMarketData.revision(state.news)))state.news=staticNews;
  if(results[2].status==='fulfilled'&&results[2].value.symbols)state.drivers=results[2].value;
  if(results[3].status==='fulfilled'&&results[3].value?.symbols){state.universe=results[3].value;state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);}
- let usedNewsFallback=false,usedQuoteFallback=false;
+ let usedNewsFallback=false,usedQuoteFallback=false,newsFallbackError='',quoteFallbackError='';
  if(newsStale(state.news)){
-  try{const live=await liveFallback('news');state.news=mergeNewsBundles(state.news,live);usedNewsFallback=true;}catch{}
+  try{const live=await liveFallback('news');state.news=mergeNewsBundles(state.news,live);usedNewsFallback=true;}catch(error){newsFallbackError=String(error?.message||error).slice(0,120);}
  }
  let selected=state.quotes[state.symbol],usedCloseCatch=false;
  if((marketSessionActive()&&quoteNeedsFallback(selected))||quoteNeedsCloseCatch(selected)){
@@ -227,7 +227,7 @@ async function refresh(){
    window.FinMarketData.mergeQuotes(state.quotes,live.quotes);
    usedCloseCatch=!marketSessionActive();
    usedQuoteFallback=marketSessionActive();
-  }catch{}
+  }catch(error){quoteFallbackError=String(error?.message||error).slice(0,120);}
  }
  showQuote();board();news();
  if(state.symbol&&!chartController.loading&&(!state.lastHistoryRefresh||Date.now()-state.lastHistoryRefresh>=15*60000)){state.lastHistoryRefresh=Date.now();void chartController.load(true);}
@@ -237,9 +237,9 @@ async function refresh(){
  if(state.initialized&&previousNewsMax){const fresh=(state.news?.items||[]).filter(x=>(Date.parse(x.publishedAt)||0)>previousNewsMax).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));const relevant=strictCompanyNews(fresh,state.symbol,1)[0];if(relevant)chartController.noteNews(relevant);}
  state.initialized=true;window.FinQueryAI?.sync(state.symbol);
  const degraded=results.some(r=>r.status==='rejected');
- const refreshStatus=$('market-refresh-status');if(refreshStatus)refreshStatus.textContent=currentQuote&&!currentQuoteLive&&marketSessionActive()?'Đang đồng bộ snapshot mới trong phiên.':usedQuoteFallback?'Đã chuyển sang nguồn trực tiếp để giữ nhịp cập nhật trong phiên.':usedCloseCatch?(marketPhase()==='LUNCH'?'Đã đồng bộ giá chốt phiên sáng.':'Đã đồng bộ giá chốt phiên chiều.'):(degraded?'Một phần dữ liệu chưa tải được; giữ giá chốt gần nhất nếu có.':'');
+ const refreshStatus=$('market-refresh-status');if(refreshStatus)refreshStatus.textContent=currentQuote&&!currentQuoteLive&&marketSessionActive()?(quoteFallbackError?'Nguồn trực tiếp chưa phản hồi; hệ thống sẽ tự thử lại sau 1 phút.':'Đang đồng bộ snapshot mới trong phiên.'):usedQuoteFallback?'Đã chuyển sang nguồn trực tiếp để giữ nhịp cập nhật trong phiên.':usedCloseCatch?(marketPhase()==='LUNCH'?'Đã đồng bộ giá chốt phiên sáng.':'Đã đồng bộ giá chốt phiên chiều.'):(degraded?'Một phần dữ liệu chưa tải được; giữ giá chốt gần nhất nếu có.':'');
  const selectedAge=Number.isFinite(quoteAgeMinutes(currentQuote))?quoteAgeMinutes(currentQuote):null;
- document.dispatchEvent(new CustomEvent('finquery:market-refresh',{detail:{symbol:state.symbol,selectedAge,selectedFresh:Boolean(currentQuoteLive),usedQuoteFallback,usedCloseCatch,usedNewsFallback,sourceTime:currentQuote?.sourceTime||null,checkedAt:currentQuote?.collectedAt||null}}));
+ document.dispatchEvent(new CustomEvent('finquery:market-refresh',{detail:{symbol:state.symbol,selectedAge,selectedFresh:Boolean(currentQuoteLive),usedQuoteFallback,usedCloseCatch,usedNewsFallback,quoteFallbackError,newsFallbackError,sourceTime:currentQuote?.sourceTime||null,checkedAt:currentQuote?.collectedAt||null}}));
  }catch(error){console.error('Market refresh failed',error);const status=$('market-refresh-status');if(status)status.textContent='Cập nhật bị gián đoạn; hệ thống sẽ tự thử lại.';}finally{state.refreshing=false;if(refreshButton)refreshButton.disabled=false;}
 }
 window.FinancialMarket={select(symbol,companies){state.coreCompanies=Array.isArray(companies)?companies:state.coreCompanies;state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);state.symbol=symbol;showQuote();board();news();chartController.select(symbol,watch);window.FinInsights?.select?.(symbol);if(['peers','sector'].includes(state.marketView))void renderMarketCompare();if(state.marketView==='scanner')window.FinTechnicalScanner?.open?.();window.FinTechnicalScanner?.setMarketSourceTime?.(state.quotes[symbol]?.sourceTime||null);window.FinQueryAI?.sync(symbol);},context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=quoteStale(state.quotes[state.symbol])?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!quote||String(scan.sourceTime)===String(quote.sourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},alertContext(){return{symbol:state.symbol,companies:state.companies.map(c=>({symbol:c.symbol,name:c.name,tier:c.tier})),quotes:state.quotes,watch:[...watch]};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
