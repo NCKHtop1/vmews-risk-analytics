@@ -17,11 +17,9 @@ vn_minutes() {
 
 session_end_minutes() {
   local now_min="$1"
-  if [ "$now_min" -ge 540 ] && [ "$now_min" -le 700 ]; then
-    echo 700
-    return 0
-  fi
-  if [ "$now_min" -ge 775 ] && [ "$now_min" -le 905 ]; then
+  # One healthy run can carry the dashboard through both trading sessions.
+  # During the lunch break the process stays alive but does not publish stale quotes.
+  if [ "$now_min" -ge 540 ] && [ "$now_min" -le 905 ]; then
     echo 905
     return 0
   fi
@@ -208,6 +206,17 @@ failures=0
 iterations=0
 
 while true; do
+  now_min="$(vn_minutes)"
+
+  # HOSE lunch break: keep the publisher alive so the afternoon session does not
+  # depend on another GitHub cron event. News supervision can still run.
+  if [ "$FORCE_ONESHOT" != "1" ] && [ "$now_min" -gt 700 ] && [ "$now_min" -lt 775 ]; then
+    supervise_news || true
+    echo "Lunch bridge active; next price refresh will resume at 12:55 Vietnam time."
+    sleep "$INTERVAL_SECONDS"
+    continue
+  fi
+
   iterations=$((iterations + 1))
   if ! collect_validate_publish; then
     failures=$((failures + 1))
