@@ -1,6 +1,6 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const state={data:null,loading:false,error:'',alertIds:null};
+const state={data:null,loading:false,error:''};
 const COMPONENT_ORDER=['breadth','volatility','liquidity','concentration','contagion'];
 const fmt=(v,d=1)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -41,7 +41,7 @@ function renderTop(){
  }else{
   const sign=Number(tr.delta)>0?'+':'';
   trend.textContent=(tr.label||'Ít thay đổi')+' · '+sign+fmt(tr.delta,1)+' điểm';
-  detail.textContent=fmt(d.overall?.score,1)+' hiện tại · '+fmt(tr.previousScore,1)+' ở mốc trước · '+(tr.comparisonLabel||'so với mốc trước');
+  detail.textContent=fmt(d.overall?.score,1)+' / 100 hiện tại · '+fmt(tr.previousScore,1)+' / 100 ở mốc trước · '+(tr.comparisonLabel||'so với mốc trước');
  }
  const cov=d.coverage||{};
  $('risk-coverage').textContent=fmt(cov.quotes,0)+' / '+fmt(cov.expected,0)+' mã';
@@ -101,13 +101,10 @@ function renderSectors(){
 }
 function renderAlerts(){
  const d=state.data,host=$('risk-alerts'),history=$('risk-alert-history');if(!d||!host)return;
- const rows=d.alerts||[],ids=new Set(rows.map(x=>x.id));
- const canMark=state.alertIds instanceof Set;
+ const rows=d.alerts||[];
  host.innerHTML=rows.length?rows.map(x=>{
-  const isNew=canMark&&!state.alertIds.has(x.id);
-  return '<article class="risk-alert risk-'+tone(x.level?.tone)+(isNew?' risk-alert-new':'')+'"><div class="risk-alert-title"><span class="risk-dot" aria-hidden="true"></span><strong>'+esc(x.title)+'</strong><b>'+fmt(x.score,1)+'/100</b></div><p>'+esc(x.evidence)+'</p><small>Bắt đầu '+time(x.startedAt)+' · cập nhật '+time(x.lastSeen)+'</small></article>';
+  return '<article class="risk-alert risk-'+tone(x.level?.tone)+'"><div class="risk-alert-title"><span class="risk-dot" aria-hidden="true"></span><strong>'+esc(x.title)+'</strong><b>'+fmt(x.score,1)+'/100</b></div><p>'+esc(x.evidence)+'</p><small>Bắt đầu '+time(x.startedAt)+' · cập nhật '+time(x.lastSeen)+'</small></article>';
  }).join(''):'<p class="risk-empty risk-empty-good">Chưa có cảnh báo đáng kể ở thời điểm này.</p>';
- state.alertIds=ids;
  if(history){
   const events=(d.alertHistory||[]).slice(-6).reverse();
   history.innerHTML=events.length?'<h4>Lịch sử gần đây</h4>'+events.map(x=>'<div><span>'+time(x.time)+'</span><strong>'+esc(x.title)+'</strong><small>'+esc(x.type)+'</small></div>').join(''):'';
@@ -135,16 +132,18 @@ function renderFunds(){
  const f=d?.fundMonitor||{};
  if(f.status!=='ok'){
   if(asof)asof.textContent='Chưa có dữ liệu quỹ';
+  const badge=$('risk-nav-badge');if(badge){badge.hidden=true;badge.textContent='';}
   box.innerHTML='<p class="risk-empty">Chưa có dữ liệu quỹ đủ để so sánh.</p>';
   alertsHost.innerHTML='';rowsHost.innerHTML='';return;
  }
- if(asof)asof.textContent='Dữ liệu thu thập '+esc(f.asOf||'—')+(f.previousAsOf?' · so với '+esc(f.previousAsOf):'');
+ if(asof)asof.textContent='Nguồn '+esc(f.source||'FMARKET')+(f.reportDate?' · báo cáo gần nhất '+esc(f.reportDate):'')+' · kiểm tra '+esc(f.asOf||'—')+(f.previousAsOf?' · so với '+esc(f.previousAsOf):'');
+ const badge=$('risk-nav-badge');if(badge){const count=Number(f.materialChanges)||0;badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);badge.title=count+' thay đổi quỹ đáng chú ý';}
  box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã có thay đổi đáng kể</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Thay đổi đáng kể</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
  const alerts=(f.alerts||[]).slice(0,8);
  alertsHost.innerHTML=alerts.length?'<h4>Thay đổi mới đáng chú ý</h4>'+alerts.map(x=>'<div class="risk-fund-alert risk-fund-'+tone(x.tone)+'"><button type="button" data-fund-symbol="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><span>'+esc(x.fundCode||x.fundName)+'</span><b>'+esc(x.label)+'</b><small>'+esc(fundDeltaText(x))+'</small></button></div>').join(''):'<p class="risk-empty risk-empty-good">Chưa thấy thay đổi tỷ trọng quỹ đáng kể giữa hai lần công bố gần nhất.</p>';
- rowsHost.innerHTML=(f.rows||[]).slice(0,40).map(x=>{
+ rowsHost.innerHTML=(f.rows||[]).map(x=>{
   const delta=Number.isFinite(Number(x.largestChangePP))?((Number(x.largestChangePP)>0?'+':'')+fmt(x.largestChangePP,2)+' điểm %'):'—';
-  const detail=(x.details||[]).map(y=>'<div class="risk-fund-detail-item"><div><strong>'+esc(y.fundCode||y.fundName)+'</strong><small>'+esc(y.fundName||'')+'</small></div><span>'+esc(y.label)+'</span><b>'+(y.currentWeightPct==null?'—':fmt(y.currentWeightPct,2)+'%')+'</b><small>Trước: '+(y.previousWeightPct==null?'—':fmt(y.previousWeightPct,2)+'%')+(Number.isFinite(Number(y.deltaPP))?' · '+(Number(y.deltaPP)>0?'+':'')+fmt(y.deltaPP,2)+' điểm %':'')+'</small></div>').join('');
+  const detail=(x.details||[]).map(y=>'<div class="risk-fund-detail-item"><div><strong>'+esc(y.fundCode||y.fundName)+'</strong><small>'+esc(y.fundName||'')+'</small></div><span>'+esc(y.label)+'</span><b>'+(y.currentWeightPct==null?'—':fmt(y.currentWeightPct,2)+'%')+'</b><small>Trước: '+(y.previousWeightPct==null?'—':fmt(y.previousWeightPct,2)+'%')+(Number.isFinite(Number(y.deltaPP))?' · '+(Number(y.deltaPP)>0?'+':'')+fmt(y.deltaPP,2)+' điểm %':'')+(y.reportDate?' · công bố '+esc(y.reportDate):'')+(Number.isFinite(Number(y.navMomentum20Pct))?' · NAV 20P '+(Number(y.navMomentum20Pct)>0?'+':'')+fmt(y.navMomentum20Pct,2)+'%':'')+'</small></div>').join('');
   return '<tr><th><button type="button" data-risk-symbol="'+esc(x.symbol)+'">'+esc(x.symbol)+'</button></th><td>'+fmt(x.currentFundCount,0)+'</td><td><span class="risk-fund-state risk-fund-'+tone(x.tone)+'">'+esc(x.label)+'</span></td><td>'+delta+'</td><td>'+(x.largestWeightPct==null?'—':fmt(x.largestWeightPct,2)+'%')+'</td><td><button type="button" class="risk-fund-toggle" data-fund-toggle="'+esc(x.symbol)+'">Xem</button></td></tr><tr class="risk-fund-detail-row" data-fund-detail="'+esc(x.symbol)+'" hidden><td colspan="6"><div class="risk-fund-detail-list">'+detail+'</div></td></tr>';
  }).join('');
 }
