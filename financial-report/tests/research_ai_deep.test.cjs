@@ -56,3 +56,24 @@ test('academic layer is passed through context and rendered separately',()=>{
  assert.match(src,/academicSources:\(agentContext\?\.academicContext\?\.references\|\|\[\]\)/);
  assert.match(src,/WEB\|ACADEMIC/);
 });
+
+test('deep answers have deterministic quality audit and bounded repair pass',()=>{
+ assert.match(src,/function auditDeepAnswer\(/);
+ assert.match(src,/missingEvidenceTags/);
+ assert.match(src,/words>=650&&empirical\.length>=2/);
+ assert.match(src,/academicRequired/);
+ assert.match(src,/hasCounter/);
+ assert.match(src,/hasMechanism/);
+ assert.match(src,/async function repairDeepAnswer\(/);
+ assert.match(src,/Đang rà soát chất lượng lập luận và biên tập vòng cuối/);
+ assert.match(src,/qualityRepair=\{status:'not_needed'\}/);
+ assert.match(src,/repairedAudit\.score>=qualityAudit\.score/);
+ assert.match(src,/kiểm định lập luận/);
+});
+
+test('deep quality repair cannot invent a new analytical basis',()=>{
+ assert.match(src,/giữ nguyên mọi số liệu đã được neo/);
+ assert.match(src,/không tự tính\/thêm số mới nếu context không có/);
+ assert.match(src,/không biến tương quan thành nhân quả/i);
+ assert.match(src,/không đưa khuyến nghị mua\/bán/i);
+});
