@@ -205,7 +205,8 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
   methodology:{
    weights:WEIGHTS,
-   description:'Điểm 0-100 đo mức căng thẳng đang quan sát được từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
+   description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
+   scope:'HOSE Core + Liquid có dữ liệu trực tiếp',
    alertRule:'Cảnh báo chỉ bật khi vượt ngưỡng vào và chỉ tắt khi hạ xuống dưới ngưỡng thoát để tránh đổi màu liên tục quanh một mốc.'
   }
  };
