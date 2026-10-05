@@ -1054,6 +1054,27 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(next_row['previousMacdHistogram'],previous['macdHistogram'])
         self.assertNotIn('macd_cross_up',{x['id'] for x in next_row['signals']})
 
+    def test_technical_scanner_repairs_collapsed_same_source_comparator(self):
+        bars=[]
+        for i in range(70):
+            close=10000 + i*i*8
+            bars.append({
+                'time':f'2026-07-{1+i:02d}' if i<31 else f'2026-08-{i-30:02d}' if i<62 else f'2026-09-{i-61:02d}',
+                'open':close-20,'high':close+80,'low':close-80,'close':close,
+                'volume':1000000,
+            })
+        stamp='2026-09-08T07:45:00+00:00'
+        baseline=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'sourceTime':stamp})
+        collapsed={
+            'barDate':baseline['barDate'],'sourceTime':stamp,
+            'macdHistogram':baseline['macdHistogram'],'previousMacdHistogram':baseline['macdHistogram'],
+            'rsi14':baseline['rsi14'],'previousRsi14':baseline['rsi14'],
+        }
+        repaired=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'sourceTime':stamp},collapsed)
+        self.assertEqual(repaired['previousMacdHistogram'],baseline['previousMacdHistogram'])
+        self.assertEqual(repaired['previousRsi14'],baseline['previousRsi14'])
+        self.assertNotEqual(repaired['previousMacdHistogram'],repaired['macdHistogram'])
+
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
         rows=m.normalize_history(data,'MBB')
