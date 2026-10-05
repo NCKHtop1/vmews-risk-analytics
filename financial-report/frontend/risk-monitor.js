@@ -35,7 +35,7 @@ function renderTop(){
  $('risk-trend-delta').textContent=tr.delta==null?'Sẽ rõ hơn sau các lần cập nhật tiếp theo':((tr.delta>0?'+':'')+fmt(tr.delta,1)+' điểm so với mốc trước');
  const cov=d.coverage||{};
  $('risk-coverage').textContent=fmt(cov.quotes,0)+' / '+fmt(cov.expected,0)+' mã';
- $('risk-coverage-note').textContent='Nhóm ngành đủ dữ liệu: '+fmt(cov.sectors,0);
+ $('risk-coverage-note').textContent='Phạm vi trực tiếp: HOSE Core + Liquid · '+fmt(cov.sectors,0)+' nhóm ngành đủ dữ liệu';
  $('risk-source-time').textContent='Dữ liệu đến '+time(d.sourceTime);
  const aligned=window.FinancialMarket?.context?.()?.quoteBundleSourceTime;
  const status=$('risk-source-status');
