@@ -9,6 +9,17 @@ const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1});
 const pct=n=>Number.isFinite(n)?`${n>0?'+':''}${nf.format(n)}%`:'—';
 const num=n=>Number.isFinite(n)?nf.format(n):'—';
 const tone=n=>!Number.isFinite(n)?'neutral':n>0?'positive':n<0?'negative':'neutral';
+const ACADEMIC_LENSES=[
+ {id:'ohlson1995',frameworks:['corporate','bank'],defaults:['corporate','bank'],title:'Ohlson (1995) · accounting-based equity valuation',citation:'Ohlson, J.A. (1995), Earnings, Book Values, and Dividends in Equity Valuation',url:'https://onlinelibrary.wiley.com/doi/10.1111/j.1911-3846.1995.tb00461.x',patterns:[/dinh gia|valuation|book value|gia tri so sach|pb|p b|roe|loi nhuan|earnings/],use:'Dùng như khung liên hệ lợi nhuận, giá trị sổ sách và thông tin khác với giá trị vốn chủ.',caveat:'Đây là benchmark lý thuyết kế toán-định giá, không phải công thức dự báo giá ngắn hạn cho một cổ phiếu.'},
+ {id:'sloan1996',frameworks:['corporate'],defaults:['corporate'],title:'Sloan (1996) · cash flow vs accrual persistence',citation:'Sloan, R.G. (1996), Do Stock Prices Fully Reflect Information in Accruals and Cash Flows About Future Earnings?',url:'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2598',patterns:[/dong tien|ocf|fcf|accrual|loi nhuan|earnings|phai thu|ton kho|chat luong loi nhuan/],use:'Dùng để tách chất lượng lợi nhuận tạo bằng tiền khỏi phần phụ thuộc nhiều vào accrual/vốn lưu động.',caveat:'Kết quả gốc là bằng chứng thực nghiệm trên dữ liệu lịch sử; không được suy diễn thành dự báo chắc chắn cho doanh nghiệp Việt Nam.'},
+ {id:'dechowDichev2002',frameworks:['corporate'],defaults:[],title:'Dechow & Dichev (2002) · accrual quality',citation:'Dechow, P.M. & Dichev, I.D. (2002), The Quality of Accruals and Earnings: The Role of Accrual Estimation Errors',url:'https://doi.org/10.2308/accr.2002.77.s-1.35',patterns:[/accrual|phai thu|ton kho|von luu dong|working capital|chat luong loi nhuan|earnings quality/],use:'Dùng để giải thích vì sao biến động vốn lưu động và sai số ước tính accrual có thể làm chất lượng lợi nhuận kém bền vững hơn.',caveat:'FinQuery chỉ được liên hệ định tính nếu chưa có mô hình accrual-quality đầy đủ; không tự gán điểm học thuật.'},
+ {id:'piotroski2000',frameworks:['corporate'],defaults:['corporate'],title:'Piotroski (2000) · fundamental financial signals',citation:'Piotroski, J.D. (2000), Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers',url:'https://doi.org/10.2307/2672906',patterns:[/suc khoe tai chinh|fundamental|co ban|roe|roa|dong tien|don bay|bien loi nhuan|financial strength/],use:'Dùng như lăng kính tổng hợp profitability, leverage/liquidity và operating efficiency từ báo cáo tài chính.',caveat:'Không được gọi điểm sức khỏe FinQuery là F-score Piotroski nếu không tính đúng định nghĩa gốc và mẫu áp dụng tương ứng.'},
+ {id:'modiglianiMiller1958',frameworks:['corporate'],defaults:[],title:'Modigliani & Miller (1958) · capital structure benchmark',citation:'Modigliani, F. & Miller, M.H. (1958), The Cost of Capital, Corporation Finance and the Theory of Investment',url:'https://www.jstor.org/stable/1809766',patterns:[/don bay|no vay|no phai tra|capital structure|wacc|chi phi von|lai vay/],use:'Dùng như benchmark để tách giá trị hoạt động khỏi tác động của cấu trúc tài trợ và chi phí vốn.',caveat:'Các mệnh đề gốc dựa trên giả định mạnh; trong thực tế phải xét thuế, distress, agency và bất cân xứng thông tin.'},
+ {id:'famaFrench2015',frameworks:['corporate','bank'],defaults:[],title:'Fama & French (2015) · profitability and investment factors',citation:'Fama, E.F. & French, K.R. (2015), A Five-Factor Asset Pricing Model',url:'https://www.sciencedirect.com/science/article/pii/S0304405X14002323',patterns:[/factor|profitability|dau tu|investment|expected return|loi suat ky vong|cross section/],use:'Dùng như lăng kính cross-sectional về profitability và investment khi bàn tới lợi suất kỳ vọng hoặc định vị tương đối.',caveat:'Không được dùng mô hình nhân tố để suy ra trực tiếp target price hay lợi suất chắc chắn của một mã nếu thiếu dữ liệu factor exposure.'},
+ {id:'hoSaunders1981',frameworks:['bank'],defaults:['bank'],title:'Ho & Saunders (1981) · determinants of bank interest margins',citation:'Ho, T.S.Y. & Saunders, A. (1981), The Determinants of Bank Interest Margins: Theory and Empirical Evidence',url:'https://doi.org/10.2307/2330377',patterns:[/nim|bien lai|spread|chi phi von|cost of funds|lai suat|interest margin/],use:'Dùng để giải thích NIM/spread trong quan hệ với cấu trúc tài sản-nợ, biến động lãi suất, cạnh tranh và rủi ro trung gian.',caveat:'Không quy toàn bộ NIM của một ngân hàng vào một biến duy nhất; phải đọc cùng CASA, cost of funds, asset yield và chất lượng tín dụng.'},
+ {id:'jegadeeshTitman1993',frameworks:['corporate','bank'],defaults:[],title:'Jegadeesh & Titman (1993) · momentum evidence',citation:'Jegadeesh, N. & Titman, S. (1993), Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency',url:'https://doi.org/10.1111/j.1540-6261.1993.tb04702.x',patterns:[/momentum|dong luong|xu huong|winner|loser|suc manh tuong doi/],use:'Dùng để đặt hiện tượng momentum vào bối cảnh nghiên cứu thực nghiệm về lợi suất quá khứ và lợi suất sau đó.',caveat:'Nghiên cứu gốc dùng chân trời nhiều tháng; không được đồng nhất máy móc momentum 5 phiên của FinQuery với hiệu ứng 3-12 tháng.'},
+ {id:'loMamayskyWang2000',frameworks:['corporate','bank'],defaults:[],title:'Lo, Mamaysky & Wang (2000) · systematic technical analysis',citation:'Lo, A.W., Mamaysky, H. & Wang, J. (2000), Foundations of Technical Analysis',url:'https://doi.org/10.1111/0022-1082.00265',patterns:[/technical|ky thuat|rsi|macd|breakout|ho tro|khang cu|pattern|chart/],use:'Dùng để nhấn mạnh rằng tín hiệu kỹ thuật cần được định nghĩa có hệ thống và kiểm định thống kê thay vì đọc hình chủ quan.',caveat:'Bằng chứng về một số pattern có giá trị thông tin gia tăng không đồng nghĩa mọi indicator đều có sức dự báo ổn định ở mọi thị trường.'}
+];
 const raw=()=>{try{return window.FinancialReportContext?.raw?.()||null;}catch{return null;}};
 const market=()=>{try{return window.FinancialMarket?.context?.()||{};}catch{return{};}};
 function periods(data){return[...new Set((data?.periods||data?.years||[]).map(String))].sort((a,b)=>{const f=x=>{const m=String(x).match(/^(\d{4})(?:-Q([1-4]))?$/);return m?Number(m[1])*4+(Number(m[2]||4)-1):-1};return f(a)-f(b);});}
@@ -500,6 +511,17 @@ function cleanNews(items,limit=8){
  for(const item of items||[]){const url=String(item?.url||'');if(!/^https?:\/\//i.test(url)||seen.has(url))continue;seen.add(url);out.push({title:String(item.title||'').slice(0,240),url,source:String(item.source||item.publisher||'').slice(0,100),publishedAt:String(item.publishedAt||item.date||'').slice(0,40),summary:String(item.summary||'').slice(0,500),topics:Array.isArray(item.topics)?item.topics.slice(0,8):[]});if(out.length>=limit)break;}
  return out;
 }
+function academicLenses(question,knowledge,deep=false){
+ const text=norm(question),framework=knowledge?.framework||'general',scored=[];
+ for(const lens of ACADEMIC_LENSES){
+  if(!(lens.frameworks||[]).includes(framework))continue;
+  let score=(deep&&(lens.defaults||[]).includes(framework))?2:0;
+  for(const re of lens.patterns||[])if(re.test(text))score+=4;
+  if(score>0)scored.push({lens,score});
+ }
+ scored.sort((a,b)=>b.score-a.score||a.lens.title.localeCompare(b.lens.title,'vi'));
+ return scored.slice(0,deep?5:2).map(({lens})=>({id:lens.id,title:lens.title,citation:lens.citation,url:lens.url,use:lens.use,caveat:lens.caveat}));
+}
 function researchKnowledge(question,annual,quarterly,deep=false){
  const kb=window.FinQueryKnowledge;if(!kb)return{framework:'general',concepts:[]};
  const all=[...rows(annual),...rows(quarterly)],labels=norm(all.map(r=>r.label||'').join(' '));
@@ -515,7 +537,7 @@ function researchKnowledge(question,annual,quarterly,deep=false){
 function buildLLMContext(question){
  const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
  const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',rowLimit=deep?140:24;
- const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep);
+ const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep),academic=academicLenses(question,knowledge,deep);
  return{
   scope:'financial-report',contextVersion:DOLPHIN_VERSION,symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,researchDepth:deep?'deep':'normal',
   generatedAt:new Date().toISOString(),
@@ -523,6 +545,7 @@ function buildLLMContext(question){
   marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,technicalScanner:m.scanner||null,
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,rowLimit,deep),quarterRows:compactRows(quarterly,question,rowLimit,deep)},
   knowledgeBase:knowledge,
+  academicContext:{policy:'FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE',references:academic},
   macroSnapshot:macro,recentNews:companyNews,sectorNews:cleanNews(m.sectorNews||m.marketNews||[],deep?10:6),
   corporateEvents:Array.isArray(insights.corporateEvents)?insights.corporateEvents.slice(0,deep?16:10):[],
   brokerResearch:Array.isArray(insights.brokerResearch)?insights.brokerResearch.slice(0,deep?12:8):[],brokerConsensus:insights.consensus||null,
@@ -556,7 +579,8 @@ function dolphinSystemInstruction(){
   'Luôn phân biệt số năm và số quý; gắn nhận định với kỳ cụ thể. Không annualize nếu context không cung cấp quy tắc.',
   'Nếu câu hỏi là follow-up ngắn, dùng lịch sử gần nhất và symbol hiện tại để hiểu mã này, quý này, chỉ số đó.',
   'Tin và Google Search chỉ là lớp bằng chứng bổ sung. Không dùng nguồn web để ghi đè số BCTC hoặc giá đã neo trong FinQuery.',
-  'Mỗi đoạn có số liệu hoặc nhận định thực chứng phải gắn nguồn ở cuối câu bằng một hoặc nhiều tag [BCTC], [QUARTER], [MARKET], [SCANNER], [NEWS], [RESEARCH] hoặc [WEB]. Không gắn tag nếu câu chỉ là giải thích khái niệm.',
+  'Mỗi đoạn có số liệu hoặc nhận định thực chứng phải gắn nguồn ở cuối câu bằng một hoặc nhiều tag [BCTC], [QUARTER], [MARKET], [SCANNER], [NEWS], [RESEARCH] hoặc [WEB]. Khi dùng khung nghiên cứu trong academicContext để giải thích cơ chế, nêu tác giả/năm trong câu và gắn [ACADEMIC]. Không gắn tag dữ liệu nếu câu chỉ là giải thích khái niệm.',
+  'academicContext chỉ là lớp khung học thuật. Không được biến kết quả nghiên cứu trên mẫu/thị trường khác thành bằng chứng rằng doanh nghiệp hiện tại chắc chắn sẽ có cùng kết quả; luôn giữ caveat của từng reference.',
   'Phân biệt recentNews là tin doanh nghiệp đã lọc chặt với sectorNews là bối cảnh ngành. Không được gọi sectorNews là tin của doanh nghiệp.',
   'corporateEvents là các sự kiện có ngày và nguồn; khi nhắc tới phải giữ đúng ngày/loại sự kiện và không tự suy diễn tác động.',
   'brokerResearch là quan điểm của công ty chứng khoán bên thứ ba. Luôn nêu rõ tên CTCK và ngày báo cáo khi dùng khuyến nghị, giá mục tiêu, luận điểm hoặc rủi ro.',
@@ -569,7 +593,7 @@ function dolphinSystemInstruction(){
   'knowledgeBase trong context là khung kiến thức tài chính dùng để diễn giải số liệu đúng bản chất. Không được dùng định nghĩa chung thay cho bằng chứng thực tế của doanh nghiệp.',
   'Nếu knowledgeBase.framework là bank, đọc theo khung ngân hàng: tăng trưởng tín dụng và huy động; NII/NIM và chi phí vốn; CASA/LDR; chất lượng tài sản NPL, nợ nhóm 2, dự phòng và LLR; credit cost; CIR; CAR; ROA/ROE; P/B/BVPS nếu có. Không áp máy móc OCF/FCF như doanh nghiệp sản xuất.',
   'Nếu knowledgeBase.framework là corporate, đọc theo khung doanh nghiệp: tăng trưởng doanh thu/lợi nhuận; biên gộp/hoạt động/ròng; vốn lưu động; OCF/FCF và CAPEX; đòn bẩy; hiệu quả vốn ROE/ROA/ROIC; định giá và chu kỳ ngành nếu dữ liệu có.',
-  state.mode==='deep'?'Ở chế độ Phân tích sâu, phải tận dụng tối đa dữ liệu thực tế có trong FinQuery và các nguồn web đáng tin cậy; không dừng phân tích chỉ vì thiếu một vài chỉ tiêu. Hãy viết như một equity research note có luận điểm trung tâm, bằng chứng nhiều kỳ, chất lượng lợi nhuận/tăng trưởng, yếu tố ngành-vĩ mô, catalyst, rủi ro, kỹ thuật và các kịch bản cần theo dõi. Nếu dữ liệu đủ, ưu tiên khoảng 1.800-3.000 từ thay vì trả lời ngắn.':'Ở chế độ nhanh, ưu tiên trực tiếp và đủ ý nhưng vẫn dùng dữ liệu thực tế thay vì nhận xét chung chung.',
+  state.mode==='deep'?'Ở chế độ Phân tích sâu, phải tận dụng tối đa dữ liệu thực tế có trong FinQuery và các nguồn web đáng tin cậy; không dừng phân tích chỉ vì thiếu một vài chỉ tiêu. Hãy viết như một equity research note có luận điểm trung tâm, bằng chứng nhiều kỳ, chất lượng lợi nhuận/tăng trưởng, yếu tố ngành-vĩ mô, catalyst, rủi ro, kỹ thuật và các kịch bản cần theo dõi. Mỗi đoạn phân tích chính phải vận hành tự nhiên theo chuỗi: luận điểm → bằng chứng → cơ chế tài chính/kinh tế → phản biện hoặc giới hạn → hàm ý cần theo dõi. Không lặp mẫu máy móc. Nếu academicContext có reference phù hợp, phải có ít nhất một đoạn liên hệ học thuật đúng phạm vi và một đoạn phản biện/counter-thesis. Nếu dữ liệu đủ, ưu tiên khoảng 1.800-3.000 từ thay vì trả lời ngắn.':'Ở chế độ nhanh, ưu tiên trực tiếp và đủ ý nhưng vẫn dùng dữ liệu thực tế thay vì nhận xét chung chung.',
   state.mode==='deep'?'Khi có URL báo cáo CTCK, sự kiện hoặc bài tin trong context, hãy đọc nội dung nguồn bằng URL Context nếu công cụ khả dụng; đồng thời dùng Google Search để tìm thông tin mới hơn, ưu tiên công bố doanh nghiệp, HOSE/HNX/SSC, cơ quan nhà nước, báo cáo CTCK và nguồn báo chí tài chính uy tín. Đối chiếu ngày dữ liệu và ngày xuất bản trước khi kết luận.':''
  ].join('\n');
 }
@@ -585,7 +609,7 @@ function inferredQuestionMode(question){
 function geminiPrompt(question,agentContext=null,researchDossier=null){
  const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',sources=sourcesForLLM();
  const researchBrief=deep
-  ?'YÊU CẦU PHÂN TÍCH SÂU: Hãy đọc toàn bộ dữ liệu liên quan trong FINQUERY CONTEXT, đặc biệt các dòng BCTC năm/quý, market, technical, scanner, sự kiện, báo cáo CTCK và tin tức. Sau đó dùng Google Search để bổ sung dữ liệu mới và dùng URL Context để đọc sâu các URL trong danh sách nguồn khi công cụ khả dụng. Ưu tiên nguồn gốc/primary source. Bài trả lời phải dài, chi tiết, có cấu trúc theo luận điểm, chỉ ra xu hướng nhiều kỳ, chất lượng tăng trưởng, rủi ro, catalyst và kịch bản; không trả lời kiểu vài đoạn tổng quát.'
+  ?'YÊU CẦU PHÂN TÍCH SÂU: Hãy đọc toàn bộ dữ liệu liên quan trong FINQUERY CONTEXT, đặc biệt các dòng BCTC năm/quý, market, technical, scanner, sự kiện, báo cáo CTCK và tin tức. Sau đó dùng Google Search để bổ sung dữ liệu mới và dùng URL Context để đọc sâu các URL trong danh sách nguồn khi công cụ khả dụng. Ưu tiên nguồn gốc/primary source. Bài trả lời phải dài, chi tiết, có cấu trúc theo luận điểm, chỉ ra xu hướng nhiều kỳ, chất lượng tăng trưởng, rủi ro, catalyst và kịch bản. Mỗi phần phải nối số liệu với cơ chế thay vì chỉ liệt kê; phải có counter-thesis/điều kiện làm luận điểm sai. Nếu FINQUERY CONTEXT.academicContext có reference phù hợp, dùng reference đó như khung giải thích và nêu rõ giới hạn áp dụng; không trả lời kiểu vài đoạn tổng quát.'
   :'YÊU CẦU: Trả lời trực tiếp nhưng phải dựa trên số liệu và bằng chứng thực tế đang có.';
  return[
   'CÂU HỎI NGƯỜI DÙNG:\n'+question,
@@ -642,7 +666,7 @@ async function callResearchDossier(question,secret,model,agentContext){
   'FINQUERY CONTEXT: '+JSON.stringify(agentContext),
   'NGUỒN CÓ URL: '+JSON.stringify(sources),
   'Hãy đọc dữ liệu theo nhiều kỳ, dùng Google Search để bổ sung thông tin mới và URL Context để đọc nguồn đã có khi khả dụng.',
-  'Trả về research dossier bằng tiếng Việt, tập trung vào: (1) phạm vi và độ mới dữ liệu; (2) các xu hướng tài chính quan trọng nhiều kỳ; (3) chất lượng tăng trưởng/lợi nhuận; (4) framework ngân hàng hoặc doanh nghiệp tương ứng; (5) market/technical/scanner; (6) sự kiện, tin, báo cáo CTCK và bối cảnh ngành-vĩ mô; (7) bằng chứng ủng hộ và phản bác các luận điểm; (8) mâu thuẫn dữ liệu; (9) dữ liệu còn thiếu; (10) danh sách 5-10 insight có giá trị nhất cho senior analyst.',
+  'Trả về research dossier bằng tiếng Việt, tập trung vào: (1) phạm vi và độ mới dữ liệu; (2) các xu hướng tài chính quan trọng nhiều kỳ; (3) chất lượng tăng trưởng/lợi nhuận; (4) framework ngân hàng hoặc doanh nghiệp tương ứng; (5) academicContext nào thực sự phù hợp, cơ chế mà nghiên cứu đó gợi ý và giới hạn khi áp dụng sang doanh nghiệp/thị trường hiện tại; (6) market/technical/scanner; (7) sự kiện, tin, báo cáo CTCK và bối cảnh ngành-vĩ mô; (8) bằng chứng ủng hộ và phản bác các luận điểm; (9) mâu thuẫn dữ liệu; (10) dữ liệu còn thiếu; (11) danh sách 5-10 insight có giá trị nhất cho senior analyst.',
   'Chỉ ghi nhận dữ kiện, so sánh và bất định có thể kiểm chứng. Không đưa khuyến nghị mua/bán.'
  ].join('\n\n');
  const generation={maxOutputTokens:3200,temperature:.08,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:'medium'}}:{})};
@@ -676,7 +700,7 @@ async function callGeminiModel(question,secret,model,allowSearch=true,agentConte
  if(!result.text){const err=new Error('Gemini chưa trả về nội dung phân tích.');err.status=503;err.model=model;throw err;}
  state.geminiReady=true;state.lastGeminiError='';state.model=model;
  const sourceMode=result.searched&&result.readUrls?'NATIVE_WEB_URL_CONTEXT':result.searched?'NATIVE_WEB_SEARCH':result.readUrls?'URL_CONTEXT':'FINQUERY_GROUNDED';
- return{answer:result.text,provider:'Gemini',model,sourceMode,readUrls:result.readUrls,sources:result.sources,queries:result.queries,anchors:provenanceAnchors()};
+ return{answer:result.text,provider:'Gemini',model,sourceMode,readUrls:result.readUrls,sources:result.sources,queries:result.queries,anchors:provenanceAnchors(),academicSources:(agentContext?.academicContext?.references||[]).slice(0,5)};
 }
 async function callLLM(question){
  let prepared=null;
@@ -745,8 +769,9 @@ function llmHTML(answer,meta={}){
  flush();
  const mode=meta.sourceMode==='NATIVE_WEB_URL_CONTEXT'?'FinQuery + Gemini + Web + đọc nguồn':meta.sourceMode==='NATIVE_WEB_SEARCH'?'FinQuery + Gemini + Web':meta.sourceMode==='URL_CONTEXT'?'FinQuery + Gemini + đọc nguồn':'FinQuery + Gemini';
  const sources=(meta.sources||[]).slice(0,6).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||url)+'</a>':'';}).filter(Boolean);
+ const academic=(meta.academicSources||[]).slice(0,5).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(s.caveat||'')+'">'+esc(s.title||s.citation||url)+'</a>':'';}).filter(Boolean);
  const anchors=(meta.anchors||[]).map(a=>'<span class="ai-anchor"><b>'+esc(a.tag)+'</b>'+esc(a.label)+' · '+esc(String(a.asOf))+'</span>').join('');
- return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(anchors?'<div class="ai-provenance"><strong>Dấu vết dữ liệu</strong>'+anchors+'</div>':'')+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel())+'</small></section>';
+ return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(anchors?'<div class="ai-provenance"><strong>Dấu vết dữ liệu</strong>'+anchors+'</div>':'')+(academic.length?'<div class="analysis-news"><strong>Khung học thuật tham chiếu</strong>'+academic.join('')+'<small>Khung học thuật dùng để giải thích cơ chế, không thay thế bằng chứng doanh nghiệp.</small></div>':'')+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel())+'</small></section>';
 }
 function nearBottom(box){return !box||box.scrollHeight-box.scrollTop-box.clientHeight<120;}
 function scrollIfNeeded(box,wasNear=true){if(box&&wasNear)box.scrollTop=box.scrollHeight;}
