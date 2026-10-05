@@ -256,3 +256,12 @@ test('Strategy Lab is a dedicated platform view instead of an accordion inside m
  assert.match(views,/FinPlatformViews/);
  assert.doesNotMatch(collapse,/section:'strategy-builder'/);
 });
+
+
+test('direct Risk and Strategy Lab hashes reopen their dedicated views after unlock',()=>{
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const views=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ assert.match(app,/location\.hash==='\#risk-monitor'.*openRisk/s);
+ assert.match(app,/location\.hash==='\#strategy-builder'.*openStrategy/s);
+ assert.match(views,/location\.hash==='\#strategy-builder'\)showStrategy\(false\)/);
+});
