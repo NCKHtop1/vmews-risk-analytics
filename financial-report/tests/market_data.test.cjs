@@ -157,3 +157,17 @@ test('news freshness has scheduler recovery and browser fallback retry',()=>{
  assert.match(market,/for\(let attempt=0;attempt<2;attempt\+\+\)/);
  assert.match(market,/&v='\+Math\.floor\(Date\.now\(\)\/60000\)/);
 });
+
+
+test('risk monitor is a separate Vietnamese production view and is bundled',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const build=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_cdn.py'),'utf8');
+ assert.match(index,/data-platform-view="risk">Giám sát rủi ro/);
+ assert.match(index,/id="risk-monitor"[^>]+hidden/);
+ assert.match(index,/Năm thước đo chính/);
+ for(const jargon of ['Risk Monitor','Market Stress','Alert Engine','Contagion','Liquidity Stress','Volatility Stress'])assert.doesNotMatch(index,new RegExp(jargon,'i'));
+ assert.doesNotMatch(risk,/🚨|⚠|🟢|🟡|🔴/);
+ assert.match(build,/risk-monitor\.css/);
+ assert.match(build,/risk-monitor\.js/);
+});
