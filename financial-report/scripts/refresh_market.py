@@ -848,8 +848,8 @@ def technical_scan_symbol(symbol, bars, quote=None, previous=None):
     if not close:
         return None
 
-    # Prefer the previous 15-minute scanner snapshot when it belongs to the same
-    # live daily bar; otherwise fall back to the previous completed daily bar.
+    # Prefer the previous live scanner snapshot when it belongs to the same
+    # current-session daily bar; otherwise fall back to the previous completed day.
     current_source_time = (quote or {}).get('sourceTime') or (quote or {}).get('collectedAt')
     scan_prev_ok = (
         isinstance(previous, dict)
@@ -861,14 +861,25 @@ def technical_scan_symbol(symbol, bars, quote=None, previous=None):
         and current_source_time
         and str(previous.get('sourceTime') or '') == str(current_source_time)
     )
-    if same_market_snapshot and number(previous.get('previousMacdHistogram')) is not None:
-        prev_hist = number(previous.get('previousMacdHistogram'))
+    stored_prev_hist = number(previous.get('previousMacdHistogram')) if same_market_snapshot else None
+    stored_prev_rsi = number(previous.get('previousRsi14')) if same_market_snapshot else None
+    collapsed_comparator = (
+        same_market_snapshot
+        and stored_prev_hist is not None
+        and stored_prev_rsi is not None
+        and number(previous.get('macdHistogram')) is not None
+        and number(previous.get('rsi14')) is not None
+        and abs(stored_prev_hist - number(previous.get('macdHistogram'))) < 1e-9
+        and abs(stored_prev_rsi - number(previous.get('rsi14'))) < 1e-9
+    )
+    if same_market_snapshot and stored_prev_hist is not None and not collapsed_comparator:
+        prev_hist = stored_prev_hist
     else:
-        prev_hist = number(previous.get('macdHistogram')) if scan_prev_ok else daily_prev['hist']
-    if same_market_snapshot and number(previous.get('previousRsi14')) is not None:
-        prev_rsi = number(previous.get('previousRsi14'))
+        prev_hist = number(previous.get('macdHistogram')) if scan_prev_ok and not same_market_snapshot else daily_prev['hist']
+    if same_market_snapshot and stored_prev_rsi is not None and not collapsed_comparator:
+        prev_rsi = stored_prev_rsi
     else:
-        prev_rsi = number(previous.get('rsi14')) if scan_prev_ok else daily_prev['rsi']
+        prev_rsi = number(previous.get('rsi14')) if scan_prev_ok and not same_market_snapshot else daily_prev['rsi']
     hist = current['hist']
     hist_pct = hist / close * 100 if close else None
     near_limit = TECHNICAL_SCANNER_RULES['macd']['nearCrossMaxSpreadPct']
