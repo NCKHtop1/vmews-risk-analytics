@@ -1389,11 +1389,16 @@ def _full_daily_history(symbol, target):
     merged = {}
     cursor = int(time.time())
     page_size = min(max(300, int(os.environ.get('HISTORY_PAGE_SIZE', '1600'))), 1600, target)
-    for _ in range(max(1, math.ceil(target / page_size) + 1)):
-        bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+    for _ in range(max(1, math.ceil(target / page_size) + 2)):
+        try:
+            bars = _history_page(symbol, 'ONE_DAY', cursor, page_size, minute=False)
+        except Exception:
+            if merged:
+                break
+            raise
         before = len(merged)
         merged.update({bar['time']: bar for bar in bars})
-        if len(merged) >= target or len(merged) == before or len(bars) < page_size:
+        if len(merged) >= target or len(merged) == before:
             break
         earliest = min(bar['time'] for bar in bars)
         cursor_next = int(datetime.fromisoformat(earliest).replace(tzinfo=VN).timestamp()) - 1
