@@ -11,7 +11,7 @@ test('a renderer exception releases refresh lock and the next refresh succeeds',
  const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  const refresh=source.slice(source.indexOf('async function refresh(){'),source.indexOf('window.FinancialMarket='));
  const button={},status={},state={quotes:{},companies:[],coreCompanies:[],symbol:'ACB',refreshing:false};let calls=0,broken=true;
- const ctx={state,$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,quoteAgeMinutes:()=>5,quoteNeedsFallback:()=>false,quoteNeedsCloseCatch:()=>false,marketSessionActive:()=>false,showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},document:{dispatchEvent(){}},chartController:{loading:true},window:{FinTechnicalScanner:{},FinQueryAI:{sync(){}}}};
+ const ctx={state,$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,quoteAgeMinutes:()=>5,quoteNeedsFallback:()=>false,quoteNeedsCloseCatch:()=>false,marketSessionActive:()=>false,manageQuoteRetry:()=>{},showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},document:{dispatchEvent(){}},chartController:{loading:true},window:{FinTechnicalScanner:{},FinQueryAI:{sync(){}}}};
  vm.runInNewContext(refresh+';this.run=refresh',ctx);
  await ctx.run();assert.equal(state.refreshing,false);assert.equal(button.disabled,false);
  broken=false;await ctx.run();assert.equal(calls,8);assert.equal(state.initialized,true);assert.equal(state.refreshing,false);
@@ -22,6 +22,15 @@ test('intraday freshness policy fails over before a quote is declared stale',()=
  assert.match(source,/quoteNeedsFallback[\s\S]*18\*60\*1000/);
  assert.match(source,/quoteStale[\s\S]*25\*60\*1000/);
  assert.match(source,/finquery:market-refresh/);
+});
+test('initial quote outage gets bounded fast UI retries',()=>{
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ assert.match(source,/quoteRetryTimer:null,quoteRetryAttempt:0/);
+ assert.match(source,/const delays=\[1200,3000,7000\]/);
+ assert.match(source,/state\.quoteRetryAttempt>=3/);
+ assert.match(source,/manageQuoteRetry\(Boolean\(currentQuoteLive\)\)/);
+ assert.match(source,/manageQuoteRetry\(false\)/);
+ assert.match(source,/hệ thống đang tự thử lại/);
 });
 test('technical scanner rules remain unchanged and evidence is additive',()=>{
  const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
