@@ -472,6 +472,11 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   fundMonitor:fundMonitor||previous?.fundMonitor||{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu quỹ'},
   sectorCalibration:sectorCalibration?{version:sectorCalibration.version,status:sectorCalibration.status,forSession:sectorCalibration.forSession,validatedSectors:sectorCalibration.validatedSectors,continuationValidatedSectors:sectorCalibration.continuationValidatedSectors,totalSectors:sectorCalibration.totalSectors,methodology:sectorCalibration.methodology}:null,
   marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
+  breadthGroups:{
+   advancing:rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change).map(r=>({symbol:r.symbol,changePct:round(r.change,2),price:round(r.price,2),volumeRatio:round(r.volumeRatio,2)})),
+   declining:rows.filter(r=>r.change<0).sort((a,b)=>a.change-b.change).map(r=>({symbol:r.symbol,changePct:round(r.change,2),price:round(r.price,2),volumeRatio:round(r.volumeRatio,2)})),
+   unchanged:rows.filter(r=>r.change===0).sort((a,b)=>a.symbol.localeCompare(b.symbol)).map(r=>({symbol:r.symbol,changePct:0,price:round(r.price,2),volumeRatio:round(r.volumeRatio,2)}))
+  },
   methodology:{
    weights:WEIGHTS,
    description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
