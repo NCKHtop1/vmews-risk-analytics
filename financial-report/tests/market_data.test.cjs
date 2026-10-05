@@ -172,11 +172,11 @@ test('risk monitor is a separate Vietnamese production view and is bundled',()=>
  assert.match(build,/risk-monitor\.js/);
 });
 
-test('risk monitor states the monitored universe clearly',()=>{
+test('risk monitor keeps universe scope in data without verbose header copy',()=>{
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const engine=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_risk_monitor.cjs'),'utf8');
- assert.match(index,/HOSE Core \+ Liquid có dữ liệu trực tiếp/);
+ assert.doesNotMatch(index,/Theo dõi mức căng thẳng hiện tại trên nhóm cổ phiếu HOSE Core \+ Liquid/);
  assert.match(risk,/Phạm vi trực tiếp: HOSE Core \+ Liquid/);
  assert.match(engine,/scope:'HOSE Core \+ Liquid có dữ liệu trực tiếp'/);
 });
@@ -192,16 +192,23 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  assert.match(index,/id="risk-contributions"/);
  assert.match(index,/id="risk-breadth-strip"/);
  assert.match(index,/id="risk-alert-history"/);
- assert.match(index,/Heatmap nhóm ngành giảm/);
+ assert.match(index,/Heatmap nhóm ngành/);
+ assert.doesNotMatch(index,/Heatmap nhóm ngành giảm/);
  assert.match(index,/id="risk-sector-detail"/);
+ assert.match(index,/id="risk-sector-updated"/);
+ assert.match(index,/id="risk-breadth-detail"/);
  assert.match(index,/id="risk-fund-chart"/);
  assert.match(index,/id="risk-fund-detail"/);
  assert.doesNotMatch(index,/id="risk-fund-rows"|risk-fund-table/);
  assert.match(index,/MỨC RỦI RO HIỆN TẠI · THANG 0–100/);
  assert.match(index,/data-info-key="risk-score"/);
- assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần|Heatmap cảnh báo trạng thái căng thẳng hiện tại|Màu của cột chỉ phản ánh/i);
+ assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần|Heatmap cảnh báo trạng thái căng thẳng hiện tại|Màu của cột chỉ phản ánh|Điểm càng cao, dấu hiệu căng thẳng|Biểu đồ xếp theo số quỹ|Cách đọc điểm rủi ro|Kiểm tra bản mới mỗi phút|GIÁM SÁT THỊ TRƯỜNG/i);
+ assert.doesNotMatch(index,/Vietnam Equity Intelligence|Charts by TradingView Lightweight Charts/);
  assert.match(risk,/renderSectorDetail/);
  assert.match(risk,/risk-sector-heat-cell/);
+ assert.match(risk,/risk-heat-up/);
+ assert.match(risk,/risk-heat-down/);
+ assert.match(risk,/renderBreadthDetail/);
  assert.match(risk,/renderFundDetail/);
  assert.match(risk,/risk-fund-bar/);
  assert.match(risk,/sectorCalibration/);
@@ -214,24 +221,38 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
 });
 
 
-test('risk navigation badge combines sector threshold alerts with fund-change symbols and cadence copy is honest',()=>{
+test('risk navigation badge and compact dashboard copy stay focused',()=>{
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  assert.match(index,/Số cảnh báo cần chú ý/);
- assert.match(index,/Kiểm tra bản mới mỗi phút · dữ liệu trong phiên khoảng 5 phút\/lần/);
- assert.match(index,/Cập nhật theo dữ liệu thị trường khoảng 5 phút\/lần trong phiên/);
+ assert.match(index,/Giám sát thị trường chứng khoán Việt Nam/);
+ assert.match(index,/data-platform-view="strategy">Strategy Lab/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
  assert.match(risk,/changedSymbols/);
- assert.doesNotMatch(risk,/badge\.title=count\+' thay đổi quỹ đáng chú ý'/);
+ assert.match(risk,/Cập nhật gần nhất:/);
+ assert.doesNotMatch(index,/snapshot phiên khoảng 5 phút|snapshot thị trường khoảng 5 phút|dữ liệu trong phiên khoảng 5 phút/i);
 });
 
 
-test('risk monitor cadence matches one-minute UI poll and five-minute live publisher',()=>{
+test('risk monitor cadence is enforced in code without UI narration',()=>{
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
- assert.match(index,/Kiểm tra bản mới mỗi phút · dữ liệu trong phiên khoảng 5 phút\/lần/);
+ assert.doesNotMatch(index,/Kiểm tra bản mới mỗi phút|5 phút\/lần/);
  assert.match(risk,/setInterval\(\(\)=>\{if\(!\$\('risk-monitor'\)\?\.hidden&&!document\.hidden\)refresh\(\);\},60000\)/);
  assert.match(live,/INTERVAL_SECONDS="\$\{MARKET_LOOP_SECONDS:-300\}"/);
+});
+
+
+test('Strategy Lab is a dedicated platform view instead of an accordion inside market analysis',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const views=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const collapse=fs.readFileSync(require('node:path').join(__dirname,'../frontend/section-collapse.js'),'utf8');
+ assert.match(index,/id="strategy-builder" class="strategy-builder-section strategy-page"[^>]+hidden/);
+ assert.match(index,/id="strategy-body" class="strategy-builder-body">/);
+ assert.doesNotMatch(index,/id="strategy-toggle"|id="strategy-chevron"/);
+ assert.match(views,/function showStrategy/);
+ assert.match(views,/FinPlatformViews/);
+ assert.doesNotMatch(collapse,/section:'strategy-builder'/);
 });
