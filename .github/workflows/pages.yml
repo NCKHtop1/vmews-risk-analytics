@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'financial-report/**'
+      - 'data/fund-holdings-history-v16.json'
       - 'forecast-*.html'
       - 'forecast-*.js'
       - 'forecast-*.css'
