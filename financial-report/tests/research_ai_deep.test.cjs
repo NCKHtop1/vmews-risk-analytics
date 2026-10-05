@@ -24,3 +24,35 @@ test('research frameworks include bank and corporate knowledge',()=>{
  assert.match(src,/\['nii','nim','casa','costOfFunds','ldr','npl','llr','creditCost','cir','car'/);
  assert.match(src,/\['grossMargin','netMargin','operatingMargin','ocf','fcf','capex'/);
 });
+
+test('deep research exposes explicit academic reasoning contract',()=>{
+ assert.match(src,/const ACADEMIC_LENSES=/);
+ assert.match(src,/academicContext:\{policy:'FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE'/);
+ assert.match(src,/\[ACADEMIC\]/);
+ assert.match(src,/luận điểm → bằng chứng → cơ chế tài chính\/kinh tế → phản biện hoặc giới hạn → hàm ý cần theo dõi/);
+ assert.match(src,/counter-thesis/);
+ assert.match(src,/Khung học thuật tham chiếu/);
+});
+
+test('academic references are canonical and scoped with caveats',()=>{
+ for(const needle of [
+  'Ohlson (1995)',
+  'Sloan (1996)',
+  'Dechow & Dichev (2002)',
+  'Piotroski (2000)',
+  'Modigliani & Miller (1958)',
+  'Fama & French (2015)',
+  'Ho & Saunders (1981)',
+  'Jegadeesh & Titman (1993)',
+  'Lo, Mamaysky & Wang (2000)'
+ ])assert.ok(src.includes(needle),needle);
+ assert.match(src,/không phải công thức dự báo giá ngắn hạn/);
+ assert.match(src,/không được đồng nhất máy móc momentum 5 phiên/);
+ assert.match(src,/không thay thế bằng chứng doanh nghiệp/);
+});
+
+test('academic layer is passed through context and rendered separately',()=>{
+ assert.match(src,/academic=academicLenses\(question,knowledge,deep\)/);
+ assert.match(src,/academicSources:\(agentContext\?\.academicContext\?\.references\|\|\[\]\)/);
+ assert.match(src,/WEB\|ACADEMIC/);
+});
