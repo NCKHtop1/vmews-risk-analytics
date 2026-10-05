@@ -47,7 +47,7 @@ sync_market_worktree() {
 validate_snapshot() {
   SNAPSHOT_DIR="$OUT/market" MAX_AGE_MINUTES="$MAX_AGE_MINUTES" python - <<'PY'
 import json, math, os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 root=Path(os.environ['SNAPSHOT_DIR'])
@@ -94,6 +94,18 @@ if scanner.get('status')!='ok' or int(scanner.get('coverage') or 0)<scanner_requ
 if strategy.get('status')!='ok' or int(strategy.get('coverage') or 0)<scanner_required:
     raise SystemExit(f'strategy coverage below 90%: {strategy.get("coverage")}/{scanner_universe}')
 
+vn_day=now.astimezone(timezone(timedelta(hours=7))).date().isoformat()
+fresh_symbols={str(q.get('symbol') or '').upper() for q in fresh if q.get('symbol')}
+scanner_rows=scanner.get('symbols') or {}
+strategy_rows=strategy.get('symbols') or {}
+scanner_today=sum(1 for symbol in fresh_symbols if str((scanner_rows.get(symbol) or {}).get('barDate') or '')==vn_day)
+strategy_today=sum(1 for symbol in fresh_symbols if str((strategy_rows.get(symbol) or {}).get('barDate') or '')==vn_day)
+bar_required=max(1,math.ceil(len(fresh_symbols)*.90))
+if scanner_today<bar_required:
+    raise SystemExit(f'scanner live barDate coverage below 90%: {scanner_today}/{len(fresh_symbols)} for {vn_day}')
+if strategy_today<bar_required:
+    raise SystemExit(f'strategy live barDate coverage below 90%: {strategy_today}/{len(fresh_symbols)} for {vn_day}')
+
 for label,data in [('scanner',scanner),('strategy',strategy),('watch',watch)]:
     if data.get('status')!='ok':
         raise SystemExit(f'{label} status is not ok')
@@ -114,6 +126,8 @@ print({
     'latestAgeMin':round(age(latest),1),
     'scanner':scanner.get('coverage'),
     'strategy':strategy.get('coverage'),
+    'scannerToday':scanner_today,
+    'strategyToday':strategy_today,
     'watch':len(watch.get('items') or []),
     'drivers':len(drivers.get('symbols') or {}),
 })
