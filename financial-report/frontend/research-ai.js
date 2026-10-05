@@ -713,9 +713,9 @@ function auditDeepAnswer(answer,agentContext){
  const hasMechanism=/co che|vi |do |dan den|keo theo|truyen dan|dong luc|bien loi nhuan|chi phi von|von luu dong|don bay|thanh khoan|cung cau|lai suat/.test(normalized);
  const headings=(text.match(/^#{1,4}\s+/gm)||[]).length,invalid=/\bundefined\b|\bNaN\b/.test(text);
  const missingRatio=empirical.length?missingTags.length/empirical.length:0;
- let score=100;if(words<650)score-=20;if(headings<3&&paras.length<7)score-=10;if(missingRatio>.25)score-=25;else if(missingRatio>0)score-=10;if(!hasCounter)score-=15;if(!hasMechanism)score-=10;if(!hasAcademic)score-=15;if(invalid)score-=35;
+ let score=100;if(words<650)score-=20;if(empirical.length<2)score-=20;if(headings<3&&paras.length<7)score-=10;if(missingRatio>.25)score-=25;else if(missingRatio>0)score-=10;if(!hasCounter)score-=15;if(!hasMechanism)score-=10;if(!hasAcademic)score-=15;if(invalid)score-=35;
  score=Math.max(0,score);
- return{pass:score>=80&&!invalid&&missingRatio<=.25&&hasCounter&&hasMechanism&&hasAcademic,score,words,paragraphs:paras.length,empiricalParagraphs:empirical.length,missingEvidenceTags:missingTags.length,missingRatio:Number(missingRatio.toFixed(3)),academicRequired,hasAcademic,hasCounter,hasMechanism,headings,invalid};
+ return{pass:score>=80&&words>=650&&empirical.length>=2&&!invalid&&missingRatio<=.25&&hasCounter&&hasMechanism&&hasAcademic,score,words,paragraphs:paras.length,empiricalParagraphs:empirical.length,missingEvidenceTags:missingTags.length,missingRatio:Number(missingRatio.toFixed(3)),academicRequired,hasAcademic,hasCounter,hasMechanism,headings,invalid};
 }
 async function repairDeepAnswer(question,answer,audit,secret,model,agentContext,researchDossier){
  const prompt=[
