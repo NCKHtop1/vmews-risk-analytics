@@ -251,6 +251,8 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(risk,/changedSymbols/);
  assert.match(risk,/Mã thay đổi đáng chú ý/);
  assert.doesNotMatch(risk,/Mã vượt ngưỡng|Lượt thay đổi vượt ngưỡng/);
+ assert.match(risk,/Chưa thấy căng thẳng lan rộng trên toàn thị trường/);
+ assert.doesNotMatch(risk,/Các thước đo chính đang ở vùng bình thường/);
  assert.match(risk,/aboveThreshold/);
  assert.match(risk,/Cập nhật gần nhất:/);
  assert.doesNotMatch(index,/snapshot phiên khoảng 5 phút|snapshot thị trường khoảng 5 phút|dữ liệu trong phiên khoảng 5 phút/i);
