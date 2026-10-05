@@ -202,7 +202,8 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  assert.doesNotMatch(index,/id="risk-fund-rows"|risk-fund-table/);
  assert.match(index,/MỨC RỦI RO HIỆN TẠI · THANG 0–100/);
  assert.match(index,/data-info-key="risk-score"/);
- assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần|Heatmap cảnh báo trạng thái căng thẳng hiện tại|Màu của cột chỉ phản ánh|Điểm càng cao, dấu hiệu căng thẳng|Biểu đồ xếp theo số quỹ|Cách đọc điểm rủi ro|Kiểm tra bản mới mỗi phút|GIÁM SÁT THỊ TRƯỜNG/i);
+ assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần|Heatmap cảnh báo trạng thái căng thẳng hiện tại|Màu của cột chỉ phản ánh|Điểm càng cao, dấu hiệu căng thẳng|Biểu đồ xếp theo số quỹ|Cách đọc điểm rủi ro|Kiểm tra bản mới mỗi phút/i);
+ assert.doesNotMatch(index,/class="risk-page-kicker"/);
  assert.doesNotMatch(index,/Vietnam Equity Intelligence|Charts by TradingView Lightweight Charts/);
  assert.match(risk,/renderSectorDetail/);
  assert.match(risk,/risk-sector-heat-cell/);
