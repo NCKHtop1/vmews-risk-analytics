@@ -23,6 +23,15 @@ test('intraday freshness policy fails over before a quote is declared stale',()=
  assert.match(source,/quoteStale[\s\S]*25\*60\*1000/);
  assert.match(source,/finquery:market-refresh/);
 });
+test('initial quote outage gets bounded fast UI retries',()=>{
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ assert.match(source,/quoteRetryTimer:null,quoteRetryAttempt:0/);
+ assert.match(source,/const delays=\[1200,3000,7000\]/);
+ assert.match(source,/state\.quoteRetryAttempt>=3/);
+ assert.match(source,/manageQuoteRetry\(Boolean\(currentQuoteLive\)\)/);
+ assert.match(source,/manageQuoteRetry\(false\)/);
+ assert.match(source,/hệ thống đang tự thử lại/);
+});
 test('technical scanner rules remain unchanged and evidence is additive',()=>{
  const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
  assert.match(source,/'macd_cross_up': 60/);
