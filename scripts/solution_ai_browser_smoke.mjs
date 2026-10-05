@@ -24,10 +24,11 @@ function solutionAiConsoleErrors(messages, failedRequests = []) {
   });
 }
 
-function solutionAiFailedRequests(lines) {
+function solutionAiFailedRequests(lines, liveReady = false) {
   return lines.filter(line => {
     if (/cloudflareinsights|favicon|google-analytics|vmews-risk-analytics-sojd\.vercel\.app\/api\/live_market/i.test(line)) return false;
     if (!requireLive && /vmews-risk-analytics-sojd\.vercel\.app\/api\/solution-ai-live/i.test(line)) return false;
+    if (liveReady && /raw\.githubusercontent\.com\/NCKHtop1\/vmews-risk-analytics\/solution-ai-live-data\/solution-ai\/live\.json.*net::ERR_ABORTED/i.test(line)) return false;
     return true;
   });
 }
@@ -260,7 +261,7 @@ try {
 
     const relevantConsoleErrors = solutionAiConsoleErrors(consoleErrors, failed);
     if (relevantConsoleErrors.length) throw new Error(`${symbol}: console errors: ${relevantConsoleErrors.join(' | ')}`);
-    const relevantFailed = solutionAiFailedRequests(failed);
+    const relevantFailed = solutionAiFailedRequests(failed, liveReady);
     if (relevantFailed.length) throw new Error(`${symbol}: failed requests: ${relevantFailed.join(' | ')}`);
 
     results.push({
