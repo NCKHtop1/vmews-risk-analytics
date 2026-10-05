@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
 
 const VERSION='FINQUERY-RISK-1.3';
-const METHOD_VERSION='FINQUERY-RISK-RULES-1.3';
+const METHOD_VERSION='FINQUERY-RISK-RULES-1.4';
 const FUND_HISTORY_PATH=path.resolve(__dirname,'../../data/fund-holdings-history-v16.json');
 const FUND_CHANGE_THRESHOLD_PP=0.50;
 const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
