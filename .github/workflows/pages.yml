@@ -150,6 +150,7 @@ jobs:
           grep -q 'DOLPHIN_V6' /tmp/page.html
           grep -q 'technical-scanner-access-code' /tmp/page.html
           grep -q 'investment-ideas' /tmp/page.html
+          grep -q 'Giám sát rủi ro' /tmp/page.html
           curl -fsSL --max-time 20 "$BASE/deployment.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/deployment.json
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
           curl -fsSL --max-time 20 "$BASE/market/news.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
