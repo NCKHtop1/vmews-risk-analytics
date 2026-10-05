@@ -177,42 +177,6 @@ PY
   echo "Dispatched stale-news recovery"
 }
 
-supervise_forecast_overlay() {
-  if [ -z "${GH_TOKEN:-}" ]; then
-    return 0
-  fi
-  if FORECAST_URL="https://raw.githubusercontent.com/$GH_REPO/main/data/forecast-session-v21.json?heartbeat=$(date +%s)" python - <<'PY'
-import json, os, urllib.request
-from datetime import datetime, timezone
-url=os.environ['FORECAST_URL']
-try:
-    with urllib.request.urlopen(url,timeout=12) as r:
-        data=json.load(r)
-    stamp=datetime.fromisoformat(str(data.get('generatedAt')).replace('Z','+00:00'))
-    if stamp.tzinfo is None:
-        stamp=stamp.replace(tzinfo=timezone.utc)
-    age=(datetime.now(timezone.utc)-stamp.astimezone(timezone.utc)).total_seconds()/60
-    if data.get('status')=='PASS' and age<=12:
-        print('Forecast V21 heartbeat OK',round(age,1),'minutes')
-        raise SystemExit(0)
-except Exception as exc:
-    print('Forecast V21 heartbeat stale/unavailable:',exc)
-raise SystemExit(1)
-PY
-  then
-    return 0
-  fi
-
-  local active
-  active="$(gh run list --repo "$GH_REPO" --workflow forecast-v21-session-refresh.yml --limit 10 --json status --jq 'any(.[]; .status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")' 2>/dev/null || echo false)"
-  if [ "$active" = "true" ]; then
-    echo "Forecast V21 publisher is already active"
-    return 0
-  fi
-  gh workflow run forecast-v21-session-refresh.yml --repo "$GH_REPO" --ref main
-  echo "Dispatched stale Forecast V21 recovery"
-}
-
 collect_validate_publish() {
   local ok=1
   for attempt in 1 2; do
@@ -226,7 +190,6 @@ collect_validate_publish() {
     sleep 45
   done
   supervise_news || true
-  supervise_forecast_overlay || true
   return "$ok"
 }
 
