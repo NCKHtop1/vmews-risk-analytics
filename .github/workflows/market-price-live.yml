@@ -81,6 +81,65 @@ jobs:
             echo "oneshot=1" >> "$GITHUB_OUTPUT"
             echo "Outside VN trading refresh window: $hhmm"
           fi
+      - name: Persist repaired derived snapshots after code push
+        if: github.event_name == 'push' && steps.session.outputs.run != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/market-derived
+          rm -rf "$OUT"
+          git fetch origin financial-market-data
+          git worktree add "$OUT" origin/financial-market-data
+          git -C "$OUT" sparse-checkout set market
+          git -C "$OUT" config user.name 'github-actions[bot]'
+          git -C "$OUT" config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          python financial-report/scripts/refresh_market.py --output "$OUT/market" --mode scanner
+          node financial-report/scripts/build_strategy_snapshot.cjs "$OUT/market"
+          node financial-report/scripts/build_sector_risk_calibration.cjs "$OUT/market"
+          node financial-report/scripts/build_risk_monitor.cjs "$OUT/market"
+
+          SNAPSHOT_DIR="$OUT/market" python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path(os.environ['SNAPSHOT_DIR'])
+          load=lambda name: json.loads((root/name).read_text())
+          quotes=load('quotes.json')
+          scanner=load('technical-signals.json')
+          strategy=load('strategy-indicators.json')
+          risk=load('risk-monitor.json')
+          latest=str(quotes.get('latestSourceTime') or quotes.get('sourceTime') or '')
+          assert latest, 'quotes sourceTime missing'
+          assert str(scanner.get('sourceTime') or '')==latest,(scanner.get('sourceTime'),latest)
+          assert str(strategy.get('sourceTime') or '')==latest,(strategy.get('sourceTime'),latest)
+          assert str(risk.get('sourceTime') or '')==latest,(risk.get('sourceTime'),latest)
+          assert int(scanner.get('refreshEveryMinutes') or 0)==5,scanner.get('refreshEveryMinutes')
+          live_scanner=[x for x in (scanner.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
+          live_strategy=[x for x in (strategy.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
+          scanner_cmp=[x for x in live_scanner if isinstance(x.get('macdHistogram'),(int,float)) and isinstance(x.get('previousMacdHistogram'),(int,float)) and abs(float(x['macdHistogram'])-float(x['previousMacdHistogram']))>1e-9]
+          strategy_cmp=[x for x in live_strategy if isinstance((x.get('current') or {}).get('macdHistogram'),(int,float)) and isinstance((x.get('previous') or {}).get('macdHistogram'),(int,float)) and abs(float(x['current']['macdHistogram'])-float(x['previous']['macdHistogram']))>1e-9]
+          assert len(live_scanner)<50 or len(scanner_cmp)>=5,(len(live_scanner),len(scanner_cmp))
+          assert len(live_strategy)<50 or len(strategy_cmp)>=5,(len(live_strategy),len(strategy_cmp))
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.6',risk.get('methodVersion')
+          print({'sourceTime':latest,'scannerLive':len(live_scanner),'scannerComparators':len(scanner_cmp),'strategyLive':len(live_strategy),'strategyComparators':len(strategy_cmp),'risk':(risk.get('overall') or {}).get('score')})
+          PY
+
+          git -C "$OUT" add --sparse market/technical-signals.json market/strategy-indicators.json market/sector-risk-calibration.json market/risk-monitor.json
+          if git -C "$OUT" diff --cached --quiet; then
+            echo "Derived market snapshots already current"
+            exit 0
+          fi
+          git -C "$OUT" commit -m 'Repair derived FinQuery market snapshots [data-only]'
+          for attempt in 1 2 3; do
+            git -C "$OUT" fetch origin financial-market-data
+            if git -C "$OUT" rebase origin/financial-market-data && git -C "$OUT" push origin HEAD:refs/heads/financial-market-data; then
+              exit 0
+            fi
+            git -C "$OUT" rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish repaired derived snapshots" >&2
+          exit 1
       - name: Run resilient current-session publisher
         if: steps.session.outputs.run == 'true'
         env:
