@@ -13,6 +13,7 @@ on:
       - 'financial-report/scripts/refresh_esg.py'
       - 'financial-report/config/esg_sources.json'
       - 'financial-report/scripts/build_risk_monitor.cjs'
+      - 'data/fund-holdings-history-v16.json'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
     # Fallback watchdogs for the dedicated live workflows. They run only when
@@ -41,7 +42,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          sparse-checkout: financial-report
+          sparse-checkout: |
+            financial-report
+            data/fund-holdings-history-v16.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
