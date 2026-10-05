@@ -198,6 +198,19 @@ def number(v):
         return None
 
 
+def positive_number(v):
+    n = number(v)
+    return n if n is not None and n > 0 else None
+
+
+def trading_weekday(value):
+    try:
+        day = datetime.fromisoformat(str(value)[:10]).date()
+        return day.weekday() < 5
+    except (ValueError, TypeError):
+        return False
+
+
 def timestamp(v):
     n = number(v)
     if n is not None:
@@ -228,15 +241,15 @@ def normalize_board(items, symbols, collected):
         # Vietcap raw price board and OHLC endpoints express prices in VND.
         # Preserve session OHLC fields when the board exposes them so the 15-minute
         # quote snapshot can update the live daily candle without waiting for EOD history.
-        open_price = number(match.get('openPrice') if match.get('openPrice') is not None else
-                            match.get('open') if match.get('open') is not None else
-                            item.get('openPrice') if item.get('openPrice') is not None else
-                            listing.get('openPrice'))
+        open_price = positive_number(match.get('openPrice') if match.get('openPrice') is not None else
+                                     match.get('open') if match.get('open') is not None else
+                                     item.get('openPrice') if item.get('openPrice') is not None else
+                                     listing.get('openPrice'))
         rows[symbol] = {'symbol': symbol, 'price': price, 'reference': ref,
                         'changePct': (price / ref - 1) * 100 if ref and ref > 0 else None,
                         'volume': number(match.get('accumulatedVolume')),
                         'open': open_price,
-                        'high': number(match.get('highest')), 'low': number(match.get('lowest')),
+                        'high': positive_number(match.get('highest')), 'low': positive_number(match.get('lowest')),
                         'sourceTime': timestamp(match.get('time')), 'collectedAt': collected,
                         'source': 'Vietcap', 'unit': 'VND', 'status': 'ok'}
     if not rows:
@@ -461,6 +474,8 @@ def normalize_history(payload, symbol, minute=False):
         day = datetime.fromisoformat(stamp).astimezone(VN).date().isoformat()
         if day > datetime.now(VN).date().isoformat():
             continue
+        if not minute and not trading_weekday(day):
+            continue
         key = stamp if minute else day
         rows[key] = dict(time=key, open=o, high=h, low=l, close=c, volume=v)
     if not rows:
@@ -593,7 +608,7 @@ def seed_market_histories(out, universe, companies):
             day = str(row.get('time') or row.get('date') or '')[:10]
             close = number(row.get('close'))
             volume = number(row.get('volume'))
-            if len(day) != 10 or close is None or close <= 0 or volume is None or volume < 0:
+            if len(day) != 10 or not trading_weekday(day) or close is None or close <= 0 or volume is None or volume < 0:
                 continue
             open_ = number(row.get('open')) or close
             high = number(row.get('high')) or max(open_, close)
@@ -1152,7 +1167,7 @@ def merge_live_daily_quotes(out, quotes):
             continue
         path = out / 'history' / (symbol + '.json')
         previous = read(path, {})
-        previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+        previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time') and trading_weekday(bar.get('time'))]
         if not previous_bars:
             continue
         last_day = str(previous_bars[-1].get('time') or '')
@@ -1160,9 +1175,9 @@ def merge_live_daily_quotes(out, quotes):
             continue
         by_day = {bar['time']: bar for bar in previous_bars}
         existing = by_day.get(day, {})
-        open_ = number(quote.get('open')) or number(existing.get('open')) or number(quote.get('reference')) or price
-        high_values = [number(quote.get('high')), number(existing.get('high')), open_, price]
-        low_values = [number(quote.get('low')), number(existing.get('low')), open_, price]
+        open_ = positive_number(quote.get('open')) or positive_number(existing.get('open')) or positive_number(quote.get('reference')) or price
+        high_values = [positive_number(quote.get('high')), positive_number(existing.get('high')), open_, price]
+        low_values = [positive_number(quote.get('low')), positive_number(existing.get('low')), open_, price]
         high = max(v for v in high_values if v is not None)
         low = min(v for v in low_values if v is not None)
         volume = max(number(quote.get('volume')) or 0, number(existing.get('volume')) or 0)
@@ -1335,7 +1350,7 @@ def normalize_kbs_history(payload, symbol):
             continue
         day = _kbs_day(row.get('t') or row.get('time') or row.get('date'))
         close = _kbs_number(row.get('c') if 'c' in row else row.get('close'))
-        if not day or close is None or close <= 0:
+        if not day or not trading_weekday(day) or close is None or close <= 0:
             continue
         open_ = _kbs_number(row.get('o') if 'o' in row else row.get('open')) or close
         high = _kbs_number(row.get('h') if 'h' in row else row.get('high')) or close
@@ -1398,7 +1413,7 @@ def _normalize_vnstock_history(df, symbol, provider):
         raw_time = row.get(time_col)
         day = raw_time.date().isoformat() if hasattr(raw_time, 'date') else str(raw_time or '')[:10]
         close = number(row.get(cols['close']))
-        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day or '') or close is None or close <= 0:
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day or '') or not trading_weekday(day) or close is None or close <= 0:
             continue
         open_ = number(row.get(cols.get('open'))) if cols.get('open') is not None else close
         high = number(row.get(cols.get('high'))) if cols.get('high') is not None else close
@@ -1460,7 +1475,7 @@ def _refresh_one_history(out, symbol, minute=False):
             providers = []
             bars = []
             force_full = os.environ.get('HISTORY_KBS_FULL') == '1'
-            previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+            previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time') and trading_weekday(bar.get('time'))]
             previous_last = previous_bars[-1].get('time') if previous_bars else None
             recent_cutoff = (datetime.now(VN).date() - timedelta(days=180)).isoformat()
             # Normal EOD refresh is incremental: existing symbols only need the
