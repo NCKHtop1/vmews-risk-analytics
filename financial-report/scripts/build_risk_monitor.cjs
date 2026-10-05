@@ -46,8 +46,7 @@ function holdingPositionSignature(snapshot){
  const rows=(snapshot?.holdings||[]).map(item=>({
   fund:String(item?.fundCode||item?.fundId||item?.fundName||'').trim(),
   symbol:String(item?.symbol||'').toUpperCase().trim(),
-  weight:n(item?.weight),
-  reportDate:String(item?.reportDate||'')
+  weight:n(item?.weight)
  })).filter(x=>x.fund&&x.symbol).sort((a,b)=>(a.symbol+'|'+a.fund).localeCompare(b.symbol+'|'+b.fund));
  return crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex').slice(0,24);
 }
