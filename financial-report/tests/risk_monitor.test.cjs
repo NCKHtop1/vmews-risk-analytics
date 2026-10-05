@@ -252,10 +252,28 @@ test('validated sector threshold creates a separate sector alert without changin
 });
 
 
+test('sector alert hysteresis is reflected in the sector state shown to the UI',()=>{
+ const sectorCalibration={
+  version:'TEST',status:'ok',forSession:'2026-10-05',validatedSectors:1,totalSectors:1,
+  sectors:{banking:{status:'VALIDATED_STATE',alertEligible:true,stateValidated:true,continuationValidated:false,thresholdMode:'TEST',threshold:20,exitThreshold:12.5,samples:800,forwardSessions:3,adverseCutoffPct:-1.5,oos:{precision:.3,baseRate:.2,precisionLift:1.5,recall:.2,falseAlarmRate:.1,youden:.1,signalRate:.1,folds:3,signals:60,events:40,medianCurrentReturnWhenSignalPct:-1.2,medianForward3WhenSignalPct:0}}}
+ };
+ const stressed=fixture({stress:true,sourceTime:'2026-10-05T07:40:00.000Z'});
+ const first=buildRiskSnapshot(stressed.quotes,stressed.strategy,null,'2026-10-05T07:40:10.000Z',null,null,sectorCalibration);
+ const firstBank=first.sectors.find(x=>x.id==='banking');
+ assert.ok(firstBank?.alertActive&&firstBank?.aboveThreshold,firstBank);
+ const calm=fixture({stress:false,sourceTime:'2026-10-05T07:45:00.000Z'});
+ const second=buildRiskSnapshot(calm.quotes,calm.strategy,first,'2026-10-05T07:45:10.000Z',null,null,sectorCalibration);
+ const secondBank=second.sectors.find(x=>x.id==='banking');
+ assert.ok(second.alerts.some(x=>x.id==='sector-banking'),second.alerts);
+ assert.ok(secondBank?.alertActive,secondBank);
+ assert.equal(secondBank?.aboveThreshold,false);
+ assert.ok(secondBank.score>=12.5&&secondBank.score<20,secondBank);
+});
+
 test('risk method copy is plain-language and versioned to refresh cached snapshots',()=>{
  const {quotes,strategy}=fixture();
  const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
- assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-1.5');
+ assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-1.6');
  assert.doesNotMatch(out.methodology.alertRule,/hysteresis|ngoài mẫu|OOS/i);
  assert.match(out.methodology.alertRule,/tránh bật\/tắt liên tục/);
 });
