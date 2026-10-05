@@ -1,8 +1,47 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-05T05:52:37+00:00",
+  "updatedAt": "2026-10-05T14:55:17+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VIX-DGW-2026-10-05-176cd35a",
+      "symbol": "DGW",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-10-05",
+      "title": "DGW-Thiết lập doanh thu kỷ lục, triển vọng tươi sáng Kính gửi quý khách hàng, Công ty cổ phần chứng khoán VIX xin gửi báo cáo phân tích chi tiết doanh nghiệp: “DGW-Thiết lập doanh thu kỷ lục, triển... XEM CHI TIẾT",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo DGW ngày 05/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "VDSC-HDG-2026-10-05-41b2b490",
+      "symbol": "HDG",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-05",
+      "title": "HDG: Khuyến nghị MUA với giá mục tiêu 22,900 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hdg-khuyen-nghi-mua-voi-gia-muc-tieu-22-900-dong-co-phieu-rpid6113.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 22900,
+      "summary": "VDSC có báo cáo HDG ngày 05/10/2026 với khuyến nghị MUA, giá mục tiêu 22.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-TPB-2026-10-05-bf3300e4",
+      "symbol": "TPB",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-05",
+      "title": "TPB: Khuyến nghị KHẢ QUAN với giá mục tiêu 16,600 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tpb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-16-600-dong-co-phieu-rpid6111.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 16600,
+      "summary": "MBS có báo cáo TPB ngày 05/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 16.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "MBS-TPB-2026-10-05-bf964adc",
       "symbol": "TPB",
@@ -15,6 +54,20 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 16600,
       "summary": "MBS công bố báo cáo ngày 05/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 16.600 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "BETA-GMD-2026-10-05-45461dd1",
+      "symbol": "GMD",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-10-05",
+      "title": "GMD: Khuyến nghị MUA với giá mục tiêu 91,800 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gmd-khuyen-nghi-mua-voi-gia-muc-tieu-91-800-dong-co-phieu-rpid6112.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 91800,
+      "summary": "BETA có báo cáo GMD ngày 05/10/2026 với khuyến nghị MUA, giá mục tiêu 91.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-VNM-2026-10-02-39e6a7aa",
@@ -332,6 +385,17 @@
       "brokerName": "Techcom Securities",
       "publishedAt": "2026-09-29",
       "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — VIC · Tập đoàn Vingroup — Công ty Cổ phần VIC #Phân tích lần đầu #Ngành BĐS dân cư Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VIC ngày 29/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VIC-2026-09-29-001b1c7b",
+      "symbol": "VIC",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-29",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – VIC · Tập đoàn Vingroup – Công ty Cổ phần VIC #Phân tích lần đầu #Ngành BĐS dân cư Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-tic",
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VIC ngày 29/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
@@ -5769,6 +5833,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/fpt-bao-cao-cap-nhat-kqkd-q2-2026-rpid5802.html",
       "dataProvider": "24HMONEY",
       "summary": "VIX có báo cáo FPT ngày 10/08/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-FPT-2026-08-10-176cd35a",
+      "symbol": "FPT",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-08-10",
+      "title": "FPT – Doanh thu tăng trưởng tích cực trong kỷ nguyên AI Kính gửi quý khách hàng, Công ty cổ phần chứng khoán VIX xin gửi báo cáo phân tích (cập nhật): “FPT – Doanh thu tăng trưởng tích cực trong... XEM CHI TIẾT 1 / 4 1 2",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo FPT ngày 10/08/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "VIX-FPT-2026-08-10-176cd35a",
