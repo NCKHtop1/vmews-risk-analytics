@@ -17,8 +17,6 @@ on:
     # that re-triggers prices during the VN trading window.
     workflows:
       - Refresh market news stream
-      - Forecast V20.1 immutable-price audit and market intelligence
-      - Forecast V21 guarded session overlay
     branches:
       - main
     types:
@@ -38,9 +36,10 @@ permissions:
 
 concurrency:
   group: market-price-live
-  # A live-session publisher is intentionally long-lived. New heartbeat triggers
-  # may queue, but must never cancel the active publisher mid-session.
-  cancel-in-progress: false
+  # Scheduled/news heartbeats never interrupt the active session publisher.
+  # A code push is the exception: hand over immediately so a repaired publisher
+  # does not wait behind an hours-old run that is still executing old code.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   prices:
