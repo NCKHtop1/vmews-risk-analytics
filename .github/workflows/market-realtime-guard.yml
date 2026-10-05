@@ -108,6 +108,9 @@ jobs:
                       raise ValueError('risk monitor stale or not aligned with quotes')
                   if int(risk_cov.get('quotes') or 0)<math.ceil(expected*.90) or not isinstance(risk_score,(int,float)) or not 0<=risk_score<=100:
                       raise ValueError(f'risk monitor invalid: coverage={risk_cov} score={risk_score}')
+                  funds=risk.get('fundMonitor') or {}
+                  if funds.get('status')!='ok' or funds.get('source')!='FMARKET' or int(funds.get('symbols') or 0)<=0:
+                      raise ValueError(f'fund holdings context unavailable: {funds.get("status")} {funds.get("source")}')
                   if len(risk.get('timeline') or [])<2 or (risk.get('trend') or {}).get('previousScore') is None:
                       raise ValueError('risk monitor comparison history is incomplete')
                   if len(risk.get('contributions') or [])!=5:

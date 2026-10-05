@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {buildRiskSnapshot,buildHistoricalBaseline}=require('../scripts/build_risk_monitor.cjs');
+const {buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
 
 const symbols=['ACB','BID','CTG','MBB','TCB','VCB','VIC','VHM','NVL','PDR','SSI','VIX'];
 function fixture({stress=false,sourceTime='2026-10-05T07:45:00.000Z'}={}){
@@ -123,4 +123,35 @@ test('alert history records new and resolved alerts',()=>{
  const calmFixture=fixture({stress:false,sourceTime:'2026-10-05T07:45:00.000Z'});
  const calm=buildRiskSnapshot(calmFixture.quotes,calmFixture.strategy,first,'2026-10-05T07:45:10.000Z');
  assert.ok(calm.alertHistory.some(x=>x.type==='Đã hạ'));
+});
+
+
+test('fund monitor compares disclosed weights without inventing share volume',()=>{
+ const history={
+  snapshots:[
+   {asOf:'2026-10-02',weightUnit:'FRACTION_OF_NAV',generatedAt:'2026-10-02T16:00:00+07:00',holdings:[
+    {fundCode:'FUND-A',fundName:'Fund A',symbol:'FPT',weight:.08,reportDate:'2026-09-30',navMomentum20:.02},
+    {fundCode:'FUND-B',fundName:'Fund B',symbol:'FPT',weight:.04,reportDate:'2026-09-30',navMomentum20:.01},
+    {fundCode:'FUND-C',fundName:'Fund C',symbol:'HPG',weight:.05,reportDate:'2026-09-30',navMomentum20:-.01}
+   ]},
+   {asOf:'2026-10-05',weightUnit:'FRACTION_OF_NAV',generatedAt:'2026-10-05T16:00:00+07:00',holdings:[
+    {fundCode:'FUND-A',fundName:'Fund A',symbol:'FPT',weight:.091,reportDate:'2026-10-03',navMomentum20:.025},
+    {fundCode:'FUND-D',fundName:'Fund D',symbol:'FPT',weight:.03,reportDate:'2026-10-03',navMomentum20:.015},
+    {fundCode:'FUND-C',fundName:'Fund C',symbol:'HPG',weight:.041,reportDate:'2026-10-03',navMomentum20:-.015}
+   ]}
+  ]
+ };
+ const out=buildFundMonitor(history);
+ assert.equal(out.status,'ok');
+ assert.equal(out.asOf,'2026-10-05');
+ assert.equal(out.previousAsOf,'2026-10-02');
+ assert.ok(out.materialChanges>=4,out);
+ const fpt=out.rows.find(x=>x.symbol==='FPT');
+ assert.ok(fpt);
+ assert.equal(fpt.currentFundCount,2);
+ assert.ok(fpt.details.some(x=>x.fundCode==='FUND-A'&&x.status==='increased'&&x.deltaPP===1.1));
+ assert.ok(fpt.details.some(x=>x.fundCode==='FUND-B'&&x.status==='removed'));
+ assert.ok(fpt.details.some(x=>x.fundCode==='FUND-D'&&x.status==='new'));
+ assert.equal(Object.prototype.hasOwnProperty.call(fpt,'shareVolume'),false);
+ assert.match(out.note,/không suy diễn thành số cổ phiếu mua\/bán/i);
 });

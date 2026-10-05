@@ -116,9 +116,24 @@
 .risk-alert-history>div{display:grid;grid-template-columns:86px minmax(0,1fr) 54px;gap:8px;padding:6px 0;border-bottom:1px dashed #edf1f5;align-items:center}
 .risk-alert-history span,.risk-alert-history small{font-size:8.5px;color:#8792a1}
 .risk-alert-history strong{font-size:9.5px;color:#526177;font-weight:600}
-@keyframes riskAlertPulse{0%{box-shadow:0 0 0 0 rgba(194,71,85,.32)}55%{box-shadow:0 0 0 8px rgba(194,71,85,0)}100%{box-shadow:none}}
-.risk-alert-new{animation:riskAlertPulse 1.4s ease-out 1}
-@media(prefers-reduced-motion:reduce){.risk-alert-new{animation:none}}
 @media(max-width:1180px){.risk-sector-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.risk-main-grid-balanced{grid-template-columns:1fr}}
 @media(max-width:760px){.risk-contribution-row{grid-template-columns:1fr}.risk-contribution-value{width:100%}.risk-sector-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-alert-history>div{grid-template-columns:72px minmax(0,1fr) 46px}}
 @media(max-width:480px){.risk-sector-grid{grid-template-columns:1fr}}
+
+/* Fund holdings context */
+.risk-fund-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0 14px}
+.risk-fund-summary>div{padding:11px;border:1px solid #edf1f5;border-radius:9px;background:#f7f9fb}
+.risk-fund-summary span{display:block;font-size:9px;color:#7f8b9b}.risk-fund-summary strong{display:block;margin-top:5px;font-size:17px;color:#34435a}
+.risk-fund-alerts{display:grid;gap:7px;margin:0 0 14px}.risk-fund-alerts h4{margin:0 0 2px;font-size:10px;color:#64748a}
+.risk-fund-alert button{width:100%;display:grid;grid-template-columns:70px minmax(110px,1fr) minmax(150px,1.4fr) 90px;gap:10px;align-items:center;border:1px solid #e5eaf0;border-left-width:4px;border-radius:9px;background:#fff;padding:9px 10px;text-align:left;color:#4b5b71}
+.risk-fund-alert strong{font-size:11px;color:#2f4059}.risk-fund-alert span,.risk-fund-alert b,.risk-fund-alert small{font-size:9.5px}.risk-fund-alert b{font-weight:650}
+.risk-fund-green button{border-left-color:#4c9d7c}.risk-fund-red button{border-left-color:#cf5a66}.risk-fund-yellow button{border-left-color:#d3a14c}.risk-fund-neutral button{border-left-color:#aeb8c6}
+.risk-fund-state{display:inline-block;font-size:9px;font-weight:700}.risk-fund-state.risk-fund-green{color:#277a5e}.risk-fund-state.risk-fund-red{color:#b53c4a}.risk-fund-state.risk-fund-yellow{color:#a36b12}.risk-fund-state.risk-fund-neutral{color:#68778c}
+.risk-fund-toggle{border:1px solid #dfe5ed!important;border-radius:7px!important;padding:4px 8px!important;color:#405474!important;background:#fff!important;font-weight:650!important}
+.risk-fund-detail-row td{background:#fbfcfe;text-align:left!important;white-space:normal!important}.risk-fund-detail-list{display:grid;gap:6px}
+.risk-fund-detail-item{display:grid;grid-template-columns:minmax(150px,1.4fr) minmax(150px,1fr) 80px minmax(170px,1.2fr);gap:10px;align-items:center;padding:8px 9px;border:1px solid #edf1f5;border-radius:8px;background:#fff}
+.risk-fund-detail-item div strong{display:block;font-size:10px;color:#35445a}.risk-fund-detail-item div small{display:block;margin-top:2px;font-size:8.5px;color:#8994a3}.risk-fund-detail-item>span,.risk-fund-detail-item>b,.risk-fund-detail-item>small{font-size:9px;color:#66768a}.risk-fund-detail-item>b{font-size:10px;color:#34445a}
+.risk-fund-note{margin:10px 0 0;font-size:9.5px;line-height:1.55;color:#7a8798}
+@media(max-width:760px){.risk-fund-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-fund-alert button{grid-template-columns:60px 1fr}.risk-fund-detail-item{grid-template-columns:1fr 1fr}}
+
+.risk-nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:4px;padding:0 5px;border-radius:999px;background:#b53c4a;color:#fff;font-size:9px;font-weight:800;line-height:1;vertical-align:middle}.risk-nav-badge[hidden]{display:none!important}

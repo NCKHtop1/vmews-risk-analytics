@@ -127,6 +127,9 @@ if len(risk.get('timeline') or [])<2 or (risk.get('trend') or {}).get('previousS
     raise SystemExit('risk monitor comparison history is incomplete')
 if len(risk.get('contributions') or [])!=5:
     raise SystemExit('risk monitor contribution breakdown is incomplete')
+funds=risk.get('fundMonitor') or {}
+if funds.get('status')!='ok' or funds.get('source')!='FMARKET' or int(funds.get('symbols') or 0)<=0:
+    raise SystemExit(f'fund holdings context is unavailable: {funds.get("status")} {funds.get("source")}')
 if status.get('status')!='ok' or age(status.get('checkedAt'))>10:
     raise SystemExit('prices-status heartbeat is stale')
 if age(drivers.get('generatedAt'))>10:
