@@ -171,3 +171,12 @@ test('risk monitor is a separate Vietnamese production view and is bundled',()=>
  assert.match(build,/risk-monitor\.css/);
  assert.match(build,/risk-monitor\.js/);
 });
+
+test('risk monitor states the monitored universe clearly',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const engine=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_risk_monitor.cjs'),'utf8');
+ assert.match(index,/HOSE Core \+ Liquid có dữ liệu trực tiếp/);
+ assert.match(risk,/Phạm vi trực tiếp: HOSE Core \+ Liquid/);
+ assert.match(engine,/scope:'HOSE Core \+ Liquid có dữ liệu trực tiếp'/);
+});
