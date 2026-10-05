@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-09-24T14:32:08.180101+00:00",
+  "generatedAt": "2026-10-05T03:03:57.017324+00:00",
   "marketModelDate": "2026-09-24",
   "requested": 42,
-  "reused": 36,
-  "fetched": 6,
+  "reused": 42,
+  "fetched": 0,
   "cached": 42,
   "symbols": {
     "API": {
@@ -25,6 +25,11 @@
     "IDJ": {
       "rows": 1800,
       "modelAsOf": "2026-08-12",
+      "source": "Vnstock"
+    },
+    "SEA": {
+      "rows": 1690,
+      "modelAsOf": "2026-09-24",
       "source": "Vnstock"
     },
     "F88": {
@@ -77,6 +82,11 @@
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
     },
+    "DXG": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-24",
+      "source": "Yahoo Finance"
+    },
     "NHA": {
       "rows": 1454,
       "modelAsOf": "2026-08-18",
@@ -97,6 +107,11 @@
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
     },
+    "TLP": {
+      "rows": 1472,
+      "modelAsOf": "2026-09-24",
+      "source": "Vnstock"
+    },
     "HBC": {
       "rows": 1800,
       "modelAsOf": "2026-08-12",
@@ -106,6 +121,11 @@
       "rows": 1800,
       "modelAsOf": "2026-09-11",
       "source": "Yahoo Finance"
+    },
+    "SBS": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-24",
+      "source": "Vnstock"
     },
     "HQC": {
       "rows": 1800,
@@ -132,6 +152,11 @@
       "modelAsOf": "2026-08-14",
       "source": "Vnstock"
     },
+    "LLM": {
+      "rows": 1412,
+      "modelAsOf": "2026-09-24",
+      "source": "Vnstock"
+    },
     "VND": {
       "rows": 1800,
       "modelAsOf": "2026-09-11",
@@ -151,6 +176,11 @@
       "rows": 1779,
       "modelAsOf": "2026-08-11",
       "source": "Vnstock"
+    },
+    "TCX": {
+      "rows": 242,
+      "modelAsOf": "2026-09-24",
+      "source": "Yahoo Finance"
     },
     "C4G": {
       "rows": 1800,
@@ -186,36 +216,6 @@
       "rows": 1800,
       "modelAsOf": "2026-08-13",
       "source": "Vnstock"
-    },
-    "SEA": {
-      "rows": 1690,
-      "modelAsOf": "2026-09-24",
-      "source": "Vnstock"
-    },
-    "DXG": {
-      "rows": 2596,
-      "modelAsOf": "2026-09-24",
-      "source": "Yahoo Finance"
-    },
-    "TLP": {
-      "rows": 1472,
-      "modelAsOf": "2026-09-24",
-      "source": "Vnstock"
-    },
-    "SBS": {
-      "rows": 1995,
-      "modelAsOf": "2026-09-24",
-      "source": "Vnstock"
-    },
-    "LLM": {
-      "rows": 1412,
-      "modelAsOf": "2026-09-24",
-      "source": "Vnstock"
-    },
-    "TCX": {
-      "rows": 242,
-      "modelAsOf": "2026-09-24",
-      "source": "Yahoo Finance"
     }
   },
   "errors": [],
