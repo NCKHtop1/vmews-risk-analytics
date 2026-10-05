@@ -233,7 +233,11 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(index,/data-platform-view="strategy">Strategy Lab/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
+ assert.match(risk,/fundChangeIsCurrent/);
  assert.match(risk,/changedSymbols/);
+ assert.match(risk,/Mã thay đổi đáng chú ý/);
+ assert.doesNotMatch(risk,/Mã vượt ngưỡng|Lượt thay đổi vượt ngưỡng/);
+ assert.match(risk,/aboveThreshold/);
  assert.match(risk,/Cập nhật gần nhất:/);
  assert.doesNotMatch(index,/snapshot phiên khoảng 5 phút|snapshot thị trường khoảng 5 phút|dữ liệu trong phiên khoảng 5 phút/i);
 });
