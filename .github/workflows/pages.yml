@@ -53,6 +53,8 @@ jobs:
           ref: financial-market-data
           path: _market-data
           sparse-checkout: market
+      - name: Rebuild Technical Scanner from the published market snapshot
+        run: python financial-report/scripts/refresh_market.py --output _market-data/market --mode scanner
       - name: Bootstrap Technical Scanner evidence from completed EOD history
         run: python financial-report/scripts/build_technical_evidence.py --output _market-data/market
       - name: Generate strategy indicator snapshot
@@ -83,7 +85,14 @@ jobs:
           assert int(quotes.get('coverage') or 0)>=int(quotes.get('expected') or 0)*.90,(quotes.get('coverage'),quotes.get('expected'))
           assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
           assert int(scanner.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(scanner.get('coverage'),scanner.get('universe'))
+          assert int(scanner.get('refreshEveryMinutes') or 0)==5,scanner.get('refreshEveryMinutes')
+          scanner_live=[x for x in (scanner.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
+          scanner_comparators=[x for x in scanner_live if isinstance(x.get('macdHistogram'),(int,float)) and isinstance(x.get('previousMacdHistogram'),(int,float)) and abs(float(x.get('macdHistogram'))-float(x.get('previousMacdHistogram')))>1e-9]
+          assert len(scanner_live)<50 or len(scanner_comparators)>=5,(len(scanner_live),len(scanner_comparators))
           assert int(strategy.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(strategy.get('coverage'),scanner.get('universe'))
+          strategy_live=[x for x in (strategy.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
+          strategy_comparators=[x for x in strategy_live if isinstance((x.get('current') or {}).get('macdHistogram'),(int,float)) and isinstance((x.get('previous') or {}).get('macdHistogram'),(int,float)) and abs(float((x.get('current') or {}).get('macdHistogram'))-float((x.get('previous') or {}).get('macdHistogram')))>1e-9]
+          assert len(strategy_live)<50 or len(strategy_comparators)>=5,(len(strategy_live),len(strategy_comparators))
           assert risk.get('status')=='ok',risk
           assert str(risk.get('sourceTime') or '')==str(quotes.get('latestSourceTime') or ''),(risk.get('sourceTime'),quotes.get('latestSourceTime'))
           assert int((risk.get('coverage') or {}).get('quotes') or 0)>=int(quotes.get('expected') or 0)*.90,risk.get('coverage')
