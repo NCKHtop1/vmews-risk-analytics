@@ -41,3 +41,31 @@ test('live strategy snapshot preserves the prior market snapshot across repeated
  assert.equal(third.sourceTime,t2);
  fs.rmSync(dir,{recursive:true,force:true});
 });
+
+
+test('live strategy snapshot repairs a previously collapsed comparator',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'finquery-strategy-repair-'));
+ fs.mkdirSync(path.join(dir,'history'),{recursive:true});
+ const bars=[];
+ for(let i=0;i<90;i++){
+  const d=new Date(Date.UTC(2026,6,1+i)).toISOString().slice(0,10),close=10000+i*25;
+  bars.push({time:d,open:close-20,high:close+50,low:close-50,close,volume:900000+i*2000});
+ }
+ fs.writeFileSync(path.join(dir,'history','AAA.json'),JSON.stringify({symbol:'AAA',bars}));
+ fs.writeFileSync(path.join(dir,'universe.json'),JSON.stringify({symbols:{AAA:{tier:'CORE'}}}));
+ const canonical=path.join(dir,'canonical.json');fs.writeFileSync(canonical,JSON.stringify({symbols:{AAA:{tier:'CORE'}}}));
+ const stamp='2026-10-05T07:45:00.000Z';
+ fs.writeFileSync(path.join(dir,'quotes.json'),JSON.stringify({latestSourceTime:stamp,quotes:{AAA:{symbol:'AAA',status:'ok',price:bars.at(-1).close,changePct:1,sourceTime:stamp}}}));
+ const script=path.join(__dirname,'../scripts/build_strategy_snapshot.cjs');
+ cp.execFileSync(process.execPath,[script,dir,canonical],{stdio:'pipe'});
+ const first=JSON.parse(fs.readFileSync(path.join(dir,'strategy-indicators.json'),'utf8'));
+ const row=first.symbols.AAA;
+ first.symbols.AAA.previous={...row.current};
+ fs.writeFileSync(path.join(dir,'strategy-indicators.json'),JSON.stringify(first));
+ cp.execFileSync(process.execPath,[script,dir,canonical],{stdio:'pipe'});
+ const repaired=JSON.parse(fs.readFileSync(path.join(dir,'strategy-indicators.json'),'utf8')).symbols.AAA;
+ assert.notDeepEqual(repaired.previous,repaired.current);
+ assert.notEqual(repaired.previous.price,repaired.current.price);
+ assert.equal(repaired.sourceTime,stamp);
+ fs.rmSync(dir,{recursive:true,force:true});
+});
