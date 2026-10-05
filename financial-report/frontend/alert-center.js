@@ -85,7 +85,7 @@ async function refreshSnapshot(){
   if(expected&&String(actual)!==String(expected)){
    if(!state.snapshot||String(state.snapshot.sourceTime||'')!==String(expected)){state.snapshot=null;state.matches=[];renderResults();}
    if(status)status.textContent='Đang đồng bộ Strategy Lab với snapshot giá mới nhất…';
-   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>refreshSnapshot(),1200);
+   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(actual||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();refreshSnapshot();},1200);
    return;
   }
   const changed=(data.sourceTime||data.checkedAt)!==(state.snapshot?.sourceTime||state.snapshot?.checkedAt);state.snapshot=data;if(status)status.textContent=(data.coverage||0)+' mã · Live '+(data.liveCoverage||0)+' · Discovery '+(data.discoveryCoverage||0)+' · '+time(data.sourceTime||data.checkedAt);scanNow();if(changed)evaluateAlerts();else renderSaved();
