@@ -62,6 +62,16 @@ test('close catch keeps strict intraday freshness but accepts official 14:45 clo
  assert.match(workflow,/MARKET_MAX_QUOTE_AGE_MINUTES: '18'/);
  assert.match(workflow,/MARKET_CLOSE_CATCH_MAX_AGE_MINUTES: '30'/);
 });
+test('after-hours code pushes persist repaired derived market snapshots',()=>{
+ const workflow=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-price-live.yml'),'utf8');
+ assert.match(workflow,/Persist repaired derived snapshots after code push/);
+ assert.match(workflow,/github\.event_name == 'push' && steps\.session\.outputs\.run != 'true'/);
+ assert.match(workflow,/refresh_market\.py --output "\$OUT\/market" --mode scanner/);
+ assert.match(workflow,/scannerComparators/);
+ assert.match(workflow,/strategyComparators/);
+ assert.match(workflow,/git -C "\$OUT" push origin HEAD:refs\/heads\/financial-market-data/);
+});
+
 test('technical scanner rules remain unchanged and evidence is additive',()=>{
  const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
  assert.match(source,/'macd_cross_up': 60/);
