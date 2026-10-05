@@ -1002,12 +1002,21 @@ def build_technical_scanner(out, companies, quotes):
         'liveCoverage': live_coverage,
         'discoveryCoverage': discovery_coverage,
         'liveUniverse': len(companies),
-        'matchCount': len(matches), 'refreshEveryMinutes': 15,
+        'matchCount': len(matches), 'refreshEveryMinutes': 5,
         'rules': TECHNICAL_SCANNER_RULES,
         'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses the evolving current-session daily candle; Discovery is EOD-only until promotion.',
         'matches': matches, 'symbols': symbols,
     })
     return matches
+
+
+def scanner(out, companies):
+    payload = read(out / 'quotes.json', {})
+    quotes = payload.get('quotes') if isinstance(payload, dict) else {}
+    if not isinstance(quotes, dict) or not quotes:
+        raise RuntimeError('Existing quotes snapshot is unavailable for scanner rebuild')
+    matches = build_technical_scanner(out, companies, quotes)
+    print(f'Technical scanner rebuilt from existing market snapshot: {len(matches)} matches', flush=True)
 
 
 def build_today_watchlist(out, companies, quotes):
@@ -2048,7 +2057,7 @@ def news(out, companies):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--mode', choices=['prices', 'history', 'intraday', 'news', 'macro', 'all'], default='all')
+    parser.add_argument('--mode', choices=['prices', 'history', 'intraday', 'news', 'macro', 'scanner', 'all'], default='all')
     args = parser.parse_args()
     core_companies = read(ROOT / 'data/companies.json', [])
     if len({c['symbol'] for c in core_companies}) != 100:

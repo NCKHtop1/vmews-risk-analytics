@@ -259,6 +259,16 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
 });
 
 
+test('Pages rebuilds scanner offline and rejects collapsed live comparators',()=>{
+ const pages=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/pages.yml'),'utf8');
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
+ assert.match(pages,/refresh_market\.py --output _market-data\/market --mode scanner/);
+ assert.match(pages,/scanner_comparators/);
+ assert.match(pages,/strategy_comparators/);
+ assert.match(source,/def scanner\(out, companies\):/);
+ assert.match(source,/'refreshEveryMinutes': 5/);
+});
+
 test('risk monitor cadence is enforced in code without UI narration',()=>{
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
