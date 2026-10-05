@@ -760,7 +760,7 @@ async function callLLM(question){
  throw lastError||new Error('Gemini tạm thời chưa phản hồi.');
 }
 function inlineMarkdown(value){
- let out=esc(String(value||''));out=out.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');out=out.replace(/\[(BCTC|QUARTER|MARKET|SCANNER|NEWS|RESEARCH|WEB)\]/g,'<span class="ai-source-tag">$1</span>');return out;
+ let out=esc(String(value||''));out=out.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');out=out.replace(/\[(BCTC|QUARTER|MARKET|SCANNER|NEWS|RESEARCH|WEB|ACADEMIC)\]/g,'<span class="ai-source-tag">$1</span>');return out;
 }
 function llmHTML(answer,meta={}){
  const lines=String(answer||'').trim().split(/\n/),blocks=[];let bullets=[];
