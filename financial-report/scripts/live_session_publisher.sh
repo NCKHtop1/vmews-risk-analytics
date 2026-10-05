@@ -5,6 +5,7 @@ ROOT="$(git rev-parse --show-toplevel)"
 OUT="/tmp/market-live"
 INTERVAL_SECONDS="${MARKET_LOOP_SECONDS:-300}"
 MAX_AGE_MINUTES="${MARKET_MAX_QUOTE_AGE_MINUTES:-18}"
+CLOSE_CATCH_MAX_AGE_MINUTES="${MARKET_CLOSE_CATCH_MAX_AGE_MINUTES:-30}"
 FORCE_ONESHOT="${FORCE_ONESHOT:-0}"
 GH_REPO="${GH_REPO:-NCKHtop1/vmews-risk-analytics}"
 
@@ -45,7 +46,8 @@ sync_market_worktree() {
 }
 
 validate_snapshot() {
-  SNAPSHOT_DIR="$OUT/market" MAX_AGE_MINUTES="$MAX_AGE_MINUTES" python - <<'PY'
+  local effective_max_age="${1:-$MAX_AGE_MINUTES}"
+  SNAPSHOT_DIR="$OUT/market" MAX_AGE_MINUTES="$effective_max_age" python - <<'PY'
 import json, math, os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -192,11 +194,18 @@ PY
 }
 
 collect_validate_publish() {
-  local ok=1
+  local ok=1 current_max_age="$MAX_AGE_MINUTES" local_min
+  local_min="$(vn_minutes)"
+  # The official HOSE close can remain stamped at 14:45 while the close-catch
+  # loop runs until 15:05. Keep the strict 18-minute gate intraday, but allow
+  # the same-day official close snapshot a bounded 30-minute window after 14:45.
+  if [ "$local_min" -ge 885 ] && [ "$local_min" -le 905 ]; then
+    current_max_age="$CLOSE_CATCH_MAX_AGE_MINUTES"
+  fi
   for attempt in 1 2; do
-    echo "=== Intraday refresh attempt $attempt at $(TZ=Asia/Ho_Chi_Minh date '+%H:%M:%S %d/%m/%Y') ==="
+    echo "=== Intraday refresh attempt $attempt at $(TZ=Asia/Ho_Chi_Minh date '+%H:%M:%S %d/%m/%Y') · maxAge=${current_max_age}m ==="
     sync_market_worktree
-    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$MAX_AGE_MINUTES"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && validate_snapshot       && publish_snapshot; then
+    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && publish_snapshot; then
       ok=0
       break
     fi
