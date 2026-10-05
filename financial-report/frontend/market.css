@@ -401,3 +401,11 @@ body.dolphin-modal-open{overflow:hidden}
 .market-board-title-row,.signal-title-row,.technical-scanner-title-row,.strategy-title-row{align-items:center}
 .signal-title-row strong{margin-top:0}
 .technical-scanner-table th .term-info-button,.market-table th .term-info-button{display:inline-grid!important;padding:0!important;vertical-align:1px!important}
+
+/* Dedicated Strategy Lab view */
+.strategy-page{margin:0 auto 34px;max-width:1500px;padding:26px 28px}
+.strategy-page .strategy-page-head{align-items:center;margin-bottom:18px}
+.strategy-page .strategy-page-head h2{margin:0;font-size:28px}
+.strategy-page .strategy-builder-body{display:block}
+body.strategy-lab-view .strategy-page{display:block}
+@media(max-width:820px){.strategy-page{padding:18px 16px}.strategy-page .strategy-page-head{align-items:flex-start}}
