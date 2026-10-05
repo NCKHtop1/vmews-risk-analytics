@@ -416,6 +416,7 @@ function buildSectorAlerts(sectors,previous,sourceTime){
   if(!s.alertEligible||!Number.isFinite(Number(s.threshold)))continue;
   const id='sector-'+s.id,old=prevMap.get(id),enter=Number(s.threshold),exit=Number(s.exitThreshold??(enter-7.5));
   const active=Number(s.score)>=(old?exit:enter);if(!active)continue;
+  const aboveThreshold=Number(s.score)>=enter;
   const bt=s.backtest||{},lift=Number(bt.precisionLift),precision=Number(bt.precision),base=Number(bt.baseRate);
   const evidence=[
    'Điểm ngành '+round(s.score,1)+'/100; ngưỡng căng thẳng lịch sử '+round(enter,1)+'/100',
@@ -425,7 +426,7 @@ function buildSectorAlerts(sectors,previous,sourceTime){
   if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('lịch sử kiểm tra cho thấy '+round(precision*100,1)+'% lần chạm ngưỡng rơi vào vùng giảm xấu trong 3 phiên sau, so với mức thông thường '+round(base*100,1)+'% (cao hơn '+round(lift,2)+' lần)');
   else evidence.push('đây là cảnh báo trạng thái căng thẳng; chưa coi là dự báo ngành sẽ giảm tiếp');
   alerts.push({
-   id,title:s.label+' chạm ngưỡng căng thẳng lịch sử',score:round(s.score,1),
+   id,title:s.label+(aboveThreshold?' chạm ngưỡng căng thẳng lịch sử':' vẫn trong vùng cảnh báo'),score:round(s.score,1),
    level:{key:Number(s.score)>=enter+10?'high':'watch',label:Number(s.score)>=enter+10?'Cao':'Cần theo dõi',tone:Number(s.score)>=enter+10?'red':'yellow'},
    startedAt:old?.startedAt||sourceTime,lastSeen:sourceTime,evidence:evidence.join('. '),
    sectorId:s.id,threshold:round(enter,1),backtestValidated:true,continuationValidated:bt.continuationValidated===true
@@ -468,7 +469,10 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   ...s,
   alertActive:activeSectorIds.has(s.id),
   nearThreshold:s.alertEligible&&!activeSectorIds.has(s.id)&&Number(s.score)>=Math.max(0,Number(s.threshold)-10)
- }));
+ })).sort((a,b)=>{
+  const ar=a.alertActive?3:a.nearThreshold?2:1,br=b.alertActive?3:b.nearThreshold?2:1;
+  return br-ar||Number(b.score)-Number(a.score);
+ });
  const alerts=[...buildAlerts(components,overall,previous,sourceTime),...sectorAlerts].sort((a,b)=>b.score-a.score);
  const breadthStats=components.breadth.stats;
  const contributions=contributionRows(components,previousPoint);
