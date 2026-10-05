@@ -850,13 +850,25 @@ def technical_scan_symbol(symbol, bars, quote=None, previous=None):
 
     # Prefer the previous 15-minute scanner snapshot when it belongs to the same
     # live daily bar; otherwise fall back to the previous completed daily bar.
+    current_source_time = (quote or {}).get('sourceTime') or (quote or {}).get('collectedAt')
     scan_prev_ok = (
         isinstance(previous, dict)
         and previous.get('barDate') == current.get('time')
         and number(previous.get('macdHistogram')) is not None
     )
-    prev_hist = number(previous.get('macdHistogram')) if scan_prev_ok else daily_prev['hist']
-    prev_rsi = number(previous.get('rsi14')) if scan_prev_ok else daily_prev['rsi']
+    same_market_snapshot = (
+        scan_prev_ok
+        and current_source_time
+        and str(previous.get('sourceTime') or '') == str(current_source_time)
+    )
+    if same_market_snapshot and number(previous.get('previousMacdHistogram')) is not None:
+        prev_hist = number(previous.get('previousMacdHistogram'))
+    else:
+        prev_hist = number(previous.get('macdHistogram')) if scan_prev_ok else daily_prev['hist']
+    if same_market_snapshot and number(previous.get('previousRsi14')) is not None:
+        prev_rsi = number(previous.get('previousRsi14'))
+    else:
+        prev_rsi = number(previous.get('rsi14')) if scan_prev_ok else daily_prev['rsi']
     hist = current['hist']
     hist_pct = hist / close * 100 if close else None
     near_limit = TECHNICAL_SCANNER_RULES['macd']['nearCrossMaxSpreadPct']
