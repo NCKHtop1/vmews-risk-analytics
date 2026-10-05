@@ -1266,6 +1266,56 @@ class MarketTests(unittest.TestCase):
             })
             self.assertEqual(saved['liveQuoteProvider'],'Vietcap')
 
+    def test_daily_history_normalization_drops_weekend_placeholders(self):
+        def ts(year,month,day):
+            return int(datetime(year,month,day,8,0,tzinfo=m.VN).timestamp())
+        payload={'data':[{
+            'symbol':'FPT',
+            't':[ts(2026,10,2),ts(2026,10,3),ts(2026,10,4)],
+            'o':[62000,62000,62000],
+            'h':[63000,63000,63000],
+            'l':[61000,61000,61000],
+            'c':[62500,62500,62500],
+            'v':[1000000,1000000,1000000],
+        }]}
+        bars=m.normalize_history(payload,'FPT',minute=False)
+        self.assertEqual([row['time'] for row in bars],['2026-10-02'])
+
+    def test_live_quote_merge_repairs_zero_low_and_removes_weekend_bars(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            m.write(out/'history/FPT.json',{
+                'symbol':'FPT','source':'Vietcap','status':'ok',
+                'bars':[
+                    {'time':'2026-10-02','open':62700,'high':63200,'low':62100,'close':62100,'volume':3199600},
+                    {'time':'2026-10-03','open':62700,'high':63200,'low':62100,'close':62100,'volume':3199600},
+                    {'time':'2026-10-04','open':62700,'high':63200,'low':62100,'close':62100,'volume':3199600},
+                    {'time':'2026-10-05','open':62200,'high':62800,'low':0,'close':62400,'volume':749200},
+                ],
+            })
+            merged=m.merge_live_daily_quotes(out,{'FPT':{
+                'symbol':'FPT','status':'ok','source':'Vietcap',
+                'price':62300,'reference':62100,'open':62200,'high':62800,'low':62200,'volume':783500,
+                'sourceTime':'2026-10-05T03:30:04.562000+00:00','collectedAt':'2026-10-05T03:30:03.404394+00:00',
+            }})
+            saved=m.read(out/'history/FPT.json',{})
+            self.assertEqual(merged,1)
+            self.assertEqual([row['time'] for row in saved['bars']],['2026-10-02','2026-10-05'])
+            self.assertEqual(saved['bars'][-1]['low'],62200.0)
+            self.assertGreater(saved['bars'][-1]['low'],0)
+
+    def test_board_normalization_treats_zero_ohlc_as_missing(self):
+        rows=m.normalize_board([{
+            'listingInfo':{'symbol':'FPT','refPrice':62100},
+            'matchPrice':{
+                'symbol':'FPT','matchPrice':62300,'accumulatedVolume':783500,
+                'openPrice':62200,'highest':62800,'lowest':0,'time':1791171004562,
+            },
+        }],['FPT'],'2026-10-05T03:30:03+00:00')
+        self.assertEqual(rows['FPT']['open'],62200)
+        self.assertEqual(rows['FPT']['high'],62800)
+        self.assertIsNone(rows['FPT']['low'])
+
     def test_kbs_history_normalization_supports_listing_to_present_payload(self):
         payload={'symbol':'FPT','data_day':[
             {'t':'13-12-2006','o':40000,'h':42000,'l':39500,'c':41000,'v':120000},
