@@ -2,9 +2,9 @@
 const fs=require('fs'),path=require('path');
 const {SECTORS}=require('./build_risk_monitor.cjs');
 
-const VERSION='FINQUERY-SECTOR-RISK-CAL-1.0';
+const VERSION='FINQUERY-SECTOR-RISK-CAL-1.1';
 const FORWARD_SESSIONS=3;
-const CANDIDATES=Array.from({length:21},(_,i)=>35+i*2.5);
+const STATE_QUANTILE=.90;
 
 const num=v=>Number.isFinite(Number(v))?Number(v):null;
 const clamp=(v,lo=0,hi=100)=>Math.min(hi,Math.max(lo,Number(v)||0));
@@ -48,63 +48,50 @@ function confusion(rows,threshold,cutoff){
   precisionLift:round(baseRate>0?precision/baseRate:0,3)
  };
 }
-function selectThreshold(train){
- const forwards=train.map(x=>x.forward3Pct);
- const adverseCutoff=Math.min(-1,quantile(forwards,.20)??-1);
- const minSignals=Math.max(10,Math.ceil(train.length*.02));
- let best=null;
- for(const threshold of CANDIDATES){
-  const m=confusion(train,threshold,adverseCutoff);
-  if(m.signals<minSignals||m.events<10)continue;
-  const candidate={threshold,adverseCutoffPct:round(adverseCutoff,2),metrics:m};
-  if(!best||m.youden>best.metrics.youden+.0001||
-     (Math.abs(m.youden-best.metrics.youden)<.0001&&m.precision>best.metrics.precision+.0001)||
-     (Math.abs(m.youden-best.metrics.youden)<.0001&&Math.abs(m.precision-best.metrics.precision)<.0001&&threshold>best.threshold)){
-    best=candidate;
-  }
- }
- return best;
-}
-function calibrateSector(id,label,observations){
- const rows=(observations||[]).filter(x=>Number.isFinite(Number(x.score))&&Number.isFinite(Number(x.forward3Pct))).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
- if(rows.length<180){
-  return{id,label,status:'INSUFFICIENT_HISTORY',alertEligible:false,samples:rows.length,threshold:round(quantile(rows.map(x=>x.score),.80)??65,1),reason:'Lịch sử hợp lệ chưa đủ 180 phiên để kiểm định theo thời gian.'};
- }
- const splits=[[.55,.70],[.70,.85],[.85,1.00]],folds=[];
- let totals={total:0,tp:0,fp:0,tn:0,fn:0,signals:0,events:0};
- const thresholds=[],cutoffs=[],signalReturns=[];
- for(const [trainFrac,testEndFrac] of splits){
-  const trainEnd=Math.floor(rows.length*trainFrac),testEnd=Math.floor(rows.length*testEndFrac);
-  const train=rows.slice(0,trainEnd),test=rows.slice(trainEnd,testEnd);
-  if(train.length<120||test.length<30)continue;
-  const selected=selectThreshold(train);if(!selected)continue;
-  const m=confusion(test,selected.threshold,selected.adverseCutoffPct);
-  folds.push({trainThrough:train[train.length-1].date,testFrom:test[0].date,testThrough:test[test.length-1].date,threshold:selected.threshold,adverseCutoffPct:selected.adverseCutoffPct,...m});
-  thresholds.push(selected.threshold);cutoffs.push(selected.adverseCutoffPct);
-  for(const row of test)if(Number(row.score)>=selected.threshold)signalReturns.push(row.forward3Pct);
-  for(const key of ['total','tp','fp','tn','fn','signals','events'])totals[key]+=m[key]||0;
- }
- const aggregate=confusionFromTotals(totals);
- const threshold=round(median(thresholds)??quantile(rows.map(x=>x.score),.80)??65,1);
- const spread=thresholds.length?round(Math.max(...thresholds)-Math.min(...thresholds),1):null;
- const medianSignalForward=median(signalReturns);
- const eligible=folds.length>=2&&aggregate.total>=90&&aggregate.signals>=12&&aggregate.events>=12&&
-  aggregate.recall>=.12&&aggregate.youden>=.03&&aggregate.precisionLift>=1.10&&(spread===null||spread<=20);
- return{
-  id,label,status:eligible?'VALIDATED_OOS':'LIMITED_OOS',alertEligible:eligible,
-  threshold,exitThreshold:round(Math.max(25,threshold-7.5),1),
-  thresholdSpread:spread,forwardSessions:FORWARD_SESSIONS,samples:rows.length,
-  firstDate:rows[0]?.date||null,lastDate:rows[rows.length-1]?.date||null,
-  adverseCutoffPct:round(median(cutoffs)??-1,2),
-  oos:{...aggregate,folds:folds.length,medianForward3WhenSignalPct:medianSignalForward===null?null:round(medianSignalForward,2)},
-  foldDetails:folds,
-  reason:eligible?'Ngưỡng đạt kiểm định ngoài mẫu theo thời gian.':'Có lịch sử nhưng độ phân biệt ngoài mẫu chưa đủ mạnh để dùng làm cảnh báo tự động.'
- };
-}
 function confusionFromTotals(x){
  const total=x.total||0,tp=x.tp||0,fp=x.fp||0,tn=x.tn||0,fn=x.fn||0,events=x.events||0;
  const recall=tp+fn?tp/(tp+fn):0,falseAlarmRate=fp+tn?fp/(fp+tn):0,precision=tp+fp?tp/(tp+fp):0,baseRate=total?events/total:0;
  return{...x,recall:round(recall,4),falseAlarmRate:round(falseAlarmRate,4),precision:round(precision,4),baseRate:round(baseRate,4),youden:round(recall-falseAlarmRate,4),precisionLift:round(baseRate>0?precision/baseRate:0,3)};
+}
+function calibrateSector(id,label,observations){
+ const rows=(observations||[]).filter(x=>Number.isFinite(Number(x.score))&&Number.isFinite(Number(x.forward3Pct))&&Number.isFinite(Number(x.currentMedianPct))).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ if(rows.length<180){
+  return{id,label,status:'INSUFFICIENT_HISTORY',alertEligible:false,stateValidated:false,continuationValidated:false,samples:rows.length,thresholdMode:'HISTORICAL_P90',threshold:round(quantile(rows.map(x=>x.score),STATE_QUANTILE)??65,1),reason:'Lịch sử hợp lệ chưa đủ 180 phiên để kiểm định độ ổn định của ngưỡng.'};
+ }
+ const splits=[[.55,.70],[.70,.85],[.85,1.00]],folds=[];
+ let totals={total:0,tp:0,fp:0,tn:0,fn:0,signals:0,events:0};
+ const thresholds=[],cutoffs=[],signalForward=[],signalCurrent=[];
+ for(const [trainFrac,testEndFrac] of splits){
+  const trainEnd=Math.floor(rows.length*trainFrac),testEnd=Math.floor(rows.length*testEndFrac);
+  const train=rows.slice(0,trainEnd),test=rows.slice(trainEnd,testEnd);
+  if(train.length<120||test.length<30)continue;
+  const threshold=round(quantile(train.map(x=>x.score),STATE_QUANTILE)??65,1);
+  const adverseCutoff=round(Math.min(-1,quantile(train.map(x=>x.forward3Pct),.20)??-1),2);
+  const m=confusion(test,threshold,adverseCutoff);
+  folds.push({trainThrough:train[train.length-1].date,testFrom:test[0].date,testThrough:test[test.length-1].date,threshold,adverseCutoffPct:adverseCutoff,...m});
+  thresholds.push(threshold);cutoffs.push(adverseCutoff);
+  for(const row of test)if(Number(row.score)>=threshold){signalForward.push(row.forward3Pct);signalCurrent.push(row.currentMedianPct);}
+  for(const key of ['total','tp','fp','tn','fn','signals','events'])totals[key]+=m[key]||0;
+ }
+ const aggregate=confusionFromTotals(totals);
+ const threshold=round(median(thresholds)??quantile(rows.map(x=>x.score),STATE_QUANTILE)??65,1);
+ const spread=thresholds.length?round(Math.max(...thresholds)-Math.min(...thresholds),1):null;
+ const signalRate=aggregate.total?aggregate.signals/aggregate.total:0;
+ const medianSignalForward=median(signalForward),medianSignalCurrent=median(signalCurrent);
+ const stateValidated=folds.length>=2&&aggregate.total>=90&&aggregate.signals>=20&&
+  signalRate>=.03&&signalRate<=.25&&(spread===null||spread<=15)&&medianSignalCurrent!==null&&medianSignalCurrent<0;
+ const continuationValidated=stateValidated&&aggregate.events>=12&&aggregate.recall>=.12&&aggregate.youden>=.05&&
+  aggregate.precisionLift>=1.20&&medianSignalForward!==null&&medianSignalForward<0;
+ return{
+  id,label,status:stateValidated?'VALIDATED_STATE':'LIMITED_STATE',alertEligible:stateValidated,stateValidated,continuationValidated,
+  thresholdMode:'HISTORICAL_P90',threshold,exitThreshold:round(Math.max(25,threshold-7.5),1),
+  thresholdSpread:spread,forwardSessions:FORWARD_SESSIONS,samples:rows.length,
+  firstDate:rows[0]?.date||null,lastDate:rows[rows.length-1]?.date||null,
+  adverseCutoffPct:round(median(cutoffs)??-1,2),
+  oos:{...aggregate,folds:folds.length,signalRate:round(signalRate,4),medianCurrentReturnWhenSignalPct:medianSignalCurrent===null?null:round(medianSignalCurrent,2),medianForward3WhenSignalPct:medianSignalForward===null?null:round(medianSignalForward,2)},
+  foldDetails:folds,
+  reason:stateValidated?(continuationValidated?'Ngưỡng căng thẳng lịch sử ổn định; bằng chứng giảm tiếp 3 phiên cũng đạt gate ngoài mẫu.':'Ngưỡng căng thẳng lịch sử ổn định; chưa đủ bằng chứng để kết luận ngành sẽ tiếp tục giảm trong 3 phiên sau.'):'Ngưỡng phân vị lịch sử chưa đủ ổn định hoặc chưa đủ mẫu tín hiệu để bật cảnh báo tự động.'
+ };
 }
 function loadFeatures(file,cutoffDay){
  let data;try{data=JSON.parse(fs.readFileSync(file,'utf8'));}catch{return new Map();}
@@ -130,13 +117,15 @@ function buildObservations(marketDir,group,cutoffDay){
   const map=loadFeatures(path.join(marketDir,'history',symbol+'.json'),cutoffDay);
   if(map.size){maps.set(symbol,map);for(const d of map.keys())dates.add(d);}
  }
- const minMembers=Math.max(2,Math.min(6,Math.ceil(group.symbols.length*.35))),rows=[];
+ if(maps.size<2)return[];
+ const minMembers=Math.max(2,Math.min(6,Math.ceil(maps.size*.50))),rows=[];
  for(const date of [...dates].sort()){
   const members=[];
   for(const [symbol,map] of maps){const x=map.get(date);if(x)members.push({symbol,...x});}
   if(members.length<minMembers)continue;
-  const fwd=median(members.map(x=>x.forward3Pct));if(fwd===null)continue;
-  rows.push({date,score:stressScore(members),forward3Pct:round(fwd,3),members:members.length});
+  const fwd=median(members.map(x=>x.forward3Pct)),current=median(members.map(x=>x.changePct));
+  if(fwd===null||current===null)continue;
+  rows.push({date,score:stressScore(members),currentMedianPct:round(current,3),forward3Pct:round(fwd,3),members:members.length});
  }
  return rows;
 }
@@ -152,16 +141,17 @@ function buildCalibration(marketDir,forSession){
   sectors[group.id]=calibrateSector(group.id,group.label,obs);
  }
  const validated=Object.values(sectors).filter(x=>x.alertEligible).length;
+ const continuationValidated=Object.values(sectors).filter(x=>x.continuationValidated).length;
  return{
   version:VERSION,status:'ok',generatedAt:new Date().toISOString(),forSession,cutoffPolicy:'ONLY_DAILY_BARS_BEFORE_CURRENT_SESSION',
   methodology:{
    score:'65% tỷ lệ mã giảm + 25% mức giảm trung vị + 10% khối lượng so với 20 phiên trước.',
-   outcome:'Mức giảm trung vị của cổ phiếu trong ngành sau 3 phiên.',
-   event:'Biến cố bất lợi dùng phân vị 20% của tập huấn luyện và phải giảm ít nhất 1%.',
-   validation:'Ba cửa sổ kiểm định mở rộng theo thời gian; ngưỡng chọn trên tập trước bằng Youden J (tỷ lệ bắt đúng trừ tỷ lệ báo giả), sau đó đánh giá ở giai đoạn sau.',
-   eligibility:'Chỉ bật cảnh báo tự động khi có ít nhất 2 fold, đủ mẫu và tín hiệu, recall >= 12%, Youden >= 0,03, precision lift >= 1,10 và ngưỡng giữa các fold không lệch quá 20 điểm.'
+   threshold:'Ngưỡng căng thẳng của từng ngành là phân vị 90% của điểm lịch sử, ước lượng riêng trong từng cửa sổ huấn luyện.',
+   validation:'Ba cửa sổ mở rộng theo thời gian kiểm tra độ ổn định của ngưỡng và tần suất chạm ngưỡng ở giai đoạn sau. Cảnh báo trạng thái không được diễn giải thành dự báo giảm tiếp.',
+   continuation:'Khả năng giảm tiếp 3 phiên được đánh giá riêng trên dữ liệu ngoài mẫu bằng adverse-tail 20% (tối thiểu -1%), precision lift, Youden, recall và lợi suất trung vị sau tín hiệu.',
+   eligibility:'Cảnh báo trạng thái chỉ bật khi có ít nhất 2 fold, đủ mẫu/tín hiệu, tần suất chạm ngưỡng hợp lý, ngưỡng giữa các fold lệch không quá 15 điểm và phản ứng cùng ngày có lợi suất trung vị âm.'
   },
-  validatedSectors:validated,totalSectors:Object.keys(sectors).length,sectors
+  validatedSectors:validated,continuationValidatedSectors:continuationValidated,totalSectors:Object.keys(sectors).length,sectors
  };
 }
 function main(){
@@ -172,13 +162,13 @@ function main(){
  try{
   const old=JSON.parse(fs.readFileSync(output,'utf8'));
   if(old?.status==='ok'&&old.version===VERSION&&old.forSession===forSession&&Object.keys(old.sectors||{}).length>=8){
-   console.log(JSON.stringify({status:'ok',reused:true,forSession,validatedSectors:old.validatedSectors,totalSectors:old.totalSectors}));
+   console.log(JSON.stringify({status:'ok',reused:true,forSession,validatedSectors:old.validatedSectors,continuationValidatedSectors:old.continuationValidatedSectors,totalSectors:old.totalSectors}));
    return;
   }
  }catch{}
  const result=buildCalibration(marketDir,forSession);
  fs.writeFileSync(output,JSON.stringify(result));
- console.log(JSON.stringify({status:result.status,reused:false,forSession,validatedSectors:result.validatedSectors,totalSectors:result.totalSectors}));
+ console.log(JSON.stringify({status:result.status,reused:false,forSession,validatedSectors:result.validatedSectors,continuationValidatedSectors:result.continuationValidatedSectors,totalSectors:result.totalSectors}));
 }
 if(require.main===module)main();
-module.exports={VERSION,stressScore,confusion,selectThreshold,calibrateSector,buildObservations,buildCalibration,quantile,median};
+module.exports={VERSION,stressScore,confusion,calibrateSector,buildObservations,buildCalibration,quantile,median};

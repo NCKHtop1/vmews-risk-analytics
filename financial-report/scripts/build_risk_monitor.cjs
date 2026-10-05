@@ -215,12 +215,13 @@ function sectorRows(rows,calibration=null){
    memberRows,threshold:threshold===null?null:round(threshold,1),exitThreshold:exitThreshold===null?null:round(exitThreshold,1),
    alertEligible,alertActive,nearThreshold,
    backtest:cal?{
-    status:cal.status||null,samples:cal.samples||0,forwardSessions:cal.forwardSessions||3,
+    status:cal.status||null,samples:cal.samples||0,forwardSessions:cal.forwardSessions||3,thresholdMode:cal.thresholdMode||null,
+    stateValidated:cal.stateValidated===true,continuationValidated:cal.continuationValidated===true,
     adverseCutoffPct:n(cal.adverseCutoffPct),thresholdSpread:n(cal.thresholdSpread),
     precision:n(cal.oos?.precision),baseRate:n(cal.oos?.baseRate),precisionLift:n(cal.oos?.precisionLift),
-    recall:n(cal.oos?.recall),falseAlarmRate:n(cal.oos?.falseAlarmRate),youden:n(cal.oos?.youden),
+    recall:n(cal.oos?.recall),falseAlarmRate:n(cal.oos?.falseAlarmRate),youden:n(cal.oos?.youden),signalRate:n(cal.oos?.signalRate),
     folds:cal.oos?.folds||0,signals:cal.oos?.signals||0,events:cal.oos?.events||0,
-    medianForward3WhenSignalPct:n(cal.oos?.medianForward3WhenSignalPct),reason:cal.reason||''
+    medianCurrentReturnWhenSignalPct:n(cal.oos?.medianCurrentReturnWhenSignalPct),medianForward3WhenSignalPct:n(cal.oos?.medianForward3WhenSignalPct),reason:cal.reason||''
    }:null
   };
  }).filter(Boolean).sort((a,b)=>{
@@ -395,16 +396,17 @@ function buildSectorAlerts(sectors,previous,sourceTime){
   const active=Number(s.score)>=(old?exit:enter);if(!active)continue;
   const bt=s.backtest||{},lift=Number(bt.precisionLift),precision=Number(bt.precision),base=Number(bt.baseRate);
   const evidence=[
-   'Điểm ngành '+round(s.score,1)+'/100; ngưỡng kiểm định '+round(enter,1)+'/100',
+   'Điểm ngành '+round(s.score,1)+'/100; ngưỡng căng thẳng lịch sử '+round(enter,1)+'/100',
    round(s.declinePct,1)+'% mã trong ngành đang giảm',
    'thay đổi trung vị '+(Number(s.medianChangePct)>0?'+':'')+round(s.medianChangePct,2)+'%'
   ];
-  if(Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('backtest ngoài mẫu: bắt đúng '+round(precision*100,1)+'% so với nền '+round(base*100,1)+'% (x'+round(lift,2)+')');
+  if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('giảm tiếp 3 phiên có bằng chứng ngoài mẫu: '+round(precision*100,1)+'% tín hiệu rơi vào vùng bất lợi so với nền '+round(base*100,1)+'% (x'+round(lift,2)+')');
+  else evidence.push('đây là cảnh báo trạng thái căng thẳng; chưa coi là dự báo ngành sẽ giảm tiếp');
   alerts.push({
-   id,title:s.label+' chạm ngưỡng cảnh báo ngành',score:round(s.score,1),
+   id,title:s.label+' chạm ngưỡng căng thẳng lịch sử',score:round(s.score,1),
    level:{key:Number(s.score)>=enter+10?'high':'watch',label:Number(s.score)>=enter+10?'Cao':'Cần theo dõi',tone:Number(s.score)>=enter+10?'red':'yellow'},
    startedAt:old?.startedAt||sourceTime,lastSeen:sourceTime,evidence:evidence.join('. '),
-   sectorId:s.id,threshold:round(enter,1),backtestValidated:true
+   sectorId:s.id,threshold:round(enter,1),backtestValidated:true,continuationValidated:bt.continuationValidated===true
   });
  }
  return alerts;
@@ -447,14 +449,14 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   coverage:{quotes:rows.length,expected,strategyLive:rows.length,sectors:sectors.length},
   overall,trend:tr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
   fundMonitor:fundMonitor||previous?.fundMonitor||{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu quỹ'},
-  sectorCalibration:sectorCalibration?{version:sectorCalibration.version,status:sectorCalibration.status,forSession:sectorCalibration.forSession,validatedSectors:sectorCalibration.validatedSectors,totalSectors:sectorCalibration.totalSectors,methodology:sectorCalibration.methodology}:null,
+  sectorCalibration:sectorCalibration?{version:sectorCalibration.version,status:sectorCalibration.status,forSession:sectorCalibration.forSession,validatedSectors:sectorCalibration.validatedSectors,continuationValidatedSectors:sectorCalibration.continuationValidatedSectors,totalSectors:sectorCalibration.totalSectors,methodology:sectorCalibration.methodology}:null,
   marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
   methodology:{
    weights:WEIGHTS,
    description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
    scope:'HOSE Core + Liquid có dữ liệu trực tiếp',
    comparison:'Mốc so sánh ưu tiên lần cập nhật liền trước. Khi chưa có lịch sử trong ngày, FinQuery dùng điểm cuối phiên giao dịch trước được dựng lại từ dữ liệu ngày.',
-   alertRule:'Cảnh báo thị trường dùng ngưỡng cố định có hysteresis. Cảnh báo ngành chỉ bật khi ngành đó có ngưỡng đã vượt kiểm định ngoài mẫu theo thời gian; mỗi ngành có ngưỡng riêng.'
+   alertRule:'Cảnh báo thị trường dùng ngưỡng cố định có hysteresis. Cảnh báo ngành chỉ bật khi điểm hiện tại chạm ngưỡng căng thẳng lịch sử riêng của ngành và ngưỡng đó ổn định qua kiểm định theo thời gian. Bằng chứng giảm tiếp 3 phiên được đánh giá riêng, không mặc định từ cảnh báo trạng thái.'
   }
  };
 }
