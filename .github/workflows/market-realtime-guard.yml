@@ -17,9 +17,6 @@ on:
     # job or the generic FinQuery market watchdog finishes, re-check the
     # published snapshots. Fresh data is a no-op; stale data is re-dispatched.
     workflows:
-      - Forecast V19 live FireAnt and 24HMoney intelligence
-      - Forecast V20.1 immutable-price audit and market intelligence
-      - Forecast V21 guarded session overlay
       - Refresh FinQuery prices and company news
       - Refresh market news stream
       - Refresh live HOSE Core + Liquid prices
@@ -53,12 +50,8 @@ jobs:
           mins=local.hour*60+local.minute
           active=local.weekday()<5 and (540<=mins<=690 or 775<=mins<=915)
           base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/financial-market-data/market/'
-          main_base='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/main/'
           def get(file):
               with urllib.request.urlopen(base+file+'?guard='+str(int(now.timestamp())),timeout=15) as r:
-                  return json.load(r)
-          def get_main(file):
-              with urllib.request.urlopen(main_base+file+'?guard='+str(int(now.timestamp())),timeout=15) as r:
                   return json.load(r)
           def age(value):
               t=datetime.fromisoformat(str(value).replace('Z','+00:00'))
@@ -83,13 +76,6 @@ jobs:
           except Exception as e:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
           if active:
-              try:
-                  v21=get_main('data/forecast-session-v21.json')
-                  if v21.get('status')!='PASS' or age(v21.get('generatedAt'))>12:
-                      raise ValueError('Forecast V21 older than 12 minutes or unavailable')
-                  print('Forecast V21 age minutes:',round(age(v21['generatedAt']),1), 'mode:',v21.get('mode'))
-              except Exception as e:
-                  print('::warning::Forecast V21 freshness:',e); stale.append('forecast-v21-session-refresh.yml')
               try:
                   q=get('quotes.json')
                   s=get('technical-signals.json')
