@@ -1,6 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {buildRiskSnapshot}=require('../scripts/build_risk_monitor.cjs');
+const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {buildRiskSnapshot,buildHistoricalBaseline}=require('../scripts/build_risk_monitor.cjs');
 
 const symbols=['ACB','BID','CTG','MBB','TCB','VCB','VIC','VHM','NVL','PDR','SSI','VIX'];
 function fixture({stress=false,sourceTime='2026-10-05T07:45:00.000Z'}={}){
@@ -75,4 +76,51 @@ test('active alerts keep their original start time while the condition remains a
  assert.ok(a);
  assert.equal(a.startedAt,'2026-10-05T07:40:00.000Z');
  assert.equal(a.lastSeen,'2026-10-05T07:45:00.000Z');
+});
+
+
+test('first risk snapshot can compare against previous session close',()=>{
+ const {quotes,strategy}=fixture();
+ const baseline={
+  sourceTime:'2026-10-02T07:45:00.000Z',sourceDate:'2026-10-02',score:31.5,level:'normal',
+  components:{breadth:35,volatility:28,liquidity:32,concentration:27,contagion:30},
+  basis:'previous-session-close',coverage:symbols.length
+ };
+ const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z',baseline);
+ assert.equal(out.timeline.length,2);
+ assert.equal(out.trend.previousScore,31.5);
+ assert.match(out.trend.comparisonLabel,/cuối phiên/);
+ assert.notEqual(out.trend.delta,null);
+ assert.equal(out.contributions.length,5);
+ assert.ok(out.contributions.every(x=>Number.isFinite(x.points)));
+});
+
+test('historical baseline is reconstructed from prior daily bars',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'risk-history-'));
+ fs.mkdirSync(path.join(dir,'history'),{recursive:true});
+ symbols.forEach((symbol,si)=>{
+  const bars=[];
+  for(let i=0;i<65;i++){
+   const d=new Date(Date.UTC(2026,6,1+i)).toISOString().slice(0,10);
+   const base=90000+si*1000+i*30;
+   bars.push({time:d,open:base-100,high:base+400,low:base-500,close:base,volume:1000000+i*1000});
+  }
+  fs.writeFileSync(path.join(dir,'history',symbol+'.json'),JSON.stringify({symbol,bars}));
+ });
+ const baseline=buildHistoricalBaseline(dir,symbols,'2026-10-05');
+ assert.ok(baseline);
+ assert.equal(baseline.coverage,symbols.length);
+ assert.equal(baseline.basis,'previous-session-close');
+ assert.ok(Number.isFinite(baseline.score));
+ assert.equal(Object.keys(baseline.components).length,5);
+ fs.rmSync(dir,{recursive:true,force:true});
+});
+
+test('alert history records new and resolved alerts',()=>{
+ const firstFixture=fixture({stress:true,sourceTime:'2026-10-05T07:40:00.000Z'});
+ const first=buildRiskSnapshot(firstFixture.quotes,firstFixture.strategy,null,'2026-10-05T07:40:10.000Z');
+ assert.ok(first.alertHistory.some(x=>x.type==='Bắt đầu'));
+ const calmFixture=fixture({stress:false,sourceTime:'2026-10-05T07:45:00.000Z'});
+ const calm=buildRiskSnapshot(calmFixture.quotes,calmFixture.strategy,first,'2026-10-05T07:45:10.000Z');
+ assert.ok(calm.alertHistory.some(x=>x.type==='Đã hạ'));
 });
