@@ -23,6 +23,10 @@ function setSiteAccess(unlocked){
  if(form)form.hidden=unlocked;
  if(error&&unlocked)error.textContent='';
  if(!unlocked)setTimeout(()=>$('site-access-code')?.focus(),0);
+ if(unlocked){
+  if(location.hash==='#risk-monitor')window.FinPlatformViews?.openRisk?.();
+  else if(location.hash==='#strategy-builder')window.FinPlatformViews?.openStrategy?.();
+ }
 }
 async function unlockSite(code){
  if(await siteDigest(String(code||'').trim())!==SITE_ACCESS_HASH){const error=$('site-access-error');if(error)error.textContent='Mã truy cập không đúng.';return false;}
