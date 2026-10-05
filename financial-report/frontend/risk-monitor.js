@@ -180,7 +180,8 @@ function renderFunds(){
   box.innerHTML='<p class="risk-empty">Chưa có dữ liệu quỹ đủ để so sánh.</p>';chart.innerHTML='';if(detail)detail.hidden=true;return;
  }
  if(asof)asof.textContent='Cập nhật nguồn '+esc(f.asOf||'—')+(f.lastChangedAsOf?' · danh mục đổi gần nhất '+esc(f.lastChangedAsOf):'')+(f.previousAsOf?' · so với '+esc(f.previousAsOf):'');
- box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã có thay đổi đáng kể</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Thay đổi đáng kể</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
+ const thresholdLabel=fmt(f.thresholdPP,2)+' điểm %';
+ box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã vượt ngưỡng '+thresholdLabel+'</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Lượt thay đổi vượt ngưỡng</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
  const rows=(f.rows||[]).filter(x=>Number(x.currentFundCount)>0).sort((a,b)=>b.currentFundCount-a.currentFundCount||b.materialChanges-a.materialChanges||a.symbol.localeCompare(b.symbol));
  const max=Math.max(1,...rows.map(x=>Number(x.currentFundCount)||0));
  chart.innerHTML='<div class="risk-fund-chart-head"><span>Mã</span><span>Số quỹ đang nắm giữ</span><span>Thay đổi gần nhất</span></div><div class="risk-fund-chart-body">'+rows.map(x=>{
