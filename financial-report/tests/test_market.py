@@ -1075,6 +1075,27 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(repaired['previousRsi14'],baseline['previousRsi14'])
         self.assertNotEqual(repaired['previousMacdHistogram'],repaired['macdHistogram'])
 
+    def test_offline_scanner_rebuild_uses_existing_snapshot_and_real_cadence(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            out=pathlib.Path(td); (out/'history').mkdir()
+            bars=[]
+            for i in range(70):
+                close=10000+i*i*8
+                bars.append({
+                    'time':f'2026-07-{1+i:02d}' if i<31 else f'2026-08-{i-30:02d}' if i<62 else f'2026-09-{i-61:02d}',
+                    'open':close-20,'high':close+80,'low':close-80,'close':close,'volume':1000000,
+                })
+            m.write(out/'history'/'FPT.json',{'symbol':'FPT','bars':bars})
+            stamp='2026-09-08T07:45:00+00:00'
+            m.write(out/'quotes.json',{'status':'ok','latestSourceTime':stamp,'quotes':{'FPT':{'symbol':'FPT','status':'ok','price':bars[-1]['close'],'changePct':1.2,'sourceTime':stamp}}})
+            m.scanner(out,[{'symbol':'FPT','tier':'CORE'}])
+            data=m.read(out/'technical-signals.json',{})
+            self.assertEqual(data['sourceTime'],stamp)
+            self.assertEqual(data['refreshEveryMinutes'],5)
+            self.assertIn('FPT',data['symbols'])
+            self.assertNotEqual(data['symbols']['FPT']['macdHistogram'],data['symbols']['FPT']['previousMacdHistogram'])
+
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
         rows=m.normalize_history(data,'MBB')
