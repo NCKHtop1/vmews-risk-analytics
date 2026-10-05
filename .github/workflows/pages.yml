@@ -57,6 +57,8 @@ jobs:
         run: python financial-report/scripts/build_technical_evidence.py --output _market-data/market
       - name: Generate strategy indicator snapshot
         run: node financial-report/scripts/build_strategy_snapshot.cjs _market-data/market
+      - name: Calibrate sector risk thresholds
+        run: node financial-report/scripts/build_sector_risk_calibration.cjs _market-data/market
       - name: Generate market risk snapshot
         run: node financial-report/scripts/build_risk_monitor.cjs _market-data/market
       - name: Validate main and market HOSE universe consistency
@@ -89,6 +91,9 @@ jobs:
           assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
           assert (risk.get('trend') or {}).get('previousScore') is not None,risk.get('trend')
           assert len(risk.get('contributions') or [])==5,risk.get('contributions')
+          sector_cal=risk.get('sectorCalibration') or {}
+          assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
+          assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
           funds=risk.get('fundMonitor') or {}
           assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
           assert funds.get('source')=='FMARKET',funds
@@ -196,6 +201,9 @@ jobs:
           assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
           assert (risk.get('trend') or {}).get('previousScore') is not None,risk.get('trend')
           assert len(risk.get('contributions') or [])==5,risk.get('contributions')
+          sector_cal=risk.get('sectorCalibration') or {}
+          assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
+          assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
           funds=risk.get('fundMonitor') or {}
           assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
           assert funds.get('source')=='FMARKET',funds

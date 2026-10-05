@@ -115,6 +115,11 @@ jobs:
                       raise ValueError('risk monitor comparison history is incomplete')
                   if len(risk.get('contributions') or [])!=5:
                       raise ValueError('risk monitor contribution breakdown is incomplete')
+                  cal=risk.get('sectorCalibration') or {}
+                  if cal.get('status')!='ok' or int(cal.get('totalSectors') or 0)<8:
+                      raise ValueError(f'sector calibration unavailable: {cal}')
+                  if not all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])):
+                      raise ValueError('sector heatmap contract incomplete')
                   if ps.get('status')!='ok' or age(ps.get('checkedAt'))>10 or ps.get('latestSourceTime')!=q.get('latestSourceTime'):
                       raise ValueError('prices-status stale or not aligned with quotes')
                   driver_symbols=drivers.get('symbols') or {}

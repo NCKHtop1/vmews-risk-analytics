@@ -296,7 +296,8 @@ jobs:
                   Array.isArray(r.contributions) && r.contributions.length===5 &&
                   Array.isArray(r.timeline) && r.timeline.length>=2 &&
                   Number.isFinite(Number(r.trend?.previousScore)) &&
-                  r.fundMonitor?.status==='ok' && Number(r.fundMonitor?.symbols||0)>0
+                  r.fundMonitor?.status==='ok' && Number(r.fundMonitor?.symbols||0)>0 &&
+                  r.sectorCalibration?.status==='ok' && Number(r.sectorCalibration?.totalSectors||0)>=8
                 );
               """))
               risk_snapshot=driver.execute_script("""
@@ -318,8 +319,10 @@ jobs:
                   fundStatus:r.fundMonitor?.status,
                   fundSymbols:r.fundMonitor?.symbols,
                   fundChanges:r.fundMonitor?.materialChanges,
-                  fundRows:document.querySelectorAll('#risk-fund-rows tr:not(.risk-fund-detail-row)').length,
+                  fundBars:document.querySelectorAll('#risk-fund-chart .risk-fund-bar').length,
                   fundSummary:document.querySelectorAll('#risk-fund-summary > div').length,
+                  sectorCalibration:r.sectorCalibration?.status,
+                  heatCells:document.querySelectorAll('#risk-sectors .risk-sector-heat-cell').length,
                   scoreText:(document.getElementById('risk-score')?.textContent||'').trim(),
                   rows:document.querySelectorAll('#risk-stock-rows tr').length,
                   contributionRows:document.querySelectorAll('#risk-contributions .risk-contribution-row').length,
@@ -343,8 +346,13 @@ jobs:
                   raise AssertionError(f'Risk trend card is not usable: {risk_snapshot}')
               if '/ 100' not in str(risk_snapshot.get('scoreText') or ''):
                   raise AssertionError(f'Risk score has no denominator: {risk_snapshot}')
-              if risk_snapshot.get('fundStatus')!='ok' or int(risk_snapshot.get('fundSymbols') or 0)<1 or int(risk_snapshot.get('fundRows') or 0)<1 or int(risk_snapshot.get('fundSummary') or 0)!=4:
-                  raise AssertionError(f'Fund holdings panel is incomplete: {risk_snapshot}')
+              if risk_snapshot.get('fundStatus')!='ok' or int(risk_snapshot.get('fundSymbols') or 0)<1 or int(risk_snapshot.get('fundBars') or 0)<1 or int(risk_snapshot.get('fundSummary') or 0)!=4:
+                  raise AssertionError(f'Fund holdings chart is incomplete: {risk_snapshot}')
+              if risk_snapshot.get('sectorCalibration')!='ok' or int(risk_snapshot.get('heatCells') or 0)<1:
+                  raise AssertionError(f'Calibrated sector heatmap is incomplete: {risk_snapshot}')
+              detail_check=driver.execute_script("const f=document.querySelector('#risk-fund-chart .risk-fund-bar'); const s=document.querySelector('#risk-sectors .risk-sector-heat-cell'); if(f)f.click(); if(s)s.click(); return {fund:document.getElementById('risk-fund-detail')?.hidden===false,sector:document.getElementById('risk-sector-detail')?.hidden===false};")
+              if not detail_check.get('fund') or not detail_check.get('sector'):
+                  raise AssertionError(f'Risk chart drilldown failed: {detail_check}')
               lowered_risk_text=str(risk_snapshot.get('text') or '').lower()
               for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress','không nhấp nháy','nhấn nhẹ một lần']:
                   if forbidden in lowered_risk_text:

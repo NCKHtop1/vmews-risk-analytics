@@ -13,6 +13,7 @@ on:
       - 'financial-report/scripts/refresh_esg.py'
       - 'financial-report/config/esg_sources.json'
       - 'financial-report/scripts/build_risk_monitor.cjs'
+      - 'financial-report/scripts/build_sector_risk_calibration.cjs'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
     # Fallback watchdogs for the dedicated live workflows. They run only when
@@ -185,7 +186,7 @@ jobs:
         if: always()
         run: |
           if [ -f /tmp/market-publish/market/quotes.json ] && [ -f /tmp/market-publish/market/strategy-indicators.json ]; then
-            if node financial-report/scripts/build_risk_monitor.cjs /tmp/market-publish/market; then
+            if node financial-report/scripts/build_sector_risk_calibration.cjs /tmp/market-publish/market && node financial-report/scripts/build_risk_monitor.cjs /tmp/market-publish/market; then
               echo "Risk history aligned and ready to publish."
             else
               echo "::warning::Risk snapshot was not rebuilt because its market inputs are not aligned."

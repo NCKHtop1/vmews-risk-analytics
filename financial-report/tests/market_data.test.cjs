@@ -182,29 +182,32 @@ test('risk monitor states the monitored universe clearly',()=>{
 });
 
 
-test('risk monitor v2 exposes usable comparison and dashboard panels',()=>{
+test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const css=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.css'),'utf8');
  const refresh=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/financial-market-refresh.yml'),'utf8');
+ const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
  assert.match(index,/SO VỚI MỐC GẦN NHẤT/);
  assert.match(index,/id="risk-contributions"/);
  assert.match(index,/id="risk-breadth-strip"/);
  assert.match(index,/id="risk-alert-history"/);
- assert.match(index,/Rủi ro theo nhóm ngành/);
+ assert.match(index,/Heatmap nhóm ngành giảm/);
+ assert.match(index,/id="risk-sector-detail"/);
+ assert.match(index,/id="risk-fund-chart"/);
+ assert.match(index,/id="risk-fund-detail"/);
+ assert.doesNotMatch(index,/id="risk-fund-rows"|risk-fund-table/);
  assert.match(index,/MỨC RỦI RO HIỆN TẠI · THANG 0–100/);
- assert.match(index,/id="risk-fund-rows"/);
- assert.match(index,/Quỹ đang nắm giữ/);
  assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần/i);
- assert.match(risk,/comparisonLabel/);
- assert.match(risk,/risk-contribution-row/);
- assert.match(risk,/risk-breadth-up/);
- assert.match(risk,/renderFunds/);
- assert.match(risk,/\/ 100/);
- assert.match(css,/risk-sector-grid/);
- assert.match(css,/risk-fund-summary/);
+ assert.match(risk,/renderSectorDetail/);
+ assert.match(risk,/risk-sector-heat-cell/);
+ assert.match(risk,/renderFundDetail/);
+ assert.match(risk,/risk-fund-bar/);
+ assert.match(risk,/sectorCalibration/);
+ assert.match(css,/risk-sector-heatmap/);
+ assert.match(css,/risk-fund-chart/);
  assert.doesNotMatch(css,/riskAlertPulse|animation:riskAlertPulse/);
+ assert.match(refresh,/build_sector_risk_calibration\.cjs/);
+ assert.match(live,/build_sector_risk_calibration\.cjs/);
  assert.match(refresh,/Persist aligned market risk history/);
- assert.match(refresh,/build_risk_monitor\.cjs/);
- assert.match(refresh,/actions\/setup-node@v4/);
 });
