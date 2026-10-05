@@ -13,7 +13,6 @@ on:
       - 'financial-report/scripts/refresh_esg.py'
       - 'financial-report/config/esg_sources.json'
       - 'financial-report/scripts/build_risk_monitor.cjs'
-      - 'data/fund-holdings-history-v16.json'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
     # Fallback watchdogs for the dedicated live workflows. They run only when
