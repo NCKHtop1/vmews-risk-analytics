@@ -1,0 +1,117 @@
+name: Refresh disclosed fund holdings
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Hourly business-day checks, 08:12-17:12 Vietnam time.
+    # Fund holdings are disclosure-based, not exchange-tick data.
+    - cron: '12 1-10 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vmews-main-data-publisher-main
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  refresh-funds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts/forecast_v16_external_data.py
+            data/fund-holdings-history-v16.json
+            data/v12-frozen-source.json.gz
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install fund collector dependencies
+        run: pip install --disable-pip-version-check -q numpy pandas
+      - name: Collect and keep only meaningful fund updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp data/fund-holdings-history-v16.json /tmp/fund-before.json
+          cp data/fund-holdings-history-v16.json /tmp/fund-next.json
+          timeout 120s python scripts/forecast_v16_external_data.py --collect-funds --output /tmp/fund-next.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          before=json.loads(Path('/tmp/fund-before.json').read_text(encoding='utf-8'))
+          after=json.loads(Path('/tmp/fund-next.json').read_text(encoding='utf-8'))
+
+          def latest(history):
+              rows=[x for x in history.get('snapshots',[]) if isinstance(x,dict) and x.get('asOf')]
+              return max(rows,key=lambda x:str(x.get('asOf'))) if rows else {}
+
+          def normalized(snapshot):
+              holdings=[]
+              for x in snapshot.get('holdings',[]) or []:
+                  if not isinstance(x,dict):
+                      continue
+                  holdings.append({
+                      'fundId':x.get('fundId'),
+                      'fundCode':x.get('fundCode'),
+                      'fundName':x.get('fundName'),
+                      'symbol':x.get('symbol'),
+                      'weight':x.get('weight'),
+                      'reportDate':x.get('reportDate'),
+                      'navMomentum20':x.get('navMomentum20'),
+                      'navVolatility20':x.get('navVolatility20'),
+                  })
+              holdings.sort(key=lambda x:(str(x.get('symbol')),str(x.get('fundCode')),str(x.get('fundId'))))
+              return {
+                  'asOf':snapshot.get('asOf'),
+                  'source':snapshot.get('source'),
+                  'weightUnit':snapshot.get('weightUnit'),
+                  'holdings':holdings,
+              }
+
+          old,new=latest(before),latest(after)
+          changed=normalized(old)!=normalized(new)
+          Path('/tmp/fund-changed').write_text('true' if changed else 'false')
+          print({
+              'changed':changed,
+              'previousAsOf':old.get('asOf'),
+              'currentAsOf':new.get('asOf'),
+              'funds':new.get('fundsWithMappedHoldings'),
+              'holdings':new.get('holdingRows'),
+              'symbols':new.get('symbols'),
+          })
+          if changed:
+              Path('data/fund-holdings-history-v16.json').write_text(
+                  json.dumps(after,ensure_ascii=False,separators=(',',':')),
+                  encoding='utf-8'
+              )
+          PY
+      - name: Publish changed fund history
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$(cat /tmp/fund-changed)" != "true" ]; then
+            echo "No meaningful fund holdings or NAV change."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/fund-holdings-history-v16.json
+          if git diff --cached --quiet; then
+            echo "No fund history diff to publish."
+            exit 0
+          fi
+          git commit -m 'Refresh disclosed fund holdings [data-only]'
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish fund history after retries" >&2
+          exit 1
