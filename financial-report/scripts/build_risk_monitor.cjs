@@ -1,8 +1,10 @@
 'use strict';
-const fs=require('fs'),path=require('path');
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
 
-const VERSION='FINQUERY-RISK-1.1';
-const METHOD_VERSION='FINQUERY-RISK-RULES-1.1';
+const VERSION='FINQUERY-RISK-1.2';
+const METHOD_VERSION='FINQUERY-RISK-RULES-1.2';
+const FUND_HISTORY_PATH=path.resolve(__dirname,'../../data/fund-holdings-history-v16.json');
+const FUND_CHANGE_THRESHOLD_PP=0.50;
 const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
 const SECTORS=[
  {id:'banking',label:'Ngân hàng',symbols:['ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB']},
@@ -30,6 +32,107 @@ const avg=values=>{const a=(values||[]).map(n).filter(Number.isFinite);return a.
 function median(values){
  const a=(values||[]).map(n).filter(Number.isFinite).sort((x,y)=>x-y);
  if(!a.length)return 0;const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;
+}
+function fundLabel(status){
+ return({new:'Mới xuất hiện trong top công bố',removed:'Không còn trong top công bố',increased:'Tăng tỷ trọng công bố',decreased:'Giảm tỷ trọng công bố',mixed:'Có cả tăng và giảm',stable:'Ít thay đổi'})[status]||'Ít thay đổi';
+}
+function fundTone(status){
+ if(status==='new'||status==='increased')return'green';
+ if(status==='removed'||status==='decreased')return'red';
+ if(status==='mixed')return'yellow';
+ return'neutral';
+}
+function buildFundMonitor(history){
+ const snapshots=(history?.snapshots||[]).filter(x=>x&&typeof x==='object'&&x.weightUnit==='FRACTION_OF_NAV'&&x.asOf);
+ if(!snapshots.length)return{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu công bố quỹ'};
+ const ordered=[...snapshots].sort((a,b)=>String(a.asOf).localeCompare(String(b.asOf)));
+ const latest=ordered[ordered.length-1],previous=ordered.length>1?ordered[ordered.length-2]:null;
+ const signature=crypto.createHash('sha256').update(JSON.stringify(latest.holdings||[])).digest('hex').slice(0,20);
+ const group=snapshot=>{
+  const by=new Map();
+  for(const item of snapshot?.holdings||[]){
+   const symbol=String(item?.symbol||'').toUpperCase().trim();if(!symbol)continue;
+   const fundKey=String(item?.fundCode||item?.fundId||item?.fundName||'').trim();if(!fundKey)continue;
+   if(!by.has(symbol))by.set(symbol,new Map());
+   by.get(symbol).set(fundKey,item);
+  }
+  return by;
+ };
+ const current=group(latest),prior=group(previous);
+ const symbols=[...new Set([...current.keys(),...prior.keys()])].sort();
+ const rows=[],alerts=[];
+ for(const symbol of symbols){
+  const now=current.get(symbol)||new Map(),old=prior.get(symbol)||new Map();
+  const fundKeys=[...new Set([...now.keys(),...old.keys()])].sort();
+  const details=fundKeys.map(fundKey=>{
+   const a=now.get(fundKey)||null,b=old.get(fundKey)||null;
+   const cw=a?n(a.weight):null,pw=b?n(b.weight):null;
+   let status='stable',deltaPP=null;
+   if(a&&!b)status='new';
+   else if(!a&&b)status='removed';
+   else if(cw!==null&&pw!==null){
+    deltaPP=round((cw-pw)*100,2);
+    if(deltaPP>=FUND_CHANGE_THRESHOLD_PP)status='increased';
+    else if(deltaPP<=-FUND_CHANGE_THRESHOLD_PP)status='decreased';
+   }
+   const material=status!=='stable';
+   const src=a||b||{};
+   return{
+    fundCode:String(src.fundCode||fundKey),fundName:String(src.fundName||src.fundCode||fundKey),
+    status,label:fundLabel(status),tone:fundTone(status),material,
+    currentWeightPct:cw===null?null:round(cw*100,2),
+    previousWeightPct:pw===null?null:round(pw*100,2),
+    deltaPP,
+    reportDate:a?.reportDate||b?.reportDate||null,
+    navMomentum20Pct:n(a?.navMomentum20)===null?null:round(n(a.navMomentum20)*100,2),
+    navVolatility20Pct:n(a?.navVolatility20)===null?null:round(n(a.navVolatility20)*100,2)
+   };
+  });
+  const active=details.filter(x=>x.currentWeightPct!==null);
+  const changes=details.filter(x=>x.material);
+  const inc=changes.filter(x=>x.status==='increased'||x.status==='new').length;
+  const dec=changes.filter(x=>x.status==='decreased'||x.status==='removed').length;
+  let status='stable';
+  if(inc&&dec)status='mixed';else if(inc)status='increased';else if(dec)status='decreased';
+  const numericChanges=details.filter(x=>Number.isFinite(Number(x.deltaPP)));
+  const largest=numericChanges.sort((a,b)=>Math.abs(Number(b.deltaPP))-Math.abs(Number(a.deltaPP)))[0]||null;
+  const activeWeights=active.map(x=>x.currentWeightPct).filter(Number.isFinite);
+  const row={
+   symbol,currentFundCount:active.length,previousFundCount:details.filter(x=>x.previousWeightPct!==null).length,
+   averageWeightPct:activeWeights.length?round(avg(activeWeights),2):null,
+   largestWeightPct:activeWeights.length?round(Math.max(...activeWeights),2):null,
+   largestChangePP:largest?round(largest.deltaPP,2):null,
+   materialChanges:changes.length,status,label:fundLabel(status),tone:fundTone(status),details
+  };
+  if(row.currentFundCount>0||row.materialChanges>0)rows.push(row);
+  for(const d of changes){
+   alerts.push({
+    id:symbol+':'+d.fundCode+':'+d.status,symbol,fundCode:d.fundCode,fundName:d.fundName,
+    status:d.status,label:d.label,tone:d.tone,currentWeightPct:d.currentWeightPct,
+    previousWeightPct:d.previousWeightPct,deltaPP:d.deltaPP,reportDate:d.reportDate,
+    priority:(d.status==='new'||d.status==='removed'?100:Math.abs(Number(d.deltaPP)||0))
+   });
+  }
+ }
+ rows.sort((a,b)=>b.materialChanges-a.materialChanges||Math.abs(Number(b.largestChangePP)||0)-Math.abs(Number(a.largestChangePP)||0)||b.currentFundCount-a.currentFundCount||a.symbol.localeCompare(b.symbol));
+ alerts.sort((a,b)=>b.priority-a.priority||a.symbol.localeCompare(b.symbol)||a.fundCode.localeCompare(b.fundCode));
+ const latestHoldings=latest.holdings||[];
+ const reportDates=latestHoldings.map(x=>String(x?.reportDate||'')).filter(Boolean).sort();
+ const uniqueFunds=new Set(latestHoldings.map(x=>String(x?.fundCode||x?.fundId||'')).filter(Boolean));
+ return{
+  status:'ok',source:'FMARKET',sourceRole:'DISCLOSED_FUND_CONTEXT',asOf:String(latest.asOf),
+  reportDate:reportDates.length?reportDates[reportDates.length-1]:null,
+  generatedAt:latest.generatedAt||history?.generatedAt||null,previousAsOf:previous?String(previous.asOf):null,
+  snapshotCount:ordered.length,funds:uniqueFunds.size,holdingRows:latestHoldings.length,
+  symbols:current.size,changedSymbols:rows.filter(x=>x.materialChanges>0).length,
+  materialChanges:alerts.length,thresholdPP:FUND_CHANGE_THRESHOLD_PP,signature,
+  rows,alerts:alerts.slice(0,60),
+  note:'So sánh tỷ trọng trong danh mục quỹ giữa hai lần thu thập gần nhất. Không suy diễn thành số cổ phiếu mua/bán khi nguồn không công bố khối lượng.'
+ };
+}
+function loadFundMonitor(historyPath=FUND_HISTORY_PATH){
+ try{return buildFundMonitor(JSON.parse(fs.readFileSync(historyPath,'utf8')));}
+ catch(error){return{status:'unavailable',source:'FMARKET',reason:'Không đọc được dữ liệu quỹ',error:String(error?.message||error).slice(0,180)};}
 }
 function vnDay(value){
  const d=new Date(value);if(!Number.isFinite(d.getTime()))return'';
@@ -267,7 +370,7 @@ function alertHistory(previous,alerts,sourceTime){
  for(const a of previous?.alerts||[])if(!now.has(a.id))history.push({id:a.id,title:a.title,type:'Đã hạ',time:sourceTime,score:a.score,level:level(0)});
  return history.slice(-60);
 }
-function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString(),baselinePoint=null){
+function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString(),baselinePoint=null,fundMonitor=null){
  if(!quotes||quotes.status!=='ok')throw new Error('quotes snapshot is not ok');
  if(!strategy||strategy.status!=='ok')throw new Error('strategy snapshot is not ok');
  const latest=quotes.latestSourceTime||quotes.sourceTime||null;
@@ -297,6 +400,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   version:VERSION,methodVersion:METHOD_VERSION,status:'ok',generatedAt,sourceTime,sourceDate:day,
   coverage:{quotes:rows.length,expected,strategyLive:rows.length,sectors:sectors.length},
   overall,trend:tr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
+  fundMonitor:fundMonitor||previous?.fundMonitor||{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu quỹ'},
   marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
   methodology:{
    weights:WEIGHTS,
@@ -313,8 +417,9 @@ function main(){
  const read=name=>JSON.parse(fs.readFileSync(path.join(out,name),'utf8'));
  const quotes=read('quotes.json'),strategy=read('strategy-indicators.json');
  let previous=null;try{previous=read('risk-monitor.json');}catch{}
+ const fundMonitor=loadFundMonitor();
  const latest=quotes.latestSourceTime||quotes.sourceTime||null,day=vnDay(latest);
- const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel');
+ const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel')&&String(previous.fundMonitor?.signature||'')===String(fundMonitor?.signature||'');
  if(reusable){
   console.log(JSON.stringify({status:previous.status,score:previous.overall?.score,level:previous.overall?.level?.label,coverage:previous.coverage,sourceTime:previous.sourceTime,trend:previous.trend,alerts:(previous.alerts||[]).length,timeline:(previous.timeline||[]).length,reused:true}));
   return;
@@ -323,9 +428,9 @@ function main(){
  const needsBaseline=!oldTimeline.some(x=>x?.sourceTime&&String(x.sourceTime)!==String(latest));
  const symbols=Object.entries(quotes.quotes||{}).filter(([,q])=>q?.status!=='retained').map(([s])=>s);
  const baseline=needsBaseline?buildHistoricalBaseline(out,symbols,day):null;
- const snapshot=buildRiskSnapshot(quotes,strategy,previous,new Date().toISOString(),baseline);
+ const snapshot=buildRiskSnapshot(quotes,strategy,previous,new Date().toISOString(),baseline,fundMonitor);
  fs.writeFileSync(path.join(out,'risk-monitor.json'),JSON.stringify(snapshot));
- console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,trend:snapshot.trend,alerts:snapshot.alerts.length,timeline:snapshot.timeline.length}));
+ console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,trend:snapshot.trend,alerts:snapshot.alerts.length,timeline:snapshot.timeline.length,funds:snapshot.fundMonitor?.funds||0,fundSymbols:snapshot.fundMonitor?.symbols||0,fundChanges:snapshot.fundMonitor?.materialChanges||0}));
 }
 if(require.main===module)main();
-module.exports={buildRiskSnapshot,buildHistoricalBaseline,componentScores,stockRisk,sectorRows,level,trend,scale,median,overallFromComponents,contributionRows,WEIGHTS,SECTORS};
+module.exports={buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor,loadFundMonitor,componentScores,stockRisk,sectorRows,level,trend,scale,median,overallFromComponents,contributionRows,WEIGHTS,SECTORS};
