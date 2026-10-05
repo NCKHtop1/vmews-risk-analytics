@@ -9,24 +9,24 @@ on:
       - '.github/workflows/market-realtime-guard.yml'
       - 'financial-report/scripts/refresh_market.py'
   schedule:
-    # Primary publisher cadence: every 15 minutes, including evenings/weekends.
-    # market-realtime-guard is a separate 5-minute recovery heartbeat because
-    # GitHub scheduled events can occasionally be delayed or skipped.
-    - cron: '12,27,42,57 * * * *'
+    # Bootstrap a long-lived publisher every hour. Each run keeps publishing for
+    # more than one hour, so a delayed/skipped cron does not immediately create
+    # a multi-hour news gap. market-realtime-guard remains an independent recovery.
+    - cron: '7 * * * *'
 
 permissions:
   contents: write
 
 concurrency:
   group: market-news-live
-  # News runs are short, but overlapping recovery/schedule triggers must not
-  # cancel a publisher that is already validating/pushing a fresh snapshot.
-  cancel-in-progress: false
+  # The next hourly bootstrap cleanly takes ownership of the heartbeat. If that
+  # bootstrap is delayed, the current run keeps publishing until its own limit.
+  cancel-in-progress: true
 
 jobs:
   news:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 125
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,15 +41,24 @@ jobs:
           git worktree add /tmp/market-news origin/financial-market-data
           git -C /tmp/market-news sparse-checkout set market
           mkdir -p /tmp/market-news/market
-      - name: Collect publisher headlines
-        run: python -u financial-report/scripts/refresh_market.py --output /tmp/market-news/market --mode news
-      - name: Validate news freshness
+      - name: Maintain resilient news heartbeat
+        shell: bash
         run: |
-          python - <<'PY'
-          import json
+          set -uo pipefail
+          for iteration in 1 2 3 4 5 6 7 8; do
+            echo "=== News heartbeat $iteration/8 at $(date -u '+%H:%M:%S UTC') ==="
+            git -C /tmp/market-news fetch origin financial-market-data
+            git -C /tmp/market-news reset --hard origin/financial-market-data
+            git -C /tmp/market-news clean -fd
+
+            if ! python -u financial-report/scripts/refresh_market.py --output /tmp/market-news/market --mode news; then
+              echo "::warning::News collection failed; retrying on the next heartbeat."
+            else
+              if SNAPSHOT=/tmp/market-news/market/news.json python - <<'PY'
+          import json, os
           from datetime import datetime, timezone
           from pathlib import Path
-          data=json.loads(Path('/tmp/market-news/market/news.json').read_text())
+          data=json.loads(Path(os.environ['SNAPSHOT']).read_text())
           if data.get('status')!='ok':
               raise SystemExit('news.json status is not ok')
           checked=datetime.fromisoformat(str(data.get('checkedAt')).replace('Z','+00:00'))
@@ -62,29 +71,35 @@ jobs:
               raise SystemExit('news snapshot has no items')
           print('NEWS OK',len(data.get('items') or []),data.get('checkedAt'))
           PY
-      - name: Publish news snapshot
-        working-directory: /tmp/market-news
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # news.json is owned by this workflow; drivers.json is owned by the price workflow.
-          # refresh_market.py recalculates drivers locally, so discard that unstaged change
-          # before rebasing/publishing the news-only commit.
-          git restore --worktree market/drivers.json || true
-          git add --sparse market/news.json
-          if git diff --cached --quiet; then
-            echo "No news changes to publish"
-            exit 0
-          fi
-          git commit -m 'Refresh market news stream [data-only]'
-          for attempt in 1 2 3; do
-            git fetch origin financial-market-data
-            if git rebase origin/financial-market-data && git push origin HEAD:refs/heads/financial-market-data; then
-              exit 0
+              then
+                git -C /tmp/market-news config user.name 'github-actions[bot]'
+                git -C /tmp/market-news config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+                git -C /tmp/market-news restore --worktree market/drivers.json || true
+                git -C /tmp/market-news add --sparse market/news.json
+                if ! git -C /tmp/market-news diff --cached --quiet; then
+                  git -C /tmp/market-news commit -m 'Refresh market news stream [data-only]'
+                  published=0
+                  for attempt in 1 2 3; do
+                    git -C /tmp/market-news fetch origin financial-market-data
+                    if git -C /tmp/market-news rebase origin/financial-market-data && git -C /tmp/market-news push origin HEAD:refs/heads/financial-market-data; then
+                      published=1
+                      break
+                    fi
+                    git -C /tmp/market-news rebase --abort || true
+                    sleep $((attempt * 2))
+                  done
+                  if [ "$published" -ne 1 ]; then
+                    echo "::warning::Unable to publish this news heartbeat after retries."
+                  fi
+                else
+                  echo "No news changes to publish"
+                fi
+              else
+                echo "::warning::News validation failed; stale data was not published."
+              fi
             fi
-            git rebase --abort || true
-            sleep $((attempt * 2))
+
+            if [ "$iteration" -lt 8 ]; then
+              sleep 900
+            fi
           done
-          echo "Unable to publish news snapshot after retries" >&2
-          exit 1
