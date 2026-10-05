@@ -135,3 +135,5 @@
 .risk-fund-detail-item div strong{display:block;font-size:10px;color:#35445a}.risk-fund-detail-item div small{display:block;margin-top:2px;font-size:8.5px;color:#8994a3}.risk-fund-detail-item>span,.risk-fund-detail-item>b,.risk-fund-detail-item>small{font-size:9px;color:#66768a}.risk-fund-detail-item>b{font-size:10px;color:#34445a}
 .risk-fund-note{margin:10px 0 0;font-size:9.5px;line-height:1.55;color:#7a8798}
 @media(max-width:760px){.risk-fund-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-fund-alert button{grid-template-columns:60px 1fr}.risk-fund-detail-item{grid-template-columns:1fr 1fr}}
+
+.risk-nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:4px;padding:0 5px;border-radius:999px;background:#b53c4a;color:#fff;font-size:9px;font-weight:800;line-height:1;vertical-align:middle}.risk-nav-badge[hidden]{display:none!important}
