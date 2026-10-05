@@ -112,7 +112,9 @@ test('news freshness has scheduler recovery and browser fallback retry',()=>{
  assert.match(guard,/Deploy VMEWS Pages/);
  assert.match(guard,/financial-report\/\*\*/);
  assert.match(news,/market-realtime-guard\.yml/);
- assert.match(news,/12,27,42,57 \* \* \* \*/);
+ assert.match(news,/cron: '7 \* \* \* \*'/);
+ assert.match(news,/Maintain resilient news heartbeat/);
+ assert.match(news,/sleep 900/);
  assert.match(market,/for\(let attempt=0;attempt<2;attempt\+\+\)/);
  assert.match(market,/&v='\+Math\.floor\(Date\.now\(\)\/60000\)/);
 });
