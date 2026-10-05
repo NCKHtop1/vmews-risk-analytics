@@ -1,3 +1,4 @@
+.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
 .risk-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:28px 30px;border-bottom:1px solid #e8edf3;background:linear-gradient(180deg,#fff,#fbfcfe)}
