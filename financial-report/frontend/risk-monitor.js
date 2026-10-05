@@ -33,11 +33,11 @@ function levelBadge(lvl){
 }
 function summaryText(score){
  const s=Number(score)||0;
- if(s>=80)return'Các dấu hiệu căng thẳng đang xuất hiện đồng thời trên nhiều mặt. Cần ưu tiên bảo toàn vị thế và theo dõi khả năng lan rộng.';
- if(s>=65)return'Rủi ro thị trường đang cao. Cần theo dõi sát mức giảm lan rộng, biến động và các nhóm ngành đang yếu.';
- if(s>=50)return'Mức căng thẳng đang tăng. Chưa phải trạng thái cao nhất nhưng cần theo dõi sát các cảnh báo đang bật.';
- if(s>=35)return'Thị trường có một số dấu hiệu cần theo dõi, nhưng áp lực chưa lan rộng trên toàn bộ hệ thống.';
- return'Các thước đo chính đang ở vùng bình thường. Chưa thấy dấu hiệu căng thẳng lan rộng ở thời điểm này.';
+ if(s>=80)return'Căng thẳng đang xuất hiện đồng thời trên nhiều mặt.';
+ if(s>=65)return'Căng thẳng thị trường đang ở mức cao và lan rộng.';
+ if(s>=50)return'Căng thẳng đang tăng trên nhiều thước đo.';
+ if(s>=35)return'Một số dấu hiệu căng thẳng đã xuất hiện nhưng chưa lan rộng.';
+ return'Chưa thấy căng thẳng lan rộng trên toàn thị trường.';
 }
 function renderTop(){
  const d=state.data;if(!d)return;
