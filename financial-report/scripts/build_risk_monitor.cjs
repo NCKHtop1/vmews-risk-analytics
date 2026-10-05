@@ -1,0 +1,223 @@
+'use strict';
+const fs=require('fs'),path=require('path');
+
+const VERSION='FINQUERY-RISK-1.0';
+const METHOD_VERSION='FINQUERY-RISK-RULES-1.0';
+const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
+const SECTORS=[
+ {id:'banking',label:'Ngân hàng',symbols:['ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB']},
+ {id:'securities',label:'Chứng khoán',symbols:['SSI','VND','VCI','HCM','BSI','FTS','CTS','ORS','SHS','VIX']},
+ {id:'real-estate',label:'Bất động sản',symbols:['VIC','VHM','VRE','NVL','PDR','DXG','KDH','NLG','BCM','KBC','SZC','DIG']},
+ {id:'steel',label:'Thép',symbols:['HPG','HSG','NKG','POM','GDA','SMC','TLH','TVN','VGS']},
+ {id:'technology',label:'Công nghệ',symbols:['FPT','CMG','ELC','CTR']},
+ {id:'retail',label:'Bán lẻ',symbols:['MWG','FRT','PNJ','DGW']},
+ {id:'oil-gas',label:'Dầu khí',symbols:['GAS','PLX','PVD','PVS','BSR','OIL']},
+ {id:'utilities',label:'Điện và tiện ích',symbols:['POW','REE','NT2','GEG','PC1']},
+ {id:'construction',label:'Xây dựng và hạ tầng',symbols:['CTD','HBC','HHV','CII','VCG']},
+ {id:'seafood',label:'Thủy sản',symbols:['VHC','ANV','FMC']},
+ {id:'chemicals',label:'Hóa chất và phân bón',symbols:['DGC','CSV','DCM','DPM']},
+ {id:'transport',label:'Vận tải và logistics',symbols:['GMD','HAH','VSC','VJC','HVN']},
+ {id:'insurance',label:'Bảo hiểm',symbols:['BVH','MIG','BIC','PVI']},
+ {id:'consumer',label:'Tiêu dùng',symbols:['VNM','SAB','MSN','QNS']}
+];
+
+const n=v=>Number.isFinite(Number(v))?Number(v):null;
+const clamp=(v,lo=0,hi=100)=>Math.min(hi,Math.max(lo,Number(v)||0));
+const scale=(v,lo,hi)=>hi<=lo?0:clamp((Number(v)-lo)/(hi-lo)*100);
+const pct=v=>Math.round(clamp(v,0,1)*1000)/10;
+const round=(v,d=1)=>{const p=10**d;return Math.round((Number(v)||0)*p)/p;};
+function median(values){
+ const a=(values||[]).map(n).filter(Number.isFinite).sort((x,y)=>x-y);
+ if(!a.length)return 0;const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;
+}
+function vnDay(value){
+ const d=new Date(value);if(!Number.isFinite(d.getTime()))return'';
+ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+}
+function level(score){
+ const s=Number(score)||0;
+ if(s>=80)return{key:'very-high',label:'Rất cao',tone:'red'};
+ if(s>=65)return{key:'high',label:'Cao',tone:'red'};
+ if(s>=50)return{key:'rising',label:'Căng thẳng tăng',tone:'yellow'};
+ if(s>=35)return{key:'watch',label:'Cần theo dõi',tone:'yellow'};
+ return{key:'normal',label:'Bình thường',tone:'green'};
+}
+function trend(current,previous){
+ if(!previous)return{label:'Chưa đủ mốc so sánh',delta:null,direction:'flat'};
+ const delta=round((Number(current)||0)-(Number(previous)||0),1);
+ if(delta>=8)return{label:'Tăng nhanh',delta,direction:'up'};
+ if(delta>=3)return{label:'Đang tăng',delta,direction:'up'};
+ if(delta<=-8)return{label:'Hạ nhanh',delta,direction:'down'};
+ if(delta<=-3)return{label:'Đang hạ',delta,direction:'down'};
+ return{label:'Ít thay đổi',delta,direction:'flat'};
+}
+function liveRows(quotes,strategy){
+ const sourceTime=quotes.latestSourceTime||quotes.sourceTime||null;
+ const day=vnDay(sourceTime);
+ const rows=[];
+ for(const [symbol,q] of Object.entries(quotes.quotes||{})){
+  const s=(strategy.symbols||{})[symbol];
+  const price=n(q?.price),change=n(q?.changePct);
+  if(!s||q?.status==='retained'||!price||change===null)continue;
+  if(s.cadence!=='LIVE_15M'||String(s.barDate||'')!==day)continue;
+  const c=s.current||{};
+  rows.push({
+   symbol,q,s,price,change,
+   volume:n(q.volume)||0,
+   reference:n(q.reference)||price,
+   rangePct:(n(q.high)!==null&&n(q.low)!==null&&(n(q.reference)||price)>0)?Math.max(0,(n(q.high)-n(q.low))/(n(q.reference)||price)*100):0,
+   atrPct:n(c.atr14)!==null&&price>0?n(c.atr14)/price*100:0,
+   volumeRatio:n(c.volumeRatio20)||0,
+   cmf:n(c.cmf20),
+   sma20:n(c.sma20),
+   sma50:n(c.sma50)
+  });
+ }
+ return{rows,sourceTime,day};
+}
+function sectorRows(rows){
+ const by=new Map(rows.map(r=>[r.symbol,r]));
+ return SECTORS.map(group=>{
+  const members=group.symbols.map(s=>by.get(s)).filter(Boolean);
+  if(members.length<2)return null;
+  const declineShare=members.filter(r=>r.change<0).length/members.length;
+  const medChange=median(members.map(r=>r.change));
+  const medVolume=median(members.map(r=>r.volumeRatio));
+  const score=clamp(
+   0.65*scale(declineShare,0.40,0.85)+
+   0.25*scale(-medChange,0,2.5)+
+   0.10*scale(medVolume,0.8,1.8)
+  );
+  return{id:group.id,label:group.label,score:round(score,1),level:level(score),members:members.length,declinePct:pct(declineShare),medianChangePct:round(medChange,2),medianVolumeRatio:round(medVolume,2)};
+ }).filter(Boolean).sort((a,b)=>b.score-a.score);
+}
+function stockRisk(r){
+ const loss=0.35*scale(-r.change,0,5);
+ const selling=r.change<0?0.20*scale(r.volumeRatio,0.8,2.5):0;
+ const vol=0.15*scale(r.rangePct,1,5);
+ const trendPenalty=(r.sma20&&r.price<r.sma20?10:0)+(r.sma50&&r.price<r.sma50?10:0);
+ const flow=r.cmf!==null&&r.cmf<-0.1?0.10*scale(-r.cmf,0.1,0.4):0;
+ const score=clamp(loss+selling+vol+trendPenalty+flow);
+ const reasons=[];
+ if(r.change<=-2)reasons.push('Giảm mạnh trong phiên');
+ if(r.change<0&&r.volumeRatio>=1.2)reasons.push('Khối lượng cao khi giá giảm');
+ if(r.rangePct>=3)reasons.push('Biên độ trong phiên lớn');
+ if(r.sma20&&r.price<r.sma20)reasons.push('Giá dưới trung bình 20 phiên');
+ if(r.sma50&&r.price<r.sma50)reasons.push('Giá dưới trung bình 50 phiên');
+ if(r.cmf!==null&&r.cmf<-0.1)reasons.push('Áp lực dòng tiền nghiêng về bán');
+ return{symbol:r.symbol,score:round(score,1),level:level(score),changePct:round(r.change,2),volumeRatio:round(r.volumeRatio,2),rangePct:round(r.rangePct,2),atrPct:round(r.atrPct,2),reasons:reasons.slice(0,3)};
+}
+function componentScores(rows,sectors){
+ const declines=rows.filter(r=>r.change<0),severe=rows.filter(r=>r.change<=-2);
+ const declineShare=rows.length?declines.length/rows.length:0;
+ const severeShare=rows.length?severe.length/rows.length:0;
+ const medianChange=median(rows.map(r=>r.change));
+ const breadth=clamp(
+  0.55*scale(declineShare,0.40,0.85)+
+  0.25*scale(severeShare,0.05,0.45)+
+  0.20*scale(-medianChange,0,2.5)
+ );
+
+ const ranges=rows.map(r=>r.rangePct),atrs=rows.map(r=>r.atrPct);
+ const medianRange=median(ranges),medianAtr=median(atrs);
+ const bigRangeShare=rows.length?rows.filter(r=>r.rangePct>=3).length/rows.length:0;
+ const volatility=clamp(
+  0.45*scale(medianRange,1,4)+
+  0.35*scale(medianAtr,1.5,5)+
+  0.20*scale(bigRangeShare,0.10,0.50)
+ );
+
+ const medianDownVol=median(declines.map(r=>r.volumeRatio));
+ const heavyDownShare=rows.length?rows.filter(r=>r.change<0&&r.volumeRatio>=1.2).length/rows.length:0;
+ const negativeCmfShare=rows.length?rows.filter(r=>r.cmf!==null&&r.cmf<=-0.1).length/rows.length:0;
+ const liquidity=clamp(
+  0.45*scale(medianDownVol,0.8,2.0)+
+  0.30*scale(heavyDownShare,0.15,0.55)+
+  0.25*scale(negativeCmfShare,0.25,0.70)
+ );
+
+ const turnovers=rows.map(r=>Math.max(0,r.price*r.volume)).sort((a,b)=>b-a);
+ const total=turnovers.reduce((a,b)=>a+b,0)||1;
+ const top5=turnovers.slice(0,5).reduce((a,b)=>a+b,0)/total;
+ const top10=turnovers.slice(0,10).reduce((a,b)=>a+b,0)/total;
+ const concentration=clamp(0.70*scale(top5,0.18,0.45)+0.30*scale(top10,0.32,0.65));
+
+ const stressed=sectors.filter(s=>s.score>=60).length,high=sectors.filter(s=>s.score>=75).length;
+ const contagion=sectors.length?clamp(0.70*(stressed/sectors.length*100)+0.30*(high/sectors.length*100)):0;
+
+ return{
+  breadth:{label:'Mức giảm lan rộng',score:round(breadth,1),level:level(breadth),detail:`${pct(declineShare)}% số mã đang giảm; ${pct(severeShare)}% giảm từ 2% trở lên.`,stats:{declinePct:pct(declineShare),severeDeclinePct:pct(severeShare),medianChangePct:round(medianChange,2)}},
+  volatility:{label:'Biến động giá',score:round(volatility,1),level:level(volatility),detail:`Biên độ trong phiên trung vị ${round(medianRange,2)}%; mức dao động 14 phiên/giá trung vị ${round(medianAtr,2)}%.`,stats:{medianRangePct:round(medianRange,2),medianAtrPct:round(medianAtr,2),bigRangePct:pct(bigRangeShare)}},
+  liquidity:{label:'Áp lực giao dịch',score:round(liquidity,1),level:level(liquidity),detail:`Khối lượng/TB20 trung vị ở nhóm giảm ${round(medianDownVol,2)} lần; ${pct(heavyDownShare)}% số mã vừa giảm vừa có khối lượng cao.`,stats:{medianDownVolumeRatio:round(medianDownVol,2),heavyDownPct:pct(heavyDownShare),negativeCmfPct:pct(negativeCmfShare)}},
+  concentration:{label:'Mức tập trung giao dịch',score:round(concentration,1),level:level(concentration),detail:`5 mã giao dịch lớn nhất chiếm ${pct(top5)}% giá trị ước tính; 10 mã lớn nhất chiếm ${pct(top10)}%.`,stats:{top5TurnoverPct:pct(top5),top10TurnoverPct:pct(top10)}},
+  contagion:{label:'Lan rộng giữa các nhóm ngành',score:round(contagion,1),level:level(contagion),detail:`${stressed}/${sectors.length} nhóm ngành đang có mức căng thẳng từ 60 điểm trở lên.`,stats:{stressedSectors:stressed,highSectors:high,totalSectors:sectors.length}}
+ };
+}
+function alertSpec(id,title,component,enter,exit,evidence){
+ return{id,title,score:component.score,enter,exit,evidence};
+}
+function buildAlerts(components,overall,previous,sourceTime){
+ const prevMap=new Map((previous?.alerts||[]).map(a=>[a.id,a]));
+ const specs=[
+  {id:'market-high',title:'Rủi ro thị trường đang cao',score:overall.score,enter:65,exit:58,evidence:`Điểm rủi ro chung hiện là ${overall.score}/100.`},
+  alertSpec('breadth','Số mã giảm đang lan rộng',components.breadth,65,55,components.breadth.detail),
+  alertSpec('volatility','Biến động giá tăng mạnh',components.volatility,65,55,components.volatility.detail),
+  alertSpec('liquidity','Áp lực bán đi kèm giao dịch lớn',components.liquidity,65,55,components.liquidity.detail),
+  alertSpec('contagion','Sự suy yếu lan sang nhiều nhóm ngành',components.contagion,60,50,components.contagion.detail),
+  alertSpec('concentration','Giao dịch đang tập trung vào ít mã',components.concentration,70,60,components.concentration.detail)
+ ];
+ const alerts=[];
+ for(const s of specs){
+  const old=prevMap.get(s.id),active=s.score>=(old?s.exit:s.enter);
+  if(!active)continue;
+  alerts.push({id:s.id,title:s.title,score:round(s.score,1),level:level(s.score),startedAt:old?.startedAt||sourceTime,lastSeen:sourceTime,evidence:s.evidence});
+ }
+ return alerts.sort((a,b)=>b.score-a.score);
+}
+function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString()){
+ if(!quotes||quotes.status!=='ok')throw new Error('quotes snapshot is not ok');
+ if(!strategy||strategy.status!=='ok')throw new Error('strategy snapshot is not ok');
+ const latest=quotes.latestSourceTime||quotes.sourceTime||null;
+ if(!latest||String(strategy.sourceTime||'')!==String(latest))throw new Error('risk inputs are not aligned');
+ const {rows,sourceTime,day}=liveRows(quotes,strategy);
+ const expected=Math.max(1,Number(quotes.expected)||Object.keys(quotes.quotes||{}).length);
+ if(rows.length<Math.ceil(expected*.90))throw new Error(`risk live coverage below 90%: ${rows.length}/${expected}`);
+ const sectors=sectorRows(rows);
+ const components=componentScores(rows,sectors);
+ const base=Object.entries(WEIGHTS).reduce((sum,[key,w])=>sum+(components[key]?.score||0)*w,0);
+ const highCount=Object.values(components).filter(x=>x.score>=65).length;
+ const amplifier=highCount>=5?10:highCount===4?8:highCount===3?5:0;
+ const total=round(clamp(base+amplifier),1);
+ const overall={score:total,level:level(total),baseScore:round(base,1),systemWideAdd:amplifier};
+ const oldTimeline=Array.isArray(previous?.timeline)?previous.timeline.filter(x=>x&&x.sourceTime):[];
+ const previousPoint=[...oldTimeline].reverse().find(x=>String(x.sourceTime)!==String(sourceTime))||null;
+ const timeline=[...oldTimeline.filter(x=>String(x.sourceTime)!==String(sourceTime)),{
+  sourceTime,score:total,level:overall.level.key,
+  components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.score]))
+ }].slice(-96);
+ const topRisk=rows.map(stockRisk).sort((a,b)=>b.score-a.score||a.symbol.localeCompare(b.symbol)).slice(0,15);
+ const alerts=buildAlerts(components,overall,previous,sourceTime);
+ const breadthStats=components.breadth.stats;
+ return{
+  version:VERSION,methodVersion:METHOD_VERSION,status:'ok',generatedAt,sourceTime,sourceDate:day,
+  coverage:{quotes:rows.length,expected,strategyLive:rows.length,sectors:sectors.length},
+  overall,trend:trend(total,previousPoint?.score),components,sectors,alerts,topRisk,timeline,
+  marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
+  methodology:{
+   weights:WEIGHTS,
+   description:'Điểm 0-100 đo mức căng thẳng đang quan sát được từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
+   alertRule:'Cảnh báo chỉ bật khi vượt ngưỡng vào và chỉ tắt khi hạ xuống dưới ngưỡng thoát để tránh đổi màu liên tục quanh một mốc.'
+  }
+ };
+}
+function main(){
+ const out=path.resolve(process.argv[2]||'');
+ if(!process.argv[2])throw new Error('Usage: node build_risk_monitor.cjs <market-dir>');
+ const read=name=>JSON.parse(fs.readFileSync(path.join(out,name),'utf8'));
+ let previous=null;try{previous=read('risk-monitor.json');}catch{}
+ const snapshot=buildRiskSnapshot(read('quotes.json'),read('strategy-indicators.json'),previous);
+ fs.writeFileSync(path.join(out,'risk-monitor.json'),JSON.stringify(snapshot));
+ console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,alerts:snapshot.alerts.length}));
+}
+if(require.main===module)main();
+module.exports={buildRiskSnapshot,componentScores,stockRisk,sectorRows,level,trend,scale,median,WEIGHTS,SECTORS};

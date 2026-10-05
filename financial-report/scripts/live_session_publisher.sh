@@ -71,6 +71,7 @@ def age(value):
 quotes=load('quotes.json')
 scanner=load('technical-signals.json')
 strategy=load('strategy-indicators.json')
+risk=load('risk-monitor.json')
 watch=load('watch-today.json')
 status=load('prices-status.json')
 drivers=load('drivers.json')
@@ -108,14 +109,20 @@ if scanner_today<bar_required:
 if strategy_today<bar_required:
     raise SystemExit(f'strategy live barDate coverage below 90%: {strategy_today}/{len(fresh_symbols)} for {vn_day}')
 
-for label,data in [('scanner',scanner),('strategy',strategy),('watch',watch)]:
+for label,data in [('scanner',scanner),('strategy',strategy),('watch',watch),('risk',risk)]:
     if data.get('status')!='ok':
         raise SystemExit(f'{label} status is not ok')
     if str(data.get('sourceTime') or '') != str(latest or ''):
         raise SystemExit(f'{label} sourceTime is not aligned with quotes')
-    if age(data.get('checkedAt'))>10:
-        raise SystemExit(f'{label} heartbeat stale: {age(data.get("checkedAt")):.1f} minutes')
+    stamp=data.get('checkedAt') or data.get('generatedAt')
+    if age(stamp)>10:
+        raise SystemExit(f'{label} heartbeat stale: {age(stamp):.1f} minutes')
 
+if risk.get('status')!='ok' or not (0<=float((risk.get('overall') or {}).get('score',-1))<=100):
+    raise SystemExit('risk monitor score/status is invalid')
+risk_cov=risk.get('coverage') or {}
+if int(risk_cov.get('quotes') or 0)<required:
+    raise SystemExit(f'risk monitor coverage below 90%: {risk_cov.get("quotes")}/{expected}')
 if status.get('status')!='ok' or age(status.get('checkedAt'))>10:
     raise SystemExit('prices-status heartbeat is stale')
 if age(drivers.get('generatedAt'))>10:
@@ -131,13 +138,14 @@ print({
     'scannerToday':scanner_today,
     'strategyToday':strategy_today,
     'watch':len(watch.get('items') or []),
+    'risk':risk.get('overall',{}).get('score'),
     'drivers':len(drivers.get('symbols') or {}),
 })
 PY
 }
 
 publish_snapshot() {
-  git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/watch-today.json     market/universe.json market/history-status.json market/history
+  git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/risk-monitor.json market/watch-today.json     market/universe.json market/history-status.json market/history
 
   if git -C "$OUT" diff --cached --quiet; then
     echo "No live market changes to publish"
@@ -205,7 +213,7 @@ collect_validate_publish() {
   for attempt in 1 2; do
     echo "=== Intraday refresh attempt $attempt at $(TZ=Asia/Ho_Chi_Minh date '+%H:%M:%S %d/%m/%Y') · maxAge=${current_max_age}m ==="
     sync_market_worktree
-    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && publish_snapshot; then
+    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_risk_monitor.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && publish_snapshot; then
       ok=0
       break
     fi

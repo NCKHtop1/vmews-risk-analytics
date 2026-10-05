@@ -80,6 +80,7 @@ jobs:
                   q=get('quotes.json')
                   s=get('technical-signals.json')
                   strategy=get('strategy-indicators.json')
+                  risk=get('risk-monitor.json')
                   w=get('watch-today.json')
                   drivers=get('drivers.json')
                   ps=get('prices-status.json')
@@ -101,6 +102,12 @@ jobs:
                       raise ValueError(f'scanner live barDate coverage below 90%: {scanner_today}/{len(fresh_symbols)} for {today}')
                   if strategy_today<required_today:
                       raise ValueError(f'strategy live barDate coverage below 90%: {strategy_today}/{len(fresh_symbols)} for {today}')
+                  risk_cov=risk.get('coverage') or {}
+                  risk_score=(risk.get('overall') or {}).get('score')
+                  if risk.get('status')!='ok' or age(risk.get('generatedAt'))>10 or risk.get('sourceTime')!=q.get('latestSourceTime'):
+                      raise ValueError('risk monitor stale or not aligned with quotes')
+                  if int(risk_cov.get('quotes') or 0)<math.ceil(expected*.90) or not isinstance(risk_score,(int,float)) or not 0<=risk_score<=100:
+                      raise ValueError(f'risk monitor invalid: coverage={risk_cov} score={risk_score}')
                   if ps.get('status')!='ok' or age(ps.get('checkedAt'))>10 or ps.get('latestSourceTime')!=q.get('latestSourceTime'):
                       raise ValueError('prices-status stale or not aligned with quotes')
                   driver_symbols=drivers.get('symbols') or {}
@@ -111,7 +118,7 @@ jobs:
                       'sourceTime':q.get('latestSourceTime'),
                       'scanner':s.get('coverage'),'strategy':strategy.get('coverage'),
                       'scannerToday':scanner_today,'strategyToday':strategy_today,
-                      'watch':len(w.get('items') or []),'drivers':len(driver_symbols)
+                      'watch':len(w.get('items') or []),'risk':risk_score,'drivers':len(driver_symbols)
                   })
               except Exception as e:
                   print('::warning::Market freshness:',e); stale.append('market-price-live.yml')

@@ -9,6 +9,7 @@ on:
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/build_technical_evidence.py'
       - 'financial-report/scripts/build_strategy_snapshot.cjs'
+      - 'financial-report/scripts/build_risk_monitor.cjs'
       - 'financial-report/scripts/live_session_publisher.sh'
       - 'financial-report/data/universe.json'
   workflow_run:
