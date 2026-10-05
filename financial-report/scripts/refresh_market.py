@@ -993,7 +993,7 @@ def build_technical_scanner(out, companies, quotes):
         'liveUniverse': len(companies),
         'matchCount': len(matches), 'refreshEveryMinutes': 15,
         'rules': TECHNICAL_SCANNER_RULES,
-        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses live 15-minute snapshots; Discovery is EOD-only until promotion.',
+        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses the evolving current-session daily candle; Discovery is EOD-only until promotion.',
         'matches': matches, 'symbols': symbols,
     })
     return matches
