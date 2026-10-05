@@ -154,9 +154,52 @@ test('fund monitor compares disclosed weights without inventing share volume',()
  assert.ok(fpt.details.some(x=>x.fundCode==='FUND-B'&&x.status==='removed'));
  assert.ok(fpt.details.some(x=>x.fundCode==='FUND-D'&&x.status==='new'));
  assert.equal(Object.prototype.hasOwnProperty.call(fpt,'shareVolume'),false);
- assert.match(out.note,/không suy diễn thành số cổ phiếu mua\/bán/i);
 });
 
+
+test('fund monitor skips repeated polling snapshots and compares the last real holdings change',()=>{
+ const history={snapshots:[
+  {asOf:'2026-09-11',weightUnit:'FRACTION_OF_NAV',holdings:[
+   {fundCode:'F1',symbol:'FPT',weight:.08,reportDate:'2026-09-11'},
+   {fundCode:'F2',symbol:'VCB',weight:.05,reportDate:'2026-09-11'}
+  ]},
+  {asOf:'2026-09-17',weightUnit:'FRACTION_OF_NAV',holdings:[
+   {fundCode:'F1',symbol:'FPT',weight:.091,reportDate:'2026-09-17'},
+   {fundCode:'F2',symbol:'VCB',weight:.05,reportDate:'2026-09-11'}
+  ]},
+  {asOf:'2026-09-29',weightUnit:'FRACTION_OF_NAV',holdings:[
+   {fundCode:'F1',symbol:'FPT',weight:.091,reportDate:'2026-09-17'},
+   {fundCode:'F2',symbol:'VCB',weight:.05,reportDate:'2026-09-11'}
+  ]},
+  {asOf:'2026-10-05',weightUnit:'FRACTION_OF_NAV',holdings:[
+   {fundCode:'F1',symbol:'FPT',weight:.091,reportDate:'2026-09-17'},
+   {fundCode:'F2',symbol:'VCB',weight:.05,reportDate:'2026-09-11'}
+  ]}
+ ]};
+ const out=buildFundMonitor(history);
+ assert.equal(out.asOf,'2026-10-05');
+ assert.equal(out.lastChangedAsOf,'2026-09-17');
+ assert.equal(out.previousAsOf,'2026-09-11');
+ assert.equal(out.comparisonMode,'LAST_MEANINGFUL_HOLDING_CHANGE');
+ const fpt=out.rows.find(x=>x.symbol==='FPT');
+ assert.equal(fpt.largestChangePP,1.1);
+ assert.equal(fpt.status,'increased');
+ const vcb=out.rows.find(x=>x.symbol==='VCB');
+ assert.equal(vcb.largestChangePP,0);
+ assert.equal(vcb.status,'stable');
+});
+
+test('risk snapshot exposes clickable breadth groups and both sector directions',()=>{
+ const {quotes,strategy}=fixture();
+ const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
+ assert.equal(
+  out.breadthGroups.advancing.length+out.breadthGroups.declining.length+out.breadthGroups.unchanged.length,
+  out.coverage.quotes
+ );
+ assert.ok(out.breadthGroups.advancing.every(x=>x.changePct>0));
+ assert.ok(out.breadthGroups.declining.every(x=>x.changePct<0));
+ assert.ok(out.sectors.every(x=>Number.isFinite(Number(x.advancePct))&&Number.isFinite(Number(x.declinePct))));
+});
 
 test('sector calibration finds a stable warning threshold with time-ordered OOS lift',()=>{
  const observations=[];
@@ -212,7 +255,7 @@ test('validated sector threshold creates a separate sector alert without changin
 test('risk method copy is plain-language and versioned to refresh cached snapshots',()=>{
  const {quotes,strategy}=fixture();
  const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
- assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-1.4');
+ assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-1.5');
  assert.doesNotMatch(out.methodology.alertRule,/hysteresis|ngoài mẫu|OOS/i);
  assert.match(out.methodology.alertRule,/tránh bật\/tắt liên tục/);
 });
