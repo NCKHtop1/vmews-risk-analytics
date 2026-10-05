@@ -1,6 +1,6 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const state={data:null,loading:false,error:''};
+const state={data:null,loading:false,error:'',selectedFundSymbol:null,selectedSectorId:null};
 const COMPONENT_ORDER=['breadth','volatility','liquidity','concentration','contagion'];
 const fmt=(v,d=1)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -94,10 +94,28 @@ function renderTimeline(){
  const currentLabel='<text class="risk-current-label" x="'+Math.min(W-R-4,x(rows.length-1)+8)+'" y="'+Math.max(T+12,y(current.score)-9)+'">'+fmt(current.score,1)+'/100</text>';
  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
 }
+function renderSectorDetail(id){
+ const host=$('risk-sector-detail'),x=(state.data?.sectors||[]).find(s=>s.id===id);if(!host||!x){if(host)host.hidden=true;return;}
+ state.selectedSectorId=id;host.hidden=false;
+ const bt=x.backtest||{},validated=x.alertEligible===true;
+ const threshold=Number.isFinite(Number(x.threshold))?fmt(x.threshold,1)+'/100':'Chưa đủ kiểm định';
+ const members=(x.memberRows||[]).map(m=>'<button type="button" class="risk-sector-member '+(Number(m.changePct)<0?'price-down':Number(m.changePct)>0?'price-up':'price-flat')+'" data-risk-symbol="'+esc(m.symbol)+'"><strong>'+esc(m.symbol)+'</strong><span>'+(Number(m.changePct)>0?'+':'')+fmt(m.changePct,2)+'%</span><small>KL/TB20 '+fmt(m.volumeRatio,2)+'x</small></button>').join('');
+ const btHtml=validated?'<div class="risk-backtest-grid"><div><span>Bắt đúng ngoài mẫu</span><strong>'+fmt(Number(bt.precision)*100,1)+'%</strong></div><div><span>Tỷ lệ nền</span><strong>'+fmt(Number(bt.baseRate)*100,1)+'%</strong></div><div><span>Độ nâng</span><strong>x'+fmt(bt.precisionLift,2)+'</strong></div><div><span>Bắt được biến cố</span><strong>'+fmt(Number(bt.recall)*100,1)+'%</strong></div><div><span>Báo giả</span><strong>'+fmt(Number(bt.falseAlarmRate)*100,1)+'%</strong></div><div><span>Số tín hiệu OOS</span><strong>'+fmt(bt.signals,0)+'</strong></div></div><p class="risk-sector-backtest-note">Khi điểm ngành vượt ngưỡng trong các giai đoạn kiểm định sau thời kỳ hiệu chỉnh, lợi suất trung vị 3 phiên sau của nhóm tín hiệu là '+(Number(bt.medianForward3WhenSignalPct)>0?'+':'')+fmt(bt.medianForward3WhenSignalPct,2)+'%. Kết quả lịch sử không bảo đảm tương lai.</p>':'<p class="risk-sector-backtest-note">'+esc(bt.reason||'Ngành này chưa đạt điều kiện để phát cảnh báo tự động từ backtest.')+'</p>';
+ host.innerHTML='<div class="risk-detail-head"><div><span>CHI TIẾT NGÀNH</span><h3>'+esc(x.label)+'</h3></div><button type="button" id="risk-sector-detail-close">Đóng</button></div><div class="risk-sector-detail-summary"><div><span>Điểm hiện tại</span><strong>'+fmt(x.score,1)+'/100</strong></div><div><span>Ngưỡng cảnh báo</span><strong>'+threshold+'</strong></div><div><span>Mã đang giảm</span><strong>'+fmt(x.declinePct,1)+'%</strong></div><div><span>Thay đổi trung vị</span><strong class="'+(Number(x.medianChangePct)<0?'price-down':Number(x.medianChangePct)>0?'price-up':'')+'">'+(Number(x.medianChangePct)>0?'+':'')+fmt(x.medianChangePct,2)+'%</strong></div></div>'+btHtml+'<h4>Các mã trong ngành ở snapshot này</h4><div class="risk-sector-members">'+members+'</div>';
+}
 function renderSectors(){
- const d=state.data,host=$('risk-sectors');if(!d||!host)return;
- const rows=(d.sectors||[]).slice(0,14);
- host.innerHTML=rows.map(x=>'<article class="risk-sector-tile risk-sector-'+tone(x.level?.tone)+'"><div class="risk-sector-tile-head"><strong>'+esc(x.label)+'</strong><b>'+fmt(x.score,1)+'/100</b></div><div class="risk-sector-tile-bar"><span style="width:'+Math.max(0,Math.min(100,Number(x.score)||0))+'%"></span></div><small>'+fmt(x.declinePct,1)+'% mã giảm · thay đổi trung vị '+(Number(x.medianChangePct)>0?'+':'')+fmt(x.medianChangePct,2)+'%</small></article>').join('')||'<p class="risk-empty">Chưa đủ dữ liệu nhóm ngành.</p>';
+ const d=state.data,host=$('risk-sectors'),status=$('risk-sector-calibration-status');if(!d||!host)return;
+ const cal=d.sectorCalibration||{};
+ if(status)status.textContent=Number.isFinite(Number(cal.validatedSectors))?fmt(cal.validatedSectors,0)+' / '+fmt(cal.totalSectors,0)+' ngành có ngưỡng đạt kiểm định':'Đang kiểm tra ngưỡng ngành';
+ const all=d.sectors||[];
+ const rows=all.filter(x=>Number(x.medianChangePct)<0||Number(x.declinePct)>=50||x.alertActive||x.nearThreshold);
+ host.innerHTML=rows.map(x=>{
+  const cls=x.alertActive?'risk-heat-alert':x.nearThreshold?'risk-heat-near':(!x.alertEligible&&Number(x.score)>=60?'risk-heat-unvalidated':'risk-heat-low');
+  const threshold=Number.isFinite(Number(x.threshold))?('Ngưỡng '+fmt(x.threshold,1)):('Ngưỡng chưa đủ kiểm định');
+  const stateLabel=x.alertActive?'CHẠM NGƯỠNG':x.nearThreshold?'TIỆM CẬN':(!x.alertEligible&&Number(x.score)>=60?'CHƯA ĐỦ BACKTEST':'');
+  return '<button type="button" class="risk-sector-tile risk-sector-heat-cell '+cls+'" data-sector-id="'+esc(x.id)+'" style="--risk-heat:'+Math.max(6,Math.min(100,Number(x.score)||0))+'%"><div class="risk-sector-tile-head"><strong>'+esc(x.label)+'</strong><b>'+(Number(x.medianChangePct)>0?'+':'')+fmt(x.medianChangePct,2)+'%</b></div><div class="risk-sector-heat-bar"><span></span></div><div class="risk-sector-heat-meta"><span>'+fmt(x.declinePct,1)+'% mã giảm</span><span>'+fmt(x.score,1)+'/100</span></div><small>'+esc(threshold)+(stateLabel?' · '+stateLabel:'')+'</small></button>';
+ }).join('')||'<p class="risk-empty risk-empty-good">Chưa có nhóm ngành giảm đáng kể ở snapshot này.</p>';
+ if(state.selectedSectorId&&rows.some(x=>x.id===state.selectedSectorId))renderSectorDetail(state.selectedSectorId);else{const detail=$('risk-sector-detail');if(detail)detail.hidden=true;}
 }
 function renderAlerts(){
  const d=state.data,host=$('risk-alerts'),history=$('risk-alert-history');if(!d||!host)return;
@@ -123,29 +141,35 @@ function renderBreadth(){
 function fundDeltaText(x){
  if(x.status==='new')return'Mới xuất hiện';
  if(x.status==='removed')return'Không còn trong top công bố';
- if(!Number.isFinite(Number(x.deltaPP)))return'—';
+ if(!Number.isFinite(Number(x.deltaPP)))return'Ít thay đổi';
  const n=Number(x.deltaPP);return(n>0?'+':'')+fmt(n,2)+' điểm %';
 }
+function renderFundDetail(symbol){
+ const host=$('risk-fund-detail'),f=state.data?.fundMonitor||{},x=(f.rows||[]).find(r=>r.symbol===symbol);if(!host||!x){if(host)host.hidden=true;return;}
+ state.selectedFundSymbol=symbol;host.hidden=false;
+ const detail=(x.details||[]).map(y=>'<div class="risk-fund-detail-item"><div><strong>'+esc(y.fundCode||y.fundName)+'</strong><small>'+esc(y.fundName||'')+'</small></div><span class="risk-fund-state risk-fund-'+tone(y.tone)+'">'+esc(y.label)+'</span><b>'+(y.currentWeightPct==null?'—':fmt(y.currentWeightPct,2)+'%')+'</b><small>Trước: '+(y.previousWeightPct==null?'—':fmt(y.previousWeightPct,2)+'%')+(Number.isFinite(Number(y.deltaPP))?' · '+(Number(y.deltaPP)>0?'+':'')+fmt(y.deltaPP,2)+' điểm %':'')+(y.reportDate?' · công bố '+esc(y.reportDate):'')+(Number.isFinite(Number(y.navMomentum20Pct))?' · NAV 20P '+(Number(y.navMomentum20Pct)>0?'+':'')+fmt(y.navMomentum20Pct,2)+'%':'')+'</small></div>').join('');
+ host.innerHTML='<div class="risk-detail-head"><div><span>CHI TIẾT QUỸ</span><h3>'+esc(symbol)+'</h3></div><button type="button" id="risk-fund-detail-close">Đóng</button></div><div class="risk-fund-detail-summary"><div><span>Số quỹ hiện tại</span><strong>'+fmt(x.currentFundCount,0)+'</strong></div><div><span>Quỹ lớn nhất</span><strong>'+(x.largestWeightPct==null?'—':fmt(x.largestWeightPct,2)+'%')+'</strong></div><div><span>Thay đổi lớn nhất</span><strong>'+(Number.isFinite(Number(x.largestChangePP))?((Number(x.largestChangePP)>0?'+':'')+fmt(x.largestChangePP,2)+' điểm %'):'—')+'</strong></div><div><span>Trạng thái</span><strong class="risk-fund-'+tone(x.tone)+'">'+esc(x.label)+'</strong></div></div><div class="risk-fund-detail-list">'+detail+'</div>';
+}
 function renderFunds(){
- const d=state.data,box=$('risk-fund-summary'),rowsHost=$('risk-fund-rows'),alertsHost=$('risk-fund-alerts'),asof=$('risk-fund-asof');
- if(!box||!rowsHost||!alertsHost)return;
+ const d=state.data,box=$('risk-fund-summary'),chart=$('risk-fund-chart'),asof=$('risk-fund-asof'),detail=$('risk-fund-detail');
+ if(!box||!chart)return;
  const f=d?.fundMonitor||{};
  if(f.status!=='ok'){
   if(asof)asof.textContent='Chưa có dữ liệu quỹ';
   const badge=$('risk-nav-badge');if(badge){badge.hidden=true;badge.textContent='';}
-  box.innerHTML='<p class="risk-empty">Chưa có dữ liệu quỹ đủ để so sánh.</p>';
-  alertsHost.innerHTML='';rowsHost.innerHTML='';return;
+  box.innerHTML='<p class="risk-empty">Chưa có dữ liệu quỹ đủ để so sánh.</p>';chart.innerHTML='';if(detail)detail.hidden=true;return;
  }
  if(asof)asof.textContent='Nguồn '+esc(f.source||'FMARKET')+(f.reportDate?' · báo cáo gần nhất '+esc(f.reportDate):'')+' · kiểm tra '+esc(f.asOf||'—')+(f.previousAsOf?' · so với '+esc(f.previousAsOf):'');
  const badge=$('risk-nav-badge');if(badge){const count=Number(f.materialChanges)||0;badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);badge.title=count+' thay đổi quỹ đáng chú ý';}
  box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã có thay đổi đáng kể</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Thay đổi đáng kể</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
- const alerts=(f.alerts||[]).slice(0,8);
- alertsHost.innerHTML=alerts.length?'<h4>Thay đổi mới đáng chú ý</h4>'+alerts.map(x=>'<div class="risk-fund-alert risk-fund-'+tone(x.tone)+'"><button type="button" data-fund-symbol="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><span>'+esc(x.fundCode||x.fundName)+'</span><b>'+esc(x.label)+'</b><small>'+esc(fundDeltaText(x))+'</small></button></div>').join(''):'<p class="risk-empty risk-empty-good">Chưa thấy thay đổi tỷ trọng quỹ đáng kể giữa hai lần công bố gần nhất.</p>';
- rowsHost.innerHTML=(f.rows||[]).map(x=>{
-  const delta=Number.isFinite(Number(x.largestChangePP))?((Number(x.largestChangePP)>0?'+':'')+fmt(x.largestChangePP,2)+' điểm %'):'—';
-  const detail=(x.details||[]).map(y=>'<div class="risk-fund-detail-item"><div><strong>'+esc(y.fundCode||y.fundName)+'</strong><small>'+esc(y.fundName||'')+'</small></div><span>'+esc(y.label)+'</span><b>'+(y.currentWeightPct==null?'—':fmt(y.currentWeightPct,2)+'%')+'</b><small>Trước: '+(y.previousWeightPct==null?'—':fmt(y.previousWeightPct,2)+'%')+(Number.isFinite(Number(y.deltaPP))?' · '+(Number(y.deltaPP)>0?'+':'')+fmt(y.deltaPP,2)+' điểm %':'')+(y.reportDate?' · công bố '+esc(y.reportDate):'')+(Number.isFinite(Number(y.navMomentum20Pct))?' · NAV 20P '+(Number(y.navMomentum20Pct)>0?'+':'')+fmt(y.navMomentum20Pct,2)+'%':'')+'</small></div>').join('');
-  return '<tr><th><button type="button" data-risk-symbol="'+esc(x.symbol)+'">'+esc(x.symbol)+'</button></th><td>'+fmt(x.currentFundCount,0)+'</td><td><span class="risk-fund-state risk-fund-'+tone(x.tone)+'">'+esc(x.label)+'</span></td><td>'+delta+'</td><td>'+(x.largestWeightPct==null?'—':fmt(x.largestWeightPct,2)+'%')+'</td><td><button type="button" class="risk-fund-toggle" data-fund-toggle="'+esc(x.symbol)+'">Xem</button></td></tr><tr class="risk-fund-detail-row" data-fund-detail="'+esc(x.symbol)+'" hidden><td colspan="6"><div class="risk-fund-detail-list">'+detail+'</div></td></tr>';
- }).join('');
+ const rows=(f.rows||[]).filter(x=>Number(x.currentFundCount)>0).sort((a,b)=>b.currentFundCount-a.currentFundCount||b.materialChanges-a.materialChanges||a.symbol.localeCompare(b.symbol));
+ const max=Math.max(1,...rows.map(x=>Number(x.currentFundCount)||0));
+ chart.innerHTML='<div class="risk-fund-chart-head"><span>Mã</span><span>Số quỹ đang công bố nắm giữ</span><span>Trạng thái gần nhất</span></div><div class="risk-fund-chart-body">'+rows.map(x=>{
+  const width=Math.max(4,(Number(x.currentFundCount)||0)/max*100);
+  const delta=Number.isFinite(Number(x.largestChangePP))?((Number(x.largestChangePP)>0?'+':'')+fmt(x.largestChangePP,2)+' điểm %'):x.label;
+  return '<button type="button" class="risk-fund-bar risk-fund-'+tone(x.tone)+'" data-fund-symbol="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><span class="risk-fund-bar-track"><i style="width:'+width+'%"></i><b>'+fmt(x.currentFundCount,0)+' quỹ</b></span><small>'+esc(delta)+'</small></button>';
+ }).join('')+'</div>';
+ if(state.selectedFundSymbol&&rows.some(x=>x.symbol===state.selectedFundSymbol))renderFundDetail(state.selectedFundSymbol);else if(detail)detail.hidden=true;
 }
 function renderMethod(){
  const d=state.data;if(!d)return;
@@ -200,8 +224,10 @@ function bind(){
  });
  $('risk-refresh')?.addEventListener('click',refresh);
  $('risk-stock-rows')?.addEventListener('click',e=>{const b=e.target.closest('[data-risk-symbol]');if(b)openSymbol(b.dataset.riskSymbol);});
- $('risk-fund-rows')?.addEventListener('click',e=>{const open=e.target.closest('[data-risk-symbol]');if(open){openSymbol(open.dataset.riskSymbol);return;}const b=e.target.closest('[data-fund-toggle]');if(!b)return;const row=document.querySelector('[data-fund-detail="'+CSS.escape(b.dataset.fundToggle)+'"]');if(row){row.hidden=!row.hidden;b.textContent=row.hidden?'Xem':'Ẩn';}});
- $('risk-fund-alerts')?.addEventListener('click',e=>{const b=e.target.closest('[data-fund-symbol]');if(!b)return;const row=document.querySelector('[data-fund-detail="'+CSS.escape(b.dataset.fundSymbol)+'"]');if(row){row.hidden=false;row.scrollIntoView({behavior:'smooth',block:'center'});}});
+ $('risk-fund-chart')?.addEventListener('click',e=>{const b=e.target.closest('[data-fund-symbol]');if(b)renderFundDetail(b.dataset.fundSymbol);});
+ $('risk-fund-detail')?.addEventListener('click',e=>{if(e.target.closest('#risk-fund-detail-close')){state.selectedFundSymbol=null;$('risk-fund-detail').hidden=true;}});
+ $('risk-sectors')?.addEventListener('click',e=>{const b=e.target.closest('[data-sector-id]');if(b)renderSectorDetail(b.dataset.sectorId);});
+ $('risk-sector-detail')?.addEventListener('click',e=>{const stock=e.target.closest('[data-risk-symbol]');if(stock){openSymbol(stock.dataset.riskSymbol);return;}if(e.target.closest('#risk-sector-detail-close')){state.selectedSectorId=null;$('risk-sector-detail').hidden=true;}});
  window.addEventListener('hashchange',()=>{if(location.hash==='#risk-monitor')showRisk(false);else if(!location.hash.startsWith('#risk-monitor'))showAnalysis();});
  document.addEventListener('finquery:market-refresh',()=>{if(!$('risk-monitor')?.hidden)refresh();});
 }
