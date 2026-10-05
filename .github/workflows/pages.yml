@@ -89,6 +89,9 @@ jobs:
           assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
           assert (risk.get('trend') or {}).get('previousScore') is not None,risk.get('trend')
           assert len(risk.get('contributions') or [])==5,risk.get('contributions')
+          funds=risk.get('fundMonitor') or {}
+          assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
+          assert funds.get('source')=='FMARKET',funds
           print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
           PY
       - name: Build site with same-origin financial and market data
@@ -193,6 +196,9 @@ jobs:
           assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
           assert (risk.get('trend') or {}).get('previousScore') is not None,risk.get('trend')
           assert len(risk.get('contributions') or [])==5,risk.get('contributions')
+          funds=risk.get('fundMonitor') or {}
+          assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
+          assert funds.get('source')=='FMARKET',funds
           vn_day=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7))).date().isoformat()
           live_symbols={str(k).upper() for k,v in (q.get('quotes') or {}).items() if v.get('status')!='retained'}
           live_required=max(1,math.ceil(len(live_symbols)*.90))
