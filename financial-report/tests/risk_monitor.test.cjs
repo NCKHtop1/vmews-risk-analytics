@@ -170,10 +170,10 @@ test('sector calibration finds a stable warning threshold with time-ordered OOS 
   });
  }
  const out=calibrateSector('demo','Ngành thử nghiệm',observations);
- assert.equal(out.status,'VALIDATED_OOS');
+ assert.equal(out.status,'VALIDATED_STATE');
  assert.equal(out.alertEligible,true);
  assert.ok(out.threshold>=55&&out.threshold<=75,out);
- assert.ok(out.oos.precisionLift>1.5,out.oos);
+ assert.ok(out.oos.signalRate>=.03&&out.oos.signalRate<=.25,out.oos);
  assert.ok(out.oos.folds>=2,out.oos);
 });
 
@@ -196,7 +196,7 @@ test('validated sector threshold creates a separate sector alert without changin
  const {quotes,strategy}=fixture({stress:true});
  const sectorCalibration={
   version:'TEST',status:'ok',forSession:'2026-10-05',validatedSectors:1,totalSectors:1,
-  sectors:{banking:{status:'VALIDATED_OOS',alertEligible:true,threshold:20,exitThreshold:12.5,samples:800,forwardSessions:3,adverseCutoffPct:-1.5,oos:{precision:.45,baseRate:.2,precisionLift:2.25,recall:.4,falseAlarmRate:.15,youden:.25,folds:3,signals:60,events:40,medianForward3WhenSignalPct:-2.1}}}
+  sectors:{banking:{status:'VALIDATED_STATE',alertEligible:true,stateValidated:true,continuationValidated:true,thresholdMode:'HISTORICAL_P90',threshold:20,exitThreshold:12.5,samples:800,forwardSessions:3,adverseCutoffPct:-1.5,oos:{precision:.45,baseRate:.2,precisionLift:2.25,recall:.4,falseAlarmRate:.15,youden:.25,signalRate:.1,folds:3,signals:60,events:40,medianCurrentReturnWhenSignalPct:-1.2,medianForward3WhenSignalPct:-2.1}}}
  };
  const baseline={sourceTime:'2026-10-02T07:45:00.000Z',sourceDate:'2026-10-02',score:31.5,level:'normal',components:{breadth:35,volatility:28,liquidity:32,concentration:27,contagion:30},basis:'previous-session-close',coverage:symbols.length};
  const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z',baseline,null,sectorCalibration);
