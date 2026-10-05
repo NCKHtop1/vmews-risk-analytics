@@ -8,6 +8,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'requirements.txt'
       - 'scripts/update_market_scan.py'
       - 'scripts/update_market_scan_v4.py'
       - 'scripts/update_alert_deep_cache.py'

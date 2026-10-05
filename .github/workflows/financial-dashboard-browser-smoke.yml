@@ -204,6 +204,26 @@ jobs:
                       raise AssertionError(f'AI local response contains invalid values for {question!r}')
                   results.append((expected,len(html)))
 
+              # A publisher commit is atomic, but the browser can straddle two
+              # generations while raw GitHub and Pages caches converge. Give the UI
+              # a bounded chance to resync; persistent misalignment still fails below.
+              for _ in range(8):
+                  aligned=driver.execute_script("""
+                    const m=window.FinancialMarket?.context?.();
+                    const s=window.FinTechnicalScanner?.context?.();
+                    const st=window.FinStrategyBuilder?.context?.()?.snapshot;
+                    const q=m?.quoteBundleSourceTime||null;
+                    return Boolean(q && s?.sourceTime===q && st?.sourceTime===q);
+                  """)
+                  if aligned:
+                      break
+                  driver.execute_script("""
+                    window.FinancialMarket?.refresh?.();
+                    window.FinTechnicalScanner?.refresh?.();
+                    window.FinStrategyBuilder?.refresh?.();
+                  """)
+                  time.sleep(3)
+
               snapshot=driver.execute_script("""
                 const m=window.FinancialMarket.context();
                 const s=window.FinTechnicalScanner.context();

@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id),E=window.FinStrategyEngine;
 if(!E)return;
 const KEY='finquery-strategies-v2',HIT_KEY='finquery-strategy-hits-v2';
-const state={snapshot:null,conditions:[],strategies:[],hits:[],matches:[],filter:'',loading:false,dragId:null};
+const state={snapshot:null,conditions:[],strategies:[],hits:[],matches:[],filter:'',loading:false,dragId:null,marketSourceTime:null,retryTimer:null};
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function clone(x){return JSON.parse(JSON.stringify(x));}
 function loadLocal(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(v))state.strategies=v;}catch{}try{const v=JSON.parse(localStorage.getItem(HIT_KEY)||'[]');if(Array.isArray(v))state.hits=v.slice(0,100);}catch{}}
@@ -79,7 +79,17 @@ function evaluateAlerts(){
 }
 async function refreshSnapshot(){
  if(state.loading)return;state.loading=true;const b=$('strategy-refresh');if(b)b.disabled=true;const status=$('strategy-status');if(status)status.textContent='Đang tải indicator snapshot…';
- try{const data=await window.FinMarketData.get('strategy-indicators.json');if(!data?.symbols)throw Error('Invalid strategy snapshot');const changed=(data.sourceTime||data.checkedAt)!==(state.snapshot?.sourceTime||state.snapshot?.checkedAt);state.snapshot=data;if(status)status.textContent=(data.coverage||0)+' mã · Live '+(data.liveCoverage||0)+' · Discovery '+(data.discoveryCoverage||0)+' · '+time(data.sourceTime||data.checkedAt);scanNow();if(changed)evaluateAlerts();else renderSaved();}
+ try{
+  const data=await window.FinMarketData.get('strategy-indicators.json');if(!data?.symbols)throw Error('Invalid strategy snapshot');
+  const expected=state.marketSourceTime,actual=data.sourceTime||null;
+  if(expected&&String(actual)!==String(expected)){
+   if(!state.snapshot||String(state.snapshot.sourceTime||'')!==String(expected)){state.snapshot=null;state.matches=[];renderResults();}
+   if(status)status.textContent='Đang đồng bộ Strategy Lab với snapshot giá mới nhất…';
+   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(actual||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();refreshSnapshot();},1200);
+   return;
+  }
+  const changed=(data.sourceTime||data.checkedAt)!==(state.snapshot?.sourceTime||state.snapshot?.checkedAt);state.snapshot=data;if(status)status.textContent=(data.coverage||0)+' mã · Live '+(data.liveCoverage||0)+' · Discovery '+(data.discoveryCoverage||0)+' · '+time(data.sourceTime||data.checkedAt);scanNow();if(changed)evaluateAlerts();else renderSaved();
+ }
  catch(e){if(status)status.textContent='Chưa tải được dữ liệu quét chiến lược.';}
  finally{state.loading=false;if(b)b.disabled=false;}
 }
@@ -102,5 +112,5 @@ function bind(){
  $('strategy-notifications')?.addEventListener('click',async()=>{if(!('Notification'in window))return;const p=await Notification.requestPermission();$('strategy-notifications').textContent=p==='granted'?'Thông báo đã bật':'Thông báo bị chặn';});
 }
 loadLocal();renderLibrary();renderCanvas();renderPreview();renderResults();renderSaved();renderHits();bind();refreshSnapshot();setInterval(()=>{if(!document.hidden)refreshSnapshot();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSnapshot();});
-window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot})};
+window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed&&state.snapshot&&next&&String(state.snapshot.sourceTime||'')!==String(next)){state.snapshot=null;state.matches=[];renderResults();}if(changed)refreshSnapshot();},context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot,marketSourceTime:state.marketSourceTime})};
 })();

@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const BASE=document.documentElement.dataset.hosting==='pages'?new URL('market/',location.href).href:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
 const ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e';
-const state={data:null,evidence:null,unlocked:sessionStorage.getItem('finquery-technical-access')==='1',filter:'all',universeFilter:'all',search:'',loading:false,marketSourceTime:null};
+const state={data:null,evidence:null,unlocked:sessionStorage.getItem('finquery-technical-access')==='1',filter:'all',universeFilter:'all',search:'',loading:false,marketSourceTime:null,retryTimer:null};
 const fmt=(v,d=2)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const time=s=>s&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short',timeStyle:'short'}):'—';
@@ -50,7 +50,17 @@ function render(){
 }
 async function load(){
  if(!state.unlocked||state.loading)return;state.loading=true;
- try{$('technical-scanner-status').textContent='Đang tải scanner HOSE…';state.data=await fetchData();render();}
+ try{
+  $('technical-scanner-status').textContent='Đang tải scanner HOSE…';
+  const data=await fetchData(),expected=state.marketSourceTime;
+  if(expected&&String(data.sourceTime||'')!==String(expected)){
+   if(!state.data||String(state.data.sourceTime||'')!==String(expected))state.data=null;
+   $('technical-scanner-status').textContent='Đang đồng bộ Technical Scanner với snapshot giá mới nhất…';
+   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(data.sourceTime||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();load();},1200);
+   return;
+  }
+  state.data=data;render();
+ }
  catch(e){$('technical-scanner-status').textContent='Chưa tải được technical scanner. Dữ liệu chart/giá vẫn hoạt động độc lập.';}
  finally{state.loading=false;}
 }
@@ -69,5 +79,5 @@ showGate();
 if(state.unlocked)setTimeout(load,0);
 setInterval(()=>{if(state.unlocked&&!document.hidden)load();},60000);
 document.addEventListener('visibilitychange',()=>{if(state.unlocked&&!document.hidden)load();});
-window.FinTechnicalScanner={open,refresh:load,setMarketSourceTime(value){state.marketSourceTime=value||null;if(state.data)render();},allContext(){return{unlocked:state.unlocked,checkedAt:state.data?.checkedAt||null,sourceTime:state.data?.sourceTime||null,symbols:state.unlocked?(state.data?.symbols||{}):{},evidence:state.evidence||null};},context(){if(!state.unlocked||!state.data)return null;const symbol=String(document.getElementById('ticker')?.value||'').trim().toUpperCase(),selected=state.data.symbols?.[symbol]||null,aligned=selected?.cadence==='EOD'?false:(!state.marketSourceTime||String(state.marketSourceTime)===String(state.data.sourceTime));return{checkedAt:state.data.checkedAt,sourceTime:state.data.sourceTime,rules:state.data.rules,current:aligned?(state.data.symbols?.[symbol]||null):null,evidence:selected?evidenceFor(selected):null,matches:aligned?(state.data.matches||[]).filter(x=>x.cadence!=='EOD').slice(0,30):[],aligned,liveCoverage:state.data.liveCoverage,discoveryCoverage:state.data.discoveryCoverage};}};
+window.FinTechnicalScanner={open,refresh:load,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed&&state.data&&next&&String(state.data.sourceTime||'')!==String(next))state.data=null;if(changed)load();else if(state.data)render();},allContext(){return{unlocked:state.unlocked,checkedAt:state.data?.checkedAt||null,sourceTime:state.data?.sourceTime||null,symbols:state.unlocked?(state.data?.symbols||{}):{},evidence:state.evidence||null};},context(){if(!state.unlocked||!state.data)return null;const symbol=String(document.getElementById('ticker')?.value||'').trim().toUpperCase(),selected=state.data.symbols?.[symbol]||null,aligned=selected?.cadence==='EOD'?false:(!state.marketSourceTime||String(state.marketSourceTime)===String(state.data.sourceTime));return{checkedAt:state.data.checkedAt,sourceTime:state.data.sourceTime,rules:state.data.rules,current:aligned?(state.data.symbols?.[symbol]||null):null,evidence:selected?evidenceFor(selected):null,matches:aligned?(state.data.matches||[]).filter(x=>x.cadence!=='EOD').slice(0,30):[],aligned,liveCoverage:state.data.liveCoverage,discoveryCoverage:state.data.discoveryCoverage};}};
 })();

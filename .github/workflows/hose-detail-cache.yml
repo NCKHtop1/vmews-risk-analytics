@@ -7,6 +7,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'requirements.txt'
       - 'scripts/update_hose_detail_cache.py'
       - 'scripts/update_hose_detail_cache_runner.py'
       - 'api/price_history.py'
