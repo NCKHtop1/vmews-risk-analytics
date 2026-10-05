@@ -702,6 +702,37 @@ async function callGeminiModel(question,secret,model,allowSearch=true,agentConte
  const sourceMode=result.searched&&result.readUrls?'NATIVE_WEB_URL_CONTEXT':result.searched?'NATIVE_WEB_SEARCH':result.readUrls?'URL_CONTEXT':'FINQUERY_GROUNDED';
  return{answer:result.text,provider:'Gemini',model,sourceMode,readUrls:result.readUrls,sources:result.sources,queries:result.queries,anchors:provenanceAnchors(),academicSources:(agentContext?.academicContext?.references||[]).slice(0,5)};
 }
+function auditDeepAnswer(answer,agentContext){
+ const text=String(answer||'').trim(),paras=text.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean),words=(text.match(/[A-Za-zÀ-ỹ0-9]+/g)||[]).length;
+ const sourceTag=/\[(?:BCTC|QUARTER|MARKET|SCANNER|NEWS|RESEARCH|WEB|ACADEMIC)\]/;
+ const empirical=paras.filter(p=>/\d|%|tỷ|triệu|đồng|qoq|yoy|roe|roa|nim|npl|casa|ldr|cir/i.test(p)&&!/^#{1,4}\s/.test(p));
+ const missingTags=empirical.filter(p=>!sourceTag.test(p));
+ const refs=agentContext?.academicContext?.references||[],academicRequired=refs.length>0;
+ const hasAcademic=!academicRequired||(/\[ACADEMIC\]/.test(text)&&refs.some(r=>{const key=norm(String(r.title||r.citation||'').split(/[·,(]/)[0]);return key&&norm(text).includes(key.split(' ')[0]);}));
+ const normalized=norm(text),hasCounter=/tuy nhien|nguoc lai|phan bien|counter thesis|dieu kien.*sai|dieu kien.*yeu|luan diem.*yeu|rui ro.*luan diem|mat khac|han che/.test(normalized);
+ const hasMechanism=/co che|vi |do |dan den|keo theo|truyen dan|dong luc|bien loi nhuan|chi phi von|von luu dong|don bay|thanh khoan|cung cau|lai suat/.test(normalized);
+ const headings=(text.match(/^#{1,4}\s+/gm)||[]).length,invalid=/\bundefined\b|\bNaN\b/.test(text);
+ const missingRatio=empirical.length?missingTags.length/empirical.length:0;
+ let score=100;if(words<650)score-=20;if(headings<3&&paras.length<7)score-=10;if(missingRatio>.25)score-=25;else if(missingRatio>0)score-=10;if(!hasCounter)score-=15;if(!hasMechanism)score-=10;if(!hasAcademic)score-=15;if(invalid)score-=35;
+ score=Math.max(0,score);
+ return{pass:score>=80&&!invalid&&missingRatio<=.25&&hasCounter&&hasMechanism&&hasAcademic,score,words,paragraphs:paras.length,empiricalParagraphs:empirical.length,missingEvidenceTags:missingTags.length,missingRatio:Number(missingRatio.toFixed(3)),academicRequired,hasAcademic,hasCounter,hasMechanism,headings,invalid};
+}
+async function repairDeepAnswer(question,answer,audit,secret,model,agentContext,researchDossier){
+ const prompt=[
+  'Bạn là senior editor vòng cuối của Dolphin AI. Hãy BIÊN TẬP lại câu trả lời, không tạo phân tích độc lập mới và không tiết lộ chuỗi suy nghĩ.',
+  'CÂU HỎI: '+question,
+  'BẢN NHÁP: '+answer,
+  'QUALITY AUDIT: '+JSON.stringify(audit),
+  'FINQUERY CONTEXT: '+JSON.stringify(agentContext),
+  researchDossier?('RESEARCH DOSSIER: '+researchDossier):'',
+  'Yêu cầu bắt buộc: giữ nguyên mọi số liệu đã được neo; không tự tính/thêm số mới nếu context không có. Mỗi đoạn có số liệu/nhận định thực chứng phải có tag nguồn phù hợp. Nếu academicContext có reference, dùng ít nhất một reference đúng phạm vi, nêu tác giả/năm, gắn [ACADEMIC] và nói rõ giới hạn áp dụng. Các đoạn chính phải nối luận điểm → bằng chứng → cơ chế → giới hạn/phản biện → hàm ý cần theo dõi một cách tự nhiên. Phải có counter-thesis hoặc điều kiện làm luận điểm yếu đi. Không biến tương quan thành nhân quả, không đưa khuyến nghị mua/bán.',
+  'Giữ tiếng Việt tự nhiên, có chiều sâu nhưng tránh lặp ý, tránh câu sáo rỗng và tránh kéo dài chỉ để đủ chữ.'
+ ].filter(Boolean).join('\n\n');
+ const body={systemInstruction:{parts:[{text:dolphinSystemInstruction()}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:7000,temperature:.08,...(/^gemini-3(?:\.|-)/i.test(model)?{thinkingConfig:{thinkingLevel:'medium'}}:{})}};
+ const payload=await geminiGenerateResilient(secret,model,body,62000,2),result=providerAnswer(payload);
+ if(!result.text)throw new Error('Vòng biên tập chất lượng không trả về nội dung.');
+ return result.text;
+}
 async function callLLM(question){
  let prepared=null;
  if(window.FinResearchAgent?.prepare){
@@ -741,8 +772,18 @@ async function callLLM(question){
  for(let i=0;i<candidates.length;i++){
   const model=candidates[i];state.model=model;attempted.push(model);
   try{
-   const answer=await callGeminiModel(question,secret,model,!dossier&&(deep||i===0),agentContext,dossier);
-   return{...answer,agentAudit,researchPass:dossier?{status:'ok',model:dossierMeta?.model||candidates[0]}:{status:'fallback'},sources:mergeSources(dossierMeta?.sources,answer.sources),queries:[...new Set([...(dossierMeta?.queries||[]),...(answer.queries||[])])].slice(0,8)};
+   let answer=await callGeminiModel(question,secret,model,!dossier&&(deep||i===0),agentContext,dossier);
+   let qualityAudit=deep?auditDeepAnswer(answer.answer,agentContext):null,qualityRepair={status:'not_needed'};
+   if(deep&&qualityAudit&&!qualityAudit.pass){
+    try{
+     renderGeminiStatus('Đang rà soát chất lượng lập luận và biên tập vòng cuối…');
+     const repaired=await repairDeepAnswer(question,answer.answer,qualityAudit,secret,model,agentContext,dossier);
+     const repairedAudit=auditDeepAnswer(repaired,agentContext);
+     if(repairedAudit.score>=qualityAudit.score){answer={...answer,answer:repaired};qualityRepair={status:'applied',before:qualityAudit.score,after:repairedAudit.score};qualityAudit=repairedAudit;}
+     else qualityRepair={status:'kept_original',before:qualityAudit.score,after:repairedAudit.score};
+    }catch(error){qualityRepair={status:'fallback',error:String(error?.message||error).slice(0,180)};}
+   }
+   return{...answer,agentAudit,qualityAudit,qualityRepair,researchPass:dossier?{status:'ok',model:dossierMeta?.model||candidates[0]}:{status:'fallback'},sources:mergeSources(dossierMeta?.sources,answer.sources),queries:[...new Set([...(dossierMeta?.queries||[]),...(answer.queries||[])])].slice(0,8)};
   }
   catch(error){
    lastError=error;state.lastGeminiError=String(error?.message||error);
@@ -771,7 +812,8 @@ function llmHTML(answer,meta={}){
  const sources=(meta.sources||[]).slice(0,6).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||url)+'</a>':'';}).filter(Boolean);
  const academic=(meta.academicSources||[]).slice(0,5).map(s=>{const url=safeExternalUrl(s.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(s.caveat||'')+'">'+esc(s.title||s.citation||url)+'</a>':'';}).filter(Boolean);
  const anchors=(meta.anchors||[]).map(a=>'<span class="ai-anchor"><b>'+esc(a.tag)+'</b>'+esc(a.label)+' · '+esc(String(a.asOf))+'</span>').join('');
- return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(anchors?'<div class="ai-provenance"><strong>Dấu vết dữ liệu</strong>'+anchors+'</div>':'')+(academic.length?'<div class="analysis-news"><strong>Khung học thuật tham chiếu</strong>'+academic.join('')+'<small>Khung học thuật dùng để giải thích cơ chế, không thay thế bằng chứng doanh nghiệp.</small></div>':'')+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel())+'</small></section>';
+ const qa=meta.qualityAudit?(' · kiểm định lập luận '+Math.round(meta.qualityAudit.score||0)+'/100'+(meta.qualityRepair?.status==='applied'?' · đã biên tập vòng cuối':'')):'';
+ return '<section class="analysis-block"><div class="analysis-narrative">'+blocks.join('')+'</div>'+(anchors?'<div class="ai-provenance"><strong>Dấu vết dữ liệu</strong>'+anchors+'</div>':'')+(academic.length?'<div class="analysis-news"><strong>Khung học thuật tham chiếu</strong>'+academic.join('')+'<small>Khung học thuật dùng để giải thích cơ chế, không thay thế bằng chứng doanh nghiệp.</small></div>':'')+(sources.length?'<div class="analysis-news"><strong>Nguồn đối chiếu</strong>'+sources.join('')+'</div>':'')+'<small>'+esc(mode+' · '+modeLabel()+qa)+'</small></section>';
 }
 function nearBottom(box){return !box||box.scrollHeight-box.scrollTop-box.clientHeight<120;}
 function scrollIfNeeded(box,wasNear=true){if(box&&wasNear)box.scrollTop=box.scrollHeight;}
