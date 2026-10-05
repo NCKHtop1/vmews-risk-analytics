@@ -314,6 +314,11 @@ function main(){
  const quotes=read('quotes.json'),strategy=read('strategy-indicators.json');
  let previous=null;try{previous=read('risk-monitor.json');}catch{}
  const latest=quotes.latestSourceTime||quotes.sourceTime||null,day=vnDay(latest);
+ const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel');
+ if(reusable){
+  console.log(JSON.stringify({status:previous.status,score:previous.overall?.score,level:previous.overall?.level?.label,coverage:previous.coverage,sourceTime:previous.sourceTime,trend:previous.trend,alerts:(previous.alerts||[]).length,timeline:(previous.timeline||[]).length,reused:true}));
+  return;
+ }
  const oldTimeline=Array.isArray(previous?.timeline)?previous.timeline:[];
  const needsBaseline=!oldTimeline.some(x=>x?.sourceTime&&String(x.sourceTime)!==String(latest));
  const symbols=Object.entries(quotes.quotes||{}).filter(([,q])=>q?.status!=='retained').map(([s])=>s);
