@@ -12,28 +12,32 @@
 <main>
 <div class="intro"><div><h1>Phân tích &amp; Dự báo Cổ phiếu Việt Nam</h1></div><form id="site-unlock-form" class="site-access-form" autocomplete="off"><label for="site-access-code">Mã truy cập</label><div class="site-access-row"><input id="site-access-code" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="Nhập mã" aria-label="Mã truy cập FinQuery"><button type="submit">Mở</button></div><p id="site-access-error" role="status" aria-live="polite"></p></form></div>
 <section id="risk-monitor" class="risk-monitor-page" aria-label="Giám sát rủi ro thị trường" hidden>
-<header class="risk-page-head"><div><span class="risk-page-kicker">GIÁM SÁT THỊ TRƯỜNG</span><h1>Giám sát rủi ro thị trường</h1><p>Theo dõi mức căng thẳng hiện tại trên nhóm cổ phiếu HOSE Core + Liquid có dữ liệu trực tiếp, dựa trên giá, khối lượng, độ lan rộng của nhịp giảm và diễn biến giữa các nhóm ngành.</p></div><div class="risk-page-tools"><span id="risk-source-time" class="risk-source-line">Đang tải dữ liệu…</span><small id="risk-source-status">Đang đồng bộ</small><button id="risk-refresh" type="button">Cập nhật</button></div></header>
+<header class="risk-page-head"><div><span class="risk-page-kicker">GIÁM SÁT THỊ TRƯỜNG</span><h1>Giám sát rủi ro thị trường</h1><p>Theo dõi mức căng thẳng hiện tại trên nhóm cổ phiếu HOSE Core + Liquid có dữ liệu trực tiếp, dựa trên giá, khối lượng, độ lan rộng của nhịp giảm và diễn biến giữa các nhóm ngành.</p></div><div class="risk-page-tools"><span id="risk-source-time" class="risk-source-line">Đang tải dữ liệu…</span><small id="risk-source-status">Đang đồng bộ</small><small>Tự làm mới mỗi phút</small><button id="risk-refresh" type="button">Cập nhật</button></div></header>
 <div id="risk-error" role="alert" hidden></div>
 <div class="risk-body">
 <div class="risk-summary-grid">
 <article class="risk-summary-card"><span>MỨC RỦI RO HIỆN TẠI</span><div class="risk-score-row"><strong id="risk-score">—</strong><span id="risk-level"></span></div><p id="risk-summary">Đang tính từ dữ liệu thị trường.</p></article>
-<article class="risk-summary-card"><span>DIỄN BIẾN SO VỚI MỐC TRƯỚC</span><strong id="risk-trend" class="risk-main-value">—</strong><p id="risk-trend-delta">Đang chờ mốc so sánh.</p></article>
+<article class="risk-summary-card"><span>SO VỚI MỐC GẦN NHẤT</span><strong id="risk-trend" class="risk-main-value">—</strong><p id="risk-trend-delta">Đang tìm mốc so sánh.</p></article>
 <article class="risk-summary-card"><span>ĐỘ PHỦ DỮ LIỆU</span><strong id="risk-coverage" class="risk-main-value">—</strong><p id="risk-coverage-note">Đang kiểm tra.</p></article>
 </div>
 
-<section class="risk-section"><div class="risk-section-head"><div><h2>Năm thước đo chính</h2><p>Điểm càng cao, dấu hiệu căng thẳng quan sát được càng rõ.</p></div></div><div id="risk-components" class="risk-components"></div></section>
+<section class="risk-section"><div class="risk-section-head"><div><h2>Năm thước đo chính</h2><p>Điểm càng cao, dấu hiệu căng thẳng quan sát được càng rõ.</p></div><span id="risk-driver-change"></span></div><div id="risk-components" class="risk-components"></div></section>
 
-<div class="risk-main-grid">
-<section class="risk-panel"><h3>Diễn biến trong ngày</h3><p class="risk-panel-sub">Mỗi điểm là một mốc dữ liệu đã được FinQuery đồng bộ.</p><div id="risk-timeline"></div><div id="risk-market-counts" class="risk-market-counts"></div></section>
-<section class="risk-panel"><h3>Cảnh báo đang có</h3><p class="risk-panel-sub">Cảnh báo được giữ ổn định, không đổi màu chỉ vì dao động nhỏ quanh ngưỡng.</p><div id="risk-alerts" class="risk-alerts"></div></section>
+<div class="risk-main-grid risk-main-grid-balanced">
+<section class="risk-panel"><div class="risk-panel-head"><div><h3>Diễn biến điểm rủi ro</h3><p class="risk-panel-sub">Theo các mốc dữ liệu đã được đồng bộ. Mốc đầu ngày sẽ so với cuối phiên trước nếu chưa có mốc trong ngày.</p></div></div><div id="risk-timeline"></div></section>
+<section class="risk-panel"><h3>Điểm rủi ro đến từ đâu?</h3><p class="risk-panel-sub">Mỗi thước đo có trọng số cố định. Thanh dưới cho biết phần điểm đang đóng góp vào tổng điểm hiện tại.</p><div id="risk-contributions" class="risk-contributions"></div></section>
 </div>
 
-<div class="risk-main-grid">
-<section class="risk-panel"><h3>Rủi ro theo nhóm ngành</h3><p class="risk-panel-sub">So sánh mức giảm lan rộng, mức giảm trung vị và khối lượng trong từng nhóm.</p><div id="risk-sectors" class="risk-sector-list"></div></section>
-<section class="risk-panel"><h3>Các mã cần chú ý</h3><p class="risk-panel-sub">Xếp theo mức giảm, biến động, khối lượng và vị trí so với trung bình giá.</p><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
+<div class="risk-main-grid risk-main-grid-balanced">
+<section class="risk-panel"><h3>Độ rộng thị trường</h3><p class="risk-panel-sub">So sánh trực tiếp số mã tăng, giảm và đứng giá trong phạm vi đang theo dõi.</p><div id="risk-breadth-strip" class="risk-breadth-strip" aria-label="Tỷ trọng mã tăng giảm đứng giá"></div><div id="risk-market-counts" class="risk-market-counts"></div></section>
+<section class="risk-panel"><h3>Cảnh báo đang có</h3><p class="risk-panel-sub">Cảnh báo chỉ đổi trạng thái khi vượt đủ ngưỡng; cảnh báo mới chỉ được nhấn nhẹ một lần, không nhấp nháy liên tục.</p><div id="risk-alerts" class="risk-alerts"></div><div id="risk-alert-history" class="risk-alert-history"></div></section>
 </div>
 
-<section class="risk-method"><h3>Cách đọc điểm rủi ro</h3><p id="risk-method-note">Điểm 0–100 đo mức căng thẳng đang quan sát được từ dữ liệu thị trường.</p><p id="risk-alert-rule"></p><p>Đây là thước đo trạng thái hiện tại, không phải xác suất thị trường chắc chắn sẽ tăng hay giảm trong tương lai.</p></section>
+<section class="risk-section"><div class="risk-section-head"><div><h2>Rủi ro theo nhóm ngành</h2><p>Nhóm có điểm cao hơn được đưa lên trước; màu chỉ thể hiện mức cần chú ý, không phải khuyến nghị mua bán.</p></div></div><div id="risk-sectors" class="risk-sector-grid"></div></section>
+
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Các mã cần chú ý</h2><p>Xếp theo mức giảm, biến động, khối lượng và vị trí so với trung bình giá.</p></div></div><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
+
+<section class="risk-method"><h3>Cách đọc điểm rủi ro</h3><p id="risk-method-note">Điểm 0–100 đo mức căng thẳng đang quan sát được từ dữ liệu thị trường.</p><p id="risk-comparison-note"></p><p id="risk-alert-rule"></p><p>Đây là thước đo trạng thái hiện tại, không phải xác suất thị trường chắc chắn sẽ tăng hay giảm trong tương lai.</p></section>
 </div>
 </section>
 <div class="workspace">
