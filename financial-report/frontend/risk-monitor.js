@@ -1,6 +1,15 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
 const state={data:null,loading:false,error:'',selectedFundSymbol:null,selectedSectorId:null};
+function updateNavBadge(){
+ const badge=$('risk-nav-badge');if(!badge)return;
+ const d=state.data||{},funds=d.fundMonitor||{};
+ const sectorCount=(d.sectors||[]).filter(x=>x.alertActive===true).length;
+ const fundCount=Number(funds.changedSymbols)||0;
+ const count=sectorCount+fundCount;
+ badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);
+ badge.title=sectorCount+' ngành chạm ngưỡng · '+fundCount+' mã có thay đổi quỹ';
+}
 const COMPONENT_ORDER=['breadth','volatility','liquidity','concentration','contagion'];
 const fmt=(v,d=1)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -157,11 +166,9 @@ function renderFunds(){
  const f=d?.fundMonitor||{};
  if(f.status!=='ok'){
   if(asof)asof.textContent='Chưa có dữ liệu quỹ';
-  const badge=$('risk-nav-badge');if(badge){badge.hidden=true;badge.textContent='';}
   box.innerHTML='<p class="risk-empty">Chưa có dữ liệu quỹ đủ để so sánh.</p>';chart.innerHTML='';if(detail)detail.hidden=true;return;
  }
  if(asof)asof.textContent='Nguồn '+esc(f.source||'FMARKET')+(f.reportDate?' · báo cáo gần nhất '+esc(f.reportDate):'')+' · kiểm tra '+esc(f.asOf||'—')+(f.previousAsOf?' · so với '+esc(f.previousAsOf):'');
- const badge=$('risk-nav-badge');if(badge){const count=Number(f.materialChanges)||0;badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);badge.title=count+' thay đổi quỹ đáng chú ý';}
  box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã có thay đổi đáng kể</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Thay đổi đáng kể</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
  const rows=(f.rows||[]).filter(x=>Number(x.currentFundCount)>0).sort((a,b)=>b.currentFundCount-a.currentFundCount||b.materialChanges-a.materialChanges||a.symbol.localeCompare(b.symbol));
  const max=Math.max(1,...rows.map(x=>Number(x.currentFundCount)||0));
@@ -180,7 +187,7 @@ function renderMethod(){
 }
 function render(){
  if(!state.data)return;
- renderTop();renderDriverChange();renderComponents();renderContributions();renderTimeline();renderSectors();renderAlerts();renderTopStocks();renderBreadth();renderFunds();renderMethod();
+ renderTop();renderDriverChange();renderComponents();renderContributions();renderTimeline();renderSectors();renderAlerts();renderTopStocks();renderBreadth();renderFunds();updateNavBadge();renderMethod();
  const err=$('risk-error');if(err){err.hidden=true;err.textContent='';}
 }
 async function refresh(){
