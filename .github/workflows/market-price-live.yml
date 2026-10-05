@@ -84,4 +84,5 @@ jobs:
           FORCE_ONESHOT: ${{ steps.session.outputs.oneshot }}
           MARKET_LOOP_SECONDS: '300'
           MARKET_MAX_QUOTE_AGE_MINUTES: '18'
+          MARKET_CLOSE_CATCH_MAX_AGE_MINUTES: '30'
         run: bash financial-report/scripts/live_session_publisher.sh
