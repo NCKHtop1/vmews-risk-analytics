@@ -71,6 +71,20 @@ test('technical scanner rules remain unchanged and evidence is additive',()=>{
  assert.match(ui,/Rule priority/);
  assert.match(ui,/EOD proxy T\+3/);
 });
+test('live technical UI does not mislabel evolving daily indicators as 15-minute bars',()=>{
+ const html=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
+ assert.match(html,/Core \+ Liquid · Trong phiên/);
+ assert.match(html,/Scanner cập nhật theo dữ liệu trong phiên/);
+ assert.doesNotMatch(html,/Core \+ Liquid · 15P|snapshot live 15 phút|snapshot giá 15 phút/i);
+ assert.doesNotMatch(app,/Cập nhật 15 phút\/lần|textContent='15P'|:'15P'/);
+ assert.match(scanner,/Trong phiên/);
+ assert.doesNotMatch(scanner,/· Live /);
+ assert.match(source,/evolving current-session daily candle/);
+});
+
 test('Strategy Lab replaces visible Data Health and simple rule form',()=>{
  const build=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_cdn.py'),'utf8');
  const html=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
