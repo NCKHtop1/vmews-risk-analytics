@@ -207,3 +207,12 @@ test('validated sector threshold creates a separate sector alert without changin
  assert.ok(out.alerts.some(x=>x.id==='sector-banking'&&x.backtestValidated===true),out.alerts);
  assert.equal(out.sectorCalibration.validatedSectors,1);
 });
+
+
+test('risk method copy is plain-language and versioned to refresh cached snapshots',()=>{
+ const {quotes,strategy}=fixture();
+ const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
+ assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-1.4');
+ assert.doesNotMatch(out.methodology.alertRule,/hysteresis|ngoài mẫu|OOS/i);
+ assert.match(out.methodology.alertRule,/tránh bật\/tắt liên tục/);
+});
