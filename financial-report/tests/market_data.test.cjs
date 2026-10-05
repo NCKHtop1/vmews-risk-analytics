@@ -211,3 +211,16 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  assert.match(live,/build_sector_risk_calibration\.cjs/);
  assert.match(refresh,/Persist aligned market risk history/);
 });
+
+
+test('risk navigation badge combines sector threshold alerts with fund-change symbols and cadence copy is honest',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ assert.match(index,/Số cảnh báo cần chú ý/);
+ assert.match(index,/snapshot phiên khoảng 5 phút\/lần/);
+ assert.match(index,/snapshot thị trường khoảng 5 phút\/lần trong phiên/);
+ assert.match(risk,/function updateNavBadge/);
+ assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
+ assert.match(risk,/changedSymbols/);
+ assert.doesNotMatch(risk,/badge\.title=count\+' thay đổi quỹ đáng chú ý'/);
+});
