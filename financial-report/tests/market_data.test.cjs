@@ -207,8 +207,10 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  assert.doesNotMatch(index,/Vietnam Equity Intelligence|Charts by TradingView Lightweight Charts/);
  assert.match(risk,/renderSectorDetail/);
  assert.match(risk,/risk-sector-heat-cell/);
- assert.match(risk,/risk-heat-up/);
- assert.match(risk,/risk-heat-down/);
+ assert.match(risk,/const direction=change>0\.01\?'up':change<-0\.01\?'down':'flat'/);
+ assert.match(risk,/risk-heat-'\+direction/);
+ assert.match(index,/risk-heat-up/);
+ assert.match(index,/risk-heat-down/);
  assert.match(risk,/renderBreadthDetail/);
  assert.match(risk,/renderFundDetail/);
  assert.match(risk,/risk-fund-bar/);
