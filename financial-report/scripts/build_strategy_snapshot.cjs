@@ -17,6 +17,11 @@ function currentChange(bars,i){if(i<1)return null;const a=num(bars[i-1]?.close),
 function normalizeBars(rows){
  return (rows||[]).map(b=>({time:b.time,open:num(b.open),high:num(b.high),low:num(b.low),close:num(b.close),volume:Math.max(0,num(b.volume)||0)})).filter(math.validBar);
 }
+function sameTechnicalState(a,b){
+ const keys=['price','rsi14','macd','macdSignal','macdHistogram','volume','volumeRatio20'];
+ const comparable=keys.filter(k=>num(a?.[k])!==null&&num(b?.[k])!==null);
+ return comparable.length>=4&&comparable.every(k=>Math.abs(num(a[k])-num(b[k]))<1e-9);
+}
 const universe=read(path.join(out,'universe.json'),{}),canonical=read(path.resolve(process.argv[3]||'financial-report/data/universe.json'),{}),quotes=read(path.join(out,'quotes.json'),{}),old=read(path.join(out,'strategy-indicators.json'),{symbols:{}});
 const records=universe.symbols||canonical.symbols||{},discoveryTechnical=universe.discoveryTechnical||canonical.discoveryTechnical||{},files=fs.existsSync(path.join(out,'history'))?fs.readdirSync(path.join(out,'history')).filter(f=>f.endsWith('.json')):[];
 const symbols={};
@@ -43,7 +48,8 @@ for(const file of files){
  const currentSourceTime=q.sourceTime||q.collectedAt||null;
  const sameLiveBar=oldRow&&oldRow.barDate===barDate&&oldRow.current&&tier!=='DISCOVERY';
  const sameMarketSnapshot=sameLiveBar&&currentSourceTime&&String(oldRow.sourceTime||'')===String(currentSourceTime);
- const previous=sameLiveBar?(sameMarketSnapshot&&oldRow.previous?oldRow.previous:oldRow.current):dailyPrevious;
+ const storedPreviousUsable=sameMarketSnapshot&&oldRow.previous&&!sameTechnicalState(oldRow.previous,oldRow.current);
+ const previous=sameLiveBar?(sameMarketSnapshot?(storedPreviousUsable?oldRow.previous:dailyPrevious):oldRow.current):dailyPrevious;
  symbols[symbol]={symbol,tier,cadence:tier==='DISCOVERY'?'EOD':'LIVE_15M',barDate,sourceTime:currentSourceTime,current,previous};
 }
 // Discovery names are intentionally EOD-only in the market branch. Merge their
