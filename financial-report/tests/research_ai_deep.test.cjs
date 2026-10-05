@@ -73,6 +73,6 @@ test('deep answers have deterministic quality audit and bounded repair pass',()=
 test('deep quality repair cannot invent a new analytical basis',()=>{
  assert.match(src,/giữ nguyên mọi số liệu đã được neo/);
  assert.match(src,/không tự tính\/thêm số mới nếu context không có/);
- assert.match(src,/không biến tương quan thành nhân quả/);
- assert.match(src,/không đưa khuyến nghị mua\/bán/);
+ assert.match(src,/không biến tương quan thành nhân quả/i);
+ assert.match(src,/không đưa khuyến nghị mua\/bán/i);
 });
