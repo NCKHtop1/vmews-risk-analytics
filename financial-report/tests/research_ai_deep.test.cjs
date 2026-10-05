@@ -60,6 +60,7 @@ test('academic layer is passed through context and rendered separately',()=>{
 test('deep answers have deterministic quality audit and bounded repair pass',()=>{
  assert.match(src,/function auditDeepAnswer\(/);
  assert.match(src,/missingEvidenceTags/);
+ assert.match(src,/words>=650&&empirical\.length>=2/);
  assert.match(src,/academicRequired/);
  assert.match(src,/hasCounter/);
  assert.match(src,/hasMechanism/);
