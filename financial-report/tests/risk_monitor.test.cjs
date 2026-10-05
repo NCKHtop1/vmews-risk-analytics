@@ -51,6 +51,18 @@ test('broad selloff raises market risk and creates explainable alerts',()=>{
  assert.equal(out.topRisk[0].reasons.length>0,true);
 });
 
+test('isolated stock shock is surfaced without turning into a market-wide alarm',()=>{
+ const {quotes,strategy}=fixture();
+ const symbol='ACB',q=quotes.quotes[symbol],s=strategy.symbols[symbol];
+ q.changePct=-6;q.price=94000;q.reference=100000;q.open=100000;q.high=101000;q.low=93000;q.volume=2600000;
+ s.current={...s.current,price:q.price,changePct:q.changePct,volume:q.volume,volumeSma20:1000000,volumeRatio20:2.6,cmf20:-.4,sma20:101000,sma50:103000,atr14:6500};
+ const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
+ assert.equal(out.topRisk[0].symbol,symbol);
+ assert.ok(out.topRisk[0].score>=80,out.topRisk[0]);
+ assert.ok(out.overall.score<50,out.overall);
+ assert.equal(out.alerts.some(x=>x.id==='market-high'),false);
+});
+
 test('risk snapshot refuses a different strategy generation',()=>{
  const {quotes,strategy}=fixture();
  strategy.sourceTime='2026-10-05T07:30:00.000Z';
