@@ -1165,6 +1165,8 @@ def merge_live_daily_quotes(out, quotes):
             day = datetime.fromisoformat(source_time).astimezone(VN).date().isoformat()
         except (ValueError, TypeError):
             continue
+        if not trading_weekday(day):
+            continue
         path = out / 'history' / (symbol + '.json')
         previous = read(path, {})
         previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time') and trading_weekday(bar.get('time'))]
