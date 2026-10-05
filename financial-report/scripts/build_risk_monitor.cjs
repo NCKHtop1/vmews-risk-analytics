@@ -400,7 +400,7 @@ function buildSectorAlerts(sectors,previous,sourceTime){
    round(s.declinePct,1)+'% mã trong ngành đang giảm',
    'thay đổi trung vị '+(Number(s.medianChangePct)>0?'+':'')+round(s.medianChangePct,2)+'%'
   ];
-  if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('giảm tiếp 3 phiên có bằng chứng ngoài mẫu: '+round(precision*100,1)+'% tín hiệu rơi vào vùng bất lợi so với nền '+round(base*100,1)+'% (x'+round(lift,2)+')');
+  if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('lịch sử kiểm tra cho thấy '+round(precision*100,1)+'% lần chạm ngưỡng rơi vào vùng giảm xấu trong 3 phiên sau, so với mức thông thường '+round(base*100,1)+'% (cao hơn '+round(lift,2)+' lần)');
   else evidence.push('đây là cảnh báo trạng thái căng thẳng; chưa coi là dự báo ngành sẽ giảm tiếp');
   alerts.push({
    id,title:s.label+' chạm ngưỡng căng thẳng lịch sử',score:round(s.score,1),
@@ -456,7 +456,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
    description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
    scope:'HOSE Core + Liquid có dữ liệu trực tiếp',
    comparison:'Mốc so sánh ưu tiên lần cập nhật liền trước. Khi chưa có lịch sử trong ngày, FinQuery dùng điểm cuối phiên giao dịch trước được dựng lại từ dữ liệu ngày.',
-   alertRule:'Cảnh báo thị trường dùng ngưỡng cố định có hysteresis. Cảnh báo ngành chỉ bật khi điểm hiện tại chạm ngưỡng căng thẳng lịch sử riêng của ngành và ngưỡng đó ổn định qua kiểm định theo thời gian. Bằng chứng giảm tiếp 3 phiên được đánh giá riêng, không mặc định từ cảnh báo trạng thái.'
+   alertRule:'Cảnh báo thị trường chỉ bật khi điểm vượt ngưỡng và chỉ tắt sau khi điểm hạ xuống dưới mức an toàn hơn, để tránh bật/tắt liên tục. Cảnh báo ngành dùng ngưỡng riêng theo lịch sử của từng ngành; khả năng giảm tiếp 3 phiên được kiểm tra riêng.'
   }
  };
 }
