@@ -56,7 +56,7 @@ function confusionFromTotals(x){
 function calibrateSector(id,label,observations){
  const rows=(observations||[]).filter(x=>Number.isFinite(Number(x.score))&&Number.isFinite(Number(x.forward3Pct))&&Number.isFinite(Number(x.currentMedianPct))).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  if(rows.length<180){
-  return{id,label,status:'INSUFFICIENT_HISTORY',alertEligible:false,stateValidated:false,continuationValidated:false,samples:rows.length,thresholdMode:'HISTORICAL_P90',threshold:round(quantile(rows.map(x=>x.score),STATE_QUANTILE)??65,1),reason:'Lịch sử hợp lệ chưa đủ 180 phiên để kiểm định độ ổn định của ngưỡng.'};
+  return{id,label,status:'INSUFFICIENT_HISTORY',alertEligible:false,stateValidated:false,continuationValidated:false,samples:rows.length,thresholdMode:'HISTORICAL_P90',threshold:round(quantile(rows.map(x=>x.score),STATE_QUANTILE)??65,1),reason:'Chưa đủ ít nhất 180 phiên lịch sử hợp lệ để kiểm tra độ ổn định của ngưỡng cảnh báo.'};
  }
  const splits=[[.55,.70],[.70,.85],[.85,1.00]],folds=[];
  let totals={total:0,tp:0,fp:0,tn:0,fn:0,signals:0,events:0};
@@ -90,7 +90,7 @@ function calibrateSector(id,label,observations){
   adverseCutoffPct:round(median(cutoffs)??-1,2),
   oos:{...aggregate,folds:folds.length,signalRate:round(signalRate,4),medianCurrentReturnWhenSignalPct:medianSignalCurrent===null?null:round(medianSignalCurrent,2),medianForward3WhenSignalPct:medianSignalForward===null?null:round(medianSignalForward,2)},
   foldDetails:folds,
-  reason:stateValidated?(continuationValidated?'Ngưỡng căng thẳng lịch sử ổn định; bằng chứng giảm tiếp 3 phiên cũng đạt gate ngoài mẫu.':'Ngưỡng căng thẳng lịch sử ổn định; chưa đủ bằng chứng để kết luận ngành sẽ tiếp tục giảm trong 3 phiên sau.'):'Ngưỡng phân vị lịch sử chưa đủ ổn định hoặc chưa đủ mẫu tín hiệu để bật cảnh báo tự động.'
+  reason:stateValidated?(continuationValidated?'Ngưỡng căng thẳng lịch sử đủ ổn định; dữ liệu kiểm tra cũng cho thấy bằng chứng giảm tiếp 3 phiên.':'Ngưỡng căng thẳng lịch sử đủ ổn định; chưa đủ bằng chứng để kết luận ngành sẽ tiếp tục giảm trong 3 phiên sau.'):'Ngưỡng lịch sử chưa đủ ổn định hoặc chưa có đủ số lần chạm ngưỡng để bật cảnh báo tự động.'
  };
 }
 function loadFeatures(file,cutoffDay){
