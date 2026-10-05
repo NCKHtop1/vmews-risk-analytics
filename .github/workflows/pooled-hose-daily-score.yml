@@ -8,6 +8,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'requirements.txt'
       - 'data/pooled-hose/model-meta.json'
       - 'data/pooled-hose/robustness.json'
       - 'scripts/score_pooled_hose_model.py'
