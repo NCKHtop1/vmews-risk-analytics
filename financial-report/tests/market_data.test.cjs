@@ -180,3 +180,26 @@ test('risk monitor states the monitored universe clearly',()=>{
  assert.match(risk,/Phạm vi trực tiếp: HOSE Core \+ Liquid/);
  assert.match(engine,/scope:'HOSE Core \+ Liquid có dữ liệu trực tiếp'/);
 });
+
+
+test('risk monitor v2 exposes usable comparison and dashboard panels',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const css=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.css'),'utf8');
+ const refresh=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/financial-market-refresh.yml'),'utf8');
+ assert.match(index,/SO VỚI MỐC GẦN NHẤT/);
+ assert.match(index,/id="risk-contributions"/);
+ assert.match(index,/id="risk-breadth-strip"/);
+ assert.match(index,/id="risk-alert-history"/);
+ assert.match(index,/Rủi ro theo nhóm ngành/);
+ assert.match(risk,/comparisonLabel/);
+ assert.match(risk,/risk-contribution-row/);
+ assert.match(risk,/risk-breadth-up/);
+ assert.match(risk,/risk-alert-new/);
+ assert.match(css,/risk-sector-grid/);
+ assert.match(css,/riskAlertPulse/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(refresh,/Persist aligned market risk history/);
+ assert.match(refresh,/build_risk_monitor\.cjs/);
+ assert.match(refresh,/actions\/setup-node@v4/);
+});
