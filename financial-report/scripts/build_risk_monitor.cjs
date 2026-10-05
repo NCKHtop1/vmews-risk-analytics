@@ -1,8 +1,8 @@
 'use strict';
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
 
-const VERSION='FINQUERY-RISK-1.3';
-const METHOD_VERSION='FINQUERY-RISK-RULES-1.4';
+const VERSION='FINQUERY-RISK-1.4';
+const METHOD_VERSION='FINQUERY-RISK-RULES-1.5';
 const FUND_HISTORY_PATH=path.resolve(__dirname,'../../data/fund-holdings-history-v16.json');
 const FUND_CHANGE_THRESHOLD_PP=0.50;
 const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
@@ -42,12 +42,31 @@ function fundTone(status){
  if(status==='mixed')return'yellow';
  return'neutral';
 }
+function holdingPositionSignature(snapshot){
+ const rows=(snapshot?.holdings||[]).map(item=>({
+  fund:String(item?.fundCode||item?.fundId||item?.fundName||'').trim(),
+  symbol:String(item?.symbol||'').toUpperCase().trim(),
+  weight:n(item?.weight),
+  reportDate:String(item?.reportDate||'')
+ })).filter(x=>x.fund&&x.symbol).sort((a,b)=>(a.symbol+'|'+a.fund).localeCompare(b.symbol+'|'+b.fund));
+ return crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex').slice(0,24);
+}
 function buildFundMonitor(history){
  const snapshots=(history?.snapshots||[]).filter(x=>x&&typeof x==='object'&&x.weightUnit==='FRACTION_OF_NAV'&&x.asOf);
  if(!snapshots.length)return{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu công bố quỹ'};
  const ordered=[...snapshots].sort((a,b)=>String(a.asOf).localeCompare(String(b.asOf)));
- const latest=ordered[ordered.length-1],previous=ordered.length>1?ordered[ordered.length-2]:null;
- const signature=crypto.createHash('sha256').update(JSON.stringify(latest.holdings||[])).digest('hex').slice(0,20);
+ const latest=ordered[ordered.length-1],latestPositionSignature=holdingPositionSignature(latest);
+ let previous=null,lastChangedAsOf=String(latest.asOf);
+ for(let i=ordered.length-2;i>=0;i--){
+  const sig=holdingPositionSignature(ordered[i]);
+  if(sig===latestPositionSignature){lastChangedAsOf=String(ordered[i].asOf);continue;}
+  previous=ordered[i];break;
+ }
+ const previousPositionSignature=previous?holdingPositionSignature(previous):null;
+ const signature=crypto.createHash('sha256').update(JSON.stringify({
+  asOf:String(latest.asOf),latestPositionSignature,
+  previousAsOf:previous?String(previous.asOf):null,previousPositionSignature
+ })).digest('hex').slice(0,20);
  const group=snapshot=>{
   const by=new Map();
   for(const item of snapshot?.holdings||[]){
@@ -95,7 +114,7 @@ function buildFundMonitor(history){
   let status='stable';
   if(inc&&dec)status='mixed';else if(inc)status='increased';else if(dec)status='decreased';
   const numericChanges=details.filter(x=>Number.isFinite(Number(x.deltaPP)));
-  const largest=numericChanges.sort((a,b)=>Math.abs(Number(b.deltaPP))-Math.abs(Number(a.deltaPP)))[0]||null;
+  const largest=[...numericChanges].sort((a,b)=>Math.abs(Number(b.deltaPP))-Math.abs(Number(a.deltaPP)))[0]||null;
   const activeWeights=active.map(x=>x.currentWeightPct).filter(Number.isFinite);
   const row={
    symbol,currentFundCount:active.length,previousFundCount:details.filter(x=>x.previousWeightPct!==null).length,
@@ -122,12 +141,13 @@ function buildFundMonitor(history){
  return{
   status:'ok',source:'FMARKET',sourceRole:'DISCLOSED_FUND_CONTEXT',asOf:String(latest.asOf),
   reportDate:reportDates.length?reportDates[reportDates.length-1]:null,
-  generatedAt:latest.generatedAt||history?.generatedAt||null,previousAsOf:previous?String(previous.asOf):null,
+  generatedAt:latest.generatedAt||history?.generatedAt||null,
+  lastChangedAsOf,previousAsOf:previous?String(previous.asOf):null,
+  comparisonMode:'LAST_MEANINGFUL_HOLDING_CHANGE',
   snapshotCount:ordered.length,funds:uniqueFunds.size,holdingRows:latestHoldings.length,
   symbols:current.size,changedSymbols:rows.filter(x=>x.materialChanges>0).length,
   materialChanges:alerts.length,thresholdPP:FUND_CHANGE_THRESHOLD_PP,signature,
-  rows,alerts:alerts.slice(0,60),
-  note:'So sánh tỷ trọng trong danh mục quỹ giữa hai lần thu thập gần nhất. Không suy diễn thành số cổ phiếu mua/bán khi nguồn không công bố khối lượng.'
+  rows,alerts:alerts.slice(0,60)
  };
 }
 function loadFundMonitor(historyPath=FUND_HISTORY_PATH){
@@ -194,6 +214,8 @@ function sectorRows(rows,calibration=null){
   const members=group.symbols.map(s=>by.get(s)).filter(Boolean);
   if(members.length<2)return null;
   const declineShare=members.filter(r=>r.change<0).length/members.length;
+  const advanceShare=members.filter(r=>r.change>0).length/members.length;
+  const unchangedShare=members.filter(r=>r.change===0).length/members.length;
   const medChange=median(members.map(r=>r.change));
   const medVolume=median(members.map(r=>r.volumeRatio));
   const score=clamp(
@@ -211,7 +233,7 @@ function sectorRows(rows,calibration=null){
   }));
   return{
    id:group.id,label:group.label,score:round(score,1),level:level(score),members:members.length,
-   declinePct:pct(declineShare),medianChangePct:round(medChange,2),medianVolumeRatio:round(medVolume,2),
+   declinePct:pct(declineShare),advancePct:pct(advanceShare),unchangedPct:pct(unchangedShare),medianChangePct:round(medChange,2),medianVolumeRatio:round(medVolume,2),
    memberRows,threshold:threshold===null?null:round(threshold,1),exitThreshold:exitThreshold===null?null:round(exitThreshold,1),
    alertEligible,alertActive,nearThreshold,
    backtest:cal?{
