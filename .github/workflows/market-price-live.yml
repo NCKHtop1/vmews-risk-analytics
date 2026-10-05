@@ -10,6 +10,7 @@ on:
       - 'financial-report/scripts/build_technical_evidence.py'
       - 'financial-report/scripts/build_strategy_snapshot.cjs'
       - 'financial-report/scripts/build_risk_monitor.cjs'
+      - 'data/fund-holdings-history-v16.json'
       - 'financial-report/scripts/live_session_publisher.sh'
       - 'financial-report/data/universe.json'
   workflow_run:
@@ -51,7 +52,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          sparse-checkout: financial-report
+          sparse-checkout: |
+            financial-report
+            data/fund-holdings-history-v16.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
