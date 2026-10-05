@@ -108,6 +108,7 @@ async function refresh(){
 function showRisk(pushHash=true){
  const section=$('risk-monitor'),intro=document.querySelector('.intro'),workspace=document.querySelector('.workspace');
  if(!section)return;
+ if(document.body.classList.contains('site-locked')){showAnalysis();return;}
  if(intro)intro.hidden=true;if(workspace)workspace.hidden=true;section.hidden=false;document.body.classList.add('risk-monitor-view');
  document.querySelectorAll('.header nav a').forEach(a=>a.classList.toggle('active',a.dataset.platformView==='risk'));
  if(pushHash&&location.hash!=='#risk-monitor')history.pushState(null,'','#risk-monitor');
