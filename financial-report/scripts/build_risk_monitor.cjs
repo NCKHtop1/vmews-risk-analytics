@@ -454,7 +454,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
    description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
    scope:'HOSE Core + Liquid có dữ liệu trực tiếp',
    comparison:'Mốc so sánh ưu tiên lần cập nhật liền trước. Khi chưa có lịch sử trong ngày, FinQuery dùng điểm cuối phiên giao dịch trước được dựng lại từ dữ liệu ngày.',
-   alertRule:'Cảnh báo thị trường dùng ngưỡng cố định có hysteresis. Cảnh báo ngành chỉ bật khi ngành đó có ngưỡng đã vượt kiểm định ngoài mẫu theo thời gian; mỗi ngành có ngưỡng riêng.'
+   alertRule:'Cảnh báo chỉ bật khi điểm vượt ngưỡng và chỉ tắt sau khi điểm hạ xuống dưới mức an toàn hơn, để tránh bật/tắt liên tục. Với ngành, chỉ những ngưỡng đã kiểm tra đủ tốt trên dữ liệu lịch sử mới được dùng để cảnh báo tự động.'
   }
  };
 }
