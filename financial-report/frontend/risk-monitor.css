@@ -164,3 +164,27 @@
 @media(max-width:1000px){.risk-sector-heatmap{grid-template-columns:repeat(3,minmax(0,1fr))}.risk-backtest-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.risk-sector-members{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.risk-fund-chart-head{display:none}.risk-fund-bar{grid-template-columns:58px 1fr}.risk-fund-bar>small{grid-column:2}.risk-fund-detail-summary,.risk-sector-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-sector-heatmap{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-sector-members{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.risk-sector-heatmap{grid-template-columns:1fr}.risk-backtest-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-sector-members{grid-template-columns:1fr}}
+
+/* Risk monitor interaction refinements */
+.risk-market-counts button{padding:11px;border-radius:9px;background:#f7f9fb;border:1px solid #edf1f5;text-align:left;color:inherit}
+.risk-market-counts button:hover{background:#f1f5f9;border-color:#d8e0ea}
+.risk-market-counts button span,.risk-market-counts button strong,.risk-market-counts button small{display:block}
+.risk-breadth-detail{margin-top:12px;padding:12px;border:1px solid #e4e9ef;border-radius:10px;background:#fbfcfe}
+.risk-breadth-symbols{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.risk-breadth-symbols button{border:1px solid #e5eaf0;border-radius:8px;background:#fff;padding:8px;text-align:left}
+.risk-breadth-symbols button:hover{background:#f7f9fc}
+.risk-breadth-symbols strong{display:block;font-size:10.5px;color:#34445a}
+.risk-breadth-symbols span{display:block;margin-top:3px;font-size:10px}
+.risk-breadth-symbols small{display:block;margin-top:3px;font-size:8px;color:#8793a3}
+.risk-section-updated{margin-top:10px;font-size:9px;color:#8390a1;text-align:right}
+.risk-sector-heat-cell.risk-heat-up{background:#f5fbf8;border-color:#d8ebe2}
+.risk-sector-heat-cell.risk-heat-down{background:#fff7f8;border-color:#ecd9dd}
+.risk-sector-heat-cell.risk-heat-flat{background:#f8f9fb;border-color:#e5e9ef}
+.risk-sector-heat-cell.risk-heat-threshold{box-shadow:inset 0 0 0 1px #c98a2a}
+.risk-heat-up .risk-sector-heat-bar span,.risk-heat-dot.risk-heat-up{background:#4c9d7c}
+.risk-heat-down .risk-sector-heat-bar span,.risk-heat-dot.risk-heat-down{background:#cf5a66}
+.risk-heat-flat .risk-sector-heat-bar span,.risk-heat-dot.risk-heat-flat{background:#9aa7b8}
+.risk-heat-dot.risk-heat-threshold{background:#d3a14c}
+@media(max-width:1000px){.risk-breadth-symbols{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.risk-breadth-symbols{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.risk-breadth-symbols{grid-template-columns:repeat(2,minmax(0,1fr))}}

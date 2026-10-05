@@ -2,44 +2,87 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="finquery-dolphin-version" content="DOLPHIN_V6"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FinQuery · Phân tích & Dự báo Cổ phiếu Việt Nam</title>
-<meta name="description" content="Nền tảng phân tích cổ phiếu Việt Nam: tài chính doanh nghiệp, thị trường, Technical Scanner, dự báo, tin tức, vĩ mô và ESG."><meta name="author" content="ngochailuong">
+<title>FinQuery · Giám sát Thị trường Chứng khoán Việt Nam</title>
+<meta name="description" content="Nền tảng giám sát thị trường chứng khoán Việt Nam: giá, kỹ thuật, rủi ro, cảnh báo, tài chính doanh nghiệp, tin tức và vĩ mô."><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css"><link rel="stylesheet" href="risk-monitor.css">
 <script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="alert-center.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="insights.js"></script><script defer src="macro.js"></script><script defer src="knowledge-base.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script>
 </head>
 <body class="site-locked">
-<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market">Thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder">Strategy Lab</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Core · Liquid · Discovery</span></div></header>
+<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy">Strategy Lab</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Core · Liquid · Discovery</span></div></header>
 <main>
-<div class="intro"><div><h1>Phân tích &amp; Dự báo Cổ phiếu Việt Nam</h1></div><form id="site-unlock-form" class="site-access-form" autocomplete="off"><label for="site-access-code">Mã truy cập</label><div class="site-access-row"><input id="site-access-code" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="Nhập mã" aria-label="Mã truy cập FinQuery"><button type="submit">Mở</button></div><p id="site-access-error" role="status" aria-live="polite"></p></form></div>
+<div class="intro"><div><h1>Giám sát thị trường chứng khoán Việt Nam</h1></div><form id="site-unlock-form" class="site-access-form" autocomplete="off"><label for="site-access-code">Mã truy cập</label><div class="site-access-row"><input id="site-access-code" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="Nhập mã" aria-label="Mã truy cập FinQuery"><button type="submit">Mở</button></div><p id="site-access-error" role="status" aria-live="polite"></p></form></div>
 <section id="risk-monitor" class="risk-monitor-page" aria-label="Giám sát rủi ro thị trường" hidden>
-<header class="risk-page-head"><div><span class="risk-page-kicker">GIÁM SÁT THỊ TRƯỜNG</span><h1>Giám sát rủi ro thị trường</h1><p>Theo dõi mức căng thẳng hiện tại trên nhóm cổ phiếu HOSE Core + Liquid có dữ liệu trực tiếp, dựa trên giá, khối lượng, độ lan rộng của nhịp giảm và diễn biến giữa các nhóm ngành.</p></div><div class="risk-page-tools"><span id="risk-source-time" class="risk-source-line">Đang tải dữ liệu…</span><small id="risk-source-status">Đang đồng bộ</small><small>Kiểm tra bản mới mỗi phút · dữ liệu trong phiên khoảng 5 phút/lần</small><button id="risk-refresh" type="button">Cập nhật</button></div></header>
+<header class="risk-page-head"><div><h1>Giám sát rủi ro thị trường</h1></div><div class="risk-page-tools"><span id="risk-source-time" class="risk-source-line">Đang tải dữ liệu…</span><small id="risk-source-status">Đang đồng bộ</small><button id="risk-refresh" type="button">Cập nhật</button></div></header>
 <div id="risk-error" role="alert" hidden></div>
 <div class="risk-body">
 <div class="risk-summary-grid">
-<article class="risk-summary-card"><span>MỨC RỦI RO HIỆN TẠI · THANG 0–100</span><div class="risk-score-row"><strong id="risk-score">—</strong><button class="term-info-button" type="button" data-info-key="risk-score" aria-label="Giải thích cách đọc điểm rủi ro">i</button><span id="risk-level"></span></div><p id="risk-summary">Đang tính từ dữ liệu thị trường.</p></article>
+<article class="risk-summary-card"><span>MỨC RỦI RO HIỆN TẠI · THANG 0–100</span><div class="risk-score-row"><strong id="risk-score">—</strong><button class="term-info-button" type="button" data-info-key="risk-score" aria-label="Giải thích thang điểm rủi ro">i</button><span id="risk-level"></span></div><p id="risk-summary">Đang tính từ dữ liệu thị trường.</p></article>
 <article class="risk-summary-card"><span>SO VỚI MỐC GẦN NHẤT</span><strong id="risk-trend" class="risk-main-value">—</strong><p id="risk-trend-delta">Đang tìm mốc so sánh.</p></article>
 <article class="risk-summary-card"><span>ĐỘ PHỦ DỮ LIỆU</span><strong id="risk-coverage" class="risk-main-value">—</strong><p id="risk-coverage-note">Đang kiểm tra.</p></article>
 </div>
 
-<section class="risk-section"><div class="risk-section-head"><div><h2>Năm thước đo chính</h2><p>Điểm càng cao, dấu hiệu căng thẳng quan sát được càng rõ.</p></div><span id="risk-driver-change"></span></div><div id="risk-components" class="risk-components"></div></section>
+<section class="risk-section"><div class="risk-section-head"><div><h2>Năm thước đo chính</h2></div><span id="risk-driver-change"></span></div><div id="risk-components" class="risk-components"></div></section>
 
 <div class="risk-main-grid risk-main-grid-balanced">
-<section class="risk-panel"><div class="risk-panel-head"><div><h3>Diễn biến điểm rủi ro</h3><p class="risk-panel-sub">Theo các mốc dữ liệu đã được đồng bộ. Mốc đầu ngày sẽ so với cuối phiên trước nếu chưa có mốc trong ngày.</p></div></div><div id="risk-timeline"></div></section>
-<section class="risk-panel"><h3>Điểm rủi ro đến từ đâu?</h3><p class="risk-panel-sub">Mỗi thước đo có trọng số cố định. Thanh dưới cho biết phần điểm đang đóng góp vào tổng điểm hiện tại.</p><div id="risk-contributions" class="risk-contributions"></div></section>
+<section class="risk-panel"><div class="risk-panel-head"><div><h3>Diễn biến điểm rủi ro</h3></div></div><div id="risk-timeline"></div></section>
+<section class="risk-panel"><h3>Điểm rủi ro đến từ đâu?</h3><div id="risk-contributions" class="risk-contributions"></div></section>
 </div>
 
 <div class="risk-main-grid risk-main-grid-balanced">
-<section class="risk-panel"><h3>Độ rộng thị trường</h3><p class="risk-panel-sub">So sánh trực tiếp số mã tăng, giảm và đứng giá trong phạm vi đang theo dõi.</p><div id="risk-breadth-strip" class="risk-breadth-strip" aria-label="Tỷ trọng mã tăng giảm đứng giá"></div><div id="risk-market-counts" class="risk-market-counts"></div></section>
-<section class="risk-panel"><h3>Cảnh báo đang có</h3><p class="risk-panel-sub">Chỉ hiển thị khi dữ liệu vượt ngưỡng đủ rõ để cần chú ý.</p><div id="risk-alerts" class="risk-alerts"></div><div id="risk-alert-history" class="risk-alert-history"></div></section>
+<section class="risk-panel"><h3>Độ rộng thị trường</h3><div id="risk-breadth-strip" class="risk-breadth-strip" aria-label="Tỷ trọng mã tăng giảm đứng giá"></div><div id="risk-market-counts" class="risk-market-counts"></div><div id="risk-breadth-detail" class="risk-breadth-detail" hidden></div></section>
+<section class="risk-panel"><h3>Cảnh báo đang có</h3><div id="risk-alerts" class="risk-alerts"></div><div id="risk-alert-history" class="risk-alert-history"></div></section>
 </div>
 
-<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Heatmap nhóm ngành giảm</h2><p>Cập nhật theo dữ liệu thị trường khoảng 5 phút/lần trong phiên; trang kiểm tra bản mới mỗi phút. Ngưỡng cảnh báo là mức căng thẳng hiếm gặp của riêng từng ngành so với lịch sử của chính ngành đó; độ ổn định được kiểm tra qua các giai đoạn sau.</p></div><span id="risk-sector-calibration-status"></span></div><div class="risk-heat-legend"><span><i class="risk-heat-dot risk-heat-low"></i>Chưa gần ngưỡng</span><span><i class="risk-heat-dot risk-heat-near"></i>Tiệm cận</span><span><i class="risk-heat-dot risk-heat-alert"></i>Chạm ngưỡng</span></div><div id="risk-sectors" class="risk-sector-heatmap"></div><div id="risk-sector-detail" class="risk-sector-detail" hidden></div></section>
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Heatmap nhóm ngành</h2></div><span id="risk-sector-calibration-status"></span></div><div class="risk-heat-legend"><span><i class="risk-heat-dot risk-heat-up"></i>Tăng</span><span><i class="risk-heat-dot risk-heat-flat"></i>Đi ngang</span><span><i class="risk-heat-dot risk-heat-down"></i>Giảm</span><span><i class="risk-heat-dot risk-heat-threshold"></i>Chạm ngưỡng cảnh báo</span></div><div id="risk-sectors" class="risk-sector-heatmap"></div><div id="risk-sector-detail" class="risk-sector-detail" hidden></div><div id="risk-sector-updated" class="risk-section-updated"></div></section>
 
-<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Các mã cần chú ý</h2><p>Xếp theo mức giảm, biến động, khối lượng và vị trí so với trung bình giá.</p></div></div><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm / 100</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Các mã cần chú ý</h2></div></div><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm / 100</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
 
-<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Quỹ đang nắm giữ</h2><p>Biểu đồ xếp theo số quỹ đang công bố nắm giữ từng mã. Bấm vào cột để xem từng quỹ, tỷ trọng hiện tại, lần trước và mức thay đổi.</p></div><span id="risk-fund-asof"></span></div><div id="risk-fund-summary" class="risk-fund-summary"></div><div id="risk-fund-chart" class="risk-fund-chart" aria-label="Biểu đồ số quỹ nắm giữ theo mã"></div><div id="risk-fund-detail" class="risk-fund-detail" hidden></div></section>
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Quỹ đang nắm giữ</h2></div><span id="risk-fund-asof"></span></div><div id="risk-fund-summary" class="risk-fund-summary"></div><div id="risk-fund-chart" class="risk-fund-chart" aria-label="Biểu đồ số quỹ nắm giữ theo mã"></div><div id="risk-fund-detail" class="risk-fund-detail" hidden></div></section>
 
-<section class="risk-method"><h3>Cách đọc điểm rủi ro</h3><p id="risk-method-note">Điểm 0–100 đo mức căng thẳng đang quan sát được từ dữ liệu thị trường.</p><p id="risk-comparison-note"></p><p id="risk-alert-rule"></p><p>Đây là thước đo trạng thái hiện tại, không phải xác suất thị trường chắc chắn sẽ tăng hay giảm trong tương lai.</p></section>
+</div>
+</section>
+<section id="strategy-builder" class="strategy-builder-section strategy-page" aria-label="Strategy Lab" hidden>
+<div class="strategy-builder-head strategy-page-head">
+<div class="strategy-head-copy">
+<div class="strategy-title-row"><h2>Strategy Lab · TA Screener</h2><button class="term-info-button" type="button" data-info-key="strategy-builder" aria-label="Hướng dẫn sử dụng Strategy Lab">i</button></div>
+</div>
+<div class="strategy-head-actions">
+<span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span>
+<button id="strategy-refresh" type="button">Cập nhật ↻</button>
+<button id="strategy-notifications" type="button">Bật thông báo</button>
+</div>
+</div>
+<div id="strategy-body" class="strategy-builder-body">
+<div class="strategy-presets" aria-label="Gợi ý chiến lược">
+<span>Gợi ý nhanh</span>
+<button type="button" data-strategy-preset="macd_rsi">MACD + RSI</button>
+<button type="button" data-strategy-preset="ema_adx">EMA Trend + ADX</button>
+<button type="button" data-strategy-preset="bollinger_rebound">Bollinger Rebound</button>
+<button type="button" data-strategy-preset="breakout_volume">Breakout + Volume</button>
+<button type="button" data-strategy-preset="momentum_recovery">Momentum hồi phục</button>
+</div>
+<div class="strategy-builder-grid">
+<aside class="strategy-library-panel">
+<div class="strategy-panel-title"><div><span>INDICATOR LIBRARY</span><strong>TA Library</strong></div><small>Pandas-TA compatible set</small></div>
+<input id="strategy-library-search" type="search" placeholder="Tìm RSI, MACD, EMA, ADX…" aria-label="Tìm indicator">
+<div id="strategy-library" class="strategy-library"></div>
+</aside>
+<div class="strategy-workbench">
+<div class="strategy-config-bar">
+<label>Tên strategy<input id="strategy-name" type="text" maxlength="80" value="Chiến lược mới"></label>
+<label>Logic<select id="strategy-join"><option value="AND">AND · tất cả điều kiện</option><option value="OR">OR · một trong các điều kiện</option></select></label>
+<label>Phạm vi<select id="strategy-scope"><option value="LIVE">Core + Liquid · 15P</option><option value="ALL">Toàn HOSE đủ dữ liệu</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option><option value="DISCOVERY">Discovery · EOD</option></select></label>
+</div>
+<div id="strategy-canvas" class="strategy-canvas" aria-label="Canvas điều kiện chiến lược"></div>
+<div id="strategy-preview" class="strategy-preview"></div>
+<div class="strategy-actions"><button id="strategy-clear" type="button">Xóa canvas</button><button id="strategy-scan" type="button" class="strategy-primary">Quét mã</button><button id="strategy-save" type="button">Lưu strategy + alert</button></div>
+</div>
+</div>
+<div class="strategy-output-grid">
+<section class="strategy-result-panel"><div class="strategy-section-title"><div><span>SCREENER RESULT</span><h3>Mã đang khớp</h3></div><small id="strategy-result-meta" aria-live="polite">Chưa quét</small></div><div id="strategy-results" aria-live="polite"></div></section>
+<section class="strategy-saved-panel"><div class="strategy-section-title"><div><span>SAVED STRATEGIES</span><h3>Strategy đã lưu</h3></div></div><div id="strategy-saved"></div></section>
+<section class="strategy-hit-panel"><div class="strategy-section-title"><div><span>NEW SIGNALS</span><h3>Tín hiệu mới</h3></div></div><div id="strategy-hits"></div></section>
+</div>
 </div>
 </section>
 <div class="workspace">
@@ -151,56 +194,6 @@
 <p id="news-status" class="market-subtitle"></p><div id="news-list"></div></aside></div>
 <section class="market-board" aria-label="Bảng giá HOSE Core và Liquid"><div class="market-top"><div class="market-board-title-row"><h3>Bảng giá HOSE · Core + Liquid</h3><button class="term-info-button" type="button" data-info-key="universe-tiers" aria-label="Giải thích Core, Liquid và Discovery">i</button></div><span id="market-count" class="market-subtitle"></span></div><div class="market-toolbar"><input id="market-filter" type="search" placeholder="Tìm mã hoặc doanh nghiệp" aria-label="Lọc bảng giá"><label><input id="watch-only" type="checkbox">Đang theo dõi</label><label>Phạm vi <select id="market-universe-filter"><option value="all">Core + Liquid</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option></select></label><label>Sắp xếp <select id="market-sort"><option value="symbol">Mã A–Z</option><option value="change">Tăng giá nhiều nhất</option></select></label></div><div class="market-table-wrap"><table class="market-table"><thead><tr><th>Theo dõi</th><th>Mã</th><th>Giá (đ)</th><th>Tham chiếu</th><th>Thay đổi</th><th>Khối lượng (CP)</th><th>Động lực / hệ số <button class="term-info-button term-info-inline" type="button" data-info-key="market-driver" aria-label="Giải thích Động lực và hệ số">i</button></th><th>Thời điểm nguồn</th></tr></thead><tbody id="market-rows"></tbody></table></div></section>
 </section>
-<section id="strategy-builder" class="strategy-builder-section is-collapsed" aria-label="Strategy Builder và TA Screener">
-<div class="strategy-builder-head">
-<div class="strategy-head-copy">
-<span class="research-ai-label">STRATEGY LAB · TA SCREENER</span>
-<div class="strategy-title-row">
-<button id="strategy-toggle" class="strategy-head-toggle strategy-title-toggle" type="button" aria-expanded="false" aria-controls="strategy-body"><h2>Kéo thả chiến lược kỹ thuật</h2></button>
-<button class="term-info-button" type="button" data-info-key="strategy-builder" aria-label="Hướng dẫn sử dụng Strategy Lab">i</button>
-</div>
-<p>Ghép indicator theo logic của bạn, quét toàn HOSE và lưu strategy để theo dõi tín hiệu.</p>
-</div>
-<div class="strategy-head-actions">
-<span id="strategy-status" aria-live="polite">Đang tải indicator snapshot…</span>
-<button id="strategy-refresh" type="button">Cập nhật ↻</button>
-<button id="strategy-notifications" type="button">Bật thông báo</button>
-<button id="strategy-chevron" class="strategy-chevron" type="button" aria-label="Mở Strategy Lab" aria-controls="strategy-body" aria-expanded="false"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button>
-</div>
-</div>
-<div id="strategy-body" class="strategy-builder-body" hidden>
-<div class="strategy-presets" aria-label="Gợi ý chiến lược">
-<span>Gợi ý nhanh</span>
-<button type="button" data-strategy-preset="macd_rsi">MACD + RSI</button>
-<button type="button" data-strategy-preset="ema_adx">EMA Trend + ADX</button>
-<button type="button" data-strategy-preset="bollinger_rebound">Bollinger Rebound</button>
-<button type="button" data-strategy-preset="breakout_volume">Breakout + Volume</button>
-<button type="button" data-strategy-preset="momentum_recovery">Momentum hồi phục</button>
-</div>
-<div class="strategy-builder-grid">
-<aside class="strategy-library-panel">
-<div class="strategy-panel-title"><div><span>INDICATOR LIBRARY</span><strong>TA Library</strong></div><small>Pandas-TA compatible set</small></div>
-<input id="strategy-library-search" type="search" placeholder="Tìm RSI, MACD, EMA, ADX…" aria-label="Tìm indicator">
-<div id="strategy-library" class="strategy-library"></div>
-</aside>
-<div class="strategy-workbench">
-<div class="strategy-config-bar">
-<label>Tên strategy<input id="strategy-name" type="text" maxlength="80" value="Chiến lược mới"></label>
-<label>Logic<select id="strategy-join"><option value="AND">AND · tất cả điều kiện</option><option value="OR">OR · một trong các điều kiện</option></select></label>
-<label>Phạm vi<select id="strategy-scope"><option value="LIVE">Core + Liquid · 15P</option><option value="ALL">Toàn HOSE đủ dữ liệu</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option><option value="DISCOVERY">Discovery · EOD</option></select></label>
-</div>
-<div id="strategy-canvas" class="strategy-canvas" aria-label="Canvas điều kiện chiến lược"></div>
-<div id="strategy-preview" class="strategy-preview"></div>
-<div class="strategy-actions"><button id="strategy-clear" type="button">Xóa canvas</button><button id="strategy-scan" type="button" class="strategy-primary">Quét mã</button><button id="strategy-save" type="button">Lưu strategy + alert</button></div>
-</div>
-</div>
-<div class="strategy-output-grid">
-<section class="strategy-result-panel"><div class="strategy-section-title"><div><span>SCREENER RESULT</span><h3>Mã đang khớp</h3></div><small id="strategy-result-meta" aria-live="polite">Chưa quét</small></div><div id="strategy-results" aria-live="polite"></div></section>
-<section class="strategy-saved-panel"><div class="strategy-section-title"><div><span>SAVED STRATEGIES</span><h3>Strategy đã lưu</h3></div></div><div id="strategy-saved"></div></section>
-<section class="strategy-hit-panel"><div class="strategy-section-title"><div><span>NEW SIGNALS</span><h3>Tín hiệu mới</h3></div></div><div id="strategy-hits"></div></section>
-</div>
-</div>
-</section>
 <section id="investment-ideas" class="investment-ideas-section is-collapsed" aria-label="Investment Ideas">
 <div class="idea-section-head">
 <button id="investment-ideas-toggle" class="collapse-head-toggle" type="button" aria-expanded="false" aria-controls="investment-ideas-body">
@@ -276,7 +269,7 @@
 </section>
 </div>
 <div id="term-info-popover" class="term-info-popover" role="dialog" aria-modal="false" aria-labelledby="term-info-title" hidden><div class="term-info-head"><strong id="term-info-title"></strong><button id="term-info-close" type="button" aria-label="Đóng giải thích">×</button></div><div id="term-info-body" class="term-info-body"></div></div>
-<footer class="bottom-line"><span>Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong></span><span>FinQuery · Vietnam Equity Intelligence · <a class="library-credit" href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView Lightweight Charts™</a></span></footer>
+<footer class="bottom-line"><span>Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong></span></footer>
 </main>
 </body></html>
 

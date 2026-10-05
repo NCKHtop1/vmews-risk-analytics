@@ -60,7 +60,7 @@ function saveStrategy(){
  saveLocal();renderSaved();
 }
 function loadStrategy(id){const s=state.strategies.find(x=>x.id===id);if(!s)return;state.conditions=(s.conditions||[]).map(E.normalizeCondition);$('strategy-name').value=s.name||'';$('strategy-join').value=s.join||'AND';$('strategy-scope').value=s.scope||'ALL';renderCanvas();renderPreview();scanNow();document.getElementById('strategy-builder')?.scrollIntoView({behavior:'smooth',block:'start'});}
-function openSymbol(symbol){const ticker=$('ticker');if(ticker)ticker.value=symbol;$('company-form')?.requestSubmit();document.getElementById('market')?.scrollIntoView({behavior:'smooth',block:'start'});}
+function openSymbol(symbol){window.FinPlatformViews?.openAnalysis?.();const ticker=$('ticker');if(ticker)ticker.value=symbol;$('company-form')?.requestSubmit();setTimeout(()=>document.getElementById('market')?.scrollIntoView({behavior:'smooth',block:'start'}),50);}
 function notify(strategy,rows){
  if(!rows.length)return;
  const names=rows.slice(0,5).map(x=>x.symbol).join(', '),body=names+(rows.length>5?' +' +(rows.length-5):'');

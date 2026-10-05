@@ -11,3 +11,6 @@ button.term-info-button{display:inline-grid!important;place-items:center!importa
 button.term-info-button.term-info-inline{width:14px!important;height:14px!important;min-width:14px!important;max-width:14px!important;min-height:14px!important;max-height:14px!important;flex-basis:14px!important;font-size:8px!important;margin-left:2px!important}
 .market-board-title-row{display:flex;align-items:center;gap:6px;min-width:0}.market-board-title-row h3{margin:0}
 .idea-kpis span>.term-info-button{transform:translateY(-1px)}
+
+.header nav a.active{color:var(--blue);font-weight:600}
+.bottom-line{justify-content:flex-start}

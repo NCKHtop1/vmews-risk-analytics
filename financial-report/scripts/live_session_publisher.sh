@@ -132,9 +132,18 @@ if cal.get('status')!='ok' or int(cal.get('totalSectors') or 0)<8:
     raise SystemExit(f'sector calibration unavailable: {cal}')
 if not all('threshold' in s and 'alertEligible' in s and isinstance(s.get('memberRows'),list) for s in (risk.get('sectors') or [])):
     raise SystemExit('sector heatmap contract is incomplete')
+if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-1.5':
+    raise SystemExit(f"unexpected risk method version: {risk.get('methodVersion')}")
+groups=risk.get('breadthGroups') or {}
+if sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))!=int(risk_cov.get('quotes') or 0):
+    raise SystemExit('risk breadth drilldown coverage is incomplete')
+if not all('advancePct' in s and 'declinePct' in s and isinstance(s.get('memberRows'),list) for s in (risk.get('sectors') or [])):
+    raise SystemExit('bidirectional sector heatmap contract is incomplete')
 funds=risk.get('fundMonitor') or {}
 if funds.get('status')!='ok' or funds.get('source')!='FMARKET' or int(funds.get('symbols') or 0)<=0:
     raise SystemExit(f'fund holdings context is unavailable: {funds.get("status")} {funds.get("source")}')
+if funds.get('previousAsOf') and funds.get('comparisonMode')!='LAST_MEANINGFUL_HOLDING_CHANGE':
+    raise SystemExit(f'fund comparison mode invalid: {funds.get("comparisonMode")}')
 if status.get('status')!='ok' or age(status.get('checkedAt'))>10:
     raise SystemExit('prices-status heartbeat is stale')
 if age(drivers.get('generatedAt'))>10:

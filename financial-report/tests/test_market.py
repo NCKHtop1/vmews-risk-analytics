@@ -1604,7 +1604,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="quote-freshness"',html)
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",workflow)
 
-    def test_chart_ui_hides_verbose_status_and_moves_tradingview_attribution_to_footer(self):
+    def test_chart_ui_hides_verbose_status_and_keeps_vendor_license_in_bundle_only(self):
         html=(ROOT/'frontend/index.html').read_text()
         chart=(ROOT/'frontend/chart-engine.js').read_text()
         insights=(ROOT/'frontend/insights.js').read_text()
@@ -1614,7 +1614,10 @@ class MarketTests(unittest.TestCase):
         self.assertIn('id="chart-status" class="market-subtitle" hidden',html)
         self.assertNotIn('class="chart-credit"',html)
         self.assertIn('attributionLogo:false',chart)
-        self.assertIn('Charts by TradingView Lightweight Charts™',html)
+        self.assertNotIn('Charts by TradingView Lightweight Charts™',html)
+        vendor=(ROOT/'frontend/vendor/lightweight-charts-5.0.9.js').read_text()
+        self.assertIn('TradingView Lightweight Charts™ v5.0.9',vendor)
+        self.assertIn('Licensed under Apache License 2.0',vendor)
         self.assertNotIn('⌄',insights)
         self.assertNotIn('⌃',insights)
         self.assertIn('.clean-chevron',css)

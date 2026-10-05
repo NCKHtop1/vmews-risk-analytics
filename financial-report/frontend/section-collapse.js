@@ -1,7 +1,6 @@
 (function(){'use strict';
 const CHEVRON='<span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span>';
 const configs=[
- {section:'strategy-builder',body:'strategy-body',toggle:'strategy-toggle',chevron:'strategy-chevron',openLabel:'Thu gọn Strategy Lab',closedLabel:'Mở Strategy Lab'},
  {section:'investment-ideas',body:'investment-ideas-body',toggle:'investment-ideas-toggle',chevron:'investment-ideas-chevron',openLabel:'Thu gọn Investment Ideas',closedLabel:'Mở Investment Ideas'},
  {section:'macro',body:'macro-body',toggle:'macro-toggle',chevron:'macro-chevron',openLabel:'Thu gọn Macro & ESG',closedLabel:'Mở Macro & ESG'}
 ];

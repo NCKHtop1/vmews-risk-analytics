@@ -99,28 +99,35 @@ jobs:
                   window.FinMacro
                 );
               """))
-              collapsed=driver.execute_script("""
+              initial_views=driver.execute_script("""
                 return {
-                  strategy:document.getElementById('strategy-body')?.hidden===true,
+                  strategySectionHidden:document.getElementById('strategy-builder')?.hidden===true,
+                  strategyBodyVisible:document.getElementById('strategy-body')?.hidden===false,
                   ideas:document.getElementById('investment-ideas-body')?.hidden===true,
                   macro:document.getElementById('macro-body')?.hidden===true,
                   chevrons:document.querySelectorAll('.section-chevron-icon svg').length
                 };
               """)
-              if not all([collapsed.get('strategy'),collapsed.get('ideas'),collapsed.get('macro')]) or int(collapsed.get('chevrons') or 0)!=3:
-                  raise AssertionError(f'Feature accordion defaults/icons are incorrect: {collapsed}')
+              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('ideas'),initial_views.get('macro')]) or int(initial_views.get('chevrons') or 0)!=2:
+                  raise AssertionError(f'Platform view defaults are incorrect: {initial_views}')
 
-              driver.execute_script("""
-                document.getElementById('strategy-toggle')?.click();
-                document.getElementById('investment-ideas-toggle')?.click();
-                document.getElementById('macro-toggle')?.click();
-              """)
+              driver.execute_script("document.querySelector('[data-platform-view=\"strategy\"]')?.click();")
               wait.until(lambda d:d.execute_script("""
                 return (
+                  document.getElementById('strategy-builder')?.hidden===false &&
                   document.getElementById('strategy-body')?.hidden===false &&
+                  document.querySelector('.workspace')?.hidden===true &&
+                  document.querySelector('[data-platform-view="strategy"]')?.classList.contains('active')
+                );
+              """))
+              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('investment-ideas-toggle')?.click(); document.getElementById('macro-toggle')?.click();")
+              wait.until(lambda d:d.execute_script("""
+                return (
+                  document.getElementById('strategy-builder')?.hidden===true &&
+                  document.querySelector('.workspace')?.hidden===false &&
                   document.getElementById('investment-ideas-body')?.hidden===false &&
                   document.getElementById('macro-body')?.hidden===false &&
-                  document.querySelectorAll('.section-chevron.is-open,.strategy-chevron.is-open').length===3
+                  document.querySelectorAll('.section-chevron.is-open').length===2
                 );
               """))
 
@@ -319,10 +326,17 @@ jobs:
                   fundStatus:r.fundMonitor?.status,
                   fundSymbols:r.fundMonitor?.symbols,
                   fundChanges:r.fundMonitor?.materialChanges,
+                  fundPreviousAsOf:r.fundMonitor?.previousAsOf,
+                  fundLastChangedAsOf:r.fundMonitor?.lastChangedAsOf,
                   fundBars:document.querySelectorAll('#risk-fund-chart .risk-fund-bar').length,
+                  fundNonZeroBars:[...document.querySelectorAll('#risk-fund-chart .risk-fund-bar>small')].filter(x=>!/Không đổi/i.test(x.textContent||'')).length,
                   fundSummary:document.querySelectorAll('#risk-fund-summary > div').length,
                   sectorCalibration:r.sectorCalibration?.status,
                   heatCells:document.querySelectorAll('#risk-sectors .risk-sector-heat-cell').length,
+                  heatUp:document.querySelectorAll('#risk-sectors .risk-heat-up').length,
+                  heatDown:document.querySelectorAll('#risk-sectors .risk-heat-down').length,
+                  heatUpdated:(document.getElementById('risk-sector-updated')?.textContent||'').trim(),
+                  breadthButtons:document.querySelectorAll('#risk-market-counts [data-breadth-group]').length,
                   scoreText:(document.getElementById('risk-score')?.textContent||'').trim(),
                   rows:document.querySelectorAll('#risk-stock-rows tr').length,
                   contributionRows:document.querySelectorAll('#risk-contributions .risk-contribution-row').length,
@@ -348,21 +362,45 @@ jobs:
                   raise AssertionError(f'Risk score has no denominator: {risk_snapshot}')
               if risk_snapshot.get('fundStatus')!='ok' or int(risk_snapshot.get('fundSymbols') or 0)<1 or int(risk_snapshot.get('fundBars') or 0)<1 or int(risk_snapshot.get('fundSummary') or 0)!=4:
                   raise AssertionError(f'Fund holdings chart is incomplete: {risk_snapshot}')
-              if risk_snapshot.get('sectorCalibration')!='ok' or int(risk_snapshot.get('heatCells') or 0)<1:
-                  raise AssertionError(f'Calibrated sector heatmap is incomplete: {risk_snapshot}')
+              if risk_snapshot.get('sectorCalibration')!='ok' or int(risk_snapshot.get('heatCells') or 0)!=int(risk_snapshot.get('sectors') or 0):
+                  raise AssertionError(f'Bidirectional sector heatmap is incomplete: {risk_snapshot}')
+              if 'Cập nhật gần nhất:' not in str(risk_snapshot.get('heatUpdated') or ''):
+                  raise AssertionError(f'Heatmap update time is missing: {risk_snapshot}')
+              if int(risk_snapshot.get('breadthButtons') or 0)!=3:
+                  raise AssertionError(f'Market breadth drilldown controls are incomplete: {risk_snapshot}')
+              if risk_snapshot.get('fundPreviousAsOf') and int(risk_snapshot.get('fundNonZeroBars') or 0)<1:
+                  raise AssertionError(f'Fund chart flattened meaningful historical changes to zero: {risk_snapshot}')
               info_text=driver.execute_script("const b=document.querySelector('[data-info-key=\"risk-score\"]'); if(b)b.click(); return document.getElementById('term-info-body')?.innerText||'';")
               if '0–34,9' not in info_text or '80–100' not in info_text:
                   raise AssertionError(f'Risk score help is incomplete: {info_text}')
               driver.execute_script("document.getElementById('term-info-close')?.click();")
-              detail_check=driver.execute_script("const f=document.querySelector('#risk-fund-chart .risk-fund-bar'); const s=document.querySelector('#risk-sectors .risk-sector-heat-cell'); if(f)f.click(); if(s)s.click(); return {fund:document.getElementById('risk-fund-detail')?.hidden===false,sector:document.getElementById('risk-sector-detail')?.hidden===false};")
-              if not detail_check.get('fund') or not detail_check.get('sector'):
-                  raise AssertionError(f'Risk chart drilldown failed: {detail_check}')
+              detail_check=driver.execute_script("""
+                const f=document.querySelector('#risk-fund-chart .risk-fund-bar');
+                const s=document.querySelector('#risk-sectors .risk-sector-heat-cell');
+                const breadth=[...document.querySelectorAll('#risk-market-counts [data-breadth-group]')].find(b=>Number(b.querySelector('strong')?.textContent||0)>0);
+                if(f)f.click(); if(s)s.click(); if(breadth)breadth.click();
+                return {
+                  fund:document.getElementById('risk-fund-detail')?.hidden===false,
+                  sector:document.getElementById('risk-sector-detail')?.hidden===false,
+                  breadth:document.getElementById('risk-breadth-detail')?.hidden===false,
+                  breadthStocks:document.querySelectorAll('#risk-breadth-detail [data-risk-symbol]').length
+                };
+              """)
+              if not detail_check.get('fund') or not detail_check.get('sector') or not detail_check.get('breadth') or int(detail_check.get('breadthStocks') or 0)<1:
+                  raise AssertionError(f'Risk drilldown failed: {detail_check}')
               lowered_risk_text=str(risk_snapshot.get('text') or '').lower()
-              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress','không nhấp nháy','nhấn nhẹ một lần','heatmap cảnh báo trạng thái căng thẳng hiện tại','màu của cột chỉ phản ánh','hysteresis',' oos','ngoài mẫu','fold']:
+              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress','không nhấp nháy','nhấn nhẹ một lần','heatmap cảnh báo trạng thái căng thẳng hiện tại','màu của cột chỉ phản ánh','hysteresis',' oos','ngoài mẫu','fold','kiểm tra bản mới mỗi phút','5 phút/lần','điểm này đo mức căng thẳng']:
                   if forbidden in lowered_risk_text:
                       raise AssertionError(f'Risk monitor exposed unexplained English jargon {forbidden!r}')
-              driver.execute_script("window.FinRiskMonitor.close();")
+              opened_symbol=driver.execute_script("""
+                const b=document.querySelector('#risk-breadth-detail [data-risk-symbol]');
+                const symbol=b?.dataset?.riskSymbol||null;
+                if(b)b.click();
+                return symbol;
+              """)
               wait.until(lambda d:d.execute_script("return document.getElementById('risk-monitor')?.hidden===true && document.querySelector('.workspace')?.hidden===false;"))
+              if not opened_symbol or driver.execute_script("return document.getElementById('ticker')?.value")!=opened_symbol:
+                  raise AssertionError(f'Breadth-to-stock drilldown did not open the selected symbol: {opened_symbol}')
 
               checked=snapshot.get('newsCheckedAt')
               if not checked:
