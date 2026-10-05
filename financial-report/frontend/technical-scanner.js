@@ -56,7 +56,7 @@ async function load(){
   if(expected&&String(data.sourceTime||'')!==String(expected)){
    if(!state.data||String(state.data.sourceTime||'')!==String(expected))state.data=null;
    $('technical-scanner-status').textContent='Đang đồng bộ Technical Scanner với snapshot giá mới nhất…';
-   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>load(),1200);
+   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(data.sourceTime||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();load();},1200);
    return;
   }
   state.data=data;render();
