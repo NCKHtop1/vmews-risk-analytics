@@ -132,7 +132,7 @@ if cal.get('status')!='ok' or int(cal.get('totalSectors') or 0)<8:
     raise SystemExit(f'sector calibration unavailable: {cal}')
 if not all('threshold' in s and 'alertEligible' in s and isinstance(s.get('memberRows'),list) for s in (risk.get('sectors') or [])):
     raise SystemExit('sector heatmap contract is incomplete')
-if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-1.5':
+if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-1.6':
     raise SystemExit(f"unexpected risk method version: {risk.get('methodVersion')}")
 groups=risk.get('breadthGroups') or {}
 if sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))!=int(risk_cov.get('quotes') or 0):

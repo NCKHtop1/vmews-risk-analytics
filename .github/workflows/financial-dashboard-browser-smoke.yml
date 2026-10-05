@@ -257,7 +257,13 @@ jobs:
                   ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180),
                   strategyCoverage:window.FinStrategyBuilder?.context?.()?.snapshot?.coverage||0,
                   strategySourceTime:window.FinStrategyBuilder?.context?.()?.snapshot?.sourceTime||null,
-                  strategyConditions:window.FinStrategyBuilder?.context?.()?.strategy?.conditions?.length||0
+                  strategyConditions:window.FinStrategyBuilder?.context?.()?.strategy?.conditions?.length||0,
+                  strategyLiveRows:Object.values(window.FinStrategyBuilder?.context?.()?.snapshot?.symbols||{}).filter(x=>x?.cadence==='LIVE_15M').length,
+                  strategyLiveComparators:Object.values(window.FinStrategyBuilder?.context?.()?.snapshot?.symbols||{}).filter(x=>{
+                    if(x?.cadence!=='LIVE_15M')return false;
+                    const a=Number(x.current?.macdHistogram),b=Number(x.previous?.macdHistogram);
+                    return Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)>1e-9;
+                  }).length
                 };
               """)
               if snapshot.get('symbol')!='FPT':
@@ -266,6 +272,8 @@ jobs:
                   raise AssertionError(f'Scanner context missing: {snapshot}')
               if int(snapshot.get('strategyCoverage') or 0)<100 or int(snapshot.get('strategyConditions') or 0)!=2:
                   raise AssertionError(f'Strategy Lab context missing or incomplete: {snapshot}')
+              if int(snapshot.get('strategyLiveRows') or 0)>=50 and int(snapshot.get('strategyLiveComparators') or 0)<5:
+                  raise AssertionError(f'Live Strategy Lab previous/current comparator collapsed: {snapshot}')
 
               watch=driver.execute_async_script("""
                 const done=arguments[arguments.length-1];
@@ -328,6 +336,10 @@ jobs:
                   fundChanges:r.fundMonitor?.materialChanges,
                   fundPreviousAsOf:r.fundMonitor?.previousAsOf,
                   fundLastChangedAsOf:r.fundMonitor?.lastChangedAsOf,
+                  fundAsOf:r.fundMonitor?.asOf,
+                  activeSectorAlerts:(r.sectors||[]).filter(x=>x.alertActive===true).length,
+                  riskBadgeHidden:document.getElementById('risk-nav-badge')?.hidden===true,
+                  riskBadgeText:(document.getElementById('risk-nav-badge')?.textContent||'').trim(),
                   fundBars:document.querySelectorAll('#risk-fund-chart .risk-fund-bar').length,
                   fundNonZeroBars:[...document.querySelectorAll('#risk-fund-chart .risk-fund-bar>small')].filter(x=>!/Không đổi/i.test(x.textContent||'')).length,
                   fundSummary:document.querySelectorAll('#risk-fund-summary > div').length,
@@ -370,6 +382,11 @@ jobs:
                   raise AssertionError(f'Market breadth drilldown controls are incomplete: {risk_snapshot}')
               if risk_snapshot.get('fundPreviousAsOf') and int(risk_snapshot.get('fundNonZeroBars') or 0)<1:
                   raise AssertionError(f'Fund chart flattened meaningful historical changes to zero: {risk_snapshot}')
+              stale_fund_change=bool(risk_snapshot.get('fundAsOf') and risk_snapshot.get('fundLastChangedAsOf') and str(risk_snapshot.get('fundAsOf'))!=str(risk_snapshot.get('fundLastChangedAsOf')))
+              if stale_fund_change and int(risk_snapshot.get('activeSectorAlerts') or 0)==0 and not risk_snapshot.get('riskBadgeHidden'):
+                  raise AssertionError(f'Risk nav badge is surfacing an old fund change as a current alert: {risk_snapshot}')
+              if int(risk_snapshot.get('activeSectorAlerts') or 0)>0 and risk_snapshot.get('riskBadgeHidden'):
+                  raise AssertionError(f'Risk nav badge hid an active sector alert: {risk_snapshot}')
               info_text=driver.execute_script("const b=document.querySelector('[data-info-key=\"risk-score\"]'); if(b)b.click(); return document.getElementById('term-info-body')?.innerText||'';")
               if '0–34,9' not in info_text or '80–100' not in info_text:
                   raise AssertionError(f'Risk score help is incomplete: {info_text}')

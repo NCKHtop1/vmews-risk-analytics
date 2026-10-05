@@ -40,9 +40,11 @@ for(const file of files){
   obv:num(row.obv),obvSlope5:idx>=5&&num(rows[idx-5]?.obv)!==null?num(row.obv)-num(rows[idx-5].obv):null,cmf20:num(row.cmf)
  };};
  const current=pack(i,base),dailyPrevious=pack(i-1,prevBase),oldRow=old.symbols?.[symbol],barDate=recent[i].time;
+ const currentSourceTime=q.sourceTime||q.collectedAt||null;
  const sameLiveBar=oldRow&&oldRow.barDate===barDate&&oldRow.current&&tier!=='DISCOVERY';
- const previous=sameLiveBar?oldRow.current:dailyPrevious;
- symbols[symbol]={symbol,tier,cadence:tier==='DISCOVERY'?'EOD':'LIVE_15M',barDate,sourceTime:q.sourceTime||q.collectedAt||null,current,previous};
+ const sameMarketSnapshot=sameLiveBar&&currentSourceTime&&String(oldRow.sourceTime||'')===String(currentSourceTime);
+ const previous=sameLiveBar?(sameMarketSnapshot&&oldRow.previous?oldRow.previous:oldRow.current):dailyPrevious;
+ symbols[symbol]={symbol,tier,cadence:tier==='DISCOVERY'?'EOD':'LIVE_15M',barDate,sourceTime:currentSourceTime,current,previous};
 }
 // Discovery names are intentionally EOD-only in the market branch. Merge their
 // validated technical snapshot so Strategy Lab can scan the full HOSE universe

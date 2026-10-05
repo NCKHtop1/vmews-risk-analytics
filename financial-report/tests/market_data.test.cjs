@@ -71,6 +71,20 @@ test('technical scanner rules remain unchanged and evidence is additive',()=>{
  assert.match(ui,/Rule priority/);
  assert.match(ui,/EOD proxy T\+3/);
 });
+test('live technical UI does not mislabel evolving daily indicators as 15-minute bars',()=>{
+ const html=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
+ assert.match(html,/Core \+ Liquid · Trong phiên/);
+ assert.match(html,/Scanner cập nhật theo dữ liệu trong phiên/);
+ assert.doesNotMatch(html,/Core \+ Liquid · 15P|snapshot live 15 phút|snapshot giá 15 phút/i);
+ assert.doesNotMatch(app,/Cập nhật 15 phút\/lần|textContent='15P'|:'15P'/);
+ assert.match(scanner,/Trong phiên/);
+ assert.doesNotMatch(scanner,/· Live /);
+ assert.match(source,/evolving current-session daily candle/);
+});
+
 test('Strategy Lab replaces visible Data Health and simple rule form',()=>{
  const build=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_cdn.py'),'utf8');
  const html=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
@@ -233,7 +247,13 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(index,/data-platform-view="strategy">Strategy Lab/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
+ assert.match(risk,/fundChangeIsCurrent/);
  assert.match(risk,/changedSymbols/);
+ assert.match(risk,/Mã thay đổi đáng chú ý/);
+ assert.doesNotMatch(risk,/Mã vượt ngưỡng|Lượt thay đổi vượt ngưỡng/);
+ assert.match(risk,/Chưa thấy căng thẳng lan rộng trên toàn thị trường/);
+ assert.doesNotMatch(risk,/Các thước đo chính đang ở vùng bình thường/);
+ assert.match(risk,/aboveThreshold/);
  assert.match(risk,/Cập nhật gần nhất:/);
  assert.doesNotMatch(index,/snapshot phiên khoảng 5 phút|snapshot thị trường khoảng 5 phút|dữ liệu trong phiên khoảng 5 phút/i);
 });

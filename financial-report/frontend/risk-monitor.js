@@ -5,10 +5,11 @@ function updateNavBadge(){
  const badge=$('risk-nav-badge');if(!badge)return;
  const d=state.data||{},funds=d.fundMonitor||{};
  const sectorCount=(d.sectors||[]).filter(x=>x.alertActive===true).length;
- const fundCount=Number(funds.changedSymbols)||0;
+ const fundChangeIsCurrent=String(funds.asOf||'')!==''&&String(funds.asOf||'')===String(funds.lastChangedAsOf||'');
+ const fundCount=fundChangeIsCurrent?(Number(funds.changedSymbols)||0):0;
  const count=sectorCount+fundCount;
  badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);
- badge.title=sectorCount+' ngành chạm ngưỡng · '+fundCount+' mã có thay đổi quỹ';
+ badge.title=sectorCount+' ngành đang cảnh báo · '+fundCount+' mã quỹ vừa thay đổi';
 }
 const COMPONENT_ORDER=['breadth','volatility','liquidity','concentration','contagion'];
 const fmt=(v,d=1)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
@@ -32,11 +33,11 @@ function levelBadge(lvl){
 }
 function summaryText(score){
  const s=Number(score)||0;
- if(s>=80)return'Các dấu hiệu căng thẳng đang xuất hiện đồng thời trên nhiều mặt. Cần ưu tiên bảo toàn vị thế và theo dõi khả năng lan rộng.';
- if(s>=65)return'Rủi ro thị trường đang cao. Cần theo dõi sát mức giảm lan rộng, biến động và các nhóm ngành đang yếu.';
- if(s>=50)return'Mức căng thẳng đang tăng. Chưa phải trạng thái cao nhất nhưng cần theo dõi sát các cảnh báo đang bật.';
- if(s>=35)return'Thị trường có một số dấu hiệu cần theo dõi, nhưng áp lực chưa lan rộng trên toàn bộ hệ thống.';
- return'Các thước đo chính đang ở vùng bình thường. Chưa thấy dấu hiệu căng thẳng lan rộng ở thời điểm này.';
+ if(s>=80)return'Căng thẳng đang xuất hiện đồng thời trên nhiều mặt.';
+ if(s>=65)return'Căng thẳng thị trường đang ở mức cao và lan rộng.';
+ if(s>=50)return'Căng thẳng đang tăng trên nhiều thước đo.';
+ if(s>=35)return'Một số dấu hiệu căng thẳng đã xuất hiện nhưng chưa lan rộng.';
+ return'Chưa thấy căng thẳng lan rộng trên toàn thị trường.';
 }
 function renderTop(){
  const d=state.data;if(!d)return;
@@ -123,7 +124,7 @@ function renderSectors(){
   const change=Number(x.medianChangePct)||0;
   const direction=change>0.01?'up':change<-0.01?'down':'flat';
   const strength=Math.max(8,Math.min(100,Math.abs(change)/3*100));
-  const threshold=x.alertActive?' · CHẠM NGƯỠNG':x.nearThreshold?' · TIỆM CẬN':'';
+  const threshold=x.alertActive?(x.aboveThreshold?' · CHẠM NGƯỠNG':' · CẢNH BÁO ĐANG GIỮ'):x.nearThreshold?' · TIỆM CẬN':'';
   const breadth=direction==='up'?fmt(x.advancePct,1)+'% mã tăng':direction==='down'?fmt(x.declinePct,1)+'% mã giảm':'Đi ngang';
   return '<button type="button" class="risk-sector-tile risk-sector-heat-cell risk-heat-'+direction+(x.alertActive?' risk-heat-threshold':'')+'" data-sector-id="'+esc(x.id)+'" style="--risk-heat:'+strength+'%"><div class="risk-sector-tile-head"><strong>'+esc(x.label)+'</strong><b class="'+(change>0?'price-up':change<0?'price-down':'price-flat')+'">'+(change>0?'+':'')+fmt(change,2)+'%</b></div><div class="risk-sector-heat-bar"><span></span></div><div class="risk-sector-heat-meta"><span>'+esc(breadth)+'</span><span>'+fmt(x.score,1)+'/100</span></div><small>'+((Number.isFinite(Number(x.threshold)))?'Ngưỡng '+fmt(x.threshold,1)+'/100':'')+threshold+'</small></button>';
  }).join('')||'<p class="risk-empty">Chưa đủ dữ liệu nhóm ngành.</p>';
@@ -180,8 +181,7 @@ function renderFunds(){
   box.innerHTML='<p class="risk-empty">Chưa có dữ liệu quỹ đủ để so sánh.</p>';chart.innerHTML='';if(detail)detail.hidden=true;return;
  }
  if(asof)asof.textContent='Cập nhật nguồn '+esc(f.asOf||'—')+(f.lastChangedAsOf?' · danh mục đổi gần nhất '+esc(f.lastChangedAsOf):'')+(f.previousAsOf?' · so với '+esc(f.previousAsOf):'');
- const thresholdLabel=fmt(f.thresholdPP,2)+' điểm %';
- box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã vượt ngưỡng '+thresholdLabel+'</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Lượt thay đổi vượt ngưỡng</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
+ box.innerHTML='<div><span>Quỹ có dữ liệu</span><strong>'+fmt(f.funds,0)+'</strong></div><div><span>Mã đang được nắm giữ</span><strong>'+fmt(f.symbols,0)+'</strong></div><div><span>Mã thay đổi đáng chú ý</span><strong>'+fmt(f.changedSymbols,0)+'</strong></div><div><span>Lượt thay đổi đáng chú ý</span><strong>'+fmt(f.materialChanges,0)+'</strong></div>';
  const rows=(f.rows||[]).filter(x=>Number(x.currentFundCount)>0).sort((a,b)=>b.currentFundCount-a.currentFundCount||b.materialChanges-a.materialChanges||a.symbol.localeCompare(b.symbol));
  const max=Math.max(1,...rows.map(x=>Number(x.currentFundCount)||0));
  chart.innerHTML='<div class="risk-fund-chart-head"><span>Mã</span><span>Số quỹ đang nắm giữ</span><span>Thay đổi gần nhất</span></div><div class="risk-fund-chart-body">'+rows.map(x=>{

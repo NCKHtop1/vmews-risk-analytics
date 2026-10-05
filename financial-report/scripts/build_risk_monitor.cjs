@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
 
 const VERSION='FINQUERY-RISK-1.4';
-const METHOD_VERSION='FINQUERY-RISK-RULES-1.5';
+const METHOD_VERSION='FINQUERY-RISK-RULES-1.6';
 const FUND_HISTORY_PATH=path.resolve(__dirname,'../../data/fund-holdings-history-v16.json');
 const FUND_CHANGE_THRESHOLD_PP=0.50;
 const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
@@ -224,7 +224,8 @@ function sectorRows(rows,calibration=null){
   );
   const cal=calibrated[group.id]||null,threshold=n(cal?.threshold),exitThreshold=n(cal?.exitThreshold);
   const alertEligible=cal?.alertEligible===true&&threshold!==null;
-  const alertActive=alertEligible&&score>=threshold;
+  const aboveThreshold=alertEligible&&score>=threshold;
+  const alertActive=aboveThreshold;
   const nearThreshold=alertEligible&&!alertActive&&score>=Math.max(0,threshold-10);
   const memberRows=[...members].sort((a,b)=>a.change-b.change).map(r=>({
    symbol:r.symbol,changePct:round(r.change,2),volumeRatio:round(r.volumeRatio,2),price:round(r.price,2),
@@ -234,7 +235,7 @@ function sectorRows(rows,calibration=null){
    id:group.id,label:group.label,score:round(score,1),level:level(score),members:members.length,
    declinePct:pct(declineShare),advancePct:pct(advanceShare),unchangedPct:pct(unchangedShare),medianChangePct:round(medChange,2),medianVolumeRatio:round(medVolume,2),
    memberRows,threshold:threshold===null?null:round(threshold,1),exitThreshold:exitThreshold===null?null:round(exitThreshold,1),
-   alertEligible,alertActive,nearThreshold,
+   alertEligible,aboveThreshold,alertActive,nearThreshold,
    backtest:cal?{
     status:cal.status||null,samples:cal.samples||0,forwardSessions:cal.forwardSessions||3,thresholdMode:cal.thresholdMode||null,
     stateValidated:cal.stateValidated===true,continuationValidated:cal.continuationValidated===true,
@@ -415,6 +416,7 @@ function buildSectorAlerts(sectors,previous,sourceTime){
   if(!s.alertEligible||!Number.isFinite(Number(s.threshold)))continue;
   const id='sector-'+s.id,old=prevMap.get(id),enter=Number(s.threshold),exit=Number(s.exitThreshold??(enter-7.5));
   const active=Number(s.score)>=(old?exit:enter);if(!active)continue;
+  const aboveThreshold=Number(s.score)>=enter;
   const bt=s.backtest||{},lift=Number(bt.precisionLift),precision=Number(bt.precision),base=Number(bt.baseRate);
   const evidence=[
    'Điểm ngành '+round(s.score,1)+'/100; ngưỡng căng thẳng lịch sử '+round(enter,1)+'/100',
@@ -424,7 +426,7 @@ function buildSectorAlerts(sectors,previous,sourceTime){
   if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('lịch sử kiểm tra cho thấy '+round(precision*100,1)+'% lần chạm ngưỡng rơi vào vùng giảm xấu trong 3 phiên sau, so với mức thông thường '+round(base*100,1)+'% (cao hơn '+round(lift,2)+' lần)');
   else evidence.push('đây là cảnh báo trạng thái căng thẳng; chưa coi là dự báo ngành sẽ giảm tiếp');
   alerts.push({
-   id,title:s.label+' chạm ngưỡng căng thẳng lịch sử',score:round(s.score,1),
+   id,title:s.label+(aboveThreshold?' chạm ngưỡng căng thẳng lịch sử':' vẫn trong vùng cảnh báo'),score:round(s.score,1),
    level:{key:Number(s.score)>=enter+10?'high':'watch',label:Number(s.score)>=enter+10?'Cao':'Cần theo dõi',tone:Number(s.score)>=enter+10?'red':'yellow'},
    startedAt:old?.startedAt||sourceTime,lastSeen:sourceTime,evidence:evidence.join('. '),
    sectorId:s.id,threshold:round(enter,1),backtestValidated:true,continuationValidated:bt.continuationValidated===true
@@ -447,7 +449,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
  const {rows,sourceTime,day}=liveRows(quotes,strategy);
  const expected=Math.max(1,Number(quotes.expected)||Object.keys(quotes.quotes||{}).length);
  if(rows.length<Math.ceil(expected*.90))throw new Error(`risk live coverage below 90%: ${rows.length}/${expected}`);
- const sectors=sectorRows(rows,sectorCalibration),components=componentScores(rows,sectors),overall=overallFromComponents(components);
+ const rawSectors=sectorRows(rows,sectorCalibration),components=componentScores(rows,rawSectors),overall=overallFromComponents(components);
  let oldTimeline=Array.isArray(previous?.timeline)?previous.timeline.filter(x=>x&&x.sourceTime):[];
  const hasDifferent=oldTimeline.some(x=>String(x.sourceTime)!==String(sourceTime));
  if(!hasDifferent&&baselinePoint?.sourceTime&&String(baselinePoint.sourceTime)!==String(sourceTime))oldTimeline=[baselinePoint,...oldTimeline];
@@ -461,7 +463,17 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.score])),basis:'live'
  }].slice(-120);
  const topRisk=rows.map(stockRisk).sort((a,b)=>b.score-a.score||a.symbol.localeCompare(b.symbol)).slice(0,15);
- const alerts=[...buildAlerts(components,overall,previous,sourceTime),...buildSectorAlerts(sectors,previous,sourceTime)].sort((a,b)=>b.score-a.score);
+ const sectorAlerts=buildSectorAlerts(rawSectors,previous,sourceTime);
+ const activeSectorIds=new Set(sectorAlerts.map(x=>x.sectorId));
+ const sectors=rawSectors.map(s=>({
+  ...s,
+  alertActive:activeSectorIds.has(s.id),
+  nearThreshold:s.alertEligible&&!activeSectorIds.has(s.id)&&Number(s.score)>=Math.max(0,Number(s.threshold)-10)
+ })).sort((a,b)=>{
+  const ar=a.alertActive?3:a.nearThreshold?2:1,br=b.alertActive?3:b.nearThreshold?2:1;
+  return br-ar||Number(b.score)-Number(a.score);
+ });
+ const alerts=[...buildAlerts(components,overall,previous,sourceTime),...sectorAlerts].sort((a,b)=>b.score-a.score);
  const breadthStats=components.breadth.stats;
  const contributions=contributionRows(components,previousPoint);
  const tr=trend(overall.score,previousPoint?.score,comparisonLabel,previousPoint?.sourceTime||null);
