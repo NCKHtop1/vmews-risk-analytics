@@ -185,7 +185,7 @@ function renderFunds(){
  const max=Math.max(1,...rows.map(x=>Number(x.currentFundCount)||0));
  chart.innerHTML='<div class="risk-fund-chart-head"><span>Mã</span><span>Số quỹ đang nắm giữ</span><span>Thay đổi gần nhất</span></div><div class="risk-fund-chart-body">'+rows.map(x=>{
   const width=Math.max(4,(Number(x.currentFundCount)||0)/max*100);
-  const raw=Number(x.largestChangePP);const delta=x.status==='stable'||(Number.isFinite(raw)&&Math.abs(raw)<0.005)?'Không đổi':Number.isFinite(raw)?((raw>0?'+':'')+fmt(raw,2)+' điểm %'):x.label;
+  const raw=Number(x.largestChangePP);const delta=Number.isFinite(raw)&&Math.abs(raw)>=0.005?((raw>0?'+':'')+fmt(raw,2)+' điểm %'):(x.status==='new'||x.status==='removed'?x.label:'Không đổi');
   return '<button type="button" class="risk-fund-bar risk-fund-'+tone(x.tone)+'" data-fund-symbol="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><span class="risk-fund-bar-track"><i style="width:'+width+'%"></i><b>'+fmt(x.currentFundCount,0)+' quỹ</b></span><small>'+esc(delta)+'</small></button>';
  }).join('')+'</div>';
  if(state.selectedFundSymbol&&rows.some(x=>x.symbol===state.selectedFundSymbol))renderFundDetail(state.selectedFundSymbol);else if(detail)detail.hidden=true;
