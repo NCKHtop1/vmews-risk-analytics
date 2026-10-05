@@ -94,7 +94,7 @@ jobs:
           sector_cal=risk.get('sectorCalibration') or {}
           assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
           assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
-          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.5',risk.get('methodVersion')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.6',risk.get('methodVersion')
           groups=risk.get('breadthGroups') or {}
           assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
           assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
@@ -212,7 +212,7 @@ jobs:
           sector_cal=risk.get('sectorCalibration') or {}
           assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
           assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
-          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.5',risk.get('methodVersion')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.6',risk.get('methodVersion')
           groups=risk.get('breadthGroups') or {}
           assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
           assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
