@@ -27,9 +27,9 @@ test('research frameworks include bank and corporate knowledge',()=>{
 
 test('deep research exposes explicit academic reasoning contract',()=>{
  assert.match(src,/const ACADEMIC_LENSES=/);
- assert.match(src,/academicContext:\\{policy:'FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE'/);
- assert.match(src,/\\[ACADEMIC\\]/);
- assert.match(src,/luận điểm → bằng chứng → cơ chế tài chính\\/kinh tế → phản biện hoặc giới hạn → hàm ý cần theo dõi/);
+ assert.match(src,/academicContext:\{policy:'FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE'/);
+ assert.match(src,/\[ACADEMIC\]/);
+ assert.match(src,/luận điểm → bằng chứng → cơ chế tài chính\/kinh tế → phản biện hoặc giới hạn → hàm ý cần theo dõi/);
  assert.match(src,/counter-thesis/);
  assert.match(src,/Khung học thuật tham chiếu/);
 });
@@ -52,7 +52,7 @@ test('academic references are canonical and scoped with caveats',()=>{
 });
 
 test('academic layer is passed through context and rendered separately',()=>{
- assert.match(src,/academic=academicLenses\\(question,knowledge,deep\\)/);
- assert.match(src,/academicSources:\\(agentContext\\?\\.academicContext\\?\\.references\\|\\|\\[\\]\\)/);
- assert.match(src,/WEB\\|ACADEMIC/);
+ assert.match(src,/academic=academicLenses\(question,knowledge,deep\)/);
+ assert.match(src,/academicSources:\(agentContext\?\.academicContext\?\.references\|\|\[\]\)/);
+ assert.match(src,/WEB\|ACADEMIC/);
 });
