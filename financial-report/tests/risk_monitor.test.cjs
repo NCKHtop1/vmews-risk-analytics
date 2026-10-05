@@ -166,19 +166,20 @@ test('sector calibration finds a stable warning threshold with time-ordered OOS 
   observations.push({
    date:new Date(Date.UTC(2022,0,1+i)).toISOString().slice(0,10),
    score,
+   currentMedianPct:stressed?-1.4:-.1,
    forward3Pct:stressed?(-2.2-(i%5)*.15):(-.1+(i%7)*.05)
   });
  }
  const out=calibrateSector('demo','Ngành thử nghiệm',observations);
  assert.equal(out.status,'VALIDATED_STATE');
  assert.equal(out.alertEligible,true);
- assert.ok(out.threshold>=55&&out.threshold<=75,out);
+ assert.ok(out.threshold>=80&&out.threshold<=95,out);
  assert.ok(out.oos.signalRate>=.03&&out.oos.signalRate<=.25,out.oos);
  assert.ok(out.oos.folds>=2,out.oos);
 });
 
 test('sector calibration refuses automatic alerts when history is insufficient',()=>{
- const rows=Array.from({length:90},(_,i)=>({date:'2026-01-'+String((i%28)+1).padStart(2,'0'),score:40+i%30,forward3Pct:-.5}));
+ const rows=Array.from({length:90},(_,i)=>({date:'2026-01-'+String((i%28)+1).padStart(2,'0'),score:40+i%30,currentMedianPct:-.2,forward3Pct:-.5}));
  const out=calibrateSector('short','Ngành ngắn',rows);
  assert.equal(out.alertEligible,false);
  assert.equal(out.status,'INSUFFICIENT_HISTORY');
