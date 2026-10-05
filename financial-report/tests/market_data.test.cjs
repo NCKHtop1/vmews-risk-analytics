@@ -134,7 +134,7 @@ test('full contextual-help audit covers site-specific terms without oversized in
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
  const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
- for(const key of ['technical-signals','scanner-guide','scanner-bias','volume-ratio','strategy-builder','universe-tiers','market-driver','broker-consensus'])assert.match(index,new RegExp('data-info-key="'+key+'"'));
+ for(const key of ['risk-score','technical-signals','scanner-guide','scanner-bias','volume-ratio','strategy-builder','universe-tiers','market-driver','broker-consensus'])assert.match(index,new RegExp('data-info-key="'+key+'"'));
  assert.match(app,/Cách dùng Technical Scanner/);
  assert.match(app,/Core · Liquid · Discovery/);
  assert.match(app,/Động lực \/ hệ số/);
@@ -198,7 +198,8 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  assert.match(index,/id="risk-fund-detail"/);
  assert.doesNotMatch(index,/id="risk-fund-rows"|risk-fund-table/);
  assert.match(index,/MỨC RỦI RO HIỆN TẠI · THANG 0–100/);
- assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần/i);
+ assert.match(index,/data-info-key="risk-score"/);
+ assert.doesNotMatch(index,/không nhấp nháy|nhấn nhẹ một lần|Heatmap cảnh báo trạng thái căng thẳng hiện tại|Màu của cột chỉ phản ánh/i);
  assert.match(risk,/renderSectorDetail/);
  assert.match(risk,/risk-sector-heat-cell/);
  assert.match(risk,/renderFundDetail/);
@@ -217,10 +218,20 @@ test('risk navigation badge combines sector threshold alerts with fund-change sy
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  assert.match(index,/Số cảnh báo cần chú ý/);
- assert.match(index,/snapshot phiên khoảng 5 phút\/lần/);
- assert.match(index,/snapshot thị trường khoảng 5 phút\/lần trong phiên/);
+ assert.match(index,/Kiểm tra bản mới mỗi phút · dữ liệu trong phiên khoảng 5 phút\/lần/);
+ assert.match(index,/Cập nhật theo dữ liệu thị trường khoảng 5 phút\/lần trong phiên/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
  assert.match(risk,/changedSymbols/);
  assert.doesNotMatch(risk,/badge\.title=count\+' thay đổi quỹ đáng chú ý'/);
+});
+
+
+test('risk monitor cadence matches one-minute UI poll and five-minute live publisher',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
+ assert.match(index,/Kiểm tra bản mới mỗi phút · dữ liệu trong phiên khoảng 5 phút\/lần/);
+ assert.match(risk,/setInterval\(\(\)=>\{if\(!\$\('risk-monitor'\)\?\.hidden&&!document\.hidden\)refresh\(\);\},60000\)/);
+ assert.match(live,/INTERVAL_SECONDS="\$\{MARKET_LOOP_SECONDS:-300\}"/);
 });
