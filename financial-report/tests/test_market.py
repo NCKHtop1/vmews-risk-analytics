@@ -1337,10 +1337,17 @@ class MarketTests(unittest.TestCase):
         base=1700000000
         def payload(times):
             return [{'symbol':'FPT','t':times,'o':[100]*len(times),'h':[110]*len(times),'l':[90]*len(times),'c':[105]*len(times),'v':[1000]*len(times)}]
-        pages=[
-            list(range(base-1599*86400,base+1,86400)),
-            list(range(base-3199*86400,base-1599*86400,86400)),
-        ]
+        def business_times(end_ts,count):
+            day=datetime.fromtimestamp(end_ts,timezone.utc).astimezone(m.VN).date()
+            out=[]
+            while len(out)<count:
+                if day.weekday()<5:
+                    out.append(int(datetime(day.year,day.month,day.day,8,0,tzinfo=m.VN).timestamp()))
+                day-=m.timedelta(days=1)
+            return sorted(out)
+        first=business_times(base,1600)
+        second=business_times(first[0]-1,1600)
+        pages=[first,second]
         def fake_request(url,payload_arg=None):
             calls.append(payload_arg)
             idx=min(len(calls)-1,len(pages)-1)
