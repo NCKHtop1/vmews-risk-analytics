@@ -213,3 +213,13 @@ test('risk monitor v3 exposes fund chart and calibrated sector heatmap',()=>{
  assert.match(live,/build_sector_risk_calibration\.cjs/);
  assert.match(refresh,/Persist aligned market risk history/);
 });
+
+
+test('risk monitor refresh cadence is explicit and matches the live publisher',()=>{
+ const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
+ assert.match(index,/Kiểm tra bản mới mỗi phút · dữ liệu trong phiên khoảng 5 phút\/lần/);
+ assert.match(risk,/setInterval\(\(\)=>\{if\(!\$\('risk-monitor'\)\?\.hidden&&!document\.hidden\)refresh\(\);\},60000\)/);
+ assert.match(live,/INTERVAL_SECONDS="\$\{MARKET_LOOP_SECONDS:-300\}"/);
+});
