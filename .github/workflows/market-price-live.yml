@@ -10,6 +10,7 @@ on:
       - 'financial-report/scripts/build_technical_evidence.py'
       - 'financial-report/scripts/build_strategy_snapshot.cjs'
       - 'financial-report/scripts/build_risk_monitor.cjs'
+      - 'financial-report/scripts/build_sector_risk_calibration.cjs'
       - 'data/fund-holdings-history-v16.json'
       - 'financial-report/scripts/live_session_publisher.sh'
       - 'financial-report/data/universe.json'
