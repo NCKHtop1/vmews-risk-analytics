@@ -50,6 +50,18 @@ test('initial quote outage gets bounded fast UI retries',()=>{
  assert.match(source,/manageQuoteRetry\(false\)/);
  assert.match(source,/hệ thống đang tự thử lại/);
 });
+test('close catch keeps strict intraday freshness but accepts official 14:45 close',()=>{
+ const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
+ const workflow=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-price-live.yml'),'utf8');
+ assert.match(live,/MAX_AGE_MINUTES="\$\{MARKET_MAX_QUOTE_AGE_MINUTES:-18\}"/);
+ assert.match(live,/CLOSE_CATCH_MAX_AGE_MINUTES="\$\{MARKET_CLOSE_CATCH_MAX_AGE_MINUTES:-30\}"/);
+ assert.match(live,/local_min.*vn_minutes/);
+ assert.match(live,/local_min" -ge 885.*local_min" -le 905/);
+ assert.match(live,/MARKET_MAX_QUOTE_AGE_MINUTES="\$current_max_age"/);
+ assert.match(live,/validate_snapshot "\$current_max_age"/);
+ assert.match(workflow,/MARKET_MAX_QUOTE_AGE_MINUTES: '18'/);
+ assert.match(workflow,/MARKET_CLOSE_CATCH_MAX_AGE_MINUTES: '30'/);
+});
 test('technical scanner rules remain unchanged and evidence is additive',()=>{
  const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
  assert.match(source,/'macd_cross_up': 60/);
