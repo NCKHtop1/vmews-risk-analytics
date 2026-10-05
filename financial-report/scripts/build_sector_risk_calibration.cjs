@@ -68,7 +68,7 @@ function selectThreshold(train){
 function calibrateSector(id,label,observations){
  const rows=(observations||[]).filter(x=>Number.isFinite(Number(x.score))&&Number.isFinite(Number(x.forward3Pct))).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  if(rows.length<180){
-  return{id,label,status:'INSUFFICIENT_HISTORY',alertEligible:false,samples:rows.length,threshold:round(quantile(rows.map(x=>x.score),.80)??65,1),reason:'Lịch sử hợp lệ chưa đủ 180 phiên để kiểm định theo thời gian.'};
+  return{id,label,status:'INSUFFICIENT_HISTORY',alertEligible:false,samples:rows.length,threshold:round(quantile(rows.map(x=>x.score),.80)??65,1),reason:'Chưa đủ ít nhất 180 phiên lịch sử hợp lệ để kiểm tra ngưỡng cảnh báo.'};
  }
  const splits=[[.55,.70],[.70,.85],[.85,1.00]],folds=[];
  let totals={total:0,tp:0,fp:0,tn:0,fn:0,signals:0,events:0};
@@ -98,7 +98,7 @@ function calibrateSector(id,label,observations){
   adverseCutoffPct:round(median(cutoffs)??-1,2),
   oos:{...aggregate,folds:folds.length,medianForward3WhenSignalPct:medianSignalForward===null?null:round(medianSignalForward,2)},
   foldDetails:folds,
-  reason:eligible?'Ngưỡng đạt kiểm định ngoài mẫu theo thời gian.':'Có lịch sử nhưng độ phân biệt ngoài mẫu chưa đủ mạnh để dùng làm cảnh báo tự động.'
+  reason:eligible?'Ngưỡng đã vượt các bước kiểm tra trên những giai đoạn lịch sử tách riêng.':'Lịch sử hiện có chưa cho thấy ngưỡng đủ ổn định và chính xác để bật cảnh báo tự động.'
  };
 }
 function confusionFromTotals(x){
