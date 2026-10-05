@@ -1,8 +1,33 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-02T12:49:00+00:00",
+  "updatedAt": "2026-10-05T05:52:37+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-TPB-2026-10-05-bf964adc",
+      "symbol": "TPB",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-05",
+      "title": "TPB – BCPT – Định giá hấp dẫn cho tiềm năng tăng trưởng",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/tpb-bcpt-dinh-gia-hap-dan-cho-tiem-nang-tang-truong/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 16600,
+      "summary": "MBS công bố báo cáo ngày 05/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 16.600 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "TCBS-VNM-2026-10-02-39e6a7aa",
+      "symbol": "VNM",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-10-02",
+      "title": "VNM: Báo cáo cập nhật KQKD 02/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vnm-bao-cao-cap-nhat-kqkd-02-10-2026-rpid6105.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo VNM ngày 02/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-VNM-2026-10-02-001b1c7b",
       "symbol": "VNM",
@@ -13,6 +38,62 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VNM ngày 02/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "SSI-VPB-2026-10-02-e18a0775",
+      "symbol": "VPB",
+      "broker": "SSI",
+      "brokerName": "SSI",
+      "publishedAt": "2026-10-02",
+      "title": "VPB: Khuyến nghị KHẢ QUAN với giá mục tiêu 26,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-26-500-dong-co-phieu-rpid6108.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 26500,
+      "summary": "SSI có báo cáo VPB ngày 02/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 26.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "NHSV-VHC-2026-10-02-ffdfc2c3",
+      "symbol": "VHC",
+      "broker": "NHSV",
+      "brokerName": "NHSV",
+      "publishedAt": "2026-10-02",
+      "title": "VHC: Khuyến nghị MUA với giá mục tiêu 65,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vhc-khuyen-nghi-mua-voi-gia-muc-tieu-65-000-dong-co-phieu-rpid6107.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 65000,
+      "summary": "NHSV có báo cáo VHC ngày 02/10/2026 với khuyến nghị MUA, giá mục tiêu 65.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BSC-KDH-2026-10-02-9d057ddc",
+      "symbol": "KDH",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-02",
+      "title": "KDH: Khuyến nghị MUA với giá mục tiêu 18,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/kdh-khuyen-nghi-mua-voi-gia-muc-tieu-18-400-dong-co-phieu-rpid6106.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 18400,
+      "summary": "BSC có báo cáo KDH ngày 02/10/2026 với khuyến nghị MUA, giá mục tiêu 18.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-NKG-2026-10-01-77ab84d4",
+      "symbol": "NKG",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-01",
+      "title": "NKG: Khuyến nghị MUA với giá mục tiêu 14,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/nkg-khuyen-nghi-mua-voi-gia-muc-tieu-14-400-dong-co-phieu-rpid6109.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 14400,
+      "summary": "VDSC có báo cáo NKG ngày 01/10/2026 với khuyến nghị MUA, giá mục tiêu 14.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-PC1-2026-10-01-001b1c7b",
@@ -39,6 +120,17 @@
       "recommendation": "MUA",
       "targetPrice": 28200,
       "summary": "MIRAE có báo cáo MBB ngày 01/10/2026 với khuyến nghị MUA, giá mục tiêu 28.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "FPTS-VIX-2026-10-01-718a7767",
+      "symbol": "VIX",
+      "broker": "FPTS",
+      "brokerName": "FPT Securities",
+      "publishedAt": "2026-10-01",
+      "title": "Khuyến nghị Bán cổ phiếu VIX ngày",
+      "currency": "VND",
+      "sourceUrl": "https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169",
+      "summary": "FPTS có báo cáo VIX ngày 01/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "VPX-MBB-2026-09-30-25c1777b",
