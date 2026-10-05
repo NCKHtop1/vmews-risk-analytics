@@ -252,7 +252,7 @@ function bind(){
  $('risk-fund-detail')?.addEventListener('click',e=>{if(e.target.closest('#risk-fund-detail-close')){state.selectedFundSymbol=null;$('risk-fund-detail').hidden=true;}});
  $('risk-sectors')?.addEventListener('click',e=>{const b=e.target.closest('[data-sector-id]');if(b)renderSectorDetail(b.dataset.sectorId);});
  $('risk-sector-detail')?.addEventListener('click',e=>{const stock=e.target.closest('[data-risk-symbol]');if(stock){openSymbol(stock.dataset.riskSymbol);return;}if(e.target.closest('#risk-sector-detail-close')){state.selectedSectorId=null;$('risk-sector-detail').hidden=true;}});
- window.addEventListener('hashchange',()=>{if(location.hash==='#risk-monitor')showRisk(false);else if(location.hash==='#strategy-builder')showStrategy(false);else if(location.hash==='#strategy-builder')showStrategy(false);else showAnalysis(false);});
+ window.addEventListener('hashchange',()=>{if(location.hash==='#risk-monitor')showRisk(false);else if(location.hash==='#strategy-builder')showStrategy(false);else showAnalysis(false);});
  document.addEventListener('finquery:market-refresh',()=>{if(!$('risk-monitor')?.hidden)refresh();});
 }
 bind();
