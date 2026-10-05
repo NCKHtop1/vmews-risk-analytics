@@ -53,11 +53,16 @@ jobs:
           DEPLOYMENT='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/deployment.json'
           expected=os.environ.get('EXPECTED_SHA','').strip()
           if expected:
-              with urllib.request.urlopen(DEPLOYMENT,timeout=20) as r:
-                  deployed=json.load(r)
-              actual=str(deployed.get('code') or '')
+              actual=''
+              for attempt in range(8):
+                  with urllib.request.urlopen(DEPLOYMENT+'?smoke='+str(int(time.time()*1000)),timeout=20) as r:
+                      deployed=json.load(r)
+                  actual=str(deployed.get('code') or '')
+                  if actual == expected:
+                      break
+                  time.sleep(min(2+attempt*2,10))
               if actual != expected:
-                  raise AssertionError(f'Pages deployment mismatch: production={actual} expected={expected}')
+                  raise AssertionError(f'Pages deployment mismatch after bounded propagation wait: production={actual} expected={expected}')
 
           options=Options()
           options.add_argument('--headless=new')
