@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const code=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market-data.js'),'utf8');
-function setup(fetch){const ctx={window:{},document:{documentElement:{dataset:{hosting:'pages'}}},location:{href:'https://example.test/financial-report/'},fetch,URL,Date,AbortSignal,DOMException};vm.runInNewContext(code,ctx);return ctx.window.FinMarketData;}
+function setup(fetch){const ctx={window:{},document:{documentElement:{dataset:{hosting:'pages'}}},location:{href:'https://example.test/financial-report/'},fetch,URL,Date,AbortSignal,DOMException,setTimeout,clearTimeout,Promise};vm.runInNewContext(code,ctx);return ctx.window.FinMarketData;}
 const bundle=(minutes,price=100)=>({checkedAt:new Date(Date.now()-minutes*60000).toISOString(),quotes:{ACB:{price}}});
 test('publisher update wins over successful stale Pages response',async()=>{const api=setup(async url=>({ok:true,json:async()=>bundle(url.includes('raw.githubusercontent')?1:90,url.includes('raw.githubusercontent')?110:100)}));assert.equal((await api.get('quotes.json')).quotes.ACB.price,110);});
 test('future publisher snapshot cannot displace valid Pages data',async()=>{const api=setup(async url=>({ok:true,json:async()=>bundle(url.includes('raw.githubusercontent')?-600:10)}));assert.ok(Date.parse((await api.get('quotes.json')).checkedAt)<Date.now());});
