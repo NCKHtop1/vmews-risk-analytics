@@ -2,6 +2,11 @@ name: Refresh disclosed fund holdings
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fund-holdings-live.yml'
+      - 'scripts/forecast_v16_external_data.py'
   schedule:
     # Hourly business-day checks, 08:12-17:12 Vietnam time.
     # Fund holdings are disclosure-based, not exchange-tick data.
@@ -27,6 +32,7 @@ jobs:
             scripts/forecast_v16_external_data.py
             data/fund-holdings-history-v16.json
             data/v12-frozen-source.json.gz
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
