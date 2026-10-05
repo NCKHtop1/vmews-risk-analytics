@@ -1030,6 +1030,30 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(m.TECHNICAL_SCANNER_RULES['rsi']['overbought'],70)
         self.assertEqual(m.TECHNICAL_SCANNER_RULES['macd']['nearCrossMaxSpreadPct'],0.15)
 
+    def test_technical_scanner_keeps_cross_signal_for_repeated_same_source_snapshot(self):
+        bars=[]
+        for i in range(70):
+            close=10000 + i*i*8
+            bars.append({
+                'time':f'2026-07-{1+i:02d}' if i<31 else f'2026-08-{i-30:02d}' if i<62 else f'2026-09-{i-61:02d}',
+                'open':close-20,'high':close+80,'low':close-80,'close':close,
+                'volume':1000000,
+            })
+        stamp='2026-09-08T07:45:00+00:00'
+        base=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'sourceTime':stamp})
+        self.assertGreater(base['macdHistogram'],0)
+        previous={
+            'barDate':base['barDate'],'sourceTime':stamp,
+            'macdHistogram':base['macdHistogram'],'previousMacdHistogram':-abs(base['macdHistogram'])-1,
+            'rsi14':base['rsi14'],'previousRsi14':base['rsi14']-5,
+        }
+        repeated=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'sourceTime':stamp},previous)
+        self.assertEqual(repeated['previousMacdHistogram'],previous['previousMacdHistogram'])
+        self.assertIn('macd_cross_up',{x['id'] for x in repeated['signals']})
+        next_row=m.technical_scan_symbol('FPT',bars,{'price':bars[-1]['close'],'sourceTime':'2026-09-08T08:00:00+00:00'},previous)
+        self.assertEqual(next_row['previousMacdHistogram'],previous['macdHistogram'])
+        self.assertNotIn('macd_cross_up',{x['id'] for x in next_row['signals']})
+
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
         rows=m.normalize_history(data,'MBB')
