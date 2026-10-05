@@ -848,8 +848,8 @@ def technical_scan_symbol(symbol, bars, quote=None, previous=None):
     if not close:
         return None
 
-    # Prefer the previous 15-minute scanner snapshot when it belongs to the same
-    # live daily bar; otherwise fall back to the previous completed daily bar.
+    # Prefer the previous live scanner snapshot when it belongs to the same
+    # current-session daily bar; otherwise fall back to the previous completed day.
     current_source_time = (quote or {}).get('sourceTime') or (quote or {}).get('collectedAt')
     scan_prev_ok = (
         isinstance(previous, dict)
