@@ -227,6 +227,7 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  assert.match(index,/Số cảnh báo cần chú ý/);
  assert.match(index,/Giám sát thị trường chứng khoán Việt Nam/);
+ assert.match(index,/data-platform-view="analysis">Giám sát thị trường/);
  assert.match(index,/data-platform-view="strategy">Strategy Lab/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
