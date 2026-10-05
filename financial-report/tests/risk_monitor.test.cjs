@@ -2,6 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
+const {calibrateSector,stressScore}=require('../scripts/build_sector_risk_calibration.cjs');
 
 const symbols=['ACB','BID','CTG','MBB','TCB','VCB','VIC','VHM','NVL','PDR','SSI','VIX'];
 function fixture({stress=false,sourceTime='2026-10-05T07:45:00.000Z'}={}){
@@ -154,4 +155,54 @@ test('fund monitor compares disclosed weights without inventing share volume',()
  assert.ok(fpt.details.some(x=>x.fundCode==='FUND-D'&&x.status==='new'));
  assert.equal(Object.prototype.hasOwnProperty.call(fpt,'shareVolume'),false);
  assert.match(out.note,/không suy diễn thành số cổ phiếu mua\/bán/i);
+});
+
+
+test('sector calibration finds a stable warning threshold with time-ordered OOS lift',()=>{
+ const observations=[];
+ for(let i=0;i<600;i++){
+  const score=25+(i%70);
+  const stressed=score>=65;
+  observations.push({
+   date:new Date(Date.UTC(2022,0,1+i)).toISOString().slice(0,10),
+   score,
+   forward3Pct:stressed?(-2.2-(i%5)*.15):(-.1+(i%7)*.05)
+  });
+ }
+ const out=calibrateSector('demo','Ngành thử nghiệm',observations);
+ assert.equal(out.status,'VALIDATED_OOS');
+ assert.equal(out.alertEligible,true);
+ assert.ok(out.threshold>=55&&out.threshold<=75,out);
+ assert.ok(out.oos.precisionLift>1.5,out.oos);
+ assert.ok(out.oos.folds>=2,out.oos);
+});
+
+test('sector calibration refuses automatic alerts when history is insufficient',()=>{
+ const rows=Array.from({length:90},(_,i)=>({date:'2026-01-'+String((i%28)+1).padStart(2,'0'),score:40+i%30,forward3Pct:-.5}));
+ const out=calibrateSector('short','Ngành ngắn',rows);
+ assert.equal(out.alertEligible,false);
+ assert.equal(out.status,'INSUFFICIENT_HISTORY');
+});
+
+test('historical and live sector stress use the same score dimensions',()=>{
+ const score=stressScore([
+  {changePct:-2.1,volumeRatio:1.5},{changePct:-1.2,volumeRatio:1.3},
+  {changePct:-.7,volumeRatio:1.1},{changePct:.2,volumeRatio:.9}
+ ]);
+ assert.ok(score>40&&score<=100,score);
+});
+
+test('validated sector threshold creates a separate sector alert without changing total score formula',()=>{
+ const {quotes,strategy}=fixture({stress:true});
+ const sectorCalibration={
+  version:'TEST',status:'ok',forSession:'2026-10-05',validatedSectors:1,totalSectors:1,
+  sectors:{banking:{status:'VALIDATED_OOS',alertEligible:true,threshold:20,exitThreshold:12.5,samples:800,forwardSessions:3,adverseCutoffPct:-1.5,oos:{precision:.45,baseRate:.2,precisionLift:2.25,recall:.4,falseAlarmRate:.15,youden:.25,folds:3,signals:60,events:40,medianForward3WhenSignalPct:-2.1}}}
+ };
+ const baseline={sourceTime:'2026-10-02T07:45:00.000Z',sourceDate:'2026-10-02',score:31.5,level:'normal',components:{breadth:35,volatility:28,liquidity:32,concentration:27,contagion:30},basis:'previous-session-close',coverage:symbols.length};
+ const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z',baseline,null,sectorCalibration);
+ const bank=out.sectors.find(x=>x.id==='banking');
+ assert.ok(bank&&bank.alertEligible&&bank.alertActive,bank);
+ assert.ok(Array.isArray(bank.memberRows)&&bank.memberRows.length>=2);
+ assert.ok(out.alerts.some(x=>x.id==='sector-banking'&&x.backtestValidated===true),out.alerts);
+ assert.equal(out.sectorCalibration.validatedSectors,1);
 });
