@@ -6,6 +6,24 @@ test('publisher update wins over successful stale Pages response',async()=>{cons
 test('future publisher snapshot cannot displace valid Pages data',async()=>{const api=setup(async url=>({ok:true,json:async()=>bundle(url.includes('raw.githubusercontent')?-600:10)}));assert.ok(Date.parse((await api.get('quotes.json')).checkedAt)<Date.now());});
 test('failed publisher uses valid same-origin snapshot',async()=>{const api=setup(async url=>{if(url.includes('raw.githubusercontent'))throw Error('offline');return{ok:true,json:async()=>bundle(20)};});assert.ok((await api.get('quotes.json')).quotes.ACB);});
 test('unavailable sources fail explicitly',async()=>{const api=setup(async()=>({ok:false,status:503}));await assert.rejects(api.get('quotes.json'),/No valid/);});
+test('slow mirror cannot block a valid publisher snapshot',async()=>{
+ const api=setup(async url=>{
+  if(url.includes('raw.githubusercontent'))return{ok:true,json:async()=>bundle(1,111)};
+  await new Promise(resolve=>setTimeout(resolve,1500));
+  return{ok:true,json:async()=>bundle(2,109)};
+ });
+ const started=Date.now(),result=await api.get('quotes.json',{timeout:5000,hedgeMs:50});
+ assert.equal(result.quotes.ACB.price,111);
+ assert.ok(Date.now()-started<1000,'valid publisher response was blocked by the slow mirror');
+});
+test('short hedge still lets a newer mirror revision win',async()=>{
+ const api=setup(async url=>{
+  if(url.includes('raw.githubusercontent'))return{ok:true,json:async()=>bundle(5,105)};
+  await new Promise(resolve=>setTimeout(resolve,20));
+  return{ok:true,json:async()=>bundle(1,115)};
+ });
+ assert.equal((await api.get('quotes.json',{hedgeMs:100})).quotes.ACB.price,115);
+});
 test('future quote cannot poison merges; valid quote repairs prior future value',()=>{const api=setup(()=>{}),now=new Date().toISOString(),future=new Date(Date.now()+86400000).toISOString();const target={ACB:{price:999,sourceTime:future}};api.mergeQuotes(target,{ACB:{price:100,sourceTime:now}});assert.equal(target.ACB.price,100);api.mergeQuotes(target,{ACB:{price:999,sourceTime:future}});assert.equal(target.ACB.price,100);api.mergeQuotes(target,{ACB:{price:90,sourceTime:new Date(Date.now()-86400000).toISOString()}});assert.equal(target.ACB.price,100);});
 test('a renderer exception releases refresh lock and the next refresh succeeds',async()=>{
  const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
