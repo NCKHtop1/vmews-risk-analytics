@@ -16,7 +16,7 @@
 <div id="risk-error" role="alert" hidden></div>
 <div class="risk-body">
 <div class="risk-summary-grid">
-<article class="risk-summary-card"><span>MỨC RỦI RO HIỆN TẠI</span><div class="risk-score-row"><strong id="risk-score">—</strong><span id="risk-level"></span></div><p id="risk-summary">Đang tính từ dữ liệu thị trường.</p></article>
+<article class="risk-summary-card"><span>MỨC RỦI RO HIỆN TẠI · THANG 0–100</span><div class="risk-score-row"><strong id="risk-score">—</strong><span id="risk-level"></span></div><p id="risk-summary">Đang tính từ dữ liệu thị trường.</p></article>
 <article class="risk-summary-card"><span>SO VỚI MỐC GẦN NHẤT</span><strong id="risk-trend" class="risk-main-value">—</strong><p id="risk-trend-delta">Đang tìm mốc so sánh.</p></article>
 <article class="risk-summary-card"><span>ĐỘ PHỦ DỮ LIỆU</span><strong id="risk-coverage" class="risk-main-value">—</strong><p id="risk-coverage-note">Đang kiểm tra.</p></article>
 </div>
@@ -30,12 +30,14 @@
 
 <div class="risk-main-grid risk-main-grid-balanced">
 <section class="risk-panel"><h3>Độ rộng thị trường</h3><p class="risk-panel-sub">So sánh trực tiếp số mã tăng, giảm và đứng giá trong phạm vi đang theo dõi.</p><div id="risk-breadth-strip" class="risk-breadth-strip" aria-label="Tỷ trọng mã tăng giảm đứng giá"></div><div id="risk-market-counts" class="risk-market-counts"></div></section>
-<section class="risk-panel"><h3>Cảnh báo đang có</h3><p class="risk-panel-sub">Cảnh báo chỉ đổi trạng thái khi vượt đủ ngưỡng; cảnh báo mới chỉ được nhấn nhẹ một lần, không nhấp nháy liên tục.</p><div id="risk-alerts" class="risk-alerts"></div><div id="risk-alert-history" class="risk-alert-history"></div></section>
+<section class="risk-panel"><h3>Cảnh báo đang có</h3><p class="risk-panel-sub">Chỉ hiển thị khi dữ liệu vượt ngưỡng đủ rõ để cần chú ý.</p><div id="risk-alerts" class="risk-alerts"></div><div id="risk-alert-history" class="risk-alert-history"></div></section>
 </div>
 
 <section class="risk-section"><div class="risk-section-head"><div><h2>Rủi ro theo nhóm ngành</h2><p>Nhóm có điểm cao hơn được đưa lên trước; màu chỉ thể hiện mức cần chú ý, không phải khuyến nghị mua bán.</p></div></div><div id="risk-sectors" class="risk-sector-grid"></div></section>
 
-<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Các mã cần chú ý</h2><p>Xếp theo mức giảm, biến động, khối lượng và vị trí so với trung bình giá.</p></div></div><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Các mã cần chú ý</h2><p>Xếp theo mức giảm, biến động, khối lượng và vị trí so với trung bình giá.</p></div></div><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm / 100</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
+
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Quỹ đang nắm giữ</h2><p>Theo tỷ trọng danh mục được quỹ công bố. FinQuery so sánh hai lần thu thập gần nhất để phát hiện thay đổi đáng kể.</p></div><span id="risk-fund-asof"></span></div><div id="risk-fund-summary" class="risk-fund-summary"></div><div id="risk-fund-alerts" class="risk-fund-alerts"></div><div class="risk-stock-table-wrap"><table class="risk-stock-table risk-fund-table"><thead><tr><th>Mã</th><th>Số quỹ</th><th>Trạng thái</th><th>Thay đổi lớn nhất</th><th>Tỷ trọng quỹ lớn nhất</th><th>Chi tiết</th></tr></thead><tbody id="risk-fund-rows"></tbody></table></div><p class="risk-fund-note">“Tăng/giảm” ở đây là thay đổi tỷ trọng công bố trong danh mục quỹ, không phải số cổ phiếu mua/bán nếu nguồn không công bố khối lượng.</p></section>
 
 <section class="risk-method"><h3>Cách đọc điểm rủi ro</h3><p id="risk-method-note">Điểm 0–100 đo mức căng thẳng đang quan sát được từ dữ liệu thị trường.</p><p id="risk-comparison-note"></p><p id="risk-alert-rule"></p><p>Đây là thước đo trạng thái hiện tại, không phải xác suất thị trường chắc chắn sẽ tăng hay giảm trong tương lai.</p></section>
 </div>
