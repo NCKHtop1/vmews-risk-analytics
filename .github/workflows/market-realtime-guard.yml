@@ -108,6 +108,10 @@ jobs:
                       raise ValueError('risk monitor stale or not aligned with quotes')
                   if int(risk_cov.get('quotes') or 0)<math.ceil(expected*.90) or not isinstance(risk_score,(int,float)) or not 0<=risk_score<=100:
                       raise ValueError(f'risk monitor invalid: coverage={risk_cov} score={risk_score}')
+                  if len(risk.get('timeline') or [])<2 or (risk.get('trend') or {}).get('previousScore') is None:
+                      raise ValueError('risk monitor comparison history is incomplete')
+                  if len(risk.get('contributions') or [])!=5:
+                      raise ValueError('risk monitor contribution breakdown is incomplete')
                   if ps.get('status')!='ok' or age(ps.get('checkedAt'))>10 or ps.get('latestSourceTime')!=q.get('latestSourceTime'):
                       raise ValueError('prices-status stale or not aligned with quotes')
                   driver_symbols=drivers.get('symbols') or {}

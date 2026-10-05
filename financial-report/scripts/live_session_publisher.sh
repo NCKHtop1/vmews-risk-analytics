@@ -123,6 +123,10 @@ if risk.get('status')!='ok' or not (0<=float((risk.get('overall') or {}).get('sc
 risk_cov=risk.get('coverage') or {}
 if int(risk_cov.get('quotes') or 0)<required:
     raise SystemExit(f'risk monitor coverage below 90%: {risk_cov.get("quotes")}/{expected}')
+if len(risk.get('timeline') or [])<2 or (risk.get('trend') or {}).get('previousScore') is None:
+    raise SystemExit('risk monitor comparison history is incomplete')
+if len(risk.get('contributions') or [])!=5:
+    raise SystemExit('risk monitor contribution breakdown is incomplete')
 if status.get('status')!='ok' or age(status.get('checkedAt'))>10:
     raise SystemExit('prices-status heartbeat is stale')
 if age(drivers.get('generatedAt'))>10:

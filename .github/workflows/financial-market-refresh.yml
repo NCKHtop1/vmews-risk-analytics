@@ -12,6 +12,7 @@ on:
     paths:
       - 'financial-report/scripts/refresh_esg.py'
       - 'financial-report/config/esg_sources.json'
+      - 'financial-report/scripts/build_risk_monitor.cjs'
       - '.github/workflows/financial-market-refresh.yml'
   schedule:
     # Fallback watchdogs for the dedicated live workflows. They run only when
@@ -44,6 +45,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Restore last successful market snapshots
         run: |
           if git ls-remote --exit-code --heads origin financial-market-data; then
@@ -174,6 +178,18 @@ jobs:
             MARKET_REQUIRE_TODAY=1 python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode prices
           else
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
+          fi
+      - name: Persist aligned market risk history
+        if: always()
+        run: |
+          if [ -f /tmp/market-publish/market/quotes.json ] && [ -f /tmp/market-publish/market/strategy-indicators.json ]; then
+            if node financial-report/scripts/build_risk_monitor.cjs /tmp/market-publish/market; then
+              echo "Risk history aligned and ready to publish."
+            else
+              echo "::warning::Risk snapshot was not rebuilt because its market inputs are not aligned."
+            fi
+          else
+            echo "Risk inputs not available in this refresh; keeping last successful risk snapshot."
           fi
       - name: Publish market snapshots without replacing financial reports
         if: always()

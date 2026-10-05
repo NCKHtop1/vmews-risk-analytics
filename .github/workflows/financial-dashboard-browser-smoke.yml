@@ -292,7 +292,10 @@ jobs:
                   document.querySelector('.workspace')?.hidden===true &&
                   r && r.status==='ok' && Number.isFinite(Number(r.overall?.score)) &&
                   Number(r.coverage?.quotes||0)>=100 &&
-                  Object.keys(r.components||{}).length===5
+                  Object.keys(r.components||{}).length===5 &&
+                  Array.isArray(r.contributions) && r.contributions.length===5 &&
+                  Array.isArray(r.timeline) && r.timeline.length>=2 &&
+                  Number.isFinite(Number(r.trend?.previousScore))
                 );
               """))
               risk_snapshot=driver.execute_script("""
@@ -303,10 +306,19 @@ jobs:
                   sourceTime:r.sourceTime,
                   coverage:r.coverage?.quotes,
                   components:Object.keys(r.components||{}).length,
+                  contributions:(r.contributions||[]).length,
+                  timeline:(r.timeline||[]).length,
+                  previousScore:r.trend?.previousScore,
+                  trendDelta:r.trend?.delta,
+                  comparisonLabel:r.trend?.comparisonLabel,
                   sectors:(r.sectors||[]).length,
                   alerts:(r.alerts||[]).length,
                   topRisk:(r.topRisk||[]).length,
                   rows:document.querySelectorAll('#risk-stock-rows tr').length,
+                  contributionRows:document.querySelectorAll('#risk-contributions .risk-contribution-row').length,
+                  breadthParts:document.querySelectorAll('#risk-breadth-strip span').length,
+                  sectorTiles:document.querySelectorAll('#risk-sectors .risk-sector-tile').length,
+                  trendText:(document.getElementById('risk-trend')?.textContent||'').trim(),
                   text:(document.getElementById('risk-monitor')?.innerText||'')
                 };
               """)
@@ -314,6 +326,14 @@ jobs:
                   raise AssertionError(f'Risk monitor is not aligned with quote snapshot: risk={risk_snapshot} snapshot={snapshot}')
               if int(risk_snapshot.get('rows') or 0)<5 or int(risk_snapshot.get('sectors') or 0)<3:
                   raise AssertionError(f'Risk monitor dashboard is incomplete: {risk_snapshot}')
+              if int(risk_snapshot.get('timeline') or 0)<2 or risk_snapshot.get('previousScore') is None or risk_snapshot.get('trendDelta') is None:
+                  raise AssertionError(f'Risk comparison is missing: {risk_snapshot}')
+              if int(risk_snapshot.get('contributions') or 0)!=5 or int(risk_snapshot.get('contributionRows') or 0)!=5:
+                  raise AssertionError(f'Risk contribution chart is incomplete: {risk_snapshot}')
+              if int(risk_snapshot.get('breadthParts') or 0)!=3 or int(risk_snapshot.get('sectorTiles') or 0)<3:
+                  raise AssertionError(f'Risk breadth/sector dashboard is incomplete: {risk_snapshot}')
+              if not risk_snapshot.get('trendText') or 'Đang tìm' in risk_snapshot.get('trendText',''):
+                  raise AssertionError(f'Risk trend card is not usable: {risk_snapshot}')
               lowered_risk_text=str(risk_snapshot.get('text') or '').lower()
               for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress']:
                   if forbidden in lowered_risk_text:

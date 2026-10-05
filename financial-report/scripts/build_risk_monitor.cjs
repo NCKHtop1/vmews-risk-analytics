@@ -1,8 +1,8 @@
 'use strict';
 const fs=require('fs'),path=require('path');
 
-const VERSION='FINQUERY-RISK-1.0';
-const METHOD_VERSION='FINQUERY-RISK-RULES-1.0';
+const VERSION='FINQUERY-RISK-1.1';
+const METHOD_VERSION='FINQUERY-RISK-RULES-1.1';
 const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
 const SECTORS=[
  {id:'banking',label:'Ngân hàng',symbols:['ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB']},
@@ -26,6 +26,7 @@ const clamp=(v,lo=0,hi=100)=>Math.min(hi,Math.max(lo,Number(v)||0));
 const scale=(v,lo,hi)=>hi<=lo?0:clamp((Number(v)-lo)/(hi-lo)*100);
 const pct=v=>Math.round(clamp(v,0,1)*1000)/10;
 const round=(v,d=1)=>{const p=10**d;return Math.round((Number(v)||0)*p)/p;};
+const avg=values=>{const a=(values||[]).map(n).filter(Number.isFinite);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;};
 function median(values){
  const a=(values||[]).map(n).filter(Number.isFinite).sort((x,y)=>x-y);
  if(!a.length)return 0;const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;
@@ -33,6 +34,14 @@ function median(values){
 function vnDay(value){
  const d=new Date(value);if(!Number.isFinite(d.getTime()))return'';
  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+}
+function viDate(value){
+ const d=new Date(value);if(!Number.isFinite(d.getTime()))return'';
+ return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit'}).format(d);
+}
+function viTime(value){
+ const d=new Date(value);if(!Number.isFinite(d.getTime()))return'';
+ return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
 }
 function level(score){
  const s=Number(score)||0;
@@ -42,14 +51,15 @@ function level(score){
  if(s>=35)return{key:'watch',label:'Cần theo dõi',tone:'yellow'};
  return{key:'normal',label:'Bình thường',tone:'green'};
 }
-function trend(current,previous){
- if(!previous)return{label:'Chưa đủ mốc so sánh',delta:null,direction:'flat'};
+function trend(current,previous,comparisonLabel='',previousSourceTime=null){
+ if(previous===null||previous===undefined)return{label:'Mới bắt đầu ghi nhận',delta:null,direction:'flat',previousScore:null,previousSourceTime:null,comparisonLabel:'Chưa có mốc dữ liệu trước'};
  const delta=round((Number(current)||0)-(Number(previous)||0),1);
- if(delta>=8)return{label:'Tăng nhanh',delta,direction:'up'};
- if(delta>=3)return{label:'Đang tăng',delta,direction:'up'};
- if(delta<=-8)return{label:'Hạ nhanh',delta,direction:'down'};
- if(delta<=-3)return{label:'Đang hạ',delta,direction:'down'};
- return{label:'Ít thay đổi',delta,direction:'flat'};
+ let label='Ít thay đổi',direction='flat';
+ if(delta>=8){label='Tăng nhanh';direction='up';}
+ else if(delta>=3){label='Đang tăng';direction='up';}
+ else if(delta<=-8){label='Hạ nhanh';direction='down';}
+ else if(delta<=-3){label='Đang hạ';direction='down';}
+ return{label,delta,direction,previousScore:round(previous,1),previousSourceTime,comparisonLabel};
 }
 function liveRows(quotes,strategy){
  const sourceTime=quotes.latestSourceTime||quotes.sourceTime||null;
@@ -153,6 +163,82 @@ function componentScores(rows,sectors){
   contagion:{label:'Lan rộng giữa các nhóm ngành',score:round(contagion,1),level:level(contagion),detail:`${stressed}/${sectors.length} nhóm ngành đang có mức căng thẳng từ 60 điểm trở lên.`,stats:{stressedSectors:stressed,highSectors:high,totalSectors:sectors.length}}
  };
 }
+function overallFromComponents(components){
+ const base=Object.entries(WEIGHTS).reduce((sum,[key,w])=>sum+(components[key]?.score||0)*w,0);
+ const highCount=Object.values(components).filter(x=>x.score>=65).length;
+ const amplifier=highCount>=5?10:highCount===4?8:highCount===3?5:0;
+ const total=round(clamp(base+amplifier),1);
+ return{score:total,level:level(total),baseScore:round(base,1),systemWideAdd:amplifier};
+}
+function contributionRows(components,previousPoint){
+ return Object.entries(WEIGHTS).map(([key,weight])=>{
+  const x=components[key],prev=n(previousPoint?.components?.[key]);
+  return{
+   key,label:x?.label||key,score:round(x?.score||0,1),weight:round(weight*100,0),
+   points:round((x?.score||0)*weight,1),
+   change:prev===null?null:round((x?.score||0)-prev,1),
+   pointChange:prev===null?null:round(((x?.score||0)-prev)*weight,1),
+   level:x?.level||level(x?.score||0)
+  };
+ }).sort((a,b)=>b.points-a.points);
+}
+function historicalRow(bars,idx,symbol){
+ if(idx<50)return null;
+ const bar=bars[idx],prev=bars[idx-1];
+ const price=n(bar.close),reference=n(prev.close);
+ if(!price||!reference)return null;
+ const range=(n(bar.high)!==null&&n(bar.low)!==null)?Math.max(0,(n(bar.high)-n(bar.low))/reference*100):0;
+ const atrValues=[];
+ for(let i=Math.max(1,idx-13);i<=idx;i++){
+  const b=bars[i],p=bars[i-1],hi=n(b.high),lo=n(b.low),pc=n(p.close);
+  if(hi===null||lo===null||pc===null)continue;
+  atrValues.push(Math.max(hi-lo,Math.abs(hi-pc),Math.abs(lo-pc)));
+ }
+ const window20=bars.slice(Math.max(0,idx-19),idx+1);
+ const volAvg=avg(window20.map(x=>x.volume));
+ let mfv=0,volSum=0;
+ for(const b of window20){
+  const hi=n(b.high),lo=n(b.low),cl=n(b.close),vol=n(b.volume)||0;
+  if(hi===null||lo===null||cl===null)continue;
+  const mult=hi===lo?0:((cl-lo)-(hi-cl))/(hi-lo);
+  mfv+=mult*vol;volSum+=vol;
+ }
+ return{
+  symbol,price,reference,change:(price/reference-1)*100,volume:n(bar.volume)||0,
+  rangePct:range,atrPct:price>0?avg(atrValues)/price*100:0,
+  volumeRatio:volAvg>0?(n(bar.volume)||0)/volAvg:0,cmf:volSum>0?mfv/volSum:null,
+  sma20:avg(window20.map(x=>x.close)),
+  sma50:avg(bars.slice(idx-49,idx+1).map(x=>x.close))
+ };
+}
+function buildHistoricalBaseline(marketDir,symbols,currentDay){
+ const rows=[];let baselineDate='';
+ for(const symbol of symbols){
+  try{
+   const data=JSON.parse(fs.readFileSync(path.join(marketDir,'history',symbol+'.json'),'utf8'));
+   const bars=Array.isArray(data.bars)?data.bars:[];
+   let idx=-1;
+   for(let i=bars.length-1;i>=0;i--){if(String(bars[i]?.time||'')<String(currentDay)){idx=i;break;}}
+   if(idx<0)continue;
+   const row=historicalRow(bars,idx,symbol);if(!row)continue;
+   rows.push(row);if(!baselineDate||String(bars[idx].time)>baselineDate)baselineDate=String(bars[idx].time);
+  }catch{}
+ }
+ if(rows.length<Math.ceil(Math.max(1,symbols.length)*.85)||!baselineDate)return null;
+ const sameDateRows=rows.filter(r=>{
+  try{
+   const data=JSON.parse(fs.readFileSync(path.join(marketDir,'history',r.symbol+'.json'),'utf8'));
+   return (data.bars||[]).some(b=>String(b.time)===baselineDate);
+  }catch{return false;}
+ });
+ const useRows=sameDateRows.length>=Math.ceil(symbols.length*.80)?sameDateRows:rows;
+ const sectors=sectorRows(useRows),components=componentScores(useRows,sectors),overall=overallFromComponents(components);
+ return{
+  sourceTime:baselineDate+'T07:45:00.000Z',sourceDate:baselineDate,score:overall.score,level:overall.level.key,
+  components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.score])),
+  basis:'previous-session-close',coverage:useRows.length
+ };
+}
 function alertSpec(id,title,component,enter,exit,evidence){
  return{id,title,score:component.score,enter,exit,evidence};
 }
@@ -174,7 +260,14 @@ function buildAlerts(components,overall,previous,sourceTime){
  }
  return alerts.sort((a,b)=>b.score-a.score);
 }
-function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString()){
+function alertHistory(previous,alerts,sourceTime){
+ const history=Array.isArray(previous?.alertHistory)?previous.alertHistory.filter(Boolean):[];
+ const old=new Map((previous?.alerts||[]).map(x=>[x.id,x])),now=new Map(alerts.map(x=>[x.id,x]));
+ for(const a of alerts)if(!old.has(a.id))history.push({id:a.id,title:a.title,type:'Bắt đầu',time:sourceTime,score:a.score,level:a.level});
+ for(const a of previous?.alerts||[])if(!now.has(a.id))history.push({id:a.id,title:a.title,type:'Đã hạ',time:sourceTime,score:a.score,level:level(0)});
+ return history.slice(-60);
+}
+function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString(),baselinePoint=null){
  if(!quotes||quotes.status!=='ok')throw new Error('quotes snapshot is not ok');
  if(!strategy||strategy.status!=='ok')throw new Error('strategy snapshot is not ok');
  const latest=quotes.latestSourceTime||quotes.sourceTime||null;
@@ -182,31 +275,34 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
  const {rows,sourceTime,day}=liveRows(quotes,strategy);
  const expected=Math.max(1,Number(quotes.expected)||Object.keys(quotes.quotes||{}).length);
  if(rows.length<Math.ceil(expected*.90))throw new Error(`risk live coverage below 90%: ${rows.length}/${expected}`);
- const sectors=sectorRows(rows);
- const components=componentScores(rows,sectors);
- const base=Object.entries(WEIGHTS).reduce((sum,[key,w])=>sum+(components[key]?.score||0)*w,0);
- const highCount=Object.values(components).filter(x=>x.score>=65).length;
- const amplifier=highCount>=5?10:highCount===4?8:highCount===3?5:0;
- const total=round(clamp(base+amplifier),1);
- const overall={score:total,level:level(total),baseScore:round(base,1),systemWideAdd:amplifier};
- const oldTimeline=Array.isArray(previous?.timeline)?previous.timeline.filter(x=>x&&x.sourceTime):[];
+ const sectors=sectorRows(rows),components=componentScores(rows,sectors),overall=overallFromComponents(components);
+ let oldTimeline=Array.isArray(previous?.timeline)?previous.timeline.filter(x=>x&&x.sourceTime):[];
+ const hasDifferent=oldTimeline.some(x=>String(x.sourceTime)!==String(sourceTime));
+ if(!hasDifferent&&baselinePoint?.sourceTime&&String(baselinePoint.sourceTime)!==String(sourceTime))oldTimeline=[baselinePoint,...oldTimeline];
  const previousPoint=[...oldTimeline].reverse().find(x=>String(x.sourceTime)!==String(sourceTime))||null;
+ let comparisonLabel='Chưa có mốc dữ liệu trước';
+ if(previousPoint){
+  comparisonLabel=vnDay(previousPoint.sourceTime)===day?'So với mốc '+viTime(previousPoint.sourceTime):'So với cuối phiên '+viDate(previousPoint.sourceTime);
+ }
  const timeline=[...oldTimeline.filter(x=>String(x.sourceTime)!==String(sourceTime)),{
-  sourceTime,score:total,level:overall.level.key,
-  components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.score]))
- }].slice(-96);
+  sourceTime,sourceDate:day,score:overall.score,level:overall.level.key,
+  components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.score])),basis:'live'
+ }].slice(-120);
  const topRisk=rows.map(stockRisk).sort((a,b)=>b.score-a.score||a.symbol.localeCompare(b.symbol)).slice(0,15);
  const alerts=buildAlerts(components,overall,previous,sourceTime);
  const breadthStats=components.breadth.stats;
+ const contributions=contributionRows(components,previousPoint);
+ const tr=trend(overall.score,previousPoint?.score,comparisonLabel,previousPoint?.sourceTime||null);
  return{
   version:VERSION,methodVersion:METHOD_VERSION,status:'ok',generatedAt,sourceTime,sourceDate:day,
   coverage:{quotes:rows.length,expected,strategyLive:rows.length,sectors:sectors.length},
-  overall,trend:trend(total,previousPoint?.score),components,sectors,alerts,topRisk,timeline,
+  overall,trend:tr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
   marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
   methodology:{
    weights:WEIGHTS,
    description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
    scope:'HOSE Core + Liquid có dữ liệu trực tiếp',
+   comparison:'Mốc so sánh ưu tiên lần cập nhật liền trước. Khi chưa có lịch sử trong ngày, FinQuery dùng điểm cuối phiên giao dịch trước được dựng lại từ dữ liệu ngày.',
    alertRule:'Cảnh báo chỉ bật khi vượt ngưỡng vào và chỉ tắt khi hạ xuống dưới ngưỡng thoát để tránh đổi màu liên tục quanh một mốc.'
   }
  };
@@ -215,10 +311,21 @@ function main(){
  const out=path.resolve(process.argv[2]||'');
  if(!process.argv[2])throw new Error('Usage: node build_risk_monitor.cjs <market-dir>');
  const read=name=>JSON.parse(fs.readFileSync(path.join(out,name),'utf8'));
+ const quotes=read('quotes.json'),strategy=read('strategy-indicators.json');
  let previous=null;try{previous=read('risk-monitor.json');}catch{}
- const snapshot=buildRiskSnapshot(read('quotes.json'),read('strategy-indicators.json'),previous);
+ const latest=quotes.latestSourceTime||quotes.sourceTime||null,day=vnDay(latest);
+ const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel');
+ if(reusable){
+  console.log(JSON.stringify({status:previous.status,score:previous.overall?.score,level:previous.overall?.level?.label,coverage:previous.coverage,sourceTime:previous.sourceTime,trend:previous.trend,alerts:(previous.alerts||[]).length,timeline:(previous.timeline||[]).length,reused:true}));
+  return;
+ }
+ const oldTimeline=Array.isArray(previous?.timeline)?previous.timeline:[];
+ const needsBaseline=!oldTimeline.some(x=>x?.sourceTime&&String(x.sourceTime)!==String(latest));
+ const symbols=Object.entries(quotes.quotes||{}).filter(([,q])=>q?.status!=='retained').map(([s])=>s);
+ const baseline=needsBaseline?buildHistoricalBaseline(out,symbols,day):null;
+ const snapshot=buildRiskSnapshot(quotes,strategy,previous,new Date().toISOString(),baseline);
  fs.writeFileSync(path.join(out,'risk-monitor.json'),JSON.stringify(snapshot));
- console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,alerts:snapshot.alerts.length}));
+ console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,trend:snapshot.trend,alerts:snapshot.alerts.length,timeline:snapshot.timeline.length}));
 }
 if(require.main===module)main();
-module.exports={buildRiskSnapshot,componentScores,stockRisk,sectorRows,level,trend,scale,median,WEIGHTS,SECTORS};
+module.exports={buildRiskSnapshot,buildHistoricalBaseline,componentScores,stockRisk,sectorRows,level,trend,scale,median,overallFromComponents,contributionRows,WEIGHTS,SECTORS};
