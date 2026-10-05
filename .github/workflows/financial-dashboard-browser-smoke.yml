@@ -350,11 +350,15 @@ jobs:
                   raise AssertionError(f'Fund holdings chart is incomplete: {risk_snapshot}')
               if risk_snapshot.get('sectorCalibration')!='ok' or int(risk_snapshot.get('heatCells') or 0)<1:
                   raise AssertionError(f'Calibrated sector heatmap is incomplete: {risk_snapshot}')
+              info_text=driver.execute_script("const b=document.querySelector('[data-info-key=\"risk-score\"]'); if(b)b.click(); return document.getElementById('term-info-body')?.innerText||'';")
+              if '0–34,9' not in info_text or '80–100' not in info_text:
+                  raise AssertionError(f'Risk score help is incomplete: {info_text}')
+              driver.execute_script("document.getElementById('term-info-close')?.click();")
               detail_check=driver.execute_script("const f=document.querySelector('#risk-fund-chart .risk-fund-bar'); const s=document.querySelector('#risk-sectors .risk-sector-heat-cell'); if(f)f.click(); if(s)s.click(); return {fund:document.getElementById('risk-fund-detail')?.hidden===false,sector:document.getElementById('risk-sector-detail')?.hidden===false};")
               if not detail_check.get('fund') or not detail_check.get('sector'):
                   raise AssertionError(f'Risk chart drilldown failed: {detail_check}')
               lowered_risk_text=str(risk_snapshot.get('text') or '').lower()
-              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress','không nhấp nháy','nhấn nhẹ một lần']:
+              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress','không nhấp nháy','nhấn nhẹ một lần','heatmap cảnh báo trạng thái căng thẳng hiện tại','màu của cột chỉ phản ánh','hysteresis',' oos','ngoài mẫu','fold']:
                   if forbidden in lowered_risk_text:
                       raise AssertionError(f'Risk monitor exposed unexplained English jargon {forbidden!r}')
               driver.execute_script("window.FinRiskMonitor.close();")
