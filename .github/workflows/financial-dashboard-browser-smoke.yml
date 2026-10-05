@@ -295,7 +295,8 @@ jobs:
                   Object.keys(r.components||{}).length===5 &&
                   Array.isArray(r.contributions) && r.contributions.length===5 &&
                   Array.isArray(r.timeline) && r.timeline.length>=2 &&
-                  Number.isFinite(Number(r.trend?.previousScore))
+                  Number.isFinite(Number(r.trend?.previousScore)) &&
+                  r.fundMonitor?.status==='ok' && Number(r.fundMonitor?.symbols||0)>0
                 );
               """))
               risk_snapshot=driver.execute_script("""
@@ -314,6 +315,12 @@ jobs:
                   sectors:(r.sectors||[]).length,
                   alerts:(r.alerts||[]).length,
                   topRisk:(r.topRisk||[]).length,
+                  fundStatus:r.fundMonitor?.status,
+                  fundSymbols:r.fundMonitor?.symbols,
+                  fundChanges:r.fundMonitor?.materialChanges,
+                  fundRows:document.querySelectorAll('#risk-fund-rows tr:not(.risk-fund-detail-row)').length,
+                  fundSummary:document.querySelectorAll('#risk-fund-summary > div').length,
+                  scoreText:(document.getElementById('risk-score')?.textContent||'').trim(),
                   rows:document.querySelectorAll('#risk-stock-rows tr').length,
                   contributionRows:document.querySelectorAll('#risk-contributions .risk-contribution-row').length,
                   breadthParts:document.querySelectorAll('#risk-breadth-strip span').length,
@@ -334,8 +341,12 @@ jobs:
                   raise AssertionError(f'Risk breadth/sector dashboard is incomplete: {risk_snapshot}')
               if not risk_snapshot.get('trendText') or 'Đang tìm' in risk_snapshot.get('trendText',''):
                   raise AssertionError(f'Risk trend card is not usable: {risk_snapshot}')
+              if '/ 100' not in str(risk_snapshot.get('scoreText') or ''):
+                  raise AssertionError(f'Risk score has no denominator: {risk_snapshot}')
+              if risk_snapshot.get('fundStatus')!='ok' or int(risk_snapshot.get('fundSymbols') or 0)<1 or int(risk_snapshot.get('fundRows') or 0)<1 or int(risk_snapshot.get('fundSummary') or 0)!=4:
+                  raise AssertionError(f'Fund holdings panel is incomplete: {risk_snapshot}')
               lowered_risk_text=str(risk_snapshot.get('text') or '').lower()
-              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress']:
+              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress','không nhấp nháy','nhấn nhẹ một lần']:
                   if forbidden in lowered_risk_text:
                       raise AssertionError(f'Risk monitor exposed unexplained English jargon {forbidden!r}')
               driver.execute_script("window.FinRiskMonitor.close();")
