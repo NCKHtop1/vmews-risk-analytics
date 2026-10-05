@@ -94,6 +94,7 @@ jobs:
                   window.FinancialReportContext &&
                   window.FinTechnicalScanner &&
                   window.FinStrategyBuilder &&
+                  window.FinRiskMonitor &&
                   window.FinSectionCollapse &&
                   window.FinMacro
                 );
@@ -283,6 +284,43 @@ jobs:
                       raise AssertionError(f'Strategy snapshot is not aligned with quote snapshot: {snapshot}')
                   if watch.get('error') or str(watch.get('sourceTime') or '')!=str(bundle_source):
                       raise AssertionError(f'Today-watch is not aligned with quote snapshot: watch={watch} snapshot={snapshot}')
+              driver.execute_script("window.FinRiskMonitor.open();")
+              wait.until(lambda d:d.execute_script("""
+                const r=window.FinRiskMonitor?.context?.();
+                return Boolean(
+                  document.getElementById('risk-monitor')?.hidden===false &&
+                  document.querySelector('.workspace')?.hidden===true &&
+                  r && r.status==='ok' && Number.isFinite(Number(r.overall?.score)) &&
+                  Number(r.coverage?.quotes||0)>=100 &&
+                  Object.keys(r.components||{}).length===5
+                );
+              """))
+              risk_snapshot=driver.execute_script("""
+                const r=window.FinRiskMonitor.context();
+                return {
+                  score:r.overall?.score,
+                  level:r.overall?.level?.label,
+                  sourceTime:r.sourceTime,
+                  coverage:r.coverage?.quotes,
+                  components:Object.keys(r.components||{}).length,
+                  sectors:(r.sectors||[]).length,
+                  alerts:(r.alerts||[]).length,
+                  topRisk:(r.topRisk||[]).length,
+                  rows:document.querySelectorAll('#risk-stock-rows tr').length,
+                  text:(document.getElementById('risk-monitor')?.innerText||'')
+                };
+              """)
+              if str(risk_snapshot.get('sourceTime') or '')!=str(snapshot.get('quoteBundleSourceTime') or ''):
+                  raise AssertionError(f'Risk monitor is not aligned with quote snapshot: risk={risk_snapshot} snapshot={snapshot}')
+              if int(risk_snapshot.get('rows') or 0)<5 or int(risk_snapshot.get('sectors') or 0)<3:
+                  raise AssertionError(f'Risk monitor dashboard is incomplete: {risk_snapshot}')
+              lowered_risk_text=str(risk_snapshot.get('text') or '').lower()
+              for forbidden in ['risk monitor','market stress','alert engine','contagion','liquidity stress','volatility stress']:
+                  if forbidden in lowered_risk_text:
+                      raise AssertionError(f'Risk monitor exposed unexplained English jargon {forbidden!r}')
+              driver.execute_script("window.FinRiskMonitor.close();")
+              wait.until(lambda d:d.execute_script("return document.getElementById('risk-monitor')?.hidden===true && document.querySelector('.workspace')?.hidden===false;"))
+
               checked=snapshot.get('newsCheckedAt')
               if not checked:
                   raise AssertionError(f'News freshness missing: {snapshot}')
@@ -292,7 +330,7 @@ jobs:
                   raise AssertionError(f'News is stale in production UI: {news_age:.1f} minutes; fallback={snapshot.get("newsLiveFallback")}')
               if int(snapshot.get('newsCount') or 0)<1:
                   raise AssertionError(f'Production UI has no usable news: {snapshot}')
-              print('BROWSER SMOKE PASS',{'ai':results,'newsAgeMin':round(news_age,1),'snapshot':snapshot})
+              print('BROWSER SMOKE PASS',{'ai':results,'newsAgeMin':round(news_age,1),'risk':{k:v for k,v in risk_snapshot.items() if k!='text'},'snapshot':snapshot})
           finally:
               driver.quit()
           PY
