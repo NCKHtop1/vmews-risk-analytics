@@ -56,6 +56,8 @@ jobs:
         run: python financial-report/scripts/build_technical_evidence.py --output _market-data/market
       - name: Generate strategy indicator snapshot
         run: node financial-report/scripts/build_strategy_snapshot.cjs _market-data/market
+      - name: Generate market risk snapshot
+        run: node financial-report/scripts/build_risk_monitor.cjs _market-data/market
       - name: Validate main and market HOSE universe consistency
         run: |
           python - <<'PY'
@@ -66,6 +68,7 @@ jobs:
           quotes=json.loads(Path('_market-data/market/quotes.json').read_text())
           scanner=json.loads(Path('_market-data/market/technical-signals.json').read_text())
           strategy=json.loads(Path('_market-data/market/strategy-indicators.json').read_text())
+          risk=json.loads(Path('_market-data/market/risk-monitor.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -78,7 +81,11 @@ jobs:
           assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
           assert int(scanner.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(scanner.get('coverage'),scanner.get('universe'))
           assert int(strategy.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(strategy.get('coverage'),scanner.get('universe'))
-          print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage')})
+          assert risk.get('status')=='ok',risk
+          assert str(risk.get('sourceTime') or '')==str(quotes.get('latestSourceTime') or ''),(risk.get('sourceTime'),quotes.get('latestSourceTime'))
+          assert int((risk.get('coverage') or {}).get('quotes') or 0)>=int(quotes.get('expected') or 0)*.90,risk.get('coverage')
+          assert 0<=float((risk.get('overall') or {}).get('score'))<=100,risk.get('overall')
+          print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
           PY
       - name: Build site with same-origin financial and market data
         shell: bash
@@ -148,6 +155,7 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/news.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/strategy.json
+          curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
           curl -fsSL --max-time 20 "$BASE/market/watch-today.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/watch.json
           curl -fsSL --max-time 20 "$BASE/market/universe.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/universe.json
           curl -fsSL --max-time 20 "$BASE/market/company-esg.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/esg.json
@@ -159,7 +167,7 @@ jobs:
           def load(name):
               return json.load(open('/tmp/'+name,encoding='utf-8'))
           import math
-          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); watch=load('watch.json'); u=load('universe.json')
+          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
           q_expected=max(1,int(q.get('expected') or 0)); q_required=max(1,math.ceil(q_expected*.90))
           s_universe=max(1,int(s.get('universe') or 0)); s_required=max(1,math.ceil(s_universe*.90))
@@ -174,6 +182,9 @@ jobs:
           assert strategy.get('status')=='ok' and int(strategy.get('coverage') or 0)>=s_required,(strategy.get('coverage'),s_universe)
           assert str(strategy.get('sourceTime') or '')==latest,(strategy.get('sourceTime'),latest)
           assert watch.get('status')=='ok' and str(watch.get('sourceTime') or '')==latest,(watch.get('sourceTime'),latest)
+          assert risk.get('status')=='ok' and str(risk.get('sourceTime') or '')==latest,(risk.get('sourceTime'),latest)
+          assert int((risk.get('coverage') or {}).get('quotes') or 0)>=q_required,risk.get('coverage')
+          assert 0<=float((risk.get('overall') or {}).get('score'))<=100,risk.get('overall')
           vn_day=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7))).date().isoformat()
           live_symbols={str(k).upper() for k,v in (q.get('quotes') or {}).items() if v.get('status')!='retained'}
           live_required=max(1,math.ceil(len(live_symbols)*.90))
@@ -191,5 +202,5 @@ jobs:
           # seconds/minutes behind the continuously updated financial-market-data
           # branch while a new deployment is propagating. Live-session freshness is
           # enforced by the realtime publisher/guard and production browser smoke.
-          print({'deployment':d,'quotes':q.get('coverage'),'scanner':s.get('coverage'),'strategy':strategy.get('coverage'),'scannerToday':scanner_today,'strategyToday':strategy_today,'watch':len(watch.get('items') or []),'financial':cov,'researchUniverse':i.get('symbolsTotal')})
+          print({'deployment':d,'quotes':q.get('coverage'),'scanner':s.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score'),'scannerToday':scanner_today,'strategyToday':strategy_today,'watch':len(watch.get('items') or []),'financial':cov,'researchUniverse':i.get('symbolsTotal')})
           PY
