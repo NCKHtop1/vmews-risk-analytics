@@ -1,6 +1,6 @@
 (function(){'use strict';
 const $=id=>document.getElementById(id);
-const state={data:null,loading:false,error:''};
+const state={data:null,loading:false,error:'',alertIds:null};
 const COMPONENT_ORDER=['breadth','volatility','liquidity','concentration','contagion'];
 const fmt=(v,d=1)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -9,9 +9,13 @@ function time(value){
  const t=Date.parse(value||'');if(!Number.isFinite(t))return'—';
  return new Date(t).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 }
-function shortTime(value){
+function shortTime(value,withDate=false){
  const t=Date.parse(value||'');if(!Number.isFinite(t))return'';
- return new Date(t).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'});
+ return new Date(t).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:withDate?'2-digit':undefined,month:withDate?'2-digit':undefined,hour:'2-digit',minute:'2-digit'});
+}
+function dayKey(value){
+ const t=Date.parse(value||'');if(!Number.isFinite(t))return'';
+ return new Date(t).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});
 }
 function levelBadge(lvl){
  const x=lvl||{label:'—',tone:'green'};
@@ -30,9 +34,15 @@ function renderTop(){
  $('risk-score').textContent=fmt(d.overall?.score,1);
  $('risk-level').innerHTML=levelBadge(d.overall?.level);
  $('risk-summary').textContent=summaryText(d.overall?.score);
- const tr=d.trend||{};
- $('risk-trend').textContent=tr.label||'Chưa đủ mốc so sánh';
- $('risk-trend-delta').textContent=tr.delta==null?'Sẽ rõ hơn sau các lần cập nhật tiếp theo':((tr.delta>0?'+':'')+fmt(tr.delta,1)+' điểm so với mốc trước');
+ const tr=d.trend||{},trend=$('risk-trend'),detail=$('risk-trend-delta');
+ if(tr.delta==null){
+  trend.textContent=tr.label||'Mới bắt đầu ghi nhận';
+  detail.textContent=tr.comparisonLabel||'Chưa có mốc dữ liệu trước.';
+ }else{
+  const sign=Number(tr.delta)>0?'+':'';
+  trend.textContent=(tr.label||'Ít thay đổi')+' · '+sign+fmt(tr.delta,1)+' điểm';
+  detail.textContent=fmt(d.overall?.score,1)+' hiện tại · '+fmt(tr.previousScore,1)+' ở mốc trước · '+(tr.comparisonLabel||'so với mốc trước');
+ }
  const cov=d.coverage||{};
  $('risk-coverage').textContent=fmt(cov.quotes,0)+' / '+fmt(cov.expected,0)+' mã';
  $('risk-coverage-note').textContent='Phạm vi trực tiếp: HOSE Core + Liquid · '+fmt(cov.sectors,0)+' nhóm ngành đủ dữ liệu';
@@ -41,6 +51,16 @@ function renderTop(){
  const status=$('risk-source-status');
  if(status)status.textContent=aligned&&String(aligned)!==String(d.sourceTime)?'Đang chờ đồng bộ mốc dữ liệu mới':'Đã đồng bộ với dữ liệu thị trường';
 }
+function renderDriverChange(){
+ const el=$('risk-driver-change');if(!el)return;
+ const rows=(state.data?.contributions||[]).filter(x=>Number.isFinite(Number(x.change)));
+ if(!rows.length){el.textContent='Chưa đủ mốc để so sánh từng nguyên nhân';return;}
+ const up=[...rows].sort((a,b)=>(Number(b.pointChange)||0)-(Number(a.pointChange)||0))[0];
+ const down=[...rows].sort((a,b)=>(Number(a.pointChange)||0)-(Number(b.pointChange)||0))[0];
+ if((Number(up?.pointChange)||0)>0.2)el.textContent='Tăng mạnh nhất: '+up.label+' +'+fmt(up.pointChange,1)+' điểm';
+ else if((Number(down?.pointChange)||0)<-0.2)el.textContent='Hạ mạnh nhất: '+down.label+' '+fmt(down.pointChange,1)+' điểm';
+ else el.textContent='Các nguyên nhân thay đổi không đáng kể so với mốc trước';
+}
 function renderComponents(){
  const d=state.data,host=$('risk-components');if(!d||!host)return;
  host.innerHTML=COMPONENT_ORDER.map(key=>{
@@ -48,46 +68,70 @@ function renderComponents(){
   return '<article class="risk-component-card"><div class="risk-component-head"><span>'+esc(x.label)+'</span>'+levelBadge(x.level)+'</div><strong>'+fmt(x.score,1)+'</strong><div class="risk-meter"><span class="risk-meter-fill risk-'+tone(x.level?.tone)+'" style="width:'+Math.max(0,Math.min(100,Number(x.score)||0))+'%"></span></div><p>'+esc(x.detail)+'</p></article>';
  }).join('');
 }
+function renderContributions(){
+ const host=$('risk-contributions'),rows=state.data?.contributions||[];if(!host)return;
+ if(!rows.length){host.innerHTML='<p class="risk-empty">Chưa có dữ liệu đóng góp.</p>';return;}
+ host.innerHTML=rows.map(x=>{
+  const delta=Number.isFinite(Number(x.pointChange))?((Number(x.pointChange)>0?'+':'')+fmt(x.pointChange,1)+' điểm so với mốc trước'):'Chưa có mốc so sánh';
+  return '<div class="risk-contribution-row"><div class="risk-contribution-label"><strong>'+esc(x.label)+'</strong><small>Trọng số '+fmt(x.weight,0)+'% · '+esc(delta)+'</small></div><div class="risk-contribution-value"><div class="risk-contribution-track"><span class="risk-'+tone(x.level?.tone)+'" style="width:'+Math.max(2,Math.min(100,Number(x.score)||0))+'%"></span></div><b>'+fmt(x.points,1)+' điểm</b></div></div>';
+ }).join('')+(Number(state.data?.overall?.systemWideAdd||0)>0?'<div class="risk-system-add"><span>Phần cộng thêm do nhiều nhóm cùng căng thẳng</span><strong>+'+fmt(state.data.overall.systemWideAdd,1)+' điểm</strong></div>':'');
+}
 function renderTimeline(){
  const d=state.data,host=$('risk-timeline');if(!d||!host)return;
- const rows=(d.timeline||[]).slice(-24);
+ const rows=(d.timeline||[]).slice(-30);
  if(!rows.length){host.innerHTML='<p class="risk-empty">Chưa có mốc dữ liệu để vẽ diễn biến.</p>';return;}
- const W=760,H=230,L=46,R=18,T=16,B=34,innerW=W-L-R,innerH=H-T-B;
+ const W=780,H=250,L=48,R=22,T=18,B=42,innerW=W-L-R,innerH=H-T-B;
  const x=i=>L+(rows.length<=1?innerW/2:i/(rows.length-1)*innerW);
  const y=v=>T+(100-Math.max(0,Math.min(100,Number(v)||0)))/100*innerH;
  const pts=rows.map((r,i)=>x(i).toFixed(1)+','+y(r.score).toFixed(1)).join(' ');
- const grids=[0,25,50,75,100].map(v=>'<g><line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(L-10)+'" y="'+(y(v)+4)+'" text-anchor="end">'+v+'</text></g>').join('');
- const labels=rows.map((r,i)=>{if(rows.length>8&&i%Math.ceil(rows.length/6)!==0&&i!==rows.length-1)return'';return'<text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle">'+esc(shortTime(r.sourceTime))+'</text>';}).join('');
+ const grids=[0,25,35,50,65,80,100].map(v=>'<g><line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(L-10)+'" y="'+(y(v)+4)+'" text-anchor="end">'+v+'</text></g>').join('');
+ const multipleDays=new Set(rows.map(r=>dayKey(r.sourceTime))).size>1;
+ const step=Math.max(1,Math.ceil(rows.length/6));
+ const labels=rows.map((r,i)=>{if(i%step!==0&&i!==rows.length-1)return'';return'<text x="'+x(i)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(shortTime(r.sourceTime,multipleDays))+'</text>';}).join('');
  const dots=rows.map((r,i)=>{const lv=Number(r.score)>=65?'red':Number(r.score)>=35?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
- host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diễn biến điểm rủi ro thị trường"><g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+'<g class="risk-axis-labels">'+labels+'</g></svg>';
+ const zones='<rect class="risk-zone risk-zone-red" x="'+L+'" y="'+y(100)+'" width="'+innerW+'" height="'+(y(65)-y(100))+'"/><rect class="risk-zone risk-zone-yellow" x="'+L+'" y="'+y(65)+'" width="'+innerW+'" height="'+(y(35)-y(65))+'"/><rect class="risk-zone risk-zone-green" x="'+L+'" y="'+y(35)+'" width="'+innerW+'" height="'+(y(0)-y(35))+'"/>';
+ const current=rows[rows.length-1];
+ const currentLabel='<text class="risk-current-label" x="'+Math.min(W-R-4,x(rows.length-1)+8)+'" y="'+Math.max(T+12,y(current.score)-9)+'">'+fmt(current.score,1)+'</text>';
+ host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
 }
 function renderSectors(){
  const d=state.data,host=$('risk-sectors');if(!d||!host)return;
  const rows=(d.sectors||[]).slice(0,14);
- host.innerHTML=rows.map(x=>'<div class="risk-sector-row"><div><strong>'+esc(x.label)+'</strong><small>'+fmt(x.declinePct,1)+'% mã giảm · thay đổi trung vị '+(Number(x.medianChangePct)>0?'+':'')+fmt(x.medianChangePct,2)+'%</small></div><div class="risk-sector-score"><span class="risk-bar"><i class="risk-'+tone(x.level?.tone)+'" style="width:'+Math.max(0,Math.min(100,Number(x.score)||0))+'%"></i></span><b>'+fmt(x.score,1)+'</b></div></div>').join('')||'<p class="risk-empty">Chưa đủ dữ liệu nhóm ngành.</p>';
+ host.innerHTML=rows.map(x=>'<article class="risk-sector-tile risk-sector-'+tone(x.level?.tone)+'"><div class="risk-sector-tile-head"><strong>'+esc(x.label)+'</strong><b>'+fmt(x.score,1)+'</b></div><div class="risk-sector-tile-bar"><span style="width:'+Math.max(0,Math.min(100,Number(x.score)||0))+'%"></span></div><small>'+fmt(x.declinePct,1)+'% mã giảm · thay đổi trung vị '+(Number(x.medianChangePct)>0?'+':'')+fmt(x.medianChangePct,2)+'%</small></article>').join('')||'<p class="risk-empty">Chưa đủ dữ liệu nhóm ngành.</p>';
 }
 function renderAlerts(){
- const d=state.data,host=$('risk-alerts');if(!d||!host)return;
- const rows=d.alerts||[];
- host.innerHTML=rows.length?rows.map(x=>'<article class="risk-alert risk-'+tone(x.level?.tone)+'"><div class="risk-alert-title"><span class="risk-dot" aria-hidden="true"></span><strong>'+esc(x.title)+'</strong><b>'+fmt(x.score,1)+'</b></div><p>'+esc(x.evidence)+'</p><small>Bắt đầu '+time(x.startedAt)+' · cập nhật '+time(x.lastSeen)+'</small></article>').join(''):'<p class="risk-empty risk-empty-good">Chưa có cảnh báo đáng kể ở thời điểm này.</p>';
+ const d=state.data,host=$('risk-alerts'),history=$('risk-alert-history');if(!d||!host)return;
+ const rows=d.alerts||[],ids=new Set(rows.map(x=>x.id));
+ const canMark=state.alertIds instanceof Set;
+ host.innerHTML=rows.length?rows.map(x=>{
+  const isNew=canMark&&!state.alertIds.has(x.id);
+  return '<article class="risk-alert risk-'+tone(x.level?.tone)+(isNew?' risk-alert-new':'')+'"><div class="risk-alert-title"><span class="risk-dot" aria-hidden="true"></span><strong>'+esc(x.title)+'</strong><b>'+fmt(x.score,1)+'</b></div><p>'+esc(x.evidence)+'</p><small>Bắt đầu '+time(x.startedAt)+' · cập nhật '+time(x.lastSeen)+'</small></article>';
+ }).join(''):'<p class="risk-empty risk-empty-good">Chưa có cảnh báo đáng kể ở thời điểm này.</p>';
+ state.alertIds=ids;
+ if(history){
+  const events=(d.alertHistory||[]).slice(-6).reverse();
+  history.innerHTML=events.length?'<h4>Lịch sử gần đây</h4>'+events.map(x=>'<div><span>'+time(x.time)+'</span><strong>'+esc(x.title)+'</strong><small>'+esc(x.type)+'</small></div>').join(''):'';
+ }
 }
 function renderTopStocks(){
  const d=state.data,body=$('risk-stock-rows');if(!d||!body)return;
  body.innerHTML=(d.topRisk||[]).slice(0,12).map(x=>'<tr><th><button type="button" data-risk-symbol="'+esc(x.symbol)+'">'+esc(x.symbol)+'</button></th><td>'+fmt(x.score,1)+'</td><td class="'+(Number(x.changePct)<0?'price-down':Number(x.changePct)>0?'price-up':'price-flat')+'">'+(Number(x.changePct)>0?'+':'')+fmt(x.changePct,2)+'%</td><td>'+fmt(x.volumeRatio,2)+' lần</td><td>'+fmt(x.rangePct,2)+'%</td><td>'+esc((x.reasons||[]).join(' · ')||'Chưa có dấu hiệu nổi bật')+'</td></tr>').join('');
 }
 function renderBreadth(){
- const d=state.data,box=$('risk-market-counts');if(!d||!box)return;
- const c=d.marketCounts||{};
- box.innerHTML='<div><span>Tăng</span><strong>'+fmt(c.advancing,0)+'</strong></div><div><span>Giảm</span><strong>'+fmt(c.declining,0)+'</strong></div><div><span>Đứng giá</span><strong>'+fmt(c.unchanged,0)+'</strong></div><div><span>Thay đổi trung vị</span><strong class="'+(Number(c.medianChangePct)<0?'price-down':Number(c.medianChangePct)>0?'price-up':'')+'">'+(Number(c.medianChangePct)>0?'+':'')+fmt(c.medianChangePct,2)+'%</strong></div>';
+ const d=state.data,box=$('risk-market-counts'),strip=$('risk-breadth-strip');if(!d||!box)return;
+ const c=d.marketCounts||{},up=Number(c.advancing)||0,down=Number(c.declining)||0,flat=Number(c.unchanged)||0,total=Math.max(1,up+down+flat);
+ if(strip)strip.innerHTML='<span class="risk-breadth-up" style="width:'+(up/total*100).toFixed(2)+'%"></span><span class="risk-breadth-flat" style="width:'+(flat/total*100).toFixed(2)+'%"></span><span class="risk-breadth-down" style="width:'+(down/total*100).toFixed(2)+'%"></span>';
+ box.innerHTML='<div><span>Tăng</span><strong>'+fmt(up,0)+'</strong><small>'+fmt(up/total*100,1)+'%</small></div><div><span>Giảm</span><strong>'+fmt(down,0)+'</strong><small>'+fmt(down/total*100,1)+'%</small></div><div><span>Đứng giá</span><strong>'+fmt(flat,0)+'</strong><small>'+fmt(flat/total*100,1)+'%</small></div><div><span>Thay đổi trung vị</span><strong class="'+(Number(c.medianChangePct)<0?'price-down':Number(c.medianChangePct)>0?'price-up':'')+'">'+(Number(c.medianChangePct)>0?'+':'')+fmt(c.medianChangePct,2)+'%</strong><small>Toàn phạm vi trực tiếp</small></div>';
 }
 function renderMethod(){
  const d=state.data;if(!d)return;
  const el=$('risk-method-note');if(el)el.textContent=d.methodology?.description||'';
+ const cmp=$('risk-comparison-note');if(cmp)cmp.textContent=d.methodology?.comparison||'';
  const el2=$('risk-alert-rule');if(el2)el2.textContent=d.methodology?.alertRule||'';
 }
 function render(){
  if(!state.data)return;
- renderTop();renderComponents();renderTimeline();renderSectors();renderAlerts();renderTopStocks();renderBreadth();renderMethod();
+ renderTop();renderDriverChange();renderComponents();renderContributions();renderTimeline();renderSectors();renderAlerts();renderTopStocks();renderBreadth();renderMethod();
  const err=$('risk-error');if(err){err.hidden=true;err.textContent='';}
 }
 async function refresh(){
