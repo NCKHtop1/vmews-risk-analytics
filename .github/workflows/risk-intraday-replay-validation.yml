@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install Python test dependencies
-        run: pip install -q pandas numpy openpyxl
+        run: pip install -q pandas numpy openpyxl pandas-ta-classic
 
       - name: Run focused collector and risk tests
         run: |
