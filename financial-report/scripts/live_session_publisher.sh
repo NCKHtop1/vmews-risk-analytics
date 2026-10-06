@@ -18,7 +18,7 @@ vn_minutes() {
 
 session_end_minutes() {
   local now_min="$1"
-  if [ "$now_min" -ge 540 ] && [ "$now_min" -le 700 ]; then
+  if [ "$now_min" -ge 535 ] && [ "$now_min" -le 700 ]; then
     echo 700
     return 0
   fi
@@ -253,6 +253,12 @@ elif [ "$FORCE_ONESHOT" = "1" ]; then
 else
   echo "Outside Vietnam live/close-catch window; nothing to publish."
   exit 0
+fi
+
+if [ "$FORCE_ONESHOT" != "1" ] && [ "$now_min" -ge 535 ] && [ "$now_min" -lt 540 ]; then
+  wait_seconds=$(((540 - now_min) * 60))
+  echo "Pre-warm ready; waiting ${wait_seconds}s for Vietnam market open."
+  sleep "$wait_seconds"
 fi
 
 setup_market_worktree
