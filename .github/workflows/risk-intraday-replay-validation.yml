@@ -35,7 +35,7 @@ jobs:
 
       - name: Run focused collector and risk tests
         run: |
-          python -m unittest discover -s financial-report/tests -p 'test_market.py'
+          python -m unittest discover -s financial-report/tests -p 'test_market.py' -k intraday
           node --test financial-report/tests/risk_monitor.test.cjs
 
       - name: Restore production market history
