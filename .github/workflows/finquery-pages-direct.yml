@@ -1,0 +1,249 @@
+name: FinQuery One-Off Pages Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finquery-pages-direct.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  # Failed workflow_run events use a separate group, so a skipped failure-triggered
+  # Pages run can never cancel a valid deployment started by a successful refresh.
+  group: pages-finquery-one-off
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Verify report-to-forecast navigation and quote loading
+        run: node scripts/forecast-navigation-test.cjs
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-report-data
+          path: _financial-data
+          sparse-checkout: data
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-insights-data
+          path: _insight-data
+          sparse-checkout: data
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-market-data
+          path: _market-data
+          sparse-checkout: market
+      - name: Rebuild Technical Scanner from the published market snapshot
+        run: python financial-report/scripts/refresh_market.py --output _market-data/market --mode scanner
+      - name: Bootstrap Technical Scanner evidence from completed EOD history
+        run: python financial-report/scripts/build_technical_evidence.py --output _market-data/market
+      - name: Generate strategy indicator snapshot
+        run: node financial-report/scripts/build_strategy_snapshot.cjs _market-data/market
+      - name: Calibrate sector risk thresholds
+        run: node financial-report/scripts/build_sector_risk_calibration.cjs _market-data/market
+      - name: Calibrate and backtest market risk
+        run: node financial-report/scripts/build_market_risk_calibration.cjs _market-data/market
+      - name: Generate market risk snapshot
+        run: node financial-report/scripts/build_risk_monitor.cjs _market-data/market
+      - name: Validate main and market HOSE universe consistency
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          main=json.loads(Path('financial-report/data/universe.json').read_text())
+          market=json.loads(Path('_market-data/market/universe.json').read_text())
+          quotes=json.loads(Path('_market-data/market/quotes.json').read_text())
+          scanner=json.loads(Path('_market-data/market/technical-signals.json').read_text())
+          strategy=json.loads(Path('_market-data/market/strategy-indicators.json').read_text())
+          risk=json.loads(Path('_market-data/market/risk-monitor.json').read_text())
+          market_cal=json.loads(Path('_market-data/market/market-risk-calibration.json').read_text())
+          mc=main.get('counts') or {}
+          bc=market.get('counts') or {}
+          assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
+          assert main.get('asOf')==market.get('asOf'),(main.get('asOf'),market.get('asOf'))
+          assert list(main.get('liveMarketSymbols') or [])==list(market.get('liveMarketSymbols') or []),'live universe mismatch'
+          for key in ('core','liquid','discovery','liveMarket','scannerEligible','forecastEligible','discoveryTechnical'):
+              assert int(mc.get(key) or 0)==int(bc.get(key) or 0),(key,mc.get(key),bc.get(key))
+          assert int(quotes.get('expected') or 0)==int(bc.get('liveMarket') or 0),(quotes.get('expected'),bc.get('liveMarket'))
+          assert int(quotes.get('coverage') or 0)>=int(quotes.get('expected') or 0)*.90,(quotes.get('coverage'),quotes.get('expected'))
+          assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
+          assert int(scanner.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(scanner.get('coverage'),scanner.get('universe'))
+          assert int(scanner.get('refreshEveryMinutes') or 0)==5,scanner.get('refreshEveryMinutes')
+          scanner_live=[x for x in (scanner.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
+          scanner_comparators=[x for x in scanner_live if isinstance(x.get('macdHistogram'),(int,float)) and isinstance(x.get('previousMacdHistogram'),(int,float)) and abs(float(x.get('macdHistogram'))-float(x.get('previousMacdHistogram')))>1e-9]
+          assert len(scanner_live)<50 or len(scanner_comparators)>=5,(len(scanner_live),len(scanner_comparators))
+          assert int(strategy.get('coverage') or 0)>=int(scanner.get('universe') or 0)*.90,(strategy.get('coverage'),scanner.get('universe'))
+          strategy_live=[x for x in (strategy.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
+          strategy_comparators=[x for x in strategy_live if isinstance((x.get('current') or {}).get('macdHistogram'),(int,float)) and isinstance((x.get('previous') or {}).get('macdHistogram'),(int,float)) and abs(float((x.get('current') or {}).get('macdHistogram'))-float((x.get('previous') or {}).get('macdHistogram')))>1e-9]
+          assert len(strategy_live)<50 or len(strategy_comparators)>=5,(len(strategy_live),len(strategy_comparators))
+          assert risk.get('status')=='ok',risk
+          assert str(risk.get('sourceTime') or '')==str(quotes.get('latestSourceTime') or ''),(risk.get('sourceTime'),quotes.get('latestSourceTime'))
+          assert int((risk.get('coverage') or {}).get('quotes') or 0)>=int(quotes.get('expected') or 0)*.90,risk.get('coverage')
+          assert 0<=float((risk.get('overall') or {}).get('score'))<=100,risk.get('overall')
+          assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
+          assert (risk.get('trend') or {}).get('previousScore') is not None,risk.get('trend')
+          assert len(risk.get('contributions') or [])==5,risk.get('contributions')
+          sector_cal=risk.get('sectorCalibration') or {}
+          assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
+          assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
+          assert market_cal.get('status')=='ok' and market_cal.get('forSession')==str(risk.get('sourceDate') or ''),(market_cal.get('status'),market_cal.get('forSession'),risk.get('sourceDate'))
+          high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
+          assert high and bool((market_cal.get('backtest') or {}).get('stateValidated')) and int(high.get('signals') or 0)>=12 and 0.05<=float(high.get('signalRate') or 0)<=0.25 and float(high.get('currentStateGapPct') or 0)<=-0.40,high
+          groups=risk.get('breadthGroups') or {}
+          assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
+          assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
+          funds=risk.get('fundMonitor') or {}
+          assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
+          assert funds.get('source')=='FMARKET',funds
+          assert not funds.get('previousAsOf') or funds.get('comparisonMode')=='LAST_MEANINGFUL_HOLDING_CHANGE',funds
+          print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
+          PY
+      - name: Build site with same-origin financial and market data
+        shell: bash
+        run: |
+          mkdir -p /tmp/main-insight-seed
+          cp financial-report/data/broker-research.json /tmp/main-insight-seed/broker-research.json
+          cp financial-report/data/corporate-events.json /tmp/main-insight-seed/corporate-events.json
+          rsync -a _financial-data/data/ financial-report/data/
+          for f in broker-research.json corporate-events.json insights-status.json event-status.json; do
+            if [ -f "_insight-data/data/$f" ]; then cp "_insight-data/data/$f" "financial-report/data/$f"; fi
+          done
+          python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
+          python financial-report/scripts/build_cdn.py
+          mkdir -p _site
+          rsync -a --exclude='_site' --exclude='_financial-data' --exclude='_insight-data' --exclude='_market-data' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
+          mkdir -p _site/financial-report/market
+          rsync -a _market-data/market/ _site/financial-report/market/
+          python - <<'PY'
+          from pathlib import Path
+          import json, subprocess
+          p=Path('_site/qtrr-final.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("const API='/api/stocks2', VALIDATE_API='/api/validate';", "const API='https://vmews-risk-analytics-sojd.vercel.app/api/radar', VALIDATE_API='https://vmews-risk-analytics-sojd.vercel.app/api/validate2';")
+          s=s.replace('Requesting current risk states from Vnstock…','Loading verified production risk data…')
+          p.write_text(s,encoding='utf-8')
+          p=Path('_site/financial-report/index.html')
+          p.write_text(p.read_text().replace('<html lang="vi">','<html lang="vi" data-hosting="pages">'))
+          revision=lambda directory: subprocess.check_output(['git','-C',directory,'rev-parse','HEAD'],text=True).strip()
+          Path('_site/financial-report/deployment.json').write_text(json.dumps({'code':revision('.'),'financialData':revision('_financial-data'),'insightData':revision('_insight-data'),'marketData':revision('_market-data')}))
+          Path('_site/.nojekyll').touch()
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages-finquery-one-off
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify deployed financial dashboard and critical datasets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://nckhtop1.github.io/vmews-risk-analytics/financial-report'
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}#market" -o /tmp/page.html; then
+              break
+            fi
+            sleep $((attempt * 3))
+          done
+          grep -q 'DOLPHIN_V6' /tmp/page.html
+          grep -q 'technical-scanner-access-code' /tmp/page.html
+          grep -q 'investment-ideas' /tmp/page.html
+          grep -q 'Giám sát rủi ro' /tmp/page.html
+          grep -q 'Giám sát thị trường' /tmp/page.html
+          grep -q 'data-platform-view="strategy"' /tmp/page.html
+          ! grep -q 'Charts by TradingView Lightweight Charts' /tmp/page.html
+          curl -fsSL --max-time 20 "$BASE/deployment.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/deployment.json
+          curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
+          curl -fsSL --max-time 20 "$BASE/market/news.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
+          curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
+          curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/strategy.json
+          curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
+          curl -fsSL --max-time 20 "$BASE/market/market-risk-calibration.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/market-risk-calibration.json
+          curl -fsSL --max-time 20 "$BASE/market/watch-today.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/watch.json
+          curl -fsSL --max-time 20 "$BASE/market/universe.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/universe.json
+          curl -fsSL --max-time 20 "$BASE/market/company-esg.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/esg.json
+          curl -fsSL --max-time 20 "$BASE/data/manifest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/manifest.json
+          curl -fsSL --max-time 20 "$BASE/data/insights-status.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/insights.json
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone, timedelta
+          def load(name):
+              return json.load(open('/tmp/'+name,encoding='utf-8'))
+          import math
+          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); market_cal=load('market-risk-calibration.json')
+          e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
+          q_expected=max(1,int(q.get('expected') or 0)); q_required=max(1,math.ceil(q_expected*.90))
+          s_universe=max(1,int(s.get('universe') or 0)); s_required=max(1,math.ceil(s_universe*.90))
+          assert q.get('status')=='ok' and int(q.get('coverage') or 0)>=q_required,(q.get('coverage'),q_expected)
+          assert s.get('status')=='ok' and int(s.get('coverage') or 0)>=s_required,(s.get('coverage'),s_universe)
+          counts=u.get('counts') or {}
+          assert int(counts.get('core') or 0)==100,counts
+          assert int(counts.get('liveMarket') or 0)>=100,counts
+          assert int(counts.get('scannerEligible') or 0)>=int(counts.get('liveMarket') or 0),counts
+          latest=str(q.get('latestSourceTime') or '')
+          assert str(s.get('sourceTime') or '')==latest,(s.get('sourceTime'),latest)
+          assert strategy.get('status')=='ok' and int(strategy.get('coverage') or 0)>=s_required,(strategy.get('coverage'),s_universe)
+          assert str(strategy.get('sourceTime') or '')==latest,(strategy.get('sourceTime'),latest)
+          assert watch.get('status')=='ok' and str(watch.get('sourceTime') or '')==latest,(watch.get('sourceTime'),latest)
+          assert risk.get('status')=='ok' and str(risk.get('sourceTime') or '')==latest,(risk.get('sourceTime'),latest)
+          assert int((risk.get('coverage') or {}).get('quotes') or 0)>=q_required,risk.get('coverage')
+          assert 0<=float((risk.get('overall') or {}).get('score'))<=100,risk.get('overall')
+          assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
+          assert (risk.get('trend') or {}).get('previousScore') is not None,risk.get('trend')
+          assert len(risk.get('contributions') or [])==5,risk.get('contributions')
+          sector_cal=risk.get('sectorCalibration') or {}
+          assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
+          assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
+          groups=risk.get('breadthGroups') or {}
+          assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
+          assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
+          funds=risk.get('fundMonitor') or {}
+          assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
+          assert funds.get('source')=='FMARKET',funds
+          assert not funds.get('previousAsOf') or funds.get('comparisonMode')=='LAST_MEANINGFUL_HOLDING_CHANGE',funds
+          source_dt=datetime.fromisoformat(latest.replace('Z','+00:00'))
+          if source_dt.tzinfo is None:
+              source_dt=source_dt.replace(tzinfo=timezone.utc)
+          source_day=source_dt.astimezone(timezone(timedelta(hours=7))).date().isoformat()
+          live_symbols={str(k).upper() for k,v in (q.get('quotes') or {}).items() if v.get('status')!='retained'}
+          live_required=max(1,math.ceil(len(live_symbols)*.90))
+          scanner_today=sum(1 for symbol in live_symbols if str(((s.get('symbols') or {}).get(symbol) or {}).get('barDate') or '')==source_day)
+          strategy_today=sum(1 for symbol in live_symbols if str(((strategy.get('symbols') or {}).get(symbol) or {}).get('barDate') or '')==source_day)
+          assert scanner_today>=live_required,(scanner_today,len(live_symbols),source_day)
+          assert strategy_today>=live_required,(strategy_today,len(live_symbols),source_day)
+          assert n.get('status')=='ok' and len(n.get('items') or [])>0,n
+          assert len(e.get('companies') or {})>=18
+          cov=f.get('coverage') or {}
+          assert int(cov.get('members') or 0)==100 and int(cov.get('annual') or 0)==100 and int(cov.get('quarterly') or 0)==100,cov
+          assert int(i.get('symbolsTotal') or 0)>=97,i
+          assert all(d.get(k) for k in ('code','financialData','insightData','marketData')),d
+          # Pages verifies artifact integrity only. The deployed market copy can be
+          # seconds/minutes behind the continuously updated financial-market-data
+          # branch while a new deployment is propagating. Live-session freshness is
+          # enforced by the realtime publisher/guard and production browser smoke.
+          print({'deployment':d,'quotes':q.get('coverage'),'scanner':s.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score'),'sourceDay':source_day,'scannerToday':scanner_today,'strategyToday':strategy_today,'watch':len(watch.get('items') or []),'financial':cov,'researchUniverse':i.get('symbolsTotal')})
+          PY
