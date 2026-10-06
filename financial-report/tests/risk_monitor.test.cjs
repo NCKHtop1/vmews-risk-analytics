@@ -4,6 +4,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
 const {calibrateSector,stressScore}=require('../scripts/build_sector_risk_calibration.cjs');
 const {rawComponents,sectorRowsV2,sessionProgress,calibrationFromObservations,calibratedComponents,overallFromComponents:overallV2}=require('../scripts/risk_model_v2.cjs');
+const {bucketFor,resample5m}=require('../scripts/build_intraday_risk_replay.cjs');
 
 const symbols=['ACB','BID','CTG','MBB','TCB','VCB','VIC','VHM','NVL','PDR','SSI','VIX'];
 function fixture({stress=false,sourceTime='2026-10-05T07:45:00.000Z'}={}){
@@ -286,6 +287,23 @@ test('sector alert hysteresis is reflected in the sector state shown to the UI',
  assert.ok(secondBank?.alertActive,secondBank);
  assert.equal(secondBank?.aboveThreshold,false);
  assert.ok(secondBank.score>=12.5&&secondBank.score<20,secondBank);
+});
+
+test('intraday replay uses HOSE-aware five-minute buckets and keeps ATC separate',()=>{
+ const bars=[
+  {time:'2026-10-05T02:15:00+00:00',open:100,high:101,low:99,close:100,volume:10},
+  {time:'2026-10-05T02:19:00+00:00',open:100,high:102,low:100,close:101,volume:20},
+  {time:'2026-10-05T06:00:00+00:00',open:101,high:103,low:101,close:103,volume:30},
+  {time:'2026-10-05T07:45:00+00:00',open:102,high:104,low:102,close:104,volume:40}
+ ];
+ const out=resample5m(bars);
+ assert.equal(out.length,3);
+ assert.equal(out[0].time,'2026-10-05T02:20:00.000Z');
+ assert.equal(out[0].session,'CONTINUOUS_AM');
+ assert.equal(out[0].volume,30);
+ assert.equal(out[1].session,'CONTINUOUS_PM');
+ assert.equal(out[2].session,'ATC');
+ assert.equal(bucketFor('2026-10-05T04:45:00+00:00'),null);
 });
 
 test('intraday trading-time normalization is monotonic and bounded',()=>{
