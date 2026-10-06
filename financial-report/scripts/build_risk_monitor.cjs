@@ -407,11 +407,12 @@ function main(){
   console.log(JSON.stringify({status:previous.status,score:previous.overall?.score,level:previous.overall?.level?.label,coverage:previous.coverage,sourceTime:previous.sourceTime,trend:previous.trend,alerts:(previous.alerts||[]).length,timeline:(previous.timeline||[]).length,reused:true}));
   return;
  }
- const oldTimeline=Array.isArray(previous?.timeline)?previous.timeline:[];
+ const compatiblePrevious=previous?.methodVersion===METHOD_VERSION?previous:null;
+ const oldTimeline=Array.isArray(compatiblePrevious?.timeline)?compatiblePrevious.timeline:[];
  const needsBaseline=!oldTimeline.some(x=>x?.sourceTime&&String(x.sourceTime)!==String(latest));
  const symbols=Object.entries(quotes.quotes||{}).filter(([,q])=>q?.status!=='retained').map(([s])=>s);
  const baseline=needsBaseline?buildHistoricalBaseline(out,symbols,day,marketCalibration):null;
- const snapshot=buildRiskSnapshot(quotes,strategy,previous,new Date().toISOString(),baseline,fundMonitor,sectorCalibration,marketCalibration);
+ const snapshot=buildRiskSnapshot(quotes,strategy,compatiblePrevious,new Date().toISOString(),baseline,fundMonitor,sectorCalibration,marketCalibration);
  fs.writeFileSync(path.join(out,'risk-monitor.json'),JSON.stringify(snapshot));
  console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,trend:snapshot.trend,alerts:snapshot.alerts.length,timeline:snapshot.timeline.length,funds:snapshot.fundMonitor?.funds||0,fundSymbols:snapshot.fundMonitor?.symbols||0,fundChanges:snapshot.fundMonitor?.materialChanges||0,validatedSectors:snapshot.sectorCalibration?.validatedSectors||0,sectorAlerts:(snapshot.sectors||[]).filter(x=>x.alertActive).length}));
 }
