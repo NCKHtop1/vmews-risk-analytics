@@ -6,6 +6,7 @@ on:
     paths:
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/build_intraday_risk_replay.cjs'
+      - 'financial-report/scripts/build_intraday_risk_clock_challenger.cjs'
       - 'financial-report/scripts/risk_model_v2.cjs'
       - 'financial-report/scripts/build_market_risk_calibration.cjs'
       - 'financial-report/tests/test_market.py'
@@ -89,6 +90,22 @@ jobs:
           print('LARGEST RANGE-CLOCK GAPS',range_gaps)
           PY
 
+      - name: Compare empirical HOSE clock challenger
+        run: |
+          node financial-report/scripts/build_intraday_risk_clock_challenger.cjs /tmp/market-data/market /tmp/intraday-risk-clock-challenger.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/intraday-risk-clock-challenger.json'))
+          print('CLOCK CHALLENGER', {
+              'recommendation':d['recommendation'],
+              'baseline':d['baseline'],
+              'empirical':d['empirical'],
+              'delta':d['delta'],
+          })
+          assert d['baseline']['validationDays']>=20,d
+          assert d['empirical']['validationDays']>=20,d
+          PY
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -96,5 +113,6 @@ jobs:
           path: |
             /tmp/intraday-risk-replay.json
             /tmp/intraday-backfill-probe.json
+            /tmp/intraday-risk-clock-challenger.json
           if-no-files-found: ignore
           retention-days: 7
