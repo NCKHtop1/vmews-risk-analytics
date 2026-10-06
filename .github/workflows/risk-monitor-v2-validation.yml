@@ -1,0 +1,84 @@
+name: Validate FinQuery Risk V2
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'financial-report/scripts/risk_model_v2.cjs'
+      - 'financial-report/scripts/build_market_risk_calibration.cjs'
+      - 'financial-report/scripts/build_risk_monitor.cjs'
+      - 'financial-report/scripts/build_sector_risk_calibration.cjs'
+      - 'financial-report/frontend/risk-monitor.js'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/app.js'
+      - 'financial-report/tests/risk_monitor.test.cjs'
+      - '.github/workflows/risk-monitor-v2-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-risk-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and focused unit tests
+        run: |
+          set -euo pipefail
+          node --check financial-report/scripts/risk_model_v2.cjs
+          node --check financial-report/scripts/build_market_risk_calibration.cjs
+          node --check financial-report/scripts/build_risk_monitor.cjs
+          node --check financial-report/frontend/risk-monitor.js
+          node --test financial-report/tests/risk_monitor.test.cjs
+      - name: Fetch production market history
+        run: |
+          set -euo pipefail
+          git fetch origin financial-market-data --depth=1
+          rm -rf /tmp/finquery-market
+          git worktree add --detach /tmp/finquery-market FETCH_HEAD
+      - name: Walk-forward calibration and production rebuild
+        run: |
+          set -euo pipefail
+          node financial-report/scripts/build_market_risk_calibration.cjs /tmp/finquery-market/market | tee /tmp/risk-v2-calibration.log
+          node financial-report/scripts/build_risk_monitor.cjs /tmp/finquery-market/market | tee /tmp/risk-v2-snapshot.log
+      - name: Quality gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, pathlib, os
+          root=pathlib.Path('/tmp/finquery-market/market')
+          cal=json.loads((root/'market-risk-calibration.json').read_text())
+          risk=json.loads((root/'risk-monitor.json').read_text())
+          assert cal.get('status')=='ok',cal.get('status')
+          assert risk.get('status')=='ok',risk.get('status')
+          assert risk.get('methodVersion')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
+          assert risk.get('marketCalibration',{}).get('status')=='ok',risk.get('marketCalibration')
+          high=next((x for x in cal.get('backtest',{}).get('thresholds',[]) if int(x.get('threshold',0))==85),None)
+          assert high is not None,cal.get('backtest')
+          assert int(high.get('total',0))>=180,high
+          assert int(high.get('signals',0))>=12,high
+          assert float(high.get('precisionLift',0))>=1.10,high
+          assert float(high.get('youden',0))>0,high
+          assert float(high.get('medianForwardSignalPct',0))<0,high
+          score=float(risk.get('overall',{}).get('score'))
+          assert 0<=score<=100,score
+          cov=risk.get('coverage',{})
+          assert int(cov.get('quotes',0))>=0.9*int(cov.get('expected',1)),cov
+          html=pathlib.Path('financial-report/frontend/index.html').read_text()
+          head=html.split('<header class="risk-page-head">',1)[1].split('</header>',1)[0]
+          assert '<p' not in head.lower(),head
+          assert 'Năm thước đo chính' not in html
+          assert 'risk-coverage-inline' in html
+          summary={'score':score,'coverage':cov,'backtest85':high,'samples':cal.get('samples'),'trainingSamples':cal.get('trainingSamples'),'downsideCorrelation':cal.get('fragilityContext',{}).get('downsideCorrelation')}
+          print('RISK V2 VALIDATION PASS',json.dumps(summary,ensure_ascii=False))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('## FinQuery Risk V2\n\n')
+              f.write(json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
+          PY
