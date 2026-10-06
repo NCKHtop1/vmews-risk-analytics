@@ -1617,6 +1617,29 @@ class MarketTests(unittest.TestCase):
             if old_count is None:m.os.environ.pop('INTRADAY_BACKFILL_COUNT',None)
             else:m.os.environ['INTRADAY_BACKFILL_COUNT']=old_count
 
+    def test_intraday_archive_summary_reports_real_day_coverage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            bars_a=[
+                {'time':f'2026-09-{day:02d}T02:20:00+00:00','open':1,'high':1,'low':1,'close':1,'volume':1}
+                for day in range(1,31)
+            ]
+            bars_b=[
+                {'time':f'2026-08-{day:02d}T02:20:00+00:00','open':1,'high':1,'low':1,'close':1,'volume':1}
+                for day in range(1,29)
+            ] + [
+                {'time':f'2026-09-{day:02d}T02:20:00+00:00','open':1,'high':1,'low':1,'close':1,'volume':1}
+                for day in range(1,21)
+            ]
+            m.write(out/'intraday-5m/FPT.json',{'bars':bars_a})
+            m.write(out/'intraday-5m/VCB.json',{'bars':bars_b})
+            summary=m.intraday_archive_summary(out,['FPT','VCB','VHM'])
+            self.assertEqual(summary['archive5mAvailable'],2)
+            self.assertEqual(summary['archive5mUniverse'],3)
+            self.assertEqual(summary['archive5mMinDays'],0)
+            self.assertEqual(summary['archive5mAtLeast40Days'],1)
+            self.assertGreaterEqual(summary['archive5mMaxDays'],40)
+
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
         original=m._refresh_one_history
