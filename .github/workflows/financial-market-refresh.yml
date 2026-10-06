@@ -188,6 +188,30 @@ jobs:
           else
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
           fi
+      - name: Publish intraday Risk clock shadow
+        if: github.event.schedule == '35 9 * * 1-5' || inputs.mode == 'intraday' || contains(github.event.head_commit.message, '[intraday-backfill]') || contains(github.event.head_commit.message, '[intraday-missing]') || contains(github.event.head_commit.message, '[intraday-critical]')
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ -d /tmp/market-publish/market/intraday-5m ]; then
+            node financial-report/scripts/build_intraday_risk_clock_challenger.cjs /tmp/market-publish/market /tmp/market-publish/market/intraday-risk-clock-shadow.json
+            python - <<'PY'
+          import json
+          p='/tmp/market-publish/market/intraday-risk-clock-shadow.json'
+          d=json.load(open(p))
+          assert d.get('version')=='FINQUERY-INTRADAY-CLOCK-CHALLENGER-0.2',d.get('version')
+          assert d.get('recommendation',{}).get('status') in ('PROMOTE_TO_SHADOW','KEEP_RESEARCH_ONLY'),d.get('recommendation')
+          print('RISK CLOCK SHADOW', {
+              'recommendation':d.get('recommendation'),
+              'baseline85':d.get('baseline',{}).get('threshold85'),
+              'range85':d.get('variants',{}).get('range',{}).get('threshold85'),
+              'volume85':d.get('variants',{}).get('volume',{}).get('threshold85')
+          })
+          PY
+          else
+            echo "::warning::No intraday-5m archive available; skipping Risk clock shadow."
+          fi
+
       - name: Persist aligned market risk history
         if: always()
         run: |
@@ -223,7 +247,7 @@ jobs:
           python - <<'PY'
           import json, pathlib
           p=pathlib.Path('/tmp/market-publish/market')
-          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','news.json','macro.json','company-esg.json','esg-status.json','history/MBB.json']:
+          for name in ['quotes.json','drivers.json','prices-status.json','history-status.json','intraday-status.json','intraday-risk-clock-shadow.json','news.json','macro.json','company-esg.json','esg-status.json','history/MBB.json']:
               f=p/name
               if not f.exists(): continue
               d=json.loads(f.read_text())
@@ -233,6 +257,7 @@ jobs:
               elif name=='macro.json': print('MACRO',d.get('status'),[(k,len(v.get('rows',[]))) for k,v in d.get('datasets',{}).items()])
               elif name=='company-esg.json': print('CORPORATE ESG',d.get('status'),d.get('run'),[(k,v.get('coverage')) for k,v in list(d.get('companies',{}).items())[:5]])
               elif name=='esg-status.json': print('ESG STATUS',d)
+              elif name=='intraday-risk-clock-shadow.json': print('RISK CLOCK SHADOW',d.get('recommendation'),d.get('baseline',{}).get('threshold85'),d.get('variants',{}).get('range',{}).get('threshold85'))
               elif name=='history/MBB.json': print('MBB HISTORY',len(d.get('bars',[])),d.get('bars',[])[-2:])
               else: print('STATUS',d)
           PY
