@@ -286,9 +286,21 @@ function buildAlerts(components,overall,previous,sourceTime){
   alertSpec('contagion','Nhiều nhóm ngành đang đồng biến theo chiều xấu',components.contagion,85,75,components.contagion.detail),
   alertSpec('concentration','Giao dịch tập trung trong lúc độ rộng suy yếu',components.concentration,90,80,components.concentration.detail)
  ];
+ const previousScores={
+  'market-high':n(previous?.overall?.score),
+  breadth:n(previous?.components?.breadth?.score),
+  volatility:n(previous?.components?.volatility?.score),
+  liquidity:n(previous?.components?.liquidity?.score),
+  contagion:n(previous?.components?.contagion?.score),
+  concentration:n(previous?.components?.concentration?.score)
+ };
  const alerts=[];
  for(const s of specs){
-  const old=prevMap.get(s.id),active=s.score>=(old?s.exit:s.enter);
+  const old=prevMap.get(s.id);
+  const prevScore=previousScores[s.id];
+  const immediate=Math.min(100,s.enter+10);
+  const confirmed=Number(s.score)>=immediate||(Number(s.score)>=s.enter&&prevScore!==null&&Number(prevScore)>=s.enter);
+  const active=old?Number(s.score)>=s.exit:confirmed;
   if(!active)continue;
   alerts.push({id:s.id,title:s.title,score:round(s.score,1),level:level(s.score),startedAt:old?.startedAt||sourceTime,lastSeen:sourceTime,evidence:s.evidence});
  }
@@ -296,10 +308,14 @@ function buildAlerts(components,overall,previous,sourceTime){
 }
 function buildSectorAlerts(sectors,previous,sourceTime){
  const prevMap=new Map((previous?.alerts||[]).map(a=>[a.id,a])),alerts=[];
+ const previousSectorScores=new Map((previous?.sectors||[]).map(s=>[s.id,n(s.score)]));
  for(const s of sectors||[]){
   if(!s.alertEligible||!Number.isFinite(Number(s.threshold)))continue;
   const id='sector-'+s.id,old=prevMap.get(id),enter=Number(s.threshold),exit=Number(s.exitThreshold??(enter-7.5));
-  const active=Number(s.score)>=(old?exit:enter);if(!active)continue;
+  const prevScore=previousSectorScores.get(s.id);
+  const immediate=Math.min(100,enter+10);
+  const confirmed=Number(s.score)>=immediate||(Number(s.score)>=enter&&prevScore!==undefined&&prevScore!==null&&Number(prevScore)>=enter);
+  const active=old?Number(s.score)>=exit:confirmed;if(!active)continue;
   const aboveThreshold=Number(s.score)>=enter;
   const bt=s.backtest||{},lift=Number(bt.precisionLift),precision=Number(bt.precision),base=Number(bt.baseRate);
   const evidence=[
