@@ -86,8 +86,8 @@ function cmf(rows){
   }
   return vol>0?mfv/vol:0;
 }
-function featureRow(symbol,day,partial,daily){
-  const prior=daily.filter(x=>String(x.time)<day);
+function featureRow(symbol,day,partial,daily,preFiltered=false){
+  const prior=preFiltered?daily:daily.filter(x=>String(x.time)<day);
   if(!prior.length)return null;
   const prev=prior[prior.length-1],ref=num(prev.close);
   if(!ref||!partial)return null;
@@ -191,13 +191,24 @@ function buildReplay(marketDir){
   const intraday=loadIntraday(marketDir);
   const daily=new Map([...intraday.keys()].map(s=>[s,loadDailyMap(marketDir,s)]));
   const days=[...new Set([...intraday.values()].flatMap(b=>b.map(x=>localParts(x.time)?.day).filter(Boolean)))].sort();
+  const lastReplayDay=days[days.length-1]||null;
+  const calibrationCutoff=lastReplayDay
+    ? new Date(new Date(lastReplayDay+'T00:00:00+07:00').getTime()+24*3600*1000).toISOString().slice(0,10)
+    : new Date().toISOString().slice(0,10);
+  // Build daily observations once. Each replay day then takes only the prefix
+  // strictly before that day, preserving the no-look-ahead rule while avoiding
+  // an O(days * full-history) rebuild.
+  const allCalibrationObs=buildObservations(marketDir,calibrationCutoff);
   const dayResults=[],allSnapshots=[];
   for(const day of days){
-    const calibrationObs=buildObservations(marketDir,day);
+    const calibrationObs=allCalibrationObs.filter(x=>String(x.date)<day);
     if(calibrationObs.length<252)continue;
     const cal=calibrationFromObservations(calibrationObs.slice(-504));
     const priorDown=calibrationObs.filter(x=>x.marketReturn<0).slice(-80);
     const downsideCorrelation=pairwiseDownsideCorrelation(priorDown);
+    const priorDaily=new Map([...daily].map(([symbol,bars])=>[
+      symbol,bars.filter(x=>String(x.time)<day)
+    ]));
     const barsBySymbol=new Map();
     const times=new Set();
     for(const [symbol,bars] of intraday){
@@ -211,7 +222,7 @@ function buildReplay(marketDir){
       }
       const rows=[];
       for(const [symbol,partial] of cumulative){
-        const x=featureRow(symbol,day,partial,daily.get(symbol)||[]);if(x)rows.push(x);
+        const x=featureRow(symbol,day,partial,priorDaily.get(symbol)||[],true);if(x)rows.push(x);
       }
       if(rows.length<MIN_REPLAY_SYMBOLS)continue;
       const sectors=sectorRowsV2(rows,null,time);
