@@ -50,6 +50,13 @@ test('initial quote outage gets bounded fast UI retries',()=>{
  assert.match(source,/manageQuoteRetry\(false\)/);
  assert.match(source,/hệ thống đang tự thử lại/);
 });
+test('live risk publisher loads market calibration before enforcing V2 validation',()=>{
+ const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
+ assert.match(live,/market_cal=load\('market-risk-calibration\.json'\)/);
+ assert.match(live,/market_cal\.get\('status'\)/);
+ assert.match(live,/FINQUERY-RISK-RULES-2\.0/);
+});
+
 test('close catch keeps strict intraday freshness but accepts official 14:45 close',()=>{
  const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
  const workflow=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-price-live.yml'),'utf8');
