@@ -11,7 +11,8 @@ function updateNavBadge(){
  badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);
  badge.title=sectorCount+' ngành đang cảnh báo · '+fundCount+' mã quỹ vừa thay đổi';
 }
-const COMPONENT_ORDER=['breadth','volatility','liquidity','concentration','contagion'];
+const COMPONENT_ORDER=['breadth','volatility','liquidity','contagion','concentration'];
+const SECTOR_ORDER=['banking','securities','real-estate','steel','technology','retail','oil-gas','utilities','construction','seafood','chemicals','transport','insurance','consumer'];
 const fmt=(v,d=1)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tone=v=>String(v||'green').replace(/[^a-z-]/g,'')||'green';
@@ -33,11 +34,10 @@ function levelBadge(lvl){
 }
 function summaryText(score){
  const s=Number(score)||0;
- if(s>=80)return'Căng thẳng đang xuất hiện đồng thời trên nhiều mặt.';
- if(s>=65)return'Căng thẳng thị trường đang ở mức cao và lan rộng.';
- if(s>=50)return'Căng thẳng đang tăng trên nhiều thước đo.';
- if(s>=35)return'Một số dấu hiệu căng thẳng đã xuất hiện nhưng chưa lan rộng.';
- return'Chưa thấy căng thẳng lan rộng trên toàn thị trường.';
+ if(s>=95)return'Rất cao so với lịch sử.';
+ if(s>=85)return'Cao so với lịch sử.';
+ if(s>=70)return'Cần theo dõi.';
+ return'Bình thường.';
 }
 function renderTop(){
  const d=state.data;if(!d)return;
@@ -53,9 +53,21 @@ function renderTop(){
   trend.textContent=(tr.label||'Ít thay đổi')+' · '+sign+fmt(tr.delta,1)+' điểm';
   detail.textContent=fmt(d.overall?.score,1)+' / 100 hiện tại · '+fmt(tr.previousScore,1)+' / 100 ở mốc trước · '+(tr.comparisonLabel||'so với mốc trước');
  }
+ const sessionTr=d.sessionTrend||{};
+ const sessionTrend=$('risk-session-trend'),sessionDetail=$('risk-session-trend-delta');
+ if(sessionTrend){
+  if(sessionTr.delta==null){
+   sessionTrend.textContent='—';
+   if(sessionDetail)sessionDetail.textContent=sessionTr.comparisonLabel||'Chưa có cuối phiên trước';
+  }else{
+   const sign=Number(sessionTr.delta)>0?'+':'';
+   sessionTrend.textContent=sign+fmt(sessionTr.delta,1)+' điểm';
+   if(sessionDetail)sessionDetail.textContent=fmt(d.overall?.score,1)+' hiện tại · '+fmt(sessionTr.previousScore,1)+' cuối phiên trước';
+  }
+ }
  const cov=d.coverage||{};
- $('risk-coverage').textContent=fmt(cov.quotes,0)+' / '+fmt(cov.expected,0)+' mã';
- $('risk-coverage-note').textContent='Phạm vi trực tiếp: HOSE Core + Liquid · '+fmt(cov.sectors,0)+' nhóm ngành đủ dữ liệu';
+ const coverageInline=$('risk-coverage-inline');
+ if(coverageInline)coverageInline.textContent=fmt(cov.quotes,0)+'/'+fmt(cov.expected,0)+' live';
  $('risk-source-time').textContent='Dữ liệu đến '+time(d.sourceTime);
  const aligned=window.FinancialMarket?.context?.()?.quoteBundleSourceTime;
  const status=$('risk-source-status');
@@ -94,12 +106,12 @@ function renderTimeline(){
  const x=i=>L+(rows.length<=1?innerW/2:i/(rows.length-1)*innerW);
  const y=v=>T+(100-Math.max(0,Math.min(100,Number(v)||0)))/100*innerH;
  const pts=rows.map((r,i)=>x(i).toFixed(1)+','+y(r.score).toFixed(1)).join(' ');
- const grids=[0,25,35,50,65,80,100].map(v=>'<g><line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(L-10)+'" y="'+(y(v)+4)+'" text-anchor="end">'+v+'</text></g>').join('');
+ const grids=[0,25,50,70,85,95,100].map(v=>'<g><line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(L-10)+'" y="'+(y(v)+4)+'" text-anchor="end">'+v+'</text></g>').join('');
  const multipleDays=new Set(rows.map(r=>dayKey(r.sourceTime))).size>1;
  const step=Math.max(1,Math.ceil(rows.length/6));
  const labels=rows.map((r,i)=>{if(i%step!==0&&i!==rows.length-1)return'';return'<text x="'+x(i)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(shortTime(r.sourceTime,multipleDays))+'</text>';}).join('');
- const dots=rows.map((r,i)=>{const lv=Number(r.score)>=65?'red':Number(r.score)>=35?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
- const zones='<rect class="risk-zone risk-zone-red" x="'+L+'" y="'+y(100)+'" width="'+innerW+'" height="'+(y(65)-y(100))+'"/><rect class="risk-zone risk-zone-yellow" x="'+L+'" y="'+y(65)+'" width="'+innerW+'" height="'+(y(35)-y(65))+'"/><rect class="risk-zone risk-zone-green" x="'+L+'" y="'+y(35)+'" width="'+innerW+'" height="'+(y(0)-y(35))+'"/>';
+ const dots=rows.map((r,i)=>{const lv=Number(r.score)>=85?'red':Number(r.score)>=70?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
+ const zones='<rect class="risk-zone risk-zone-red" x="'+L+'" y="'+y(100)+'" width="'+innerW+'" height="'+(y(85)-y(100))+'"/><rect class="risk-zone risk-zone-yellow" x="'+L+'" y="'+y(85)+'" width="'+innerW+'" height="'+(y(70)-y(85))+'"/><rect class="risk-zone risk-zone-green" x="'+L+'" y="'+y(70)+'" width="'+innerW+'" height="'+(y(0)-y(70))+'"/>';
  const current=rows[rows.length-1];
  const currentLabel='<text class="risk-current-label" x="'+Math.min(W-R-4,x(rows.length-1)+8)+'" y="'+Math.max(T+12,y(current.score)-9)+'">'+fmt(current.score,1)+'/100</text>';
  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
@@ -119,7 +131,8 @@ function renderSectors(){
  const cal=d.sectorCalibration||{};
  if(status)status.textContent=Number.isFinite(Number(cal.validatedSectors))?'Ngưỡng cảnh báo '+fmt(cal.validatedSectors,0)+' / '+fmt(cal.totalSectors,0)+' ngành':'';
  if(updated)updated.textContent='Cập nhật gần nhất: '+time(d.sourceTime);
- const rows=[...(d.sectors||[])].sort((a,b)=>Number(b.medianChangePct||0)-Number(a.medianChangePct||0));
+ const rank=new Map(SECTOR_ORDER.map((id,i)=>[id,i]));
+ const rows=[...(d.sectors||[])].sort((a,b)=>(rank.get(a.id)??999)-(rank.get(b.id)??999));
  host.innerHTML=rows.map(x=>{
   const change=Number(x.medianChangePct)||0;
   const direction=change>0.01?'up':change<-0.01?'down':'flat';
