@@ -1792,6 +1792,40 @@ def update_history_effective_status(out, symbols):
     return status
 
 
+def intraday_archive_summary(out, symbols):
+    day_counts = []
+    available = 0
+    latest = []
+    first = []
+    at_least_40 = 0
+    for symbol in symbols:
+        row = read(out / 'intraday-5m' / (symbol + '.json'), {})
+        bars = [bar for bar in row.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+        if not bars:
+            day_counts.append(0)
+            continue
+        available += 1
+        days = sorted({datetime.fromisoformat(str(bar['time']).replace('Z', '+00:00')).astimezone(VN).date().isoformat() for bar in bars})
+        count = len(days)
+        day_counts.append(count)
+        if count >= 40:
+            at_least_40 += 1
+        first.append(days[0])
+        latest.append(days[-1])
+    ordered = sorted(day_counts)
+    median_days = ordered[len(ordered)//2] if ordered else 0
+    return {
+        'archive5mAvailable': available,
+        'archive5mUniverse': len(symbols),
+        'archive5mMinDays': min(day_counts) if day_counts else 0,
+        'archive5mMedianDays': median_days,
+        'archive5mMaxDays': max(day_counts) if day_counts else 0,
+        'archive5mAtLeast40Days': at_least_40,
+        'archive5mEarliestDay': min(first) if first else None,
+        'archive5mLatestDay': max(latest) if latest else None,
+    }
+
+
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
@@ -1828,10 +1862,13 @@ def refresh_history_group(out, companies, minute=False):
                     failed.append((symbol, error))
     errors = [f'{symbol}{" intraday" if minute else ""}: {error}' for symbol, error in failed]
     name = 'intraday' if minute else 'history'
-    write(out / f'{name}-status.json', {
+    status_payload = {
         'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols),
         'onlyMissing': only_missing, 'forcedSymbols': forced, 'retryPass': True, 'errors': errors
-    })
+    }
+    if minute:
+        status_payload.update(intraday_archive_summary(out, all_symbols))
+    write(out / f'{name}-status.json', status_payload)
     if not minute:
         update_history_effective_status(out, all_symbols)
         build_drivers(out, companies)
