@@ -175,7 +175,7 @@ function buildCalibration(marketDir,forSession){
    thresholds:wf.thresholds
   },
   methodology:{
-   normalization:'Intraday price range and return are scaled by square-root trading-time; volume is scaled by elapsed trading-time. This removes the strongest partial-session bias without claiming an unavailable fitted intraday curve.',
+   normalization:'Intraday price range and return are scaled by square-root trading-time; volume uses a parameter-free U-shaped activity clock. This removes the strongest partial-session bias without claiming a fitted HOSE intraday curve that the repository does not yet contain.',
    breadth:'Cross-sectional decline share, severe standardized losses and median standardized return.',
    volatility:'Maturity-adjusted intraday range, ATR/price regime and share of unusually wide ranges.',
    liquidity:'Downside volume pace, downside high-volume breadth, return-per-volume price-impact proxy and negative CMF breadth.',
