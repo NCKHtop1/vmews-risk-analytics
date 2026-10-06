@@ -85,7 +85,7 @@ function sessionProgress(sourceTime){
  else if(mins<780)elapsed=150;
  else if(mins<885)elapsed=150+(mins-780);
  else elapsed=255;
- return clamp(elapsed/255,0,1)/100;
+ return Math.max(0,Math.min(1,elapsed/255));
 }
 function maturityFactors(sourceTime){
  const progress=sessionProgress(sourceTime);
@@ -195,7 +195,7 @@ function rawComponents(rows,sectors,sourceTime,fragilityContext={}){
  const top10=turnovers.slice(0,10).reduce((a,b)=>a+b,0)/total;
  const concentrationRaw=clamp(0.70*scale(top5,0.18,0.45)+0.30*scale(top10,0.32,0.65));
  const activityCoverage=norm.length?norm.filter(r=>r.volume>0).length/norm.length:0;
- const breadthWeakness=clamp((breadth-20)/80,0,1)/100;
+ const breadthWeakness=Math.max(0,Math.min(1,(breadth-20)/80));
  const concentration=clamp(concentrationRaw*breadthWeakness*activityCoverage);
 
  const sectorDecline=sectors.length?sectors.filter(s=>s.medianAdjustedChangePct<0).length/sectors.length:0;
