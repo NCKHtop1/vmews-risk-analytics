@@ -198,23 +198,27 @@ function buildReplay(marketDir){
       day,buckets:snapshots.length,maxScore,eventTime:event?.time||null,
       first70:first70?.time||null,lead70:event&&first70?minutesBetween(first70.time,event.time):null,
       first85:first85?.time||null,lead85:event&&first85?minutesBetween(first85.time,event.time):null,
-      closeState:snapshots[snapshots.length-1]||null
+      signal70State:first70||null,signal85State:first85||null,eventState:event||null,
+      closeState:snapshots[snapshots.length-1]||null,
+      eventAudit:event?snapshots.filter(x=>new Date(x.time)>=new Date((first70||first85||event).time)&&new Date(x.time)<=new Date(event.time)):[]
+
     });
     allSnapshots.push(...snapshots);
   }
-  const eventDays=dayResults.filter(x=>x.eventTime),detect70=eventDays.filter(x=>x.first70),detect85=eventDays.filter(x=>x.first85);
-  const highDays=dayResults.filter(x=>Number(x.maxScore)>=85),falseHigh=highDays.filter(x=>!x.eventTime);
+  const usableDays=dayResults.filter(x=>x.buckets>0);
+  const eventDays=usableDays.filter(x=>x.eventTime),detect70=eventDays.filter(x=>x.first70),detect85=eventDays.filter(x=>x.first85);
+  const highDays=usableDays.filter(x=>Number(x.maxScore)>=85),falseHigh=highDays.filter(x=>!x.eventTime);
   const thresholdStats=[70,85,95].map(threshold=>{
     const rows=allSnapshots.filter(x=>x.score>=threshold&&Number.isFinite(x.future30mChangePct));
     return {threshold,samples:rows.length,medianFuture30mPct:rows.length?round(med(rows.map(x=>x.future30mChangePct)),3):null,medianCurrentPct:rows.length?round(med(rows.map(x=>x.marketReturn)),3):null};
   });
-  const enough=dayResults.length>=MIN_VALIDATED_DAYS&&eventDays.length>=MIN_EVENT_DAYS;
+  const enough=usableDays.length>=MIN_VALIDATED_DAYS&&eventDays.length>=MIN_EVENT_DAYS;
   return {
-    version:'FINQUERY-INTRADAY-RISK-REPLAY-0.1',
+    version:'FINQUERY-INTRADAY-RISK-REPLAY-0.2',
     status:enough?'READY_FOR_VALIDATION':'LIMITED_INTRADAY_HISTORY',
     generatedAt:new Date().toISOString(),
     sourceInterval:'5m replay from retained 1m/5m HOSE bars',
-    days:dayResults.length,eventDays:eventDays.length,snapshots:allSnapshots.length,
+    calendarDaysSeen:dayResults.length,days:usableDays.length,eventDays:eventDays.length,snapshots:allSnapshots.length,
     detection:{
       threshold70:{detected:detect70.length,rate:eventDays.length?round(detect70.length/eventDays.length,3):null,medianLeadMinutes:detect70.length?med(detect70.map(x=>x.lead70).filter(Number.isFinite)):null},
       threshold85:{detected:detect85.length,rate:eventDays.length?round(detect85.length/eventDays.length,3):null,medianLeadMinutes:detect85.length?med(detect85.map(x=>x.lead85).filter(Number.isFinite)):null},
@@ -222,7 +226,7 @@ function buildReplay(marketDir){
     },
     thresholdStats,daysDetail:dayResults,
     empiricalVolumeClock:empiricalVolumeClock(intraday),
-    validationPolicy:{minDays:MIN_VALIDATED_DAYS,minEventDays:MIN_EVENT_DAYS,note:'Until these minima are met, replay metrics are descriptive only and cannot change production thresholds.'}
+    validationPolicy:{minDays:MIN_VALIDATED_DAYS,minEventDays:MIN_EVENT_DAYS,minCoverageSymbols:MIN_REPLAY_SYMBOLS,note:'Only days with at least one 5-minute snapshot covering the minimum symbol count are usable. Until the minima are met, replay metrics are descriptive only and cannot change production thresholds.'}
   };
 }
 function main(){
