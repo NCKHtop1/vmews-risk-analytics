@@ -1542,6 +1542,54 @@ class MarketTests(unittest.TestCase):
             if old_retain is None:m.os.environ.pop('INTRADAY_RETAIN_1M_BARS',None)
             else:m.os.environ['INTRADAY_RETAIN_1M_BARS']=old_retain
 
+    def test_intraday_backfill_cursor_extends_before_existing_five_minute_archive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            m.write(out/'intraday-5m/FPT.json',{
+                'bars':[{
+                    'time':'2026-10-05T02:20:00+00:00','session':'CONTINUOUS_AM',
+                    'open':100,'high':101,'low':99,'close':100,'volume':10
+                }]
+            })
+            cursor=m._intraday_backfill_cursor(out,'FPT',[])
+            expected=int(datetime.fromisoformat('2026-10-05T02:15:00+00:00').timestamp())-1
+            self.assertEqual(cursor,expected)
+
+    def test_intraday_backfill_chunk_pages_backwards_without_growing_recent_one_minute_file(self):
+        original=m._history_page
+        calls=[]
+        first=[
+            {'time':'2026-10-03T07:44:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':10},
+            {'time':'2026-10-03T07:45:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':20},
+        ]
+        second=[
+            {'time':'2026-10-03T07:42:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':30},
+            {'time':'2026-10-03T07:43:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':40},
+        ]
+        def fake(symbol,frame,to,count,minute=False):
+            calls.append(to)
+            return first if len(calls)==1 else second
+        old_pages=m.os.environ.get('INTRADAY_BACKFILL_PAGES')
+        try:
+            m._history_page=fake
+            m.os.environ['INTRADAY_BACKFILL_PAGES']='2'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.write(out/'intraday-5m/FPT.json',{
+                    'bars':[{
+                        'time':'2026-10-05T02:20:00+00:00','session':'CONTINUOUS_AM',
+                        'open':100,'high':101,'low':99,'close':100,'volume':10
+                    }]
+                })
+                rows=m._backfill_intraday_chunk(out,'FPT',[])
+                self.assertEqual(len(rows),4)
+                self.assertEqual(rows[0]['time'],'2026-10-03T07:42:00+00:00')
+                self.assertLess(calls[1],calls[0])
+        finally:
+            m._history_page=original
+            if old_pages is None:m.os.environ.pop('INTRADAY_BACKFILL_PAGES',None)
+            else:m.os.environ['INTRADAY_BACKFILL_PAGES']=old_pages
+
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
         original=m._refresh_one_history
