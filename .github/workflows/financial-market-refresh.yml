@@ -190,6 +190,7 @@ jobs:
           fi
       - name: Publish intraday Risk clock shadow
         if: github.event.schedule == '35 9 * * 1-5' || inputs.mode == 'intraday' || contains(github.event.head_commit.message, '[intraday-backfill]') || contains(github.event.head_commit.message, '[intraday-missing]') || contains(github.event.head_commit.message, '[intraday-critical]')
+        continue-on-error: true
         run: |
           set -euo pipefail
           if [ -d /tmp/market-publish/market/intraday-5m ]; then
