@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-05T19:00:29.227255+00:00",
+  "generatedAt": "2026-10-06T03:12:31.178148+00:00",
   "marketModelDate": "2026-10-05",
   "requested": 72,
-  "reused": 56,
-  "fetched": 16,
+  "reused": 72,
+  "fetched": 0,
   "cached": 72,
   "symbols": {
     "PNJ": {
@@ -16,6 +16,11 @@
       "rows": 1800,
       "modelAsOf": "2026-09-17",
       "source": "Yahoo Finance"
+    },
+    "DVM": {
+      "rows": 1050,
+      "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
     },
     "BNA": {
       "rows": 1410,
@@ -72,6 +77,11 @@
       "modelAsOf": "2026-08-18",
       "source": "Vnstock"
     },
+    "VIW": {
+      "rows": 706,
+      "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
+    },
     "SHS": {
       "rows": 1800,
       "modelAsOf": "2026-08-14",
@@ -100,6 +110,11 @@
     "VDS": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
+      "source": "Yahoo Finance"
+    },
+    "D2D": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
     "CKA": {
@@ -197,6 +212,26 @@
       "modelAsOf": "2026-09-11",
       "source": "Yahoo Finance"
     },
+    "AGG": {
+      "rows": 1757,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
+    "PVX": {
+      "rows": 732,
+      "modelAsOf": "2026-10-02",
+      "source": "Vnstock"
+    },
+    "VC7": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
+    },
+    "HHS": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
     "NDN": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
@@ -207,6 +242,11 @@
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
     },
+    "PIT": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
     "SBS": {
       "rows": 1800,
       "modelAsOf": "2026-09-24",
@@ -215,6 +255,26 @@
     "KDH": {
       "rows": 1800,
       "modelAsOf": "2026-08-14",
+      "source": "Yahoo Finance"
+    },
+    "L14": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
+    },
+    "CMG": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
+    "TSJ": {
+      "rows": 485,
+      "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
+    },
+    "MHC": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
     "ASM": {
@@ -252,6 +312,11 @@
       "modelAsOf": "2026-08-14",
       "source": "Vnstock"
     },
+    "VIX": {
+      "rows": 1497,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
     "DGC": {
       "rows": 1591,
       "modelAsOf": "2026-09-14",
@@ -267,9 +332,19 @@
       "modelAsOf": "2026-09-14",
       "source": "Vnstock"
     },
+    "AGR": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
     "SCR": {
       "rows": 1800,
       "modelAsOf": "2026-09-11",
+      "source": "Yahoo Finance"
+    },
+    "CTS": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
     "HUT": {
@@ -285,81 +360,6 @@
     "HQC": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
-      "source": "Yahoo Finance"
-    },
-    "DVM": {
-      "rows": 1050,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "VIW": {
-      "rows": 706,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "D2D": {
-      "rows": 2587,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "AGG": {
-      "rows": 1757,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "PVX": {
-      "rows": 732,
-      "modelAsOf": "2026-10-02",
-      "source": "Vnstock"
-    },
-    "VC7": {
-      "rows": 1911,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "HHS": {
-      "rows": 2587,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "PIT": {
-      "rows": 2587,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "L14": {
-      "rows": 1994,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "CMG": {
-      "rows": 2596,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "TSJ": {
-      "rows": 485,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "MHC": {
-      "rows": 2596,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "VIX": {
-      "rows": 1497,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "AGR": {
-      "rows": 2587,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "CTS": {
-      "rows": 2596,
-      "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
     "THD": {
