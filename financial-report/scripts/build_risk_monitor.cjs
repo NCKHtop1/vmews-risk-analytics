@@ -1,27 +1,13 @@
 'use strict';
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const RISK_V2=require('./risk_model_v2.cjs');
 
-const VERSION='FINQUERY-RISK-1.4';
-const METHOD_VERSION='FINQUERY-RISK-RULES-1.6';
+const VERSION=RISK_V2.MODEL_VERSION;
+const METHOD_VERSION=RISK_V2.METHOD_VERSION;
 const FUND_HISTORY_PATH=path.resolve(__dirname,'../../data/fund-holdings-history-v16.json');
 const FUND_CHANGE_THRESHOLD_PP=0.50;
-const WEIGHTS={breadth:0.30,volatility:0.20,liquidity:0.20,concentration:0.10,contagion:0.20};
-const SECTORS=[
- {id:'banking',label:'Ngân hàng',symbols:['ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB']},
- {id:'securities',label:'Chứng khoán',symbols:['SSI','VND','VCI','HCM','BSI','FTS','CTS','ORS','SHS','VIX']},
- {id:'real-estate',label:'Bất động sản',symbols:['VIC','VHM','VRE','NVL','PDR','DXG','KDH','NLG','BCM','KBC','SZC','DIG']},
- {id:'steel',label:'Thép',symbols:['HPG','HSG','NKG','POM','GDA','SMC','TLH','TVN','VGS']},
- {id:'technology',label:'Công nghệ',symbols:['FPT','CMG','ELC','CTR']},
- {id:'retail',label:'Bán lẻ',symbols:['MWG','FRT','PNJ','DGW']},
- {id:'oil-gas',label:'Dầu khí',symbols:['GAS','PLX','PVD','PVS','BSR','OIL']},
- {id:'utilities',label:'Điện và tiện ích',symbols:['POW','REE','NT2','GEG','PC1']},
- {id:'construction',label:'Xây dựng và hạ tầng',symbols:['CTD','HBC','HHV','CII','VCG']},
- {id:'seafood',label:'Thủy sản',symbols:['VHC','ANV','FMC']},
- {id:'chemicals',label:'Hóa chất và phân bón',symbols:['DGC','CSV','DCM','DPM']},
- {id:'transport',label:'Vận tải và logistics',symbols:['GMD','HAH','VSC','VJC','HVN']},
- {id:'insurance',label:'Bảo hiểm',symbols:['BVH','MIG','BIC','PVI']},
- {id:'consumer',label:'Tiêu dùng',symbols:['VNM','SAB','MSN','QNS']}
-];
+const WEIGHTS=RISK_V2.WEIGHTS;
+const SECTORS=RISK_V2.SECTORS;
 
 const n=v=>Number.isFinite(Number(v))?Number(v):null;
 const clamp=(v,lo=0,hi=100)=>Math.min(hi,Math.max(lo,Number(v)||0));
@@ -165,14 +151,7 @@ function viTime(value){
  const d=new Date(value);if(!Number.isFinite(d.getTime()))return'';
  return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
 }
-function level(score){
- const s=Number(score)||0;
- if(s>=80)return{key:'very-high',label:'Rất cao',tone:'red'};
- if(s>=65)return{key:'high',label:'Cao',tone:'red'};
- if(s>=50)return{key:'rising',label:'Căng thẳng tăng',tone:'yellow'};
- if(s>=35)return{key:'watch',label:'Cần theo dõi',tone:'yellow'};
- return{key:'normal',label:'Bình thường',tone:'green'};
-}
+function level(score){return RISK_V2.level(score);}
 function trend(current,previous,comparisonLabel='',previousSourceTime=null){
  if(previous===null||previous===undefined)return{label:'Mới bắt đầu ghi nhận',delta:null,direction:'flat',previousScore:null,previousSourceTime:null,comparisonLabel:'Chưa có mốc dữ liệu trước'};
  const delta=round((Number(current)||0)-(Number(previous)||0),1);
@@ -207,49 +186,8 @@ function liveRows(quotes,strategy){
  }
  return{rows,sourceTime,day};
 }
-function sectorRows(rows,calibration=null){
- const by=new Map(rows.map(r=>[r.symbol,r])),calibrated=calibration?.sectors||{};
- return SECTORS.map(group=>{
-  const members=group.symbols.map(s=>by.get(s)).filter(Boolean);
-  if(members.length<2)return null;
-  const declineShare=members.filter(r=>r.change<0).length/members.length;
-  const advanceShare=members.filter(r=>r.change>0).length/members.length;
-  const unchangedShare=members.filter(r=>r.change===0).length/members.length;
-  const medChange=median(members.map(r=>r.change));
-  const medVolume=median(members.map(r=>r.volumeRatio));
-  const score=clamp(
-   0.65*scale(declineShare,0.40,0.85)+
-   0.25*scale(-medChange,0,2.5)+
-   0.10*scale(medVolume,0.8,1.8)
-  );
-  const cal=calibrated[group.id]||null,threshold=n(cal?.threshold),exitThreshold=n(cal?.exitThreshold);
-  const alertEligible=cal?.alertEligible===true&&threshold!==null;
-  const aboveThreshold=alertEligible&&score>=threshold;
-  const alertActive=aboveThreshold;
-  const nearThreshold=alertEligible&&!alertActive&&score>=Math.max(0,threshold-10);
-  const memberRows=[...members].sort((a,b)=>a.change-b.change).map(r=>({
-   symbol:r.symbol,changePct:round(r.change,2),volumeRatio:round(r.volumeRatio,2),price:round(r.price,2),
-   rangePct:round(r.rangePct,2),cmf:r.cmf===null?null:round(r.cmf,3)
-  }));
-  return{
-   id:group.id,label:group.label,score:round(score,1),level:level(score),members:members.length,
-   declinePct:pct(declineShare),advancePct:pct(advanceShare),unchangedPct:pct(unchangedShare),medianChangePct:round(medChange,2),medianVolumeRatio:round(medVolume,2),
-   memberRows,threshold:threshold===null?null:round(threshold,1),exitThreshold:exitThreshold===null?null:round(exitThreshold,1),
-   alertEligible,aboveThreshold,alertActive,nearThreshold,
-   backtest:cal?{
-    status:cal.status||null,samples:cal.samples||0,forwardSessions:cal.forwardSessions||3,thresholdMode:cal.thresholdMode||null,
-    stateValidated:cal.stateValidated===true,continuationValidated:cal.continuationValidated===true,
-    adverseCutoffPct:n(cal.adverseCutoffPct),thresholdSpread:n(cal.thresholdSpread),
-    precision:n(cal.oos?.precision),baseRate:n(cal.oos?.baseRate),precisionLift:n(cal.oos?.precisionLift),
-    recall:n(cal.oos?.recall),falseAlarmRate:n(cal.oos?.falseAlarmRate),youden:n(cal.oos?.youden),signalRate:n(cal.oos?.signalRate),
-    folds:cal.oos?.folds||0,signals:cal.oos?.signals||0,events:cal.oos?.events||0,
-    medianCurrentReturnWhenSignalPct:n(cal.oos?.medianCurrentReturnWhenSignalPct),medianForward3WhenSignalPct:n(cal.oos?.medianForward3WhenSignalPct),reason:cal.reason||''
-   }:null
-  };
- }).filter(Boolean).sort((a,b)=>{
-  const ar=a.alertActive?3:a.nearThreshold?2:1,br=b.alertActive?3:b.nearThreshold?2:1;
-  return br-ar||b.score-a.score;
- });
+function sectorRows(rows,calibration=null,sourceTime=null){
+ return RISK_V2.sectorRowsV2(rows,calibration,sourceTime);
 }
 function stockRisk(r){
  const loss=0.35*scale(-r.change,0,5);
@@ -267,70 +205,15 @@ function stockRisk(r){
  if(r.cmf!==null&&r.cmf<-0.1)reasons.push('Áp lực dòng tiền nghiêng về bán');
  return{symbol:r.symbol,score:round(score,1),level:level(score),changePct:round(r.change,2),volumeRatio:round(r.volumeRatio,2),rangePct:round(r.rangePct,2),atrPct:round(r.atrPct,2),reasons:reasons.slice(0,3)};
 }
-function componentScores(rows,sectors){
- const declines=rows.filter(r=>r.change<0),severe=rows.filter(r=>r.change<=-2);
- const declineShare=rows.length?declines.length/rows.length:0;
- const severeShare=rows.length?severe.length/rows.length:0;
- const medianChange=median(rows.map(r=>r.change));
- const breadth=clamp(
-  0.55*scale(declineShare,0.40,0.85)+
-  0.25*scale(severeShare,0.05,0.45)+
-  0.20*scale(-medianChange,0,2.5)
- );
-
- const ranges=rows.map(r=>r.rangePct),atrs=rows.map(r=>r.atrPct);
- const medianRange=median(ranges),medianAtr=median(atrs);
- const bigRangeShare=rows.length?rows.filter(r=>r.rangePct>=3).length/rows.length:0;
- const volatility=clamp(
-  0.45*scale(medianRange,1,4)+
-  0.35*scale(medianAtr,1.5,5)+
-  0.20*scale(bigRangeShare,0.10,0.50)
- );
-
- const medianDownVol=median(declines.map(r=>r.volumeRatio));
- const heavyDownShare=rows.length?rows.filter(r=>r.change<0&&r.volumeRatio>=1.2).length/rows.length:0;
- const negativeCmfShare=rows.length?rows.filter(r=>r.cmf!==null&&r.cmf<=-0.1).length/rows.length:0;
- const liquidity=clamp(
-  0.45*scale(medianDownVol,0.8,2.0)+
-  0.30*scale(heavyDownShare,0.15,0.55)+
-  0.25*scale(negativeCmfShare,0.25,0.70)
- );
-
- const turnovers=rows.map(r=>Math.max(0,r.price*r.volume)).sort((a,b)=>b-a);
- const total=turnovers.reduce((a,b)=>a+b,0)||1;
- const top5=turnovers.slice(0,5).reduce((a,b)=>a+b,0)/total;
- const top10=turnovers.slice(0,10).reduce((a,b)=>a+b,0)/total;
- const concentration=clamp(0.70*scale(top5,0.18,0.45)+0.30*scale(top10,0.32,0.65));
-
- const stressed=sectors.filter(s=>s.score>=60).length,high=sectors.filter(s=>s.score>=75).length;
- const contagion=sectors.length?clamp(0.70*(stressed/sectors.length*100)+0.30*(high/sectors.length*100)):0;
-
- return{
-  breadth:{label:'Mức giảm lan rộng',score:round(breadth,1),level:level(breadth),detail:`${pct(declineShare)}% số mã đang giảm; ${pct(severeShare)}% giảm từ 2% trở lên.`,stats:{declinePct:pct(declineShare),severeDeclinePct:pct(severeShare),medianChangePct:round(medianChange,2)}},
-  volatility:{label:'Biến động giá',score:round(volatility,1),level:level(volatility),detail:`Biên độ trong phiên trung vị ${round(medianRange,2)}%; mức dao động 14 phiên/giá trung vị ${round(medianAtr,2)}%.`,stats:{medianRangePct:round(medianRange,2),medianAtrPct:round(medianAtr,2),bigRangePct:pct(bigRangeShare)}},
-  liquidity:{label:'Áp lực giao dịch',score:round(liquidity,1),level:level(liquidity),detail:`Khối lượng/TB20 trung vị ở nhóm giảm ${round(medianDownVol,2)} lần; ${pct(heavyDownShare)}% số mã vừa giảm vừa có khối lượng cao.`,stats:{medianDownVolumeRatio:round(medianDownVol,2),heavyDownPct:pct(heavyDownShare),negativeCmfPct:pct(negativeCmfShare)}},
-  concentration:{label:'Mức tập trung giao dịch',score:round(concentration,1),level:level(concentration),detail:`5 mã giao dịch lớn nhất chiếm ${pct(top5)}% giá trị ước tính; 10 mã lớn nhất chiếm ${pct(top10)}%.`,stats:{top5TurnoverPct:pct(top5),top10TurnoverPct:pct(top10)}},
-  contagion:{label:'Lan rộng giữa các nhóm ngành',score:round(contagion,1),level:level(contagion),detail:`${stressed}/${sectors.length} nhóm ngành đang có mức căng thẳng từ 60 điểm trở lên.`,stats:{stressedSectors:stressed,highSectors:high,totalSectors:sectors.length}}
- };
+function componentScores(rows,sectors,sourceTime=null,marketCalibration=null){
+ const raw=RISK_V2.rawComponents(rows,sectors,sourceTime,marketCalibration?.fragilityContext||{});
+ return RISK_V2.detailsForComponents(RISK_V2.calibratedComponents(raw,marketCalibration));
 }
-function overallFromComponents(components){
- const base=Object.entries(WEIGHTS).reduce((sum,[key,w])=>sum+(components[key]?.score||0)*w,0);
- const highCount=Object.values(components).filter(x=>x.score>=65).length;
- const amplifier=highCount>=5?10:highCount===4?8:highCount===3?5:0;
- const total=round(clamp(base+amplifier),1);
- return{score:total,level:level(total),baseScore:round(base,1),systemWideAdd:amplifier};
+function overallFromComponents(components,marketCalibration=null){
+ return RISK_V2.overallFromComponents(components,marketCalibration);
 }
 function contributionRows(components,previousPoint){
- return Object.entries(WEIGHTS).map(([key,weight])=>{
-  const x=components[key],prev=n(previousPoint?.components?.[key]);
-  return{
-   key,label:x?.label||key,score:round(x?.score||0,1),weight:round(weight*100,0),
-   points:round((x?.score||0)*weight,1),
-   change:prev===null?null:round((x?.score||0)-prev,1),
-   pointChange:prev===null?null:round(((x?.score||0)-prev)*weight,1),
-   level:x?.level||level(x?.score||0)
-  };
- }).sort((a,b)=>b.points-a.points);
+ return RISK_V2.contributionRows(components,previousPoint);
 }
 function historicalRow(bars,idx,symbol){
  if(idx<50)return null;
@@ -361,7 +244,7 @@ function historicalRow(bars,idx,symbol){
   sma50:avg(bars.slice(idx-49,idx+1).map(x=>x.close))
  };
 }
-function buildHistoricalBaseline(marketDir,symbols,currentDay){
+function buildHistoricalBaseline(marketDir,symbols,currentDay,marketCalibration=null){
  const rows=[];let baselineDate='';
  for(const symbol of symbols){
   try{
@@ -382,9 +265,10 @@ function buildHistoricalBaseline(marketDir,symbols,currentDay){
   }catch{return false;}
  });
  const useRows=sameDateRows.length>=Math.ceil(symbols.length*.80)?sameDateRows:rows;
- const sectors=sectorRows(useRows),components=componentScores(useRows,sectors),overall=overallFromComponents(components);
+ const sourceTime=baselineDate+'T14:45:00+07:00';
+ const sectors=sectorRows(useRows,null,sourceTime),components=componentScores(useRows,sectors,sourceTime,marketCalibration),overall=overallFromComponents(components,marketCalibration);
  return{
-  sourceTime:baselineDate+'T07:45:00.000Z',sourceDate:baselineDate,score:overall.score,level:overall.level.key,
+  sourceTime:sourceTime,sourceDate:baselineDate,score:overall.score,level:overall.level.key,
   components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.score])),
   basis:'previous-session-close',coverage:useRows.length
  };
@@ -395,12 +279,12 @@ function alertSpec(id,title,component,enter,exit,evidence){
 function buildAlerts(components,overall,previous,sourceTime){
  const prevMap=new Map((previous?.alerts||[]).map(a=>[a.id,a]));
  const specs=[
-  {id:'market-high',title:'Rủi ro thị trường đang cao',score:overall.score,enter:65,exit:58,evidence:`Điểm rủi ro chung hiện là ${overall.score}/100.`},
-  alertSpec('breadth','Số mã giảm đang lan rộng',components.breadth,65,55,components.breadth.detail),
-  alertSpec('volatility','Biến động giá tăng mạnh',components.volatility,65,55,components.volatility.detail),
-  alertSpec('liquidity','Áp lực bán đi kèm giao dịch lớn',components.liquidity,65,55,components.liquidity.detail),
-  alertSpec('contagion','Sự suy yếu lan sang nhiều nhóm ngành',components.contagion,60,50,components.contagion.detail),
-  alertSpec('concentration','Giao dịch đang tập trung vào ít mã',components.concentration,70,60,components.concentration.detail)
+  {id:'market-high',title:'Rủi ro thị trường đang cao',score:overall.score,enter:85,exit:78,evidence:`Điểm rủi ro chung hiện là ${overall.score}/100.`},
+  alertSpec('breadth','Số mã giảm đang lan rộng',components.breadth,85,75,components.breadth.detail),
+  alertSpec('volatility','Biến động đang ở vùng bất thường',components.volatility,85,75,components.volatility.detail),
+  alertSpec('liquidity','Thanh khoản và áp lực bán đang xấu đi',components.liquidity,85,75,components.liquidity.detail),
+  alertSpec('contagion','Nhiều nhóm ngành đang đồng biến theo chiều xấu',components.contagion,85,75,components.contagion.detail),
+  alertSpec('concentration','Giao dịch tập trung trong lúc độ rộng suy yếu',components.concentration,90,80,components.concentration.detail)
  ];
  const alerts=[];
  for(const s of specs){
@@ -441,7 +325,7 @@ function alertHistory(previous,alerts,sourceTime){
  for(const a of previous?.alerts||[])if(!now.has(a.id))history.push({id:a.id,title:a.title,type:'Đã hạ',time:sourceTime,score:a.score,level:level(0)});
  return history.slice(-60);
 }
-function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString(),baselinePoint=null,fundMonitor=null,sectorCalibration=null){
+function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().toISOString(),baselinePoint=null,fundMonitor=null,sectorCalibration=null,marketCalibration=null){
  if(!quotes||quotes.status!=='ok')throw new Error('quotes snapshot is not ok');
  if(!strategy||strategy.status!=='ok')throw new Error('strategy snapshot is not ok');
  const latest=quotes.latestSourceTime||quotes.sourceTime||null;
@@ -449,7 +333,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
  const {rows,sourceTime,day}=liveRows(quotes,strategy);
  const expected=Math.max(1,Number(quotes.expected)||Object.keys(quotes.quotes||{}).length);
  if(rows.length<Math.ceil(expected*.90))throw new Error(`risk live coverage below 90%: ${rows.length}/${expected}`);
- const rawSectors=sectorRows(rows,sectorCalibration),components=componentScores(rows,rawSectors),overall=overallFromComponents(components);
+ const rawSectors=sectorRows(rows,sectorCalibration,sourceTime),components=componentScores(rows,rawSectors,sourceTime,marketCalibration),overall=overallFromComponents(components,marketCalibration);
  let oldTimeline=Array.isArray(previous?.timeline)?previous.timeline.filter(x=>x&&x.sourceTime):[];
  const hasDifferent=oldTimeline.some(x=>String(x.sourceTime)!==String(sourceTime));
  if(!hasDifferent&&baselinePoint?.sourceTime&&String(baselinePoint.sourceTime)!==String(sourceTime))oldTimeline=[baselinePoint,...oldTimeline];
@@ -483,6 +367,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   overall,trend:tr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
   fundMonitor:fundMonitor||previous?.fundMonitor||{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu quỹ'},
   sectorCalibration:sectorCalibration?{version:sectorCalibration.version,status:sectorCalibration.status,forSession:sectorCalibration.forSession,validatedSectors:sectorCalibration.validatedSectors,continuationValidatedSectors:sectorCalibration.continuationValidatedSectors,totalSectors:sectorCalibration.totalSectors,methodology:sectorCalibration.methodology}:null,
+  marketCalibration:marketCalibration?{version:marketCalibration.version,status:marketCalibration.status,forSession:marketCalibration.forSession,samples:marketCalibration.samples,trainingSamples:marketCalibration.trainingSamples,fragilityContext:marketCalibration.fragilityContext,backtest:marketCalibration.backtest}:null,
   marketCounts:{advancing:rows.filter(r=>r.change>0).length,declining:rows.filter(r=>r.change<0).length,unchanged:rows.filter(r=>r.change===0).length,...breadthStats},
   breadthGroups:{
    advancing:rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change).map(r=>({symbol:r.symbol,changePct:round(r.change,2),price:round(r.price,2),volumeRatio:round(r.volumeRatio,2)})),
@@ -491,10 +376,11 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   },
   methodology:{
    weights:WEIGHTS,
-   description:'Điểm 0-100 đo mức căng thẳng đang quan sát được trên nhóm HOSE Core + Liquid có dữ liệu trực tiếp, từ giá, khối lượng và mức lan rộng của biến động. Điểm này không phải xác suất thị trường sẽ giảm.',
+   description:'Điểm 0-100 là thước đo căng thẳng tương đối với lịch sử. Dữ liệu trong phiên được điều chỉnh theo thời gian giao dịch trước khi so sánh.',
    scope:'HOSE Core + Liquid có dữ liệu trực tiếp',
-   comparison:'Mốc so sánh ưu tiên lần cập nhật liền trước. Khi chưa có lịch sử trong ngày, FinQuery dùng điểm cuối phiên giao dịch trước được dựng lại từ dữ liệu ngày.',
-   alertRule:'Cảnh báo thị trường chỉ bật khi điểm vượt ngưỡng và chỉ tắt sau khi điểm hạ xuống dưới mức an toàn hơn, để tránh bật/tắt liên tục. Cảnh báo ngành dùng ngưỡng riêng theo lịch sử của từng ngành; khả năng giảm tiếp 3 phiên được kiểm tra riêng.'
+   comparison:'So sánh ngắn hạn dùng mốc cập nhật trước; mốc đầu ngày dùng cuối phiên giao dịch trước.',
+   calibration:'Các thành phần được xếp theo phân phối lịch sử; mức đồng biến ngành dùng tương quan downside lịch sử. Tập trung giao dịch chỉ làm tăng rủi ro khi độ rộng thị trường cùng suy yếu.',
+   alertRule:'Cảnh báo chỉ bật khi điểm vào vùng cao và chỉ tắt sau khi hạ xuống mức an toàn hơn. Cảnh báo trạng thái và bằng chứng giảm tiếp 3 phiên được đánh giá riêng.'
   }
  };
 }
@@ -505,9 +391,11 @@ function main(){
  const quotes=read('quotes.json'),strategy=read('strategy-indicators.json');
  let previous=null;try{previous=read('risk-monitor.json');}catch{}
  let sectorCalibration=null;try{sectorCalibration=read('sector-risk-calibration.json');}catch{}
+ let marketCalibration=null;try{marketCalibration=read('market-risk-calibration.json');}catch{}
+ if(!marketCalibration||marketCalibration.status!=='ok'||String(marketCalibration.forSession||'')!==String(vnDay(quotes.latestSourceTime||quotes.sourceTime||'')))throw new Error('market risk calibration is unavailable or stale');
  const fundMonitor=loadFundMonitor();
  const latest=quotes.latestSourceTime||quotes.sourceTime||null,day=vnDay(latest);
- const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel')&&String(previous.fundMonitor?.signature||'')===String(fundMonitor?.signature||'')&&String(previous.sectorCalibration?.version||'')===String(sectorCalibration?.version||'')&&String(previous.sectorCalibration?.forSession||'')===String(sectorCalibration?.forSession||'');
+ const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel')&&String(previous.fundMonitor?.signature||'')===String(fundMonitor?.signature||'')&&String(previous.sectorCalibration?.version||'')===String(sectorCalibration?.version||'')&&String(previous.sectorCalibration?.forSession||'')===String(sectorCalibration?.forSession||'')&&String(previous.marketCalibration?.version||'')===String(marketCalibration?.version||'')&&String(previous.marketCalibration?.forSession||'')===String(marketCalibration?.forSession||'');
  if(reusable){
   console.log(JSON.stringify({status:previous.status,score:previous.overall?.score,level:previous.overall?.level?.label,coverage:previous.coverage,sourceTime:previous.sourceTime,trend:previous.trend,alerts:(previous.alerts||[]).length,timeline:(previous.timeline||[]).length,reused:true}));
   return;
@@ -515,8 +403,8 @@ function main(){
  const oldTimeline=Array.isArray(previous?.timeline)?previous.timeline:[];
  const needsBaseline=!oldTimeline.some(x=>x?.sourceTime&&String(x.sourceTime)!==String(latest));
  const symbols=Object.entries(quotes.quotes||{}).filter(([,q])=>q?.status!=='retained').map(([s])=>s);
- const baseline=needsBaseline?buildHistoricalBaseline(out,symbols,day):null;
- const snapshot=buildRiskSnapshot(quotes,strategy,previous,new Date().toISOString(),baseline,fundMonitor,sectorCalibration);
+ const baseline=needsBaseline?buildHistoricalBaseline(out,symbols,day,marketCalibration):null;
+ const snapshot=buildRiskSnapshot(quotes,strategy,previous,new Date().toISOString(),baseline,fundMonitor,sectorCalibration,marketCalibration);
  fs.writeFileSync(path.join(out,'risk-monitor.json'),JSON.stringify(snapshot));
  console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,trend:snapshot.trend,alerts:snapshot.alerts.length,timeline:snapshot.timeline.length,funds:snapshot.fundMonitor?.funds||0,fundSymbols:snapshot.fundMonitor?.symbols||0,fundChanges:snapshot.fundMonitor?.materialChanges||0,validatedSectors:snapshot.sectorCalibration?.validatedSectors||0,sectorAlerts:(snapshot.sectors||[]).filter(x=>x.alertActive).length}));
 }
