@@ -156,8 +156,11 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Dedicated automatic FinQuery Pages environment. The workflow itself is
+    # restricted to main / successful main data refreshes, so releases do not
+    # depend on a manual reviewer while the original github-pages protection stays intact.
     environment:
-      name: github-pages
+      name: github-pages-finquery-prod
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
