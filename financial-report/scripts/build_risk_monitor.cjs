@@ -361,10 +361,17 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
  const breadthStats=components.breadth.stats;
  const contributions=contributionRows(components,previousPoint);
  const tr=trend(overall.score,previousPoint?.score,comparisonLabel,previousPoint?.sourceTime||null);
+ const previousClosePoint=[...oldTimeline].reverse().find(x=>x?.sourceTime&&vnDay(x.sourceTime)!==day)||null;
+ const sessionTr=trend(
+  overall.score,
+  previousClosePoint?.score,
+  previousClosePoint?'So với cuối phiên '+viDate(previousClosePoint.sourceTime):'Chưa có cuối phiên trước',
+  previousClosePoint?.sourceTime||null
+ );
  return{
   version:VERSION,methodVersion:METHOD_VERSION,status:'ok',generatedAt,sourceTime,sourceDate:day,
   coverage:{quotes:rows.length,expected,strategyLive:rows.length,sectors:sectors.length},
-  overall,trend:tr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
+  overall,trend:tr,sessionTrend:sessionTr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
   fundMonitor:fundMonitor||previous?.fundMonitor||{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu quỹ'},
   sectorCalibration:sectorCalibration?{version:sectorCalibration.version,status:sectorCalibration.status,forSession:sectorCalibration.forSession,validatedSectors:sectorCalibration.validatedSectors,continuationValidatedSectors:sectorCalibration.continuationValidatedSectors,totalSectors:sectorCalibration.totalSectors,methodology:sectorCalibration.methodology}:null,
   marketCalibration:marketCalibration?{version:marketCalibration.version,status:marketCalibration.status,forSession:marketCalibration.forSession,samples:marketCalibration.samples,trainingSamples:marketCalibration.trainingSamples,fragilityContext:marketCalibration.fragilityContext,backtest:marketCalibration.backtest}:null,
