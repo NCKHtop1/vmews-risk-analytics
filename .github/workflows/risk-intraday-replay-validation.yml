@@ -84,7 +84,9 @@ jobs:
               'thresholdStats':d['thresholdStats']
           })
           gaps=sorted(d.get('empiricalVolumeClock') or [],key=lambda x:abs(x.get('gap') or 0),reverse=True)[:10]
+          range_gaps=sorted(d.get('empiricalRangeClock') or [],key=lambda x:abs(x.get('gap') or 0),reverse=True)[:10]
           print('LARGEST VOLUME-CLOCK GAPS',gaps)
+          print('LARGEST RANGE-CLOCK GAPS',range_gaps)
           PY
 
       - uses: actions/upload-artifact@v4
