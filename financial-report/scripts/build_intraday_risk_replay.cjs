@@ -144,7 +144,7 @@ function empiricalVolumeClock(intraday){
   for(const [clock,vals] of [...bucketValues].sort(([a],[b])=>a.localeCompare(b))){
     const sample=vals.length,emp=med(vals);
     const parts=clock.split(':').map(Number);
-    const synthetic='2026-10-06T'+String(parts[0]-7<0?parts[0]+17:parts[0]-7).padStart(2,'0')+':'+String(parts[1]).padStart(2,'0')+':00Z';
+    const synthetic=isoFromLocal('2026-10-06',parts[0]*60+parts[1]);
     const model=maturityFactors(synthetic).volumeDenominator;
     out.push({clock,samples:sample,empirical:round(emp,4),model:round(model,4),gap:round(emp-model,4)});
   }
