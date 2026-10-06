@@ -132,8 +132,13 @@ if cal.get('status')!='ok' or int(cal.get('totalSectors') or 0)<8:
     raise SystemExit(f'sector calibration unavailable: {cal}')
 if not all('threshold' in s and 'alertEligible' in s and isinstance(s.get('memberRows'),list) for s in (risk.get('sectors') or [])):
     raise SystemExit('sector heatmap contract is incomplete')
-if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-1.6':
+if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-2.0':
     raise SystemExit(f"unexpected risk method version: {risk.get('methodVersion')}")
+if market_cal.get('status')!='ok' or market_cal.get('forSession')!=str(risk.get('sourceDate') or ''):
+    raise SystemExit(f"market risk calibration unavailable/stale: {market_cal.get('status')} {market_cal.get('forSession')}")
+high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
+if not high or int(high.get('signals') or 0)<12 or float(high.get('precisionLift') or 0)<1.10 or float(high.get('youden') or 0)<=0:
+    raise SystemExit(f'market risk backtest gate failed: {high}')
 groups=risk.get('breadthGroups') or {}
 if sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))!=int(risk_cov.get('quotes') or 0):
     raise SystemExit('risk breadth drilldown coverage is incomplete')
@@ -166,7 +171,7 @@ PY
 }
 
 publish_snapshot() {
-  git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/sector-risk-calibration.json market/risk-monitor.json market/watch-today.json     market/universe.json market/history-status.json market/history
+  git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json market/watch-today.json     market/universe.json market/history-status.json market/history
 
   if git -C "$OUT" diff --cached --quiet; then
     echo "No live market changes to publish"
@@ -234,7 +239,7 @@ collect_validate_publish() {
   for attempt in 1 2; do
     echo "=== Intraday refresh attempt $attempt at $(TZ=Asia/Ho_Chi_Minh date '+%H:%M:%S %d/%m/%Y') · maxAge=${current_max_age}m ==="
     sync_market_worktree
-    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_sector_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_risk_monitor.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && publish_snapshot; then
+    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_sector_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_market_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_risk_monitor.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && publish_snapshot; then
       ok=0
       break
     fi
