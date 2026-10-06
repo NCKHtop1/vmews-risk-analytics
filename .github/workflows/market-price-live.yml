@@ -131,7 +131,7 @@ jobs:
           assert market_cal.get('status')=='ok' and market_cal.get('forSession')==str(risk.get('sourceDate') or ''),(market_cal.get('status'),market_cal.get('forSession'),risk.get('sourceDate'))
           bt=(market_cal.get('backtest') or {}).get('thresholds') or []
           high=next((x for x in bt if int(x.get('threshold') or 0)==85),None)
-          assert high and int(high.get('signals') or 0)>=12 and float(high.get('precisionLift') or 0)>=1.10 and float(high.get('youden') or 0)>0,high
+          assert high and bool((market_cal.get('backtest') or {}).get('stateValidated')) and int(high.get('signals') or 0)>=12 and 0.05<=float(high.get('signalRate') or 0)<=0.25 and float(high.get('currentStateGapPct') or 0)<=-0.40,high
           print({'sourceTime':latest,'scannerLive':len(live_scanner),'scannerComparators':len(scanner_cmp),'strategyLive':len(live_strategy),'strategyComparators':len(strategy_cmp),'risk':(risk.get('overall') or {}).get('score')})
           PY
 
