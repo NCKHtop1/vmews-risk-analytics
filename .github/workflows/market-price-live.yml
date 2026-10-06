@@ -107,11 +107,13 @@ jobs:
           quotes=load('quotes.json')
           scanner=load('technical-signals.json')
           strategy=load('strategy-indicators.json')
+          watch=load('watch-today.json')
           risk=load('risk-monitor.json')
           latest=str(quotes.get('latestSourceTime') or quotes.get('sourceTime') or '')
           assert latest, 'quotes sourceTime missing'
           assert str(scanner.get('sourceTime') or '')==latest,(scanner.get('sourceTime'),latest)
           assert str(strategy.get('sourceTime') or '')==latest,(strategy.get('sourceTime'),latest)
+          assert watch.get('status')=='ok' and str(watch.get('sourceTime') or '')==latest,(watch.get('status'),watch.get('sourceTime'),latest)
           assert str(risk.get('sourceTime') or '')==latest,(risk.get('sourceTime'),latest)
           assert int(scanner.get('refreshEveryMinutes') or 0)==5,scanner.get('refreshEveryMinutes')
           live_scanner=[x for x in (scanner.get('symbols') or {}).values() if x.get('cadence')=='LIVE_15M']
@@ -124,7 +126,7 @@ jobs:
           print({'sourceTime':latest,'scannerLive':len(live_scanner),'scannerComparators':len(scanner_cmp),'strategyLive':len(live_strategy),'strategyComparators':len(strategy_cmp),'risk':(risk.get('overall') or {}).get('score')})
           PY
 
-          git -C "$OUT" add --sparse market/technical-signals.json market/strategy-indicators.json market/sector-risk-calibration.json market/risk-monitor.json
+          git -C "$OUT" add --sparse market/technical-signals.json market/strategy-indicators.json market/watch-today.json market/sector-risk-calibration.json market/risk-monitor.json
           if git -C "$OUT" diff --cached --quiet; then
             echo "Derived market snapshots already current"
             exit 0
