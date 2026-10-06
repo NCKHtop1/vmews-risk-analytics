@@ -137,7 +137,7 @@ if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-2.0':
 if market_cal.get('status')!='ok' or market_cal.get('forSession')!=str(risk.get('sourceDate') or ''):
     raise SystemExit(f"market risk calibration unavailable/stale: {market_cal.get('status')} {market_cal.get('forSession')}")
 high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
-if not high or int(high.get('signals') or 0)<12 or float(high.get('precisionLift') or 0)<1.10 or float(high.get('youden') or 0)<=0:
+if not high or not bool((market_cal.get('backtest') or {}).get('stateValidated')) or int(high.get('signals') or 0)<12 or not (0.05<=float(high.get('signalRate') or 0)<=0.25) or float(high.get('currentStateGapPct') or 0)>-0.40:
     raise SystemExit(f'market risk backtest gate failed: {high}')
 groups=risk.get('breadthGroups') or {}
 if sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))!=int(risk_cov.get('quotes') or 0):
