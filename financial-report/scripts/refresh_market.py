@@ -1345,6 +1345,117 @@ def _history_page(symbol, frame, to, count, minute=False):
     raise last_error
 
 
+def _full_intraday_history(symbol, target):
+    """Page backwards through Vietcap minute history without discarding older bars.
+
+    The live endpoint returns a bounded window. Backfill mode walks the `to`
+    cursor backwards and is intentionally page-capped so one symbol cannot
+    monopolize a scheduled publisher run.
+    """
+    merged = {}
+    cursor = int(time.time())
+    page_size = min(700, max(100, int(os.environ.get('INTRADAY_PAGE_SIZE', '700'))))
+    max_pages = max(1, int(os.environ.get('INTRADAY_MAX_PAGES', '12')))
+    for _ in range(min(max_pages, max(1, math.ceil(target / page_size) + 1))):
+        try:
+            bars = _history_page(symbol, 'ONE_MINUTE', cursor, page_size, minute=True)
+        except Exception:
+            if merged:
+                break
+            raise
+        before = len(merged)
+        merged.update({bar['time']: bar for bar in bars})
+        if len(merged) >= target or len(merged) == before:
+            break
+        earliest = min(bar['time'] for bar in bars)
+        try:
+            cursor_next = int(datetime.fromisoformat(earliest).timestamp()) - 1
+        except (ValueError, TypeError):
+            break
+        if cursor_next >= cursor:
+            break
+        cursor = cursor_next
+    return [merged[key] for key in sorted(merged)][-target:]
+
+
+def _intraday_bucket(bar):
+    """Return the HOSE auction/continuous bucket available after this bar.
+
+    Continuous data are aggregated to five-minute end timestamps. Opening and
+    closing auctions are kept as separate buckets because their volume process
+    is structurally different from continuous matching.
+    """
+    stamp = timestamp(bar.get('time'))
+    if not stamp:
+        return None
+    dt = datetime.fromisoformat(stamp).astimezone(VN)
+    mins = dt.hour * 60 + dt.minute
+    day = dt.date()
+    session = None
+    end_min = None
+    if 9 * 60 <= mins < 9 * 60 + 15:
+        session, end_min = 'ATO', 9 * 60 + 15
+    elif 9 * 60 + 15 <= mins < 11 * 60 + 30:
+        start = 9 * 60 + 15
+        session, end_min = 'CONTINUOUS_AM', start + ((mins - start) // 5 + 1) * 5
+    elif 13 * 60 <= mins < 14 * 60 + 30:
+        start = 13 * 60
+        session, end_min = 'CONTINUOUS_PM', start + ((mins - start) // 5 + 1) * 5
+    elif 14 * 60 + 30 <= mins <= 14 * 60 + 45:
+        session, end_min = 'ATC', 14 * 60 + 45
+    else:
+        return None
+    end_local = datetime(day.year, day.month, day.day, end_min // 60, end_min % 60, tzinfo=VN)
+    return end_local.astimezone(timezone.utc).isoformat(), session
+
+
+def resample_intraday_5m(bars):
+    buckets = {}
+    for bar in sorted((bars or []), key=lambda x: str(x.get('time') or '')):
+        key = _intraday_bucket(bar)
+        if not key:
+            continue
+        end_time, session = key
+        o, h, l, close, vol = [number(bar.get(k)) for k in ('open', 'high', 'low', 'close', 'volume')]
+        if None in (o, h, l, close, vol):
+            continue
+        row = buckets.get(end_time)
+        if row is None:
+            buckets[end_time] = {
+                'time': end_time, 'open': o, 'high': h, 'low': l, 'close': close,
+                'volume': max(0, vol), 'session': session
+            }
+        else:
+            row['high'] = max(row['high'], h)
+            row['low'] = min(row['low'], l)
+            row['close'] = close
+            row['volume'] += max(0, vol)
+    return [buckets[key] for key in sorted(buckets)]
+
+
+def _write_intraday_5m_archive(out, symbol, minute_bars):
+    path = out / 'intraday-5m' / (symbol + '.json')
+    previous = read(path, {})
+    prior = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+    fresh = resample_intraday_5m(minute_bars)
+    merged = {bar['time']: bar for bar in prior}
+    merged.update({bar['time']: bar for bar in fresh})
+    bars = [merged[key] for key in sorted(merged)]
+    retain = max(500, int(os.environ.get('INTRADAY_5M_RETAIN_BARS', '6000')))
+    if len(bars) > retain:
+        bars = bars[-retain:]
+    row = {
+        'symbol': symbol, 'source': 'Vietcap 1m resampled by FinQuery', 'unit': 'VND',
+        'interval': '5m', 'checkedAt': now(), 'status': 'ok', 'barCount': len(bars),
+        'firstBar': bars[0]['time'] if bars else None,
+        'lastBar': bars[-1]['time'] if bars else None,
+        'sessions': ['ATO', 'CONTINUOUS_AM', 'CONTINUOUS_PM', 'ATC'],
+        'bars': bars
+    }
+    write(path, row)
+    return row
+
+
 def _kbs_number(value):
     if isinstance(value, str):
         text = value.strip().replace(' ', '')
@@ -1511,8 +1622,19 @@ def _refresh_one_history(out, symbol, minute=False):
     previous = read(path, {})
     try:
         if minute:
-            count = int(os.environ.get('INTRADAY_COUNT_BACK', '700'))
-            bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
+            count = max(100, int(os.environ.get('INTRADAY_COUNT_BACK', '700')))
+            target = max(count, int(os.environ.get('INTRADAY_TARGET_BARS', str(count))))
+            backfill = os.environ.get('INTRADAY_BACKFILL', '0') == '1'
+            fresh_bars = _full_intraday_history(symbol, target) if backfill else _history_page(
+                symbol, 'ONE_MINUTE', int(time.time()), count, minute=True
+            )
+            previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+            merged = {bar['time']: bar for bar in previous_bars}
+            merged.update({bar['time']: bar for bar in fresh_bars})
+            archive_bars = [merged[key] for key in sorted(merged)]
+            _write_intraday_5m_archive(out, symbol, archive_bars)
+            retain_1m = max(700, int(os.environ.get('INTRADAY_RETAIN_1M_BARS', '3000')))
+            bars = archive_bars[-retain_1m:]
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
             recent_count = max(20, min(250, int(os.environ.get('HISTORY_RECENT_COUNT', '80'))))
