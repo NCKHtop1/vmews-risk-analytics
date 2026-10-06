@@ -1272,6 +1272,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("&& '3' || '2'",workflow)
         self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
         self.assertIn('Publish intraday Risk clock shadow',workflow)
+        self.assertIn('continue-on-error: true',workflow)
         self.assertIn('build_intraday_risk_clock_challenger.cjs',workflow)
         self.assertIn('intraday-risk-clock-shadow.json',workflow)
         self.assertIn("'PROMOTE_TO_SHADOW','KEEP_RESEARCH_ONLY'",workflow)
