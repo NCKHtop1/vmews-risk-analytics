@@ -47,7 +47,7 @@ test('a renderer exception releases refresh lock and the next refresh succeeds',
  const refresh=source.slice(source.indexOf('async function refresh(){'),source.indexOf('window.FinancialMarket='));
  const button={},status={},state={quotes:{},companies:[],coreCompanies:[],symbol:'ACB',refreshing:false};let calls=0,broken=true;
  const atomic={sourceTime:'2026-10-06T07:45:00Z',quotes:{checkedAt:'2026-10-06T07:45:01Z',quotes:{}}};
- const marketData={getAlignedBundle:async()=>{calls++;return atomic;},commitBundle:x=>x,currentBundle:()=>atomic};
+ const marketData={getAlignedBundle:async()=>{calls++;return atomic;},commitBundle:x=>x,currentBundle:()=>atomic,mergeQuotes(){}};
  const ctx={state,$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,quoteAgeMinutes:()=>5,quoteNeedsFallback:()=>false,quoteNeedsCloseCatch:()=>false,marketSessionActive:()=>false,manageQuoteRetry:()=>{},showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},document:{dispatchEvent(){}},chartController:{loading:true},window:{FinMarketData:marketData,FinTechnicalScanner:{},FinStrategyBuilder:{},FinQueryAI:{sync(){}}}};
  vm.runInNewContext(refresh+';this.run=refresh',ctx);
  await ctx.run();assert.equal(state.refreshing,false);assert.equal(button.disabled,false);
@@ -285,8 +285,8 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(index,/data-platform-view="strategy">Strategy Lab/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
- assert.match(risk,/fundChangeIsCurrent/);
- assert.match(risk,/changedSymbols/);
+ assert.match(risk,/badge\.title=sectorCount\+' cảnh báo rủi ro ngành đang hoạt động'/);
+ assert.doesNotMatch(risk,/const count=sectorCount\+fundCount/);
  assert.match(risk,/Mã thay đổi đáng chú ý/);
  assert.doesNotMatch(risk,/Mã vượt ngưỡng|Lượt thay đổi vượt ngưỡng/);
  assert.match(risk,/return'Bình thường\.'/);
