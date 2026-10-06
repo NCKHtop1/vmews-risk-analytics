@@ -217,12 +217,21 @@ async function refresh(){
  state.refreshing=true;const refreshButton=$('market-refresh');if(refreshButton)refreshButton.disabled=true;
  try{
  const previousNewsMax=Math.max(0,...(state.news?.items||[]).map(x=>Date.parse(x.publishedAt)||0));
- const results=await Promise.allSettled([get('quotes.json'),get('news.json'),get('drivers.json'),get('universe.json')]);
- if(results[0].status==='fulfilled'&&results[0].value.quotes){
-  const bundle=results[0].value;
-  window.FinMarketData.mergeQuotes(state.quotes,bundle.quotes);
-  state.quoteBundleSourceTime=bundle.latestSourceTime||bundle.sourceTime||state.quoteBundleSourceTime||null;
-  state.quoteBundleCheckedAt=bundle.checkedAt||bundle.collectedAt||state.quoteBundleCheckedAt||null;
+ const results=await Promise.allSettled([window.FinMarketData.getAlignedBundle(),get('news.json'),get('drivers.json'),get('universe.json')]);
+ if(results[0].status==='fulfilled'){
+  const atomic=window.FinMarketData.commitBundle(results[0].value),bundle=atomic?.quotes;
+  if(bundle?.quotes){
+   window.FinMarketData.mergeQuotes(state.quotes,bundle.quotes);
+   state.quoteBundleSourceTime=atomic.sourceTime||state.quoteBundleSourceTime||null;
+   state.quoteBundleCheckedAt=bundle.checkedAt||bundle.collectedAt||state.quoteBundleCheckedAt||null;
+  }
+ }else{
+  const atomic=window.FinMarketData.currentBundle?.();
+  if(atomic?.quotes?.quotes){
+   window.FinMarketData.mergeQuotes(state.quotes,atomic.quotes.quotes);
+   state.quoteBundleSourceTime=atomic.sourceTime||state.quoteBundleSourceTime||null;
+   state.quoteBundleCheckedAt=atomic.quotes.checkedAt||atomic.quotes.collectedAt||state.quoteBundleCheckedAt||null;
+  }
  }
  let staticNews=results[1].status==='fulfilled'&&Array.isArray(results[1].value.items)?results[1].value:null;
  if(staticNews&&(!state.news||window.FinMarketData.revision(staticNews)>=window.FinMarketData.revision(state.news)))state.news=staticNews;
@@ -237,7 +246,6 @@ async function refresh(){
   try{
    const live=await liveFallback('quotes');
    window.FinMarketData.mergeQuotes(state.quotes,live.quotes);
-   state.quoteBundleSourceTime=live.latestSourceTime||live.sourceTime||state.quoteBundleSourceTime||null;
    state.quoteBundleCheckedAt=live.checkedAt||live.collectedAt||state.quoteBundleCheckedAt||null;
    usedCloseCatch=!marketSessionActive();
    usedQuoteFallback=marketSessionActive();
@@ -251,8 +259,8 @@ async function refresh(){
  if(currentQuoteLive)chartController.snapshot(currentQuote);
  if(state.initialized&&previousNewsMax){const fresh=(state.news?.items||[]).filter(x=>(Date.parse(x.publishedAt)||0)>previousNewsMax).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));const relevant=strictCompanyNews(fresh,state.symbol,1)[0];if(relevant)chartController.noteNews(relevant);}
  state.initialized=true;window.FinQueryAI?.sync(state.symbol);
- const degraded=results.some(r=>r.status==='rejected');
- const refreshStatus=$('market-refresh-status');if(refreshStatus)refreshStatus.textContent=currentQuote&&!currentQuoteLive&&marketSessionActive()?(quoteFallbackError?'Nguồn trực tiếp chưa phản hồi; hệ thống đang tự thử lại.':'Đang đồng bộ snapshot mới trong phiên.'):usedQuoteFallback?'Đã chuyển sang nguồn trực tiếp để giữ nhịp cập nhật trong phiên.':usedCloseCatch?(marketPhase()==='LUNCH'?'Đã đồng bộ giá chốt phiên sáng.':'Đã đồng bộ giá chốt phiên chiều.'):(degraded?'Một phần dữ liệu chưa tải được; giữ giá chốt gần nhất nếu có.':'');
+ const degraded=results.some(r=>r.status==='rejected'),bundleWaiting=results[0].status==='rejected';
+ const refreshStatus=$('market-refresh-status');if(refreshStatus)refreshStatus.textContent=bundleWaiting?'Đang đồng bộ bộ dữ liệu mới; hệ thống giữ snapshot hoàn chỉnh gần nhất.':currentQuote&&!currentQuoteLive&&marketSessionActive()?(quoteFallbackError?'Nguồn trực tiếp chưa phản hồi; hệ thống đang tự thử lại.':'Đang đồng bộ snapshot mới trong phiên.'):usedQuoteFallback?'Giá trực tiếp đã cập nhật; các module phân tích giữ snapshot hoàn chỉnh gần nhất cho đến khi đồng bộ xong.':usedCloseCatch?(marketPhase()==='LUNCH'?'Đã đồng bộ giá chốt phiên sáng.':'Đã đồng bộ giá chốt phiên chiều.'):(degraded?'Một phần dữ liệu chưa tải được; giữ snapshot hoàn chỉnh gần nhất nếu có.':'');
  const selectedAge=Number.isFinite(quoteAgeMinutes(currentQuote))?quoteAgeMinutes(currentQuote):null;
  document.dispatchEvent(new CustomEvent('finquery:market-refresh',{detail:{symbol:state.symbol,selectedAge,selectedFresh:Boolean(currentQuoteLive),usedQuoteFallback,usedCloseCatch,usedNewsFallback,quoteFallbackError,newsFallbackError,sourceTime:currentQuote?.sourceTime||null,checkedAt:currentQuote?.collectedAt||null}}));
  }catch(error){console.error('Market refresh failed',error);manageQuoteRetry(false);const status=$('market-refresh-status');if(status)status.textContent='Cập nhật bị gián đoạn; hệ thống đang tự thử lại.';}finally{state.refreshing=false;if(refreshButton)refreshButton.disabled=false;}
