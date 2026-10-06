@@ -102,9 +102,14 @@ jobs:
                           raise ValueError(f'watch item {symbol or "<missing>"} is absent from current live scanner')
                       if str(item.get('barDate') or '')!=str(row.get('barDate') or ''):
                           raise ValueError(f'watch/scanner barDate mismatch for {symbol}')
-                      for field in ('rsi14','volumeRatio20','bias'):
-                          if item.get(field)!=row.get(field):
-                              raise ValueError(f'watch/scanner {field} mismatch for {symbol}: {item.get(field)} != {row.get(field)}')
+                      if item.get('bias')!=row.get('bias'):
+                          raise ValueError(f'watch/scanner bias mismatch for {symbol}: {item.get("bias")} != {row.get("bias")}')
+                      for field in ('rsi14','volumeRatio20'):
+                          watch_value=item.get(field)
+                          scanner_value=row.get(field)
+                          expected_value=round(float(scanner_value),2) if isinstance(scanner_value,(int,float)) else scanner_value
+                          if watch_value!=expected_value:
+                              raise ValueError(f'watch/scanner {field} mismatch for {symbol}: {watch_value} != {expected_value}')
                   today=local.date().isoformat()
                   fresh_symbols={str(v.get('symbol') or '').upper() for v in fresh if v.get('symbol')}
                   required_today=max(1,math.ceil(len(fresh_symbols)*.90))
