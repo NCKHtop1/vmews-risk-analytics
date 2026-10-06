@@ -73,10 +73,12 @@ function empiricalProfileBeforeDay(intraday,beforeDay){
     volume:monotonicMap(volumeValues),range:monotonicMap(rangeValues)
   };
 }
-function adjustRowsForProfile(rows,time,profile){
+function adjustRowsForProfile(rows,time,profile,mode='both'){
   const key=clockKey(time),model=maturityFactors(time);
-  const targetVol=num(profile?.volume?.[key])||model.volumeDenominator;
-  const targetRange=num(profile?.range?.[key])||model.rangeDenominator;
+  const useVolume=mode==='both'||mode==='volume';
+  const useRange=mode==='both'||mode==='range';
+  const targetVol=useVolume?(num(profile?.volume?.[key])||model.volumeDenominator):model.volumeDenominator;
+  const targetRange=useRange?(num(profile?.range?.[key])||model.rangeDenominator):model.rangeDenominator;
   const vf=model.volumeDenominator/Math.max(.01,targetVol);
   const rf=model.rangeDenominator/Math.max(.01,targetRange);
   return rows.map(r=>({
@@ -86,8 +88,8 @@ function adjustRowsForProfile(rows,time,profile){
     change:(num(r.change)||0)*rf
   }));
 }
-function scoreRows(rows,time,cal,downsideCorrelation,profile=null){
-  const input=profile?adjustRowsForProfile(rows,time,profile):rows;
+function scoreRows(rows,time,cal,downsideCorrelation,profile=null,mode='both'){
+  const input=profile?adjustRowsForProfile(rows,time,profile,mode):rows;
   const sectors=sectorRowsV2(input,null,time);
   const raw=rawComponents(input,sectors,time,{downsideCorrelation});
   const components=calibratedComponents(raw,cal);
@@ -108,9 +110,9 @@ function signalOutcome(snapshots,signal){
   };
 }
 function summarize(days,model){
-  const eligible=days.filter(x=>x.completeDay&&x.profileDays>=MIN_PROFILE_DAYS);
-  const events=eligible.filter(x=>x.eventTime);
   const maxKey=model+'Max',first70Key=model+'First70',first85Key=model+'First85';
+  const eligible=days.filter(x=>x.completeDay&&x.profileDays>=MIN_PROFILE_DAYS&&Number.isFinite(x[maxKey]));
+  const events=eligible.filter(x=>x.eventTime);
   const signalDays85=eligible.filter(x=>Number(x[maxKey])>=85);
   const false85=signalDays85.filter(x=>!x.eventTime);
   const det70=events.filter(x=>x[first70Key]);
@@ -123,14 +125,14 @@ function summarize(days,model){
     validationDays:eligible.length,eventDays:events.length,
     threshold70:{
       detected:det70.length,recall:events.length?round(det70.length/events.length,3):null,
-      medianLeadMinutes:det70.length?med(det70.map(x=>x.leadMinutes).filter(Number.isFinite)):null
+      medianLeadMinutes:det70.length?med(det70.map(x=>x[first70Key]?.leadMinutes).filter(Number.isFinite)):null
     },
     threshold85:{
       detected:det85.length,recall:events.length?round(det85.length/events.length,3):null,
       signalDays:signalDays85.length,falseHighDays:false85.length,
       dayPrecision:signalDays85.length?round((signalDays85.length-false85.length)/signalDays85.length,3):null,
       falseHighDayRate:signalDays85.length?round(false85.length/signalDays85.length,3):null,
-      medianLeadMinutes:det85.length?med(det85.map(x=>x.leadMinutes).filter(Number.isFinite)):null,
+      medianLeadMinutes:det85.length?med(det85.map(x=>x[first85Key]?.leadMinutes).filter(Number.isFinite)):null,
       medianCurrentPct:current85.length?round(med(current85),3):null,
       medianFuture30mPct:future85.length?round(med(future85),3):null,
       medianMaxAdverse60mPct:adverse85.length?round(med(adverse85),3):null
@@ -173,13 +175,15 @@ function buildChallenger(marketDir){
       snaps.push({
         time,marketReturn,declinePct,
         baseline:scoreRows(rows,time,cal,downsideCorrelation,null),
-        empirical:profile.days>=MIN_PROFILE_DAYS?scoreRows(rows,time,cal,downsideCorrelation,profile):null
+        volume:profile.days>=MIN_PROFILE_DAYS?scoreRows(rows,time,cal,downsideCorrelation,profile,'volume'):null,
+        range:profile.days>=MIN_PROFILE_DAYS?scoreRows(rows,time,cal,downsideCorrelation,profile,'range'):null,
+        empirical:profile.days>=MIN_PROFILE_DAYS?scoreRows(rows,time,cal,downsideCorrelation,profile,'both'):null
       });
     }
     const event=snaps.find(x=>x.marketReturn<=-1&&x.declinePct>=70)||null;
     const completeDay=fullSessionRows([...times].sort().map(time=>({time})));
     const row={day,completeDay,profileDays:profile.days,eventTime:event?.time||null};
-    for(const model of ['baseline','empirical']){
+    for(const model of ['baseline','volume','range','empirical']){
       const valid=snaps.filter(x=>Number.isFinite(x[model]));
       row[model+'Max']=valid.length?Math.max(...valid.map(x=>x[model])):null;
       for(const threshold of [70,85]){
@@ -195,20 +199,29 @@ function buildChallenger(marketDir){
     results.push(row);
   }
   const baseline=summarize(results,'baseline');
-  const empirical=summarize(results,'empirical');
-  const delta={
-    recall85:baseline.threshold85.recall===null||empirical.threshold85.recall===null?null:round(empirical.threshold85.recall-baseline.threshold85.recall,3),
-    precision85:baseline.threshold85.dayPrecision===null||empirical.threshold85.dayPrecision===null?null:round(empirical.threshold85.dayPrecision-baseline.threshold85.dayPrecision,3),
-    falseHigh85:baseline.threshold85.falseHighDayRate===null||empirical.threshold85.falseHighDayRate===null?null:round(empirical.threshold85.falseHighDayRate-baseline.threshold85.falseHighDayRate,3),
-    lead85:baseline.threshold85.medianLeadMinutes===null||empirical.threshold85.medianLeadMinutes===null?null:round(empirical.threshold85.medianLeadMinutes-baseline.threshold85.medianLeadMinutes,1)
+  const variants={
+    volume:summarize(results,'volume'),
+    range:summarize(results,'range'),
+    both:summarize(results,'empirical')
   };
-  const promote=empirical.validationDays>=20&&empirical.eventDays>=5&&
-    (delta.recall85??-1)>=-0.05&&(delta.precision85??-1)>=0&&(delta.falseHigh85??1)<=0;
+  const deltas={};
+  for(const [name,v] of Object.entries(variants)){
+    deltas[name]={
+      recall85:baseline.threshold85.recall===null||v.threshold85.recall===null?null:round(v.threshold85.recall-baseline.threshold85.recall,3),
+      precision85:baseline.threshold85.dayPrecision===null||v.threshold85.dayPrecision===null?null:round(v.threshold85.dayPrecision-baseline.threshold85.dayPrecision,3),
+      falseHigh85:baseline.threshold85.falseHighDayRate===null||v.threshold85.falseHighDayRate===null?null:round(v.threshold85.falseHighDayRate-baseline.threshold85.falseHighDayRate,3),
+      lead85:baseline.threshold85.medianLeadMinutes===null||v.threshold85.medianLeadMinutes===null?null:round(v.threshold85.medianLeadMinutes-baseline.threshold85.medianLeadMinutes,1)
+    };
+  }
+  const qualified=Object.entries(variants).filter(([name,v])=>{
+    const d=deltas[name];
+    return v.validationDays>=20&&v.eventDays>=5&&(d.recall85??-1)>=-0.05&&(d.precision85??-1)>=0&&(d.falseHigh85??1)<=0;
+  }).map(([name])=>name);
   return{
-    version:'FINQUERY-INTRADAY-CLOCK-CHALLENGER-0.1',generatedAt:new Date().toISOString(),
+    version:'FINQUERY-INTRADAY-CLOCK-CHALLENGER-0.2',generatedAt:new Date().toISOString(),
     lookbackDays:LOOKBACK_DAYS,minProfileDays:MIN_PROFILE_DAYS,
-    baseline,empirical,delta,
-    recommendation:promote?'PROMOTE_TO_SHADOW':'KEEP_RESEARCH_ONLY',
+    baseline,variants,deltas,
+    recommendation:qualified.length?{status:'PROMOTE_TO_SHADOW',variants:qualified}:{status:'KEEP_RESEARCH_ONLY',variants:[]},
     policy:'A challenger may enter shadow mode only if it preserves recall, improves day-level precision, and does not increase false-high days on the same validation subset.',
     days:results
   };
@@ -219,7 +232,7 @@ function main(){
   const result=buildChallenger(marketDir);
   const output=process.argv[3]||path.join(marketDir,'intraday-risk-clock-challenger.json');
   fs.writeFileSync(output,JSON.stringify(result));
-  console.log(JSON.stringify({recommendation:result.recommendation,baseline:result.baseline,empirical:result.empirical,delta:result.delta}));
+  console.log(JSON.stringify({recommendation:result.recommendation,baseline:result.baseline,variants:result.variants,deltas:result.deltas}));
 }
 if(require.main===module)main();
 module.exports={empiricalProfileBeforeDay,adjustRowsForProfile,buildChallenger};
