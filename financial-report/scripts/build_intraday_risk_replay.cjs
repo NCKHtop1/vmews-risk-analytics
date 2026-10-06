@@ -150,6 +150,43 @@ function empiricalVolumeClock(intraday){
   }
   return out;
 }
+function empiricalRangeClock(intraday){
+  const bucketValues=new Map();
+  for(const [symbol,bars] of intraday){
+    const byDay=new Map();
+    for(const bar of bars){
+      const day=localParts(bar.time)?.day;if(!day)continue;
+      if(!byDay.has(day))byDay.set(day,[]);
+      byDay.get(day).push(bar);
+    }
+    for(const [day,rows] of byDay){
+      const ordered=rows.sort((a,b)=>a.time.localeCompare(b.time));
+      const fullHigh=Math.max(...ordered.map(x=>num(x.high)).filter(Number.isFinite));
+      const fullLow=Math.min(...ordered.map(x=>num(x.low)).filter(Number.isFinite));
+      const fullRange=fullHigh-fullLow;
+      if(!(fullRange>0))continue;
+      let cumHigh=-Infinity,cumLow=Infinity;
+      for(const bar of ordered){
+        const h=num(bar.high),l=num(bar.low);
+        if(h===null||l===null)continue;
+        cumHigh=Math.max(cumHigh,h);cumLow=Math.min(cumLow,l);
+        const p=localParts(bar.time),key=String(p.hour).padStart(2,'0')+':'+String(p.minute).padStart(2,'0');
+        if(!bucketValues.has(key))bucketValues.set(key,[]);
+        bucketValues.get(key).push((cumHigh-cumLow)/fullRange);
+      }
+    }
+  }
+  const out=[];
+  for(const [clock,vals] of [...bucketValues].sort(([a],[b])=>a.localeCompare(b))){
+    const sample=vals.length,emp=med(vals);
+    const parts=clock.split(':').map(Number);
+    const synthetic=isoFromLocal('2026-10-06',parts[0]*60+parts[1]);
+    const model=maturityFactors(synthetic).rangeDenominator;
+    out.push({clock,samples:sample,empirical:round(emp,4),model:round(model,4),gap:round(emp-model,4)});
+  }
+  return out;
+}
+
 function buildReplay(marketDir){
   const intraday=loadIntraday(marketDir);
   const daily=new Map([...intraday.keys()].map(s=>[s,loadDailyMap(marketDir,s)]));
@@ -226,6 +263,12 @@ function buildReplay(marketDir){
     },
     thresholdStats,daysDetail:dayResults,
     empiricalVolumeClock:empiricalVolumeClock(intraday),
+    empiricalRangeClock:empiricalRangeClock(intraday),
+    challengerDiagnostics:{
+      nearFloorDefinition:'changePct <= -6.3% (research-only HOSE near-floor proxy)',
+      csadDefinition:'cross-sectional absolute deviation around the equal-weight market return',
+      policy:'Near-floor pressure and CSAD remain research-only until they add incremental out-of-sample value beyond breadth/liquidity/co-movement.'
+    },
     validationPolicy:{minDays:MIN_VALIDATED_DAYS,minEventDays:MIN_EVENT_DAYS,minCoverageSymbols:MIN_REPLAY_SYMBOLS,note:'Only days with at least one 5-minute snapshot covering the minimum symbol count are usable. Until the minima are met, replay metrics are descriptive only and cannot change production thresholds.'}
   };
 }
@@ -238,4 +281,4 @@ function main(){
   console.log(JSON.stringify({status:result.status,days:result.days,eventDays:result.eventDays,snapshots:result.snapshots,detection:result.detection,thresholdStats:result.thresholdStats}));
 }
 if(require.main===module)main();
-module.exports={bucketFor,resample5m,featureRow,empiricalVolumeClock,buildReplay};
+module.exports={bucketFor,resample5m,featureRow,empiricalVolumeClock,empiricalRangeClock,buildReplay};
