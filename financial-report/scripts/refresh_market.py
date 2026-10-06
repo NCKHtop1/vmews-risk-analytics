@@ -1028,7 +1028,7 @@ def build_today_watchlist(out, companies, quotes):
     """Rank Core/VN100 names worth reviewing from the latest live technical snapshot.
 
     This is a transparent screening list, not an investment recommendation. It
-    updates with the 15-minute live price/scanner job and preserves prior ranks
+    updates with the live price/scanner snapshot and preserves prior ranks
     so the UI can show NEW / rank-up / rank-down changes between snapshots.
     """
     path = out / 'watch-today.json'
@@ -1165,7 +1165,7 @@ def build_today_watchlist(out, companies, quotes):
         'sourceDate': source_date,
         'status': 'ok',
         'universe': 'VN100/Core',
-        'refreshEveryMinutes': 15,
+        'refreshEveryMinutes': 5,
         'methodVersion': 'finquery-today-watch-v1',
         'rules': {
             'requiresPositiveTechnicalEvidence': True,
