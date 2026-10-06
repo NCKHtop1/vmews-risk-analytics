@@ -190,8 +190,14 @@ function buildCalibration(marketDir,forSession){
  const calibration=calibrationFromObservations(usable);
  const wf=walkForward(obs);
  const high=wf.thresholds.find(x=>x.threshold===85);
+ const bands=wf.stateBands||{};
+ const bandOrder=['normal','watch','high','veryHigh'];
+ const bandMedians=bandOrder.map(k=>num(bands[k]?.medianCurrentPct));
+ const bandCounts=bandOrder.map(k=>Number(bands[k]?.count)||0);
+ const stateMonotonic=bandMedians.every(Number.isFinite)&&bandCounts.every(x=>x>=20)&&
+  bandMedians[0]>bandMedians[1]&&bandMedians[1]>bandMedians[2]&&bandMedians[2]>bandMedians[3];
  const stateValidated=Boolean(
-  high&&high.total>=180&&high.signals>=12&&
+  high&&high.total>=180&&high.signals>=12&&stateMonotonic&&
   Number.isFinite(Number(high.currentStateGapPct))&&Number(high.currentStateGapPct)<=-0.40&&
   Number(high.signalRate)>=.05&&Number(high.signalRate)<=.25
  );
@@ -208,7 +214,7 @@ function buildCalibration(marketDir,forSession){
   componentGrids:calibration.componentGrids,overallBaseGrid:calibration.overallBaseGrid,
   fragilityContext:{downsideCorrelation:downsideCorrelation===null?null:round(downsideCorrelation,4),downsideSamples:recentDown.length},
   backtest:{
-   status:stateValidated?'VALIDATED_STATE':'LIMITED_STATE',stateValidated,continuationValidated,walkForwardSamples:wf.scored.length,forwardSessions:FORWARD_SESSIONS,stateBands:wf.stateBands,
+   status:stateValidated?'VALIDATED_STATE':'LIMITED_STATE',stateValidated,stateMonotonic,continuationValidated,walkForwardSamples:wf.scored.length,forwardSessions:FORWARD_SESSIONS,stateBands:wf.stateBands,
    adverseDefinition:'rolling prior-history 20th percentile of forward 3-session market return, capped at -1%',
    thresholds:wf.thresholds
   },
