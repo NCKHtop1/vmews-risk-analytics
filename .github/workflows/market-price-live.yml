@@ -27,7 +27,8 @@ on:
   schedule:
     # Redundant session bootstraps. Scheduled events can be delayed, so the
     # long-lived publisher also receives workflow_run heartbeats above.
-    - cron: '0 2 * * 1-5'   # 09:00 Vietnam
+    - cron: '55 1 * * 1-5'  # 08:55 Vietnam pre-warm
+    - cron: '0 2 * * 1-5'   # 09:00 Vietnam redundant open bootstrap
     - cron: '55 5 * * 1-5'  # 12:55 Vietnam
     # Backup cadence + close catches. Once one run starts, concurrency keeps it
     # alive and later triggers queue instead of cancelling the active publisher.
@@ -70,7 +71,7 @@ jobs:
           # During a live/close-catch window every trigger becomes a persistent
           # session publisher. This includes workflow_dispatch recoveries from
           # the freshness guard, so one recovery run cannot go stale again.
-          if { [ "$hhmm" -ge 0900 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
+          if { [ "$hhmm" -ge 0855 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "oneshot=0" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
