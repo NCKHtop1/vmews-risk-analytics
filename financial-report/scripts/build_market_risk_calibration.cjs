@@ -109,7 +109,7 @@ function buildObservations(marketDir,cutoffDay){
   const sectors=sectorRowsV2(rows,null,sourceTime);
   const raw=rawComponents(rows,sectors,sourceTime,{downsideCorrelation});
   sectorHistory.push({date,marketReturn:marketMed,sectors:sectorReturns});
-  observations.push({date,coverage:rows.length,marketReturn:round(marketMed,4),downsideCorrelation,raw});
+  observations.push({date,coverage:rows.length,marketReturn:round(marketMed,4),sectors:sectorReturns,downsideCorrelation,raw});
  }
  for(let i=0;i<observations.length;i++){
   let wealth=1,count=0;
@@ -129,12 +129,22 @@ function metrics(rows,threshold){
   if(signal&&event)tp++;else if(signal&&!event)fp++;else if(!signal&&event)fn++;else tn++;
  }
  const precision=tp+fp?tp/(tp+fp):0,recall=tp+fn?tp/(tp+fn):0,fpr=fp+tn?fp/(fp+tn):0,base=rows.length?events/rows.length:0;
+ const signalRows=rows.filter(x=>x.score>=threshold);
+ const medianCurrentAll=rows.length?median(rows.map(x=>x.marketReturn)):null;
+ const medianCurrentSignal=signalRows.length?median(signalRows.map(x=>x.marketReturn)):null;
+ const medianForwardAll=rows.length?median(rows.map(x=>x.forward3Pct)):null;
+ const medianForwardSignal=signalRows.length?median(signalRows.map(x=>x.forward3Pct)):null;
  return{
   threshold,total:rows.length,signals,events,tp,fp,tn,fn,
   precision:round(precision,4),recall:round(recall,4),falseAlarmRate:round(fpr,4),
   baseRate:round(base,4),precisionLift:round(base>0?precision/base:0,3),youden:round(recall-fpr,4),
   signalRate:round(rows.length?signals/rows.length:0,4),
-  medianForwardSignalPct:signals?round(median(rows.filter(x=>x.score>=threshold).map(x=>x.forward3Pct)),3):null
+  medianCurrentAllPct:medianCurrentAll===null?null:round(medianCurrentAll,3),
+  medianCurrentSignalPct:medianCurrentSignal===null?null:round(medianCurrentSignal,3),
+  currentStateGapPct:medianCurrentAll===null||medianCurrentSignal===null?null:round(medianCurrentSignal-medianCurrentAll,3),
+  medianForwardAllPct:medianForwardAll===null?null:round(medianForwardAll,3),
+  medianForwardSignalPct:medianForwardSignal===null?null:round(medianForwardSignal,3),
+  forwardMedianGapPct:medianForwardAll===null||medianForwardSignal===null?null:round(medianForwardSignal-medianForwardAll,3)
  };
 }
 function walkForward(observations){
@@ -148,7 +158,7 @@ function walkForward(observations){
   const components=calibratedComponents(current.raw,cal);
   const overall=overallFromComponents(components,cal);
   const adverse=Math.min(-1,Number(quantile(train.map(x=>x.forward3Pct),.20)??-1));
-  scored.push({date:current.date,score:overall.score,forward3Pct:current.forward3Pct,event:current.forward3Pct<=adverse,adverseCutoffPct:round(adverse,3)});
+  scored.push({date:current.date,score:overall.score,marketReturn:current.marketReturn,forward3Pct:current.forward3Pct,event:current.forward3Pct<=adverse,adverseCutoffPct:round(adverse,3)});
  }
  const thresholds=[70,85,95].map(t=>metrics(scored,t));
  return{scored,thresholds};
@@ -160,17 +170,25 @@ function buildCalibration(marketDir,forSession){
  const calibration=calibrationFromObservations(usable);
  const wf=walkForward(obs);
  const high=wf.thresholds.find(x=>x.threshold===85);
- const validated=Boolean(high&&high.total>=180&&high.signals>=12&&high.precisionLift>=1.10&&high.youden>0&&Number(high.medianForwardSignalPct)<0);
+ const stateValidated=Boolean(
+  high&&high.total>=180&&high.signals>=12&&
+  Number.isFinite(Number(high.currentStateGapPct))&&Number(high.currentStateGapPct)<=-0.40&&
+  Number(high.signalRate)>=.05&&Number(high.signalRate)<=.25
+ );
+ const continuationValidated=Boolean(
+  stateValidated&&high.precisionLift>=1.10&&high.youden>0&&
+  Number.isFinite(Number(high.forwardMedianGapPct))&&Number(high.forwardMedianGapPct)<0
+ );
  const recentDown=obs.filter(x=>x.marketReturn<0).slice(-80);
  const downsideCorrelation=pairwiseDownsideCorrelation(recentDown);
  return{
-  version:VERSION,status:validated?'ok':'limited',forSession,generatedAt:new Date().toISOString(),
+  version:VERSION,status:stateValidated?'ok':'limited',forSession,generatedAt:new Date().toISOString(),
   cutoffPolicy:'ONLY_DAILY_BARS_BEFORE_CURRENT_SESSION',
   samples:obs.length,trainingSamples:usable.length,
   componentGrids:calibration.componentGrids,overallBaseGrid:calibration.overallBaseGrid,
   fragilityContext:{downsideCorrelation:downsideCorrelation===null?null:round(downsideCorrelation,4),downsideSamples:recentDown.length},
   backtest:{
-   status:validated?'VALIDATED':'LIMITED',walkForwardSamples:wf.scored.length,forwardSessions:FORWARD_SESSIONS,
+   status:stateValidated?'VALIDATED_STATE':'LIMITED_STATE',stateValidated,continuationValidated,walkForwardSamples:wf.scored.length,forwardSessions:FORWARD_SESSIONS,
    adverseDefinition:'rolling prior-history 20th percentile of forward 3-session market return, capped at -1%',
    thresholds:wf.thresholds
   },
