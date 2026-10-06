@@ -1378,6 +1378,68 @@ def _full_intraday_history(symbol, target):
     return [merged[key] for key in sorted(merged)][-target:]
 
 
+def _intraday_backfill_cursor(out, symbol, previous_bars):
+    """Choose a cursor strictly before the earliest completed retained bucket."""
+    archive = read(out / 'intraday-5m' / (symbol + '.json'), {})
+    archived = [bar for bar in archive.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+    if archived:
+        first = archived[0]
+        try:
+            end = datetime.fromisoformat(str(first['time']).replace('Z', '+00:00')).astimezone(VN)
+            mins = end.hour * 60 + end.minute
+            session = str(first.get('session') or '')
+            if session == 'ATO':
+                start_min = 9 * 60
+            elif session == 'ATC':
+                start_min = 14 * 60 + 30
+            elif session in ('CONTINUOUS_AM', 'CONTINUOUS_PM'):
+                start_min = mins - 5
+            else:
+                start_min = mins - 5
+            start_local = datetime(end.year, end.month, end.day, start_min // 60, start_min % 60, tzinfo=VN)
+            return int(start_local.timestamp()) - 1
+        except (ValueError, TypeError):
+            pass
+    if previous_bars:
+        try:
+            return int(datetime.fromisoformat(str(previous_bars[0]['time']).replace('Z', '+00:00')).timestamp()) - 1
+        except (ValueError, TypeError):
+            pass
+    return int(time.time())
+
+
+def _backfill_intraday_chunk(out, symbol, previous_bars):
+    """Fetch a bounded older chunk and write it directly into the 5m archive.
+
+    Repeated manual backfill runs extend the 5m archive further backwards while
+    the retained 1m file stays small enough for the production data branch.
+    """
+    cursor = _intraday_backfill_cursor(out, symbol, previous_bars)
+    page_size = min(700, max(100, int(os.environ.get('INTRADAY_PAGE_SIZE', '700'))))
+    pages = max(1, min(6, int(os.environ.get('INTRADAY_BACKFILL_PAGES', '2'))))
+    merged = {}
+    for _ in range(pages):
+        try:
+            rows = _history_page(symbol, 'ONE_MINUTE', cursor, page_size, minute=True)
+        except Exception:
+            if merged:
+                break
+            raise
+        before = len(merged)
+        merged.update({bar['time']: bar for bar in rows})
+        if not rows or len(merged) == before:
+            break
+        earliest = min(bar['time'] for bar in rows)
+        try:
+            cursor_next = int(datetime.fromisoformat(earliest.replace('Z', '+00:00')).timestamp()) - 1
+        except (ValueError, TypeError):
+            break
+        if cursor_next >= cursor:
+            break
+        cursor = cursor_next
+    return [merged[key] for key in sorted(merged)]
+
+
 def _intraday_bucket(bar):
     """Return the HOSE auction/continuous bucket available after this bar.
 
@@ -1623,18 +1685,17 @@ def _refresh_one_history(out, symbol, minute=False):
     try:
         if minute:
             count = max(100, int(os.environ.get('INTRADAY_COUNT_BACK', '700')))
-            target = max(count, int(os.environ.get('INTRADAY_TARGET_BARS', str(count))))
             backfill = os.environ.get('INTRADAY_BACKFILL', '0') == '1'
-            fresh_bars = _full_intraday_history(symbol, target) if backfill else _history_page(
-                symbol, 'ONE_MINUTE', int(time.time()), count, minute=True
-            )
             previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+            fresh_bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
+            older_bars = _backfill_intraday_chunk(out, symbol, previous_bars) if backfill else []
+            archive_input = older_bars + previous_bars + fresh_bars
+            _write_intraday_5m_archive(out, symbol, archive_input)
             merged = {bar['time']: bar for bar in previous_bars}
             merged.update({bar['time']: bar for bar in fresh_bars})
-            archive_bars = [merged[key] for key in sorted(merged)]
-            _write_intraday_5m_archive(out, symbol, archive_bars)
+            recent_bars = [merged[key] for key in sorted(merged)]
             retain_1m = max(700, int(os.environ.get('INTRADAY_RETAIN_1M_BARS', '3000')))
-            bars = archive_bars[-retain_1m:]
+            bars = recent_bars[-retain_1m:]
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
             recent_count = max(20, min(250, int(os.environ.get('HISTORY_RECENT_COUNT', '80'))))
