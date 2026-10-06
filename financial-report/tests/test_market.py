@@ -1483,6 +1483,163 @@ class MarketTests(unittest.TestCase):
             m.os.environ.pop('HISTORY_COUNT_BACK',None)
             m.os.environ.pop('HISTORY_RECENT_COUNT',None)
 
+    def test_intraday_resamples_to_hose_aware_five_minute_buckets(self):
+        bars=[
+            {'time':'2026-10-05T02:15:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':10},
+            {'time':'2026-10-05T02:16:00+00:00','open':100,'high':102,'low':100,'close':101,'volume':20},
+            {'time':'2026-10-05T02:19:00+00:00','open':101,'high':103,'low':100,'close':102,'volume':30},
+            {'time':'2026-10-05T06:00:00+00:00','open':103,'high':104,'low':102,'close':104,'volume':40},
+            {'time':'2026-10-05T07:45:00+00:00','open':105,'high':106,'low':104,'close':105,'volume':50},
+        ]
+        out=m.resample_intraday_5m(bars)
+        self.assertEqual(len(out),3)
+        self.assertEqual(out[0]['time'],'2026-10-05T02:20:00+00:00')
+        self.assertEqual(out[0]['session'],'CONTINUOUS_AM')
+        self.assertEqual(out[0]['open'],100)
+        self.assertEqual(out[0]['high'],103)
+        self.assertEqual(out[0]['low'],99)
+        self.assertEqual(out[0]['close'],102)
+        self.assertEqual(out[0]['volume'],60)
+        self.assertEqual(out[1]['time'],'2026-10-05T06:05:00+00:00')
+        self.assertEqual(out[1]['session'],'CONTINUOUS_PM')
+        self.assertEqual(out[2]['time'],'2026-10-05T07:45:00+00:00')
+        self.assertEqual(out[2]['session'],'ATC')
+
+    def test_intraday_refresh_preserves_prior_minutes_and_appends_five_minute_archive(self):
+        original=m._history_page
+        old_retain=m.os.environ.get('INTRADAY_RETAIN_1M_BARS')
+        def fake(symbol,frame,to,count,minute=False):
+            self.assertEqual(symbol,'FPT')
+            self.assertEqual(frame,'ONE_MINUTE')
+            self.assertTrue(minute)
+            return [
+                {'time':'2026-10-06T02:15:00+00:00','open':101,'high':102,'low':100,'close':101,'volume':20},
+                {'time':'2026-10-06T02:16:00+00:00','open':101,'high':103,'low':101,'close':102,'volume':30},
+            ]
+        try:
+            m._history_page=fake
+            m.os.environ['INTRADAY_RETAIN_1M_BARS']='3000'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                m.write(out/'intraday/FPT.json',{
+                    'symbol':'FPT','bars':[
+                        {'time':'2026-10-05T02:15:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':10}
+                    ]
+                })
+                symbol,ok,error=m._refresh_one_history(out,'FPT',minute=True)
+                self.assertEqual(symbol,'FPT')
+                self.assertTrue(ok,error)
+                saved=m.read(out/'intraday/FPT.json',{})
+                self.assertEqual(len(saved['bars']),3)
+                self.assertEqual(saved['firstBar'],'2026-10-05T02:15:00+00:00')
+                five=m.read(out/'intraday-5m/FPT.json',{})
+                self.assertEqual(five['interval'],'5m')
+                self.assertEqual(five['barCount'],2)
+                self.assertEqual(five['bars'][0]['time'],'2026-10-05T02:20:00+00:00')
+                self.assertEqual(five['bars'][1]['time'],'2026-10-06T02:20:00+00:00')
+        finally:
+            m._history_page=original
+            if old_retain is None:m.os.environ.pop('INTRADAY_RETAIN_1M_BARS',None)
+            else:m.os.environ['INTRADAY_RETAIN_1M_BARS']=old_retain
+
+    def test_intraday_backfill_cursor_extends_before_existing_five_minute_archive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            m.write(out/'intraday-5m/FPT.json',{
+                'bars':[{
+                    'time':'2026-10-05T02:20:00+00:00','session':'CONTINUOUS_AM',
+                    'open':100,'high':101,'low':99,'close':100,'volume':10
+                }]
+            })
+            cursor=m._intraday_backfill_cursor(out,'FPT',[])
+            expected=int(datetime.fromisoformat('2026-10-05T02:15:00+00:00').timestamp())-1
+            self.assertEqual(cursor,expected)
+
+    def test_intraday_backfill_chunk_uses_validated_large_request_first(self):
+        original=m._history_page
+        calls=[]
+        direct=[
+            {'time':'2026-09-04T03:50:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':30},
+            {'time':'2026-10-03T07:45:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':20},
+        ]
+        def fake(symbol,frame,to,count,minute=False):
+            calls.append((to,count))
+            return direct
+        old_count=m.os.environ.get('INTRADAY_BACKFILL_COUNT')
+        try:
+            m._history_page=fake
+            m.os.environ['INTRADAY_BACKFILL_COUNT']='5000'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                rows=m._backfill_intraday_chunk(out,'FPT',[])
+                self.assertEqual(len(rows),2)
+                self.assertEqual(len(calls),1)
+                self.assertEqual(calls[0][1],5000)
+        finally:
+            m._history_page=original
+            if old_count is None:m.os.environ.pop('INTRADAY_BACKFILL_COUNT',None)
+            else:m.os.environ['INTRADAY_BACKFILL_COUNT']=old_count
+
+    def test_intraday_backfill_chunk_falls_back_to_small_backward_pages(self):
+        original=m._history_page
+        calls=[]
+        first=[
+            {'time':'2026-10-03T07:44:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':10},
+            {'time':'2026-10-03T07:45:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':20},
+        ]
+        second=[
+            {'time':'2026-10-03T07:42:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':30},
+            {'time':'2026-10-03T07:43:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':40},
+        ]
+        def fake(symbol,frame,to,count,minute=False):
+            calls.append((to,count))
+            if len(calls)==1:
+                raise RuntimeError('large request rejected')
+            return first if len(calls)==2 else second
+        old_pages=m.os.environ.get('INTRADAY_BACKFILL_PAGES')
+        old_count=m.os.environ.get('INTRADAY_BACKFILL_COUNT')
+        try:
+            m._history_page=fake
+            m.os.environ['INTRADAY_BACKFILL_COUNT']='5000'
+            m.os.environ['INTRADAY_BACKFILL_PAGES']='2'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                rows=m._backfill_intraday_chunk(out,'FPT',[])
+                self.assertEqual(len(rows),4)
+                self.assertEqual(rows[0]['time'],'2026-10-03T07:42:00+00:00')
+                self.assertEqual(calls[0][1],5000)
+                self.assertEqual(calls[1][1],700)
+                self.assertLess(calls[2][0],calls[1][0])
+        finally:
+            m._history_page=original
+            if old_pages is None:m.os.environ.pop('INTRADAY_BACKFILL_PAGES',None)
+            else:m.os.environ['INTRADAY_BACKFILL_PAGES']=old_pages
+            if old_count is None:m.os.environ.pop('INTRADAY_BACKFILL_COUNT',None)
+            else:m.os.environ['INTRADAY_BACKFILL_COUNT']=old_count
+
+    def test_intraday_archive_summary_reports_real_day_coverage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            bars_a=[
+                {'time':f'2026-09-{day:02d}T02:20:00+00:00','open':1,'high':1,'low':1,'close':1,'volume':1}
+                for day in range(1,31)
+            ]
+            bars_b=[
+                {'time':f'2026-08-{day:02d}T02:20:00+00:00','open':1,'high':1,'low':1,'close':1,'volume':1}
+                for day in range(1,29)
+            ] + [
+                {'time':f'2026-09-{day:02d}T02:20:00+00:00','open':1,'high':1,'low':1,'close':1,'volume':1}
+                for day in range(1,21)
+            ]
+            m.write(out/'intraday-5m/FPT.json',{'bars':bars_a})
+            m.write(out/'intraday-5m/VCB.json',{'bars':bars_b})
+            summary=m.intraday_archive_summary(out,['FPT','VCB','VHM'])
+            self.assertEqual(summary['archive5mAvailable'],2)
+            self.assertEqual(summary['archive5mUniverse'],3)
+            self.assertEqual(summary['archive5mMinDays'],0)
+            self.assertEqual(summary['archive5mAtLeast40Days'],1)
+            self.assertGreaterEqual(summary['archive5mMaxDays'],40)
+
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
         original=m._refresh_one_history
