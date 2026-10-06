@@ -1016,14 +1016,19 @@ def scanner(out, companies):
     if not isinstance(quotes, dict) or not quotes:
         raise RuntimeError('Existing quotes snapshot is unavailable for scanner rebuild')
     matches = build_technical_scanner(out, companies, quotes)
-    print(f'Technical scanner rebuilt from existing market snapshot: {len(matches)} matches', flush=True)
+    today_watch = build_today_watchlist(out, companies, quotes)
+    print(
+        f'Technical scanner rebuilt from existing market snapshot: {len(matches)} matches; '
+        f'today watch: {len(today_watch)}',
+        flush=True,
+    )
 
 
 def build_today_watchlist(out, companies, quotes):
     """Rank Core/VN100 names worth reviewing from the latest live technical snapshot.
 
     This is a transparent screening list, not an investment recommendation. It
-    updates with the 15-minute live price/scanner job and preserves prior ranks
+    updates with the live price/scanner snapshot and preserves prior ranks
     so the UI can show NEW / rank-up / rank-down changes between snapshots.
     """
     path = out / 'watch-today.json'
@@ -1158,9 +1163,9 @@ def build_today_watchlist(out, companies, quotes):
         'checkedAt': stamp,
         'sourceTime': newest_source_time(quotes),
         'sourceDate': source_date,
-        'status': 'ok' if selected else 'empty',
+        'status': 'ok',
         'universe': 'VN100/Core',
-        'refreshEveryMinutes': 15,
+        'refreshEveryMinutes': 5,
         'methodVersion': 'finquery-today-watch-v1',
         'rules': {
             'requiresPositiveTechnicalEvidence': True,

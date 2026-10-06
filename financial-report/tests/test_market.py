@@ -1095,6 +1095,10 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(data['refreshEveryMinutes'],5)
             self.assertIn('FPT',data['symbols'])
             self.assertNotEqual(data['symbols']['FPT']['macdHistogram'],data['symbols']['FPT']['previousMacdHistogram'])
+            watch=m.read(out/'watch-today.json',{})
+            self.assertEqual(watch['status'],'ok')
+            self.assertEqual(watch['sourceTime'],stamp)
+            self.assertEqual(watch['refreshEveryMinutes'],5)
 
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
@@ -1166,7 +1170,7 @@ class MarketTests(unittest.TestCase):
             rows=m.build_today_watchlist(out,companies,quotes)
             self.assertEqual([x['symbol'] for x in rows],['HSG','VIB'])
             payload=json.loads((out/'watch-today.json').read_text())
-            self.assertEqual(payload['refreshEveryMinutes'],15)
+            self.assertEqual(payload['refreshEveryMinutes'],5)
             self.assertEqual(payload['universe'],'VN100/Core')
             self.assertTrue(all(x['isNew'] for x in payload['items']))
             second=dict(first)
@@ -1196,6 +1200,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('if(!document.hidden)loadTodayWatch();},60000)',app)
         self.assertIn('finqueryQuickWatch',css)
         self.assertIn('market/watch-today.json',session)
+        self.assertIn('market/watch-today.json market/sector-risk-calibration.json',price)
 
     def test_news_and_price_refreshes_are_independent_from_heavy_market_jobs(self):
         script=(ROOT/'scripts/refresh_market.py').read_text()
@@ -1254,6 +1259,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn('Refresh market news stream',pages)
         self.assertIn("group: pages-${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion || 'success' }}",pages)
         self.assertIn('cancel-in-progress: true',pages)
+        self.assertIn("source_day=source_dt.astimezone",pages)
+        self.assertNotIn("vn_day=datetime.now(timezone.utc)",pages)
         self.assertIn("cron: '20 9 * * 1-5'",workflow)
         self.assertIn("cron: '35 9 * * 1-5'",workflow)
         self.assertIn("HISTORY_RETRY_WORKERS: '2'",workflow)
@@ -1756,6 +1763,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn("watch-today.json",guard)
         self.assertIn("drivers.json",guard)
         self.assertIn("prices-status.json",guard)
+        self.assertIn("FINQUERY-RISK-RULES-1.6",guard)
+        self.assertNotIn("FINQUERY-RISK-RULES-1.5",guard)
+        self.assertIn("watch/scanner barDate mismatch",guard)
         self.assertNotIn("Forecast V20.1 immutable-price audit and market intelligence",guard)
         self.assertNotIn("Forecast V21 guarded session overlay",guard)
         self.assertNotIn("forecast-v21-session-refresh.yml",guard)

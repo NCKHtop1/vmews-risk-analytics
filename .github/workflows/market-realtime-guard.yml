@@ -93,6 +93,23 @@ jobs:
                   for label,d in [('scanner',s),('strategy',strategy),('watch',w)]:
                       if d.get('status')!='ok' or age(d.get('checkedAt'))>10 or d.get('sourceTime')!=q.get('latestSourceTime'):
                           raise ValueError(label+' stale or not aligned with quotes')
+                  scanner_rows=s.get('symbols') or {}
+                  watch_items=w.get('items') or []
+                  for item in watch_items:
+                      symbol=str(item.get('symbol') or '').upper()
+                      row=scanner_rows.get(symbol) or {}
+                      if not symbol or row.get('cadence')!='LIVE_15M':
+                          raise ValueError(f'watch item {symbol or "<missing>"} is absent from current live scanner')
+                      if str(item.get('barDate') or '')!=str(row.get('barDate') or ''):
+                          raise ValueError(f'watch/scanner barDate mismatch for {symbol}')
+                      if item.get('bias')!=row.get('bias'):
+                          raise ValueError(f'watch/scanner bias mismatch for {symbol}: {item.get("bias")} != {row.get("bias")}')
+                      for field in ('rsi14','volumeRatio20'):
+                          watch_value=item.get(field)
+                          scanner_value=row.get(field)
+                          expected_value=round(float(scanner_value),2) if isinstance(scanner_value,(int,float)) else scanner_value
+                          if watch_value!=expected_value:
+                              raise ValueError(f'watch/scanner {field} mismatch for {symbol}: {watch_value} != {expected_value}')
                   today=local.date().isoformat()
                   fresh_symbols={str(v.get('symbol') or '').upper() for v in fresh if v.get('symbol')}
                   required_today=max(1,math.ceil(len(fresh_symbols)*.90))
@@ -108,7 +125,7 @@ jobs:
                       raise ValueError('risk monitor stale or not aligned with quotes')
                   if int(risk_cov.get('quotes') or 0)<math.ceil(expected*.90) or not isinstance(risk_score,(int,float)) or not 0<=risk_score<=100:
                       raise ValueError(f'risk monitor invalid: coverage={risk_cov} score={risk_score}')
-                  if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-1.5':
+                  if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-1.6':
                       raise ValueError(f"unexpected risk method version: {risk.get('methodVersion')}")
                   groups=risk.get('breadthGroups') or {}
                   if sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))!=int(risk_cov.get('quotes') or 0):
