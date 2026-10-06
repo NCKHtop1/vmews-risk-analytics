@@ -1,12 +1,12 @@
 {
   "version": "VMEWS-FORECAST-LIVE-1.0.0",
-  "generatedAt": "2026-10-05T04:35:08.139621+00:00",
+  "generatedAt": "2026-10-06T05:21:30.186456+00:00",
   "status": "WAITING_OR_REVIEW",
-  "reason": "PIT mismatch panel=2026-10-05 scan=2026-09-24; current archive withheld",
+  "reason": "PIT mismatch panel=2026-10-06 scan=2026-10-05; current archive withheld",
   "timeBasis": "COMPLETED_EOD_ONLY",
   "preservesLastValidatedSnapshot": true,
   "automaticPromotion": false,
   "reasonCode": "PIT_SESSION_MISMATCH",
-  "panelAsOf": "2026-10-05",
-  "scanAsOf": "2026-09-24"
+  "panelAsOf": "2026-10-06",
+  "scanAsOf": "2026-10-05"
 }
