@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
 const {calibrateSector,stressScore}=require('../scripts/build_sector_risk_calibration.cjs');
+const {rawComponents,sectorRowsV2,sessionProgress,calibrationFromObservations,calibratedComponents,overallFromComponents:overallV2}=require('../scripts/risk_model_v2.cjs');
 
 const symbols=['ACB','BID','CTG','MBB','TCB','VCB','VIC','VHM','NVL','PDR','SSI','VIX'];
 function fixture({stress=false,sourceTime='2026-10-05T07:45:00.000Z'}={}){
@@ -38,17 +39,20 @@ test('calm market stays below high-risk threshold',()=>{
  assert.equal(out.timeline.length,1);
 });
 
-test('broad selloff raises market risk and creates explainable alerts',()=>{
- const {quotes,strategy}=fixture({stress:true});
- const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
- assert.ok(out.overall.score>=65,out.overall);
- assert.ok(out.components.breadth.score>=65,out.components.breadth);
- assert.ok(out.components.volatility.score>=65,out.components.volatility);
- assert.ok(out.components.liquidity.score>=65,out.components.liquidity);
- assert.ok(out.components.contagion.score>=60,out.components.contagion);
- assert.ok(out.alerts.some(x=>x.id==='market-high'));
- assert.ok(out.alerts.some(x=>x.id==='breadth'));
- assert.equal(out.topRisk[0].reasons.length>0,true);
+test('broad selloff raises market risk and confirms non-extreme alerts on the next snapshot',()=>{
+ const firstFixture=fixture({stress:true,sourceTime:'2026-10-05T07:40:00.000Z'});
+ const first=buildRiskSnapshot(firstFixture.quotes,firstFixture.strategy,null,'2026-10-05T07:40:10.000Z');
+ assert.ok(first.overall.score>=80,first.overall);
+ assert.ok(first.components.breadth.score>=65,first.components.breadth);
+ assert.ok(first.components.volatility.score>=65,first.components.volatility);
+ assert.ok(first.components.liquidity.score>=65,first.components.liquidity);
+ assert.ok(first.components.contagion.score>=60,first.components.contagion);
+ if(first.overall.score<95)assert.equal(first.alerts.some(x=>x.id==='market-high'),false);
+ const secondFixture=fixture({stress:true,sourceTime:'2026-10-05T07:45:00.000Z'});
+ const second=buildRiskSnapshot(secondFixture.quotes,secondFixture.strategy,first,'2026-10-05T07:45:10.000Z');
+ assert.ok(second.alerts.some(x=>x.id==='market-high'));
+ assert.ok(second.alerts.some(x=>x.id==='breadth'));
+ assert.equal(second.topRisk[0].reasons.length>0,true);
 });
 
 test('isolated stock shock is surfaced without turning into a market-wide alarm',()=>{
@@ -80,15 +84,17 @@ test('timeline is deduplicated by market source time',()=>{
  assert.notEqual(next.trend.delta,null);
 });
 
-test('active alerts keep their original start time while the condition remains active',()=>{
+test('confirmed alerts keep their confirmation time while the condition remains active',()=>{
  const firstFixture=fixture({stress:true,sourceTime:'2026-10-05T07:40:00.000Z'});
  const first=buildRiskSnapshot(firstFixture.quotes,firstFixture.strategy,null,'2026-10-05T07:40:10.000Z');
- const nextFixture=fixture({stress:true,sourceTime:'2026-10-05T07:45:00.000Z'});
- const next=buildRiskSnapshot(nextFixture.quotes,nextFixture.strategy,first,'2026-10-05T07:45:10.000Z');
+ const confirmFixture=fixture({stress:true,sourceTime:'2026-10-05T07:45:00.000Z'});
+ const confirmed=buildRiskSnapshot(confirmFixture.quotes,confirmFixture.strategy,first,'2026-10-05T07:45:10.000Z');
+ const nextFixture=fixture({stress:true,sourceTime:'2026-10-05T07:50:00.000Z'});
+ const next=buildRiskSnapshot(nextFixture.quotes,nextFixture.strategy,confirmed,'2026-10-05T07:50:10.000Z');
  const a=next.alerts.find(x=>x.id==='market-high');
  assert.ok(a);
- assert.equal(a.startedAt,'2026-10-05T07:40:00.000Z');
- assert.equal(a.lastSeen,'2026-10-05T07:45:00.000Z');
+ assert.equal(a.startedAt,'2026-10-05T07:45:00.000Z');
+ assert.equal(a.lastSeen,'2026-10-05T07:50:00.000Z');
 });
 
 
@@ -282,10 +288,40 @@ test('sector alert hysteresis is reflected in the sector state shown to the UI',
  assert.ok(secondBank.score>=12.5&&secondBank.score<20,secondBank);
 });
 
+test('intraday trading-time normalization is monotonic and bounded',()=>{
+ assert.equal(sessionProgress('2026-10-05T01:55:00.000Z'),0);
+ const open=sessionProgress('2026-10-05T02:15:00.000Z');
+ const lateMorning=sessionProgress('2026-10-05T04:00:00.000Z');
+ const afternoon=sessionProgress('2026-10-05T07:00:00.000Z');
+ assert.ok(open>0&&open<lateMorning&&lateMorning<afternoon&&afternoon<1,{open,lateMorning,afternoon});
+ assert.equal(sessionProgress('2026-10-05T07:45:00.000Z'),1);
+});
+
+test('turnover concentration alone cannot create market stress when breadth is healthy',()=>{
+ const rows=[];
+ for(let i=0;i<20;i++)rows.push({symbol:'X'+i,price:100+i,volume:i<5?1_000_000:10_000,change:i%2===0?.2:-.2,rangePct:.6,atrPct:1.8,volumeRatio:1,cmf:0,sma20:100,sma50:100});
+ const sectors=sectorRowsV2(rows,null,'2026-10-05T07:45:00.000Z');
+ const raw=rawComponents(rows,sectors,'2026-10-05T07:45:00.000Z',{});
+ assert.ok(raw.breadth.raw<20,raw.breadth);
+ assert.equal(raw.concentration.raw,0);
+});
+
+test('historical calibration maps component scores and overall score into percentile space',()=>{
+ const observations=[];
+ for(let i=0;i<300;i++)observations.push({raw:{
+  breadth:{raw:i%101},volatility:{raw:(i*2)%101},liquidity:{raw:(i*3)%101},concentration:{raw:(i*5)%101},contagion:{raw:(i*7)%101}
+ }});
+ const cal=calibrationFromObservations(observations);
+ const comps=calibratedComponents({breadth:{raw:90},volatility:{raw:85},liquidity:{raw:80},concentration:{raw:70},contagion:{raw:88}},cal);
+ const total=overallV2(comps,cal);
+ assert.ok(total.score>=0&&total.score<=100,total);
+ assert.ok(comps.breadth.score>50,comps.breadth);
+});
+
 test('risk method copy is plain-language and versioned to refresh cached snapshots',()=>{
  const {quotes,strategy}=fixture();
  const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
- assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-1.6');
+ assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-2.0');
  assert.doesNotMatch(out.methodology.alertRule,/hysteresis|ngoài mẫu|OOS/i);
- assert.match(out.methodology.alertRule,/tránh bật\/tắt liên tục/);
+ assert.match(out.methodology.alertRule,/chỉ tắt sau khi hạ xuống mức an toàn hơn/);
 });

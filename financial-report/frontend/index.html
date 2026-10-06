@@ -12,20 +12,18 @@
 <main>
 <div class="intro"><div><h1>Giám sát thị trường chứng khoán Việt Nam</h1></div><form id="site-unlock-form" class="site-access-form" autocomplete="off"><label for="site-access-code">Mã truy cập</label><div class="site-access-row"><input id="site-access-code" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="Nhập mã" aria-label="Mã truy cập FinQuery"><button type="submit">Mở</button></div><p id="site-access-error" role="status" aria-live="polite"></p></form></div>
 <section id="risk-monitor" class="risk-monitor-page" aria-label="Giám sát rủi ro thị trường" hidden>
-<header class="risk-page-head"><div><h1>Giám sát rủi ro thị trường</h1></div><div class="risk-page-tools"><span id="risk-source-time" class="risk-source-line">Đang tải dữ liệu…</span><small id="risk-source-status">Đang đồng bộ</small><button id="risk-refresh" type="button">Cập nhật</button></div></header>
+<header class="risk-page-head"><div><h1>Giám sát rủi ro thị trường</h1></div><div class="risk-page-tools"><span id="risk-coverage-inline">—</span><span id="risk-source-time" class="risk-source-line">Đang tải dữ liệu…</span><small id="risk-source-status">Đang đồng bộ</small><button id="risk-refresh" type="button">Cập nhật</button></div></header>
 <div id="risk-error" role="alert" hidden></div>
 <div class="risk-body">
 <div class="risk-summary-grid">
 <article class="risk-summary-card"><span>MỨC RỦI RO HIỆN TẠI · THANG 0–100</span><div class="risk-score-row"><strong id="risk-score">—</strong><button class="term-info-button" type="button" data-info-key="risk-score" aria-label="Giải thích thang điểm rủi ro">i</button><span id="risk-level"></span></div><p id="risk-summary">Đang tính từ dữ liệu thị trường.</p></article>
 <article class="risk-summary-card"><span>SO VỚI MỐC GẦN NHẤT</span><strong id="risk-trend" class="risk-main-value">—</strong><p id="risk-trend-delta">Đang tìm mốc so sánh.</p></article>
-<article class="risk-summary-card"><span>ĐỘ PHỦ DỮ LIỆU</span><strong id="risk-coverage" class="risk-main-value">—</strong><p id="risk-coverage-note">Đang kiểm tra.</p></article>
+<article class="risk-summary-card"><span>SO VỚI CUỐI PHIÊN TRƯỚC</span><strong id="risk-session-trend" class="risk-main-value">—</strong><p id="risk-session-trend-delta">Đang tìm mốc so sánh.</p></article>
 </div>
-
-<section class="risk-section"><div class="risk-section-head"><div><h2>Năm thước đo chính</h2></div><span id="risk-driver-change"></span></div><div id="risk-components" class="risk-components"></div></section>
 
 <div class="risk-main-grid risk-main-grid-balanced">
 <section class="risk-panel"><div class="risk-panel-head"><div><h3>Diễn biến điểm rủi ro</h3></div></div><div id="risk-timeline"></div></section>
-<section class="risk-panel"><h3>Điểm rủi ro đến từ đâu?</h3><div id="risk-contributions" class="risk-contributions"></div></section>
+<section class="risk-panel"><div class="risk-panel-head"><div><h3>Điểm rủi ro đến từ đâu?</h3></div><span id="risk-driver-change"></span></div><div id="risk-contributions" class="risk-contributions"></div></section>
 </div>
 
 <div class="risk-main-grid risk-main-grid-balanced">
@@ -37,7 +35,7 @@
 
 <section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Các mã cần chú ý</h2></div></div><div class="risk-stock-table-wrap"><table class="risk-stock-table"><thead><tr><th>Mã</th><th>Điểm / 100</th><th>% phiên</th><th>Khối lượng/TB20</th><th>Biên độ</th><th>Lý do</th></tr></thead><tbody id="risk-stock-rows"></tbody></table></div></section>
 
-<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Quỹ đang nắm giữ</h2></div><span id="risk-fund-asof"></span></div><div id="risk-fund-summary" class="risk-fund-summary"></div><div id="risk-fund-chart" class="risk-fund-chart" aria-label="Biểu đồ số quỹ nắm giữ theo mã"></div><div id="risk-fund-detail" class="risk-fund-detail" hidden></div></section>
+<section class="risk-section risk-panel"><div class="risk-section-head"><div><h2>Bối cảnh sở hữu quỹ</h2></div><span id="risk-fund-asof"></span></div><div id="risk-fund-summary" class="risk-fund-summary"></div><div id="risk-fund-chart" class="risk-fund-chart" aria-label="Biểu đồ số quỹ nắm giữ theo mã"></div><div id="risk-fund-detail" class="risk-fund-detail" hidden></div></section>
 
 </div>
 </section>

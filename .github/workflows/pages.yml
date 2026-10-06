@@ -61,6 +61,8 @@ jobs:
         run: node financial-report/scripts/build_strategy_snapshot.cjs _market-data/market
       - name: Calibrate sector risk thresholds
         run: node financial-report/scripts/build_sector_risk_calibration.cjs _market-data/market
+      - name: Calibrate and backtest market risk
+        run: node financial-report/scripts/build_market_risk_calibration.cjs _market-data/market
       - name: Generate market risk snapshot
         run: node financial-report/scripts/build_risk_monitor.cjs _market-data/market
       - name: Validate main and market HOSE universe consistency
@@ -74,6 +76,7 @@ jobs:
           scanner=json.loads(Path('_market-data/market/technical-signals.json').read_text())
           strategy=json.loads(Path('_market-data/market/strategy-indicators.json').read_text())
           risk=json.loads(Path('_market-data/market/risk-monitor.json').read_text())
+          market_cal=json.loads(Path('_market-data/market/market-risk-calibration.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -103,7 +106,10 @@ jobs:
           sector_cal=risk.get('sectorCalibration') or {}
           assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
           assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
-          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.6',risk.get('methodVersion')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
+          assert market_cal.get('status')=='ok' and market_cal.get('forSession')==str(risk.get('sourceDate') or ''),(market_cal.get('status'),market_cal.get('forSession'),risk.get('sourceDate'))
+          high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
+          assert high and bool((market_cal.get('backtest') or {}).get('stateValidated')) and int(high.get('signals') or 0)>=12 and 0.05<=float(high.get('signalRate') or 0)<=0.25 and float(high.get('currentStateGapPct') or 0)<=-0.40,high
           groups=risk.get('breadthGroups') or {}
           assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
           assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
@@ -186,6 +192,7 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/strategy.json
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
+          curl -fsSL --max-time 20 "$BASE/market/market-risk-calibration.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/market-risk-calibration.json
           curl -fsSL --max-time 20 "$BASE/market/watch-today.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/watch.json
           curl -fsSL --max-time 20 "$BASE/market/universe.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/universe.json
           curl -fsSL --max-time 20 "$BASE/market/company-esg.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/esg.json
@@ -197,7 +204,7 @@ jobs:
           def load(name):
               return json.load(open('/tmp/'+name,encoding='utf-8'))
           import math
-          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json')
+          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); market_cal=load('market-risk-calibration.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
           q_expected=max(1,int(q.get('expected') or 0)); q_required=max(1,math.ceil(q_expected*.90))
           s_universe=max(1,int(s.get('universe') or 0)); s_required=max(1,math.ceil(s_universe*.90))
@@ -221,7 +228,7 @@ jobs:
           sector_cal=risk.get('sectorCalibration') or {}
           assert sector_cal.get('status')=='ok' and int(sector_cal.get('totalSectors') or 0)>=8,sector_cal
           assert all('threshold' in x and 'alertEligible' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
-          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.6',risk.get('methodVersion')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
           groups=risk.get('breadthGroups') or {}
           assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
           assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')

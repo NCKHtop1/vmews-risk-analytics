@@ -328,6 +328,7 @@ jobs:
                 return {
                   score:r.overall?.score,
                   level:r.overall?.level?.label,
+                  methodVersion:r.methodVersion,
                   sourceTime:r.sourceTime,
                   coverage:r.coverage?.quotes,
                   components:Object.keys(r.components||{}).length,
@@ -368,6 +369,8 @@ jobs:
               """)
               if str(risk_snapshot.get('sourceTime') or '')!=str(snapshot.get('quoteBundleSourceTime') or ''):
                   raise AssertionError(f'Risk monitor is not aligned with quote snapshot: risk={risk_snapshot} snapshot={snapshot}')
+              if str(risk_snapshot.get('methodVersion') or '')!='FINQUERY-RISK-RULES-2.0':
+                  raise AssertionError(f'Unexpected production risk method: {risk_snapshot}')
               if int(risk_snapshot.get('rows') or 0)<5 or int(risk_snapshot.get('sectors') or 0)<3:
                   raise AssertionError(f'Risk monitor dashboard is incomplete: {risk_snapshot}')
               if int(risk_snapshot.get('timeline') or 0)<2 or risk_snapshot.get('previousScore') is None or risk_snapshot.get('trendDelta') is None:
@@ -396,7 +399,7 @@ jobs:
               if int(risk_snapshot.get('activeSectorAlerts') or 0)>0 and risk_snapshot.get('riskBadgeHidden'):
                   raise AssertionError(f'Risk nav badge hid an active sector alert: {risk_snapshot}')
               info_text=driver.execute_script("const b=document.querySelector('[data-info-key=\"risk-score\"]'); if(b)b.click(); return document.getElementById('term-info-body')?.innerText||'';")
-              if '0–34,9' not in info_text or '80–100' not in info_text:
+              if '0–69,9' not in info_text or '95–100' not in info_text:
                   raise AssertionError(f'Risk score help is incomplete: {info_text}')
               driver.execute_script("document.getElementById('term-info-close')?.click();")
               detail_check=driver.execute_script("""
