@@ -131,6 +131,14 @@ jobs:
                 );
               """))
 
+              local_open=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7)))
+              open_seconds=local_open.hour*3600+local_open.minute*60+local_open.second
+              if local_open.weekday()<5 and 9*3600<=open_seconds<9*3600+5*60:
+                  wait_seconds=9*3600+5*60-open_seconds+2
+                  print(f'Opening grace: waiting {wait_seconds}s for the first validated live snapshot')
+                  time.sleep(wait_seconds)
+                  driver.refresh()
+                  wait.until(lambda d:d.execute_script("return document.readyState==='complete';"))
               wait.until(lambda d:d.execute_script("""
                 const q=window.FinancialMarket?.context?.()?.quote;
                 return Boolean(q && Number(q.price)>0);
