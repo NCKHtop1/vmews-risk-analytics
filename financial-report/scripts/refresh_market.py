@@ -1409,12 +1409,20 @@ def _intraday_backfill_cursor(out, symbol, previous_bars):
 
 
 def _backfill_intraday_chunk(out, symbol, previous_bars):
-    """Fetch a bounded older chunk and write it directly into the 5m archive.
+    """Fetch an older block and write it directly into the 5m archive.
 
-    Repeated manual backfill runs extend the 5m archive further backwards while
-    the retained 1m file stays small enough for the production data branch.
+    Vietcap accepts a 5,000-bar ONE_MINUTE request in one call. Use that fast
+    path first; fall back to smaller backwards pages if a symbol/provider
+    rejects the larger request.
     """
     cursor = _intraday_backfill_cursor(out, symbol, previous_bars)
+    direct_count = max(700, min(5000, int(os.environ.get('INTRADAY_BACKFILL_COUNT', '5000'))))
+    try:
+        rows = _history_page(symbol, 'ONE_MINUTE', cursor, direct_count, minute=True)
+        if rows:
+            return rows
+    except Exception:
+        pass
     page_size = min(700, max(100, int(os.environ.get('INTRADAY_PAGE_SIZE', '700'))))
     pages = max(1, min(6, int(os.environ.get('INTRADAY_BACKFILL_PAGES', '2'))))
     merged = {}
