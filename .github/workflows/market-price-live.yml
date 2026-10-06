@@ -11,6 +11,8 @@ on:
       - 'financial-report/scripts/build_strategy_snapshot.cjs'
       - 'financial-report/scripts/build_risk_monitor.cjs'
       - 'financial-report/scripts/build_sector_risk_calibration.cjs'
+      - 'financial-report/scripts/build_market_risk_calibration.cjs'
+      - 'financial-report/scripts/risk_model_v2.cjs'
       - 'data/fund-holdings-history-v16.json'
       - 'financial-report/scripts/live_session_publisher.sh'
       - 'financial-report/data/universe.json'
@@ -98,6 +100,7 @@ jobs:
           python financial-report/scripts/refresh_market.py --output "$OUT/market" --mode scanner
           node financial-report/scripts/build_strategy_snapshot.cjs "$OUT/market"
           node financial-report/scripts/build_sector_risk_calibration.cjs "$OUT/market"
+          node financial-report/scripts/build_market_risk_calibration.cjs "$OUT/market"
           node financial-report/scripts/build_risk_monitor.cjs "$OUT/market"
 
           SNAPSHOT_DIR="$OUT/market" python - <<'PY'
@@ -110,6 +113,7 @@ jobs:
           strategy=load('strategy-indicators.json')
           watch=load('watch-today.json')
           risk=load('risk-monitor.json')
+          market_cal=load('market-risk-calibration.json')
           latest=str(quotes.get('latestSourceTime') or quotes.get('sourceTime') or '')
           assert latest, 'quotes sourceTime missing'
           assert str(scanner.get('sourceTime') or '')==latest,(scanner.get('sourceTime'),latest)
@@ -123,11 +127,15 @@ jobs:
           strategy_cmp=[x for x in live_strategy if isinstance((x.get('current') or {}).get('macdHistogram'),(int,float)) and isinstance((x.get('previous') or {}).get('macdHistogram'),(int,float)) and abs(float(x['current']['macdHistogram'])-float(x['previous']['macdHistogram']))>1e-9]
           assert len(live_scanner)<50 or len(scanner_cmp)>=5,(len(live_scanner),len(scanner_cmp))
           assert len(live_strategy)<50 or len(strategy_cmp)>=5,(len(live_strategy),len(strategy_cmp))
-          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-1.6',risk.get('methodVersion')
+          assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
+          assert market_cal.get('status')=='ok' and market_cal.get('forSession')==str(risk.get('sourceDate') or ''),(market_cal.get('status'),market_cal.get('forSession'),risk.get('sourceDate'))
+          bt=(market_cal.get('backtest') or {}).get('thresholds') or []
+          high=next((x for x in bt if int(x.get('threshold') or 0)==85),None)
+          assert high and int(high.get('signals') or 0)>=12 and float(high.get('precisionLift') or 0)>=1.10 and float(high.get('youden') or 0)>0,high
           print({'sourceTime':latest,'scannerLive':len(live_scanner),'scannerComparators':len(scanner_cmp),'strategyLive':len(live_strategy),'strategyComparators':len(strategy_cmp),'risk':(risk.get('overall') or {}).get('score')})
           PY
 
-          git -C "$OUT" add --sparse market/technical-signals.json market/strategy-indicators.json market/watch-today.json market/sector-risk-calibration.json market/risk-monitor.json
+          git -C "$OUT" add --sparse market/technical-signals.json market/strategy-indicators.json market/watch-today.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json
           if git -C "$OUT" diff --cached --quiet; then
             echo "Derived market snapshots already current"
             exit 0
