@@ -147,6 +147,26 @@ function metrics(rows,threshold){
   forwardMedianGapPct:medianForwardAll===null||medianForwardSignal===null?null:round(medianForwardSignal-medianForwardAll,3)
  };
 }
+function scoreBandStats(rows){
+ const specs=[
+  {key:'normal',lo:-Infinity,hi:70},
+  {key:'watch',lo:70,hi:85},
+  {key:'high',lo:85,hi:95},
+  {key:'veryHigh',lo:95,hi:Infinity}
+ ];
+ const out={};
+ for(const spec of specs){
+  const x=(rows||[]).filter(r=>Number(r.score)>=spec.lo&&Number(r.score)<spec.hi);
+  const events=x.filter(r=>r.event===true).length;
+  out[spec.key]={
+   count:x.length,
+   medianCurrentPct:x.length?round(median(x.map(r=>r.marketReturn)),3):null,
+   medianForward3Pct:x.length?round(median(x.map(r=>r.forward3Pct)),3):null,
+   adverseRate:x.length?round(events/x.length,4):null
+  };
+ }
+ return out;
+}
 function walkForward(observations){
  const scored=[];
  for(let i=MIN_HISTORY;i<observations.length-FORWARD_SESSIONS;i++){
@@ -161,7 +181,7 @@ function walkForward(observations){
   scored.push({date:current.date,score:overall.score,marketReturn:current.marketReturn,forward3Pct:current.forward3Pct,event:current.forward3Pct<=adverse,adverseCutoffPct:round(adverse,3)});
  }
  const thresholds=[70,85,95].map(t=>metrics(scored,t));
- return{scored,thresholds};
+ return{scored,thresholds,stateBands:scoreBandStats(scored)};
 }
 function buildCalibration(marketDir,forSession){
  const obs=buildObservations(marketDir,forSession);
@@ -188,7 +208,7 @@ function buildCalibration(marketDir,forSession){
   componentGrids:calibration.componentGrids,overallBaseGrid:calibration.overallBaseGrid,
   fragilityContext:{downsideCorrelation:downsideCorrelation===null?null:round(downsideCorrelation,4),downsideSamples:recentDown.length},
   backtest:{
-   status:stateValidated?'VALIDATED_STATE':'LIMITED_STATE',stateValidated,continuationValidated,walkForwardSamples:wf.scored.length,forwardSessions:FORWARD_SESSIONS,
+   status:stateValidated?'VALIDATED_STATE':'LIMITED_STATE',stateValidated,continuationValidated,walkForwardSamples:wf.scored.length,forwardSessions:FORWARD_SESSIONS,stateBands:wf.stateBands,
    adverseDefinition:'rolling prior-history 20th percentile of forward 3-session market return, capped at -1%',
    thresholds:wf.thresholds
   },
@@ -223,4 +243,4 @@ function main(){
  if(result.status!=='ok')process.exitCode=2;
 }
 if(require.main===module)main();
-module.exports={VERSION,loadSymbolFeatures,pairwiseDownsideCorrelation,buildObservations,metrics,walkForward,buildCalibration};
+module.exports={VERSION,loadSymbolFeatures,pairwiseDownsideCorrelation,buildObservations,metrics,scoreBandStats,walkForward,buildCalibration};
