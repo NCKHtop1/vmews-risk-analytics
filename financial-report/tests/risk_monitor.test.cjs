@@ -4,7 +4,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
 const {calibrateSector,stressScore}=require('../scripts/build_sector_risk_calibration.cjs');
 const {rawComponents,sectorRowsV2,sessionProgress,calibrationFromObservations,calibratedComponents,overallFromComponents:overallV2}=require('../scripts/risk_model_v2.cjs');
-const {bucketFor,resample5m}=require('../scripts/build_intraday_risk_replay.cjs');
+const {bucketFor,resample5m,fullSessionRows}=require('../scripts/build_intraday_risk_replay.cjs');
 
 const symbols=['ACB','BID','CTG','MBB','TCB','VCB','VIC','VHM','NVL','PDR','SSI','VIX'];
 function fixture({stress=false,sourceTime='2026-10-05T07:45:00.000Z'}={}){
@@ -304,6 +304,16 @@ test('intraday replay uses HOSE-aware five-minute buckets and keeps ATC separate
  assert.equal(out[1].session,'CONTINUOUS_PM');
  assert.equal(out[2].session,'ATC');
  assert.equal(bucketFor('2026-10-05T04:45:00+00:00'),null);
+});
+
+test('incomplete intraday sessions are excluded from validation clocks',()=>{
+ const morning=[];
+ for(let i=0;i<27;i++)morning.push({time:new Date(Date.UTC(2026,9,6,2,20+i*5)).toISOString()});
+ const full=[...morning];
+ for(let i=0;i<18;i++)full.push({time:new Date(Date.UTC(2026,9,6,6,5+i*5)).toISOString()});
+ full.push({time:'2026-10-06T07:45:00.000Z'});
+ assert.equal(fullSessionRows(morning),false);
+ assert.equal(fullSessionRows(full),true);
 });
 
 test('intraday trading-time normalization is monotonic and bounded',()=>{
