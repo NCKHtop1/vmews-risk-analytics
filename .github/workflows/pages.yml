@@ -109,7 +109,7 @@ jobs:
           assert str(risk.get('methodVersion') or '')=='FINQUERY-RISK-RULES-2.0',risk.get('methodVersion')
           assert market_cal.get('status')=='ok' and market_cal.get('forSession')==str(risk.get('sourceDate') or ''),(market_cal.get('status'),market_cal.get('forSession'),risk.get('sourceDate'))
           high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
-          assert high and int(high.get('signals') or 0)>=12 and float(high.get('precisionLift') or 0)>=1.10 and float(high.get('youden') or 0)>0,high
+          assert high and bool((market_cal.get('backtest') or {}).get('stateValidated')) and int(high.get('signals') or 0)>=12 and 0.05<=float(high.get('signalRate') or 0)<=0.25 and float(high.get('currentStateGapPct') or 0)<=-0.40,high
           groups=risk.get('breadthGroups') or {}
           assert sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))==int((risk.get('coverage') or {}).get('quotes') or 0),groups
           assert all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])),risk.get('sectors')
