@@ -99,11 +99,12 @@ jobs:
           print('CLOCK CHALLENGER', {
               'recommendation':d['recommendation'],
               'baseline':d['baseline'],
-              'empirical':d['empirical'],
-              'delta':d['delta'],
+              'variants':d['variants'],
+              'deltas':d['deltas'],
           })
           assert d['baseline']['validationDays']>=20,d
-          assert d['empirical']['validationDays']>=20,d
+          for name,variant in d['variants'].items():
+              assert variant['validationDays']>=20,(name,variant)
           PY
 
       - uses: actions/upload-artifact@v4
