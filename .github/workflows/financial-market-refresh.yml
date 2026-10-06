@@ -77,10 +77,9 @@ jobs:
           INTRADAY_ONLY_MISSING: ${{ contains(github.event.head_commit.message, '[intraday-missing]') && '1' || '0' }}
           INTRADAY_SYMBOLS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && 'VHM,VCB' || '' }}
           INTRADAY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '300' || '700' }}
-          INTRADAY_BACKFILL: ${{ contains(github.event.head_commit.message, '[intraday-backfill]') && '1' || '0' }}
-          INTRADAY_TARGET_BARS: ${{ contains(github.event.head_commit.message, '[intraday-backfill]') && '8400' || '700' }}
+          INTRADAY_BACKFILL: ${{ (contains(github.event.head_commit.message, '[intraday-backfill]') || inputs.mode == 'intraday') && '1' || '0' }}
           INTRADAY_PAGE_SIZE: '700'
-          INTRADAY_MAX_PAGES: '12'
+          INTRADAY_BACKFILL_PAGES: '2'
           INTRADAY_RETAIN_1M_BARS: '3000'
           INTRADAY_5M_RETAIN_BARS: '6000'
           INTRADAY_WORKERS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '1' || '3' }}
