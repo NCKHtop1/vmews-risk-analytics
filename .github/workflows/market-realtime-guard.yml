@@ -81,7 +81,7 @@ jobs:
                   s=get('technical-signals.json')
                   strategy=get('strategy-indicators.json')
                   risk=get('risk-monitor.json')
-        market_cal=get('market-risk-calibration.json')
+                  market_cal=get('market-risk-calibration.json')
                   w=get('watch-today.json')
                   drivers=get('drivers.json')
                   ps=get('prices-status.json')
@@ -129,11 +129,11 @@ jobs:
                   if str(risk.get('methodVersion') or '')!='FINQUERY-RISK-RULES-2.0':
                       raise ValueError(f"unexpected risk method version: {risk.get('methodVersion')}")
                   if market_cal.get('status')!='ok' or market_cal.get('forSession')!=str(risk.get('sourceDate') or ''):
-            raise ValueError(f'market risk calibration unavailable/stale: {market_cal.get("status")} {market_cal.get("forSession")}')
-        high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
-        if not high or int(high.get('signals') or 0)<12 or float(high.get('precisionLift') or 0)<1.10 or float(high.get('youden') or 0)<=0:
-            raise ValueError(f'market risk backtest gate failed: {high}')
-        groups=risk.get('breadthGroups') or {}
+                      raise ValueError(f'market risk calibration unavailable/stale: {market_cal.get("status")} {market_cal.get("forSession")}')
+                  high=next((x for x in ((market_cal.get('backtest') or {}).get('thresholds') or []) if int(x.get('threshold') or 0)==85),None)
+                  if not high or int(high.get('signals') or 0)<12 or float(high.get('precisionLift') or 0)<1.10 or float(high.get('youden') or 0)<=0:
+                      raise ValueError(f'market risk backtest gate failed: {high}')
+                  groups=risk.get('breadthGroups') or {}
                   if sum(len(groups.get(k) or []) for k in ('advancing','declining','unchanged'))!=int(risk_cov.get('quotes') or 0):
                       raise ValueError('risk breadth drilldown coverage incomplete')
                   if not all('advancePct' in x and 'declinePct' in x and isinstance(x.get('memberRows'),list) for x in (risk.get('sectors') or [])):
