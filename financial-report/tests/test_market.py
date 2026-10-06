@@ -1555,7 +1555,32 @@ class MarketTests(unittest.TestCase):
             expected=int(datetime.fromisoformat('2026-10-05T02:15:00+00:00').timestamp())-1
             self.assertEqual(cursor,expected)
 
-    def test_intraday_backfill_chunk_pages_backwards_without_growing_recent_one_minute_file(self):
+    def test_intraday_backfill_chunk_uses_validated_large_request_first(self):
+        original=m._history_page
+        calls=[]
+        direct=[
+            {'time':'2026-09-04T03:50:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':30},
+            {'time':'2026-10-03T07:45:00+00:00','open':100,'high':101,'low':99,'close':100,'volume':20},
+        ]
+        def fake(symbol,frame,to,count,minute=False):
+            calls.append((to,count))
+            return direct
+        old_count=m.os.environ.get('INTRADAY_BACKFILL_COUNT')
+        try:
+            m._history_page=fake
+            m.os.environ['INTRADAY_BACKFILL_COUNT']='5000'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                rows=m._backfill_intraday_chunk(out,'FPT',[])
+                self.assertEqual(len(rows),2)
+                self.assertEqual(len(calls),1)
+                self.assertEqual(calls[0][1],5000)
+        finally:
+            m._history_page=original
+            if old_count is None:m.os.environ.pop('INTRADAY_BACKFILL_COUNT',None)
+            else:m.os.environ['INTRADAY_BACKFILL_COUNT']=old_count
+
+    def test_intraday_backfill_chunk_falls_back_to_small_backward_pages(self):
         original=m._history_page
         calls=[]
         first=[
@@ -1567,28 +1592,30 @@ class MarketTests(unittest.TestCase):
             {'time':'2026-10-03T07:43:00+00:00','open':99,'high':100,'low':98,'close':99,'volume':40},
         ]
         def fake(symbol,frame,to,count,minute=False):
-            calls.append(to)
-            return first if len(calls)==1 else second
+            calls.append((to,count))
+            if len(calls)==1:
+                raise RuntimeError('large request rejected')
+            return first if len(calls)==2 else second
         old_pages=m.os.environ.get('INTRADAY_BACKFILL_PAGES')
+        old_count=m.os.environ.get('INTRADAY_BACKFILL_COUNT')
         try:
             m._history_page=fake
+            m.os.environ['INTRADAY_BACKFILL_COUNT']='5000'
             m.os.environ['INTRADAY_BACKFILL_PAGES']='2'
             with tempfile.TemporaryDirectory() as tmp:
                 out=pathlib.Path(tmp)
-                m.write(out/'intraday-5m/FPT.json',{
-                    'bars':[{
-                        'time':'2026-10-05T02:20:00+00:00','session':'CONTINUOUS_AM',
-                        'open':100,'high':101,'low':99,'close':100,'volume':10
-                    }]
-                })
                 rows=m._backfill_intraday_chunk(out,'FPT',[])
                 self.assertEqual(len(rows),4)
                 self.assertEqual(rows[0]['time'],'2026-10-03T07:42:00+00:00')
-                self.assertLess(calls[1],calls[0])
+                self.assertEqual(calls[0][1],5000)
+                self.assertEqual(calls[1][1],700)
+                self.assertLess(calls[2][0],calls[1][0])
         finally:
             m._history_page=original
             if old_pages is None:m.os.environ.pop('INTRADAY_BACKFILL_PAGES',None)
             else:m.os.environ['INTRADAY_BACKFILL_PAGES']=old_pages
+            if old_count is None:m.os.environ.pop('INTRADAY_BACKFILL_COUNT',None)
+            else:m.os.environ['INTRADAY_BACKFILL_COUNT']=old_count
 
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
