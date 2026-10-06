@@ -78,6 +78,7 @@ jobs:
           INTRADAY_SYMBOLS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && 'VHM,VCB' || '' }}
           INTRADAY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '300' || '700' }}
           INTRADAY_BACKFILL: ${{ (contains(github.event.head_commit.message, '[intraday-backfill]') || inputs.mode == 'intraday') && '1' || '0' }}
+          INTRADAY_BACKFILL_COUNT: '5000'
           INTRADAY_PAGE_SIZE: '700'
           INTRADAY_BACKFILL_PAGES: '2'
           INTRADAY_RETAIN_1M_BARS: '3000'
