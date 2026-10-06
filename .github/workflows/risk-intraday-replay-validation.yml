@@ -30,6 +30,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install Python test dependencies
+        run: pip install -q pandas numpy openpyxl
 
       - name: Run focused collector and risk tests
         run: |
