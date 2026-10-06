@@ -89,8 +89,15 @@ function sessionProgress(sourceTime){
 }
 function maturityFactors(sourceTime){
  const progress=sessionProgress(sourceTime);
- const p=Math.max(.12,progress);
- return{progress,volumeDenominator:p,rangeDenominator:Math.sqrt(p)};
+ const p=Math.max(.01,progress);
+ // Parameter-free symmetric U-shaped activity clock: faster accumulation near
+ // the open and close, slower through the middle of the trading day.
+ const activity=(2/Math.PI)*Math.asin(Math.sqrt(p));
+ return{
+  progress,
+  volumeDenominator:Math.max(.12,Math.min(1,activity)),
+  rangeDenominator:Math.sqrt(Math.max(.12,p))
+ };
 }
 function level(score){
  const s=Number(score)||0;
