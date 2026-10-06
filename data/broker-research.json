@@ -1,8 +1,73 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-05T14:55:17+00:00",
+  "updatedAt": "2026-10-06T06:31:57+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-VRE-2026-10-06-34e1fd82",
+      "symbol": "VRE",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-06",
+      "title": "VRE – BCPT – Báo cáo gặp gỡ nhà đầu tư Tháng 10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/vre-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026/",
+      "recommendation": "MUA",
+      "summary": "MBS công bố báo cáo ngày 06/10/2026 với khuyến nghị MUA. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "MBS-VHM-2026-10-06-5772a5ed",
+      "symbol": "VHM",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-06",
+      "title": "VHM – BCPT – Báo cáo gặp gỡ nhà đầu tư tháng 10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/vhm-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026/",
+      "recommendation": "BÁN",
+      "summary": "MBS công bố báo cáo ngày 06/10/2026 với khuyến nghị BÁN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "YUANTA-CMG-2026-10-05-53016f7c",
+      "symbol": "CMG",
+      "broker": "YUANTA",
+      "brokerName": "YSVN",
+      "publishedAt": "2026-10-05",
+      "title": "CMG: Khuyến nghị NẮM GIỮ với giá mục tiêu 23,319 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/cmg-khuyen-nghi-nam-giu-voi-gia-muc-tieu-23-319-dong-co-phieu-rpid6118.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "NẮM GIỮ",
+      "targetPrice": 23319,
+      "summary": "YUANTA có báo cáo CMG ngày 05/10/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 23.319 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-DCM-2026-10-05-21678d45",
+      "symbol": "DCM",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-05",
+      "title": "DCM: Khuyến nghị KHẢ QUAN với giá mục tiêu 40,600 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dcm-khuyen-nghi-kha-quan-voi-gia-muc-tieu-40-600-dong-co-phieu-rpid6114.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 40600,
+      "summary": "VNDIRECT có báo cáo DCM ngày 05/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 40.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-DGW-2026-10-05-ef68504e",
+      "symbol": "DGW",
+      "broker": "VIX",
+      "brokerName": "VIX",
+      "publishedAt": "2026-10-05",
+      "title": "DGW: Khuyến nghị TÍCH CỰC với giá mục tiêu 58,346 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dgw-khuyen-nghi-tich-cuc-voi-gia-muc-tieu-58-346-dong-co-phieu-rpid6116.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 58346,
+      "summary": "VIX có báo cáo DGW ngày 05/10/2026 với giá mục tiêu 58.346 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "VIX-DGW-2026-10-05-176cd35a",
       "symbol": "DGW",
@@ -13,6 +78,20 @@
       "currency": "VND",
       "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
       "summary": "VIX có báo cáo DGW ngày 05/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "VDSC-VSC-2026-10-05-f94a9fc5",
+      "symbol": "VSC",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-05",
+      "title": "VSC: Khuyến nghị MUA với giá mục tiêu 22,600 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vsc-khuyen-nghi-mua-voi-gia-muc-tieu-22-600-dong-co-phieu-rpid6115.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 22600,
+      "summary": "VDSC có báo cáo VSC ngày 05/10/2026 với khuyến nghị MUA, giá mục tiêu 22.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VDSC-HDG-2026-10-05-41b2b490",
@@ -119,6 +198,17 @@
       "recommendation": "MUA",
       "targetPrice": 65000,
       "summary": "NHSV có báo cáo VHC ngày 02/10/2026 với khuyến nghị MUA, giá mục tiêu 65.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "FPTS-SSI-2026-10-02-718a7767",
+      "symbol": "SSI",
+      "broker": "FPTS",
+      "brokerName": "FPT Securities",
+      "publishedAt": "2026-10-02",
+      "title": "Khuyến nghị Bán cổ phiếu SSI ngày",
+      "currency": "VND",
+      "sourceUrl": "https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169",
+      "summary": "FPTS có báo cáo SSI ngày 02/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "BSC-KDH-2026-10-02-9d057ddc",
@@ -251,6 +341,18 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 13200,
       "summary": "VDSC có báo cáo MSB ngày 30/09/2026 với giá mục tiêu 13.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-PNJ-2026-09-30-001b1c7b",
+      "symbol": "PNJ",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-09-30",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Bán lẻ: Lãnh đạo đăng ký mua, đăng ký bán – có phải điểm mua, điểm bán tốt? Thống kê 384 sự kiện tại 10 doanh nghiệp, 7/2014–9/2026 MWG MCH MSN PNJ FRT DGW #Giao dịch nội bộ #Ngành bán",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "BÁN",
+      "summary": "TCBS có báo cáo PNJ ngày 30/09/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-MSN-2026-09-30-001b1c7b",
