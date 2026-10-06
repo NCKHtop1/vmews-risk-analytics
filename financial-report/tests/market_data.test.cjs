@@ -189,7 +189,9 @@ test('risk monitor is a separate Vietnamese production view and is bundled',()=>
  const build=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_cdn.py'),'utf8');
  assert.match(index,/data-platform-view="risk">Giám sát rủi ro/);
  assert.match(index,/id="risk-monitor"[^>]+hidden/);
- assert.match(index,/Năm thước đo chính/);
+ assert.doesNotMatch(index,/Năm thước đo chính/);
+ assert.match(index,/id="risk-contributions"/);
+ assert.match(index,/id="risk-coverage-inline"/);
  for(const jargon of ['Risk Monitor','Market Stress','Alert Engine','Contagion','Liquidity Stress','Volatility Stress'])assert.doesNotMatch(index,new RegExp(jargon,'i'));
  assert.doesNotMatch(risk,/🚨|⚠|🟢|🟡|🔴/);
  assert.match(build,/risk-monitor\.css/);
@@ -201,7 +203,7 @@ test('risk monitor keeps universe scope in data without verbose header copy',()=
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const engine=fs.readFileSync(require('node:path').join(__dirname,'../scripts/build_risk_monitor.cjs'),'utf8');
  assert.doesNotMatch(index,/Theo dõi mức căng thẳng hiện tại trên nhóm cổ phiếu HOSE Core \+ Liquid/);
- assert.match(risk,/Phạm vi trực tiếp: HOSE Core \+ Liquid/);
+ assert.doesNotMatch(risk,/Phạm vi trực tiếp: HOSE Core \+ Liquid/);
  assert.match(engine,/scope:'HOSE Core \+ Liquid có dữ liệu trực tiếp'/);
 });
 
@@ -261,7 +263,8 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(risk,/changedSymbols/);
  assert.match(risk,/Mã thay đổi đáng chú ý/);
  assert.doesNotMatch(risk,/Mã vượt ngưỡng|Lượt thay đổi vượt ngưỡng/);
- assert.match(risk,/Chưa thấy căng thẳng lan rộng trên toàn thị trường/);
+ assert.match(risk,/return'Bình thường\.'/);
+ assert.doesNotMatch(risk,/Chưa thấy căng thẳng lan rộng trên toàn thị trường/);
  assert.doesNotMatch(risk,/Các thước đo chính đang ở vùng bình thường/);
  assert.match(risk,/aboveThreshold/);
  assert.match(risk,/Cập nhật gần nhất:/);
