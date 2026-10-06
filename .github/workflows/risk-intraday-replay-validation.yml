@@ -54,8 +54,15 @@ jobs:
           import json, sys
           sys.path.insert(0,'financial-report/scripts')
           import refresh_market as m
+          direct={}
+          for requested in (1400,5000):
+              try:
+                  rows=m._history_page('FPT','ONE_MINUTE',int(__import__('time').time()),requested,minute=True)
+                  direct[str(requested)]={'returned':len(rows),'first':rows[0]['time'] if rows else None,'last':rows[-1]['time'] if rows else None}
+              except Exception as exc:
+                  direct[str(requested)]={'error':str(exc)}
           bars=m._full_intraday_history('FPT',1400)
-          result={'count':len(bars),'first':bars[0]['time'] if bars else None,'last':bars[-1]['time'] if bars else None}
+          result={'pagedCount':len(bars),'first':bars[0]['time'] if bars else None,'last':bars[-1]['time'] if bars else None,'direct':direct}
           print('INTRADAY BACKFILL PROBE',result)
           open('/tmp/intraday-backfill-probe.json','w').write(json.dumps(result))
           if len(bars)<=700:
