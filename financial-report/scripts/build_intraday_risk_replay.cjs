@@ -117,6 +117,12 @@ function cumulativeUpdate(old,bar){
 }
 function minutesBetween(a,b){return Math.round((new Date(b)-new Date(a))/60000);}
 function med(values){return median((values||[]).filter(Number.isFinite));}
+function fullSessionRows(rows){
+  if(!Array.isArray(rows)||rows.length<40)return false;
+  const last=localParts(rows[rows.length-1]?.time);
+  if(!last)return false;
+  return last.hour*60+last.minute>=14*60+30;
+}
 
 function empiricalVolumeClock(intraday){
   const bucketValues=new Map();
@@ -129,6 +135,7 @@ function empiricalVolumeClock(intraday){
     }
     for(const [day,rows] of byDay){
       const ordered=rows.sort((a,b)=>a.time.localeCompare(b.time));
+      if(!fullSessionRows(ordered))continue;
       const total=ordered.reduce((s,x)=>s+(num(x.volume)||0),0);
       if(total<=0)continue;
       let cum=0;
@@ -161,6 +168,7 @@ function empiricalRangeClock(intraday){
     }
     for(const [day,rows] of byDay){
       const ordered=rows.sort((a,b)=>a.time.localeCompare(b.time));
+      if(!fullSessionRows(ordered))continue;
       const fullHigh=Math.max(...ordered.map(x=>num(x.high)).filter(Number.isFinite));
       const fullLow=Math.min(...ordered.map(x=>num(x.low)).filter(Number.isFinite));
       const fullRange=fullHigh-fullLow;
@@ -243,7 +251,7 @@ function buildReplay(marketDir){
     const first85=snapshots.find(x=>x.score>=85&&(event?new Date(x.time)<=new Date(event.time):true))||null;
     const maxScore=snapshots.length?Math.max(...snapshots.map(x=>x.score)):null;
     dayResults.push({
-      day,buckets:snapshots.length,maxScore,eventTime:event?.time||null,
+      day,buckets:snapshots.length,completeDay:fullSessionRows([...times].sort().map(time=>({time}))),maxScore,eventTime:event?.time||null,
       first70:first70?.time||null,lead70:event&&first70?minutesBetween(first70.time,event.time):null,
       first85:first85?.time||null,lead85:event&&first85?minutesBetween(first85.time,event.time):null,
       signal70State:first70||null,signal85State:first85||null,eventState:event||null,
@@ -254,19 +262,21 @@ function buildReplay(marketDir){
     allSnapshots.push(...snapshots);
   }
   const usableDays=dayResults.filter(x=>x.buckets>0);
-  const eventDays=usableDays.filter(x=>x.eventTime),detect70=eventDays.filter(x=>x.first70),detect85=eventDays.filter(x=>x.first85);
-  const highDays=usableDays.filter(x=>Number(x.maxScore)>=85),falseHigh=highDays.filter(x=>!x.eventTime);
+  const validationDays=usableDays.filter(x=>x.completeDay===true);
+  const validationSet=new Set(validationDays.map(x=>x.day));
+  const eventDays=validationDays.filter(x=>x.eventTime),detect70=eventDays.filter(x=>x.first70),detect85=eventDays.filter(x=>x.first85);
+  const highDays=validationDays.filter(x=>Number(x.maxScore)>=85),falseHigh=highDays.filter(x=>!x.eventTime);
   const thresholdStats=[70,85,95].map(threshold=>{
-    const rows=allSnapshots.filter(x=>x.score>=threshold&&Number.isFinite(x.future30mChangePct));
+    const rows=allSnapshots.filter(x=>validationSet.has(x.day)&&x.score>=threshold&&Number.isFinite(x.future30mChangePct));
     return {threshold,samples:rows.length,medianFuture30mPct:rows.length?round(med(rows.map(x=>x.future30mChangePct)),3):null,medianCurrentPct:rows.length?round(med(rows.map(x=>x.marketReturn)),3):null};
   });
-  const enough=usableDays.length>=MIN_VALIDATED_DAYS&&eventDays.length>=MIN_EVENT_DAYS;
+  const enough=validationDays.length>=MIN_VALIDATED_DAYS&&eventDays.length>=MIN_EVENT_DAYS;
   return {
     version:'FINQUERY-INTRADAY-RISK-REPLAY-0.2',
     status:enough?'READY_FOR_VALIDATION':'LIMITED_INTRADAY_HISTORY',
     generatedAt:new Date().toISOString(),
     sourceInterval:'5m replay from retained 1m/5m HOSE bars',
-    calendarDaysSeen:dayResults.length,days:usableDays.length,eventDays:eventDays.length,snapshots:allSnapshots.length,
+    calendarDaysSeen:dayResults.length,days:usableDays.length,validationDays:validationDays.length,eventDays:eventDays.length,snapshots:allSnapshots.length,
     detection:{
       threshold70:{detected:detect70.length,rate:eventDays.length?round(detect70.length/eventDays.length,3):null,medianLeadMinutes:detect70.length?med(detect70.map(x=>x.lead70).filter(Number.isFinite)):null},
       threshold85:{detected:detect85.length,rate:eventDays.length?round(detect85.length/eventDays.length,3):null,medianLeadMinutes:detect85.length?med(detect85.map(x=>x.lead85).filter(Number.isFinite)):null},
@@ -292,4 +302,4 @@ function main(){
   console.log(JSON.stringify({status:result.status,days:result.days,eventDays:result.eventDays,snapshots:result.snapshots,detection:result.detection,thresholdStats:result.thresholdStats}));
 }
 if(require.main===module)main();
-module.exports={bucketFor,resample5m,featureRow,empiricalVolumeClock,empiricalRangeClock,buildReplay};
+module.exports={bucketFor,resample5m,featureRow,empiricalVolumeClock,empiricalRangeClock,buildReplay,loadIntraday,loadDailyMap,localParts,cumulativeUpdate,minutesBetween,fullSessionRows};
