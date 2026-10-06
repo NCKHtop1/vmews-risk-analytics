@@ -81,7 +81,8 @@ jobs:
           assert '<p' not in head.lower(),head
           assert 'Năm thước đo chính' not in html
           assert 'risk-coverage-inline' in html
-          summary={'score':score,'coverage':cov,'backtest85':high,'stateValidated':cal.get('backtest',{}).get('stateValidated'),'continuationValidated':cal.get('backtest',{}).get('continuationValidated'),'samples':cal.get('samples'),'trainingSamples':cal.get('trainingSamples'),'downsideCorrelation':cal.get('fragilityContext',{}).get('downsideCorrelation')}
+          bands=cal.get('backtest',{}).get('stateBands') or {}
+          summary={'score':score,'coverage':cov,'backtest85':high,'stateBands':bands,'stateValidated':cal.get('backtest',{}).get('stateValidated'),'continuationValidated':cal.get('backtest',{}).get('continuationValidated'),'samples':cal.get('samples'),'trainingSamples':cal.get('trainingSamples'),'downsideCorrelation':cal.get('fragilityContext',{}).get('downsideCorrelation')}
           print('RISK V2 VALIDATION PASS',json.dumps(summary,ensure_ascii=False))
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
               f.write('## FinQuery Risk V2\n\n')
