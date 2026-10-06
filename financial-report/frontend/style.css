@@ -14,3 +14,16 @@ button.term-info-button.term-info-inline{width:14px!important;height:14px!import
 
 .header nav a.active{color:var(--blue);font-weight:600}
 .bottom-line{justify-content:flex-start}
+
+
+@media(max-width:850px){
+ .header{height:auto;min-height:68px;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:10px 16px}
+ .header nav{order:3;width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;gap:18px;padding:2px 0 6px;scrollbar-width:thin;white-space:nowrap;-webkit-overflow-scrolling:touch}
+ .header nav a{flex:0 0 auto}
+ .header-label{margin-left:auto}
+}
+@media(max-width:600px){
+ .header{padding:9px 12px}
+ .header nav{gap:15px}
+ .brand-copy small{display:none}
+}

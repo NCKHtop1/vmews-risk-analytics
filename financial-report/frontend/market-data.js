@@ -24,5 +24,26 @@ async function get(file,{signal,timeout=12000,hedgeMs=250}={}){
  return first;
 }
 function mergeQuotes(target,rows){for(const [symbol,q]of Object.entries(rows||{})){const t=stamp(q?.sourceTime),old=target[symbol],prior=stamp(old?.sourceTime);if(t!==null&&Number(q.price)>0&&(prior===null||!old||t>=prior))target[symbol]=q;}return target;}
-window.FinMarketData={get,stamp,valid,revision,mergeQuotes};
+const CORE_BUNDLE_FILES={quotes:'quotes.json',scanner:'technical-signals.json',strategy:'strategy-indicators.json',watch:'watch-today.json',risk:'risk-monitor.json'};
+let committedBundle=null;
+function bundleSource(data,key){return key==='quotes'?(data?.latestSourceTime||data?.sourceTime||null):(data?.sourceTime||null);}
+async function getAlignedBundle(options={}){
+ const rows=await Promise.all(Object.entries(CORE_BUNDLE_FILES).map(async([key,file])=>[key,await get(file,options)]));
+ const bundle=Object.fromEntries(rows),sourceTime=bundleSource(bundle.quotes,'quotes');
+ if(!sourceTime)throw Error('Market bundle sourceTime missing');
+ const mismatched=Object.entries(bundle).filter(([key,data])=>String(bundleSource(data,key)||'')!==String(sourceTime)).map(([key])=>key);
+ if(mismatched.length){const error=Error('Market bundle not aligned: '+mismatched.join(','));error.code='FINQUERY_BUNDLE_MISMATCH';error.sourceTime=sourceTime;error.mismatched=mismatched;throw error;}
+ return{...bundle,sourceTime};
+}
+function commitBundle(bundle){
+ if(!bundle?.sourceTime)return committedBundle;
+ const next=stamp(bundle.sourceTime),prior=stamp(committedBundle?.sourceTime);
+ if(next===null)return committedBundle;
+ if(prior!==null&&next<prior)return committedBundle;
+ committedBundle=bundle;
+ document.dispatchEvent(new CustomEvent('finquery:market-bundle',{detail:{sourceTime:bundle.sourceTime}}));
+ return committedBundle;
+}
+function currentBundle(){return committedBundle;}
+window.FinMarketData={get,stamp,valid,revision,mergeQuotes,getAlignedBundle,commitBundle,currentBundle};
 })();

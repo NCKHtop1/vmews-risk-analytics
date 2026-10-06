@@ -83,8 +83,8 @@ async function refreshSnapshot(){
   const data=await window.FinMarketData.get('strategy-indicators.json');if(!data?.symbols)throw Error('Invalid strategy snapshot');
   const expected=state.marketSourceTime,actual=data.sourceTime||null;
   if(expected&&String(actual)!==String(expected)){
-   if(!state.snapshot||String(state.snapshot.sourceTime||'')!==String(expected)){state.snapshot=null;state.matches=[];renderResults();}
-   if(status)status.textContent='Đang đồng bộ Strategy Lab với snapshot giá mới nhất…';
+   if(state.snapshot){scanNow();renderSaved();}
+   if(status)status.textContent=(state.snapshot?'Đang giữ snapshot Strategy Lab gần nhất · ':'')+'Đang đồng bộ với snapshot giá mới nhất…';
    clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(actual||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();refreshSnapshot();},1200);
    return;
   }
@@ -112,5 +112,5 @@ function bind(){
  $('strategy-notifications')?.addEventListener('click',async()=>{if(!('Notification'in window))return;const p=await Notification.requestPermission();$('strategy-notifications').textContent=p==='granted'?'Thông báo đã bật':'Thông báo bị chặn';});
 }
 loadLocal();renderLibrary();renderCanvas();renderPreview();renderResults();renderSaved();renderHits();bind();refreshSnapshot();setInterval(()=>{if(!document.hidden)refreshSnapshot();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSnapshot();});
-window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed&&state.snapshot&&next&&String(state.snapshot.sourceTime||'')!==String(next)){state.snapshot=null;state.matches=[];renderResults();}if(changed)refreshSnapshot();},context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot,marketSourceTime:state.marketSourceTime})};
+window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed)refreshSnapshot();},context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot,marketSourceTime:state.marketSourceTime,aligned:!state.marketSourceTime||String(state.snapshot?.sourceTime||'')===String(state.marketSourceTime)})};
 })();

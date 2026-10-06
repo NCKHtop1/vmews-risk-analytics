@@ -393,11 +393,13 @@ jobs:
                   raise AssertionError(f'Market breadth drilldown controls are incomplete: {risk_snapshot}')
               if risk_snapshot.get('fundPreviousAsOf') and int(risk_snapshot.get('fundNonZeroBars') or 0)<1:
                   raise AssertionError(f'Fund chart flattened meaningful historical changes to zero: {risk_snapshot}')
-              stale_fund_change=bool(risk_snapshot.get('fundAsOf') and risk_snapshot.get('fundLastChangedAsOf') and str(risk_snapshot.get('fundAsOf'))!=str(risk_snapshot.get('fundLastChangedAsOf')))
-              if stale_fund_change and int(risk_snapshot.get('activeSectorAlerts') or 0)==0 and not risk_snapshot.get('riskBadgeHidden'):
-                  raise AssertionError(f'Risk nav badge is surfacing an old fund change as a current alert: {risk_snapshot}')
-              if int(risk_snapshot.get('activeSectorAlerts') or 0)>0 and risk_snapshot.get('riskBadgeHidden'):
-                  raise AssertionError(f'Risk nav badge hid an active sector alert: {risk_snapshot}')
+              active_sector_alerts=int(risk_snapshot.get('activeSectorAlerts') or 0)
+              badge_hidden=bool(risk_snapshot.get('riskBadgeHidden'))
+              badge_text=str(risk_snapshot.get('riskBadgeText') or '').strip()
+              if active_sector_alerts==0 and not badge_hidden:
+                  raise AssertionError(f'Risk nav badge surfaced non-risk context as an alert: {risk_snapshot}')
+              if active_sector_alerts>0 and (badge_hidden or badge_text!=str(active_sector_alerts)):
+                  raise AssertionError(f'Risk nav badge must equal active sector alerts only: {risk_snapshot}')
               info_text=driver.execute_script("const b=document.querySelector('[data-info-key=\"risk-score\"]'); if(b)b.click(); return document.getElementById('term-info-body')?.innerText||'';")
               if '0–69,9' not in info_text or '95–100' not in info_text:
                   raise AssertionError(f'Risk score help is incomplete: {info_text}')
@@ -439,7 +441,64 @@ jobs:
                   raise AssertionError(f'News is stale in production UI: {news_age:.1f} minutes; fallback={snapshot.get("newsLiveFallback")}')
               if int(snapshot.get('newsCount') or 0)<1:
                   raise AssertionError(f'Production UI has no usable news: {snapshot}')
-              print('BROWSER SMOKE PASS',{'ai':results,'newsAgeMin':round(news_age,1),'risk':{k:v for k,v in risk_snapshot.items() if k!='text'},'snapshot':snapshot})
+
+              mobile_results=[]
+              for width,height in ((390,844),(768,1024)):
+                  driver.set_window_size(width,height)
+                  time.sleep(1)
+                  driver.execute_script("window.FinPlatformViews.openAnalysis();")
+                  time.sleep(.4)
+                  analysis_mobile=driver.execute_script("""
+                    const nav=document.querySelector('.header nav');
+                    const root=document.documentElement;
+                    const rect=nav?.getBoundingClientRect();
+                    return {
+                      pageOverflow:root.scrollWidth>window.innerWidth+2,
+                      navOverflowX:getComputedStyle(nav).overflowX,
+                      navWidth:rect?.width||0,
+                      viewport:window.innerWidth,
+                      chartWidth:document.getElementById('price-chart')?.getBoundingClientRect().width||0,
+                      workspaceVisible:document.querySelector('.workspace')?.hidden===false
+                    };
+                  """)
+                  if analysis_mobile.get('pageOverflow') or analysis_mobile.get('navOverflowX') not in ('auto','scroll') or not analysis_mobile.get('workspaceVisible') or float(analysis_mobile.get('chartWidth') or 0)<=0:
+                      raise AssertionError(f'Mobile analysis layout failed at {width}x{height}: {analysis_mobile}')
+
+                  driver.execute_script("window.FinPlatformViews.openRisk();")
+                  wait.until(lambda d:d.execute_script("return document.getElementById('risk-monitor')?.hidden===false;"))
+                  risk_mobile=driver.execute_script("""
+                    const root=document.documentElement;
+                    const heat=document.getElementById('risk-sectors');
+                    const table=document.querySelector('.risk-stock-table-wrap');
+                    return {
+                      pageOverflow:root.scrollWidth>window.innerWidth+2,
+                      heatWidth:heat?.getBoundingClientRect().width||0,
+                      tableScrollable:Boolean(table && table.scrollWidth>=table.clientWidth),
+                      riskVisible:document.getElementById('risk-monitor')?.hidden===false
+                    };
+                  """)
+                  if risk_mobile.get('pageOverflow') or not risk_mobile.get('riskVisible') or float(risk_mobile.get('heatWidth') or 0)<=0 or not risk_mobile.get('tableScrollable'):
+                      raise AssertionError(f'Mobile risk layout failed at {width}x{height}: {risk_mobile}')
+
+                  driver.execute_script("window.FinPlatformViews.openStrategy();")
+                  wait.until(lambda d:d.execute_script("return document.getElementById('strategy-builder')?.hidden===false;"))
+                  strategy_mobile=driver.execute_script("""
+                    const root=document.documentElement;
+                    const section=document.getElementById('strategy-builder');
+                    const results=document.querySelector('.strategy-results-table-wrap');
+                    return {
+                      pageOverflow:root.scrollWidth>window.innerWidth+2,
+                      sectionWidth:section?.getBoundingClientRect().width||0,
+                      resultsScrollable:Boolean(results && results.scrollWidth>=results.clientWidth),
+                      strategyVisible:section?.hidden===false
+                    };
+                  """)
+                  if strategy_mobile.get('pageOverflow') or not strategy_mobile.get('strategyVisible') or float(strategy_mobile.get('sectionWidth') or 0)<=0:
+                      raise AssertionError(f'Mobile Strategy Lab layout failed at {width}x{height}: {strategy_mobile}')
+                  mobile_results.append((width,height,analysis_mobile,risk_mobile,strategy_mobile))
+
+              driver.set_window_size(1440,1200)
+              print('BROWSER SMOKE PASS',{'ai':results,'newsAgeMin':round(news_age,1),'risk':{k:v for k,v in risk_snapshot.items() if k!='text'},'snapshot':snapshot,'mobile':mobile_results})
           finally:
               driver.quit()
           PY

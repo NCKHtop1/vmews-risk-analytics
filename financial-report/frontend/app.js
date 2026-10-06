@@ -87,7 +87,7 @@ function renderTodayWatch(data){
  const rowHTML=row=>{const reasons=(row.reasons||[]).join(' · '),score=Number(row.score),title=[reasons,Number.isFinite(score)?'Điểm theo dõi '+score+'/100':''].filter(Boolean).join(' · '),chg=Number(row.changePct),cls=Number.isFinite(chg)?(chg>0?'positive':chg<0?'negative':'neutral'):'neutral';return'<button type="button" class="quick-watch-button '+cls+'" data-symbol="'+esc(row.symbol)+'" title="'+esc(title)+'"><strong>'+esc(row.symbol)+'</strong><span>'+esc(watchChange(chg))+'</span>'+watchMove(row)+'</button>';};
  const pieces=items.map(rowHTML);track.innerHTML=(pieces.length>3?pieces.concat(pieces):pieces).join('');track.classList.toggle('is-running',pieces.length>3);
 }
-async function loadTodayWatch(){try{renderTodayWatch(await marketJson('watch-today.json'));}catch{const track=$('quick-tickers-track'),status=$('today-watch-status');if(status)status.textContent='TRONG PHIÊN';if(track){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Đang chờ snapshot tín hiệu.</span>';}}}
+async function loadTodayWatch(){try{const committed=window.FinMarketData?.currentBundle?.(),data=committed?.watch||await marketJson('watch-today.json');renderTodayWatch(data);}catch{const track=$('quick-tickers-track'),status=$('today-watch-status');if(status)status.textContent='TRONG PHIÊN';if(track){track.classList.remove('is-running');track.innerHTML='<span class="quick-tickers-loading">Đang chờ snapshot tín hiệu.</span>';}}}
 function error(message){$('error').hidden=!message;$('error').textContent=message||'';}
 function reportPeriods(s,mode){return sorted(s.rows.flatMap(r=>Object.keys(r.values).filter(p=>Number.isFinite(r.values[p])).map(p=>mode==='quarter'?p:Number(p))));}
 function eligible(){if(!state.data||!state.reports.length)return[];const ss=state.data.sections.filter(s=>state.reports.includes(s.id));return ss.length?ss.map(s=>s.periods).reduce((a,b)=>a.filter(p=>b.includes(p))):[];}
@@ -191,7 +191,7 @@ window.FinancialReportContext={
 };
 async function init(){
  try{state.companies=BOOT.companies||await json(DATA_BASE+'companies.json',null);companyOptions();$('company-description').textContent='100 doanh nghiệp thuộc VN100.';}catch{error('Chưa tải được danh sách VN100. Vui lòng tải lại trang.');return;}
- loadTodayWatch();setInterval(()=>{if(!document.hidden)loadTodayWatch();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTodayWatch();});window.addEventListener('online',loadTodayWatch);
+ loadTodayWatch();document.addEventListener('finquery:market-bundle',loadTodayWatch);setInterval(()=>{if(!document.hidden)loadTodayWatch();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTodayWatch();});window.addEventListener('online',loadTodayWatch);
  // Membership updates do not block a company request, and a failed manifest
  // never disables live financial data fetching.
  json(liveUrl('companies.json'),null,6000).then(list=>{if(Array.isArray(list)&&new Set(list.map(c=>c.symbol)).size===100){state.companies=list;companyOptions();}}).catch(()=>{});

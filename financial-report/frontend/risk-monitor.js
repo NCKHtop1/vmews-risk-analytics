@@ -3,13 +3,10 @@ const $=id=>document.getElementById(id);
 const state={data:null,loading:false,error:'',selectedFundSymbol:null,selectedSectorId:null,selectedBreadthGroup:null};
 function updateNavBadge(){
  const badge=$('risk-nav-badge');if(!badge)return;
- const d=state.data||{},funds=d.fundMonitor||{};
+ const d=state.data||{};
  const sectorCount=(d.sectors||[]).filter(x=>x.alertActive===true).length;
- const fundChangeIsCurrent=String(funds.asOf||'')!==''&&String(funds.asOf||'')===String(funds.lastChangedAsOf||'');
- const fundCount=fundChangeIsCurrent?(Number(funds.changedSymbols)||0):0;
- const count=sectorCount+fundCount;
- badge.hidden=count<=0;badge.textContent=count>99?'99+':String(count);
- badge.title=sectorCount+' ngành đang cảnh báo · '+fundCount+' mã quỹ vừa thay đổi';
+ badge.hidden=sectorCount<=0;badge.textContent=sectorCount>99?'99+':String(sectorCount);
+ badge.title=sectorCount+' cảnh báo rủi ro ngành đang hoạt động';
 }
 const COMPONENT_ORDER=['breadth','volatility','liquidity','contagion','concentration'];
 const SECTOR_ORDER=['banking','securities','real-estate','steel','technology','retail','oil-gas','utilities','construction','seafood','chemicals','transport','insurance','consumer'];
@@ -217,6 +214,13 @@ async function refresh(){
  try{
   const data=await window.FinMarketData.get('risk-monitor.json',{timeout:10000});
   if(data?.status!=='ok'||!data.overall||!Number.isFinite(Number(data.overall.score)))throw Error('Dữ liệu giám sát chưa hợp lệ');
+  const expected=window.FinancialMarket?.context?.()?.quoteBundleSourceTime||null;
+  if(expected&&String(data.sourceTime||'')!==String(expected)){
+   if(state.data)render();
+   if(status)status.textContent=(state.data?'Đang giữ snapshot rủi ro gần nhất · ':'')+'Đang đồng bộ mốc dữ liệu mới';
+   setTimeout(()=>{if(!$('risk-monitor')?.hidden)refresh();},1200);
+   return;
+  }
   state.data=data;state.error='';render();
  }catch(error){
   state.error=String(error?.message||error);
