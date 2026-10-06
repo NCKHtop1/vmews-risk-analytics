@@ -67,6 +67,7 @@ jobs:
           assert float(high.get('signalRate',0))>=0.05 and float(high.get('signalRate',0))<=0.25,high
           assert float(high.get('currentStateGapPct',0))<=-0.40,high
           assert cal.get('backtest',{}).get('stateValidated') is True,cal.get('backtest')
+          assert cal.get('backtest',{}).get('stateMonotonic') is True,cal.get('backtest')
           continuation=cal.get('backtest',{}).get('continuationValidated') is True
           if continuation:
               assert float(high.get('precisionLift',0))>=1.10,high
@@ -82,7 +83,9 @@ jobs:
           assert 'Năm thước đo chính' not in html
           assert 'risk-coverage-inline' in html
           bands=cal.get('backtest',{}).get('stateBands') or {}
-          summary={'score':score,'coverage':cov,'backtest85':high,'stateBands':bands,'stateValidated':cal.get('backtest',{}).get('stateValidated'),'continuationValidated':cal.get('backtest',{}).get('continuationValidated'),'samples':cal.get('samples'),'trainingSamples':cal.get('trainingSamples'),'downsideCorrelation':cal.get('fragilityContext',{}).get('downsideCorrelation')}
+          components={k:{'score':v.get('score'),'rawScore':v.get('rawScore'),'stats':v.get('stats')} for k,v in (risk.get('components') or {}).items()}
+          alerts=[{'id':x.get('id'),'title':x.get('title'),'score':x.get('score')} for x in (risk.get('alerts') or [])]
+          summary={'score':score,'coverage':cov,'components':components,'alerts':alerts,'backtest85':high,'stateBands':bands,'stateValidated':cal.get('backtest',{}).get('stateValidated'),'stateMonotonic':cal.get('backtest',{}).get('stateMonotonic'),'continuationValidated':cal.get('backtest',{}).get('continuationValidated'),'samples':cal.get('samples'),'trainingSamples':cal.get('trainingSamples'),'downsideCorrelation':cal.get('fragilityContext',{}).get('downsideCorrelation')}
           print('RISK V2 VALIDATION PASS',json.dumps(summary,ensure_ascii=False))
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
               f.write('## FinQuery Risk V2\n\n')
