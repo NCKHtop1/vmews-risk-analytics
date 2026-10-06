@@ -1,8 +1,43 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-06T06:31:57+00:00",
+  "updatedAt": "2026-10-06T15:18:10+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VCK-2026-10-06-001b1c7b",
+      "symbol": "VCK",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Thanh khoản thị trường và cổ phiếu chứng khoán: Định giá đang đi trước dòng tiền — khi nào thanh khoản xác nhận điểm mua? VCK SSI VND VPX VIX VCI SHS HCM MBS BSI CTS VDS #Thanh khoản thị trường #Định giá #Ngành chứn",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo VCK ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-NKG-2026-10-06-001b1c7b",
+      "symbol": "NKG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Thép: Lãnh đạo mua, lãnh đạo bán — chiều nào đáng tin hơn? Thống kê 151 sự kiện tại 16 doanh nghiệp, 01/2018–10/2026 HPG HSG NKG #Giao dịch nội bộ #Ngành thép Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo NKG ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BWE-2026-10-06-001b1c7b",
+      "symbol": "BWE",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — BWE · Tổng Công ty Cổ phần Nước – Môi trường Bình Dương (Biwase) BWE #Phân tích lần đầu #Ngành nước Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BWE ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "MBS-VRE-2026-10-06-34e1fd82",
       "symbol": "VRE",
@@ -167,6 +202,17 @@
       "brokerName": "Techcom Securities",
       "publishedAt": "2026-10-02",
       "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – VNM · CTCP Sữa Việt Nam Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VNM ngày 02/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VNM-2026-10-02-001b1c7b",
+      "symbol": "VNM",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-02",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – VNM · CTCP Sữa Việt Nam VNM #Phân tích lần đầu #Ngành thực phẩm Xem báo cáo Tải file",
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VNM ngày 02/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
