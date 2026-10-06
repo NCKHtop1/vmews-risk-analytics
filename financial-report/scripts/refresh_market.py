@@ -1016,7 +1016,12 @@ def scanner(out, companies):
     if not isinstance(quotes, dict) or not quotes:
         raise RuntimeError('Existing quotes snapshot is unavailable for scanner rebuild')
     matches = build_technical_scanner(out, companies, quotes)
-    print(f'Technical scanner rebuilt from existing market snapshot: {len(matches)} matches', flush=True)
+    today_watch = build_today_watchlist(out, companies, quotes)
+    print(
+        f'Technical scanner rebuilt from existing market snapshot: {len(matches)} matches; '
+        f'today watch: {len(today_watch)}',
+        flush=True,
+    )
 
 
 def build_today_watchlist(out, companies, quotes):
@@ -1158,7 +1163,7 @@ def build_today_watchlist(out, companies, quotes):
         'checkedAt': stamp,
         'sourceTime': newest_source_time(quotes),
         'sourceDate': source_date,
-        'status': 'ok' if selected else 'empty',
+        'status': 'ok',
         'universe': 'VN100/Core',
         'refreshEveryMinutes': 15,
         'methodVersion': 'finquery-today-watch-v1',
