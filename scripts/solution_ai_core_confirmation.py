@@ -1,7 +1,9 @@
-"""Build an independent Yahoo daily-close confirmation snapshot for SoluTION.AI core refresh.
+"""Build an independent daily-close confirmation snapshot for guarded forecast refreshes.
 
-This file is consumed only by the dedicated SoluTION.AI core workflow. It does
-not publish to main and does not weaken the existing forecast validation gates.
+Yahoo is attempted first, with VCI and TCBS used only as gap-fill providers.
+The snapshot is used by both the dedicated SoluTION.AI core refresh and the
+main V20.1 guarded post-close pipeline. It never publishes by itself and never
+weakens the existing forecast validation gates.
 """
 from __future__ import annotations
 
