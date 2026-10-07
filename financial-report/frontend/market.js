@@ -7,7 +7,7 @@ const date=s=>s&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString('vi-V
 const safeURL=u=>{try{const p=new URL(u);return p.protocol==='https:'&&!p.username&&!p.password&&['vnexpress.net','baodautu.vn','vietnamnet.vn','cafef.vn','vneconomy.vn','federalreserve.gov','ecb.europa.eu','sbv.gov.vn','news.google.com'].some(h=>p.hostname===h||p.hostname.endsWith('.'+h))?p.href:'';}catch{return '';}};
 let watch=[];try{const v=JSON.parse(localStorage.getItem('finquery-watchlist')||'[]');if(Array.isArray(v))watch=v.filter(s=>/^[A-Z]{3}$/.test(s));}catch{}
 
-const state={symbol:'',companies:[],coreCompanies:[],universe:null,universeFilter:'all',quotes:{},quoteBundleSourceTime:null,quoteBundleCheckedAt:null,drivers:{symbols:{}},news:null,bars:[],sourceBars:[],interval:'day',chartType:'candles',history:null,count:120,end:0,request:0,watchOnly:false,sort:'symbol',newsMode:'company',newsTab:'company',driverOpen:'',refreshing:false,initialized:false,marketView:'price',quoteRetryTimer:null,quoteRetryAttempt:0};
+const state={symbol:'',companies:[],coreCompanies:[],universe:null,universeLoadedAt:0,universeFilter:'all',quotes:{},quoteBundleSourceTime:null,quoteBundleCheckedAt:null,drivers:{symbols:{}},news:null,bars:[],sourceBars:[],interval:'day',chartType:'candles',history:null,count:120,end:0,request:0,watchOnly:false,sort:'symbol',newsMode:'company',newsTab:'company',driverOpen:'',refreshing:false,initialized:false,marketView:'price',quoteRetryTimer:null,quoteRetryAttempt:0};
 const compareCache=new Map();
 const companyLogoUrl=symbol=>'https://storage.googleapis.com/cdn-entrade/company/'+encodeURIComponent(symbol);
 const companyLogoFallback=symbol=>'https://cdn.simplize.vn/simplizevn/logo/'+encodeURIComponent(symbol)+'.jpeg';
@@ -218,7 +218,9 @@ async function refresh(){
  try{
  const previousNewsMax=Math.max(0,...(state.news?.items||[]).map(x=>Date.parse(x.publishedAt)||0));
  const latestNews=get('news-latest.json').catch(()=>get('news.json'));
- const results=await Promise.allSettled([window.FinMarketData.getAlignedBundle(),latestNews,get('drivers.json'),get('universe.json')]);
+ const universeNeedsRefresh=!state.universe||Date.now()-state.universeLoadedAt>=3600000;
+ const universeSnapshot=universeNeedsRefresh?get('universe.json'):Promise.resolve(state.universe);
+ const results=await Promise.allSettled([window.FinMarketData.getAlignedBundle(),latestNews,get('drivers.json'),universeSnapshot]);
  if(results[0].status==='fulfilled'){
   const atomic=window.FinMarketData.commitBundle(results[0].value),bundle=atomic?.quotes;
   if(bundle?.quotes){
@@ -237,7 +239,7 @@ async function refresh(){
  let staticNews=results[1].status==='fulfilled'&&Array.isArray(results[1].value.items)?results[1].value:null;
  if(staticNews&&(!state.news||window.FinMarketData.revision(staticNews)>=window.FinMarketData.revision(state.news)))state.news=staticNews;
  if(results[2].status==='fulfilled'&&results[2].value.symbols)state.drivers=results[2].value;
- if(results[3].status==='fulfilled'&&results[3].value?.symbols){state.universe=results[3].value;state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);}
+ if(results[3].status==='fulfilled'&&results[3].value?.symbols){state.universe=results[3].value;if(universeNeedsRefresh)state.universeLoadedAt=Date.now();state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);}
  let usedNewsFallback=false,usedQuoteFallback=false,newsFallbackError='',quoteFallbackError='';
  if(newsStale(state.news)&&LIVE_FALLBACK_API){
   try{const live=await liveFallback('news');state.news=mergeNewsBundles(state.news,live);usedNewsFallback=true;}catch(error){newsFallbackError=String(error?.message||error).slice(0,120);}
