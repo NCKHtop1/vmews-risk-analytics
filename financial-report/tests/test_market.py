@@ -2038,6 +2038,101 @@ class MarketTests(unittest.TestCase):
         self.assertGreaterEqual(rows[0]['sourcePriority'],90)
         self.assertIn('sbv',rows[0]['topics'])
 
+    def test_luatvietnam_direct_parser_extracts_market_policy_and_exact_source_tier(self):
+        source=next(x for x in m.LUATVIETNAM_DIRECT_SOURCES if x['scope']=='finance')
+        raw=b'''<html><head><title>LuatVietnam</title></head><body><h1>Tai chinh - Ngan hang</h1>
+        <div><a href="/linh-vuc-khac/thong-tu-53-2026-tt-nhnn-quy-dinh-an-toan-va-quan-ly-rui-ro-ai-trong-ngan-hang-449984-d1.html">Thong tu 53/2026/TT-NHNN quy dinh an toan va quan ly rui ro AI trong ngan hang</a><span>Cap nhat: 07/10/2026, 11:48</span></div>
+        <div><a href="/linh-vuc-khac/quyet-dinh-giao-duc-449111-d1.html">Quyet dinh cong bo thu tuc hanh chinh giao duc</a><span>Cap nhat: 07/10/2026, 10:30</span></div>
+        </body></html>'''
+        # Keep a UTF-8 fixture so the production Vietnamese regex is exercised.
+        raw=raw.decode().replace('Tai chinh - Ngan hang','Tài chính-Ngân hàng').replace('Thong tu','Thông tư').replace('quy dinh','quy định').replace('an toan','an toàn').replace('quan ly','quản lý').replace('rui ro','rủi ro').replace('ngan hang','ngân hàng').replace('Cap nhat','Cập nhật').replace('Quyet dinh','Quyết định').replace('cong bo','công bố').replace('thu tuc hanh chinh giao duc','thủ tục hành chính giáo dục').encode()
+        rows,health=m._parse_luatvietnam_listing(raw,source,[{'symbol':'FPT','name':'Công ty Cổ phần FPT'}],datetime(2026,10,7,7,tzinfo=timezone.utc))
+        self.assertTrue(health['parserHealthy'])
+        self.assertEqual(health['status'],'ok')
+        self.assertGreaterEqual(health['candidateCount'],2)
+        self.assertGreaterEqual(health['datedCandidates'],2)
+        self.assertEqual(len(rows),1)
+        row=rows[0]
+        self.assertEqual(row['source'],'Luật Việt Nam')
+        self.assertEqual(row['sourceTier'],'trusted_legal_direct')
+        self.assertEqual(row['sourcePriority'],94)
+        self.assertTrue(row['directSource'])
+        self.assertEqual(row['timePrecision'],'minute')
+        self.assertEqual(row['publishedAt'],'2026-10-07T04:48:00+00:00')
+        self.assertIn('sbv',row['topics'])
+        self.assertIn('central_bank',row['topics'])
+
+    def test_luatvietnam_relative_list_age_is_parseable_but_not_claimed_exact(self):
+        current=datetime(2026,10,7,7,0,tzinfo=timezone.utc)
+        dt,basis,precision=m._luatvietnam_datetime('6 phút trước',current)
+        self.assertEqual(dt.isoformat(),'2026-10-07T06:54:00+00:00')
+        self.assertEqual(basis,'relative_age')
+        self.assertEqual(precision,'relative')
+        dt,basis,precision=m._luatvietnam_datetime('2 giờ trước',current)
+        self.assertEqual(dt.isoformat(),'2026-10-07T05:00:00+00:00')
+        self.assertEqual(precision,'relative')
+
+    def test_luatvietnam_detail_uses_update_time_not_issue_date(self):
+        raw='''<html><body>Ngày cập nhật: Thứ Tư, 07/10/2026 11:48 (GMT+7)
+        Ngày ban hành: 01/10/2026</body></html>'''.encode()
+        dt,basis,precision=m._luatvietnam_detail_timestamp(raw,datetime(2026,10,7,7,tzinfo=timezone.utc))
+        self.assertEqual(dt.isoformat(),'2026-10-07T04:48:00+00:00')
+        self.assertEqual(basis,'updated')
+        self.assertEqual(precision,'minute')
+
+    def test_luatvietnam_http_200_with_broken_structure_is_error_not_green(self):
+        source=next(x for x in m.LUATVIETNAM_DIRECT_SOURCES if x['scope']=='stocks')
+        raw='<html><head><title>LuatVietnam</title></head><body><h1>Chứng khoán</h1><p>HTTP 200 nhưng template đã đổi</p></body></html>'.encode()
+        rows,health=m._parse_luatvietnam_listing(raw,source,[],datetime(2026,10,7,7,tzinfo=timezone.utc))
+        self.assertEqual(rows,[])
+        self.assertFalse(health['parserHealthy'])
+        self.assertEqual(health['status'],'error')
+        self.assertIn('parser contract failed',health['error'])
+
+    def test_luatvietnam_direct_group_never_claims_detail_checks_it_did_not_make(self):
+        raw='''<html><head><title>LuatVietnam</title></head><body><h1>Tài chính-Ngân hàng</h1>
+        <div><a href="/linh-vuc-khac/thong-tu-53-2026-tt-nhnn-quy-dinh-ai-449984-d1.html">Thông tư 53/2026/TT-NHNN quy định quản lý rủi ro AI trong ngân hàng</a>
+        <span>Cập nhật: 07/10/2026, 11:48</span></div></body></html>'''.encode()
+        original=m.request
+        try:
+            m.request=lambda url,*_args,**_kwargs: raw
+            rows,sources,group=m._fetch_luatvietnam_direct([],datetime(2026,10,7,7,tzinfo=timezone.utc))
+            self.assertEqual(len(sources),4)
+            self.assertEqual(group['parserHealthy'],4)
+            self.assertEqual(group['status'],'ok')
+            self.assertEqual(group['detailChecks'],0)
+            self.assertEqual(group['detailTimestampVerified'],0)
+            self.assertGreaterEqual(group['preciseTimestamps'],1)
+            self.assertTrue(rows)
+        finally:
+            m.request=original
+
+    def test_luatvietnam_direct_group_is_red_when_all_parsers_break(self):
+        original=m.request
+        try:
+            m.request=lambda url,*_args,**_kwargs: b'<html><title>LuatVietnam</title><body>template changed</body></html>'
+            rows,sources,group=m._fetch_luatvietnam_direct([],datetime(2026,10,7,7,tzinfo=timezone.utc))
+            self.assertEqual(rows,[])
+            self.assertEqual(len(sources),4)
+            self.assertEqual(group['parserHealthy'],0)
+            self.assertEqual(group['status'],'error')
+            self.assertTrue(all(x['status']=='error' for x in sources))
+        finally:
+            m.request=original
+
+    def test_direct_luatvietnam_wins_duplicate_over_google_discovery_but_not_official(self):
+        stamp='2026-10-07T04:48:00+00:00'
+        title='Thông tư 53/2026/TT-NHNN quy định quản lý rủi ro AI trong ngân hàng'
+        google={'title':title,'url':'https://news.google.com/articles/x','publishedAt':stamp,'source':'Luật Việt Nam','sourcePriority':92}
+        direct={'title':title,'url':'https://luatvietnam.vn/linh-vuc-khac/x-d1.html','publishedAt':stamp,'source':'Luật Việt Nam','sourcePriority':94}
+        official={'title':title,'url':'https://sbv.gov.vn/x','publishedAt':stamp,'source':'Ngân hàng Nhà nước Việt Nam','sourcePriority':100}
+        picked=m._unique_news([google,direct])
+        self.assertEqual(len(picked),1)
+        self.assertEqual(picked[0]['url'],direct['url'])
+        picked=m._unique_news([direct,official])
+        self.assertEqual(len(picked),1)
+        self.assertEqual(picked[0]['url'],official['url'])
+
     def test_sbv_parser_does_not_report_green_when_zero_items(self):
         original=m.request
         try:
@@ -2057,6 +2152,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn("company.get('selection')!='per_symbol_latest'",live)
         self.assertIn("company=get('news-company-latest.json')",guard)
         self.assertIn("health.get('healthy')",guard)
+        self.assertIn("luat=n.get('luatVietnamDirect')",guard)
+        self.assertIn("luat.get('parserHealthy')",guard)
+        self.assertIn("LuatVietnam direct parser contract failed",live)
 
     def test_chart_quote_consistency_gate_hides_bad_technical_context(self):
         chart=(ROOT/'frontend/chart-engine.js').read_text()

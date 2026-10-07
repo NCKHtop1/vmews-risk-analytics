@@ -30,6 +30,23 @@ VI_DISCLOSURE_DISCOVERY_URL = 'https://news.google.com/rss/search?' + urlencode(
          '("công bố thông tin" OR "báo cáo tài chính" OR "giao dịch cổ phiếu" OR "doanh nghiệp niêm yết") when:7d',
     'hl': 'vi', 'gl': 'VN', 'ceid': 'VN:vi'
 })
+LUATVIETNAM_DIRECT_SOURCES = [
+    {'id':'luatvietnam_new_documents','name':'LuatVietnam Direct · Văn bản mới',
+     'url':'https://luatvietnam.vn/van-ban-moi.html','scope':'new_documents'},
+    {'id':'luatvietnam_new_articles','name':'LuatVietnam Direct · Tin văn bản mới',
+     'url':'https://luatvietnam.vn/tin-van-ban-moi-c186-article.html','scope':'new_articles'},
+    {'id':'luatvietnam_finance','name':'LuatVietnam Direct · Tài chính-Ngân hàng',
+     'url':'https://luatvietnam.vn/tai-chinh-ngan-hang-2-f1.html','scope':'finance'},
+    {'id':'luatvietnam_securities','name':'LuatVietnam Direct · Chứng khoán',
+     'url':'https://luatvietnam.vn/chung-khoan-35-f1.html','scope':'stocks'},
+]
+LUATVIETNAM_MARKET_PATTERN = re.compile(
+    r'ngân hàng nhà nước|nhnn|tt-nhnn|tổ chức tín dụng|ngân hàng|tín dụng|lãi suất|'
+    r'tỷ giá|ngoại hối|tiền tệ|thanh toán|phòng,? chống rửa tiền|trái phiếu|'
+    r'chứng khoán|cổ phiếu|công ty đại chúng|quỹ đầu tư|thị trường vốn|'
+    r'báo cáo tài chính|kiểm toán|thuế|tài chính|đầu tư|bảo hiểm|fintech|'
+    r'vốn nhà nước|phát hành|niêm yết|giao dịch', re.I)
+LUATVIETNAM_ARTICLE_PATH = re.compile(r'(?:-d1\.html|-article\.html)$', re.I)
 FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/chung-khoan.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/doanh-nghiep.rss'),
@@ -178,6 +195,8 @@ def news_source_quality(source, feed_source=None):
     feed = clean(feed_source or '').casefold()
     if name in OFFICIAL_NEWS_SOURCES or any(x in name for x in ('ngân hàng nhà nước', 'báo chính phủ', 'stock exchange', 'chứng khoán nhà nước')):
         return 'official', 100
+    if feed.startswith('luatvietnam direct'):
+        return 'trusted_legal_direct', 94
     if name in TRUSTED_POLICY_SOURCES or any(x in name for x in ('luatvietnam', 'luật việt nam')):
         return 'trusted_legal', 92
     if feed in ('vietnam policy watch', 'vietnam disclosure watch'):
@@ -209,12 +228,12 @@ def now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def request(url, payload=None):
+def request(url, payload=None, timeout=25):
     headers = {'User-Agent': 'FinQuery/1.0 public financial dashboard', 'Accept': 'application/json, application/xml, text/xml, */*'}
     if payload is not None:
         headers.update({'Content-Type': 'application/json', 'Referer': 'https://trading.vietcap.com.vn/', 'Origin': 'https://trading.vietcap.com.vn'})
     req = Request(url, data=json.dumps(payload).encode() if payload is not None else None, headers=headers)
-    with urlopen(req, timeout=25) as response:
+    with urlopen(req, timeout=timeout) as response:
         return response.read()
 
 
@@ -2438,6 +2457,209 @@ def _fetch_news_feed(publisher, url, companies, current):
         return [], {'name': publisher, 'url': url, 'status': 'error', 'error': str(e)}
 
 
+def _luatvietnam_datetime(text, current):
+    value = clean(text)
+    relative = re.search(r'(\d+)\s*(phút|giờ|ngày)\s+trước', value, re.I)
+    if relative:
+        amount = int(relative.group(1))
+        unit = relative.group(2).casefold()
+        delta = timedelta(minutes=amount) if unit == 'phút' else (timedelta(hours=amount) if unit == 'giờ' else timedelta(days=amount))
+        dt = current - delta
+        if dt >= current - timedelta(days=30):
+            return dt, 'relative_age', 'relative'
+    if re.search(r'\bhôm qua\b', value, re.I):
+        return current - timedelta(days=1), 'relative_age', 'day'
+    patterns = [
+        (r'(?:Ngày\s+cập\s+nhật|Cập\s+nhật)\s*:?[^\d]{0,45}(\d{1,2}/\d{1,2}/\d{4})(?:\s*[ ,]\s*(\d{1,2}:\d{2}))?', 'updated'),
+        (r'(?:Thứ\s+[^,]{2,12},\s*)?(\d{1,2}/\d{1,2}/\d{4})\s*,\s*(\d{1,2}:\d{2})', 'article_time'),
+        (r'Ban\s+hành\s*:?[^\d]{0,20}(\d{1,2}/\d{1,2}/\d{4})', 'issued'),
+    ]
+    for pattern, basis in patterns:
+        match = re.search(pattern, value, re.I)
+        if not match:
+            continue
+        day, month, year = map(int, match.group(1).split('/'))
+        clock = match.group(2) if match.lastindex and match.lastindex >= 2 else None
+        hour, minute = (map(int, clock.split(':')) if clock else (0, 0))
+        try:
+            dt = datetime(year, month, day, hour, minute, tzinfo=VN).astimezone(timezone.utc)
+        except ValueError:
+            continue
+        if dt > current + timedelta(days=1) or dt < current - timedelta(days=30):
+            continue
+        return dt, basis, ('minute' if clock else 'day')
+    return None, None, None
+
+
+def _luatvietnam_topics(title, scope):
+    topics = {'vietnam', 'legal_policy'}
+    if scope == 'finance':
+        topics.update({'finance', 'banking'})
+    elif scope == 'stocks':
+        topics.update({'finance', 'stocks', 'market'})
+    text = title or ''
+    for topic, pattern in TOPIC_PATTERNS.items():
+        if pattern.search(text):
+            topics.add(topic)
+    if SBV_PATTERN.search(text) or re.search(r'TT-NHNN|tổ chức tín dụng|phòng,? chống rửa tiền', text, re.I):
+        topics.update({'finance', 'banking', 'macro', 'central_bank', 'sbv'})
+    if re.search(r'chứng khoán|cổ phiếu|niêm yết|công ty đại chúng|thị trường vốn', text, re.I):
+        topics.update({'finance', 'stocks', 'market'})
+    return topics
+
+
+def _parse_luatvietnam_listing(raw, source, companies, current):
+    text = raw.decode('utf-8-sig', errors='ignore') if isinstance(raw, bytes) else str(raw)
+    folded = clean(text).casefold()
+    signature_ok = 'luatvietnam' in folded and any(
+        marker in folded for marker in ('văn bản', 'tin văn bản', 'tài chính', 'chứng khoán')
+    )
+    anchors = list(re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', text, re.I | re.S))
+    candidates, dated, relevant = [], 0, 0
+    for match in anchors:
+        title = clean(match.group(2))
+        if len(title) < 18:
+            continue
+        href = html.unescape(match.group(1)).strip()
+        link = urljoin(source['url'], href)
+        parsed = urlsplit(link)
+        if not (parsed.hostname or '').endswith('luatvietnam.vn'):
+            continue
+        if not LUATVIETNAM_ARTICLE_PATH.search(parsed.path.rstrip('/')):
+            continue
+        context = clean(text[max(0, match.start()-220):min(len(text), match.end()+1000)])
+        dt, basis, precision = _luatvietnam_datetime(context, current)
+        if dt is not None:
+            dated += 1
+        candidates.append({
+            'title': title,
+            'url': urlunsplit((parsed.scheme or 'https', parsed.netloc, parsed.path, '', '')),
+            'dt': dt, 'timestampBasis': basis, 'timePrecision': precision, 'context': context,
+        })
+        if LUATVIETNAM_MARKET_PATTERN.search(title):
+            relevant += 1
+
+    unique = {}
+    for row in candidates:
+        prior = unique.get(row['url'])
+        if prior is None or (row.get('dt') and not prior.get('dt')):
+            unique[row['url']] = row
+    candidates = list(unique.values())
+    parser_ok = signature_ok and bool(candidates) and dated >= 1
+
+    rows = []
+    for candidate in candidates:
+        if not LUATVIETNAM_MARKET_PATTERN.search(candidate['title']) or candidate.get('dt') is None:
+            continue
+        topics = _luatvietnam_topics(candidate['title'], source['scope'])
+        matched = [c['symbol'] for c in companies if company_match(c, candidate['title'] + ' ' + candidate['context'])]
+        if matched:
+            topics.add('company')
+        tier, priority = news_source_quality('Luật Việt Nam', source['name'])
+        meta = classify_news_meta(candidate['title'], candidate['context'][:900], 'Luật Việt Nam', topics, candidate['dt'].isoformat())
+        if 'sbv' in topics:
+            meta['impactScore'] = max(int(meta.get('impactScore') or 0), 52)
+        elif 'stocks' in topics:
+            meta['impactScore'] = max(int(meta.get('impactScore') or 0), 34)
+        rows.append({
+            'title': candidate['title'], 'summary': candidate['context'][:900],
+            'url': candidate['url'], 'source': 'Luật Việt Nam', 'feedSource': source['name'],
+            'publishedAt': candidate['dt'].isoformat(), 'timestampBasis': candidate['timestampBasis'],
+            'timePrecision': candidate['timePrecision'], 'symbols': matched,
+            'topics': sorted(topics), 'sourceTier': tier, 'sourcePriority': priority,
+            'directSource': True, **meta
+        })
+    rows = _unique_news(rows)
+    health = {
+        'id': source['id'], 'name': source['name'], 'url': source['url'],
+        'status': ('error' if not parser_ok else ('ok' if rows else 'empty')),
+        'parser': 'luatvietnam-listing-v1', 'parserHealthy': parser_ok,
+        'candidateCount': len(candidates), 'datedCandidates': dated,
+        'relevantCandidates': relevant, 'items': len(rows),
+        'lastItemAt': rows[0]['publishedAt'] if rows else None,
+    }
+    if not parser_ok:
+        health['error'] = f'parser contract failed: signature={signature_ok} candidates={len(candidates)} dated={dated}'
+    return rows, health
+
+
+def _luatvietnam_detail_timestamp(raw, current):
+    text = raw.decode('utf-8-sig', errors='ignore') if isinstance(raw, bytes) else str(raw)
+    return _luatvietnam_datetime(clean(text[:350000]), current)
+
+
+def _enrich_luatvietnam_row(row, current):
+    try:
+        dt, basis, precision = _luatvietnam_detail_timestamp(request(row['url'], timeout=8), current)
+        if dt is None:
+            return row, False
+        enriched = dict(row)
+        enriched['publishedAt'] = dt.isoformat()
+        enriched['timestampBasis'] = basis
+        enriched['timePrecision'] = precision
+        enriched['detailTimestampVerified'] = True
+        return enriched, True
+    except Exception:
+        return row, False
+
+
+def _fetch_luatvietnam_direct(companies, current):
+    all_rows, sources = [], []
+
+    def fetch_listing(source):
+        try:
+            return _parse_luatvietnam_listing(request(source['url'], timeout=10), source, companies, current)
+        except Exception as e:
+            return [], {
+                'id': source['id'], 'name': source['name'], 'url': source['url'],
+                'status': 'error', 'parser': 'luatvietnam-listing-v1',
+                'parserHealthy': False, 'items': 0, 'error': str(e)
+            }
+
+    with ThreadPoolExecutor(max_workers=len(LUATVIETNAM_DIRECT_SOURCES)) as pool:
+        futures = {pool.submit(fetch_listing, source): source for source in LUATVIETNAM_DIRECT_SOURCES}
+        for future in as_completed(futures):
+            rows, health = future.result()
+            all_rows.extend(rows)
+            sources.append(health)
+    source_order = {source['id']: i for i, source in enumerate(LUATVIETNAM_DIRECT_SOURCES)}
+    sources.sort(key=lambda source: source_order.get(source.get('id'), 999))
+
+    targets = [
+        row for row in sorted(_unique_news(all_rows), key=lambda r: r.get('publishedAt') or '', reverse=True)
+        if row.get('timePrecision') != 'minute'
+    ][:8]
+    replacements, detail_ok = {}, 0
+    if targets:
+        with ThreadPoolExecutor(max_workers=min(4, len(targets))) as pool:
+            futures = {pool.submit(_enrich_luatvietnam_row, row, current): row['url'] for row in targets}
+            for future in as_completed(futures):
+                enriched, verified = future.result()
+                replacements[futures[future]] = enriched
+                detail_ok += int(verified)
+
+    final = _unique_news([replacements.get(row['url'], row) for row in all_rows])
+    parser_healthy = sum(1 for source in sources if source.get('parserHealthy'))
+    precise = sum(1 for row in final if row.get('timePrecision') == 'minute')
+    if parser_healthy >= 3:
+        group_status = 'ok'
+    elif parser_healthy == 2:
+        group_status = 'degraded'
+    else:
+        group_status = 'error'
+    if group_status == 'ok' and final and precise == 0:
+        group_status = 'degraded'
+    group = {
+        'name': 'LuatVietnam Direct', 'url': 'https://luatvietnam.vn/',
+        'status': group_status, 'parserHealthy': parser_healthy,
+        'expectedParsers': len(LUATVIETNAM_DIRECT_SOURCES),
+        'items': len(final), 'detailChecks': len(targets),
+        'detailTimestampVerified': detail_ok, 'preciseTimestamps': precise,
+        'lastItemAt': final[0]['publishedAt'] if final else None,
+    }
+    return final, sources, group
+
+
 def _news_story_key(row):
     title = clean((row or {}).get('title')).casefold()
     title = re.sub(r'\s+[-–—|]\s+(?:luatvietnam|vnexpress|vneconomy|cafef|vietnamnet|báo đầu tư|báo chính phủ)\s*$', '', title, flags=re.I)
@@ -2510,6 +2732,9 @@ def news(out, companies):
     sbv_items, sbv_source = _fetch_sbv_news(current)
     rows.extend(sbv_items)
     sources.append(sbv_source)
+    luat_rows, luat_sources, luat_health = _fetch_luatvietnam_direct(companies, current)
+    rows.extend(luat_rows)
+    sources.extend(luat_sources)
     source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
 
@@ -2529,7 +2754,7 @@ def news(out, companies):
     payload = {
         'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'),
         'status': 'ok' if ok else 'retained', 'sources': sources, 'sourceHealth': health,
-        'items': items
+        'luatVietnamDirect': luat_health, 'items': items
     }
     write(path, payload)
 
@@ -2549,6 +2774,7 @@ def news(out, companies):
     print(
         f'News: {len(rows)} fetched; {len(items)} unique; latest {len(latest_items)}; '
         f'company {len(company_items)} items/{len(company_counts)} symbols; '
+        f'luat {luat_health.get("status")} {len(luat_rows)} items; '
         f'sources {healthy}/{len(sources)} healthy ({empty} empty); drivers: {len(drivers)}',
         flush=True
     )
