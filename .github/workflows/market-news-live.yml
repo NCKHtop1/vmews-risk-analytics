@@ -127,5 +127,10 @@ jobs:
               raise SystemExit(f'company news index invalid: status={company.get("status")} coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
           if str(company.get('checkedAt'))!=str(data.get('checkedAt')):
               raise SystemExit('company news index is not aligned with latest news snapshot')
-          print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []),'companyCoverage',company.get('companyCoverage'))
+          luat=data.get('luatVietnamDirect') or {}
+          if int(luat.get('expectedParsers') or 0)!=4 or int(luat.get('parserHealthy') or 0)<2:
+              raise SystemExit(f'LuatVietnam direct parser contract failed: {luat}')
+          if luat.get('status') not in ('ok','degraded'):
+              raise SystemExit(f'LuatVietnam direct source unavailable: {luat}')
+          print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []),'companyCoverage',company.get('companyCoverage'),'luat',luat)
           PY
