@@ -1,5 +1,6 @@
 name: Refresh FinQuery market universe
 
+# Single writer for market/universe.json.
 on:
   workflow_dispatch:
   push:
