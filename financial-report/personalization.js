@@ -84,6 +84,21 @@ function normalizedProfile(payload){
     givenName:String(payload.given_name||'').trim(),
     email:String(payload.email||'').trim(),
     picture:safeImage(payload.picture),
+    provider:'google',
+    signedAt:nowIso()
+  };
+}
+function localProfile(name){
+  var display=String(name||'').trim().replace(/\s+/g,' ');
+  if(!display)return null;
+  var parts=display.split(' ');
+  return{
+    sub:GUEST_ID,
+    name:display,
+    givenName:parts[parts.length-1]||display,
+    email:'',
+    picture:'',
+    provider:'local',
     signedAt:nowIso()
   };
 }
@@ -318,7 +333,7 @@ function accountMenu(profile){
 
   var logout=document.createElement('button');
   logout.type='button';
-  logout.textContent='Đăng xuất';
+  logout.textContent=profile&&profile.provider==='local'?'Xóa hồ sơ':'Đăng xuất';
   logout.addEventListener('click',function(){signOut();});
 
   menu.appendChild(watch);
@@ -360,11 +375,49 @@ function renderAccount(){
     document.addEventListener('click',function(){menu.hidden=true;button.setAttribute('aria-expanded','false');},{once:true});
     return;
   }
+  root.hidden=false;
   if(!clientId){
-    root.hidden=true;
+    var localButton=document.createElement('button');
+    localButton.type='button';
+    localButton.className='finquery-account-profile finquery-local-trigger';
+    localButton.textContent='Cá nhân hóa';
+    var panel=document.createElement('form');
+    panel.className='finquery-local-panel';
+    panel.hidden=true;
+    panel.autocomplete='off';
+    var input=document.createElement('input');
+    input.type='text';
+    input.maxLength=60;
+    input.placeholder='Tên hiển thị';
+    input.setAttribute('aria-label','Tên hiển thị');
+    var save=document.createElement('button');
+    save.type='submit';
+    save.textContent='Lưu';
+    panel.appendChild(input);
+    panel.appendChild(save);
+    localButton.addEventListener('click',function(event){
+      event.stopPropagation();
+      panel.hidden=!panel.hidden;
+      if(!panel.hidden)setTimeout(function(){input.focus();},0);
+    });
+    panel.addEventListener('click',function(event){event.stopPropagation();});
+    panel.addEventListener('submit',function(event){
+      event.preventDefault();
+      var profile=localProfile(input.value);
+      if(!profile)return;
+      state.profile=profile;
+      saveJson(PROFILE_KEY,profile);
+      state.previousSnapshot=loadJson(userKey('snapshot'),null);
+      state.watchSignature=JSON.stringify(readLegacyWatch());
+      recordRecent(currentSymbol());
+      renderAccount();
+      refreshData();
+    });
+    root.appendChild(localButton);
+    root.appendChild(panel);
+    document.addEventListener('click',function(){panel.hidden=true;},{once:true});
     return;
   }
-  root.hidden=false;
   var slot=document.createElement('div');
   slot.id='finquery-google-slot';
   slot.className='finquery-google-slot';
@@ -386,7 +439,15 @@ function renderAccount(){
       logo_alignment:'left',
       width:190
     });
-  }).catch(function(){root.hidden=true;});
+  }).catch(function(){
+    root.replaceChildren();
+    var fallback=document.createElement('button');
+    fallback.type='button';
+    fallback.className='finquery-account-profile';
+    fallback.textContent='Cá nhân hóa';
+    fallback.addEventListener('click',function(){renderAccount();});
+    root.appendChild(fallback);
+  });
 }
 var googlePromise=null;
 function loadGoogleIdentity(){
@@ -652,6 +713,7 @@ function initProfile(){
       givenName:String(stored.givenName||'').trim(),
       email:String(stored.email||'').trim(),
       picture:safeImage(stored.picture),
+      provider:String(stored.provider||((stored.email||stored.picture)?'google':'local')),
       signedAt:String(stored.signedAt||'')
     };
   }
