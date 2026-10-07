@@ -56,6 +56,10 @@ jobs:
           node --check financial-report/frontend/strategy-intelligence.js
           node --check financial-report/frontend/strategy-engine.js
           node --check financial-report/frontend/alert-center.js
+          node --check financial-report/frontend/market.js
+          node --check financial-report/frontend/risk-monitor.js
+          node --check financial-report/frontend/research-agent.js
+          node --check financial-report/frontend/research-ai.js
           node financial-report/scripts/test_strategy_intelligence.cjs
       - uses: actions/checkout@v4
         with:
@@ -289,6 +293,9 @@ jobs:
           grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' /tmp/page.html
           grep -q 'sai-top-strategies' /tmp/page.html
           grep -q 'Strategy Builder & Screener' /tmp/page.html
+          grep -q 'openChart:openMarketChart' /tmp/page.html
+          grep -q 'ensureGlobalAILayer' /tmp/page.html
+          grep -q 'sai-action-status' /tmp/page.html
           ! grep -q 'src="strategy-intelligence-core.js"' /tmp/page.html
           ! grep -q 'src="strategy-intelligence.js"' /tmp/page.html
           grep -q 'news-company-latest.json' /tmp/page.html
