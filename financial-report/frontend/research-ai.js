@@ -860,7 +860,11 @@ async function refreshGeminiSession(){
  try{const model=await validateGemini(secret);renderGeminiStatus('Gemini phản hồi OK · '+model);}
  catch(error){state.geminiReady=false;state.lastGeminiError=String(error?.message||error);renderGeminiStatus('Không thể generateContent · '+state.lastGeminiError);}
 }
-function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return;if(backdrop)backdrop.hidden=false;drawer.hidden=false;requestAnimationFrame(()=>{backdrop?.classList.add('open');drawer.classList.add('open');});document.body.classList.add('dolphin-modal-open');mountGeminiUI();if(fab){fab.setAttribute('aria-expanded','true');fab.hidden=true;}setTimeout(()=>$('research-ai-question')?.focus(),100);}
+function ensureGlobalAILayer(){
+ const body=document.body;if(!body)return;
+ for(const id of ['ai-backdrop','research-ai','ai-fab']){const el=$(id);if(el&&el.parentElement!==body)body.append(el);}
+}
+function openDrawer(){ensureGlobalAILayer();const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return false;if(backdrop)backdrop.hidden=false;drawer.hidden=false;requestAnimationFrame(()=>{backdrop?.classList.add('open');drawer.classList.add('open');});document.body.classList.add('dolphin-modal-open');mountGeminiUI();if(fab){fab.setAttribute('aria-expanded','true');fab.hidden=true;}setTimeout(()=>$('research-ai-question')?.focus(),100);return true;}
 function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return;drawer.classList.remove('open');backdrop?.classList.remove('open');document.body.classList.remove('dolphin-modal-open');setTimeout(()=>{drawer.hidden=true;if(backdrop)backdrop.hidden=true;},160);if(fab){fab.setAttribute('aria-expanded','false');fab.hidden=false;}}
 async function ask(question,preferredMode=null){
  const q=String(question||'').trim();if(!q||state.busy)return;
@@ -878,7 +882,7 @@ async function ask(question,preferredMode=null){
  }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
-window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
+window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,ensureGlobalLayer:ensureGlobalAILayer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
 const form=$('research-ai-form'),input=$('research-ai-question'),sendButton=$('research-ai-send');
 form?.addEventListener('submit',e=>{e.preventDefault();if(state.busy){state.currentController?.abort();return;}const q=input.value.trim();if(q){input.value='';input.style.height='';ask(q);}});
 input?.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,130)+'px';});
@@ -886,5 +890,5 @@ input?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&window.in
 document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'',b.dataset.aiMode||null)));
 $('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);$('ai-backdrop')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('research-ai')?.hidden)closeDrawer();});
-restoreAIMode();sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');mountGeminiUI();void refreshGeminiSession();
+restoreAIMode();sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');ensureGlobalAILayer();mountGeminiUI();void refreshGeminiSession();
 })();
