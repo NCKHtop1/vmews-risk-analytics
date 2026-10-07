@@ -75,7 +75,7 @@ function renderView(model){
  '</div>'+
  '<div class="sai-evidence-grid"><section><h4>Yếu tố ủng hộ</h4><ul class="positive">'+positives+'</ul></section><section><h4>Điểm cần thận trọng</h4><ul class="caution">'+cautions+'</ul></section></div>'+
  '<div class="sai-invalidation"><span>ĐIỀU KIỆN MẤT HIỆU LỰC</span><p>'+esc(v.invalidation)+'</p></div>'+
- '<div class="sai-ai-actions"><button id="sai-open-symbol" type="button">Mở biểu đồ '+esc(v.symbol)+'</button><button id="sai-query-ai" type="button" class="primary">Phân tích sâu</button></div>';
+ '<div id="sai-action-status" class="sai-action-status" role="status" aria-live="polite"></div><div class="sai-ai-actions"><button id="sai-open-symbol" type="button">Mở biểu đồ '+esc(v.symbol)+'</button><button id="sai-query-ai" type="button" class="primary">Phân tích sâu</button></div>';
 }
 function renderExecution(){
  const host=$('sai-vn-execution');if(!host)return;
@@ -118,18 +118,56 @@ function loadPreset(id){
  const button=document.querySelector('[data-strategy-preset="'+CSS.escape(id)+'"]');
  if(button){button.click();document.getElementById('strategy-builder')?.scrollIntoView({behavior:'smooth',block:'start'});}
 }
-function openSymbol(symbol){
- const s=String(symbol||state.selected||'').toUpperCase();if(!s)return;
- window.FinPlatformViews?.openAnalysis?.();
- const ticker=$('ticker');if(ticker)ticker.value=s;
- $('company-form')?.requestSubmit();
- setTimeout(()=>document.getElementById('market')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+function actionStatus(message,tone=''){
+ const el=$('sai-action-status');if(!el)return;
+ el.textContent=message||'';el.className='sai-action-status'+(tone?' '+tone:'');
 }
-function askAI(){
- if(!state.model||!state.selected||!window.FinQueryAI?.ask)return;
- const v=C.investmentView(state.selected,state.model.opportunities,state.model.regime);
- const q='Phân tích '+state.selected+' theo Strategy Intelligence hiện tại. Chiến lược chính: '+(v.primary?.label||'chưa có')+'. Điểm phù hợp: '+(v.score??'—')+'/100. Regime: '+state.model.regime.label+'. Hãy đối chiếu thêm giá, kỹ thuật, Forecast, Risk, tin doanh nghiệp và BCTC đang có trong FinQuery; nêu yếu tố ủng hộ, yếu tố phản biện, kịch bản tích cực, kịch bản mất hiệu lực và rủi ro. Không suy diễn số liệu thiếu.';
- window.FinQueryAI.ask(q,'deep');
+function setActionBusy(id,busy,label=''){
+ const b=$(id);if(!b)return;
+ if(!b.dataset.idleLabel)b.dataset.idleLabel=b.textContent||'';
+ b.disabled=Boolean(busy);b.textContent=busy?(label||'Đang xử lý…'):b.dataset.idleLabel;
+}
+async function openSymbol(symbol){
+ const s=String(symbol||state.selected||'').trim().toUpperCase();if(!/^[A-Z]{3}$/.test(s)){actionStatus('Mã chứng khoán không hợp lệ.','error');return false;}
+ setActionBusy('sai-open-symbol',true,'Đang mở '+s+'…');actionStatus('Đang mở biểu đồ '+s+'…','loading');
+ try{
+  window.FinPlatformViews?.openAnalysis?.();
+  const opened=window.FinancialMarket?.openChart?.(s);
+  if(!opened){
+   const ticker=$('ticker');if(ticker)ticker.value=s;
+   $('company-form')?.requestSubmit();
+   document.querySelector('[data-market-view="price"]')?.click();
+  }
+  const resolver=window.FinancialReportContext?.resolveSymbol?.(s);
+  if(resolver===s)void window.FinancialReportContext.select(s).catch(()=>{});
+  await new Promise(resolve=>setTimeout(resolve,80));
+  const market=document.getElementById('market'),terminal=document.getElementById('chart-terminal');
+  if(!market||!terminal||terminal.hidden)throw Error('Chart view chưa sẵn sàng');
+  terminal.scrollIntoView({behavior:'smooth',block:'start'});
+  return true;
+ }catch(error){
+  actionStatus('Không mở được biểu đồ '+s+'. '+String(error?.message||error),'error');
+  return false;
+ }finally{setActionBusy('sai-open-symbol',false);}
+}
+async function askAI(){
+ const s=String(state.selected||'').toUpperCase();
+ if(!state.model||!s){actionStatus('Chưa có mã để phân tích.','error');return false;}
+ if(!window.FinQueryAI?.ask){actionStatus('Dolphin chưa sẵn sàng. Hãy tải lại trang.','error');return false;}
+ const v=C.investmentView(s,state.model.opportunities,state.model.regime);
+ const q='Phân tích '+s+' theo Strategy Intelligence hiện tại. Chiến lược chính: '+(v.primary?.label||'chưa có')+'. Điểm phù hợp: '+(v.score??'—')+'/100. Regime: '+state.model.regime.label+'. Hãy đối chiếu thêm giá, kỹ thuật, Forecast, Risk, tin doanh nghiệp và BCTC đang có trong FinQuery; nêu yếu tố ủng hộ, yếu tố phản biện, kịch bản tích cực, kịch bản mất hiệu lực và rủi ro. Không suy diễn số liệu thiếu.';
+ setActionBusy('sai-query-ai',true,'Đang mở Dolphin…');actionStatus('Đang mở phân tích sâu cho '+s+'…','loading');
+ try{
+  window.FinancialMarket?.openChart?.(s);
+  window.FinQueryAI.sync?.(s);
+  window.FinQueryAI.ensureGlobalLayer?.();
+  await window.FinQueryAI.ask(q,'deep');
+  actionStatus('Đã mở phân tích sâu cho '+s+'.','success');
+  return true;
+ }catch(error){
+  actionStatus('Không mở được phân tích sâu. '+String(error?.message||error),'error');
+  return false;
+ }finally{setActionBusy('sai-query-ai',false);}
 }
 function bind(){
  $('sai-top-strategies')?.addEventListener('click',e=>{const b=e.target.closest('[data-sai-strategy]');if(b)loadPreset(b.dataset.saiStrategy);});
