@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
       - '.github/workflows/market-news-live.yml'
@@ -12,6 +13,7 @@ on:
     branches: [main]
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
       - '.github/workflows/market-news-live.yml'
