@@ -20,6 +20,16 @@ ROOT = Path(__file__).resolve().parents[1]
 VN = timezone(timedelta(hours=7))
 API = 'https://trading.vietcap.com.vn/api/'
 KBS_API = 'https://kbbuddywts.kbsec.com.vn/iis-server/investment'
+VI_POLICY_DISCOVERY_URL = 'https://news.google.com/rss/search?' + urlencode({
+    'q': '(site:sbv.gov.vn OR site:vanban.chinhphu.vn OR site:luatvietnam.vn OR site:baochinhphu.vn) '
+         '(NHNN OR "Ngân hàng Nhà nước" OR "TT-NHNN" OR "chính sách tiền tệ" OR "tỷ giá trung tâm") when:7d',
+    'hl': 'vi', 'gl': 'VN', 'ceid': 'VN:vi'
+})
+VI_DISCLOSURE_DISCOVERY_URL = 'https://news.google.com/rss/search?' + urlencode({
+    'q': '(site:hsx.vn OR site:hnx.vn OR site:ssc.gov.vn) '
+         '("công bố thông tin" OR "báo cáo tài chính" OR "giao dịch cổ phiếu" OR "doanh nghiệp niêm yết") when:7d',
+    'hl': 'vi', 'gl': 'VN', 'ceid': 'VN:vi'
+})
 FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/chung-khoan.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/doanh-nghiep.rss'),
@@ -33,6 +43,8 @@ FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('VnEconomy', 'https://vneconomy.vn/thi-truong.rss'),
          ('VnEconomy', 'https://vneconomy.vn/dau-tu.rss'),
          ('VnEconomy', 'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss'),
+         ('Vietnam Policy Watch', VI_POLICY_DISCOVERY_URL),
+         ('Vietnam Disclosure Watch', VI_DISCLOSURE_DISCOVERY_URL),
          ('Federal Reserve', 'https://www.federalreserve.gov/feeds/press_all.xml'),
          ('ECB', 'https://mid.ecb.europa.eu/rss/mid.xml'),
          ('Global Central Banks', 'https://news.google.com/rss/search?q=(Federal+Reserve+OR+Fed+OR+FOMC+OR+ECB+OR+BOJ+OR+PBOC)+when:1d&hl=en-US&gl=US&ceid=US:en'),
@@ -49,6 +61,8 @@ FEED_TOPICS = {
     'https://vneconomy.vn/thi-truong.rss': {'market'},
     'https://vneconomy.vn/dau-tu.rss': {'investment', 'market'},
     'https://vneconomy.vn/nhip-cau-doanh-nghiep.rss': {'company'},
+    VI_POLICY_DISCOVERY_URL: {'vietnam','macro','finance','banking','rates','central_bank','sbv'},
+    VI_DISCLOSURE_DISCOVERY_URL: {'vietnam','company','stocks','market'},
     'https://www.federalreserve.gov/feeds/press_all.xml': {'global','macro','rates','central_bank'},
     'https://mid.ecb.europa.eu/rss/mid.xml': {'global','macro','rates','central_bank'},
     'https://news.google.com/rss/search?q=(Federal+Reserve+OR+Fed+OR+FOMC+OR+ECB+OR+BOJ+OR+PBOC)+when:1d&hl=en-US&gl=US&ceid=US:en': {'global','macro','rates','central_bank'},
@@ -149,6 +163,33 @@ ALIASES = {'MBB': ['MB Bank', 'MBBank', 'Ngân hàng MB', 'Ngân hàng Quân đ�
            'MWG': ['Thế Giới Di Động'], 'MSN': ['Masan'], 'SAB': ['Sabeco'],
            'DCM': ['PVCFC', 'Phân bón Cà Mau'], 'FRT': ['FPT Retail'], 'FPT': ['Tập đoàn FPT'],
            'GAS': ['PV GAS'], 'PLX': ['Petrolimex'], 'VJC': ['Vietjet'], 'HVN': ['Vietnam Airlines']}
+OFFICIAL_NEWS_SOURCES = {
+    'ngân hàng nhà nước việt nam', 'ngân hàng nhà nước', 'state bank of vietnam',
+    'báo chính phủ', 'cổng thông tin điện tử chính phủ', 'văn bản chính phủ',
+    'ho chi minh stock exchange', 'hose', 'sở giao dịch chứng khoán tp.hcm',
+    'hanoi stock exchange', 'hnx', 'sở giao dịch chứng khoán hà nội',
+    'ủy ban chứng khoán nhà nước', 'state securities commission of vietnam'
+}
+TRUSTED_POLICY_SOURCES = {'luatvietnam', 'luật việt nam', 'thư viện pháp luật'}
+
+def news_source_quality(source, feed_source=None):
+    """Return a transparent source tier used for ranking, never as a truth guarantee."""
+    name = clean(source or '').casefold()
+    feed = clean(feed_source or '').casefold()
+    if name in OFFICIAL_NEWS_SOURCES or any(x in name for x in ('ngân hàng nhà nước', 'báo chính phủ', 'stock exchange', 'chứng khoán nhà nước')):
+        return 'official', 100
+    if name in TRUSTED_POLICY_SOURCES or any(x in name for x in ('luatvietnam', 'luật việt nam')):
+        return 'trusted_legal', 92
+    if feed in ('vietnam policy watch', 'vietnam disclosure watch'):
+        return 'trusted_discovery', 84
+    if name in {'vnexpress', 'báo đầu tư', 'vietnamnet', 'cafef', 'vneconomy'}:
+        return 'financial_press', 80
+    if name in {'federal reserve', 'ecb'}:
+        return 'official', 100
+    if feed.startswith('global '):
+        return 'global_discovery', 68
+    return 'press', 72
+
 VBMA_TABLES = {
     'macro_overview': ('tong_quan_kinh_te_vi_mo', 'Tổng quan kinh tế vĩ mô'),
     'fdi': ('tinh_hinh_fdi', 'Tình hình FDI'),
@@ -2042,16 +2083,35 @@ def parse_feed(raw, publisher, feed_url, companies, current):
         if dt > current + timedelta(minutes=10) or dt < current - timedelta(days=30):
             continue
         body = clean(item.findtext('description'))
-        text = title + ' ' + body
-        matched = [c['symbol'] for c in companies if company_match(c, text)]
+        article_text = title + ' ' + body
+        matched = [c['symbol'] for c in companies if company_match(c, article_text)]
         topics = set(FEED_TOPICS.get(feed_url, ()))
         for topic, pattern in TOPIC_PATTERNS.items():
-            if pattern.search(text):
+            if pattern.search(article_text):
                 topics.add(topic)
         if matched:
             topics.add('company')
-        meta = classify_news_meta(title, body, publisher, topics, dt.isoformat())
-        rows.append({'title': title, 'summary': body[:900], 'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')), 'source': publisher, 'publishedAt': dt.isoformat(), 'symbols': matched, 'topics': sorted(topics), **meta})
+        origin_source = clean(item.findtext('source')) or publisher
+        source_tier, source_priority = news_source_quality(origin_source, publisher)
+        meta = classify_news_meta(title, body, origin_source, topics, dt.isoformat())
+        origin_fold = origin_source.casefold()
+        if not meta.get('officialSource') and source_tier == 'official':
+            if 'ngân hàng nhà nước' in origin_fold or 'state bank of vietnam' in origin_fold:
+                meta['officialSource'] = 'SBV'
+            elif 'chính phủ' in origin_fold:
+                meta['officialSource'] = 'GOV'
+            elif any(x in origin_fold for x in ('stock exchange', 'chứng khoán', 'hose', 'hnx')):
+                meta['officialSource'] = 'MARKET_DISCLOSURE'
+        row = {
+            'title': title, 'summary': body[:900],
+            'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')),
+            'source': origin_source, 'publishedAt': dt.isoformat(),
+            'symbols': matched, 'topics': sorted(topics),
+            'sourceTier': source_tier, 'sourcePriority': source_priority, **meta
+        }
+        if origin_source != publisher:
+            row['feedSource'] = publisher
+        rows.append(row)
     return rows
 
 
@@ -2309,26 +2369,27 @@ def macro(out, companies=None):
         raise RuntimeError('Macro and ESG collection failed and no retained data is available')
 
 
-SBV_NEWS_URL = 'https://www.sbv.gov.vn/webcenter/portal/vi/menu/trangchu/ttsk'
+SBV_NEWS_URL = 'https://sbv.gov.vn/vi/web/sbv_portal/trang-chu'
 
 def _fetch_sbv_news(current):
     try:
         raw = request(SBV_NEWS_URL)
         text = raw.decode('utf-8-sig', errors='ignore') if isinstance(raw, bytes) else str(raw)
         rows, seen = [], set()
-        # The SBV portal is server-rendered but does not expose a stable public RSS endpoint.
-        # Extract article links containing dDocName and require a nearby dd/mm/yyyy date.
-        pattern = re.compile(r'<a[^>]+href=["\']([^"\']*dDocName=[^"\']+)["\'][^>]*>(.*?)</a>', re.I | re.S)
+        # SBV has migrated page templates several times. Do not tie health to the
+        # legacy dDocName-only template: scan article-like anchors, then require
+        # a nearby publication date and an sbv.gov.vn destination.
+        pattern = re.compile(r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', re.I | re.S)
         for match in pattern.finditer(text):
             title = clean(match.group(2))
             if len(title) < 18:
                 continue
             href = html.unescape(match.group(1))
             link = urljoin(SBV_NEWS_URL, href)
-            if 'sbv.gov.vn' not in (urlsplit(link).hostname or ''):
+            if not (urlsplit(link).hostname or '').endswith('sbv.gov.vn'):
                 continue
-            context = clean(text[max(0, match.start()-260):min(len(text), match.end()+260)])
-            date_match = re.search(r'(\d{1,2})/(\d{1,2})/(\d{4})', context)
+            context = clean(text[max(0, match.start()-420):min(len(text), match.end()+420)])
+            date_match = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](\d{4})', context)
             if not date_match:
                 continue
             day, month, year = map(int, date_match.groups())
@@ -2349,10 +2410,19 @@ def _fetch_sbv_news(current):
             meta = classify_news_meta(title, '', 'Ngân hàng Nhà nước Việt Nam', topics, dt.isoformat())
             meta['officialSource'] = 'SBV'
             meta['impactScore'] = max(meta['impactScore'], 52 if SBV_PATTERN.search(title) else 36)
-            rows.append({'title': title, 'summary': '', 'url': link, 'source': 'Ngân hàng Nhà nước Việt Nam',
-                         'publishedAt': dt.isoformat(), 'symbols': [], 'topics': sorted(topics), **meta})
+            rows.append({
+                'title': title, 'summary': '', 'url': link,
+                'source': 'Ngân hàng Nhà nước Việt Nam',
+                'publishedAt': dt.isoformat(), 'symbols': [], 'topics': sorted(topics),
+                'sourceTier': 'official', 'sourcePriority': 100, **meta
+            })
         rows.sort(key=lambda row: row['publishedAt'], reverse=True)
-        return rows[:80], {'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL, 'status': 'ok', 'items': len(rows[:80])}
+        status = 'ok' if rows else 'empty'
+        return rows[:80], {
+            'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL,
+            'status': status, 'items': len(rows[:80]), 'parser': 'sbv-anchor-date-v2',
+            'lastItemAt': rows[0]['publishedAt'] if rows else None
+        }
     except Exception as e:
         return [], {'name': 'Ngân hàng Nhà nước Việt Nam', 'url': SBV_NEWS_URL, 'status': 'error', 'error': str(e)}
 
@@ -2360,20 +2430,76 @@ def _fetch_sbv_news(current):
 def _fetch_news_feed(publisher, url, companies, current):
     try:
         items = parse_feed(request(url), publisher, url, companies, current)
-        return items, {'name': publisher, 'url': url, 'status': 'ok', 'items': len(items)}
+        return items, {
+            'name': publisher, 'url': url, 'status': 'ok' if items else 'empty',
+            'items': len(items), 'lastItemAt': items[0]['publishedAt'] if items else None
+        }
     except Exception as e:
         return [], {'name': publisher, 'url': url, 'status': 'error', 'error': str(e)}
 
+
+def _news_story_key(row):
+    title = clean((row or {}).get('title')).casefold()
+    title = re.sub(r'\s+[-–—|]\s+(?:luatvietnam|vnexpress|vneconomy|cafef|vietnamnet|báo đầu tư|báo chính phủ)\s*$', '', title, flags=re.I)
+    title = re.sub(r'[^\w\sÀ-ỹ]', ' ', title, flags=re.UNICODE)
+    return re.sub(r'\s+', ' ', title).strip()
+
+def _unique_news(rows):
+    unique, titles = {}, {}
+    for row in sorted(rows, key=lambda r: r.get('publishedAt') or '', reverse=True):
+        url = row.get('url')
+        key = _news_story_key(row)
+        if not url or not key:
+            continue
+        existing_url = unique.get(url)
+        existing_key = titles.get(key)
+        existing = existing_url or existing_key
+        if existing:
+            new_priority = int(row.get('sourcePriority') or 0)
+            old_priority = int(existing.get('sourcePriority') or 0)
+            if new_priority > old_priority:
+                if existing.get('url') in unique:
+                    del unique[existing['url']]
+                unique[url] = row
+                titles[key] = row
+            continue
+        unique[url] = row
+        titles[key] = row
+    return sorted(unique.values(), key=lambda r: r.get('publishedAt') or '', reverse=True)
+
+def _balanced_news_snapshot(items):
+    ordered = sorted(items or [], key=lambda r: r.get('publishedAt') or '', reverse=True)
+    vietnam = [r for r in ordered if r.get('region') != 'global'][:140]
+    global_rows = [r for r in ordered if r.get('region') == 'global'][:60]
+    sbv_rows = [r for r in ordered if r.get('officialSource') == 'SBV' or 'sbv' in (r.get('topics') or [])][:50]
+    impact = [r for r in ordered if int(r.get('impactScore') or 0) >= 48][:50]
+    return _unique_news(vietnam + global_rows + sbv_rows + impact)
+
+def _company_news_snapshot(items, per_symbol=15):
+    ordered = sorted(items or [], key=lambda r: r.get('publishedAt') or '', reverse=True)
+    counts, picked = {}, []
+    seen = set()
+    for row in ordered:
+        symbols = [str(x).upper() for x in (row.get('symbols') or []) if x]
+        wanted = [symbol for symbol in symbols if counts.get(symbol, 0) < per_symbol]
+        if not wanted:
+            continue
+        key = row.get('url') or _news_story_key(row)
+        if key not in seen:
+            seen.add(key)
+            picked.append(row)
+        for symbol in wanted:
+            counts[symbol] = counts.get(symbol, 0) + 1
+    return picked, counts
 
 def news(out, companies):
     path = out / 'news.json'
     previous = read(path, {'items': []})
     current = datetime.now(timezone.utc)
     rows, sources = [], []
-    # RSS is best-effort and must never serialize 13 independent network timeouts.
-    # Keep the job bounded to roughly one upstream timeout so news cannot starve
-    # the 15-minute quote publisher in the shared workflow queue.
-    workers = min(8, max(1, len(FEEDS)))
+    # RSS/discovery feeds are best-effort and concurrent so one slow publisher
+    # cannot starve the 15-minute publisher heartbeat.
+    workers = min(10, max(1, len(FEEDS)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_fetch_news_feed, publisher, url, companies, current)
                    for publisher, url in FEEDS]
@@ -2386,25 +2512,48 @@ def news(out, companies):
     sources.append(sbv_source)
     source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
-    unique = {}
-    titles = set()
-    for row in sorted(rows + previous['items'], key=lambda r: r['publishedAt'], reverse=True):
-        if datetime.fromisoformat(row['publishedAt']) < current - timedelta(days=30):
+
+    retained = []
+    for row in previous.get('items', []):
+        try:
+            if datetime.fromisoformat(str(row.get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc) >= current - timedelta(days=30):
+                retained.append(row)
+        except (TypeError, ValueError, OverflowError):
             continue
-        key = clean(row['title']).casefold()
-        if row['url'] in unique or key in titles:
-            continue
-        unique[row['url']] = row
-        titles.add(key)
-    ok = any(s['status'] == 'ok' for s in sources)
+    items = _unique_news(rows + retained)[:2500]
+    healthy = sum(source.get('status') == 'ok' for source in sources)
+    empty = sum(source.get('status') == 'empty' for source in sources)
+    ok = healthy > 0
     checked_at = now()
-    payload = {'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'sources': sources, 'items': list(unique.values())[:2500]}
+    health = {'healthy': healthy, 'empty': empty, 'error': len(sources) - healthy - empty, 'total': len(sources)}
+    payload = {
+        'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'),
+        'status': 'ok' if ok else 'retained', 'sources': sources, 'sourceHealth': health,
+        'items': items
+    }
     write(path, payload)
-    write(out / 'news-latest.json', {**payload, 'archiveFile': 'news.json', 'items': payload['items'][:100]})
+
+    latest_items = _balanced_news_snapshot(items)
+    write(out / 'news-latest.json', {
+        **payload, 'archiveFile': 'news.json', 'selection': 'balanced_vietnam_global_sbv_impact',
+        'items': latest_items
+    })
+
+    company_items, company_counts = _company_news_snapshot(items)
+    write(out / 'news-company-latest.json', {
+        **payload, 'archiveFile': 'news.json', 'selection': 'per_symbol_latest',
+        'perSymbolLimit': 15, 'companyCoverage': len(company_counts),
+        'companyCounts': company_counts, 'items': company_items
+    })
     drivers = build_drivers(out, companies) if (out / 'quotes.json').exists() else {}
-    print(f'News: {len(rows)} fetched; {len(unique)} unique; sources {sum(s["status"] == "ok" for s in sources)}/{len(sources)}; drivers: {len(drivers)}', flush=True)
+    print(
+        f'News: {len(rows)} fetched; {len(items)} unique; latest {len(latest_items)}; '
+        f'company {len(company_items)} items/{len(company_counts)} symbols; '
+        f'sources {healthy}/{len(sources)} healthy ({empty} empty); drivers: {len(drivers)}',
+        flush=True
+    )
     if not ok:
-        raise RuntimeError('All RSS sources failed; previous news retained')
+        raise RuntimeError('All news sources failed or returned no parseable items; previous news retained')
 
 
 if __name__ == '__main__':

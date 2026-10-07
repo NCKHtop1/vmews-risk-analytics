@@ -1253,7 +1253,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('Publish only files owned by this refresh mode',workflow)
         self.assertIn('echo "mode=$mode" >> "$GITHUB_OUTPUT"',workflow)
         self.assertIn('owned=(market/company-esg.json market/esg-status.json)',workflow)
-        self.assertIn('owned=(market/news.json market/news-latest.json)',workflow)
+        self.assertIn('owned=(market/news.json market/news-latest.json market/news-company-latest.json)',workflow)
         self.assertIn('owned=(market/macro.json)',workflow)
         self.assertNotIn('git add --sparse market\n',workflow)
         self.assertIn("steps.collect.outputs.mode == 'prices' || steps.collect.outputs.mode == 'all'",workflow)
@@ -1986,6 +1986,69 @@ class MarketTests(unittest.TestCase):
         self.assertIn("category:'COMPANY'",research)
         self.assertIn("category:'SECTOR'",research)
         self.assertIn('Không được gọi sectorNews là tin của doanh nghiệp',research)
+
+    def test_news_company_index_survives_global_latest_crowding(self):
+        base=datetime(2026,10,7,7,0,tzinfo=timezone.utc)
+        rows=[
+            {'title':f'Global market story {i}','url':f'https://news.google.com/{i}',
+             'publishedAt':(base-timedelta(minutes=i)).isoformat(),'symbols':[],
+             'topics':['global','market'],'region':'global','source':'Global Markets',
+             'sourcePriority':68}
+            for i in range(150)
+        ]
+        rows.append({
+            'title':'FPT công bố thông tin mới','url':'https://cafef.vn/fpt-new.htm',
+            'publishedAt':(base-timedelta(hours=4)).isoformat(),'symbols':['FPT'],
+            'topics':['company'],'region':'vietnam','source':'CafeF','sourcePriority':80
+        })
+        company,counts=m._company_news_snapshot(rows)
+        self.assertEqual(counts.get('FPT'),1)
+        self.assertTrue(any('FPT' in (x.get('symbols') or []) for x in company))
+        latest=m._balanced_news_snapshot(rows)
+        self.assertLessEqual(sum(x.get('region')=='global' for x in latest),60)
+
+    def test_news_frontend_trusts_backend_symbol_mapping_and_loads_company_index(self):
+        market=(ROOT/'frontend/market.js').read_text()
+        self.assertIn("includes(symbol)?7:0",market)
+        self.assertIn("get('news-company-latest.json').catch(()=>null)",market)
+        self.assertIn("'luatvietnam.vn'",market)
+        self.assertIn("'baochinhphu.vn'",market)
+        self.assertIn("'ssc.gov.vn'",market)
+
+    def test_policy_discovery_preserves_origin_and_source_tier(self):
+        companies=[{'symbol':'FPT','name':'Công ty Cổ phần FPT'}]
+        xml='''<?xml version="1.0" encoding="UTF-8"?><rss><channel>
+        <item><title>Thông tư 53/2026/TT-NHNN về quản lý rủi ro AI trong ngân hàng</title>
+        <link>https://news.google.com/articles/test</link>
+        <pubDate>Wed, 07 Oct 2026 11:48:00 +0700</pubDate>
+        <source>Luật Việt Nam</source><description>Ngân hàng Nhà nước ban hành quy định mới.</description></item>
+        </channel></rss>'''
+        rows=m.parse_feed(xml,'Vietnam Policy Watch',m.VI_POLICY_DISCOVERY_URL,companies,datetime(2026,10,7,7,tzinfo=timezone.utc))
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['source'],'Luật Việt Nam')
+        self.assertEqual(rows[0]['sourceTier'],'trusted_legal')
+        self.assertGreaterEqual(rows[0]['sourcePriority'],90)
+        self.assertIn('sbv',rows[0]['topics'])
+
+    def test_sbv_parser_does_not_report_green_when_zero_items(self):
+        original=m.request
+        try:
+            m.request=lambda *_args,**_kwargs: b'<html><body>no dated news anchors</body></html>'
+            rows,source=m._fetch_sbv_news(datetime(2026,10,7,7,tzinfo=timezone.utc))
+            self.assertEqual(rows,[])
+            self.assertEqual(source['status'],'empty')
+            self.assertEqual(source['items'],0)
+        finally:
+            m.request=original
+
+    def test_news_workflow_publishes_and_guards_company_index(self):
+        root=ROOT.parent
+        live=(root/'.github/workflows/market-news-live.yml').read_text() if (root/'.github/workflows/market-news-live.yml').exists() else pathlib.Path('.github/workflows/market-news-live.yml').read_text()
+        guard=(root/'.github/workflows/market-realtime-guard.yml').read_text() if (root/'.github/workflows/market-realtime-guard.yml').exists() else pathlib.Path('.github/workflows/market-realtime-guard.yml').read_text()
+        self.assertIn('market/news-company-latest.json',live)
+        self.assertIn("company.get('selection')!='per_symbol_latest'",live)
+        self.assertIn("company=get('news-company-latest.json')",guard)
+        self.assertIn("health.get('healthy')",guard)
 
     def test_chart_quote_consistency_gate_hides_bad_technical_context(self):
         chart=(ROOT/'frontend/chart-engine.js').read_text()

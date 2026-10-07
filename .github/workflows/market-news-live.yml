@@ -76,7 +76,8 @@ jobs:
                 git -C /tmp/market-news config user.email '41898282+github-actions[bot]@users.noreply.github.com'
                 git -C /tmp/market-news restore --worktree market/drivers.json || true
                 test -s /tmp/market-news/market/news-latest.json
-                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json
+                test -s /tmp/market-news/market/news-company-latest.json
+                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json
                 if ! git -C /tmp/market-news diff --cached --quiet; then
                   git -C /tmp/market-news commit -m 'Refresh market news stream [data-only]'
                   published=0
@@ -109,16 +110,22 @@ jobs:
           # branch finish green. Re-read the published branch, not the worktree.
           git -C /tmp/market-news fetch origin financial-market-data
           git -C /tmp/market-news show origin/financial-market-data:market/news-latest.json > /tmp/remote-news-latest.json
-          REMOTE_NEWS=/tmp/remote-news-latest.json python - <<'PY'
+          git -C /tmp/market-news show origin/financial-market-data:market/news-company-latest.json > /tmp/remote-news-company.json
+          REMOTE_NEWS=/tmp/remote-news-latest.json REMOTE_COMPANY=/tmp/remote-news-company.json python - <<'PY'
           import json, os
           from datetime import datetime, timezone
           from pathlib import Path
           data=json.loads(Path(os.environ['REMOTE_NEWS']).read_text())
+          company=json.loads(Path(os.environ['REMOTE_COMPANY']).read_text())
           stamp=datetime.fromisoformat(str(data.get('checkedAt')).replace('Z','+00:00'))
           if stamp.tzinfo is None:
               stamp=stamp.replace(tzinfo=timezone.utc)
           age=(datetime.now(timezone.utc)-stamp.astimezone(timezone.utc)).total_seconds()/60
           if data.get('status')!='ok' or not data.get('items') or not (-5 <= age <= 30):
               raise SystemExit(f'remote news branch is stale/invalid: status={data.get("status")} age={age:.1f} items={len(data.get("items") or [])}')
-          print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []))
+          if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
+              raise SystemExit(f'company news index invalid: status={company.get("status")} coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
+          if str(company.get('checkedAt'))!=str(data.get('checkedAt')):
+              raise SystemExit('company news index is not aligned with latest news snapshot')
+          print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []),'companyCoverage',company.get('companyCoverage'))
           PY
