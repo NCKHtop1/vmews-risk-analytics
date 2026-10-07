@@ -8,8 +8,10 @@ from datetime import datetime, timezone
 
 from system_contract_audit import (
     Audit,
+    audit_main_forecast,
     audit_market_bar_files,
     compute_intraday_session,
+    production_prefers_solution_core,
     risk_eligible_symbols,
     solution_live_freshness,
 )
@@ -114,6 +116,88 @@ class SystemContractAuditTests(unittest.TestCase):
                 "2026-10-07",
             )
         self.assertTrue(any(row["code"] == "MARKET_HISTORY_OHLC" and row["status"] == "FAIL" for row in audit.results))
+
+
+    def test_production_loader_prefers_dedicated_solution_core(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "forecast-final-v12.js").write_text(
+                'const SOLUTION_CORE_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data";\n'
+                'const SOLUTION_CORE_FILES=new Set(["forecast-dashboard-v12.json"]);\n'
+                'const roots=SOLUTION_CORE_ROOT&&SOLUTION_CORE_FILES.has(name)?[SOLUTION_CORE_ROOT,ROOT]:[ROOT];\n'
+                'window.__SOLUTION_AI_CORE_ROOT__=SOLUTION_CORE_ROOT;\n',
+                encoding="utf-8",
+            )
+            self.assertTrue(production_prefers_solution_core(root))
+
+    def test_stale_main_becomes_warning_only_when_dedicated_core_is_authoritative_and_fallback_abstains(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            data = root / "data"
+            data.mkdir()
+            dashboard = {
+                "asOf": "2026-09-29",
+                "modelVersion": "V",
+                "symbols": {"AAA": {}},
+                "promotion": {"preferredRankingHorizon": 3},
+            }
+            current = {"asOf": "2026-09-29", "modelVersion": "V", "symbols": {"AAA": {}}}
+            market = {
+                "asOf": "2026-09-29",
+                "version": "V",
+                "sources": {
+                    "marketScanAsOf": "2026-09-29",
+                    "priceSessionAsOf": "2026-09-29",
+                    "priceCrossSource": {
+                        "status": "PASS",
+                        "coverage": 1.0,
+                        "requiredCoverage": 0.9,
+                        "mismatchCount": 0,
+                    },
+                },
+            }
+            release = {"asOf": "2026-09-29", "status": "PASS", "blockers": [], "scope": {"symbols": 1}}
+            session = {
+                "status": "PASS",
+                "coreAsOf": "2026-09-29",
+                "coreForecastUnchanged": True,
+                "mode": "PRICE_ONLY_STALE_CORE",
+                "rankingHorizon": 3,
+                "leaders": [],
+                "coverage": {
+                    "coverageRatio": 1.0,
+                    "currentCoverageRatio": 0.8,
+                    "cutoffFreshCoverageRatio": 0.8,
+                },
+                "forecastAlignment": {
+                    "status": "STALE_CORE",
+                    "rankingEligible": False,
+                    "actualCoreAsOf": "2026-09-29",
+                    "expectedCoreAsOf": "2026-10-06",
+                },
+            }
+            for name, payload in {
+                "forecast-dashboard-v12.json": dashboard,
+                "forecast-current-v12.json": current,
+                "forecast-market-v13.json": market,
+                "release-audit-v20.json": release,
+                "forecast-session-v21.json": session,
+            }.items():
+                (data / name).write_text(json.dumps(payload), encoding="utf-8")
+
+            audit = Audit()
+            audit_main_forecast(
+                audit,
+                root,
+                datetime(2026, 10, 7, 8, 0, tzinfo=timezone.utc),
+                authoritative_core_ready=True,
+            )
+
+        self.assertFalse(audit.errors)
+        warning_codes = {row["code"] for row in audit.results if row["status"] == "WARN"}
+        self.assertIn("FORECAST_MAIN_SESSION", warning_codes)
+        self.assertIn("FORECAST_V21_FALLBACK_STALE", warning_codes)
+        self.assertTrue(any(row["code"] == "FORECAST_V21_FALLBACK_SAFE" and row["status"] == "PASS" for row in audit.results))
 
     def test_solution_live_active_session_requires_real_source_freshness(self):
         now = datetime(2026, 10, 7, 3, 0, tzinfo=timezone.utc)  # 10:00 Vietnam
