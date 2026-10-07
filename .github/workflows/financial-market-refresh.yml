@@ -11,7 +11,6 @@ on:
     branches: [main]
     paths:
       - 'financial-report/scripts/refresh_esg.py'
-      - 'financial-report/scripts/build_hose_universe.py'
       - 'financial-report/config/esg_sources.json'
       - 'financial-report/scripts/build_risk_monitor.cjs'
       - 'financial-report/scripts/build_sector_risk_calibration.cjs'
@@ -102,8 +101,6 @@ jobs:
           # Push-triggered runs are now ESG-only. Live price/news have dedicated
           # workflows and must never be overwritten by a generic mode=all push.
           if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
-          # Universe refresh is independent from the live-price publisher.
-          if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[universe-refresh\]'; then mode=universe; fi
           if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 * * * *' ]; then mode=news-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '47 14 * * 1-5' ]; then mode=esg; fi
@@ -187,15 +184,10 @@ jobs:
             python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
           elif [ "$mode" = 'esg-history' ]; then
             ESG_HISTORY_BACKFILL=1 python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
-          elif [ "$mode" = 'universe' ]; then
-            FINQUERY_MARKET_DIR=/tmp/market-publish/market FINQUERY_UNIVERSE_OUTPUT=/tmp/market-publish/market/universe.json python -u financial-report/scripts/build_hose_universe.py
           elif [ "$mode" = 'prices' ]; then
             MARKET_REQUIRE_TODAY=1 python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode prices
           else
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
-            if [ "$mode" = 'history' ]; then
-              FINQUERY_MARKET_DIR=/tmp/market-publish/market FINQUERY_UNIVERSE_OUTPUT=/tmp/market-publish/market/universe.json python -u financial-report/scripts/build_hose_universe.py
-            fi
           fi
       - name: Persist aligned market risk history
         if: always()
