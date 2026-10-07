@@ -49,8 +49,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Unit-test system contract logic
+      - name: Unit-test FinQuery system contract logic
         working-directory: scripts
+        env:
+          FINQUERY_CORE_ONLY: "1"
         run: python system_contract_audit_test.py
 
       - uses: actions/checkout@v4
