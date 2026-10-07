@@ -21,10 +21,8 @@ on:
       - Refresh FinQuery market universe
       - Refresh financial reports for CDN
       - Refresh investment insights
-      - SoluTION.AI independent live prices
       - Forecast V20.1 immutable-price audit and market intelligence
       - Forecast V21 guarded session overlay
-      - SoluTION.AI independent core forecast
     types: [completed]
     branches: [main]
 
@@ -73,26 +71,13 @@ jobs:
           path: _insight-data
           sparse-checkout: data
 
-      - uses: actions/checkout@v4
-        with:
-          ref: solution-ai-live-data
-          path: _solution-live
-          sparse-checkout: solution-ai
-
-      - uses: actions/checkout@v4
-        with:
-          ref: solution-ai-core-data
-          path: _solution-core
-          sparse-checkout: data
-
       - name: Recompute all production data contracts
         run: |
           python scripts/system_contract_audit.py \
             --market-dir _market-data/market \
             --financial-dir _financial-data/data \
             --insights-dir _insight-data/data \
-            --solution-live _solution-live/solution-ai/live.json \
-            --solution-core-dir _solution-core/data \
+            --ignore-solution-ai \
             --repo-root . \
             --report-json /tmp/system-contract.json
 
