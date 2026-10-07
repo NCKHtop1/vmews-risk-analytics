@@ -255,11 +255,20 @@ class NewsParserTests(unittest.TestCase):
         self.assertEqual(len(picked),1)
         self.assertEqual(picked[0]['url'],direct['url'])
 
+    def test_company_match_separates_fpt_from_fpt_retail(self):
+        fpt={'symbol':'FPT','name':'Công ty Cổ phần FPT'}
+        frt={'symbol':'FRT','name':'Công ty Cổ phần Bán lẻ Kỹ thuật số FPT'}
+        retail='Chủ tịch FPT Retail Nguyễn Bạch Điệp vào Top 100 phụ nữ quyền lực'
+        self.assertFalse(m.company_match(fpt,retail))
+        self.assertTrue(m.company_match(frt,retail))
+        self.assertTrue(m.company_match(fpt,'Cổ phiếu FPT giảm 10 phiên liên tiếp'))
+
     def test_frontend_guards_omo_and_fpt_retail_false_positives(self):
         market=(ROOT/'frontend/market.js').read_text()
         self.assertIn(r"\bomo\b",market)
         self.assertIn("title=title.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
         self.assertIn("summary=summary.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
+        self.assertIn("if(tagged.length&&!tagged.includes(symbol))return 0",market)
 
 
 if __name__=='__main__':
