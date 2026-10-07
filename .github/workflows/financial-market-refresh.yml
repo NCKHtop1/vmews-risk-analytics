@@ -20,8 +20,6 @@ on:
     # Fallback watchdogs for the dedicated live workflows. They run only when
     # the published snapshot is stale, so missed GitHub cron events self-heal.
     - cron: '0,15,30,45 2-8 * * 1-5'
-    # Lightweight live intraday candles; full minute-history backfill remains after close.
-    - cron: '5,20,35,50 2-8 * * 1-5'
     - cron: '7,22,37,52 * * * *'
     # VBMA macro tables refresh once each business day.
     - cron: '15 1 * * 1-5'
@@ -83,7 +81,7 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           INTRADAY_ONLY_MISSING: ${{ contains(github.event.head_commit.message, '[intraday-missing]') && '1' || '0' }}
           INTRADAY_SYMBOLS: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && 'VHM,VCB' || '' }}
-          INTRADAY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '300' || github.event.schedule == '5,20,35,50 2-8 * * 1-5' && '360' || '700' }}
+          INTRADAY_COUNT_BACK: ${{ contains(github.event.head_commit.message, '[intraday-critical]') && '300' || '700' }}
           INTRADAY_RETRIES: '3'
           INTRADAY_RETRY_WORKERS: '1'
           INTRADAY_BACKFILL: ${{ (contains(github.event.head_commit.message, '[intraday-backfill]') || inputs.mode == 'intraday') && '1' || '0' }}
@@ -110,7 +108,6 @@ jobs:
           if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[universe-refresh\]'; then mode=universe; fi
           if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
-          if [ "$EVENT_SCHEDULE" = '5,20,35,50 2-8 * * 1-5' ]; then mode=intraday; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 * * * *' ]; then mode=news-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '42 1-4 * * 1-5' ]; then mode=macro-watchdog; fi
@@ -120,13 +117,6 @@ jobs:
           if [ "$EVENT_SCHEDULE" = '20 9 * * 1-5' ]; then mode=history; fi
           if [ "$EVENT_SCHEDULE" = '35 9 * * 1-5' ]; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
-          if [ "$EVENT_SCHEDULE" = '5,20,35,50 2-8 * * 1-5' ]; then
-            hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
-            if ! { [ "$hhmm" -ge 900 ] && [ "$hhmm" -le 1130 ]; } && ! { [ "$hhmm" -ge 1300 ] && [ "$hhmm" -le 1445 ]; }; then
-              echo "Outside HOSE live session; intraday refresh skipped."
-              exit 0
-            fi
-          fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-refresh\]'; then mode=history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
           if [ "$mode" = 'prices-watchdog' ]; then
