@@ -218,9 +218,22 @@ def audit_market(report: Audit, market_dir: Path, now):
     req = math.ceil(len(session["expected"]) * .90) if session["expected"] else 0
     report.check(len(session["fresh"]) >= req, "MARKET_INTRADAY_BAR_COVERAGE", f"fresh={len(session['fresh'])}/{len(session['expected'])} required={req} lagged={session['lagged'][:12]}")
     report.check(status.get("sessionExpected") is not None and status.get("sessionFresh") is not None, "MARKET_INTRADAY_STATUS_FIELDS", status)
+    report.check(bool(status.get("sessionQuoteSourceTime")), "MARKET_INTRADAY_QUOTE_GENERATION_MISSING", status.get("checkedAt"))
     if status.get("sessionExpected") is not None:
-        report.check(int(status.get("sessionExpected") or 0) == len(session["expected"]), "MARKET_INTRADAY_EXPECTED_EXACT", (status.get("sessionExpected"), len(session["expected"])))
-        report.check(int(status.get("sessionFresh") or 0) == len(session["fresh"]), "MARKET_INTRADAY_FRESH_EXACT", (status.get("sessionFresh"), len(session["fresh"])))
+        status_expected=int(status.get("sessionExpected") or 0)
+        status_fresh=int(status.get("sessionFresh") or 0)
+        status_required=int(status.get("sessionRequired") or (math.ceil(status_expected*.90) if status_expected else 0))
+        report.check(status_expected == 0 or status_fresh >= status_required, "MARKET_INTRADAY_STATUS_COVERAGE", (status_fresh,status_expected,status_required))
+        status_source=parse_ts(status.get("sessionQuoteSourceTime"))
+        report.check(status_source is not None and status_source <= now + timedelta(minutes=5), "MARKET_INTRADAY_QUOTE_GENERATION_INVALID", status.get("sessionQuoteSourceTime"))
+        if status_source and qstamp:
+            report.check(status_source.astimezone(VN_TZ).date() == qstamp.astimezone(VN_TZ).date(), "MARKET_INTRADAY_QUOTE_SESSION_MISMATCH", (status.get("sessionQuoteSourceTime"), quotes.get("latestSourceTime")))
+            report.check(status_source <= qstamp + timedelta(minutes=5), "MARKET_INTRADAY_QUOTE_GENERATION_FUTURE", (status.get("sessionQuoteSourceTime"), quotes.get("latestSourceTime")))
+            if str(status.get("sessionQuoteSourceTime") or "") == str(quotes.get("latestSourceTime") or ""):
+                report.check(status_expected == len(session["expected"]), "MARKET_INTRADAY_EXPECTED_EXACT", (status_expected, len(session["expected"])))
+                report.check(status_fresh == len(session["fresh"]), "MARKET_INTRADAY_FRESH_EXACT", (status_fresh, len(session["fresh"])))
+            else:
+                report.warn(abs(status_expected-len(session["expected"])) <= 5 and abs(status_fresh-len(session["fresh"])) <= 5, "MARKET_INTRADAY_GENERATION_SKEW", f"status={status_fresh}/{status_expected} current={len(session['fresh'])}/{len(session['expected'])} statusSource={status.get('sessionQuoteSourceTime')} currentSource={quotes.get('latestSourceTime')}")
 
     news = docs.get("news-latest.json") or {}
     report.check(news.get("status") == "ok" and 0 < len(news.get("items") or []) <= 150, "MARKET_NEWS_CONTENT", (news.get("status"), len(news.get("items") or [])))
