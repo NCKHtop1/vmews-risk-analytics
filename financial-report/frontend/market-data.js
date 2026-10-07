@@ -6,7 +6,7 @@ function valid(data){return data&&typeof data==='object'&&['checkedAt','sourceTi
 function revision(data){return Math.max(0,...['checkedAt','collectedAt','generatedAt','sourceTime','latestSourceTime'].map(k=>stamp(data[k])||0));}
 async function read(base,file,signal,timeout){const r=await fetch(base+file+'?refresh='+Date.now().toString(36),{cache:'no-store',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(timeout)]):AbortSignal.timeout(timeout)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!valid(data))throw Error('Invalid snapshot timestamp');return data;}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-async function get(file,{signal,timeout=12000,hedgeMs=250}={}){
+async function get(file,{signal,timeout=12000,hedgeMs=750}={}){
  // Raw publisher is the primary source. Pages is a true hedge: it starts only
  // when the primary is slow or fails, preventing duplicate multi-megabyte
  // downloads on every refresh while preserving fast failover.
