@@ -198,28 +198,35 @@ jobs:
         run: |
           set -euo pipefail
           BASE='https://nckhtop1.github.io/vmews-risk-analytics/financial-report'
-          for attempt in 1 2 3 4 5; do
-            if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}#market" -o /tmp/page.html; then
-              break
+          ready=0
+          for attempt in 1 2 3 4 5 6 7 8; do
+            token="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${attempt}"
+            if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=$token#market" -o /tmp/page.html \
+              && curl -fsSL --max-time 20 "$BASE/deployment.json?verify=$token" -o /tmp/deployment.json \
+              && curl -fsSL --max-time 20 "$BASE/personalization.js?verify=$token" -o /tmp/personalization.js \
+              && curl -fsSL --max-time 20 "$BASE/google-auth-config.js?verify=$token" -o /tmp/google-auth-config.js; then
+              deployed_code="$(python -c "import json; print(json.load(open('/tmp/deployment.json')).get('code',''))" 2>/dev/null || true)"
+              if [ "$deployed_code" = "$GITHUB_SHA" ] \
+                && grep -q 'personalization.js?v=20261007' /tmp/page.html \
+                && grep -q 'personalization.css?v=20261007' /tmp/page.html \
+                && grep -q 'FINQUERY_GOOGLE_CLIENT_ID' /tmp/google-auth-config.js \
+                && node --check /tmp/personalization.js >/dev/null 2>&1; then
+                ready=1
+                break
+              fi
             fi
             sleep $((attempt * 3))
           done
+          test "$ready" = 1
           grep -q 'DOLPHIN_V6' /tmp/page.html
           grep -q 'technical-scanner-access-code' /tmp/page.html
           grep -q 'investment-ideas' /tmp/page.html
           grep -q 'Giám sát rủi ro' /tmp/page.html
           grep -q 'Giám sát thị trường' /tmp/page.html
           grep -q 'data-platform-view="strategy"' /tmp/page.html
-          grep -q 'personalization.js?v=20261007' /tmp/page.html
-          grep -q 'personalization.css?v=20261007' /tmp/page.html
           ! grep -q 'Danh sách theo dõi được lưu trên trình duyệt này.' /tmp/page.html
           ! grep -q 'Dữ liệu lịch sử: Vietcap, đồng bộ theo lịch 15 phút' /tmp/page.html
-          curl -fsSL --max-time 20 "$BASE/personalization.js?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/personalization.js
-          curl -fsSL --max-time 20 "$BASE/google-auth-config.js?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/google-auth-config.js
-          node --check /tmp/personalization.js
-          grep -q 'FINQUERY_GOOGLE_CLIENT_ID' /tmp/google-auth-config.js
           ! grep -q 'Charts by TradingView Lightweight Charts' /tmp/page.html
-          curl -fsSL --max-time 20 "$BASE/deployment.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/deployment.json
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
           curl -fsSL --max-time 20 "$BASE/market/news.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
