@@ -2458,17 +2458,13 @@ def _fetch_news_feed(publisher, url, companies, current):
 
 
 def _luatvietnam_datetime(text, current):
+    """Parse a timestamp independently from freshness.
+
+    Absolute LuatVietnam timestamps always win over relative age labels. This
+    prevents a detail page's unrelated "x phút trước" widget from replacing its
+    canonical publication/update timestamp.
+    """
     value = clean(text)
-    relative = re.search(r'(\d+)\s*(phút|giờ|ngày)\s+trước', value, re.I)
-    if relative:
-        amount = int(relative.group(1))
-        unit = relative.group(2).casefold()
-        delta = timedelta(minutes=amount) if unit == 'phút' else (timedelta(hours=amount) if unit == 'giờ' else timedelta(days=amount))
-        dt = current - delta
-        if dt >= current - timedelta(days=30):
-            return dt, 'relative_age', 'relative'
-    if re.search(r'\bhôm qua\b', value, re.I):
-        return current - timedelta(days=1), 'relative_age', 'day'
     patterns = [
         (r'(?:Ngày\s+cập\s+nhật|Cập\s+nhật)\s*:?[^\d]{0,45}(\d{1,2}/\d{1,2}/\d{4})(?:\s*[ ,]\s*(\d{1,2}:\d{2}))?', 'updated'),
         (r'(?:Thứ\s+[^,]{2,12},\s*)?(\d{1,2}/\d{1,2}/\d{4})\s*,\s*(\d{1,2}:\d{2})', 'article_time'),
@@ -2485,10 +2481,22 @@ def _luatvietnam_datetime(text, current):
             dt = datetime(year, month, day, hour, minute, tzinfo=VN).astimezone(timezone.utc)
         except ValueError:
             continue
-        if dt > current + timedelta(days=1) or dt < current - timedelta(days=30):
-            continue
-        return dt, basis, ('minute' if clock else 'day')
+        if dt <= current + timedelta(days=1):
+            return dt, basis, ('minute' if clock else 'day')
+
+    relative = re.search(r'(\d+)\s*(phút|giờ|ngày)\s+trước', value, re.I)
+    if relative:
+        amount = int(relative.group(1))
+        unit = relative.group(2).casefold()
+        delta = timedelta(minutes=amount) if unit == 'phút' else (timedelta(hours=amount) if unit == 'giờ' else timedelta(days=amount))
+        return current - delta, 'relative_age', 'relative'
+    if re.search(r'\bhôm qua\b', value, re.I):
+        return current - timedelta(days=1), 'relative_age', 'day'
     return None, None, None
+
+
+def _luatvietnam_recent(dt, current, days=30):
+    return bool(dt and current - timedelta(days=days) <= dt <= current + timedelta(days=1))
 
 
 def _luatvietnam_topics(title, scope):
@@ -2515,7 +2523,7 @@ def _parse_luatvietnam_listing(raw, source, companies, current):
         marker in folded for marker in ('văn bản', 'tin văn bản', 'tài chính', 'chứng khoán')
     )
     anchors = list(re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', text, re.I | re.S))
-    candidates, dated, relevant = [], 0, 0
+    primary = []
     for match in anchors:
         title = clean(match.group(2))
         if len(title) < 18:
@@ -2527,16 +2535,29 @@ def _parse_luatvietnam_listing(raw, source, companies, current):
             continue
         if not LUATVIETNAM_ARTICLE_PATH.search(parsed.path.rstrip('/')):
             continue
-        context = clean(text[max(0, match.start()-220):min(len(text), match.end()+1000)])
+        primary.append({
+            'match': match, 'title': title,
+            'url': urlunsplit((parsed.scheme or 'https', parsed.netloc, parsed.path, '', '')),
+        })
+
+    candidates, dated, recent_dated, relevant = [], 0, 0, 0
+    for index, base in enumerate(primary):
+        match = base['match']
+        # Treat one document/article card as one parsing unit. The update date can
+        # be several KB after the headline because LuatVietnam inserts action and
+        # login markup between the title and "Cập nhật".
+        next_start = primary[index + 1]['match'].start() if index + 1 < len(primary) else min(len(text), match.end() + 12000)
+        context = clean(text[max(0, match.start()-220):next_start])
         dt, basis, precision = _luatvietnam_datetime(context, current)
         if dt is not None:
             dated += 1
+            if _luatvietnam_recent(dt, current):
+                recent_dated += 1
         candidates.append({
-            'title': title,
-            'url': urlunsplit((parsed.scheme or 'https', parsed.netloc, parsed.path, '', '')),
+            'title': base['title'], 'url': base['url'],
             'dt': dt, 'timestampBasis': basis, 'timePrecision': precision, 'context': context,
         })
-        if LUATVIETNAM_MARKET_PATTERN.search(title):
+        if LUATVIETNAM_MARKET_PATTERN.search(base['title']):
             relevant += 1
 
     unique = {}
@@ -2545,11 +2566,14 @@ def _parse_luatvietnam_listing(raw, source, companies, current):
         if prior is None or (row.get('dt') and not prior.get('dt')):
             unique[row['url']] = row
     candidates = list(unique.values())
+    # Parser health is structural, not a freshness claim. A page containing only
+    # older documents is healthy-but-empty, not a parser failure.
     parser_ok = signature_ok and bool(candidates) and dated >= 1
 
     rows = []
     for candidate in candidates:
-        if not LUATVIETNAM_MARKET_PATTERN.search(candidate['title']) or candidate.get('dt') is None:
+        if (not LUATVIETNAM_MARKET_PATTERN.search(candidate['title'])
+                or not _luatvietnam_recent(candidate.get('dt'), current)):
             continue
         topics = _luatvietnam_topics(candidate['title'], source['scope'])
         matched = [c['symbol'] for c in companies if company_match(c, candidate['title'] + ' ' + candidate['context'])]
@@ -2573,8 +2597,9 @@ def _parse_luatvietnam_listing(raw, source, companies, current):
     health = {
         'id': source['id'], 'name': source['name'], 'url': source['url'],
         'status': ('error' if not parser_ok else ('ok' if rows else 'empty')),
-        'parser': 'luatvietnam-listing-v1', 'parserHealthy': parser_ok,
+        'parser': 'luatvietnam-listing-v2', 'parserHealthy': parser_ok,
         'candidateCount': len(candidates), 'datedCandidates': dated,
+        'recentDatedCandidates': recent_dated,
         'relevantCandidates': relevant, 'items': len(rows),
         'lastItemAt': rows[0]['publishedAt'] if rows else None,
     }
@@ -2591,7 +2616,7 @@ def _luatvietnam_detail_timestamp(raw, current):
 def _enrich_luatvietnam_row(row, current):
     try:
         dt, basis, precision = _luatvietnam_detail_timestamp(request(row['url'], timeout=8), current)
-        if dt is None:
+        if not _luatvietnam_recent(dt, current) or precision != 'minute':
             return row, False
         enriched = dict(row)
         enriched['publishedAt'] = dt.isoformat()
@@ -2612,7 +2637,7 @@ def _fetch_luatvietnam_direct(companies, current):
         except Exception as e:
             return [], {
                 'id': source['id'], 'name': source['name'], 'url': source['url'],
-                'status': 'error', 'parser': 'luatvietnam-listing-v1',
+                'status': 'error', 'parser': 'luatvietnam-listing-v2',
                 'parserHealthy': False, 'items': 0, 'error': str(e)
             }
 
