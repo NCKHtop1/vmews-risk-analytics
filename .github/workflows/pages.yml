@@ -119,6 +119,14 @@ jobs:
           assert not funds.get('previousAsOf') or funds.get('comparisonMode')=='LAST_MEANINGFUL_HOLDING_CHANGE',funds
           print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
           PY
+      - name: Verify FinQuery personalization bundle
+        shell: bash
+        run: |
+          node --check financial-report/personalization.js
+          grep -q 'personalization.js?v=20261007' financial-report/index.html
+          grep -q 'personalization.css?v=20261007' financial-report/index.html
+          ! grep -q 'Danh sách theo dõi được lưu trên trình duyệt này.' financial-report/index.html
+          ! grep -q 'Dữ liệu lịch sử: Vietcap, đồng bộ theo lịch 15 phút' financial-report/index.html
       - name: Build site with same-origin financial and market data
         shell: bash
         run: |
@@ -148,6 +156,20 @@ jobs:
           revision=lambda directory: subprocess.check_output(['git','-C',directory,'rev-parse','HEAD'],text=True).strip()
           Path('_site/financial-report/deployment.json').write_text(json.dumps({'code':revision('.'),'financialData':revision('_financial-data'),'insightData':revision('_insight-data'),'marketData':revision('_market-data')}))
           Path('_site/.nojekyll').touch()
+          PY
+      - name: Configure FinQuery Google Sign-In
+        shell: bash
+        env:
+          FINQUERY_GOOGLE_CLIENT_ID: ${{ secrets.FINQUERY_GOOGLE_CLIENT_ID }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          client_id=os.environ.get('FINQUERY_GOOGLE_CLIENT_ID','').strip()
+          Path('_site/financial-report/google-auth-config.js').write_text(
+              'window.FINQUERY_GOOGLE_CLIENT_ID='+json.dumps(client_id)+';\n',
+              encoding='utf-8',
+          )
           PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
@@ -188,6 +210,14 @@ jobs:
           grep -q 'Giám sát rủi ro' /tmp/page.html
           grep -q 'Giám sát thị trường' /tmp/page.html
           grep -q 'data-platform-view="strategy"' /tmp/page.html
+          grep -q 'personalization.js?v=20261007' /tmp/page.html
+          grep -q 'personalization.css?v=20261007' /tmp/page.html
+          ! grep -q 'Danh sách theo dõi được lưu trên trình duyệt này.' /tmp/page.html
+          ! grep -q 'Dữ liệu lịch sử: Vietcap, đồng bộ theo lịch 15 phút' /tmp/page.html
+          curl -fsSL --max-time 20 "$BASE/personalization.js?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/personalization.js
+          curl -fsSL --max-time 20 "$BASE/google-auth-config.js?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/google-auth-config.js
+          node --check /tmp/personalization.js
+          grep -q 'FINQUERY_GOOGLE_CLIENT_ID' /tmp/google-auth-config.js
           ! grep -q 'Charts by TradingView Lightweight Charts' /tmp/page.html
           curl -fsSL --max-time 20 "$BASE/deployment.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/deployment.json
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
