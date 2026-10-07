@@ -96,6 +96,38 @@ class NewsParserTests(unittest.TestCase):
         self.assertEqual(group['status'],'error')
         self.assertTrue(all(x['status']=='error' for x in sources))
 
+    def test_verified_exact_direct_row_beats_invalid_verified_relative_legacy(self):
+        title='Thông tư 53/2026/TT-NHNN quy định quản lý rủi ro AI trong ngân hàng'
+        legacy={
+            'title':title,'url':'https://luatvietnam.vn/x-d1.html',
+            'publishedAt':'2026-10-07T07:13:00+00:00','source':'Luật Việt Nam',
+            'sourcePriority':94,'directSource':True,'detailTimestampVerified':True,
+            'timePrecision':'relative'
+        }
+        exact={
+            'title':title,'url':'https://luatvietnam.vn/x-d1.html',
+            'publishedAt':'2026-10-07T04:48:00+00:00','source':'Luật Việt Nam',
+            'sourcePriority':94,'directSource':True,'detailTimestampVerified':True,
+            'timePrecision':'minute'
+        }
+        picked=m._unique_news([legacy,exact])
+        self.assertEqual(len(picked),1)
+        self.assertEqual(picked[0]['publishedAt'],'2026-10-07T04:48:00+00:00')
+        self.assertEqual(picked[0]['timePrecision'],'minute')
+
+    def test_retention_rejects_invalid_legacy_direct_timestamp_contract(self):
+        current=self.current
+        bad={
+            'title':'Bad legacy','url':'https://luatvietnam.vn/bad-d1.html',
+            'publishedAt':'2026-10-07T06:50:00+00:00','source':'Luật Việt Nam',
+            'directSource':True,'detailTimestampVerified':True,'timePrecision':'relative'
+        }
+        self.assertFalse(m._retain_news_row(bad,current))
+        old_relative={**bad,'detailTimestampVerified':False,'publishedAt':'2026-10-06T20:00:00+00:00'}
+        self.assertFalse(m._retain_news_row(old_relative,current))
+        exact={**bad,'detailTimestampVerified':True,'timePrecision':'minute','publishedAt':'2026-10-07T04:48:00+00:00'}
+        self.assertTrue(m._retain_news_row(exact,current))
+
     def test_dedupe_priority_official_over_direct_over_discovery(self):
         stamp='2026-10-07T04:48:00+00:00'
         title='Thông tư 53/2026/TT-NHNN quy định quản lý rủi ro AI trong ngân hàng'
