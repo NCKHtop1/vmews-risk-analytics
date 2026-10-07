@@ -9,6 +9,7 @@ on:
       - 'scripts/solution_ai_*.mjs'
       - 'scripts/solution_ai_live_*.py'
       - 'scripts/solution_ai_core_*.py'
+      - 'scripts/solution_ai_workflow_contract_test.py'
       - 'scripts/forecast_v13_market_model_test_v28.py'
       - 'forecast-final.html'
       - '.github/workflows/solution-ai-production-smoke.yml'
