@@ -30,12 +30,11 @@ jobs:
           from datetime import datetime, timezone, timedelta
 
           now=datetime.now(timezone.utc)
-          vn=now.astimezone(timezone(timedelta(hours=7)))
+          VN=timezone(timedelta(hours=7))
+          vn=now.astimezone(VN)
           mins=vn.hour*60+vn.minute
-          active=vn.weekday()<5 and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
-          if not active:
-              print('Outside SoluTION.AI live window; no recovery required.')
-              raise SystemExit(0)
+          weekday=vn.weekday()<5
+          active=weekday and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
 
           url=f'https://raw.githubusercontent.com/{os.environ["GH_REPO"]}/solution-ai-live-data/solution-ai/live.json?guard={int(now.timestamp())}'
           stale=True
@@ -43,11 +42,31 @@ jobs:
           try:
               with urllib.request.urlopen(url,timeout=12) as response:
                   data=json.load(response)
-              stamp=datetime.fromisoformat(str(data.get('generatedAt') or '').replace('Z','+00:00')).astimezone(timezone.utc)
-              age=(now-stamp).total_seconds()/60
+              generated=datetime.fromisoformat(str(data.get('generatedAt') or '').replace('Z','+00:00')).astimezone(timezone.utc)
+              source=datetime.fromisoformat(str(data.get('sourceTime') or '').replace('Z','+00:00')).astimezone(timezone.utc)
+              generated_age=(now-generated).total_seconds()/60
+              source_age=(now-source).total_seconds()/60
+              source_vn=source.astimezone(VN)
               coverage=int(data.get('coverage') or 0)
-              stale=not (data.get('scope')=='solution-ai' and data.get('status')=='ok' and coverage>=500 and age<=4)
-              reason=f'age={age:.1f}m coverage={coverage} status={data.get("status")}'
+              base_ok=(
+                  data.get('scope')=='solution-ai'
+                  and data.get('status')=='ok'
+                  and coverage>=500
+                  and -5<=generated_age
+                  and -5<=source_age
+                  and source<=generated+timedelta(minutes=5)
+              )
+              if active:
+                  fresh=base_ok and generated_age<=6 and source_age<=25 and source_vn.date()==vn.date()
+                  policy='LIVE'
+              elif weekday and mins>=11*60+40:
+                  fresh=base_ok and source_vn.date()==vn.date()
+                  policy='SAME_DAY_SESSION'
+              else:
+                  fresh=base_ok and source_age<=96*60
+                  policy='LAST_COMPLETED_SESSION'
+              stale=not fresh
+              reason=f'policy={policy} generatedAge={generated_age:.1f}m sourceAge={source_age:.1f}m sourceDay={source_vn.date()} coverage={coverage} status={data.get("status")}'
           except Exception as exc:
               reason=str(exc)
 
