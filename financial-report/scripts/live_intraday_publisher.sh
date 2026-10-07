@@ -38,6 +38,8 @@ d=json.loads(p.read_text())
 expected=int(d.get('expected') or 0)
 success=int(d.get('success') or 0)
 required=int(d.get('required') or math.ceil(expected*.90))
+if 'sessionExpected' not in d or 'sessionFresh' not in d:
+    raise SystemExit('intraday live-session freshness fields missing')
 session_expected=int(d.get('sessionExpected') or 0)
 session_fresh=int(d.get('sessionFresh') or 0)
 session_required=int(d.get('sessionRequired') or (math.ceil(session_expected*.90) if session_expected else 0))
@@ -85,12 +87,12 @@ publish_snapshot() {
 
 run_cycle() {
   sync_market_branch
-  local collect_rc=0 health_rc=0
+  local collect_rc=0 health_rc=0 publish_rc=0
   python -u financial-report/scripts/refresh_market.py --output "$OUT/market" --mode intraday || collect_rc=$?
   validate_status || health_rc=$?
-  publish_snapshot
-  if [ "$collect_rc" -ne 0 ] || [ "$health_rc" -ne 0 ]; then
-    echo "Minute-candle cycle degraded: collector=$collect_rc health=$health_rc" >&2
+  publish_snapshot || publish_rc=$?
+  if [ "$collect_rc" -ne 0 ] || [ "$health_rc" -ne 0 ] || [ "$publish_rc" -ne 0 ]; then
+    echo "Minute-candle cycle degraded: collector=$collect_rc health=$health_rc publish=$publish_rc" >&2
     return 1
   fi
   return 0
