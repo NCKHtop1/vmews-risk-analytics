@@ -21,10 +21,6 @@ on:
     # the published snapshot is stale, so missed GitHub cron events self-heal.
     - cron: '0,15,30,45 2-8 * * 1-5'
     - cron: '7,22,37,52 * * * *'
-    # VBMA macro tables refresh once each business day.
-    - cron: '15 1 * * 1-5'
-    # Retry window if GitHub misses the primary macro cron.
-    - cron: '42 1-4 * * 1-5'
     # Corporate ESG source discovery: once each business day, plus Saturday history catch-up.
     - cron: '47 14 * * 1-5'
     - cron: '47 2 * * 6'
@@ -108,11 +104,8 @@ jobs:
           if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
           # Universe refresh is independent from the live-price publisher.
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[universe-refresh\]'; then mode=universe; fi
-          if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[macro-refresh\]'; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 * * * *' ]; then mode=news-watchdog; fi
-          if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
-          if [ "$EVENT_SCHEDULE" = '42 1-4 * * 1-5' ]; then mode=macro-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '47 14 * * 1-5' ]; then mode=esg; fi
           if [ "$EVENT_SCHEDULE" = '47 2 * * 6' ]; then mode=esg-history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[esg-refresh\]'; then mode=esg; fi
@@ -159,30 +152,6 @@ jobs:
                 echo "PRICE WATCHDOG found dedicated live publisher already active."
               fi
               exit 0
-            fi
-          fi
-          if [ "$mode" = 'macro-watchdog' ]; then
-            if python - <<'PY'
-          import json
-          from datetime import datetime, timezone, timedelta
-          from pathlib import Path
-          VN=timezone(timedelta(hours=7)); now=datetime.now(timezone.utc); local=now.astimezone(VN)
-          try:
-              d=json.loads(Path('/tmp/market-publish/market/macro.json').read_text())
-              raw=d.get('checkedAt') or d.get('generatedAt')
-              stamp=datetime.fromisoformat(str(raw).replace('Z','+00:00')).astimezone(timezone.utc)
-              fresh=d.get('status')=='ok' and stamp.astimezone(VN).date()==local.date()
-          except Exception:
-              fresh=False
-          print('MACRO WATCHDOG',{'fresh':fresh,'localDay':local.date().isoformat()})
-          raise SystemExit(0 if fresh else 1)
-          PY
-            then
-              echo "Macro heartbeat already refreshed today; watchdog skipped."
-              exit 0
-            else
-              mode=macro
-              echo "Macro heartbeat missing for today; running recovery refresh."
             fi
           fi
           if [ "$mode" = 'news-watchdog' ]; then
