@@ -74,6 +74,23 @@ class UniverseBuilderTests(unittest.TestCase):
         self.assertEqual(liquid,['CCC','DDD'])
         self.assertEqual(result['counts']['liquid'],2)
 
+    def test_fresher_market_history_overrides_stale_forecast_chart(self):
+        core=[{'symbol':'AAA','name':'Core A','exchange':'HOSE'}]
+        current=bars(50000,1000000)
+        current[-1]['date']='2026-10-07'
+        stale_chart=bars(50000,1000000)
+        stale_chart[-1]['date']='2026-09-29'
+        result=u.build_universe(
+            core,
+            {'AAA','CCC'},
+            {'AAA':current,'CCC':current},
+            {'asOf':'2026-09-29','symbols':{},'charts':{'AAA':stale_chart,'CCC':stale_chart}},
+        )
+        self.assertEqual(result['asOf'],'2026-10-07')
+        self.assertEqual(result['symbols']['CCC']['latestDate'],'2026-10-07')
+        self.assertEqual(result['symbols']['CCC']['tier'],'LIQUID')
+        self.assertTrue(result['symbols']['CCC']['forecastEligible'])
+
     def test_policy_is_fail_closed_for_stale_non_core_symbol(self):
         core=[{'symbol':'AAA','name':'Core A','exchange':'HOSE'}]
         rows=bars(50000,1000000)
