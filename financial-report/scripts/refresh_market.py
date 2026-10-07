@@ -2721,6 +2721,22 @@ def _unique_news(rows):
         titles[key] = row
     return sorted(unique.values(), key=lambda r: r.get('publishedAt') or '', reverse=True)
 
+def _retain_news_row(row, current):
+    try:
+        stamp = datetime.fromisoformat(str((row or {}).get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    if stamp < current - timedelta(days=30):
+        return False
+    if row.get('directSource') and row.get('source') == 'Luật Việt Nam':
+        precision = row.get('timePrecision')
+        if row.get('detailTimestampVerified') and precision != 'minute':
+            return False
+        if precision == 'relative' and stamp < current - timedelta(hours=6):
+            return False
+    return True
+
+
 def _balanced_news_snapshot(items):
     ordered = sorted(items or [], key=lambda r: r.get('publishedAt') or '', reverse=True)
     vietnam = [r for r in ordered if r.get('region') != 'global'][:140]
@@ -2770,26 +2786,9 @@ def news(out, companies):
     source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
 
-    retained = []
-    for row in previous.get('items', []):
-        try:
-            stamp = datetime.fromisoformat(str(row.get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc)
-            if stamp < current - timedelta(days=30):
-                continue
-            if row.get('directSource') and row.get('source') == 'Luật Việt Nam':
-                precision = row.get('timePrecision')
-                # Parser-v1 could mark a relative clock as detail-verified. That
-                # combination is impossible under the v2 contract and must not
-                # survive append/retain merges.
-                if row.get('detailTimestampVerified') and precision != 'minute':
-                    continue
-                # Relative timestamps are useful for immediacy but must never
-                # become a 30-day pseudo-canonical archive.
-                if precision == 'relative' and stamp < current - timedelta(hours=6):
-                    continue
-            retained.append(row)
-        except (TypeError, ValueError, OverflowError):
-            continue
+    # Retain history only when it still satisfies the current timestamp
+    # contract. Parser-v1 invalid combinations are purged during this merge.
+    retained = [row for row in previous.get('items', []) if _retain_news_row(row, current)]
     items = _unique_news(rows + retained)[:2500]
     healthy = sum(source.get('status') == 'ok' for source in sources)
     empty = sum(source.get('status') == 'empty' for source in sources)
