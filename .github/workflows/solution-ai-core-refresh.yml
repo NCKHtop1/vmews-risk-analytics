@@ -55,7 +55,10 @@ jobs:
         env:
           V20_FLOW_WORKERS: '12'
         run: |
-          timeout 90s python scripts/refresh_institutional_flow_v20_v28.py --symbols VN30 || echo "::warning::Institutional provider incomplete; genuine stale rows remain visible and are masked from current flow signal."
+          # Release audit requires both institutional-flow routes to be attempted
+          # for every symbol that can enter the published forecast universe.
+          # Stale/unavailable observations remain inert; coverage is never faked.
+          timeout 240s python scripts/refresh_institutional_flow_v20_v28.py --symbols ALL || echo "::warning::Institutional provider incomplete; genuine stale rows remain visible and are masked from current flow signal."
 
       - name: Refresh current SoluTION news and market intelligence
         env:
