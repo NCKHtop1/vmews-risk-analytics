@@ -106,6 +106,7 @@ jobs:
           # Push-triggered runs are now ESG-only. Live price/news have dedicated
           # workflows and must never be overwritten by a generic mode=all push.
           if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
+          # Universe refresh is independent from the live-price publisher.
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[universe-refresh\]'; then mode=universe; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[macro-refresh\]'; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
