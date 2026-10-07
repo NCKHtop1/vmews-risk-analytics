@@ -1,0 +1,97 @@
+name: Refresh FinQuery market universe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-universe-refresh.yml'
+      - 'financial-report/scripts/build_hose_universe.py'
+  schedule:
+    - cron: '15 10 * * 1-5'
+    - cron: '45 10 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-universe-refresh
+  cancel-in-progress: true
+
+jobs:
+  universe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            financial-report
+            data/v12-frozen-source.json.gz
+            data/forecast-dashboard-v12.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restore latest market history
+        shell: bash
+        run: |
+          git fetch origin financial-market-data
+          git worktree add /tmp/market-universe origin/financial-market-data
+          git -C /tmp/market-universe sparse-checkout set market
+          mkdir -p /tmp/market-universe/market
+
+      - name: Rebuild universe from published market history
+        env:
+          FINQUERY_MARKET_DIR: /tmp/market-universe/market
+          FINQUERY_UNIVERSE_OUTPUT: /tmp/market-universe/market/universe.json
+        run: |
+          python -u financial-report/scripts/build_hose_universe.py
+
+      - name: Validate universe
+        shell: bash
+        run: |
+          SNAPSHOT=/tmp/market-universe/market/universe.json python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          VN=timezone(timedelta(hours=7))
+          d=json.loads(Path(os.environ['SNAPSHOT']).read_text())
+          today=datetime.now(timezone.utc).astimezone(VN).date()
+          asof=datetime.fromisoformat(str(d.get('asOf'))[:10]).date()
+          counts=d.get('counts') or {}
+          if asof < today-timedelta(days=3):
+              raise SystemExit(f'universe too stale: {asof}')
+          if int(counts.get('listedHOSE') or 0)<350:
+              raise SystemExit(f'listed HOSE coverage too low: {counts}')
+          if int(counts.get('core') or 0)!=100:
+              raise SystemExit(f'core coverage changed unexpectedly: {counts}')
+          if int(counts.get('liveMarket') or 0)<100:
+              raise SystemExit(f'live market universe too small: {counts}')
+          if int(counts.get('scannerEligible') or 0)<350:
+              raise SystemExit(f'scanner universe too small: {counts}')
+          print('UNIVERSE OK',d.get('asOf'),counts)
+          PY
+
+      - name: Publish universe only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C /tmp/market-universe config user.name 'github-actions[bot]'
+          git -C /tmp/market-universe config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C /tmp/market-universe add --sparse market/universe.json
+          if git -C /tmp/market-universe diff --cached --quiet; then
+            echo "Universe already current"
+            exit 0
+          fi
+          git -C /tmp/market-universe commit -m 'Refresh FinQuery market universe [data-only]'
+          for attempt in 1 2 3; do
+            git -C /tmp/market-universe fetch origin financial-market-data
+            if git -C /tmp/market-universe rebase origin/financial-market-data && git -C /tmp/market-universe push origin HEAD:refs/heads/financial-market-data; then
+              exit 0
+            fi
+            git -C /tmp/market-universe rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
