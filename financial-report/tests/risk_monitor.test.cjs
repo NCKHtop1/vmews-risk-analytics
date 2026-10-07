@@ -346,6 +346,30 @@ test('historical calibration maps component scores and overall score into percen
  assert.ok(comps.breadth.score>50,comps.breadth);
 });
 
+test('liquidity percentile cannot become high without absolute selling evidence',()=>{
+ const grids={liquidity:Array.from({length:101},(_,i)=>i/10)};
+ const raw={
+  breadth:{raw:20,stats:{}},volatility:{raw:20,stats:{}},
+  liquidity:{raw:9.5,stats:{medianDownVolumePace:.29,heavyDownPct:1.8,medianPriceImpact:4.94,negativeCmfPct:53.6}},
+  concentration:{raw:20,stats:{}},contagion:{raw:20,stats:{}}
+ };
+ const out=calibratedComponents(raw,{componentGrids:grids});
+ assert.ok(out.liquidity.score<70,out.liquidity);
+ assert.equal(out.liquidity.absoluteGate.sellingActivity,false);
+ assert.equal(out.liquidity.absoluteGate.passedHigh,false);
+});
+test('liquidity high zone remains available when absolute selling evidence is present',()=>{
+ const grids={liquidity:Array.from({length:101},(_,i)=>i/10)};
+ const raw={
+  breadth:{raw:20,stats:{}},volatility:{raw:20,stats:{}},
+  liquidity:{raw:9.5,stats:{medianDownVolumePace:1.3,heavyDownPct:22,medianPriceImpact:.8,negativeCmfPct:35}},
+  concentration:{raw:20,stats:{}},contagion:{raw:20,stats:{}}
+ };
+ const out=calibratedComponents(raw,{componentGrids:grids});
+ assert.ok(out.liquidity.score>=85,out.liquidity);
+ assert.equal(out.liquidity.absoluteGate.passedHigh,true);
+});
+
 test('risk method copy is plain-language and versioned to refresh cached snapshots',()=>{
  const {quotes,strategy}=fixture();
  const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
