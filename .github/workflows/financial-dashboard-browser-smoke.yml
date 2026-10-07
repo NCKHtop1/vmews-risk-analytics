@@ -22,6 +22,7 @@ concurrency:
 
 jobs:
   browser-smoke:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -31,7 +32,6 @@ jobs:
       - name: Install browser smoke dependency
         run: pip install --disable-pip-version-check -q selenium==4.36.0
       - name: Exercise production chart, ideas, macro, scanner and Dolphin local analysis
-        if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'cancelled'
         env:
           EXPECTED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
         shell: bash
