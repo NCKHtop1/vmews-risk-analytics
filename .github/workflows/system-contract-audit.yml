@@ -61,24 +61,28 @@ jobs:
         run: python system_contract_audit_test.py
 
       - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
         with:
           ref: financial-market-data
           path: _market-data
           sparse-checkout: market
 
       - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
         with:
           ref: financial-report-data
           path: _financial-data
           sparse-checkout: data
 
       - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
         with:
           ref: financial-insights-data
           path: _insight-data
           sparse-checkout: data
 
       - name: Recompute all production data contracts
+        if: github.event_name != 'pull_request'
         run: |
           python scripts/system_contract_audit.py \
             --market-dir _market-data/market \
@@ -129,7 +133,7 @@ jobs:
           print({'productionDeployment':'PASS','code':d.get('code'),'marketSourceTime':source,'riskCoverage':(r.get('coverage') or {}).get('quotes')})
           PY
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         with:
           name: finquery-system-contract
           path: /tmp/system-contract.json
