@@ -437,3 +437,9 @@ test('Pages refuses legacy intraday health during an active session',()=>{
  assert.match(pages,/intraday\.get\('sessionExpected'\) is not None and intraday\.get\('sessionFresh'\) is not None/);
  assert.match(pages,/intraday session freshness missing/);
 });
+test('Pages requires exact risk coverage for the current live input set',()=>{
+ const pages=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/pages.yml'),'utf8');
+ assert.match(pages,/risk\.get\('inputSignature'\)/);
+ assert.match(pages,/eligible_risk=sum\(/);
+ assert.match(pages,/get\('quotes'\) or 0\)==eligible_risk/);
+});
