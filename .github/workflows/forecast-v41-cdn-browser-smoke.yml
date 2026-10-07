@@ -51,6 +51,7 @@ jobs:
       - name: Browser-test complete V41 page on exact immutable commit
         env:
           V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final-v41.html?symbol=FPT&dataRef=main
+          FINQUERY_IGNORE_SOLUTION_AI: "1"
         run: node scripts/v12_browser_smoke.mjs
       - name: Assert V41 transition radar is mounted and interactive
         env:
