@@ -618,6 +618,31 @@ def load_market_companies(core_companies, market_dir=None):
     return companies, universe
 
 
+def scanner_market_companies(core_companies, universe):
+    """Return the broad EOD scanner target without promoting those names to live quotes."""
+    core = {str(row.get('symbol') or '').upper(): dict(row) for row in core_companies if row.get('symbol')}
+    records = universe.get('symbols') if isinstance(universe, dict) and isinstance(universe.get('symbols'), dict) else {}
+    targets = universe.get('scannerSymbols') if isinstance(universe, dict) and isinstance(universe.get('scannerSymbols'), list) else []
+    if not targets or not records:
+        return [{**row, 'tier': 'CORE', 'coreMember': True} for row in core.values()]
+    companies = []
+    for raw_symbol in targets:
+        symbol = str(raw_symbol or '').upper()
+        meta = records.get(symbol) or {}
+        base = core.get(symbol) or {}
+        if not symbol or not meta.get('scannerEligible'):
+            continue
+        companies.append({
+            'symbol': symbol,
+            'name': base.get('name') or meta.get('name') or symbol,
+            'exchange': 'HOSE',
+            'tier': meta.get('tier') or ('CORE' if symbol in core else 'DISCOVERY'),
+            'coreMember': symbol in core,
+            'scannerEligible': True,
+        })
+    return sorted(companies, key=lambda row: (0 if row.get('tier') == 'CORE' else 1, row['symbol']))
+
+
 def fallback_market_universe(companies):
     """Core-only safety universe used until the validated dynamic universe exists."""
     rows={}
@@ -644,9 +669,10 @@ def fallback_market_universe(companies):
         'generatedAt':now(),
         'asOf':None,
         'policy':{'fallback':True,'description':'Core 100 safety universe until validated HOSE promotion data is published.'},
-        'counts':{'listedHOSE':len(symbols),'core':len(symbols),'liquid':0,'discovery':0,'liveMarket':len(symbols),'scannerEligible':len(symbols),'forecastEligible':len(symbols),'discoveryTechnical':0},
+        'counts':{'listedHOSE':len(symbols),'core':len(symbols),'liquid':0,'discovery':0,'liveMarket':len(symbols),'scannerEligible':len(symbols),'scannerCurrent':len(symbols),'forecastEligible':len(symbols),'discoveryTechnical':0},
         'liveMarketSymbols':symbols,
         'scannerSymbols':symbols,
+        'scannerCurrentSymbols':symbols,
         'forecastEligibleSymbols':symbols,
         'symbols':rows,
     }
@@ -671,10 +697,10 @@ def sync_market_universe(out, universe):
 
 
 def seed_market_histories(out, universe, companies):
-    """Seed newly promoted Liquid names from the already validated forecast history.
+    """Seed missing Liquid/Discovery histories from validated forecast history.
 
-    This makes the first live scanner run useful immediately instead of waiting
-    for the nightly history job. Newer market-branch bars always win.
+    Seeds are bootstrap-only. The EOD history refresh must fetch the recent
+    market window before a Discovery symbol is allowed to count as current.
     """
     records = universe.get('symbols') if isinstance(universe, dict) else {}
     if not isinstance(records, dict):
