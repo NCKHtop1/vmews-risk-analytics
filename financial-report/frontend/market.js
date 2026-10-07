@@ -255,7 +255,7 @@ async function refresh(){
   }catch(error){quoteFallbackError=String(error?.message||error).slice(0,120);}
  }
  showQuote();board();news();
- if(state.symbol&&!chartController.loading&&(!state.lastHistoryRefresh||Date.now()-state.lastHistoryRefresh>=15*60000)){state.lastHistoryRefresh=Date.now();void chartController.load(true);}
+ if(state.symbol&&!chartController.loading&&(!state.lastHistoryRefresh||Date.now()-state.lastHistoryRefresh>=10*60000)){state.lastHistoryRefresh=Date.now();void chartController.load(true);}
  const currentQuote=state.quotes[state.symbol],currentQuoteLive=currentQuote&&!quoteStale(currentQuote);
  manageQuoteRetry(Boolean(currentQuoteLive));
  window.FinTechnicalScanner?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);window.FinStrategyBuilder?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);
