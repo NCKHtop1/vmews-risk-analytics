@@ -119,16 +119,6 @@ jobs:
           assert not funds.get('previousAsOf') or funds.get('comparisonMode')=='LAST_MEANINGFUL_HOLDING_CHANGE',funds
           print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
           PY
-      - name: Verify FinQuery personalization bundle
-        shell: bash
-        run: |
-          node --check financial-report/personalization.js
-          grep -q 'personalization.js?v=20261007' financial-report/frontend/index.html
-          grep -q 'personalization.css?v=20261007' financial-report/frontend/index.html
-          grep -q 'personalization.js?v=20261007' financial-report/index.html
-          grep -q 'personalization.css?v=20261007' financial-report/index.html
-          ! grep -q 'Danh sách theo dõi được lưu trên trình duyệt này.' financial-report/index.html
-          ! grep -q 'Dữ liệu lịch sử: Vietcap, đồng bộ theo lịch 15 phút' financial-report/index.html
       - name: Build site with same-origin financial and market data
         shell: bash
         run: |
@@ -158,20 +148,6 @@ jobs:
           revision=lambda directory: subprocess.check_output(['git','-C',directory,'rev-parse','HEAD'],text=True).strip()
           Path('_site/financial-report/deployment.json').write_text(json.dumps({'code':revision('.'),'financialData':revision('_financial-data'),'insightData':revision('_insight-data'),'marketData':revision('_market-data')}))
           Path('_site/.nojekyll').touch()
-          PY
-      - name: Configure FinQuery Google Sign-In
-        shell: bash
-        env:
-          FINQUERY_GOOGLE_CLIENT_ID: ${{ secrets.FINQUERY_GOOGLE_CLIENT_ID }}
-        run: |
-          python - <<'PY'
-          import json, os
-          from pathlib import Path
-          client_id=os.environ.get('FINQUERY_GOOGLE_CLIENT_ID','').strip()
-          Path('_site/financial-report/google-auth-config.js').write_text(
-              'window.FINQUERY_GOOGLE_CLIENT_ID='+json.dumps(client_id)+';\n',
-              encoding='utf-8',
-          )
           PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
@@ -204,20 +180,10 @@ jobs:
           for attempt in 1 2 3 4 5 6 7 8; do
             token="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${attempt}"
             if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=$token#market" -o /tmp/page.html \
-              && curl -fsSL --max-time 20 "$BASE/deployment.json?verify=$token" -o /tmp/deployment.json \
-              && curl -fsSL --max-time 20 "$BASE/personalization.js?verify=$token" -o /tmp/personalization.js \
-              && curl -fsSL --max-time 20 "$BASE/google-auth-config.js?verify=$token" -o /tmp/google-auth-config.js; then
+              && curl -fsSL --max-time 20 "$BASE/deployment.json?verify=$token" -o /tmp/deployment.json; then
               deployed_code="$(python -c "import json; print(json.load(open('/tmp/deployment.json')).get('code',''))" 2>/dev/null || true)"
-              page_js=0; grep -q 'personalization.js?v=20261007' /tmp/page.html && page_js=1 || true
-              page_css=0; grep -q 'personalization.css?v=20261007' /tmp/page.html && page_css=1 || true
-              config_ok=0; grep -q 'FINQUERY_GOOGLE_CLIENT_ID' /tmp/google-auth-config.js && config_ok=1 || true
-              syntax_ok=0; node --check /tmp/personalization.js >/dev/null 2>&1 && syntax_ok=1 || true
-              echo "pages-verify attempt=$attempt deployed=$deployed_code expected=$GITHUB_SHA js=$page_js css=$page_css config=$config_ok syntax=$syntax_ok"
-              if [ "$deployed_code" = "$GITHUB_SHA" ] \
-                && [ "$page_js" = 1 ] \
-                && [ "$page_css" = 1 ] \
-                && [ "$config_ok" = 1 ] \
-                && [ "$syntax_ok" = 1 ]; then
+              echo "pages-verify attempt=$attempt deployed=$deployed_code expected=$GITHUB_SHA"
+              if [ "$deployed_code" = "$GITHUB_SHA" ]; then
                 ready=1
                 break
               fi
@@ -231,6 +197,14 @@ jobs:
           grep -q 'Giám sát rủi ro' /tmp/page.html
           grep -q 'Giám sát thị trường' /tmp/page.html
           grep -q 'data-platform-view="strategy"' /tmp/page.html
+          grep -q '>Investment Ideas<' /tmp/page.html
+          grep -q '>Phân tích<' /tmp/page.html
+          grep -q '>Vĩ mô<' /tmp/page.html
+          grep -q '>Tổng quan<' /tmp/page.html
+          grep -q '>Bảng số liệu<' /tmp/page.html
+          ! grep -q 'personalization.css' /tmp/page.html
+          ! grep -q 'personalization.js' /tmp/page.html
+          ! grep -q 'google-auth-config.js' /tmp/page.html
           ! grep -q 'Danh sách theo dõi được lưu trên trình duyệt này.' /tmp/page.html
           ! grep -q 'Dữ liệu lịch sử: Vietcap, đồng bộ theo lịch 15 phút' /tmp/page.html
           ! grep -q 'Charts by TradingView Lightweight Charts' /tmp/page.html
