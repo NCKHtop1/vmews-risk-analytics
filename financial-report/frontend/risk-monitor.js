@@ -212,9 +212,10 @@ async function refresh(){
  const btn=$('risk-refresh');if(btn)btn.disabled=true;
  const status=$('risk-source-status');if(status)status.textContent='Đang cập nhật…';
  try{
-  const data=await window.FinMarketData.get('risk-monitor.json',{timeout:10000});
-  if(data?.status!=='ok'||!data.overall||!Number.isFinite(Number(data.overall.score)))throw Error('Dữ liệu giám sát chưa hợp lệ');
   const expected=window.FinancialMarket?.context?.()?.quoteBundleSourceTime||null;
+  const bundled=window.FinMarketData.currentBundle?.()?.risk;
+  const data=bundled&&(!expected||String(bundled.sourceTime||'')===String(expected))?bundled:await window.FinMarketData.get('risk-monitor.json',{timeout:10000});
+  if(data?.status!=='ok'||!data.overall||!Number.isFinite(Number(data.overall.score)))throw Error('Dữ liệu giám sát chưa hợp lệ');
   if(expected&&String(data.sourceTime||'')!==String(expected)){
    if(state.data)render();
    if(status)status.textContent=(state.data?'Đang giữ snapshot rủi ro gần nhất · ':'')+'Đang đồng bộ mốc dữ liệu mới';
