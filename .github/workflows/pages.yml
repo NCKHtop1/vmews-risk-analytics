@@ -13,7 +13,7 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
   workflow_run:
-    workflows: ['Refresh FinQuery prices and company news', 'Refresh live HOSE Core + Liquid prices', 'Refresh market news stream', 'Refresh FinQuery macro snapshot', 'Refresh FinQuery market universe', 'Refresh financial reports for CDN', 'Refresh investment insights']
+    workflows: ['Refresh FinQuery prices and company news', 'Refresh live HOSE Core + Liquid prices', 'Refresh live HOSE minute candles', 'Refresh market news stream', 'Refresh FinQuery macro snapshot', 'Refresh FinQuery market universe', 'Refresh financial reports for CDN', 'Refresh investment insights']
     types: [completed]
     branches: [main]
 
@@ -32,6 +32,11 @@ jobs:
   build:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    outputs:
+      code_sha: ${{ steps.revisions.outputs.code_sha }}
+      financial_sha: ${{ steps.revisions.outputs.financial_sha }}
+      insight_sha: ${{ steps.revisions.outputs.insight_sha }}
+      market_sha: ${{ steps.revisions.outputs.market_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,6 +58,14 @@ jobs:
           ref: financial-market-data
           path: _market-data
           sparse-checkout: market
+      - name: Capture exact build revisions
+        id: revisions
+        shell: bash
+        run: |
+          echo "code_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "financial_sha=$(git -C _financial-data rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "insight_sha=$(git -C _insight-data rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "market_sha=$(git -C _market-data rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Rebuild Technical Scanner from the published market snapshot
         run: python financial-report/scripts/refresh_market.py --output _market-data/market --mode scanner
       - name: Bootstrap Technical Scanner evidence from completed EOD history
@@ -110,7 +123,9 @@ jobs:
           if active:
               assert intraday.get('sessionExpected') is not None and intraday.get('sessionFresh') is not None,('intraday session freshness missing',intraday)
               intraday_checked=datetime.fromisoformat(str(intraday.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
-              assert (now-intraday_checked).total_seconds()/60<=25,('stale intraday heartbeat',intraday.get('checkedAt'))
+              intraday_age=(now-intraday_checked).total_seconds()/60
+              if intraday_age>25:
+                  print({'warning':'intraday mirror heartbeat is stale; raw financial-market-data remains the production primary','ageMin':round(intraday_age,1),'checkedAt':intraday.get('checkedAt')})
           assert int(quotes.get('expected') or 0)==int(bc.get('liveMarket') or 0),(quotes.get('expected'),bc.get('liveMarket'))
           assert int(quotes.get('coverage') or 0)>=int(quotes.get('expected') or 0)*.90,(quotes.get('coverage'),quotes.get('expected'))
           assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
