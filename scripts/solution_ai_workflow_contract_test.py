@@ -12,7 +12,19 @@ class SolutionAIWorkflowContracts(unittest.TestCase):
         self.assertIn("publishing one recovery snapshot", flow)
         self.assertNotIn('echo "Outside SoluTION.AI live window: $now"\n            exit 0', flow)
         self.assertIn("sourceTime", flow)
-        self.assertIn("96*3600", flow)
+        self.assertIn("source_age<=25", flow)
+        self.assertIn("generated_age<=6", flow)
+        self.assertIn("policy='LIVE'", flow)
+        self.assertIn("source_age<=96*60", flow)
+
+    def test_market_guard_is_independent_solution_live_recovery_path(self):
+        guard = (ROOT / ".github/workflows/market-realtime-guard.yml").read_text()
+        self.assertIn("SoluTION.AI independent live prices", guard)
+        self.assertIn("solution-ai-live-price.yml", guard)
+        self.assertIn("solution-ai-live-data/solution-ai/live.json", guard)
+        self.assertIn("source_age<=25", guard)
+        self.assertIn("generated_age<=6", guard)
+        self.assertIn("SoluTION live freshness OK", guard)
 
     def test_live_guard_checks_real_market_source_outside_session(self):
         guard = (ROOT / ".github/workflows/solution-ai-live-guard.yml").read_text()
