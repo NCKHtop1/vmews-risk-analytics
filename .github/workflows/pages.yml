@@ -123,6 +123,8 @@ jobs:
         shell: bash
         run: |
           node --check financial-report/personalization.js
+          grep -q 'personalization.js?v=20261007' financial-report/frontend/index.html
+          grep -q 'personalization.css?v=20261007' financial-report/frontend/index.html
           grep -q 'personalization.js?v=20261007' financial-report/index.html
           grep -q 'personalization.css?v=20261007' financial-report/index.html
           ! grep -q 'Danh sách theo dõi được lưu trên trình duyệt này.' financial-report/index.html
