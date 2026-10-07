@@ -2992,17 +2992,25 @@ if __name__ == '__main__':
     core_companies = read(ROOT / 'data/companies.json', [])
     if len({c['symbol'] for c in core_companies}) != 100:
         raise RuntimeError('Expected 100 unique VN100 Core symbols')
-    companies, universe = load_market_companies(core_companies, args.output)
-    if len({c['symbol'] for c in companies}) < 100:
+    live_companies, universe = load_market_companies(core_companies, args.output)
+    if len({c['symbol'] for c in live_companies}) < 100:
         raise RuntimeError('Tiered HOSE market universe cannot be smaller than Core 100')
-    universe = universe or fallback_market_universe(companies)
+    universe = universe or fallback_market_universe(live_companies)
+    history_companies = scanner_market_companies(core_companies, universe) if args.mode == 'history' else live_companies
     if args.mode in {'prices', 'history', 'intraday', 'all'}:
         sync_market_universe(args.output, universe)
-        seed_market_histories(args.output, universe, companies)
+        seed_market_histories(args.output, universe, history_companies)
     errors = []
-    for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
+    modes = ['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]
+    for mode in modes:
         try:
-            globals()[mode](args.output, companies)
+            if mode == 'history':
+                history(args.output, history_companies)
+                # Rebuild the scanner immediately from the refreshed EOD files;
+                # Strategy snapshot is rebuilt by the owning workflow's Node step.
+                scanner(args.output, live_companies)
+            else:
+                globals()[mode](args.output, live_companies)
         except Exception as e:
             errors.append(str(e))
     if errors:
