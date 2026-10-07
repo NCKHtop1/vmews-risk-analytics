@@ -2750,6 +2750,35 @@ def _retain_news_row(row, current):
     return True
 
 
+def _sanitize_retained_news_row(row):
+    """Migrate retained metadata through current classification rules.
+
+    Historical snapshots may carry labels produced by older regexes. Never let
+    a fixed classifier keep serving an obsolete SBV/NHNN tag for up to 30 days.
+    """
+    cleaned = dict(row or {})
+    topics = set(cleaned.get('topics') or [])
+    text = ' '.join([
+        str(cleaned.get('title') or ''),
+        str(cleaned.get('summary') or ''),
+        str(cleaned.get('source') or ''),
+    ])
+    stale_sbv = ('sbv' in topics or cleaned.get('impactTag') == 'NHNN') and not SBV_PATTERN.search(text)
+    if stale_sbv:
+        topics.discard('sbv')
+        cleaned['topics'] = sorted(topics)
+        meta = classify_news_meta(
+            cleaned.get('title') or '',
+            cleaned.get('summary') or '',
+            cleaned.get('source') or '',
+            topics,
+            cleaned.get('publishedAt'),
+        )
+        cleaned.update(meta)
+        cleaned['metadataMigrated'] = 'sbv-token-boundary-v2'
+    return cleaned
+
+
 def _balanced_news_snapshot(items):
     ordered = sorted(items or [], key=lambda r: r.get('publishedAt') or '', reverse=True)
     vietnam = [r for r in ordered if r.get('region') != 'global'][:140]
@@ -2801,7 +2830,11 @@ def news(out, companies):
 
     # Retain history only when it still satisfies the current timestamp
     # contract. Parser-v1 invalid combinations are purged during this merge.
-    retained = [row for row in previous.get('items', []) if _retain_news_row(row, current)]
+    retained = [
+        _sanitize_retained_news_row(row)
+        for row in previous.get('items', [])
+        if _retain_news_row(row, current)
+    ]
     items = _unique_news(rows + retained)[:2500]
     healthy = sum(source.get('status') == 'ok' for source in sources)
     empty = sum(source.get('status') == 'empty' for source in sources)
