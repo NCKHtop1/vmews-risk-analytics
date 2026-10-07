@@ -50,6 +50,13 @@ jobs:
           ref: main
       - name: Verify report-to-forecast navigation and quote loading
         run: node scripts/forecast-navigation-test.cjs
+      - name: Verify Strategy Intelligence core and frontend syntax
+        run: |
+          node --check financial-report/frontend/strategy-intelligence-core.js
+          node --check financial-report/frontend/strategy-intelligence.js
+          node --check financial-report/frontend/strategy-engine.js
+          node --check financial-report/frontend/alert-center.js
+          node financial-report/scripts/test_strategy_intelligence.cjs
       - uses: actions/checkout@v4
         with:
           ref: financial-report-data
