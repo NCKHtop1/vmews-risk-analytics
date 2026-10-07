@@ -54,6 +54,28 @@ def _tick(price):
     return 10 if price < 10_000 else 50 if price < 50_000 else 100
 
 
+def select_validation_universe(histories, current_symbols, published_symbols):
+    """Return the exact currently-published Forecast universe for close proof.
+
+    Forecast publication should be gated by the symbols the product actually
+    publishes, not unrelated HOSE listings that are outside the validated
+    forecast universe. If the published snapshot cannot be read, fail safely
+    back to the full current HOSE universe rather than silently narrowing scope.
+    """
+    available = {str(symbol).upper() for symbol in histories}
+    current = {
+        str(symbol).upper()
+        for symbol in (current_symbols or [])
+        if str(symbol).upper() in available
+    }
+    published = {
+        str(symbol).upper()
+        for symbol in (published_symbols or [])
+        if str(symbol).upper() in current
+    }
+    return sorted(published or current)
+
+
 def fetch_tradingview_quotes():
     from tradingview_screener import stocks
     fields = ["name", "exchange", "open", "high", "low", "close", "change", "volume", "update_mode", "update_time"]

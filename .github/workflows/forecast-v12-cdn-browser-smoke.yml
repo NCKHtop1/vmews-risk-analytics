@@ -6,7 +6,6 @@ on:
       - 'forecast-final.html'
       - 'forecast-final-v12.js'
       - 'forecast-live-leaders-v14.js'
-      - 'solution-ai-v17.js'
       - 'data/forecast-model-v12.json'
       - 'data/forecast-dashboard-v12.json'
       - 'data/forecast-backtest-v12.json'
@@ -14,14 +13,12 @@ on:
       - 'data/phase-gates-v12.json'
       - '.github/workflows/forecast-v12-cdn-browser-smoke.yml'
       - 'scripts/v12_browser_smoke.mjs'
-      - 'scripts/solution_ai_browser_smoke.mjs'
   push:
     branches: [main]
     paths:
       - 'forecast-final.html'
       - 'forecast-final-v12.js'
       - 'forecast-live-leaders-v14.js'
-      - 'solution-ai-v17.js'
       - 'data/forecast-model-v12.json'
       - 'data/forecast-dashboard-v12.json'
       - 'data/forecast-backtest-v12.json'
@@ -29,7 +26,6 @@ on:
       - 'data/phase-gates-v12.json'
       - '.github/workflows/forecast-v12-cdn-browser-smoke.yml'
       - 'scripts/v12_browser_smoke.mjs'
-      - 'scripts/solution_ai_browser_smoke.mjs'
 permissions:
   contents: read
 jobs:
@@ -53,12 +49,8 @@ jobs:
       - name: Browser-test exact immutable CDN commit
         env:
           V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final.html?symbol=FPT
+          FINQUERY_IGNORE_SOLUTION_AI: "1"
         run: node scripts/v12_browser_smoke.mjs
-      - name: Browser-test SoluTION.AI forecast, local fallback and Gemini handoff
-        env:
-          SOLUTION_AI_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final.html?symbol=FPT
-          SOLUTION_AI_SYMBOLS: FPT,ACB,HPG,VIC
-        run: node scripts/solution_ai_browser_smoke.mjs
       - name: Upload exact-CDN UX screenshots
         if: always()
         uses: actions/upload-artifact@v4

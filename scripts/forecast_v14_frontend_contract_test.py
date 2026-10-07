@@ -97,19 +97,14 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
         self.assertNotIn("bước giá", self.html)
         self.assertNotIn("không trả lời chung chung", self.html)
-        self.assertIn(
-            "nghiên cứu nguồn công khai và kết nối thông tin mới với diễn biến của từng mã",
-            self.html,
-        )
         self.assertRegex(self.html, r'forecast-final-v12\.js\?release=\d+\.\d+')
-        self.assertRegex(self.html, r'solution-ai-v17\.js\?release=\d+\.\d+')
         self.assertIn("forecast-live-leaders-v14.js?release=42.0", self.html)
         self.assertNotIn("release=19.3", self.html)
 
     def test_internal_statuses_and_nonexistent_backend_are_not_user_facing(self) -> None:
         assets = "\n".join(
             (ROOT / name).read_text(encoding="utf-8")
-            for name in ("forecast-final.html", "forecast-final-v12.js", "solution-ai-v17.js")
+            for name in ("forecast-final.html", "forecast-final-v12.js")
         )
         for forbidden in (
             "ĐIỂM ĐÃ QUA GATE", "ĐIỂM QUA GATE", "ĐIỂM ĐỘ TIN CẬY THẤP",

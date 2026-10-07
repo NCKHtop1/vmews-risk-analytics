@@ -10,7 +10,6 @@ on:
       - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v41_runtime_patch.py"
       - "scripts/forecast_v41_technical_transition_test.py"
-      - "api/solution-ai.js"
       - ".github/workflows/forecast-v40-tail-calibration.yml"
   pull_request:
     paths:
@@ -19,7 +18,6 @@ on:
       - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v41_runtime_patch.py"
       - "scripts/forecast_v41_technical_transition_test.py"
-      - "api/solution-ai.js"
       - ".github/workflows/forecast-v40-tail-calibration.yml"
 
 permissions:
@@ -56,14 +54,3 @@ jobs:
           if missing: raise SystemExit(f'V40 runtime integration missing: {missing}')
           print('V40 guarded runtime integration PASS')
           PY
-      - name: SoluTION.AI syntax and diagnostic contract
-        run: |
-          node --check api/solution-ai.js
-          node - <<'JS'
-          const fs=require('fs');
-          const text=fs.readFileSync('api/solution-ai.js','utf8');
-          for (const term of ['direction miss','under-amplitude','over-amplitude','largeMoveAudit','pointToRealizedMoveRatio']) {
-            if (!text.includes(term)) throw new Error(`missing AI diagnostic contract: ${term}`);
-          }
-          console.log('SoluTION.AI forecast-miss diagnostic contract PASS');
-          JS

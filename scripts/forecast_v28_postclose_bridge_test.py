@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))
-from forecast_v28_postclose_bridge import bridge_completed_session
+from forecast_v28_postclose_bridge import bridge_completed_session, select_validation_universe
 VN_TZ=timezone(timedelta(hours=7))
 
 def frame_for(symbols,date_text="2026-08-28"):
@@ -26,6 +26,16 @@ def histories(symbols,as_of="2026-08-27"):
     return {s:[{"date":as_of,"open":49000,"high":51000,"low":48500,"close":50000,"modelClose":50000,"volume":900000,"provider":"fixture","exchange":"HOSE"}] for s in symbols}
 
 class PostCloseBridgeTest(unittest.TestCase):
+    def test_validation_universe_uses_published_forecast_symbols_only(self):
+        h=histories(["AAA","BBB","CCC","DDD"])
+        picked=select_validation_universe(h,["AAA","BBB","CCC","DDD"],["AAA","CCC","ZZZ"])
+        self.assertEqual(picked,["AAA","CCC"])
+
+    def test_validation_universe_falls_back_to_full_current_hose(self):
+        h=histories(["AAA","BBB","CCC"])
+        picked=select_validation_universe(h,["AAA","BBB","CCC"],[])
+        self.assertEqual(picked,["AAA","BBB","CCC"])
+
     def test_advances_only_after_two_source_same_day_proof(self):
         symbols=[f"S{i:02d}" for i in range(10)]; h=histories(symbols); freshness={"forecastAsOf":"2026-08-27","currentHOSESymbols":symbols,"providerBySymbol":{}}
         out,meta=bridge_completed_session(h,freshness,now=datetime(2026,8,28,16,tzinfo=VN_TZ),frame=frame_for(symbols),secondary_rows=secondary_for(symbols),min_coverage=.9,min_secondary_coverage=.9)
