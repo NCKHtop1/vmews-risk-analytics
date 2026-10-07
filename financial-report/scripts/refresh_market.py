@@ -1065,7 +1065,10 @@ def build_technical_scanner(out, companies, quotes):
 
     # Discovery stays fail-closed for live price/forecast decisions, but its
     # validated EOD technical snapshot remains searchable in the scanner.
-    universe = load_market_universe()
+    # The output snapshot owns the market universe for this build. Never mix
+    # discovery/scanner membership from financial-report/data/universe.json
+    # with a newer market branch snapshot.
+    universe = load_market_universe(out)
     discovery = universe.get('discoveryTechnical') if isinstance(universe, dict) else {}
     records = universe.get('symbols') if isinstance(universe, dict) else {}
     if isinstance(discovery, dict):

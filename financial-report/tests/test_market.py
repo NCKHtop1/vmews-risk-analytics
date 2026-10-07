@@ -1125,6 +1125,42 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(watch['sourceTime'],stamp)
             self.assertEqual(watch['refreshEveryMinutes'],5)
 
+    def test_scanner_rebuild_uses_output_market_universe_not_stale_main_fallback(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            out=pathlib.Path(td); (out/'history').mkdir()
+            bars=[]
+            for i in range(70):
+                close=10000+i*i*8
+                bars.append({
+                    'time':f'2026-07-{1+i:02d}' if i<31 else f'2026-08-{i-30:02d}' if i<62 else f'2026-09-{i-61:02d}',
+                    'open':close-20,'high':close+80,'low':close-80,'close':close,'volume':1000000,
+                })
+            m.write(out/'history'/'FPT.json',{'symbol':'FPT','bars':bars})
+            m.write(out/'universe.json',{
+                'version':'TEST-OUTPUT-UNIVERSE',
+                'counts':{'scannerEligible':1,'liveMarket':1},
+                'liveMarketSymbols':['FPT'],
+                'scannerSymbols':['FPT'],
+                'symbols':{'FPT':{'symbol':'FPT','scannerEligible':True,'liveMarketEligible':True}},
+                'discoveryTechnical':{},
+            })
+            stamp='2026-10-07T07:45:00+00:00'
+            m.build_technical_scanner(
+                out,
+                [{'symbol':'FPT','tier':'CORE'}],
+                {'FPT':{'symbol':'FPT','status':'ok','price':bars[-1]['close'],'changePct':1.2,'sourceTime':stamp}},
+            )
+            data=m.read(out/'technical-signals.json',{})
+            self.assertEqual(data['universe'],1)
+            self.assertEqual(data['coverage'],1)
+            self.assertEqual(set(data['symbols']),{'FPT'})
+
+    def test_forecast_publisher_does_not_own_market_universe(self):
+        workflow=(pathlib.Path(__file__).resolve().parents[2]/'.github'/'workflows'/'forecast-v13-daily-refresh.yml').read_text(encoding='utf-8')
+        self.assertNotIn('- name: Build tiered HOSE universe',workflow)
+        self.assertNotIn('financial-report/data/universe.json',workflow)
+
     def test_candles_reject_invalid_high_low_and_keep_original_prices(self):
         data=[{'symbol':'MBB','t':[1727100000,1727186400],'o':[25000,25000],'h':[27000,24000],'l':[24000,23000],'c':[26000,26000],'v':[1000,500]}]
         rows=m.normalize_history(data,'MBB')
@@ -2314,7 +2350,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("financial-report/data/universe.json",price)
         self.assertIn("math.ceil(expected*.90)",session)
         self.assertIn("financial-report/scripts/build_hose_universe.py",forecast)
-        self.assertIn("financial-report/data/universe.json",forecast)
+        self.assertNotIn("financial-report/data/universe.json",forecast)
+        self.assertIn("universe = load_market_universe(out)",script)
         self.assertIn("market/universe.json",pages)
         self.assertIn('id="market-universe-filter"',html)
         self.assertIn('id="technical-scanner-universe"',html)
