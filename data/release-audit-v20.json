@@ -1,41 +1,41 @@
 {
   "version": "VMEWS-RELEASE-AUDIT-20.2.0",
-  "asOf": "2026-10-06",
+  "asOf": "2026-10-07",
   "status": "PASS",
   "scope": {
-    "symbols": 367,
-    "forecasts": 1835,
-    "flowRows": 322183,
-    "headlines": 23713,
+    "symbols": 347,
+    "forecasts": 1735,
+    "flowRows": 306243,
+    "headlines": 22815,
     "headlineSources": {
       "community-claims": 4,
-      "community-watchlist": 159,
-      "dashboard-communityWatchlist": 202,
-      "dashboard-decisionNews": 162,
-      "dashboard-decisionRecent": 4236,
-      "dashboard-recent": 4236,
-      "fireant": 1226,
+      "community-watchlist": 160,
+      "dashboard-communityWatchlist": 205,
+      "dashboard-decisionNews": 2,
+      "dashboard-decisionRecent": 4027,
+      "dashboard-recent": 4027,
+      "fireant": 1227,
       "research-news": 1228,
-      "research-news-v10": 12260
+      "research-news-v10": 11935
     }
   },
   "calendar": {
-    "sourceSession": "2026-10-06",
+    "sourceSession": "2026-10-07",
     "certifiedTargetDates": {
-      "1": "2026-10-07",
-      "2": "2026-10-08",
-      "3": "2026-10-09",
-      "4": "2026-10-12",
-      "5": "2026-10-13"
+      "1": "2026-10-08",
+      "2": "2026-10-09",
+      "3": "2026-10-12",
+      "4": "2026-10-13",
+      "5": "2026-10-14"
     }
   },
   "price": {
     "marketSources": {
-      "VNDIRECT_PUBLIC_EOD": 367
+      "TRADINGVIEW_POST_CLOSE_VNDIRECT_CONFIRMED": 347
     },
     "staleSymbols": 0,
     "chartMismatches": 0,
-    "flatPointForecasts": 10,
+    "flatPointForecasts": 22,
     "crossSource": {
       "status": "PASS",
       "method": "SAME_COMPLETED_SESSION_VNDIRECT_VS_TRADINGVIEW_CLOSE",
@@ -55,41 +55,65 @@
       "p95AbsoluteLogGap": 0.0
     },
     "currentSessionBridge": {
-      "status": "NOT_APPLICABLE_ALREADY_CURRENT",
-      "sessionDate": "2026-10-06",
-      "observedAt": "2026-10-07T14:03:28+07:00",
+      "status": "PASS",
+      "sessionDate": "2026-10-07",
+      "observedAt": "2026-10-07T16:04:13+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
-      "coverage": 0.0,
-      "secondaryCoverage": 0.0,
-      "eligibleSymbols": 0,
-      "sameDayQuotes": 0,
-      "secondarySameDayQuotes": 0,
+      "coverage": 0.945504,
+      "secondaryCoverage": 0.945504,
+      "eligibleSymbols": 367,
+      "sameDayQuotes": 347,
+      "secondarySameDayQuotes": 347,
       "mismatchCount": 0,
-      "appendedSymbols": 0,
+      "appendedSymbols": 347,
       "alreadyCurrentSymbols": 0,
-      "staleSymbols": 0,
-      "staleSymbolSample": [],
+      "staleSymbols": 20,
+      "staleSymbolSample": [
+        "BHN",
+        "BRC",
+        "CCI",
+        "CMV",
+        "COM",
+        "CRV",
+        "DTL",
+        "HU1",
+        "LIX",
+        "PGI",
+        "S4A",
+        "SBV",
+        "SFG",
+        "SSC",
+        "STG",
+        "TMP",
+        "TVT",
+        "VFG",
+        "VSI",
+        "VTB"
+      ],
       "primary": "TRADINGVIEW_VIETNAM_SCREEN",
       "secondary": "VNDIRECT_PUBLIC_EOD",
       "secondaryCoverageScope": "universe",
       "realOHLCRequired": true,
-      "inferenceOnly": true
+      "inferenceOnly": true,
+      "secondaryCoverageBase": 367,
+      "mismatches": [],
+      "completedSessionVerified": true,
+      "independentCloseConfirmed": true,
+      "partialUniverse": true,
+      "publicationScope": "VERIFIED_CURRENT_PLUS_EXPLICIT_STALE"
     }
   },
   "flow": {
-    "completedSession": "2026-10-06",
+    "completedSession": "2026-10-07",
     "requestSuccessCoverage": 1.0,
     "foreignLatest": "2026-10-06",
     "proprietaryLatest": "2026-10-06",
-    "foreignCurrentSymbols": 30,
-    "proprietaryCurrentSymbols": 30,
+    "foreignCurrentSymbols": 210,
+    "proprietaryCurrentSymbols": 50,
     "staleDecisionPriorViolations": 0,
-    "targetedRefreshAccepted": {
-      "requestedSymbols": 30,
-      "requestedKinds": 60,
-      "target": "2026-10-06"
-    }
+    "targetedRefreshAccepted": false,
+    "targetedRefreshDetail": "requested=403 kinds=806 success=1.0 rejected=0 target=2026-10-06 asOf=2026-10-07"
   },
   "news": {
     "issuerMismatches": 0,
@@ -114,64 +138,62 @@
   "horizons": {
     "1": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.00027755786734384724,
-      "magnitudeMAESkill": 0.037973953270813654,
-      "directionalAccuracy": 0.51220478681249,
+      "executableMAESkill": -0.0001910306442025611,
+      "magnitudeMAESkill": 0.03566679064295819,
+      "directionalAccuracy": 0.5098695571318509,
       "directionStatus": "PASS",
       "pointDirectionStatus": "REVIEW",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.005435741188625134,
+      "meanNetRealizedReturn": 0.005463252596628566,
       "positiveChronologicalFolds": 4
     },
     "2": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.001273860229596635,
-      "magnitudeMAESkill": 0.016354445630896053,
-      "directionalAccuracy": 0.5344255495644961,
+      "executableMAESkill": 0.001669504060332061,
+      "magnitudeMAESkill": 0.020789567850232005,
+      "directionalAccuracy": 0.5342339646958643,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": 0.00014013510823648325,
+      "meanNetRealizedReturn": 0.0004786301008260665,
       "positiveChronologicalFolds": 2
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.024006674104221415,
-      "magnitudeMAESkill": 0.007813441679251243,
-      "directionalAccuracy": 0.5681723031120621,
+      "executableMAESkill": 0.023526804156537184,
+      "magnitudeMAESkill": 0.005978255600342819,
+      "directionalAccuracy": 0.5665742186589601,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0030461693661504243,
+      "meanNetRealizedReturn": 0.003574994143784444,
       "positiveChronologicalFolds": 3
     },
     "4": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.01837709159024059,
-      "magnitudeMAESkill": -0.0014327232069204499,
-      "directionalAccuracy": 0.5745937295737823,
+      "executableMAESkill": 0.020059486635625512,
+      "magnitudeMAESkill": -0.0005447083878336034,
+      "directionalAccuracy": 0.5776321735201084,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0022978206958405444,
+      "meanNetRealizedReturn": 0.0034954722316451587,
       "positiveChronologicalFolds": 3
     },
     "5": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.021807802645059104,
-      "magnitudeMAESkill": 0.0017795126193045352,
-      "directionalAccuracy": 0.5778017629069977,
+      "executableMAESkill": 0.022164834129759226,
+      "magnitudeMAESkill": 0.007558860672257306,
+      "directionalAccuracy": 0.5795784311520032,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0016817868207267802,
+      "meanNetRealizedReturn": 0.004180849283479683,
       "positiveChronologicalFolds": 3
     }
   },
   "blockers": [],
-  "warnings": [
-    "Institutional flow refresh is targeted rather than full-universe; unrefreshed stale/unavailable rows remain visible for provenance and are masked from live decision priors."
-  ],
+  "warnings": [],
   "limitations": [
     "Central forecasts estimate conditional expected return; expected absolute move and bear/bull scenarios are separate unsigned quantities.",
     "A direction probability is displayed only for horizons whose sealed Brier-skill gate passes.",
