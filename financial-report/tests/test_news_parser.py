@@ -22,6 +22,25 @@ class NewsParserTests(unittest.TestCase):
         self.assertEqual(dt.isoformat(),'2026-10-07T04:48:00+00:00')
         self.assertEqual((basis,precision),('updated','minute'))
 
+    def test_absolute_timestamp_wins_over_unrelated_relative_widget(self):
+        text='5 phút trước · Ngày cập nhật: Thứ Tư, 07/10/2026 11:48 (GMT+7)'
+        dt,basis,precision=m._luatvietnam_datetime(text,self.current)
+        self.assertEqual(dt.isoformat(),'2026-10-07T04:48:00+00:00')
+        self.assertEqual((basis,precision),('updated','minute'))
+
+    def test_old_but_parseable_listing_is_healthy_empty_not_error(self):
+        source=next(x for x in m.LUATVIETNAM_DIRECT_SOURCES if x['scope']=='stocks')
+        filler='x'*1800
+        raw=f'''<html><title>LuatVietnam</title><h1>Chứng khoán</h1>
+        <a href="/chung-khoan/van-ban-hop-nhat-12-2026-abc-d1.html">Văn bản hợp nhất 12/VBHN-BTC về thị trường giao dịch cổ phiếu và chứng khoán phái sinh</a>
+        {filler}<span>Cập nhật: 17/06/2026</span></html>'''.encode()
+        rows,health=m._parse_luatvietnam_listing(raw,source,[],self.current)
+        self.assertEqual(rows,[])
+        self.assertTrue(health['parserHealthy'])
+        self.assertEqual(health['status'],'empty')
+        self.assertGreaterEqual(health['datedCandidates'],1)
+        self.assertEqual(health['recentDatedCandidates'],0)
+
     def test_valid_listing_extracts_only_market_relevant_item(self):
         source=next(x for x in m.LUATVIETNAM_DIRECT_SOURCES if x['scope']=='finance')
         raw='''<html><title>LuatVietnam</title><h1>Tài chính-Ngân hàng</h1>
