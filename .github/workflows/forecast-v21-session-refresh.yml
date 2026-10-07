@@ -86,6 +86,14 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # A successful full Forecast core publication must rebuild V21 even
+          # after market close. Bot-authored data commits do not start new push
+          # workflows, so this workflow_run is the authoritative handoff.
+          if [ "${{ github.event.workflow_run.name }}" = "Forecast V20.1 immutable-price audit and market intelligence" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Full Forecast core publisher completed; forcing V21 alignment refresh."
+            exit 0
+          fi
           hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
           if { [ "$hhmm" -ge 0900 ] && [ "$hhmm" -le 1130 ]; } || { [ "$hhmm" -ge 1300 ] && [ "$hhmm" -le 1445 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"

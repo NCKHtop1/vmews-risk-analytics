@@ -109,6 +109,17 @@ class ForecastV21PublishGuardTest(unittest.TestCase):
             payload = json.loads(completed.stdout)
             self.assertEqual(payload["decision"], "SKIP")
 
+    def test_workflow_forces_post_close_refresh_after_core_publisher(self):
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "forecast-v21-session-refresh.yml").read_text(encoding="utf-8")
+        self.assertIn("github.event.workflow_run.name", workflow)
+        self.assertIn("Forecast V20.1 immutable-price audit and market intelligence", workflow)
+        self.assertIn("Full Forecast core publisher completed; forcing V21 alignment refresh.", workflow)
+        self.assertLess(
+            workflow.index("Full Forecast core publisher completed; forcing V21 alignment refresh."),
+            workflow.index("hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)"),
+        )
+
     def test_workflow_uses_bounded_fast_forward_retry_not_json_rebase(self):
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "forecast-v21-session-refresh.yml").read_text(encoding="utf-8")
