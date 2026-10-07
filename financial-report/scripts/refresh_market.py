@@ -2691,6 +2691,15 @@ def _news_story_key(row):
     title = re.sub(r'[^\w\sÀ-ỹ]', ' ', title, flags=re.UNICODE)
     return re.sub(r'\s+', ' ', title).strip()
 
+def _news_row_quality(row):
+    """Prefer authoritative and timestamp-verifiable duplicates over newer noise."""
+    priority = int((row or {}).get('sourcePriority') or 0)
+    precision = {'minute': 3, 'day': 2, 'relative': 1}.get((row or {}).get('timePrecision'), 2)
+    verified = 1 if (row or {}).get('detailTimestampVerified') else 0
+    direct = 1 if (row or {}).get('directSource') else 0
+    return priority, verified, precision, direct
+
+
 def _unique_news(rows):
     unique, titles = {}, {}
     for row in sorted(rows, key=lambda r: r.get('publishedAt') or '', reverse=True):
@@ -2702,9 +2711,7 @@ def _unique_news(rows):
         existing_key = titles.get(key)
         existing = existing_url or existing_key
         if existing:
-            new_priority = int(row.get('sourcePriority') or 0)
-            old_priority = int(existing.get('sourcePriority') or 0)
-            if new_priority > old_priority:
+            if _news_row_quality(row) > _news_row_quality(existing):
                 if existing.get('url') in unique:
                     del unique[existing['url']]
                 unique[url] = row
@@ -2713,6 +2720,22 @@ def _unique_news(rows):
         unique[url] = row
         titles[key] = row
     return sorted(unique.values(), key=lambda r: r.get('publishedAt') or '', reverse=True)
+
+def _retain_news_row(row, current):
+    try:
+        stamp = datetime.fromisoformat(str((row or {}).get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    if stamp < current - timedelta(days=30):
+        return False
+    if row.get('directSource') and row.get('source') == 'Luật Việt Nam':
+        precision = row.get('timePrecision')
+        if row.get('detailTimestampVerified') and precision != 'minute':
+            return False
+        if precision == 'relative' and stamp < current - timedelta(hours=6):
+            return False
+    return True
+
 
 def _balanced_news_snapshot(items):
     ordered = sorted(items or [], key=lambda r: r.get('publishedAt') or '', reverse=True)
@@ -2763,13 +2786,9 @@ def news(out, companies):
     source_order = {url: i for i, (_, url) in enumerate(FEEDS)}
     sources.sort(key=lambda row: source_order.get(row.get('url'), 999))
 
-    retained = []
-    for row in previous.get('items', []):
-        try:
-            if datetime.fromisoformat(str(row.get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc) >= current - timedelta(days=30):
-                retained.append(row)
-        except (TypeError, ValueError, OverflowError):
-            continue
+    # Retain history only when it still satisfies the current timestamp
+    # contract. Parser-v1 invalid combinations are purged during this merge.
+    retained = [row for row in previous.get('items', []) if _retain_news_row(row, current)]
     items = _unique_news(rows + retained)[:2500]
     healthy = sum(source.get('status') == 'ok' for source in sources)
     empty = sum(source.get('status') == 'empty' for source in sources)
