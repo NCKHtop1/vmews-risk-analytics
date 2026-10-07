@@ -73,7 +73,7 @@ jobs:
             python - "$out" <<'PY'
           import json,sys
           p=json.load(open(sys.argv[1],encoding='utf-8'))
-          from datetime import datetime, timezone
+          from datetime import datetime, timezone, timedelta
           assert p.get('scope')=='solution-ai',p
           assert p.get('status')=='ok',p
           assert int(p.get('coverage') or 0)>=500,p.get('coverage')
@@ -81,10 +81,28 @@ jobs:
           generated=datetime.fromisoformat(str(p.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
           source=datetime.fromisoformat(str(p.get('sourceTime')).replace('Z','+00:00')).astimezone(timezone.utc)
           now=datetime.now(timezone.utc)
-          assert source <= generated + __import__('datetime').timedelta(minutes=5),(source,generated)
-          assert generated <= now + __import__('datetime').timedelta(minutes=5),(generated,now)
-          assert (now-source).total_seconds() <= 96*3600,(source,now)
-          print({'coverage':p['coverage'],'generatedAt':p.get('generatedAt'),'sourceTime':p.get('sourceTime'),'exchangeCounts':p.get('exchangeCounts')})
+          VN=timezone(timedelta(hours=7))
+          local=now.astimezone(VN)
+          mins=local.hour*60+local.minute
+          active=local.weekday()<5 and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
+          generated_age=(now-generated).total_seconds()/60
+          source_age=(now-source).total_seconds()/60
+          source_day=source.astimezone(VN).date()
+          assert -5<=generated_age,(generated,now)
+          assert -5<=source_age,(source,now)
+          assert source <= generated + timedelta(minutes=5),(source,generated)
+          if active:
+              assert generated_age<=6,generated_age
+              assert source_age<=25,source_age
+              assert source_day==local.date(),(source_day,local.date())
+              policy='LIVE'
+          elif local.weekday()<5 and mins>=11*60+40:
+              assert source_day==local.date(),(source_day,local.date())
+              policy='SAME_DAY_SESSION'
+          else:
+              assert source_age<=96*60,source_age
+              policy='LAST_COMPLETED_SESSION'
+          print({'coverage':p['coverage'],'generatedAt':p.get('generatedAt'),'sourceTime':p.get('sourceTime'),'sourceAgeMin':round(source_age,1),'policy':policy,'exchangeCounts':p.get('exchangeCounts')})
           PY
 
             git -C /tmp/solution-ai-live-data add solution-ai/live.json
