@@ -134,6 +134,12 @@ test('Strategy Lab replaces visible Data Health and simple rule form',()=>{
 });
 
 
+test('retained same-day quote also disables intraday technical signals',()=>{
+ const chart=fs.readFileSync(require('node:path').join(__dirname,'../frontend/chart-engine.js'),'utf8');
+ assert.match(chart,/M\.intraday\(this\.tf\)&&q\.status==='retained'/);
+ assert.match(chart,/reason:'retained_quote'/);
+ assert.match(chart,/q\.status==='retained'\|\|!barDate/);
+});
 test('stale intraday chart fails closed before technical signals are rendered',()=>{
  const chart=fs.readFileSync(require('node:path').join(__dirname,'../frontend/chart-engine.js'),'utf8');
  assert.match(chart,/staleIntraday=M\.intraday\(this\.tf\)/);
