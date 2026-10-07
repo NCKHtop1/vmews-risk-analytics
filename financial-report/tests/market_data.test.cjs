@@ -16,13 +16,19 @@ test('slow mirror cannot block a valid publisher snapshot',async()=>{
  assert.equal(result.quotes.ACB.price,111);
  assert.ok(Date.now()-started<1000,'valid publisher response was blocked by the slow mirror');
 });
-test('short hedge still lets a newer mirror revision win',async()=>{
+test('fast primary avoids duplicate mirror download',async()=>{
+ let calls=0;
+ const api=setup(async url=>{calls++;return{ok:true,json:async()=>bundle(url.includes('raw.githubusercontent')?1:2,url.includes('raw.githubusercontent')?105:115)};});
+ assert.equal((await api.get('quotes.json',{hedgeMs:100})).quotes.ACB.price,105);
+ await new Promise(resolve=>setTimeout(resolve,130));
+ assert.equal(calls,1);
+});
+test('slow primary launches mirror hedge and returns the first valid snapshot',async()=>{
  const api=setup(async url=>{
-  if(url.includes('raw.githubusercontent'))return{ok:true,json:async()=>bundle(5,105)};
-  await new Promise(resolve=>setTimeout(resolve,20));
-  return{ok:true,json:async()=>bundle(1,115)};
+  if(url.includes('raw.githubusercontent')){await new Promise(resolve=>setTimeout(resolve,250));return{ok:true,json:async()=>bundle(1,105)};}
+  await new Promise(resolve=>setTimeout(resolve,10));return{ok:true,json:async()=>bundle(2,115)};
  });
- assert.equal((await api.get('quotes.json',{hedgeMs:100})).quotes.ACB.price,115);
+ assert.equal((await api.get('quotes.json',{hedgeMs:30})).quotes.ACB.price,115);
 });
 test('future quote cannot poison merges; valid quote repairs prior future value',()=>{const api=setup(()=>{}),now=new Date().toISOString(),future=new Date(Date.now()+86400000).toISOString();const target={ACB:{price:999,sourceTime:future}};api.mergeQuotes(target,{ACB:{price:100,sourceTime:now}});assert.equal(target.ACB.price,100);api.mergeQuotes(target,{ACB:{price:999,sourceTime:future}});assert.equal(target.ACB.price,100);api.mergeQuotes(target,{ACB:{price:90,sourceTime:new Date(Date.now()-86400000).toISOString()}});assert.equal(target.ACB.price,100);});
 test('atomic market bundle only commits one aligned source generation',async()=>{
@@ -128,6 +134,36 @@ test('Strategy Lab replaces visible Data Health and simple rule form',()=>{
  assert.match(html,/id="strategy-builder"/);assert.doesNotMatch(html,/id="data-health"/);assert.doesNotMatch(html,/Cảnh báo chạy khi trang đang mở/);
 });
 
+
+test('stale intraday chart fails closed before technical signals are rendered',()=>{
+ const chart=fs.readFileSync(require('node:path').join(__dirname,'../frontend/chart-engine.js'),'utf8');
+ assert.match(chart,/staleIntraday=M\.intraday\(this\.tf\)/);
+ assert.match(chart,/this\.dataConsistent=!staleIntraday/);
+ assert.match(chart,/Nến phút chưa cập nhật phiên hôm nay/);
+ assert.match(chart,/if\(!ctx\)\{this\.signalSnapshot=null;this\.signalEvents=\[\];this\.renderSignals\(\);return;\}/);
+ assert.match(chart,/this\.consistency\(this\.lastMarketQuote\);this\.evaluateSignals\(false\)/);
+});
+test('retained quotes are visibly marked instead of presented as live',()=>{
+ const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ assert.match(market,/q\.status==='retained'\|\|src\.day!==now\.day/);
+ assert.match(market,/Bản gần nhất/);
+ assert.match(market,/renderQuoteFreshness\(q\)/);
+});
+test('scanner watch states do not create directional bias and volume is contextual',()=>{
+ const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
+ assert.match(source,/bullish = sum\(x\['direction'\] == 'bullish'/);
+ assert.match(source,/bearish = sum\(x\['direction'\] == 'bearish'/);
+ assert.match(source,/volume_direction = 'bullish'.*'bearish'.*'confirmation'/s);
+ assert.doesNotMatch(source,/sum\(x\['direction'\] in \{'bullish', 'bullish_watch'\}/);
+});
+test('heavy market modules poll on the five-minute publisher cadence',()=>{
+ const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ assert.match(market,/setInterval\(\(\)=>\{if\(!document\.hidden\)refresh\(\);\},300000\)/);
+ assert.match(scanner,/setInterval\(\(\)=>\{if\(state\.unlocked&&!document\.hidden\)load\(\);\},300000\)/);
+ assert.match(risk,/setInterval\(\(\)=>\{if\(!\$\('risk-monitor'\)\?\.hidden&&!document\.hidden\)refresh\(\);\},300000\)/);
+});
 
 test('market quote subtitle is timestamp-only and legacy nearest-session title is removed',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
@@ -313,7 +349,7 @@ test('risk monitor cadence is enforced in code without UI narration',()=>{
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
  assert.doesNotMatch(index,/Kiểm tra bản mới mỗi phút|5 phút\/lần/);
- assert.match(risk,/setInterval\(\(\)=>\{if\(!\$\('risk-monitor'\)\?\.hidden&&!document\.hidden\)refresh\(\);\},60000\)/);
+ assert.match(risk,/setInterval\(\(\)=>\{if\(!\$\('risk-monitor'\)\?\.hidden&&!document\.hidden\)refresh\(\);\},300000\)/);
  assert.match(live,/INTERVAL_SECONDS="\$\{MARKET_LOOP_SECONDS:-300\}"/);
 });
 
