@@ -138,5 +138,15 @@ class NewsParserTests(unittest.TestCase):
         self.assertEqual(m._unique_news([direct,official])[0]['url'],official['url'])
 
 
+    def test_news_ui_does_not_present_approximate_time_as_exact(self):
+        market=(ROOT/'frontend/market.js').read_text()
+        self.assertIn("function newsTimeLabel(r)",market)
+        self.assertIn("timePrecision==='relative'&&!r?.detailTimestampVerified",market)
+        self.assertIn("return'~ '+shortAge(r)+' trước'",market)
+        self.assertIn("timePrecision==='day'",market)
+        self.assertIn("esc(newsTimeLabel(r))",market)
+        self.assertNotIn("esc(date(r.publishedAt))",market)
+
+
 if __name__=='__main__':
     unittest.main()
