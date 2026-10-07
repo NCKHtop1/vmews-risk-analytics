@@ -2450,9 +2450,17 @@ def _fetch_sbv_news(current):
 def _fetch_news_feed(publisher, url, companies, current):
     try:
         items = parse_feed(request(url), publisher, url, companies, current)
+        latest = max((item.get('publishedAt') for item in items if item.get('publishedAt')), default=None)
+        latest_age = None
+        if latest:
+            try:
+                latest_dt = datetime.fromisoformat(str(latest).replace('Z', '+00:00')).astimezone(timezone.utc)
+                latest_age = round(max(0.0, (current - latest_dt).total_seconds() / 60), 1)
+            except (TypeError, ValueError, OverflowError):
+                latest_age = None
         return items, {
             'name': publisher, 'url': url, 'status': 'ok' if items else 'empty',
-            'items': len(items), 'lastItemAt': items[0]['publishedAt'] if items else None
+            'items': len(items), 'lastItemAt': latest, 'latestItemAgeMinutes': latest_age
         }
     except Exception as e:
         return [], {'name': publisher, 'url': url, 'status': 'error', 'error': str(e)}
