@@ -173,6 +173,8 @@ class NewsParserTests(unittest.TestCase):
         bundle=(root/'.github/workflows/finquery-bundle-sync.yml').read_text()
         self.assertIn("int(luat.get('parserHealthy') or 0)<3",live)
         self.assertIn("luat.get('status')!='ok'",live)
+        self.assertIn("origin/main:financial-report/scripts/refresh_market.py",live)
+        self.assertIn("superseded=1",live)
         self.assertIn("int(luat.get('parserHealthy') or 0)<3",guard)
         self.assertIn("luat.get('status')!='ok'",guard)
         self.assertIn('Build standalone FinQuery and verify News bundle contract',ci)
