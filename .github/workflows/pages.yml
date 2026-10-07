@@ -99,7 +99,12 @@ jobs:
           assert news_latest.get('status')=='ok' and 0<len(news_latest.get('items') or [])<=150,('invalid compact news',news_latest.get('status'),len(news_latest.get('items') or []))
           intraday_expected=max(1,int(intraday.get('expected') or 0))
           intraday_required=max(1,int(intraday.get('required') or __import__('math').ceil(intraday_expected*.90)))
-          assert intraday.get('status')=='ok' and int(intraday.get('success') or 0)>=intraday_required,('intraday coverage',intraday.get('success'),intraday_expected,intraday_required)
+          intraday_success=int(intraday.get('success') or 0)
+          session_expected=int(intraday.get('sessionExpected') or 0)
+          session_required=int(intraday.get('sessionRequired') or (__import__('math').ceil(session_expected*.90) if session_expected else 0))
+          session_fresh=int(intraday.get('sessionFresh') if intraday.get('sessionFresh') is not None else intraday_success)
+          assert intraday.get('status')=='ok' and intraday_success>=intraday_required,('intraday fetch coverage',intraday_success,intraday_expected,intraday_required)
+          assert not session_expected or session_fresh>=session_required,('intraday live-bar coverage',session_fresh,session_expected,session_required)
           now=datetime.now(timezone.utc); local=now.astimezone(timezone(timedelta(hours=7))); mins=local.hour*60+local.minute
           active=local.weekday()<5 and (540<=mins<=690 or 780<=mins<=885)
           if active:
@@ -292,7 +297,12 @@ jobs:
           assert strategy_today>=live_required,(strategy_today,len(live_symbols),source_day)
           assert n.get('status')=='ok' and 0<len(n.get('items') or [])<=150,n
           i_expected=max(1,int(intraday.get('expected') or 0)); i_required=max(1,int(intraday.get('required') or math.ceil(i_expected*.90)))
-          assert intraday.get('status')=='ok' and int(intraday.get('success') or 0)>=i_required,(intraday.get('success'),i_expected,i_required)
+          i_success=int(intraday.get('success') or 0)
+          i_session_expected=int(intraday.get('sessionExpected') or 0)
+          i_session_required=int(intraday.get('sessionRequired') or (math.ceil(i_session_expected*.90) if i_session_expected else 0))
+          i_session_fresh=int(intraday.get('sessionFresh') if intraday.get('sessionFresh') is not None else i_success)
+          assert intraday.get('status')=='ok' and i_success>=i_required,(i_success,i_expected,i_required)
+          assert not i_session_expected or i_session_fresh>=i_session_required,(i_session_fresh,i_session_expected,i_session_required)
           macro_day=datetime.fromisoformat(str(macro.get('checkedAt') or macro.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date().isoformat()
           assert macro.get('status')=='ok' and macro_day>=source_day,(macro.get('checkedAt'),source_day)
           assert len(e.get('companies') or {})>=18
