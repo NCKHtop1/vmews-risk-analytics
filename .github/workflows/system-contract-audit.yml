@@ -83,8 +83,8 @@ jobs:
             --repo-root . \
             --report-json /tmp/system-contract.json
 
-      - name: Verify Pages generation after a Pages deployment
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Deploy VMEWS Pages' && github.event.workflow_run.conclusion == 'success'
+      - name: Verify current Pages production generation
+        if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Deploy VMEWS Pages' && github.event.workflow_run.conclusion == 'success')
         shell: bash
         run: |
           set -euo pipefail
