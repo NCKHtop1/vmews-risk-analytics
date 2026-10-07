@@ -93,6 +93,7 @@ jobs:
           intraday=json.loads(Path('_market-data/market/intraday-status.json').read_text())
           macro=json.loads(Path('_market-data/market/macro.json').read_text())
           news_latest=json.loads(Path('_market-data/market/news-latest.json').read_text())
+          company_news=json.loads(Path('_market-data/market/news-company-latest.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -109,7 +110,13 @@ jobs:
           assert uday>=minimum,('stale market universe',market.get('asOf'),'minimum',minimum.isoformat())
           macro_day=datetime.fromisoformat(str(macro.get('checkedAt') or macro.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date()
           assert macro.get('status')=='ok' and macro_day>=qday,('stale macro',macro.get('checkedAt'),qday.isoformat())
-          assert news_latest.get('status')=='ok' and 0<len(news_latest.get('items') or [])<=150,('invalid compact news',news_latest.get('status'),len(news_latest.get('items') or []))
+          news_health=news_latest.get('sourceHealth') or {}
+          assert news_latest.get('status')=='ok' and news_latest.get('selection')=='balanced_vietnam_global_sbv_impact' and 0<len(news_latest.get('items') or [])<=300,('invalid balanced news',news_latest.get('status'),news_latest.get('selection'),len(news_latest.get('items') or []))
+          assert int(news_health.get('healthy') or 0)>=3,('news source health too low',news_health)
+          company_counts=company_news.get('companyCounts') or {}
+          assert company_news.get('status')=='ok' and company_news.get('selection')=='per_symbol_latest' and int(company_news.get('perSymbolLimit') or 0)==15,('invalid company news',company_news.get('status'),company_news.get('selection'),company_news.get('perSymbolLimit'))
+          assert int(company_news.get('companyCoverage') or 0)==len(company_counts) and len(company_counts)>0 and bool(company_news.get('items')),('company news coverage invalid',company_news.get('companyCoverage'),len(company_counts),len(company_news.get('items') or []))
+          assert str(company_news.get('checkedAt') or '')==str(news_latest.get('checkedAt') or ''),('company news heartbeat mismatch',company_news.get('checkedAt'),news_latest.get('checkedAt'))
           intraday_expected=max(1,int(intraday.get('expected') or 0))
           intraday_required=max(1,int(intraday.get('required') or __import__('math').ceil(intraday_expected*.90)))
           intraday_success=int(intraday.get('success') or 0)
@@ -268,6 +275,7 @@ jobs:
           ! grep -q 'Charts by TradingView Lightweight Charts' /tmp/page.html
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
           curl -fsSL --max-time 20 "$BASE/market/news-latest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
+          curl -fsSL --max-time 20 "$BASE/market/news-company-latest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/company-news.json
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/strategy.json
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
@@ -285,7 +293,7 @@ jobs:
           def load(name):
               return json.load(open('/tmp/'+name,encoding='utf-8'))
           import math
-          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); intraday=load('intraday.json'); macro=load('macro.json'); market_cal=load('market-risk-calibration.json')
+          q=load('quotes.json'); n=load('news.json'); cn=load('company-news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); intraday=load('intraday.json'); macro=load('macro.json'); market_cal=load('market-risk-calibration.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
           import os,re
           expected={'code':os.environ['EXPECTED_CODE_SHA'],'financialData':os.environ['EXPECTED_FINANCIAL_SHA'],'insightData':os.environ['EXPECTED_INSIGHT_SHA'],'marketData':os.environ['EXPECTED_MARKET_SHA']}
@@ -331,7 +339,13 @@ jobs:
           strategy_today=sum(1 for symbol in live_symbols if str(((strategy.get('symbols') or {}).get(symbol) or {}).get('barDate') or '')==source_day)
           assert scanner_today>=live_required,(scanner_today,len(live_symbols),source_day)
           assert strategy_today>=live_required,(strategy_today,len(live_symbols),source_day)
-          assert n.get('status')=='ok' and 0<len(n.get('items') or [])<=150,n
+          nh=n.get('sourceHealth') or {}
+          assert n.get('status')=='ok' and n.get('selection')=='balanced_vietnam_global_sbv_impact' and 0<len(n.get('items') or [])<=300,n
+          assert int(nh.get('healthy') or 0)>=3,nh
+          cc=cn.get('companyCounts') or {}
+          assert cn.get('status')=='ok' and cn.get('selection')=='per_symbol_latest' and int(cn.get('perSymbolLimit') or 0)==15,cn
+          assert int(cn.get('companyCoverage') or 0)==len(cc) and len(cc)>0 and bool(cn.get('items')),cn
+          assert str(cn.get('checkedAt') or '')==str(n.get('checkedAt') or ''),(cn.get('checkedAt'),n.get('checkedAt'))
           i_expected=max(1,int(intraday.get('expected') or 0)); i_required=max(1,int(intraday.get('required') or math.ceil(i_expected*.90)))
           i_success=int(intraday.get('success') or 0)
           i_session_expected=int(intraday.get('sessionExpected') or 0)
