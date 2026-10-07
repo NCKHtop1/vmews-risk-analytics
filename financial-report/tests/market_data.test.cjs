@@ -176,6 +176,12 @@ test('scanner and risk reuse the committed aligned bundle instead of refetching 
  assert.match(risk,/bundled&&\(!expected\|\|String\(bundled\.sourceTime/);
 });
 
+test('large market universe is cached for one hour instead of refetched every market tick',()=>{
+ const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ assert.match(market,/universeLoadedAt:0/);
+ assert.match(market,/Date\.now\(\)-state\.universeLoadedAt>=3600000/);
+ assert.match(market,/universeNeedsRefresh\?get\('universe\.json'\):Promise\.resolve\(state\.universe\)/);
+});
 test('heavy market modules poll on the five-minute publisher cadence',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
