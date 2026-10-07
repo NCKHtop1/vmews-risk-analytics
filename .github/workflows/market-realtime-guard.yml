@@ -82,9 +82,13 @@ jobs:
                   expected_i=max(1,int(intraday.get('expected') or 0))
                   required_i=max(1,int(intraday.get('required') or math.ceil(expected_i*.90)))
                   success_i=int(intraday.get('success') or 0)
-                  if intraday.get('status')!='ok' or success_i<required_i or age(intraday.get('checkedAt'))>20:
-                      raise ValueError(f'intraday stale/partial: {success_i}/{expected_i}, required={required_i}')
-                  print('Intraday age/coverage:',round(age(intraday['checkedAt']),1),f'{success_i}/{expected_i}')
+                  session_expected=int(intraday.get('sessionExpected') or 0)
+                  session_required=int(intraday.get('sessionRequired') or (math.ceil(session_expected*.90) if session_expected else 0))
+                  session_fresh=int(intraday.get('sessionFresh') if intraday.get('sessionFresh') is not None else success_i)
+                  session_bad=session_expected>0 and session_fresh<session_required
+                  if intraday.get('status')!='ok' or success_i<required_i or session_bad or age(intraday.get('checkedAt'))>20:
+                      raise ValueError(f'intraday stale/partial: fetch={success_i}/{expected_i}, session={session_fresh}/{session_expected}, required={session_required}')
+                  print('Intraday age/coverage:',round(age(intraday['checkedAt']),1),f'fetch {success_i}/{expected_i}',f'session {session_fresh}/{session_expected}')
               except Exception as e:
                   print('::warning::Intraday freshness:',e); stale.append('market-intraday-live.yml')
               try:
