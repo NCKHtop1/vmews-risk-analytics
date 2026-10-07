@@ -2,6 +2,7 @@
 'use strict';
 
 var PROFILE_KEY='finquery-google-profile';
+var AUTH_ENDPOINT='https://vmews-risk-analytics-sojd.vercel.app/api/finquery-auth';
 var LEGACY_WATCH_KEY='finquery-watchlist';
 var GUEST_ID='guest';
 var DATA_REFRESH_MS=60000;
@@ -409,21 +410,41 @@ function loadGoogleIdentity(){
   });
   return googlePromise;
 }
-function handleGoogleCredential(response){
-  var payload=decodeJwtPayload(response&&response.credential);
-  var profile=normalizedProfile(payload);
-  if(!profile)return;
-  saveJson(userKey('watchlist',null),readLegacyWatch());
-  var changed=migrateGuestData(profile);
-  state.profile=profile;
-  saveJson(PROFILE_KEY,profile);
-  state.previousSnapshot=loadJson(userKey('snapshot'),null);
-  state.watchSignature=JSON.stringify(readLegacyWatch());
-  recordRecent(currentSymbol());
-  renderAccount();
-  refreshData();
-  if(changed){
-    setTimeout(function(){location.reload();},80);
+async function handleGoogleCredential(response){
+  var credential=String(response&&response.credential||'').trim();
+  if(!credential)return;
+  try{
+    var verified=await fetch(AUTH_ENDPOINT,{
+      method:'POST',
+      mode:'cors',
+      cache:'no-store',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({credential:credential,clientId:currentClientId()})
+    });
+    var body=await verified.json().catch(function(){return{};});
+    if(!verified.ok||!body.ok||!body.profile)throw new Error('GOOGLE_VERIFY_FAILED');
+    var profile=normalizedProfile({
+      sub:body.profile.sub,
+      name:body.profile.name,
+      given_name:body.profile.givenName,
+      email:body.profile.email,
+      picture:body.profile.picture
+    });
+    if(!profile)throw new Error('GOOGLE_PROFILE_INVALID');
+    saveJson(userKey('watchlist',null),readLegacyWatch());
+    var changed=migrateGuestData(profile);
+    state.profile=profile;
+    saveJson(PROFILE_KEY,profile);
+    state.previousSnapshot=loadJson(userKey('snapshot'),null);
+    state.watchSignature=JSON.stringify(readLegacyWatch());
+    recordRecent(currentSymbol());
+    renderAccount();
+    refreshData();
+    if(changed)setTimeout(function(){location.reload();},80);
+  }catch(_){
+    try{
+      if(window.google&&window.google.accounts&&window.google.accounts.id)window.google.accounts.id.disableAutoSelect();
+    }catch(__){}
   }
 }
 function signOut(){
