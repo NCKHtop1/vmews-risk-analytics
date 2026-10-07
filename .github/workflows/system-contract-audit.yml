@@ -95,10 +95,12 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?contract=$token" -o /tmp/public-strategy.json
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?contract=$token" -o /tmp/public-risk.json
 
-          code_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['code'])\")"
-          financial_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['financialData'])\")"
-          insight_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['insightData'])\")"
-          market_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['marketData'])\")"
+          read -r code_sha financial_sha insight_sha market_sha <<< "$(python - <<'PY'
+          import json
+          d=json.load(open('/tmp/deployment.json'))
+          print(d['code'],d['financialData'],d['insightData'],d['marketData'])
+          PY
+          )"
 
           git fetch origin main --depth=100
           git merge-base --is-ancestor "$code_sha" origin/main
