@@ -104,3 +104,21 @@ jobs:
               sleep 900
             fi
           done
+
+          # Warnings inside an iteration must never let an entirely stale remote
+          # branch finish green. Re-read the published branch, not the worktree.
+          git -C /tmp/market-news fetch origin financial-market-data
+          git -C /tmp/market-news show origin/financial-market-data:market/news-latest.json > /tmp/remote-news-latest.json
+          REMOTE_NEWS=/tmp/remote-news-latest.json python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          data=json.loads(Path(os.environ['REMOTE_NEWS']).read_text())
+          stamp=datetime.fromisoformat(str(data.get('checkedAt')).replace('Z','+00:00'))
+          if stamp.tzinfo is None:
+              stamp=stamp.replace(tzinfo=timezone.utc)
+          age=(datetime.now(timezone.utc)-stamp.astimezone(timezone.utc)).total_seconds()/60
+          if data.get('status')!='ok' or not data.get('items') or not (-5 <= age <= 30):
+              raise SystemExit(f'remote news branch is stale/invalid: status={data.get("status")} age={age:.1f} items={len(data.get("items") or [])}')
+          print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []))
+          PY
