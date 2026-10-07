@@ -258,7 +258,7 @@ def build_universe(
             "liquidExtraCap": MAX_LIQUID_EXTRA,
             "discoveryHistoryBarsMin": DISCOVERY_MIN_HISTORY,
             "discoveryActiveSessions20Min": DISCOVERY_MIN_ACTIVE_20,
-            "promotion": "Dynamic from current HOSE membership and published market-history liquidity/data gates; forecast/frozen history cannot promote a symbol into the live tier.",
+            "promotion": "Dynamic from current HOSE membership and published market-history liquidity/data gates; independent of forecast freshness. Forecast/frozen history cannot promote a symbol into the live tier.",
         },
         "counts": counts,
         "liveMarketSymbols": sorted(live_market_symbols),
