@@ -1874,8 +1874,11 @@ def refresh_history_group(out, companies, minute=False):
                     failed.append((symbol, error))
     errors = [f'{symbol}{" intraday" if minute else ""}: {error}' for symbol, error in failed]
     name = 'intraday' if minute else 'history'
+    required = max(1, math.ceil(len(symbols) * 0.90)) if symbols else 0
     status_payload = {
-        'checkedAt': now(), 'success': success, 'expected': len(symbols), 'universe': len(all_symbols),
+        'checkedAt': now(), 'status': 'ok' if success >= required else 'partial',
+        'success': success, 'expected': len(symbols), 'required': required, 'universe': len(all_symbols),
+        'coveragePct': round(success / len(symbols) * 100, 1) if symbols else 100.0,
         'onlyMissing': only_missing, 'forcedSymbols': forced, 'retryPass': True, 'errors': errors
     }
     if minute:
@@ -1885,9 +1888,11 @@ def refresh_history_group(out, companies, minute=False):
         update_history_effective_status(out, all_symbols)
         build_drivers(out, companies)
     print(f'{name}: {success}/{len(symbols)} target; universe {len(all_symbols)}', flush=True)
-    # Keep retained data available if a minority of requests fail. Fail only
-    # when the entire upstream route is unavailable.
-    if success == 0:
+    # Retained data remain available, but low coverage must not look healthy.
+    # The workflow publishes successful updates even when this step fails.
+    if minute and success < required:
+        raise RuntimeError(f'{name} refresh coverage {success}/{len(symbols)} below required {required}')
+    if not minute and success == 0:
         raise RuntimeError(f'{name} refresh failed for all symbols')
 
 
