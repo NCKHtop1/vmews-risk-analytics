@@ -196,6 +196,13 @@ test('large market universe is cached for one hour instead of refetched every ma
  assert.match(market,/Date\.now\(\)-state\.universeLoadedAt>=3600000/);
  assert.match(market,/universeNeedsRefresh\?get\('universe\.json'\):Promise\.resolve\(state\.universe\)/);
 });
+test('dormant data-health module cannot reintroduce one-minute polling or full news archive downloads',()=>{
+ const health=fs.readFileSync(require('node:path').join(__dirname,'../frontend/data-health.js'),'utf8');
+ assert.match(health,/news-latest\.json/);
+ assert.match(health,/setInterval\(\(\)=>\{if\(!document\.hidden\)refresh\(\);\},300000\)/);
+ assert.doesNotMatch(health,/news\.json/);
+ assert.doesNotMatch(health,/setInterval\(\(\)=>\{if\(!document\.hidden\)refresh\(\);\},60000\)/);
+});
 test('heavy market modules poll on the five-minute publisher cadence',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
