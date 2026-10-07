@@ -111,6 +111,7 @@ jobs:
           if printf '%s' "$COMMIT_MESSAGE" | grep -Eq '\[(intraday-backfill|intraday-missing|intraday-critical)\]'; then mode=intraday; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-refresh\]'; then mode=history; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[history-full\]'; then mode=history; fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
           if [ "$mode" = 'prices-watchdog' ]; then
             if python - <<'PY'
           import json
@@ -190,7 +191,7 @@ jobs:
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
           fi
       - name: Persist aligned market risk history
-        if: always()
+        if: always() && (steps.collect.outputs.mode == 'prices' || steps.collect.outputs.mode == 'all')
         run: |
           if [ -f /tmp/market-publish/market/quotes.json ] && [ -f /tmp/market-publish/market/strategy-indicators.json ]; then
             if node financial-report/scripts/build_sector_risk_calibration.cjs /tmp/market-publish/market && node financial-report/scripts/build_risk_monitor.cjs /tmp/market-publish/market; then
@@ -201,24 +202,67 @@ jobs:
           else
             echo "Risk inputs not available in this refresh; keeping last successful risk snapshot."
           fi
-      - name: Publish market snapshots without replacing financial reports
-        if: always()
+      - name: Publish only files owned by this refresh mode
+        if: always() && steps.collect.outputs.mode != 'prices-watchdog' && steps.collect.outputs.mode != 'news-watchdog'
         working-directory: /tmp/market-publish
+        env:
+          PUBLISH_MODE: ${{ steps.collect.outputs.mode }}
         run: |
+          set -euo pipefail
           test -d market
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # market/universe.json is owned exclusively by market-universe-refresh.yml.
-          git restore --worktree market/universe.json 2>/dev/null || true
-          git add --sparse market
-          if ! git diff --cached --quiet; then
-            git commit -m 'Refresh FinQuery market prices, candles and company news'
-            if ! git push origin HEAD:refs/heads/financial-market-data; then
-              echo "Market data branch advanced during this run; rebasing once and retrying."
-              git fetch origin financial-market-data
-              git rebase FETCH_HEAD
-              git push origin HEAD:refs/heads/financial-market-data
+
+          # financial-market-data has several independent publishers. Never stage
+          # the whole market tree: each mode may publish only the files it owns.
+          case "$PUBLISH_MODE" in
+            esg|esg-history)
+              owned=(market/company-esg.json market/esg-status.json)
+              ;;
+            history)
+              owned=(market/history market/history-status.json market/drivers.json)
+              ;;
+            intraday)
+              owned=(market/intraday market/intraday-status.json market/intraday-5m)
+              ;;
+            news)
+              owned=(market/news.json market/news-latest.json)
+              ;;
+            macro)
+              owned=(market/macro.json)
+              ;;
+            prices)
+              owned=(market/quotes.json market/prices-status.json market/drivers.json market/history market/history-status.json market/technical-signals.json market/technical-evidence.json market/strategy-indicators.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json market/watch-today.json)
+              ;;
+            all)
+              owned=(market/quotes.json market/prices-status.json market/drivers.json market/history market/history-status.json market/intraday market/intraday-status.json market/intraday-5m market/news.json market/news-latest.json market/macro.json market/company-esg.json market/esg-status.json market/technical-signals.json market/technical-evidence.json market/strategy-indicators.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json market/watch-today.json)
+              ;;
+            *)
+              echo "No publish ownership defined for mode=$PUBLISH_MODE; refusing broad branch write." >&2
+              exit 1
+              ;;
+          esac
+
+          git add --sparse -- "${owned[@]}"
+          if git diff --cached --quiet; then
+            echo "No owned market changes to publish for mode=$PUBLISH_MODE."
+            exit 0
+          fi
+
+          git commit -m "Refresh FinQuery market data [$PUBLISH_MODE]"
+          published=0
+          for attempt in 1 2 3; do
+            git fetch origin financial-market-data
+            if git rebase origin/financial-market-data && git push origin HEAD:refs/heads/financial-market-data; then
+              published=1
+              break
             fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          if [ "$published" -ne 1 ]; then
+            echo "Unable to publish owned files for mode=$PUBLISH_MODE after retries." >&2
+            exit 1
           fi
       - name: Summarize source coverage
         if: always()
