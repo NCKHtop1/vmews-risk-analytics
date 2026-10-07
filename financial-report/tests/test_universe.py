@@ -59,6 +59,24 @@ class UniverseBuilderTests(unittest.TestCase):
         self.assertEqual(result['symbols']['DDD']['tier'],'DISCOVERY')
         self.assertEqual(result['symbols']['EEE']['tier'],'DISCOVERY')
 
+    def test_live_promotion_requires_published_market_history_when_gate_is_supplied(self):
+        core=[{'symbol':'AAA','name':'Core A','exchange':'HOSE'}]
+        good=bars(50000,1000000)
+        result=u.build_universe(
+            core,
+            {'AAA','CCC'},
+            {'AAA':good,'CCC':good},
+            {'asOf':'2026-09-29','symbols':{},'charts':{}},
+            live_history_symbols={'AAA'},
+        )
+        self.assertTrue(result['symbols']['AAA']['marketHistoryBacked'])
+        self.assertFalse(result['symbols']['CCC']['marketHistoryBacked'])
+        self.assertEqual(result['symbols']['CCC']['tier'],'DISCOVERY')
+        self.assertFalse(result['symbols']['CCC']['liveMarketEligible'])
+        self.assertFalse(result['symbols']['CCC']['forecastEligible'])
+        self.assertIn('CCC',result['scannerSymbols'])
+
+
     def test_liquid_extra_cap_is_deterministic(self):
         old=u.MAX_LIQUID_EXTRA
         try:
