@@ -112,8 +112,9 @@ function setMode(mode,preserve=false){
  state.years=preserve?state.years.filter(p=>eligible().includes(p)):eligible().slice(mode==='quarter'?-4:-6);
  const updated=state.data.updatedAt;const date=updated?new Date(updated).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short',timeStyle:'short'}):'chưa xác định';
  $('updated-at').textContent='Dữ liệu cập nhật '+date;
- $('data-state').textContent=state.fallback?'Bản đã lưu':state.data.refreshStatus==='retained'?'Bản gần nhất':'Có dữ liệu';
- $('data-state').className='status-badge ready';
+ const refreshState=String(state.data.refreshStatus||'').toLowerCase();
+ $('data-state').textContent=state.fallback?'Bản đã lưu':refreshState==='partial'?'Có dữ liệu · một phần dùng bản trước':refreshState==='retained'?'Bản gần nhất':'Có dữ liệu';
+ $('data-state').className='status-badge '+(refreshState==='partial'?'warning':'ready');
  const url=new URL(location.href);url.searchParams.set('symbol',state.bundle.symbol);url.searchParams.set('mode',mode);history.replaceState(null,'',url);
  renderReports();update();
 }
