@@ -85,6 +85,36 @@ publish_snapshot() {
   [ "$published" -eq 1 ]
 }
 
+finalize_completed_archive() {
+  local minute
+  minute="$(vn_minutes)"
+  if [ "$minute" -lt 885 ]; then
+    echo "5m archive finalization waits for the completed HOSE session."
+    return 0
+  fi
+
+  sync_market_branch
+  python -u financial-report/scripts/finalize_intraday_archive.py "$OUT/market"
+  git -C "$OUT" add --sparse market/intraday-status.json market/intraday-5m
+  if git -C "$OUT" diff --cached --quiet; then
+    echo "5m archive already contains the completed session."
+    return 0
+  fi
+
+  git -C "$OUT" commit -m 'Finalize completed HOSE 5m archive [data-only]'
+  local published=0
+  for attempt in 1 2 3; do
+    git -C "$OUT" fetch origin financial-market-data
+    if git -C "$OUT" rebase origin/financial-market-data && git -C "$OUT" push origin HEAD:refs/heads/financial-market-data; then
+      published=1
+      break
+    fi
+    git -C "$OUT" rebase --abort || true
+    sleep $((attempt * 2))
+  done
+  [ "$published" -eq 1 ]
+}
+
 run_cycle() {
   sync_market_branch
   local collect_rc=0 health_rc=0 publish_rc=0
@@ -108,6 +138,7 @@ while true; do
   fi
   if [ "$ONESHOT" != "1" ] && ! in_live_window "$minute"; then
     echo "Outside live minute-candle window; publisher finished."
+    finalize_completed_archive
     exit 0
   fi
 
@@ -122,7 +153,8 @@ while true; do
   fi
 
   if [ "$ONESHOT" = "1" ]; then
-    [ "$failures" -eq 0 ]
+    [ "$failures" -eq 0 ] || exit $?
+    finalize_completed_archive
     exit $?
   fi
   sleep "$INTERVAL_SECONDS"
