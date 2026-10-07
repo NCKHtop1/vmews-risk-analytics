@@ -127,14 +127,14 @@ def compute_intraday_session(market_dir: Path, quotes, source_day, max_lag=20.0)
 
 def audit_market_bar_files(report: Audit, market_dir: Path, universe, now, quote_day):
     symbols = universe.get("symbols") or {}
-    scanner_symbols = sorted(
-        symbol for symbol, meta in symbols.items()
-        if (meta or {}).get("scannerEligible")
-    )
     live_symbols = sorted(
         symbol for symbol, meta in symbols.items()
         if (meta or {}).get("liveMarketEligible")
     )
+    # Only Core/Liquid live names are file-backed by market/history. Discovery
+    # scanner rows are intentionally EOD snapshots embedded in technical-signals
+    # and are covered by scanner/universe contracts elsewhere in this audit.
+    history_symbols = live_symbols
 
     def valid_ohlc(bar):
         try:
@@ -145,7 +145,7 @@ def audit_market_bar_files(report: Audit, market_dir: Path, universe, now, quote
         return all(math.isfinite(x) for x in (o,h,l,c,v)) and min(o,h,l,c)>0 and v>=0 and h+1e-9>=max(o,c) and l-1e-9<=min(o,c)
 
     history_valid=0
-    for symbol in scanner_symbols:
+    for symbol in history_symbols:
         path=market_dir/"history"/f"{symbol}.json"
         if not report.check(path.exists(), "MARKET_HISTORY_FILE", symbol):
             continue
@@ -169,7 +169,7 @@ def audit_market_bar_files(report: Audit, market_dir: Path, universe, now, quote
         report.check(str(data.get("lastBar") or "")[:10]==(times[-1] if times else ""), "MARKET_HISTORY_LASTBAR", symbol)
         if bars and all(valid_ohlc(row) for row in bars) and times==sorted(set(times)):
             history_valid+=1
-    report.check(history_valid==len(scanner_symbols), "MARKET_HISTORY_DEEP_COVERAGE", f"{history_valid}/{len(scanner_symbols)}")
+    report.check(history_valid==len(history_symbols), "MARKET_HISTORY_DEEP_COVERAGE", f"{history_valid}/{len(history_symbols)}")
 
     intraday_valid=0
     for symbol in live_symbols:
