@@ -3165,11 +3165,11 @@ async function prepare(question){
 function classify(question){
  const s=norm(question);
  if(/la gi|nghia la gi|cong thuc|cach tinh|do cai gi|the hien gi/.test(s))return'concept';
- if(/chien luoc|strategy|quet ma|scanner|macd|rsi|bollinger|supertrend|adx|stochastic|volume/.test(s))return'technical';
+ if(/phan tich sau|phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|danh gia tong the|tong hop|deep dive/.test(s))return'memo';
+ if(/chien luoc|strategy|quet ma|scanner|technical|ky thuat|macd|rsi|bollinger|supertrend|adx|stochastic|volume/.test(s))return'technical';
  if(/nhnn|ngan hang nha nuoc|lai suat|omo|ty gia|lam phat|gdp|pmi|fdi|vi mo|esg/.test(s))return'macro';
  if(/rui ro|canh bao|bat thuong|yeu diem/.test(s))return'risk';
  if(/so sanh|ky truoc|cung ky|qoq|yoy/.test(s))return'compare';
- if(/phan tich sau|phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|danh gia tong the|tong hop|deep dive/.test(s))return'memo';
  if(/tai sao|vi sao|phien hom nay|phien nay|bien dong|tang|giam/.test(s))return'movement';
  if(/doanh thu|loi nhuan|dong tien|roe|roa|bien loi nhuan|fcf|ocf|phai thu|ton kho|suc khoe tai chinh/.test(s))return'financial';
  return'general';
