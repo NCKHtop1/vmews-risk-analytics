@@ -49,7 +49,6 @@ jobs:
       - name: Browser-test exact immutable CDN commit
         env:
           V12_BROWSER_URL: https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/${{ github.event.pull_request.head.sha || github.sha }}/forecast-final.html?symbol=FPT
-          FINQUERY_IGNORE_SOLUTION_AI: "1"
         run: node scripts/v12_browser_smoke.mjs
       - name: Upload exact-CDN UX screenshots
         if: always()
