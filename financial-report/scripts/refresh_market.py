@@ -2105,8 +2105,8 @@ def refresh_history_group(out, companies, minute=False):
             f"{name} current-session bar coverage {session.get('sessionFresh')}/{session.get('sessionExpected')} "
             f"below required {session.get('sessionRequired')}"
         )
-    if not minute and success == 0:
-        raise RuntimeError(f'{name} refresh failed for all symbols')
+    if not minute and success < required:
+        raise RuntimeError(f'{name} refresh coverage {success}/{len(symbols)} below required {required}')
 
 
 def history(out, companies):
