@@ -176,6 +176,14 @@ test('scanner and risk reuse the committed aligned bundle instead of refetching 
  assert.match(risk,/bundled&&\(!expected\|\|String\(bundled\.sourceTime/);
 });
 
+test('quarterly partial financial reports surface the retained-part warning in the active mode',()=>{
+ const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
+ const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
+ assert.match(app,/state\.data=mode==='quarter'\?state\.bundle\.quarterly:state\.bundle/);
+ assert.match(app,/refreshState==='partial'\?'Có dữ liệu · một phần dùng bản trước'/);
+ assert.match(app,/refreshState==='partial'\?'warning':'ready'/);
+ assert.match(style,/\.status-badge\.warning\{/);
+});
 test('large market universe is cached for one hour instead of refetched every market tick',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  assert.match(market,/universeLoadedAt:0/);
