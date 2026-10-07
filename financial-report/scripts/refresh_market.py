@@ -453,6 +453,24 @@ def newest_source_time(rows):
     return max(stamps) if stamps else None
 
 
+def valid_stored_daily_bar(bar):
+    """Validate retained daily OHLCV before it is reused or republished.
+
+    Some old adjusted-provider rows can have high below open/close or low above
+    open/close. Those rows are not safe technical inputs and are dropped rather
+    than repaired/fabricated.
+    """
+    if not isinstance(bar, dict):
+        return False
+    day = str(bar.get('time') or '')[:10]
+    if len(day) != 10 or not trading_weekday(day):
+        return False
+    o, h, l, c, v = (number(bar.get(k)) for k in ('open', 'high', 'low', 'close', 'volume'))
+    if any(x is None for x in (o, h, l, c, v)):
+        return False
+    return min(o, h, l, c) > 0 and v >= 0 and l <= min(o, c) and h >= max(o, c) and l <= h
+
+
 def normalize_history(payload, symbol, minute=False):
     if isinstance(payload, dict):
         payload = payload.get('data', [])
@@ -625,7 +643,7 @@ def seed_market_histories(out, universe, companies):
             continue
         path = out / 'history' / (symbol + '.json')
         previous = read(path, {})
-        existing = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
+        existing = [bar for bar in previous.get('bars', []) if valid_stored_daily_bar(bar)]
         merged = {bar['time']: bar for bar in incoming}
         merged.update({bar['time']: bar for bar in existing})
         bars = [merged[key] for key in sorted(merged)]
@@ -1221,7 +1239,7 @@ def merge_live_daily_quotes(out, quotes):
             continue
         path = out / 'history' / (symbol + '.json')
         previous = read(path, {})
-        previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time') and trading_weekday(bar.get('time'))]
+        previous_bars = [bar for bar in previous.get('bars', []) if valid_stored_daily_bar(bar)]
         if not previous_bars:
             continue
         last_day = str(previous_bars[-1].get('time') or '')
@@ -1729,7 +1747,7 @@ def _refresh_one_history(out, symbol, minute=False):
             providers = []
             bars = []
             force_full = os.environ.get('HISTORY_KBS_FULL') == '1'
-            previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time') and trading_weekday(bar.get('time'))]
+            previous_bars = [bar for bar in previous.get('bars', []) if valid_stored_daily_bar(bar)]
             previous_last = previous_bars[-1].get('time') if previous_bars else None
             recent_cutoff = (datetime.now(VN).date() - timedelta(days=180)).isoformat()
             # Normal EOD refresh is incremental: existing symbols only need the
