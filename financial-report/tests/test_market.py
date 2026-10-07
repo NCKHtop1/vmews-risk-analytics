@@ -1323,6 +1323,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("INTRADAY_MAX_QUOTE_LAG_MINUTES: '20'",intraday)
         self.assertIn("INTRADAY_PUBLISH_INTERVAL_SECONDS: '600'",intraday)
         self.assertIn('live_intraday_publisher.sh',intraday)
+        self.assertIn('must repair the current/last session once',intraday)
+        self.assertNotIn('elif [ "${{ github.event_name }}" = "workflow_dispatch" ]',intraday)
         self.assertIn('git -C "$OUT" reset --hard origin/financial-market-data',intraday_session)
         self.assertIn('sleep "$INTERVAL_SECONDS"',intraday_session)
         self.assertIn('sessionFresh',intraday_session)
