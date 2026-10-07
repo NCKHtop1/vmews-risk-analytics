@@ -18,7 +18,7 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
 from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
-from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes, select_validation_universe  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes, select_validation_universe, verified_reentry_symbols  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
 # V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
@@ -129,8 +129,26 @@ def _load_histories_with_current_session(*args,**kwargs):
 
     all_current=sorted(set(str(s).upper() for s in (freshness.get("currentHOSESymbols") or histories) if str(s).upper() in histories))
     published_symbols=_last_validated_forecast_symbols(histories)
-    validation_symbols=select_validation_universe(histories,all_current,published_symbols)
-    validation_scope="LAST_VALIDATED_PUBLISHED_SYMBOLS" if published_symbols else "CURRENT_HOSE_FALLBACK"
+    secondary=market_model._vn_direct_hose_rows()
+
+    from datetime import datetime
+    from vn_exchange_calendar import VN_TZ, latest_completed_session
+    session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
+    primary_frame=None
+    try:
+        primary_frame=fetch_tradingview_quotes()
+    except Exception:
+        # The bridge retains its own fail-closed retry/fallback path. A failed
+        # preflight may block re-entry, but can never promote an unverified name.
+        pass
+    reentry_candidates=sorted(set(all_current)-set(published_symbols))
+    reentry_verified=verified_reentry_symbols(
+        primary_frame,secondary,reentry_candidates,session_date
+    ) if published_symbols else []
+    validation_symbols=select_validation_universe(
+        histories,all_current,published_symbols,reentry_verified
+    )
+    validation_scope="PUBLISHED_PLUS_TWO_SOURCE_REENTRY" if published_symbols else "CURRENT_HOSE_FALLBACK"
     freshness=dict(freshness)
     freshness["allCurrentHOSESymbols"]=all_current
     freshness["allCurrentHOSECount"]=len(all_current)
@@ -138,14 +156,16 @@ def _load_histories_with_current_session(*args,**kwargs):
     freshness["currentHOSECount"]=len(validation_symbols)
     freshness["forecastValidationUniverse"]=validation_scope
     freshness["forecastValidationUniverseCount"]=len(validation_symbols)
+    freshness["forecastPublishedBaseCount"]=len(published_symbols)
+    freshness["forecastReentryCandidateCount"]=len(reentry_candidates)
+    freshness["forecastReentryVerifiedCount"]=len(reentry_verified)
+    freshness["forecastReentryVerifiedSymbols"]=reentry_verified
 
-    secondary=market_model._vn_direct_hose_rows()
     try:
-        histories,freshness=bridge_completed_session(histories,freshness,secondary_rows=secondary)
+        histories,freshness=bridge_completed_session(
+            histories,freshness,frame=primary_frame,secondary_rows=secondary
+        )
     except RuntimeError as primary_error:
-        from datetime import datetime
-        from vn_exchange_calendar import VN_TZ, latest_completed_session
-        session_date=latest_completed_session(datetime.now(VN_TZ)).isoformat()
         yahoo_secondary=_legacy_snapshot_rows(session_date)
         tv_secondary=_tradingview_confirmation_rows(session_date)
         original_symbols=sorted(set(freshness.get("currentHOSESymbols") or histories))
@@ -183,6 +203,11 @@ def _load_histories_with_current_session(*args,**kwargs):
     bridge=freshness.get("postCloseBridge") or {}
     bridge["validationUniverse"]=validation_scope
     bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
+    bridge["publishedBaseSymbols"]=len(published_symbols)
+    bridge["reentryCandidateSymbols"]=len(reentry_candidates)
+    bridge["reentryVerifiedSymbols"]=len(reentry_verified)
+    bridge["reentryVerifiedSample"]=reentry_verified[:20]
+    bridge["reentryPolicy"]="TWO_SOURCE_SAME_SESSION_CLOSE_AND_VALID_OHLC"
     bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
     _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
