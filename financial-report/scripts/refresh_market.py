@@ -1338,7 +1338,7 @@ def prices(out, companies):
 
 
 def _history_page(symbol, frame, to, count, minute=False):
-    attempts = 1 if minute else max(1, int(os.environ.get('HISTORY_RETRIES', '3')))
+    attempts = max(1, int(os.environ.get('INTRADAY_RETRIES', '3'))) if minute else max(1, int(os.environ.get('HISTORY_RETRIES', '3')))
     last_error = None
     for attempt in range(attempts):
         try:
@@ -1700,7 +1700,7 @@ def _refresh_one_history(out, symbol, minute=False):
     previous = read(path, {})
     try:
         if minute:
-            count = max(100, int(os.environ.get('INTRADAY_COUNT_BACK', '700')))
+            count = max(100, int(os.environ.get('INTRADAY_COUNT_BACK', '360')))
             backfill = os.environ.get('INTRADAY_BACKFILL', '0') == '1'
             previous_bars = [bar for bar in previous.get('bars', []) if isinstance(bar, dict) and bar.get('time')]
             fresh_bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
@@ -1844,7 +1844,7 @@ def refresh_history_group(out, companies, minute=False):
         symbols = [s for s in all_symbols if not read(out / 'intraday' / (s + '.json'), {}).get('bars')] if only_missing else all_symbols
     errors, success, failed = [], 0, []
     # Intraday responses are heavier; use a smaller pool to avoid upstream read timeouts.
-    workers = int(os.environ.get('INTRADAY_WORKERS', '3')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
+    workers = int(os.environ.get('INTRADAY_WORKERS', '2')) if minute else int(os.environ.get('HISTORY_WORKERS', '4'))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_refresh_one_history, out, symbol, minute) for symbol in symbols]
         for future in as_completed(futures):
@@ -1856,7 +1856,7 @@ def refresh_history_group(out, companies, minute=False):
     # A short second pass at lower concurrency recovers transient upstream read
     # timeouts without forcing a full backfill or discarding retained history.
     if failed:
-        retry_workers = max(1, min(int(os.environ.get('HISTORY_RETRY_WORKERS', '2')), workers))
+        retry_workers = max(1, min(int(os.environ.get('INTRADAY_RETRY_WORKERS', '1') if minute else os.environ.get('HISTORY_RETRY_WORKERS', '2')), workers))
         retry_symbols = [symbol for symbol, _ in failed]
         time.sleep(1)
         failed = []
