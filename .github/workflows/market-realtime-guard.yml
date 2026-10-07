@@ -73,9 +73,17 @@ jobs:
           stale=[]
           try:
               n=get('news-latest.json')
+              company=get('news-company-latest.json')
               if n.get('status')!='ok' or not n.get('items') or age(n.get('checkedAt'))>20:
                   raise ValueError('News older than 20 minutes or unavailable')
-              print('News age minutes:',round(age(n['checkedAt']),1))
+              if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
+                  raise ValueError(f'Company news index invalid: coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
+              if str(company.get('checkedAt'))!=str(n.get('checkedAt')) or age(company.get('checkedAt'))>20:
+                  raise ValueError('Company news index stale or not aligned with latest news')
+              health=n.get('sourceHealth') or {}
+              if int(health.get('healthy') or 0)<3:
+                  raise ValueError(f'News source health too low: {health}')
+              print('News age/coverage:',round(age(n['checkedAt']),1),'company symbols',company.get('companyCoverage'),'source health',health)
           except Exception as e:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
           if active:
