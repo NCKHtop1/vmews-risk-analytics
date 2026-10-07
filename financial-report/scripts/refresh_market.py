@@ -1077,6 +1077,7 @@ def build_technical_scanner(out, companies, quotes):
     old = read(path, {'symbols': {}})
     previous_symbols = old.get('symbols') or {}
     symbols, matches = {}, []
+    live_symbols = {str(company.get('symbol') or '').upper() for company in companies}
     for company in companies:
         symbol = company['symbol']
         bars = read(out / 'history' / (symbol + '.json'), {}).get('bars') or []
@@ -1085,48 +1086,67 @@ def build_technical_scanner(out, companies, quotes):
             continue
         row['tier'] = company.get('tier') or 'CORE'
         row['cadence'] = 'LIVE_15M'
+        row['fresh'] = True
         symbols[symbol] = row
         if row['matched']:
             matches.append(row)
 
-    # Discovery stays fail-closed for live price/forecast decisions, but its
-    # validated EOD technical snapshot remains searchable in the scanner.
-    # The output snapshot owns the market universe for this build. Never mix
-    # discovery/scanner membership from financial-report/data/universe.json
-    # with a newer market branch snapshot.
+    # Discovery is EOD-only and may enter the active scanner only when the
+    # published market history is aligned to the completed EOD session.
+    # Frozen forecast history is bootstrap material, never current evidence.
     universe = load_market_universe(out)
-    discovery = universe.get('discoveryTechnical') if isinstance(universe, dict) else {}
     records = universe.get('symbols') if isinstance(universe, dict) else {}
-    if isinstance(discovery, dict):
-        for symbol, source in discovery.items():
-            if symbol in symbols or not isinstance(source, dict):
-                continue
-            meta = (records or {}).get(symbol) or {}
-            if not meta.get('scannerEligible'):
-                continue
-            row = {**source, 'symbol': symbol, 'tier': 'DISCOVERY', 'cadence': 'EOD'}
-            symbols[symbol] = row
-            if row.get('matched'):
-                matches.append(row)
+    scanner_universe = universe.get('scannerSymbols') if isinstance(universe, dict) else None
+    targets = [str(x).upper() for x in scanner_universe] if isinstance(scanner_universe, list) else list(live_symbols)
+    eod_as_of = str(universe.get('eodAsOf') or '')[:10] if isinstance(universe, dict) else ''
+    stale_discovery = []
+    for symbol in targets:
+        if symbol in live_symbols:
+            continue
+        meta = (records or {}).get(symbol) or {}
+        if not meta.get('scannerEligible'):
+            continue
+        history = read(out / 'history' / (symbol + '.json'), {})
+        bars = history.get('bars') or []
+        last_bar = str(history.get('lastBar') or (bars[-1].get('time') if bars and isinstance(bars[-1], dict) else ''))[:10]
+        if not eod_as_of or last_bar != eod_as_of:
+            stale_discovery.append({'symbol': symbol, 'barDate': last_bar or None})
+            continue
+        row = technical_scan_symbol(symbol, bars, None, previous_symbols.get(symbol))
+        if not row or str(row.get('barDate') or '')[:10] != eod_as_of:
+            stale_discovery.append({'symbol': symbol, 'barDate': str((row or {}).get('barDate') or '')[:10] or None})
+            continue
+        row['tier'] = 'DISCOVERY'
+        row['cadence'] = 'EOD'
+        row['sourceTime'] = None
+        row['fresh'] = True
+        symbols[symbol] = row
+        if row.get('matched'):
+            matches.append(row)
 
     matches.sort(key=lambda row: (-row.get('priority', 0), row['symbol']))
     stamp = now()
-    scanner_universe = universe.get('scannerSymbols') if isinstance(universe, dict) else None
+    target_count = len(targets) if targets else len(companies)
+    required = max(1, math.ceil(target_count * .90)) if target_count else 0
     live_coverage = sum(row.get('cadence') == 'LIVE_15M' for row in symbols.values())
     discovery_coverage = sum(row.get('cadence') == 'EOD' for row in symbols.values())
     write(path, {
         'checkedAt': stamp,
         'sourceTime': newest_source_time(quotes),
-        'status': 'ok' if symbols else 'retained',
-        'methodVersion': 'technical-scanner-v2-tiered-hose',
-        'universe': len(scanner_universe) if isinstance(scanner_universe, list) and scanner_universe else len(companies),
+        'status': 'ok' if target_count and len(symbols) >= required else ('partial' if symbols else 'retained'),
+        'methodVersion': 'technical-scanner-v3-fresh-eod',
+        'universe': target_count,
         'coverage': len(symbols),
         'liveCoverage': live_coverage,
         'discoveryCoverage': discovery_coverage,
+        'discoveryTarget': max(0, target_count - len(live_symbols)),
+        'discoveryStaleCount': len(stale_discovery),
+        'discoveryStaleSymbols': stale_discovery,
+        'eodAsOf': eod_as_of or None,
         'liveUniverse': len(companies),
         'matchCount': len(matches), 'refreshEveryMinutes': 5,
         'rules': TECHNICAL_SCANNER_RULES,
-        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses the evolving current-session daily candle; Discovery is EOD-only until promotion.',
+        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses the evolving current-session daily candle; Discovery is included only from the latest completed EOD market history.',
         'matches': matches, 'symbols': symbols,
     })
     return matches
