@@ -1125,6 +1125,51 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(watch['sourceTime'],stamp)
             self.assertEqual(watch['refreshEveryMinutes'],5)
 
+    def test_scanner_excludes_stale_discovery_until_eod_history_is_current(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            out=pathlib.Path(td); (out/'history').mkdir()
+            def make_bars(last_day):
+                rows=[]
+                for i in range(70):
+                    close=10000+i*15
+                    rows.append({'time':f'2026-07-{(i%28)+1:02d}','open':close-20,'high':close+50,'low':close-50,'close':close,'volume':700000+i*1000})
+                rows[-1]={**rows[-1],'time':last_day}
+                return rows
+            live=make_bars('2026-10-07')
+            stale=make_bars('2026-10-06')
+            m.write(out/'history'/'FPT.json',{'symbol':'FPT','lastBar':'2026-10-07','bars':live})
+            m.write(out/'history'/'CCC.json',{'symbol':'CCC','lastBar':'2026-10-06','bars':stale})
+            m.write(out/'universe.json',{
+                'eodAsOf':'2026-10-07',
+                'scannerSymbols':['FPT','CCC'],
+                'liveMarketSymbols':['FPT'],
+                'symbols':{
+                    'FPT':{'symbol':'FPT','tier':'CORE','scannerEligible':True,'liveMarketEligible':True},
+                    'CCC':{'symbol':'CCC','tier':'DISCOVERY','scannerEligible':True,'liveMarketEligible':False},
+                },
+            })
+            stamp='2026-10-07T07:45:00+00:00'
+            quotes={'FPT':{'symbol':'FPT','status':'ok','price':live[-1]['close'],'changePct':1.1,'sourceTime':stamp}}
+            m.build_technical_scanner(out,[{'symbol':'FPT','tier':'CORE'}],quotes)
+            data=m.read(out/'technical-signals.json',{})
+            self.assertEqual(data['status'],'partial')
+            self.assertEqual(data['coverage'],1)
+            self.assertEqual(data['universe'],2)
+            self.assertEqual(data['discoveryStaleCount'],1)
+            self.assertNotIn('CCC',data['symbols'])
+
+            current=make_bars('2026-10-07')
+            m.write(out/'history'/'CCC.json',{'symbol':'CCC','lastBar':'2026-10-07','bars':current})
+            m.build_technical_scanner(out,[{'symbol':'FPT','tier':'CORE'}],quotes)
+            data=m.read(out/'technical-signals.json',{})
+            self.assertEqual(data['status'],'ok')
+            self.assertEqual(data['coverage'],2)
+            self.assertEqual(data['discoveryCoverage'],1)
+            self.assertEqual(data['discoveryStaleCount'],0)
+            self.assertEqual(data['symbols']['CCC']['cadence'],'EOD')
+            self.assertEqual(data['symbols']['CCC']['barDate'],'2026-10-07')
+
     def test_scanner_rebuild_uses_output_market_universe_not_stale_main_fallback(self):
         import tempfile
         with tempfile.TemporaryDirectory() as td:
