@@ -54,13 +54,19 @@ def _tick(price):
     return 10 if price < 10_000 else 50 if price < 50_000 else 100
 
 
-def select_validation_universe(histories, current_symbols, published_symbols):
-    """Return the exact currently-published Forecast universe for close proof.
+def select_validation_universe(
+    histories,
+    current_symbols,
+    published_symbols,
+    reentry_symbols=None,
+):
+    """Return the published Forecast universe plus independently verified re-entry.
 
-    Forecast publication should be gated by the symbols the product actually
-    publishes, not unrelated HOSE listings that are outside the validated
-    forecast universe. If the published snapshot cannot be read, fail safely
-    back to the full current HOSE universe rather than silently narrowing scope.
+    The last validated publication is the stable base universe. Symbols outside
+    that base may re-enter only after same-session evidence independently
+    confirms them again; this prevents a temporary provider gap from becoming a
+    permanent one-way universe shrink. If no prior publication is available,
+    fail safely back to the full current HOSE universe.
     """
     available = {str(symbol).upper() for symbol in histories}
     current = {
@@ -73,7 +79,62 @@ def select_validation_universe(histories, current_symbols, published_symbols):
         for symbol in (published_symbols or [])
         if str(symbol).upper() in current
     }
-    return sorted(published or current)
+    reentry = {
+        str(symbol).upper()
+        for symbol in (reentry_symbols or [])
+        if str(symbol).upper() in current and str(symbol).upper() not in published
+    }
+    return sorted((published | reentry) if published else current)
+
+
+def verified_reentry_symbols(frame, secondary_rows, candidate_symbols, session_date):
+    """Return candidates with valid same-session OHLC and independent close proof."""
+    candidates = {str(symbol).upper() for symbol in (candidate_symbols or [])}
+    if not candidates or frame is None:
+        return []
+
+    primary = {}
+    for _, row in frame.iterrows():
+        symbol = _symbol(row.get("name") or row.get("ticker"))
+        updated = _quote_time(row.get("update_time"))
+        source_date = str(row.get("date") or "")[:10]
+        observed_date = (
+            source_date
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", source_date)
+            else (updated.date().isoformat() if updated else "")
+        )
+        if (
+            symbol not in candidates
+            or _exchange(row.get("exchange")) != "HOSE"
+            or symbol in primary
+            or observed_date != session_date
+        ):
+            continue
+        o, h, l, close = (_num(row.get(key)) for key in ("open", "high", "low", "close"))
+        if (
+            None in (o, h, l, close)
+            or min(o, h, l, close) <= 0
+            or h + 1e-9 < max(o, close)
+            or l - 1e-9 > min(o, close)
+        ):
+            continue
+        primary[symbol] = float(close)
+
+    verified = []
+    for symbol, primary_close in primary.items():
+        matches = [
+            row
+            for row in (secondary_rows or {}).get(symbol, [])
+            if str(row.get("date") or "")[:10] == session_date
+            and _num(row.get("close"), 0) > 0
+        ]
+        if not matches:
+            continue
+        secondary_close = float(_num(matches[-1].get("close")))
+        tolerance = max(MAX_LOG_GAP, 2 * _tick(primary_close) / primary_close)
+        if abs(math.log(primary_close / secondary_close)) <= tolerance:
+            verified.append(symbol)
+    return sorted(verified)
 
 
 def fetch_tradingview_quotes():
