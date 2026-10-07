@@ -12,6 +12,7 @@ on:
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
       - 'financial-report/scripts/test_strategy_intelligence.cjs'
+      - 'financial-report/scripts/test_research_agent_market_only.cjs'
       - '.github/workflows/strategy-intelligence-ci.yml'
   workflow_dispatch:
 
@@ -34,7 +35,9 @@ jobs:
           node --check financial-report/frontend/research-agent.js
           node --check financial-report/frontend/research-ai.js
       - name: Core regression tests
-        run: node financial-report/scripts/test_strategy_intelligence.cjs
+        run: |
+          node financial-report/scripts/test_strategy_intelligence.cjs
+          node financial-report/scripts/test_research_agent_market_only.cjs
       - name: HTML integration contract
         run: |
           node - <<'NODE'

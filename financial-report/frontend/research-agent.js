@@ -64,10 +64,14 @@ function plan(question){
  if(/du bao|forecast|t\+3|t\+4|t\+5/.test(s)){tools.add('forecast');tools.add('market');tools.add('scanner');tools.add('financial');}
  return{intent,tools:[...tools],targetSymbol:resolveTargetSymbol(question)};
 }
-function marketTool(){
- const m=root.FinancialMarket?.context?.()||{};
- const q=m.quote||null,d=m.driver||null,t=m.technical||null;
- return{symbol:m.symbol||q?.symbol||'',quote:q?pick(q,['symbol','price','reference','change','changePct','volume','value','sourceTime','collectedAt','status']):null,driver:d?pick(d,['relativeStrengthPct','volumeRatio20','momentum5dPct','factors']):null,technical:t?pick(t,['timeframe','snapshot','indicators','sourceTime','checkedAt']):null,market:pick(m.market||{},['index','indexChangePct','breadth','sourceTime']),newsCheckedAt:m.newsCheckedAt||null};
+function marketTool(targetSymbol=null){
+ let m={},a={};
+ try{m=root.FinancialMarket?.context?.()||{};}catch{}
+ try{a=root.FinancialMarket?.alertContext?.()||{};}catch{}
+ const requested=String(targetSymbol||'').toUpperCase(),symbol=requested||String(m.symbol||a.symbol||'').toUpperCase();
+ const same=!symbol||String(m.symbol||'').toUpperCase()===symbol;
+ const q=(same?m.quote:null)||a.quotes?.[symbol]||null,d=same?m.driver:null,t=same?m.technical:null;
+ return{symbol,quote:q?pick(q,['symbol','price','reference','change','changePct','volume','value','sourceTime','collectedAt','status']):null,driver:d?pick(d,['relativeStrengthPct','volumeRatio20','momentum5dPct','factors']):null,technical:t?pick(t,['timeframe','snapshot','indicators','sourceTime','checkedAt']):null,market:pick(m.market||{},['index','indexChangePct','breadth','sourceTime']),newsCheckedAt:m.newsCheckedAt||null};
 }
 function financialTool(base,targetSymbol=null){
  if(base?.localFinancialData)return clone(base.localFinancialData);
@@ -118,7 +122,7 @@ function forecastTool(){
  const m=root.FinancialMarket?.context?.()||{};const f=m.forecast||root.FinForecast?.context?.()||null;
  return f?clone(f):{available:false,reason:'Forecast context chua duoc nap trong financial-report.'};
 }
-const TOOL_REGISTRY={market:({})=>marketTool(),financial:({baseContext,targetSymbol})=>financialTool(baseContext,targetSymbol),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
+const TOOL_REGISTRY={market:({targetSymbol})=>marketTool(targetSymbol),financial:({baseContext,targetSymbol})=>financialTool(baseContext,targetSymbol),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
 async function execute(name,args){
  const started=performance?.now?.()??Date.now();try{const result=await TOOL_REGISTRY[name](args);return{name,status:result?'ok':'missing',durationMs:Math.round((performance?.now?.()??Date.now())-started),result};}catch(error){return{name,status:'error',durationMs:Math.round((performance?.now?.()??Date.now())-started),error:String(error?.message||error).slice(0,240),result:null};}
 }
