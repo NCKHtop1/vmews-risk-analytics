@@ -1,0 +1,120 @@
+name: FinQuery system contract audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/system_contract_audit.py'
+      - 'scripts/system_contract_audit_test.py'
+      - '.github/workflows/system-contract-audit.yml'
+  schedule:
+    - cron: '10,40 2-8 * * 1-5'
+    - cron: '20 9 * * 1-5'
+  workflow_run:
+    workflows:
+      - Deploy VMEWS Pages
+      - Refresh live HOSE Core + Liquid prices
+      - Refresh live HOSE minute candles
+      - Refresh market news stream
+      - Refresh FinQuery macro snapshot
+      - Refresh FinQuery market universe
+      - Refresh financial reports for CDN
+      - Refresh investment insights
+      - SoluTION.AI independent live prices
+      - SoluTION.AI independent core forecast
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finquery-system-contract-audit
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Unit-test system contract logic
+        working-directory: scripts
+        run: python system_contract_audit_test.py
+
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-market-data
+          path: _market-data
+          sparse-checkout: market
+
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-report-data
+          path: _financial-data
+          sparse-checkout: data
+
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-insights-data
+          path: _insight-data
+          sparse-checkout: data
+
+      - uses: actions/checkout@v4
+        with:
+          ref: solution-ai-live-data
+          path: _solution-live
+          sparse-checkout: solution-ai
+
+      - uses: actions/checkout@v4
+        with:
+          ref: solution-ai-core-data
+          path: _solution-core
+          sparse-checkout: data
+
+      - name: Recompute all production data contracts
+        run: |
+          python scripts/system_contract_audit.py \
+            --market-dir _market-data/market \
+            --financial-dir _financial-data/data \
+            --insights-dir _insight-data/data \
+            --solution-live _solution-live/solution-ai/live.json \
+            --solution-core-dir _solution-core/data \
+            --repo-root . \
+            --report-json /tmp/system-contract.json
+
+      - name: Verify Pages branch revisions after a Pages deployment
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Deploy VMEWS Pages' && github.event.workflow_run.conclusion == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          curl -fsSL --max-time 20 "https://nckhtop1.github.io/vmews-risk-analytics/financial-report/deployment.json?contract=$token" -o /tmp/deployment.json
+          python - <<'PY'
+          import json,subprocess
+          d=json.load(open('/tmp/deployment.json'))
+          expected={
+            'code':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'financialData':subprocess.check_output(['git','-C','_financial-data','rev-parse','HEAD'],text=True).strip(),
+            'insightData':subprocess.check_output(['git','-C','_insight-data','rev-parse','HEAD'],text=True).strip(),
+            'marketData':subprocess.check_output(['git','-C','_market-data','rev-parse','HEAD'],text=True).strip(),
+          }
+          assert d==expected,(d,expected)
+          print({'productionDeployment':'PASS',**d})
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-system-contract
+          path: /tmp/system-contract.json
+          retention-days: 7
