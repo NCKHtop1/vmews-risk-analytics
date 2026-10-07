@@ -236,8 +236,16 @@ function calibratedComponents(raw,calibration=null){
  for(const [key,def] of Object.entries(defs)){
   const r=raw[key]||{raw:0,stats:{}};
   const pct=percentileFromGrid(r.raw,grids[key]);
-  const score=pct===null?r.raw:pct;
-  out[key]={...def,score:round(score,1),rawScore:round(r.raw,1),level:componentLevel(score),stats:r.stats};
+  let score=pct===null?r.raw:pct,absoluteGate=null;
+  if(key==='liquidity'){
+   const stats=r.stats||{};
+   const sellingActivity=Number(stats.medianDownVolumePace)>=0.8||Number(stats.heavyDownPct)>=15;
+   const sellingQuality=Number(stats.medianPriceImpact)>=0.35||Number(stats.negativeCmfPct)>=25;
+   if(!sellingActivity)score=Math.min(score,69.9);
+   else if(!sellingQuality)score=Math.min(score,84.9);
+   absoluteGate={sellingActivity,sellingQuality,passedHigh:sellingActivity&&sellingQuality};
+  }
+  out[key]={...def,score:round(score,1),rawScore:round(r.raw,1),level:componentLevel(score),stats:r.stats,...(absoluteGate?{absoluteGate}:{})};
  }
  return out;
 }
