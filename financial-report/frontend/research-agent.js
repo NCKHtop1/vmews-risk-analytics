@@ -64,8 +64,21 @@ function scannerTool(){
  return{checkedAt:s.checkedAt||null,sourceTime:s.sourceTime||null,aligned:s.aligned!==false,current:s.current?pick(s.current,['symbol','tier','cadence','price','changePct','priority','bias','macd','macdSignal','macdHistogram','rsi14','volumeRatio20','signals','sourceTime','barDate']):null,evidence:s.evidence?pick(s.evidence,['signal','sample','horizons','updatedAt']):null,liveCoverage:s.liveCoverage,discoveryCoverage:s.discoveryCoverage};
 }
 function strategyTool(){
- const s=root.FinStrategyBuilder?.context?.()||null;if(!s)return null;
- return{strategy:s.strategy?pick(s.strategy,['name','join','scope','conditions']):null,snapshot:s.snapshot?pick(s.snapshot,['checkedAt','sourceTime','coverage','liveCoverage','discoveryCoverage']):null,matches:trimArray(s.matches||[],12).map(x=>pick(x,['symbol','tier','cadence','sourceTime','barDate','current']))};
+ const s=root.FinStrategyBuilder?.context?.()||null,intel=root.FinStrategyIntelligence?.context?.()||null;
+ if(!s&&!intel)return null;
+ const m=intel?.model||null;
+ return{
+  strategy:s?.strategy?pick(s.strategy,['name','join','scope','conditions']):null,
+  snapshot:s?.snapshot?pick(s.snapshot,['checkedAt','sourceTime','coverage','liveCoverage','discoveryCoverage']):null,
+  matches:trimArray(s?.matches||[],12).map(x=>pick(x,['symbol','tier','cadence','sourceTime','barDate','current'])),
+  intelligence:m?{
+   selected:intel.selected||null,
+   regime:m.regime?pick(m.regime,['id','label','confidence','coverage','metrics']):null,
+   topStrategies:trimArray(m.ranking||[],5).map(x=>pick(x,['id','label','family','horizon','risk','score','status','regimeFit','confirmation','selectivity','matchesCount','matchSymbols'])),
+   opportunities:trimArray(m.opportunities||[],12).map(x=>({symbol:x.symbol,score:x.score,stance:x.stance,riskScore:x.riskScore,primary:x.primary?pick(x.primary,['id','label','score','strength']):null,strategies:trimArray(x.strategies||[],5).map(y=>pick(y,['id','label','score','strength'])),current:x.row?.current||null})),
+   execution:intel.execution||null
+  }:null
+ };
 }
 function insightTool(){
  const i=root.FinInsights?.context?.()||null;if(!i)return null;
