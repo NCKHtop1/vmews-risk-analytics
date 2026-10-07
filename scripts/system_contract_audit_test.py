@@ -192,29 +192,39 @@ class SystemContractAuditTests(unittest.TestCase):
         )
         self.assertFalse(audit.errors)
 
-    def test_macro_contract_requires_safe_canonical_series_and_warning_evidence(self):
+    def test_macro_contract_requires_safe_aggregate_gdp_and_warning_evidence(self):
         good = {
             "datasets": {
-                key: {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 1}]}
-                for key in ("gdp_growth", "pmi", "money_supply", "fdi")
+                "gdp_growth": {
+                    "status": "ok", "qualityStatus": "warning",
+                    "qualityWarnings": [{"code": "GDP_GROWTH_PLAUSIBILITY", "row": 1}],
+                    "columns": ["Cột 1", "Q3 2021", "Q2 2026"],
+                    "numericColumns": ["Q3 2021", "Q2 2026"],
+                    "rows": [
+                        {"Cột 1": "Tốc độ tăng trưởng GDP thực tế", "Q3 2021": -6.2, "Q2 2026": 8.39},
+                        {"Cột 1": "Nông nghiệp", "Q3 2021": 30.63, "Q2 2026": 3.71},
+                    ],
+                },
+                "pmi": {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 51}]},
+                "money_supply": {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 1}]},
+                "fdi": {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 1}]},
+                "macro_overview": {
+                    "status": "ok", "qualityStatus": "warning",
+                    "qualityWarnings": [{"code": "GDP_GROWTH_PLAUSIBILITY"}],
+                    "rows": [{"x": 1}],
+                },
             }
-        }
-        good["datasets"]["macro_overview"] = {
-            "status": "ok", "qualityStatus": "warning",
-            "qualityWarnings": [{"code": "GDP_GROWTH_PLAUSIBILITY"}],
-            "rows": [{"x": 1}],
         }
         audit = Audit()
         audit_macro_semantics(audit, good)
         self.assertFalse(audit.errors)
 
         bad = json.loads(json.dumps(good))
-        bad["datasets"]["gdp_growth"]["qualityStatus"] = "warning"
-        bad["datasets"]["gdp_growth"]["qualityWarnings"] = [{"code": "GDP_GROWTH_PLAUSIBILITY"}]
+        bad["datasets"]["gdp_growth"]["rows"][0]["Q3 2021"] = 32.7
         audit = Audit()
         audit_macro_semantics(audit, bad)
         self.assertTrue(any(
-            row["code"] == "MARKET_MACRO_CANONICAL_QUALITY" and row["status"] == "FAIL"
+            row["code"] == "MARKET_MACRO_GDP_AGGREGATE" and row["status"] == "FAIL"
             for row in audit.results
         ))
 
