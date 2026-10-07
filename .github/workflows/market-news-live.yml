@@ -75,7 +75,8 @@ jobs:
                 git -C /tmp/market-news config user.name 'github-actions[bot]'
                 git -C /tmp/market-news config user.email '41898282+github-actions[bot]@users.noreply.github.com'
                 git -C /tmp/market-news restore --worktree market/drivers.json || true
-                git -C /tmp/market-news add --sparse market/news.json
+                test -s /tmp/market-news/market/news-latest.json
+                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json
                 if ! git -C /tmp/market-news diff --cached --quiet; then
                   git -C /tmp/market-news commit -m 'Refresh market news stream [data-only]'
                   published=0
