@@ -2,7 +2,7 @@
 'use strict';
 
 var PROFILE_KEY='finquery-google-profile';
-var AUTH_ENDPOINT='https://vmews-risk-analytics-sojd.vercel.app/api/finquery-auth';
+var AUTH_ENDPOINT=String(window.FINQUERY_AUTH_ENDPOINT||'https://vmews-risk-analytics-sojd.vercel.app/api/finquery-auth');
 var LEGACY_WATCH_KEY='finquery-watchlist';
 var GUEST_ID='guest';
 var DATA_REFRESH_MS=60000;
@@ -410,42 +410,59 @@ function loadGoogleIdentity(){
   });
   return googlePromise;
 }
-async function handleGoogleCredential(response){
-  var credential=String(response&&response.credential||'').trim();
-  if(!credential)return;
+function locallyValidatedGoogleProfile(credential){
+  var payload=decodeJwtPayload(credential);
+  var now=Math.floor(Date.now()/1000);
+  var issuer=String(payload&&payload.iss||'');
+  if(!payload||String(payload.aud||'')!==currentClientId())return null;
+  if(Number(payload.exp||0)<=now)return null;
+  if(payload.email_verified!==true&&String(payload.email_verified||'').toLowerCase()!=='true')return null;
+  if(issuer!=='accounts.google.com'&&issuer!=='https://accounts.google.com')return null;
+  return normalizedProfile(payload);
+}
+async function verifyGoogleCredential(credential){
   try{
     var verified=await fetch(AUTH_ENDPOINT,{
       method:'POST',
       mode:'cors',
       cache:'no-store',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({credential:credential,clientId:currentClientId()})
+      body:JSON.stringify({credential:credential,clientId:currentClientId()}),
+      signal:AbortSignal.timeout(5000)
     });
     var body=await verified.json().catch(function(){return{};});
-    if(!verified.ok||!body.ok||!body.profile)throw new Error('GOOGLE_VERIFY_FAILED');
-    var profile=normalizedProfile({
-      sub:body.profile.sub,
-      name:body.profile.name,
-      given_name:body.profile.givenName,
-      email:body.profile.email,
-      picture:body.profile.picture
-    });
-    if(!profile)throw new Error('GOOGLE_PROFILE_INVALID');
-    saveJson(userKey('watchlist',null),readLegacyWatch());
-    var changed=migrateGuestData(profile);
-    state.profile=profile;
-    saveJson(PROFILE_KEY,profile);
-    state.previousSnapshot=loadJson(userKey('snapshot'),null);
-    state.watchSignature=JSON.stringify(readLegacyWatch());
-    recordRecent(currentSymbol());
-    renderAccount();
-    refreshData();
-    if(changed)setTimeout(function(){location.reload();},80);
-  }catch(_){
+    if(verified.ok&&body.ok&&body.profile){
+      return normalizedProfile({
+        sub:body.profile.sub,
+        name:body.profile.name,
+        given_name:body.profile.givenName,
+        email:body.profile.email,
+        picture:body.profile.picture
+      });
+    }
+  }catch(_){}
+  return locallyValidatedGoogleProfile(credential);
+}
+async function handleGoogleCredential(response){
+  var credential=String(response&&response.credential||'').trim();
+  if(!credential)return;
+  var profile=await verifyGoogleCredential(credential);
+  if(!profile){
     try{
       if(window.google&&window.google.accounts&&window.google.accounts.id)window.google.accounts.id.disableAutoSelect();
-    }catch(__){}
+    }catch(_){}
+    return;
   }
+  saveJson(userKey('watchlist',null),readLegacyWatch());
+  var changed=migrateGuestData(profile);
+  state.profile=profile;
+  saveJson(PROFILE_KEY,profile);
+  state.previousSnapshot=loadJson(userKey('snapshot'),null);
+  state.watchSignature=JSON.stringify(readLegacyWatch());
+  recordRecent(currentSymbol());
+  renderAccount();
+  refreshData();
+  if(changed)setTimeout(function(){location.reload();},80);
 }
 function signOut(){
   persistActiveWatch();
