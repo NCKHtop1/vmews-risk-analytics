@@ -2,12 +2,12 @@
 const $=id=>document.getElementById(id);
 const BASE=document.documentElement.dataset.hosting==='pages'?new URL('market/',location.href).href:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
 const ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e';
-const state={data:null,evidence:null,unlocked:sessionStorage.getItem('finquery-technical-access')==='1',filter:'all',universeFilter:'all',search:'',loading:false,marketSourceTime:null,retryTimer:null};
+const state={data:null,evidence:null,evidenceLoadedAt:0,unlocked:sessionStorage.getItem('finquery-technical-access')==='1',filter:'all',universeFilter:'all',search:'',loading:false,marketSourceTime:null,retryTimer:null};
 const fmt=(v,d=2)=>Number.isFinite(Number(v))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(Number(v)):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const time=s=>s&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short',timeStyle:'short'}):'—';
 async function digest(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-async function fetchData(){const [scanner,evidence]=await Promise.allSettled([window.FinMarketData.get('technical-signals.json'),window.FinMarketData.get('technical-evidence.json')]);const data=scanner.status==='fulfilled'?scanner.value:null;if(!data?.symbols||!Array.isArray(data.matches))throw Error('Invalid scanner data');state.evidence=evidence.status==='fulfilled'?evidence.value:null;return data;}
+async function fetchData(){const bundle=window.FinMarketData.currentBundle?.(),bundled=bundle?.scanner,bundleAligned=bundled&&(!state.marketSourceTime||String(bundled.sourceTime||'')===String(state.marketSourceTime));const scannerPromise=bundleAligned?Promise.resolve(bundled):window.FinMarketData.get('technical-signals.json');const evidenceFresh=state.evidence&&Date.now()-state.evidenceLoadedAt<3600000;const evidencePromise=evidenceFresh?Promise.resolve(state.evidence):window.FinMarketData.get('technical-evidence.json');const [scanner,evidence]=await Promise.allSettled([scannerPromise,evidencePromise]);const data=scanner.status==='fulfilled'?scanner.value:null;if(!data?.symbols||!Array.isArray(data.matches))throw Error('Invalid scanner data');if(evidence.status==='fulfilled'){state.evidence=evidence.value;state.evidenceLoadedAt=Date.now();}return data;}
 function showGate(){
  const gate=$('technical-scanner-gate'),work=$('technical-scanner-workspace');
  if(gate){gate.hidden=state.unlocked;gate.style.display=state.unlocked?'none':'';}
