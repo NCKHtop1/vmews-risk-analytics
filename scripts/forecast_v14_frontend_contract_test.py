@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+FINQUERY_CORE_ONLY = os.environ.get("FINQUERY_CORE_ONLY", "").strip() == "1"
 
 
 class Document(HTMLParser):
@@ -37,8 +39,11 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("forecast-portfolio-v14.css", self.document.assets)
         self.assertIn("forecast-portfolio-v14.js", self.document.assets)
         self.assertIn("forecast-live-leaders-v14.js", self.document.assets)
-        self.assertIn("solution-ai-v17.js", self.document.assets)
+        if not FINQUERY_CORE_ONLY:
+            self.assertIn("solution-ai-v17.js", self.document.assets)
         for asset in self.document.assets:
+            if FINQUERY_CORE_ONLY and asset == "solution-ai-v17.js":
+                continue
             with self.subTest(asset=asset):
                 self.assertTrue((ROOT / asset).is_file())
 
@@ -55,11 +60,14 @@ class ForecastFrontendContractTest(unittest.TestCase):
             "leaders", "leadersTitle", "snapshotDate", "vnClock", "marketPulse",
             "signalDeck", "leaderDots", "leaderDetail", "carouselPosition",
             "carouselPrev", "carouselNext", "carouselAutoplay",
-            "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
-            "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
-            "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiGeminiWeb",
-            "solutionAiKey", "solutionAiDisconnect",
         }
+        if not FINQUERY_CORE_ONLY:
+            required.update({
+                "solutionAiLauncher", "solutionAiPanel", "solutionAiMessages", "solutionAiForm",
+                "solutionAiInput", "solutionAiSuggestions", "solutionAiContext",
+                "solutionAiConnect", "solutionAiGoogle", "solutionAiRetry", "solutionAiGeminiWeb",
+                "solutionAiKey", "solutionAiDisconnect",
+            })
         self.assertFalse(required - self.document.ids)
 
     def test_browser_smoke_uses_the_current_visible_method_proof_contract(self) -> None:
@@ -87,7 +95,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         css = (ROOT / "forecast-portfolio-v14.css").read_text(encoding="utf-8")
         self.assertIn("#a8eb65", css)
         self.assertIn("#090a08", css)
-        self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
+        if not FINQUERY_CORE_ONLY:
+            self.assertIn("<span>SoluTION.AI</span> define market.", self.html)
         self.assertIn("HOSE · KỲ DỰ BÁO ĐƯỢC CHỌN", self.html)
         self.assertIn("Tâm điểm HOSE", self.html)
         self.assertNotIn("Tâm điểm VN30", self.html)
@@ -106,12 +115,16 @@ class ForecastFrontendContractTest(unittest.TestCase):
             (ROOT / name).read_text(encoding="utf-8")
             for name in ("forecast-final.html", "forecast-final-v12.js")
         )
-        for forbidden in (
+        forbidden_labels = [
             "ĐIỂM ĐÃ QUA GATE", "ĐIỂM QUA GATE", "ĐIỂM ĐỘ TIN CẬY THẤP",
-            "không phải chênh vài trăm đồng", "MÁY CHỦ AI DỰ PHÒNG",
-            "máy-chủ-của-bạn", "solutionAiBackend", "solutionAiSaveBackend",
-            "vmews_solution_ai_endpoint",
-        ):
+            "không phải chênh vài trăm đồng",
+        ]
+        if not FINQUERY_CORE_ONLY:
+            forbidden_labels.extend([
+                "MÁY CHỦ AI DỰ PHÒNG", "máy-chủ-của-bạn",
+                "solutionAiBackend", "solutionAiSaveBackend", "vmews_solution_ai_endpoint",
+            ])
+        for forbidden in forbidden_labels:
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, assets)
 
@@ -235,9 +248,11 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("Danh mục quỹ", app)
         self.assertIn("fundContext", polish)
         self.assertIn("Tác động T+5", polish)
-        self.assertIn("fund.holdings", (ROOT / "solution-ai-v17.js").read_text(encoding="utf-8"))
+        if not FINQUERY_CORE_ONLY:
+            self.assertIn("fund.holdings", (ROOT / "solution-ai-v17.js").read_text(encoding="utf-8"))
         self.assertNotIn("chưa dùng để fit model", polish)
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery core publication gate")
     def test_solution_ai_is_grounded_and_does_not_expose_a_provider_secret(self) -> None:
         assistant = (ROOT / "solution-ai-v17.js").read_text(encoding="utf-8")
         backend = (ROOT / "api/solution-ai.js").read_text(encoding="utf-8")

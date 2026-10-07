@@ -147,6 +147,8 @@ jobs:
       - name: Publish bounded live community overlay against the audited snapshot
         run: python scripts/forecast_v18_market_intelligence.py --publish-live
       - name: Reject issuer mixups, future leakage, holiday errors and failed backtests
+        env:
+          FINQUERY_CORE_ONLY: "1"
         run: |
           python scripts/forecast_v28_postclose_bridge_test.py
           python scripts/vn_exchange_calendar_test.py
@@ -158,6 +160,7 @@ jobs:
           python -m unittest financial-report/tests/test_universe.py -v
           python scripts/refresh_institutional_flow_v20_test.py
           python scripts/sanitize_intelligence_v20_test.py
+          python scripts/system_contract_audit_test.py
           node --test scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/forecast_v20_release_audit_test.py
           python scripts/forecast_v20_release_audit_v28_test.py

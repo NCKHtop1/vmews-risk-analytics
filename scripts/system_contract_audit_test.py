@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import tempfile
 import unittest
 from datetime import datetime, timezone
+
+FINQUERY_CORE_ONLY = os.environ.get("FINQUERY_CORE_ONLY", "").strip() == "1"
+
 
 from system_contract_audit import (
     Audit,
     audit_main_forecast,
     audit_market_bar_files,
     compute_intraday_session,
-    production_prefers_solution_core,
+    production_uses_finquery_main_core,
     risk_eligible_symbols,
     solution_live_freshness,
 )
@@ -118,18 +122,18 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertTrue(any(row["code"] == "MARKET_HISTORY_OHLC" and row["status"] == "FAIL" for row in audit.results))
 
 
-    def test_production_loader_prefers_dedicated_solution_core(self):
+    def test_production_loader_uses_finquery_main_core_and_market_quotes(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             (root / "forecast-final-v12.js").write_text(
-                'const SOLUTION_CORE_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data";\n'
-                'const SOLUTION_CORE_FILES=new Set(["forecast-dashboard-v12.json"]);\n'
-                'const roots=SOLUTION_CORE_ROOT&&SOLUTION_CORE_FILES.has(name)?[SOLUTION_CORE_ROOT,ROOT]:[ROOT];\n'
-                'window.__SOLUTION_AI_CORE_ROOT__=SOLUTION_CORE_ROOT;\n',
+                'const FINQUERY_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json";\n'
+                'const roots=[ROOT];\n'
+                'window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{scope:"finquery-market"}}));\n',
                 encoding="utf-8",
             )
-            self.assertTrue(production_prefers_solution_core(root))
+            self.assertTrue(production_uses_finquery_main_core(root))
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_stale_main_becomes_warning_only_when_dedicated_core_is_authoritative_and_fallback_abstains(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
@@ -199,6 +203,7 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertIn("FORECAST_V21_FALLBACK_STALE", warning_codes)
         self.assertTrue(any(row["code"] == "FORECAST_V21_FALLBACK_SAFE" and row["status"] == "PASS" for row in audit.results))
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_solution_live_active_session_requires_real_source_freshness(self):
         now = datetime(2026, 10, 7, 3, 0, tzinfo=timezone.utc)  # 10:00 Vietnam
         fresh = {
@@ -215,6 +220,7 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(policy, "LIVE")
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_solution_live_same_day_close_uses_source_day_not_generated_day(self):
         now = datetime(2026, 10, 7, 5, 30, tzinfo=timezone.utc)  # 12:30 Vietnam
         poisoned = {

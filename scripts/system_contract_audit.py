@@ -466,6 +466,25 @@ def production_prefers_solution_core(repo_root: Path):
     return all(token in text for token in required)
 
 
+def production_uses_finquery_main_core(repo_root: Path):
+    """Return True when FinQuery Forecast is independent of SoluTION data branches."""
+    try:
+        text = (repo_root / "forecast-final-v12.js").read_text(encoding="utf-8")
+    except Exception:
+        return False
+    required = (
+        "const roots=[ROOT]",
+        "financial-market-data/market/quotes.json",
+        'scope:"finquery-market"',
+    )
+    forbidden = (
+        "solution-ai-core-data/data",
+        "solution-ai-live-data/solution-ai/live.json",
+        "[SOLUTION_CORE_ROOT,ROOT]",
+    )
+    return all(token in text for token in required) and not any(token in text for token in forbidden)
+
+
 def solution_core_is_authoritative(core_dir: Path, now):
     """Check the minimum freshness/proof needed before main may be treated as fallback-only."""
     try:
@@ -666,8 +685,9 @@ def main():
     parser.add_argument("--market-dir", required=True)
     parser.add_argument("--financial-dir", required=True)
     parser.add_argument("--insights-dir", required=True)
-    parser.add_argument("--solution-live", required=True)
-    parser.add_argument("--solution-core-dir", required=True)
+    parser.add_argument("--solution-live")
+    parser.add_argument("--solution-core-dir")
+    parser.add_argument("--ignore-solution-ai", action="store_true")
     parser.add_argument("--repo-root", default=str(ROOT))
     parser.add_argument("--report-json")
     args = parser.parse_args()
@@ -678,13 +698,20 @@ def main():
     audit_insights(audit, Path(args.insights_dir), now)
     audit_forecast_monitor(audit, Path(args.repo_root), now)
     repo_root = Path(args.repo_root)
-    solution_core_dir = Path(args.solution_core_dir)
-    core_route_ok = production_prefers_solution_core(repo_root)
-    audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE", "Pages loader must prefer solution-ai-core-data before main fallback")
-    authoritative_core_ready = core_route_ok and solution_core_is_authoritative(solution_core_dir, now)
-    audit_main_forecast(audit, repo_root, now, authoritative_core_ready=authoritative_core_ready)
-    audit_solution_live(audit, Path(args.solution_live), now)
-    audit_solution_core(audit, solution_core_dir, now)
+    if args.ignore_solution_ai:
+        core_route_ok = production_uses_finquery_main_core(repo_root)
+        audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE", "FinQuery Forecast must load main/data and FinQuery market quotes without SoluTION data branches")
+        audit_main_forecast(audit, repo_root, now, authoritative_core_ready=False)
+    else:
+        if not args.solution_live or not args.solution_core_dir:
+            parser.error("--solution-live and --solution-core-dir are required unless --ignore-solution-ai is set")
+        solution_core_dir = Path(args.solution_core_dir)
+        core_route_ok = production_prefers_solution_core(repo_root)
+        audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE", "Full audit expects dedicated solution-ai-core-data before main fallback")
+        authoritative_core_ready = core_route_ok and solution_core_is_authoritative(solution_core_dir, now)
+        audit_main_forecast(audit, repo_root, now, authoritative_core_ready=authoritative_core_ready)
+        audit_solution_live(audit, Path(args.solution_live), now)
+        audit_solution_core(audit, solution_core_dir, now)
     category_summary = {}
     for row in audit.results:
         bucket = category_summary.setdefault(row["category"], {"PASS": 0, "WARN": 0, "FAIL": 0})

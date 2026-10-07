@@ -180,14 +180,12 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
         bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
-        bridge["validationUniverse"]=validation_scope
-        bridge["validationUniverseSymbols"]=len(original_symbols)
-        bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
-    bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
+    bridge=freshness.get("postCloseBridge") or {}
+    bridge["validationUniverse"]=validation_scope
+    bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
+    bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
+    _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
-        bridge["validationUniverse"]=validation_scope
-        bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
-        bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
         freshness["marketScanAsOf"]=str(freshness.get("forecastAsOf") or "")[:10]
         freshness["freshSymbols"]=sum(str((rows or [{}])[-1].get("date") or "")[:10]==freshness["forecastAsOf"] for rows in histories.values() if rows)

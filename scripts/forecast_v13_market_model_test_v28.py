@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import unittest
 from datetime import datetime
 
@@ -156,22 +155,18 @@ _original_horizon_release_gate_test = (
 )
 
 
-def _solution_validation_scope(self):
+def _forecast_validation_scope(self):
+    """Return the explicit FinQuery Forecast publication scope from persisted bridge proof."""
     bridge = (self.market.get("sources") or {}).get("postCloseBridge") or {}
-    env_scope = os.environ.get("SOLUTION_AI_VALIDATION_UNIVERSE", "").strip().upper()
-    if bridge.get("validationUniverse") == "LAST_VALIDATED_PUBLISHED_SYMBOLS":
+    scope = str(bridge.get("validationUniverse") or "").strip().upper()
+    if scope in {"LAST_VALIDATED_PUBLISHED_SYMBOLS", "CURRENT_HOSE_FALLBACK"}:
         return bridge
-    if env_scope == "LAST_VALIDATED_PUBLISHED_SYMBOLS":
-        patched = dict(bridge)
-        patched.setdefault("validationUniverse", "LAST_VALIDATED_PUBLISHED_SYMBOLS")
-        patched.setdefault("validationUniverseSymbols", len(self.dashboard.get("symbols") or {}))
-        return patched
     return None
 
 
 def test_current_source_and_coverage_dynamic(self) -> None:
-    """Validate the current SoluTION publication universe without trusting stale static counts."""
-    bridge = _solution_validation_scope(self)
+    """Validate the current FinQuery Forecast publication universe without stale scalar floors."""
+    bridge = _forecast_validation_scope(self)
     if not bridge:
         return _original_current_source_and_coverage_test(self)
 
@@ -252,7 +247,7 @@ def test_current_source_and_coverage_dynamic(self) -> None:
 
 def test_every_quote_grid_dynamic(self) -> None:
     """Retain all tick/range/release assertions while scaling the obsolete 1800 floor."""
-    bridge = _solution_validation_scope(self)
+    bridge = _forecast_validation_scope(self)
     if not bridge:
         return _original_quote_grid_test(self)
 
@@ -276,7 +271,7 @@ def test_every_quote_grid_dynamic(self) -> None:
 
 def test_fpt_flow_governance(self) -> None:
     """Current genuine flow is preferred; stale optional flow must be visible and inert."""
-    bridge = _solution_validation_scope(self)
+    bridge = _forecast_validation_scope(self)
     if not bridge:
         return _original_fpt_flow_test(self)
 
@@ -337,7 +332,7 @@ def test_fpt_flow_governance(self) -> None:
 
 def test_archived_flow_and_financial_governance(self) -> None:
     """Retain fundamental assertions while allowing unavailable/stale proprietary flow to stay inert."""
-    bridge = _solution_validation_scope(self)
+    bridge = _forecast_validation_scope(self)
     if not bridge:
         return _original_archived_flow_financial_test(self)
 
