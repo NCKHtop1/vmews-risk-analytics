@@ -2177,7 +2177,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("(front / 'macro.js').read_text()",build)
         for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
             self.assertIn(token,chart)
-        self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},60000)',market)
+        self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},300000)',market)
         self.assertIn("return'macro'",research)
         self.assertIn('macroHTML',research)
         for forbidden in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','không coi việc xuất hiện cùng ngày là bằng chứng nhân quả','Chưa có lực hỗ trợ nổi bật','Chưa xuất hiện điểm suy yếu','Chưa đủ dữ liệu'):
