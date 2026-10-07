@@ -156,6 +156,15 @@ test('scanner watch states do not create directional bias and volume is contextu
  assert.match(source,/volume_direction = 'bullish'.*'bearish'.*'confirmation'/s);
  assert.doesNotMatch(source,/sum\(x\['direction'\] in \{'bullish', 'bullish_watch'\}/);
 });
+test('scanner and risk reuse the committed aligned bundle instead of refetching it',()=>{
+ const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
+ const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ assert.match(scanner,/currentBundle\?\.\(\),bundled=bundle\?\.scanner/);
+ assert.match(scanner,/evidenceLoadedAt<3600000/);
+ assert.match(risk,/currentBundle\?\.\(\)\?\.risk/);
+ assert.match(risk,/bundled&&\(!expected\|\|String\(bundled\.sourceTime/);
+});
+
 test('heavy market modules poll on the five-minute publisher cadence',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
