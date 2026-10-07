@@ -49,6 +49,9 @@ class IntradayArchiveFinalizerTests(unittest.TestCase):
             self.assertEqual(status["archiveFinalizedSession"], "2026-10-07")
             self.assertEqual(status["archive5mLatestDay"], "2026-10-07")
             self.assertEqual(status["archive5mLatestDayCoverage"], 2)
+            second = finalizer.finalize(root)
+            self.assertEqual(second["written"], 0)
+            self.assertTrue(second["alreadyFinalized"])
             for symbol in symbols:
                 archive = json.loads((root / "intraday-5m" / f"{symbol}.json").read_text())
                 days = {row["time"][:10] for row in archive["bars"]}
