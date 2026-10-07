@@ -1845,6 +1845,67 @@ def intraday_archive_summary(out, symbols):
     }
 
 
+def intraday_session_summary(out, symbols):
+    """Compare minute bars with the current published quote generation.
+
+    A successful HTTP/OHLC request is not enough to call intraday healthy:
+    the newest minute bar must also be close to the current live quote for
+    symbols that actually have a current-session trade.
+    """
+    quotes = read(out / 'quotes.json', {})
+    quote_rows = quotes.get('quotes') if isinstance(quotes.get('quotes'), dict) else {}
+    today = datetime.now(VN).date().isoformat()
+    max_lag = max(1.0, float(os.environ.get('INTRADAY_MAX_QUOTE_LAG_MINUTES', '20')))
+    expected_symbols, current_symbols, lagged = [], [], []
+    lags = []
+    retained_quotes = 0
+    for symbol in symbols:
+        quote = quote_rows.get(symbol) or {}
+        quote_stamp = timestamp(quote.get('sourceTime') or quote.get('collectedAt'))
+        if quote.get('status') == 'retained':
+            retained_quotes += 1
+            continue
+        if not quote_stamp or source_day(quote_stamp) != today:
+            continue
+        expected_symbols.append(symbol)
+        row = read(out / 'intraday' / (symbol + '.json'), {})
+        last_bar = row.get('lastBar')
+        if not last_bar:
+            bars = row.get('bars') or []
+            last_bar = bars[-1].get('time') if bars and isinstance(bars[-1], dict) else None
+        bar_stamp = timestamp(last_bar)
+        if not bar_stamp or source_day(bar_stamp) != today:
+            lagged.append({'symbol': symbol, 'reason': 'no_current_session_bar'})
+            continue
+        try:
+            q_dt = datetime.fromisoformat(quote_stamp).astimezone(timezone.utc)
+            b_dt = datetime.fromisoformat(bar_stamp).astimezone(timezone.utc)
+            lag = max(0.0, (q_dt - b_dt).total_seconds() / 60)
+        except (ValueError, TypeError):
+            lagged.append({'symbol': symbol, 'reason': 'invalid_timestamp'})
+            continue
+        lags.append(lag)
+        if lag <= max_lag:
+            current_symbols.append(symbol)
+        else:
+            lagged.append({'symbol': symbol, 'lagMinutes': round(lag, 1)})
+    expected = len(expected_symbols)
+    required = max(1, math.ceil(expected * .90)) if expected else 0
+    current = len(current_symbols)
+    return {
+        'sessionExpected': expected,
+        'sessionRequired': required,
+        'sessionFresh': current,
+        'sessionCoveragePct': round(current / expected * 100, 1) if expected else None,
+        'sessionMaxQuoteLagMinutes': max_lag,
+        'sessionMedianLagMinutes': round(sorted(lags)[len(lags)//2], 1) if lags else None,
+        'sessionMaxObservedLagMinutes': round(max(lags), 1) if lags else None,
+        'sessionLaggedCount': len(lagged),
+        'sessionLaggedSymbols': lagged[:20],
+        'sessionRetainedQuotes': retained_quotes,
+    }
+
+
 def refresh_history_group(out, companies, minute=False):
     all_symbols = [c['symbol'] for c in companies]
     only_missing = minute and os.environ.get('INTRADAY_ONLY_MISSING') == '1'
@@ -1888,8 +1949,13 @@ def refresh_history_group(out, companies, minute=False):
         'coveragePct': round(success / len(symbols) * 100, 1) if symbols else 100.0,
         'onlyMissing': only_missing, 'forcedSymbols': forced, 'retryPass': True, 'errors': errors
     }
+    session = None
     if minute:
+        session = intraday_session_summary(out, all_symbols)
+        status_payload.update(session)
         status_payload.update(intraday_archive_summary(out, all_symbols))
+        if session.get('sessionExpected') and session.get('sessionFresh', 0) < session.get('sessionRequired', 0):
+            status_payload['status'] = 'partial'
     write(out / f'{name}-status.json', status_payload)
     if not minute:
         update_history_effective_status(out, all_symbols)
@@ -1899,6 +1965,11 @@ def refresh_history_group(out, companies, minute=False):
     # The workflow publishes successful updates even when this step fails.
     if minute and success < required:
         raise RuntimeError(f'{name} refresh coverage {success}/{len(symbols)} below required {required}')
+    if minute and session and session.get('sessionExpected') and session.get('sessionFresh', 0) < session.get('sessionRequired', 0):
+        raise RuntimeError(
+            f"{name} current-session bar coverage {session.get('sessionFresh')}/{session.get('sessionExpected')} "
+            f"below required {session.get('sessionRequired')}"
+        )
     if not minute and success == 0:
         raise RuntimeError(f'{name} refresh failed for all symbols')
 
