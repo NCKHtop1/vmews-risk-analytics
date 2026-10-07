@@ -158,7 +158,7 @@ async function askAI(){
  const q='Phân tích '+s+' theo Strategy Intelligence hiện tại. Chiến lược chính: '+(v.primary?.label||'chưa có')+'. Điểm phù hợp: '+(v.score??'—')+'/100. Regime: '+state.model.regime.label+'. Hãy đối chiếu thêm giá, kỹ thuật, Forecast, Risk, tin doanh nghiệp và BCTC đang có trong FinQuery; nêu yếu tố ủng hộ, yếu tố phản biện, kịch bản tích cực, kịch bản mất hiệu lực và rủi ro. Không suy diễn số liệu thiếu.';
  setActionBusy('sai-query-ai',true,'Đang mở Dolphin…');actionStatus('Đang mở phân tích sâu cho '+s+'…','loading');
  try{
-  window.FinancialMarket?.openChart?.(s);
+  window.FinancialMarket?.select?.(s);
   window.FinQueryAI.sync?.(s);
   window.FinQueryAI.ensureGlobalLayer?.();
   await window.FinQueryAI.ask(q,'deep');
