@@ -95,20 +95,20 @@ TOPIC_PATTERNS = {
     'investment': re.compile(r'đầu tư|fdi|giải ngân|dự án|quỹ đầu tư', re.I),
     'macro': re.compile(r'gdp|cpi|lạm phát|kinh tế|xuất khẩu|nhập khẩu|tăng trưởng|inflation|economic|growth|payroll|employment|pmi', re.I),
     'global': re.compile(r'fed|federal reserve|fomc|ecb|european central bank|boj|pboc|treasury|wall street|euro area|eurozone|united states|china|japan|opec|brent|wti|geopolit', re.I),
-    'central_bank': re.compile(r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|central bank|monetary policy', re.I),
-    'sbv': re.compile(r'ngân hàng nhà nước|nhnn|sbv|thị trường mở|omo|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I),
+    'central_bank': re.compile(r'\b(?:fed|fomc|ecb|boj|pboc|nhnn|sbv)\b|ngân hàng nhà nước|central bank|monetary policy', re.I),
+    'sbv': re.compile(r'ngân hàng nhà nước|\bnhnn\b|\bsbv\b|thị trường mở|\bomo\b|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I),
 }
 
 IMPACT_PATTERN = re.compile(
     r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|lãi suất|interest rate|rate cut|rate hike|'
-    r'omo|thị trường mở|bơm ròng|hút ròng|tỷ giá|exchange rate|treasury|bond yield|cpi|inflation|'
+    r'\bomo\b|thị trường mở|bơm ròng|hút ròng|tỷ giá|exchange rate|treasury|bond yield|cpi|inflation|'
     r'lạm phát|gdp|payroll|employment|oil|brent|wti|gold|vàng|war|conflict|geopolit|sanction|'
     r'default|bank failure|khủng hoảng|phá sản|lao dốc|giảm mạnh|tăng mạnh|tăng vọt|sụt mạnh|'
     r'plunge|plummet|tumble|soar|surge|spike|crash|collapse|record high|record low|halt trading|'
     r'investigation|fraud|indict|arrest|resign|delist|downgrade|upgrade', re.I)
-CENTRAL_BANK_PATTERN = re.compile(r'fed|fomc|ecb|boj|pboc|ngân hàng nhà nước|nhnn|sbv|central bank|monetary policy', re.I)
-POLICY_DECISION_PATTERN = re.compile(r'raise(?:s|d)? rates?|hike(?:s|d)? rates?|cut(?:s)? rates?|rate cut|rate hike|holds? rates?|leaves? rates? unchanged|tăng lãi suất|giảm lãi suất|hạ lãi suất|giữ nguyên lãi suất|bơm ròng|hút ròng|omo|tín phiếu', re.I)
-SBV_PATTERN = re.compile(r'ngân hàng nhà nước|nhnn|sbv|thị trường mở|omo|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I)
+CENTRAL_BANK_PATTERN = re.compile(r'\b(?:fed|fomc|ecb|boj|pboc|nhnn|sbv)\b|ngân hàng nhà nước|central bank|monetary policy', re.I)
+POLICY_DECISION_PATTERN = re.compile(r'raise(?:s|d)? rates?|hike(?:s|d)? rates?|cut(?:s)? rates?|rate cut|rate hike|holds? rates?|leaves? rates? unchanged|tăng lãi suất|giảm lãi suất|hạ lãi suất|giữ nguyên lãi suất|bơm ròng|hút ròng|\bomo\b|tín phiếu', re.I)
+SBV_PATTERN = re.compile(r'ngân hàng nhà nước|\bnhnn\b|\bsbv\b|thị trường mở|\bomo\b|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc', re.I)
 SHOCK_MOVE_PATTERN = re.compile(r'lao dốc|giảm mạnh|giảm sốc|rơi mạnh|sụt mạnh|tăng mạnh|tăng vọt|bật tăng|lập đỉnh|kỷ lục|plunge|plummet|tumble|slump|soar|surge|spike|crash|collapse|record high|record low|biggest (?:gain|drop|fall|rise)', re.I)
 COMPANY_SHOCK_PATTERN = re.compile(r'phá sản|vỡ nợ|khởi tố|bắt tạm giam|điều tra|gian lận|lừa đảo|đình chỉ|hủy niêm yết|thu hồi|xử phạt|ceo .*từ chức|bankrupt|default|investigation|fraud|indict|arrest|halt trading|delist|recall|ceo .*resign', re.I)
 GEOPOLITICAL_PATTERN = re.compile(r'war|conflict|geopolit|sanction|missile|attack|invasion|ceasefire|chiến tranh|xung đột|trừng phạt|tên lửa|tấn công', re.I)
@@ -2691,6 +2691,15 @@ def _news_story_key(row):
     title = re.sub(r'[^\w\sÀ-ỹ]', ' ', title, flags=re.UNICODE)
     return re.sub(r'\s+', ' ', title).strip()
 
+def _news_document_key(row):
+    tier = str((row or {}).get('sourceTier') or '')
+    if tier not in {'official', 'trusted_legal_direct', 'trusted_legal', 'trusted_discovery'}:
+        return None
+    title = clean((row or {}).get('title'))
+    match = re.search(r'(?<!\w)(\d{1,4}/\d{4}/[A-ZĐ0-9-]+)(?!\w)', title, re.I)
+    return match.group(1).upper() if match else None
+
+
 def _news_row_quality(row):
     """Prefer authoritative and timestamp-verifiable duplicates over newer noise."""
     priority = int((row or {}).get('sourcePriority') or 0)
@@ -2701,24 +2710,27 @@ def _news_row_quality(row):
 
 
 def _unique_news(rows):
-    unique, titles = {}, {}
+    unique, titles, documents = {}, {}, {}
     for row in sorted(rows, key=lambda r: r.get('publishedAt') or '', reverse=True):
         url = row.get('url')
         key = _news_story_key(row)
+        doc_key = _news_document_key(row)
         if not url or not key:
             continue
-        existing_url = unique.get(url)
-        existing_key = titles.get(key)
-        existing = existing_url or existing_key
+        existing = unique.get(url) or titles.get(key) or (documents.get(doc_key) if doc_key else None)
         if existing:
             if _news_row_quality(row) > _news_row_quality(existing):
                 if existing.get('url') in unique:
                     del unique[existing['url']]
                 unique[url] = row
                 titles[key] = row
+                if doc_key:
+                    documents[doc_key] = row
             continue
         unique[url] = row
         titles[key] = row
+        if doc_key:
+            documents[doc_key] = row
     return sorted(unique.values(), key=lambda r: r.get('publishedAt') or '', reverse=True)
 
 def _retain_news_row(row, current):
