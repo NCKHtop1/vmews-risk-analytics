@@ -2527,7 +2527,7 @@ def _parse_luatvietnam_listing(raw, source, companies, current):
             'dt': dt, 'timestampBasis': basis, 'timePrecision': precision, 'context': context,
         }
         candidates.append(candidate)
-        if LUATVIETNAM_MARKET_PATTERN.search(title + ' ' + context):
+        if LUATVIETNAM_MARKET_PATTERN.search(title):
             relevant += 1
 
     unique = {}
@@ -2541,7 +2541,7 @@ def _parse_luatvietnam_listing(raw, source, companies, current):
 
     rows = []
     for candidate in candidates:
-        if not LUATVIETNAM_MARKET_PATTERN.search(candidate['title'] + ' ' + candidate['context']):
+        if not LUATVIETNAM_MARKET_PATTERN.search(candidate['title']):
             continue
         dt = candidate.get('dt')
         if dt is None:
@@ -2618,7 +2618,10 @@ def _fetch_luatvietnam_direct(companies, current):
 
     # Detail pages provide exact LuatVietnam "Ngày cập nhật" time. Verify a
     # bounded set so the 15-minute publisher cannot be starved by a slow site.
-    targets = sorted(_unique_news(all_rows), key=lambda r: r.get('publishedAt') or '', reverse=True)[:12]
+    targets = [
+        row for row in sorted(_unique_news(all_rows), key=lambda r: r.get('publishedAt') or '', reverse=True)
+        if row.get('timePrecision') != 'minute'
+    ][:12]
     replacements, detail_ok = {}, 0
     if targets:
         with ThreadPoolExecutor(max_workers=min(4, len(targets))) as pool:
@@ -2630,11 +2633,13 @@ def _fetch_luatvietnam_direct(companies, current):
     final = [replacements.get(row['url'], row) for row in all_rows]
     final = _unique_news(final)
     parser_healthy = sum(1 for source in sources if source.get('parserHealthy'))
+    precise = sum(1 for row in final if row.get('timePrecision') == 'minute')
     group = {
         'name': 'LuatVietnam Direct', 'url': 'https://luatvietnam.vn/',
-        'status': 'ok' if parser_healthy >= 2 else ('degraded' if parser_healthy == 1 else 'error'),
+        'status': 'ok' if parser_healthy >= 3 else ('degraded' if parser_healthy == 2 else 'error'),
         'parserHealthy': parser_healthy, 'expectedParsers': len(LUATVIETNAM_DIRECT_SOURCES),
         'items': len(final), 'detailChecks': len(targets), 'detailTimestampVerified': detail_ok,
+        'preciseTimestamps': precise,
         'lastItemAt': final[0]['publishedAt'] if final else None,
     }
     return final, sources, group
