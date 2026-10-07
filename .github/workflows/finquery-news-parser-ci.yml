@@ -4,22 +4,30 @@ on:
   pull_request:
     paths:
       - 'financial-report/scripts/refresh_market.py'
-      - 'financial-report/frontend/index.html'
       - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
+      - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
       - '.github/workflows/market-realtime-guard.yml'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
   push:
     branches: [main]
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
+      - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
       - '.github/workflows/market-realtime-guard.yml'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
   workflow_dispatch:
 
 permissions:
