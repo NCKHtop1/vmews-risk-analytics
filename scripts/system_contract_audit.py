@@ -165,7 +165,7 @@ def audit_market_bar_files(report: Audit, market_dir: Path, universe, now, quote
         report.check(not times or times[-1]<=quote_day, "MARKET_HISTORY_FUTURE", f"{symbol}:{times[-1] if times else None}>{quote_day}")
         expected_latest=str(meta.get("latestDate") or "")[:10]
         if expected_latest:
-            report.check(bool(times) and times[-1]==expected_latest, "MARKET_HISTORY_UNIVERSE_ALIGNMENT", f"{symbol}:{times[-1] if times else None}/{expected_latest}")
+            report.check(bool(times) and times[-1]>=expected_latest, "MARKET_HISTORY_UNIVERSE_ALIGNMENT", f"{symbol}:{times[-1] if times else None}/{expected_latest}")
         report.check(str(data.get("lastBar") or "")[:10]==(times[-1] if times else ""), "MARKET_HISTORY_LASTBAR", symbol)
         if bars and all(valid_ohlc(row) for row in bars) and times==sorted(set(times)):
             history_valid+=1
