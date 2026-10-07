@@ -143,6 +143,11 @@ test('stale intraday chart fails closed before technical signals are rendered',(
  assert.match(chart,/if\(!ctx\)\{this\.signalSnapshot=null;this\.signalEvents=\[\];this\.renderSignals\(\);return;\}/);
  assert.match(chart,/this\.consistency\(this\.lastMarketQuote\);this\.evaluateSignals\(false\)/);
 });
+test('retained quote cannot trigger burst refreshes when live fallback is disabled',()=>{
+ const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
+ assert.match(market,/if\(hasLive\|\|!state\.symbol\|\|!marketSessionActive\(\)\|\|!LIVE_FALLBACK_API\)/);
+ assert.doesNotMatch(market,/const delays=\[1200,3000,7000\]/);
+});
 test('retained quotes are visibly marked instead of presented as live',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  assert.match(market,/q\.status==='retained'\|\|src\.day!==now\.day/);
