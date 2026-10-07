@@ -148,5 +148,50 @@ class NewsParserTests(unittest.TestCase):
         self.assertNotIn("esc(date(r.publishedAt))",market)
 
 
+    def test_sbv_omo_is_a_token_not_a_substring(self):
+        for text in ('tomorrow rate decision','SOMO crude sales','Moomoo market update'):
+            self.assertIsNone(m.TOPIC_PATTERNS['sbv'].search(text),text)
+            self.assertIsNone(m.SBV_PATTERN.search(text),text)
+        for text in ('NHNN bơm vốn qua OMO','thị trường mở OMO'):
+            self.assertIsNotNone(m.TOPIC_PATTERNS['sbv'].search(text),text)
+            self.assertIsNotNone(m.SBV_PATTERN.search(text),text)
+
+    def test_global_tomorrow_story_is_not_tagged_sbv(self):
+        xml='''<?xml version="1.0"?><rss><channel>
+        <item><title>Fed minutes coming tomorrow could give markets important clues about future rate hikes</title>
+        <link>https://news.google.com/articles/fed-test</link>
+        <pubDate>Tue, 06 Oct 2026 20:38:35 +0000</pubDate>
+        <description>Global central bank outlook.</description></item>
+        </channel></rss>'''
+        url=next(url for name,url in m.FEEDS if name=='Global Central Banks')
+        rows=m.parse_feed(xml,'Global Central Banks',url,[],self.current)
+        self.assertEqual(len(rows),1)
+        self.assertNotIn('sbv',rows[0]['topics'])
+        self.assertNotEqual(rows[0].get('impactTag'),'NHNN')
+
+    def test_legal_document_code_dedupe_prefers_direct_over_discovery(self):
+        stamp='2026-10-07T04:48:00+00:00'
+        google={
+            'title':'Thông tư 53/2026/TT-NHNN: Quy định an toàn và quản lý rủi ro AI trong Ngân hàng - LuatVietnam',
+            'url':'https://news.google.com/articles/tt53','publishedAt':stamp,
+            'source':'LuatVietnam','sourceTier':'trusted_legal','sourcePriority':92
+        }
+        direct={
+            'title':'Thông tư 53/2026/TT-NHNN của Ngân hàng Nhà nước Việt Nam quy định về an toàn, quản lý rủi ro AI',
+            'url':'https://luatvietnam.vn/tt53-d1.html','publishedAt':stamp,
+            'source':'Luật Việt Nam','sourceTier':'trusted_legal_direct','sourcePriority':94,
+            'directSource':True,'timePrecision':'minute','detailTimestampVerified':True
+        }
+        picked=m._unique_news([google,direct])
+        self.assertEqual(len(picked),1)
+        self.assertEqual(picked[0]['url'],direct['url'])
+
+    def test_frontend_guards_omo_and_fpt_retail_false_positives(self):
+        market=(ROOT/'frontend/market.js').read_text()
+        self.assertIn(r"\bomo\b",market)
+        self.assertIn("title=title.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
+        self.assertIn("summary=summary.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
+
+
 if __name__=='__main__':
     unittest.main()
