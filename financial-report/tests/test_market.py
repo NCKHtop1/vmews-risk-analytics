@@ -1004,9 +1004,13 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(rows['FPT']['volume'],1234567)
         self.assertEqual(rows['FPT']['source'],'KBS')
         self.assertEqual(rows['FPT']['sourceTime'],verified)
-        self.assertEqual(rows['MBB']['price'],19800)
-        self.assertEqual(rows['MBB']['volume'],0)
-        self.assertEqual(rows['MBB']['sourceTimeBasis'],'current_session_trade_probe')
+        self.assertEqual(rows['FPT']['sourceTimeBasis'],'current_session_probe_with_symbol_trade')
+        self.assertNotIn('MBB',rows)
+
+    def test_kbs_zero_trade_reference_price_never_counts_as_live(self):
+        payload=[{'SB':'SJS','RE':51900,'CP':0,'TT':0,'OP':0,'HI':0,'LO':0,'CHP':0}]
+        rows=m.normalize_kbs_board(payload,['SJS'],'2026-10-07T03:45:00+00:00','2026-10-07T03:44:00+00:00')
+        self.assertEqual(rows,{})
 
     def test_kbs_trade_timestamp_parses_trade_date_and_time(self):
         stamp=m._kbs_trade_time({'TD':'29/09/2026','FT':'14:05:01'})
