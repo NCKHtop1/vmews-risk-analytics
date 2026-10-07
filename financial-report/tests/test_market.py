@@ -1275,6 +1275,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn('sleep 900',news)
         self.assertIn('Refresh live HOSE Core + Liquid prices',pages)
         self.assertIn('Refresh market news stream',pages)
+        self.assertIn('Refresh FinQuery macro snapshot',pages)
+        self.assertIn('Refresh FinQuery market universe',pages)
         self.assertIn("group: pages-${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion || 'success' }}",pages)
         self.assertIn('cancel-in-progress: true',pages)
         self.assertIn("source_day=source_dt.astimezone",pages)
