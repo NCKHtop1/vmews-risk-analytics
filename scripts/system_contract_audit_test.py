@@ -7,6 +7,8 @@ import unittest
 from datetime import datetime, timezone
 
 from system_contract_audit import (
+    Audit,
+    audit_market_bar_files,
     compute_intraday_session,
     risk_eligible_symbols,
     solution_live_freshness,
@@ -54,6 +56,64 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertEqual(out["expected"], ["AAA", "BBB"])
         self.assertEqual(out["fresh"], ["AAA"])
         self.assertEqual(out["lagged"], [("BBB", 40.0)])
+
+    def test_deep_history_requires_files_only_for_live_names_not_discovery(self):
+        universe = {
+            "symbols": {
+                "LIVE": {"liveMarketEligible": True, "scannerEligible": True, "latestDate": "2026-10-07"},
+                "DISC": {"liveMarketEligible": False, "scannerEligible": True, "latestDate": "2026-10-07"},
+            }
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "history").mkdir()
+            (root / "intraday").mkdir()
+            daily = {
+                "symbol": "LIVE", "unit": "VND", "barCount": 1, "lastBar": "2026-10-07",
+                "bars": [{"time": "2026-10-07", "open": 100, "high": 110, "low": 95, "close": 105, "volume": 1000}],
+            }
+            minute = {
+                "symbol": "LIVE", "unit": "VND", "barCount": 1, "lastBar": "2026-10-07T03:00:00+00:00",
+                "bars": [{"time": "2026-10-07T03:00:00+00:00", "open": 100, "high": 110, "low": 95, "close": 105, "volume": 1000}],
+            }
+            (root / "history" / "LIVE.json").write_text(json.dumps(daily))
+            (root / "intraday" / "LIVE.json").write_text(json.dumps(minute))
+            audit = Audit()
+            audit_market_bar_files(
+                audit, root, universe,
+                datetime(2026, 10, 7, 4, 0, tzinfo=timezone.utc),
+                "2026-10-07",
+            )
+        self.assertFalse(any(row["detail"] == "DISC" and row["status"] == "FAIL" for row in audit.results))
+        self.assertFalse(audit.errors)
+
+    def test_deep_history_rejects_invalid_live_ohlc(self):
+        universe = {
+            "symbols": {
+                "LIVE": {"liveMarketEligible": True, "scannerEligible": True, "latestDate": "2026-10-07"},
+            }
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "history").mkdir()
+            (root / "intraday").mkdir()
+            daily = {
+                "symbol": "LIVE", "unit": "VND", "barCount": 1, "lastBar": "2026-10-07",
+                "bars": [{"time": "2026-10-07", "open": 110, "high": 105, "low": 95, "close": 108, "volume": 1000}],
+            }
+            minute = {
+                "symbol": "LIVE", "unit": "VND", "barCount": 1, "lastBar": "2026-10-07T03:00:00+00:00",
+                "bars": [{"time": "2026-10-07T03:00:00+00:00", "open": 100, "high": 110, "low": 95, "close": 105, "volume": 1000}],
+            }
+            (root / "history" / "LIVE.json").write_text(json.dumps(daily))
+            (root / "intraday" / "LIVE.json").write_text(json.dumps(minute))
+            audit = Audit()
+            audit_market_bar_files(
+                audit, root, universe,
+                datetime(2026, 10, 7, 4, 0, tzinfo=timezone.utc),
+                "2026-10-07",
+            )
+        self.assertTrue(any(row["code"] == "MARKET_HISTORY_OHLC" and row["status"] == "FAIL" for row in audit.results))
 
     def test_solution_live_active_session_requires_real_source_freshness(self):
         now = datetime(2026, 10, 7, 3, 0, tzinfo=timezone.utc)  # 10:00 Vietnam
