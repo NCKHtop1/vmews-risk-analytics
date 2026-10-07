@@ -183,11 +183,30 @@ def test_current_source_and_coverage_dynamic(self) -> None:
 
     sources = self.market["sources"]
     current_bridge = sources.get("postCloseBridge") or {}
-    self.assertEqual(current_bridge.get("status"), "PASS")
+    bridge_status = current_bridge.get("status")
+    self.assertIn(bridge_status, {"PASS", "NOT_APPLICABLE_ALREADY_CURRENT"})
+    self.assertEqual(current_bridge.get("sessionDate"), self.dashboard["asOf"])
     self.assertEqual(sources.get("priceSessionAsOf"), self.dashboard["asOf"])
     self.assertLessEqual(sources.get("historicalRiskScanAsOf"), self.dashboard["asOf"])
     self.assertGreaterEqual(sources["marketScanGeneratedOn"], sources["historicalRiskScanAsOf"])
     self.assertEqual(symbols, set(self.current["symbols"]))
+    if bridge_status == "PASS":
+        self.assertTrue(current_bridge.get("completedSessionVerified"))
+        self.assertTrue(current_bridge.get("independentCloseConfirmed"))
+        self.assertGreaterEqual(
+            float(current_bridge.get("coverage") or 0),
+            float(current_bridge.get("minimumCoverage") or 1),
+        )
+        self.assertGreaterEqual(
+            float(current_bridge.get("secondaryCoverage") or 0),
+            float(current_bridge.get("minimumSecondaryCoverage") or 1),
+        )
+        self.assertEqual(int(current_bridge.get("mismatchCount") or 0), 0)
+    else:
+        # The bridge is intentionally bypassed only when the upstream history is
+        # already on the certified completed session. Cross-source publication
+        # proof remains mandatory below; this is not a stale-data exemption.
+        self.assertEqual(sources.get("marketScanAsOf"), self.dashboard["asOf"])
 
     universe = self.market["model"]["universe"]
     self.assertGreaterEqual(universe["hoseCoverage"], universe["requiredCurrentCoverage"])
