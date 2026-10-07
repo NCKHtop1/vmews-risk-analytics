@@ -208,6 +208,8 @@ jobs:
           test -d market
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # market/universe.json is owned exclusively by market-universe-refresh.yml.
+          git restore --worktree market/universe.json 2>/dev/null || true
           git add --sparse market
           if ! git diff --cached --quiet; then
             git commit -m 'Refresh FinQuery market prices, candles and company news'
