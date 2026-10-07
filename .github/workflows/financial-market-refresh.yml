@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - 'financial-report/scripts/refresh_esg.py'
+      - 'financial-report/scripts/build_hose_universe.py'
       - 'financial-report/config/esg_sources.json'
       - 'financial-report/scripts/build_risk_monitor.cjs'
       - 'financial-report/scripts/build_sector_risk_calibration.cjs'
