@@ -294,7 +294,7 @@ def build_universe(
             "liquidExtraCap": MAX_LIQUID_EXTRA,
             "discoveryHistoryBarsMin": DISCOVERY_MIN_HISTORY,
             "discoveryActiveSessions20Min": DISCOVERY_MIN_ACTIVE_20,
-            "promotion": "Live admission is fail-closed: published market history, liquidity/data gates and prior live admission are required in production; forecast/frozen history alone cannot promote a symbol.",
+            "promotion": "Live admission is fail-closed and independent of forecast freshness: published market history, liquidity/data gates and prior live admission are required in production; forecast/frozen history alone cannot promote a symbol.",
         },
         "counts": counts,
         "liveMarketSymbols": sorted(live_market_symbols),
