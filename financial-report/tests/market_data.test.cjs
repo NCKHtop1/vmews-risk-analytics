@@ -161,6 +161,13 @@ test('scanner watch states do not create directional bias and volume is contextu
  assert.match(source,/volume_direction = 'bullish'.*'bearish'.*'confirmation'/s);
  assert.doesNotMatch(source,/sum\(x\['direction'\] in \{'bullish', 'bullish_watch'\}/);
 });
+test('strategy lab reuses the committed aligned bundle and does not poll every minute',()=>{
+ const alerts=fs.readFileSync(require('node:path').join(__dirname,'../frontend/alert-center.js'),'utf8');
+ assert.match(alerts,/currentBundle\?\.\(\)\?\.strategy/);
+ assert.match(alerts,/setInterval\(\(\)=>\{if\(!document\.hidden\)refreshSnapshot\(\);\},300000\)/);
+ assert.doesNotMatch(alerts,/setInterval\(\(\)=>\{if\(!document\.hidden\)refreshSnapshot\(\);\},60000\)/);
+ assert.doesNotMatch(alerts,/setTimeout\(\(\)=>\{if\(Date\.parse\(actual\|\|0\)>Date\.parse\(expected\|\|0\)\)window\.FinancialMarket\?\.refresh\?\.\(\);refreshSnapshot\(\);\},1200\)/);
+});
 test('scanner and risk reuse the committed aligned bundle instead of refetching it',()=>{
  const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
  const risk=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
