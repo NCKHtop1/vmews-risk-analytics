@@ -33,7 +33,7 @@ function render(x){
 async function refresh(){
  if(state.loading)return;state.loading=true;setStatus('neutral','Đang kiểm tra…');
  try{
-  const urls=[MARKET_BASE+'quotes.json',MARKET_BASE+'news.json',MARKET_BASE+'technical-signals.json',MARKET_BASE+'technical-evidence.json',DATA_BASE+'live-track/track-record.json',DATA_BASE+'forecast-live-v10/evaluation.json'];
+  const urls=[MARKET_BASE+'quotes.json',MARKET_BASE+'news-latest.json',MARKET_BASE+'technical-signals.json',MARKET_BASE+'technical-evidence.json',DATA_BASE+'live-track/track-record.json',DATA_BASE+'forecast-live-v10/evaluation.json'];
   const rs=await Promise.allSettled(urls.map(get));
   const quotes=rs[0].status==='fulfilled'?rs[0].value:{},news=rs[1].status==='fulfilled'?rs[1].value:{},scanner=rs[2].status==='fulfilled'?rs[2].value:{},evidence=rs[3].status==='fulfilled'?rs[3].value:{},track=rs[4].status==='fulfilled'?rs[4].value:{},forecastLive=rs[5].status==='fulfilled'?rs[5].value:{};
   const active=activeSession(),rows=Object.values(quotes.quotes||{}).filter(q=>q&&q.status!=='retained'&&sameVnDay(q.sourceTime||q.collectedAt));
@@ -58,6 +58,6 @@ async function refresh(){
 }
 document.addEventListener('finquery:market-refresh',e=>{state.lastMarket=e.detail||null;refresh();});
 $('data-health-refresh')?.addEventListener('click',refresh);
-refresh();setInterval(()=>{if(!document.hidden)refresh();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+refresh();setInterval(()=>{if(!document.hidden)refresh();},300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 window.FinDataHealth={refresh,context:()=>state.last};
 })();
