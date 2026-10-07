@@ -423,3 +423,17 @@ test('direct Risk and Strategy Lab hashes reopen their dedicated views after unl
  assert.match(app,/location\.hash==='\#strategy-builder'.*openStrategy/s);
  assert.match(views,/location\.hash==='\#strategy-builder'\)showStrategy\(false\)/);
 });
+
+test('minute publisher fails closed on missing live-session freshness and publish failure',()=>{
+ const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_intraday_publisher.sh'),'utf8');
+ assert.match(live,/sessionExpected' not in d or 'sessionFresh' not in d/);
+ assert.match(live,/intraday live-session freshness fields missing/);
+ assert.match(live,/local collect_rc=0 health_rc=0 publish_rc=0/);
+ assert.match(live,/publish_snapshot \|\| publish_rc=\$\?/);
+ assert.match(live,/\[ "\$publish_rc" -ne 0 \]/);
+});
+test('Pages refuses legacy intraday health during an active session',()=>{
+ const pages=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/pages.yml'),'utf8');
+ assert.match(pages,/intraday\.get\('sessionExpected'\) is not None and intraday\.get\('sessionFresh'\) is not None/);
+ assert.match(pages,/intraday session freshness missing/);
+});
