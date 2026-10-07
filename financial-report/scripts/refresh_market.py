@@ -365,9 +365,12 @@ def normalize_kbs_board(payload, symbols, collected, verified_source_time):
         if volume is None:
             volume = number(item.get('CV'))
         volume = max(0, volume or 0)
-        price = matched if matched and matched > 0 else (ref if volume == 0 and ref and ref > 0 else None)
-        if price is None or price <= 0:
+        # A reference price with zero matched volume is not evidence that this
+        # symbol traded in the current session. Never borrow another symbol's
+        # session timestamp to make a zero-trade row look live.
+        if not matched or matched <= 0 or volume <= 0:
             continue
+        price = matched
         open_price = number(item.get('OP'))
         high = number(item.get('HI'))
         low = number(item.get('LO'))
@@ -377,7 +380,7 @@ def normalize_kbs_board(payload, symbols, collected, verified_source_time):
             'volume': volume, 'open': open_price, 'high': high, 'low': low,
             'sourceTime': verified_source_time, 'collectedAt': collected,
             'source': 'KBS', 'unit': 'VND', 'status': 'ok',
-            'sourceTimeBasis': 'current_session_trade_probe'
+            'sourceTimeBasis': 'current_session_probe_with_symbol_trade'
         }
     if not out:
         raise ValueError('No valid prices in KBS price-board response')
@@ -1296,6 +1299,9 @@ def prices(out, companies):
     if require_today and missing_current:
         try:
             kbs_rows = kbs_current_board(missing_current, collected)
+            max_quote_age = os.environ.get('MARKET_MAX_QUOTE_AGE_MINUTES')
+            kbs_rows, kbs_stale = current_session_quotes(kbs_rows, max_age_minutes=max_quote_age)
+            stale.update(kbs_stale)
             fresh.update(kbs_rows)
             errors.append(f'KBS current-session fallback filled {len(kbs_rows)}/{len(missing_current)} symbols')
         except Exception as kbs_error:
