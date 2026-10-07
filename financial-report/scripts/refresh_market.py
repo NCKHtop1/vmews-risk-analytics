@@ -2691,6 +2691,15 @@ def _news_story_key(row):
     title = re.sub(r'[^\w\sÀ-ỹ]', ' ', title, flags=re.UNICODE)
     return re.sub(r'\s+', ' ', title).strip()
 
+def _news_row_quality(row):
+    """Prefer authoritative and timestamp-verifiable duplicates over newer noise."""
+    priority = int((row or {}).get('sourcePriority') or 0)
+    precision = {'minute': 3, 'day': 2, 'relative': 1}.get((row or {}).get('timePrecision'), 2)
+    verified = 1 if (row or {}).get('detailTimestampVerified') else 0
+    direct = 1 if (row or {}).get('directSource') else 0
+    return priority, verified, precision, direct
+
+
 def _unique_news(rows):
     unique, titles = {}, {}
     for row in sorted(rows, key=lambda r: r.get('publishedAt') or '', reverse=True):
@@ -2702,9 +2711,7 @@ def _unique_news(rows):
         existing_key = titles.get(key)
         existing = existing_url or existing_key
         if existing:
-            new_priority = int(row.get('sourcePriority') or 0)
-            old_priority = int(existing.get('sourcePriority') or 0)
-            if new_priority > old_priority:
+            if _news_row_quality(row) > _news_row_quality(existing):
                 if existing.get('url') in unique:
                     del unique[existing['url']]
                 unique[url] = row
@@ -2766,8 +2773,21 @@ def news(out, companies):
     retained = []
     for row in previous.get('items', []):
         try:
-            if datetime.fromisoformat(str(row.get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc) >= current - timedelta(days=30):
-                retained.append(row)
+            stamp = datetime.fromisoformat(str(row.get('publishedAt')).replace('Z', '+00:00')).astimezone(timezone.utc)
+            if stamp < current - timedelta(days=30):
+                continue
+            if row.get('directSource') and row.get('source') == 'Luật Việt Nam':
+                precision = row.get('timePrecision')
+                # Parser-v1 could mark a relative clock as detail-verified. That
+                # combination is impossible under the v2 contract and must not
+                # survive append/retain merges.
+                if row.get('detailTimestampVerified') and precision != 'minute':
+                    continue
+                # Relative timestamps are useful for immediacy but must never
+                # become a 30-day pseudo-canonical archive.
+                if precision == 'relative' and stamp < current - timedelta(hours=6):
+                    continue
+            retained.append(row)
         except (TypeError, ValueError, OverflowError):
             continue
     items = _unique_news(rows + retained)[:2500]
