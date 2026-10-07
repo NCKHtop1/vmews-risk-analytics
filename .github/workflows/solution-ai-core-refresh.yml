@@ -100,10 +100,32 @@ jobs:
           if str(dash.get('asOf')) != expected:
               raise SystemExit(f'SOLUTION CORE STALE: {dash.get("asOf")} expected={expected}')
           market=json.loads(Path('data/forecast-market-v13.json').read_text(encoding='utf-8'))
-          bridge=((market.get('sources') or {}).get('postCloseBridge') or {})
-          if bridge.get('status') != 'PASS':
-              raise SystemExit(f'SOLUTION CORE BRIDGE NOT PASS: {bridge}')
-          print({'asOf':dash.get('asOf'),'generatedAt':dash.get('generatedAt'),'bridge':bridge.get('status')})
+          sources=market.get('sources') or {}
+          bridge=sources.get('postCloseBridge') or {}
+          price_audit=sources.get('priceCrossSource') or {}
+          status=bridge.get('status')
+          if status not in {'PASS','NOT_APPLICABLE_ALREADY_CURRENT'}:
+              raise SystemExit(f'SOLUTION CORE BRIDGE INVALID: {bridge}')
+          if str(bridge.get('sessionDate') or '') != expected:
+              raise SystemExit(f'SOLUTION CORE BRIDGE SESSION MISMATCH: {bridge.get("sessionDate")} expected={expected}')
+          if str(sources.get('priceSessionAsOf') or '') != expected or str(sources.get('marketScanAsOf') or '') != expected:
+              raise SystemExit(f'SOLUTION CORE SOURCE SESSION MISMATCH: price={sources.get("priceSessionAsOf")} market={sources.get("marketScanAsOf")} expected={expected}')
+          if price_audit.get('status') != 'PASS':
+              raise SystemExit(f'SOLUTION CORE PRICE CROSS-SOURCE NOT PASS: {price_audit}')
+          if float(price_audit.get('coverage') or 0) < float(price_audit.get('requiredCoverage') or 1):
+              raise SystemExit(f'SOLUTION CORE PRICE COVERAGE LOW: {price_audit}')
+          if int(price_audit.get('mismatchCount') or 0) != 0:
+              raise SystemExit(f'SOLUTION CORE PRICE SOURCES DISAGREE: {price_audit}')
+          if status == 'PASS':
+              if bridge.get('completedSessionVerified') is not True or bridge.get('independentCloseConfirmed') is not True:
+                  raise SystemExit(f'SOLUTION CORE BRIDGE PROOF INCOMPLETE: {bridge}')
+              if float(bridge.get('coverage') or 0) < float(bridge.get('minimumCoverage') or 1):
+                  raise SystemExit(f'SOLUTION CORE BRIDGE PRIMARY COVERAGE LOW: {bridge}')
+              if float(bridge.get('secondaryCoverage') or 0) < float(bridge.get('minimumSecondaryCoverage') or 1):
+                  raise SystemExit(f'SOLUTION CORE BRIDGE SECONDARY COVERAGE LOW: {bridge}')
+              if int(bridge.get('mismatchCount') or 0) != 0:
+                  raise SystemExit(f'SOLUTION CORE BRIDGE SOURCES DISAGREE: {bridge}')
+          print({'asOf':dash.get('asOf'),'generatedAt':dash.get('generatedAt'),'bridge':status,'priceCrossSource':price_audit.get('status')})
           PY
 
       - name: Publish only to dedicated SoluTION.AI core branch
