@@ -55,6 +55,22 @@ def finalize(root: Path) -> dict:
     if not target_day:
         raise RuntimeError("quote session date missing")
 
+    required = max(1, math.ceil(len(symbols) * .90))
+    existing = intraday_archive_summary(root, symbols)
+    if (
+        existing.get("archive5mLatestDay") == target_day
+        and int(existing.get("archive5mLatestDayCoverage") or 0) >= required
+    ):
+        return {
+            "session": target_day,
+            "written": 0,
+            "liveUniverse": len(symbols),
+            "latestCoverage": int(existing.get("archive5mLatestDayCoverage") or 0),
+            "required": required,
+            "skipped": [],
+            "alreadyFinalized": True,
+        }
+
     written = 0
     skipped = []
     for symbol in symbols:
@@ -72,7 +88,6 @@ def finalize(root: Path) -> dict:
     summary = intraday_archive_summary(root, symbols)
     latest_day = summary.get("archive5mLatestDay")
     latest_coverage = int(summary.get("archive5mLatestDayCoverage") or 0)
-    required = max(1, math.ceil(len(symbols) * .90))
     if latest_day != target_day:
         raise RuntimeError(f"5m archive session mismatch: {latest_day} != {target_day}")
     if latest_coverage < required:
