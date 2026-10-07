@@ -217,7 +217,8 @@ async function refresh(){
  state.refreshing=true;const refreshButton=$('market-refresh');if(refreshButton)refreshButton.disabled=true;
  try{
  const previousNewsMax=Math.max(0,...(state.news?.items||[]).map(x=>Date.parse(x.publishedAt)||0));
- const results=await Promise.allSettled([window.FinMarketData.getAlignedBundle(),get('news.json'),get('drivers.json'),get('universe.json')]);
+ const latestNews=get('news-latest.json').catch(()=>get('news.json'));
+ const results=await Promise.allSettled([window.FinMarketData.getAlignedBundle(),latestNews,get('drivers.json'),get('universe.json')]);
  if(results[0].status==='fulfilled'){
   const atomic=window.FinMarketData.commitBundle(results[0].value),bundle=atomic?.quotes;
   if(bundle?.quotes){
