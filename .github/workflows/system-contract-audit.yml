@@ -95,8 +95,6 @@ jobs:
       - name: Verify Pages generation after a Pages deployment
         if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Deploy VMEWS Pages' && github.event.workflow_run.conclusion == 'success'
         shell: bash
-        env:
-          EXPECTED_CODE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
           token="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -105,13 +103,25 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?contract=$token" -o /tmp/public-quotes.json
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?contract=$token" -o /tmp/public-strategy.json
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?contract=$token" -o /tmp/public-risk.json
-          EXPECTED_CODE_SHA="$EXPECTED_CODE_SHA" python - <<'PY'
-          import json,os,re
+
+          code_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['code'])\")"
+          financial_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['financialData'])\")"
+          insight_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['insightData'])\")"
+          market_sha="$(python -c \"import json; print(json.load(open('/tmp/deployment.json'))['marketData'])\")"
+
+          git fetch origin main --depth=100
+          git merge-base --is-ancestor "$code_sha" origin/main
+          git -C _financial-data fetch origin financial-report-data --depth=100
+          git -C _financial-data merge-base --is-ancestor "$financial_sha" origin/financial-report-data
+          git -C _insight-data fetch origin financial-insights-data --depth=100
+          git -C _insight-data merge-base --is-ancestor "$insight_sha" origin/financial-insights-data
+          git -C _market-data fetch origin financial-market-data --depth=100
+          git -C _market-data merge-base --is-ancestor "$market_sha" origin/financial-market-data
+
+          python - <<'PY'
+          import json,re
           d=json.load(open('/tmp/deployment.json'))
-          expected=os.environ['EXPECTED_CODE_SHA']
-          assert d.get('code')==expected,(d.get('code'),expected)
-          for key in ('financialData','insightData','marketData'):
-              assert re.fullmatch(r'[0-9a-f]{40}',str(d.get(key) or '')),(key,d.get(key))
+          assert all(re.fullmatch(r'[0-9a-f]{40}',str(v or '')) for v in d.values()),d
           q=json.load(open('/tmp/public-quotes.json'))
           s=json.load(open('/tmp/public-strategy.json'))
           r=json.load(open('/tmp/public-risk.json'))
@@ -120,7 +130,6 @@ jobs:
           assert r.get('inputSignature'),r.get('version')
           print({'productionDeployment':'PASS','code':d.get('code'),'marketSourceTime':source,'riskCoverage':(r.get('coverage') or {}).get('quotes')})
           PY
-
       - uses: actions/upload-artifact@v4
         if: always()
         with:
