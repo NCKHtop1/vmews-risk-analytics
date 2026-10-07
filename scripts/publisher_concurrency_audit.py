@@ -120,8 +120,9 @@ DATA_BRANCH = "financial-market-data"
 
 def pushes_to_branch(text: str, branch: str) -> bool:
     active = _active_lines(text)
+    pattern = re.compile(rf"(?:HEAD:refs/heads/|HEAD:){re.escape(branch)}\\b")
     return any(
-        re.search(rf"(?:HEAD:refs/heads/|HEAD:){re.escape(branch)}\\b", command.replace('"', "").replace("'", ""))
+        bool(pattern.search(command.replace('"', "").replace("'", "")))
         for command in push_commands(active)
     )
 
@@ -130,16 +131,15 @@ def stages_whole_market_tree(text: str) -> bool:
     """Reject branch writers that can accidentally publish another job's files."""
     active = _active_lines(text)
     for line in active.splitlines():
-        if not re.search(r"\\bgit(?:\\s+-C\\s+\\S+)?\\s+add\\b", line):
+        if not re.search(r"\bgit(?:\s+-C\s+\S+)?\s+add\b", line):
             continue
         command = line.replace('"', "").replace("'", "")
         # A literal market path with no slash/file suffix stages the whole tree.
-        if re.search(r"\\bmarket(?:/)?(?:\\s|$)", command) and not re.search(r"\\bmarket/[^\\s]+", command):
+        if re.search(r"\bmarket(?:/)?(?:\s|$)", command) and not re.search(r"\bmarket/[^\s]+", command):
             return True
-        if re.search(r"--sparse\\s+market(?:\\s|$)", command):
+        if re.search(r"--sparse\s+market(?:\s|$)", command):
             return True
     return False
-
 
 def audit_data_branch_ownership() -> dict[str, list[str]]:
     failures: dict[str, list[str]] = {}
