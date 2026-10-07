@@ -33,7 +33,9 @@ permissions:
 
 concurrency:
   group: finquery-system-contract-audit
-  cancel-in-progress: true
+  # Finish the audit already in flight. GitHub coalesces newer triggers into a
+  # single pending run, avoiding both cancellation storms and an audit backlog.
+  cancel-in-progress: false
 
 jobs:
   contract:
