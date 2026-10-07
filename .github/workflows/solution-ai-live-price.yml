@@ -73,11 +73,18 @@ jobs:
             python - "$out" <<'PY'
           import json,sys
           p=json.load(open(sys.argv[1],encoding='utf-8'))
+          from datetime import datetime, timezone
           assert p.get('scope')=='solution-ai',p
           assert p.get('status')=='ok',p
           assert int(p.get('coverage') or 0)>=500,p.get('coverage')
           assert isinstance(p.get('quotes'),dict) and len(p['quotes'])>=500
-          print({'coverage':p['coverage'],'sourceTime':p.get('sourceTime'),'exchangeCounts':p.get('exchangeCounts')})
+          generated=datetime.fromisoformat(str(p.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+          source=datetime.fromisoformat(str(p.get('sourceTime')).replace('Z','+00:00')).astimezone(timezone.utc)
+          now=datetime.now(timezone.utc)
+          assert source <= generated + __import__('datetime').timedelta(minutes=5),(source,generated)
+          assert generated <= now + __import__('datetime').timedelta(minutes=5),(generated,now)
+          assert (now-source).total_seconds() <= 96*3600,(source,now)
+          print({'coverage':p['coverage'],'generatedAt':p.get('generatedAt'),'sourceTime':p.get('sourceTime'),'exchangeCounts':p.get('exchangeCounts')})
           PY
 
             git -C /tmp/solution-ai-live-data add solution-ai/live.json
@@ -96,12 +103,13 @@ jobs:
           now="$(vn_hhmm)"
           if end="$(session_end "$now")"; then
             oneshot=0
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ]; then
+          else
+            # GitHub scheduled jobs can start hours late. A late cron must still
+            # repair the dedicated branch with a one-shot snapshot instead of
+            # reporting a green no-op and leaving yesterday's data in production.
             end="$now"
             oneshot=1
-          else
-            echo "Outside SoluTION.AI live window: $now"
-            exit 0
+            echo "Outside continuous live window ($now); publishing one recovery snapshot for event=${{ github.event_name }}."
           fi
 
           iterations=0
