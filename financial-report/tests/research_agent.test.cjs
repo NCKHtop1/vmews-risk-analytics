@@ -19,3 +19,20 @@ test('research agent plans tools and excludes stale scanner evidence',async()=>{
  const second=await ctx.FinResearchAgent.run('Vì sao mã này tăng trong phiên hôm nay?',{baseContext:{technicalScanner:{current:{symbol:'FPT'}},localFinancialData:{annualSummary:{period:'2025'}}}});
  assert.equal(second.audit.validation.status,'warn');assert.equal(second.context.agent.evidence.scanner.current,null);assert.equal(second.context.technicalScanner,null);
 });
+
+test('macro research prefers canonical series and carries quality warnings',async()=>{
+ ctx.FinMacro.context=()=>({checkedAt:now,datasets:{
+  macro_overview:{name:'Tổng quan kinh tế vĩ mô',qualityStatus:'warning',qualityWarnings:[{code:'GDP_GROWTH_PLAUSIBILITY'}],rows:[{metric:'GDP',value:32.7}],numericColumns:['value']},
+  fdi:{name:'Tình hình FDI',qualityStatus:'ok',rows:[{date:'2026-09',value:1}],numericColumns:['value']},
+  gdp_growth:{name:'Tăng trưởng GDP thực tế',qualityStatus:'ok',rows:[{date:'Q3 2026',value:8.39}],numericColumns:['value']},
+  pmi:{name:'PMI theo tháng',qualityStatus:'ok',rows:[{date:'2026-09',value:51}],numericColumns:['value']},
+  money_supply:{name:'Tổng cung tiền theo tháng',qualityStatus:'ok',rows:[{date:'2026-09',value:10}],numericColumns:['value']}
+ }});
+ const general=await ctx.FinResearchAgent.run('Phân tích bối cảnh vĩ mô hiện tại.');
+ const ids=general.context.agent.evidence.macro.datasets.map(x=>x.id);
+ assert.deepEqual(ids,['gdp_growth','pmi','money_supply','fdi']);
+ assert(!ids.includes('macro_overview'));
+ const gdp=await ctx.FinResearchAgent.run('Phân tích tăng trưởng GDP hiện tại.');
+ assert.equal(gdp.context.agent.evidence.macro.datasets[0].id,'gdp_growth');
+ assert.equal(gdp.context.agent.evidence.macro.datasets[0].qualityStatus,'ok');
+});
