@@ -220,9 +220,14 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
   verify:
-    needs: deploy
+    needs: [build, deploy]
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
+    env:
+      EXPECTED_CODE_SHA: ${{ needs.build.outputs.code_sha }}
+      EXPECTED_FINANCIAL_SHA: ${{ needs.build.outputs.financial_sha }}
+      EXPECTED_INSIGHT_SHA: ${{ needs.build.outputs.insight_sha }}
+      EXPECTED_MARKET_SHA: ${{ needs.build.outputs.market_sha }}
     steps:
       - name: Verify deployed financial dashboard and critical datasets
         shell: bash
@@ -235,8 +240,8 @@ jobs:
             if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=$token#market" -o /tmp/page.html \
               && curl -fsSL --max-time 20 "$BASE/deployment.json?verify=$token" -o /tmp/deployment.json; then
               deployed_code="$(python -c "import json; print(json.load(open('/tmp/deployment.json')).get('code',''))" 2>/dev/null || true)"
-              echo "pages-verify attempt=$attempt deployed=$deployed_code expected=$GITHUB_SHA"
-              if [ "$deployed_code" = "$GITHUB_SHA" ]; then
+              echo "pages-verify attempt=$attempt deployed=$deployed_code expected=$EXPECTED_CODE_SHA"
+              if [ "$deployed_code" = "$EXPECTED_CODE_SHA" ]; then
                 ready=1
                 break
               fi
@@ -282,6 +287,10 @@ jobs:
           import math
           q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); intraday=load('intraday.json'); macro=load('macro.json'); market_cal=load('market-risk-calibration.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
+          import os,re
+          expected={'code':os.environ['EXPECTED_CODE_SHA'],'financialData':os.environ['EXPECTED_FINANCIAL_SHA'],'insightData':os.environ['EXPECTED_INSIGHT_SHA'],'marketData':os.environ['EXPECTED_MARKET_SHA']}
+          assert d==expected,(d,expected)
+          assert all(re.fullmatch(r'[0-9a-f]{40}',str(v or '')) for v in d.values()),d
           q_expected=max(1,int(q.get('expected') or 0)); q_required=max(1,math.ceil(q_expected*.90))
           s_universe=max(1,int(s.get('universe') or 0)); s_required=max(1,math.ceil(s_universe*.90))
           assert q.get('status')=='ok' and int(q.get('coverage') or 0)>=q_required,(q.get('coverage'),q_expected)
