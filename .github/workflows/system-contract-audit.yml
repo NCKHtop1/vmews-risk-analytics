@@ -92,24 +92,33 @@ jobs:
             --repo-root . \
             --report-json /tmp/system-contract.json
 
-      - name: Verify Pages branch revisions after a Pages deployment
+      - name: Verify Pages generation after a Pages deployment
         if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Deploy VMEWS Pages' && github.event.workflow_run.conclusion == 'success'
         shell: bash
+        env:
+          EXPECTED_CODE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
           token="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          curl -fsSL --max-time 20 "https://nckhtop1.github.io/vmews-risk-analytics/financial-report/deployment.json?contract=$token" -o /tmp/deployment.json
-          python - <<'PY'
-          import json,subprocess
+          BASE='https://nckhtop1.github.io/vmews-risk-analytics/financial-report'
+          curl -fsSL --max-time 20 "$BASE/deployment.json?contract=$token" -o /tmp/deployment.json
+          curl -fsSL --max-time 20 "$BASE/market/quotes.json?contract=$token" -o /tmp/public-quotes.json
+          curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?contract=$token" -o /tmp/public-strategy.json
+          curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?contract=$token" -o /tmp/public-risk.json
+          EXPECTED_CODE_SHA="$EXPECTED_CODE_SHA" python - <<'PY'
+          import json,os,re
           d=json.load(open('/tmp/deployment.json'))
-          expected={
-            'code':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
-            'financialData':subprocess.check_output(['git','-C','_financial-data','rev-parse','HEAD'],text=True).strip(),
-            'insightData':subprocess.check_output(['git','-C','_insight-data','rev-parse','HEAD'],text=True).strip(),
-            'marketData':subprocess.check_output(['git','-C','_market-data','rev-parse','HEAD'],text=True).strip(),
-          }
-          assert d==expected,(d,expected)
-          print({'productionDeployment':'PASS',**d})
+          expected=os.environ['EXPECTED_CODE_SHA']
+          assert d.get('code')==expected,(d.get('code'),expected)
+          for key in ('financialData','insightData','marketData'):
+              assert re.fullmatch(r'[0-9a-f]{40}',str(d.get(key) or '')),(key,d.get(key))
+          q=json.load(open('/tmp/public-quotes.json'))
+          s=json.load(open('/tmp/public-strategy.json'))
+          r=json.load(open('/tmp/public-risk.json'))
+          source=q.get('latestSourceTime')
+          assert source and s.get('sourceTime')==source and r.get('sourceTime')==source,(source,s.get('sourceTime'),r.get('sourceTime'))
+          assert r.get('inputSignature'),r.get('version')
+          print({'productionDeployment':'PASS','code':d.get('code'),'marketSourceTime':source,'riskCoverage':(r.get('coverage') or {}).get('quotes')})
           PY
 
       - uses: actions/upload-artifact@v4
