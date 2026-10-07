@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))
-from forecast_v28_postclose_bridge import bridge_completed_session, select_validation_universe
+from forecast_v28_postclose_bridge import bridge_completed_session, select_validation_universe, verified_reentry_symbols
 VN_TZ=timezone(timedelta(hours=7))
 
 def frame_for(symbols,date_text="2026-08-28"):
@@ -30,6 +30,20 @@ class PostCloseBridgeTest(unittest.TestCase):
         h=histories(["AAA","BBB","CCC","DDD"])
         picked=select_validation_universe(h,["AAA","BBB","CCC","DDD"],["AAA","CCC","ZZZ"])
         self.assertEqual(picked,["AAA","CCC"])
+
+    def test_validation_universe_adds_only_explicit_verified_reentry(self):
+        h=histories(["AAA","BBB","CCC","DDD"])
+        picked=select_validation_universe(
+            h,["AAA","BBB","CCC","DDD"],["AAA","CCC"],["BBB","ZZZ"]
+        )
+        self.assertEqual(picked,["AAA","BBB","CCC"])
+
+    def test_reentry_requires_two_source_same_session_agreement(self):
+        symbols=["BBB","DDD"]
+        frame=frame_for(symbols)
+        secondary=secondary_for(symbols,bump="DDD")
+        verified=verified_reentry_symbols(frame,secondary,symbols,"2026-08-28")
+        self.assertEqual(verified,["BBB"])
 
     def test_validation_universe_falls_back_to_full_current_hose(self):
         h=histories(["AAA","BBB","CCC"])
