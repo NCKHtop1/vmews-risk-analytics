@@ -912,13 +912,21 @@ def technical_scan_symbol(symbol, bars, quote=None, previous=None):
         if prev_rsi is not None and prev_rsi > 70 >= rsi:
             signals.append(_technical_signal('RSI vừa rời vùng quá mua', 'rsi_exit_overbought', 'bearish', 'high'))
 
-    if volume_ratio is not None and volume_ratio >= TECHNICAL_SCANNER_RULES['volume']['spikeRatio']:
-        signals.append(_technical_signal('Khối lượng tích lũy ≥ 1,5x TB20', 'volume_spike', 'confirmation', 'high'))
-    elif volume_ratio is not None and volume_ratio >= TECHNICAL_SCANNER_RULES['volume']['elevatedRatio']:
-        signals.append(_technical_signal('Khối lượng tích lũy ≥ 1,2x TB20', 'volume_elevated', 'confirmation', 'medium'))
+    quote_change = number((quote or {}).get('changePct'))
+    if quote_change is None and daily_prev.get('close'):
+        quote_change = (close / daily_prev['close'] - 1) * 100
+    volume_direction = 'bullish' if (quote_change or 0) > 0.15 else 'bearish' if (quote_change or 0) < -0.15 else 'confirmation'
+    volume_side = 'cùng giá tăng' if volume_direction == 'bullish' else 'trong phiên giảm' if volume_direction == 'bearish' else 'khi giá đi ngang'
 
-    bullish = sum(x['direction'] in {'bullish', 'bullish_watch'} for x in signals)
-    bearish = sum(x['direction'] in {'bearish', 'bearish_watch'} for x in signals)
+    if volume_ratio is not None and volume_ratio >= TECHNICAL_SCANNER_RULES['volume']['spikeRatio']:
+        signals.append(_technical_signal(f'Khối lượng ≥ 1,5x TB20 {volume_side}', 'volume_spike', volume_direction, 'high'))
+    elif volume_ratio is not None and volume_ratio >= TECHNICAL_SCANNER_RULES['volume']['elevatedRatio']:
+        signals.append(_technical_signal(f'Khối lượng ≥ 1,2x TB20 {volume_side}', 'volume_elevated', volume_direction, 'medium'))
+
+    # Watch states such as RSI oversold/overbought are conditions to monitor,
+    # not directional confirmation by themselves.
+    bullish = sum(x['direction'] == 'bullish' for x in signals)
+    bearish = sum(x['direction'] == 'bearish' for x in signals)
     bias = 'bullish' if bullish > bearish else 'bearish' if bearish > bullish else 'mixed' if bullish and bearish else 'neutral'
 
     priority = 0
