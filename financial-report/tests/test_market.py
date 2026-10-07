@@ -930,7 +930,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('target<first||target>last',chart)
         self.assertIn('chart-insight-marker',chart)
         self.assertIn('registerInsights(api)',market)
-        self.assertIn("window.FinInsights?.select?.(symbol)",market)
+        self.assertRegex(market, r"window\.FinInsights\?\.select\?\.\((?:symbol|next)\)")
         self.assertIn("window.FinInsights={select,attachChart,context,open,reload:load}",insights)
         self.assertIn('Khuyến nghị và giá mục tiêu là quan điểm của',insights)
         self.assertIn('corporateEvents',research)
