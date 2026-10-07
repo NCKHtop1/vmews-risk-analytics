@@ -20,6 +20,7 @@ on:
       - Refresh FinQuery prices and company news
       - Refresh market news stream
       - Refresh live HOSE Core + Liquid prices
+      - Refresh live HOSE minute candles
       - Deploy VMEWS Pages
     branches: [main]
     types: [completed]
@@ -69,13 +70,23 @@ jobs:
               print('Recovery dispatched:',workflow)
           stale=[]
           try:
-              n=get('news.json')
+              n=get('news-latest.json')
               if n.get('status')!='ok' or not n.get('items') or age(n.get('checkedAt'))>20:
                   raise ValueError('News older than 20 minutes or unavailable')
               print('News age minutes:',round(age(n['checkedAt']),1))
           except Exception as e:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
           if active:
+              try:
+                  intraday=get('intraday-status.json')
+                  expected_i=max(1,int(intraday.get('expected') or 0))
+                  required_i=max(1,int(intraday.get('required') or math.ceil(expected_i*.90)))
+                  success_i=int(intraday.get('success') or 0)
+                  if intraday.get('status')!='ok' or success_i<required_i or age(intraday.get('checkedAt'))>20:
+                      raise ValueError(f'intraday stale/partial: {success_i}/{expected_i}, required={required_i}')
+                  print('Intraday age/coverage:',round(age(intraday['checkedAt']),1),f'{success_i}/{expected_i}')
+              except Exception as e:
+                  print('::warning::Intraday freshness:',e); stale.append('market-intraday-live.yml')
               try:
                   q=get('quotes.json')
                   s=get('technical-signals.json')
