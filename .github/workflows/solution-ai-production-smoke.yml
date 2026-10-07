@@ -109,6 +109,23 @@ jobs:
           done
           echo 'Production Pages has not reached the local-first SoluTION.AI release.' >&2
           exit 1
+      - name: Require dedicated core to match latest completed VN session
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 20 "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data/forecast-dashboard-v12.json?session=${GITHUB_RUN_ID}" -o /tmp/solution-core-dashboard.json
+          python - <<'PY'
+          import json,sys
+          from datetime import datetime
+          sys.path.insert(0,'scripts')
+          from vn_exchange_calendar import VN_TZ,latest_completed_session
+          expected=latest_completed_session(datetime.now(VN_TZ)).isoformat()
+          dash=json.load(open('/tmp/solution-core-dashboard.json',encoding='utf-8'))
+          observed=str(dash.get('asOf') or '')
+          if observed != expected:
+              raise SystemExit(f'SOLUTION CORE STALE IN PRODUCTION: {observed} expected={expected}')
+          print({'coreAsOf':observed,'expected':expected,'status':'CURRENT'})
+          PY
       - name: Verify dedicated SoluTION.AI live data channel
         shell: bash
         run: |
