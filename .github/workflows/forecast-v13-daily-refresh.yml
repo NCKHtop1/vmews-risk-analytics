@@ -160,6 +160,7 @@ jobs:
           python -m unittest financial-report/tests/test_universe.py -v
           python scripts/refresh_institutional_flow_v20_test.py
           python scripts/sanitize_intelligence_v20_test.py
+          python scripts/system_contract_audit_test.py
           node --test scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/forecast_v20_release_audit_test.py
           python scripts/forecast_v20_release_audit_v28_test.py
