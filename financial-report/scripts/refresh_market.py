@@ -1710,11 +1710,12 @@ def _refresh_one_history(out, symbol, minute=False):
             fresh_bars = _history_page(symbol, 'ONE_MINUTE', int(time.time()), count, minute=True)
             older_bars = _backfill_intraday_chunk(out, symbol, previous_bars) if backfill else []
             archive_input = older_bars + previous_bars + fresh_bars
-            _write_intraday_5m_archive(out, symbol, archive_input)
+            if os.environ.get('INTRADAY_WRITE_ARCHIVE', '1') != '0':
+                _write_intraday_5m_archive(out, symbol, archive_input)
             merged = {bar['time']: bar for bar in previous_bars}
             merged.update({bar['time']: bar for bar in fresh_bars})
             recent_bars = [merged[key] for key in sorted(merged)]
-            retain_1m = max(700, int(os.environ.get('INTRADAY_RETAIN_1M_BARS', '3000')))
+            retain_1m = max(360, int(os.environ.get('INTRADAY_RETAIN_1M_BARS', '3000')))
             bars = recent_bars[-retain_1m:]
         else:
             target = int(os.environ.get('HISTORY_COUNT_BACK', '6000'))
