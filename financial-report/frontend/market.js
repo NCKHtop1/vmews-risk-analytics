@@ -282,10 +282,10 @@ function selectMarketSymbol(symbol,companies){
  return true;
 }
 function openMarketChart(symbol,companies){
- const ok=selectMarketSymbol(symbol,companies);if(!ok)return false;
  setMarketView('price');
+ const ok=selectMarketSymbol(symbol,companies);if(!ok)return false;
  const ticker=$('ticker');if(ticker)ticker.value=state.symbol;
- const url=new URL(location.href);url.searchParams.set('symbol',state.symbol);history.replaceState(null,'',url);
+ const url=new URL(location.href);url.searchParams.set('symbol',state.symbol);url.hash='market';history.replaceState(null,'',url);
  return true;
 }
 window.FinancialMarket={refresh,select:selectMarketSymbol,openChart:openMarketChart,context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=quoteStale(state.quotes[state.symbol])?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,quoteBundleSourceTime:state.quoteBundleSourceTime||null,quoteBundleCheckedAt:state.quoteBundleCheckedAt||null,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!state.quoteBundleSourceTime||String(scan.sourceTime)===String(state.quoteBundleSourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},alertContext(){return{symbol:state.symbol,companies:state.companies.map(c=>({symbol:c.symbol,name:c.name,tier:c.tier})),quotes:state.quotes,watch:[...watch]};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
