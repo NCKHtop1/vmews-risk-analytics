@@ -97,8 +97,13 @@ def build_universe(
     current_hose: set[str],
     histories: dict[str, list[dict[str, Any]]],
     dashboard: dict[str, Any] | None = None,
+    live_history_symbols: set[str] | None = None,
 ) -> dict[str, Any]:
     dashboard = dashboard or {}
+    live_history_symbols = (
+        None if live_history_symbols is None
+        else {str(symbol).upper() for symbol in live_history_symbols if str(symbol).strip()}
+    )
     core_by_symbol = {
         str(row.get("symbol") or "").upper(): row
         for row in core_companies
@@ -139,8 +144,10 @@ def build_universe(
             and metrics["activeSessions20"] >= MIN_ACTIVE_20
             and metrics["observedSessions20"] >= min(20, MIN_ACTIVE_20)
         )
+        market_history_backed = live_history_symbols is None or symbol in live_history_symbols
         liquid_gate = (
             symbol not in core_symbols
+            and market_history_backed
             and fresh
             and data_sufficient
             and metrics["medianTurnover20"] >= MIN_MEDIAN_TURNOVER_20
@@ -161,6 +168,7 @@ def build_universe(
             "coreMember": symbol in core_symbols,
             "fresh": fresh,
             "dataSufficient": data_sufficient,
+            "marketHistoryBacked": market_history_backed,
             **metrics,
             "_bars": bars,
         }
@@ -189,9 +197,9 @@ def build_universe(
             and raw["activeSessions20"] >= DISCOVERY_MIN_ACTIVE_20
             and bool(raw["latestDate"])
         )
-        live_market_eligible = tier in {"CORE", "LIQUID"}
+        live_market_eligible = tier in {"CORE", "LIQUID"} and raw["marketHistoryBacked"]
         forecast_eligible = (
-            tier in {"CORE", "LIQUID"}
+            live_market_eligible
             and raw["fresh"]
             and raw["dataSufficient"]
         )
@@ -250,7 +258,7 @@ def build_universe(
             "liquidExtraCap": MAX_LIQUID_EXTRA,
             "discoveryHistoryBarsMin": DISCOVERY_MIN_HISTORY,
             "discoveryActiveSessions20Min": DISCOVERY_MIN_ACTIVE_20,
-            "promotion": "Dynamic from current HOSE membership and market-history liquidity/data gates; independent of forecast freshness.",
+            "promotion": "Dynamic from current HOSE membership and published market-history liquidity/data gates; forecast/frozen history cannot promote a symbol into the live tier.",
         },
         "counts": counts,
         "liveMarketSymbols": sorted(live_market_symbols),
@@ -261,7 +269,7 @@ def build_universe(
     }
 
 
-def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[str, Any]]], dict[str, Any]]:
+def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[str, Any]]], dict[str, Any], set[str] | None]:
     core = json.loads((FINANCIAL / "data" / "companies.json").read_text(encoding="utf-8"))
     dashboard_path = REPO / "data" / "forecast-dashboard-v12.json"
     dashboard = json.loads(dashboard_path.read_text(encoding="utf-8")) if dashboard_path.exists() else {}
@@ -276,7 +284,9 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
     }
     market_dir_raw = os.environ.get("FINQUERY_MARKET_DIR")
     market_dir = Path(market_dir_raw) if market_dir_raw else None
+    market_history_symbols: set[str] | None = None
     if market_dir and market_dir.exists():
+        market_history_symbols = set()
         read_json = {}
         universe_path = market_dir / "universe.json"
         if universe_path.exists():
@@ -298,14 +308,18 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
                     bars = row.get("bars") or []
                     if bars:
                         histories[symbol] = bars
+                        market_history_symbols.add(symbol)
                 except (OSError, ValueError, TypeError):
                     continue
-    return core, current_hose, histories, dashboard
+    return core, current_hose, histories, dashboard, market_history_symbols
 
 
 def main() -> None:
-    core, current_hose, histories, dashboard = load_inputs()
-    universe = build_universe(core, current_hose, histories, dashboard)
+    core, current_hose, histories, dashboard, market_history_symbols = load_inputs()
+    universe = build_universe(
+        core, current_hose, histories, dashboard,
+        live_history_symbols=market_history_symbols,
+    )
     output = Path(os.environ.get("FINQUERY_UNIVERSE_OUTPUT", str(DEFAULT_OUTPUT)))
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
