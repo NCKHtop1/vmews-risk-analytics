@@ -107,6 +107,7 @@ jobs:
           # workflows and must never be overwritten by a generic mode=all push.
           if [ "$EVENT_NAME" = 'push' ]; then mode=esg; fi
           if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[universe-refresh\]'; then mode=universe; fi
+          if printf '%s' "$COMMIT_MESSAGE" | grep -q '\[macro-refresh\]'; then mode=macro; fi
           if [ "$EVENT_SCHEDULE" = '0,15,30,45 2-8 * * 1-5' ]; then mode=prices-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '7,22,37,52 * * * *' ]; then mode=news-watchdog; fi
           if [ "$EVENT_SCHEDULE" = '15 1 * * 1-5' ]; then mode=macro; fi
