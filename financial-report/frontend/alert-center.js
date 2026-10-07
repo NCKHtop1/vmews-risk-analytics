@@ -80,12 +80,13 @@ function evaluateAlerts(){
 async function refreshSnapshot(){
  if(state.loading)return;state.loading=true;const b=$('strategy-refresh');if(b)b.disabled=true;const status=$('strategy-status');if(status)status.textContent='Đang tải indicator snapshot…';
  try{
-  const data=await window.FinMarketData.get('strategy-indicators.json');if(!data?.symbols)throw Error('Invalid strategy snapshot');
-  const expected=state.marketSourceTime,actual=data.sourceTime||null;
+  const expected=state.marketSourceTime,bundled=window.FinMarketData.currentBundle?.()?.strategy;
+  const data=bundled&&(!expected||String(bundled.sourceTime||'')===String(expected))?bundled:await window.FinMarketData.get('strategy-indicators.json');
+  if(!data?.symbols)throw Error('Invalid strategy snapshot');
+  const actual=data.sourceTime||null;
   if(expected&&String(actual)!==String(expected)){
    if(state.snapshot){scanNow();renderSaved();}
    if(status)status.textContent=(state.snapshot?'Đang giữ snapshot Strategy Lab gần nhất · ':'')+'Đang đồng bộ với snapshot giá mới nhất…';
-   clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(actual||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();refreshSnapshot();},1200);
    return;
   }
   const changed=(data.sourceTime||data.checkedAt)!==(state.snapshot?.sourceTime||state.snapshot?.checkedAt);state.snapshot=data;if(status)status.textContent=(data.coverage||0)+' mã · Live '+(data.liveCoverage||0)+' · Discovery '+(data.discoveryCoverage||0)+' · '+time(data.sourceTime||data.checkedAt);scanNow();if(changed)evaluateAlerts();else renderSaved();
@@ -111,6 +112,6 @@ function bind(){
  $('strategy-hits')?.addEventListener('click',e=>{const b=e.target.closest('[data-strategy-open]');if(b)openSymbol(b.dataset.strategyOpen);});
  $('strategy-notifications')?.addEventListener('click',async()=>{if(!('Notification'in window))return;const p=await Notification.requestPermission();$('strategy-notifications').textContent=p==='granted'?'Thông báo đã bật':'Thông báo bị chặn';});
 }
-loadLocal();renderLibrary();renderCanvas();renderPreview();renderResults();renderSaved();renderHits();bind();refreshSnapshot();setInterval(()=>{if(!document.hidden)refreshSnapshot();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSnapshot();});
+loadLocal();renderLibrary();renderCanvas();renderPreview();renderResults();renderSaved();renderHits();bind();refreshSnapshot();setInterval(()=>{if(!document.hidden)refreshSnapshot();},300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSnapshot();});
 window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed)refreshSnapshot();},context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot,marketSourceTime:state.marketSourceTime,aligned:!state.marketSourceTime||String(state.snapshot?.sourceTime||'')===String(state.marketSourceTime)})};
 })();
