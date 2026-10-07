@@ -28,7 +28,10 @@ on:
       - '.github/workflows/solution-ai-live-guard.yml'
       - '.github/workflows/solution-ai-core-refresh.yml'
   workflow_run:
-    workflows: ['Deploy VMEWS Pages']
+    # Pages publishes application code; the dedicated core workflow publishes
+    # production forecast data directly to solution-ai-core-data. Smoke both
+    # transitions so a successful core publish is verified in the real browser.
+    workflows: ['Deploy VMEWS Pages', 'SoluTION.AI independent core forecast']
     types: [completed]
 
 permissions:
