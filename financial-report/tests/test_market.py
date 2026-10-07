@@ -1300,6 +1300,8 @@ class MarketTests(unittest.TestCase):
         self.assertIn("HISTORY_RECENT_COUNT: '80'",workflow)
         self.assertNotIn("[universe-refresh]",workflow)
         self.assertNotIn("build_hose_universe.py",workflow)
+        self.assertIn("git restore --worktree market/universe.json",workflow)
+        self.assertIn("git restore --worktree market/universe.json",session)
         self.assertIn("group: market-universe-refresh",universe_flow)
         self.assertIn("FINQUERY_MARKET_DIR: /tmp/market-universe/market",universe_flow)
         self.assertIn("add --sparse market/universe.json",universe_flow)
