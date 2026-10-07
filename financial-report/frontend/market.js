@@ -39,12 +39,12 @@ function quoteNeedsCloseCatch(q){const now=vnClock(),phase=marketPhase();if(['Sa
 function quoteStale(q){if(!q)return true;const raw=q.sourceTime||q.collectedAt,t=Date.parse(raw||'');if(!Number.isFinite(t)||futureTimestamp(raw))return true;const now=vnClock(),src=vnClock(t);if(q.status==='retained'||src.day!==now.day)return true;if(!marketSessionActive())return false;return Date.now()-t>25*60*1000;}
 function quoteTime(q){if(!q)return'Chưa có';return date(q.sourceTime||q.collectedAt);}
 function manageQuoteRetry(hasLive){
- if(hasLive||!state.symbol||!marketSessionActive()){
+ if(hasLive||!state.symbol||!marketSessionActive()||!LIVE_FALLBACK_API){
   if(state.quoteRetryTimer)clearTimeout(state.quoteRetryTimer);
   state.quoteRetryTimer=null;state.quoteRetryAttempt=0;return;
  }
- if(state.quoteRetryTimer||state.quoteRetryAttempt>=3)return;
- const delays=[1200,3000,7000],delay=delays[state.quoteRetryAttempt++]||7000;
+ if(state.quoteRetryTimer||state.quoteRetryAttempt>=2)return;
+ const delays=[2500,7000],delay=delays[state.quoteRetryAttempt++]||7000;
  state.quoteRetryTimer=setTimeout(()=>{state.quoteRetryTimer=null;refresh();},delay);
 }
 function renderQuoteFreshness(q){const el=$('quote-freshness');if(!el)return;const stale=quoteStale(q);el.hidden=!stale;el.textContent=stale&&q?(q.status==='retained'?'Bản gần nhất · ':'Chưa có giao dịch mới · ')+quoteTime(q):'';}
