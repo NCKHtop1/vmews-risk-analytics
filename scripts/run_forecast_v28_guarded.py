@@ -18,7 +18,7 @@ external.fund_feature_panel=_guarded_fund_feature_panel
 import forecast_v13_market_model as market_model  # noqa:E402
 from forecast_v40_tail_blend import select_tail_guarded_directional_blend  # noqa:E402
 from forecast_v41_runtime_patch import install_v41_refined  # noqa:E402
-from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes  # noqa:E402
+from forecast_v28_postclose_bridge import bridge_completed_session, fetch_tradingview_quotes, select_validation_universe  # noqa:E402
 from vn_exchange_calendar import next_trading_dates as certified_next_trading_dates  # noqa:E402
 
 # V40 protects amplitude/tail calibration. V41 adds market-wide causal technical
@@ -49,7 +49,7 @@ def _last_validated_forecast_symbols(histories: dict[str, list[dict]]) -> list[s
             return sorted(set(symbols))
     except Exception:
         pass
-    return sorted(histories)
+    return []
 
 def _legacy_snapshot_rows(session_date: str) -> dict[str, list[dict]]:
     """Independent same-session fallback from the archived live snapshot.
@@ -128,16 +128,16 @@ def _load_histories_with_current_session(*args,**kwargs):
     _historical_scan_as_of=str(freshness.get("marketScanAsOf") or "")[:10]
 
     all_current=sorted(set(str(s).upper() for s in (freshness.get("currentHOSESymbols") or histories) if str(s).upper() in histories))
-    solution_scope=os.environ.get("SOLUTION_AI_VALIDATION_UNIVERSE","").strip().upper()=="LAST_VALIDATED_PUBLISHED_SYMBOLS"
-    validation_symbols=_last_validated_forecast_symbols(histories) if solution_scope else all_current
-    if solution_scope:
-        freshness=dict(freshness)
-        freshness["allCurrentHOSESymbols"]=all_current
-        freshness["allCurrentHOSECount"]=len(all_current)
-        freshness["currentHOSESymbols"]=validation_symbols
-        freshness["currentHOSECount"]=len(validation_symbols)
-        freshness["forecastValidationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
-        freshness["forecastValidationUniverseCount"]=len(validation_symbols)
+    published_symbols=_last_validated_forecast_symbols(histories)
+    validation_symbols=select_validation_universe(histories,all_current,published_symbols)
+    validation_scope="LAST_VALIDATED_PUBLISHED_SYMBOLS" if published_symbols else "CURRENT_HOSE_FALLBACK"
+    freshness=dict(freshness)
+    freshness["allCurrentHOSESymbols"]=all_current
+    freshness["allCurrentHOSECount"]=len(all_current)
+    freshness["currentHOSESymbols"]=validation_symbols
+    freshness["currentHOSECount"]=len(validation_symbols)
+    freshness["forecastValidationUniverse"]=validation_scope
+    freshness["forecastValidationUniverseCount"]=len(validation_symbols)
 
     secondary=market_model._vn_direct_hose_rows()
     try:
@@ -180,16 +180,14 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["yahooFillSymbols"]=len((set(yahoo_secondary)-set(tv_secondary))&set(original_symbols))
         bridge["fallbackVerifiedSymbols"]=len(verified_symbols)
         bridge["fallbackPolicy"]="VNDIRECT_OHLC_WITH_TRADINGVIEW_PRIMARY_CONFIRMATION_AND_YAHOO_GAP_FILL"
-        if solution_scope:
-            bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
-            bridge["validationUniverseSymbols"]=len(original_symbols)
-            bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
+        bridge["validationUniverse"]=validation_scope
+        bridge["validationUniverseSymbols"]=len(original_symbols)
+        bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
     bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
     if bridge.get("status")=="PASS":
-        if solution_scope:
-            bridge["validationUniverse"]="LAST_VALIDATED_PUBLISHED_SYMBOLS"
-            bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
-            bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
+        bridge["validationUniverse"]=validation_scope
+        bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
+        bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
         freshness["historicalMarketScanAsOf"]=_historical_scan_as_of
         freshness["marketScanAsOf"]=str(freshness.get("forecastAsOf") or "")[:10]
         freshness["freshSymbols"]=sum(str((rows or [{}])[-1].get("date") or "")[:10]==freshness["forecastAsOf"] for rows in histories.values() if rows)
