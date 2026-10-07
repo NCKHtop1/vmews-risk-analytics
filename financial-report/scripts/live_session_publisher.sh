@@ -172,7 +172,10 @@ PY
 }
 
 publish_snapshot() {
-  git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json market/watch-today.json     market/universe.json market/history-status.json market/history
+  # Universe has its own builder/publisher. Live prices may read it but must
+  # never overwrite it with the static checkout copy.
+  git -C "$OUT" restore --worktree market/universe.json 2>/dev/null || true
+  git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json market/watch-today.json     market/history-status.json market/history
 
   if git -C "$OUT" diff --cached --quiet; then
     echo "No live market changes to publish"
@@ -196,7 +199,7 @@ supervise_news() {
   if [ -z "${GH_TOKEN:-}" ]; then
     return 0
   fi
-  if NEWS_URL="https://raw.githubusercontent.com/$GH_REPO/financial-market-data/market/news.json?heartbeat=$(date +%s)" python - <<'PY'
+  if NEWS_URL="https://raw.githubusercontent.com/$GH_REPO/financial-market-data/market/news-latest.json?heartbeat=$(date +%s)" python - <<'PY'
 import json, os, urllib.request
 from datetime import datetime, timezone
 url=os.environ['NEWS_URL']
