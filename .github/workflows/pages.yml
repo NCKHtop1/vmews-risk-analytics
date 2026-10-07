@@ -118,6 +118,10 @@ jobs:
           news_health=news_latest.get('sourceHealth') or {}
           assert news_latest.get('status')=='ok' and news_latest.get('selection')=='balanced_vietnam_global_sbv_impact' and 0<len(news_latest.get('items') or [])<=300,('invalid balanced news',news_latest.get('status'),news_latest.get('selection'),len(news_latest.get('items') or []))
           assert int(news_health.get('healthy') or 0)>=3,('news source health too low',news_health)
+          luat=news_latest.get('luatVietnamDirect') or {}
+          assert int(luat.get('expectedParsers') or 0)==4 and int(luat.get('parserHealthy') or 0)>=3 and luat.get('status')=='ok',('luatvietnam direct degraded',luat)
+          invalid_luat_time=[x for x in (news_latest.get('items') or []) if x.get('source')=='Luật Việt Nam' and x.get('detailTimestampVerified') and x.get('timePrecision')!='minute']
+          assert not invalid_luat_time,('invalid verified LuatVietnam timestamps',invalid_luat_time[:3])
           company_counts=company_news.get('companyCounts') or {}
           assert company_news.get('status')=='ok' and company_news.get('selection')=='per_symbol_latest' and int(company_news.get('perSymbolLimit') or 0)==15,('invalid company news',company_news.get('status'),company_news.get('selection'),company_news.get('perSymbolLimit'))
           assert int(company_news.get('companyCoverage') or 0)==len(company_counts) and len(company_counts)>0 and bool(company_news.get('items')),('company news coverage invalid',company_news.get('companyCoverage'),len(company_counts),len(company_news.get('items') or []))
@@ -267,6 +271,15 @@ jobs:
           grep -q 'Giám sát rủi ro' /tmp/page.html
           grep -q 'Giám sát thị trường' /tmp/page.html
           grep -q 'data-platform-view="strategy"' /tmp/page.html
+          grep -q 'news-company-latest.json' /tmp/page.html
+          grep -q 'function newsTimeLabel(r)' /tmp/page.html
+          python - <<'PY'
+          from pathlib import Path
+          page=Path('/tmp/page.html').read_text(encoding='utf-8')
+          required=[r'\bomo\b',r'fpt\s+(?:retail|securities)\b','function strictCompanyNews(']
+          missing=[x for x in required if x not in page]
+          assert not missing,('deployed News bundle missing contract markers',missing)
+          PY
           grep -q '>Investment Ideas<' /tmp/page.html
           grep -q '>Phân tích<' /tmp/page.html
           grep -q '>Vĩ mô<' /tmp/page.html
@@ -347,6 +360,10 @@ jobs:
           nh=n.get('sourceHealth') or {}
           assert n.get('status')=='ok' and n.get('selection')=='balanced_vietnam_global_sbv_impact' and 0<len(n.get('items') or [])<=300,n
           assert int(nh.get('healthy') or 0)>=3,nh
+          luat=n.get('luatVietnamDirect') or {}
+          assert int(luat.get('expectedParsers') or 0)==4 and int(luat.get('parserHealthy') or 0)>=3 and luat.get('status')=='ok',luat
+          invalid_luat_time=[x for x in (n.get('items') or []) if x.get('source')=='Luật Việt Nam' and x.get('detailTimestampVerified') and x.get('timePrecision')!='minute']
+          assert not invalid_luat_time,invalid_luat_time[:3]
           cc=cn.get('companyCounts') or {}
           assert cn.get('status')=='ok' and cn.get('selection')=='per_symbol_latest' and int(cn.get('perSymbolLimit') or 0)==15,cn
           assert int(cn.get('companyCoverage') or 0)==len(cc) and len(cc)>0 and bool(cn.get('items')),cn
