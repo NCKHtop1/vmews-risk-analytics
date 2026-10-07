@@ -409,3 +409,5 @@ body.dolphin-modal-open{overflow:hidden}
 .strategy-page .strategy-builder-body{display:block}
 body.strategy-lab-view .strategy-page{display:block}
 @media(max-width:820px){.strategy-page{padding:18px 16px}.strategy-page .strategy-page-head{align-items:flex-start}}
+
+.quote-stale{font-weight:600;color:#8a6514}
