@@ -206,11 +206,16 @@ jobs:
               && curl -fsSL --max-time 20 "$BASE/personalization.js?verify=$token" -o /tmp/personalization.js \
               && curl -fsSL --max-time 20 "$BASE/google-auth-config.js?verify=$token" -o /tmp/google-auth-config.js; then
               deployed_code="$(python -c "import json; print(json.load(open('/tmp/deployment.json')).get('code',''))" 2>/dev/null || true)"
+              page_js=0; grep -q 'personalization.js?v=20261007' /tmp/page.html && page_js=1 || true
+              page_css=0; grep -q 'personalization.css?v=20261007' /tmp/page.html && page_css=1 || true
+              config_ok=0; grep -q 'FINQUERY_GOOGLE_CLIENT_ID' /tmp/google-auth-config.js && config_ok=1 || true
+              syntax_ok=0; node --check /tmp/personalization.js >/dev/null 2>&1 && syntax_ok=1 || true
+              echo "pages-verify attempt=$attempt deployed=$deployed_code expected=$GITHUB_SHA js=$page_js css=$page_css config=$config_ok syntax=$syntax_ok"
               if [ "$deployed_code" = "$GITHUB_SHA" ] \
-                && grep -q 'personalization.js?v=20261007' /tmp/page.html \
-                && grep -q 'personalization.css?v=20261007' /tmp/page.html \
-                && grep -q 'FINQUERY_GOOGLE_CLIENT_ID' /tmp/google-auth-config.js \
-                && node --check /tmp/personalization.js >/dev/null 2>&1; then
+                && [ "$page_js" = 1 ] \
+                && [ "$page_css" = 1 ] \
+                && [ "$config_ok" = 1 ] \
+                && [ "$syntax_ok" = 1 ]; then
                 ready=1
                 break
               fi
