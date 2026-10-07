@@ -217,6 +217,24 @@ class NewsParserTests(unittest.TestCase):
         self.assertIn("function newsTimeLabel(r)",pages)
         self.assertIn("build_cdn.py",bundle)
 
+    def test_feed_health_uses_true_latest_item_not_feed_order(self):
+        url=next(url for name,url in m.FEEDS if name=='Global Central Banks')
+        raw='''<?xml version="1.0"?><rss><channel>
+        <item><title>Older central bank story</title><link>https://news.google.com/articles/old</link>
+        <pubDate>Wed, 07 Oct 2026 04:00:00 +0000</pubDate><description>older</description></item>
+        <item><title>Newer central bank story</title><link>https://news.google.com/articles/new</link>
+        <pubDate>Wed, 07 Oct 2026 06:30:00 +0000</pubDate><description>newer</description></item>
+        </channel></rss>'''.encode()
+        original=m.request
+        try:
+            m.request=lambda *_args,**_kwargs: raw
+            rows,health=m._fetch_news_feed('Global Central Banks',url,[],self.current)
+        finally:
+            m.request=original
+        self.assertEqual(len(rows),2)
+        self.assertEqual(health['lastItemAt'],'2026-10-07T06:30:00+00:00')
+        self.assertEqual(health['latestItemAgeMinutes'],30.0)
+
     def test_sbv_omo_is_a_token_not_a_substring(self):
         for text in ('tomorrow rate decision','SOMO crude sales','Moomoo market update'):
             self.assertIsNone(m.TOPIC_PATTERNS['sbv'].search(text),text)
