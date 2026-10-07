@@ -451,8 +451,60 @@ def audit_forecast_monitor(report: Audit, repo_root: Path, now):
     report.check(int(manifest.get("count") or 0) >= 20, "FORECAST_ARCHIVE_DEPTH", manifest.get("count"))
 
 
-def audit_main_forecast(report: Audit, repo_root: Path, now):
-    """Audit the canonical main-branch forecast plus its V21 session overlay."""
+def production_prefers_solution_core(repo_root: Path):
+    """Return True only when the deployed Pages loader prefers the dedicated core branch."""
+    try:
+        text = (repo_root / "forecast-final-v12.js").read_text(encoding="utf-8")
+    except Exception:
+        return False
+    required = (
+        "solution-ai-core-data/data",
+        "SOLUTION_CORE_FILES.has(name)",
+        "[SOLUTION_CORE_ROOT,ROOT]",
+        "window.__SOLUTION_AI_CORE_ROOT__=SOLUTION_CORE_ROOT",
+    )
+    return all(token in text for token in required)
+
+
+def solution_core_is_authoritative(core_dir: Path, now):
+    """Check the minimum freshness/proof needed before main may be treated as fallback-only."""
+    try:
+        dashboard = load_json(core_dir / "forecast-dashboard-v12.json")
+        market = load_json(core_dir / "forecast-market-v13.json")
+        release = load_json(core_dir / "release-audit-v20.json")
+    except Exception:
+        return False
+    expected = latest_completed_session(now.astimezone(VN_TZ)).isoformat()
+    sources = market.get("sources") or {}
+    bridge = sources.get("postCloseBridge") or {}
+    price_audit = sources.get("priceCrossSource") or {}
+    published = len(dashboard.get("symbols") or {})
+    validation = int(bridge.get("validationUniverseSymbols") or published or 0)
+    return bool(
+        str(dashboard.get("asOf") or "") == expected
+        and release.get("status") == "PASS"
+        and not (release.get("blockers") or [])
+        and str(release.get("asOf") or "") == expected
+        and str(sources.get("marketScanAsOf") or "") == expected
+        and str(sources.get("priceSessionAsOf") or "") == expected
+        and bridge.get("status") in {"PASS", "NOT_APPLICABLE_ALREADY_CURRENT"}
+        and str(bridge.get("sessionDate") or "") == expected
+        and price_audit.get("status") == "PASS"
+        and float(price_audit.get("coverage") or 0) >= float(price_audit.get("requiredCoverage") or 1)
+        and int(price_audit.get("mismatchCount") or 0) == 0
+        and published >= math.ceil(max(1, validation) * .90)
+    )
+
+
+def audit_main_forecast(report: Audit, repo_root: Path, now, authoritative_core_ready=False):
+    """Audit the main-branch forecast as production source or safe fallback.
+
+    Pages deliberately prefers solution-ai-core-data for validated forecast core
+    files. When that dedicated core is current and independently proven, an older
+    main snapshot is a fallback condition, not a production freshness failure.
+    The fallback must still remain structurally valid and the V21 overlay must
+    abstain rather than rank against a stale core.
+    """
     data = repo_root / "data"
     names = {
         "dashboard": "forecast-dashboard-v12.json",
@@ -485,7 +537,9 @@ def audit_main_forecast(report: Audit, repo_root: Path, now):
         "market": str(market.get("asOf") or ""),
         "release": str(release.get("asOf") or ""),
     }
-    report.check(all(value == expected for value in dates.values()), "FORECAST_MAIN_SESSION", f"{dates} expected={expected}")
+    main_current = all(value == expected for value in dates.values())
+    freshness_check = report.warn if authoritative_core_ready else report.check
+    freshness_check(main_current, "FORECAST_MAIN_SESSION", f"{dates} expected={expected}")
     report.check(release.get("status") == "PASS" and not (release.get("blockers") or []), "FORECAST_MAIN_RELEASE", {"status": release.get("status"), "blockers": release.get("blockers")})
 
     dash_symbols = set((dashboard.get("symbols") or {}).keys())
@@ -498,8 +552,8 @@ def audit_main_forecast(report: Audit, repo_root: Path, now):
     report.check(bool(versions[0]) and len(set(versions)) == 1, "FORECAST_MAIN_VERSION_ALIGNMENT", versions)
 
     sources = market.get("sources") or {}
-    report.check(str(sources.get("marketScanAsOf") or "") == expected, "FORECAST_MAIN_MARKET_SCAN", sources.get("marketScanAsOf"))
-    report.check(str(sources.get("priceSessionAsOf") or "") == expected, "FORECAST_MAIN_PRICE_SESSION", sources.get("priceSessionAsOf"))
+    freshness_check(str(sources.get("marketScanAsOf") or "") == expected, "FORECAST_MAIN_MARKET_SCAN", sources.get("marketScanAsOf"))
+    freshness_check(str(sources.get("priceSessionAsOf") or "") == expected, "FORECAST_MAIN_PRICE_SESSION", sources.get("priceSessionAsOf"))
     price_audit = sources.get("priceCrossSource") or {}
     report.check(price_audit.get("status") == "PASS", "FORECAST_MAIN_PRICE_CROSS_SOURCE", price_audit.get("status"))
     report.check(float(price_audit.get("coverage") or 0) >= float(price_audit.get("requiredCoverage") or 1), "FORECAST_MAIN_PRICE_COVERAGE", price_audit)
@@ -511,6 +565,44 @@ def audit_main_forecast(report: Audit, repo_root: Path, now):
     alignment = session.get("forecastAlignment") or {}
     coverage = session.get("coverage") or {}
     report.check(session.get("status") == "PASS", "FORECAST_V21_STATUS", session.get("status"))
+    report.check(float(coverage.get("coverageRatio") or 0) >= .90, "FORECAST_V21_COVERAGE", coverage)
+    report.check(float(coverage.get("currentCoverageRatio") or 0) >= .70, "FORECAST_V21_CURRENT_COVERAGE", coverage)
+    report.check(float(coverage.get("cutoffFreshCoverageRatio") or 0) >= .70, "FORECAST_V21_CUTOFF_COVERAGE", coverage)
+    preferred = int((dashboard.get("promotion") or {}).get("preferredRankingHorizon") or 0)
+    report.check(preferred > 0 and int(session.get("rankingHorizon") or 0) == preferred, "FORECAST_V21_HORIZON", (session.get("rankingHorizon"), preferred))
+
+    if authoritative_core_ready and not main_current:
+        fallback_safe = (
+            str(session.get("coreAsOf") or "") == str(dashboard.get("asOf") or "")
+            and alignment.get("status") == "STALE_CORE"
+            and alignment.get("rankingEligible") is False
+            and session.get("mode") == "PRICE_ONLY_STALE_CORE"
+            and session.get("coreForecastUnchanged") is True
+            and not (session.get("leaders") or [])
+        )
+        report.check(
+            fallback_safe,
+            "FORECAST_V21_FALLBACK_SAFE",
+            {
+                "coreAsOf": session.get("coreAsOf"),
+                "mainAsOf": dashboard.get("asOf"),
+                "alignment": alignment,
+                "mode": session.get("mode"),
+                "leaders": len(session.get("leaders") or []),
+            },
+        )
+        report.warn(
+            False,
+            "FORECAST_V21_FALLBACK_STALE",
+            {
+                "mainCoreAsOf": dashboard.get("asOf"),
+                "productionCoreExpected": expected,
+                "mode": session.get("mode"),
+                "rankingEligible": alignment.get("rankingEligible"),
+            },
+        )
+        return
+
     report.check(str(session.get("coreAsOf") or "") == expected, "FORECAST_V21_CORE_SESSION", (session.get("coreAsOf"), expected))
     report.check(
         alignment.get("status") == "PASS"
@@ -521,13 +613,7 @@ def audit_main_forecast(report: Audit, repo_root: Path, now):
         alignment,
     )
     report.check(session.get("mode") == "FORECAST_ALIGNED" and session.get("coreForecastUnchanged") is True, "FORECAST_V21_MODE", (session.get("mode"), session.get("coreForecastUnchanged")))
-    report.check(float(coverage.get("coverageRatio") or 0) >= .90, "FORECAST_V21_COVERAGE", coverage)
-    report.check(float(coverage.get("currentCoverageRatio") or 0) >= .70, "FORECAST_V21_CURRENT_COVERAGE", coverage)
-    report.check(float(coverage.get("cutoffFreshCoverageRatio") or 0) >= .70, "FORECAST_V21_CUTOFF_COVERAGE", coverage)
-    preferred = int((dashboard.get("promotion") or {}).get("preferredRankingHorizon") or 0)
-    report.check(preferred > 0 and int(session.get("rankingHorizon") or 0) == preferred, "FORECAST_V21_HORIZON", (session.get("rankingHorizon"), preferred))
     report.check(len(session.get("leaders") or []) == 10, "FORECAST_V21_LEADERS", len(session.get("leaders") or []))
-
 
 def audit_solution_live(report: Audit, path: Path, now):
     if not report.check(path.exists(), "SOLUTION_LIVE_MISSING", path):
@@ -591,9 +677,14 @@ def main():
     audit_financial(audit, Path(args.financial_dir), core)
     audit_insights(audit, Path(args.insights_dir), now)
     audit_forecast_monitor(audit, Path(args.repo_root), now)
-    audit_main_forecast(audit, Path(args.repo_root), now)
+    repo_root = Path(args.repo_root)
+    solution_core_dir = Path(args.solution_core_dir)
+    core_route_ok = production_prefers_solution_core(repo_root)
+    audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE", "Pages loader must prefer solution-ai-core-data before main fallback")
+    authoritative_core_ready = core_route_ok and solution_core_is_authoritative(solution_core_dir, now)
+    audit_main_forecast(audit, repo_root, now, authoritative_core_ready=authoritative_core_ready)
     audit_solution_live(audit, Path(args.solution_live), now)
-    audit_solution_core(audit, Path(args.solution_core_dir), now)
+    audit_solution_core(audit, solution_core_dir, now)
     category_summary = {}
     for row in audit.results:
         bucket = category_summary.setdefault(row["category"], {"PASS": 0, "WARN": 0, "FAIL": 0})
