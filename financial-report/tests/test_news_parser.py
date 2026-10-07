@@ -188,7 +188,7 @@ class NewsParserTests(unittest.TestCase):
 
     def test_frontend_guards_omo_and_fpt_retail_false_positives(self):
         market=(ROOT/'frontend/market.js').read_text()
-        self.assertIn(r"\\bomo\\b",market)
+        self.assertIn(r"\bomo\b",market)
         self.assertIn("title=title.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
         self.assertIn("summary=summary.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
 
