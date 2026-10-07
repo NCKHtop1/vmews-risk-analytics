@@ -1730,6 +1730,57 @@ class MarketTests(unittest.TestCase):
             if old_retry is None:m.os.environ.pop('INTRADAY_RETRY_WORKERS',None)
             else:m.os.environ['INTRADAY_RETRY_WORKERS']=old_retry
 
+    def test_intraday_session_summary_measures_live_bar_freshness_not_fetch_success(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=pathlib.Path(tmp)
+            base=datetime.now(m.VN).replace(hour=10,minute=0,second=0,microsecond=0).astimezone(timezone.utc)
+            quote_time=base.isoformat()
+            fresh_bar=(base-timedelta(minutes=5)).isoformat()
+            old_bar=(base-timedelta(days=1)).isoformat()
+            m.write(out/'quotes.json',{'quotes':{
+                'AAA':{'symbol':'AAA','status':'ok','sourceTime':quote_time,'price':10},
+                'BBB':{'symbol':'BBB','status':'ok','sourceTime':quote_time,'price':20},
+                'CCC':{'symbol':'CCC','status':'retained','sourceTime':old_bar,'price':30},
+            }})
+            m.write(out/'intraday/AAA.json',{'symbol':'AAA','lastBar':fresh_bar,'bars':[{'time':fresh_bar}]})
+            m.write(out/'intraday/BBB.json',{'symbol':'BBB','lastBar':old_bar,'bars':[{'time':old_bar}]})
+            m.write(out/'intraday/CCC.json',{'symbol':'CCC','lastBar':old_bar,'bars':[{'time':old_bar}]})
+            summary=m.intraday_session_summary(out,['AAA','BBB','CCC'])
+            self.assertEqual(summary['sessionExpected'],2)
+            self.assertEqual(summary['sessionRequired'],2)
+            self.assertEqual(summary['sessionFresh'],1)
+            self.assertEqual(summary['sessionRetainedQuotes'],1)
+            self.assertEqual(summary['sessionLaggedCount'],1)
+            self.assertEqual(summary['sessionLaggedSymbols'][0]['symbol'],'BBB')
+
+    def test_intraday_health_fails_when_requests_succeed_but_live_bars_lag(self):
+        companies=[{'symbol':f'S{i:03d}'} for i in range(10)]
+        original_refresh=m._refresh_one_history
+        original_summary=m.intraday_session_summary
+        old_workers=m.os.environ.get('INTRADAY_WORKERS')
+        try:
+            m._refresh_one_history=lambda out,symbol,minute=False:(symbol,True,None)
+            m.intraday_session_summary=lambda out,symbols:{
+                'sessionExpected':10,'sessionRequired':9,'sessionFresh':8,'sessionCoveragePct':80.0,
+                'sessionMaxQuoteLagMinutes':20,'sessionMedianLagMinutes':5,'sessionMaxObservedLagMinutes':40,
+                'sessionLaggedCount':2,'sessionLaggedSymbols':[{'symbol':'S008'},{'symbol':'S009'}],
+                'sessionRetainedQuotes':0,
+            }
+            m.os.environ['INTRADAY_WORKERS']='1'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                with self.assertRaisesRegex(RuntimeError,'current-session bar coverage'):
+                    m.refresh_history_group(out,companies,minute=True)
+                status=m.read(out/'intraday-status.json',{})
+                self.assertEqual(status['success'],10)
+                self.assertEqual(status['status'],'partial')
+                self.assertEqual(status['sessionFresh'],8)
+        finally:
+            m._refresh_one_history=original_refresh
+            m.intraday_session_summary=original_summary
+            if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
+            else:m.os.environ['INTRADAY_WORKERS']=old_workers
+
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
         original=m._refresh_one_history
