@@ -8,6 +8,8 @@ on:
       - 'scripts/solution_ai_core_confirmation.py'
       - 'scripts/solution_ai_core_confirmation_test.py'
       - 'scripts/forecast_v13_market_model_test_v28.py'
+      - 'scripts/forecast_v20_release_audit_v28.py'
+      - 'scripts/forecast_v20_release_audit_v28_test.py'
       - '.github/workflows/solution-ai-core-refresh.yml'
   schedule:
     - cron: '20 8 * * 1-5'   # 15:20 Vietnam
@@ -90,6 +92,7 @@ jobs:
         run: |
           python scripts/forecast_v28_postclose_bridge_test.py
           python scripts/forecast_v13_market_model_test_v28.py
+          python scripts/forecast_v20_release_audit_v28_test.py
           python scripts/forecast_v20_release_audit_v28.py
           python - <<'PY'
           import json,sys
