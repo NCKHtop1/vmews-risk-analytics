@@ -209,6 +209,11 @@ jobs:
           done
           python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
           python financial-report/scripts/build_cdn.py
+          grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' financial-report/index.html
+          grep -q '>AI Strategy Agent<' financial-report/index.html
+          grep -q 'sai-top-strategies' financial-report/index.html
+          ! grep -q 'src="strategy-intelligence-core.js"' financial-report/index.html
+          ! grep -q 'src="strategy-intelligence.js"' financial-report/index.html
           mkdir -p _site
           rsync -a --exclude='_site' --exclude='_financial-data' --exclude='_insight-data' --exclude='_market-data' --exclude='.git' --exclude='.github' --exclude='api' --exclude='model' --exclude='docs' --exclude='*.md' ./ _site/
           mkdir -p _site/financial-report/market
@@ -280,6 +285,12 @@ jobs:
           grep -q 'Giám sát rủi ro' /tmp/page.html
           grep -q 'Giám sát thị trường' /tmp/page.html
           grep -q 'data-platform-view="strategy"' /tmp/page.html
+          grep -q '>AI Strategy Agent<' /tmp/page.html
+          grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' /tmp/page.html
+          grep -q 'sai-top-strategies' /tmp/page.html
+          grep -q 'Strategy Builder & Screener' /tmp/page.html
+          ! grep -q 'src="strategy-intelligence-core.js"' /tmp/page.html
+          ! grep -q 'src="strategy-intelligence.js"' /tmp/page.html
           grep -q 'news-company-latest.json' /tmp/page.html
           grep -q 'function newsTimeLabel(r)' /tmp/page.html
           python - <<'PY'
