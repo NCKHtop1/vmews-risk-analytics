@@ -115,11 +115,20 @@ def build_universe(
     # Market freshness is derived from market history, never from the forecast
     # dashboard clock. Forecast data may lag without freezing the market universe.
     market_dates = []
+    completed_candidates = []
+    local_now = datetime.now(VN_TZ)
+    today = local_now.date().isoformat()
+    before_eod_lock = local_now.weekday() < 5 and (local_now.hour * 60 + local_now.minute) < (15 * 60 + 20)
     for rows in histories.values():
         normalized = normalize_bars(rows)
         if normalized:
             market_dates.append(normalized[-1]["time"])
+            completed_candidates.extend(row["time"] for row in normalized[-3:] if row["time"] < today)
     as_of = max(market_dates) if market_dates else (str(dashboard.get("asOf") or "")[:10] or None)
+    if before_eod_lock and as_of == today:
+        eod_as_of = max(completed_candidates) if completed_candidates else None
+    else:
+        eod_as_of = as_of
     symbols = sorted({str(x).upper() for x in current_hose if str(x).strip()} | core_symbols)
 
     prepared: dict[str, dict[str, Any]] = {}
@@ -180,6 +189,7 @@ def build_universe(
     discovery_technical: dict[str, dict[str, Any]] = {}
     live_market_symbols: list[str] = []
     scanner_symbols: list[str] = []
+    scanner_current_symbols: list[str] = []
     forecast_eligible_symbols: list[str] = []
 
     for symbol in symbols:
@@ -198,6 +208,18 @@ def build_universe(
             and bool(raw["latestDate"])
         )
         live_market_eligible = tier in {"CORE", "LIQUID"} and raw["marketHistoryBacked"]
+        scanner_fresh = bool(
+            scanner_eligible
+            and (
+                (live_market_eligible and raw["fresh"])
+                or (
+                    tier == "DISCOVERY"
+                    and raw["marketHistoryBacked"]
+                    and eod_as_of
+                    and raw["latestDate"] == eod_as_of
+                )
+            )
+        )
         forecast_eligible = (
             live_market_eligible
             and raw["fresh"]
@@ -209,11 +231,12 @@ def build_universe(
             "tier": tier,
             "liveMarketEligible": live_market_eligible,
             "scannerEligible": scanner_eligible,
+            "scannerFresh": scanner_fresh,
             "forecastEligible": forecast_eligible,
             "liquidityGatePassed": symbol in liquid_symbols,
         }
 
-        if tier == "LIQUID":
+        if tier == "LIQUID" or (tier == "DISCOVERY" and scanner_eligible and not raw["marketHistoryBacked"]):
             row["seedBars"] = bars[-SEED_BAR_COUNT:]
 
         if tier == "DISCOVERY" and scanner_eligible:
@@ -224,6 +247,7 @@ def build_universe(
                     "tier": "DISCOVERY",
                     "cadence": "EOD",
                     "sourceTime": None,
+                    "snapshotFresh": scanner_fresh,
                 }
 
         public_symbols[symbol] = row
@@ -231,6 +255,8 @@ def build_universe(
             live_market_symbols.append(symbol)
         if scanner_eligible:
             scanner_symbols.append(symbol)
+        if scanner_fresh:
+            scanner_current_symbols.append(symbol)
         if forecast_eligible:
             forecast_eligible_symbols.append(symbol)
 
@@ -241,6 +267,7 @@ def build_universe(
         "discovery": sum(row["tier"] == "DISCOVERY" for row in public_symbols.values()),
         "liveMarket": len(live_market_symbols),
         "scannerEligible": len(scanner_symbols),
+        "scannerCurrent": len(scanner_current_symbols),
         "forecastEligible": len(forecast_eligible_symbols),
         "discoveryTechnical": len(discovery_technical),
     }
@@ -248,10 +275,11 @@ def build_universe(
         "version": "FINQUERY-HOSE-UNIVERSE-1.0",
         "generatedAt": datetime.now(VN_TZ).isoformat(timespec="seconds"),
         "asOf": as_of,
+        "eodAsOf": eod_as_of,
         "policy": {
             "core": "Verified VN100 financial-report universe; membership is retained independently of liquidity.",
             "liquid": "Non-core HOSE symbols promoted by objective 20-session turnover, trading activity and history gates.",
-            "discovery": "Remaining current HOSE symbols; EOD technical discovery only until liquidity/data gates are met.",
+            "discovery": "Remaining current HOSE symbols; EOD technical discovery is active only when its published market history matches eodAsOf.",
             "medianTurnover20MinVND": int(MIN_MEDIAN_TURNOVER_20),
             "activeSessions20Min": MIN_ACTIVE_20,
             "historyBarsMin": MIN_HISTORY,
@@ -263,6 +291,7 @@ def build_universe(
         "counts": counts,
         "liveMarketSymbols": sorted(live_market_symbols),
         "scannerSymbols": sorted(scanner_symbols),
+        "scannerCurrentSymbols": sorted(scanner_current_symbols),
         "forecastEligibleSymbols": sorted(forecast_eligible_symbols),
         "discoveryTechnical": discovery_technical,
         "symbols": public_symbols,
