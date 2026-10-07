@@ -7,7 +7,7 @@ import tempfile
 import pandas as pd
 import pandas_ta_classic as ta
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('market', ROOT / 'scripts/refresh_market.py')
