@@ -61,6 +61,7 @@ jobs:
           node --check financial-report/frontend/research-agent.js
           node --check financial-report/frontend/research-ai.js
           node financial-report/scripts/test_strategy_intelligence.cjs
+          node financial-report/scripts/test_research_agent_market_only.cjs
       - uses: actions/checkout@v4
         with:
           ref: financial-report-data
