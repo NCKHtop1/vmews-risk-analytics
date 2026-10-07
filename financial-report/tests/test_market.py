@@ -2507,6 +2507,20 @@ class MarketTests(unittest.TestCase):
         self.assertEqual(out['qualityStatus'],'ok')
         self.assertEqual(out['qualityWarnings'],[])
 
+    def test_macro_quality_guard_does_not_treat_sector_growth_as_total_gdp(self):
+        parsed={
+            'columns':['Cột 1','Q3 2021','Q2 2026'],
+            'numericColumns':['Q3 2021','Q2 2026'],
+            'rows':[
+                {'Cột 1':'Tốc độ tăng trưởng GDP thực tế','Q3 2021':-6.2,'Q2 2026':8.39},
+                {'Cột 1':'Nông nghiệp','Q3 2021':30.63,'Q2 2026':3.71},
+                {'Cột 1':'Vận tải kho bãi','Q3 2021':28.77,'Q2 2026':11.19},
+            ]
+        }
+        out=m.normalize_vbma_dataset('gdp_growth',parsed)
+        self.assertEqual(out['qualityStatus'],'ok')
+        self.assertEqual(out['qualityWarnings'],[])
+
     def test_macro_collection_scope_excludes_bond_and_swap_curves(self):
         self.assertEqual(set(m.VBMA_TABLES),{'macro_overview','fdi','gdp_growth','pmi','money_supply','credit_sector'})
         joined=' '.join(slug for slug,_ in m.VBMA_TABLES.values()).lower()
