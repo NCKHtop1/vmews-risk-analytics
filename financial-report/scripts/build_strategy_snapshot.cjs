@@ -24,7 +24,7 @@ function sameTechnicalState(a,b){
 }
 const universe=read(path.join(out,'universe.json'),{}),canonical=read(path.resolve(process.argv[3]||'financial-report/data/universe.json'),{}),quotes=read(path.join(out,'quotes.json'),{}),old=read(path.join(out,'strategy-indicators.json'),{symbols:{}});
 const records=universe.symbols||canonical.symbols||{},discoveryTechnical=universe.discoveryTechnical||canonical.discoveryTechnical||{},files=fs.existsSync(path.join(out,'history'))?fs.readdirSync(path.join(out,'history')).filter(f=>f.endsWith('.json')):[];
-const eodAsOf=String(universe.eodAsOf||canonical.eodAsOf||'').slice(0,10),scannerTargets=Array.isArray(universe.scannerSymbols)?universe.scannerSymbols:(Array.isArray(canonical.scannerSymbols)?canonical.scannerSymbols:[]);
+const eodAsOf=String(universe.eodAsOf||canonical.eodAsOf||universe.asOf||canonical.asOf||'').slice(0,10),scannerTargets=Array.isArray(universe.scannerSymbols)?universe.scannerSymbols:(Array.isArray(canonical.scannerSymbols)?canonical.scannerSymbols:[]);
 const symbols={};
 for(const file of files){
  const symbol=path.basename(file,'.json').toUpperCase(),bars=normalizeBars(read(path.join(out,'history',file),{}).bars);
