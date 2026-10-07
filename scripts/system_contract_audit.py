@@ -325,8 +325,22 @@ def audit_solution_core(report: Audit, core_dir: Path, now):
     report.check(str(release.get("asOf") or "") == asof, "SOLUTION_CORE_RELEASE_ALIGNMENT", (release.get("asOf"), asof))
     sources = market.get("sources") or {}
     bridge = sources.get("postCloseBridge") or {}
-    report.check(bridge.get("status") == "PASS", "SOLUTION_CORE_BRIDGE", bridge)
+    bridge_status = bridge.get("status")
+    bridge_ok = bridge_status in {"PASS", "NOT_APPLICABLE_ALREADY_CURRENT"}
+    report.check(bridge_ok, "SOLUTION_CORE_BRIDGE", bridge)
+    report.check(str(bridge.get("sessionDate") or "") == asof, "SOLUTION_CORE_BRIDGE_SESSION", (bridge.get("sessionDate"), asof))
     report.check(str(sources.get("marketScanAsOf") or "") == asof, "SOLUTION_CORE_MARKET_ALIGNMENT", (sources.get("marketScanAsOf"), asof))
+    report.check(str(sources.get("priceSessionAsOf") or "") == asof, "SOLUTION_CORE_PRICE_SESSION_ALIGNMENT", (sources.get("priceSessionAsOf"), asof))
+    price_audit = sources.get("priceCrossSource") or {}
+    report.check(price_audit.get("status") == "PASS", "SOLUTION_CORE_PRICE_CROSS_SOURCE", price_audit.get("status"))
+    report.check(float(price_audit.get("coverage") or 0) >= float(price_audit.get("requiredCoverage") or 1), "SOLUTION_CORE_PRICE_COVERAGE", price_audit)
+    report.check(int(price_audit.get("mismatchCount") or 0) == 0, "SOLUTION_CORE_PRICE_MISMATCH", price_audit.get("mismatchCount"))
+    if bridge_status == "PASS":
+        report.check(bridge.get("completedSessionVerified") is True, "SOLUTION_CORE_BRIDGE_COMPLETION", bridge)
+        report.check(bridge.get("independentCloseConfirmed") is True, "SOLUTION_CORE_BRIDGE_CONFIRMATION", bridge)
+        report.check(float(bridge.get("coverage") or 0) >= float(bridge.get("minimumCoverage") or 1), "SOLUTION_CORE_BRIDGE_PRIMARY_COVERAGE", bridge)
+        report.check(float(bridge.get("secondaryCoverage") or 0) >= float(bridge.get("minimumSecondaryCoverage") or 1), "SOLUTION_CORE_BRIDGE_SECONDARY_COVERAGE", bridge)
+        report.check(int(bridge.get("mismatchCount") or 0) == 0, "SOLUTION_CORE_BRIDGE_MISMATCH", bridge)
     published = len(dashboard.get("symbols") or {})
     validation = int(bridge.get("validationUniverseSymbols") or published)
     report.check(published >= math.ceil(max(1, validation) * .90), "SOLUTION_CORE_SYMBOL_COVERAGE", (published, validation))
