@@ -494,7 +494,7 @@ body.strategy-lab-view .strategy-page{display:block}
 .sai-view-head small{display:block;margin-top:4px;color:#8a96a7;font-size:8px}
 .sai-evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.sai-evidence-grid section{border:1px solid #e8ebf1;border-radius:11px;padding:10px}.sai-evidence-grid h4{margin:0 0 7px;font-size:9px;color:#4e5f77}.sai-evidence-grid ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}.sai-evidence-grid li{display:grid;grid-template-columns:16px 1fr;gap:5px;font-size:8px;line-height:1.45;color:#617087}.sai-evidence-grid li i{display:grid;place-items:center;width:15px;height:15px;border-radius:50%;font-style:normal;font-weight:900}.sai-evidence-grid .positive i{background:#e9f8f2;color:#087b61}.sai-evidence-grid .caution i{background:#fff5df;color:#a06c00}
 .sai-invalidation{margin-top:11px;border-left:3px solid #6b78db;border-radius:8px;background:#f7f8fe;padding:9px 10px}.sai-invalidation p{margin:4px 0 0;font-size:8px;line-height:1.5;color:#596983}
-.sai-ai-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:11px}.sai-ai-actions button{border:1px solid #dce3ee;border-radius:9px;background:#fff;padding:8px 10px;color:#465773;font-size:9px;font-weight:750;cursor:pointer}.sai-ai-actions .primary{border-color:#4868d7;background:#4868d7;color:#fff}
+.sai-action-status{min-height:16px;margin-top:9px;font-size:8px;line-height:1.45;color:#7b879a}.sai-action-status.loading{color:#5269b9}.sai-action-status.success{color:#14745f}.sai-action-status.error{color:#b14a55}.sai-ai-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:7px}.sai-ai-actions button{border:1px solid #dce3ee;border-radius:9px;background:#fff;padding:8px 10px;color:#465773;font-size:9px;font-weight:750;cursor:pointer}.sai-ai-actions button:disabled{opacity:.58;cursor:wait}.sai-ai-actions .primary{border-color:#4868d7;background:#4868d7;color:#fff}
 .sai-vn-execution{background:linear-gradient(180deg,#fff,#fbfcff)}
 .strategy-builder-divider{display:flex;align-items:center;gap:10px;margin:18px 0 4px;color:#77849a;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.strategy-builder-divider::before,.strategy-builder-divider::after{content:"";height:1px;background:#e5e9f0;flex:1}
 .sai-empty{padding:18px 8px;text-align:center;color:#8a96a6;font-size:9px}
@@ -1706,7 +1706,26 @@ async function refresh(){
  document.dispatchEvent(new CustomEvent('finquery:market-refresh',{detail:{symbol:state.symbol,selectedAge,selectedFresh:Boolean(currentQuoteLive),usedQuoteFallback,usedCloseCatch,usedNewsFallback,quoteFallbackError,newsFallbackError,sourceTime:currentQuote?.sourceTime||null,checkedAt:currentQuote?.collectedAt||null}}));
  }catch(error){console.error('Market refresh failed',error);manageQuoteRetry(false);const status=$('market-refresh-status');if(status)status.textContent='Cập nhật bị gián đoạn; hệ thống đang tự thử lại.';}finally{state.refreshing=false;if(refreshButton)refreshButton.disabled=false;}
 }
-window.FinancialMarket={refresh,select(symbol,companies){state.coreCompanies=Array.isArray(companies)?companies:state.coreCompanies;state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);state.symbol=symbol;showQuote();board();news();chartController.select(symbol,watch);window.FinInsights?.select?.(symbol);if(['peers','sector'].includes(state.marketView))void renderMarketCompare();if(state.marketView==='scanner')window.FinTechnicalScanner?.open?.();window.FinTechnicalScanner?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);window.FinStrategyBuilder?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);window.FinQueryAI?.sync(symbol);},context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=quoteStale(state.quotes[state.symbol])?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,quoteBundleSourceTime:state.quoteBundleSourceTime||null,quoteBundleCheckedAt:state.quoteBundleCheckedAt||null,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!state.quoteBundleSourceTime||String(scan.sourceTime)===String(state.quoteBundleSourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},alertContext(){return{symbol:state.symbol,companies:state.companies.map(c=>({symbol:c.symbol,name:c.name,tier:c.tier})),quotes:state.quotes,watch:[...watch]};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
+function selectMarketSymbol(symbol,companies){
+ const next=String(symbol||'').trim().toUpperCase();if(!/^[A-Z]{3}$/.test(next))return false;
+ state.coreCompanies=Array.isArray(companies)?companies:state.coreCompanies;
+ state.companies=mergeUniverseCompanies(state.coreCompanies,state.universe);
+ state.symbol=next;showQuote();board();news();chartController.select(next,watch);window.FinInsights?.select?.(next);
+ if(['peers','sector'].includes(state.marketView))void renderMarketCompare();
+ if(state.marketView==='scanner')window.FinTechnicalScanner?.open?.();
+ window.FinTechnicalScanner?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);
+ window.FinStrategyBuilder?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);
+ window.FinQueryAI?.sync(next);
+ return true;
+}
+function openMarketChart(symbol,companies){
+ setMarketView('price');
+ const ok=selectMarketSymbol(symbol,companies);if(!ok)return false;
+ const ticker=$('ticker');if(ticker)ticker.value=state.symbol;
+ const url=new URL(location.href);url.searchParams.set('symbol',state.symbol);url.hash='market';history.replaceState(null,'',url);
+ return true;
+}
+window.FinancialMarket={refresh,select:selectMarketSymbol,openChart:openMarketChart,context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=quoteStale(state.quotes[state.symbol])?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,quoteBundleSourceTime:state.quoteBundleSourceTime||null,quoteBundleCheckedAt:state.quoteBundleCheckedAt||null,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!state.quoteBundleSourceTime||String(scan.sourceTime)===String(state.quoteBundleSourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},alertContext(){return{symbol:state.symbol,companies:state.companies.map(c=>({symbol:c.symbol,name:c.name,tier:c.tier})),quotes:state.quotes,watch:[...watch]};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
 document.querySelectorAll('[data-market-view]').forEach(btn=>btn.addEventListener('click',()=>setMarketView(btn.dataset.marketView)));
 $('watch-toggle').addEventListener('click',()=>toggleWatch(state.symbol));$('market-rows').addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||!img.closest('.ticker-logo'))return;const stage=Number(img.dataset.logoStage||0);if(stage===0&&img.dataset.logoAlt){img.dataset.logoStage='1';img.src=img.dataset.logoAlt;return;}if(stage===1&&img.dataset.logoAlt2){img.dataset.logoStage='2';img.src=img.dataset.logoAlt2;return;}if(stage<=2&&img.dataset.logoPlaceholder){img.dataset.logoStage='3';img.src=img.dataset.logoPlaceholder;return;}img.hidden=true;},true);$('market-rows').addEventListener('click',e=>{const star=e.target.closest('[data-watch]'),ticker=e.target.closest('[data-market-symbol]'),driver=e.target.closest('[data-driver]');if(star)toggleWatch(star.dataset.watch);if(driver){state.driverOpen=state.driverOpen===driver.dataset.driver?'':driver.dataset.driver;board();return;}if(ticker){const symbol=ticker.dataset.marketSymbol,company=state.companies.find(x=>x.symbol===symbol);if(company?.tier&&company.tier!=='CORE'){openForecastSymbol(symbol);return;}$('ticker').value=symbol;$('company-form').requestSubmit();}});$('market-filter').addEventListener('input',board);$('market-universe-filter')?.addEventListener('change',e=>{state.universeFilter=e.target.value;board();});$('watch-only').addEventListener('change',e=>{state.watchOnly=e.target.checked;board();});$('market-sort').addEventListener('change',e=>{state.sort=e.target.value;board();});$('market-refresh')?.addEventListener('click',()=>{refresh();window.FinInsights?.reload?.();window.FinTechnicalScanner?.refresh?.();if(state.symbol)chartController.load(true);});$('news-mode').addEventListener('change',e=>{state.newsMode=e.target.value;news();});document.querySelectorAll('[data-news-tab]').forEach(btn=>btn.addEventListener('click',()=>{state.newsMode=btn.dataset.newsTab;news();}));
 const chartController=window.FinChart.create(BASE,q=>{const previous=state.quotes[q.symbol];if(window.FinMarketData.stamp(q.sourceTime)===null)return;if(previous?.sourceTime&&window.FinMarketData.stamp(previous.sourceTime)!==null&&Date.parse(previous.sourceTime)>Date.parse(q.sourceTime))return;state.quotes[q.symbol]={...previous,...q,changePct:Number.isFinite(q.changePct)?q.changePct:(q.reference||previous?.reference)>0?(q.price/(q.reference||previous.reference)-1)*100:null,unit:'VND',source:'WebSocket',status:'ok',collectedAt:new Date().toISOString()};showQuote();board();});
@@ -2270,7 +2289,7 @@ function renderView(model){
  '</div>'+
  '<div class="sai-evidence-grid"><section><h4>Yếu tố ủng hộ</h4><ul class="positive">'+positives+'</ul></section><section><h4>Điểm cần thận trọng</h4><ul class="caution">'+cautions+'</ul></section></div>'+
  '<div class="sai-invalidation"><span>ĐIỀU KIỆN MẤT HIỆU LỰC</span><p>'+esc(v.invalidation)+'</p></div>'+
- '<div class="sai-ai-actions"><button id="sai-open-symbol" type="button">Mở biểu đồ '+esc(v.symbol)+'</button><button id="sai-query-ai" type="button" class="primary">Phân tích sâu</button></div>';
+ '<div id="sai-action-status" class="sai-action-status" role="status" aria-live="polite"></div><div class="sai-ai-actions"><button id="sai-open-symbol" type="button">Mở biểu đồ '+esc(v.symbol)+'</button><button id="sai-query-ai" type="button" class="primary">Phân tích sâu</button></div>';
 }
 function renderExecution(){
  const host=$('sai-vn-execution');if(!host)return;
@@ -2313,18 +2332,56 @@ function loadPreset(id){
  const button=document.querySelector('[data-strategy-preset="'+CSS.escape(id)+'"]');
  if(button){button.click();document.getElementById('strategy-builder')?.scrollIntoView({behavior:'smooth',block:'start'});}
 }
-function openSymbol(symbol){
- const s=String(symbol||state.selected||'').toUpperCase();if(!s)return;
- window.FinPlatformViews?.openAnalysis?.();
- const ticker=$('ticker');if(ticker)ticker.value=s;
- $('company-form')?.requestSubmit();
- setTimeout(()=>document.getElementById('market')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+function actionStatus(message,tone=''){
+ const el=$('sai-action-status');if(!el)return;
+ el.textContent=message||'';el.className='sai-action-status'+(tone?' '+tone:'');
 }
-function askAI(){
- if(!state.model||!state.selected||!window.FinQueryAI?.ask)return;
- const v=C.investmentView(state.selected,state.model.opportunities,state.model.regime);
- const q='Phân tích '+state.selected+' theo Strategy Intelligence hiện tại. Chiến lược chính: '+(v.primary?.label||'chưa có')+'. Điểm phù hợp: '+(v.score??'—')+'/100. Regime: '+state.model.regime.label+'. Hãy đối chiếu thêm giá, kỹ thuật, Forecast, Risk, tin doanh nghiệp và BCTC đang có trong FinQuery; nêu yếu tố ủng hộ, yếu tố phản biện, kịch bản tích cực, kịch bản mất hiệu lực và rủi ro. Không suy diễn số liệu thiếu.';
- window.FinQueryAI.ask(q,'deep');
+function setActionBusy(id,busy,label=''){
+ const b=$(id);if(!b)return;
+ if(!b.dataset.idleLabel)b.dataset.idleLabel=b.textContent||'';
+ b.disabled=Boolean(busy);b.textContent=busy?(label||'Đang xử lý…'):b.dataset.idleLabel;
+}
+async function openSymbol(symbol){
+ const s=String(symbol||state.selected||'').trim().toUpperCase();if(!/^[A-Z]{3}$/.test(s)){actionStatus('Mã chứng khoán không hợp lệ.','error');return false;}
+ setActionBusy('sai-open-symbol',true,'Đang mở '+s+'…');actionStatus('Đang mở biểu đồ '+s+'…','loading');
+ try{
+  window.FinPlatformViews?.openAnalysis?.();
+  const opened=window.FinancialMarket?.openChart?.(s);
+  if(!opened){
+   const ticker=$('ticker');if(ticker)ticker.value=s;
+   $('company-form')?.requestSubmit();
+   document.querySelector('[data-market-view="price"]')?.click();
+  }
+  const resolver=window.FinancialReportContext?.resolveSymbol?.(s);
+  if(resolver===s)void window.FinancialReportContext.select(s).catch(()=>{});
+  await new Promise(resolve=>setTimeout(resolve,80));
+  const market=document.getElementById('market'),terminal=document.getElementById('chart-terminal');
+  if(!market||!terminal||terminal.hidden)throw Error('Chart view chưa sẵn sàng');
+  terminal.scrollIntoView({behavior:'smooth',block:'start'});
+  return true;
+ }catch(error){
+  actionStatus('Không mở được biểu đồ '+s+'. '+String(error?.message||error),'error');
+  return false;
+ }finally{setActionBusy('sai-open-symbol',false);}
+}
+async function askAI(){
+ const s=String(state.selected||'').toUpperCase();
+ if(!state.model||!s){actionStatus('Chưa có mã để phân tích.','error');return false;}
+ if(!window.FinQueryAI?.ask){actionStatus('Dolphin chưa sẵn sàng. Hãy tải lại trang.','error');return false;}
+ const v=C.investmentView(s,state.model.opportunities,state.model.regime);
+ const q='Phân tích '+s+' theo Strategy Intelligence hiện tại. Chiến lược chính: '+(v.primary?.label||'chưa có')+'. Điểm phù hợp: '+(v.score??'—')+'/100. Regime: '+state.model.regime.label+'. Hãy đối chiếu thêm giá, kỹ thuật, Forecast, Risk, tin doanh nghiệp và BCTC đang có trong FinQuery; nêu yếu tố ủng hộ, yếu tố phản biện, kịch bản tích cực, kịch bản mất hiệu lực và rủi ro. Không suy diễn số liệu thiếu.';
+ setActionBusy('sai-query-ai',true,'Đang mở Dolphin…');actionStatus('Đang mở phân tích sâu cho '+s+'…','loading');
+ try{
+  window.FinancialMarket?.select?.(s);
+  window.FinQueryAI.sync?.(s);
+  window.FinQueryAI.ensureGlobalLayer?.();
+  await window.FinQueryAI.ask(q,'deep');
+  actionStatus('Đã mở phân tích sâu cho '+s+'.','success');
+  return true;
+ }catch(error){
+  actionStatus('Không mở được phân tích sâu. '+String(error?.message||error),'error');
+  return false;
+ }finally{setActionBusy('sai-query-ai',false);}
 }
 function bind(){
  $('sai-top-strategies')?.addEventListener('click',e=>{const b=e.target.closest('[data-sai-strategy]');if(b)loadPreset(b.dataset.saiStrategy);});
@@ -2589,10 +2646,12 @@ function showRisk(pushHash=true){setPlatformView('risk',pushHash);}
 function showStrategy(pushHash=true){setPlatformView('strategy',pushHash);}
 function showAnalysis(pushHash=false){setPlatformView('analysis',pushHash);}
 function openSymbol(symbol){
+ const s=String(symbol||'').trim().toUpperCase();if(!/^[A-Z]{3}$/.test(s))return;
  showAnalysis();
- const ticker=$('ticker');if(ticker)ticker.value=symbol;
- $('company-form')?.requestSubmit();
- setTimeout(()=>document.getElementById('market')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
+ const opened=window.FinancialMarket?.openChart?.(s);
+ if(!opened){const ticker=$('ticker');if(ticker)ticker.value=s;$('company-form')?.requestSubmit();document.querySelector('[data-market-view="price"]')?.click();}
+ const resolver=window.FinancialReportContext?.resolveSymbol?.(s);if(resolver===s)void window.FinancialReportContext.select(s).catch(()=>{});
+ setTimeout(()=>document.getElementById('chart-terminal')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
 }
 function bind(){
  document.querySelectorAll('.header nav a').forEach(a=>{
@@ -3077,15 +3136,31 @@ function clone(v){try{return JSON.parse(JSON.stringify(v));}catch{return null;}}
 function pick(obj,keys){const out={};for(const k of keys)if(obj&&obj[k]!==undefined)out[k]=obj[k];return out;}
 function trimArray(v,n=8){return Array.isArray(v)?v.slice(0,n):[];}
 function summarizeNews(items,n=6){return trimArray(items,n).map(x=>pick(x,['title','source','publisher','publishedAt','date','url','summary','symbols','topics']));}
-function activeSymbol(){return String(root.FinancialReportContext?.raw?.()?.symbol||root.FinancialMarket?.context?.()?.symbol||'').toUpperCase();}
-function resolveTargetSymbol(question){try{return String(root.FinancialReportContext?.resolveSymbol?.(question)||'').toUpperCase();}catch{return'';}}
+function activeSymbol(){return String(root.FinancialMarket?.context?.()?.symbol||root.FinancialReportContext?.raw?.()?.symbol||'').toUpperCase();}
+function marketCompanies(){try{return root.FinancialMarket?.alertContext?.()?.companies||[];}catch{return[];}}
+function resolveTargetSymbol(question){
+ try{const f=String(root.FinancialReportContext?.resolveSymbol?.(question)||'').toUpperCase();if(f)return f;}catch{}
+ const raw=String(question||''),upper=raw.toUpperCase(),companies=marketCompanies(),symbols=new Set(companies.map(x=>String(x.symbol||'').toUpperCase()).filter(Boolean));
+ const tokens=upper.match(/(^|[^A-Z0-9])([A-Z]{3})(?=[^A-Z0-9]|$)/g)||[];
+ for(const token of tokens){const symbol=token.replace(/[^A-Z]/g,'');if(symbols.has(symbol))return symbol;}
+ const q=norm(raw);const hit=companies.find(x=>{const name=norm(x.name||'');return name.length>=6&&q.includes(name);});
+ return String(hit?.symbol||'').toUpperCase();
+}
 async function prepare(question){
  const requestedSymbol=resolveTargetSymbol(question),before=activeSymbol();
- if(!requestedSymbol||requestedSymbol===before)return{requestedSymbol:requestedSymbol||before,beforeSymbol:before,activeSymbol:before,switched:false,status:'ok'};
- if(!root.FinancialReportContext?.select){return{requestedSymbol,beforeSymbol:before,activeSymbol:before,switched:false,status:'unsupported'};}
- const loaded=await root.FinancialReportContext.select(requestedSymbol),after=String(loaded?.symbol||activeSymbol()).toUpperCase();
- if(after!==requestedSymbol){const error=new Error('Khong nap duoc du lieu '+requestedSymbol+' theo yeu cau.');error.code='SYMBOL_SWITCH_FAILED';throw error;}
- return{requestedSymbol,beforeSymbol:before,activeSymbol:after,switched:true,status:'ok'};
+ if(!requestedSymbol||requestedSymbol===before)return{requestedSymbol:requestedSymbol||before,beforeSymbol:before,activeSymbol:before,switched:false,status:'ok',financialAvailable:Boolean(root.FinancialReportContext?.raw?.()?.symbol===before)};
+ let marketSwitched=false,financialAvailable=false;
+ if(root.FinancialMarket?.select){
+  try{marketSwitched=Boolean(root.FinancialMarket.select(requestedSymbol));}catch{}
+ }
+ const financialCompanies=typeof root.FinancialReportContext?.companies==='function'?root.FinancialReportContext.companies():[];
+ const financialSupported=financialCompanies.some(x=>String(x.symbol||'').toUpperCase()===requestedSymbol);
+ if(financialSupported&&root.FinancialReportContext?.select){
+  try{const loaded=await root.FinancialReportContext.select(requestedSymbol);financialAvailable=String(loaded?.symbol||'').toUpperCase()===requestedSymbol;}catch{financialAvailable=false;}
+ }
+ const after=activeSymbol();
+ if(after!==requestedSymbol&&!marketSwitched){const error=new Error('Khong nap duoc du lieu thi truong '+requestedSymbol+' theo yeu cau.');error.code='SYMBOL_SWITCH_FAILED';throw error;}
+ return{requestedSymbol,beforeSymbol:before,activeSymbol:requestedSymbol,switched:true,status:'ok',marketSwitched,financialAvailable};
 }
 function classify(question){
  const s=norm(question);
@@ -3119,9 +3194,11 @@ function marketTool(){
  const q=m.quote||null,d=m.driver||null,t=m.technical||null;
  return{symbol:m.symbol||q?.symbol||'',quote:q?pick(q,['symbol','price','reference','change','changePct','volume','value','sourceTime','collectedAt','status']):null,driver:d?pick(d,['relativeStrengthPct','volumeRatio20','momentum5dPct','factors']):null,technical:t?pick(t,['timeframe','snapshot','indicators','sourceTime','checkedAt']):null,market:pick(m.market||{},['index','indexChangePct','breadth','sourceTime']),newsCheckedAt:m.newsCheckedAt||null};
 }
-function financialTool(base){
+function financialTool(base,targetSymbol=null){
  if(base?.localFinancialData)return clone(base.localFinancialData);
  const raw=root.FinancialReportContext?.raw?.()||null;if(!raw)return null;
+ const expected=String(targetSymbol||activeSymbol()||'').toUpperCase(),actual=String(raw?.symbol||'').toUpperCase();
+ if(expected&&actual&&expected!==actual)return null;
  const compact=data=>{if(!data)return null;const ps=(data.periods||data.years||[]).map(String).slice(-8);const rs=(data.sections||[]).flatMap(s=>(s.rows||[]).slice(0,8).map(r=>({label:r.label,unit:r.unit||'',section:s.id||'',values:Object.fromEntries(ps.filter(p=>Number.isFinite(Number(r.values?.[p]))).map(p=>[p,Number(r.values[p])]))}))).slice(0,30);return{periods:ps,updatedAt:data.updatedAt||null,checkedAt:data.checkedAt||null,rows:rs};};
  return{annual:compact(raw.annual||(!raw.quarterly?raw.data:null)),quarterly:compact(raw.quarterly||null)};
 }
@@ -3166,7 +3243,7 @@ function forecastTool(){
  const m=root.FinancialMarket?.context?.()||{};const f=m.forecast||root.FinForecast?.context?.()||null;
  return f?clone(f):{available:false,reason:'Forecast context chua duoc nap trong financial-report.'};
 }
-const TOOL_REGISTRY={market:({})=>marketTool(),financial:({baseContext})=>financialTool(baseContext),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
+const TOOL_REGISTRY={market:({})=>marketTool(),financial:({baseContext,targetSymbol})=>financialTool(baseContext,targetSymbol),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
 async function execute(name,args){
  const started=performance?.now?.()??Date.now();try{const result=await TOOL_REGISTRY[name](args);return{name,status:result?'ok':'missing',durationMs:Math.round((performance?.now?.()??Date.now())-started),result};}catch(error){return{name,status:'error',durationMs:Math.round((performance?.now?.()??Date.now())-started),error:String(error?.message||error).slice(0,240),result:null};}
 }
@@ -3193,7 +3270,8 @@ async function run(question,options={}){
  const q=String(question||'').trim(),prepared=options.prepared||await prepare(q),planInfo=plan(q),startedAt=new Date().toISOString(),scratchpad=[];
  scratchpad.push({type:'symbol',requestedSymbol:prepared.requestedSymbol||null,beforeSymbol:prepared.beforeSymbol||null,activeSymbol:prepared.activeSymbol||null,switched:Boolean(prepared.switched)});
  scratchpad.push({type:'plan',intent:planInfo.intent,tools:planInfo.tools,targetSymbol:planInfo.targetSymbol||prepared.activeSymbol||null});
- const calls=await Promise.all(planInfo.tools.map(name=>execute(name,{question:q,baseContext:options.baseContext||null})));
+ const targetSymbol=planInfo.targetSymbol||prepared.activeSymbol||null;
+ const calls=await Promise.all(planInfo.tools.map(name=>execute(name,{question:q,baseContext:options.baseContext||null,targetSymbol})));
  const results=Object.fromEntries(calls.map(x=>[x.name,x]));
  for(const call of calls)scratchpad.push({type:'tool',name:call.name,status:call.status,durationMs:call.durationMs,error:call.error||null});
  const validation=validate(q,planInfo.intent,results,options.baseContext||null);scratchpad.push({type:'validate',status:validation.status,warnings:validation.warnings});
@@ -4067,7 +4145,11 @@ async function refreshGeminiSession(){
  try{const model=await validateGemini(secret);renderGeminiStatus('Gemini phản hồi OK · '+model);}
  catch(error){state.geminiReady=false;state.lastGeminiError=String(error?.message||error);renderGeminiStatus('Không thể generateContent · '+state.lastGeminiError);}
 }
-function openDrawer(){const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return;if(backdrop)backdrop.hidden=false;drawer.hidden=false;requestAnimationFrame(()=>{backdrop?.classList.add('open');drawer.classList.add('open');});document.body.classList.add('dolphin-modal-open');mountGeminiUI();if(fab){fab.setAttribute('aria-expanded','true');fab.hidden=true;}setTimeout(()=>$('research-ai-question')?.focus(),100);}
+function ensureGlobalAILayer(){
+ const body=document.body;if(!body)return;
+ for(const id of ['ai-backdrop','research-ai','ai-fab']){const el=$(id);if(el&&el.parentElement!==body)body.append(el);}
+}
+function openDrawer(){ensureGlobalAILayer();const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return false;if(backdrop)backdrop.hidden=false;drawer.hidden=false;requestAnimationFrame(()=>{backdrop?.classList.add('open');drawer.classList.add('open');});document.body.classList.add('dolphin-modal-open');mountGeminiUI();if(fab){fab.setAttribute('aria-expanded','true');fab.hidden=true;}setTimeout(()=>$('research-ai-question')?.focus(),100);return true;}
 function closeDrawer(){const drawer=$('research-ai'),fab=$('ai-fab'),backdrop=$('ai-backdrop');if(!drawer)return;drawer.classList.remove('open');backdrop?.classList.remove('open');document.body.classList.remove('dolphin-modal-open');setTimeout(()=>{drawer.hidden=true;if(backdrop)backdrop.hidden=true;},160);if(fab){fab.setAttribute('aria-expanded','false');fab.hidden=false;}}
 async function ask(question,preferredMode=null){
  const q=String(question||'').trim();if(!q||state.busy)return;
@@ -4085,7 +4167,7 @@ async function ask(question,preferredMode=null){
  }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
-window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
+window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,ensureGlobalLayer:ensureGlobalAILayer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
 const form=$('research-ai-form'),input=$('research-ai-question'),sendButton=$('research-ai-send');
 form?.addEventListener('submit',e=>{e.preventDefault();if(state.busy){state.currentController?.abort();return;}const q=input.value.trim();if(q){input.value='';input.style.height='';ask(q);}});
 input?.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,130)+'px';});
@@ -4093,7 +4175,7 @@ input?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&window.in
 document.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.aiPrompt||'',b.dataset.aiMode||null)));
 $('ai-fab')?.addEventListener('click',()=>{if($('research-ai')?.hidden)openDrawer();else closeDrawer();});$('ai-close')?.addEventListener('click',closeDrawer);$('ai-backdrop')?.addEventListener('click',closeDrawer);document.querySelector('a[href="#research-ai"]')?.addEventListener('click',e=>{e.preventDefault();openDrawer();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('research-ai')?.hidden)closeDrawer();});
-restoreAIMode();sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');mountGeminiUI();void refreshGeminiSession();
+restoreAIMode();sync(window.FinancialMarket?.context?.().symbol||new URLSearchParams(location.search).get('symbol')||'MBB');ensureGlobalAILayer();mountGeminiUI();void refreshGeminiSession();
 })();</script><script data-base="./data/">(function(){'use strict';
 const $=id=>document.getElementById(id);
 const DATA_BASE=new URL(document.currentScript.dataset.base||'../data/',document.currentScript.src||location.href).href;
