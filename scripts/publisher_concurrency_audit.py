@@ -120,12 +120,13 @@ DATA_BRANCH = "financial-market-data"
 
 def pushes_to_branch(text: str, branch: str) -> bool:
     active = _active_lines(text)
-    pattern = re.compile(rf"(?:HEAD:refs/heads/|HEAD:){re.escape(branch)}\\b")
-    return any(
-        bool(pattern.search(command.replace('"', "").replace("'", "")))
-        for command in push_commands(active)
-    )
-
+    long_ref = f"HEAD:refs/heads/{branch}"
+    short_ref = f"HEAD:{branch}"
+    for command in push_commands(active):
+        normalized = command.replace('"', "").replace("'", "")
+        if long_ref in normalized or short_ref in normalized:
+            return True
+    return False
 
 def stages_whole_market_tree(text: str) -> bool:
     """Reject branch writers that can accidentally publish another job's files."""
