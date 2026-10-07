@@ -7,21 +7,37 @@ function revision(data){return Math.max(0,...['checkedAt','collectedAt','generat
 async function read(base,file,signal,timeout){const r=await fetch(base+file+'?refresh='+Date.now().toString(36),{cache:'no-store',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(timeout)]):AbortSignal.timeout(timeout)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!valid(data))throw Error('Invalid snapshot timestamp');return data;}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function get(file,{signal,timeout=12000,hedgeMs=250}={}){
- // Raw publisher is normally the freshest copy, while Pages is a same-origin
- // safety mirror. Start both together, return the first valid copy quickly, and
- // keep only a short grace window to compare revisions. A hung mirror must never
- // hold an otherwise valid market snapshot until the full network timeout.
- const tasks=[...new Set([source,pages].filter(Boolean))].map(base=>read(base,file,signal,timeout));
- if(!tasks.length)throw Error('No market snapshot source');
- let first;
- try{first=await Promise.any(tasks);}catch{throw Error('No valid market snapshot');}
- if(signal?.aborted)throw new DOMException('Aborted','AbortError');
- const settled=await Promise.race([Promise.allSettled(tasks),delay(Math.max(0,Number(hedgeMs)||0)).then(()=>null)]);
- if(Array.isArray(settled)){
-  const rows=settled.filter(x=>x.status==='fulfilled').map(x=>x.value).sort((a,b)=>revision(b)-revision(a));
-  if(rows.length)return rows[0];
+ // Raw publisher is the primary source. Pages is a true hedge: it starts only
+ // when the primary is slow or fails, preventing duplicate multi-megabyte
+ // downloads on every refresh while preserving fast failover.
+ const bases=[...new Set([source,pages].filter(Boolean))];
+ if(!bases.length)throw Error('No market snapshot source');
+ const primaryCtl=new AbortController(),mirrorCtl=new AbortController();
+ const combined=ctl=>signal?AbortSignal.any([signal,ctl.signal]):ctl.signal;
+ let mirrorPromise=null,timer=null;
+ const startMirror=()=>{
+  if(mirrorPromise)return mirrorPromise;
+  if(bases.length<2){mirrorPromise=Promise.reject(Error('No mirror snapshot source'));mirrorPromise.catch(()=>{});return mirrorPromise;}
+  mirrorPromise=read(bases[1],file,combined(mirrorCtl),timeout);
+  return mirrorPromise;
+ };
+ const primary=read(bases[0],file,combined(primaryCtl),timeout);
+ const mirrorGate=new Promise((resolve,reject)=>{
+  const launch=()=>startMirror().then(resolve,reject);
+  timer=setTimeout(launch,Math.max(0,Number(hedgeMs)||0));
+  primary.catch(()=>{if(timer){clearTimeout(timer);timer=null;}launch();});
+ });
+ try{
+  const result=await Promise.any([primary,mirrorGate]);
+  if(signal?.aborted)throw new DOMException('Aborted','AbortError');
+  return result;
+ }catch(error){
+  if(signal?.aborted)throw new DOMException('Aborted','AbortError');
+  throw Error('No valid market snapshot');
+ }finally{
+  if(timer)clearTimeout(timer);
+  primaryCtl.abort();mirrorCtl.abort();
  }
- return first;
 }
 function mergeQuotes(target,rows){for(const [symbol,q]of Object.entries(rows||{})){const t=stamp(q?.sourceTime),old=target[symbol],prior=stamp(old?.sourceTime);if(t!==null&&Number(q.price)>0&&(prior===null||!old||t>=prior))target[symbol]=q;}return target;}
 const CORE_BUNDLE_FILES={quotes:'quotes.json',scanner:'technical-signals.json',strategy:'strategy-indicators.json',watch:'watch-today.json',risk:'risk-monitor.json'};
