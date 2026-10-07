@@ -2058,6 +2058,16 @@ class MarketTests(unittest.TestCase):
         self.assertIn('sbv',row['topics'])
         self.assertIn('central_bank',row['topics'])
 
+    def test_luatvietnam_relative_list_age_is_parseable_but_not_claimed_exact(self):
+        current=datetime(2026,10,7,7,0,tzinfo=timezone.utc)
+        dt,basis,precision=m._luatvietnam_datetime('6 phút trước',current)
+        self.assertEqual(dt.isoformat(),'2026-10-07T06:54:00+00:00')
+        self.assertEqual(basis,'relative_age')
+        self.assertEqual(precision,'relative')
+        dt,basis,precision=m._luatvietnam_datetime('2 giờ trước',current)
+        self.assertEqual(dt.isoformat(),'2026-10-07T05:00:00+00:00')
+        self.assertEqual(precision,'relative')
+
     def test_luatvietnam_detail_uses_update_time_not_issue_date(self):
         raw='''<html><body>Ngày cập nhật: Thứ Tư, 07/10/2026 11:48 (GMT+7)
         Ngày ban hành: 01/10/2026</body></html>'''.encode()
