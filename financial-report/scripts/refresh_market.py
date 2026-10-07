@@ -2432,7 +2432,8 @@ def _fetch_sbv_news(current):
             rows.append({
                 'title': title, 'summary': '', 'url': link,
                 'source': 'Ngân hàng Nhà nước Việt Nam',
-                'publishedAt': dt.isoformat(), 'symbols': [], 'topics': sorted(topics),
+                'publishedAt': dt.isoformat(), 'timestampBasis': 'listing_date',
+                'timePrecision': 'day', 'symbols': [], 'topics': sorted(topics),
                 'sourceTier': 'official', 'sourcePriority': 100, **meta
             })
         rows.sort(key=lambda row: row['publishedAt'], reverse=True)

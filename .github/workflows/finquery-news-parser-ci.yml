@@ -4,20 +4,30 @@ on:
   pull_request:
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
+      - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
       - '.github/workflows/market-realtime-guard.yml'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
   push:
     branches: [main]
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
+      - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
       - '.github/workflows/market-realtime-guard.yml'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
   workflow_dispatch:
 
 permissions:
@@ -36,3 +46,20 @@ jobs:
         run: python -m py_compile financial-report/scripts/refresh_market.py
       - name: Run focused news parser regressions
         run: python financial-report/tests/test_news_parser.py
+      - name: Build standalone FinQuery and verify News bundle contract
+        run: |
+          python financial-report/scripts/build_cdn.py
+          python - <<'PY'
+          from pathlib import Path
+          page=Path('financial-report/index.html').read_text(encoding='utf-8')
+          required=[
+              'news-company-latest.json',
+              'function newsTimeLabel(r)',
+              r'\bomo\b',
+              r'fpt\s+(?:retail|securities)\b',
+              'function strictCompanyNews(',
+          ]
+          missing=[x for x in required if x not in page]
+          assert not missing,('standalone News bundle is stale/incomplete',missing)
+          print('NEWS BUNDLE CONTRACT PASS',len(page),required)
+          PY

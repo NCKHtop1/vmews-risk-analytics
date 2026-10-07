@@ -148,6 +148,40 @@ class NewsParserTests(unittest.TestCase):
         self.assertNotIn("esc(date(r.publishedAt))",market)
 
 
+    def test_sbv_listing_date_is_day_precision_not_fake_clock_time(self):
+        raw='''<html><body>
+        <a href="/w/thong-cao-ty-gia">Ngân hàng Nhà nước công bố tỷ giá trung tâm mới</a>
+        <span>07/10/2026</span>
+        </body></html>'''.encode()
+        original=m.request
+        try:
+            m.request=lambda *_args,**_kwargs: raw
+            rows,health=m._fetch_sbv_news(self.current)
+        finally:
+            m.request=original
+        self.assertEqual(health['status'],'ok')
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['timePrecision'],'day')
+        self.assertEqual(rows[0]['timestampBasis'],'listing_date')
+
+    def test_news_workflows_require_healthy_luatvietnam_and_bundle_contract(self):
+        root=ROOT.parent
+        live=(root/'.github/workflows/market-news-live.yml').read_text()
+        guard=(root/'.github/workflows/market-realtime-guard.yml').read_text()
+        ci=(root/'.github/workflows/finquery-news-parser-ci.yml').read_text()
+        pages=(root/'.github/workflows/pages.yml').read_text()
+        bundle=(root/'.github/workflows/finquery-bundle-sync.yml').read_text()
+        self.assertIn("int(luat.get('parserHealthy') or 0)<3",live)
+        self.assertIn("luat.get('status')!='ok'",live)
+        self.assertIn("origin/main:financial-report/scripts/refresh_market.py",live)
+        self.assertIn("superseded=1",live)
+        self.assertIn("int(luat.get('parserHealthy') or 0)<3",guard)
+        self.assertIn("luat.get('status')!='ok'",guard)
+        self.assertIn('Build standalone FinQuery and verify News bundle contract',ci)
+        self.assertIn("news-company-latest.json",pages)
+        self.assertIn("function newsTimeLabel(r)",pages)
+        self.assertIn("build_cdn.py",bundle)
+
     def test_sbv_omo_is_a_token_not_a_substring(self):
         for text in ('tomorrow rate decision','SOMO crude sales','Moomoo market update'):
             self.assertIsNone(m.TOPIC_PATTERNS['sbv'].search(text),text)

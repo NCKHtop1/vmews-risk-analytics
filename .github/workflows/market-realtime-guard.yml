@@ -84,10 +84,10 @@ jobs:
               if int(health.get('healthy') or 0)<3:
                   raise ValueError(f'News source health too low: {health}')
               luat=n.get('luatVietnamDirect') or {}
-              if int(luat.get('expectedParsers') or 0)!=4 or int(luat.get('parserHealthy') or 0)<2:
+              if int(luat.get('expectedParsers') or 0)!=4 or int(luat.get('parserHealthy') or 0)<3:
                   raise ValueError(f'LuatVietnam direct parser health insufficient: {luat}')
-              if luat.get('status') not in ('ok','degraded'):
-                  raise ValueError(f'LuatVietnam direct source unavailable: {luat}')
+              if luat.get('status')!='ok':
+                  raise ValueError(f'LuatVietnam direct source degraded/unavailable: {luat}')
               print('News age/coverage:',round(age(n['checkedAt']),1),'company symbols',company.get('companyCoverage'),'source health',health,'luat',luat)
           except Exception as e:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
