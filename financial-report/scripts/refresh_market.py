@@ -2749,6 +2749,33 @@ def _retain_news_row(row, current):
     return True
 
 
+def _news_is_sbv(row):
+    if (row or {}).get('officialSource') == 'SBV' or (row or {}).get('source') == 'Ngân hàng Nhà nước Việt Nam':
+        return True
+    text = ' '.join([
+        clean((row or {}).get('title')),
+        clean((row or {}).get('summary')),
+        clean((row or {}).get('source')),
+    ])
+    return bool(SBV_PATTERN.search(text))
+
+
+def _normalize_retained_news_row(row):
+    """Repair stale classifications created by older parser rules."""
+    normalized = dict(row or {})
+    topics = list(normalized.get('topics') or [])
+    if not _news_is_sbv(normalized):
+        topics = [topic for topic in topics if topic != 'sbv']
+        normalized['topics'] = topics
+        if normalized.get('impactTag') == 'NHNN':
+            meta = classify_news_meta(
+                normalized.get('title'), normalized.get('summary'),
+                normalized.get('source'), set(topics), normalized.get('publishedAt')
+            )
+            normalized.update(meta)
+    return normalized
+
+
 def _balanced_news_snapshot(items):
     ordered = sorted(items or [], key=lambda r: r.get('publishedAt') or '', reverse=True)
     vietnam = [r for r in ordered if r.get('region') != 'global'][:140]
@@ -2800,7 +2827,11 @@ def news(out, companies):
 
     # Retain history only when it still satisfies the current timestamp
     # contract. Parser-v1 invalid combinations are purged during this merge.
-    retained = [row for row in previous.get('items', []) if _retain_news_row(row, current)]
+    retained = [
+        _normalize_retained_news_row(row)
+        for row in previous.get('items', [])
+        if _retain_news_row(row, current)
+    ]
     items = _unique_news(rows + retained)[:2500]
     healthy = sum(source.get('status') == 'ok' for source in sources)
     empty = sum(source.get('status') == 'empty' for source in sources)
