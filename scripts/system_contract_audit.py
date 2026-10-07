@@ -285,7 +285,7 @@ def audit_intraday_archive_status(report: Audit, status, live_symbols, qday, now
 
 
 def audit_macro_semantics(report: Audit, macro):
-    """Fail closed when the canonical macro datasets needed by AI are missing or semantically unsafe."""
+    """Fail closed when canonical macro evidence is missing or the aggregate GDP/PMI series is unsafe."""
     datasets = macro.get("datasets") or {}
     for key in ("gdp_growth", "pmi", "money_supply", "fdi"):
         dataset = datasets.get(key) or {}
@@ -294,11 +294,34 @@ def audit_macro_semantics(report: Audit, macro):
             "MARKET_MACRO_CANONICAL_DATASET",
             f"{key}:{dataset.get('status')} rows={len(dataset.get('rows') or [])}",
         )
-        report.check(
-            dataset.get("qualityStatus") == "ok",
-            "MARKET_MACRO_CANONICAL_QUALITY",
-            f"{key}:{dataset.get('qualityStatus')} warnings={len(dataset.get('qualityWarnings') or [])}",
-        )
+
+    gdp = datasets.get("gdp_growth") or {}
+    columns = gdp.get("columns") or []
+    label_key = columns[0] if columns else None
+    numeric_columns = gdp.get("numericColumns") or columns[1:]
+    aggregate_rows = []
+    for row in gdp.get("rows") or []:
+        label = str(row.get(label_key) if label_key else next(iter(row.values()), "")).casefold()
+        if "gdp" not in label:
+            continue
+        values = [
+            float(row[column])
+            for column in numeric_columns
+            if finite(row.get(column))
+        ]
+        aggregate_rows.append(values)
+    aggregate_safe = bool(aggregate_rows) and all(
+        values and all(abs(value) <= 20 for value in values)
+        for values in aggregate_rows
+    )
+    report.check(aggregate_safe, "MARKET_MACRO_GDP_AGGREGATE", f"aggregateRows={len(aggregate_rows)}")
+
+    pmi = datasets.get("pmi") or {}
+    report.check(
+        pmi.get("qualityStatus") == "ok",
+        "MARKET_MACRO_PMI_QUALITY",
+        f"quality={pmi.get('qualityStatus')} warnings={len(pmi.get('qualityWarnings') or [])}",
+    )
     overview = datasets.get("macro_overview") or {}
     if overview.get("qualityStatus") == "warning":
         report.check(
