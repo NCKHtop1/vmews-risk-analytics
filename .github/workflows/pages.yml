@@ -28,6 +28,8 @@ permissions:
   id-token: write
 
 concurrency:
+  # Successful deployments are verified by the FinQuery system contract against
+  # deployment.json plus the public quote/strategy/risk generation.
   # Failed workflow_run events use a separate group, so a skipped failure-triggered
   # Pages run can never cancel a valid deployment started by a successful refresh.
   group: pages-${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion || 'success' }}
