@@ -19,7 +19,9 @@ permissions:
 
 concurrency:
   group: solution-ai-core-forecast
-  cancel-in-progress: false
+  # Code/test pushes supersede older code revisions. Scheduled/manual production
+  # runs remain non-cancelling so a genuine session build is never interrupted.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   refresh:
