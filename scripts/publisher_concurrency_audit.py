@@ -115,6 +115,45 @@ def concurrency_contract(text: str) -> tuple[bool, list[str]]:
     return not problems, problems
 
 
+DATA_BRANCH = "financial-market-data"
+
+
+def pushes_to_branch(text: str, branch: str) -> bool:
+    active = _active_lines(text)
+    return any(
+        re.search(rf"(?:HEAD:refs/heads/|HEAD:){re.escape(branch)}\\b", command.replace('"', "").replace("'", ""))
+        for command in push_commands(active)
+    )
+
+
+def stages_whole_market_tree(text: str) -> bool:
+    """Reject branch writers that can accidentally publish another job's files."""
+    active = _active_lines(text)
+    for line in active.splitlines():
+        if not re.search(r"\\bgit(?:\\s+-C\\s+\\S+)?\\s+add\\b", line):
+            continue
+        command = line.replace('"', "").replace("'", "")
+        # A literal market path with no slash/file suffix stages the whole tree.
+        if re.search(r"\\bmarket(?:/)?(?:\\s|$)", command) and not re.search(r"\\bmarket/[^\\s]+", command):
+            return True
+        if re.search(r"--sparse\\s+market(?:\\s|$)", command):
+            return True
+    return False
+
+
+def audit_data_branch_ownership() -> dict[str, list[str]]:
+    failures: dict[str, list[str]] = {}
+    for path in sorted(WORKFLOWS.glob("*.yml")) + sorted(WORKFLOWS.glob("*.yaml")):
+        text = path.read_text(encoding="utf-8")
+        if not pushes_to_branch(text, DATA_BRANCH):
+            continue
+        if stages_whole_market_tree(text):
+            failures[path.relative_to(ROOT).as_posix()] = [
+                f"publisher to {DATA_BRANCH!r} stages the whole market tree; use explicit owned files"
+            ]
+    return failures
+
+
 def audit() -> tuple[list[str], dict[str, list[str]]]:
     writers: list[str] = []
     failures: dict[str, list[str]] = {}
@@ -136,6 +175,7 @@ def main() -> int:
     args = parser.parse_args()
 
     writers, failures = audit()
+    data_failures = audit_data_branch_ownership()
     print(f"Direct main publishers: {len(writers)}")
     for path in writers:
         state = "PASS" if path not in failures else "FAIL"
@@ -143,16 +183,21 @@ def main() -> int:
         for problem in failures.get(path, []):
             print(f"  - {problem}")
 
-    if failures and not args.report_only:
+    print(f"Data-branch broad-stage violations: {len(data_failures)}")
+    for path, problems in data_failures.items():
+        print(f"[FAIL] {path}")
+        for problem in problems:
+            print(f"  - {problem}")
+
+    if (failures or data_failures) and not args.report_only:
         print(
-            f"FAIL: {len(failures)} main publisher workflow(s) can race. "
-            f"All direct main publishers must use group {LOCK_GROUP!r} "
-            "with cancel-in-progress: false."
+            f"FAIL: publisher governance found {len(failures)} main-lock violation(s) "
+            f"and {len(data_failures)} data-branch ownership violation(s)."
         )
         return 1
     print(
-        "PASS: repository-wide main publisher concurrency contract satisfied."
-        if not failures
+        "PASS: repository-wide publisher concurrency and file-ownership contracts satisfied."
+        if not failures and not data_failures
         else "REPORT ONLY"
     )
     return 0
