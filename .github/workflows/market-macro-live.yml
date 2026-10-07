@@ -1,0 +1,107 @@
+name: Refresh FinQuery macro snapshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-macro-live.yml'
+      - 'financial-report/scripts/refresh_market.py'
+  schedule:
+    - cron: '15 1 * * 1-5'
+    - cron: '42 1-4 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-macro-live
+  cancel-in-progress: true
+
+jobs:
+  macro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restore latest macro snapshot
+        shell: bash
+        run: |
+          git fetch origin financial-market-data
+          git worktree add /tmp/market-macro origin/financial-market-data
+          git -C /tmp/market-macro sparse-checkout set market
+          mkdir -p /tmp/market-macro/market
+
+      - name: Check whether today's macro heartbeat already exists
+        id: freshness
+        shell: bash
+        run: |
+          if SNAPSHOT=/tmp/market-macro/market/macro.json python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          VN=timezone(timedelta(hours=7))
+          path=Path(os.environ['SNAPSHOT'])
+          if not path.exists():
+              raise SystemExit(1)
+          d=json.loads(path.read_text())
+          raw=d.get('checkedAt') or d.get('generatedAt')
+          stamp=datetime.fromisoformat(str(raw).replace('Z','+00:00')).astimezone(VN)
+          today=datetime.now(timezone.utc).astimezone(VN).date()
+          fresh=d.get('status')=='ok' and stamp.date()==today
+          print({'checkedAt':raw,'today':today.isoformat(),'fresh':fresh})
+          raise SystemExit(0 if fresh else 1)
+          PY
+          then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Refresh macro data
+        if: steps.freshness.outputs.run == 'true'
+        run: |
+          python -u financial-report/scripts/refresh_market.py --output /tmp/market-macro/market --mode macro
+
+      - name: Validate and publish macro snapshot
+        if: steps.freshness.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SNAPSHOT=/tmp/market-macro/market/macro.json python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          VN=timezone(timedelta(hours=7))
+          d=json.loads(Path(os.environ['SNAPSHOT']).read_text())
+          raw=d.get('checkedAt') or d.get('generatedAt')
+          stamp=datetime.fromisoformat(str(raw).replace('Z','+00:00')).astimezone(VN)
+          today=datetime.now(timezone.utc).astimezone(VN).date()
+          if d.get('status')!='ok' or stamp.date()!=today:
+              raise SystemExit(f'macro snapshot not fresh: {d.get("status")} {raw}')
+          print('MACRO OK',raw)
+          PY
+          git -C /tmp/market-macro config user.name 'github-actions[bot]'
+          git -C /tmp/market-macro config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C /tmp/market-macro add --sparse market/macro.json
+          if git -C /tmp/market-macro diff --cached --quiet; then
+            echo "Macro snapshot already current"
+            exit 0
+          fi
+          git -C /tmp/market-macro commit -m 'Refresh FinQuery macro snapshot [data-only]'
+          for attempt in 1 2 3; do
+            git -C /tmp/market-macro fetch origin financial-market-data
+            if git -C /tmp/market-macro rebase origin/financial-market-data && git -C /tmp/market-macro push origin HEAD:refs/heads/financial-market-data; then
+              exit 0
+            fi
+            git -C /tmp/market-macro rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
