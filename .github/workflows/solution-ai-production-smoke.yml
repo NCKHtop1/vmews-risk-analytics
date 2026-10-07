@@ -2,6 +2,19 @@ name: SoluTION.AI production browser smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'solution-ai-v17.js'
+      - 'scripts/solution_ai_*.mjs'
+      - 'scripts/solution_ai_live_*.py'
+      - 'scripts/solution_ai_core_*.py'
+      - 'scripts/forecast_v13_market_model_test_v28.py'
+      - 'forecast-final.html'
+      - '.github/workflows/solution-ai-production-smoke.yml'
+      - '.github/workflows/solution-ai-live-price.yml'
+      - '.github/workflows/solution-ai-live-guard.yml'
+      - '.github/workflows/solution-ai-core-refresh.yml'
   pull_request:
     paths:
       - 'solution-ai-v17.js'
@@ -108,22 +121,30 @@ jobs:
           assert float(q.get('price') or 0)>0,q
           now=datetime.now(timezone.utc)
           vn=now.astimezone(timezone(timedelta(hours=7)))
-          stamp=datetime.fromisoformat(str(d.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
-          source_vn=stamp.astimezone(timezone(timedelta(hours=7)))
-          age=(now-stamp).total_seconds()/60
+          generated=datetime.fromisoformat(str(d.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+          source=datetime.fromisoformat(str(d.get('sourceTime')).replace('Z','+00:00')).astimezone(timezone.utc)
+          VN=timezone(timedelta(hours=7))
+          source_vn=source.astimezone(VN)
+          generated_age=(now-generated).total_seconds()/60
+          source_age=(now-source).total_seconds()/60
+          assert -5<=generated_age,(generated,now)
+          assert -5<=source_age,(source,now)
+          assert source<=generated+timedelta(minutes=5),(source,generated)
           mins=vn.hour*60+vn.minute
           weekday=vn.weekday()<5
           live_window=weekday and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
           if live_window:
-              assert -5<=age<=10,age
+              assert generated_age<=10,generated_age
+              assert source_age<=25,source_age
+              assert source_vn.date()==vn.date(),(source_vn.isoformat(),vn.isoformat())
               freshness='LIVE_FRESH'
           elif weekday and mins>=11*60+40:
               assert source_vn.date()==vn.date(),(source_vn.isoformat(),vn.isoformat())
-              freshness='SAME_DAY_CLOSE'
+              freshness='SAME_DAY_SESSION'
           else:
-              assert -5<=age<=96*60,age
-              freshness='LAST_COMPLETED_CLOSE'
-          print({'status':d.get('status'),'coverage':d.get('coverage'),'price':q.get('price'),'source':q.get('source'),'ageMin':round(age,1),'freshness':freshness})
+              assert source_age<=96*60,source_age
+              freshness='LAST_COMPLETED_SESSION'
+          print({'status':d.get('status'),'coverage':d.get('coverage'),'price':q.get('price'),'source':q.get('source'),'generatedAgeMin':round(generated_age,1),'sourceAgeMin':round(source_age,1),'freshness':freshness})
           PY
               then
                 exit 0
