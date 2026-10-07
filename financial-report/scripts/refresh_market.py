@@ -1914,6 +1914,8 @@ def intraday_archive_summary(out, symbols):
         latest.append(days[-1])
     ordered = sorted(day_counts)
     median_days = ordered[len(ordered)//2] if ordered else 0
+    latest_day = max(latest) if latest else None
+    latest_coverage = sum(1 for day in latest if day == latest_day) if latest_day else 0
     return {
         'archive5mAvailable': available,
         'archive5mUniverse': len(symbols),
@@ -1922,7 +1924,9 @@ def intraday_archive_summary(out, symbols):
         'archive5mMaxDays': max(day_counts) if day_counts else 0,
         'archive5mAtLeast40Days': at_least_40,
         'archive5mEarliestDay': min(first) if first else None,
-        'archive5mLatestDay': max(latest) if latest else None,
+        'archive5mLatestDay': latest_day,
+        'archive5mLatestDayCoverage': latest_coverage,
+        'archive5mLatestDayCoveragePct': round(latest_coverage / len(symbols) * 100, 1) if symbols else 100.0,
     }
 
 
