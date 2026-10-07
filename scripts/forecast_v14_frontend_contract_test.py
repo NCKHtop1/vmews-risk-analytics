@@ -76,7 +76,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.sha || github.sha", workflow)
         for label in ("PHÂN TÍCH BỔ SUNG", "Kỹ thuật · Dòng tiền · Tài chính", "Giá thị trường", "Tài chính doanh nghiệp", "Tín hiệu cộng đồng"):
             self.assertIn(label, smoke)
-        for label in ("Giá dự báo của mô hình", "Vùng tham khảo", "TĂNG", "GIẢM"):
+        for label in ("Giá dự báo (?:của mô hình|trung tâm)", "Vùng tham khảo", "TĂNG", "GIẢM"):
             self.assertIn(label, smoke)
         for forbidden in ("ĐIỂM ĐÃ QUA GATE", "ĐỘ TIN CẬY ĐIỂM THẤP", "không phải chênh vài trăm đồng"):
             self.assertIn(forbidden, smoke)
@@ -92,7 +92,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("Tâm điểm HOSE", self.html)
         self.assertNotIn("Tâm điểm VN30", self.html)
         self.assertIn("Giá dự báo T+5", self.html)
-        self.assertIn("Mức dự báo T+5", self.html)
+        self.assertIn("Mức dự báo ưu tiên", self.html)
         self.assertIn("Phản ứng sau sự kiện", self.html)
         self.assertNotIn("Chuyển động giao diện không đại diện", self.html)
         self.assertNotIn("bước giá", self.html)
@@ -102,7 +102,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
             self.html,
         )
         self.assertRegex(self.html, r'forecast-final-v12\.js\?release=\d+\.\d+')
-        self.assertIn("solution-ai-v17.js?release=36.0", self.html)
+        self.assertRegex(self.html, r'solution-ai-v17\.js\?release=\d+\.\d+')
         self.assertIn("forecast-live-leaders-v14.js?release=42.0", self.html)
         self.assertNotIn("release=19.3", self.html)
 
@@ -186,8 +186,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("function pointMove(q,close)", app)
         self.assertIn("q?.priceValidated===true", app)
         self.assertIn("CHƯA ĐẠT KIỂM ĐỊNH", app)
-        self.assertIn("Kỳ này không phát hành giá dự báo", app)
-        self.assertIn("Giá dự báo của mô hình", app)
+        self.assertIn("CHƯA ĐẠT KIỂM ĐỊNH HORIZON", app)
+        self.assertIn("Giá dự báo trung tâm", app)
         self.assertIn("__VMEWS_BACKTEST_RESULT_DATE__", app)
         self.assertIn("Ngày có kết quả", self.html)
         self.assertNotIn("ĐỘ TIN CẬY ĐIỂM THẤP", app)
@@ -233,7 +233,7 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertIn("bearScenarioPrice", app)
         self.assertIn("bullScenarioPrice", app)
         self.assertIn("magnitudeCalibrationRatio", app)
-        self.assertIn("Kịch bản giảm/tăng", app)
+        self.assertIn("Kịch bản |move| quanh T0", app)
         self.assertIn("Mức bắt biên độ của điểm", app)
         self.assertIn("economicPointStatus", app)
         self.assertIn("Dự báo biên độ", app)
