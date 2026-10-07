@@ -1282,6 +1282,8 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('add --sparse market/news.json market/drivers.json',news)
         self.assertIn('Maintain resilient news heartbeat',news)
         self.assertIn('news-latest.json',news)
+        self.assertIn('REMOTE NEWS CONTRACT PASS',news)
+        self.assertIn('origin/financial-market-data:market/news-latest.json',news)
         market=(ROOT/'frontend/market.js').read_text()
         refresh_script=(ROOT/'scripts/refresh_market.py').read_text()
         self.assertIn("get('news-latest.json').catch(()=>get('news.json'))",market)
