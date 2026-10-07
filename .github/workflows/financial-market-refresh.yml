@@ -226,7 +226,7 @@ jobs:
               owned=(market/intraday market/intraday-status.json market/intraday-5m)
               ;;
             news)
-              owned=(market/news.json market/news-latest.json)
+              owned=(market/news.json market/news-latest.json market/news-company-latest.json)
               ;;
             macro)
               owned=(market/macro.json)
