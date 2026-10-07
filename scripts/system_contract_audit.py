@@ -44,19 +44,32 @@ class Audit:
     def __init__(self):
         self.errors = []
         self.warnings = []
+        self.results = []
         self.checks = 0
+
+    def _record(self, status, code, detail):
+        self.results.append({
+            "status": status,
+            "code": code,
+            "category": str(code).split("_", 1)[0],
+            "detail": str(detail),
+        })
 
     def check(self, condition, code, detail):
         self.checks += 1
-        if not condition:
+        ok = bool(condition)
+        self._record("PASS" if ok else "FAIL", code, detail)
+        if not ok:
             self.errors.append({"code": code, "detail": str(detail)})
-        return bool(condition)
+        return ok
 
     def warn(self, condition, code, detail):
         self.checks += 1
-        if not condition:
+        ok = bool(condition)
+        self._record("PASS" if ok else "WARN", code, detail)
+        if not ok:
             self.warnings.append({"code": code, "detail": str(detail)})
-        return bool(condition)
+        return ok
 
     def future_safe(self, value, now, code):
         stamp = parse_ts(value)
@@ -377,12 +390,21 @@ def main():
     audit_forecast_monitor(audit, Path(args.repo_root), now)
     audit_solution_live(audit, Path(args.solution_live), now)
     audit_solution_core(audit, Path(args.solution_core_dir), now)
+    category_summary = {}
+    for row in audit.results:
+        bucket = category_summary.setdefault(row["category"], {"PASS": 0, "WARN": 0, "FAIL": 0})
+        bucket[row["status"]] = bucket.get(row["status"], 0) + 1
     result = {
         "status": "PASS" if not audit.errors else "FAIL",
         "checkedAt": now.isoformat(),
         "checks": audit.checks,
+        "passes": sum(row["status"] == "PASS" for row in audit.results),
+        "failures": len(audit.errors),
+        "warningChecks": len(audit.warnings),
+        "categories": category_summary,
         "errors": audit.errors,
         "warnings": audit.warnings,
+        "results": audit.results,
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if args.report_json:
