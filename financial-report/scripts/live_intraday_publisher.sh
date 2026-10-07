@@ -153,9 +153,11 @@ while true; do
   fi
 
   if [ "$ONESHOT" = "1" ]; then
-    [ "$failures" -eq 0 ] || exit $?
-    finalize_completed_archive
-    exit $?
+    if [ "$failures" -ne 0 ]; then
+      exit 1
+    fi
+    finalize_completed_archive || exit 1
+    exit 0
   fi
   sleep "$INTERVAL_SECONDS"
 done
