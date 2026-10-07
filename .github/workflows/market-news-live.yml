@@ -26,7 +26,7 @@ concurrency:
 jobs:
   news:
     runs-on: ubuntu-latest
-    timeout-minutes: 125
+    timeout-minutes: 320
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,8 +46,11 @@ jobs:
         run: |
           set -uo pipefail
           superseded=0
-          for iteration in 1 2 3 4 5 6 7 8; do
-            echo "=== News heartbeat $iteration/8 at $(date -u '+%H:%M:%S UTC') ==="
+          # Keep one publisher alive for about five hours. The hourly cron
+          # normally hands ownership to a newer run, but a delayed/skipped GitHub
+          # schedule must not create a multi-hour production news gap.
+          for iteration in $(seq 1 20); do
+            echo "=== News heartbeat $iteration/20 at $(date -u '+%H:%M:%S UTC') ==="
             # GitHub concurrency is the first line of defence, but a long-lived
             # runner must also refuse to publish with collector/workflow code
             # that has been superseded on main.
@@ -116,7 +119,7 @@ jobs:
               fi
             fi
 
-            if [ "$iteration" -lt 8 ]; then
+            if [ "$iteration" -lt 20 ]; then
               sleep 900
             fi
           done
