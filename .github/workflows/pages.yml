@@ -77,6 +77,9 @@ jobs:
           strategy=json.loads(Path('_market-data/market/strategy-indicators.json').read_text())
           risk=json.loads(Path('_market-data/market/risk-monitor.json').read_text())
           market_cal=json.loads(Path('_market-data/market/market-risk-calibration.json').read_text())
+          intraday=json.loads(Path('_market-data/market/intraday-status.json').read_text())
+          macro=json.loads(Path('_market-data/market/macro.json').read_text())
+          news_latest=json.loads(Path('_market-data/market/news-latest.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -91,6 +94,17 @@ jobs:
               minimum-=timedelta(days=1)
           uday=datetime.fromisoformat(str(market.get('asOf'))[:10]).date()
           assert uday>=minimum,('stale market universe',market.get('asOf'),'minimum',minimum.isoformat())
+          macro_day=datetime.fromisoformat(str(macro.get('checkedAt') or macro.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date()
+          assert macro.get('status')=='ok' and macro_day>=qday,('stale macro',macro.get('checkedAt'),qday.isoformat())
+          assert news_latest.get('status')=='ok' and 0<len(news_latest.get('items') or [])<=150,('invalid compact news',news_latest.get('status'),len(news_latest.get('items') or []))
+          intraday_expected=max(1,int(intraday.get('expected') or 0))
+          intraday_required=max(1,int(intraday.get('required') or __import__('math').ceil(intraday_expected*.90)))
+          assert intraday.get('status')=='ok' and int(intraday.get('success') or 0)>=intraday_required,('intraday coverage',intraday.get('success'),intraday_expected,intraday_required)
+          now=datetime.now(timezone.utc); local=now.astimezone(timezone(timedelta(hours=7))); mins=local.hour*60+local.minute
+          active=local.weekday()<5 and (540<=mins<=690 or 780<=mins<=885)
+          if active:
+              intraday_checked=datetime.fromisoformat(str(intraday.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+              assert (now-intraday_checked).total_seconds()/60<=25,('stale intraday heartbeat',intraday.get('checkedAt'))
           assert int(quotes.get('expected') or 0)==int(bc.get('liveMarket') or 0),(quotes.get('expected'),bc.get('liveMarket'))
           assert int(quotes.get('coverage') or 0)>=int(quotes.get('expected') or 0)*.90,(quotes.get('coverage'),quotes.get('expected'))
           assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
@@ -216,13 +230,15 @@ jobs:
           ! grep -q 'Dữ liệu lịch sử: Vietcap, đồng bộ theo lịch 15 phút' /tmp/page.html
           ! grep -q 'Charts by TradingView Lightweight Charts' /tmp/page.html
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
-          curl -fsSL --max-time 20 "$BASE/market/news.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
+          curl -fsSL --max-time 20 "$BASE/market/news-latest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/strategy.json
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
           curl -fsSL --max-time 20 "$BASE/market/market-risk-calibration.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/market-risk-calibration.json
           curl -fsSL --max-time 20 "$BASE/market/watch-today.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/watch.json
           curl -fsSL --max-time 20 "$BASE/market/universe.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/universe.json
+          curl -fsSL --max-time 20 "$BASE/market/intraday-status.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/intraday.json
+          curl -fsSL --max-time 20 "$BASE/market/macro.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/macro.json
           curl -fsSL --max-time 20 "$BASE/market/company-esg.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/esg.json
           curl -fsSL --max-time 20 "$BASE/data/manifest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/manifest.json
           curl -fsSL --max-time 20 "$BASE/data/insights-status.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/insights.json
@@ -232,7 +248,7 @@ jobs:
           def load(name):
               return json.load(open('/tmp/'+name,encoding='utf-8'))
           import math
-          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); market_cal=load('market-risk-calibration.json')
+          q=load('quotes.json'); n=load('news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); intraday=load('intraday.json'); macro=load('macro.json'); market_cal=load('market-risk-calibration.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
           q_expected=max(1,int(q.get('expected') or 0)); q_required=max(1,math.ceil(q_expected*.90))
           s_universe=max(1,int(s.get('universe') or 0)); s_required=max(1,math.ceil(s_universe*.90))
@@ -274,7 +290,11 @@ jobs:
           strategy_today=sum(1 for symbol in live_symbols if str(((strategy.get('symbols') or {}).get(symbol) or {}).get('barDate') or '')==source_day)
           assert scanner_today>=live_required,(scanner_today,len(live_symbols),source_day)
           assert strategy_today>=live_required,(strategy_today,len(live_symbols),source_day)
-          assert n.get('status')=='ok' and len(n.get('items') or [])>0,n
+          assert n.get('status')=='ok' and 0<len(n.get('items') or [])<=150,n
+          i_expected=max(1,int(intraday.get('expected') or 0)); i_required=max(1,int(intraday.get('required') or math.ceil(i_expected*.90)))
+          assert intraday.get('status')=='ok' and int(intraday.get('success') or 0)>=i_required,(intraday.get('success'),i_expected,i_required)
+          macro_day=datetime.fromisoformat(str(macro.get('checkedAt') or macro.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date().isoformat()
+          assert macro.get('status')=='ok' and macro_day>=source_day,(macro.get('checkedAt'),source_day)
           assert len(e.get('companies') or {})>=18
           cov=f.get('coverage') or {}
           assert int(cov.get('members') or 0)==100 and int(cov.get('annual') or 0)==100 and int(cov.get('quarterly') or 0)==100,cov
