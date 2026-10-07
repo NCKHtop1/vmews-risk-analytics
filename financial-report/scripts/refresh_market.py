@@ -2288,7 +2288,10 @@ def news(out, companies):
         unique[row['url']] = row
         titles.add(key)
     ok = any(s['status'] == 'ok' for s in sources)
-    write(path, {'checkedAt': now(), 'lastSuccessAt': now() if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'sources': sources, 'items': list(unique.values())[:2500]})
+    checked_at = now()
+    payload = {'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'), 'status': 'ok' if ok else 'retained', 'sources': sources, 'items': list(unique.values())[:2500]}
+    write(path, payload)
+    write(out / 'news-latest.json', {**payload, 'archiveFile': 'news.json', 'items': payload['items'][:100]})
     drivers = build_drivers(out, companies) if (out / 'quotes.json').exists() else {}
     print(f'News: {len(rows)} fetched; {len(unique)} unique; sources {sum(s["status"] == "ok" for s in sources)}/{len(sources)}; drivers: {len(drivers)}', flush=True)
     if not ok:
