@@ -497,13 +497,17 @@ def write(path, data):
     temp.replace(path)
 
 
-def load_market_universe():
+def load_market_universe(market_dir=None):
+    if market_dir:
+        published = read(Path(market_dir) / 'universe.json', {})
+        if isinstance(published.get('symbols'), dict) and published.get('liveMarketSymbols'):
+            return published
     return read(ROOT / 'data/universe.json', {})
 
 
-def load_market_companies(core_companies):
+def load_market_companies(core_companies, market_dir=None):
     """Return Core + dynamically promoted HOSE Liquid names for live market jobs."""
-    universe = load_market_universe()
+    universe = load_market_universe(market_dir)
     core = {str(row.get('symbol') or '').upper(): dict(row) for row in core_companies if row.get('symbol')}
     records = universe.get('symbols') if isinstance(universe.get('symbols'), dict) else {}
     live_symbols = universe.get('liveMarketSymbols') if isinstance(universe.get('liveMarketSymbols'), list) else []
@@ -2306,7 +2310,7 @@ if __name__ == '__main__':
     core_companies = read(ROOT / 'data/companies.json', [])
     if len({c['symbol'] for c in core_companies}) != 100:
         raise RuntimeError('Expected 100 unique VN100 Core symbols')
-    companies, universe = load_market_companies(core_companies)
+    companies, universe = load_market_companies(core_companies, args.output)
     if len({c['symbol'] for c in companies}) < 100:
         raise RuntimeError('Tiered HOSE market universe cannot be smaller than Core 100')
     universe = universe or fallback_market_universe(companies)
