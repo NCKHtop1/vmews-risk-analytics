@@ -41,7 +41,9 @@ permissions:
   actions: write
 
 concurrency:
-  group: market-price-live
+  # v2 releases the repaired publisher from a pre-fix long-running concurrency
+  # slot. All new triggers converge on this single group.
+  group: market-price-live-v2
   # Scheduled/news heartbeats never interrupt the active session publisher.
   # A code push is the exception: hand over immediately so a repaired publisher
   # does not wait behind an hours-old run that is still executing old code.
