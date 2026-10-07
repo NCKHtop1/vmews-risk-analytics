@@ -159,7 +159,7 @@ def _forecast_validation_scope(self):
     """Return the explicit FinQuery Forecast publication scope from persisted bridge proof."""
     bridge = (self.market.get("sources") or {}).get("postCloseBridge") or {}
     scope = str(bridge.get("validationUniverse") or "").strip().upper()
-    if scope in {"LAST_VALIDATED_PUBLISHED_SYMBOLS", "CURRENT_HOSE_FALLBACK"}:
+    if scope in {"LAST_VALIDATED_PUBLISHED_SYMBOLS", "PUBLISHED_PLUS_TWO_SOURCE_REENTRY", "CURRENT_HOSE_FALLBACK"}:
         return bridge
     return None
 
