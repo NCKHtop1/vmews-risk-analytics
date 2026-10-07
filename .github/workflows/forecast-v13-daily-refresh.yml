@@ -10,7 +10,6 @@ on:
       - "scripts/forecast_freshness_audit.py"
       - "forecast-final.html"
       - "forecast-final-v12.js"
-      - "solution-ai-v17.js"
       - "scripts/prepare_forecast_scan_v28.py"
       - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v41_runtime_patch.py"
@@ -35,7 +34,6 @@ on:
       - "scripts/forecast_v18_market_intelligence.py"
       - "scripts/forecast_v18_frontend_runtime_test.mjs"
       - "scripts/forecast_v21_session_snapshot_test.py"
-      - "api/solution-ai.js"
   push:
     branches: [main]
     # UI/AI/session-only changes have dedicated smoke/session workflows and must
@@ -160,7 +158,7 @@ jobs:
           python -m unittest financial-report/tests/test_universe.py -v
           python scripts/refresh_institutional_flow_v20_test.py
           python scripts/sanitize_intelligence_v20_test.py
-          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
+          node --test scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/forecast_v20_release_audit_test.py
           python scripts/forecast_v20_release_audit_v28_test.py
           python scripts/forecast_v20_release_audit_v28.py
