@@ -2221,7 +2221,7 @@ def macro_quality_warnings(key, parsed):
     if key in {'macro_overview', 'gdp_growth'}:
         for index, row in enumerate(rows):
             text = row_text(row)
-            if key == 'gdp_growth' or ('gdp' in text and ('tăng trưởng' in text or 'growth' in text)):
+            if 'gdp' in text and ('tăng trưởng' in text or 'growth' in text):
                 outliers = [(column, value) for column, value in numeric_cells(row) if abs(value) > 20]
                 if outliers:
                     warnings.append({
