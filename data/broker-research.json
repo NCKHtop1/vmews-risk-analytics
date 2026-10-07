@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-06T15:18:10+00:00",
+  "updatedAt": "2026-10-07T06:10:39+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VIX-2026-10-06-001b1c7b",
+      "symbol": "VIX",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Thanh khoản thị trường và cổ phiếu chứng khoán: Định giá đang đi trước dòng tiền — khi nào thanh khoản xác nhận điểm mua? VCK SSI VND VPX VIX VCI SHS HCM MBS BSI CTS VDS #Thanh khoản thị trường #Định giá #Ngành chứn",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo VIX ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "TCBS-VCK-2026-10-06-001b1c7b",
       "symbol": "VCK",
@@ -26,6 +38,18 @@
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "recommendation": "MUA",
       "summary": "TCBS có báo cáo NKG ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HPG-2026-10-06-001b1c7b",
+      "symbol": "HPG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Thép: Lãnh đạo mua, lãnh đạo bán — chiều nào đáng tin hơn? Thống kê 151 sự kiện tại 16 doanh nghiệp, 01/2018–10/2026 HPG HSG NKG #Giao dịch nội bộ #Ngành thép Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo HPG ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-BWE-2026-10-06-001b1c7b",
@@ -255,6 +279,19 @@
       "currency": "VND",
       "sourceUrl": "https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169",
       "summary": "FPTS có báo cáo SSI ngày 02/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "BSC-KDH-2026-10-02-be0688e0",
+      "symbol": "KDH",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-10-02",
+      "title": "X-Alpha | KDH 18,400 +21.5%: Hoạt động kinh doanh cốt lõi tạo đáy 2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.bsc.com.vn/bao-cao/15990-x-alpha-kdh-18400-21-5-hoat-dong-kinh-doanh-cot-loi-tao-day-2026",
+      "recommendation": "MUA",
+      "targetPrice": 18400,
+      "summary": "BSC công bố báo cáo ngày 02/10/2026 với khuyến nghị MUA, giá mục tiêu 18.400 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "BSC-KDH-2026-10-02-9d057ddc",
@@ -879,6 +916,32 @@
       "summary": "VCBS có báo cáo PVT ngày 25/09/2026 với khuyến nghị MUA, giá mục tiêu 30.140 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "BSC-VHC-2026-09-25-7be16f0f",
+      "symbol": "VHC",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-09-25",
+      "title": "X-Stock | VHC 58,100 +17%: Cập nhật KQKD Q2/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.bsc.com.vn/bao-cao/15962-x-stock-vhc-58100-17-cap-nhat-kqkd-q2-2026",
+      "recommendation": "MUA",
+      "targetPrice": 58100,
+      "summary": "BSC công bố báo cáo ngày 25/09/2026 với khuyến nghị MUA, giá mục tiêu 58.100 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "BSC-PDR-2026-09-25-4132e10c",
+      "symbol": "PDR",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-09-25",
+      "title": "X-Alpha | PDR 13,100 +15.9%: \"Khát vọng\" Thủ Thiêm",
+      "currency": "VND",
+      "sourceUrl": "https://www.bsc.com.vn/bao-cao/15960-x-alpha-pdr-13100-15-9-khat-vong-thu-thiem",
+      "recommendation": "MUA",
+      "targetPrice": 13100,
+      "summary": "BSC công bố báo cáo ngày 25/09/2026 với khuyến nghị MUA, giá mục tiêu 13.100 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
       "id": "BSC-PDR-2026-09-25-fa0a72c1",
       "symbol": "PDR",
       "broker": "BSC",
@@ -903,6 +966,19 @@
       "dataProvider": "SMARTCHART",
       "targetPrice": 13100,
       "summary": "BSC có báo cáo PDR ngày 25/09/2026 với giá mục tiêu 13.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BSC-MWG-2026-09-25-9fe1bcc3",
+      "symbol": "MWG",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-09-25",
+      "title": "X-Alpha | MWG 102,500 +40%: Tiếp tục câu chuyện định giá",
+      "currency": "VND",
+      "sourceUrl": "https://www.bsc.com.vn/bao-cao/15961-x-alpha-mwg-102500-40-tiep-tuc-cau-chuyen-dinh-gia",
+      "recommendation": "MUA",
+      "targetPrice": 102500,
+      "summary": "BSC công bố báo cáo ngày 25/09/2026 với khuyến nghị MUA, giá mục tiêu 102.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "BSC-MWG-2026-09-25-8f923b94",
@@ -1662,6 +1738,19 @@
         "Rủi ro cầu thép thấp hơn kỳ vọng"
       ],
       "sourceUrl": "https://www.mbs.com.vn/hpg-bcpt-gia-thep-tang-truong-nho-nhu-cau-thuan-loi/"
+    },
+    {
+      "id": "BSC-VPB-2026-09-18-cb6f9495",
+      "symbol": "VPB",
+      "broker": "BSC",
+      "brokerName": "BIDV Securities",
+      "publishedAt": "2026-09-18",
+      "title": "X-Point | VPB, TCB, MSB: Gặp gỡ doanh nghiệp 2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.bsc.com.vn/bao-cao/15924-x-point-vpb-tcb-msb-gap-go-doanh-nghiep-2026",
+      "recommendation": "MUA",
+      "targetPrice": 36500,
+      "summary": "BSC công bố báo cáo ngày 18/09/2026 với khuyến nghị MUA, giá mục tiêu 36.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "VNDIRECT-VNM-2026-09-17-c462eec3",
@@ -23876,6 +23965,18 @@
       "sourceUrl": "https://vixs.vn/ree-bao-cao-trien-vong-co-phieu.html",
       "recommendation": "MUA",
       "summary": "VIX công bố báo cáo ngày 11/09/2008 với khuyến nghị MUA. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "VIETCAP-SAB-2008-07-29-eac878f5",
+      "symbol": "SAB",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap Securities",
+      "publishedAt": "2008-07-29",
+      "title": "SAB [MUA +37,0%] - Tăng trưởng được duy trì dù thuế tiêu thụ đặc biệt tăng hằng năm - Cập nhật Doanh Nghiệp 02/10/2026 • SAB 02/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.vietcap.com.vn/trung-tam-phan-tich/sab-mua-37-0-tang-truong-duoc-duy-tri-du-thue-tieu-thu-dac-biet-tang-hang-nam-cap-nhat",
+      "recommendation": "MUA",
+      "summary": "VIETCAP công bố báo cáo ngày 29/07/2008 với khuyến nghị MUA. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     }
   ]
 }
