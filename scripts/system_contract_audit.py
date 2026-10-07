@@ -422,6 +422,84 @@ def audit_forecast_monitor(report: Audit, repo_root: Path, now):
     report.check(int(manifest.get("count") or 0) >= 20, "FORECAST_ARCHIVE_DEPTH", manifest.get("count"))
 
 
+def audit_main_forecast(report: Audit, repo_root: Path, now):
+    """Audit the canonical main-branch forecast plus its V21 session overlay."""
+    data = repo_root / "data"
+    names = {
+        "dashboard": "forecast-dashboard-v12.json",
+        "current": "forecast-current-v12.json",
+        "market": "forecast-market-v13.json",
+        "release": "release-audit-v20.json",
+        "session": "forecast-session-v21.json",
+    }
+    docs = {}
+    for key, name in names.items():
+        path = data / name
+        if not report.check(path.exists(), "FORECAST_MAIN_FILE", name):
+            continue
+        try:
+            docs[key] = load_json(path)
+        except Exception as exc:
+            report.check(False, "FORECAST_MAIN_JSON", f"{name}: {exc}")
+    if not all(key in docs for key in ("dashboard", "current", "market", "release")):
+        return
+
+    dashboard = docs["dashboard"]
+    current = docs["current"]
+    market = docs["market"]
+    release = docs["release"]
+    expected = latest_completed_session(now.astimezone(VN_TZ)).isoformat()
+
+    dates = {
+        "dashboard": str(dashboard.get("asOf") or ""),
+        "current": str(current.get("asOf") or ""),
+        "market": str(market.get("asOf") or ""),
+        "release": str(release.get("asOf") or ""),
+    }
+    report.check(all(value == expected for value in dates.values()), "FORECAST_MAIN_SESSION", f"{dates} expected={expected}")
+    report.check(release.get("status") == "PASS" and not (release.get("blockers") or []), "FORECAST_MAIN_RELEASE", {"status": release.get("status"), "blockers": release.get("blockers")})
+
+    dash_symbols = set((dashboard.get("symbols") or {}).keys())
+    current_symbols = set((current.get("symbols") or {}).keys())
+    release_symbols = int((release.get("scope") or {}).get("symbols") or 0)
+    report.check(bool(dash_symbols) and dash_symbols == current_symbols, "FORECAST_MAIN_SYMBOL_ALIGNMENT", f"dashboard={len(dash_symbols)} current={len(current_symbols)}")
+    report.check(len(dash_symbols) == release_symbols, "FORECAST_MAIN_RELEASE_SCOPE", f"published={len(dash_symbols)} release={release_symbols}")
+
+    versions = (market.get("version"), dashboard.get("modelVersion"), current.get("modelVersion"))
+    report.check(bool(versions[0]) and len(set(versions)) == 1, "FORECAST_MAIN_VERSION_ALIGNMENT", versions)
+
+    sources = market.get("sources") or {}
+    report.check(str(sources.get("marketScanAsOf") or "") == expected, "FORECAST_MAIN_MARKET_SCAN", sources.get("marketScanAsOf"))
+    report.check(str(sources.get("priceSessionAsOf") or "") == expected, "FORECAST_MAIN_PRICE_SESSION", sources.get("priceSessionAsOf"))
+    price_audit = sources.get("priceCrossSource") or {}
+    report.check(price_audit.get("status") == "PASS", "FORECAST_MAIN_PRICE_CROSS_SOURCE", price_audit.get("status"))
+    report.check(float(price_audit.get("coverage") or 0) >= float(price_audit.get("requiredCoverage") or 1), "FORECAST_MAIN_PRICE_COVERAGE", price_audit)
+    report.check(int(price_audit.get("mismatchCount") or 0) == 0, "FORECAST_MAIN_PRICE_MISMATCH", price_audit.get("mismatchCount"))
+
+    if "session" not in docs:
+        return
+    session = docs["session"]
+    alignment = session.get("forecastAlignment") or {}
+    coverage = session.get("coverage") or {}
+    report.check(session.get("status") == "PASS", "FORECAST_V21_STATUS", session.get("status"))
+    report.check(str(session.get("coreAsOf") or "") == expected, "FORECAST_V21_CORE_SESSION", (session.get("coreAsOf"), expected))
+    report.check(
+        alignment.get("status") == "PASS"
+        and alignment.get("rankingEligible") is True
+        and str(alignment.get("actualCoreAsOf") or "") == expected
+        and str(alignment.get("expectedCoreAsOf") or "") == expected,
+        "FORECAST_V21_ALIGNMENT",
+        alignment,
+    )
+    report.check(session.get("mode") == "FORECAST_ALIGNED" and session.get("coreForecastUnchanged") is True, "FORECAST_V21_MODE", (session.get("mode"), session.get("coreForecastUnchanged")))
+    report.check(float(coverage.get("coverageRatio") or 0) >= .90, "FORECAST_V21_COVERAGE", coverage)
+    report.check(float(coverage.get("currentCoverageRatio") or 0) >= .70, "FORECAST_V21_CURRENT_COVERAGE", coverage)
+    report.check(float(coverage.get("cutoffFreshCoverageRatio") or 0) >= .70, "FORECAST_V21_CUTOFF_COVERAGE", coverage)
+    preferred = int((dashboard.get("promotion") or {}).get("preferredRankingHorizon") or 0)
+    report.check(preferred > 0 and int(session.get("rankingHorizon") or 0) == preferred, "FORECAST_V21_HORIZON", (session.get("rankingHorizon"), preferred))
+    report.check(len(session.get("leaders") or []) == 10, "FORECAST_V21_LEADERS", len(session.get("leaders") or []))
+
+
 def audit_solution_live(report: Audit, path: Path, now):
     if not report.check(path.exists(), "SOLUTION_LIVE_MISSING", path):
         return
@@ -484,6 +562,7 @@ def main():
     audit_financial(audit, Path(args.financial_dir), core)
     audit_insights(audit, Path(args.insights_dir), now)
     audit_forecast_monitor(audit, Path(args.repo_root), now)
+    audit_main_forecast(audit, Path(args.repo_root), now)
     audit_solution_live(audit, Path(args.solution_live), now)
     audit_solution_core(audit, Path(args.solution_core_dir), now)
     category_summary = {}
