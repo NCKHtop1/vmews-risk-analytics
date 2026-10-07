@@ -8,6 +8,12 @@
 .finquery-account-menu button{width:100%;border:0;background:transparent;color:#344760;text-align:left;padding:9px 10px;border-radius:8px;font:inherit;font-size:11px;cursor:pointer}
 .finquery-account-menu button:hover{background:#f3f6fb}
 .finquery-google-slot{min-height:32px;display:flex;align-items:center}
+.finquery-local-trigger{min-height:32px}
+.finquery-local-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:1500;display:flex;gap:7px;align-items:center;padding:8px;background:#fff;border:1px solid #dfe5ef;border-radius:12px;box-shadow:0 16px 40px rgba(44,59,87,.16)}
+.finquery-local-panel[hidden]{display:none!important}
+.finquery-local-panel input{width:150px;height:32px;border:1px solid #dfe5ef;border-radius:8px;padding:0 9px;font:inherit;font-size:11px;color:#30435f;outline:none}
+.finquery-local-panel input:focus{border-color:#9db3e6;box-shadow:0 0 0 2px rgba(49,90,200,.08)}
+.finquery-local-panel button{height:32px;border:0;border-radius:8px;padding:0 12px;background:#315ac8;color:#fff;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 .finquery-personal-home{margin:18px auto 24px;max-width:1480px;padding:0 28px}
 .finquery-personal-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:12px}
 .finquery-personal-head h2{margin:0;font-size:24px;line-height:1.2;color:#263755;letter-spacing:-.3px}
