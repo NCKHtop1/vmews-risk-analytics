@@ -122,9 +122,16 @@ def build_universe(
 
     for symbol in symbols:
         chart_rows = charts.get(symbol) if isinstance(charts, dict) else None
-        bars = normalize_bars(chart_rows)
-        if len(bars) < MIN_HISTORY:
-            bars = normalize_bars(histories.get(symbol))
+        chart_bars = normalize_bars(chart_rows)
+        history_bars = normalize_bars(histories.get(symbol))
+        # Always prefer the fresher market history. Forecast charts are only a
+        # fallback when they are at least as current, never a freshness clock.
+        chart_last = chart_bars[-1]["time"] if chart_bars else ""
+        history_last = history_bars[-1]["time"] if history_bars else ""
+        if history_last > chart_last or (history_last == chart_last and len(history_bars) >= len(chart_bars)):
+            bars = history_bars
+        else:
+            bars = chart_bars
         metrics = liquidity_metrics(bars)
         fresh = bool(metrics["latestDate"]) and (not as_of or metrics["latestDate"] == as_of)
         data_sufficient = (
@@ -270,7 +277,7 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
     market_dir_raw = os.environ.get("FINQUERY_MARKET_DIR")
     market_dir = Path(market_dir_raw) if market_dir_raw else None
     if market_dir and market_dir.exists():
-        published = read_json = {}
+        read_json = {}
         universe_path = market_dir / "universe.json"
         if universe_path.exists():
             try:
