@@ -35,7 +35,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -190,6 +190,11 @@ jobs:
           else
             python -u financial-report/scripts/refresh_market.py --output /tmp/market-publish/market --mode "$mode"
           fi
+      - name: Rebuild current EOD scanner strategy after history refresh
+        if: steps.collect.outputs.mode == 'history'
+        run: |
+          node financial-report/scripts/build_strategy_snapshot.cjs /tmp/market-publish/market
+
       - name: Persist aligned market risk history
         if: always() && (steps.collect.outputs.mode == 'prices' || steps.collect.outputs.mode == 'all')
         run: |
@@ -220,7 +225,7 @@ jobs:
               owned=(market/company-esg.json market/esg-status.json)
               ;;
             history)
-              owned=(market/history market/history-status.json market/drivers.json)
+              owned=(market/history market/history-status.json market/drivers.json market/technical-signals.json market/strategy-indicators.json market/watch-today.json)
               ;;
             intraday)
               owned=(market/intraday market/intraday-status.json market/intraday-5m)
@@ -264,6 +269,15 @@ jobs:
             echo "Unable to publish owned files for mode=$PUBLISH_MODE after retries." >&2
             exit 1
           fi
+      - name: Rebuild universe after scanner-wide EOD history
+        if: steps.collect.outputs.mode == 'history' && success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh workflow run market-universe-refresh.yml --repo "$GH_REPO" --ref main
+          echo "Dispatched universe rebuild after current EOD history publish."
+
       - name: Summarize source coverage
         if: always()
         run: |
