@@ -1,5 +1,6 @@
 name: Refresh live HOSE minute candles
 
+# Dedicated publisher: never shares the live-price concurrency group.
 on:
   workflow_dispatch:
   push:
