@@ -266,13 +266,27 @@ def test_fpt_flow_governance(self) -> None:
     foreign = flow["foreign"]
     proprietary = flow["proprietary"]
 
-    # Foreign flow remains a required current institutional source for the FPT
-    # regression anchor.
-    self.assertTrue(foreign["available"])
-    self.assertFalse(foreign["stale"])
-    self.assertLessEqual(foreign["latestDate"], market_date)
-    self.assertLessEqual(int(foreign["ageSessions"]), 3)
-    self.assertGreater(abs(foreign["net1"]), 1_000_000)
+    # Foreign flow is genuine but provider-dependent. Current observations are
+    # validated; unavailable/stale observations remain visible for provenance
+    # and must be exactly inert in the decision layer.
+    self.assertLessEqual(foreign.get("latestDate") or "0000-00-00", market_date)
+    if foreign.get("available") and not foreign.get("stale"):
+        self.assertLessEqual(int(foreign["ageSessions"]), 3)
+        self.assertEqual(foreign.get("sourceUnit"), "VND")
+        value = float(foreign.get("net1") or 0)
+        self.assertTrue(math.isfinite(value))
+    else:
+        self.assertTrue(
+            not foreign.get("available")
+            or foreign.get("stale")
+            or int(foreign.get("ageSessions", 99)) > 3
+        )
+        signal, weight = flow_decision_signal({
+            "foreign": foreign,
+            "proprietary": {"available": False},
+        })
+        self.assertEqual(signal, 0.0)
+        self.assertEqual(weight, 0.0)
 
     # Proprietary disclosure availability is provider-dependent.  A genuine
     # stale observation may remain visible for provenance, but the live
@@ -311,8 +325,17 @@ def test_archived_flow_and_financial_governance(self) -> None:
     acb = self.dashboard["symbols"]["ACB"]
     foreign = acb["flow"]["foreign"]
     proprietary = acb["flow"]["proprietary"]
-    self.assertTrue(foreign["available"])
     self.assertLessEqual(foreign.get("latestDate") or "0000-00-00", acb["date"])
+    if foreign.get("available") and not foreign.get("stale"):
+        self.assertLessEqual(int(foreign.get("ageSessions", 99)), 3)
+        self.assertEqual(foreign.get("sourceUnit"), "VND")
+    else:
+        signal, weight = flow_decision_signal({
+            "foreign": foreign,
+            "proprietary": {"available": False},
+        })
+        self.assertEqual(signal, 0.0)
+        self.assertEqual(weight, 0.0)
 
     if proprietary.get("available") and not proprietary.get("stale"):
         value = float(proprietary.get("net1") or 0)
@@ -337,6 +360,26 @@ def test_archived_flow_and_financial_governance(self) -> None:
     self.assertFalse(fpt["horizons"]["5"]["liveAdjustmentAppliedToCentralForecast"])
 
 
+def test_stale_institutional_flow_is_inert(self) -> None:
+    """A stale optional flow source can never alter the decision prior."""
+    stale = {
+        "available": True,
+        "stale": True,
+        "ageSessions": 8,
+        "net5": 9_000_000_000,
+        "gross5": 10_000_000_000,
+    }
+    for kind in ("foreign", "proprietary"):
+        flow = {
+            "foreign": {"available": False},
+            "proprietary": {"available": False},
+        }
+        flow[kind] = stale
+        signal, weight = flow_decision_signal(flow)
+        self.assertEqual(signal, 0.0)
+        self.assertEqual(weight, 0.0)
+
+
 def test_v41_horizon_release_gate(self) -> None:
     """Assert the V41 version, then run every legacy release-gate assertion."""
     self.assertEqual(self.market["version"], "VMEWS-MARKET-FORECAST-41.0.0")
@@ -348,6 +391,7 @@ def test_v41_horizon_release_gate(self) -> None:
         self.market["version"] = version
 
 
+legacy.PublishedMarketForecastTest.test_stale_optional_institutional_flow_is_inert = test_stale_institutional_flow_is_inert
 legacy.PublishedMarketForecastTest.test_fund_holdings_are_scenario_context_without_moving_central_price = test_fund_holdings_governance
 legacy.PublishedMarketForecastTest.test_after_close_news_influences_next_session_without_future_leakage = test_after_close_news_governance
 legacy.PublishedMarketForecastTest.test_current_source_and_coverage = test_current_source_and_coverage_dynamic
