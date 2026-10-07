@@ -257,7 +257,7 @@ def solution_live_freshness(data, now):
 def audit_market(report: Audit, market_dir: Path, now):
     required = [
         "universe.json", "quotes.json", "intraday-status.json", "technical-signals.json",
-        "strategy-indicators.json", "risk-monitor.json", "news-latest.json", "macro.json",
+        "strategy-indicators.json", "risk-monitor.json", "news-latest.json", "news-company-latest.json", "macro.json",
         "esg-status.json", "watch-today.json",
     ]
     docs = {}
@@ -345,9 +345,38 @@ def audit_market(report: Audit, market_dir: Path, now):
                 report.warn(abs(status_expected-len(session["expected"])) <= 5 and abs(status_fresh-len(session["fresh"])) <= 5, "MARKET_INTRADAY_GENERATION_SKEW", f"status={status_fresh}/{status_expected} current={len(session['fresh'])}/{len(session['expected'])} statusSource={status.get('sessionQuoteSourceTime')} currentSource={quotes.get('latestSourceTime')}")
 
     news = docs.get("news-latest.json") or {}
-    report.check(news.get("status") == "ok" and 0 < len(news.get("items") or []) <= 150, "MARKET_NEWS_CONTENT", (news.get("status"), len(news.get("items") or [])))
+    news_items = news.get("items") or []
+    health = news.get("sourceHealth") or {}
+    report.check(
+        news.get("status") == "ok"
+        and news.get("selection") == "balanced_vietnam_global_sbv_impact"
+        and 0 < len(news_items) <= 300,
+        "MARKET_NEWS_CONTENT",
+        (news.get("status"), news.get("selection"), len(news_items)),
+    )
+    report.check(int(health.get("healthy") or 0) >= 3 and int(health.get("healthy") or 0) + int(health.get("empty") or 0) + int(health.get("error") or 0) == int(health.get("total") or 0), "MARKET_NEWS_SOURCE_HEALTH", health)
     nstamp = parse_ts(news.get("checkedAt") or news.get("generatedAt"))
     report.check(nstamp is not None and -5 <= (now - nstamp).total_seconds() / 60 <= 45, "MARKET_NEWS_FRESHNESS", news.get("checkedAt"))
+
+    company_news = docs.get("news-company-latest.json") or {}
+    company_counts = company_news.get("companyCounts") or {}
+    report.check(
+        company_news.get("status") == "ok"
+        and company_news.get("selection") == "per_symbol_latest"
+        and int(company_news.get("perSymbolLimit") or 0) == 15
+        and int(company_news.get("companyCoverage") or 0) == len(company_counts)
+        and len(company_counts) > 0
+        and bool(company_news.get("items")),
+        "MARKET_COMPANY_NEWS_CONTENT",
+        {
+            "status": company_news.get("status"),
+            "selection": company_news.get("selection"),
+            "coverage": company_news.get("companyCoverage"),
+            "countKeys": len(company_counts),
+            "items": len(company_news.get("items") or []),
+        },
+    )
+    report.check(str(company_news.get("checkedAt") or "") == str(news.get("checkedAt") or ""), "MARKET_COMPANY_NEWS_ALIGNMENT", (company_news.get("checkedAt"), news.get("checkedAt")))
 
     macro = docs.get("macro.json") or {}
     mstamp = parse_ts(macro.get("checkedAt") or macro.get("generatedAt"))
