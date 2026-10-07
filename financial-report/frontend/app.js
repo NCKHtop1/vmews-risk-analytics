@@ -192,7 +192,7 @@ window.FinancialReportContext={
 };
 async function init(){
  try{state.companies=BOOT.companies||await json(DATA_BASE+'companies.json',null);companyOptions();$('company-description').textContent='100 doanh nghiệp thuộc VN100.';}catch{error('Chưa tải được danh sách VN100. Vui lòng tải lại trang.');return;}
- loadTodayWatch();document.addEventListener('finquery:market-bundle',loadTodayWatch);setInterval(()=>{if(!document.hidden)loadTodayWatch();},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTodayWatch();});window.addEventListener('online',loadTodayWatch);
+ loadTodayWatch();document.addEventListener('finquery:market-bundle',loadTodayWatch);setInterval(()=>{if(!document.hidden)loadTodayWatch();},300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadTodayWatch();});window.addEventListener('online',loadTodayWatch);
  // Membership updates do not block a company request, and a failed manifest
  // never disables live financial data fetching.
  json(liveUrl('companies.json'),null,6000).then(list=>{if(Array.isArray(list)&&new Set(list.map(c=>c.symbol)).size===100){state.companies=list;companyOptions();}}).catch(()=>{});
