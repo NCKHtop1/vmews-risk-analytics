@@ -388,6 +388,20 @@ def audit_market(report: Audit, market_dir: Path, now):
     report.check(int(scanner.get("universe") or 0) == int(counts.get("scannerEligible") or 0), "MARKET_SCANNER_UNIVERSE", (scanner.get("universe"), counts.get("scannerEligible")))
     report.check(int(scanner.get("coverage") or 0) >= math.ceil(max(1, int(scanner.get("universe") or 0)) * .90), "MARKET_SCANNER_COVERAGE", scanner.get("coverage"))
     report.check(int(strategy.get("coverage") or 0) >= math.ceil(max(1, int(scanner.get("universe") or 0)) * .90), "MARKET_STRATEGY_COVERAGE", strategy.get("coverage"))
+    eod_as_of = str(universe.get("eodAsOf") or "")[:10]
+    scanner_rows = scanner.get("symbols") or {}
+    strategy_rows = strategy.get("symbols") or {}
+    scanner_eod = [row for row in scanner_rows.values() if row.get("cadence") == "EOD"]
+    strategy_eod = [row for row in strategy_rows.values() if row.get("cadence") == "EOD"]
+    report.check(bool(eod_as_of), "MARKET_SCANNER_EOD_ASOF", universe.get("eodAsOf"))
+    report.check(str(scanner.get("eodAsOf") or "")[:10] == eod_as_of, "MARKET_SCANNER_EOD_ALIGNMENT", (scanner.get("eodAsOf"), eod_as_of))
+    report.check(str(strategy.get("eodAsOf") or "")[:10] == eod_as_of, "MARKET_STRATEGY_EOD_ALIGNMENT", (strategy.get("eodAsOf"), eod_as_of))
+    report.check(all(str(row.get("barDate") or "")[:10] == eod_as_of for row in scanner_eod), "MARKET_SCANNER_EOD_FRESHNESS", f"eod={eod_as_of} rows={len(scanner_eod)}")
+    report.check(all(str(row.get("barDate") or "")[:10] == eod_as_of for row in strategy_eod), "MARKET_STRATEGY_EOD_FRESHNESS", f"eod={eod_as_of} rows={len(strategy_eod)}")
+    report.check(int(scanner.get("discoveryCoverage") or 0) == len(scanner_eod), "MARKET_SCANNER_DISCOVERY_EXACT", (scanner.get("discoveryCoverage"), len(scanner_eod)))
+    report.check(int(strategy.get("discoveryCoverage") or 0) == len(strategy_eod), "MARKET_STRATEGY_DISCOVERY_EXACT", (strategy.get("discoveryCoverage"), len(strategy_eod)))
+    if counts.get("scannerCurrent") is not None:
+        report.check(int(counts.get("scannerCurrent") or 0) == int(scanner.get("coverage") or 0), "MARKET_SCANNER_CURRENT_EXACT", (counts.get("scannerCurrent"), scanner.get("coverage")))
 
     eligible = risk_eligible_symbols(quotes, strategy, qday)
     rcov = int((risk.get("coverage") or {}).get("quotes") or 0)
