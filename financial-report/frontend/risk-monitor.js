@@ -274,7 +274,7 @@ function bind(){
 }
 bind();
 if(location.hash==='#risk-monitor')showRisk(false);
-setInterval(()=>{if(!$('risk-monitor')?.hidden&&!document.hidden)refresh();},60000);
+setInterval(()=>{if(!$('risk-monitor')?.hidden&&!document.hidden)refresh();},300000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('risk-monitor')?.hidden)refresh();});
 window.FinPlatformViews={openRisk:()=>showRisk(),openStrategy:()=>showStrategy(),openAnalysis:()=>showAnalysis()};
 window.FinRiskMonitor={refresh,open:()=>showRisk(),close:showAnalysis,context:()=>state.data};
