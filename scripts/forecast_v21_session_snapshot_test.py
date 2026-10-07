@@ -14,6 +14,8 @@ class ForecastV21SessionSnapshotTest(unittest.TestCase):
         self.assertIn("Forecast V20.1 immutable-price audit and market intelligence", workflow)
         self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
         self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
+        self.assertIn("github.event.workflow_run.name", workflow)
+        self.assertIn("Full Forecast core publisher completed; forcing V21 alignment refresh.", workflow)
 
     def test_workflow_refreshes_intraday_overlay_every_15_minutes(self):
         workflow = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "forecast-v21-session-refresh.yml").read_text(encoding="utf-8")
