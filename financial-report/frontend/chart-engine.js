@@ -96,12 +96,12 @@ class ChartController{
  pushSignal(id,title,detail,tone='neutral',toast=true){const key=this.symbol+':'+this.tf+':'+id,now=Date.now(),last=this.signalCooldown.get(key)||0;if(toast&&now-last<12*60*1000)return;this.signalCooldown.set(key,now);const event={id,title,detail,tone,time:now};this.signalEvents=[event,...this.signalEvents.filter(x=>x.id!==id)].slice(0,6);this.renderSignals();if(toast){const stack=$('signal-toast-stack');if(stack){const node=document.createElement('div');node.className='signal-toast '+tone;node.innerHTML='<strong>'+title.replace(/[<>]/g,'')+'</strong><p>'+detail.replace(/[<>]/g,'')+'</p>';stack.prepend(node);setTimeout(()=>node.remove(),9000);}}}
  consistency(q=this.lastMarketQuote){
   const b=this.bars.at(-1),chartNode=$('price-chart');
-  if(!q||!b||!Number.isFinite(Number(q.price))||!Number.isFinite(Number(b.close))){this.dataConsistent=true;chartNode?.classList.remove('chart-data-mismatch');return{ok:true,comparable:false};}
+  if(!q||!b||!Number.isFinite(Number(q.price))||!Number.isFinite(Number(b.close))){this.dataConsistent=true;chartNode?.classList?.remove('chart-data-mismatch');return{ok:true,comparable:false};}
   const barDate=typeof b.time==='string'?b.time:(typeof b.time==='number'?new Date(b.time*1000).toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'');
   const quoteDate=q.sourceTime?new Date(q.sourceTime).toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'';
-  if(barDate&&quoteDate&&barDate!==quoteDate){const staleIntraday=M.intraday(this.tf);this.dataConsistent=!staleIntraday;chartNode?.classList.toggle('chart-data-mismatch',staleIntraday);if(staleIntraday){this.signalSnapshot=null;this.signalEvents=[];this.renderSignals();this.status('Nến phút chưa cập nhật phiên hôm nay; FinQuery tạm ẩn tín hiệu kỹ thuật.');const signalStatus=$('signal-status');if(signalStatus)signalStatus.textContent='Nến phút chưa cập nhật phiên hôm nay';}return{ok:!staleIntraday,comparable:false,barDate,quoteDate,reason:staleIntraday?'stale_intraday_session':'different_session'};}
+  if(barDate&&quoteDate&&barDate!==quoteDate){const staleIntraday=M.intraday(this.tf);this.dataConsistent=!staleIntraday;chartNode?.classList?.toggle('chart-data-mismatch',staleIntraday);if(staleIntraday){this.signalSnapshot=null;this.signalEvents=[];this.renderSignals();this.status('Nến phút chưa cập nhật phiên hôm nay; FinQuery tạm ẩn tín hiệu kỹ thuật.');const signalStatus=$('signal-status');if(signalStatus)signalStatus.textContent='Nến phút chưa cập nhật phiên hôm nay';}return{ok:!staleIntraday,comparable:false,barDate,quoteDate,reason:staleIntraday?'stale_intraday_session':'different_session'};}
   const delta=Math.abs(Number(b.close)-Number(q.price))/Number(q.price),ok=delta<=.15;
-  this.dataConsistent=ok;chartNode?.classList.toggle('chart-data-mismatch',!ok);
+  this.dataConsistent=ok;chartNode?.classList?.toggle('chart-data-mismatch',!ok);
   if(!ok)this.status('Dữ liệu giá và biểu đồ đang lệch nhau; FinQuery tạm ẩn tín hiệu kỹ thuật cho đến khi đồng bộ.');
   return{ok,comparable:true,delta,barClose:Number(b.close),quotePrice:Number(q.price),barDate,quoteDate};
  }
