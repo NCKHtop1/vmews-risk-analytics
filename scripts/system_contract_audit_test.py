@@ -22,6 +22,14 @@ from system_contract_audit import (
 
 
 class SystemContractAuditTests(unittest.TestCase):
+    def test_system_contract_workflow_verifies_pages_on_push_with_safe_sha_parsing(self):
+        root=pathlib.Path(__file__).resolve().parents[1]
+        workflow=(root/'.github'/'workflows'/'system-contract-audit.yml').read_text(encoding='utf-8')
+        self.assertIn("github.event_name == 'push'",workflow)
+        self.assertIn("Verify current Pages production generation",workflow)
+        self.assertIn("read -r code_sha financial_sha insight_sha market_sha",workflow)
+        self.assertNotIn('python -c \\"import json; print(json.load',workflow)
+
     def test_risk_eligible_set_excludes_retained_and_misaligned_rows(self):
         quotes = {
             "quotes": {
