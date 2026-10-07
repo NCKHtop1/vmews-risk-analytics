@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const code=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market-data.js'),'utf8');
-function setup(fetch){const ctx={window:{},document:{documentElement:{dataset:{hosting:'pages'}},dispatchEvent(){}},location:{href:'https://example.test/financial-report/'},fetch,URL,Date,AbortSignal,DOMException,CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},setTimeout,clearTimeout,Promise};vm.runInNewContext(code,ctx);return ctx.window.FinMarketData;}
+function setup(fetch){const ctx={window:{},document:{documentElement:{dataset:{hosting:'pages'}},dispatchEvent(){}},location:{href:'https://example.test/financial-report/'},fetch,URL,Date,AbortController,AbortSignal,DOMException,CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},setTimeout,clearTimeout,Promise};vm.runInNewContext(code,ctx);return ctx.window.FinMarketData;}
 const bundle=(minutes,price=100)=>({checkedAt:new Date(Date.now()-minutes*60000).toISOString(),quotes:{ACB:{price}}});
 test('publisher update wins over successful stale Pages response',async()=>{const api=setup(async url=>({ok:true,json:async()=>bundle(url.includes('raw.githubusercontent')?1:90,url.includes('raw.githubusercontent')?110:100)}));assert.equal((await api.get('quotes.json')).quotes.ACB.price,110);});
 test('future publisher snapshot cannot displace valid Pages data',async()=>{const api=setup(async url=>({ok:true,json:async()=>bundle(url.includes('raw.githubusercontent')?-600:10)}));assert.ok(Date.parse((await api.get('quotes.json')).checkedAt)<Date.now());});
@@ -54,7 +54,7 @@ test('a renderer exception releases refresh lock and the next refresh succeeds',
  const button={},status={},state={quotes:{},companies:[],coreCompanies:[],symbol:'ACB',refreshing:false};let calls=0,broken=true;
  const atomic={sourceTime:'2026-10-06T07:45:00Z',quotes:{checkedAt:'2026-10-06T07:45:01Z',quotes:{}}};
  const marketData={getAlignedBundle:async()=>{calls++;return atomic;},commitBundle:x=>x,currentBundle:()=>atomic,mergeQuotes(){}};
- const ctx={state,$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,quoteAgeMinutes:()=>5,quoteNeedsFallback:()=>false,quoteNeedsCloseCatch:()=>false,marketSessionActive:()=>false,manageQuoteRetry:()=>{},showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},document:{dispatchEvent(){}},chartController:{loading:true},window:{FinMarketData:marketData,FinTechnicalScanner:{},FinStrategyBuilder:{},FinQueryAI:{sync(){}}}};
+ const ctx={state,LIVE_FALLBACK_API:'',$:id=>id==='market-refresh'?button:status,get:async()=>{calls++;return{};},Date,Promise,console:{error(){}},newsStale:()=>false,quoteStale:()=>true,quoteAgeMinutes:()=>5,quoteNeedsFallback:()=>false,quoteNeedsCloseCatch:()=>false,marketSessionActive:()=>false,manageQuoteRetry:()=>{},showQuote:()=>{if(broken)throw Error('render failed');},board(){},news(){},CustomEvent:function(type,init){this.type=type;this.detail=init?.detail;},document:{dispatchEvent(){}},chartController:{loading:true},window:{FinMarketData:marketData,FinTechnicalScanner:{},FinStrategyBuilder:{},FinQueryAI:{sync(){}}}};
  vm.runInNewContext(refresh+';this.run=refresh',ctx);
  await ctx.run();assert.equal(state.refreshing,false);assert.equal(button.disabled,false);
  broken=false;await ctx.run();assert.equal(calls,8);assert.equal(state.initialized,true);assert.equal(state.refreshing,false);
@@ -66,14 +66,13 @@ test('intraday freshness policy fails over before a quote is declared stale',()=
  assert.match(source,/quoteStale[\s\S]*25\*60\*1000/);
  assert.match(source,/finquery:market-refresh/);
 });
-test('initial quote outage gets bounded fast UI retries',()=>{
+test('published snapshot mode disables burst quote retries when live fallback is unavailable',()=>{
  const source=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  assert.match(source,/quoteRetryTimer:null,quoteRetryAttempt:0/);
- assert.match(source,/const delays=\[1200,3000,7000\]/);
- assert.match(source,/state\.quoteRetryAttempt>=3/);
+ assert.match(source,/if\(hasLive\|\|!state\.symbol\|\|!marketSessionActive\(\)\|\|!LIVE_FALLBACK_API\)/);
+ assert.doesNotMatch(source,/const delays=\[1200,3000,7000\]/);
  assert.match(source,/manageQuoteRetry\(Boolean\(currentQuoteLive\)\)/);
  assert.match(source,/manageQuoteRetry\(false\)/);
- assert.match(source,/hệ thống đang tự thử lại/);
 });
 test('live risk publisher loads market calibration before enforcing V2 validation',()=>{
  const live=fs.readFileSync(require('node:path').join(__dirname,'../scripts/live_session_publisher.sh'),'utf8');
@@ -249,20 +248,22 @@ test('full contextual-help audit covers site-specific terms without oversized in
  assert.match(style,/button\.term-info-button\{[^}]*width:16px!important/);
 });
 
-test('news freshness has scheduler recovery and browser fallback retry',()=>{
+test('news freshness relies on scheduler recovery and compact published snapshot without dead browser fallback',()=>{
  const market=fs.readFileSync(require('node:path').join(__dirname,'../frontend/market.js'),'utf8');
  const guard=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-realtime-guard.yml'),'utf8');
  const news=fs.readFileSync(require('node:path').join(__dirname,'../../.github/workflows/market-news-live.yml'),'utf8');
  assert.match(guard,/cron: '\*\/5 \* \* \* \*'/);
  assert.match(guard,/Refresh live HOSE Core \+ Liquid prices/);
  assert.match(guard,/Deploy VMEWS Pages/);
- assert.match(guard,/financial-report\/\*\*/);
+ assert.match(guard,/news-latest\.json/);
  assert.match(news,/market-realtime-guard\.yml/);
  assert.match(news,/cron: '7 \* \* \* \*'/);
  assert.match(news,/Maintain resilient news heartbeat/);
  assert.match(news,/sleep 900/);
- assert.match(market,/for\(let attempt=0;attempt<2;attempt\+\+\)/);
- assert.match(market,/&v='\+Math\.floor\(Date\.now\(\)\/60000\)/);
+ assert.match(news,/market\/news\.json market\/news-latest\.json/);
+ assert.match(market,/const LIVE_FALLBACK_API=''/);
+ assert.match(market,/get\('news-latest\.json'\)\.catch\(\(\)=>get\('news\.json'\)\)/);
+ assert.doesNotMatch(market,/for\(let attempt=0;attempt<2;attempt\+\+\)/);
 });
 
 
