@@ -1,6 +1,7 @@
 name: Refresh live HOSE minute candles
 
-# Dedicated publisher: never shares the live-price concurrency group.
+# Dedicated long-lived publisher. It never shares the live-price concurrency
+# group, so minute-bar recovery cannot delay the five-minute quote publisher.
 on:
   workflow_dispatch:
   push:
@@ -8,20 +9,26 @@ on:
     paths:
       - '.github/workflows/market-intraday-live.yml'
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/live_intraday_publisher.sh'
   schedule:
-    - cron: '5,20,35,50 2-8 * * 1-5'
+    - cron: '55 1 * * 1-5'  # 08:55 Vietnam
+    - cron: '0 2 * * 1-5'   # 09:00 redundant morning bootstrap
+    - cron: '55 5 * * 1-5'  # 12:55 Vietnam
+    - cron: '0 6 * * 1-5'   # 13:00 redundant afternoon bootstrap
 
 permissions:
   contents: write
 
 concurrency:
   group: market-intraday-live
-  cancel-in-progress: true
+  # A code push hands over immediately to repaired logic. Scheduled/manual
+  # heartbeats never interrupt a healthy long-running publisher.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   intraday:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 190
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,33 +38,36 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Check HOSE live session
+      - name: Check HOSE minute-candle window
         id: session
         shell: bash
         run: |
           hhmm=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
           run=false
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          oneshot=0
+          if { [ "$hhmm" -ge 0855 ] && [ "$hhmm" -le 1137 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1455 ]; }; then
             run=true
-          elif { [ "$hhmm" -ge 900 ] && [ "$hhmm" -le 1130 ]; } || { [ "$hhmm" -ge 1300 ] && [ "$hhmm" -le 1445 ]; }; then
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             run=true
+            oneshot=1
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
-          echo "VN time=$hhmm run=$run"
+          echo "oneshot=$oneshot" >> "$GITHUB_OUTPUT"
+          echo "VN time=$hhmm run=$run oneshot=$oneshot"
 
-      - name: Restore latest minute snapshots
+      - name: Restore latest market branch
         if: steps.session.outputs.run == 'true'
         shell: bash
         run: |
           git fetch origin financial-market-data
           git worktree add /tmp/market-intraday origin/financial-market-data
           git -C /tmp/market-intraday sparse-checkout set market
+          git -C /tmp/market-intraday config user.name 'github-actions[bot]'
+          git -C /tmp/market-intraday config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           mkdir -p /tmp/market-intraday/market/intraday
 
-      - name: Collect current-session minute candles
-        id: collect
+      - name: Run resilient minute-candle publisher
         if: steps.session.outputs.run == 'true'
-        continue-on-error: true
         env:
           INTRADAY_COUNT_BACK: '360'
           INTRADAY_RETRIES: '3'
@@ -66,51 +76,9 @@ jobs:
           INTRADAY_BACKFILL: '0'
           INTRADAY_RETAIN_1M_BARS: '700'
           INTRADAY_WRITE_ARCHIVE: '0'
+          INTRADAY_MAX_QUOTE_LAG_MINUTES: '20'
+          INTRADAY_PUBLISH_INTERVAL_SECONDS: '600'
+          INTRADAY_MAX_CONSECUTIVE_FAILURES: '3'
+          INTRADAY_ONESHOT: ${{ steps.session.outputs.oneshot }}
         run: |
-          python -u financial-report/scripts/refresh_market.py --output /tmp/market-intraday/market --mode intraday
-
-      - name: Validate and publish minute snapshots
-        if: steps.session.outputs.run == 'true' && always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -s /tmp/market-intraday/market/intraday-status.json
-          STATUS=/tmp/market-intraday/market/intraday-status.json python - <<'PY'
-          import json, math, os
-          from datetime import datetime, timezone, timedelta
-          from pathlib import Path
-          d=json.loads(Path(os.environ['STATUS']).read_text())
-          expected=int(d.get('expected') or 0)
-          success=int(d.get('success') or 0)
-          required=int(d.get('required') or math.ceil(expected*.90))
-          if expected <= 0:
-              raise SystemExit('intraday expected universe missing')
-          checked=datetime.fromisoformat(str(d.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
-          if (datetime.now(timezone.utc)-checked).total_seconds()>25*60:
-              raise SystemExit('intraday status is stale')
-          print('INTRADAY',{'success':success,'expected':expected,'required':required,'status':d.get('status')})
-          PY
-
-          git -C /tmp/market-intraday restore --worktree market/universe.json market/history 2>/dev/null || true
-          git -C /tmp/market-intraday config user.name 'github-actions[bot]'
-          git -C /tmp/market-intraday config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git -C /tmp/market-intraday add --sparse market/intraday-status.json market/intraday
-          if ! git -C /tmp/market-intraday diff --cached --quiet; then
-            git -C /tmp/market-intraday commit -m 'Refresh live HOSE minute candles [data-only]'
-            published=0
-            for attempt in 1 2 3; do
-              git -C /tmp/market-intraday fetch origin financial-market-data
-              if git -C /tmp/market-intraday rebase origin/financial-market-data && git -C /tmp/market-intraday push origin HEAD:refs/heads/financial-market-data; then
-                published=1
-                break
-              fi
-              git -C /tmp/market-intraday rebase --abort || true
-              sleep $((attempt * 2))
-            done
-            test "$published" -eq 1
-          fi
-
-          if [ "${{ steps.collect.outcome }}" != "success" ]; then
-            echo "Minute candles were published as partial/retained, but coverage health failed." >&2
-            exit 1
-          fi
+          bash financial-report/scripts/live_intraday_publisher.sh /tmp/market-intraday
