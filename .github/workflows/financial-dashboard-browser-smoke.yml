@@ -94,6 +94,8 @@ jobs:
                   window.FinancialReportContext &&
                   window.FinTechnicalScanner &&
                   window.FinStrategyBuilder &&
+                  window.FinStrategyIntelligence &&
+                  window.FinResearchAgent &&
                   window.FinRiskMonitor &&
                   window.FinSectionCollapse &&
                   window.FinMacro
@@ -192,6 +194,93 @@ jobs:
                 const c=window.FinStrategyBuilder?.context?.();
                 return Boolean(c && c.strategy && c.strategy.conditions && c.strategy.conditions.length===2);
               """))
+
+              # Exercise the real Strategy Agent actions, not just the underlying APIs.
+              driver.execute_script("""
+                window.FinPlatformViews.openStrategy();
+                window.FinStrategyIntelligence.selectSymbol('HCM');
+              """)
+              wait.until(lambda d:d.execute_script("""
+                return Boolean(
+                  document.getElementById('strategy-builder')?.hidden===false &&
+                  document.getElementById('sai-open-symbol') &&
+                  document.getElementById('sai-query-ai') &&
+                  (document.querySelector('#sai-investment-view h3')?.textContent||'').includes('HCM')
+                );
+              """))
+              driver.find_element('id','sai-open-symbol').click()
+              wait.until(lambda d:d.execute_script("""
+                const m=window.FinancialMarket?.context?.();
+                return Boolean(
+                  document.querySelector('.workspace')?.hidden===false &&
+                  document.getElementById('strategy-builder')?.hidden===true &&
+                  m?.symbol==='HCM' &&
+                  document.querySelector('[data-market-view="price"]')?.classList.contains('active') &&
+                  document.getElementById('chart-terminal')?.hidden===false &&
+                  (document.getElementById('price-readout')?.textContent||'').startsWith('HCM')
+                );
+              """))
+              chart_action=driver.execute_script("""
+                return {
+                  symbol:window.FinancialMarket?.context?.()?.symbol||null,
+                  hash:location.hash,
+                  chartHidden:document.getElementById('chart-terminal')?.hidden,
+                  view:document.querySelector('[data-market-view="price"]')?.classList.contains('active'),
+                  readout:(document.getElementById('price-readout')?.textContent||'').slice(0,120)
+                };
+              """)
+              if chart_action.get('symbol')!='HCM' or chart_action.get('hash')!='#market' or chart_action.get('chartHidden') or not chart_action.get('view'):
+                  raise AssertionError(f'Strategy Agent open-chart action failed: {chart_action}')
+
+              driver.execute_script("""
+                window.FinPlatformViews.openStrategy();
+                window.FinStrategyIntelligence.selectSymbol('HCM');
+              """)
+              wait.until(lambda d:d.execute_script("return Boolean(document.getElementById('sai-query-ai'));"))
+              driver.find_element('id','sai-query-ai').click()
+              wait.until(lambda d:d.execute_script("""
+                const drawer=document.getElementById('research-ai'),backdrop=document.getElementById('ai-backdrop');
+                return Boolean(
+                  drawer && drawer.hidden===false && drawer.classList.contains('open') &&
+                  drawer.parentElement===document.body &&
+                  backdrop?.parentElement===document.body &&
+                  document.getElementById('strategy-builder')?.hidden===false
+                );
+              """))
+              ai_action=driver.execute_script("""
+                return {
+                  drawerOpen:document.getElementById('research-ai')?.classList.contains('open'),
+                  drawerGlobal:document.getElementById('research-ai')?.parentElement===document.body,
+                  strategyVisible:document.getElementById('strategy-builder')?.hidden===false,
+                  userText:[...document.querySelectorAll('#research-ai-messages .user')].map(x=>x.textContent||'').join(' ')
+                };
+              """)
+              if not ai_action.get('drawerOpen') or not ai_action.get('drawerGlobal') or not ai_action.get('strategyVisible') or 'HCM' not in ai_action.get('userText',''):
+                  raise AssertionError(f'Strategy Agent deep-analysis action failed: {ai_action}')
+              driver.execute_script("window.FinQueryAI.close();")
+
+              # A Liquid symbol outside the financial-report universe must still be
+              # routable through market/strategy analysis, without leaking stale BCTC.
+              market_only=driver.execute_async_script("""
+                const done=arguments[arguments.length-1];
+                window.FinResearchAgent.run('Phân tích chuyên sâu AAA theo kỹ thuật và rủi ro hiện tại.')
+                  .then(x=>done({
+                    activeSymbol:x?.audit?.symbol?.activeSymbol||null,
+                    marketSymbol:x?.context?.agent?.evidence?.market?.symbol||null,
+                    hasFinancial:Boolean(x?.context?.agent?.evidence?.financial),
+                    status:x?.context?.agent?.validation?.status||null
+                  }))
+                  .catch(e=>done({error:String(e),code:e?.code||null}));
+              """)
+              if market_only.get('error') or market_only.get('activeSymbol')!='AAA' or market_only.get('marketSymbol')!='AAA' or market_only.get('hasFinancial'):
+                  raise AssertionError(f'Market-only Strategy/Research routing failed: {market_only}')
+
+              driver.execute_async_script("""
+                const done=arguments[arguments.length-1];
+                window.FinancialMarket.openChart('FPT');
+                window.FinancialReportContext.select('FPT').then(()=>done(true)).catch(()=>done(false));
+              """)
+              wait.until(lambda d:d.execute_script("return window.FinancialMarket?.context?.()?.symbol==='FPT';"))
 
               driver.execute_script("""
                 document.querySelector('[data-market-view="scanner"]')?.click();

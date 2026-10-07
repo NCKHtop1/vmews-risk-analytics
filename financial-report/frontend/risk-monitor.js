@@ -251,10 +251,12 @@ function showRisk(pushHash=true){setPlatformView('risk',pushHash);}
 function showStrategy(pushHash=true){setPlatformView('strategy',pushHash);}
 function showAnalysis(pushHash=false){setPlatformView('analysis',pushHash);}
 function openSymbol(symbol){
+ const s=String(symbol||'').trim().toUpperCase();if(!/^[A-Z]{3}$/.test(s))return;
  showAnalysis();
- const ticker=$('ticker');if(ticker)ticker.value=symbol;
- $('company-form')?.requestSubmit();
- setTimeout(()=>document.getElementById('market')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
+ const opened=window.FinancialMarket?.openChart?.(s);
+ if(!opened){const ticker=$('ticker');if(ticker)ticker.value=s;$('company-form')?.requestSubmit();document.querySelector('[data-market-view="price"]')?.click();}
+ const resolver=window.FinancialReportContext?.resolveSymbol?.(s);if(resolver===s)void window.FinancialReportContext.select(s).catch(()=>{});
+ setTimeout(()=>document.getElementById('chart-terminal')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
 }
 function bind(){
  document.querySelectorAll('.header nav a').forEach(a=>{

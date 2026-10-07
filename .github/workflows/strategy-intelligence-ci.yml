@@ -6,6 +6,9 @@ on:
       - 'financial-report/frontend/strategy-*.js'
       - 'financial-report/frontend/alert-center.js'
       - 'financial-report/frontend/research-agent.js'
+      - 'financial-report/frontend/research-ai.js'
+      - 'financial-report/frontend/market.js'
+      - 'financial-report/frontend/risk-monitor.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
       - 'financial-report/scripts/test_strategy_intelligence.cjs'
@@ -26,7 +29,10 @@ jobs:
           node --check financial-report/frontend/strategy-intelligence-core.js
           node --check financial-report/frontend/strategy-intelligence.js
           node --check financial-report/frontend/alert-center.js
+          node --check financial-report/frontend/market.js
+          node --check financial-report/frontend/risk-monitor.js
           node --check financial-report/frontend/research-agent.js
+          node --check financial-report/frontend/research-ai.js
       - name: Core regression tests
         run: node financial-report/scripts/test_strategy_intelligence.cjs
       - name: HTML integration contract
