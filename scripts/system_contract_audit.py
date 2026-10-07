@@ -125,6 +125,100 @@ def compute_intraday_session(market_dir: Path, quotes, source_day, max_lag=20.0)
     return {"expected": expected, "fresh": fresh, "lagged": lagged}
 
 
+def audit_market_bar_files(report: Audit, market_dir: Path, universe, now, quote_day):
+    symbols = universe.get("symbols") or {}
+    scanner_symbols = sorted(
+        symbol for symbol, meta in symbols.items()
+        if (meta or {}).get("scannerEligible")
+    )
+    live_symbols = sorted(
+        symbol for symbol, meta in symbols.items()
+        if (meta or {}).get("liveMarketEligible")
+    )
+
+    def valid_ohlc(bar):
+        try:
+            o=float(bar.get("open")); h=float(bar.get("high")); l=float(bar.get("low")); c=float(bar.get("close"))
+            v=float(bar.get("volume") or 0)
+        except (TypeError, ValueError):
+            return False
+        return all(math.isfinite(x) for x in (o,h,l,c,v)) and min(o,h,l,c)>0 and v>=0 and h+1e-9>=max(o,c) and l-1e-9<=min(o,c)
+
+    history_valid=0
+    for symbol in scanner_symbols:
+        path=market_dir/"history"/f"{symbol}.json"
+        if not report.check(path.exists(), "MARKET_HISTORY_FILE", symbol):
+            continue
+        try:
+            data=load_json(path)
+        except Exception as exc:
+            report.check(False, "MARKET_HISTORY_JSON", f"{symbol}: {exc}")
+            continue
+        bars=data.get("bars") or []
+        times=[str(row.get("time") or "")[:10] for row in bars if isinstance(row,dict)]
+        meta=symbols.get(symbol) or {}
+        report.check(data.get("symbol")==symbol and data.get("unit")=="VND", "MARKET_HISTORY_IDENTITY", symbol)
+        report.check(bool(bars) and int(data.get("barCount") or 0)==len(bars), "MARKET_HISTORY_COUNT", f"{symbol}:{data.get('barCount')}/{len(bars)}")
+        report.check(times==sorted(set(times)), "MARKET_HISTORY_ORDER", symbol)
+        report.check(all(valid_ohlc(row) for row in bars), "MARKET_HISTORY_OHLC", symbol)
+        report.check(all(datetime.fromisoformat(day).weekday()<5 for day in times if day), "MARKET_HISTORY_WEEKEND", symbol)
+        report.check(not times or times[-1]<=quote_day, "MARKET_HISTORY_FUTURE", f"{symbol}:{times[-1] if times else None}>{quote_day}")
+        expected_latest=str(meta.get("latestDate") or "")[:10]
+        if expected_latest:
+            report.check(bool(times) and times[-1]==expected_latest, "MARKET_HISTORY_UNIVERSE_ALIGNMENT", f"{symbol}:{times[-1] if times else None}/{expected_latest}")
+        report.check(str(data.get("lastBar") or "")[:10]==(times[-1] if times else ""), "MARKET_HISTORY_LASTBAR", symbol)
+        if bars and all(valid_ohlc(row) for row in bars) and times==sorted(set(times)):
+            history_valid+=1
+    report.check(history_valid==len(scanner_symbols), "MARKET_HISTORY_DEEP_COVERAGE", f"{history_valid}/{len(scanner_symbols)}")
+
+    intraday_valid=0
+    for symbol in live_symbols:
+        path=market_dir/"intraday"/f"{symbol}.json"
+        if not report.check(path.exists(), "MARKET_INTRADAY_FILE", symbol):
+            continue
+        try:
+            data=load_json(path)
+        except Exception as exc:
+            report.check(False, "MARKET_INTRADAY_JSON", f"{symbol}: {exc}")
+            continue
+        bars=data.get("bars") or []
+        parsed=[]
+        parse_ok=True
+        for row in bars:
+            try:
+                parsed.append(datetime.fromisoformat(str(row.get("time") or "").replace("Z","+00:00")).astimezone(VN_TZ))
+            except Exception:
+                parse_ok=False
+                break
+        report.check(data.get("symbol")==symbol and data.get("unit")=="VND", "MARKET_INTRADAY_IDENTITY", symbol)
+        report.check(bool(bars) and int(data.get("barCount") or 0)==len(bars), "MARKET_INTRADAY_COUNT", f"{symbol}:{data.get('barCount')}/{len(bars)}")
+        report.check(parse_ok and parsed==sorted(parsed) and len(parsed)==len(set(parsed)), "MARKET_INTRADAY_ORDER", symbol)
+        report.check(all(valid_ohlc(row) for row in bars), "MARKET_INTRADAY_OHLC", symbol)
+        report.check(
+            parse_ok and all(stamp.astimezone(timezone.utc)<=now+timedelta(minutes=5) for stamp in parsed),
+            "MARKET_INTRADAY_FUTURE", symbol
+        )
+        report.check(parse_ok and all(stamp.weekday()<5 for stamp in parsed), "MARKET_INTRADAY_WEEKEND", symbol)
+        session_times_ok=True
+        if parse_ok:
+            for stamp in parsed:
+                minute=stamp.hour*60+stamp.minute
+                if not ((9*60)<=minute<=(11*60+30) or (13*60)<=minute<=(15*60)):
+                    session_times_ok=False
+                    break
+        report.check(session_times_ok, "MARKET_INTRADAY_SESSION_TIME", symbol)
+        last_iso=str(data.get("lastBar") or "")
+        if parsed:
+            expected_last=parsed[-1].astimezone(timezone.utc)
+            actual_last=parse_ts(last_iso)
+            report.check(actual_last is not None and abs((actual_last-expected_last).total_seconds())<1, "MARKET_INTRADAY_LASTBAR", symbol)
+        else:
+            report.check(False, "MARKET_INTRADAY_LASTBAR", symbol)
+        if bars and parse_ok and all(valid_ohlc(row) for row in bars):
+            intraday_valid+=1
+    report.check(intraday_valid==len(live_symbols), "MARKET_INTRADAY_DEEP_COVERAGE", f"{intraday_valid}/{len(live_symbols)}")
+
+
 def solution_live_freshness(data, now):
     now = now.astimezone(timezone.utc)
     local = now.astimezone(VN_TZ)
@@ -205,6 +299,8 @@ def audit_market(report: Audit, market_dir: Path, now):
             report.check(qstamp.astimezone(VN_TZ).date() == local.date(), "MARKET_QUOTE_WRONG_SESSION", qstamp)
     else:
         qday = str(universe.get("asOf") or "")
+
+    audit_market_bar_files(report, market_dir, universe, now, qday)
 
     scanner = docs.get("technical-signals.json") or {}
     strategy = docs.get("strategy-indicators.json") or {}
