@@ -44,12 +44,16 @@ vm.runInContext(source,sandbox,{filename:'research-agent.js'});
  assert.equal(technical.context.agent.evidence.market.quote.symbol,'AAA');
  assert.equal(technical.context.agent.evidence.market.quote.price,7420);
 
- const memo=await agent.run('Phan tich chuyen sau AAA');
+ const memo=await agent.run('Phan tich chuyen sau AAA theo ky thuat va rui ro hien tai');
+ assert.equal(memo.audit.intent,'memo');
+ assert.ok(memo.audit.plan.includes('market'));
+ assert.ok(memo.audit.plan.includes('scanner'));
+ assert.ok(memo.audit.plan.includes('strategy'));
  assert.equal(memo.audit.symbol.activeSymbol,'AAA');
  assert.equal(memo.context.agent.evidence.market.symbol,'AAA');
  assert.equal(memo.context.agent.evidence.market.quote.price,7420);
  assert.equal(Object.prototype.hasOwnProperty.call(memo.context.agent.evidence,'financial'),false);
  assert.ok(memo.context.agent.validation.warnings.some(x=>/BCTC/i.test(x)));
 
- console.log(JSON.stringify({status:'ok',active:active,market:memo.context.agent.evidence.market.symbol,price:memo.context.agent.evidence.market.quote.price,financialLeaked:false},null,2));
+ console.log(JSON.stringify({status:'ok',intent:memo.audit.intent,plan:memo.audit.plan,active:active,market:memo.context.agent.evidence.market.symbol,price:memo.context.agent.evidence.market.quote.price,financialLeaked:false},null,2));
 })().catch(error=>{console.error(error);process.exitCode=1;});
