@@ -1,0 +1,77 @@
+name: Sync FinQuery standalone bundle
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/frontend/**'
+      - 'financial-report/config/derived_metrics.json'
+      - 'financial-report/config/ratio_checks.json'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/data/companies.json'
+      - 'financial-report/data/MBB.json'
+      - 'financial-report/data/VIC.json'
+      - 'financial-report/data/FPT.json'
+      - 'financial-report/data/VCB.json'
+      - '.github/workflows/finquery-bundle-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finquery-standalone-bundle-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[bundle-sync]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and publish exact standalone bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python financial-report/scripts/build_cdn.py
+            python - <<'PY'
+          from pathlib import Path
+          page=Path('financial-report/index.html').read_text(encoding='utf-8')
+          required=[
+              'news-company-latest.json',
+              'function newsTimeLabel(r)',
+              r'\bomo\b',
+              r'fpt\s+(?:retail|securities)\b',
+              'function strictCompanyNews(',
+          ]
+          missing=[x for x in required if x not in page]
+          assert not missing,('standalone News bundle incomplete',missing)
+          print('STANDALONE BUNDLE CONTRACT PASS',len(page))
+          PY
+            git add financial-report/index.html financial-report/frontend/metrics.js
+            if git diff --cached --quiet; then
+              echo 'Standalone bundle already synchronized'
+              exit 0
+            fi
+            git commit -m 'Sync FinQuery standalone bundle [bundle-sync]'
+            if git push origin HEAD:main; then
+              echo 'Standalone bundle synchronized'
+              exit 0
+            fi
+            echo "::warning::Bundle push raced with a newer main commit; rebuilding from latest main (attempt $attempt)."
+            sleep $((attempt * 2))
+          done
+          echo '::error::Unable to synchronize standalone bundle after retries.'
+          exit 1
