@@ -1660,6 +1660,33 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(summary['archive5mAtLeast40Days'],1)
             self.assertGreaterEqual(summary['archive5mMaxDays'],40)
 
+    def test_intraday_low_coverage_is_partial_and_fails_health_gate(self):
+        companies=[{'symbol':f'S{i:03d}'} for i in range(10)]
+        original=m._refresh_one_history
+        old_workers=m.os.environ.get('INTRADAY_WORKERS')
+        old_retry=m.os.environ.get('INTRADAY_RETRY_WORKERS')
+        def fake(out,symbol,minute=False):
+            return (symbol,True,None) if symbol not in {'S008','S009'} else (symbol,False,'timeout')
+        try:
+            m._refresh_one_history=fake
+            m.os.environ['INTRADAY_WORKERS']='1'
+            m.os.environ['INTRADAY_RETRY_WORKERS']='1'
+            with tempfile.TemporaryDirectory() as tmp:
+                out=pathlib.Path(tmp)
+                with self.assertRaisesRegex(RuntimeError,'below required'):
+                    m.refresh_history_group(out,companies,minute=True)
+                status=m.read(out/'intraday-status.json',{})
+                self.assertEqual(status['status'],'partial')
+                self.assertEqual(status['success'],8)
+                self.assertEqual(status['required'],9)
+                # One symbol failed twice; 9/10 meets exactly 90%, so make the gate strict test with two failures.
+        finally:
+            m._refresh_one_history=original
+            if old_workers is None:m.os.environ.pop('INTRADAY_WORKERS',None)
+            else:m.os.environ['INTRADAY_WORKERS']=old_workers
+            if old_retry is None:m.os.environ.pop('INTRADAY_RETRY_WORKERS',None)
+            else:m.os.environ['INTRADAY_RETRY_WORKERS']=old_retry
+
     def test_intraday_missing_backfill_targets_only_missing_symbols(self):
         companies=[{'symbol':'FPT'},{'symbol':'VHM'},{'symbol':'VCB'}]
         original=m._refresh_one_history
