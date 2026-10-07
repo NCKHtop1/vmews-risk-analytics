@@ -43,6 +43,11 @@ jobs:
         id: freshness
         shell: bash
         run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Code changed: force one macro rebuild even when today's heartbeat exists."
+            exit 0
+          fi
           if SNAPSHOT=/tmp/market-macro/market/macro.json python - <<'PY'
           import json, os
           from datetime import datetime, timezone, timedelta
