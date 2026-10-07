@@ -169,6 +169,28 @@ class NewsParserTests(unittest.TestCase):
         self.assertNotIn('sbv',rows[0]['topics'])
         self.assertNotEqual(rows[0].get('impactTag'),'NHNN')
 
+    def test_retained_false_nhnn_classification_is_repaired(self):
+        row={
+            'title':'Fed minutes coming tomorrow could give markets important clues about future rate hikes',
+            'summary':'Global central bank outlook.',
+            'source':'Global Central Banks',
+            'publishedAt':'2026-10-06T20:38:35+00:00',
+            'topics':['central_bank','global','macro','rates','sbv'],
+            'region':'global','impactTag':'NHNN','impactScore':80
+        }
+        fixed=m._normalize_retained_news_row(row)
+        self.assertNotIn('sbv',fixed['topics'])
+        self.assertEqual(fixed['impactTag'],'FED')
+        self.assertFalse(m._news_is_sbv(fixed))
+
+    def test_company_match_separates_fpt_from_fpt_retail(self):
+        fpt={'symbol':'FPT','name':'Công ty Cổ phần FPT'}
+        frt={'symbol':'FRT','name':'Công ty Cổ phần Bán lẻ Kỹ thuật số FPT'}
+        text='Chủ tịch FPT Retail Nguyễn Bạch Điệp vào Top 100 phụ nữ quyền lực'
+        self.assertFalse(m.company_match(fpt,text))
+        self.assertTrue(m.company_match(frt,text))
+        self.assertTrue(m.company_match(fpt,'Cổ phiếu FPT giảm 10 phiên liên tiếp'))
+
     def test_legal_document_code_dedupe_prefers_direct_over_discovery(self):
         stamp='2026-10-07T04:48:00+00:00'
         google={
@@ -191,6 +213,7 @@ class NewsParserTests(unittest.TestCase):
         self.assertIn(r"\bomo\b",market)
         self.assertIn("title=title.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
         self.assertIn("summary=summary.replace(/\\bfpt\\s+(?:retail|securities)\\b/g,' ')",market)
+        self.assertIn("if(tagged.length&&!tagged.includes(symbol))return 0",market)
 
 
 if __name__=='__main__':
