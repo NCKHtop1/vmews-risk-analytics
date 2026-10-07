@@ -10,6 +10,7 @@ on:
       - '.github/workflows/market-intraday-live.yml'
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/live_intraday_publisher.sh'
+      - 'financial-report/scripts/finalize_intraday_archive.py'
   schedule:
     - cron: '55 1 * * 1-5'  # 08:55 Vietnam
     - cron: '0 2 * * 1-5'   # 09:00 redundant morning bootstrap

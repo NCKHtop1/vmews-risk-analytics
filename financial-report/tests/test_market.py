@@ -930,7 +930,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('target<first||target>last',chart)
         self.assertIn('chart-insight-marker',chart)
         self.assertIn('registerInsights(api)',market)
-        self.assertIn("window.FinInsights?.select?.(symbol)",market)
+        self.assertRegex(market, r"window\.FinInsights\?\.select\?\.\((?:symbol|next)\)")
         self.assertIn("window.FinInsights={select,attachChart,context,open,reload:load}",insights)
         self.assertIn('Khuyến nghị và giá mục tiêu là quan điểm của',insights)
         self.assertIn('corporateEvents',research)
@@ -2481,6 +2481,31 @@ class MarketTests(unittest.TestCase):
         credit=m.normalize_vbma_dataset('credit_sector',credit)
         self.assertEqual(credit['rows'][0]['Nông, lâm, thủy sản'],1225073)
         self.assertEqual(credit['rows'][0]['Vận tải, viễn thông'],546391)
+
+    def test_macro_quality_guard_flags_implausible_gdp_without_rewriting_source(self):
+        parsed={
+            'columns':['Chỉ tiêu','Đơn vị','T1 2018','T2 2018','T4 2026'],
+            'numericColumns':['T1 2018','T2 2018','T4 2026'],
+            'rows':[{
+                'Chỉ tiêu':'Tăng trưởng GDP thực tế','Đơn vị':'% YoY',
+                'T1 2018':32.7,'T2 2018':23.1,'T4 2026':8.39
+            }]
+        }
+        out=m.normalize_vbma_dataset('macro_overview',parsed)
+        self.assertEqual(out['qualityStatus'],'warning')
+        self.assertEqual(out['qualityWarnings'][0]['code'],'GDP_GROWTH_PLAUSIBILITY')
+        self.assertEqual(out['rows'][0]['T1 2018'],32.7)
+        self.assertEqual(out['rows'][0]['T4 2026'],8.39)
+
+    def test_macro_quality_guard_accepts_plausible_dedicated_series(self):
+        parsed={
+            'columns':['Date','GDP % YoY'],
+            'numericColumns':['GDP % YoY'],
+            'rows':[{'Date':'Q3 2026','GDP % YoY':8.39}]
+        }
+        out=m.normalize_vbma_dataset('gdp_growth',parsed)
+        self.assertEqual(out['qualityStatus'],'ok')
+        self.assertEqual(out['qualityWarnings'],[])
 
     def test_macro_collection_scope_excludes_bond_and_swap_curves(self):
         self.assertEqual(set(m.VBMA_TABLES),{'macro_overview','fdi','gdp_growth','pmi','money_supply','credit_sector'})

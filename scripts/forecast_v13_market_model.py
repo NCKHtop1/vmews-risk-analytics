@@ -2358,6 +2358,21 @@ def write_artifacts(
         if str(latest.loc[symbol]["date"].date()) == forecast_as_of
     ]
     excluded_stale_symbols = sorted(set(eligible_symbols) - set(symbols))
+    current_hose_symbols = {
+        str(symbol).upper()
+        for symbol in (freshness.get("currentHOSESymbols") or [])
+        if str(symbol).strip()
+    }
+    raw_insufficient_history = {
+        str(symbol).upper()
+        for symbol in (freshness.get("insufficientHistory") or [])
+        if str(symbol).strip()
+    }
+    insufficient_current_history = sorted(
+        raw_insufficient_history & current_hose_symbols
+        if current_hose_symbols
+        else raw_insufficient_history
+    )
     minimum_current_coverage = float(os.environ.get("V42_PUBLISH_MIN_CURRENT_COVERAGE", ".90"))
     current_coverage = len(symbols) / max(1, int(freshness["currentHOSECount"]))
     if current_coverage < minimum_current_coverage:
@@ -2968,7 +2983,7 @@ def write_artifacts(
             "listedHOSE": freshness["currentHOSECount"],
             "hoseCoverage": len(symbols) / max(1, freshness["currentHOSECount"]),
             "requiredCurrentCoverage": minimum_current_coverage,
-            "insufficientHistorySymbols": freshness["insufficientHistory"],
+            "insufficientHistorySymbols": insufficient_current_history,
             "staleOrUnverifiedSymbols": excluded_stale_symbols,
             "freshSymbols": sum(snapshot["dataFreshness"] == "CURRENT" for snapshot in snapshots.values()),
             "staleSymbols": sum(snapshot["dataFreshness"] != "CURRENT" for snapshot in snapshots.values()),

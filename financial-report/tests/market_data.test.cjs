@@ -257,8 +257,8 @@ test('context help is compact, plain-language and Strategy Lab has usage guide',
  assert.match(index,/class="strategy-title-row"/);
  assert.doesNotMatch(app,/FinQuery không coi một chỉ báo riêng lẻ là đủ/);
  assert.match(app,/Xu hướng:<\/b> giá đang đi lên hay đi xuống/);
- assert.match(app,/Kéo hoặc bấm một chỉ báo/);
- assert.match(app,/Lưu strategy \+ alert/);
+ assert.match(app,/Strategy Builder & Screener/);
+ assert.match(app,/sửa rule hoặc tự tạo chiến lược/);
  assert.match(style,/width:16px;height:16px/);
  assert.match(marketCss,/technical-scanner-head \.term-info-button/);
 });
@@ -368,7 +368,7 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(index,/Số cảnh báo cần chú ý/);
  assert.match(index,/Giám sát thị trường chứng khoán Việt Nam/);
  assert.match(index,/data-platform-view="analysis">Giám sát thị trường/);
- assert.match(index,/data-platform-view="strategy">Strategy Lab/);
+ assert.match(index,/data-platform-view="strategy"[^>]*>[^<]*<span[^>]*><\/span>AI Strategy Agent|data-platform-view="strategy"[^>]*>AI Strategy Agent/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
  assert.match(risk,/badge\.title=sectorCount\+' cảnh báo rủi ro ngành đang hoạt động'/);
@@ -408,7 +408,7 @@ test('Strategy Lab is a dedicated platform view instead of an accordion inside m
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const views=fs.readFileSync(require('node:path').join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const collapse=fs.readFileSync(require('node:path').join(__dirname,'../frontend/section-collapse.js'),'utf8');
- assert.match(index,/id="strategy-builder" class="strategy-builder-section strategy-page"[^>]+hidden/);
+ assert.match(index,/id="strategy-builder"[^>]+class="[^"]*strategy-builder-section[^"]*strategy-page[^"]*"[^>]+hidden/);
  assert.match(index,/id="strategy-body" class="strategy-builder-body">/);
  assert.doesNotMatch(index,/id="strategy-toggle"|id="strategy-chevron"/);
  assert.match(views,/function showStrategy/);

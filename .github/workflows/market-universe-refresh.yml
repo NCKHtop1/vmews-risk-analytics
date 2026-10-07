@@ -3,6 +3,13 @@ name: Refresh FinQuery market universe
 # Single writer for market/universe.json.
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Refresh live HOSE Core + Liquid prices
+    branches:
+      - main
+    types:
+      - completed
   push:
     branches: [main]
     paths:
@@ -21,6 +28,7 @@ concurrency:
 
 jobs:
   universe:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -72,7 +80,33 @@ jobs:
               raise SystemExit(f'live market universe too small: {counts}')
           if int(counts.get('scannerEligible') or 0)<350:
               raise SystemExit(f'scanner universe too small: {counts}')
-          print('UNIVERSE OK',d.get('asOf'),counts)
+          symbols=d.get('symbols') or {}
+          live=[str(x).upper() for x in (d.get('liveMarketSymbols') or [])]
+          mismatches=[]
+          for symbol in live:
+              row=symbols.get(symbol) or {}
+              hp=Path('/tmp/market-universe/market/history')/(symbol+'.json')
+              if not hp.exists():
+                  mismatches.append((symbol,'history_missing'))
+                  continue
+              h=json.loads(hp.read_text())
+              bars=h.get('bars') or []
+              actual=str(h.get('lastBar') or (bars[-1].get('time') if bars and isinstance(bars[-1],dict) else ''))[:10]
+              if str(row.get('latestDate') or '')!=actual:
+                  mismatches.append((symbol,'latestDate',row.get('latestDate'),actual))
+                  continue
+              expected_fresh=actual==str(d.get('asOf') or '')
+              if bool(row.get('fresh'))!=expected_fresh:
+                  mismatches.append((symbol,'fresh',row.get('fresh'),expected_fresh))
+              expected_forecast=bool(row.get('tier') in {'CORE','LIQUID'} and row.get('dataSufficient') and expected_fresh)
+              if bool(row.get('forecastEligible'))!=expected_forecast:
+                  mismatches.append((symbol,'forecastEligible',row.get('forecastEligible'),expected_forecast))
+          if mismatches:
+              raise SystemExit(f'universe/history mismatch sample={mismatches[:20]}')
+          row_forecast=sum(1 for row in symbols.values() if row.get('forecastEligible'))
+          if row_forecast!=int(counts.get('forecastEligible') or 0):
+              raise SystemExit(f'forecastEligible count mismatch: rows={row_forecast} counts={counts.get("forecastEligible")}')
+          print('UNIVERSE OK',d.get('asOf'),counts,'liveHistoryChecked',len(live))
           PY
 
       - name: Publish universe only

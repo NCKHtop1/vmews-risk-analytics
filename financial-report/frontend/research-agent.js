@@ -112,11 +112,16 @@ function newsTool(){
 }
 function macroTool(question){
  const m=root.FinMacro?.context?.()||null;if(!m)return null;
- const datasets=m.datasets||{},terms=norm(question).split(' ').filter(x=>x.length>2&&!STOP.has(x));let selected=[];
+ const datasets=m.datasets||{},generic=new Set(['macro','kinh','hien','tai','phan','tich','boi','canh','tong','quan']);
+ const terms=norm(question).split(' ').filter(x=>x.length>2&&!STOP.has(x)&&!generic.has(x));let selected=[];
  for(const [id,ds] of Object.entries(datasets)){const hay=norm(id+' '+(ds?.name||'')+' '+(ds?.title||''));const score=terms.reduce((n,t)=>n+(hay.includes(t)?1:0),0);if(score)selected.push({id,score,ds});}
- if(!selected.length)selected=Object.entries(datasets).slice(0,3).map(([id,ds])=>({id,score:0,ds}));
+ if(!selected.length){
+  const canonical=['gdp_growth','pmi','money_supply','fdi'];
+  selected=canonical.filter(id=>datasets[id]).map(id=>({id,score:0,ds:datasets[id]}));
+  if(!selected.length)selected=Object.entries(datasets).slice(0,3).map(([id,ds])=>({id,score:0,ds}));
+ }
  selected.sort((a,b)=>b.score-a.score);
- return{checkedAt:m.checkedAt||null,datasets:selected.slice(0,4).map(({id,ds})=>({id,name:ds?.name||ds?.title||id,source:ds?.source||null,numericColumns:ds?.numericColumns||[],rows:trimArray((ds?.rows||[]).slice(-6),6)})),externalAssessments:trimArray(m.corporateEsg?.externalAssessments||[],6)};
+ return{checkedAt:m.checkedAt||null,datasets:selected.slice(0,4).map(({id,ds})=>({id,name:ds?.name||ds?.title||id,source:ds?.source||null,qualityStatus:ds?.qualityStatus||'ok',qualityWarnings:trimArray(ds?.qualityWarnings||[],6),numericColumns:ds?.numericColumns||[],rows:trimArray((ds?.rows||[]).slice(-6),6)})),externalAssessments:trimArray(m.corporateEsg?.externalAssessments||[],6)};
 }
 function forecastTool(){
  const m=root.FinancialMarket?.context?.()||{};const f=m.forecast||root.FinForecast?.context?.()||null;

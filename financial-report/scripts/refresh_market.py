@@ -1914,6 +1914,8 @@ def intraday_archive_summary(out, symbols):
         latest.append(days[-1])
     ordered = sorted(day_counts)
     median_days = ordered[len(ordered)//2] if ordered else 0
+    latest_day = max(latest) if latest else None
+    latest_coverage = sum(1 for day in latest if day == latest_day) if latest_day else 0
     return {
         'archive5mAvailable': available,
         'archive5mUniverse': len(symbols),
@@ -1922,7 +1924,9 @@ def intraday_archive_summary(out, symbols):
         'archive5mMaxDays': max(day_counts) if day_counts else 0,
         'archive5mAtLeast40Days': at_least_40,
         'archive5mEarliestDay': min(first) if first else None,
-        'archive5mLatestDay': max(latest) if latest else None,
+        'archive5mLatestDay': latest_day,
+        'archive5mLatestDayCoverage': latest_coverage,
+        'archive5mLatestDayCoveragePct': round(latest_coverage / len(symbols) * 100, 1) if symbols else 100.0,
     }
 
 
@@ -2195,6 +2199,50 @@ def parse_vbma_table(raw):
     return {'columns': unique, 'numericColumns': numeric, 'rows': data}
 
 
+def macro_quality_warnings(key, parsed):
+    """Flag semantic outliers without rewriting upstream macro observations."""
+    rows, columns = parsed.get('rows', []), parsed.get('columns', [])
+    warnings = []
+    numeric_columns = parsed.get('numericColumns') or [
+        name for name in columns
+        if any(isinstance(row.get(name), (int, float)) and not isinstance(row.get(name), bool) for row in rows)
+    ]
+
+    def numeric_cells(row):
+        return [
+            (column, float(row[column]))
+            for column in numeric_columns
+            if isinstance(row.get(column), (int, float)) and not isinstance(row.get(column), bool)
+        ]
+
+    def row_text(row):
+        return ' '.join(str(row.get(column) or '') for column in columns[:3]).casefold()
+
+    if key in {'macro_overview', 'gdp_growth'}:
+        for index, row in enumerate(rows):
+            text = row_text(row)
+            if key == 'gdp_growth' or ('gdp' in text and ('tăng trưởng' in text or 'growth' in text)):
+                outliers = [(column, value) for column, value in numeric_cells(row) if abs(value) > 20]
+                if outliers:
+                    warnings.append({
+                        'code': 'GDP_GROWTH_PLAUSIBILITY',
+                        'row': index,
+                        'message': 'Chuỗi tăng trưởng GDP có giá trị ngoài ngưỡng kiểm tra ±20%; giữ nguyên dữ liệu nguồn nhưng không dùng mặc định cho AI.',
+                        'outliers': [{'column': column, 'value': value} for column, value in outliers[:12]],
+                    })
+    if key == 'pmi':
+        for index, row in enumerate(rows):
+            outliers = [(column, value) for column, value in numeric_cells(row) if value < 0 or value > 100]
+            if outliers:
+                warnings.append({
+                    'code': 'PMI_RANGE',
+                    'row': index,
+                    'message': 'PMI nằm ngoài miền 0–100; giữ nguyên dữ liệu nguồn để kiểm tra.',
+                    'outliers': [{'column': column, 'value': value} for column, value in outliers[:12]],
+                })
+    return warnings
+
+
 def normalize_vbma_dataset(key, parsed):
     rows, columns = parsed.get('rows', []), parsed.get('columns', [])
     if key == 'money_supply':
@@ -2213,6 +2261,9 @@ def normalize_vbma_dataset(key, parsed):
                 elif isinstance(value, float) and abs(value) < 10000 and abs(value * 1000 - round(value * 1000)) < 1e-6:
                     row[column] = int(round(value * 1000))
     parsed['numericColumns'] = [name for name in columns if any(isinstance(row.get(name), (int, float)) and not isinstance(row.get(name), bool) for row in rows)]
+    quality_warnings = macro_quality_warnings(key, parsed)
+    parsed['qualityStatus'] = 'warning' if quality_warnings else 'ok'
+    parsed['qualityWarnings'] = quality_warnings
     return parsed
 
 
@@ -2334,7 +2385,11 @@ def macro(out, companies=None):
             parsed = normalize_vbma_dataset(key, parse_vbma_table(request(url)))
             parsed.update({'id': key, 'title': title, 'source': 'VBMA', 'sourceUrl': url, 'collectedAt': now(), 'status': 'ok'})
             datasets[key] = parsed
-            sources.append({'id': key, 'provider': 'VBMA', 'url': url, 'status': 'ok', 'rows': len(parsed['rows'])})
+            sources.append({
+                'id': key, 'provider': 'VBMA', 'url': url, 'status': 'ok',
+                'rows': len(parsed['rows']), 'qualityStatus': parsed.get('qualityStatus', 'ok'),
+                'qualityWarnings': len(parsed.get('qualityWarnings') or []),
+            })
         except Exception as e:
             retained = previous.get('datasets', {}).get(key)
             if retained:
