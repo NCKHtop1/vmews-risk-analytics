@@ -165,7 +165,14 @@ def audit_market_bar_files(report: Audit, market_dir: Path, universe, now, quote
         report.check(not times or times[-1]<=quote_day, "MARKET_HISTORY_FUTURE", f"{symbol}:{times[-1] if times else None}>{quote_day}")
         expected_latest=str(meta.get("latestDate") or "")[:10]
         if expected_latest:
-            report.check(bool(times) and times[-1]>=expected_latest, "MARKET_HISTORY_UNIVERSE_ALIGNMENT", f"{symbol}:{times[-1] if times else None}/{expected_latest}")
+            actual_latest=times[-1] if times else ""
+            report.check(bool(times) and actual_latest==expected_latest, "MARKET_HISTORY_UNIVERSE_ALIGNMENT", f"{symbol}:{actual_latest or None}/{expected_latest}")
+            expected_fresh=bool(actual_latest and actual_latest==quote_day)
+            if "fresh" in meta:
+                report.check(bool(meta.get("fresh"))==expected_fresh, "MARKET_UNIVERSE_FRESH_FLAG", f"{symbol}:{meta.get('fresh')}/{expected_fresh}")
+            if "forecastEligible" in meta:
+                expected_forecast=bool(meta.get("tier") in {"CORE","LIQUID"} and meta.get("dataSufficient") and expected_fresh)
+                report.check(bool(meta.get("forecastEligible"))==expected_forecast, "MARKET_UNIVERSE_FORECAST_FLAG", f"{symbol}:{meta.get('forecastEligible')}/{expected_forecast}")
         report.check(str(data.get("lastBar") or "")[:10]==(times[-1] if times else ""), "MARKET_HISTORY_LASTBAR", symbol)
         if bars and all(valid_ohlc(row) for row in bars) and times==sorted(set(times)):
             history_valid+=1
@@ -253,6 +260,52 @@ def solution_live_freshness(data, now):
     ok = source_age <= 96 * 60
     return ok, "LAST_COMPLETED_SESSION", f"sourceAge={source_age:.1f}"
 
+
+
+def audit_intraday_archive_status(report: Audit, status, live_symbols, qday, now, qstamp):
+    """Require the append-only 5m replay archive after the current HOSE session is safely complete."""
+    if qstamp is None:
+        return
+    local = now.astimezone(VN_TZ)
+    mins = local.hour * 60 + local.minute
+    quote_local = qstamp.astimezone(VN_TZ)
+    post_close = (
+        is_trading_day(local.date(), require_certified=True)
+        and mins >= 15 * 60 + 20
+        and quote_local.date() == local.date()
+    )
+    if not post_close:
+        return
+    required = math.ceil(len(live_symbols) * .90) if live_symbols else 0
+    latest = str(status.get("archive5mLatestDay") or "")
+    coverage = int(status.get("archive5mLatestDayCoverage") or 0)
+    report.check(latest == qday, "MARKET_INTRADAY_ARCHIVE_SESSION", f"{latest}/{qday}")
+    report.check(coverage >= required, "MARKET_INTRADAY_ARCHIVE_COVERAGE", f"{coverage}/{len(live_symbols)} required={required}")
+    report.check(str(status.get("archiveFinalizedSession") or "") == qday, "MARKET_INTRADAY_ARCHIVE_FINALIZED", status.get("archiveFinalizedSession"))
+
+
+def audit_macro_semantics(report: Audit, macro):
+    """Fail closed when the canonical macro datasets needed by AI are missing or semantically unsafe."""
+    datasets = macro.get("datasets") or {}
+    for key in ("gdp_growth", "pmi", "money_supply", "fdi"):
+        dataset = datasets.get(key) or {}
+        report.check(
+            dataset.get("status") in {"ok", "cached"} and bool(dataset.get("rows")),
+            "MARKET_MACRO_CANONICAL_DATASET",
+            f"{key}:{dataset.get('status')} rows={len(dataset.get('rows') or [])}",
+        )
+        report.check(
+            dataset.get("qualityStatus") == "ok",
+            "MARKET_MACRO_CANONICAL_QUALITY",
+            f"{key}:{dataset.get('qualityStatus')} warnings={len(dataset.get('qualityWarnings') or [])}",
+        )
+    overview = datasets.get("macro_overview") or {}
+    if overview.get("qualityStatus") == "warning":
+        report.check(
+            bool(overview.get("qualityWarnings")),
+            "MARKET_MACRO_WARNING_EVIDENCE",
+            f"warnings={len(overview.get('qualityWarnings') or [])}",
+        )
 
 def audit_market(report: Audit, market_dir: Path, now):
     required = [
@@ -344,6 +397,8 @@ def audit_market(report: Audit, market_dir: Path, now):
             else:
                 report.warn(abs(status_expected-len(session["expected"])) <= 5 and abs(status_fresh-len(session["fresh"])) <= 5, "MARKET_INTRADAY_GENERATION_SKEW", f"status={status_fresh}/{status_expected} current={len(session['fresh'])}/{len(session['expected'])} statusSource={status.get('sessionQuoteSourceTime')} currentSource={quotes.get('latestSourceTime')}")
 
+    audit_intraday_archive_status(report, status, live_symbols, qday, now, qstamp)
+
     news = docs.get("news-latest.json") or {}
     news_items = news.get("items") or []
     health = news.get("sourceHealth") or {}
@@ -383,6 +438,7 @@ def audit_market(report: Audit, market_dir: Path, now):
     report.check(macro.get("status") == "ok" and mstamp is not None, "MARKET_MACRO_STATUS", macro.get("status"))
     if mstamp and qstamp:
         report.check(mstamp.astimezone(VN_TZ).date() >= qstamp.astimezone(VN_TZ).date(), "MARKET_MACRO_SESSION", (mstamp, qstamp))
+    audit_macro_semantics(report, macro)
 
     esg = docs.get("esg-status.json") or {}
     report.check(esg.get("status") == "ok", "MARKET_ESG_STATUS", esg.get("status"))
