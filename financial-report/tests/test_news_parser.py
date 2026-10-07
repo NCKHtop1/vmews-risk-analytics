@@ -115,6 +115,41 @@ class NewsParserTests(unittest.TestCase):
         self.assertEqual(picked[0]['publishedAt'],'2026-10-07T04:48:00+00:00')
         self.assertEqual(picked[0]['timePrecision'],'minute')
 
+    def test_retained_false_sbv_metadata_is_migrated(self):
+        legacy={
+            'title':'Fed minutes coming tomorrow could give markets important clues about future rate hikes',
+            'summary':'Global central bank outlook',
+            'source':'Global Central Banks',
+            'publishedAt':'2026-10-06T20:38:35+00:00',
+            'topics':['central_bank','global','macro','rates','sbv'],
+            'region':'global','impactTag':'NHNN','impactScore':88,'marketMoving':True,
+        }
+        cleaned=m._sanitize_retained_news_row(legacy)
+        self.assertNotIn('sbv',cleaned['topics'])
+        self.assertEqual(cleaned['impactTag'],'FED')
+        self.assertEqual(cleaned['metadataMigrated'],'sbv-token-boundary-v2')
+
+        for title,source in [
+            ('Conocophillips CEO Says Oil Price Floor Likely','Moomoo'),
+            ('Iraq moves to give state oil marketer SOMO greater flexibility in crude sales','middle-east-online.com'),
+        ]:
+            row={**legacy,'title':title,'source':source,'topics':['finance','global','market','sbv'],'impactTag':'NHNN'}
+            migrated=m._sanitize_retained_news_row(row)
+            self.assertNotIn('sbv',migrated['topics'],(title,migrated))
+            self.assertNotEqual(migrated['impactTag'],'NHNN',(title,migrated))
+
+    def test_retained_real_sbv_metadata_is_preserved(self):
+        row={
+            'title':'NHNN bơm ròng qua OMO',
+            'summary':'Ngân hàng Nhà nước điều tiết thanh khoản',
+            'source':'CafeF','publishedAt':'2026-10-07T06:00:00+00:00',
+            'topics':['banking','sbv'],'impactTag':'NHNN'
+        }
+        cleaned=m._sanitize_retained_news_row(row)
+        self.assertIn('sbv',cleaned['topics'])
+        self.assertEqual(cleaned['impactTag'],'NHNN')
+        self.assertNotIn('metadataMigrated',cleaned)
+
     def test_retention_rejects_invalid_legacy_direct_timestamp_contract(self):
         current=self.current
         bad={
