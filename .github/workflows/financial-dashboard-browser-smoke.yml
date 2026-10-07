@@ -261,6 +261,7 @@ jobs:
                   newsCheckedAt:m.newsCheckedAt,
                   newsLiveFallback:m.newsLiveFallback,
                   newsCount:(m.news||[]).length+(m.marketNews||[]).length,
+                  companyNews:(m.news||[]).map(x=>({title:x.title||'',symbols:x.symbols||[],source:x.source||''})),
                   financial:Boolean(window.FinancialReportContext.raw()),
                   ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180),
                   strategyCoverage:window.FinStrategyBuilder?.context?.()?.snapshot?.coverage||0,
@@ -282,6 +283,43 @@ jobs:
                   raise AssertionError(f'Strategy Lab context missing or incomplete: {snapshot}')
               if int(snapshot.get('strategyLiveRows') or 0)>=50 and int(snapshot.get('strategyLiveComparators') or 0)<5:
                   raise AssertionError(f'Live Strategy Lab previous/current comparator collapsed: {snapshot}')
+
+              company_bundle=driver.execute_async_script("""
+                const done=arguments[arguments.length-1];
+                window.FinMarketData.get('news-company-latest.json')
+                  .then(x=>done({checkedAt:x.checkedAt,companyCounts:x.companyCounts||{},items:(x.items||[]).length}))
+                  .catch(e=>done({error:String(e)}));
+              """)
+              if company_bundle.get('error'):
+                  raise AssertionError(f'Company news bundle unavailable: {company_bundle}')
+              backend_fpt=int((company_bundle.get('companyCounts') or {}).get('FPT') or 0)
+              browser_company=snapshot.get('companyNews') or []
+              if backend_fpt>0 and len(browser_company)<1:
+                  raise AssertionError(f'FPT company-news filter is blank despite backend coverage={backend_fpt}: {snapshot}')
+              false_frt=[
+                  row for row in browser_company
+                  if re.search(r'\bFPT\s+(?:Retail|Securities)\b',str(row.get('title') or ''),re.I)
+                  and 'FPT' not in [str(x).upper() for x in (row.get('symbols') or [])]
+              ]
+              if false_frt:
+                  raise AssertionError(f'FRT/FPTS leaked into FPT company-news filter: {false_frt}')
+
+              news_bundle=driver.execute_async_script("""
+                const done=arguments[arguments.length-1];
+                window.FinMarketData.get('news-latest.json')
+                  .then(x=>done({checkedAt:x.checkedAt,items:(x.items||[]).map(r=>({title:r.title||'',source:r.source||'',region:r.region||'',topics:r.topics||[],impactTag:r.impactTag||''}))}))
+                  .catch(e=>done({error:String(e)}));
+              """)
+              if news_bundle.get('error'):
+                  raise AssertionError(f'Latest news bundle unavailable: {news_bundle}')
+              false_sbv=[
+                  row for row in (news_bundle.get('items') or [])
+                  if row.get('region')=='global'
+                  and 'sbv' in (row.get('topics') or [])
+                  and re.search(r'tomorrow|\bSOMO\b|Moomoo',str(row.get('title') or '')+' '+str(row.get('source') or ''),re.I)
+              ]
+              if false_sbv:
+                  raise AssertionError(f'Global OMO-substring false positives leaked into NHNN: {false_sbv[:5]}')
 
               watch=driver.execute_async_script("""
                 const done=arguments[arguments.length-1];
