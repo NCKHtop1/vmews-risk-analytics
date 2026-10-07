@@ -228,12 +228,12 @@ def now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def request(url, payload=None):
+def request(url, payload=None, timeout=25):
     headers = {'User-Agent': 'FinQuery/1.0 public financial dashboard', 'Accept': 'application/json, application/xml, text/xml, */*'}
     if payload is not None:
         headers.update({'Content-Type': 'application/json', 'Referer': 'https://trading.vietcap.com.vn/', 'Origin': 'https://trading.vietcap.com.vn'})
     req = Request(url, data=json.dumps(payload).encode() if payload is not None else None, headers=headers)
-    with urlopen(req, timeout=25) as response:
+    with urlopen(req, timeout=timeout) as response:
         return response.read()
 
 
@@ -2590,7 +2590,7 @@ def _luatvietnam_detail_timestamp(raw, current):
 
 def _enrich_luatvietnam_row(row, current):
     try:
-        dt, basis, precision = _luatvietnam_detail_timestamp(request(row['url']), current)
+        dt, basis, precision = _luatvietnam_detail_timestamp(request(row['url'], timeout=8), current)
         if dt is None:
             return row, False
         enriched = dict(row)
@@ -2605,22 +2605,30 @@ def _enrich_luatvietnam_row(row, current):
 
 def _fetch_luatvietnam_direct(companies, current):
     all_rows, sources = [], []
-    for source in LUATVIETNAM_DIRECT_SOURCES:
+
+    def fetch_listing(source):
         try:
-            rows, health = _parse_luatvietnam_listing(request(source['url']), source, companies, current)
+            return _parse_luatvietnam_listing(request(source['url'], timeout=10), source, companies, current)
         except Exception as e:
-            rows, health = [], {
+            return [], {
                 'id': source['id'], 'name': source['name'], 'url': source['url'],
                 'status': 'error', 'parser': 'luatvietnam-listing-v1',
                 'parserHealthy': False, 'items': 0, 'error': str(e)
             }
-        all_rows.extend(rows)
-        sources.append(health)
+
+    with ThreadPoolExecutor(max_workers=len(LUATVIETNAM_DIRECT_SOURCES)) as pool:
+        futures = {pool.submit(fetch_listing, source): source for source in LUATVIETNAM_DIRECT_SOURCES}
+        for future in as_completed(futures):
+            rows, health = future.result()
+            all_rows.extend(rows)
+            sources.append(health)
+    source_order = {source['id']: i for i, source in enumerate(LUATVIETNAM_DIRECT_SOURCES)}
+    sources.sort(key=lambda source: source_order.get(source.get('id'), 999))
 
     targets = [
         row for row in sorted(_unique_news(all_rows), key=lambda r: r.get('publishedAt') or '', reverse=True)
         if row.get('timePrecision') != 'minute'
-    ][:12]
+    ][:8]
     replacements, detail_ok = {}, 0
     if targets:
         with ThreadPoolExecutor(max_workers=min(4, len(targets))) as pool:
