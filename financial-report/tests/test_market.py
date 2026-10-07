@@ -27,6 +27,18 @@ esm = importlib.util.module_from_spec(esg_spec)
 esg_spec.loader.exec_module(esm)
 
 class MarketTests(unittest.TestCase):
+    def test_retained_daily_history_rejects_structurally_invalid_ohlc(self):
+        valid={"time":"2026-10-07","open":100,"high":110,"low":95,"close":105,"volume":1000}
+        high_below_close={**valid,"high":104}
+        low_above_open={**valid,"low":101}
+        negative_volume={**valid,"volume":-1}
+        weekend={**valid,"time":"2026-10-04"}
+        self.assertTrue(m.valid_stored_daily_bar(valid))
+        self.assertFalse(m.valid_stored_daily_bar(high_below_close))
+        self.assertFalse(m.valid_stored_daily_bar(low_above_open))
+        self.assertFalse(m.valid_stored_daily_bar(negative_volume))
+        self.assertFalse(m.valid_stored_daily_bar(weekend))
+
     def test_corporate_esg_registry_covers_vn100_banks_and_external_providers(self):
         cfg=json.loads((ROOT/'config/esg_sources.json').read_text())
         required={'ACB','BID','CTG','EIB','HDB','LPB','MBB','MSB','NAB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB'}
