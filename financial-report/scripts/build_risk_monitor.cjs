@@ -323,8 +323,7 @@ function buildSectorAlerts(sectors,previous,sourceTime){
    round(s.declinePct,1)+'% mã trong ngành đang giảm',
    'thay đổi trung vị '+(Number(s.medianChangePct)>0?'+':'')+round(s.medianChangePct,2)+'%'
   ];
-  if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('lịch sử kiểm tra cho thấy '+round(precision*100,1)+'% lần chạm ngưỡng rơi vào vùng giảm xấu trong 3 phiên sau, so với mức thông thường '+round(base*100,1)+'% (cao hơn '+round(lift,2)+' lần)');
-  else evidence.push('đây là cảnh báo trạng thái căng thẳng; chưa coi là dự báo ngành sẽ giảm tiếp');
+  if(bt.continuationValidated&&Number.isFinite(lift)&&Number.isFinite(precision)&&Number.isFinite(base))evidence.push('Backtest T+3: '+round(precision*100,1)+'% so với nền '+round(base*100,1)+'%; lift '+round(lift,2)+'x');
   alerts.push({
    id,title:s.label+(aboveThreshold?' chạm ngưỡng căng thẳng lịch sử':' vẫn trong vùng cảnh báo'),score:round(s.score,1),
    level:{key:Number(s.score)>=enter+10?'high':'watch',label:Number(s.score)>=enter+10?'Cao':'Cần theo dõi',tone:Number(s.score)>=enter+10?'red':'yellow'},
