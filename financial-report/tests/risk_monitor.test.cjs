@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
+const {buildRiskSnapshot,riskInputSignature,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
 const {calibrateSector,stressScore}=require('../scripts/build_sector_risk_calibration.cjs');
 const {rawComponents,sectorRowsV2,sessionProgress,calibrationFromObservations,calibratedComponents,overallFromComponents:overallV2}=require('../scripts/risk_model_v2.cjs');
 const {bucketFor,resample5m,fullSessionRows}=require('../scripts/build_intraday_risk_replay.cjs');
@@ -73,6 +73,18 @@ test('risk snapshot refuses a different strategy generation',()=>{
  strategy.sourceTime='2026-10-05T07:30:00.000Z';
  assert.throws(()=>buildRiskSnapshot(quotes,strategy),/not aligned/);
 });
+
+test('risk input signature changes when live membership changes at the same source time',()=>{
+ const {quotes,strategy}=fixture();
+ const before=riskInputSignature(quotes,strategy);
+ quotes.quotes.ACB.status='retained';
+ const after=riskInputSignature(quotes,strategy);
+ assert.notEqual(after,before);
+ const out=buildRiskSnapshot(quotes,strategy,null,'2026-10-05T07:45:10.000Z');
+ assert.equal(out.coverage.quotes,symbols.length-1);
+ assert.equal(out.inputSignature,after);
+});
+
 
 test('timeline is deduplicated by market source time',()=>{
  const {quotes,strategy}=fixture({stress:true});
