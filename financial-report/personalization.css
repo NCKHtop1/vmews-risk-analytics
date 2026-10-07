@@ -1,0 +1,40 @@
+/* FinQuery account and personal home */
+.finquery-account{display:flex;align-items:center;gap:10px;margin-left:auto;position:relative}
+.finquery-account[hidden]{display:none!important}
+.finquery-account-profile{display:flex;align-items:center;gap:8px;border:1px solid #dfe5ef;background:#fff;border-radius:10px;padding:6px 9px;cursor:pointer;color:#30435f;font:inherit;font-size:12px;font-weight:700}
+.finquery-account-profile img{width:26px;height:26px;border-radius:50%;object-fit:cover;background:#eef2f8}
+.finquery-account-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:1500;min-width:190px;padding:6px;background:#fff;border:1px solid #dfe5ef;border-radius:12px;box-shadow:0 16px 40px rgba(44,59,87,.16)}
+.finquery-account-menu[hidden]{display:none!important}
+.finquery-account-menu button{width:100%;border:0;background:transparent;color:#344760;text-align:left;padding:9px 10px;border-radius:8px;font:inherit;font-size:11px;cursor:pointer}
+.finquery-account-menu button:hover{background:#f3f6fb}
+.finquery-google-slot{min-height:32px;display:flex;align-items:center}
+.finquery-personal-home{margin:18px auto 24px;max-width:1480px;padding:0 28px}
+.finquery-personal-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:12px}
+.finquery-personal-head h2{margin:0;font-size:24px;line-height:1.2;color:#263755;letter-spacing:-.3px}
+.finquery-personal-status{margin-top:5px;color:#718098;font-size:11px}
+.finquery-personal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.finquery-personal-card{border:1px solid #e1e7f0;background:#fff;border-radius:14px;padding:14px 15px;min-height:108px;box-shadow:0 4px 18px rgba(36,55,88,.035)}
+.finquery-personal-card[hidden]{display:none!important}
+.finquery-personal-card h3{margin:0 0 10px;font-size:12px;color:#334762}
+.finquery-personal-list{display:grid;gap:2px}
+.finquery-personal-row{display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#3e526c;padding:8px 0;border-top:1px solid #eef2f6}
+.finquery-personal-row:first-child{border-top:0;padding-top:2px}
+.finquery-personal-row:hover .finquery-personal-symbol{color:#315ac8}
+.finquery-personal-main{min-width:0}
+.finquery-personal-symbol{display:block;font-weight:800;font-size:12px;color:#2e4059}
+.finquery-personal-detail{display:block;margin-top:2px;font-size:10px;color:#74839a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finquery-personal-value{flex:none;font-size:10px;font-weight:700;color:#51627b}
+.finquery-personal-value.positive{color:#16865c}
+.finquery-personal-value.negative{color:#c84c4c}
+.finquery-personal-empty{display:none}
+@media(max-width:980px){
+  .header{gap:10px}
+  .header nav{display:none}
+  .finquery-personal-grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .finquery-personal-home{padding:0 12px;margin-top:12px}
+  .finquery-personal-head h2{font-size:20px}
+  .finquery-account-profile span{display:none}
+  .finquery-account-profile{padding:5px}
+}
