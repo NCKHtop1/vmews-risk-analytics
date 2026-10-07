@@ -1751,15 +1751,22 @@ class MarketTests(unittest.TestCase):
             quote_time=base.isoformat()
             fresh_bar=(base-timedelta(minutes=5)).isoformat()
             old_bar=(base-timedelta(days=1)).isoformat()
-            m.write(out/'quotes.json',{'quotes':{
-                'AAA':{'symbol':'AAA','status':'ok','sourceTime':quote_time,'price':10},
-                'BBB':{'symbol':'BBB','status':'ok','sourceTime':quote_time,'price':20},
-                'CCC':{'symbol':'CCC','status':'retained','sourceTime':old_bar,'price':30},
-            }})
+            m.write(out/'quotes.json',{
+                'latestSourceTime':quote_time,'checkedAt':quote_time,'expected':3,'coverage':2,
+                'quotes':{
+                    'AAA':{'symbol':'AAA','status':'ok','sourceTime':quote_time,'price':10},
+                    'BBB':{'symbol':'BBB','status':'ok','sourceTime':quote_time,'price':20},
+                    'CCC':{'symbol':'CCC','status':'retained','sourceTime':old_bar,'price':30},
+                }
+            })
             m.write(out/'intraday/AAA.json',{'symbol':'AAA','lastBar':fresh_bar,'bars':[{'time':fresh_bar}]})
             m.write(out/'intraday/BBB.json',{'symbol':'BBB','lastBar':old_bar,'bars':[{'time':old_bar}]})
             m.write(out/'intraday/CCC.json',{'symbol':'CCC','lastBar':old_bar,'bars':[{'time':old_bar}]})
             summary=m.intraday_session_summary(out,['AAA','BBB','CCC'])
+            self.assertEqual(summary['sessionQuoteSourceTime'],quote_time)
+            self.assertEqual(summary['sessionQuoteCheckedAt'],quote_time)
+            self.assertEqual(summary['sessionQuoteExpected'],3)
+            self.assertEqual(summary['sessionQuoteCoverage'],2)
             self.assertEqual(summary['sessionExpected'],2)
             self.assertEqual(summary['sessionRequired'],2)
             self.assertEqual(summary['sessionFresh'],1)
