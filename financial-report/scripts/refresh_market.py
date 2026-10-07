@@ -382,8 +382,6 @@ def normalize_kbs_board(payload, symbols, collected, verified_source_time):
             'source': 'KBS', 'unit': 'VND', 'status': 'ok',
             'sourceTimeBasis': 'current_session_probe_with_symbol_trade'
         }
-    if not out:
-        raise ValueError('No valid prices in KBS price-board response')
     return out
 
 
@@ -397,6 +395,8 @@ def kbs_current_board(symbols, collected):
         rows.update(normalize_kbs_board(payload, batch, collected, verified_source_time))
     for row in rows.values():
         row['sessionProbeSymbol'] = probe_symbol
+    if not rows:
+        raise ValueError('No valid prices in KBS price-board response')
     return rows
 
 
