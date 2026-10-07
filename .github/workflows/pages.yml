@@ -125,6 +125,17 @@ jobs:
           assert len(strategy_live)<50 or len(strategy_comparators)>=5,(len(strategy_live),len(strategy_comparators))
           assert risk.get('status')=='ok',risk
           assert str(risk.get('sourceTime') or '')==str(quotes.get('latestSourceTime') or ''),(risk.get('sourceTime'),quotes.get('latestSourceTime'))
+          assert risk.get('inputSignature'),('risk input signature missing',risk.get('version'))
+          risk_day=qday.isoformat()
+          eligible_risk=sum(
+              1 for symbol,q in (quotes.get('quotes') or {}).items()
+              if q.get('status')!='retained'
+              and (strategy.get('symbols') or {}).get(symbol,{}).get('cadence')=='LIVE_15M'
+              and str((strategy.get('symbols') or {}).get(symbol,{}).get('barDate') or '')==risk_day
+              and isinstance(q.get('price'),(int,float)) and float(q.get('price') or 0)>0
+              and isinstance(q.get('changePct'),(int,float))
+          )
+          assert int((risk.get('coverage') or {}).get('quotes') or 0)==eligible_risk,(risk.get('coverage'),eligible_risk)
           assert int((risk.get('coverage') or {}).get('quotes') or 0)>=int(quotes.get('expected') or 0)*.90,risk.get('coverage')
           assert 0<=float((risk.get('overall') or {}).get('score'))<=100,risk.get('overall')
           assert len(risk.get('timeline') or [])>=2,risk.get('timeline')
