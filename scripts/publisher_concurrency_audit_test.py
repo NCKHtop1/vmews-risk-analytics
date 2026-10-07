@@ -4,10 +4,13 @@ import unittest
 
 from publisher_concurrency_audit import (
     LOCK_GROUP,
+    DATA_BRANCH,
     concurrency_contract,
     is_direct_main_writer,
     push_can_advance_main,
     push_commands,
+    pushes_to_branch,
+    stages_whole_market_tree,
     workflow_can_run_main,
 )
 
@@ -105,6 +108,34 @@ concurrency:
         ok, problems = concurrency_contract(text)
         self.assertFalse(ok)
         self.assertTrue(any("cancel-in-progress" in item for item in problems))
+
+    def test_financial_market_data_writer_cannot_stage_entire_market_tree(self) -> None:
+        text = f"""
+permissions:
+  contents: write
+jobs:
+  publish:
+    steps:
+      - run: |
+          git add --sparse market
+          git push origin HEAD:refs/heads/{DATA_BRANCH}
+"""
+        self.assertTrue(pushes_to_branch(text, DATA_BRANCH))
+        self.assertTrue(stages_whole_market_tree(text))
+
+    def test_explicit_data_branch_files_do_not_trip_broad_stage_guard(self) -> None:
+        text = f"""
+permissions:
+  contents: write
+jobs:
+  publish:
+    steps:
+      - run: |
+          git add --sparse market/news.json market/news-latest.json
+          git push origin HEAD:refs/heads/{DATA_BRANCH}
+"""
+        self.assertTrue(pushes_to_branch(text, DATA_BRANCH))
+        self.assertFalse(stages_whole_market_tree(text))
 
     def test_missing_or_single_queue_cannot_drop_pending_releases(self) -> None:
         for queue in ("", "  queue: single\n"):
