@@ -11,15 +11,31 @@ function clone(v){try{return JSON.parse(JSON.stringify(v));}catch{return null;}}
 function pick(obj,keys){const out={};for(const k of keys)if(obj&&obj[k]!==undefined)out[k]=obj[k];return out;}
 function trimArray(v,n=8){return Array.isArray(v)?v.slice(0,n):[];}
 function summarizeNews(items,n=6){return trimArray(items,n).map(x=>pick(x,['title','source','publisher','publishedAt','date','url','summary','symbols','topics']));}
-function activeSymbol(){return String(root.FinancialReportContext?.raw?.()?.symbol||root.FinancialMarket?.context?.()?.symbol||'').toUpperCase();}
-function resolveTargetSymbol(question){try{return String(root.FinancialReportContext?.resolveSymbol?.(question)||'').toUpperCase();}catch{return'';}}
+function activeSymbol(){return String(root.FinancialMarket?.context?.()?.symbol||root.FinancialReportContext?.raw?.()?.symbol||'').toUpperCase();}
+function marketCompanies(){try{return root.FinancialMarket?.alertContext?.()?.companies||[];}catch{return[];}}
+function resolveTargetSymbol(question){
+ try{const f=String(root.FinancialReportContext?.resolveSymbol?.(question)||'').toUpperCase();if(f)return f;}catch{}
+ const raw=String(question||''),upper=raw.toUpperCase(),companies=marketCompanies(),symbols=new Set(companies.map(x=>String(x.symbol||'').toUpperCase()).filter(Boolean));
+ const tokens=upper.match(/(^|[^A-Z0-9])([A-Z]{3})(?=[^A-Z0-9]|$)/g)||[];
+ for(const token of tokens){const symbol=token.replace(/[^A-Z]/g,'');if(symbols.has(symbol))return symbol;}
+ const q=norm(raw);const hit=companies.find(x=>{const name=norm(x.name||'');return name.length>=6&&q.includes(name);});
+ return String(hit?.symbol||'').toUpperCase();
+}
 async function prepare(question){
  const requestedSymbol=resolveTargetSymbol(question),before=activeSymbol();
- if(!requestedSymbol||requestedSymbol===before)return{requestedSymbol:requestedSymbol||before,beforeSymbol:before,activeSymbol:before,switched:false,status:'ok'};
- if(!root.FinancialReportContext?.select){return{requestedSymbol,beforeSymbol:before,activeSymbol:before,switched:false,status:'unsupported'};}
- const loaded=await root.FinancialReportContext.select(requestedSymbol),after=String(loaded?.symbol||activeSymbol()).toUpperCase();
- if(after!==requestedSymbol){const error=new Error('Khong nap duoc du lieu '+requestedSymbol+' theo yeu cau.');error.code='SYMBOL_SWITCH_FAILED';throw error;}
- return{requestedSymbol,beforeSymbol:before,activeSymbol:after,switched:true,status:'ok'};
+ if(!requestedSymbol||requestedSymbol===before)return{requestedSymbol:requestedSymbol||before,beforeSymbol:before,activeSymbol:before,switched:false,status:'ok',financialAvailable:Boolean(root.FinancialReportContext?.raw?.()?.symbol===before)};
+ let marketSwitched=false,financialAvailable=false;
+ if(root.FinancialMarket?.select){
+  try{marketSwitched=Boolean(root.FinancialMarket.select(requestedSymbol));}catch{}
+ }
+ const financialCompanies=typeof root.FinancialReportContext?.companies==='function'?root.FinancialReportContext.companies():[];
+ const financialSupported=financialCompanies.some(x=>String(x.symbol||'').toUpperCase()===requestedSymbol);
+ if(financialSupported&&root.FinancialReportContext?.select){
+  try{const loaded=await root.FinancialReportContext.select(requestedSymbol);financialAvailable=String(loaded?.symbol||'').toUpperCase()===requestedSymbol;}catch{financialAvailable=false;}
+ }
+ const after=activeSymbol();
+ if(after!==requestedSymbol&&!marketSwitched){const error=new Error('Khong nap duoc du lieu thi truong '+requestedSymbol+' theo yeu cau.');error.code='SYMBOL_SWITCH_FAILED';throw error;}
+ return{requestedSymbol,beforeSymbol:before,activeSymbol:requestedSymbol,switched:true,status:'ok',marketSwitched,financialAvailable};
 }
 function classify(question){
  const s=norm(question);
@@ -53,9 +69,11 @@ function marketTool(){
  const q=m.quote||null,d=m.driver||null,t=m.technical||null;
  return{symbol:m.symbol||q?.symbol||'',quote:q?pick(q,['symbol','price','reference','change','changePct','volume','value','sourceTime','collectedAt','status']):null,driver:d?pick(d,['relativeStrengthPct','volumeRatio20','momentum5dPct','factors']):null,technical:t?pick(t,['timeframe','snapshot','indicators','sourceTime','checkedAt']):null,market:pick(m.market||{},['index','indexChangePct','breadth','sourceTime']),newsCheckedAt:m.newsCheckedAt||null};
 }
-function financialTool(base){
+function financialTool(base,targetSymbol=null){
  if(base?.localFinancialData)return clone(base.localFinancialData);
  const raw=root.FinancialReportContext?.raw?.()||null;if(!raw)return null;
+ const expected=String(targetSymbol||activeSymbol()||'').toUpperCase(),actual=String(raw?.symbol||'').toUpperCase();
+ if(expected&&actual&&expected!==actual)return null;
  const compact=data=>{if(!data)return null;const ps=(data.periods||data.years||[]).map(String).slice(-8);const rs=(data.sections||[]).flatMap(s=>(s.rows||[]).slice(0,8).map(r=>({label:r.label,unit:r.unit||'',section:s.id||'',values:Object.fromEntries(ps.filter(p=>Number.isFinite(Number(r.values?.[p]))).map(p=>[p,Number(r.values[p])]))}))).slice(0,30);return{periods:ps,updatedAt:data.updatedAt||null,checkedAt:data.checkedAt||null,rows:rs};};
  return{annual:compact(raw.annual||(!raw.quarterly?raw.data:null)),quarterly:compact(raw.quarterly||null)};
 }
@@ -100,7 +118,7 @@ function forecastTool(){
  const m=root.FinancialMarket?.context?.()||{};const f=m.forecast||root.FinForecast?.context?.()||null;
  return f?clone(f):{available:false,reason:'Forecast context chua duoc nap trong financial-report.'};
 }
-const TOOL_REGISTRY={market:({})=>marketTool(),financial:({baseContext})=>financialTool(baseContext),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
+const TOOL_REGISTRY={market:({})=>marketTool(),financial:({baseContext,targetSymbol})=>financialTool(baseContext,targetSymbol),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
 async function execute(name,args){
  const started=performance?.now?.()??Date.now();try{const result=await TOOL_REGISTRY[name](args);return{name,status:result?'ok':'missing',durationMs:Math.round((performance?.now?.()??Date.now())-started),result};}catch(error){return{name,status:'error',durationMs:Math.round((performance?.now?.()??Date.now())-started),error:String(error?.message||error).slice(0,240),result:null};}
 }
@@ -127,7 +145,8 @@ async function run(question,options={}){
  const q=String(question||'').trim(),prepared=options.prepared||await prepare(q),planInfo=plan(q),startedAt=new Date().toISOString(),scratchpad=[];
  scratchpad.push({type:'symbol',requestedSymbol:prepared.requestedSymbol||null,beforeSymbol:prepared.beforeSymbol||null,activeSymbol:prepared.activeSymbol||null,switched:Boolean(prepared.switched)});
  scratchpad.push({type:'plan',intent:planInfo.intent,tools:planInfo.tools,targetSymbol:planInfo.targetSymbol||prepared.activeSymbol||null});
- const calls=await Promise.all(planInfo.tools.map(name=>execute(name,{question:q,baseContext:options.baseContext||null})));
+ const targetSymbol=planInfo.targetSymbol||prepared.activeSymbol||null;
+ const calls=await Promise.all(planInfo.tools.map(name=>execute(name,{question:q,baseContext:options.baseContext||null,targetSymbol})));
  const results=Object.fromEntries(calls.map(x=>[x.name,x]));
  for(const call of calls)scratchpad.push({type:'tool',name:call.name,status:call.status,durationMs:call.durationMs,error:call.error||null});
  const validation=validate(q,planInfo.intent,results,options.baseContext||null);scratchpad.push({type:'validate',status:validation.status,warnings:validation.warnings});
