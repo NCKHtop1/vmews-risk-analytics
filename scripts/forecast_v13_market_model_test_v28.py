@@ -214,9 +214,10 @@ def test_current_source_and_coverage_dynamic(self) -> None:
     self.assertFalse(unverified & symbols)
     self.assertFalse(insufficient & symbols)
     accounted = symbols | insufficient | unverified
-    # listedHOSE is historical metadata and can lag a newly reconciled universe by
-    # one symbol.  The publication contract is the actual accounted set plus the
-    # >=90% validated-universe gate, not an obsolete scalar count.
+    # Every exclusion must belong to the current listed universe.  An orphaned
+    # delisted/renamed ticker would otherwise make immutable CDN contracts red
+    # even when all current HOSE symbols are valid and fresh.
+    self.assertLessEqual(len(accounted), int(universe["listedHOSE"]))
     self.assertGreaterEqual(len(accounted), validation_count)
 
     price_audit = self.market["sources"]["priceCrossSource"]
