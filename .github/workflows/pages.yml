@@ -80,10 +80,17 @@ jobs:
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
-          assert main.get('asOf')==market.get('asOf'),(main.get('asOf'),market.get('asOf'))
-          assert list(main.get('liveMarketSymbols') or [])==list(market.get('liveMarketSymbols') or []),'live universe mismatch'
-          for key in ('core','liquid','discovery','liveMarket','scannerEligible','forecastEligible','discoveryTechnical'):
-              assert int(mc.get(key) or 0)==int(bc.get(key) or 0),(key,mc.get(key),bc.get(key))
+          assert int(mc.get('core') or 0)==int(bc.get('core') or 0),(mc.get('core'),bc.get('core'))
+          # Market universe is independent of forecast freshness. It may be one
+          # completed trading session behind live quotes, but never older.
+          from datetime import datetime,timedelta,timezone
+          qraw=quotes.get('latestSourceTime') or quotes.get('checkedAt')
+          qday=datetime.fromisoformat(str(qraw).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date()
+          minimum=qday-timedelta(days=1)
+          while minimum.weekday()>=5:
+              minimum-=timedelta(days=1)
+          uday=datetime.fromisoformat(str(market.get('asOf'))[:10]).date()
+          assert uday>=minimum,('stale market universe',market.get('asOf'),'minimum',minimum.isoformat())
           assert int(quotes.get('expected') or 0)==int(bc.get('liveMarket') or 0),(quotes.get('expected'),bc.get('liveMarket'))
           assert int(quotes.get('coverage') or 0)>=int(quotes.get('expected') or 0)*.90,(quotes.get('coverage'),quotes.get('expected'))
           assert int(scanner.get('universe') or 0)==int(bc.get('scannerEligible') or 0),(scanner.get('universe'),bc.get('scannerEligible'))
@@ -117,7 +124,7 @@ jobs:
           assert funds.get('status')=='ok' and int(funds.get('symbols') or 0)>0,funds
           assert funds.get('source')=='FMARKET',funds
           assert not funds.get('previousAsOf') or funds.get('comparisonMode')=='LAST_MEANINGFUL_HOLDING_CHANGE',funds
-          print({'asOf':main.get('asOf'),'counts':mc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
+          print({'asOf':market.get('asOf'),'counts':bc,'quotes':quotes.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('overall') or {}).get('score')})
           PY
       - name: Build site with same-origin financial and market data
         shell: bash
