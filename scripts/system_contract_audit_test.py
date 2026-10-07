@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import tempfile
 import unittest
 from datetime import datetime, timezone
+
+FINQUERY_CORE_ONLY = os.environ.get("FINQUERY_CORE_ONLY", "").strip() == "1"
+
 
 from system_contract_audit import (
     Audit,
@@ -129,6 +133,7 @@ class SystemContractAuditTests(unittest.TestCase):
             )
             self.assertTrue(production_uses_finquery_main_core(root))
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_stale_main_becomes_warning_only_when_dedicated_core_is_authoritative_and_fallback_abstains(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
@@ -198,6 +203,7 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertIn("FORECAST_V21_FALLBACK_STALE", warning_codes)
         self.assertTrue(any(row["code"] == "FORECAST_V21_FALLBACK_SAFE" and row["status"] == "PASS" for row in audit.results))
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_solution_live_active_session_requires_real_source_freshness(self):
         now = datetime(2026, 10, 7, 3, 0, tzinfo=timezone.utc)  # 10:00 Vietnam
         fresh = {
@@ -214,6 +220,7 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(policy, "LIVE")
 
+    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_solution_live_same_day_close_uses_source_day_not_generated_day(self):
         now = datetime(2026, 10, 7, 5, 30, tzinfo=timezone.utc)  # 12:30 Vietnam
         poisoned = {
