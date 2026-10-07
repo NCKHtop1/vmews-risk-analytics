@@ -181,6 +181,13 @@ jobs:
               exit 0
             fi
           fi
+          if [ "$mode" = 'history' ]; then
+            # Rebuild a local planning universe first so missing Discovery histories
+            # receive bootstrap seedBars from the validated frozen market source.
+            # This local universe is not published by the history writer; the
+            # dedicated universe workflow rebuilds/publishes after history succeeds.
+            FINQUERY_MARKET_DIR=/tmp/market-publish/market             FINQUERY_UNIVERSE_OUTPUT=/tmp/market-publish/market/universe.json               python -u financial-report/scripts/build_hose_universe.py
+          fi
           if [ "$mode" = 'esg' ]; then
             python -u financial-report/scripts/refresh_esg.py --output /tmp/market-publish/market
           elif [ "$mode" = 'esg-history' ]; then
