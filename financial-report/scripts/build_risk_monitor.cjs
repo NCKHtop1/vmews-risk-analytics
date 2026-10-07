@@ -186,6 +186,17 @@ function liveRows(quotes,strategy){
  }
  return{rows,sourceTime,day};
 }
+function riskInputSignature(quotes,strategy){
+ const {rows,sourceTime,day}=liveRows(quotes,strategy);
+ const payload={
+  sourceTime,day,
+  rows:rows.map(r=>({
+   symbol:r.symbol,price:r.price,change:r.change,volume:r.volume,reference:r.reference,
+   rangePct:r.rangePct,atrPct:r.atrPct,volumeRatio:r.volumeRatio,cmf:r.cmf,sma20:r.sma20,sma50:r.sma50
+  })).sort((a,b)=>a.symbol.localeCompare(b.symbol))
+ };
+ return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0,24);
+}
 function sectorRows(rows,calibration=null,sourceTime=null){
  return RISK_V2.sectorRowsV2(rows,calibration,sourceTime);
 }
@@ -346,6 +357,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
  const latest=quotes.latestSourceTime||quotes.sourceTime||null;
  if(!latest||String(strategy.sourceTime||'')!==String(latest))throw new Error('risk inputs are not aligned');
  const {rows,sourceTime,day}=liveRows(quotes,strategy);
+ const inputSignature=riskInputSignature(quotes,strategy);
  const expected=Math.max(1,Number(quotes.expected)||Object.keys(quotes.quotes||{}).length);
  if(rows.length<Math.ceil(expected*.90))throw new Error(`risk live coverage below 90%: ${rows.length}/${expected}`);
  const rawSectors=sectorRows(rows,sectorCalibration,sourceTime),components=componentScores(rows,rawSectors,sourceTime,marketCalibration),overall=overallFromComponents(components,marketCalibration);
@@ -384,7 +396,7 @@ function buildRiskSnapshot(quotes,strategy,previous=null,generatedAt=new Date().
   previousClosePoint?.sourceTime||null
  );
  return{
-  version:VERSION,methodVersion:METHOD_VERSION,status:'ok',generatedAt,sourceTime,sourceDate:day,
+  version:VERSION,methodVersion:METHOD_VERSION,status:'ok',generatedAt,sourceTime,sourceDate:day,inputSignature,
   coverage:{quotes:rows.length,expected,strategyLive:rows.length,sectors:sectors.length},
   overall,trend:tr,sessionTrend:sessionTr,components,contributions,sectors,alerts,alertHistory:alertHistory(previous,alerts,sourceTime),topRisk,timeline,
   fundMonitor:fundMonitor||previous?.fundMonitor||{status:'unavailable',source:'FMARKET',reason:'Chưa có dữ liệu quỹ'},
@@ -417,7 +429,8 @@ function main(){
  if(!marketCalibration||marketCalibration.status!=='ok'||String(marketCalibration.forSession||'')!==String(vnDay(quotes.latestSourceTime||quotes.sourceTime||'')))throw new Error('market risk calibration is unavailable or stale');
  const fundMonitor=loadFundMonitor();
  const latest=quotes.latestSourceTime||quotes.sourceTime||null,day=vnDay(latest);
- const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel')&&String(previous.fundMonitor?.signature||'')===String(fundMonitor?.signature||'')&&String(previous.sectorCalibration?.version||'')===String(sectorCalibration?.version||'')&&String(previous.sectorCalibration?.forSession||'')===String(sectorCalibration?.forSession||'')&&String(previous.marketCalibration?.version||'')===String(marketCalibration?.version||'')&&String(previous.marketCalibration?.forSession||'')===String(marketCalibration?.forSession||'');
+ const currentInputSignature=riskInputSignature(quotes,strategy);
+ const reusable=previous&&previous.status==='ok'&&String(previous.sourceTime||'')===String(latest||'')&&String(previous.inputSignature||'')===currentInputSignature&&previous.methodVersion===METHOD_VERSION&&Array.isArray(previous.contributions)&&previous.trend&&Object.prototype.hasOwnProperty.call(previous.trend,'comparisonLabel')&&String(previous.fundMonitor?.signature||'')===String(fundMonitor?.signature||'')&&String(previous.sectorCalibration?.version||'')===String(sectorCalibration?.version||'')&&String(previous.sectorCalibration?.forSession||'')===String(sectorCalibration?.forSession||'')&&String(previous.marketCalibration?.version||'')===String(marketCalibration?.version||'')&&String(previous.marketCalibration?.forSession||'')===String(marketCalibration?.forSession||'');
  if(reusable){
   console.log(JSON.stringify({status:previous.status,score:previous.overall?.score,level:previous.overall?.level?.label,coverage:previous.coverage,sourceTime:previous.sourceTime,trend:previous.trend,alerts:(previous.alerts||[]).length,timeline:(previous.timeline||[]).length,reused:true}));
   return;
@@ -432,4 +445,4 @@ function main(){
  console.log(JSON.stringify({status:snapshot.status,score:snapshot.overall.score,level:snapshot.overall.level.label,coverage:snapshot.coverage,sourceTime:snapshot.sourceTime,trend:snapshot.trend,alerts:snapshot.alerts.length,timeline:snapshot.timeline.length,funds:snapshot.fundMonitor?.funds||0,fundSymbols:snapshot.fundMonitor?.symbols||0,fundChanges:snapshot.fundMonitor?.materialChanges||0,validatedSectors:snapshot.sectorCalibration?.validatedSectors||0,sectorAlerts:(snapshot.sectors||[]).filter(x=>x.alertActive).length}));
 }
 if(require.main===module)main();
-module.exports={buildRiskSnapshot,buildHistoricalBaseline,buildFundMonitor,loadFundMonitor,componentScores,stockRisk,sectorRows,buildSectorAlerts,level,trend,scale,median,overallFromComponents,contributionRows,WEIGHTS,SECTORS};
+module.exports={buildRiskSnapshot,riskInputSignature,buildHistoricalBaseline,buildFundMonitor,loadFundMonitor,componentScores,stockRisk,sectorRows,buildSectorAlerts,level,trend,scale,median,overallFromComponents,contributionRows,WEIGHTS,SECTORS};
