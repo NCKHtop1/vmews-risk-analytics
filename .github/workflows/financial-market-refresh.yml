@@ -202,6 +202,11 @@ jobs:
         run: |
           node financial-report/scripts/build_strategy_snapshot.cjs /tmp/market-publish/market
 
+      - name: Restore non-owned planning universe
+        if: steps.collect.outputs.mode == 'history'
+        run: |
+          git -C /tmp/market-publish restore --worktree market/universe.json || true
+
       - name: Persist aligned market risk history
         if: always() && (steps.collect.outputs.mode == 'prices' || steps.collect.outputs.mode == 'all')
         run: |
