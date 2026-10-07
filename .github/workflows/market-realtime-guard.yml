@@ -8,6 +8,7 @@ on:
       - 'financial-report/**'
       - '.github/workflows/market-*.yml'
       - '.github/workflows/pages.yml'
+      - '.github/workflows/solution-ai-*.yml'
   schedule:
     # Lightweight heartbeat. GitHub can delay/drop individual cron events, so
     # a 5-minute guard gives several chances to recover before news exceeds 20m.
@@ -21,6 +22,7 @@ on:
       - Refresh market news stream
       - Refresh live HOSE Core + Liquid prices
       - Refresh live HOSE minute candles
+      - SoluTION.AI independent live prices
       - Deploy VMEWS Pages
     branches: [main]
     types: [completed]
@@ -181,6 +183,36 @@ jobs:
                   })
               except Exception as e:
                   print('::warning::Market freshness:',e); stale.append('market-price-live.yml')
+          # SoluTION.AI has a dedicated data branch, but GitHub cron can be
+          # delayed or dropped. Reuse this proven market guard as an independent
+          # recovery path and validate the real market source timestamp, not
+          # merely the snapshot generation timestamp.
+          try:
+              solution_url='https://raw.githubusercontent.com/'+os.environ['GH_REPO']+'/solution-ai-live-data/solution-ai/live.json?guard='+str(int(now.timestamp()))
+              with urllib.request.urlopen(solution_url,timeout=15) as r:
+                  sol=json.load(r)
+              generated=datetime.fromisoformat(str(sol.get('generatedAt') or '').replace('Z','+00:00')).astimezone(timezone.utc)
+              source=datetime.fromisoformat(str(sol.get('sourceTime') or '').replace('Z','+00:00')).astimezone(timezone.utc)
+              generated_age=(now-generated).total_seconds()/60
+              source_age=(now-source).total_seconds()/60
+              source_day=source.astimezone(timezone(timedelta(hours=7))).date()
+              sol_active=local.weekday()<5 and ((8*60+55)<=mins<=(11*60+40) or (12*60+55)<=mins<=(15*60+10))
+              base_ok=(sol.get('scope')=='solution-ai' and sol.get('status')=='ok' and int(sol.get('coverage') or 0)>=500 and -5<=generated_age and -5<=source_age and source<=generated+timedelta(minutes=5))
+              if sol_active:
+                  sol_fresh=base_ok and generated_age<=6 and source_age<=25 and source_day==local.date()
+                  sol_policy='LIVE'
+              elif local.weekday()<5 and mins>=11*60+40:
+                  sol_fresh=base_ok and source_day==local.date()
+                  sol_policy='SAME_DAY_SESSION'
+              else:
+                  sol_fresh=base_ok and source_age<=96*60
+                  sol_policy='LAST_COMPLETED_SESSION'
+              if not sol_fresh:
+                  raise ValueError(f'SoluTION live stale: policy={sol_policy} generatedAge={generated_age:.1f}m sourceAge={source_age:.1f}m sourceDay={source_day} coverage={sol.get("coverage")}')
+              print('SoluTION live freshness OK',{'policy':sol_policy,'generatedAgeMin':round(generated_age,1),'sourceAgeMin':round(source_age,1),'coverage':sol.get('coverage')})
+          except Exception as e:
+              print('::warning::SoluTION live freshness:',e); stale.append('solution-ai-live-price.yml')
+
           for workflow in stale: trigger(workflow)
           if stale:
               with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
