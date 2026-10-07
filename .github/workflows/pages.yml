@@ -108,6 +108,7 @@ jobs:
           now=datetime.now(timezone.utc); local=now.astimezone(timezone(timedelta(hours=7))); mins=local.hour*60+local.minute
           active=local.weekday()<5 and (540<=mins<=690 or 780<=mins<=885)
           if active:
+              assert intraday.get('sessionExpected') is not None and intraday.get('sessionFresh') is not None,('intraday session freshness missing',intraday)
               intraday_checked=datetime.fromisoformat(str(intraday.get('checkedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
               assert (now-intraday_checked).total_seconds()/60<=25,('stale intraday heartbeat',intraday.get('checkedAt'))
           assert int(quotes.get('expected') or 0)==int(bc.get('liveMarket') or 0),(quotes.get('expected'),bc.get('liveMarket'))
