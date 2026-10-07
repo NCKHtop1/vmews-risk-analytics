@@ -41,7 +41,7 @@ LUATVIETNAM_DIRECT_SOURCES = [
      'url':'https://luatvietnam.vn/chung-khoan-35-f1.html','scope':'stocks'},
 ]
 LUATVIETNAM_MARKET_PATTERN = re.compile(
-    r'ngân hàng nhà nước|nhnn|tt-nhnnn|tt-nhnn|tổ chức tín dụng|ngân hàng|tín dụng|lãi suất|'
+    r'ngân hàng nhà nước|nhnn|tt-nhnn|tổ chức tín dụng|ngân hàng|tín dụng|lãi suất|'
     r'tỷ giá|ngoại hối|tiền tệ|thanh toán|phòng,? chống rửa tiền|trái phiếu|'
     r'chứng khoán|cổ phiếu|công ty đại chúng|quỹ đầu tư|thị trường vốn|'
     r'báo cáo tài chính|kiểm toán|thuế|tài chính|đầu tư|bảo hiểm|fintech|'
@@ -2459,6 +2459,16 @@ def _fetch_news_feed(publisher, url, companies, current):
 
 def _luatvietnam_datetime(text, current):
     value = clean(text)
+    relative = re.search(r'(\d+)\s*(phút|giờ|ngày)\s+trước', value, re.I)
+    if relative:
+        amount = int(relative.group(1))
+        unit = relative.group(2).casefold()
+        delta = timedelta(minutes=amount) if unit == 'phút' else (timedelta(hours=amount) if unit == 'giờ' else timedelta(days=amount))
+        dt = current - delta
+        if dt >= current - timedelta(days=30):
+            return dt, 'relative_age', 'relative'
+    if re.search(r'\bhôm qua\b', value, re.I):
+        return current - timedelta(days=1), 'relative_age', 'day'
     patterns = [
         (r'(?:Ngày\s+cập\s+nhật|Cập\s+nhật)\s*:?[^\d]{0,45}(\d{1,2}/\d{1,2}/\d{4})(?:\s*[ ,]\s*(\d{1,2}:\d{2}))?', 'updated'),
         (r'(?:Thứ\s+[^,]{2,12},\s*)?(\d{1,2}/\d{1,2}/\d{4})\s*,\s*(\d{1,2}:\d{2})', 'article_time'),
