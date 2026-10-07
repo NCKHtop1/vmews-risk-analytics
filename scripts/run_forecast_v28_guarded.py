@@ -183,7 +183,7 @@ def _load_histories_with_current_session(*args,**kwargs):
         bridge["validationUniverse"]=validation_scope
         bridge["validationUniverseSymbols"]=len(original_symbols)
         bridge["allCurrentHOSESymbols"]=len(freshness.get("allCurrentHOSESymbols") or [])
-    bridge=freshness.get("postCloseBridge") or {}; _bridge_metadata=dict(bridge)
+    bridge=freshness.get("postCloseBridge") or {}
     if bridge.get("status")=="PASS":
         bridge["validationUniverse"]=validation_scope
         bridge["validationUniverseSymbols"]=len(freshness.get("currentHOSESymbols") or [])
@@ -192,6 +192,7 @@ def _load_histories_with_current_session(*args,**kwargs):
         freshness["marketScanAsOf"]=str(freshness.get("forecastAsOf") or "")[:10]
         freshness["freshSymbols"]=sum(str((rows or [{}])[-1].get("date") or "")[:10]==freshness["forecastAsOf"] for rows in histories.values() if rows)
         freshness["staleSymbols"]=len(histories)-freshness["freshSymbols"]
+    _bridge_metadata=dict(bridge)
     return histories,freshness
 
 market_model.load_histories=_load_histories_with_current_session
