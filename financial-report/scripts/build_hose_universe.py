@@ -107,7 +107,14 @@ def build_universe(
     core_symbols = set(core_by_symbol)
     charts = dashboard.get("charts") or {}
     snapshots = dashboard.get("symbols") or {}
-    as_of = str(dashboard.get("asOf") or "")[:10] or None
+    # Market freshness is derived from market history, never from the forecast
+    # dashboard clock. Forecast data may lag without freezing the market universe.
+    market_dates = []
+    for rows in histories.values():
+        normalized = normalize_bars(rows)
+        if normalized:
+            market_dates.append(normalized[-1]["time"])
+    as_of = max(market_dates) if market_dates else (str(dashboard.get("asOf") or "")[:10] or None)
     symbols = sorted({str(x).upper() for x in current_hose if str(x).strip()} | core_symbols)
 
     prepared: dict[str, dict[str, Any]] = {}
@@ -236,7 +243,7 @@ def build_universe(
             "liquidExtraCap": MAX_LIQUID_EXTRA,
             "discoveryHistoryBarsMin": DISCOVERY_MIN_HISTORY,
             "discoveryActiveSessions20Min": DISCOVERY_MIN_ACTIVE_20,
-            "promotion": "Dynamic on every validated forecast refresh; no symbol-specific override.",
+            "promotion": "Dynamic from current HOSE membership and market-history liquidity/data gates; independent of forecast freshness.",
         },
         "counts": counts,
         "liveMarketSymbols": sorted(live_market_symbols),
@@ -260,20 +267,47 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
         for symbol, rows in (frozen.get("histories") or {}).items()
         if isinstance(rows, list)
     }
+    market_dir_raw = os.environ.get("FINQUERY_MARKET_DIR")
+    market_dir = Path(market_dir_raw) if market_dir_raw else None
+    if market_dir and market_dir.exists():
+        published = read_json = {}
+        universe_path = market_dir / "universe.json"
+        if universe_path.exists():
+            try:
+                read_json = json.loads(universe_path.read_text(encoding="utf-8"))
+                published_symbols = set((read_json.get("symbols") or {}).keys())
+                if published_symbols:
+                    current_hose = {str(x).upper() for x in published_symbols}
+            except (OSError, ValueError, TypeError):
+                pass
+        history_dir = market_dir / "history"
+        if history_dir.exists():
+            for symbol in current_hose:
+                file = history_dir / f"{symbol}.json"
+                if not file.exists():
+                    continue
+                try:
+                    row = json.loads(file.read_text(encoding="utf-8"))
+                    bars = row.get("bars") or []
+                    if bars:
+                        histories[symbol] = bars
+                except (OSError, ValueError, TypeError):
+                    continue
     return core, current_hose, histories, dashboard
 
 
 def main() -> None:
     core, current_hose, histories, dashboard = load_inputs()
     universe = build_universe(core, current_hose, histories, dashboard)
-    DEFAULT_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    DEFAULT_OUTPUT.write_text(
+    output = Path(os.environ.get("FINQUERY_UNIVERSE_OUTPUT", str(DEFAULT_OUTPUT)))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
         json.dumps(universe, ensure_ascii=False, separators=(",", ":"), allow_nan=False),
         encoding="utf-8",
     )
     print(json.dumps({
         "status": "PASS",
-        "output": str(DEFAULT_OUTPUT),
+        "output": str(output),
         "asOf": universe.get("asOf"),
         **universe.get("counts", {}),
     }, ensure_ascii=False))
