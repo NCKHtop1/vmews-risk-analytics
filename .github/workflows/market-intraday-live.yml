@@ -47,7 +47,9 @@ jobs:
           oneshot=0
           if { [ "$hhmm" -ge 0855 ] && [ "$hhmm" -le 1137 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1455 ]; }; then
             run=true
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          else
+            # A delayed GitHub cron or a code push outside the continuous window
+            # must repair the current/last session once, not finish as a green no-op.
             run=true
             oneshot=1
           fi
