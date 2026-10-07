@@ -1893,6 +1893,10 @@ def intraday_session_summary(out, symbols):
     required = max(1, math.ceil(expected * .90)) if expected else 0
     current = len(current_symbols)
     return {
+        'sessionQuoteSourceTime': quotes.get('latestSourceTime') or quotes.get('sourceTime'),
+        'sessionQuoteCheckedAt': quotes.get('checkedAt'),
+        'sessionQuoteExpected': int(quotes.get('expected') or 0),
+        'sessionQuoteCoverage': int(quotes.get('coverage') or 0),
         'sessionExpected': expected,
         'sessionRequired': required,
         'sessionFresh': current,
