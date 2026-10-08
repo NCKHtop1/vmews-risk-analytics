@@ -21,13 +21,13 @@ jobs:
             echo "ORIGIN ${path} HTTP=${code} bytes=$(wc -c < /tmp/fq_data)"
             if [ "$code" != "200" ]; then exit 1; fi
           done
-      - name: Check Vercel custom-domain proxy before changing iNET DNS
+      - name: Check public Vercel production alias as proxy functional smoke
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://finquery.info.vn'
+          BASE='https://finquery-web.vercel.app'
           for path in / /market/quotes.json /data/manifest.json /deployment.json; do
-            code="$(curl -skSL --resolve 'finquery.info.vn:443:76.76.21.21' --max-time 35 -o /tmp/fq_proxy -D /tmp/fq_headers -w '%{http_code}' "$BASE$path")"
+            code="$(curl -sSL --max-time 35 -o /tmp/fq_proxy -D /tmp/fq_headers -w '%{http_code}' "$BASE$path")"
             echo "PROXY ${path} HTTP=${code} bytes=$(wc -c < /tmp/fq_proxy)"
             grep -Ei '^(content-type|x-vercel-id|server|location):' /tmp/fq_headers | tail -n 7 || true
             if [ "$code" != "200" ]; then head -c 260 /tmp/fq_proxy; exit 1; fi
