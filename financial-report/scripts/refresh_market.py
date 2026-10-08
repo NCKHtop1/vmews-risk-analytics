@@ -15,6 +15,11 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
+import sys
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 import news_intelligence as ni
 
 ROOT = Path(__file__).resolve().parents[1]
