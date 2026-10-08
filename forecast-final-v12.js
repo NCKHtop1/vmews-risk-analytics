@@ -173,6 +173,8 @@ function renderForecastCards(B,z){
     }else if(!validated){
       const review=finite(q?.expectedPrice);
       e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${review?"CHƯA ĐẠT KIỂM ĐỊNH HORIZON":"CHƯA CÓ DỮ LIỆU"}</strong><small>${review?`T+${n} đang ${modelHorizon.priceStatus||q.validationStatus||"REVIEW"} ở kiểm định toàn thị trường; không phải lỗi riêng ${esc(z.symbol||"mã này")}.`:"Không đủ đầu vào để ước lượng"}</small>`;
+    }else if(!finite(z.close)||Number(z.close)<=0){
+      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>THIẾU GIÁ THAM CHIẾU</strong><small>Dự báo đã kiểm định nhưng chưa có giá tham chiếu hợp lệ để tính mức tăng/giảm. Chờ đồng bộ giá; không hiển thị tỷ suất giả.</small>`;
     }else{
       const move=pointMove(q,z.close),rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,scenario=finite(q.expectedAbsReturn)&&finite(q.bearScenarioPrice)&&finite(q.bullScenarioPrice)?`<small>Biên độ tuyệt đối kỳ vọng quanh T0 ±${pct(q.expectedAbsReturn,2)}</small><small>Kịch bản |move| quanh T0: ${price(q.bearScenarioPrice)} / ${price(q.bullScenarioPrice)}</small>`:"",sealed=z.staleForecast?`<small>Forecast niêm phong từ phiên ${esc(z.date||B.dash.asOf||"trước")} · khoảng cách tính lại theo giá FinQuery hiện tại</small>`:"";
       e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong class="${move.tone}">${move.direction} ${price(Math.abs(move.delta))} → ${price(move.target)}</strong><small>Giá dự báo trung tâm · ${rate}</small><small>Vùng xác suất Q20–Q80: ${price(q.q20Price)} – ${price(q.q80Price)}</small>${scenario}<small>${pupText(q,0)}</small>${sealed}`;
