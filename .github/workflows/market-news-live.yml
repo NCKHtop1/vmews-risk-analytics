@@ -138,7 +138,7 @@ jobs:
           git -C /tmp/market-news show origin/financial-market-data:market/news-latest.json > /tmp/remote-news-latest.json
           git -C /tmp/market-news show origin/financial-market-data:market/news-company-latest.json > /tmp/remote-news-company.json
           REMOTE_NEWS=/tmp/remote-news-latest.json REMOTE_COMPANY=/tmp/remote-news-company.json python - <<'PY'
-          import json, os
+          import json, math, os
           from datetime import datetime, timezone
           from pathlib import Path
           data=json.loads(Path(os.environ['REMOTE_NEWS']).read_text())

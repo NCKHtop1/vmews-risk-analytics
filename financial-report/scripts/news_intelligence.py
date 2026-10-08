@@ -119,6 +119,29 @@ FINANCIAL_TOPIC_ALLOW = {
     'gold','oil','company','geopolitical'
 }
 
+STRONG_FINANCIAL_TITLE_RE = re.compile(
+    r'cổ phiếu|chứng khoán|vn-?index|hose|hnx|upcom|khối ngoại|tự doanh|mua ròng|bán ròng|'
+    r'lãi suất|tỷ giá|trái phiếu|cổ tức|esop|báo cáo tài chính|kết quả kinh doanh|'
+    r'doanh thu|lợi nhuận|giá vàng|giá dầu|fed|fomc|cpi|gdp|pmi|lạm phát|'
+    r'stock|shares|earnings|revenue|profit|bond|dividend|interest rate|exchange rate',
+    re.I
+)
+REAL_ESTATE_INVEST_RE = re.compile(
+    r'bất động sản|căn hộ|chung cư|nhà ở|nhà xã hội|khu đô thị|dự án|mở bán|giá nhà|'
+    r'mặt bằng giá|giá đất|đấu giá|khởi công|hạ tầng|cao tốc|sân bay|cầu\b',
+    re.I
+)
+BUSINESS_INVEST_RE = re.compile(
+    r'doanh nghiệp|tập đoàn|công ty|đầu tư|vốn|thương vụ|m&a|ipo|xuất khẩu|nhập khẩu|'
+    r'nhà máy|sản lượng|đơn hàng|hợp đồng|thị phần|doanh thu|lợi nhuận',
+    re.I
+)
+LEGAL_FINANCE_RE = re.compile(
+    r'chứng khoán|cổ phiếu|niêm yết|ủy ban chứng khoán|ssc|hose|hnx|ngân hàng|thuế|'
+    r'trái phiếu|doanh nghiệp|xử phạt.*(?:công ty|chứng khoán|ngân hàng)',
+    re.I
+)
+
 TITLE_NOISE = re.compile(
     r'\s*[-–—|]\s*(?:luatvietnam|vnexpress|vneconomy|cafef|vietnamnet|báo đầu tư|báo chính phủ|24hmoney)\s*$',
     re.I
@@ -560,18 +583,28 @@ def count_24hmoney_article_anchors(raw):
 def _24hmoney_financial_relevance(title, symbols, topics, evidence, content_type):
     topic_set=set(topics or [])
     evidence_set=set(evidence or [])
+    title=str(title or '')
     if symbols:
         return True,'symbol'
     if content_type=='expert_analysis':
         return True,'expert'
-    if topic_set & FINANCIAL_TOPIC_ALLOW:
-        # Broad categories such as business/real-estate are accepted because
-        # they are explicit 24HMoney finance modules, not generic site chrome.
-        return True,'source_category'
+    # Narrow, finance-native modules are safe on their own.
+    if topic_set & {'stocks','finance','commodity','macro','rates','fx','gold','oil','company'}:
+        return True,'finance_native_category'
     if evidence_set & {'rates','gold','oil','fx','macro','geopolitical','corporate'}:
         return True,'semantic_evidence'
-    if FINANCIAL_NEWS_RE.search(str(title or '')):
-        return True,'financial_title'
+    # Broad modules need title-level investment intent to avoid lifestyle,
+    # crime or generic local-news items leaking into the market feed.
+    if 'realestate' in topic_set and REAL_ESTATE_INVEST_RE.search(title):
+        return True,'realestate_investment'
+    if 'business' in topic_set and BUSINESS_INVEST_RE.search(title):
+        return True,'business_investment'
+    if 'legal' in topic_set and LEGAL_FINANCE_RE.search(title):
+        return True,'legal_finance'
+    if 'global' in topic_set and STRONG_FINANCIAL_TITLE_RE.search(title):
+        return True,'global_finance'
+    if STRONG_FINANCIAL_TITLE_RE.search(title):
+        return True,'strong_financial_title'
     return False,'non_financial'
 
 
@@ -642,6 +675,12 @@ def enrich_row(row, companies, aliases=None):
     copy.setdefault('discoveredVia',copy.get('feedSource') or copy.get('source'))
     copy['contentType'] = classify_content_type(copy.get('source',''),copy.get('title',''),topics)
     copy['expectedImpact'] = expected_impact(copy.get('title',''),copy.get('summary',''),copy.get('symbols'))
+    if str(copy.get('source') or '').casefold()=='24hmoney':
+        relevant,reason=_24hmoney_financial_relevance(
+            copy.get('title',''),copy.get('symbols') or [],topics,evidence,copy.get('contentType')
+        )
+        copy['financialRelevance']=relevant
+        copy['relevanceReason']=reason
     topic_set=set(topics)
     current_tag=str(copy.get('impactTag') or '')
     if current_tag=='VÀNG' and 'gold' not in topic_set:

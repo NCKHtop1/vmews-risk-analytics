@@ -114,13 +114,27 @@ class NewsIntelligenceTests(unittest.TestCase):
 
     def test_24hmoney_filters_non_financial_live_noise(self):
         current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
-        raw='''<html><body><div>20 phút</div><a href="/news/doi-song-c1a1.html">Khách sạn lâu đời nhất Hà Nội qua ảnh tư liệu trăm năm</a></body></html>'''
-        filtered=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES)
-        raw_rows=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES,financial_only=False)
-        self.assertEqual(filtered,[])
-        self.assertEqual(len(raw_rows),1)
-        self.assertFalse(raw_rows[0]['financialRelevance'])
-        self.assertEqual(raw_rows[0]['relevanceReason'],'non_financial')
+        cases=[
+            '''<html><body><div>20 phút</div><div>#Bất Động Sản</div><a href="/news/ks-c1a1.html">Khách sạn lâu đời nhất Hà Nội qua ảnh tư liệu trăm năm</a></body></html>''',
+            '''<html><body><div>20 phút</div><div>#Pháp luật</div><a href="/news/phap-y-c1a2.html">Cần có công an bảo vệ 24/7 ở Viện Pháp y tâm thần sau vụ dung túng tội phạm</a></body></html>''',
+            '''<html><body><div>20 phút</div><a href="/news/tien-chay-c1a3.html">Bất ngờ số tiền nhận lại khi cặp vợ chồng già mang gần 800 triệu đồng bị cháy đen đến đổi ở ngân hàng</a></body></html>''',
+        ]
+        for raw in cases:
+            filtered=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES)
+            raw_rows=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES,financial_only=False)
+            self.assertEqual(filtered,[])
+            self.assertEqual(len(raw_rows),1)
+            self.assertFalse(raw_rows[0]['financialRelevance'])
+            self.assertEqual(raw_rows[0]['relevanceReason'],'non_financial')
+
+    def test_24hmoney_keeps_strong_market_and_realestate_items(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        stock='''<html><body><div>15 phút</div><a href="/news/khoi-ngoai-c1a4.html">102.000 tỷ bị khối ngoại bán ròng: Ai đang âm thầm gom?</a></body></html>'''
+        project='''<html><body><div>15 phút</div><div>#Bất Động Sản</div><a href="/news/khu-do-thi-c1a5.html">Doanh nghiệp vừa thành lập đã trúng khu đô thị 15.600 tỷ đồng tại Hưng Yên</a></body></html>'''
+        self.assertEqual(len(ni.parse_24hmoney_live(stock,current,COMPANIES,ALIASES)),1)
+        rows=ni.parse_24hmoney_live(project,current,COMPANIES,ALIASES)
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['relevanceReason'],'realestate_investment')
 
     def test_24hmoney_detail_exact_timestamp_metadata(self):
         current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
