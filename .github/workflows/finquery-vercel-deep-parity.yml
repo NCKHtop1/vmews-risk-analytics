@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/finquery_vercel_parity_audit.py'
       - 'scripts/finquery_vercel_browser_audit.py'
+      - 'scripts/finquery_vercel_freshness_diff.py'
       - '.github/workflows/finquery-vercel-deep-parity.yml'
   workflow_dispatch:
 permissions:
@@ -46,4 +47,17 @@ jobs:
         with:
           name: finquery-vercel-parity-browser
           path: finquery-browser-audit.json
+          if-no-files-found: ignore
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare live news and snapshot freshness, with cache-busting
+        run: python scripts/finquery_vercel_freshness_diff.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-vercel-freshness
+          path: finquery-freshness-diff.json
           if-no-files-found: ignore
