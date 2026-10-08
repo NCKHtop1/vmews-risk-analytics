@@ -317,8 +317,9 @@ jobs:
           grep -q 'news-daily-brief.json' /tmp/page.html
           grep -q 'news-viewpoint-sentiment.json' /tmp/page.html
           grep -q 'function newsTimeLabel(r)' /tmp/page.html
-          grep -q 'Bản tin 24h' /tmp/page.html
-          grep -q 'Góc nhìn thị trường' /tmp/page.html
+          ! grep -q 'id="news-intelligence-summary"' /tmp/page.html
+          ! grep -q 'class="news-brief-card"' /tmp/page.html
+          ! grep -q 'class="news-viewpoint-card"' /tmp/page.html
           python - <<'PY'
           from pathlib import Path
           page=Path('/tmp/page.html').read_text(encoding='utf-8')
