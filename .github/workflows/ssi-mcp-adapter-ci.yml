@@ -63,3 +63,30 @@ jobs:
             head -c 1800 /tmp/ssi_body | tr '\n' ' ' || true
             echo
           done
+
+  dcr-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Probe SSI MCP OAuth client registration without retaining any credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -sS -L --max-redirs 0 --max-time 15 -o /tmp/ssi_dcr_response -w '%{http_code}' -X POST 'https://mcp.ssi.com.vn/oauth/register' \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json' \
+            --data '{"client_name":"FinQuery SSI MCP staging","redirect_uris":["https://finquery-ssi-stage-ngochailuong.vercel.app/api/ssi-callback"],"grant_types":["authorization_code","refresh_token"],"response_types":["code"],"token_endpoint_auth_method":"none","scope":"market-data:read"}') || status=transport_failure
+          echo "SSI_DCR_HTTP=$status"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          try:
+              d=json.loads(Path('/tmp/ssi_dcr_response').read_text())
+          except Exception as e:
+              print('SSI_DCR_INVALID_RESPONSE', type(e).__name__)
+          else:
+              print('SSI_DCR_ERROR',str(d.get('error',''))[:120])
+              print('SSI_DCR_DESCRIPTION',str(d.get('error_description',''))[:200])
+              print('SSI_DCR_REGISTERED', isinstance(d.get('client_id'),str))
+              print('SSI_DCR_KEYS', sorted(k for k in d.keys() if k not in ('client_id','client_secret','registration_access_token')))
+          PY
