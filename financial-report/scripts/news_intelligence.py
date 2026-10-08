@@ -106,6 +106,18 @@ NEGATIVE = re.compile(
     r'lỗ|giảm lợi nhuận|doanh thu giảm|hạ khuyến nghị|giảm giá mục tiêu|bị phạt|xử phạt|khởi tố|bắt tạm giam|'
     r'vỡ nợ|phá sản|hủy niêm yết|đình chỉ|miss(?:es|ed)? estimates?|downgrade|fraud|default|bankrupt', re.I)
 
+VIEWPOINT_POSITIVE = re.compile(
+    r'tích cực|khả quan|hưởng lợi|động lực tăng trưởng|tăng trưởng mới|nổi sóng tăng trưởng|'
+    r'bứt phá|cải thiện mạnh|nâng khuyến nghị|khuyến nghị mua|\bbuy\b|\boutperform\b|upside', re.I)
+VIEWPOINT_NEGATIVE = re.compile(
+    r'tiêu cực|sụt giảm mạnh|giảm mạnh|kém khả quan|rủi ro|áp lực|cú sốc|lo ngại|'
+    r'hạ khuyến nghị|khuyến nghị bán|\bsell\b|\bunderperform\b|downside', re.I)
+BRIEF_LOW_SIGNAL_RE = re.compile(
+    r'\boperating normally\b|\bis operating normally\b|\bservice status\b|'
+    r'\btechnical notice\b|\bmaintenance window\b|\bsystem status\b|'
+    r'\bt2s\b.*\bnormal(?:ly)?\b|\btarget\b.*\bnormal(?:ly)?\b',
+    re.I)
+
 FINANCIAL_NEWS_RE = re.compile(
     r'cổ phiếu|chứng khoán|thị trường|vn-?index|hose|hnx|upcom|ngân hàng|lãi suất|tỷ giá|'
     r'doanh thu|lợi nhuận|kết quả kinh doanh|báo cáo tài chính|trái phiếu|cổ tức|esop|'
@@ -810,6 +822,8 @@ def build_daily_brief(rows, current=None, hours=24):
         stamp=_parse_news_time(row.get('publishedAt'))
         if stamp is None or stamp<floor or stamp>current+timedelta(minutes=10):
             continue
+        if BRIEF_LOW_SIGNAL_RE.search(compact(row.get('title') or '')):
+            continue
         eligible.append(row)
 
     # Collapse repeated story members before ranking the brief.
@@ -864,7 +878,7 @@ def build_daily_brief(rows, current=None, hours=24):
         'topSymbols':top_symbols,
         'topStories':top,
         'sections':{'market':market,'policy':policy,'company':companies,'global':global_rows},
-        'method':'deterministic_story_priority_v1',
+        'method':'deterministic_story_priority_v2',
     }
 
 
@@ -875,8 +889,8 @@ def _viewpoint_stance(row):
     if direction in {'positive','negative','mixed'} and confidence>=0.5:
         return direction
     text=compact(str(row.get('title') or '')+' '+str(row.get('summary') or ''))
-    pos=bool(POSITIVE.search(text))
-    neg=bool(NEGATIVE.search(text))
+    pos=bool(VIEWPOINT_POSITIVE.search(text) or POSITIVE.search(text))
+    neg=bool(VIEWPOINT_NEGATIVE.search(text) or NEGATIVE.search(text))
     if pos and not neg:return 'positive'
     if neg and not pos:return 'negative'
     if pos and neg:return 'mixed'
@@ -927,5 +941,5 @@ def build_viewpoint_sentiment(rows, current=None, hours=72):
         'checkedAt':current.isoformat(),'status':'ok','windowHours':hours,
         'separatedFromBreaking':True,
         'expert':expert,'community':community,
-        'method':'deterministic_viewpoint_summary_v1',
+        'method':'deterministic_viewpoint_summary_v2',
     }

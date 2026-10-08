@@ -170,6 +170,33 @@ class NewsIntelligenceTests(unittest.TestCase):
         self.assertNotIn('Cộng đồng tranh luận FPT',titles)
         self.assertEqual(brief['topSymbols'][0]['symbol'],'FPT')
 
+    def test_daily_brief_excludes_low_signal_operational_notices(self):
+        current=datetime(2026,10,8,4,30,tzinfo=timezone.utc)
+        rows=[
+            {'title':'T2S is operating normally','url':'https://example.com/t2s','source':'ECB','publishedAt':'2026-10-08T03:00:00+00:00','contentType':'news','topics':['central_bank','global','macro','rates'],'newsPriority':90,'sourcePriority':100,'symbols':[],'impactTag':'ECB','storyId':'ops'},
+            {'title':'Lãi suất thị trường 2 giảm sâu, NHNN hút ròng','url':'https://example.com/rate','source':'CafeF','publishedAt':'2026-10-08T04:18:00+00:00','contentType':'news','topics':['rates','finance'],'newsPriority':74,'sourcePriority':80,'symbols':[],'impactTag':'NHNN','storyId':'rates'},
+        ]
+        brief=ni.build_daily_brief(rows,current,24)
+        titles=[x['title'] for x in brief['topStories']]
+        self.assertNotIn('T2S is operating normally',titles)
+        self.assertIn('Lãi suất thị trường 2 giảm sâu, NHNN hút ròng',titles)
+        self.assertEqual(brief['method'],'deterministic_story_priority_v2')
+
+    def test_viewpoint_stance_understands_vietnamese_directional_language(self):
+        current=datetime(2026,10,8,4,30,tzinfo=timezone.utc)
+        rows=[
+            {'title':'Ngành phân bón: giảm thuế xuất khẩu về 0% - Tích cực cho DCM & DPM','url':'https://example.com/pos','source':'24HMoney','publishedAt':'2026-10-08T04:10:00+00:00','contentType':'expert_analysis','symbols':['DCM','DPM'],'expectedImpact':{'direction':'unknown','confidence':0}},
+            {'title':'BCM Q2-2026: Sụt giảm mạnh do cách hạch toán mới','url':'https://example.com/neg','source':'24HMoney','publishedAt':'2026-10-08T03:50:00+00:00','contentType':'expert_analysis','symbols':['BCM'],'expectedImpact':{'direction':'unknown','confidence':0}},
+            {'title':'VGI, CTR nổi sóng tăng trưởng','url':'https://example.com/community','source':'24HMoney','publishedAt':'2026-10-08T03:40:00+00:00','contentType':'community','symbols':['CTR'],'expectedImpact':{'direction':'unknown','confidence':0}},
+        ]
+        out=ni.build_viewpoint_sentiment(rows,current,72)
+        self.assertEqual(out['expert']['positive'],1)
+        self.assertEqual(out['expert']['negative'],1)
+        self.assertEqual(out['expert']['label'],'mixed')
+        self.assertEqual(out['community']['positive'],1)
+        self.assertEqual(out['community']['label'],'positive')
+        self.assertEqual(out['method'],'deterministic_viewpoint_summary_v2')
+
     def test_viewpoint_sentiment_keeps_expert_and_community_separate(self):
         current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
         rows=[
