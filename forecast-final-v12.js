@@ -109,7 +109,7 @@ function primaryHorizon(B,z=null){
   const promotion=B?.model?.promotion||B?.dash?.promotion||{},promoted=(promotion.directPriceHorizons||[]).map(Number).filter(n=>n>=1&&n<=5),preferred=Number(promotion.preferredRankingHorizon||promoted[0]||3),candidates=[preferred,...promoted,3,2,1,4,5].filter((n,index,list)=>list.indexOf(n)===index);
   return candidates.find(n=>!z||forecastUsableForDecision(h(z,n),z))||candidates.find(n=>!z||forecastAvailable(h(z,n)))||3
 }
-function pointMove(q,close){if(!forecastAvailable(q)||!finite(close))return null;const target=+q.expectedPrice,delta=target-(+close),rate=delta/(+close),direction=delta>0?"TĂNG":delta<0?"GIẢM":"ĐI NGANG",tone=delta>0?"good":delta<0?"bad":"";return{target,delta,rate,direction,tone}}
+function pointMove(q,close){if(!forecastAvailable(q)||!finite(close)||Number(close)<=0)return null;const target=+q.expectedPrice,delta=target-(+close),rate=delta/(+close),direction=delta>0?"TĂNG":delta<0?"GIẢM":"ĐI NGANG",tone=delta>0?"good":delta<0?"bad":"";return{target,delta,rate,direction,tone}}
 function backtestResultDate(B,x,horizon){const explicit=x?.targetDate||x?.actualDate||x?.realizedDate;if(explicit)return String(explicit).slice(0,10);const history=B?.dash?.charts?.[x?.symbol]||[],dates=history.map(item=>String(item?.date||"").slice(0,10)).filter(Boolean),origin=String(x?.originDate||"").slice(0,10),index=dates.indexOf(origin),steps=Math.max(1,Number(horizon)||1);return index>=0&&index+steps<dates.length?dates[index+steps]:"—"}
 window.__VMEWS_PRIMARY_HORIZON__=primaryHorizon;
 window.__VMEWS_POINT_MOVE__=pointMove;
