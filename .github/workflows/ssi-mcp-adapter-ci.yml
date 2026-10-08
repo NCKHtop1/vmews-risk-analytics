@@ -1,0 +1,20 @@
+name: SSI MCP adapter contract
+on:
+  pull_request:
+    paths:
+      - 'api/ssi-mcp.js'
+      - 'api/ssi-mcp.test.cjs'
+      - '.github/workflows/ssi-mcp-adapter-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check api/ssi-mcp.js && node --test api/ssi-mcp.test.cjs
