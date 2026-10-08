@@ -1,0 +1,20 @@
+name: FinQuery existing Pages contract recheck
+on:
+  push:
+    branches: [ops/finquery-domain-proxy-verify-20261009]
+    paths:
+      - 'scripts/finquery_vercel_pages_contract_audit.py'
+      - '.github/workflows/finquery-pages-contract-recheck.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pages-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse workflow and reproduce actual published data assertions
+        run: |
+          pip install -q PyYAML
+          python scripts/finquery_vercel_pages_contract_audit.py
