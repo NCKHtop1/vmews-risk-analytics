@@ -3085,6 +3085,13 @@ def news(out, companies):
         if _retain_news_row(row, current)
     ]
     normalized = [ni.enrich_row(row, companies, ALIASES) for row in (rows + retained)]
+    # Purge retained 24HMoney rows that no longer meet the current financial
+    # relevance policy. This prevents old lifestyle/legal noise from surviving
+    # indefinitely just because it was accepted by an earlier parser version.
+    normalized = [
+        row for row in normalized
+        if str(row.get('source') or '').casefold()!='24hmoney' or row.get('financialRelevance') is not False
+    ]
     items = _unique_news(normalized)[:2500]
     items, story_rows = ni.cluster_stories(items)
     intraday_cache = {}
