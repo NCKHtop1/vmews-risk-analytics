@@ -2154,7 +2154,7 @@ def parse_feed(raw, publisher, feed_url, companies, current):
 def _fetch_24hmoney_symbol_news(companies, current):
     symbols=sorted({str(c.get('symbol') or '').upper() for c in companies if c.get('symbol')})
     if not symbols:
-        return [], {'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}/news','status':'empty','items':0,'symbolsAttempted':0,'symbolsReachable':0}
+        return [], {'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':'empty','items':0,'symbolsAttempted':0,'symbolsReachable':0}
     budget=max(1,min(len(symbols),int(os.environ.get('MONEY24_SYMBOL_BUDGET','30'))))
     priority=[x for x in ('FPT','MBB','HPG','VCB','VIC','VHM','SSI','TCB','VPB','VND','HCM','VIX') if x in symbols]
     offset=(current.hour*budget)%len(symbols)
@@ -2163,24 +2163,36 @@ def _fetch_24hmoney_symbol_news(companies, current):
     for symbol in priority+rotated:
         if symbol not in batch: batch.append(symbol)
 
-    rows=[];reachable=0;errors=[];parser_mismatch=0;anchor_candidates=0
+    rows=[];reachable=0;errors=[];parser_mismatch=0;anchor_candidates=0;endpoint_counts={}
     def fetch_one(symbol):
-        url=f'https://24hmoney.vn/stock/{symbol}/news'
-        try:
-            raw=request(url,timeout=8)
-            anchors=ni.count_24hmoney_article_anchors(raw)
-            parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
-            mismatch=anchors>0 and not parsed
-            return symbol,parsed,True,None,anchors,mismatch
-        except Exception as exc:
-            return symbol,[],False,str(exc)[:120],0,False
+        candidates=[
+            f'https://24hmoney.vn/stock/{symbol}',
+            f'https://24hmoney.vn/stock/{symbol}/news',
+        ]
+        last_error=None
+        for url in candidates:
+            try:
+                raw=request(url,timeout=8)
+                anchors=ni.count_24hmoney_article_anchors(raw)
+                parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
+                # A reachable stock page is useful even when it has no matching
+                # articles for the current 7-day window. Only declare a parser
+                # mismatch when article anchors exist but none can be parsed.
+                mismatch=anchors>0 and not parsed
+                return symbol,parsed,True,None,anchors,mismatch,url
+            except Exception as exc:
+                last_error=str(exc)[:120]
+        return symbol,[],False,last_error or 'unreachable',0,False,None
 
     workers=max(4,min(12,int(os.environ.get('MONEY24_SYMBOL_WORKERS','10'))))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures=[pool.submit(fetch_one,symbol) for symbol in batch]
         for future in as_completed(futures):
-            symbol,parsed,ok,error,anchors,mismatch=future.result()
+            symbol,parsed,ok,error,anchors,mismatch,endpoint=future.result()
             anchor_candidates+=anchors
+            if endpoint:
+                key='/stock/{symbol}' if endpoint.rstrip('/').endswith(symbol) else '/stock/{symbol}/news'
+                endpoint_counts[key]=endpoint_counts.get(key,0)+1
             if ok:
                 reachable+=1;rows.extend(parsed)
                 if mismatch: parser_mismatch+=1
@@ -2197,14 +2209,15 @@ def _fetch_24hmoney_symbol_news(companies, current):
     else:
         status='error'
     health={
-        'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}/news',
+        'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}',
+        'fallbackUrl':'https://24hmoney.vn/stock/{symbol}/news',
         'status':status,'items':len(rows),'symbolsAttempted':len(batch),
         'symbolsReachable':reachable,'articleAnchors':anchor_candidates,
-        'parserMismatchPages':parser_mismatch,'parser':'24hmoney-symbol-v3'
+        'parserMismatchPages':parser_mismatch,'endpointCounts':endpoint_counts,
+        'parser':'24hmoney-symbol-v4'
     }
     if errors: health['errors']=errors[:6]
     return rows,health
-
 
 def _fetch_24hmoney_live(companies, current):
     try:

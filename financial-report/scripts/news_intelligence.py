@@ -402,32 +402,80 @@ def cluster_stories(rows, threshold=0.48, hours=18):
     return enriched, story_rows
 
 
-def _24hmoney_context_category(context):
-    text=compact(context)
-    if re.search(r'#?\s*Chuyên\s*gia|\bPro\b|chuyên viên tư vấn|tư vấn đầu tư',text,re.I):
-        return 'expert_analysis',{'expert','stocks'}
-    return 'news',set()
+def _24hmoney_plain_context(text,start,end,radius=3200):
+    marker='__FQ_ANCHOR__'
+    raw=text[max(0,start-radius):start]+' '+marker+' '+text[end:min(len(text),end+radius)]
+    plain=compact(raw)
+    return plain,plain.find(marker),marker
 
 
-def _24hmoney_timestamp(context,current):
-    """Parse 24HMoney list timestamps without inventing precision."""
+def _marker_distance(match,anchor):
+    if anchor<0:return 10**9
+    if match.end()<=anchor:return anchor-match.end()
+    if match.start()>=anchor:return match.start()-anchor
+    return 0
+
+
+def _24hmoney_context_category(context,anchor=-1,max_distance=140):
     text=compact(context)
-    rel=re.search(r'(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)',text,re.I)
-    if rel:
-        n=int(rel.group(1));unit=fold(rel.group(2))
+    candidates=[]
+    patterns=[
+        (r'#?\s*Chuyên\s*gia',('expert_analysis',{'expert','stocks'})),
+        (r'#?\s*Chứng\s*khoán',('news',{'stocks'})),
+        (r'#?\s*Tài\s*chính',('news',{'finance'})),
+        (r'#?\s*Hàng\s*hóa',('news',{'commodity'})),
+        (r'#?\s*KT\s*vĩ\s*mô',('news',{'macro'})),
+        (r'#?\s*Tin\s*quốc\s*tế',('news',{'global'})),
+        (r'#?\s*Bất\s*Động\s*Sản',('news',{'realestate'})),
+        (r'#?\s*Kinh\s*doanh',('news',{'business'})),
+        (r'#?\s*Pháp\s*luật',('news',{'legal'})),
+    ]
+    for pattern,value in patterns:
+        for m in re.finditer(pattern,text,re.I):
+            distance=_marker_distance(m,anchor) if anchor>=0 else 0
+            if distance<=max_distance:candidates.append((distance,m.start(),value))
+    if not candidates:
+        return 'news',set()
+    candidates.sort(key=lambda x:(x[0],x[1]))
+    return candidates[0][2]
+
+
+def _24hmoney_timestamp(context,current,anchor=-1,max_distance=180):
+    """Parse only the timestamp nearest the article card; never borrow a distant card time."""
+    text=compact(context)
+    candidates=[]
+
+    for m in re.finditer(r'(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)',text,re.I):
+        distance=_marker_distance(m,anchor) if anchor>=0 else 0
+        if distance>max_distance:continue
+        n=int(m.group(1));unit=fold(m.group(2))
+        if n<0 or (unit=='phut' and n>1440) or (unit=='gio' and n>168) or (unit=='ngay' and n>7):
+            continue
         delta=timedelta(minutes=n) if unit=='phut' else (timedelta(hours=n) if unit=='gio' else timedelta(days=n))
-        return current-delta,'relative',False
-    if re.search(r'\bhôm\s+qua\b',text,re.I):
+        candidates.append((distance,0,m.start(),current-delta,'relative',False))
+
+    for m in re.finditer(r'\bhôm\s+qua\b',text,re.I):
+        distance=_marker_distance(m,anchor) if anchor>=0 else 0
+        if distance>max_distance:continue
         local=current.astimezone(VIETNAM_TZ)
         day=(local-timedelta(days=1)).date()
-        return datetime(day.year,day.month,day.day,tzinfo=VIETNAM_TZ).astimezone(timezone.utc),'day',False
-    abs_match=re.search(r'(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](20\d{2})(?:\s+(?:lúc\s+)?(\d{1,2}):(\d{2}))?',text,re.I)
-    if abs_match:
-        d,m,y,hh,mm=abs_match.groups()
-        stamp=datetime(int(y),int(m),int(d),int(hh or 0),int(mm or 0),tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
-        return stamp,('minute' if hh is not None else 'day'),bool(hh is not None)
-    return None,None,False
+        stamp=datetime(day.year,day.month,day.day,tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
+        candidates.append((distance,1,m.start(),stamp,'day',False))
 
+    for m in re.finditer(r'(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](20\d{2})(?:\s+(?:lúc\s+)?(\d{1,2}):(\d{2}))?',text,re.I):
+        distance=_marker_distance(m,anchor) if anchor>=0 else 0
+        if distance>max_distance:continue
+        d,mo,y,hh,mm=m.groups()
+        try:
+            stamp=datetime(int(y),int(mo),int(d),int(hh or 0),int(mm or 0),tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
+        except ValueError:
+            continue
+        candidates.append((distance,2,m.start(),stamp,'minute' if hh is not None else 'day',bool(hh is not None)))
+
+    if not candidates:return None,None,False
+    candidates.sort(key=lambda x:(x[0],x[1],x[2]))
+    _,_,_,stamp,precision,verified=candidates[0]
+    return stamp,precision,verified
 
 def count_24hmoney_article_anchors(raw):
     text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
@@ -456,16 +504,15 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
             continue
         seen.add(clean_url)
 
-        # Live pages place relative time either before OR after the title.
-        # Include both directions while keeping the window small enough to
-        # avoid borrowing a timestamp from a distant card.
-        context_raw=text[max(0,match.start()-900):min(len(text),match.end()+900)]
-        context=compact(context_raw)
-        stamp,precision,verified=_24hmoney_timestamp(context,current)
+        # Keep the article anchor as a sentinel in normalized plain text,
+        # then choose the nearest timestamp/category marker. This prevents one
+        # card from borrowing metadata from the previous/next card.
+        context,anchor,_=_24hmoney_plain_context(text,match.start(),match.end())
+        stamp,precision,verified=_24hmoney_timestamp(context,current,anchor)
         if stamp is None or stamp<current-timedelta(days=7) or stamp>current+timedelta(minutes=10):
             continue
 
-        content_type,extra_topics=_24hmoney_context_category(context)
+        content_type,extra_topics=_24hmoney_context_category(context,anchor)
         base_topics={'vietnam','market'}|set(extra_topics)
         mentions=resolve_company_symbols(companies,title,'',aliases)
         topics,evidence=classify_semantics(title,'',base_topics)
