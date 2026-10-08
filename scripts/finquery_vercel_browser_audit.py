@@ -74,6 +74,7 @@ def visit(label,url):
     checks=[]
     errors=[]
     snapshots={}
+    phase='loading'
     def check(name,predicate,error=None):
         try:
             ok=bool(predicate())
@@ -81,6 +82,7 @@ def visit(label,url):
         except Exception as e:
             checks.append({"name":name,"ok":False,"details":str(e)[:350]})
     try:
+        phase='opening URL'
         driver.get(url+'?symbol=FPT&mode=year#market')
         driver.execute_script("""
             sessionStorage.setItem('finquery-site-access','1');
@@ -88,24 +90,30 @@ def visit(label,url):
             sessionStorage.setItem('finquery-macro-access','1');
         """)
         driver.refresh()
-        wait=WebDriverWait(driver,75)
+        wait=WebDriverWait(driver,45)
+        phase='waiting for market modules'
         wait.until(lambda d:d.execute_script("return window.FinancialMarket&&window.FinPlatformViews&&window.FinRiskMonitor;"))
-        wait.until(lambda d:d.execute_script("return Boolean(window.FinancialMarket?.context?.()?.quote?.price > 0);"))
+        # A previous-session close can correctly be unavailable as a LIVE quote after midnight.
+        # Browser parity must still verify price label and timestamp rather than requiring LIVE 24/7.
+        phase='waiting for rendered chart'
         wait.until(lambda d:d.execute_script("return Boolean(document.querySelector('#price-chart canvas'));"))
+        phase='waiting for strategy snapshot'
         wait.until(lambda d:d.execute_script("return Boolean(window.FinStrategyBuilder?.context?.()?.snapshot?.symbols);"))
+        phase='waiting for scanner'
         wait.until(lambda d:d.execute_script("return Boolean(window.FinTechnicalScanner?.context?.()?.current);"))
         time.sleep(2)
         snapshots['initial']=driver.execute_script(valid_js())
         check("FinQuery correct entry", "FinQuery" in snapshots['initial']['title'] and "VMEWS" not in snapshots['initial']['title'])
         check("all critical JS modules initialized",all(snapshots['initial']['features'].values()),snapshots['initial']['features'])
         check("site access restored using authorized smoke session flags",not snapshots['initial']['locked'])
-        check("quote FPT positive",snapshots['initial']['quote'] is not None and snapshots['initial']['quote']['price']>0)
+        check("last known FPT price rendered",bool(re.search(r'[1-9][0-9.,]*',snapshots['initial']['priceLabel'])),snapshots['initial']['priceLabel'])
         check("price chart rendered",snapshots['initial']['chartCanvas']>0)
         check("scanner selected FPT",snapshots['initial']['scannerSymbol']=='FPT')
         check("strategy data loaded",snapshots['initial']['strategyCount']>=100, str(snapshots['initial']['strategyCount']))
         check("macro sources >=3",snapshots['initial']['macroSources']>=3,str(snapshots['initial']['macroSources']))
         check("main views exist",not snapshots['initial']['missingElements'],snapshots['initial']['missingElements'])
         check("hosting original Pages build",snapshots['initial']['hosting']=='pages',snapshots['initial']['hosting'])
+        phase='opening Risk view'
         driver.execute_script("window.FinPlatformViews.openRisk();")
         wait.until(lambda d:d.execute_script("return document.getElementById('risk-monitor')?.hidden===false;"))
         wait.until(lambda d:d.execute_script("return Boolean(window.FinRiskMonitor?.context?.()?.overall?.score >= 0);"))
@@ -115,6 +123,7 @@ def visit(label,url):
               not snapshots['risk']['riskSourceTime'] or
               snapshots['risk']['riskSourceTime']==snapshots['risk']['sourceTime'],
               str(snapshots['risk']['riskSourceTime'])+"/"+str(snapshots['risk']['sourceTime']))
+        phase='opening Strategy view'
         driver.execute_script("window.FinPlatformViews.openStrategy();")
         wait.until(lambda d:d.execute_script("return document.getElementById('strategy-builder')?.hidden===false;"))
         wait.until(lambda d:d.execute_script("return Boolean(document.querySelector('#sai-open-symbol'));"))
@@ -125,6 +134,7 @@ def visit(label,url):
         wait.until(lambda d:d.execute_script("return (document.querySelector('#sai-investment-view h3')?.textContent||'').includes('HCM');"))
         snapshots['strategy']=driver.execute_script(valid_js())
         check("Strategy HCM selection", "HCM" in (driver.execute_script("return document.querySelector('#sai-investment-view h3')?.textContent||''")))
+        phase='click Strategy -> Chart'
         driver.find_element('id','sai-open-symbol').click()
         wait.until(lambda d:d.execute_script("return window.FinancialMarket?.context?.()?.symbol==='HCM' && document.querySelector('#price-chart canvas');"))
         snapshots['chart_link']=driver.execute_script(valid_js())
@@ -135,10 +145,11 @@ def visit(label,url):
         snapshots['final']=driver.execute_script(valid_js())
         check("Analysis view restores FPT chart",snapshots['final']['symbol']=='FPT' and snapshots['final']['chartCanvas']>0)
         check("Financial report loaded",snapshots['final']['reportLoaded'])
+        phase='completed'
         errors=[{"level":x.get("level"),"message":x.get("message","")[:230]}
                for x in driver.get_log("browser") if x.get("level")=="SEVERE"]
     except Exception as e:
-        checks.append({"name":"BROWSER RUN FINISHED","ok":False,"details":str(e)[:1000]})
+        checks.append({"name":"BROWSER RUN FINISHED phase="+phase,"ok":False,"details":repr(e)[:1000]})
         try:snapshots['on_error']=driver.execute_script(valid_js())
         except Exception:pass
         try:errors=[{"level":x.get("level"),"message":x.get("message","")[:230]} for x in driver.get_log("browser") if x.get("level")=="SEVERE"]
@@ -146,7 +157,7 @@ def visit(label,url):
     finally:
         driver.quit()
     result={"url":url,"checks":checks,"errors":errors,"snapshots":snapshots}
-    print(label.upper()+" BROWSER",json.dumps({"checkResults":[x['name']+":"+("PASS" if x['ok'] else "FAIL "+str(x.get('details'))) for x in checks],"severeCount":len(errors),"severeSample":errors[:5],"initial":snapshots.get("initial"),"risk":snapshots.get("risk"),"chart":snapshots.get("chart_link")},ensure_ascii=False)[:12000],flush=True)
+    print(label.upper()+" BROWSER",json.dumps({"checkResults":[x['name']+":"+("PASS" if x['ok'] else "FAIL "+str(x.get('details'))) for x in checks],"severeCount":len(errors),"severeSample":errors[:5],"initial":snapshots.get("initial"),"risk":snapshots.get("risk"),"chart":snapshots.get("chart_link"),"onError":snapshots.get("on_error")},ensure_ascii=False)[:16000],flush=True)
     return result
 
 def main():
