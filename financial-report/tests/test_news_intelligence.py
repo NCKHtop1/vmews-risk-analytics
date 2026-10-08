@@ -100,6 +100,28 @@ class NewsIntelligenceTests(unittest.TestCase):
         self.assertEqual(rows[0]['contentType'],'expert_analysis')
         self.assertEqual(rows[0]['sourceTier'],'expert')
 
+    def test_24hmoney_uses_nearest_card_timestamp(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        raw='''<html><body>
+        <div>Hôm qua</div><a href="/news/doi-song-c1a1.html">Khách sạn lâu đời nhất Hà Nội qua ảnh tư liệu trăm năm</a>
+        <div>37 phút</div><div>#Chứng khoán</div><a href="/news/fpt-ai-c1a2.html">FPT ký hợp đồng AI mới, mở rộng thị trường quốc tế</a>
+        </body></html>'''
+        rows=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES)
+        fpt=next(x for x in rows if 'FPT' in (x.get('symbols') or []))
+        stamp=datetime.fromisoformat(fpt['publishedAt'])
+        self.assertAlmostEqual((current-stamp).total_seconds()/60,37,delta=1)
+        self.assertEqual(fpt['timePrecision'],'relative')
+
+    def test_24hmoney_filters_non_financial_live_noise(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        raw='''<html><body><div>20 phút</div><a href="/news/doi-song-c1a1.html">Khách sạn lâu đời nhất Hà Nội qua ảnh tư liệu trăm năm</a></body></html>'''
+        filtered=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES)
+        raw_rows=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES,financial_only=False)
+        self.assertEqual(filtered,[])
+        self.assertEqual(len(raw_rows),1)
+        self.assertFalse(raw_rows[0]['financialRelevance'])
+        self.assertEqual(raw_rows[0]['relevanceReason'],'non_financial')
+
     def test_plan_parser_extracts_structured_ytd_actual(self):
         raw='''<html><body><h1>FPT</h1><table>
         <tr><th>Năm</th><th>Quý</th><th colspan="3">Doanh thu</th><th colspan="3">Lợi nhuận trước thuế</th><th colspan="3">Lợi nhuận sau thuế</th></tr>
