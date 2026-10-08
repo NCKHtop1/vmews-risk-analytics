@@ -4,10 +4,13 @@ on:
   pull_request:
     paths:
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/news_intelligence.py'
+      - 'financial-report/scripts/refresh_business_plans.py'
       - 'financial-report/scripts/build_cdn.py'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.js'
       - 'financial-report/tests/test_news_parser.py'
+      - 'financial-report/tests/test_news_intelligence.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
       - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
@@ -42,10 +45,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Compile news collector
-        run: python -m py_compile financial-report/scripts/refresh_market.py
+      - name: Compile news intelligence collectors
+        run: python -m py_compile financial-report/scripts/refresh_market.py financial-report/scripts/news_intelligence.py financial-report/scripts/refresh_business_plans.py
       - name: Run focused news parser regressions
-        run: python financial-report/tests/test_news_parser.py
+        run: |
+          python financial-report/tests/test_news_parser.py
+          python financial-report/tests/test_news_intelligence.py
       - name: Build standalone FinQuery and verify News bundle contract
         run: |
           python financial-report/scripts/build_cdn.py
@@ -58,6 +63,9 @@ jobs:
               r'\bomo\b',
               r'fpt\s+(?:retail|securities)\b',
               'function strictCompanyNews(',
+              '24hmoney.vn',
+              'newsPriority',
+              'business-plans.json',
           ]
           missing=[x for x in required if x not in page]
           assert not missing,('standalone News bundle is stale/incomplete',missing)
