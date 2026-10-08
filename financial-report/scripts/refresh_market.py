@@ -1131,7 +1131,8 @@ def build_technical_scanner(out, companies, quotes, universe=None):
     # already-loaded, validated full market-branch universe MUST be passed
     # through this function; reloading the public copy here drops ~287 EOD
     # scanner names and blocks quote publishing at the 90% coverage gate.
-    universe = universe if isinstance(universe, dict) and universe.get('scannerSymbols') else load_market_universe(out)
+    if not (isinstance(universe, dict) and universe.get('scannerSymbols')):
+        universe = load_market_universe(out)
     discovery = universe.get('discoveryTechnical') if isinstance(universe, dict) else {}
     records = universe.get('symbols') if isinstance(universe, dict) else {}
     if isinstance(discovery, dict):
