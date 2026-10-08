@@ -1,0 +1,42 @@
+name: FinQuery Domain Link & Smoke PR Gate
+on:
+  push:
+    branches: [fix/finquery-domain-safe-forecast-and-valid-smoke-20261009]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  production-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Selenium browser dependency
+        run: pip install -q selenium==4.36.0 PyYAML
+      - name: Run official browser smoke against current production with corrected schedule semantics
+        run: python scripts/finquery_branch_smoke_run.py
+  standalone-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild standalone app and assert hosting-agnostic forecast link
+        shell: bash
+        run: |
+          set -euo pipefail
+          python financial-report/scripts/build_cdn.py
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('financial-report/index.html').read_text(encoding='utf-8')
+          assert 'href="../forecast-final.html?symbol=MBB"' in html, "Forecast relative link missing in built bundle"
+          assert 'id="news-intelligence-summary"' not in html, "Removed cards reappeared"
+          assert 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' in html
+          assert '>AI Strategy Agent<' in html
+          print("DOMAIN_SAFE_BUNDLE_PASS",len(html))
+          PY
+          node --check financial-report/frontend/market.js
+          node --check forecast-final-v12.js
+          node scripts/test_forecast_missing_close.cjs

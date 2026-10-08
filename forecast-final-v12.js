@@ -109,7 +109,7 @@ function primaryHorizon(B,z=null){
   const promotion=B?.model?.promotion||B?.dash?.promotion||{},promoted=(promotion.directPriceHorizons||[]).map(Number).filter(n=>n>=1&&n<=5),preferred=Number(promotion.preferredRankingHorizon||promoted[0]||3),candidates=[preferred,...promoted,3,2,1,4,5].filter((n,index,list)=>list.indexOf(n)===index);
   return candidates.find(n=>!z||forecastUsableForDecision(h(z,n),z))||candidates.find(n=>!z||forecastAvailable(h(z,n)))||3
 }
-function pointMove(q,close){if(!forecastAvailable(q)||!finite(close))return null;const target=+q.expectedPrice,delta=target-(+close),rate=delta/(+close),direction=delta>0?"TĂNG":delta<0?"GIẢM":"ĐI NGANG",tone=delta>0?"good":delta<0?"bad":"";return{target,delta,rate,direction,tone}}
+function pointMove(q,close){if(!forecastAvailable(q)||!finite(close)||Number(close)<=0)return null;const target=+q.expectedPrice,delta=target-(+close),rate=delta/(+close),direction=delta>0?"TĂNG":delta<0?"GIẢM":"ĐI NGANG",tone=delta>0?"good":delta<0?"bad":"";return{target,delta,rate,direction,tone}}
 function backtestResultDate(B,x,horizon){const explicit=x?.targetDate||x?.actualDate||x?.realizedDate;if(explicit)return String(explicit).slice(0,10);const history=B?.dash?.charts?.[x?.symbol]||[],dates=history.map(item=>String(item?.date||"").slice(0,10)).filter(Boolean),origin=String(x?.originDate||"").slice(0,10),index=dates.indexOf(origin),steps=Math.max(1,Number(horizon)||1);return index>=0&&index+steps<dates.length?dates[index+steps]:"—"}
 window.__VMEWS_PRIMARY_HORIZON__=primaryHorizon;
 window.__VMEWS_POINT_MOVE__=pointMove;
@@ -173,6 +173,8 @@ function renderForecastCards(B,z){
     }else if(!validated){
       const review=finite(q?.expectedPrice);
       e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${review?"CHƯA ĐẠT KIỂM ĐỊNH HORIZON":"CHƯA CÓ DỮ LIỆU"}</strong><small>${review?`T+${n} đang ${modelHorizon.priceStatus||q.validationStatus||"REVIEW"} ở kiểm định toàn thị trường; không phải lỗi riêng ${esc(z.symbol||"mã này")}.`:"Không đủ đầu vào để ước lượng"}</small>`;
+    }else if(!finite(z.close)||Number(z.close)<=0){
+      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>THIẾU GIÁ THAM CHIẾU</strong><small>Dự báo đã kiểm định nhưng chưa có giá tham chiếu hợp lệ để tính mức tăng/giảm. Chờ đồng bộ giá; không hiển thị tỷ suất giả.</small>`;
     }else{
       const move=pointMove(q,z.close),rate=`${move.rate>=0?"+":""}${pct(move.rate,2)}`,scenario=finite(q.expectedAbsReturn)&&finite(q.bearScenarioPrice)&&finite(q.bullScenarioPrice)?`<small>Biên độ tuyệt đối kỳ vọng quanh T0 ±${pct(q.expectedAbsReturn,2)}</small><small>Kịch bản |move| quanh T0: ${price(q.bearScenarioPrice)} / ${price(q.bullScenarioPrice)}</small>`:"",sealed=z.staleForecast?`<small>Forecast niêm phong từ phiên ${esc(z.date||B.dash.asOf||"trước")} · khoảng cách tính lại theo giá FinQuery hiện tại</small>`:"";
       e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong class="${move.tone}">${move.direction} ${price(Math.abs(move.delta))} → ${price(move.target)}</strong><small>Giá dự báo trung tâm · ${rate}</small><small>Vùng xác suất Q20–Q80: ${price(q.q20Price)} – ${price(q.q80Price)}</small>${scenario}<small>${pupText(q,0)}</small>${sealed}`;

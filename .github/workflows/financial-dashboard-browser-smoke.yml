@@ -141,10 +141,22 @@ jobs:
                   time.sleep(wait_seconds)
                   driver.refresh()
                   wait.until(lambda d:d.execute_script("return document.readyState==='complete';"))
-              wait.until(lambda d:d.execute_script("""
-                const q=window.FinancialMarket?.context?.()?.quote;
-                return Boolean(q && Number(q.price)>0);
-              """))
+              # The last completed session remains visible after midnight, but
+              # FinancialMarket.context().quote is deliberately live-only.
+              vn_open=(local_open.weekday()<5 and (
+                  9*3600<=open_seconds<=11*3600+30*60 or
+                  13*3600<=open_seconds<=14*3600+45*60
+              ))
+              if vn_open:
+                  wait.until(lambda d:d.execute_script("""
+                    const q=window.FinancialMarket?.context?.()?.quote;
+                    return Boolean(q && Number(q.price)>0);
+                  """))
+              else:
+                  wait.until(lambda d:d.execute_script("""
+                    const price=(document.getElementById('quote-price')?.textContent||'').trim();
+                    return /[1-9][0-9.,]*\s*đ/.test(price);
+                  """))
               freshness_ui=driver.execute_script("""
                 const warning=document.getElementById('quote-freshness');
                 const quoteTime=(document.getElementById('quote-time')?.textContent||'').trim();
@@ -154,7 +166,7 @@ jobs:
                   quoteTime
                 };
               """)
-              if not freshness_ui.get('warningHidden') or 'Nguồn quá' in freshness_ui.get('warningText','') or 'không dùng như giá live' in freshness_ui.get('warningText',''):
+              if (vn_open and not freshness_ui.get('warningHidden')) or 'Nguồn quá' in freshness_ui.get('warningText','') or 'không dùng như giá live' in freshness_ui.get('warningText',''):
                   raise AssertionError(f'Legacy minute-age live warning resurfaced: {freshness_ui}')
               quote_time=freshness_ui.get('quoteTime','')
               lowered=quote_time.lower()
