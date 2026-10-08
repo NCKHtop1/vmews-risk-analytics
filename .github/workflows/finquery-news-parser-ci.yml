@@ -101,4 +101,9 @@ jobs:
           dispatch_pos=workflow.index('gh workflow run pages.yml --ref main')
           assert dispatch_pos>publish_pos,('Pages dispatch must occur after market-data push',publish_pos,dispatch_pos)
           print('NEWS TO PAGES HANDOFF PASS',required)
+          pages=Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
+          assert 'name: github-pages-' in pages, 'Pages upload artifact name is not attempt-scoped'
+          assert 'artifact_name: github-pages-' in pages, 'Pages deploy artifact name is not attempt-scoped'
+          assert pages.count('github.run_attempt')>=2, 'Pages upload/deploy must both use github.run_attempt'
+          print('PAGES RERUN ARTIFACT CONTRACT PASS')
           PY
