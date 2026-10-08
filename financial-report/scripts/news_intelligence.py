@@ -25,7 +25,7 @@ AMBIGUOUS = {'HCM','VIX','VND','CEO','GAS','PET','POW'}
 
 ISSUER_CUES = {
     'HCM': (
-        r'chứng khoáns+(?:tp.?s*hcm|hcm)|ho chi minh city securities|hcm securities|\bhsc\b',
+        r'chứng khoán\s+(?:tp\.?\s*hcm|hcm)|ho chi minh city securities|hcm securities|\bhsc\b',
         r'cổ phiếu\s+hcm|mã\s+hcm|hose\s*:\s*hcm'
     ),
     'VIX': (
@@ -402,54 +402,91 @@ def cluster_stories(rows, threshold=0.48, hours=18):
     return enriched, story_rows
 
 
+def _24hmoney_context_category(context):
+    text=compact(context)
+    if re.search(r'#?\s*Chuyên\s*gia|\bPro\b|chuyên viên tư vấn|tư vấn đầu tư',text,re.I):
+        return 'expert_analysis',{'expert','stocks'}
+    return 'news',set()
+
+
+def _24hmoney_timestamp(context,current):
+    """Parse 24HMoney list timestamps without inventing precision."""
+    text=compact(context)
+    rel=re.search(r'(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)',text,re.I)
+    if rel:
+        n=int(rel.group(1));unit=fold(rel.group(2))
+        delta=timedelta(minutes=n) if unit=='phut' else (timedelta(hours=n) if unit=='gio' else timedelta(days=n))
+        return current-delta,'relative',False
+    if re.search(r'\bhôm\s+qua\b',text,re.I):
+        local=current.astimezone(VIETNAM_TZ)
+        day=(local-timedelta(days=1)).date()
+        return datetime(day.year,day.month,day.day,tzinfo=VIETNAM_TZ).astimezone(timezone.utc),'day',False
+    abs_match=re.search(r'(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](20\d{2})(?:\s+(?:lúc\s+)?(\d{1,2}):(\d{2}))?',text,re.I)
+    if abs_match:
+        d,m,y,hh,mm=abs_match.groups()
+        stamp=datetime(int(y),int(m),int(d),int(hh or 0),int(mm or 0),tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
+        return stamp,('minute' if hh is not None else 'day'),bool(hh is not None)
+    return None,None,False
+
+
+def count_24hmoney_article_anchors(raw):
+    text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
+    anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
+    return sum(
+        1 for m in anchor_re.finditer(text)
+        if '/news/' in html.unescape(m.group(1)).lower() and len(compact(m.group(2)))>=24
+    )
+
+
 def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https://24hmoney.vn/news/live'):
-    text = raw.decode('utf-8-sig', errors='ignore') if isinstance(raw, bytes) else str(raw or '')
-    rows = []
-    seen = set()
-    anchor_re = re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', re.I|re.S)
+    text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
+    rows=[];seen=set()
+    anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
     for match in anchor_re.finditer(text):
-        href = html.unescape(match.group(1)).strip()
-        title = compact(match.group(2))
-        if len(title) < 24 or '/news/' not in href:
+        href=html.unescape(match.group(1)).strip()
+        title=compact(match.group(2))
+        if len(title)<24 or '/news/' not in href.lower():
             continue
-        url = urljoin(base_url, href)
-        parsed = urlsplit(url)
+        url=urljoin(base_url,href)
+        parsed=urlsplit(url)
         if not (parsed.hostname or '').endswith('24hmoney.vn'):
             continue
-        clean_url = urlunsplit((parsed.scheme or 'https', parsed.netloc, parsed.path, '', ''))
+        clean_url=urlunsplit((parsed.scheme or 'https',parsed.netloc,parsed.path,'',''))
         if clean_url in seen:
             continue
         seen.add(clean_url)
-        context = compact(text[match.end():match.end()+700])
-        stamp = None
-        rel = re.search(r'(\d+)\s*(phút|giờ|ngày)\s+trước', context, re.I)
-        if rel:
-            n = int(rel.group(1)); unit = fold(rel.group(2))
-            delta = timedelta(minutes=n) if unit == 'phut' else (timedelta(hours=n) if unit == 'gio' else timedelta(days=n))
-            stamp = current - delta
-        if stamp is None:
-            abs_match = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](20\d{2})(?:\s+(\d{1,2}):(\d{2}))?', context)
-            if abs_match:
-                d,m,y,hh,mm = abs_match.groups()
-                stamp = datetime(int(y),int(m),int(d),int(hh or 0),int(mm or 0),tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
-        if stamp is None or stamp < current-timedelta(days=7) or stamp > current+timedelta(minutes=10):
+
+        # Live pages place relative time either before OR after the title.
+        # Include both directions while keeping the window small enough to
+        # avoid borrowing a timestamp from a distant card.
+        context_raw=text[max(0,match.start()-900):min(len(text),match.end()+900)]
+        context=compact(context_raw)
+        stamp,precision,verified=_24hmoney_timestamp(context,current)
+        if stamp is None or stamp<current-timedelta(days=7) or stamp>current+timedelta(minutes=10):
             continue
-        mentions = resolve_company_symbols(companies,title,'',aliases)
-        topics,evidence = classify_semantics(title,'',{'vietnam','market'})
-        symbols = [x['symbol'] for x in mentions]
-        row = {
+
+        content_type,extra_topics=_24hmoney_context_category(context)
+        base_topics={'vietnam','market'}|set(extra_topics)
+        mentions=resolve_company_symbols(companies,title,'',aliases)
+        topics,evidence=classify_semantics(title,'',base_topics)
+        symbols=[x['symbol'] for x in mentions]
+        source_tier='expert' if content_type=='expert_analysis' else 'financial_press'
+        source_priority=54 if content_type=='expert_analysis' else 78
+        row={
             'title':title,'summary':'','url':clean_url,'source':'24HMoney',
             'publisher':'24HMoney','discoveredVia':'24HMoney Live',
-            'publishedAt':stamp.isoformat(),'timePrecision':'relative' if rel else ('minute' if abs_match and abs_match.group(4) else 'day'),
-            'symbols':symbols,'entityMentions':mentions,'entityConfidence':max([x['confidence'] for x in mentions],default=None),
-            'topics':topics,'topicEvidence':evidence,'sourceTier':'financial_press','sourcePriority':78,
-            'contentType':'news','directSource':True,
+            'publishedAt':stamp.isoformat(),'timePrecision':precision,
+            'detailTimestampVerified':verified,
+            'symbols':symbols,'entityMentions':mentions,
+            'entityConfidence':max([x['confidence'] for x in mentions],default=None),
+            'topics':topics,'topicEvidence':evidence,
+            'sourceTier':source_tier,'sourcePriority':source_priority,
+            'contentType':content_type,'directSource':True,
         }
-        row['expectedImpact'] = expected_impact(title,'',symbols)
+        row['expectedImpact']=expected_impact(title,'',symbols)
         rows.append(row)
-    rows.sort(key=lambda x:x['publishedAt'], reverse=True)
+    rows.sort(key=lambda x:x['publishedAt'],reverse=True)
     return rows[:120]
-
 
 def enrich_row(row, companies, aliases=None):
     copy = dict(row or {})
@@ -537,13 +574,21 @@ def semantic_violations(rows):
 
 def parse_24hmoney_symbol_page(raw, symbol, current, companies, aliases=None, base_url=None):
     """Parse public per-symbol article links with the same metadata-only policy."""
-    base_url=base_url or f'https://24hmoney.vn/stock/{symbol}'
+    base_url=base_url or f'https://24hmoney.vn/stock/{symbol}/news'
     rows=parse_24hmoney_live(raw,current,companies,aliases,base_url)
     out=[]
     for row in rows:
         syms=set(row.get('symbols') or [])
-        if symbol in syms:
-            row['discoveredVia']='24HMoney Symbol'
-            row['symbolDiscovery']=symbol
-            out.append(row)
+        if symbol not in syms:
+            continue
+        row['discoveredVia']='24HMoney Symbol'
+        row['symbolDiscovery']=symbol
+        if row.get('contentType')=='expert_analysis':
+            row['sourceTier']='expert'
+            row['sourcePriority']=52
+        else:
+            row['sourceTier']='trusted_discovery'
+            row['sourcePriority']=68
+        out.append(row)
     return out
+
