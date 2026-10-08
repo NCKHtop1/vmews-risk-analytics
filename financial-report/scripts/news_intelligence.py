@@ -106,6 +106,19 @@ NEGATIVE = re.compile(
     r'lỗ|giảm lợi nhuận|doanh thu giảm|hạ khuyến nghị|giảm giá mục tiêu|bị phạt|xử phạt|khởi tố|bắt tạm giam|'
     r'vỡ nợ|phá sản|hủy niêm yết|đình chỉ|miss(?:es|ed)? estimates?|downgrade|fraud|default|bankrupt', re.I)
 
+FINANCIAL_NEWS_RE = re.compile(
+    r'cổ phiếu|chứng khoán|thị trường|vn-?index|hose|hnx|upcom|ngân hàng|lãi suất|tỷ giá|'
+    r'doanh thu|lợi nhuận|kết quả kinh doanh|báo cáo tài chính|trái phiếu|cổ tức|esop|'
+    r'đầu tư|vốn hóa|khối ngoại|quỹ|mua ròng|bán ròng|hàng hóa|giá dầu|giá vàng|'
+    r'fed|fomc|cpi|gdp|pmi|lạm phát|bất động sản|doanh nghiệp|ipo|m&a|'
+    r'stock|shares|earnings|revenue|profit|bond|dividend|interest rate|exchange rate',
+    re.I
+)
+FINANCIAL_TOPIC_ALLOW = {
+    'stocks','finance','commodity','macro','realestate','business','rates','fx',
+    'gold','oil','company','geopolitical'
+}
+
 TITLE_NOISE = re.compile(
     r'\s*[-–—|]\s*(?:luatvietnam|vnexpress|vneconomy|cafef|vietnamnet|báo đầu tư|báo chính phủ|24hmoney)\s*$',
     re.I
@@ -486,7 +499,25 @@ def count_24hmoney_article_anchors(raw):
     )
 
 
-def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https://24hmoney.vn/news/live'):
+def _24hmoney_financial_relevance(title, symbols, topics, evidence, content_type):
+    topic_set=set(topics or [])
+    evidence_set=set(evidence or [])
+    if symbols:
+        return True,'symbol'
+    if content_type=='expert_analysis':
+        return True,'expert'
+    if topic_set & FINANCIAL_TOPIC_ALLOW:
+        # Broad categories such as business/real-estate are accepted because
+        # they are explicit 24HMoney finance modules, not generic site chrome.
+        return True,'source_category'
+    if evidence_set & {'rates','gold','oil','fx','macro','geopolitical','corporate'}:
+        return True,'semantic_evidence'
+    if FINANCIAL_NEWS_RE.search(str(title or '')):
+        return True,'financial_title'
+    return False,'non_financial'
+
+
+def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https://24hmoney.vn/news/live', financial_only=True):
     text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
     rows=[];seen=set()
     anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
@@ -517,6 +548,9 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
         mentions=resolve_company_symbols(companies,title,'',aliases)
         topics,evidence=classify_semantics(title,'',base_topics)
         symbols=[x['symbol'] for x in mentions]
+        relevant,relevance_reason=_24hmoney_financial_relevance(title,symbols,topics,evidence,content_type)
+        if financial_only and not relevant:
+            continue
         source_tier='expert' if content_type=='expert_analysis' else 'financial_press'
         source_priority=54 if content_type=='expert_analysis' else 78
         row={
@@ -529,6 +563,8 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
             'topics':topics,'topicEvidence':evidence,
             'sourceTier':source_tier,'sourcePriority':source_priority,
             'contentType':content_type,'directSource':True,
+            'sourceCategory':next((x for x in ('stocks','finance','commodity','macro','realestate','business','global','legal','expert') if x in set(topics)), 'general'),
+            'financialRelevance':relevant,'relevanceReason':relevance_reason,
         }
         row['expectedImpact']=expected_impact(title,'',symbols)
         rows.append(row)
