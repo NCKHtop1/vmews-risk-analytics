@@ -48,3 +48,12 @@ jobs:
           PY
             fi
           done
+      - name: Inspect live DNS at iNET (non-blocking)
+        shell: bash
+        run: |
+          echo 'APEX_A:'
+          dig +short finquery.info.vn A || true
+          echo 'WWW_CNAME:'
+          dig +short www.finquery.info.vn CNAME || true
+          echo 'DIRECT_HTTPS:'
+          curl -sS -I -L --max-time 12 https://finquery.info.vn/ | head -n 10 || true
