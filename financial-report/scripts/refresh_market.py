@@ -2144,6 +2144,42 @@ def parse_feed(raw, publisher, feed_url, companies, current):
     return rows
 
 
+def _fetch_24hmoney_symbol_news(companies, current):
+    symbols=sorted({str(c.get('symbol') or '').upper() for c in companies if c.get('symbol')})
+    if not symbols:
+        return [], {'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':'empty','items':0,'symbolsAttempted':0,'symbolsReachable':0}
+    budget=max(1,min(len(symbols),int(os.environ.get('MONEY24_SYMBOL_BUDGET','30'))))
+    priority=[x for x in ('FPT','MBB','HPG','VCB','VIC','VHM','SSI','TCB','VPB','VND','HCM','VIX') if x in symbols]
+    offset=(current.hour*budget)%len(symbols)
+    rotated=[symbols[(offset+i)%len(symbols)] for i in range(budget)]
+    batch=[]
+    for symbol in priority+rotated:
+        if symbol not in batch: batch.append(symbol)
+    rows=[];reachable=0;errors=[]
+    def fetch_one(symbol):
+        url=f'https://24hmoney.vn/stock/{symbol}'
+        try:
+            raw=request(url)
+            parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
+            return symbol,parsed,True,None
+        except Exception as exc:
+            return symbol,[],False,str(exc)[:120]
+    workers=max(4,min(12,int(os.environ.get('MONEY24_SYMBOL_WORKERS','10'))))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures=[pool.submit(fetch_one,symbol) for symbol in batch]
+        for future in as_completed(futures):
+            symbol,parsed,ok,error=future.result()
+            if ok:
+                reachable+=1;rows.extend(parsed)
+            elif error:
+                errors.append(symbol+': '+error)
+    status='ok' if rows else ('reachable_no_news' if reachable else 'error')
+    health={'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':status,'items':len(rows),
+            'symbolsAttempted':len(batch),'symbolsReachable':reachable,'parser':'24hmoney-symbol-v2'}
+    if errors: health['errors']=errors[:6]
+    return rows,health
+
+
 def _fetch_24hmoney_live(companies, current):
     try:
         rows = ni.parse_24hmoney_live(request(MONEY24_LIVE_URL), current, companies, ALIASES, MONEY24_LIVE_URL)
@@ -2907,6 +2943,9 @@ def news(out, companies):
     money24_items, money24_source = _fetch_24hmoney_live(companies, current)
     rows.extend(money24_items)
     sources.append(money24_source)
+    money24_symbol_items, money24_symbol_source = _fetch_24hmoney_symbol_news(companies, current)
+    rows.extend(money24_symbol_items)
+    sources.append(money24_symbol_source)
     luat_rows, luat_sources, luat_health = _fetch_luatvietnam_direct(companies, current)
     rows.extend(luat_rows)
     sources.extend(luat_sources)
@@ -2962,6 +3001,7 @@ def news(out, companies):
         'checkedAt': checked_at, 'status':'ok' if ok else 'retained',
         'storyCount':len(story_rows), 'items':story_rows[:500]
     })
+    violations = ni.semantic_violations(items)
     semantic_metrics = {
         'checkedAt':checked_at,
         'entityTaggedItems':sum(1 for row in items if row.get('symbols')),
@@ -2970,17 +3010,21 @@ def news(out, companies):
         'storyCount':len(story_rows),
         'clusteredMembers':sum(max(0,int(row.get('memberCount') or 1)-1) for row in story_rows),
         'sourceLineageItems':sum(1 for row in items if row.get('publisher') or row.get('discoveredVia')),
+        'criticalViolations':len(violations),
+        'violations':violations[:20],
     }
     write(out / 'news-semantic-health.json', semantic_metrics)
     drivers = build_drivers(out, companies) if (out / 'quotes.json').exists() else {}
     print(
         f'News: {len(rows)} fetched; {len(items)} unique; latest {len(latest_items)}; '
         f'company {len(company_items)} items/{len(company_counts)} symbols; '
-        f'stories {len(story_rows)}; 24hmoney {len(money24_items)}; '
+        f'stories {len(story_rows)}; 24hmoney live {len(money24_items)} + symbol {len(money24_symbol_items)}; '
         f'luat {luat_health.get("status")} {len(luat_rows)} items; '
         f'sources {healthy}/{len(sources)} healthy ({empty} empty); drivers: {len(drivers)}',
         flush=True
     )
+    if violations:
+        raise RuntimeError('News semantic gate failed: '+json.dumps(violations[:5],ensure_ascii=False))
     if not ok:
         raise RuntimeError('All news sources failed or returned no parseable items; previous news retained')
 
