@@ -216,7 +216,7 @@ jobs:
           cp financial-report/data/corporate-events.json /tmp/main-insight-seed/corporate-events.json
           cp -f financial-report/data/business-plans.json /tmp/main-insight-seed/business-plans.json 2>/dev/null || true
           rsync -a _financial-data/data/ financial-report/data/
-          for f in broker-research.json corporate-events.json business-plans.json business-plan-status.json insights-status.json event-status.json; do
+          for f in broker-research.json corporate-events.json insights-status.json event-status.json business-plans.json business-plan-status.json; do
             if [ -f "_insight-data/data/$f" ]; then cp "_insight-data/data/$f" "financial-report/data/$f"; fi
           done
           python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
