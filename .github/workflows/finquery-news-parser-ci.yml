@@ -97,6 +97,14 @@ jobs:
           ]
           missing=[x for x in required if x not in workflow]
           assert not missing,('News-to-Pages handoff contract incomplete',missing)
+          handover_required=[
+              'financial-report/scripts/news_intelligence.py',
+              'local_intelligence=',
+              'main_intelligence=',
+              '"$local_intelligence" != "$main_intelligence"',
+          ]
+          missing=[x for x in handover_required if x not in workflow]
+          assert not missing,('News publisher handover guard incomplete',missing)
           publish_pos=workflow.index('git -C /tmp/market-news push origin HEAD:refs/heads/financial-market-data')
           dispatch_pos=workflow.index('gh workflow run pages.yml --ref main')
           assert dispatch_pos>publish_pos,('Pages dispatch must occur after market-data push',publish_pos,dispatch_pos)
