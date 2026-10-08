@@ -24,7 +24,16 @@ test('macro research prefers canonical series and carries quality warnings',asyn
  ctx.FinMacro.context=()=>({checkedAt:now,datasets:{
   macro_overview:{name:'Tổng quan kinh tế vĩ mô',qualityStatus:'warning',qualityWarnings:[{code:'GDP_GROWTH_PLAUSIBILITY'}],rows:[{metric:'GDP',value:32.7}],numericColumns:['value']},
   fdi:{name:'Tình hình FDI',qualityStatus:'ok',rows:[{date:'2026-09',value:1}],numericColumns:['value']},
-  gdp_growth:{name:'Tăng trưởng GDP thực tế',qualityStatus:'ok',rows:[{date:'Q3 2026',value:8.39}],numericColumns:['value']},
+  gdp_growth:{name:'Tăng trưởng GDP thực tế',qualityStatus:'ok',columns:['Cột 1','Q2 2026'],rows:[
+   {'Cột 1':'Tốc độ tăng trưởng GDP thực tế','Q2 2026':8.39},
+   {'Cột 1':'Nông nghiệp, lâm nghiệp và thủy sản','Q2 2026':4.06},
+   {'Cột 1':'Nông nghiệp','Q2 2026':3.71},
+   {'Cột 1':'Lâm nghiệp','Q2 2026':4.58},
+   {'Cột 1':'Thủy sản','Q2 2026':4.98},
+   {'Cột 1':'Công nghiệp','Q2 2026':10.55},
+   {'Cột 1':'Dịch vụ','Q2 2026':7.87},
+   {'Cột 1':'Hoạt động kinh doanh bất động sản','Q2 2026':4.69}
+  ],numericColumns:['Q2 2026']},
   pmi:{name:'PMI theo tháng',qualityStatus:'ok',rows:[{date:'2026-09',value:51}],numericColumns:['value']},
   money_supply:{name:'Tổng cung tiền theo tháng',qualityStatus:'ok',rows:[{date:'2026-09',value:10}],numericColumns:['value']}
  }});
@@ -35,4 +44,10 @@ test('macro research prefers canonical series and carries quality warnings',asyn
  const gdp=await ctx.FinResearchAgent.run('Phân tích tăng trưởng GDP hiện tại.');
  assert.equal(gdp.context.agent.evidence.macro.datasets[0].id,'gdp_growth');
  assert.equal(gdp.context.agent.evidence.macro.datasets[0].qualityStatus,'ok');
+ assert.equal(gdp.context.agent.evidence.macro.datasets[0].rows[0]['Cột 1'],'Tốc độ tăng trưởng GDP thực tế');
+ assert(gdp.context.agent.evidence.macro.datasets[0].rows.some(x=>x['Cột 1']==='Công nghiệp'));
+ const realEstate=await ctx.FinResearchAgent.run('Phân tích tăng trưởng bất động sản trong GDP.');
+ assert.equal(realEstate.context.agent.evidence.macro.datasets[0].id,'gdp_growth');
+ assert.equal(realEstate.context.agent.evidence.macro.datasets[0].rows[0]['Cột 1'],'Tốc độ tăng trưởng GDP thực tế');
+ assert(realEstate.context.agent.evidence.macro.datasets[0].rows.some(x=>x['Cột 1']==='Hoạt động kinh doanh bất động sản'));
 });

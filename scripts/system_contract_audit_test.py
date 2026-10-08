@@ -12,6 +12,8 @@ FINQUERY_CORE_ONLY = os.environ.get("FINQUERY_CORE_ONLY", "").strip() == "1"
 
 from system_contract_audit import (
     Audit,
+    audit_intraday_archive_status,
+    audit_macro_semantics,
     audit_main_forecast,
     audit_market_bar_files,
     compute_intraday_session,
@@ -120,6 +122,111 @@ class SystemContractAuditTests(unittest.TestCase):
                 "2026-10-07",
             )
         self.assertTrue(any(row["code"] == "MARKET_HISTORY_OHLC" and row["status"] == "FAIL" for row in audit.results))
+
+
+    def test_deep_history_rejects_stale_universe_metadata_even_when_history_is_newer(self):
+        universe = {
+            "symbols": {
+                "LIVE": {
+                    "liveMarketEligible": True, "scannerEligible": True,
+                    "latestDate": "2026-10-06", "fresh": False,
+                    "forecastEligible": False, "tier": "CORE", "dataSufficient": True,
+                },
+            }
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "history").mkdir()
+            (root / "intraday").mkdir()
+            daily = {
+                "symbol": "LIVE", "unit": "VND", "barCount": 1, "lastBar": "2026-10-07",
+                "bars": [{"time": "2026-10-07", "open": 100, "high": 110, "low": 95, "close": 105, "volume": 1000}],
+            }
+            minute = {
+                "symbol": "LIVE", "unit": "VND", "barCount": 1, "lastBar": "2026-10-07T03:00:00+00:00",
+                "bars": [{"time": "2026-10-07T03:00:00+00:00", "open": 100, "high": 110, "low": 95, "close": 105, "volume": 1000}],
+            }
+            (root / "history" / "LIVE.json").write_text(json.dumps(daily))
+            (root / "intraday" / "LIVE.json").write_text(json.dumps(minute))
+            audit = Audit()
+            audit_market_bar_files(
+                audit, root, universe,
+                datetime(2026, 10, 7, 4, 0, tzinfo=timezone.utc),
+                "2026-10-07",
+            )
+        self.assertTrue(any(
+            row["code"] == "MARKET_HISTORY_UNIVERSE_ALIGNMENT" and row["status"] == "FAIL"
+            for row in audit.results
+        ))
+
+    def test_post_close_contract_requires_current_5m_archive_finalization(self):
+        audit = Audit()
+        audit_intraday_archive_status(
+            audit,
+            {
+                "archive5mLatestDay": "2026-10-06",
+                "archive5mLatestDayCoverage": 113,
+                "archiveFinalizedSession": "2026-10-06",
+            },
+            {"AAA", "BBB", "CCC"},
+            "2026-10-07",
+            datetime(2026, 10, 7, 8, 30, tzinfo=timezone.utc),
+            datetime(2026, 10, 7, 7, 45, tzinfo=timezone.utc),
+        )
+        failed = {row["code"] for row in audit.results if row["status"] == "FAIL"}
+        self.assertIn("MARKET_INTRADAY_ARCHIVE_SESSION", failed)
+        self.assertIn("MARKET_INTRADAY_ARCHIVE_FINALIZED", failed)
+
+        audit = Audit()
+        audit_intraday_archive_status(
+            audit,
+            {
+                "archive5mLatestDay": "2026-10-07",
+                "archive5mLatestDayCoverage": 3,
+                "archiveFinalizedSession": "2026-10-07",
+            },
+            {"AAA", "BBB", "CCC"},
+            "2026-10-07",
+            datetime(2026, 10, 7, 8, 30, tzinfo=timezone.utc),
+            datetime(2026, 10, 7, 7, 45, tzinfo=timezone.utc),
+        )
+        self.assertFalse(audit.errors)
+
+    def test_macro_contract_requires_safe_aggregate_gdp_and_warning_evidence(self):
+        good = {
+            "datasets": {
+                "gdp_growth": {
+                    "status": "ok", "qualityStatus": "warning",
+                    "qualityWarnings": [{"code": "GDP_GROWTH_PLAUSIBILITY", "row": 1}],
+                    "columns": ["Cột 1", "Q3 2021", "Q2 2026"],
+                    "numericColumns": ["Q3 2021", "Q2 2026"],
+                    "rows": [
+                        {"Cột 1": "Tốc độ tăng trưởng GDP thực tế", "Q3 2021": -6.2, "Q2 2026": 8.39},
+                        {"Cột 1": "Nông nghiệp", "Q3 2021": 30.63, "Q2 2026": 3.71},
+                    ],
+                },
+                "pmi": {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 51}]},
+                "money_supply": {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 1}]},
+                "fdi": {"status": "ok", "qualityStatus": "ok", "qualityWarnings": [], "rows": [{"x": 1}]},
+                "macro_overview": {
+                    "status": "ok", "qualityStatus": "warning",
+                    "qualityWarnings": [{"code": "GDP_GROWTH_PLAUSIBILITY"}],
+                    "rows": [{"x": 1}],
+                },
+            }
+        }
+        audit = Audit()
+        audit_macro_semantics(audit, good)
+        self.assertFalse(audit.errors)
+
+        bad = json.loads(json.dumps(good))
+        bad["datasets"]["gdp_growth"]["rows"][0]["Q3 2021"] = 32.7
+        audit = Audit()
+        audit_macro_semantics(audit, bad)
+        self.assertTrue(any(
+            row["code"] == "MARKET_MACRO_GDP_AGGREGATE" and row["status"] == "FAIL"
+            for row in audit.results
+        ))
 
 
     def test_production_loader_uses_finquery_main_core_and_market_quotes(self):

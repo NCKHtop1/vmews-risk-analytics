@@ -97,8 +97,18 @@ def build_universe(
     current_hose: set[str],
     histories: dict[str, list[dict[str, Any]]],
     dashboard: dict[str, Any] | None = None,
+    live_history_symbols: set[str] | None = None,
+    live_promotion_symbols: set[str] | None = None,
 ) -> dict[str, Any]:
     dashboard = dashboard or {}
+    live_history_symbols = (
+        None if live_history_symbols is None
+        else {str(symbol).upper() for symbol in live_history_symbols if str(symbol).strip()}
+    )
+    live_promotion_symbols = (
+        None if live_promotion_symbols is None
+        else {str(symbol).upper() for symbol in live_promotion_symbols if str(symbol).strip()}
+    )
     core_by_symbol = {
         str(row.get("symbol") or "").upper(): row
         for row in core_companies
@@ -110,11 +120,20 @@ def build_universe(
     # Market freshness is derived from market history, never from the forecast
     # dashboard clock. Forecast data may lag without freezing the market universe.
     market_dates = []
+    completed_candidates = []
+    local_now = datetime.now(VN_TZ)
+    today = local_now.date().isoformat()
+    before_eod_lock = local_now.weekday() < 5 and (local_now.hour * 60 + local_now.minute) < (15 * 60 + 20)
     for rows in histories.values():
         normalized = normalize_bars(rows)
         if normalized:
             market_dates.append(normalized[-1]["time"])
+            completed_candidates.extend(row["time"] for row in normalized[-3:] if row["time"] < today)
     as_of = max(market_dates) if market_dates else (str(dashboard.get("asOf") or "")[:10] or None)
+    if before_eod_lock and as_of == today:
+        eod_as_of = max(completed_candidates) if completed_candidates else None
+    else:
+        eod_as_of = as_of
     symbols = sorted({str(x).upper() for x in current_hose if str(x).strip()} | core_symbols)
 
     prepared: dict[str, dict[str, Any]] = {}
@@ -139,8 +158,12 @@ def build_universe(
             and metrics["activeSessions20"] >= MIN_ACTIVE_20
             and metrics["observedSessions20"] >= min(20, MIN_ACTIVE_20)
         )
+        market_history_backed = live_history_symbols is None or symbol in live_history_symbols
+        live_promotion_backed = live_promotion_symbols is None or symbol in live_promotion_symbols
         liquid_gate = (
             symbol not in core_symbols
+            and market_history_backed
+            and live_promotion_backed
             and fresh
             and data_sufficient
             and metrics["medianTurnover20"] >= MIN_MEDIAN_TURNOVER_20
@@ -161,6 +184,8 @@ def build_universe(
             "coreMember": symbol in core_symbols,
             "fresh": fresh,
             "dataSufficient": data_sufficient,
+            "marketHistoryBacked": market_history_backed,
+            "livePromotionBacked": live_promotion_backed,
             **metrics,
             "_bars": bars,
         }
@@ -172,6 +197,7 @@ def build_universe(
     discovery_technical: dict[str, dict[str, Any]] = {}
     live_market_symbols: list[str] = []
     scanner_symbols: list[str] = []
+    scanner_current_symbols: list[str] = []
     forecast_eligible_symbols: list[str] = []
 
     for symbol in symbols:
@@ -189,9 +215,21 @@ def build_universe(
             and raw["activeSessions20"] >= DISCOVERY_MIN_ACTIVE_20
             and bool(raw["latestDate"])
         )
-        live_market_eligible = tier in {"CORE", "LIQUID"}
+        live_market_eligible = tier in {"CORE", "LIQUID"} and raw["marketHistoryBacked"]
+        scanner_fresh = bool(
+            scanner_eligible
+            and (
+                (live_market_eligible and raw["fresh"])
+                or (
+                    tier == "DISCOVERY"
+                    and raw["marketHistoryBacked"]
+                    and eod_as_of
+                    and raw["latestDate"] == eod_as_of
+                )
+            )
+        )
         forecast_eligible = (
-            tier in {"CORE", "LIQUID"}
+            live_market_eligible
             and raw["fresh"]
             and raw["dataSufficient"]
         )
@@ -201,11 +239,12 @@ def build_universe(
             "tier": tier,
             "liveMarketEligible": live_market_eligible,
             "scannerEligible": scanner_eligible,
+            "scannerFresh": scanner_fresh,
             "forecastEligible": forecast_eligible,
             "liquidityGatePassed": symbol in liquid_symbols,
         }
 
-        if tier == "LIQUID":
+        if tier == "LIQUID" or (tier == "DISCOVERY" and scanner_eligible and not raw["marketHistoryBacked"]):
             row["seedBars"] = bars[-SEED_BAR_COUNT:]
 
         if tier == "DISCOVERY" and scanner_eligible:
@@ -216,6 +255,7 @@ def build_universe(
                     "tier": "DISCOVERY",
                     "cadence": "EOD",
                     "sourceTime": None,
+                    "snapshotFresh": scanner_fresh,
                 }
 
         public_symbols[symbol] = row
@@ -223,6 +263,8 @@ def build_universe(
             live_market_symbols.append(symbol)
         if scanner_eligible:
             scanner_symbols.append(symbol)
+        if scanner_fresh:
+            scanner_current_symbols.append(symbol)
         if forecast_eligible:
             forecast_eligible_symbols.append(symbol)
 
@@ -233,6 +275,7 @@ def build_universe(
         "discovery": sum(row["tier"] == "DISCOVERY" for row in public_symbols.values()),
         "liveMarket": len(live_market_symbols),
         "scannerEligible": len(scanner_symbols),
+        "scannerCurrent": len(scanner_current_symbols),
         "forecastEligible": len(forecast_eligible_symbols),
         "discoveryTechnical": len(discovery_technical),
     }
@@ -240,28 +283,30 @@ def build_universe(
         "version": "FINQUERY-HOSE-UNIVERSE-1.0",
         "generatedAt": datetime.now(VN_TZ).isoformat(timespec="seconds"),
         "asOf": as_of,
+        "eodAsOf": eod_as_of,
         "policy": {
             "core": "Verified VN100 financial-report universe; membership is retained independently of liquidity.",
             "liquid": "Non-core HOSE symbols promoted by objective 20-session turnover, trading activity and history gates.",
-            "discovery": "Remaining current HOSE symbols; EOD technical discovery only until liquidity/data gates are met.",
+            "discovery": "Remaining current HOSE symbols; EOD technical discovery is active only when its published market history matches eodAsOf.",
             "medianTurnover20MinVND": int(MIN_MEDIAN_TURNOVER_20),
             "activeSessions20Min": MIN_ACTIVE_20,
             "historyBarsMin": MIN_HISTORY,
             "liquidExtraCap": MAX_LIQUID_EXTRA,
             "discoveryHistoryBarsMin": DISCOVERY_MIN_HISTORY,
             "discoveryActiveSessions20Min": DISCOVERY_MIN_ACTIVE_20,
-            "promotion": "Dynamic from current HOSE membership and market-history liquidity/data gates; independent of forecast freshness.",
+            "promotion": "Live admission is fail-closed and independent of forecast freshness: published market history, liquidity/data gates and prior live admission are required in production; forecast/frozen history alone cannot promote a symbol.",
         },
         "counts": counts,
         "liveMarketSymbols": sorted(live_market_symbols),
         "scannerSymbols": sorted(scanner_symbols),
+        "scannerCurrentSymbols": sorted(scanner_current_symbols),
         "forecastEligibleSymbols": sorted(forecast_eligible_symbols),
         "discoveryTechnical": discovery_technical,
         "symbols": public_symbols,
     }
 
 
-def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[str, Any]]], dict[str, Any]]:
+def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[str, Any]]], dict[str, Any], set[str] | None, set[str] | None]:
     core = json.loads((FINANCIAL / "data" / "companies.json").read_text(encoding="utf-8"))
     dashboard_path = REPO / "data" / "forecast-dashboard-v12.json"
     dashboard = json.loads(dashboard_path.read_text(encoding="utf-8")) if dashboard_path.exists() else {}
@@ -276,7 +321,10 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
     }
     market_dir_raw = os.environ.get("FINQUERY_MARKET_DIR")
     market_dir = Path(market_dir_raw) if market_dir_raw else None
+    market_history_symbols: set[str] | None = None
+    prior_live_symbols: set[str] | None = None
     if market_dir and market_dir.exists():
+        market_history_symbols = set()
         read_json = {}
         universe_path = market_dir / "universe.json"
         if universe_path.exists():
@@ -285,6 +333,9 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
                 published_symbols = set((read_json.get("symbols") or {}).keys())
                 if published_symbols:
                     current_hose = {str(x).upper() for x in published_symbols}
+                published_live = read_json.get("liveMarketSymbols") or []
+                if published_live:
+                    prior_live_symbols = {str(x).upper() for x in published_live}
             except (OSError, ValueError, TypeError):
                 pass
         history_dir = market_dir / "history"
@@ -298,14 +349,19 @@ def load_inputs() -> tuple[list[dict[str, Any]], set[str], dict[str, list[dict[s
                     bars = row.get("bars") or []
                     if bars:
                         histories[symbol] = bars
+                        market_history_symbols.add(symbol)
                 except (OSError, ValueError, TypeError):
                     continue
-    return core, current_hose, histories, dashboard
+    return core, current_hose, histories, dashboard, market_history_symbols, prior_live_symbols
 
 
 def main() -> None:
-    core, current_hose, histories, dashboard = load_inputs()
-    universe = build_universe(core, current_hose, histories, dashboard)
+    core, current_hose, histories, dashboard, market_history_symbols, prior_live_symbols = load_inputs()
+    universe = build_universe(
+        core, current_hose, histories, dashboard,
+        live_history_symbols=market_history_symbols,
+        live_promotion_symbols=prior_live_symbols,
+    )
     output = Path(os.environ.get("FINQUERY_UNIVERSE_OUTPUT", str(DEFAULT_OUTPUT)))
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(

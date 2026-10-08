@@ -24,6 +24,7 @@ function sameTechnicalState(a,b){
 }
 const universe=read(path.join(out,'universe.json'),{}),canonical=read(path.resolve(process.argv[3]||'financial-report/data/universe.json'),{}),quotes=read(path.join(out,'quotes.json'),{}),old=read(path.join(out,'strategy-indicators.json'),{symbols:{}});
 const records=universe.symbols||canonical.symbols||{},discoveryTechnical=universe.discoveryTechnical||canonical.discoveryTechnical||{},files=fs.existsSync(path.join(out,'history'))?fs.readdirSync(path.join(out,'history')).filter(f=>f.endsWith('.json')):[];
+const eodAsOf=String(universe.eodAsOf||canonical.eodAsOf||universe.asOf||canonical.asOf||'').slice(0,10),scannerTargets=Array.isArray(universe.scannerSymbols)?universe.scannerSymbols:(Array.isArray(canonical.scannerSymbols)?canonical.scannerSymbols:[]);
 const symbols={};
 for(const file of files){
  const symbol=path.basename(file,'.json').toUpperCase(),bars=normalizeBars(read(path.join(out,'history',file),{}).bars);
@@ -45,6 +46,7 @@ for(const file of files){
   obv:num(row.obv),obvSlope5:idx>=5&&num(rows[idx-5]?.obv)!==null?num(row.obv)-num(rows[idx-5].obv):null,cmf20:num(row.cmf)
  };};
  const current=pack(i,base),dailyPrevious=pack(i-1,prevBase),oldRow=old.symbols?.[symbol],barDate=recent[i].time;
+ if(tier==='DISCOVERY'&&(!eodAsOf||String(barDate).slice(0,10)!==eodAsOf))continue;
  const currentSourceTime=q.sourceTime||q.collectedAt||null;
  const sameLiveBar=oldRow&&oldRow.barDate===barDate&&oldRow.current&&tier!=='DISCOVERY';
  const sameMarketSnapshot=sameLiveBar&&currentSourceTime&&String(oldRow.sourceTime||'')===String(currentSourceTime);
@@ -57,6 +59,8 @@ for(const file of files){
 // without fabricating indicators that are not available for those names.
 for(const [symbol,d] of Object.entries(discoveryTechnical)){
  if(symbols[symbol]||!d)continue;
+ const meta=records[symbol]||{};
+ if(!meta.scannerEligible||!eodAsOf||String(d.barDate||'').slice(0,10)!==eodAsOf)continue;
  const current={
   price:num(d.price),changePct:num(d.changePct),rsi14:num(d.rsi14),
   macd:num(d.macd),macdSignal:num(d.macdSignal),macdHistogram:num(d.macdHistogram),
@@ -69,15 +73,18 @@ for(const [symbol,d] of Object.entries(discoveryTechnical)){
  };
  symbols[symbol]={symbol,tier:'DISCOVERY',cadence:'EOD',barDate:d.barDate||null,sourceTime:null,current,previous,partial:true};
 }
-const rows=Object.values(symbols),payload={
- version:'FINQUERY-STRATEGY-SNAPSHOT-1.0',
+const rows=Object.values(symbols),targetUniverse=scannerTargets.length||rows.length,required=targetUniverse?Math.ceil(targetUniverse*.90):0,discoveryTarget=scannerTargets.filter(s=>String((records[s]||{}).tier||'').toUpperCase()==='DISCOVERY').length,payload={
+ version:'FINQUERY-STRATEGY-SNAPSHOT-1.1-FRESH-EOD',
  checkedAt:new Date().toISOString(),
  sourceTime:quotes.latestSourceTime||null,
- status:rows.length?'ok':'empty',
+ status:rows.length>=required?'ok':(rows.length?'partial':'empty'),
  library:'FinChartMath · pandas-ta compatible indicator set',
+ universe:targetUniverse,
  coverage:rows.length,
  liveCoverage:rows.filter(x=>x.cadence==='LIVE_15M').length,
  discoveryCoverage:rows.filter(x=>x.cadence==='EOD').length,
+ discoveryTarget,
+ eodAsOf:eodAsOf||null,
  symbols
 };
 write(path.join(out,'strategy-indicators.json'),payload);

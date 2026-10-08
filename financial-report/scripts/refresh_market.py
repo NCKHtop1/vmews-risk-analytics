@@ -625,6 +625,31 @@ def load_market_companies(core_companies, market_dir=None):
     return companies, universe
 
 
+def scanner_market_companies(core_companies, universe):
+    """Return the broad EOD scanner target without promoting those names to live quotes."""
+    core = {str(row.get('symbol') or '').upper(): dict(row) for row in core_companies if row.get('symbol')}
+    records = universe.get('symbols') if isinstance(universe, dict) and isinstance(universe.get('symbols'), dict) else {}
+    targets = universe.get('scannerSymbols') if isinstance(universe, dict) and isinstance(universe.get('scannerSymbols'), list) else []
+    if not targets or not records:
+        return [{**row, 'tier': 'CORE', 'coreMember': True} for row in core.values()]
+    companies = []
+    for raw_symbol in targets:
+        symbol = str(raw_symbol or '').upper()
+        meta = records.get(symbol) or {}
+        base = core.get(symbol) or {}
+        if not symbol or not meta.get('scannerEligible'):
+            continue
+        companies.append({
+            'symbol': symbol,
+            'name': base.get('name') or meta.get('name') or symbol,
+            'exchange': 'HOSE',
+            'tier': meta.get('tier') or ('CORE' if symbol in core else 'DISCOVERY'),
+            'coreMember': symbol in core,
+            'scannerEligible': True,
+        })
+    return sorted(companies, key=lambda row: (0 if row.get('tier') == 'CORE' else 1, row['symbol']))
+
+
 def fallback_market_universe(companies):
     """Core-only safety universe used until the validated dynamic universe exists."""
     rows={}
@@ -651,9 +676,10 @@ def fallback_market_universe(companies):
         'generatedAt':now(),
         'asOf':None,
         'policy':{'fallback':True,'description':'Core 100 safety universe until validated HOSE promotion data is published.'},
-        'counts':{'listedHOSE':len(symbols),'core':len(symbols),'liquid':0,'discovery':0,'liveMarket':len(symbols),'scannerEligible':len(symbols),'forecastEligible':len(symbols),'discoveryTechnical':0},
+        'counts':{'listedHOSE':len(symbols),'core':len(symbols),'liquid':0,'discovery':0,'liveMarket':len(symbols),'scannerEligible':len(symbols),'scannerCurrent':len(symbols),'forecastEligible':len(symbols),'discoveryTechnical':0},
         'liveMarketSymbols':symbols,
         'scannerSymbols':symbols,
+        'scannerCurrentSymbols':symbols,
         'forecastEligibleSymbols':symbols,
         'symbols':rows,
     }
@@ -678,10 +704,10 @@ def sync_market_universe(out, universe):
 
 
 def seed_market_histories(out, universe, companies):
-    """Seed newly promoted Liquid names from the already validated forecast history.
+    """Seed missing Liquid/Discovery histories from validated forecast history.
 
-    This makes the first live scanner run useful immediately instead of waiting
-    for the nightly history job. Newer market-branch bars always win.
+    Seeds are bootstrap-only. The EOD history refresh must fetch the recent
+    market window before a Discovery symbol is allowed to count as current.
     """
     records = universe.get('symbols') if isinstance(universe, dict) else {}
     if not isinstance(records, dict):
@@ -1058,6 +1084,7 @@ def build_technical_scanner(out, companies, quotes):
     old = read(path, {'symbols': {}})
     previous_symbols = old.get('symbols') or {}
     symbols, matches = {}, []
+    live_symbols = {str(company.get('symbol') or '').upper() for company in companies}
     for company in companies:
         symbol = company['symbol']
         bars = read(out / 'history' / (symbol + '.json'), {}).get('bars') or []
@@ -1066,48 +1093,67 @@ def build_technical_scanner(out, companies, quotes):
             continue
         row['tier'] = company.get('tier') or 'CORE'
         row['cadence'] = 'LIVE_15M'
+        row['fresh'] = True
         symbols[symbol] = row
         if row['matched']:
             matches.append(row)
 
-    # Discovery stays fail-closed for live price/forecast decisions, but its
-    # validated EOD technical snapshot remains searchable in the scanner.
-    # The output snapshot owns the market universe for this build. Never mix
-    # discovery/scanner membership from financial-report/data/universe.json
-    # with a newer market branch snapshot.
+    # Discovery is EOD-only and may enter the active scanner only when the
+    # published market history is aligned to the completed EOD session.
+    # Frozen forecast history is bootstrap material, never current evidence.
     universe = load_market_universe(out)
-    discovery = universe.get('discoveryTechnical') if isinstance(universe, dict) else {}
     records = universe.get('symbols') if isinstance(universe, dict) else {}
-    if isinstance(discovery, dict):
-        for symbol, source in discovery.items():
-            if symbol in symbols or not isinstance(source, dict):
-                continue
-            meta = (records or {}).get(symbol) or {}
-            if not meta.get('scannerEligible'):
-                continue
-            row = {**source, 'symbol': symbol, 'tier': 'DISCOVERY', 'cadence': 'EOD'}
-            symbols[symbol] = row
-            if row.get('matched'):
-                matches.append(row)
+    scanner_universe = universe.get('scannerSymbols') if isinstance(universe, dict) else None
+    targets = [str(x).upper() for x in scanner_universe] if isinstance(scanner_universe, list) else list(live_symbols)
+    eod_as_of = str(universe.get('eodAsOf') or '')[:10] if isinstance(universe, dict) else ''
+    stale_discovery = []
+    for symbol in targets:
+        if symbol in live_symbols:
+            continue
+        meta = (records or {}).get(symbol) or {}
+        if not meta.get('scannerEligible'):
+            continue
+        history = read(out / 'history' / (symbol + '.json'), {})
+        bars = history.get('bars') or []
+        last_bar = str(history.get('lastBar') or (bars[-1].get('time') if bars and isinstance(bars[-1], dict) else ''))[:10]
+        if not eod_as_of or last_bar != eod_as_of:
+            stale_discovery.append({'symbol': symbol, 'barDate': last_bar or None})
+            continue
+        row = technical_scan_symbol(symbol, bars, None, previous_symbols.get(symbol))
+        if not row or str(row.get('barDate') or '')[:10] != eod_as_of:
+            stale_discovery.append({'symbol': symbol, 'barDate': str((row or {}).get('barDate') or '')[:10] or None})
+            continue
+        row['tier'] = 'DISCOVERY'
+        row['cadence'] = 'EOD'
+        row['sourceTime'] = None
+        row['fresh'] = True
+        symbols[symbol] = row
+        if row.get('matched'):
+            matches.append(row)
 
     matches.sort(key=lambda row: (-row.get('priority', 0), row['symbol']))
     stamp = now()
-    scanner_universe = universe.get('scannerSymbols') if isinstance(universe, dict) else None
+    target_count = len(targets) if targets else len(companies)
+    required = max(1, math.ceil(target_count * .90)) if target_count else 0
     live_coverage = sum(row.get('cadence') == 'LIVE_15M' for row in symbols.values())
     discovery_coverage = sum(row.get('cadence') == 'EOD' for row in symbols.values())
     write(path, {
         'checkedAt': stamp,
         'sourceTime': newest_source_time(quotes),
-        'status': 'ok' if symbols else 'retained',
-        'methodVersion': 'technical-scanner-v2-tiered-hose',
-        'universe': len(scanner_universe) if isinstance(scanner_universe, list) and scanner_universe else len(companies),
+        'status': 'ok' if target_count and len(symbols) >= required else ('partial' if symbols else 'retained'),
+        'methodVersion': 'technical-scanner-v3-fresh-eod',
+        'universe': target_count,
         'coverage': len(symbols),
         'liveCoverage': live_coverage,
         'discoveryCoverage': discovery_coverage,
+        'discoveryTarget': max(0, target_count - len(live_symbols)),
+        'discoveryStaleCount': len(stale_discovery),
+        'discoveryStaleSymbols': stale_discovery,
+        'eodAsOf': eod_as_of or None,
         'liveUniverse': len(companies),
         'matchCount': len(matches), 'refreshEveryMinutes': 5,
         'rules': TECHNICAL_SCANNER_RULES,
-        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses the evolving current-session daily candle; Discovery is EOD-only until promotion.',
+        'disclaimer': 'Technical conditions are screening signals, not trade instructions. Core/Liquid uses the evolving current-session daily candle; Discovery is included only from the latest completed EOD market history.',
         'matches': matches, 'symbols': symbols,
     })
     return matches
@@ -2066,8 +2112,8 @@ def refresh_history_group(out, companies, minute=False):
             f"{name} current-session bar coverage {session.get('sessionFresh')}/{session.get('sessionExpected')} "
             f"below required {session.get('sessionRequired')}"
         )
-    if not minute and success == 0:
-        raise RuntimeError(f'{name} refresh failed for all symbols')
+    if not minute and success < required:
+        raise RuntimeError(f'{name} refresh coverage {success}/{len(symbols)} below required {required}')
 
 
 def history(out, companies):
@@ -2398,7 +2444,7 @@ def macro_quality_warnings(key, parsed):
     if key in {'macro_overview', 'gdp_growth'}:
         for index, row in enumerate(rows):
             text = row_text(row)
-            if key == 'gdp_growth' or ('gdp' in text and ('tăng trưởng' in text or 'growth' in text)):
+            if 'gdp' in text and ('tăng trưởng' in text or 'growth' in text):
                 outliers = [(column, value) for column, value in numeric_cells(row) if abs(value) > 20]
                 if outliers:
                     warnings.append({
@@ -3169,17 +3215,25 @@ if __name__ == '__main__':
     core_companies = read(ROOT / 'data/companies.json', [])
     if len({c['symbol'] for c in core_companies}) != 100:
         raise RuntimeError('Expected 100 unique VN100 Core symbols')
-    companies, universe = load_market_companies(core_companies, args.output)
-    if len({c['symbol'] for c in companies}) < 100:
+    live_companies, universe = load_market_companies(core_companies, args.output)
+    if len({c['symbol'] for c in live_companies}) < 100:
         raise RuntimeError('Tiered HOSE market universe cannot be smaller than Core 100')
-    universe = universe or fallback_market_universe(companies)
+    universe = universe or fallback_market_universe(live_companies)
+    history_companies = scanner_market_companies(core_companies, universe) if args.mode == 'history' else live_companies
     if args.mode in {'prices', 'history', 'intraday', 'all'}:
         sync_market_universe(args.output, universe)
-        seed_market_histories(args.output, universe, companies)
+        seed_market_histories(args.output, universe, history_companies)
     errors = []
-    for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
+    modes = ['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]
+    for mode in modes:
         try:
-            globals()[mode](args.output, companies)
+            if mode == 'history':
+                history(args.output, history_companies)
+                # Rebuild the scanner immediately from the refreshed EOD files;
+                # Strategy snapshot is rebuilt by the owning workflow's Node step.
+                scanner(args.output, live_companies)
+            else:
+                globals()[mode](args.output, live_companies)
         except Exception as e:
             errors.append(str(e))
     if errors:

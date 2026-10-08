@@ -110,6 +110,16 @@ function newsTool(){
  const m=root.FinancialMarket?.context?.()||{};
  return{checkedAt:m.newsCheckedAt||null,company:summarizeNews(m.news||[],8),sector:summarizeNews(m.sectorNews||m.marketNews||[],6),liveFallback:Boolean(m.newsLiveFallback)};
 }
+function macroRows(id,ds,terms){
+ const rows=Array.isArray(ds?.rows)?ds.rows:[];if(id!=='gdp_growth')return trimArray(rows.slice(-6),6);
+ const columns=Array.isArray(ds?.columns)?ds.columns:[],labelKey=columns[0]||Object.keys(rows[0]||{})[0]||'';
+ const label=row=>norm(row?.[labelKey]??'');
+ const aggregate=rows.find(row=>{const x=label(row);return x.includes('gdp')&&(x.includes('tang truong')||x.includes('toc do'));})||null;
+ const matched=terms.length?rows.filter(row=>terms.some(term=>label(row).includes(term))):[];
+ const context=rows.filter(row=>['nong nghiep lam nghiep va thuy san','cong nghiep','dich vu'].includes(label(row)));
+ const out=[],seen=new Set();for(const row of [aggregate,...matched,...context]){if(!row)continue;const key=JSON.stringify(row);if(seen.has(key))continue;seen.add(key);out.push(row);}
+ return trimArray(out.length?out:rows.slice(0,6),6);
+}
 function macroTool(question){
  const m=root.FinMacro?.context?.()||null;if(!m)return null;
  const datasets=m.datasets||{},generic=new Set(['macro','kinh','hien','tai','phan','tich','boi','canh','tong','quan']);
@@ -121,7 +131,7 @@ function macroTool(question){
   if(!selected.length)selected=Object.entries(datasets).slice(0,3).map(([id,ds])=>({id,score:0,ds}));
  }
  selected.sort((a,b)=>b.score-a.score);
- return{checkedAt:m.checkedAt||null,datasets:selected.slice(0,4).map(({id,ds})=>({id,name:ds?.name||ds?.title||id,source:ds?.source||null,qualityStatus:ds?.qualityStatus||'ok',qualityWarnings:trimArray(ds?.qualityWarnings||[],6),numericColumns:ds?.numericColumns||[],rows:trimArray((ds?.rows||[]).slice(-6),6)})),externalAssessments:trimArray(m.corporateEsg?.externalAssessments||[],6)};
+ return{checkedAt:m.checkedAt||null,datasets:selected.slice(0,4).map(({id,ds})=>({id,name:ds?.name||ds?.title||id,source:ds?.source||null,qualityStatus:ds?.qualityStatus||'ok',qualityWarnings:trimArray(ds?.qualityWarnings||[],6),numericColumns:ds?.numericColumns||[],rows:macroRows(id,ds,terms)})),externalAssessments:trimArray(m.corporateEsg?.externalAssessments||[],6)};
 }
 function forecastTool(){
  const m=root.FinancialMarket?.context?.()||{};const f=m.forecast||root.FinForecast?.context?.()||null;

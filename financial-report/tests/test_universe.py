@@ -59,6 +59,49 @@ class UniverseBuilderTests(unittest.TestCase):
         self.assertEqual(result['symbols']['DDD']['tier'],'DISCOVERY')
         self.assertEqual(result['symbols']['EEE']['tier'],'DISCOVERY')
 
+    def test_live_promotion_requires_published_market_history_when_gate_is_supplied(self):
+        core=[{'symbol':'AAA','name':'Core A','exchange':'HOSE'}]
+        good=bars(50000,1000000)
+        result=u.build_universe(
+            core,
+            {'AAA','CCC'},
+            {'AAA':good,'CCC':good},
+            {'asOf':'2026-09-29','symbols':{},'charts':{}},
+            live_history_symbols={'AAA'},
+        )
+        self.assertTrue(result['symbols']['AAA']['marketHistoryBacked'])
+        self.assertFalse(result['symbols']['CCC']['marketHistoryBacked'])
+        self.assertEqual(result['symbols']['CCC']['tier'],'DISCOVERY')
+        self.assertFalse(result['symbols']['CCC']['liveMarketEligible'])
+        self.assertFalse(result['symbols']['CCC']['forecastEligible'])
+        self.assertIn('CCC',result['scannerSymbols'])
+        self.assertFalse(result['symbols']['CCC']['scannerFresh'])
+        self.assertNotIn('CCC',result['scannerCurrentSymbols'])
+        self.assertIn('seedBars',result['symbols']['CCC'])
+
+
+    def test_prior_live_gate_keeps_current_discovery_out_of_live_but_in_current_scanner(self):
+        core=[{'symbol':'AAA','name':'Core A','exchange':'HOSE'}]
+        good=bars(50000,1000000)
+        result=u.build_universe(
+            core,
+            {'AAA','CCC'},
+            {'AAA':good,'CCC':good},
+            {'asOf':'2026-09-29','symbols':{},'charts':{}},
+            live_history_symbols={'AAA','CCC'},
+            live_promotion_symbols={'AAA'},
+        )
+        self.assertEqual(result['eodAsOf'],'2026-09-29')
+        self.assertEqual(result['symbols']['CCC']['tier'],'DISCOVERY')
+        self.assertTrue(result['symbols']['CCC']['marketHistoryBacked'])
+        self.assertFalse(result['symbols']['CCC']['livePromotionBacked'])
+        self.assertFalse(result['symbols']['CCC']['liveMarketEligible'])
+        self.assertTrue(result['symbols']['CCC']['scannerEligible'])
+        self.assertTrue(result['symbols']['CCC']['scannerFresh'])
+        self.assertIn('CCC',result['scannerCurrentSymbols'])
+        self.assertNotIn('CCC',result['liveMarketSymbols'])
+        self.assertEqual(result['counts']['scannerCurrent'],2)
+
     def test_liquid_extra_cap_is_deterministic(self):
         old=u.MAX_LIQUID_EXTRA
         try:
