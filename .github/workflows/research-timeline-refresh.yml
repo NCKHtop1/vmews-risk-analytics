@@ -6,6 +6,7 @@ on:
     paths:
       - 'financial-report/scripts/refresh_insights.py'
       - 'financial-report/scripts/refresh_events.py'
+      - 'financial-report/scripts/refresh_business_plans.py'
       - 'financial-report/config/research_sources.json'
       - 'financial-report/config/event_sources.json'
       - 'financial-report/data/broker-research.json'
@@ -50,18 +51,22 @@ jobs:
           cp financial-report/data/companies.json /tmp/insight-publish/data/companies.json
           cp -n financial-report/data/broker-research.json /tmp/insight-publish/data/broker-research.json || true
           cp -n financial-report/data/corporate-events.json /tmp/insight-publish/data/corporate-events.json || true
+          cp -n financial-report/data/business-plans.json /tmp/insight-publish/data/business-plans.json || true
       - name: Sweep public broker research sources
         run: |
           python -u financial-report/scripts/refresh_insights.py             --output /tmp/insight-publish/data             --max-detail "$RESEARCH_DETAIL_BUDGET"
       - name: Sweep corporate-event sources
         run: |
           python -u financial-report/scripts/refresh_events.py             --output /tmp/insight-publish/data
+      - name: Sweep business plan sources
+        run: |
+          python -u financial-report/scripts/refresh_business_plans.py --output /tmp/insight-publish/data
       - name: Publish investment insight datasets
         working-directory: /tmp/insight-publish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --sparse             data/broker-research.json             data/corporate-events.json             data/insights-status.json             data/event-status.json
+          git add --sparse data/broker-research.json data/corporate-events.json data/business-plans.json data/business-plan-status.json data/insights-status.json data/event-status.json
           if ! git diff --cached --quiet; then
             git commit -m "Refresh investment insight timelines"
             git push origin HEAD:refs/heads/financial-insights-data
@@ -75,4 +80,6 @@ jobs:
             /tmp/insight-publish/data/corporate-events.json
             /tmp/insight-publish/data/insights-status.json
             /tmp/insight-publish/data/event-status.json
+            /tmp/insight-publish/data/business-plans.json
+            /tmp/insight-publish/data/business-plan-status.json
           retention-days: 7
