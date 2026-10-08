@@ -98,7 +98,14 @@ jobs:
                   raise ValueError(f'LuatVietnam direct parser health insufficient: {luat}')
               if luat.get('status')!='ok':
                   raise ValueError(f'LuatVietnam direct source degraded/unavailable: {luat}')
-              print('News age/coverage:',round(age(n['checkedAt']),1),'company symbols',company.get('companyCoverage'),'source health',health,'luat',luat)
+              source_map={str(x.get('name') or ''):x for x in (n.get('sources') or [])}
+              for source_name in ('24HMoney Live','24HMoney Symbol'):
+                  source=source_map.get(source_name) or {}
+                  if source.get('status')=='error':
+                      raise ValueError(f'{source_name} parser/source degraded: {source}')
+                  if int(source.get('articleAnchors') or 0)>0 and int(source.get('items') or 0)==0:
+                      raise ValueError(f'{source_name} has article anchors but parsed 0 items: {source}')
+              print('News age/coverage:',round(age(n['checkedAt']),1),'company symbols',company.get('companyCoverage'),'source health',health,'luat',luat,'24hmoney',{k:(source_map.get(k) or {}).get('items') for k in ('24HMoney Live','24HMoney Symbol')})
           except Exception as e:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
           if active:
