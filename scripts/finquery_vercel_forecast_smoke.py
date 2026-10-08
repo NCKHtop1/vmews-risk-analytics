@@ -66,6 +66,7 @@ finally:
   d.quit()
 print('FORECAST_BLOCKED_GITHUB '+json.dumps(out,ensure_ascii=False)[:5500],flush=True)
 if out.get('error'):fail.append('Forecast UI fails while Github blocked')
+if any('TypeError' in str(line) and ('forecast-final-v12.js' in str(line) or 'renderForecastCards' in str(line)) for line in out.get('browserSevere',[])):fail.append('Forecast TypeError detected in browser console')
 if out.get('forecastCardsLength',0)<30:fail.append('Forecast card content not rendered')
 if out.get('close','') in ('','—','–'):fail.append('Forecast current/last price missing')
 with open('finquery-forecast-smoke.json','w',encoding='utf-8') as f:json.dump({"dataFiles":data_files,"browser":out,"failures":fail},f,ensure_ascii=False,indent=2)
