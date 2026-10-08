@@ -174,6 +174,24 @@ jobs:
               except Exception as e:
                   print('::warning::Lunch quote freshness:',e)
                   stale.append('market-price-live.yml')
+              else:
+                  # Minute requests can return HTTP 200 for all symbols while
+                  # sessionExpected=0 because the quote branch was one day old.
+                  # After quote recovery, require the minute checkpoint to
+                  # reference the SAME session before calling lunch healthy.
+                  try:
+                      intraday=get('intraday-status.json')
+                      ref=intraday.get('sessionQuoteSourceTime')
+                      ref_day=datetime.fromisoformat(str(ref).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date().isoformat() if ref else ''
+                      total=int(intraday.get('sessionExpected') or 0)
+                      found=int(intraday.get('sessionFresh') or 0)
+                      required=int(intraday.get('sessionRequired') or math.ceil(total*.90)) if total else 0
+                      if intraday.get('status')!='ok' or ref_day!=today or total<=0 or found<required:
+                          raise ValueError(f'no aligned lunch intraday: quoteDay={ref_day}, session={found}/{total}, expectedDay={today}')
+                      print('Lunch intraday quote-session alignment OK',found,'/',total)
+                  except Exception as e:
+                      print('::warning::Lunch minute alignment:',e)
+                      stale.append('market-intraday-live.yml')
           if active:
               try:
                   intraday=get('intraday-status.json')
