@@ -74,11 +74,6 @@ jobs:
           stamp=datetime.fromisoformat(str(source).replace('Z','+00:00')).astimezone(timezone.utc)
           published_day=stamp.astimezone(VN).date().isoformat()
           expected=max(1,int(q.get('expected') or 0))
-          valid=sum(
-              1 for row in (q.get('quotes') or {}).values()
-              if row.get('status')!='retained'
-              and str(row.get('sourceTime') or '').startswith(day)
-          )
           # Per-symbol timestamps are timezone-aware UTC, so compare dates
           # using Asia/Bangkok rather than ISO string prefixes.
           valid=sum(
