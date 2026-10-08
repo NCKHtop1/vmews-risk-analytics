@@ -490,6 +490,64 @@ def _24hmoney_timestamp(context,current,anchor=-1,max_distance=180):
     _,_,_,stamp,precision,verified=candidates[0]
     return stamp,precision,verified
 
+def parse_24hmoney_detail_timestamp(raw,current):
+    """Prefer exact article metadata/date lines; fall back to page-relative age."""
+    text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
+    candidates=[]
+
+    iso_patterns=[
+        r'(?:article:published_time|datePublished|publishedAt)["\']?\s*(?:content=|:)\s*["\']([^"\']+)["\']',
+        r'<time\b[^>]*datetime=["\']([^"\']+)["\']',
+    ]
+    for pattern in iso_patterns:
+        for m in re.finditer(pattern,text,re.I):
+            value=html.unescape(m.group(1)).strip()
+            try:
+                stamp=datetime.fromisoformat(value.replace('Z','+00:00'))
+                if stamp.tzinfo is None:
+                    stamp=stamp.replace(tzinfo=VIETNAM_TZ)
+                stamp=stamp.astimezone(timezone.utc)
+                candidates.append((0,stamp,'minute',True,'metadata'))
+            except Exception:
+                continue
+
+    plain=compact(text)
+    for m in re.finditer(
+        r'(?:thứ\s+[^\s,]+,\s*)?ngày\s+(\d{1,2})/(\d{1,2})/(20\d{2})\s+(\d{1,2}):(\d{2})(?:\s*(AM|PM))?\s*(?:\(GMT\+7\))?',
+        plain,re.I
+    ):
+        d,mo,y,hh,mm,ampm=m.groups()
+        hour=int(hh)
+        if ampm and hour<=12:
+            if ampm.upper()=='PM' and hour<12: hour+=12
+            if ampm.upper()=='AM' and hour==12: hour=0
+        if hour>23: continue
+        try:
+            stamp=datetime(int(y),int(mo),int(d),hour,int(mm),tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
+            candidates.append((1,stamp,'minute',True,'date_line'))
+        except ValueError:
+            continue
+
+    if not candidates:
+        rels=[]
+        for m in re.finditer(r'(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)',plain,re.I):
+            n=int(m.group(1));unit=fold(m.group(2))
+            if (unit=='phut' and n<=1440) or (unit=='gio' and n<=168) or (unit=='ngay' and n<=7):
+                delta=timedelta(minutes=n) if unit=='phut' else (timedelta(hours=n) if unit=='gio' else timedelta(days=n))
+                rels.append((n if unit=='phut' else n*60 if unit=='gio' else n*1440,current-delta,'relative',False,'relative'))
+        if rels:
+            rels.sort(key=lambda x:x[0])
+            _,stamp,precision,verified,basis=rels[0]
+            return stamp,precision,verified,basis
+        return None,None,False,None
+
+    candidates.sort(key=lambda x:(x[0],abs((current-x[1]).total_seconds())))
+    _,stamp,precision,verified,basis=candidates[0]
+    if stamp>current+timedelta(minutes=10) or stamp<current-timedelta(days=30):
+        return None,None,False,None
+    return stamp,precision,verified,basis
+
+
 def count_24hmoney_article_anchors(raw):
     text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
     anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
