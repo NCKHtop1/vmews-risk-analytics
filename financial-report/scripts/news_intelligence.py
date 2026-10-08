@@ -772,3 +772,159 @@ def parse_24hmoney_symbol_page(raw, symbol, current, companies, aliases=None, ba
         out.append(row)
     return out
 
+
+
+def _parse_news_time(value):
+    try:
+        stamp=datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+        return stamp.replace(tzinfo=stamp.tzinfo or timezone.utc).astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _brief_row(row):
+    return {
+        'storyId':row.get('storyId'),
+        'title':row.get('title'),
+        'url':row.get('canonicalUrl') or row.get('url'),
+        'source':row.get('canonicalSource') or row.get('source'),
+        'publishedAt':row.get('publishedAt'),
+        'symbols':row.get('symbols') or [],
+        'topics':row.get('topics') or [],
+        'impactTag':row.get('impactTag'),
+        'newsPriority':int(row.get('newsPriority') or 0),
+        'sourceCount':int(row.get('sourceCount') or 1),
+        'contentType':row.get('contentType') or 'news',
+    }
+
+
+def build_daily_brief(rows, current=None, hours=24):
+    """Build a deterministic market-wide daily brief from factual/news rows."""
+    current=(current or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    floor=current-timedelta(hours=hours)
+    eligible=[]
+    for row in rows or []:
+        if str(row.get('contentType') or 'news') in {'expert_analysis','community'}:
+            continue
+        stamp=_parse_news_time(row.get('publishedAt'))
+        if stamp is None or stamp<floor or stamp>current+timedelta(minutes=10):
+            continue
+        eligible.append(row)
+
+    # Collapse repeated story members before ranking the brief.
+    best={}
+    for row in eligible:
+        key=row.get('storyId') or row.get('canonicalUrl') or row.get('url') or compact(row.get('title')).casefold()
+        prior=best.get(key)
+        rank=(int(row.get('newsPriority') or 0),int(row.get('sourcePriority') or 0),str(row.get('publishedAt') or ''))
+        if prior is None or rank>(int(prior.get('newsPriority') or 0),int(prior.get('sourcePriority') or 0),str(prior.get('publishedAt') or '')):
+            best[key]=row
+    unique=list(best.values())
+    unique.sort(key=lambda x:(int(x.get('newsPriority') or 0),str(x.get('publishedAt') or '')),reverse=True)
+
+    def section(predicate,limit=4):
+        return [_brief_row(x) for x in unique if predicate(x)][:limit]
+
+    policy=section(lambda x:
+        x.get('contentType')=='official' or
+        str(x.get('officialSource') or '') in {'SBV','GOV'} or
+        bool(set(x.get('topics') or []) & {'rates','macro','fx'}) or
+        str(x.get('impactTag') or '') in {'NHNN','FED','ECB','VĨ MÔ','TỶ GIÁ'}
+    )
+    companies=section(lambda x:bool(x.get('symbols')),6)
+    global_rows=section(lambda x:
+        str(x.get('region') or '')=='global' or
+        'global' in set(x.get('topics') or []) or
+        str(x.get('impactTag') or '') in {'FED','ECB','THẾ GIỚI','ĐỊA CHÍNH TRỊ'}
+    )
+    market=section(lambda x:
+        bool(set(x.get('topics') or []) & {'market','stocks','commodity','finance'}) or
+        int(x.get('newsPriority') or 0)>=50
+    )
+
+    symbol_counter=Counter()
+    for row in eligible:
+        for symbol in row.get('symbols') or []:
+            symbol_counter[str(symbol).upper()]+=1
+    top_symbols=[{'symbol':symbol,'mentions':count} for symbol,count in symbol_counter.most_common(8)]
+
+    local=current.astimezone(VIETNAM_TZ)
+    top=[_brief_row(x) for x in unique[:8]]
+    return {
+        'checkedAt':current.isoformat(),
+        'status':'ok',
+        'briefDate':local.date().isoformat(),
+        'windowHours':hours,
+        'itemsConsidered':len(eligible),
+        'storyCount':len(unique),
+        'highPriorityCount':sum(1 for x in unique if int(x.get('newsPriority') or 0)>=55),
+        'officialCount':sum(1 for x in eligible if x.get('contentType')=='official'),
+        'companyStoryCount':sum(1 for x in unique if x.get('symbols')),
+        'topSymbols':top_symbols,
+        'topStories':top,
+        'sections':{'market':market,'policy':policy,'company':companies,'global':global_rows},
+        'method':'deterministic_story_priority_v1',
+    }
+
+
+def _viewpoint_stance(row):
+    expected=row.get('expectedImpact') or {}
+    direction=str(expected.get('direction') or '').lower()
+    confidence=float(expected.get('confidence') or 0)
+    if direction in {'positive','negative','mixed'} and confidence>=0.5:
+        return direction
+    text=compact(str(row.get('title') or '')+' '+str(row.get('summary') or ''))
+    pos=bool(POSITIVE.search(text))
+    neg=bool(NEGATIVE.search(text))
+    if pos and not neg:return 'positive'
+    if neg and not pos:return 'negative'
+    if pos and neg:return 'mixed'
+    return 'neutral'
+
+
+def build_viewpoint_sentiment(rows, current=None, hours=72):
+    """Summarize expert/community viewpoints separately from factual News."""
+    current=(current or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    floor=current-timedelta(hours=hours)
+    channels={'expert_analysis':[],'community':[]}
+    for row in rows or []:
+        kind=str(row.get('contentType') or '')
+        if kind not in channels:
+            continue
+        stamp=_parse_news_time(row.get('publishedAt'))
+        if stamp is None or stamp<floor or stamp>current+timedelta(minutes=10):
+            continue
+        copy=_brief_row(row)
+        copy['stance']=_viewpoint_stance(row)
+        copy['expectedImpact']=row.get('expectedImpact') or {}
+        channels[kind].append(copy)
+
+    def summarize(kind,values):
+        counts=Counter(x['stance'] for x in values)
+        total=len(values)
+        directional=counts['positive']+counts['negative']
+        net=round((counts['positive']-counts['negative'])/directional*100,1) if directional else 0.0
+        if directional==0:label='neutral'
+        elif net>=25:label='positive'
+        elif net<=-25:label='negative'
+        else:label='mixed'
+        symbols=Counter()
+        for row in values:
+            for symbol in row.get('symbols') or []:symbols[str(symbol).upper()]+=1
+        return {
+            'channel':kind,'total':total,
+            'positive':counts['positive'],'negative':counts['negative'],
+            'mixed':counts['mixed'],'neutral':counts['neutral'],
+            'netScore':net,'label':label,
+            'topSymbols':[{'symbol':s,'mentions':n} for s,n in symbols.most_common(6)],
+            'items':sorted(values,key=lambda x:str(x.get('publishedAt') or ''),reverse=True)[:20],
+        }
+
+    expert=summarize('expert_analysis',channels['expert_analysis'])
+    community=summarize('community',channels['community'])
+    return {
+        'checkedAt':current.isoformat(),'status':'ok','windowHours':hours,
+        'separatedFromBreaking':True,
+        'expert':expert,'community':community,
+        'method':'deterministic_viewpoint_summary_v1',
+    }
