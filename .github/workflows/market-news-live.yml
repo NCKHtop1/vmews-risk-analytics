@@ -74,7 +74,7 @@ jobs:
               echo "::warning::News collection failed; retrying on the next heartbeat."
             else
               if SNAPSHOT=/tmp/market-news/market/news.json python - <<'PY'
-          import json, os
+          import json, math, os
           from datetime import datetime, timezone
           from pathlib import Path
           data=json.loads(Path(os.environ['SNAPSHOT']).read_text())
