@@ -134,6 +134,15 @@ jobs:
                   session_required=int(intraday.get('sessionRequired') or (math.ceil(session_expected*.90) if session_expected else 0))
                   session_fresh=int(intraday.get('sessionFresh') if intraday.get('sessionFresh') is not None else success_i)
                   session_bad=session_expected>0 and session_fresh<session_required
+                  # A collector can return 113/113 HTTP-successful *yesterday*
+                  # bars. Require today's underlying quote generation after
+                  # the opening grace period, even if sessionExpected is zero.
+                  today=local.date().isoformat()
+                  opening_elapsed=(540+15<=mins<=690) or (780<=mins<=915)
+                  source_stamp=intraday.get('sessionQuoteSourceTime')
+                  source_day=datetime.fromisoformat(str(source_stamp).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date().isoformat() if source_stamp else ''
+                  if opening_elapsed and (source_day!=today or session_expected<=0):
+                      raise ValueError(f'intraday has no valid {today} session reference: quoteDay={source_day}, sessionExpected={session_expected}, httpSuccess={success_i}/{expected_i}')
                   if intraday.get('status')!='ok' or success_i<required_i or session_bad or age(intraday.get('checkedAt'))>20:
                       raise ValueError(f'intraday stale/partial: fetch={success_i}/{expected_i}, session={session_fresh}/{session_expected}, required={session_required}')
                   print('Intraday age/coverage:',round(age(intraday['checkedAt']),1),f'fetch {success_i}/{expected_i}',f'session {session_fresh}/{session_expected}')
