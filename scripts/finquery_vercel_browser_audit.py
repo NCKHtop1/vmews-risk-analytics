@@ -77,7 +77,7 @@ def visit(label,url):
     phase='loading'
     def check(name,predicate,error=None):
         try:
-            ok=bool(predicate())
+            ok=bool(predicate() if callable(predicate) else predicate)
             checks.append({"name":name,"ok":ok,"details":error if not ok else None})
         except Exception as e:
             checks.append({"name":name,"ok":False,"details":str(e)[:350]})
