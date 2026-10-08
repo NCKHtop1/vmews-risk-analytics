@@ -13,6 +13,7 @@ on:
       - 'data/release-audit-v20.json'
       - 'forecast-*.html'
       - 'forecast-*.js'
+      - 'scripts/forecast-navigation-test.cjs'
       - 'forecast-*.css'
       - 'solution-ai-v17.js'
       - '.github/workflows/pages.yml'
