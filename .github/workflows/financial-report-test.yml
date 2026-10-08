@@ -57,6 +57,39 @@ jobs:
           except Exception as exc:
               print('TRADINGVIEW ERROR',repr(exc),flush=True)
           PY
+      - name: Dry run complete quote and derived publish chain on isolated worktree
+        continue-on-error: true
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -euo pipefail
+          git sparse-checkout add data/fund-holdings-history-v16.json
+          git fetch origin financial-market-data
+          git worktree add /tmp/finquery-oct08-dry origin/financial-market-data
+          git -C /tmp/finquery-oct08-dry sparse-checkout set market
+          export MARKET_REQUIRE_TODAY=1
+          export MARKET_MAX_QUOTE_AGE_MINUTES=105
+          echo "STAGE=quote"
+          python -u financial-report/scripts/refresh_market.py --output /tmp/finquery-oct08-dry/market --mode prices
+          echo "STAGE=technical"
+          python -u financial-report/scripts/build_technical_evidence.py --output /tmp/finquery-oct08-dry/market
+          echo "STAGE=strategy"
+          node financial-report/scripts/build_strategy_snapshot.cjs /tmp/finquery-oct08-dry/market
+          echo "STAGE=sector-risk"
+          node financial-report/scripts/build_sector_risk_calibration.cjs /tmp/finquery-oct08-dry/market
+          echo "STAGE=market-calibration"
+          node financial-report/scripts/build_market_risk_calibration.cjs /tmp/finquery-oct08-dry/market
+          echo "STAGE=risk-monitor"
+          node financial-report/scripts/build_risk_monitor.cjs /tmp/finquery-oct08-dry/market
+          echo "STAGE=final-status"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/finquery-oct08-dry/market')
+          for key in ('quotes','prices-status','technical-signals','strategy-indicators','risk-monitor','market-risk-calibration'):
+              d=json.loads((p/(key+'.json')).read_text())
+              print(key,'status',d.get('status'),'checkedAt',d.get('checkedAt'),'source',d.get('sourceTime') or d.get('latestSourceTime'),'coverage',d.get('coverage'),flush=True)
+          PY
       - name: Build production bundle from frontend source
         run: python financial-report/scripts/build_cdn.py
       - run: python -m unittest discover -s financial-report/tests -v
