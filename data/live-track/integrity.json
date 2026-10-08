@@ -1,18 +1,18 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-10-08T04:59:52.305358+00:00",
+  "generatedAt": "2026-10-08T17:25:56.138185+00:00",
   "status": "WAITING_OR_REVIEW",
   "reasons": [
-    "market/pooled EOD mismatch (2026-10-06 vs 2026-10-07)"
+    "market/pooled EOD mismatch (2026-10-08 vs 2026-10-07)"
   ],
-  "marketModelDate": "2026-10-06",
+  "marketModelDate": "2026-10-08",
   "pooledModelDate": "2026-10-07",
   "sameCompletedEod": false,
   "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
   "policyAligned": true,
   "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
   "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
-  "marketContextDate": "2026-10-02",
+  "marketContextDate": "2026-10-05",
   "marketContextStatus": "EXCLUDED_UNAVAILABLE",
   "marketContextImputed": false,
   "pointInTimeReady": true,
