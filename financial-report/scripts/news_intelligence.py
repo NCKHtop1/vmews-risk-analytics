@@ -175,6 +175,9 @@ def resolve_company_symbols(companies, title, body='', aliases=None):
         name_hit = next((a for a in long_aliases if re.search(r'(?<!\w)' + re.escape(a) + r'(?!\w)', text, re.I)), None)
         ticker_title = _ticker_exact(title, symbol)
         ticker_body = _ticker_exact(body, symbol)
+        if symbol == 'FPT' and re.search(r'\bfpt\s+(?:retail|securities)\b', text, re.I) and not re.search(r'fpt\s+(?:corporation|corp)|tập đoàn\s+fpt|công ty cổ phần\s+fpt', text, re.I):
+            ticker_title = False
+            ticker_body = False
 
         if name_hit:
             mentions.append({'symbol':symbol,'confidence':0.98,'reason':'issuer_alias','evidence':name_hit[:80]})
