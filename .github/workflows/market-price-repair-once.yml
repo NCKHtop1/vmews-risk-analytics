@@ -1,0 +1,104 @@
+name: Recover FinQuery same-session prices once
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/market-price-repair-once.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+# A repair must never race the regular live price publisher. If the old
+# publisher is blocked in its own loop, hand ownership to this bounded run.
+concurrency:
+  group: market-price-live-v2
+  cancel-in-progress: true
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          sparse-checkout: |
+            financial-report
+            data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install independent verified quote source
+        run: pip install --disable-pip-version-check -q pandas tradingview-screener==3.2.1
+      - name: Publish verified market and derived snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          FORCE_ONESHOT: '1'
+          MARKET_MAX_QUOTE_AGE_MINUTES: '18'
+          MARKET_LUNCH_MAX_QUOTE_AGE_MINUTES: '105'
+          MARKET_CLOSE_CATCH_MAX_AGE_MINUTES: '30'
+        run: bash financial-report/scripts/live_session_publisher.sh
+      - name: Verify remote production source date, scanner and risk
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin financial-market-data
+          for file in quotes technical-signals strategy-indicators risk-monitor; do
+            git show "origin/financial-market-data:market/${file}.json" > "/tmp/finquery-${file}.json"
+          done
+          python - <<'PY'
+          import json,math
+          from pathlib import Path
+          from datetime import datetime,timedelta,timezone
+          VN=timezone(timedelta(hours=7))
+          now=datetime.now(timezone.utc)
+          local=now.astimezone(VN)
+          day=local.date().isoformat()
+          root=Path('/tmp')
+          read=lambda name: json.loads((root/('finquery-'+name+'.json')).read_text())
+          q=read('quotes')
+          sc=read('technical-signals')
+          strategy=read('strategy-indicators')
+          risk=read('risk-monitor')
+          source=q.get('latestSourceTime')
+          if not source:
+              raise SystemExit('Published quote sourceTime is absent')
+          stamp=datetime.fromisoformat(str(source).replace('Z','+00:00')).astimezone(timezone.utc)
+          published_day=stamp.astimezone(VN).date().isoformat()
+          expected=max(1,int(q.get('expected') or 0))
+          valid=sum(
+              1 for row in (q.get('quotes') or {}).values()
+              if row.get('status')!='retained'
+              and str(row.get('sourceTime') or '').startswith(day)
+          )
+          # Per-symbol timestamps are timezone-aware UTC, so compare dates
+          # using Asia/Bangkok rather than ISO string prefixes.
+          valid=sum(
+              1 for row in (q.get('quotes') or {}).values()
+              if row.get('status')!='retained' and row.get('sourceTime')
+              and datetime.fromisoformat(str(row['sourceTime']).replace('Z','+00:00')).astimezone(VN).date().isoformat()==day
+          )
+          if published_day!=day or valid<math.ceil(expected*.90):
+              raise SystemExit(f'P0 PRICE RED: {published_day=} {day=} {valid=}/{expected}')
+          if int(sc.get('coverage') or 0)<int(sc.get('universe') or 0)*.90:
+              raise SystemExit(f'SCANNER RED: {sc.get("coverage")} / {sc.get("universe")}')
+          if sc.get('sourceTime')!=source or strategy.get('sourceTime')!=source or risk.get('sourceTime')!=source:
+              raise SystemExit('P0 RED: published scanner/strategy/risk misaligned to quotes')
+          if int((risk.get('coverage') or {}).get('quotes') or 0)<math.ceil(expected*.90):
+              raise SystemExit('P0 RED: risk has insufficient same-session quote coverage')
+          if risk.get('sourceDate')!=day:
+              raise SystemExit(f'P0 RED: risk sourceDate={risk.get("sourceDate")} expected {day}')
+          print('FINQUERY REMOTE RECOVERY PASS',{'quoteSourceTime':source,'quoteCoverage':valid,'expected':expected,'scanner':sc.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('coverage') or {}).get('quotes')})
+          PY
+      - name: Rebuild public Pages with recovered market branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
