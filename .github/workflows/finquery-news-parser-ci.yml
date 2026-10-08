@@ -9,6 +9,9 @@ on:
       - 'financial-report/scripts/build_cdn.py'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.js'
+      - 'financial-report/frontend/insights.js'
+      - 'financial-report/frontend/research-agent.js'
+      - 'financial-report/frontend/market.css'
       - 'financial-report/tests/test_news_parser.py'
       - 'financial-report/tests/test_news_intelligence.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
@@ -51,6 +54,9 @@ jobs:
         run: |
           python financial-report/tests/test_news_parser.py
           python financial-report/tests/test_news_intelligence.py
+          node --check financial-report/frontend/market.js
+          node --check financial-report/frontend/insights.js
+          node --check financial-report/frontend/research-agent.js
       - name: Build standalone FinQuery and verify News bundle contract
         run: |
           python financial-report/scripts/build_cdn.py
