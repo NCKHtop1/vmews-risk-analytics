@@ -106,6 +106,19 @@ NEGATIVE = re.compile(
     r'lỗ|giảm lợi nhuận|doanh thu giảm|hạ khuyến nghị|giảm giá mục tiêu|bị phạt|xử phạt|khởi tố|bắt tạm giam|'
     r'vỡ nợ|phá sản|hủy niêm yết|đình chỉ|miss(?:es|ed)? estimates?|downgrade|fraud|default|bankrupt', re.I)
 
+FINANCIAL_NEWS_RE = re.compile(
+    r'cổ phiếu|chứng khoán|thị trường|vn-?index|hose|hnx|upcom|ngân hàng|lãi suất|tỷ giá|'
+    r'doanh thu|lợi nhuận|kết quả kinh doanh|báo cáo tài chính|trái phiếu|cổ tức|esop|'
+    r'đầu tư|vốn hóa|khối ngoại|quỹ|mua ròng|bán ròng|hàng hóa|giá dầu|giá vàng|'
+    r'fed|fomc|cpi|gdp|pmi|lạm phát|bất động sản|doanh nghiệp|ipo|m&a|'
+    r'stock|shares|earnings|revenue|profit|bond|dividend|interest rate|exchange rate',
+    re.I
+)
+FINANCIAL_TOPIC_ALLOW = {
+    'stocks','finance','commodity','macro','realestate','business','rates','fx',
+    'gold','oil','company','geopolitical'
+}
+
 TITLE_NOISE = re.compile(
     r'\s*[-–—|]\s*(?:luatvietnam|vnexpress|vneconomy|cafef|vietnamnet|báo đầu tư|báo chính phủ|24hmoney)\s*$',
     re.I
@@ -477,6 +490,64 @@ def _24hmoney_timestamp(context,current,anchor=-1,max_distance=180):
     _,_,_,stamp,precision,verified=candidates[0]
     return stamp,precision,verified
 
+def parse_24hmoney_detail_timestamp(raw,current):
+    """Prefer exact article metadata/date lines; fall back to page-relative age."""
+    text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
+    candidates=[]
+
+    iso_patterns=[
+        r'(?:article:published_time|datePublished|publishedAt)["\']?\s*(?:content=|:)\s*["\']([^"\']+)["\']',
+        r'<time\b[^>]*datetime=["\']([^"\']+)["\']',
+    ]
+    for pattern in iso_patterns:
+        for m in re.finditer(pattern,text,re.I):
+            value=html.unescape(m.group(1)).strip()
+            try:
+                stamp=datetime.fromisoformat(value.replace('Z','+00:00'))
+                if stamp.tzinfo is None:
+                    stamp=stamp.replace(tzinfo=VIETNAM_TZ)
+                stamp=stamp.astimezone(timezone.utc)
+                candidates.append((0,stamp,'minute',True,'metadata'))
+            except Exception:
+                continue
+
+    plain=compact(text)
+    for m in re.finditer(
+        r'(?:thứ\s+[^\s,]+,\s*)?ngày\s+(\d{1,2})/(\d{1,2})/(20\d{2})\s+(\d{1,2}):(\d{2})(?:\s*(AM|PM))?\s*(?:\(GMT\+7\))?',
+        plain,re.I
+    ):
+        d,mo,y,hh,mm,ampm=m.groups()
+        hour=int(hh)
+        if ampm and hour<=12:
+            if ampm.upper()=='PM' and hour<12: hour+=12
+            if ampm.upper()=='AM' and hour==12: hour=0
+        if hour>23: continue
+        try:
+            stamp=datetime(int(y),int(mo),int(d),hour,int(mm),tzinfo=VIETNAM_TZ).astimezone(timezone.utc)
+            candidates.append((1,stamp,'minute',True,'date_line'))
+        except ValueError:
+            continue
+
+    if not candidates:
+        rels=[]
+        for m in re.finditer(r'(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)',plain,re.I):
+            n=int(m.group(1));unit=fold(m.group(2))
+            if (unit=='phut' and n<=1440) or (unit=='gio' and n<=168) or (unit=='ngay' and n<=7):
+                delta=timedelta(minutes=n) if unit=='phut' else (timedelta(hours=n) if unit=='gio' else timedelta(days=n))
+                rels.append((n if unit=='phut' else n*60 if unit=='gio' else n*1440,current-delta,'relative',False,'relative'))
+        if rels:
+            rels.sort(key=lambda x:x[0])
+            _,stamp,precision,verified,basis=rels[0]
+            return stamp,precision,verified,basis
+        return None,None,False,None
+
+    candidates.sort(key=lambda x:(x[0],abs((current-x[1]).total_seconds())))
+    _,stamp,precision,verified,basis=candidates[0]
+    if stamp>current+timedelta(minutes=10) or stamp<current-timedelta(days=30):
+        return None,None,False,None
+    return stamp,precision,verified,basis
+
+
 def count_24hmoney_article_anchors(raw):
     text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
     anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
@@ -486,7 +557,25 @@ def count_24hmoney_article_anchors(raw):
     )
 
 
-def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https://24hmoney.vn/news/live'):
+def _24hmoney_financial_relevance(title, symbols, topics, evidence, content_type):
+    topic_set=set(topics or [])
+    evidence_set=set(evidence or [])
+    if symbols:
+        return True,'symbol'
+    if content_type=='expert_analysis':
+        return True,'expert'
+    if topic_set & FINANCIAL_TOPIC_ALLOW:
+        # Broad categories such as business/real-estate are accepted because
+        # they are explicit 24HMoney finance modules, not generic site chrome.
+        return True,'source_category'
+    if evidence_set & {'rates','gold','oil','fx','macro','geopolitical','corporate'}:
+        return True,'semantic_evidence'
+    if FINANCIAL_NEWS_RE.search(str(title or '')):
+        return True,'financial_title'
+    return False,'non_financial'
+
+
+def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https://24hmoney.vn/news/live', financial_only=True):
     text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
     rows=[];seen=set()
     anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
@@ -517,6 +606,9 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
         mentions=resolve_company_symbols(companies,title,'',aliases)
         topics,evidence=classify_semantics(title,'',base_topics)
         symbols=[x['symbol'] for x in mentions]
+        relevant,relevance_reason=_24hmoney_financial_relevance(title,symbols,topics,evidence,content_type)
+        if financial_only and not relevant:
+            continue
         source_tier='expert' if content_type=='expert_analysis' else 'financial_press'
         source_priority=54 if content_type=='expert_analysis' else 78
         row={
@@ -529,6 +621,8 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
             'topics':topics,'topicEvidence':evidence,
             'sourceTier':source_tier,'sourcePriority':source_priority,
             'contentType':content_type,'directSource':True,
+            'sourceCategory':next((x for x in ('stocks','finance','commodity','macro','realestate','business','global','legal','expert') if x in set(topics)), 'general'),
+            'financialRelevance':relevant,'relevanceReason':relevance_reason,
         }
         row['expectedImpact']=expected_impact(title,'',symbols)
         rows.append(row)
