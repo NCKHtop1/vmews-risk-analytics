@@ -190,13 +190,17 @@ def refresh(output):
 
     rows.sort(key=lambda x:(x['symbol'],-int(x['year'] or 0),x['metric']))
     errors=[x for x in health if x['status']=='error']
+    current_year=datetime.now(timezone.utc).year
+    symbols_with_plan={r['symbol'] for r in rows}
+    current_year_symbols={r['symbol'] for r in rows if int(r.get('year') or 0)==current_year}
     status={
       'checkedAt':now(),'symbolsTotal':len(symbols),
-      'symbolsWithPlan':len({r['symbol'] for r in rows}),
+      'symbolsWithPlan':len(symbols_with_plan),
+      'currentYearSymbols':len(current_year_symbols),
       'reachable':sum(1 for x in health if x['status']!='error'),
       'errors':len(errors),
       'parser':'24hmoney-plan-table-v2',
-      'invalidFutureYears':sum(1 for r in rows if int(r.get('year') or 0)>datetime.now(timezone.utc).year+2),
+      'invalidFutureYears':sum(1 for r in rows if int(r.get('year') or 0)>current_year+2),
       'sources':health
     }
     payload={
@@ -211,6 +215,11 @@ def refresh(output):
         raise RuntimeError('All business-plan source requests failed')
     if status['invalidFutureYears']:
         raise RuntimeError('Business-plan parser emitted invalid future years')
+    minimum=max(5,min(10,len(symbols)//10))
+    if status['symbolsWithPlan']<minimum:
+        raise RuntimeError(f'Business-plan coverage too low: {status["symbolsWithPlan"]}/{len(symbols)} < {minimum}')
+    if status['errors']>max(20,len(symbols)//3):
+        raise RuntimeError(f'Business-plan parser/source errors too high: {status["errors"]}/{len(symbols)}')
     return status
 
 if __name__=='__main__':
