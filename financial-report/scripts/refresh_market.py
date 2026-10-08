@@ -2161,7 +2161,7 @@ def _fetch_24hmoney_symbol_news(companies, current):
     def fetch_one(symbol):
         url=f'https://24hmoney.vn/stock/{symbol}'
         try:
-            raw=request(url)
+            raw=request(url,timeout=8)
             parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
             return symbol,parsed,True,None
         except Exception as exc:
@@ -2175,7 +2175,7 @@ def _fetch_24hmoney_symbol_news(companies, current):
                 reachable+=1;rows.extend(parsed)
             elif error:
                 errors.append(symbol+': '+error)
-    status='ok' if rows else ('reachable_no_news' if reachable else 'error')
+    status='ok' if rows else ('empty' if reachable else 'error')
     health={'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':status,'items':len(rows),
             'symbolsAttempted':len(batch),'symbolsReachable':reachable,'parser':'24hmoney-symbol-v2'}
     if errors: health['errors']=errors[:6]
