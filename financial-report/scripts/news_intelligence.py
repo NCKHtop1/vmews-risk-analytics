@@ -510,3 +510,37 @@ def realized_reaction(row, bars, horizons=(15,30,60)):
         out['returnEodPct']=round((same_day[-1][1]/base[1]-1)*100,3)
         out['eodTime']=same_day[-1][0].isoformat()
     return out
+
+
+def semantic_violations(rows):
+    """Return critical false-positive patterns that must never publish green."""
+    violations=[]
+    for row in rows or []:
+        title=compact(row.get('title'))
+        text=compact(title+' '+str(row.get('summary') or ''))
+        symbols=set(str(x).upper() for x in (row.get('symbols') or []))
+        if 'HCM' in symbols and _pattern_any(NEGATIVE_CONTEXT['HCM'],text) and not _issuer_context('HCM',text):
+            violations.append({'code':'HCM_CITY_FALSE_POSITIVE','title':title,'symbols':sorted(symbols)})
+        if 'VIX' in symbols and _pattern_any(NEGATIVE_CONTEXT['VIX'],text) and not _issuer_context('VIX',text):
+            violations.append({'code':'VIX_INDEX_FALSE_POSITIVE','title':title,'symbols':sorted(symbols)})
+        if 'VND' in symbols and _pattern_any(NEGATIVE_CONTEXT['VND'],text) and not _issuer_context('VND',text):
+            violations.append({'code':'VND_CURRENCY_FALSE_POSITIVE','title':title,'symbols':sorted(symbols)})
+        if row.get('impactTag')=='VÀNG' and GOLD_IDIOM.search(text) and not GOLD_EXPLICIT.search(text):
+            violations.append({'code':'GOLD_IDIOM_FALSE_TOPIC','title':title,'symbols':sorted(symbols)})
+        if row.get('impactTag')=='TỶ GIÁ' and not FX_EXPLICIT.search(text):
+            violations.append({'code':'BARE_CURRENCY_FALSE_FX_TOPIC','title':title,'symbols':sorted(symbols)})
+    return violations
+
+
+def parse_24hmoney_symbol_page(raw, symbol, current, companies, aliases=None, base_url=None):
+    """Parse public per-symbol article links with the same metadata-only policy."""
+    base_url=base_url or f'https://24hmoney.vn/stock/{symbol}'
+    rows=parse_24hmoney_live(raw,current,companies,aliases,base_url)
+    out=[]
+    for row in rows:
+        syms=set(row.get('symbols') or [])
+        if symbol in syms:
+            row['discoveredVia']='24HMoney Symbol'
+            row['symbolDiscovery']=symbol
+            out.append(row)
+    return out
