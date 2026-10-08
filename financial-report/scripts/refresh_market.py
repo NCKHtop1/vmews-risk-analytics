@@ -47,7 +47,9 @@ LUATVIETNAM_MARKET_PATTERN = re.compile(
     r'chứng khoán|cổ phiếu|công ty đại chúng|quỹ đầu tư|thị trường vốn|'
     r'báo cáo tài chính|kiểm toán|thuế|tài chính|đầu tư|bảo hiểm|fintech|'
     r'vốn nhà nước|phát hành|niêm yết|giao dịch', re.I)
-LUATVIETNAM_ARTICLE_PATH = re.compile(r'(?:-d1\\.html|-article\\.html)('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
+LUATVIETNAM_ARTICLE_PATH = re.compile(r'(?:-d1\.html|-article\.html)$', re.I)
+MONEY24_LIVE_URL = 'https://24hmoney.vn/news/live'
+FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/chung-khoan.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/doanh-nghiep.rss'),
          ('VietnamNet', 'https://vietnamnet.vn/kinh-doanh.rss'),
