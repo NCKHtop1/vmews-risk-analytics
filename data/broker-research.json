@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-07T13:36:06+00:00",
+  "updatedAt": "2026-10-08T02:36:06+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-VPL-2026-10-08-96335a3c",
+      "symbol": "VPL",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-08",
+      "title": "VPL – BCPT – Báo cáo gặp gỡ nhà đầu tư tháng 10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/vpl-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026/",
+      "summary": "MBS công bố báo cáo ngày 08/10/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "VNDIRECT-BAF-2026-10-07-3f43207c",
       "symbol": "BAF",
