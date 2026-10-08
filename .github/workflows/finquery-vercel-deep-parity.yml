@@ -1,0 +1,49 @@
+name: FinQuery Vercel deep parity audit
+on:
+  push:
+    branches: [ops/finquery-domain-proxy-verify-20261009]
+    paths:
+      - 'scripts/finquery_vercel_parity_audit.py'
+      - 'scripts/finquery_vercel_browser_audit.py'
+      - '.github/workflows/finquery-vercel-deep-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  http-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare origin and Vercel source/data/deep links
+        run: python scripts/finquery_vercel_parity_audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-vercel-parity-http
+          path: finquery-parity-http-report.json
+          if-no-files-found: ignore
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser dependency
+        run: pip install -q --disable-pip-version-check selenium==4.36.0
+      - name: Compare live browser behavior and UI on GitHub and Vercel
+        run: |
+          if [ -f scripts/finquery_vercel_browser_audit.py ]; then
+            python scripts/finquery_vercel_browser_audit.py
+          else
+            echo "BROWSER AUDIT NOT IMPLEMENTED (not a pass)"
+            exit 2
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-vercel-parity-browser
+          path: finquery-browser-audit.json
+          if-no-files-found: ignore
