@@ -457,6 +457,7 @@ def _24hmoney_context_category(context,anchor=-1,max_distance=140):
     candidates=[]
     patterns=[
         (r'#?\s*Chuyên\s*gia',('expert_analysis',{'expert','stocks'})),
+        (r'#?\s*Cộng\s*đồng',('community',{'community','stocks'})),
         (r'#?\s*Chứng\s*khoán',('news',{'stocks'})),
         (r'#?\s*Tài\s*chính',('news',{'finance'})),
         (r'#?\s*Hàng\s*hóa',('news',{'commodity'})),
@@ -642,8 +643,8 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
         relevant,relevance_reason=_24hmoney_financial_relevance(title,symbols,topics,evidence,content_type)
         if financial_only and not relevant:
             continue
-        source_tier='expert' if content_type=='expert_analysis' else 'financial_press'
-        source_priority=54 if content_type=='expert_analysis' else 78
+        source_tier='expert' if content_type=='expert_analysis' else ('community' if content_type=='community' else 'financial_press')
+        source_priority=54 if content_type=='expert_analysis' else (36 if content_type=='community' else 78)
         row={
             'title':title,'summary':'','url':clean_url,'source':'24HMoney',
             'publisher':'24HMoney','discoveredVia':'24HMoney Live',
