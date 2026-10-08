@@ -1,0 +1,33 @@
+name: FinQuery Vercel after-deploy bank-network smoke
+on:
+  push:
+    branches: [ops/finquery-domain-proxy-verify-20261009]
+    paths:
+      - 'scripts/finquery_vercel_forecast_smoke.py'
+      - '.github/workflows/finquery-vercel-postdeploy-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q selenium==4.36.0
+      - name: Verify FinQuery on Vercel when client blocks GitHub domains
+        run: python scripts/finquery_vercel_bank_network_audit.py
+  forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q selenium==4.36.0
+      - name: Verify isolated Forecast data and actual rendered UI without client GitHub
+        run: python scripts/finquery_vercel_forecast_smoke.py
