@@ -163,7 +163,7 @@ jobs:
           symbol24=source_map.get('24HMoney Symbol') or {}
           if live24.get('status')=='error':
               raise SystemExit(f'24HMoney Live parser/source degraded: {live24}')
-          if live24.get('parser')!='24hmoney-live-v3':
+          if live24.get('parser')!='24hmoney-live-v4':
               raise SystemExit(f'24HMoney Live parser version invalid: {live24.get("parser")}')
           if int(live24.get('articleAnchors') or 0)>0 and int(live24.get('items') or 0)==0:
               raise SystemExit(f'24HMoney Live has current article anchors but parsed 0 items: {live24}')
