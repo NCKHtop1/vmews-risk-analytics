@@ -18,3 +18,19 @@ jobs:
         with:
           node-version: '22'
       - run: node --check api/ssi-mcp.js && node --test api/ssi-mcp.test.cjs
+
+  discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    continue-on-error: true
+    steps:
+      - name: Check public SSI MCP OAuth discovery (no credentials)
+        shell: bash
+        run: |
+          for path in /mcp /.well-known/oauth-protected-resource/mcp /.well-known/oauth-protected-resource /.well-known/oauth-authorization-server; do
+            echo "DISCOVERY PATH: $path"
+            curl -sS --max-time 6 -D /tmp/ssi_headers -o /tmp/ssi_body "https://mcp.ssi.com.vn$path" || true
+            grep -Ei '^(HTTP/|www-authenticate:|location:|content-type:|access-control-allow-origin:)' /tmp/ssi_headers || true
+            head -c 400 /tmp/ssi_body | tr '\n' ' ' || true
+            echo
+          done
