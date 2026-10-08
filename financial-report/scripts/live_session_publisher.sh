@@ -6,6 +6,7 @@ OUT="/tmp/market-live"
 INTERVAL_SECONDS="${MARKET_LOOP_SECONDS:-300}"
 MAX_AGE_MINUTES="${MARKET_MAX_QUOTE_AGE_MINUTES:-18}"
 CLOSE_CATCH_MAX_AGE_MINUTES="${MARKET_CLOSE_CATCH_MAX_AGE_MINUTES:-30}"
+LUNCH_MAX_AGE_MINUTES="${MARKET_LUNCH_MAX_QUOTE_AGE_MINUTES:-105}"
 FORCE_ONESHOT="${FORCE_ONESHOT:-0}"
 GH_REPO="${GH_REPO:-NCKHtop1/vmews-risk-analytics}"
 
@@ -237,7 +238,11 @@ collect_validate_publish() {
   # The official HOSE close can remain stamped at 14:45 while the close-catch
   # loop runs until 15:05. Keep the strict 18-minute gate intraday, but allow
   # the same-day official close snapshot a bounded 30-minute window after 14:45.
-  if [ "$local_min" -ge 885 ] && [ "$local_min" -le 905 ]; then
+  if [ "$local_min" -ge 700 ] && [ "$local_min" -lt 775 ]; then
+    # A one-shot repair at lunch uses the same-day 11:30 board without
+    # falsely asserting that a market-closed quote was traded just now.
+    current_max_age="$LUNCH_MAX_AGE_MINUTES"
+  elif [ "$local_min" -ge 885 ] && [ "$local_min" -le 905 ]; then
     current_max_age="$CLOSE_CATCH_MAX_AGE_MINUTES"
   fi
   for attempt in 1 2; do
