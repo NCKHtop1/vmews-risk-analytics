@@ -481,3 +481,7 @@ body.strategy-lab-view .strategy-page{display:block}
 .idea-plan-row small{display:block;margin-top:3px;color:#8490a2;font-size:9px;line-height:1.4}
 .idea-plan-row strong{flex-shrink:0;color:#375bb6;font-size:13px}
 @media(max-width:600px){.idea-plan-row{align-items:flex-start}.news-primary-tabs{gap:5px}.news-primary-tabs button{padding:6px 8px}}
+
+.news-head-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+#news-alert-toggle{font-size:9px!important;padding:6px 9px!important;border-radius:999px!important}
+#news-alert-toggle[aria-pressed="true"]{background:#eef7f3!important;border-color:#b9decf!important;color:#187356!important}
