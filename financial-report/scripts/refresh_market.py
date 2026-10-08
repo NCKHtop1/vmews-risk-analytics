@@ -15,6 +15,12 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
+import sys
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+import news_intelligence as ni
 
 ROOT = Path(__file__).resolve().parents[1]
 VN = timezone(timedelta(hours=7))
@@ -47,6 +53,7 @@ LUATVIETNAM_MARKET_PATTERN = re.compile(
     r'báo cáo tài chính|kiểm toán|thuế|tài chính|đầu tư|bảo hiểm|fintech|'
     r'vốn nhà nước|phát hành|niêm yết|giao dịch', re.I)
 LUATVIETNAM_ARTICLE_PATH = re.compile(r'(?:-d1\.html|-article\.html)$', re.I)
+MONEY24_LIVE_URL = 'https://24hmoney.vn/news/live'
 FEEDS = [('VnExpress', 'https://vnexpress.net/rss/kinh-doanh.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/chung-khoan.rss'),
          ('Báo Đầu tư', 'https://baodautu.vn/doanh-nghiep.rss'),
@@ -2110,7 +2117,8 @@ def parse_feed(raw, publisher, feed_url, companies, current):
             continue
         body = clean(item.findtext('description'))
         article_text = title + ' ' + body
-        matched = [c['symbol'] for c in companies if company_match(c, article_text)]
+        mentions = ni.resolve_company_symbols(companies, title, body, ALIASES)
+        matched = [x['symbol'] for x in mentions]
         topics = set(FEED_TOPICS.get(feed_url, ()))
         for topic, pattern in TOPIC_PATTERNS.items():
             if pattern.search(article_text):
@@ -2132,13 +2140,64 @@ def parse_feed(raw, publisher, feed_url, companies, current):
             'title': title, 'summary': body[:900],
             'url': urlunsplit((link.scheme, link.netloc, link.path, '', '')),
             'source': origin_source, 'publishedAt': dt.isoformat(),
-            'symbols': matched, 'topics': sorted(topics),
+            'symbols': matched, 'entityMentions': mentions,
+            'entityConfidence': max([x['confidence'] for x in mentions], default=None),
+            'topics': sorted(topics),
             'sourceTier': source_tier, 'sourcePriority': source_priority, **meta
         }
         if origin_source != publisher:
             row['feedSource'] = publisher
         rows.append(row)
     return rows
+
+
+def _fetch_24hmoney_symbol_news(companies, current):
+    symbols=sorted({str(c.get('symbol') or '').upper() for c in companies if c.get('symbol')})
+    if not symbols:
+        return [], {'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':'empty','items':0,'symbolsAttempted':0,'symbolsReachable':0}
+    budget=max(1,min(len(symbols),int(os.environ.get('MONEY24_SYMBOL_BUDGET','30'))))
+    priority=[x for x in ('FPT','MBB','HPG','VCB','VIC','VHM','SSI','TCB','VPB','VND','HCM','VIX') if x in symbols]
+    offset=(current.hour*budget)%len(symbols)
+    rotated=[symbols[(offset+i)%len(symbols)] for i in range(budget)]
+    batch=[]
+    for symbol in priority+rotated:
+        if symbol not in batch: batch.append(symbol)
+    rows=[];reachable=0;errors=[]
+    def fetch_one(symbol):
+        url=f'https://24hmoney.vn/stock/{symbol}'
+        try:
+            raw=request(url,timeout=8)
+            parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
+            return symbol,parsed,True,None
+        except Exception as exc:
+            return symbol,[],False,str(exc)[:120]
+    workers=max(4,min(12,int(os.environ.get('MONEY24_SYMBOL_WORKERS','10'))))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures=[pool.submit(fetch_one,symbol) for symbol in batch]
+        for future in as_completed(futures):
+            symbol,parsed,ok,error=future.result()
+            if ok:
+                reachable+=1;rows.extend(parsed)
+            elif error:
+                errors.append(symbol+': '+error)
+    status='ok' if rows else ('empty' if reachable else 'error')
+    health={'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':status,'items':len(rows),
+            'symbolsAttempted':len(batch),'symbolsReachable':reachable,'parser':'24hmoney-symbol-v2'}
+    if errors: health['errors']=errors[:6]
+    return rows,health
+
+
+def _fetch_24hmoney_live(companies, current):
+    try:
+        rows = ni.parse_24hmoney_live(request(MONEY24_LIVE_URL), current, companies, ALIASES, MONEY24_LIVE_URL)
+        latest = max((row.get('publishedAt') for row in rows if row.get('publishedAt')), default=None)
+        return rows, {
+            'name':'24HMoney Live','url':MONEY24_LIVE_URL,
+            'status':'ok' if rows else 'empty','items':len(rows),
+            'lastItemAt':latest,'parser':'24hmoney-live-v2'
+        }
+    except Exception as exc:
+        return [], {'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':'error','error':str(exc)[:240],'parser':'24hmoney-live-v2'}
 
 
 def _vbma_cell(value):
@@ -2888,6 +2947,12 @@ def news(out, companies):
     sbv_items, sbv_source = _fetch_sbv_news(current)
     rows.extend(sbv_items)
     sources.append(sbv_source)
+    money24_items, money24_source = _fetch_24hmoney_live(companies, current)
+    rows.extend(money24_items)
+    sources.append(money24_source)
+    money24_symbol_items, money24_symbol_source = _fetch_24hmoney_symbol_news(companies, current)
+    rows.extend(money24_symbol_items)
+    sources.append(money24_symbol_source)
     luat_rows, luat_sources, luat_health = _fetch_luatvietnam_direct(companies, current)
     rows.extend(luat_rows)
     sources.extend(luat_sources)
@@ -2901,7 +2966,20 @@ def news(out, companies):
         for row in previous.get('items', [])
         if _retain_news_row(row, current)
     ]
-    items = _unique_news(rows + retained)[:2500]
+    normalized = [ni.enrich_row(row, companies, ALIASES) for row in (rows + retained)]
+    items = _unique_news(normalized)[:2500]
+    items, story_rows = ni.cluster_stories(items)
+    intraday_cache = {}
+    for row in items:
+        symbols = row.get('symbols') or []
+        if len(symbols) != 1:
+            continue
+        symbol = symbols[0]
+        if symbol not in intraday_cache:
+            intraday_cache[symbol] = (read(out / 'intraday' / (symbol + '.json'), {}) or {}).get('bars') or []
+        reaction = ni.realized_reaction(row, intraday_cache[symbol])
+        if reaction:
+            row['observedReaction'] = reaction
     healthy = sum(source.get('status') == 'ok' for source in sources)
     empty = sum(source.get('status') == 'empty' for source in sources)
     ok = healthy > 0
@@ -2910,7 +2988,7 @@ def news(out, companies):
     payload = {
         'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'),
         'status': 'ok' if ok else 'retained', 'sources': sources, 'sourceHealth': health,
-        'luatVietnamDirect': luat_health, 'items': items
+        'luatVietnamDirect': luat_health, 'newsIntelligenceVersion':'v2', 'items': items
     }
     write(path, payload)
 
@@ -2926,14 +3004,34 @@ def news(out, companies):
         'perSymbolLimit': 15, 'companyCoverage': len(company_counts),
         'companyCounts': company_counts, 'items': company_items
     })
+    write(out / 'news-stories.json', {
+        'checkedAt': checked_at, 'status':'ok' if ok else 'retained',
+        'storyCount':len(story_rows), 'items':story_rows[:500]
+    })
+    violations = ni.semantic_violations(items)
+    semantic_metrics = {
+        'checkedAt':checked_at,
+        'entityTaggedItems':sum(1 for row in items if row.get('symbols')),
+        'ambiguousGuardedItems':sum(1 for row in items if any(m.get('reason','').startswith('ambiguous') for m in (row.get('entityMentions') or []))),
+        'semanticCorrections':sum(1 for row in items if row.get('semanticCorrection')),
+        'storyCount':len(story_rows),
+        'clusteredMembers':sum(max(0,int(row.get('memberCount') or 1)-1) for row in story_rows),
+        'sourceLineageItems':sum(1 for row in items if row.get('publisher') or row.get('discoveredVia')),
+        'criticalViolations':len(violations),
+        'violations':violations[:20],
+    }
+    write(out / 'news-semantic-health.json', semantic_metrics)
     drivers = build_drivers(out, companies) if (out / 'quotes.json').exists() else {}
     print(
         f'News: {len(rows)} fetched; {len(items)} unique; latest {len(latest_items)}; '
         f'company {len(company_items)} items/{len(company_counts)} symbols; '
+        f'stories {len(story_rows)}; 24hmoney live {len(money24_items)} + symbol {len(money24_symbol_items)}; '
         f'luat {luat_health.get("status")} {len(luat_rows)} items; '
         f'sources {healthy}/{len(sources)} healthy ({empty} empty); drivers: {len(drivers)}',
         flush=True
     )
+    if violations:
+        raise RuntimeError('News semantic gate failed: '+json.dumps(violations[:5],ensure_ascii=False))
     if not ok:
         raise RuntimeError('All news sources failed or returned no parseable items; previous news retained')
 
@@ -2961,5 +3059,3 @@ if __name__ == '__main__':
             errors.append(str(e))
     if errors:
         raise SystemExit('; '.join(errors))
-
-

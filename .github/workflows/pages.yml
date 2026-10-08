@@ -113,6 +113,8 @@ jobs:
           macro=json.loads(Path('_market-data/market/macro.json').read_text())
           news_latest=json.loads(Path('_market-data/market/news-latest.json').read_text())
           company_news=json.loads(Path('_market-data/market/news-company-latest.json').read_text())
+          news_stories=json.loads(Path('_market-data/market/news-stories.json').read_text())
+          semantic_health=json.loads(Path('_market-data/market/news-semantic-health.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -140,6 +142,10 @@ jobs:
           assert company_news.get('status')=='ok' and company_news.get('selection')=='per_symbol_latest' and int(company_news.get('perSymbolLimit') or 0)==15,('invalid company news',company_news.get('status'),company_news.get('selection'),company_news.get('perSymbolLimit'))
           assert int(company_news.get('companyCoverage') or 0)==len(company_counts) and len(company_counts)>0 and bool(company_news.get('items')),('company news coverage invalid',company_news.get('companyCoverage'),len(company_counts),len(company_news.get('items') or []))
           assert str(company_news.get('checkedAt') or '')==str(news_latest.get('checkedAt') or ''),('company news heartbeat mismatch',company_news.get('checkedAt'),news_latest.get('checkedAt'))
+          assert news_latest.get('newsIntelligenceVersion')=='v2',('news intelligence version missing',news_latest.get('newsIntelligenceVersion'))
+          assert news_stories.get('status')=='ok' and int(news_stories.get('storyCount') or 0)>0,('invalid news stories',news_stories.get('status'),news_stories.get('storyCount'))
+          assert int(semantic_health.get('criticalViolations') or 0)==0,('semantic news violations',semantic_health.get('violations'))
+          assert int(semantic_health.get('sourceLineageItems') or 0)>0,('missing news source lineage',semantic_health)
           intraday_expected=max(1,int(intraday.get('expected') or 0))
           intraday_required=max(1,int(intraday.get('required') or __import__('math').ceil(intraday_expected*.90)))
           intraday_success=int(intraday.get('success') or 0)
@@ -208,8 +214,9 @@ jobs:
           mkdir -p /tmp/main-insight-seed
           cp financial-report/data/broker-research.json /tmp/main-insight-seed/broker-research.json
           cp financial-report/data/corporate-events.json /tmp/main-insight-seed/corporate-events.json
+          cp -f financial-report/data/business-plans.json /tmp/main-insight-seed/business-plans.json 2>/dev/null || true
           rsync -a _financial-data/data/ financial-report/data/
-          for f in broker-research.json corporate-events.json insights-status.json event-status.json; do
+          for f in broker-research.json corporate-events.json insights-status.json event-status.json business-plans.json business-plan-status.json; do
             if [ -f "_insight-data/data/$f" ]; then cp "_insight-data/data/$f" "financial-report/data/$f"; fi
           done
           python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data

@@ -192,15 +192,16 @@
 <p class="market-compare-note">Hiệu suất được chuẩn hóa về 0% tại điểm đầu của khoảng so sánh từ lịch sử giá FinQuery. Chỉ số ngành là bình quân equal-weight của các mã có dữ liệu; đây không phải dữ liệu dòng tiền mua/bán.</p>
 </section>
 <div class="forecast-card"><div><span class="forecast-label">SoluTION.AI · FORECAST</span><h4>Khám phá góc nhìn dự báo</h4><p>Xem kịch bản giá T+1–T+5, các yếu tố tác động và kết quả kiểm định cho <strong id="forecast-symbol">MBB</strong>.</p></div><div class="forecast-action"><a id="forecast-link" href="https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=MBB" target="_blank" rel="noopener noreferrer">Xem dự báo MBB ↗</a><small>Mở trang Forecast trong tab mới</small></div></div></div>
-<aside class="market-news"><div class="market-news-head"><div><span class="research-ai-label">NEWS RADAR</span><h3 id="news-title">Tin doanh nghiệp</h3></div><span id="news-impact-summary" class="news-impact-summary"></span></div>
+<aside class="market-news"><div class="market-news-head"><div><span class="research-ai-label">NEWS RADAR</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false">Bật cảnh báo Watchlist</button></div></div>
 <div id="news-primary-tabs" class="news-primary-tabs" role="tablist" aria-label="Nhóm tin tức">
-<button type="button" class="active" data-news-tab="company" role="tab" aria-selected="true">Doanh nghiệp</button>
-<button type="button" data-news-tab="vietnam" role="tab" aria-selected="false">Kinh tế VN</button>
-<button type="button" data-news-tab="sbv" role="tab" aria-selected="false">NHNN & tiền tệ</button>
+<button type="button" data-news-tab="all" role="tab" aria-selected="false">Mới nhất</button>
+<button type="button" data-news-tab="impact" role="tab" aria-selected="false">Đang tác động</button>
+<button type="button" class="active" data-news-tab="company" role="tab" aria-selected="true">Theo mã</button>
+<button type="button" data-news-tab="watchlist" role="tab" aria-selected="false">Watchlist</button>
+<button type="button" data-news-tab="sbv" role="tab" aria-selected="false">NHNN</button>
 <button type="button" data-news-tab="global" role="tab" aria-selected="false">Quốc tế</button>
-<button type="button" data-news-tab="impact" role="tab" aria-selected="false">Tác động mạnh</button>
 </div>
-<div class="news-filter-row"><label for="news-mode">Bộ lọc</label><select id="news-mode"><option value="company">Theo doanh nghiệp</option><option value="vietnam">Kinh tế Việt Nam</option><option value="sbv">NHNN & tiền tệ Việt Nam</option><option value="global">Kinh tế quốc tế</option><option value="impact">Tin tác động mạnh</option><option value="all">Tất cả tin kinh tế</option><option value="finance">Tài chính</option><option value="market">Thị trường</option><option value="rates">Lãi suất</option><option value="stocks">Chứng khoán</option><option value="banking">Ngân hàng</option><option value="investment">Đầu tư</option><option value="macro">Vĩ mô</option></select></div>
+<div class="news-filter-row"><label for="news-mode">Bộ lọc</label><select id="news-mode"><option value="company">Theo doanh nghiệp</option><option value="watchlist">Watchlist</option><option value="new">Mới từ lần xem trước</option><option value="vietnam">Kinh tế Việt Nam</option><option value="sbv">NHNN & tiền tệ Việt Nam</option><option value="global">Kinh tế quốc tế</option><option value="impact">Đang tác động</option><option value="all">Tất cả tin kinh tế</option><option value="finance">Tài chính</option><option value="market">Thị trường</option><option value="rates">Lãi suất</option><option value="stocks">Chứng khoán</option><option value="banking">Ngân hàng</option><option value="investment">Đầu tư</option><option value="macro">Vĩ mô</option></select></div>
 <p id="news-status" class="market-subtitle"></p><div id="news-list"></div></aside></div>
 <section class="market-board" aria-label="Bảng giá HOSE Core và Liquid"><div class="market-top"><div class="market-board-title-row"><h3>Bảng giá HOSE · Core + Liquid</h3><button class="term-info-button" type="button" data-info-key="universe-tiers" aria-label="Giải thích Core, Liquid và Discovery">i</button></div><span id="market-count" class="market-subtitle"></span></div><div class="market-toolbar"><input id="market-filter" type="search" placeholder="Tìm mã hoặc doanh nghiệp" aria-label="Lọc bảng giá"><label><input id="watch-only" type="checkbox">Đang theo dõi</label><label>Phạm vi <select id="market-universe-filter"><option value="all">Core + Liquid</option><option value="CORE">Core 100</option><option value="LIQUID">HOSE Liquid</option></select></label><label>Sắp xếp <select id="market-sort"><option value="symbol">Mã A–Z</option><option value="change">Tăng giá nhiều nhất</option></select></label></div><div class="market-table-wrap"><table class="market-table"><thead><tr><th>Theo dõi</th><th>Mã</th><th>Giá (đ)</th><th>Tham chiếu</th><th>Thay đổi</th><th>Khối lượng (CP)</th><th>Động lực / hệ số <button class="term-info-button term-info-inline" type="button" data-info-key="market-driver" aria-label="Giải thích Động lực và hệ số">i</button></th><th>Thời điểm nguồn</th></tr></thead><tbody id="market-rows"></tbody></table></div></section>
 </section>
@@ -222,6 +223,7 @@
 <div><span>VÙNG MỤC TIÊU</span><strong id="idea-target-range">—</strong><small id="idea-target-count"></small></div>
 </div>
 </div>
+<div id="idea-plan-card" class="idea-plan-card"><div class="idea-card-head"><h3>Kế hoạch năm</h3><span id="idea-plan-year"></span></div><div id="idea-plan-list" class="idea-plan-list"></div></div>
 <div class="idea-rating-card">
 <div class="idea-card-head"><h3>Phân bố khuyến nghị</h3><span id="idea-rating-total"></span></div>
 <div id="idea-rating-distribution" class="idea-rating-distribution"></div>

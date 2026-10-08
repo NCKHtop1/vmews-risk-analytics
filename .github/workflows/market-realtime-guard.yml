@@ -74,12 +74,22 @@ jobs:
           try:
               n=get('news-latest.json')
               company=get('news-company-latest.json')
+              stories=get('news-stories.json')
+              semantic=get('news-semantic-health.json')
               if n.get('status')!='ok' or not n.get('items') or age(n.get('checkedAt'))>20:
                   raise ValueError('News older than 20 minutes or unavailable')
               if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
                   raise ValueError(f'Company news index invalid: coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
               if str(company.get('checkedAt'))!=str(n.get('checkedAt')) or age(company.get('checkedAt'))>20:
                   raise ValueError('Company news index stale or not aligned with latest news')
+              if n.get('newsIntelligenceVersion')!='v2':
+                  raise ValueError('News Intelligence V2 marker missing')
+              if stories.get('status')!='ok' or int(stories.get('storyCount') or 0)<=0:
+                  raise ValueError(f'News story index invalid: {stories.get("status")} / {stories.get("storyCount")}')
+              if int(semantic.get('criticalViolations') or 0)!=0:
+                  raise ValueError(f'News semantic gate failed: {semantic.get("violations")}')
+              if str(semantic.get('checkedAt') or '')!=str(n.get('checkedAt') or ''):
+                  raise ValueError('Semantic health snapshot not aligned with news heartbeat')
               health=n.get('sourceHealth') or {}
               if int(health.get('healthy') or 0)<3:
                   raise ValueError(f'News source health too low: {health}')
