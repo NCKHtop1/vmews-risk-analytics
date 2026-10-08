@@ -63,7 +63,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git sparse-checkout add data/fund-holdings-history-v16.json
+          git sparse-checkout add data
           git fetch origin financial-market-data
           git worktree add /tmp/finquery-oct08-dry origin/financial-market-data
           git -C /tmp/finquery-oct08-dry sparse-checkout set market
