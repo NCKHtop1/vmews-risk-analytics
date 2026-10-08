@@ -2261,24 +2261,61 @@ def _fetch_24hmoney_live(companies, current):
         raw=request(MONEY24_LIVE_URL,timeout=10)
         anchors=ni.count_24hmoney_article_anchors(raw)
         rows=ni.parse_24hmoney_live(raw,current,companies,ALIASES,MONEY24_LIVE_URL)
+
+        # The list HTML can expose only day precision even while the rendered
+        # Live page shows "N phút/N giờ". Refine uncertain timestamps from each
+        # article's own metadata/date line instead of inventing a clock time.
+        detail_candidates=[(idx,row) for idx,row in enumerate(rows) if not row.get('detailTimestampVerified')][:24]
+        detail_enriched=0;detail_errors=[]
+        def refine_detail(pair):
+            idx,row=pair
+            try:
+                raw_detail=request(row.get('url'),timeout=6)
+                stamp,precision,verified,basis=ni.parse_24hmoney_detail_timestamp(raw_detail,current)
+                if not stamp:
+                    return idx,row,False,None
+                copy=dict(row)
+                copy['publishedAt']=stamp.isoformat()
+                copy['timePrecision']=precision
+                copy['detailTimestampVerified']=verified
+                copy['timestampBasis']='24hmoney_detail_'+str(basis or precision)
+                return idx,copy,True,None
+            except Exception as exc:
+                return idx,row,False,str(exc)[:120]
+
+        if detail_candidates:
+            workers=max(3,min(8,len(detail_candidates)))
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures=[pool.submit(refine_detail,pair) for pair in detail_candidates]
+                for future in as_completed(futures):
+                    idx,row,enriched,error=future.result()
+                    rows[idx]=row
+                    if enriched:detail_enriched+=1
+                    elif error:detail_errors.append(error)
+
+        rows.sort(key=lambda x:str(x.get('publishedAt') or ''),reverse=True)
         latest=max((row.get('publishedAt') for row in rows if row.get('publishedAt')),default=None)
         if rows:
             status='ok';error=None
         elif anchors:
-            status='error';error=f'parser mismatch: {anchors} article anchors found but 0 recent rows parsed'
+            status='error';error=f'parser mismatch: {anchors} article anchors found but 0 recent financial rows parsed'
         else:
             status='empty';error=None
         health={
             'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':status,
             'items':len(rows),'articleAnchors':anchors,'lastItemAt':latest,
-            'parser':'24hmoney-live-v3'
+            'detailTimestampAttempted':len(detail_candidates),
+            'detailTimestampEnriched':detail_enriched,
+            'detailTimestampErrors':len(detail_errors),
+            'parser':'24hmoney-live-v4'
         }
         if error: health['error']=error
+        if detail_errors: health['detailErrors']=detail_errors[:4]
         return rows,health
     except Exception as exc:
         return [],{
             'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':'error',
-            'error':str(exc)[:240],'parser':'24hmoney-live-v3'
+            'error':str(exc)[:240],'parser':'24hmoney-live-v4'
         }
 
 def _vbma_cell(value):
