@@ -72,6 +72,11 @@ jobs:
               '24hmoney.vn',
               'newsPriority',
               'business-plans.json',
+              'news-daily-brief.json',
+              'news-viewpoint-sentiment.json',
+              'Bản tin 24h',
+              'Góc nhìn thị trường',
+              'function renderNewsIntelligenceSummary()',
           ]
           missing=[x for x in required if x not in page]
           assert not missing,('standalone News bundle is stale/incomplete',missing)
@@ -87,6 +92,8 @@ jobs:
               'gh workflow run pages.yml --ref main',
               'Pages deploy requested for the new News snapshot.',
               'if [ "$published" -ne 1 ]; then',
+              'news-daily-brief.json',
+              'news-viewpoint-sentiment.json',
           ]
           missing=[x for x in required if x not in workflow]
           assert not missing,('News-to-Pages handoff contract incomplete',missing)
