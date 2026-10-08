@@ -20,9 +20,20 @@ function context(url) {
 }
 (async () => {
   const href = read('financial-report/frontend/index.html').match(/id="forecast-link" href="([^"]+)"/)[1];
-  const link = new URL(href);
+  // Relative forecast navigation must work on BOTH original GitHub Pages
+  // and FinQuery's custom-domain facade without leaving the current host.
+  const pagesHome='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/';
+  const vercelHome='https://finquery-web.vercel.app/';
+  const customHome='https://finquery.info.vn/';
+  const link = new URL(href, pagesHome);
   link.searchParams.set('symbol', 'FPT');
   assert.equal(link.href, 'https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?symbol=FPT');
+  const stagingLink=new URL(href,vercelHome);
+  stagingLink.searchParams.set('symbol','FPT');
+  assert.equal(stagingLink.href,'https://finquery-web.vercel.app/forecast-final.html?symbol=FPT');
+  const customLink=new URL(href,customHome);
+  customLink.searchParams.set('symbol','FPT');
+  assert.equal(customLink.href,'https://finquery.info.vn/forecast-final.html?symbol=FPT');
   const ctx = context(link.href);
   assert.equal(ctx.window.__VMEWS_DATA_ROOT__, 'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data');
   assert.equal(context('http://localhost:8000/forecast-final.html').window.__VMEWS_DATA_ROOT__, './data');
