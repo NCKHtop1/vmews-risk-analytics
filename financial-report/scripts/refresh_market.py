@@ -1400,7 +1400,7 @@ def merge_live_daily_quotes(out, quotes):
     return merged_count
 
 
-def prices(out, companies):
+def prices(out, companies, universe=None):
     """Fast quote snapshot with an optional current-session freshness gate.
 
     Scheduled intraday runs set MARKET_REQUIRE_TODAY=1. In that mode a provider
@@ -1410,7 +1410,7 @@ def prices(out, companies):
     # Prefer the complete market-branch universe over the main checkout when
     # available. Keep its EOD Discovery evidence in memory before writing the
     # slim public copy; the live price writer must not erase scanner members.
-    universe = load_market_universe(out) or load_market_universe() or fallback_market_universe(companies)
+    universe = universe if isinstance(universe, dict) and universe.get('scannerSymbols') else (load_market_universe(out) or load_market_universe() or fallback_market_universe(companies))
     sync_market_universe(out, universe)
     seeded_histories = seed_market_histories(out, universe, companies)
     symbols = [c['symbol'] for c in companies]
@@ -3264,7 +3264,13 @@ if __name__ == '__main__':
     errors = []
     for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
         try:
-            globals()[mode](args.output, companies)
+            if mode == 'prices':
+                # Preserve the FULL market-branch universe loaded before the
+                # public-universe synchronization at the top of __main__.
+                # Otherwise the 287 EOD Discovery scanner rows disappear.
+                prices(args.output, companies, universe=universe)
+            else:
+                globals()[mode](args.output, companies)
         except Exception as e:
             errors.append(str(e))
     if errors:
