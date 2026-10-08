@@ -1,3 +1,4 @@
+# Temporary dry-run diagnosis against the scanner-coverage fix; never merged.
 name: Test financial report downloads
 on:
   workflow_dispatch:
