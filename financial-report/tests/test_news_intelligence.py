@@ -122,6 +122,24 @@ class NewsIntelligenceTests(unittest.TestCase):
         self.assertFalse(raw_rows[0]['financialRelevance'])
         self.assertEqual(raw_rows[0]['relevanceReason'],'non_financial')
 
+    def test_24hmoney_detail_exact_timestamp_metadata(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        raw='''<html><head><meta property="article:published_time" content="2026-10-08T09:41:00+07:00"></head><body></body></html>'''
+        stamp,precision,verified,basis=ni.parse_24hmoney_detail_timestamp(raw,current)
+        self.assertEqual(stamp.isoformat(),'2026-10-08T02:41:00+00:00')
+        self.assertEqual(precision,'minute')
+        self.assertTrue(verified)
+        self.assertEqual(basis,'metadata')
+
+    def test_24hmoney_detail_exact_timestamp_date_line(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        raw='''<html><body>Thứ tư, ngày 07/10/2026 18:31 PM (GMT+7)</body></html>'''
+        stamp,precision,verified,basis=ni.parse_24hmoney_detail_timestamp(raw,current)
+        self.assertEqual(stamp.isoformat(),'2026-10-07T11:31:00+00:00')
+        self.assertEqual(precision,'minute')
+        self.assertTrue(verified)
+        self.assertEqual(basis,'date_line')
+
     def test_plan_parser_extracts_structured_ytd_actual(self):
         raw='''<html><body><h1>FPT</h1><table>
         <tr><th>Năm</th><th>Quý</th><th colspan="3">Doanh thu</th><th colspan="3">Lợi nhuận trước thuế</th><th colspan="3">Lợi nhuận sau thuế</th></tr>
