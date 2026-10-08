@@ -62,6 +62,7 @@ function plan(question){
  if(/co ban|tai chinh|doanh thu|loi nhuan|dong tien|roe|roa/.test(s))tools.add('financial');
  if(/tin|su kien|ctck|bao cao chung khoan/.test(s)){tools.add('insights');tools.add('news');}
  if(/du bao|forecast|t\+3|t\+4|t\+5/.test(s)){tools.add('forecast');tools.add('market');tools.add('scanner');tools.add('financial');}
+ if(root.FinSSI?.ready?.()&&(resolveTargetSymbol(question)||activeSymbol())&&['financial','compare','memo','general','risk'].includes(intent))tools.add('ssi');
  return{intent,tools:[...tools],targetSymbol:resolveTargetSymbol(question)};
 }
 function marketTool(targetSymbol=null){
@@ -127,7 +128,7 @@ function forecastTool(){
  const m=root.FinancialMarket?.context?.()||{};const f=m.forecast||root.FinForecast?.context?.()||null;
  return f?clone(f):{available:false,reason:'Forecast context chua duoc nap trong financial-report.'};
 }
-const TOOL_REGISTRY={market:({targetSymbol})=>marketTool(targetSymbol),financial:({baseContext,targetSymbol})=>financialTool(baseContext,targetSymbol),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool()};
+const TOOL_REGISTRY={market:({targetSymbol})=>marketTool(targetSymbol),financial:({baseContext,targetSymbol})=>financialTool(baseContext,targetSymbol),scanner:({})=>scannerTool(),strategy:({})=>strategyTool(),insights:({})=>insightTool(),news:({})=>newsTool(),macro:({question})=>macroTool(question),forecast:({})=>forecastTool(),ssi:({question,targetSymbol})=>root.FinSSI?.query?.(question,targetSymbol)};
 async function execute(name,args){
  const started=performance?.now?.()??Date.now();try{const result=await TOOL_REGISTRY[name](args);return{name,status:result?'ok':'missing',durationMs:Math.round((performance?.now?.()??Date.now())-started),result};}catch(error){return{name,status:'error',durationMs:Math.round((performance?.now?.()??Date.now())-started),error:String(error?.message||error).slice(0,240),result:null};}
 }
@@ -151,7 +152,9 @@ function buildContext(question,planInfo,results,validation,baseContext,sources){
  return{...cleanBase,agent:{version:VERSION,intent:planInfo.intent,targetSymbol:planInfo.targetSymbol||cleanBase.symbol||null,plan:planInfo.tools,validation,evidence,sourceHints:trimArray(sources||[],12),policy:{numbers:'FINQUERY_ANCHORED_ONLY',staleScanner:'EXCLUDE_CURRENT',missing:'STATE_MISSING_DO_NOT_INVENT',recommendations:'NO_BUY_SELL_ADVICE'}}};
 }
 async function run(question,options={}){
- const q=String(question||'').trim(),prepared=options.prepared||await prepare(q),planInfo=plan(q),startedAt=new Date().toISOString(),scratchpad=[];
+ const q=String(question||'').trim();
+ try{await root.FinSSI?.init?.();}catch{}
+ const prepared=options.prepared||await prepare(q),planInfo=plan(q),startedAt=new Date().toISOString(),scratchpad=[];
  scratchpad.push({type:'symbol',requestedSymbol:prepared.requestedSymbol||null,beforeSymbol:prepared.beforeSymbol||null,activeSymbol:prepared.activeSymbol||null,switched:Boolean(prepared.switched)});
  scratchpad.push({type:'plan',intent:planInfo.intent,tools:planInfo.tools,targetSymbol:planInfo.targetSymbol||prepared.activeSymbol||null});
  const targetSymbol=planInfo.targetSymbol||prepared.activeSymbol||null;
