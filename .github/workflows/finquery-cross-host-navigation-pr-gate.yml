@@ -1,0 +1,22 @@
+name: FinQuery Cross-host navigation PR gate
+on:
+  push:
+    branches: [fix/finquery-cross-host-navigation-contract-20261009]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cross-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify GitHub, Vercel, and custom-domain Forecast navigation
+        run: |
+          set -euo pipefail
+          node scripts/forecast-navigation-test.cjs
+          node scripts/test_forecast_missing_close.cjs
+          node --check forecast-final-v12.js
+          python financial-report/scripts/build_cdn.py
+          node scripts/forecast-navigation-test.cjs
+          grep -q 'href="../forecast-final.html?symbol=MBB"' financial-report/index.html
