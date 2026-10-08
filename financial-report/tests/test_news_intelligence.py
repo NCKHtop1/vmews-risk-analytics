@@ -83,20 +83,56 @@ class NewsIntelligenceTests(unittest.TestCase):
         self.assertEqual(r['returnEodPct'],3.0)
 
     def test_24hmoney_live_parser_keeps_metadata_only(self):
-        raw='''<html><body><a href="/news/fpt-ky-hop-dong-ai-c1a123.html">FPT ký hợp đồng AI mới, mở rộng thị trường quốc tế</a><span>5 phút trước</span></body></html>'''
+        # Current Live markup places the relative time BEFORE the headline.
+        raw='''<html><body><div>37 phút</div><div>#Chứng khoán</div><a href="/news/fpt-ky-hop-dong-ai-c1a123.html?utm_medium=live_page">FPT ký hợp đồng AI mới, mở rộng thị trường quốc tế</a></body></html>'''
         rows=ni.parse_24hmoney_live(raw,datetime(2026,10,8,2,0,tzinfo=timezone.utc),COMPANIES,ALIASES)
         self.assertEqual(len(rows),1)
         self.assertEqual(rows[0]['source'],'24HMoney')
         self.assertIn('FPT',rows[0]['symbols'])
         self.assertEqual(rows[0]['contentType'],'news')
+        self.assertEqual(rows[0]['timePrecision'],'relative')
+        self.assertTrue(rows[0]['url'].endswith('.html'))
         self.assertLessEqual(len(rows[0]['summary']),1)
 
-    def test_plan_parser_extracts_plan_actual_completion(self):
-        raw='''<html><body>FPT Kế hoạch kinh doanh 2026 Doanh thu Kế hoạch 100.000 Thực hiện 50.000 Hoàn thành 50% Lợi nhuận trước thuế Kế hoạch 20.000 Thực hiện 11.000 Hoàn thành 55%</body></html>'''
-        rows,status=bp.parse_plan_html(raw,'FPT','https://24hmoney.vn/stock/FPT/ke-hoach-kinh-doanh')
+    def test_24hmoney_expert_content_is_separated_from_news(self):
+        raw='''<html><body><span>Pro</span><span>#Chuyên gia</span><a href="/news/fpt-ai-c30a123.html">FPT tăng trưởng mảng AI và doanh thu ký mới</a><span>2 giờ</span></body></html>'''
+        rows=ni.parse_24hmoney_live(raw,datetime(2026,10,8,2,0,tzinfo=timezone.utc),COMPANIES,ALIASES)
+        self.assertEqual(rows[0]['contentType'],'expert_analysis')
+        self.assertEqual(rows[0]['sourceTier'],'expert')
+
+    def test_plan_parser_extracts_structured_ytd_actual(self):
+        raw='''<html><body><h1>FPT</h1><table>
+        <tr><th>Năm</th><th>Quý</th><th colspan="3">Doanh thu</th><th colspan="3">Lợi nhuận trước thuế</th><th colspan="3">Lợi nhuận sau thuế</th></tr>
+        <tr><th></th><th></th><th>Kế hoạch năm</th><th>Doanh thu</th><th>%</th><th>Kế hoạch năm</th><th>Lợi nhuận</th><th>%</th><th>Kế hoạch năm</th><th>Lợi nhuận</th><th>%</th></tr>
+        <tr><td>2026</td><td>2</td><td>58,580</td><td>13,789</td><td>23.54</td><td>11,629</td><td>2,910</td><td>25.03</td><td>9,303</td><td>2,568</td><td>27.6</td></tr>
+        <tr><td>1</td><td>12,480</td><td>21.3</td><td>2,804</td><td>24.11</td><td>2,487</td><td>26.74</td></tr>
+        <tr><td>Luỹ kế</td><td>26,269</td><td>44.84</td><td>5,714</td><td>49.14</td><td>5,055</td><td>54.34</td></tr>
+        <tr><td>2025</td><td>4</td><td>75,400</td><td>20,225</td><td>26.82</td><td>13,395</td><td>3,498</td><td>26.12</td><td>10,716</td><td>2,503</td><td>23.35</td></tr>
+        <tr><td>Cả năm</td><td>70,113</td><td>92.99</td><td>13,039</td><td>97.34</td><td>9,369</td><td>87.43</td></tr>
+        </table></body></html>'''
+        rows,status=bp.parse_plan_html(raw,'FPT','https://24hmoney.vn/stock/FPT/ke-hoach-kinh-doanh',reference_year=2026)
         self.assertEqual(status['status'],'ok')
-        revenue=next(x for x in rows if x['metric']=='revenue')
-        self.assertEqual(revenue['completionPct'],50.0)
+        self.assertEqual(status['years'],[2026,2025])
+        revenue=next(x for x in rows if x['year']==2026 and x['metric']=='revenue')
+        pretax=next(x for x in rows if x['year']==2026 and x['metric']=='pretaxProfit')
+        net=next(x for x in rows if x['year']==2026 and x['metric']=='netProfit')
+        self.assertEqual(revenue['plan'],58580.0)
+        self.assertEqual(revenue['actual'],26269.0)
+        self.assertEqual(revenue['completionPct'],44.84)
+        self.assertEqual(revenue['actualBasis'],'ytd')
+        self.assertEqual(revenue['throughQuarter'],2)
+        self.assertEqual(pretax['actual'],5714.0)
+        self.assertEqual(net['actual'],5055.0)
+        self.assertEqual(net['unit'],'billion_vnd')
+        prior=next(x for x in rows if x['year']==2025 and x['metric']=='revenue')
+        self.assertEqual(prior['actualBasis'],'full_year')
+        self.assertEqual(prior['actual'],70113.0)
+
+    def test_plan_parser_rejects_unrelated_future_year_noise(self):
+        raw='''<html><body>FPT Kế hoạch kinh doanh <script>const x=[2034,2038,2039]</script></body></html>'''
+        rows,status=bp.parse_plan_html(raw,'FPT','https://24hmoney.vn/stock/FPT/ke-hoach-kinh-doanh',reference_year=2026)
+        self.assertEqual(rows,[])
+        self.assertNotEqual(status['status'],'ok')
 
 if __name__=='__main__':
     unittest.main()
