@@ -11,6 +11,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+import urllib.error
 
 ORIGIN = "https://nckhtop1.github.io/vmews-risk-analytics/financial-report"
 VERCEL = "https://finquery-web.vercel.app"
@@ -56,6 +57,12 @@ def request(url, retries=1):
                         "data":b, "content_type":r.headers.get("Content-Type",""),
                         "cache":r.headers.get("Cache-Control",""),"age":r.headers.get("Age",""),
                         "vercel_cache":r.headers.get("X-Vercel-Cache","")}
+        except urllib.error.HTTPError as e:
+            body=e.read()
+            return {"code":e.code,"url":url,"bytes":len(body),"sha":hashlib.sha256(body).hexdigest(),
+                    "data":body, "content_type":e.headers.get("Content-Type",""),
+                    "cache":e.headers.get("Cache-Control",""),"age":e.headers.get("Age",""),
+                    "vercel_cache":e.headers.get("X-Vercel-Cache","")}
         except Exception as e:
             last = str(e)
             if attempt < retries: time.sleep(0.6)
@@ -128,7 +135,11 @@ def run():
     print("FORECAST_ENTRY "+json.dumps(forecast),flush=True)
     if forecast_original.get("code")==200 and not forecast["same_bytes"]:
         failures.append("Forecast standalone route /forecast-final.html differs from GitHub root (broken internal navigation)")
-    for p in ["/forecast-final-v12.js","/forecast-portfolio-v14.css","/solution-ai-v17.js"]:
+    for p in ["/forecast-final-v12.js","/forecast-portfolio-v14.css","/solution-ai-v17.js",
+              "/forecast-polish-v12.js","/forecast-freshness.js",
+              "/forecast-portfolio-v14.js","/forecast-live-leaders-v14.js",
+              "/forecast-deep-dive-v24.js","/forecast-final-v41.html",
+              "/forecast-technical-radar-v41.js"]:
         a=request(ROOT_GITHUB+p);b=request(VERCEL+p)
         print("FORECAST_ASSET "+p+" "+str(a.get("code"))+"/"+str(b.get("code"))+" same="+str(a.get("sha")==b.get("sha")),flush=True)
         if a.get("code")==200 and (b.get("code")!=200 or a.get("sha")!=b.get("sha")):
