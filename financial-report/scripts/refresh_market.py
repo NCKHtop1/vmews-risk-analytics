@@ -324,6 +324,57 @@ def normalize_board(items, symbols, collected):
     return rows
 
 
+
+def normalize_tradingview_board(frame, symbols, collected):
+    """Convert timestamped HOSE screener rows; never invent a live timestamp."""
+    wanted = set(symbols)
+    rows = {}
+    for _, item in frame.iterrows():
+        symbol = str(item.get('name') or '').upper().split(':')[-1].strip()
+        exchange = str(item.get('exchange') or '').upper().strip()
+        if symbol not in wanted or exchange not in {'HOSE', 'HSX'}:
+            continue
+        price = positive_number(item.get('close'))
+        pct = number(item.get('change'))
+        volume = number(item.get('volume'))
+        observed = timestamp(item.get('update_time'))
+        if price is None or pct is None or pct <= -100 or volume is None or volume <= 0 or not observed:
+            continue
+        reference = price / (1 + pct / 100)
+        if not math.isfinite(reference) or reference <= 0:
+            continue
+        # TradingView reports a delayed Vietnam screener. Use its per-symbol
+        # update_time, NOT the collection clock or the snapshot's newest symbol.
+        rows[symbol] = {
+            'symbol': symbol, 'price': price, 'reference': reference,
+            'changePct': pct, 'volume': volume,
+            'open': positive_number(item.get('open')),
+            'high': positive_number(item.get('high')),
+            'low': positive_number(item.get('low')),
+            'sourceTime': observed, 'collectedAt': collected,
+            'source': 'TradingView Vietnam screener',
+            'sourceMode': str(item.get('update_mode') or 'unknown'),
+            'referenceBasis': 'derived_from_provider_change_pct',
+            'unit': 'VND', 'status': 'ok',
+        }
+    if not rows:
+        raise ValueError('No valid timestamped HOSE prices in TradingView screener')
+    return rows
+
+
+def tradingview_current_board(symbols, collected):
+    """Independent delayed quote fallback. No SoluTION.AI data-branch dependency."""
+    from tradingview_screener import stocks
+    fields = [
+        'name', 'exchange', 'close', 'change', 'volume', 'open',
+        'high', 'low', 'update_mode', 'update_time',
+    ]
+    _, frame = stocks('vietnam').select(*fields).limit(3000).get_scanner_data()
+    if frame is None or len(frame) < 500:
+        raise ValueError(f'TradingView Vietnam screener incomplete: {0 if frame is None else len(frame)} rows')
+    return normalize_tradingview_board(frame, symbols, collected)
+
+
 def _kbs_post(path, payload, timeout=20):
     headers = {
         'User-Agent': 'FinQuery/1.0 public financial dashboard',
@@ -1381,10 +1432,25 @@ def prices(out, companies):
         fresh = {}
         errors.append('Vietcap quotes: ' + str(e))
 
-    # KBS is the live fallback when Vietcap is stale or incomplete. A KBS board
-    # is accepted only after its trade-history endpoint proves today's session.
+    # Vietcap is primary. TradingView's independently timestamped delayed
+    # screener rescues a frozen price board; every row still passes the strict
+    # session/age gate before it is published. Do not read SoluTION.AI outputs.
     missing_current = [symbol for symbol in symbols if symbol not in fresh]
-    if require_today and missing_current:
+    if require_today and missing_current and len(fresh) < math.ceil(len(symbols) * .90):
+        try:
+            tv_rows = tradingview_current_board(missing_current, collected)
+            max_quote_age = os.environ.get('MARKET_MAX_QUOTE_AGE_MINUTES')
+            tv_rows, tv_stale = current_session_quotes(tv_rows, max_age_minutes=max_quote_age)
+            stale.update(tv_stale)
+            fresh.update(tv_rows)
+            errors.append(f'TradingView timestamped fallback filled {len(tv_rows)}/{len(missing_current)} symbols')
+        except Exception as tv_error:
+            errors.append('TradingView fallback: ' + str(tv_error))
+
+    # KBS is an additional independent fallback if the current-session quote
+    # coverage is still insufficient. Its time must be trade-history-verified.
+    missing_current = [symbol for symbol in symbols if symbol not in fresh]
+    if require_today and missing_current and len(fresh) < math.ceil(len(symbols) * .90):
         try:
             kbs_rows = kbs_current_board(missing_current, collected)
             max_quote_age = os.environ.get('MARKET_MAX_QUOTE_AGE_MINUTES')
