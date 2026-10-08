@@ -230,7 +230,7 @@ function renderNewsIntelligenceSummary(){
  }
  if(briefList){
   const rows=(brief?.topStories||[]).slice(0,3);
-  briefList.innerHTML=rows.length?rows.map(r=>{const url=safeURL(r.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><span>'+esc(r.title)+'</span><small>'+esc(r.impactTag||r.source||'THỊ TRƯỜNG')+' · '+esc(newsTimeLabel(r))+'</small></a>':'';}).join(''):'<span class="news-summary-empty">Chưa đủ dữ liệu 24h.</span>';
+  briefList.innerHTML=rows.length?rows.map(r=>{const url=safeURL(r.url);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><span>'+esc(r.title)+'</span><small>'+esc(r.impactTag||r.source||'THỊ TRƯỜNG')+' · '+esc(newsTimeLabel(r))+'</small></a>':'';}).join(''):'<span class="news-summary-empty">Chưa có câu chuyện phù hợp trong 24 giờ.</span>';
  }
  if(view){
   const expert=sentiment?.expert,community=sentiment?.community;
