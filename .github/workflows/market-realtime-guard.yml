@@ -124,6 +124,32 @@ jobs:
               print('News age/coverage:',round(age(n['checkedAt']),1),'company symbols',company.get('companyCoverage'),'source health',health,'luat',luat,'24hmoney',{k:(source_map.get(k) or {}).get('items') for k in ('24HMoney Live','24HMoney Symbol')})
           except Exception as e:
               print('::warning::News freshness:',e); stale.append('market-news-live.yml')
+          # During the midday market break, validate session *date*, not
+          # a rolling 18-minute quote age. Yesterday's session is never live.
+          lunch=local.weekday()<5 and 690<mins<775
+          if lunch:
+              try:
+                  q=get('quotes.json')
+                  expected=max(1,int(q.get('expected') or 0))
+                  today=local.date().isoformat()
+                  current_session=[]
+                  for v in (q.get('quotes') or {}).values():
+                      if v.get('status')=='retained':
+                          continue
+                      source=v.get('sourceTime')
+                      if not source:
+                          continue
+                      dt=datetime.fromisoformat(str(source).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7)))
+                      if dt.date().isoformat()==today and dt.astimezone(timezone.utc)<=now+timedelta(minutes=5):
+                          current_session.append(v)
+                  latest=q.get('latestSourceTime')
+                  latest_day=datetime.fromisoformat(str(latest).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date().isoformat() if latest else ''
+                  if q.get('status')!='ok' or latest_day!=today or len(current_session)<math.ceil(expected*.90):
+                      raise ValueError(f'quotes morning-session unavailable: {len(current_session)}/{expected}, latestDay={latest_day}, today={today}')
+                  print('Lunch quotes sourceTime/session OK',latest,len(current_session),'/',expected)
+              except Exception as e:
+                  print('::warning::Lunch quote freshness:',e)
+                  stale.append('market-price-live.yml')
           if active:
               try:
                   intraday=get('intraday-status.json')
@@ -272,4 +298,8 @@ jobs:
           if stale:
               with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
                   f.write('Stale data detected; recovery requested (completion is verified on the next guard run): '+', '.join(stale)+'\n')
+          if any(item!='solution-ai-live-price.yml' for item in stale):
+              # A dispatched recovery is not a successful freshness check.
+              # Keep the FinQuery guard red until actual market sourceTime advances.
+              raise SystemExit('FinQuery source freshness degraded; recovery dispatched: '+', '.join(x for x in stale if x!='solution-ai-live-price.yml'))
           PY
