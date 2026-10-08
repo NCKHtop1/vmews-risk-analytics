@@ -115,6 +115,8 @@ jobs:
           company_news=json.loads(Path('_market-data/market/news-company-latest.json').read_text())
           news_stories=json.loads(Path('_market-data/market/news-stories.json').read_text())
           semantic_health=json.loads(Path('_market-data/market/news-semantic-health.json').read_text())
+          daily_brief=json.loads(Path('_market-data/market/news-daily-brief.json').read_text())
+          viewpoint_sentiment=json.loads(Path('_market-data/market/news-viewpoint-sentiment.json').read_text())
           mc=main.get('counts') or {}
           bc=market.get('counts') or {}
           assert main.get('version')==market.get('version'),(main.get('version'),market.get('version'))
@@ -146,6 +148,8 @@ jobs:
           assert news_stories.get('status')=='ok' and int(news_stories.get('storyCount') or 0)>0,('invalid news stories',news_stories.get('status'),news_stories.get('storyCount'))
           assert int(semantic_health.get('criticalViolations') or 0)==0,('semantic news violations',semantic_health.get('violations'))
           assert int(semantic_health.get('sourceLineageItems') or 0)>0,('missing news source lineage',semantic_health)
+          assert daily_brief.get('status')=='ok' and str(daily_brief.get('checkedAt') or '')==str(news_latest.get('checkedAt') or '') and bool(daily_brief.get('topStories')),('invalid Daily Brief',daily_brief)
+          assert viewpoint_sentiment.get('status')=='ok' and str(viewpoint_sentiment.get('checkedAt') or '')==str(news_latest.get('checkedAt') or '') and viewpoint_sentiment.get('separatedFromBreaking') is True,('invalid viewpoint sentiment',viewpoint_sentiment)
           intraday_expected=max(1,int(intraday.get('expected') or 0))
           intraday_required=max(1,int(intraday.get('required') or __import__('math').ceil(intraday_expected*.90)))
           intraday_success=int(intraday.get('success') or 0)
@@ -307,7 +311,11 @@ jobs:
           ! grep -q 'src="strategy-intelligence-core.js"' /tmp/page.html
           ! grep -q 'src="strategy-intelligence.js"' /tmp/page.html
           grep -q 'news-company-latest.json' /tmp/page.html
+          grep -q 'news-daily-brief.json' /tmp/page.html
+          grep -q 'news-viewpoint-sentiment.json' /tmp/page.html
           grep -q 'function newsTimeLabel(r)' /tmp/page.html
+          grep -q 'Bản tin 24h' /tmp/page.html
+          grep -q 'Góc nhìn thị trường' /tmp/page.html
           python - <<'PY'
           from pathlib import Path
           page=Path('/tmp/page.html').read_text(encoding='utf-8')
@@ -329,6 +337,8 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/quotes.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/quotes.json
           curl -fsSL --max-time 20 "$BASE/market/news-latest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news.json
           curl -fsSL --max-time 20 "$BASE/market/news-company-latest.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/company-news.json
+          curl -fsSL --max-time 20 "$BASE/market/news-daily-brief.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news-brief.json
+          curl -fsSL --max-time 20 "$BASE/market/news-viewpoint-sentiment.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/news-sentiment.json
           curl -fsSL --max-time 20 "$BASE/market/technical-signals.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/scanner.json
           curl -fsSL --max-time 20 "$BASE/market/strategy-indicators.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/strategy.json
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
@@ -346,7 +356,7 @@ jobs:
           def load(name):
               return json.load(open('/tmp/'+name,encoding='utf-8'))
           import math
-          q=load('quotes.json'); n=load('news.json'); cn=load('company-news.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); intraday=load('intraday.json'); macro=load('macro.json'); market_cal=load('market-risk-calibration.json')
+          q=load('quotes.json'); n=load('news.json'); cn=load('company-news.json'); nb=load('news-brief.json'); ns=load('news-sentiment.json'); s=load('scanner.json'); strategy=load('strategy.json'); risk=load('risk.json'); watch=load('watch.json'); u=load('universe.json'); intraday=load('intraday.json'); macro=load('macro.json'); market_cal=load('market-risk-calibration.json')
           e=load('esg.json'); f=load('manifest.json'); i=load('insights.json'); d=load('deployment.json')
           import os,re
           expected={'code':os.environ['EXPECTED_CODE_SHA'],'financialData':os.environ['EXPECTED_FINANCIAL_SHA'],'insightData':os.environ['EXPECTED_INSIGHT_SHA'],'marketData':os.environ['EXPECTED_MARKET_SHA']}
@@ -364,6 +374,8 @@ jobs:
           assert str(s.get('sourceTime') or '')==latest,(s.get('sourceTime'),latest)
           assert strategy.get('status')=='ok' and int(strategy.get('coverage') or 0)>=s_required,(strategy.get('coverage'),s_universe)
           assert str(strategy.get('sourceTime') or '')==latest,(strategy.get('sourceTime'),latest)
+          assert nb.get('status')=='ok' and str(nb.get('checkedAt') or '')==str(n.get('checkedAt') or '') and bool(nb.get('topStories')),('public Daily Brief invalid',nb)
+          assert ns.get('status')=='ok' and str(ns.get('checkedAt') or '')==str(n.get('checkedAt') or '') and ns.get('separatedFromBreaking') is True,('public viewpoint sentiment invalid',ns)
           assert watch.get('status')=='ok' and str(watch.get('sourceTime') or '')==latest,(watch.get('sourceTime'),latest)
           assert risk.get('status')=='ok' and str(risk.get('sourceTime') or '')==latest,(risk.get('sourceTime'),latest)
           assert int((risk.get('coverage') or {}).get('quotes') or 0)>=q_required,risk.get('coverage')
