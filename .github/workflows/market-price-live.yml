@@ -67,6 +67,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install independent delayed-price fallback
+        run: pip install --disable-pip-version-check -q pandas tradingview-screener==3.2.1
       - name: Check Vietnam trading window
         id: session
         shell: bash
@@ -78,7 +80,9 @@ jobs:
           if { [ "$hhmm" -ge 0855 ] && [ "$hhmm" -le 1140 ]; } || { [ "$hhmm" -ge 1255 ] && [ "$hhmm" -le 1505 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "oneshot=0" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || { [ "${{ github.event_name }}" = "push" ] && [ "$hhmm" -ge 1140 ] && [ "$hhmm" -lt 1255 ]; }; then
+            # A price-pipeline repair merged during lunch must backfill the
+            # morning session immediately; do not wait until 12:55.
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "oneshot=1" >> "$GITHUB_OUTPUT"
           else
@@ -160,6 +164,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           FORCE_ONESHOT: ${{ steps.session.outputs.oneshot }}
           MARKET_LOOP_SECONDS: '300'
-          MARKET_MAX_QUOTE_AGE_MINUTES: '18'
+          MARKET_MAX_QUOTE_AGE_MINUTES: '30'
+          MARKET_LUNCH_MAX_QUOTE_AGE_MINUTES: '105'
           MARKET_CLOSE_CATCH_MAX_AGE_MINUTES: '30'
         run: bash financial-report/scripts/live_session_publisher.sh
