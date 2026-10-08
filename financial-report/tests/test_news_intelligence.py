@@ -154,6 +154,46 @@ class NewsIntelligenceTests(unittest.TestCase):
         self.assertTrue(verified)
         self.assertEqual(basis,'date_line')
 
+    def test_daily_brief_excludes_viewpoint_content(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        rows=[
+            {'title':'Fed giữ lãi suất, thị trường chờ tín hiệu mới','url':'https://example.com/a','source':'Official','publishedAt':'2026-10-08T02:40:00+00:00','contentType':'official','topics':['rates','macro'],'newsPriority':80,'sourcePriority':100,'symbols':[],'impactTag':'FED','storyId':'s1'},
+            {'title':'FPT tăng trưởng lợi nhuận quý III','url':'https://example.com/b','source':'Press','publishedAt':'2026-10-08T02:30:00+00:00','contentType':'news','topics':['company','stocks'],'newsPriority':70,'sourcePriority':80,'symbols':['FPT'],'impactTag':'DOANH NGHIỆP','storyId':'s2'},
+            {'title':'Chuyên gia đánh giá FPT tích cực','url':'https://example.com/c','source':'24HMoney','publishedAt':'2026-10-08T02:20:00+00:00','contentType':'expert_analysis','topics':['expert','stocks'],'newsPriority':60,'sourcePriority':54,'symbols':['FPT'],'storyId':'s3'},
+            {'title':'Cộng đồng tranh luận FPT','url':'https://example.com/d','source':'24HMoney','publishedAt':'2026-10-08T02:10:00+00:00','contentType':'community','topics':['community','stocks'],'newsPriority':20,'sourcePriority':36,'symbols':['FPT'],'storyId':'s4'},
+        ]
+        brief=ni.build_daily_brief(rows,current,24)
+        titles=[x['title'] for x in brief['topStories']]
+        self.assertIn('Fed giữ lãi suất, thị trường chờ tín hiệu mới',titles)
+        self.assertIn('FPT tăng trưởng lợi nhuận quý III',titles)
+        self.assertNotIn('Chuyên gia đánh giá FPT tích cực',titles)
+        self.assertNotIn('Cộng đồng tranh luận FPT',titles)
+        self.assertEqual(brief['topSymbols'][0]['symbol'],'FPT')
+
+    def test_viewpoint_sentiment_keeps_expert_and_community_separate(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        rows=[
+            {'title':'FPT lợi nhuận tăng mạnh, chuyên gia nâng khuyến nghị','url':'https://example.com/e','source':'24HMoney','publishedAt':'2026-10-08T02:20:00+00:00','contentType':'expert_analysis','topics':['expert','stocks'],'symbols':['FPT'],'expectedImpact':{'direction':'positive','confidence':0.68}},
+            {'title':'Cộng đồng lo ngại FPT giảm lợi nhuận','url':'https://example.com/f','source':'24HMoney','publishedAt':'2026-10-08T02:10:00+00:00','contentType':'community','topics':['community','stocks'],'symbols':['FPT'],'expectedImpact':{'direction':'negative','confidence':0.72}},
+            {'title':'Tin chính thức FPT công bố BCTC','url':'https://example.com/g','source':'HOSE','publishedAt':'2026-10-08T02:00:00+00:00','contentType':'official','topics':['company'],'symbols':['FPT']},
+        ]
+        out=ni.build_viewpoint_sentiment(rows,current,72)
+        self.assertTrue(out['separatedFromBreaking'])
+        self.assertEqual(out['expert']['total'],1)
+        self.assertEqual(out['expert']['positive'],1)
+        self.assertEqual(out['community']['total'],1)
+        self.assertEqual(out['community']['negative'],1)
+        self.assertEqual(out['expert']['topSymbols'][0]['symbol'],'FPT')
+
+    def test_24hmoney_community_is_classified_separately(self):
+        current=datetime(2026,10,8,3,0,tzinfo=timezone.utc)
+        raw='''<html><body><div>10 phút</div><div>#Cộng đồng</div><a href="/news/fpt-cong-dong-c1a1.html">FPT cổ phiếu được cộng đồng nhà đầu tư thảo luận sôi động</a></body></html>'''
+        rows=ni.parse_24hmoney_live(raw,current,COMPANIES,ALIASES)
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['contentType'],'community')
+        self.assertEqual(rows[0]['sourceTier'],'community')
+        self.assertLess(rows[0]['sourcePriority'],50)
+
     def test_plan_parser_extracts_structured_ytd_actual(self):
         raw='''<html><body><h1>FPT</h1><table>
         <tr><th>Năm</th><th>Quý</th><th colspan="3">Doanh thu</th><th colspan="3">Lợi nhuận trước thuế</th><th colspan="3">Lợi nhuận sau thuế</th></tr>

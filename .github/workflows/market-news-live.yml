@@ -99,7 +99,9 @@ jobs:
                 test -s /tmp/market-news/market/news-company-latest.json
                 test -s /tmp/market-news/market/news-stories.json
                 test -s /tmp/market-news/market/news-semantic-health.json
-                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json market/news-stories.json market/news-semantic-health.json
+                test -s /tmp/market-news/market/news-daily-brief.json
+                test -s /tmp/market-news/market/news-viewpoint-sentiment.json
+                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json market/news-stories.json market/news-semantic-health.json market/news-daily-brief.json market/news-viewpoint-sentiment.json
                 if ! git -C /tmp/market-news diff --cached --quiet; then
                   git -C /tmp/market-news commit -m 'Refresh market news stream [data-only]'
                   published=0
@@ -149,12 +151,16 @@ jobs:
           git -C /tmp/market-news fetch origin financial-market-data
           git -C /tmp/market-news show origin/financial-market-data:market/news-latest.json > /tmp/remote-news-latest.json
           git -C /tmp/market-news show origin/financial-market-data:market/news-company-latest.json > /tmp/remote-news-company.json
-          REMOTE_NEWS=/tmp/remote-news-latest.json REMOTE_COMPANY=/tmp/remote-news-company.json python - <<'PY'
+          git -C /tmp/market-news show origin/financial-market-data:market/news-daily-brief.json > /tmp/remote-news-brief.json
+          git -C /tmp/market-news show origin/financial-market-data:market/news-viewpoint-sentiment.json > /tmp/remote-news-sentiment.json
+          REMOTE_NEWS=/tmp/remote-news-latest.json REMOTE_COMPANY=/tmp/remote-news-company.json REMOTE_BRIEF=/tmp/remote-news-brief.json REMOTE_SENTIMENT=/tmp/remote-news-sentiment.json python - <<'PY'
           import json, math, os
           from datetime import datetime, timezone
           from pathlib import Path
           data=json.loads(Path(os.environ['REMOTE_NEWS']).read_text())
           company=json.loads(Path(os.environ['REMOTE_COMPANY']).read_text())
+          brief=json.loads(Path(os.environ['REMOTE_BRIEF']).read_text())
+          sentiment=json.loads(Path(os.environ['REMOTE_SENTIMENT']).read_text())
           stamp=datetime.fromisoformat(str(data.get('checkedAt')).replace('Z','+00:00'))
           if stamp.tzinfo is None:
               stamp=stamp.replace(tzinfo=timezone.utc)
@@ -165,6 +171,10 @@ jobs:
               raise SystemExit(f'company news index invalid: status={company.get("status")} coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
           if str(company.get('checkedAt'))!=str(data.get('checkedAt')):
               raise SystemExit('company news index is not aligned with latest news snapshot')
+          if brief.get('status')!='ok' or str(brief.get('checkedAt'))!=str(data.get('checkedAt')) or not brief.get('topStories'):
+              raise SystemExit(f'Daily Brief invalid or misaligned: {brief}')
+          if sentiment.get('status')!='ok' or str(sentiment.get('checkedAt'))!=str(data.get('checkedAt')) or sentiment.get('separatedFromBreaking') is not True:
+              raise SystemExit(f'Viewpoint sentiment invalid or misaligned: {sentiment}')
           luat=data.get('luatVietnamDirect') or {}
           if int(luat.get('expectedParsers') or 0)!=4 or int(luat.get('parserHealthy') or 0)<3:
               raise SystemExit(f'LuatVietnam direct parser contract failed: {luat}')

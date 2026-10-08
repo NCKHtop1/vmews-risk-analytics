@@ -3133,6 +3133,12 @@ def news(out, companies):
         'checkedAt': checked_at, 'status':'ok' if ok else 'retained',
         'storyCount':len(story_rows), 'items':story_rows[:500]
     })
+    daily_brief = ni.build_daily_brief(items, current, 24)
+    daily_brief['checkedAt'] = checked_at
+    viewpoint_sentiment = ni.build_viewpoint_sentiment(items, current, 72)
+    viewpoint_sentiment['checkedAt'] = checked_at
+    write(out / 'news-daily-brief.json', daily_brief)
+    write(out / 'news-viewpoint-sentiment.json', viewpoint_sentiment)
     violations = ni.semantic_violations(items)
     semantic_metrics = {
         'checkedAt':checked_at,
@@ -3144,13 +3150,18 @@ def news(out, companies):
         'sourceLineageItems':sum(1 for row in items if row.get('publisher') or row.get('discoveredVia')),
         'criticalViolations':len(violations),
         'violations':violations[:20],
+        'dailyBriefStories':len(daily_brief.get('topStories') or []),
+        'expertViewpoints':int((viewpoint_sentiment.get('expert') or {}).get('total') or 0),
+        'communityViewpoints':int((viewpoint_sentiment.get('community') or {}).get('total') or 0),
     }
     write(out / 'news-semantic-health.json', semantic_metrics)
     drivers = build_drivers(out, companies) if (out / 'quotes.json').exists() else {}
     print(
         f'News: {len(rows)} fetched; {len(items)} unique; latest {len(latest_items)}; '
         f'company {len(company_items)} items/{len(company_counts)} symbols; '
-        f'stories {len(story_rows)}; 24hmoney live {len(money24_items)} + symbol {len(money24_symbol_items)}; '
+        f'stories {len(story_rows)}; brief {len(daily_brief.get("topStories") or [])}; '
+        f'viewpoints expert {(viewpoint_sentiment.get("expert") or {}).get("total",0)} / community {(viewpoint_sentiment.get("community") or {}).get("total",0)}; '
+        f'24hmoney live {len(money24_items)} + symbol {len(money24_symbol_items)}; '
         f'luat {luat_health.get("status")} {len(luat_rows)} items; '
         f'sources {healthy}/{len(sources)} healthy ({empty} empty); drivers: {len(drivers)}',
         flush=True

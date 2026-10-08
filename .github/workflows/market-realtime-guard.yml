@@ -76,6 +76,8 @@ jobs:
               company=get('news-company-latest.json')
               stories=get('news-stories.json')
               semantic=get('news-semantic-health.json')
+              brief=get('news-daily-brief.json')
+              sentiment=get('news-viewpoint-sentiment.json')
               if n.get('status')!='ok' or not n.get('items') or age(n.get('checkedAt'))>20:
                   raise ValueError('News older than 20 minutes or unavailable')
               if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
@@ -90,6 +92,10 @@ jobs:
                   raise ValueError(f'News semantic gate failed: {semantic.get("violations")}')
               if str(semantic.get('checkedAt') or '')!=str(n.get('checkedAt') or ''):
                   raise ValueError('Semantic health snapshot not aligned with news heartbeat')
+              if brief.get('status')!='ok' or str(brief.get('checkedAt') or '')!=str(n.get('checkedAt') or '') or not brief.get('topStories'):
+                  raise ValueError(f'Daily Brief invalid or misaligned: {brief}')
+              if sentiment.get('status')!='ok' or str(sentiment.get('checkedAt') or '')!=str(n.get('checkedAt') or '') or sentiment.get('separatedFromBreaking') is not True:
+                  raise ValueError(f'Viewpoint sentiment invalid or misaligned: {sentiment}')
               health=n.get('sourceHealth') or {}
               if int(health.get('healthy') or 0)<3:
                   raise ValueError(f'News source health too low: {health}')
