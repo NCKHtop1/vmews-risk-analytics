@@ -37,6 +37,52 @@ jobs:
       - run: node --check financial-report/scripts/build_strategy_snapshot.cjs && node --check financial-report/scripts/build_sector_risk_calibration.cjs && node --check financial-report/scripts/build_risk_monitor.cjs
       - run: node --test financial-report/tests/chart_math.test.cjs financial-report/tests/chart_stream.test.cjs financial-report/tests/market_data.test.cjs financial-report/tests/strategy_engine.test.cjs financial-report/tests/strategy_snapshot.test.cjs financial-report/tests/research_agent.test.cjs financial-report/tests/research_ai_deep.test.cjs financial-report/tests/risk_monitor.test.cjs
       - run: node financial-report/tests/knowledge.test.cjs
+      - name: Probe public FinQuery Pages market and News v2 without modifying production
+        continue-on-error: true
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,time,urllib.request,math
+          from datetime import datetime,timezone,timedelta
+          base='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/'
+          VN=timezone(timedelta(hours=7))
+          def get(name):
+              url=base+name+'?audit='+str(time.time_ns())
+              req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','User-Agent':'FinQueryProductionAudit/1.0'})
+              with urllib.request.urlopen(req,timeout=25) as response:
+                  body=response.read()
+              return json.loads(body)
+          names=['deployment.json','market/quotes.json','market/technical-signals.json','market/strategy-indicators.json','market/risk-monitor.json','market/news-daily-brief.json','market/news-viewpoint-sentiment.json']
+          result={}
+          for name in names:
+              try:
+                  d=get(name)
+                  result[name]=d
+                  print('PAGES_FILE',name,'status',d.get('status'),'checkedAt',d.get('checkedAt'),'sourceTime',d.get('sourceTime') or d.get('latestSourceTime'),'coverage',d.get('coverage'),'sha',d.get('marketData'),flush=True)
+              except Exception as exc:
+                  print('PAGES_FETCH_ERROR',name,repr(exc),flush=True)
+          quote=result.get('market/quotes.json') or {}
+          scanner=result.get('market/technical-signals.json') or {}
+          strategy=result.get('market/strategy-indicators.json') or {}
+          risk=result.get('market/risk-monitor.json') or {}
+          brief=result.get('market/news-daily-brief.json') or {}
+          sentiment=result.get('market/news-viewpoint-sentiment.json') or {}
+          today=datetime.now(VN).date().isoformat()
+          source=quote.get('latestSourceTime')
+          day=datetime.fromisoformat(source.replace('Z','+00:00')).astimezone(VN).date().isoformat() if source else None
+          if day!=today:
+              raise SystemExit('PAGES_RED price source day='+str(day)+' expected='+today)
+          expected=max(1,int(quote.get('expected') or 0))
+          if quote.get('status')!='ok' or int(quote.get('coverage') or 0)<math.ceil(expected*.90):
+              raise SystemExit('PAGES_RED quote coverage below 90%')
+          if scanner.get('sourceTime')!=source or int(scanner.get('coverage') or 0)<int(scanner.get('universe') or 0)*.90:
+              raise SystemExit('PAGES_RED scanner stale/incomplete')
+          if strategy.get('sourceTime')!=source or risk.get('sourceTime')!=source:
+              raise SystemExit('PAGES_RED strategy/risk sourceTime mismatch')
+          if brief.get('status')!='ok' or sentiment.get('status')!='ok' or sentiment.get('separatedFromBreaking') is not True:
+              raise SystemExit('PAGES_RED Daily Brief/sentiment missing')
+          print('PAGES_PRICE_NEWS_V2_CONTRACT_PASS',{'sourceTime':source,'coverage':quote.get('coverage'),'scanner':scanner.get('coverage'),'strategy':strategy.get('coverage'),'risk':(risk.get('coverage') or {}).get('quotes'),'brief':len(brief.get('topStories') or []),'expert':(sentiment.get('expert') or {}).get('total')},flush=True)
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: financial-excel-tested
