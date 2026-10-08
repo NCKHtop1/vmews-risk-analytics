@@ -60,7 +60,9 @@ jobs:
           fetch-depth: 1
           sparse-checkout: |
             financial-report
-            data/fund-holdings-history-v16.json
+            data
+          # Cone mode only accepts directory patterns. The previous file-level
+          # sparse path could abort checkout before the price publisher started.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
