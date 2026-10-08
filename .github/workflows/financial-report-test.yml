@@ -26,6 +26,37 @@ jobs:
         with:
           node-version: '22'
       - run: pip install -q openpyxl==3.1.5 pandas pandas-ta-classic==0.8.32
+      - name: Diagnose provider timestamps without publishing data
+        continue-on-error: true
+        timeout-minutes: 3
+        run: |
+          pip install --disable-pip-version-check -q tradingview-screener==3.2.1
+          python - <<'PY'
+          import importlib.util, json, sys
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          root=Path('financial-report/scripts').resolve()
+          sys.path.insert(0,str(root))
+          spec=importlib.util.spec_from_file_location('finquery_live_diag',root/'refresh_market.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          symbols=[x['symbol'] for x in json.loads(Path('financial-report/data/companies.json').read_text())]
+          clock=datetime.now(timezone.utc)
+          print('PROBE_CLOCK',clock.isoformat(),'VN',(clock+timedelta(hours=7)).isoformat(),flush=True)
+          try:
+              payload=json.loads(m.request(m.API+'price/symbols/getList',{'symbols':symbols},timeout=18))
+              allrows=m.normalize_board(payload,symbols,m.now())
+              current,stale=m.current_session_quotes(allrows,current=clock,max_age_minutes=18)
+              print('VIETCAP',len(allrows),'LIVE18',len(current),'STALE',len(stale),'LATEST',m.newest_source_time(allrows),'FPT',allrows.get('FPT'),flush=True)
+          except Exception as exc:
+              print('VIETCAP ERROR',repr(exc),flush=True)
+          try:
+              allrows=m.tradingview_current_board(symbols,m.now())
+              current,stale=m.current_session_quotes(allrows,current=clock,max_age_minutes=18)
+              lunch,stale_lunch=m.current_session_quotes(allrows,current=clock,max_age_minutes=105)
+              print('TRADINGVIEW',len(allrows),'LIVE18',len(current),'LUNCH105',len(lunch),'STALE105',len(stale_lunch),'LATEST',m.newest_source_time(allrows),'FPT',allrows.get('FPT'),flush=True)
+          except Exception as exc:
+              print('TRADINGVIEW ERROR',repr(exc),flush=True)
+          PY
       - name: Build production bundle from frontend source
         run: python financial-report/scripts/build_cdn.py
       - run: python -m unittest discover -s financial-report/tests -v
