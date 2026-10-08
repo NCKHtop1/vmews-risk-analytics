@@ -1104,7 +1104,7 @@ def technical_scan_symbol(symbol, bars, quote=None, previous=None):
     }
 
 
-def build_technical_scanner(out, companies, quotes):
+def build_technical_scanner(out, companies, quotes, universe=None):
     path = out / 'technical-signals.json'
     old = read(path, {'symbols': {}})
     previous_symbols = old.get('symbols') or {}
@@ -1126,7 +1126,13 @@ def build_technical_scanner(out, companies, quotes):
     # The output snapshot owns the market universe for this build. Never mix
     # discovery/scanner membership from financial-report/data/universe.json
     # with a newer market branch snapshot.
-    universe = load_market_universe(out)
+    # During a live price refresh, sync_market_universe() deliberately writes a
+    # public/minimal universe without the heavy Discovery EOD indicators. The
+    # already-loaded, validated full market-branch universe MUST be passed
+    # through this function; reloading the public copy here drops ~287 EOD
+    # scanner names and blocks quote publishing at the 90% coverage gate.
+    if not (isinstance(universe, dict) and universe.get('scannerSymbols')):
+        universe = load_market_universe(out)
     discovery = universe.get('discoveryTechnical') if isinstance(universe, dict) else {}
     records = universe.get('symbols') if isinstance(universe, dict) else {}
     if isinstance(discovery, dict):
@@ -1395,14 +1401,17 @@ def merge_live_daily_quotes(out, quotes):
     return merged_count
 
 
-def prices(out, companies):
+def prices(out, companies, universe=None):
     """Fast quote snapshot with an optional current-session freshness gate.
 
     Scheduled intraday runs set MARKET_REQUIRE_TODAY=1. In that mode a provider
     response from T-1 is not accepted as a successful refresh and is never
     merged into today's candle.
     """
-    universe = load_market_universe() or fallback_market_universe(companies)
+    # Prefer the complete market-branch universe over the main checkout when
+    # available. Keep its EOD Discovery evidence in memory before writing the
+    # slim public copy; the live price writer must not erase scanner members.
+    universe = universe if isinstance(universe, dict) and universe.get('scannerSymbols') else (load_market_universe(out) or load_market_universe() or fallback_market_universe(companies))
     sync_market_universe(out, universe)
     seeded_histories = seed_market_histories(out, universe, companies)
     symbols = [c['symbol'] for c in companies]
@@ -1478,7 +1487,7 @@ def prices(out, companies):
     })
     live_daily_merged = merge_live_daily_quotes(out, fresh)
     history_effective = update_history_effective_status(out, symbols)
-    technical_matches = build_technical_scanner(out, companies, fresh)
+    technical_matches = build_technical_scanner(out, companies, fresh, universe=universe)
     today_watch = build_today_watchlist(out, companies, fresh)
     available_histories = sum(1 for symbol in symbols if read(out / 'history' / (symbol + '.json'), {}).get('bars'))
     write(out / 'prices-status.json', {
@@ -3256,7 +3265,13 @@ if __name__ == '__main__':
     errors = []
     for mode in (['prices', 'news', 'macro'] if args.mode == 'all' else [args.mode]):
         try:
-            globals()[mode](args.output, companies)
+            if mode == 'prices':
+                # Preserve the FULL market-branch universe loaded before the
+                # public-universe synchronization at the top of __main__.
+                # Otherwise the 287 EOD Discovery scanner rows disappear.
+                prices(args.output, companies, universe=universe)
+            else:
+                globals()[mode](args.output, companies)
         except Exception as e:
             errors.append(str(e))
     if errors:
