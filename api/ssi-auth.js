@@ -21,7 +21,14 @@ module.exports=async function handler(req,res){
    const codeVerifier=oauth.verifier();
    session.writeCookie(res,session.PENDING,{client,state,codeVerifier,redirectUri,at:Date.now()},600);
    res.redirect(302,oauth.authorizeUrl(m,client,redirectUri,state,codeVerifier));
-  }catch{session.json(res,502,{enabled:true,connected:false,error:'ssi_oauth_unavailable'});}
+  }catch(error){
+   if(error?.code==='ssi_redirect_domain_not_allowed'){
+    // SSI restricts callback domains. Return to an explanatory screen; never suggest bypassing the allowlist.
+    res.redirect(302,session.strictOrigin()+'/?ssi=domain_not_allowed');
+   }else{
+    session.json(res,502,{enabled:true,connected:false,error:'ssi_oauth_unavailable'});
+   }
+  }
   return;
  }
  if(op(req)==='logout'&&req.method==='POST'){
