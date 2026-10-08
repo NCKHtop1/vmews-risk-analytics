@@ -473,3 +473,40 @@ def enrich_row(row, companies, aliases=None):
         copy['impactTag']='DOANH NGHIỆP' if copy.get('symbols') else ('THẾ GIỚI' if copy.get('region')=='global' else 'VĨ MÔ')
         copy['semanticCorrection']='oil_word_without_market_context'
     return copy
+
+
+def realized_reaction(row, bars, horizons=(15,30,60)):
+    """Measure raw post-news return from the first bar at/after publication."""
+    if not bars or len(row.get('symbols') or []) != 1:
+        return None
+    try:
+        event = datetime.fromisoformat(str(row.get('publishedAt')).replace('Z','+00:00')).astimezone(timezone.utc)
+    except Exception:
+        return None
+    parsed=[]
+    for bar in bars:
+        try:
+            stamp=datetime.fromisoformat(str(bar.get('time')).replace('Z','+00:00')).astimezone(timezone.utc)
+            close=float(bar.get('close'))
+        except Exception:
+            continue
+        if close>0:
+            parsed.append((stamp,close))
+    if not parsed:
+        return None
+    parsed.sort()
+    base=next(((t,p) for t,p in parsed if t>=event),None)
+    if not base or abs((base[0]-event).total_seconds())>45*60:
+        return None
+    out={'basis':'first_trade_at_or_after_news','baseTime':base[0].isoformat(),'basePrice':base[1]}
+    for minutes in horizons:
+        target=event+timedelta(minutes=minutes)
+        hit=next(((t,p) for t,p in parsed if t>=target),None)
+        if hit and hit[0].date()==base[0].date():
+            out[f'return{minutes}mPct']=round((hit[1]/base[1]-1)*100,3)
+            out[f'time{minutes}m']=hit[0].isoformat()
+    same_day=[(t,p) for t,p in parsed if t.date()==base[0].date() and t>=base[0]]
+    if same_day:
+        out['returnEodPct']=round((same_day[-1][1]/base[1]-1)*100,3)
+        out['eodTime']=same_day[-1][0].isoformat()
+    return out
