@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: market-news-live
@@ -113,6 +114,17 @@ jobs:
                   done
                   if [ "$published" -ne 1 ]; then
                     echo "::warning::Unable to publish this news heartbeat after retries."
+                  else
+                    # Pages serves a bundled copy of financial-market-data. A
+                    # long-lived News runner does not complete after each 15m
+                    # heartbeat, so workflow_run alone cannot keep the public
+                    # UI fresh. Dispatch Pages immediately after a real data
+                    # commit is published; pages.yml concurrency handles overlap.
+                    if GH_TOKEN="${{ github.token }}" gh workflow run pages.yml --ref main; then
+                      echo "Pages deploy requested for the new News snapshot."
+                    else
+                      echo "::warning::News data published but Pages dispatch failed; freshness guard/browser smoke will catch a stale public bundle."
+                    fi
                   fi
                 else
                   echo "No news changes to publish"
