@@ -40,4 +40,16 @@ const rows=scenario(59700);
 assert.equal(rows.length,5);
 assert.ok(rows.every(r=>r.innerHTML.includes('Giá dự báo trung tâm')),'valid close preserves forecast target UI');
 assert.ok(rows.every(r=>!r.innerHTML.includes('THIẾU GIÁ THAM CHIẾU')),'valid close not downgraded');
-console.log('FORECAST_MISSING_REFERENCE_PRICE_REGRESSION_PASS 5 cases');
+// Also test production pointMove itself (not just a test double).
+const moveStart=source.indexOf('function pointMove(q,close)');
+const moveEnd=source.indexOf('\nfunction ',moveStart+4);
+assert.ok(moveStart>=0&&moveEnd>moveStart,'pointMove function extractable');
+const realPointMove=vm.runInNewContext(source.slice(moveStart,moveEnd)+'\npointMove;',{
+   forecastAvailable:valid,finite:x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))
+});
+const horizon={priceValidated:true,expectedPrice:50000,q20Price:49000,q80Price:51000};
+assert.equal(realPointMove(horizon,null),null);
+assert.equal(realPointMove(horizon,0),null);
+assert.equal(realPointMove(horizon,-1),null);
+assert.ok(Number.isFinite(realPointMove(horizon,59700).rate));
+console.log('FORECAST_MISSING_REFERENCE_PRICE_REGRESSION_PASS 9 cases');
