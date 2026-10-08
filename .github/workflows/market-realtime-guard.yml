@@ -63,11 +63,35 @@ jobs:
               if minutes < -5: raise ValueError('Future timestamp')
               return minutes
           def trigger(workflow):
-              # Never cancel a collector that is already running or queued.
               raw=subprocess.check_output(['gh','api',f'repos/{os.environ["GH_REPO"]}/actions/workflows/{workflow}/runs?per_page=10'],text=True)
               runs=json.loads(raw).get('workflow_runs',[])
-              if any(r.get('status') in ('queued','in_progress','waiting','pending','requested') for r in runs):
-                  print(workflow, 'already active'); return
+              active=[r for r in runs if r.get('status') in ('queued','in_progress','waiting','pending','requested')]
+              if active:
+                  # A long-running price runner can remain in_progress while
+                  # EVERY quote collection fails. An active workflow is not
+                  # proof of a current quote snapshot. Replace only a genuinely
+                  # stuck price runner; keep News/intraday ownership intact.
+                  if workflow!='market-price-live.yml':
+                      print(workflow,'already active');return
+                  queued=[r for r in active if r.get('status')!='in_progress']
+                  hanging=[]
+                  for item in active:
+                      if item.get('status')!='in_progress':
+                          continue
+                      try:
+                          started=datetime.fromisoformat(str(item.get('run_started_at') or item.get('created_at')).replace('Z','+00:00')).astimezone(timezone.utc)
+                          if now-started>timedelta(minutes=25):
+                              hanging.append(item)
+                      except (ValueError,TypeError):
+                          pass
+                  if not hanging:
+                      print(workflow,'active but still within recovery grace period',[(r.get('id'),r.get('status')) for r in active]);return
+                  for item in hanging:
+                      subprocess.run(['gh','run','cancel',str(item['id']),'--repo',os.environ['GH_REPO']],check=True)
+                      print('Cancelled stuck price publisher',item['id'],'after 25m without a fresh remote quote')
+                  if queued:
+                      print('Queued price publisher will take over after cancellation',[(r.get('id'),r.get('status')) for r in queued])
+                      return
               subprocess.run(['gh','workflow','run',workflow,'--ref','main'],check=True)
               print('Recovery dispatched:',workflow)
           stale=[]
