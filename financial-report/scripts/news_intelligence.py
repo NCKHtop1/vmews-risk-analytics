@@ -461,4 +461,15 @@ def enrich_row(row, companies, aliases=None):
     copy.setdefault('discoveredVia',copy.get('feedSource') or copy.get('source'))
     copy['contentType'] = classify_content_type(copy.get('source',''),copy.get('title',''),topics)
     copy['expectedImpact'] = expected_impact(copy.get('title',''),copy.get('summary',''),copy.get('symbols'))
+    topic_set=set(topics)
+    current_tag=str(copy.get('impactTag') or '')
+    if current_tag=='VÀNG' and 'gold' not in topic_set:
+        copy['impactTag']='DOANH NGHIỆP' if copy.get('symbols') else ('THẾ GIỚI' if copy.get('region')=='global' else 'VĨ MÔ')
+        copy['semanticCorrection']='gold_idiom_or_non_commodity'
+    elif current_tag=='TỶ GIÁ' and 'fx' not in topic_set:
+        copy['impactTag']='DOANH NGHIỆP' if copy.get('symbols') else ('THẾ GIỚI' if copy.get('region')=='global' else 'VĨ MÔ')
+        copy['semanticCorrection']='currency_unit_not_fx'
+    elif current_tag=='DẦU' and 'oil' not in topic_set:
+        copy['impactTag']='DOANH NGHIỆP' if copy.get('symbols') else ('THẾ GIỚI' if copy.get('region')=='global' else 'VĨ MÔ')
+        copy['semanticCorrection']='oil_word_without_market_context'
     return copy
