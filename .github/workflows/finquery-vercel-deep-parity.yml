@@ -6,6 +6,7 @@ on:
       - 'scripts/finquery_vercel_parity_audit.py'
       - 'scripts/finquery_vercel_browser_audit.py'
       - 'scripts/finquery_vercel_freshness_diff.py'
+      - 'scripts/finquery_vercel_bank_network_audit.py'
       - '.github/workflows/finquery-vercel-deep-parity.yml'
   workflow_dispatch:
 permissions:
@@ -60,4 +61,22 @@ jobs:
         with:
           name: finquery-vercel-freshness
           path: finquery-freshness-diff.json
+          if-no-files-found: ignore
+  bank-network:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium/Selenium
+        run: pip install -q selenium==4.36.0
+      - name: Open Vercel FinQuery with github.io/githubusercontent.com blocked
+        run: python scripts/finquery_vercel_bank_network_audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-bank-network
+          path: finquery-bank-network-audit.json
           if-no-files-found: ignore
