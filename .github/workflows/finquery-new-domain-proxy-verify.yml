@@ -1,0 +1,50 @@
+name: FinQuery new-domain proxy verification
+on:
+  push:
+    branches: [ops/finquery-domain-proxy-verify-20261009]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check existing FinQuery origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://nckhtop1.github.io/vmews-risk-analytics/financial-report'
+          for path in / /market/quotes.json /data/manifest.json /deployment.json; do
+            url="$BASE$path"
+            code="$(curl -sSL --max-time 22 -o /tmp/fq_data -w '%{http_code}' "$url")"
+            echo "ORIGIN ${path} HTTP=${code} bytes=$(wc -c < /tmp/fq_data)"
+            if [ "$code" != "200" ]; then exit 1; fi
+          done
+      - name: Check Vercel custom-domain proxy before changing iNET DNS
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://finquery.info.vn'
+          for path in / /market/quotes.json /data/manifest.json /deployment.json; do
+            code="$(curl -skSL --resolve 'finquery.info.vn:443:76.76.21.21' --max-time 35 -o /tmp/fq_proxy -D /tmp/fq_headers -w '%{http_code}' "$BASE$path")"
+            echo "PROXY ${path} HTTP=${code} bytes=$(wc -c < /tmp/fq_proxy)"
+            grep -Ei '^(content-type|x-vercel-id|server|location):' /tmp/fq_headers | tail -n 7 || true
+            if [ "$code" != "200" ]; then head -c 260 /tmp/fq_proxy; exit 1; fi
+            if [ "$path" = "/" ]; then
+              grep -q 'FinQuery' /tmp/fq_proxy
+              if grep -q '<title>VMEWS' /tmp/fq_proxy; then echo 'WRONG_SITE'; exit 1; fi
+            else
+              PATH_FOR_CHECK="$path" python3 - <<'PY'
+          import json,os
+          with open('/tmp/fq_proxy',encoding='utf-8') as f: d=json.load(f)
+          path=os.environ['PATH_FOR_CHECK']
+          assert isinstance(d,dict),type(d)
+          if path.endswith('/quotes.json'):
+              assert isinstance(d.get('quotes'),dict) and len(d['quotes'])>=50,len(d.get('quotes') or {})
+          if path.endswith('/deployment.json'):
+              assert all(k in d for k in ('code','financialData','insightData','marketData')),d
+          print('VALID_JSON',path,len(d))
+          PY
+            fi
+          done
