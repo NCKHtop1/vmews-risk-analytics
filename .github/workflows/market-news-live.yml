@@ -59,9 +59,11 @@ jobs:
             if git fetch --quiet --no-tags origin main; then
               local_collector="$(git rev-parse "${GITHUB_SHA}:financial-report/scripts/refresh_market.py" 2>/dev/null || true)"
               main_collector="$(git rev-parse "origin/main:financial-report/scripts/refresh_market.py" 2>/dev/null || true)"
+              local_intelligence="$(git rev-parse "${GITHUB_SHA}:financial-report/scripts/news_intelligence.py" 2>/dev/null || true)"
+              main_intelligence="$(git rev-parse "origin/main:financial-report/scripts/news_intelligence.py" 2>/dev/null || true)"
               local_workflow="$(git rev-parse "${GITHUB_SHA}:.github/workflows/market-news-live.yml" 2>/dev/null || true)"
               main_workflow="$(git rev-parse "origin/main:.github/workflows/market-news-live.yml" 2>/dev/null || true)"
-              if [ -z "$local_collector" ] || [ -z "$main_collector" ] || [ "$local_collector" != "$main_collector" ] || [ "$local_workflow" != "$main_workflow" ]; then
+              if [ -z "$local_collector" ] || [ -z "$main_collector" ] || [ -z "$local_intelligence" ] || [ -z "$main_intelligence" ] || [ "$local_collector" != "$main_collector" ] || [ "$local_intelligence" != "$main_intelligence" ] || [ "$local_workflow" != "$main_workflow" ]; then
                 echo "::notice::This News publisher is superseded by newer collector/workflow code on main; stopping before another publish."
                 superseded=1
                 break
