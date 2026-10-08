@@ -38,3 +38,5 @@ jobs:
           print("DOMAIN_SAFE_BUNDLE_PASS",len(html))
           PY
           node --check financial-report/frontend/market.js
+          node --check forecast-final-v12.js
+          node scripts/test_forecast_missing_close.cjs
