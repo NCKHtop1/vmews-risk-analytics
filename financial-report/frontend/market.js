@@ -178,7 +178,7 @@ function newsTimeLabel(r){if(r?.timePrecision==='relative'&&!r?.detailTimestampV
 function isSBVNews(r){return r?.officialSource==='SBV'||r?.source==='Ngân hàng Nhà nước Việt Nam'||SBV_RE.test(newsText(r));}
 function matchesNewsMode(r,mode){const topics=Array.isArray(r.topics)&&r.topics.length?r.topics:inferredTopics(r);if(mode==='watchlist')return (r?.symbols||[]).some(s=>watch.includes(String(s).toUpperCase()));if(mode==='new'){const last=Number(localStorage.getItem('finquery-news-last-seen')||0);return (Date.parse(r?.publishedAt)||0)>last;}if(mode==='vietnam')return newsOrigin(r)==='vietnam';if(mode==='sbv')return isSBVNews(r);if(mode==='global')return newsOrigin(r)==='global';if(mode==='impact')return Number(r?.newsPriority||0)>=55||impactScore(r)>=48||IMPACT_RE.test(newsText(r));if(mode==='all')return true;return topics.includes(mode);}
 function breakingRows(){
- const ranked=(state.news?.items||[]).filter(r=>newsAgeHours(r)<=36&&impactScore(r)>=52&&safeURL(r.url)).sort((a,b)=>impactScore(b)-impactScore(a)||Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
+ const ranked=(state.news?.items||[]).filter(r=>newsAgeHours(r)<=36&&impactScore(r)>=52&&safeURL(r.url)&&!['community','expert_analysis'].includes(String(r?.contentType||''))).sort((a,b)=>impactScore(b)-impactScore(a)||Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
  const picked=[],counts={};
  for(const row of ranked){const tag=impactTag(row);if((counts[tag]||0)>=2)continue;counts[tag]=(counts[tag]||0)+1;picked.push(row);if(picked.length>=10)break;}
  if(picked.length<4){for(const row of ranked){if(picked.includes(row))continue;picked.push(row);if(picked.length>=6)break;}}
