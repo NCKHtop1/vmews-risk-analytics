@@ -8,6 +8,7 @@ on:
       - '.github/workflows/market-news-live.yml'
       - '.github/workflows/market-realtime-guard.yml'
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/news_intelligence.py'
   schedule:
     # Bootstrap a long-lived publisher every hour. Each run keeps publishing for
     # more than one hour, so a delayed/skipped cron does not immediately create
@@ -95,7 +96,9 @@ jobs:
                 git -C /tmp/market-news restore --worktree market/drivers.json || true
                 test -s /tmp/market-news/market/news-latest.json
                 test -s /tmp/market-news/market/news-company-latest.json
-                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json
+                test -s /tmp/market-news/market/news-stories.json
+                test -s /tmp/market-news/market/news-semantic-health.json
+                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json market/news-stories.json market/news-semantic-health.json
                 if ! git -C /tmp/market-news diff --cached --quiet; then
                   git -C /tmp/market-news commit -m 'Refresh market news stream [data-only]'
                   published=0
