@@ -2154,7 +2154,7 @@ def parse_feed(raw, publisher, feed_url, companies, current):
 def _fetch_24hmoney_symbol_news(companies, current):
     symbols=sorted({str(c.get('symbol') or '').upper() for c in companies if c.get('symbol')})
     if not symbols:
-        return [], {'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':'empty','items':0,'symbolsAttempted':0,'symbolsReachable':0}
+        return [], {'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}/news','status':'empty','items':0,'symbolsAttempted':0,'symbolsReachable':0}
     budget=max(1,min(len(symbols),int(os.environ.get('MONEY24_SYMBOL_BUDGET','30'))))
     priority=[x for x in ('FPT','MBB','HPG','VCB','VIC','VHM','SSI','TCB','VPB','VND','HCM','VIX') if x in symbols]
     offset=(current.hour*budget)%len(symbols)
@@ -2162,43 +2162,74 @@ def _fetch_24hmoney_symbol_news(companies, current):
     batch=[]
     for symbol in priority+rotated:
         if symbol not in batch: batch.append(symbol)
-    rows=[];reachable=0;errors=[]
+
+    rows=[];reachable=0;errors=[];parser_mismatch=0;anchor_candidates=0
     def fetch_one(symbol):
-        url=f'https://24hmoney.vn/stock/{symbol}'
+        url=f'https://24hmoney.vn/stock/{symbol}/news'
         try:
             raw=request(url,timeout=8)
+            anchors=ni.count_24hmoney_article_anchors(raw)
             parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
-            return symbol,parsed,True,None
+            mismatch=anchors>0 and not parsed
+            return symbol,parsed,True,None,anchors,mismatch
         except Exception as exc:
-            return symbol,[],False,str(exc)[:120]
+            return symbol,[],False,str(exc)[:120],0,False
+
     workers=max(4,min(12,int(os.environ.get('MONEY24_SYMBOL_WORKERS','10'))))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures=[pool.submit(fetch_one,symbol) for symbol in batch]
         for future in as_completed(futures):
-            symbol,parsed,ok,error=future.result()
+            symbol,parsed,ok,error,anchors,mismatch=future.result()
+            anchor_candidates+=anchors
             if ok:
                 reachable+=1;rows.extend(parsed)
+                if mismatch: parser_mismatch+=1
             elif error:
                 errors.append(symbol+': '+error)
-    status='ok' if rows else ('empty' if reachable else 'error')
-    health={'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}','status':status,'items':len(rows),
-            'symbolsAttempted':len(batch),'symbolsReachable':reachable,'parser':'24hmoney-symbol-v2'}
+
+    if rows:
+        status='ok'
+    elif reachable and anchor_candidates==0:
+        status='empty'
+    elif reachable:
+        status='error'
+        errors.append(f'parser mismatch: {parser_mismatch}/{reachable} reachable symbol pages had article anchors but no parsed rows')
+    else:
+        status='error'
+    health={
+        'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}/news',
+        'status':status,'items':len(rows),'symbolsAttempted':len(batch),
+        'symbolsReachable':reachable,'articleAnchors':anchor_candidates,
+        'parserMismatchPages':parser_mismatch,'parser':'24hmoney-symbol-v3'
+    }
     if errors: health['errors']=errors[:6]
     return rows,health
 
 
 def _fetch_24hmoney_live(companies, current):
     try:
-        rows = ni.parse_24hmoney_live(request(MONEY24_LIVE_URL), current, companies, ALIASES, MONEY24_LIVE_URL)
-        latest = max((row.get('publishedAt') for row in rows if row.get('publishedAt')), default=None)
-        return rows, {
-            'name':'24HMoney Live','url':MONEY24_LIVE_URL,
-            'status':'ok' if rows else 'empty','items':len(rows),
-            'lastItemAt':latest,'parser':'24hmoney-live-v2'
+        raw=request(MONEY24_LIVE_URL,timeout=10)
+        anchors=ni.count_24hmoney_article_anchors(raw)
+        rows=ni.parse_24hmoney_live(raw,current,companies,ALIASES,MONEY24_LIVE_URL)
+        latest=max((row.get('publishedAt') for row in rows if row.get('publishedAt')),default=None)
+        if rows:
+            status='ok';error=None
+        elif anchors:
+            status='error';error=f'parser mismatch: {anchors} article anchors found but 0 recent rows parsed'
+        else:
+            status='empty';error=None
+        health={
+            'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':status,
+            'items':len(rows),'articleAnchors':anchors,'lastItemAt':latest,
+            'parser':'24hmoney-live-v3'
         }
+        if error: health['error']=error
+        return rows,health
     except Exception as exc:
-        return [], {'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':'error','error':str(exc)[:240],'parser':'24hmoney-live-v2'}
-
+        return [],{
+            'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':'error',
+            'error':str(exc)[:240],'parser':'24hmoney-live-v3'
+        }
 
 def _vbma_cell(value):
     text = clean(value).strip()
