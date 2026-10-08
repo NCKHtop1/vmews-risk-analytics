@@ -1,1 +1,252 @@
-{"checkedAt":"2026-10-08T04:27:41.220362+00:00","status":"ok","windowHours":72,"separatedFromBreaking":true,"expert":{"channel":"expert_analysis","total":6,"positive":0,"negative":0,"mixed":0,"neutral":6,"netScore":0.0,"label":"neutral","topSymbols":[{"symbol":"REE","mentions":1},{"symbol":"DCM","mentions":1},{"symbol":"DPM","mentions":1},{"symbol":"MCH","mentions":1},{"symbol":"MSN","mentions":1},{"symbol":"BCM","mentions":1}],"items":[{"storyId":"story_eef2e4de8d9374de","title":"REE: Điện gió và backlog M&E mở ra động lực tăng trưởng mới","url":"https://24hmoney.vn/news/ree-dien-gio-va-backlog-m-e-mo-ra-dong-luc-tang-truong-moi-c30a2841913.html","source":"24HMoney","publishedAt":"2026-10-08T04:23:58+00:00","symbols":["REE"],"topics":["expert","market","stocks","vietnam"],"impactTag":null,"newsPriority":34,"sourceCount":1,"contentType":"expert_analysis","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"symbol","model":"deterministic_semantic_v1"}},{"storyId":"story_41ce383facc5bce4","title":"Ngành sản xuất phân bón: Khả năng giảm thuế xuất khẩu về 0% - Tích cực cho DCM & DPM","url":"https://24hmoney.vn/news/nganh-san-xuat-phan-bon-kha-nang-giam-thue-xuat-khau-ve-0-tich-cuc-cho-dcm-dpm-c30a2841896.html","source":"24HMoney","publishedAt":"2026-10-08T04:10:12+00:00","symbols":["DCM","DPM"],"topics":["expert","market","stocks","vietnam"],"impactTag":null,"newsPriority":34,"sourceCount":1,"contentType":"expert_analysis","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"symbol","model":"deterministic_semantic_v1"}},{"storyId":"story_41c2588669b12429","title":"Lãi vay mua xe tiến sát 20%: Cú sốc lãi suất đang đánh thẳng vào dòng tiền hộ gia đình","url":"https://24hmoney.vn/news/lai-vay-mua-xe-tien-sat-20-cu-soc-lai-suat-dang-danh-thang-vao-dong-tien-ho-gia-dinh-c30a2841888.html","source":"24HMoney","publishedAt":"2026-10-08T03:59:12+00:00","symbols":[],"topics":["expert","finance","market","rates","stocks","vietnam"],"impactTag":null,"newsPriority":20,"sourceCount":1,"contentType":"expert_analysis","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"market","model":"deterministic_semantic_v1"}},{"storyId":"story_2408a94fe8eef193","title":"MSN dự chi 10.000 tỷ đồng mua thêm MCH: Cổ đông được gì?","url":"https://24hmoney.vn/news/msn-du-chi-10-000-ty-dong-mua-them-mch-co-dong-duoc-gi-c30a2841594.html","source":"24HMoney","publishedAt":"2026-10-08T03:02:51+00:00","symbols":["MCH","MSN"],"topics":["expert","market","stocks","vietnam"],"impactTag":null,"newsPriority":34,"sourceCount":1,"contentType":"expert_analysis","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"symbol","model":"deterministic_semantic_v1"}},{"storyId":"story_11c8ec78b87b105c","title":"Dầu khí: những gì đã xảy ra có thể mới chỉ là khởi đầu","url":"https://24hmoney.vn/news/dau-khi-nhung-gi-da-xay-ra-co-the-moi-chi-la-khoi-dau-c30a2841624.html","source":"24HMoney","publishedAt":"2026-10-08T02:08:03+00:00","symbols":[],"topics":["expert","market","stocks","vietnam"],"impactTag":null,"newsPriority":14,"sourceCount":1,"contentType":"expert_analysis","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"market","model":"deterministic_semantic_v1"}},{"storyId":"story_2fce81be2f3ea177","title":"BCM Q2-2026: Sụt giảm mạnh do cách hạch toán mới","url":"https://24hmoney.vn/news/bcm-q2-2026-sut-giam-manh-do-cach-hach-toan-moi-c30a2839401.html","source":"24HMoney","publishedAt":"2026-10-06T17:00:00+00:00","symbols":["BCM"],"topics":["expert","market","stocks","vietnam"],"impactTag":null,"newsPriority":16,"sourceCount":1,"contentType":"expert_analysis","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"symbol","model":"deterministic_semantic_v1"}}]},"community":{"channel":"community","total":1,"positive":0,"negative":0,"mixed":0,"neutral":1,"netScore":0.0,"label":"neutral","topSymbols":[{"symbol":"CTR","mentions":1}],"items":[{"storyId":"story_c375d5da568ccebe","title":"VGI, CTR nổi sóng tăng trưởng","url":"https://24hmoney.vn/news/vgi-ctr-noi-song-tang-truong-c1a2841739.html","source":"24HMoney","publishedAt":"2026-10-08T00:09:40.416577+00:00","symbols":["CTR"],"topics":["community","market","stocks","vietnam"],"impactTag":null,"newsPriority":22,"sourceCount":1,"contentType":"community","stance":"neutral","expectedImpact":{"direction":"unknown","confidence":0.0,"scope":"symbol","model":"deterministic_semantic_v1"}}]},"method":"deterministic_viewpoint_summary_v1"}
+{
+  "checkedAt": "2026-10-08T04:27:41.220362+00:00",
+  "status": "ok",
+  "windowHours": 72,
+  "separatedFromBreaking": true,
+  "expert": {
+    "channel": "expert_analysis",
+    "total": 6,
+    "positive": 2,
+    "negative": 2,
+    "mixed": 0,
+    "neutral": 2,
+    "netScore": 0,
+    "label": "mixed",
+    "topSymbols": [
+      {
+        "symbol": "REE",
+        "mentions": 1
+      },
+      {
+        "symbol": "DCM",
+        "mentions": 1
+      },
+      {
+        "symbol": "DPM",
+        "mentions": 1
+      },
+      {
+        "symbol": "MCH",
+        "mentions": 1
+      },
+      {
+        "symbol": "MSN",
+        "mentions": 1
+      },
+      {
+        "symbol": "BCM",
+        "mentions": 1
+      }
+    ],
+    "items": [
+      {
+        "storyId": "story_eef2e4de8d9374de",
+        "title": "REE: Điện gió và backlog M&E mở ra động lực tăng trưởng mới",
+        "url": "https://24hmoney.vn/news/ree-dien-gio-va-backlog-m-e-mo-ra-dong-luc-tang-truong-moi-c30a2841913.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-08T04:23:58+00:00",
+        "symbols": [
+          "REE"
+        ],
+        "topics": [
+          "expert",
+          "market",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 34,
+        "sourceCount": 1,
+        "contentType": "expert_analysis",
+        "stance": "positive",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "symbol",
+          "model": "deterministic_semantic_v1"
+        }
+      },
+      {
+        "storyId": "story_41ce383facc5bce4",
+        "title": "Ngành sản xuất phân bón: Khả năng giảm thuế xuất khẩu về 0% - Tích cực cho DCM & DPM",
+        "url": "https://24hmoney.vn/news/nganh-san-xuat-phan-bon-kha-nang-giam-thue-xuat-khau-ve-0-tich-cuc-cho-dcm-dpm-c30a2841896.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-08T04:10:12+00:00",
+        "symbols": [
+          "DCM",
+          "DPM"
+        ],
+        "topics": [
+          "expert",
+          "market",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 34,
+        "sourceCount": 1,
+        "contentType": "expert_analysis",
+        "stance": "positive",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "symbol",
+          "model": "deterministic_semantic_v1"
+        }
+      },
+      {
+        "storyId": "story_41c2588669b12429",
+        "title": "Lãi vay mua xe tiến sát 20%: Cú sốc lãi suất đang đánh thẳng vào dòng tiền hộ gia đình",
+        "url": "https://24hmoney.vn/news/lai-vay-mua-xe-tien-sat-20-cu-soc-lai-suat-dang-danh-thang-vao-dong-tien-ho-gia-dinh-c30a2841888.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-08T03:59:12+00:00",
+        "symbols": [],
+        "topics": [
+          "expert",
+          "finance",
+          "market",
+          "rates",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 20,
+        "sourceCount": 1,
+        "contentType": "expert_analysis",
+        "stance": "negative",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "market",
+          "model": "deterministic_semantic_v1"
+        }
+      },
+      {
+        "storyId": "story_2408a94fe8eef193",
+        "title": "MSN dự chi 10.000 tỷ đồng mua thêm MCH: Cổ đông được gì?",
+        "url": "https://24hmoney.vn/news/msn-du-chi-10-000-ty-dong-mua-them-mch-co-dong-duoc-gi-c30a2841594.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-08T03:02:51+00:00",
+        "symbols": [
+          "MCH",
+          "MSN"
+        ],
+        "topics": [
+          "expert",
+          "market",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 34,
+        "sourceCount": 1,
+        "contentType": "expert_analysis",
+        "stance": "neutral",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "symbol",
+          "model": "deterministic_semantic_v1"
+        }
+      },
+      {
+        "storyId": "story_11c8ec78b87b105c",
+        "title": "Dầu khí: những gì đã xảy ra có thể mới chỉ là khởi đầu",
+        "url": "https://24hmoney.vn/news/dau-khi-nhung-gi-da-xay-ra-co-the-moi-chi-la-khoi-dau-c30a2841624.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-08T02:08:03+00:00",
+        "symbols": [],
+        "topics": [
+          "expert",
+          "market",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 14,
+        "sourceCount": 1,
+        "contentType": "expert_analysis",
+        "stance": "neutral",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "market",
+          "model": "deterministic_semantic_v1"
+        }
+      },
+      {
+        "storyId": "story_2fce81be2f3ea177",
+        "title": "BCM Q2-2026: Sụt giảm mạnh do cách hạch toán mới",
+        "url": "https://24hmoney.vn/news/bcm-q2-2026-sut-giam-manh-do-cach-hach-toan-moi-c30a2839401.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-06T17:00:00+00:00",
+        "symbols": [
+          "BCM"
+        ],
+        "topics": [
+          "expert",
+          "market",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 16,
+        "sourceCount": 1,
+        "contentType": "expert_analysis",
+        "stance": "negative",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "symbol",
+          "model": "deterministic_semantic_v1"
+        }
+      }
+    ]
+  },
+  "community": {
+    "channel": "community",
+    "total": 1,
+    "positive": 1,
+    "negative": 0,
+    "mixed": 0,
+    "neutral": 0,
+    "netScore": 100,
+    "label": "positive",
+    "topSymbols": [
+      {
+        "symbol": "CTR",
+        "mentions": 1
+      }
+    ],
+    "items": [
+      {
+        "storyId": "story_c375d5da568ccebe",
+        "title": "VGI, CTR nổi sóng tăng trưởng",
+        "url": "https://24hmoney.vn/news/vgi-ctr-noi-song-tang-truong-c1a2841739.html",
+        "source": "24HMoney",
+        "publishedAt": "2026-10-08T00:09:40.416577+00:00",
+        "symbols": [
+          "CTR"
+        ],
+        "topics": [
+          "community",
+          "market",
+          "stocks",
+          "vietnam"
+        ],
+        "impactTag": null,
+        "newsPriority": 22,
+        "sourceCount": 1,
+        "contentType": "community",
+        "stance": "positive",
+        "expectedImpact": {
+          "direction": "unknown",
+          "confidence": 0,
+          "scope": "symbol",
+          "model": "deterministic_semantic_v1"
+        }
+      }
+    ]
+  },
+  "method": "deterministic_viewpoint_summary_v2"
+}
