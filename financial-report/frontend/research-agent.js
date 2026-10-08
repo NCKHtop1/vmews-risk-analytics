@@ -104,7 +104,7 @@ function strategyTool(){
 }
 function insightTool(){
  const i=root.FinInsights?.context?.()||null;if(!i)return null;
- return{updatedAt:i.updatedAt||null,consensus:i.consensus||null,brokerResearch:trimArray(i.brokerResearch||[],8).map(x=>pick(x,['broker','title','publishedAt','recommendation','targetPrice','summary','catalysts','risks','sourceUrl'])),corporateEvents:trimArray(i.corporateEvents||[],10).map(x=>pick(x,['id','type','title','date','summary','details','source'])),businessPlans:trimArray(i.businessPlans||[],12).map(x=>pick(x,['year','metric','plan','actual','completionPct','unit','sourceUrl','provider']))};
+ return{updatedAt:i.updatedAt||null,consensus:i.consensus||null,brokerResearch:trimArray(i.brokerResearch||[],8).map(x=>pick(x,['broker','title','publishedAt','recommendation','targetPrice','summary','catalysts','risks','sourceUrl'])),corporateEvents:trimArray(i.corporateEvents||[],10).map(x=>pick(x,['id','type','title','date','summary','details','source'])),businessPlans:trimArray(i.businessPlans||[],12).map(x=>pick(x,['year','metric','plan','actual','completionPct','unit','actualBasis','throughQuarter','sourceUrl','provider']))};
 }
 function newsTool(){
  const m=root.FinancialMarket?.context?.()||{};
