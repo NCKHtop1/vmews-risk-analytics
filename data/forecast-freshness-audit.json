@@ -1,11 +1,13 @@
 {
   "status": "PASS",
-  "checkedAt": "2026-10-08T00:49:32.608720+07:00",
+  "checkedAt": "2026-10-08T07:26:38.794310+07:00",
   "expectedSession": "2026-10-07",
   "publishedSession": "2026-10-07",
-  "checkedSymbols": 362,
+  "checkedSymbols": 361,
   "listedSymbols": 362,
-  "excludedUnverified": [],
+  "excludedUnverified": [
+    "ANT"
+  ],
   "insufficientHistory": [],
   "errors": [],
   "symbols": [
@@ -101,12 +103,6 @@
     },
     {
       "symbol": "AGR",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "ANT",
       "date": "2026-10-07",
       "status": "PASS",
       "issues": []
