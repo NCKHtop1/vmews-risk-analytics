@@ -7,6 +7,7 @@ on:
       - 'scripts/finquery_vercel_browser_audit.py'
       - 'scripts/finquery_vercel_freshness_diff.py'
       - 'scripts/finquery_vercel_bank_network_audit.py'
+      - 'scripts/finquery_vercel_forecast_smoke.py'
       - '.github/workflows/finquery-vercel-deep-parity.yml'
   workflow_dispatch:
 permissions:
@@ -79,4 +80,22 @@ jobs:
         with:
           name: finquery-bank-network
           path: finquery-bank-network-audit.json
+          if-no-files-found: ignore
+  forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium/Selenium
+        run: pip install -q selenium==4.36.0
+      - name: Verify Forecast root data and rendered page under Github-blocked network
+        run: python scripts/finquery_vercel_forecast_smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-forecast-vercel-smoke
+          path: finquery-forecast-smoke.json
           if-no-files-found: ignore
