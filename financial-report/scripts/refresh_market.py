@@ -2163,58 +2163,95 @@ def _fetch_24hmoney_symbol_news(companies, current):
     for symbol in priority+rotated:
         if symbol not in batch: batch.append(symbol)
 
-    rows=[];reachable=0;errors=[];parser_mismatch=0;anchor_candidates=0;endpoint_counts={}
+    rows=[];reachable=0;errors=[];parser_warnings=0;anchor_candidates=0
+    parsed_recent_cards=0;pages_with_matches=0;endpoint_counts={}
+
+    def symbol_rows(parsed_all,symbol):
+        matched=[]
+        for raw_row in parsed_all:
+            if symbol not in set(raw_row.get('symbols') or []):
+                continue
+            if not raw_row.get('financialRelevance',True):
+                continue
+            row=dict(raw_row)
+            row['discoveredVia']='24HMoney Symbol'
+            row['symbolDiscovery']=symbol
+            if row.get('contentType')=='expert_analysis':
+                row['sourceTier']='expert';row['sourcePriority']=52
+            else:
+                row['sourceTier']='trusted_discovery';row['sourcePriority']=68
+            matched.append(row)
+        return matched
+
     def fetch_one(symbol):
         candidates=[
             f'https://24hmoney.vn/stock/{symbol}',
             f'https://24hmoney.vn/stock/{symbol}/news',
         ]
-        last_error=None
+        last_error=None;best=None
         for url in candidates:
             try:
                 raw=request(url,timeout=8)
                 anchors=ni.count_24hmoney_article_anchors(raw)
-                parsed=ni.parse_24hmoney_symbol_page(raw,symbol,current,companies,ALIASES,url)
-                # A reachable stock page is useful even when it has no matching
-                # articles for the current 7-day window. Only declare a parser
-                # mismatch when article anchors exist but none can be parsed.
-                mismatch=anchors>0 and not parsed
-                return symbol,parsed,True,None,anchors,mismatch,url
+                parsed_all=ni.parse_24hmoney_live(raw,current,companies,ALIASES,url,financial_only=False)
+                matched=symbol_rows(parsed_all,symbol)
+                candidate={
+                    'symbol':symbol,'rows':matched,'ok':True,'error':None,
+                    'anchors':anchors,'parsedRecent':len(parsed_all),
+                    'warning':anchors>0 and not parsed_all,'endpoint':url
+                }
+                score=(1 if matched else 0,len(parsed_all),anchors)
+                if best is None or score>best[0]:
+                    best=(score,candidate)
+                if matched:
+                    break
             except Exception as exc:
                 last_error=str(exc)[:120]
-        return symbol,[],False,last_error or 'unreachable',0,False,None
+        if best:
+            return best[1]
+        return {'symbol':symbol,'rows':[],'ok':False,'error':last_error or 'unreachable',
+                'anchors':0,'parsedRecent':0,'warning':False,'endpoint':None}
 
     workers=max(4,min(12,int(os.environ.get('MONEY24_SYMBOL_WORKERS','10'))))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures=[pool.submit(fetch_one,symbol) for symbol in batch]
         for future in as_completed(futures):
-            symbol,parsed,ok,error,anchors,mismatch,endpoint=future.result()
-            anchor_candidates+=anchors
+            result=future.result()
+            anchor_candidates+=int(result.get('anchors') or 0)
+            parsed_recent_cards+=int(result.get('parsedRecent') or 0)
+            endpoint=result.get('endpoint')
             if endpoint:
-                key='/stock/{symbol}' if endpoint.rstrip('/').endswith(symbol) else '/stock/{symbol}/news'
+                key='/stock/{symbol}' if endpoint.rstrip('/').endswith(result['symbol']) else '/stock/{symbol}/news'
                 endpoint_counts[key]=endpoint_counts.get(key,0)+1
-            if ok:
-                reachable+=1;rows.extend(parsed)
-                if mismatch: parser_mismatch+=1
-            elif error:
-                errors.append(symbol+': '+error)
+            if result.get('ok'):
+                reachable+=1
+                if result.get('rows'):
+                    pages_with_matches+=1
+                    rows.extend(result['rows'])
+                if result.get('warning'):
+                    parser_warnings+=1
+            elif result.get('error'):
+                errors.append(result['symbol']+': '+result['error'])
 
-    if rows:
+    warning_limit=max(3,math.ceil(max(1,reachable)*0.80))
+    if reachable==0:
+        status='error'
+    elif parser_warnings>=warning_limit and anchor_candidates>0:
+        status='error'
+        errors.append(f'parser warnings too high: {parser_warnings}/{reachable} reachable pages')
+    elif rows:
         status='ok'
-    elif reachable and anchor_candidates==0:
-        status='empty'
-    elif reachable:
-        status='error'
-        errors.append(f'parser mismatch: {parser_mismatch}/{reachable} reachable symbol pages had article anchors but no parsed rows')
     else:
-        status='error'
+        status='empty'
+
     health={
         'name':'24HMoney Symbol','url':'https://24hmoney.vn/stock/{symbol}',
         'fallbackUrl':'https://24hmoney.vn/stock/{symbol}/news',
         'status':status,'items':len(rows),'symbolsAttempted':len(batch),
-        'symbolsReachable':reachable,'articleAnchors':anchor_candidates,
-        'parserMismatchPages':parser_mismatch,'endpointCounts':endpoint_counts,
-        'parser':'24hmoney-symbol-v4'
+        'symbolsReachable':reachable,'pagesWithMatches':pages_with_matches,
+        'articleAnchors':anchor_candidates,'parsedRecentCards':parsed_recent_cards,
+        'parserWarningPages':parser_warnings,'endpointCounts':endpoint_counts,
+        'parser':'24hmoney-symbol-v5'
     }
     if errors: health['errors']=errors[:6]
     return rows,health
