@@ -2923,6 +2923,17 @@ def news(out, companies):
     normalized = [ni.enrich_row(row, companies, ALIASES) for row in (rows + retained)]
     items = _unique_news(normalized)[:2500]
     items, story_rows = ni.cluster_stories(items)
+    intraday_cache = {}
+    for row in items:
+        symbols = row.get('symbols') or []
+        if len(symbols) != 1:
+            continue
+        symbol = symbols[0]
+        if symbol not in intraday_cache:
+            intraday_cache[symbol] = (read(out / 'intraday' / (symbol + '.json'), {}) or {}).get('bars') or []
+        reaction = ni.realized_reaction(row, intraday_cache[symbol])
+        if reaction:
+            row['observedReaction'] = reaction
     healthy = sum(source.get('status') == 'ok' for source in sources)
     empty = sum(source.get('status') == 'empty' for source in sources)
     ok = healthy > 0
