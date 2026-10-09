@@ -144,3 +144,24 @@ test('present, historical and outdated stock prices are strictly separated',()=>
  }
  assert.equal(P.priceQuality(old,'MBB','Giá MBB hôm nay',now).usable,false);
 });
+
+test('QA50 FQ-31: dividend news title takes precedence over generic related headline',()=>{
+ const now=new Date().toISOString();
+ const rows=[
+  {title:'FPT chấm dứt chuỗi giảm giá',summary:'Thị trường tài chính và tin tức',symbols:['FPT'],source:'24HMoney',publishedAt:now},
+  {title:'FPT thông báo kế hoạch chia cổ tức',summary:'Cổ tức bằng tiền',symbols:['FPT'],source:'CafeF',publishedAt:now},
+  {title:'FRT chia cổ tức',symbols:['FRT'],source:'24HMoney',publishedAt:now}
+ ];
+ const matched=P.selectNews('Tin cổ tức FPT mới nhất',rows,{symbol:'FPT',companyOnly:true});
+ assert.deepEqual(matched.map(x=>x.title),['FPT thông báo kế hoạch chia cổ tức']);
+});
+test('QA50 FQ-34: provider/source and last-24h filter are applied separately',()=>{
+ const now=Date.now();
+ const rows=[
+  {title:'FPT công bố thay đổi mới',symbols:['FPT'],source:'24HMoney',publishedAt:new Date(now-3600000).toISOString()},
+  {title:'FPT hợp đồng mới',symbols:['FPT'],source:'CafeF',publishedAt:new Date(now-3600000).toISOString()},
+  {title:'FPT nghiên cứu công nghệ',symbols:['FPT'],source:'24HMoney',publishedAt:new Date(now-48*3600000).toISOString()}
+ ];
+ const matched=P.selectNews('Tin 24hMoney của FPT 24h qua',rows,{symbol:'FPT',companyOnly:true});
+ assert.deepEqual(matched.map(x=>x.title),['FPT công bố thay đổi mới']);
+});

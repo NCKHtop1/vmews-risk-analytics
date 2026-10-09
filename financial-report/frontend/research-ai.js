@@ -465,7 +465,7 @@ function newsHTML(question,m){
  const wantsRecent=/\bmoi nhat\b|\bhom nay\b|\btin moi\b|\b24 gio\b|\bgan day\b/.test(s);
  const checkedAt=m.newsCheckedAt||null,checkedMs=Date.parse(checkedAt||''),age=Number.isFinite(checkedMs)?(Date.now()-checkedMs)/60000:Infinity;
  const disclaimer=wantsRecent&&(!Number.isFinite(age)||age>30)?'Dữ liệu tin chưa có mốc cập nhật hợp lệ trong 30 phút gần đây. Dưới đây chỉ là những tin lưu gần nhất theo nguồn và ngày đăng, KHÔNG khẳng định là tin mới nhất.':null;
- return prose([disclaimer,'Các tin phù hợp nhất trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
+ return prose([disclaimer,'Các tin phù hợp nhất '+(global?'của thị trường':'về mã '+state.symbol)+' trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
 }
 function forecastHTML(question){
  const target=/^[A-Z]{3,4}$/.test(state.symbol)?state.symbol:null;
@@ -507,7 +507,8 @@ function classify(q){
  return QP?.route?.(q,K.search?.(q,12)||[])||'unknown';
 }
 function analyze(question){
- const requested=window.FinResearchAgent?.resolveTargetSymbols?.(question)||[];
+ const issuerQuery=String(question||'').replace(/\bFPT\s+Retail\b/gi,'FRT').replace(/\bFPT\s+Securities\b/gi,'FTS');
+ const requested=window.FinResearchAgent?.resolveTargetSymbols?.(issuerQuery)||[];
  if(requested.length>1)return{type:'multiSymbol',html:prose(['Câu hỏi yêu cầu nhiều mã ('+requested.join(', ')+'). Chế độ dữ liệu cục bộ hiện không tải BCTC độc lập cho tất cả mã cùng lúc; không thể so sánh chính xác khi thiếu dữ liệu.'])};
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
  const explicit=String(question||'').match(/(?:mã|ma|ticker|symbol)\s+([A-Z]{3,5})\b/i);

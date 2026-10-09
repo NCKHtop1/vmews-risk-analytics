@@ -509,3 +509,17 @@ body.strategy-lab-view .strategy-page{display:block}
 
 /* Dolphin modal: the floating launcher must never obscure Send / Stop on mobile. */
 .ai-fab[hidden],body.dolphin-modal-open .ai-fab{display:none!important;pointer-events:none!important}
+
+/* QA50 landscape: reserve a reachable footer even on 360px-high phones. */
+@media (max-height:480px) and (min-width:601px){
+ .research-ai.ai-drawer.ai-modal{
+   width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important;
+   max-height:calc(100dvh - 12px)!important;border-radius:12px!important;
+ }
+ .research-ai.ai-drawer .research-ai-head{max-height:52px!important;min-height:0!important;overflow:hidden!important;padding:4px 12px!important}
+ .research-ai.ai-drawer .research-ai-head h3{font-size:14px!important;line-height:1.1!important}
+ .research-ai.ai-drawer .dolphin-connect-card{max-height:58px!important;min-height:0!important;overflow-y:auto!important;margin-top:0!important;padding:5px 8px!important}
+ .research-ai.ai-drawer .research-ai-prompts{max-height:32px!important;min-height:0!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px 10px!important}
+ .research-ai.ai-drawer .research-ai-form{min-height:0!important;padding:5px 10px!important;grid-template-columns:minmax(0,1fr) 105px!important}
+ .research-ai.ai-drawer .research-ai-form textarea,.research-ai.ai-drawer .research-ai-form button{min-height:44px!important;height:44px!important}
+}

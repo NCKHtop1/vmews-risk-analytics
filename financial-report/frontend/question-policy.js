@@ -86,22 +86,33 @@ function searchRows(question,data,{minCoverage=0.6,limit=8}={}){
  return ranked.slice(0,limit);
 }
 function selectNews(question,items,{symbol='',companyOnly=false,limit=8}={}){
- const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' ')),topic=topicTokens(question,symbol);
- // Common company names in the query are identification, not topical matching requirements.
+ const s=norm(question),providerRequested=/\b24hmoney\b/.test(s)?'24hmoney':/\bcafef\b/.test(s)?'cafef':/\bvietstock\b/.test(s)?'vietstock':/\bfireant\b/.test(s)?'fireant':'';
+ const dividend=/\bco tuc\b/.test(s),recentDay=/\b24h\b|\b24 gio\b/.test(s);
+ const generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' '));
+ const topic=topicTokens(question,symbol).filter(t=>!['24hmoney','24h','qua','cafef','vietstock','fireant'].includes(t));
  const out=[];
  for(const row of Array.isArray(items)?items:[]){
   const symbols=Array.isArray(row.symbols)?row.symbols.map(x=>String(x).toUpperCase()):[];
   const companyHit=Boolean(symbol)&&(symbols.includes(String(symbol).toUpperCase())||(!symbols.length&&has(norm(row.title),symbol)));
   if(companyOnly&&!companyHit)continue;
-  const text=(row.title||'')+' '+(row.summary||'')+' '+(Array.isArray(row.topics)?row.topics.join(' '):'');
-  const matched=topic.filter(t=>(' '+norm(text)+' ').includes(' '+t+' ')).length;
-  const topical=topic.length?matched/topic.length:0;
-  if(topic.length&&topical===0)continue;
-  if(!topic.length&&!generic)continue;
-  if(!topic.length&&companyOnly&&!companyHit)continue;
-  out.push({...row,_relevance:topical*100+(companyHit?10:0)});
+  const provider=norm(row.source||row.publisher||'').replace(/\s+/g,'');
+  if(providerRequested&&!provider.includes(providerRequested))continue;
+  const issued=Date.parse(row.publishedAt||row.date||'');
+  if(recentDay&&(!Number.isFinite(issued)||issued>Date.now()+5*60000||Date.now()-issued>24*3600000))continue;
+  const title=norm(row.title||''),summary=norm(row.summary||''),tags=norm((Array.isArray(row.topics)?row.topics:[]).join(' '));
+  const headline=' '+title+' ',detail=' '+summary+' ',category=' '+tags+' ';
+  // An article mentioning generic "tin tức" is not evidence of dividend news.
+  if(dividend&&!headline.includes(' co tuc ')&&!detail.includes(' co tuc ')&&!category.includes(' co tuc '))continue;
+  const titleHits=topic.filter(t=>headline.includes(' '+t+' ')).length;
+  const summaryHits=topic.filter(t=>detail.includes(' '+t+' ')).length;
+  const tagHits=topic.filter(t=>category.includes(' '+t+' ')).length;
+  if(topic.length&&titleHits+summaryHits+tagHits===0)continue;
+  if(!topic.length&&!generic&&!providerRequested)continue;
+  // The headline should outweigh incidental words in summaries or topic tags.
+  const score=(titleHits*7+summaryHits*2+tagHits)/Math.max(1,topic.length)+(dividend&&headline.includes(' co tuc ')?12:0)+(companyHit?3:0);
+  out.push({...row,_relevance:score});
  }
- return out.sort((a,b)=>b._relevance-a._relevance||Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,limit).map(({_relevance,...row})=>row);
+ return out.sort((a,b)=>b._relevance-a._relevance||(Date.parse(b.publishedAt||0)||0)-(Date.parse(a.publishedAt||0)||0)).slice(0,limit).map(({_relevance,...row})=>row);
 }
 function priceQuality(quote,symbol='',question='',now=new Date()){
  if(!quote||!Number.isFinite(Number(quote.price))||Number(quote.price)<=0)return{usable:false,reason:'Chưa có giá hợp lệ'};
