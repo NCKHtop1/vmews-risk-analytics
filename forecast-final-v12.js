@@ -43,20 +43,26 @@ async function refreshLiveQuotes(force=false){
   if(LIVE_QUOTES_REFRESHING)return LIVE_QUOTES_REFRESHING;
   LIVE_QUOTES_REFRESHING=(async()=>{
     const revision=Math.floor(Date.now()/30_000);
+    // Prefer the append-only source; fall back to the audited same-origin
+    // Pages/Vercel mirror if raw.githubusercontent is blocked by the network.
+    const urls=[FINQUERY_LIVE_URL];
+    const mirror=location.hostname==="nckhtop1.github.io"?
+      location.origin+"/vmews-risk-analytics/financial-report/market/quotes.json":
+      location.origin+"/financial-report/market/quotes.json";
+    if(!urls.includes(mirror))urls.push(mirror);
     try{
-      const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),5000);
-      const response=await fetch(`${FINQUERY_LIVE_URL}?refresh=${revision}`,{cache:"no-store",signal:controller.signal});
-      clearTimeout(timeout);
-      if(!response.ok)return false;
-      const payload=await response.json();
-      if(!liveQuotePayloadUsable(payload))return false;
-      LIVE_QUOTES=payload;
-      window.__VMEWS_LIVE_QUOTES__=payload;
-      window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload,scope:"finquery-market"}}));
-      return true;
-    }catch{return false}
-    finally{LIVE_QUOTES_REFRESHING=null}
+      for(const url of urls){
+        try{
+          const payload=await fetchJsonBounded(url+"?refresh="+revision,5000);
+          if(!liveQuotePayloadUsable(payload))continue;
+          LIVE_QUOTES=payload;
+          window.__VMEWS_LIVE_QUOTES__=payload;
+          window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload,scope:"finquery-market"}}));
+          return true;
+        }catch{continue}
+      }
+      return false;
+    }finally{LIVE_QUOTES_REFRESHING=null}
   })();
   return LIVE_QUOTES_REFRESHING;
 }
@@ -448,7 +454,18 @@ async function refreshCore(){
     if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
   }catch{}
 }
-async function init(){const hint=setTimeout(()=>setText("#status","Đang tải bộ Forecast Core đã kiểm định; kết nối sẽ tự kết thúc khi quá hạn."),6500);try{const B=await loadBase();assertProduction(B);quickButtons(B);await refreshLiveQuotes(true);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
+async function init(){
+  const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
+  const priceFetch=refreshLiveQuotes(true).then(ready=>{
+    if(!ready||BASE)return;
+    const observed=LIVE_QUOTES?.quotes?.[q];
+    if(observed&&finite(observed.price)&&+observed.price>0){
+      setText("#close",price(observed.price));
+      setText("#status",q+" · giá thực tế "+price(observed.price)+" · Forecast Core đang được tải và kiểm định độc lập.");
+    }
+  });
+  const hint=setTimeout(()=>{if(!BASE)setText("#status",q+" · đang tải Forecast Core dung lượng lớn; nếu quá hạn sẽ hiển thị cách thử lại.");},6500);
+  try{const B=await loadBase();assertProduction(B);quickButtons(B);await priceFetch;await renderSymbol(q);bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
 function showError(e){console.error(e);setText("#status",String(e?.message||e));const status=$("#status");if(status){const retry=document.createElement("button");retry.type="button";retry.textContent="Thử tải lại";retry.onclick=()=>location.reload();status.append(" ",retry);}const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 window.addEventListener?.("vmews:session-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · dữ liệu ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}`)}});
 window.addEventListener?.("vmews:live-quotes-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · forecast ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"LIVE"} ${price(view.close)}`:""}`)}});
