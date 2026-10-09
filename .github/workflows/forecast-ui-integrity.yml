@@ -1,0 +1,49 @@
+name: FinQuery Forecast Core integrity and loading regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/forecast_freshness_audit.py'
+      - 'scripts/forecast_freshness_audit_test.py'
+      - 'scripts/forecast_loader_regression_test.cjs'
+      - 'forecast-final-v12.js'
+      - 'forecast-live-leaders-v14.js'
+      - '.github/workflows/forecast-ui-integrity.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/forecast_freshness_audit.py'
+      - 'scripts/forecast_freshness_audit_test.py'
+      - 'scripts/forecast_loader_regression_test.cjs'
+      - 'forecast-final-v12.js'
+      - 'forecast-live-leaders-v14.js'
+      - '.github/workflows/forecast-ui-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finquery-forecast-ui-regression-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  forecast-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test price-vs-chart invariants including all nine disputed symbols
+        run: python scripts/forecast_freshness_audit_test.py
+      - name: Verify browser JavaScript syntax
+        run: |
+          node --check forecast-final-v12.js
+          node --check forecast-live-leaders-v14.js
+      - name: Test bounded network failure, retry and recovery
+        run: node scripts/forecast_loader_regression_test.cjs
+      - name: Verify Forecast UI contracts without weakening source gates
+        run: python scripts/forecast_v14_frontend_contract_test.py
