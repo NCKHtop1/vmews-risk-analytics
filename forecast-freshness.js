@@ -49,7 +49,9 @@
     if(minutes < 9 * 60) return 'PRE_OPEN';
     if(minutes <= 11 * 60 + 30) return 'LIVE';
     if(minutes < 13 * 60) return 'LUNCH';
-    if(minutes <= 15 * 60 + 5) return 'LIVE';
+    // Continuous trading and the closing auction end at 14:45; EOD model
+    // readiness at 15:05 is a DIFFERENT clock, not a quote freshness SLA.
+    if(minutes <= 14 * 60 + 45) return 'LIVE';
     return 'POST_CLOSE';
   }
   function inspect(snapshot, now = new Date()){
