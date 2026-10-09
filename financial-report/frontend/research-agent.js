@@ -154,14 +154,21 @@ function validate(question,intent,results,baseContext){
  if(mt&&st){const gap=Math.abs(Date.parse(mt)-Date.parse(st))/60000;checks.push({id:'market_scanner_alignment',ok:scanner?.aligned!==false&&gap<=20,gapMinutes:Number.isFinite(gap)?Math.round(gap):null});if(scanner?.aligned===false||gap>20)warnings.push('Technical Scanner khong dong bo voi snapshot gia; bo qua current scanner khi tong hop.');}
  if(current&&mt){const age=ageMin(mt);checks.push({id:'market_freshness',ok:age===null||age<=35,ageMinutes:age===null?null:Math.round(age)});if(age!==null&&age>35)warnings.push('Snapshot gia co the da cu hon nguong phien hien tai.');}
  if(current&&news?.checkedAt){const age=ageMin(news.checkedAt);checks.push({id:'news_freshness',ok:age===null||age<=45,ageMinutes:age===null?null:Math.round(age)});if(age!==null&&age>45)warnings.push('Tin tuc da qua nguong freshness 45 phut.');}
- if(['financial','risk','compare','memo'].includes(intent)){const ok=Boolean(financial&&(financial.annualSummary||financial.quarterSummary||financial.annual||financial.quarterly));checks.push({id:'financial_available',ok});if(!ok)warnings.push('Chua co du du lieu BCTC cho yeu cau nay.');}
- if(['movement','technical','memo'].includes(intent)){const ok=Boolean(market?.quote&&finite(market.quote.price)!==null);checks.push({id:'market_available',ok});if(!ok)warnings.push('Chua co snapshot gia hop le.');}
+ if(['financial','risk','compare','memo'].includes(intent)){const ok=baseContext?.financialDataQuality?.aligned!==false&&Boolean(financial&&(financial.annualSummary||financial.quarterSummary||financial.annual||financial.quarterly));checks.push({id:'financial_available',ok});if(!ok)warnings.push('Chua co du du lieu BCTC cho yeu cau nay.');}
+ if(['movement','technical','memo'].includes(intent)){const ok=baseContext?.marketDataQuality?.usable!==false&&Boolean(market?.quote&&finite(market.quote.price)!==null);checks.push({id:'market_available',ok});if(!ok)warnings.push('Chua co snapshot gia hop le.');}
  const requiredMissing=checks.some(x=>x.ok===false&&['financial_available','market_available'].includes(x.id));
  return{status:requiredMissing?'partial':warnings.length?'warn':'ok',warnings,checks,checkedAt:new Date().toISOString(),baseContextPresent:Boolean(baseContext)};
 }
 function buildContext(question,planInfo,results,validation,baseContext,sources){
- const scanner=results.scanner?.result;const scannerSafe=scanner&&validation.checks.find(x=>x.id==='market_scanner_alignment'&&x.ok===false)?{...scanner,current:null,discardedCurrent:true}:scanner;
- const evidence={};for(const [name,record] of Object.entries(results)){if(record.status==='ok')evidence[name]=name==='scanner'?scannerSafe:record.result;}
+ const scanner=results.scanner?.result,staleMarket=baseContext?.marketDataQuality?.usable===false;
+ const staleScanner=staleMarket||validation.checks.some(x=>x.id==='market_scanner_alignment'&&x.ok===false);
+ const scannerSafe=scanner&&staleScanner?{...scanner,current:null,discardedCurrent:true}:scanner;
+ const evidence={};for(const [name,record] of Object.entries(results)){
+  if(record.status!=='ok')continue;
+  if(name==='market'&&staleMarket){const market=record.result||{};evidence.market={symbol:market.symbol||null,quote:null,driver:null,technical:null,market:market.market||null,discardedQuote:true,reason:baseContext.marketDataQuality?.reason};}
+  else if(name==='financial'&&baseContext?.financialDataQuality?.aligned===false)evidence.financial={unavailable:true,reason:'BCTC không thuộc mã yêu cầu'};
+  else evidence[name]=name==='scanner'?scannerSafe:record.result;
+ }
  const cleanBase={...(baseContext||{})};
  if(scannerSafe?.discardedCurrent)cleanBase.technicalScanner=null;
  return{...cleanBase,agent:{version:VERSION,intent:planInfo.intent,targetSymbol:planInfo.targetSymbol||cleanBase.symbol||null,plan:planInfo.tools,validation,evidence,sourceHints:trimArray(sources||[],12),policy:{numbers:'FINQUERY_ANCHORED_ONLY',staleScanner:'EXCLUDE_CURRENT',missing:'STATE_MISSING_DO_NOT_INVENT',recommendations:'NO_BUY_SELL_ADVICE'}}};

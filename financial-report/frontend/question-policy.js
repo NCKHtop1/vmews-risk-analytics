@@ -8,7 +8,8 @@ function has(s,word){return (' '+s+' ').includes(' '+norm(word)+' ');}
 function periodInfo(q){
  const s=norm(q),years=[...new Set((s.match(/\b20\d\d\b/g)||[]))],qs=[],q1=/\b(?:q|quy)\s*([1-4])\s*(20\d\d)\b/g,q2=/\b(20\d\d)\s*(?:q|quy)\s*([1-4])\b/g;
  let m;while((m=q1.exec(s)))qs.push(m[2]+'-Q'+m[1]);while((m=q2.exec(s)))qs.push(m[1]+'-Q'+m[2]);
- return{years,quarters:[...new Set(qs)],isQuarter:/\bquy\b|\bq[1-4]\b/.test(s),hasPeriod:years.length>0||qs.length>0};
+ const namedQuarter=/\b(?:q[1-4]|quy\s*(?:[1-4]|i{1,3}|iv|nay|truoc|gan nhat|moi nhat|dau|cuoi|nam|20\d\d))\b/.test(s);
+ return{years,quarters:[...new Set(qs)],isQuarter:qs.length>0||namedQuarter,hasPeriod:years.length>0||qs.length>0};
 }
 function route(question,ranked=[]){
  const s=norm(question),candidates=(ranked||[]).filter(x=>x.score>=25);
@@ -24,13 +25,13 @@ function route(question,ranked=[]){
  const definition=/\bla gi\b|\bnghia la gi\b|\bkhai niem\b|\bdinh nghia\b|\bcong thuc\b|\bcach tinh\b|\bdo cai gi\b|\bthe hien gi\b/.test(s);
  const amount=/\bbao nhieu\b|\bgia tri\b|\bso lieu\b|\bmuc nao\b|\bmuc bao nhieu\b|\bhien tai\b|\bky nay\b/.test(s);
  const comparison=/\bso sanh\b|\bkhac gi\b|\bkhac nhau\b|\bky truoc\b|\bcung ky\b|\bqoq\b|\byoy\b|\bversus\b|\bvs\b/.test(s);
- const news=/\btin\b|\btin tuc\b|\btin moi\b|\btin ve\b|\btin doanh nghiep\b|\bsu kien\b|\bcong bo thong tin\b|\bbai bao\b|\bnews\b|\bbao cao ctck\b/.test(s);
+ const news=/\btin\b|\btin tuc\b|\btin moi\b|\btin ve\b|\btin doanh nghiep\b|\bsu kien\b|\bcong bo thong tin\b|\bbai bao\b|\bnews\b|\bbao cao ctck\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' '));
  const forecast=/\bdu bao\b|\bforecast\b|\bt[+]3\b|\bt[+]4\b|\bt[+]5\b|\bxac suat tang\b|\bgia muc tieu\b/.test(s);
  const risk=/\brui ro\b|\bcanh bao\b|\bbat thuong\b|\bye[u]? diem\b|\bcang thang\b/.test(s);
- const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bovernight\b|\bomo\b|\bty gia\b|\blam phat\b|\bcpi\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
+ const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bls on\b|\bon\b|\bovernight\b|\bomo\b|\btin dung\b|\bty gia\b|\blam phat\b|\bcpi\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
  const technical=/\bky thuat\b|\brsi\b|\bmacd\b|\bbollinger\b|\batr\b|\badx\b|\bsupertrend\b|\bvwap\b|\bobv\b|\bmfi\b|\bcmf\b|\bstochastic\b|\bstoch\b|\bcci\b|\broc\b|\bwillr\b|\bchi bao\b|\bscanner\b|\bchien luoc\b|\bquet ma\b/.test(s);
  const financial=/\bbctc\b|\btai chinh\b|\bdoanh thu\b|\bloi nhuan\b|\bdong tien\b|\bvon chu\b|\btai san\b|\bno phai tra\b|\bno xau\b|\bphai thu\b|\bton kho\b|\bthanh khoan\b|\bdu no\b|\bbao cao tai chinh\b/.test(s);
- const movement=/\bgia\b.*\b(hom nay|hien tai|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b/.test(s);
+ const movement=/\bgia\b.*\b(bao nhieu|hom nay|hien tai|moi nhat|bay gio|luc nay|hom qua|ngay mai|ngay kia|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b|\bgia\b.*\bngay\s*[0-9]{1,2}\b/.test(s);
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
  const time=periodInfo(question);
  if(/\bkhong (?:muon )?hoi ve\b|\bkhong can (?:giai thich|tra loi)\b/.test(s)&&!/(\bma\b|\bnhung\b)/.test(s))return'unknown';
@@ -83,7 +84,7 @@ function searchRows(question,data,{minCoverage=0.6,limit=8}={}){
  return ranked.slice(0,limit);
 }
 function selectNews(question,items,{symbol='',companyOnly=false,limit=8}={}){
- const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s),topic=topicTokens(question,symbol);
+ const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' ')),topic=topicTokens(question,symbol);
  // Common company names in the query are identification, not topical matching requirements.
  const out=[];
  for(const row of Array.isArray(items)?items:[]){
@@ -108,7 +109,11 @@ function priceQuality(quote,symbol='',question='',now=new Date()){
  const fmt=(d)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
  const today=fmt(now),snapshot=fmt(new Date(ts)),s=norm(question);
  // A quote from an earlier date may be displayed only as a historical snapshot.
- const wantsCurrent=/\bhom nay\b|\bphien nay\b|\btrong phien\b|\brealtime\b|\blive\b/.test(s);
+ const wantsCurrent=/\bhom nay\b|\bhien tai\b|\bbay gio\b|\bluc nay\b|\bmoi nhat\b|\bphien nay\b|\btrong phien\b|\brealtime\b|\blive\b/.test(s);
+ const historical=/\bhom qua\b|\bphien truoc\b|\btu ngay\b|\bngay\s*[0-9]{1,2}\s*[0-9]{1,2}\s*20[0-9]{2}\b/.test(s);
+ if(historical)return{usable:false,reason:'Câu hỏi yêu cầu giá của phiên hoặc ngày lịch sử; phải tra chuỗi giá đúng mốc, không lấy snapshot hiện tại',sourceTime:raw,historical:true};
+ const future=/\bngay mai\b|\bngay kia\b|\bphien toi\b|\btuong lai\b/.test(s);
+ if(future)return{usable:false,reason:'Không có giá thực tế cho phiên tương lai. Chỉ có thể tham khảo dự báo đã qua kiểm chứng',sourceTime:raw,future:true};
  const old=wantsCurrent&&today!==snapshot;
  const timeParts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
  const minutes=Number(timeParts.hour)*60+Number(timeParts.minute),businessDay=!['Sat','Sun'].includes(timeParts.weekday);
