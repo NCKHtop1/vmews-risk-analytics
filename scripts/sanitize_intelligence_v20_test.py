@@ -24,6 +24,30 @@ class IntelligenceSanitizationTest(unittest.TestCase):
         self.assertEqual(cleaned["symbols"]["VPB"], [])
         self.assertEqual(audit["rejected"], 2)
 
+    def test_ant_outside_universe_is_not_hcm_geographic_news(self) -> None:
+        """Regression: provider ticker ANT: must not attach to HCM via TP.HCM."""
+        universe = {"HCM", "FPT", "VCB"}  # ANT is deliberately outside universe
+        rows = [
+            {"title": "ANT: Nghị quyết HĐQT thông qua nội dung vay vốn tại Ngân hàng TMCP Tiên Phong - Chi nhánh TP.HCM - CafeF"},
+            {"title": "ANT: Nghị quyết HĐQT thông qua nội dung vay vốn tại Vietinbank - Chi nhánh 7 TP.HCM - CafeF"},
+            {"title": "HCM: CTCP Chứng khoán TP.HCM báo cáo kết quả kinh doanh"}
+        ]
+        cleaned, audit = sanitize_payload({"symbols": {"HCM": rows}}, universe)
+        self.assertEqual([r["title"] for r in cleaned["symbols"]["HCM"]], [rows[2]["title"]])
+        self.assertEqual(audit["rejected"], 2)
+        self.assertTrue(all("ANT:" in title for title in audit["rejectedBySymbol"]["HCM"]))
+
+    def test_leading_other_ticker_outside_universe_is_authoritative(self) -> None:
+        universe = {"HCM", "FPT"}
+        payload = {"symbols": {
+            "HCM": [{"title": "ABC: Hoạt động tại TP.HCM"}],
+            "FPT": [{"title": "FPT: Mở rộng trung tâm dữ liệu tại TP.HCM"}]
+        }}
+        clean, audit = sanitize_payload(payload, universe)
+        self.assertEqual(clean["symbols"]["HCM"], [])
+        self.assertEqual(len(clean["symbols"]["FPT"]), 1)
+        self.assertEqual(audit["rejected"], 1)
+
     def test_nested_community_lists_are_sanitized(self) -> None:
         payload = {"symbols": {"FPT": {
             "claims": [{"title": "FPT mở rộng trung tâm dữ liệu"}],
