@@ -1,0 +1,34 @@
+name: FinQuery custom-domain end-to-end smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, fix/finquery-domain-https-route-smoke-20261009]
+    paths:
+      - 'financial-report/scripts/smoke_custom_domain.py'
+      - '.github/workflows/finquery-custom-domain-smoke.yml'
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    branches: [main]
+    types: [completed]
+  schedule:
+    - cron: '15 2-9 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finquery-real-domain-smoke
+  cancel-in-progress: true
+
+jobs:
+  domain:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check real FinQuery HTTPS, landing page, quotes, news, forecast and www redirect
+        run: python financial-report/scripts/smoke_custom_domain.py
