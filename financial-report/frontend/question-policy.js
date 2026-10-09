@@ -5,7 +5,7 @@ const TERMS_STOP=new Set([...STOP,'tin','tuc','su','kien','moi','cap','nhat','th
 function norm(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9+]+/g,' ').trim();}
 function has(s,word){return (' '+s+' ').includes(' '+norm(word)+' ');}
 function periodInfo(q){
- const s=norm(q),years=[...new Set((s.match(/\b20\d\d\b/g)||[]))],qs=[],q1=/\bquy\s*([1-4])\s*(20\d\d)\b/g,q2=/\b(20\d\d)\s*(?:q|quy)\s*([1-4])\b/g;
+ const s=norm(q),years=[...new Set((s.match(/\b20\d\d\b/g)||[]))],qs=[],q1=/\b(?:q|quy)\s*([1-4])\s*(20\d\d)\b/g,q2=/\b(20\d\d)\s*(?:q|quy)\s*([1-4])\b/g;
  let m;while((m=q1.exec(s)))qs.push(m[2]+'-Q'+m[1]);while((m=q2.exec(s)))qs.push(m[1]+'-Q'+m[2]);
  return{years,quarters:[...new Set(qs)],isQuarter:/\bquy\b|\bq[1-4]\b/.test(s),hasPeriod:years.length>0||qs.length>0};
 }
@@ -24,6 +24,7 @@ function route(question,ranked=[]){
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
  const time=periodInfo(question);
  // A compound question must not silently answer only one of several named concepts.
+ if(strong.length>=2&&comparison&&periodInfo(question).hasPeriod)return'multiMetric';
  if(strong.length>=2&&(definition||comparison))return'multiConcept';
  if(strong.length>=2&&amount)return'multiMetric';
  if(strong.length>=2&&/\bva\b|\bhay\b/.test(s)&&!technical&&!movement)return'multiConcept';
