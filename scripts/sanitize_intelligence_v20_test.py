@@ -24,6 +24,26 @@ class IntelligenceSanitizationTest(unittest.TestCase):
         self.assertEqual(cleaned["symbols"]["VPB"], [])
         self.assertEqual(audit["rejected"], 2)
 
+    def test_primary_ticker_outside_forecast_universe_is_not_assigned_to_city_name(self) -> None:
+        universe = {"HCM", "FPT", "MBB"}  # ANT may be unlisted from this forecast release.
+        title = "ANT: Nghị quyết HĐQT thông qua khoản vay tại Vietinbank - Chi nhánh TP.HCM - CafeF"
+        payload = {"symbols": {"HCM": [{"title": title}], "FPT": [{"title": "FPT ký hợp đồng mới"}]}}
+        cleaned, audit = sanitize_payload(payload, universe)
+        self.assertEqual(cleaned["symbols"]["HCM"], [])
+        self.assertEqual([row["title"] for row in cleaned["symbols"]["FPT"]], ["FPT ký hợp đồng mới"])
+        self.assertEqual(audit["rejected"], 1)
+
+    def test_equivalent_primary_ticker_with_valid_hcm_issuer_is_retained(self) -> None:
+        payload = {"symbols": {"HCM": [{"title": "HCM: Công ty Chứng khoán TP.HCM công bố kết quả"}]}}
+        clean, audit = sanitize_payload(payload, {"HCM"})
+        self.assertEqual(len(clean["symbols"]["HCM"]), 1)
+        self.assertEqual(audit["rejected"], 0)
+
+    def test_exchange_prefix_blocks_out_of_universe_issuer(self) -> None:
+        payload = {"symbols": {"HCM": [{"title": "HOSE: ANT: Báo cáo kết quả kinh doanh tại TP.HCM"}]}}
+        cleaned, audit = sanitize_payload(payload, {"HCM"})
+        self.assertEqual(cleaned["symbols"]["HCM"], [])
+        self.assertEqual(audit["rejected"], 1)
     def test_nested_community_lists_are_sanitized(self) -> None:
         payload = {"symbols": {"FPT": {
             "claims": [{"title": "FPT mở rộng trung tâm dữ liệu"}],
