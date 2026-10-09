@@ -38,6 +38,7 @@ jobs:
       - run: node --test financial-report/tests/chart_math.test.cjs financial-report/tests/chart_stream.test.cjs financial-report/tests/market_data.test.cjs financial-report/tests/strategy_engine.test.cjs financial-report/tests/strategy_snapshot.test.cjs financial-report/tests/research_agent.test.cjs financial-report/tests/research_ai_deep.test.cjs financial-report/tests/risk_monitor.test.cjs
       - run: node financial-report/tests/knowledge.test.cjs
       - run: node --test financial-report/tests/question_policy.test.cjs
+      - run: node --test financial-report/tests/local_analysis_semantics.test.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: financial-excel-tested
