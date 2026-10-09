@@ -32,3 +32,18 @@ jobs:
           python-version: '3.12'
       - name: Check real FinQuery HTTPS, landing page, quotes, news, forecast and www redirect
         run: python financial-report/scripts/smoke_custom_domain.py
+
+  browser:
+    if: github.event_name != 'workflow_run'
+    needs: domain
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install full browser smoke dependencies
+        run: pip install --disable-pip-version-check -q selenium==4.36.0 PyYAML
+      - name: Exercise charts, market prices, company news, Risk, strategy and mobile on finquery.info.vn
+        run: python scripts/finquery_custom_domain_browser_run.py
