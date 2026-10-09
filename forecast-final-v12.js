@@ -11,6 +11,9 @@ const PAGES_HOST=location.hostname==="nckhtop1.github.io"&&location.pathname.sta
 const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HOST?"main":"LOCAL_DEPLOYMENT";
 const ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data";
 const CDN_REVISION=Math.floor(Date.now()/60000);
+const FALLBACK_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data";
+const FETCH_TIMEOUT_MS=Math.max(30,Math.min(30000,Number(window.__FINQUERY_FORECAST_TIMEOUT_MS)||22000));
+const CHART_EXECUTABLE_CLOSE=item=>finite(item?.rawClose)?+item.rawClose:finite(item?.close)?+item.close:NaN;
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
 const FINQUERY_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json";
@@ -59,25 +62,37 @@ async function refreshLiveQuotes(force=false){
 }
 window.__VMEWS_REFRESH_LIVE_QUOTES__=refreshLiveQuotes;
 
+async function fetchJsonBounded(url,timeoutMs=FETCH_TIMEOUT_MS){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const response=await fetch(url,{cache:"no-store",signal:controller.signal});
+    if(!response.ok)throw Error("HTTP "+response.status);
+    return await response.json();
+  }finally{clearTimeout(timer)}
+}
 async function json(name){
   if(JSON_PROMISES.has(name))return JSON_PROMISES.get(name);
   const request=(async()=>{
     const roots=[ROOT];
+    // The custom domain may be out of sync with GitHub Pages. Use exactly
+    // the same audited main branch as fallback, not a fabricated snapshot.
+    // Immutable/pinned CDN releases may never mix with main.
+    if(!CDN_REF && ROOT!==FALLBACK_ROOT)roots.push(FALLBACK_ROOT);
     let lastError=null;
     for(const root of roots){
-      try{
-        const r=await fetch(`${root}/${name}?refresh=${CDN_REVISION}`,{cache:"no-store"});
-        if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);
-        return await r.json();
-      }catch(error){lastError=error}
+      const url=`${root}/${name}?refresh=${CDN_REVISION}`;
+      try{return await fetchJsonBounded(url)}
+      catch(error){lastError=error}
     }
-    throw lastError||Error(`${name}: unavailable`);
+    throw Error(`${name}: tải dữ liệu quá thời hạn hoặc nguồn chưa sẵn sàng (${String(lastError?.message||lastError||"unknown")}).`);
   })();
   JSON_PROMISES.set(name,request);
-  try{return await request}catch(error){JSON_PROMISES.delete(name);throw error}
+  try{return await request}
+  catch(error){JSON_PROMISES.delete(name);throw error}
 }
-async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})();return LEADER_BASE_PROMISE}
-async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})();return BASE_PROMISE}
+async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})().catch(error=>{LEADER_BASE_PROMISE=null;throw error});return LEADER_BASE_PROMISE}
+async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})().catch(error=>{BASE_PROMISE=null;throw error});return BASE_PROMISE}
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
@@ -197,16 +212,16 @@ function draw(sym,z,history,animate=true){
   if(!finite(z.close)||+z.close<=0){hoverPoints=[];chartBounds=null;context.clearRect(0,0,width,height);context.fillStyle="#8da4ae";context.font="12px ui-sans-serif,system-ui";context.textAlign="center";context.fillText("Đang đồng bộ giá đúng phiên — không hiển thị giá cũ",width/2,height/2);context.textAlign="left";return}
   const current=+z.close,forecasts=[];
   for(let n=1;n<=5;n++){const item=h(z,n);if(forecastUsableForDecision(item,z))forecasts.push({n,price:+item.expectedPrice,lo:+item.q20Price,hi:+item.q80Price,p:+item.probUp,dir:validatedDirection(item),validated:validatedPrice(item)&&reliablePoint(item),ret:+item.expectedReturn,active:item.activeExperts||[],contrib:item.expertContributions||{},calN:item.calibrationN})}
-  const values=hist.map(item=>+item.close).concat(forecasts.flatMap(item=>[item.lo,item.price,item.hi]),[current]);
+  const values=hist.map(CHART_EXECUTABLE_CLOSE).concat(forecasts.flatMap(item=>[item.lo,item.price,item.hi]),[current]);
   let minimum=Math.min(...values),maximum=Math.max(...values);const gutter=(maximum-minimum)*.11||1;minimum-=gutter;maximum+=gutter;
   const innerWidth=width-padding.left-padding.right,historyWidth=innerWidth*(compact?.62:.69),forecastWidth=innerWidth-historyWidth;
   const xHistory=index=>padding.left+index*historyWidth/(hist.length-1),xForecast=index=>padding.left+historyWidth+forecastWidth*index/5;
   const y=value=>padding.top+(maximum-value)/(maximum-minimum)*(height-padding.top-padding.bottom);
   const split=padding.left+historyWidth,currentY=y(current),floorY=height-padding.bottom;
-  const historic=hist.map((item,index)=>({x:xHistory(index),y:y(+item.close)}));
+  const historic=hist.map((item,index)=>({x:xHistory(index),y:y(CHART_EXECUTABLE_CLOSE(item))}));
   const future=[{x:split,y:currentY},...forecasts.map(item=>({x:xForecast(item.n),y:y(item.price)}))];
   const activeCard=Array.from(document.querySelectorAll(".forecastCard")).findIndex(card=>card.classList.contains("active"))+1||5;
-  hoverPoints=hist.map((item,index)=>({kind:"history",x:xHistory(index),y:y(+item.close),data:item}));
+  hoverPoints=hist.map((item,index)=>({kind:"history",x:xHistory(index),y:y(CHART_EXECUTABLE_CLOSE(item)),data:item}));
   hoverPoints.push(...forecasts.map(item=>({kind:"forecast",x:xForecast(item.n),y:y(item.price),data:item})));
   chartBounds={left:padding.left,right:width-padding.right,top:padding.top,bottom:floorY,width,height,density};
   canvas.dataset.range=String(chartRange);
@@ -429,14 +444,12 @@ async function refreshCore(){
   if(last)rerender(last.B,last.sym,last.z);
   try{
     const coreRoot=ROOT;
-    const response=await fetch(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,{cache:"no-store"});
-    if(!response.ok)return;
-    const next=await response.json();
+    const next=await fetchJsonBounded(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,12000);
     if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
   }catch{}
 }
-async function init(){try{const B=await loadBase();assertProduction(B);quickButtons(B);await refreshLiveQuotes(true);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}}
-function showError(e){console.error(e);setText("#status",String(e?.message||e));const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
+async function init(){const hint=setTimeout(()=>setText("#status","Đang tải bộ Forecast Core đã kiểm định; kết nối sẽ tự kết thúc khi quá hạn."),6500);try{const B=await loadBase();assertProduction(B);quickButtons(B);await refreshLiveQuotes(true);const q=new URLSearchParams(location.search).get("symbol")||"FPT";await renderSymbol(q);bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
+function showError(e){console.error(e);setText("#status",String(e?.message||e));const status=$("#status");if(status){const retry=document.createElement("button");retry.type="button";retry.textContent="Thử tải lại";retry.onclick=()=>location.reload();status.append(" ",retry);}const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 window.addEventListener?.("vmews:session-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · dữ liệu ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}`)}});
 window.addEventListener?.("vmews:live-quotes-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · forecast ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"LIVE"} ${price(view.close)}`:""}`)}});
 document.addEventListener("DOMContentLoaded",init);
