@@ -43,6 +43,8 @@ for(const question of [
 const answerSource=require('node:fs').readFileSync(require('node:path').join(__dirname,'../frontend/research-ai.js'),'utf8');
 assert.ok(!answerSource.includes('concept=K.find?.(question)||ranked[0]?.c||null'),'nearby results must not become definitions');
 assert.ok(!answerSource.includes('const first=nearest[0].c'),'search fallback must not invent definitions');
-assert.match(answerSource,/score=relevance\+\(symbolMatch\?2:0\)/,'news relevance should not be reduced to a Boolean');
+const policySource=require('node:fs').readFileSync(require('node:path').join(__dirname,'../frontend/question-policy.js'),'utf8');
+assert.match(policySource,/function selectNews\(/,'news selection must be topic and symbol aware');
+assert.match(answerSource,/QP\?\.selectNews/,'research AI must use shared verified news ranking');
 
 console.log('knowledge-base tests passed');

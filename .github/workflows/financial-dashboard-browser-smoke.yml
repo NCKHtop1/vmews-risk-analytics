@@ -323,6 +323,12 @@ jobs:
                 ('So sánh kỳ gần nhất với kỳ trước và cùng kỳ.','compare'),
                 ('ROE là gì?','concept'),
                 ('Phân tích bối cảnh lãi suất và vĩ mô hiện tại.','macro'),
+                ('Tài sản ngắn hạn và nợ ngắn hạn là gì?','multiConcept'),
+                ('ROE của FPT năm 2025 là bao nhiêu?','metric'),
+                ('Tin cổ tức của FPT','news'),
+                ('Dự báo T+3 cho FPT','forecast'),
+                ('FPT và MBB khác nhau như thế nào?','multiSymbol'),
+                ('Thời tiết Hà Nội ngày mai','unknown'),
               ]
               # Verify semantic meaning, not only a generic concept response length.
               semantic_checks=[
@@ -336,6 +342,15 @@ jobs:
                   answer=str(semantic.get('html') or '')
                   if semantic.get('type')!='concept' or required.casefold() not in answer.casefold() or forbidden.casefold() in answer.casefold():
                       raise AssertionError(f'Dolphin semantic mismatch for {question!r}: {semantic}')
+              concepts=driver.execute_script("return window.FinQueryKnowledge.concepts.map(c=>({id:c.id,title:c.title,definition:c.definition}));")
+              failures=[]
+              for concept in concepts:
+                  response=driver.execute_script("return window.FinQueryAI.analyze(arguments[0]);",concept['title']+' là gì?')
+                  html=str(response.get('html') or '')
+                  if response.get('type')!='concept' or str(concept['definition'])[:25] not in html:
+                      failures.append((concept['id'],response.get('type'),html[:100]))
+              if len(concepts)<90 or failures:
+                  raise AssertionError(f'All-concept browser regression failed: {len(concepts)} concepts; {failures[:15]}')
               unmatched=driver.execute_script("return window.FinQueryKnowledge.find(arguments[0]);",'abcxyz là gì?')
               if unmatched is not None:
                   raise AssertionError(f'Unknown definition must fail closed: {unmatched}')
