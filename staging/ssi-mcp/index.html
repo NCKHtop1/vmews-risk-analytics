@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FinQuery · SSI MCP thử nghiệm</title>
+<style>
+:root{font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;color:#17243b;background:#f5f7fb}*{box-sizing:border-box}
+body{margin:0}.wrap{max-width:860px;margin:38px auto;padding:0 18px}
+h1{font-size:27px;margin:0;color:#13284e;letter-spacing:-.6px}h2{font-size:18px;margin:0 0 13px}p{margin:8px 0}
+.muted{color:#62718c}.card{background:#fff;border:1px solid #e1e7f0;border-radius:14px;margin:18px 0;padding:24px;box-shadow:0 4px 16px #19305508}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}button{font:inherit;padding:10px 15px;border-radius:8px;border:0;background:#2c5aca;color:white;cursor:pointer}
+button.secondary{color:#274c98;background:#eef3ff}button:disabled{cursor:not-allowed;opacity:.48}
+input,select{border:1px solid #cdd7e6;border-radius:8px;padding:9px;font:inherit;background:#fff}input{width:90px;text-transform:uppercase}
+label{color:#34445e}#results{background:#f6f8fc;padding:15px;border:1px solid #dfe6f0;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:460px;overflow:auto;font-size:13px}
+.alert{background:#fff4df;border:1px solid #e3be72;border-radius:11px;padding:17px;margin:15px 0}.alert strong{display:block;margin-bottom:6px}
+code{background:#f3f5fb;border-radius:4px;padding:3px 6px;overflow-wrap:anywhere;font-size:13px}
+a{color:#2753b5}small{color:#62718c}#auth-status{font-weight:700}
+@media(max-width:600px){.wrap{margin:18px auto}.card{padding:16px}h1{font-size:23px}}
+</style>
+</head>
+<body><main class="wrap">
+<h1>FinQuery · SSI MCP</h1>
+<p class="muted">Trang thử nghiệm kết nối và đối chiếu dữ liệu SSI, không thay đổi FinQuery đang chạy trên GitHub Pages.</p>
+<section class="card">
+<h2>Kết nối tài khoản SSI</h2>
+<div id="callback-alert" class="alert" role="alert" hidden>
+<strong>SSI chưa chấp thuận địa chỉ đăng nhập của FinQuery.</strong>
+<p>SSI phản hồi <code>invalid_redirect_uri</code>: <code>redirect_uri domain is not allowed</code>.</p>
+<p>Đây là giới hạn phía SSI, không phải lỗi mật khẩu. Cần SSI phê duyệt địa chỉ quay về sau đăng nhập:</p>
+<p><code id="callback-uri"></code></p>
+<div class="row"><button type="button" id="copy-callback" class="secondary">Sao chép địa chỉ callback</button><a href="https://mcp.ssi.com.vn/docs/ket-noi/" target="_blank" rel="noopener noreferrer">Hướng dẫn SSI MCP ↗</a></div>
+<p><small>Sau khi SSI phê duyệt domain, hãy tải lại trang và kết nối lại. Không gửi mật khẩu hoặc OTP cho bất kỳ ai.</small></p>
+</div>
+<p id="auth-status" aria-live="polite">Đang kiểm tra kết nối...</p>
+<div class="row">
+<button type="button" id="connect" disabled>Đăng nhập SSI</button>
+<button type="button" id="disconnect" class="secondary" hidden>Ngắt SSI</button>
+</div>
+<p class="muted"><small>Chỉ nhập tài khoản SSI trên trang đăng nhập chính thức của SSI. FinQuery dùng OAuth, không thu thập mật khẩu SSI.</small></p>
+</section>
+<section class="card">
+<h2>Kiểm tra dữ liệu SSI</h2>
+<div class="row">
+<label>Mã cổ phiếu <input id="ticker" value="FPT" maxlength="3" autocomplete="off" aria-label="Mã cổ phiếu"></label>
+<label>Loại dữ liệu <select id="kind"><option value="indicators">Chỉ số tài chính</option><option value="profile">Hồ sơ công ty</option><option value="news">Tin doanh nghiệp</option><option value="events">Sự kiện</option><option value="peers">Cùng ngành</option></select></label>
+<button type="button" id="read" disabled>Tra cứu SSI</button>
+</div>
+<p id="message" class="muted" role="status"></p><pre id="results" hidden></pre>
+</section>
+<p><small>SSI MCP là dữ liệu bổ trợ theo quyền truy cập của người dùng, không thay thế giá realtime, biểu đồ hay Forecast của FinQuery.</small></p>
+</main>
+<script>
+(function(){'use strict';
+const $=id=>document.getElementById(id),origin=location.origin;
+const callbackUri=origin+'/api/ssi-callback';
+$('callback-uri').textContent=callbackUri;
+const qs=new URLSearchParams(location.search),denied=qs.get('ssi')==='domain_not_allowed';
+if(denied)$('callback-alert').hidden=false;
+$('copy-callback').addEventListener('click',()=>{navigator.clipboard?.writeText(callbackUri).then(()=>$('copy-callback').textContent='Đã sao chép ✓').catch(()=>$('copy-callback').textContent='Hãy sao chép dòng phía trên');});
+let connected=false;
+function status(text){$('auth-status').textContent=text;}
+async function refresh(){
+ try{
+  const response=await fetch('/api/ssi-auth?op=status',{cache:'no-store',credentials:'same-origin'});
+  const data=await response.json(),enabled=data.enabled===true;
+  connected=enabled&&data.connected===true;
+  status(!enabled?'Kết nối SSI chưa được bật trên máy chủ':connected?'Đã kết nối SSI MCP · chỉ đọc dữ liệu':'Chưa kết nối tài khoản SSI trong FinQuery');
+  $('connect').hidden=connected;$('disconnect').hidden=!connected;$('connect').disabled=!enabled||connected||denied;
+  $('read').disabled=!connected;
+ }catch{connected=false;status('Chưa liên lạc được máy chủ SSI');$('connect').disabled=true;}
+}
+$('connect').addEventListener('click',()=>location.assign('/api/ssi-auth?op=start'));
+$('disconnect').addEventListener('click',async()=>{
+ try{await fetch('/api/ssi-auth?op=logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'}});}catch{}
+ $('results').hidden=true;await refresh();
+});
+$('read').addEventListener('click',async()=>{
+ if(!connected)return;
+ const symbol=$('ticker').value.trim().toUpperCase(),kind=$('kind').value,btn=$('read');
+ if(!/^[A-Z]{3}$/.test(symbol)){$('message').textContent='Hãy nhập mã cổ phiếu gồm đúng 3 chữ cái.';return;}
+ btn.disabled=true;$('results').hidden=true;$('message').textContent='Đang truy vấn dữ liệu SSI...';
+ try{
+  const r=await fetch('/api/ssi-mcp?symbol='+encodeURIComponent(symbol)+'&kind='+encodeURIComponent(kind),{cache:'no-store',credentials:'same-origin'}),data=await r.json();
+  $('message').textContent=data.status==='ok'?'Đã nhận dữ liệu · '+String(data.retrievedAt||''):('Truy vấn chưa thành công: '+String(data.status||r.status));
+  $('results').textContent=JSON.stringify(data,null,2);$('results').hidden=false;
+  if(r.status===401)await refresh();
+ }catch{$('message').textContent='SSI hiện chưa trả dữ liệu qua website.';}
+ finally{btn.disabled=!connected;}
+});
+if(denied)$('message').textContent='Đang chờ SSI cho phép domain. Tra cứu SSI trong ChatGPT vẫn sử dụng được.';
+if(qs.get('ssi')==='login_failed')$('message').textContent='Chưa hoàn tất đăng nhập SSI, vui lòng thử lại.';
+if(qs.get('ssi')==='connected')$('message').textContent='Đã trở về từ SSI; đang kiểm tra phiên đăng nhập.';
+void refresh();
+})();
+</script></body></html>

@@ -1,0 +1,67 @@
+name: SSI MCP adapter contract
+on:
+  pull_request:
+    paths:
+      - 'api/ssi-*.js'
+      - 'api/ssi-mcp.test.cjs'
+      - 'lib/ssi-*.js'
+      - 'financial-report/frontend/ssi-enrichment.js'
+      - 'financial-report/frontend/research-agent.js'
+      - 'financial-report/frontend/research-ai.js'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/tests/ssi_enrichment.test.cjs'
+      - 'staging/ssi-mcp/index.html'
+      - '.github/workflows/ssi-mcp-adapter-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Backend and browser safety contracts
+        run: |
+          node --check api/ssi-mcp.js
+          node --check api/ssi-auth.js
+          node --check api/ssi-callback.js
+          node --check lib/ssi-session.js
+          node --check lib/ssi-oauth.js
+          node --check lib/ssi-transport.js
+          node --check financial-report/frontend/ssi-enrichment.js
+          node --check financial-report/frontend/research-agent.js
+          node --check financial-report/frontend/research-ai.js
+          node --test api/ssi-mcp.test.cjs financial-report/tests/ssi_enrichment.test.cjs
+      - name: Verify standalone bundle includes SSI without credentials
+        run: |
+          python3 financial-report/scripts/build_cdn.py
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('financial-report/index.html').read_text()
+          assert 'FinSSI' in html
+          assert 'FINQUERY_SSI_COOKIE_KEY' not in html
+          assert '<script defer src="ssi-enrichment.js"></script>' not in html
+          print('SSI_BUNDLE_READ_ONLY_GUARD_PASS')
+          PY
+
+  discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    continue-on-error: true
+    steps:
+      - name: Check public SSI MCP OAuth discovery (no credentials)
+        shell: bash
+        run: |
+          for path in /mcp /.well-known/oauth-protected-resource/mcp /.well-known/oauth-protected-resource /.well-known/oauth-authorization-server; do
+            echo "DISCOVERY PATH: $path"
+            curl -sS --max-time 6 -D /tmp/ssi_headers -o /tmp/ssi_body "https://mcp.ssi.com.vn$path" || true
+            grep -Ei '^(HTTP/|www-authenticate:|location:|content-type:|access-control-allow-origin:)' /tmp/ssi_headers || true
+            head -c 1800 /tmp/ssi_body | tr '\n' ' ' || true
+            echo
+          done
+
