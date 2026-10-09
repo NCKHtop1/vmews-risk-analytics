@@ -1,6 +1,12 @@
 name: FinQuery QA50 real browser
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/frontend/research-ai.js'
+      - 'financial-report/tests/finquery_qa50_live.py'
+      - '.github/workflows/finquery-qa50.yml'
   pull_request:
     paths:
       - 'financial-report/tests/finquery_qa50_live.py'
@@ -8,8 +14,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: finquery-qa50
-  cancel-in-progress: false
+  group: finquery-qa50-${{ github.sha }}
+  cancel-in-progress: true
 jobs:
   browser:
     runs-on: ubuntu-latest
@@ -23,12 +29,41 @@ jobs:
       - name: Install QA dependencies
         run: |
           python -m pip install -q playwright==1.55.0 openpyxl==3.1.5
-          python -m playwright install --with-deps chromium
+          if command -v google-chrome >/dev/null 2>&1 || command -v google-chrome-stable >/dev/null 2>&1; then
+            echo "Using preinstalled Google Chrome for Playwright"
+          else
+            python -m playwright install --with-deps chromium
+          fi
       - name: Compile QA runner
         run: python -m py_compile financial-report/tests/finquery_qa50_live.py
+      - name: Wait for tested code revision to reach GitHub Pages
+        if: github.event_name == 'push'
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json,os,time,urllib.request
+          expected=os.environ['EXPECTED_SHA']
+          url='https://finquery.info.vn/financial-report/deployment.json'
+          latest=''
+          for attempt in range(90):
+              try:
+                  with urllib.request.urlopen(url+'?qa='+str(time.time_ns()),timeout=12) as response:
+                      record=json.load(response)
+                  latest=str(record.get('code') or '')
+                  if latest==expected:
+                      print('QA50 deployment code verified:',latest,flush=True)
+                      break
+              except Exception as exc:
+                  print('Deployment wait:',type(exc).__name__,str(exc)[:150],flush=True)
+              time.sleep(5)
+          else:
+              raise SystemExit('Production code SHA does not match QA50 push: expected='+expected+' actual='+latest)
+          PY
       - name: Execute exact 50 real production cases
         env:
           FINQUERY_QA_URL: https://finquery.info.vn/financial-report/
+          FINQUERY_QA_RESEARCH_AI_OVERRIDE: ${{ github.event_name == 'pull_request' && 'financial-report/frontend/research-ai.js' || '' }}
         run: python financial-report/tests/finquery_qa50_live.py
       - name: Upload screenshots and status matrix
         if: always()

@@ -77,3 +77,12 @@ test('deep quality repair cannot invent a new analytical basis',()=>{
  assert.match(src,/không biến tương quan thành nhân quả/i);
  assert.match(src,/không đưa khuyến nghị mua\/bán/i);
 });
+
+test('Gemini overload has a six-call budget, quota fail-fast and cancelled-request ownership',()=>{
+  assert.match(src,/MAX_GEMINI_CALLS_PER_QUESTION=6/);
+  assert.match(src,/owner\.dolphinGeminiCalls>MAX_GEMINI_CALLS_PER_QUESTION/);
+  assert.match(src,/GEMINI_REQUEST_BUDGET_EXHAUSTED/);
+  assert.match(src,/Number\(error\?\.status\)===429\|\|/);
+  assert.match(src,/async function callLLM\(question,owner\)/);
+  assert.match(src,/requireActiveQuestion\(owner\)/);
+});
