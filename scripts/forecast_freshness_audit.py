@@ -5,6 +5,7 @@ import math
 from datetime import datetime
 from pathlib import Path
 from vn_exchange_calendar import VN_TZ, latest_completed_session, next_trading_dates
+from forecast_publication_session import publication_session_status
 
 DATA = Path(__file__).resolve().parents[1] / 'data'
 
@@ -26,7 +27,23 @@ def executable_close(value):
 
 
 def audit(dashboard, current, market, now=None):
-    expected = latest_completed_session(now).isoformat()
+    actual_now = now or datetime.now(VN_TZ)
+    expected_now = latest_completed_session(actual_now).isoformat()
+    published_session = str(dashboard.get('asOf') or '')[:10]
+    warnings = []
+    session_gate = None
+    try:
+        session_gate = publication_session_status(published_session, actual_now)
+        expected = session_gate['validatedSession']
+        if session_gate['staleCore']:
+            warnings.append(
+                f"VERIFIED_PRIOR_SESSION: {expected} published during the HOSE cutoff; "
+                f"current completed session is {expected_now}. Forecast remains stale on UI."
+            )
+    except ValueError as exc:
+        # Preserve strict current-session checks outside the short EOD handoff.
+        expected = expected_now
+        warnings.append(str(exc))
     errors = []
     symbols = dashboard.get('symbols') or {}
     if not symbols:
@@ -66,8 +83,9 @@ def audit(dashboard, current, market, now=None):
             errors.append(f'{symbol}: {", ".join(issues)}')
         rows.append({'symbol': symbol, 'date': row.get('date'), 'status': 'FAIL' if issues else 'PASS', 'issues': issues})
     universe = (market.get('model') or {}).get('universe') or {}
-    return {'status': 'FAIL' if errors else 'PASS', 'checkedAt': (now or datetime.now(VN_TZ)).isoformat(),
-            'expectedSession': expected, 'publishedSession': dashboard.get('asOf'), 'checkedSymbols': len(rows),
+    return {'status': 'FAIL' if errors else 'PASS', 'checkedAt': actual_now.isoformat(),
+            'expectedSession': expected_now, 'validatedSession': expected, 'sessionGate': session_gate,
+            'warnings': warnings, 'publishedSession': dashboard.get('asOf'), 'checkedSymbols': len(rows),
             'listedSymbols': universe.get('listedHOSE'), 'excludedUnverified': universe.get('staleOrUnverifiedSymbols', []),
             'insufficientHistory': universe.get('insufficientHistorySymbols', []), 'errors': errors, 'symbols': rows}
 

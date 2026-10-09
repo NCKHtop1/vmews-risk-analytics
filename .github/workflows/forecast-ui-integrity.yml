@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'scripts/forecast_freshness_audit.py'
+      - 'scripts/forecast_publication_session.py'
+      - 'scripts/forecast_publication_session_test.py'
       - 'scripts/forecast_freshness_audit_test.py'
       - 'scripts/forecast_loader_regression_test.cjs'
       - 'scripts/forecast-navigation-test.cjs'
@@ -13,6 +15,8 @@ on:
     branches: [main]
     paths:
       - 'scripts/forecast_freshness_audit.py'
+      - 'scripts/forecast_publication_session.py'
+      - 'scripts/forecast_publication_session_test.py'
       - 'scripts/forecast_freshness_audit_test.py'
       - 'scripts/forecast_loader_regression_test.cjs'
       - 'scripts/forecast-navigation-test.cjs'
@@ -41,6 +45,8 @@ jobs:
           python-version: "3.12"
       - name: Test price-vs-chart invariants including all nine disputed symbols
         run: python scripts/forecast_freshness_audit_test.py
+      - name: Reject stale, future, or out-of-grace forecast cutover publication
+        run: python scripts/forecast_publication_session_test.py
       - name: Verify browser JavaScript syntax
         run: |
           node --check forecast-final-v12.js

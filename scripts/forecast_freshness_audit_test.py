@@ -43,6 +43,21 @@ class ForecastFreshnessExecutableCloseTest(unittest.TestCase):
         self.assertEqual(result["checkedSymbols"], 9)
         self.assertFalse(result["errors"])
 
+    def test_verified_prior_session_survives_1505_cutover_with_stale_flag(self):
+        actual = datetime(2026, 10, 9, 15, 20, tzinfo=VN_TZ)
+        result = audit(*documents(), now=actual)
+        self.assertEqual(result["status"], "PASS", result["errors"])
+        self.assertEqual(result["expectedSession"], "2026-10-09")
+        self.assertEqual(result["validatedSession"], "2026-10-08")
+        self.assertTrue(result["sessionGate"]["staleCore"])
+        self.assertEqual(result["checkedSymbols"], 9)
+
+    def test_old_snapshot_rejected_after_grace(self):
+        actual = datetime(2026, 10, 9, 16, 21, tzinfo=VN_TZ)
+        result = audit(*documents(), now=actual)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertTrue(any("session" in err for err in result["errors"]))
+
     def test_incorrect_real_close_still_fails(self):
         docs = documents(("AGR",))
         docs[0]["charts"]["AGR"][-1]["rawClose"] += 100
