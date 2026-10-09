@@ -13,6 +13,18 @@ function trimArray(v,n=8){return Array.isArray(v)?v.slice(0,n):[];}
 function summarizeNews(items,n=6){return trimArray(items,n).map(x=>pick(x,['title','source','publisher','publishedAt','date','url','summary','symbols','topics']));}
 function activeSymbol(){return String(root.FinancialMarket?.context?.()?.symbol||root.FinancialReportContext?.raw?.()?.symbol||'').toUpperCase();}
 function marketCompanies(){try{return root.FinancialMarket?.alertContext?.()?.companies||[];}catch{return[];}}
+function resolveTargetSymbols(question){
+ const known=new Set(marketCompanies().map(x=>String(x.symbol||'').toUpperCase()).filter(Boolean));
+ const financial=root.FinancialReportContext?.companies?.()||[];
+ for(const company of financial)if(company.symbol)known.add(String(company.symbol).toUpperCase());
+ const matches=(String(question||'').match(/\b[A-Z]{3,4}\b/g)||[]).filter(x=>known.has(x)&&!['ROE','ROA','FCF','OCF','RSI','MFI','CIR','NIM','NPL','MACD','CASA','TOI','CAR','OMO','GDP','CPI','FCP','EPS','ATR','ADX','SMA','EMA','PEG'].includes(x));
+ const phrase=norm(question);
+ for(const c of marketCompanies()){
+  const name=norm(c.name||'');
+  if(name.length>=7&&(' '+phrase+' ').includes(' '+name+' '))matches.push(String(c.symbol).toUpperCase());
+ }
+ return[...new Set(matches)];
+}
 function resolveTargetSymbol(question){
  try{const f=String(root.FinancialReportContext?.resolveSymbol?.(question)||'').toUpperCase();if(f)return f;}catch{}
  const raw=String(question||''),upper=raw.toUpperCase(),companies=marketCompanies(),symbols=new Set(companies.map(x=>String(x.symbol||'').toUpperCase()).filter(Boolean));
@@ -22,7 +34,9 @@ function resolveTargetSymbol(question){
  return String(hit?.symbol||'').toUpperCase();
 }
 async function prepare(question){
- const requestedSymbol=resolveTargetSymbol(question),before=activeSymbol();
+ const targets=resolveTargetSymbols(question);
+ if(targets.length>1){const error=new Error('Câu hỏi yêu cầu so sánh nhiều mã: '+targets.join(', ')+'. Chưa có bằng chứng BCTC độc lập cho từng mã trong context.');error.code='MULTI_SYMBOL_DATA_REQUIRED';throw error;}
+ const requestedSymbol=targets[0]||resolveTargetSymbol(question),before=activeSymbol();
  if(!requestedSymbol||requestedSymbol===before)return{requestedSymbol:requestedSymbol||before,beforeSymbol:before,activeSymbol:before,switched:false,status:'ok',financialAvailable:Boolean(root.FinancialReportContext?.raw?.()?.symbol===before)};
  let marketSwitched=false,financialAvailable=false;
  if(root.FinancialMarket?.select){
@@ -38,6 +52,8 @@ async function prepare(question){
  return{requestedSymbol,beforeSymbol:before,activeSymbol:requestedSymbol,switched:true,status:'ok',marketSwitched,financialAvailable};
 }
 function classify(question){
+ const policy=root.FinQueryQuestionPolicy?.route?.(question,root.FinQueryKnowledge?.search?.(question,12)||[]);
+ if(policy){const convert={multiConcept:'concept',multiMetric:'financial',metric:'financial',news:'news',forecast:'forecast',unknown:'general'};return convert[policy]||policy;}
  const s=norm(question);
  if(/la gi|nghia la gi|cong thuc|cach tinh|do cai gi|the hien gi/.test(s))return'concept';
  if(/phan tich sau|phan tich chuyen sau|phan tich toan dien|ho so nghien cuu|danh gia tong the|tong hop|deep dive/.test(s))return'memo';
@@ -55,8 +71,8 @@ function plan(question){
  if(['financial','risk','compare','memo','general','concept'].includes(intent))tools.add('financial');
  if(['movement','technical','memo'].includes(intent))tools.add('scanner');
  if(['technical','memo'].includes(intent))tools.add('strategy');
- if(['movement','financial','risk','memo','general'].includes(intent))tools.add('insights');
- if(['movement','memo','general'].includes(intent))tools.add('news');
+ if(['movement','financial','risk','memo','general','news'].includes(intent))tools.add('insights');
+ if(['movement','memo','general','news'].includes(intent))tools.add('news');
  if(['macro','movement','memo'].includes(intent))tools.add('macro');
  const s=norm(question);
  if(/co ban|tai chinh|doanh thu|loi nhuan|dong tien|roe|roa/.test(s))tools.add('financial');
@@ -165,5 +181,5 @@ async function run(question,options={}){
  return lastRun;
 }
 function status(){return{version:VERSION,tools:Object.keys(TOOL_REGISTRY),lastRun:lastRun?.audit||null};}
-root.FinResearchAgent={version:VERSION,run,prepare,resolveTargetSymbol,plan,classify,status,lastRun:()=>lastRun,tools:()=>Object.keys(TOOL_REGISTRY)};
+root.FinResearchAgent={version:VERSION,run,prepare,resolveTargetSymbol,resolveTargetSymbols,plan,classify,status,lastRun:()=>lastRun,tools:()=>Object.keys(TOOL_REGISTRY)};
 })(typeof window==='undefined'?globalThis:window);
