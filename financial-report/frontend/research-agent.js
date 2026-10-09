@@ -94,7 +94,7 @@ function financialTool(base,targetSymbol=null){
  const raw=root.FinancialReportContext?.raw?.()||null;if(!raw)return null;
  const expected=String(targetSymbol||activeSymbol()||'').toUpperCase(),actual=String(raw?.symbol||'').toUpperCase();
  if(expected&&actual&&expected!==actual)return null;
- const compact=data=>{if(!data)return null;const ps=(data.periods||data.years||[]).map(String).slice(-8);const rs=(data.sections||[]).flatMap(s=>(s.rows||[]).slice(0,8).map(r=>({label:r.label,unit:r.unit||'',section:s.id||'',values:Object.fromEntries(ps.filter(p=>finite(r.values?.[p])!==null)).map(p=>[p,finite(r.values[p])]))}))).slice(0,30);return{periods:ps,updatedAt:data.updatedAt||null,checkedAt:data.checkedAt||null,rows:rs};};
+ const compact=data=>{if(!data)return null;const ps=(data.periods||data.years||[]).map(String).slice(-8);const rs=(data.sections||[]).flatMap(s=>(s.rows||[]).slice(0,8).map(r=>({label:r.label,unit:r.unit||'',section:s.id||'',values:Object.fromEntries(ps.filter(p=>finite(r.values?.[p])!==null).map(p=>[p,finite(r.values[p])]))}))).slice(0,30);return{periods:ps,updatedAt:data.updatedAt||null,checkedAt:data.checkedAt||null,rows:rs};};
  return{annual:compact(raw.annual||(!raw.quarterly?raw.data:null)),quarterly:compact(raw.quarterly||null)};
 }
 function scannerTool(){
