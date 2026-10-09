@@ -1,14 +1,14 @@
 {
-  "checkedAt": "2026-10-08T13:45:36+00:00",
+  "checkedAt": "2026-10-09T06:20:02+00:00",
   "sourcesTotal": 3,
   "sourcesReachable": 3,
-  "eventsDiscoveredThisRun": 3801,
-  "storedEvents": 4831,
+  "eventsDiscoveredThisRun": 3837,
+  "storedEvents": 4839,
   "sources": [
     {
       "code": "VSDC",
       "name": "Tổng công ty Lưu ký và Bù trừ Chứng khoán Việt Nam",
-      "checkedAt": "2026-10-08T13:45:13+00:00",
+      "checkedAt": "2026-10-09T06:19:35+00:00",
       "kind": "health",
       "status": "reachable",
       "parsed": 0,
@@ -18,7 +18,7 @@
     {
       "code": "HOSE",
       "name": "Sở GDCK TP.HCM",
-      "checkedAt": "2026-10-08T13:45:15+00:00",
+      "checkedAt": "2026-10-09T06:19:37+00:00",
       "kind": "health",
       "status": "reachable",
       "parsed": 0,
@@ -28,12 +28,11 @@
     {
       "code": "24HMONEY_EVENTS",
       "name": "24HMoney - sự kiện theo mã",
-      "checkedAt": "2026-10-08T13:45:17+00:00",
+      "checkedAt": "2026-10-09T06:19:40+00:00",
       "kind": "24hmoney_events",
       "status": "ok",
-      "parsed": 3801,
-      "reachable": 99,
-      "errors": 1
+      "parsed": 3837,
+      "reachable": 100
     }
   ]
 }

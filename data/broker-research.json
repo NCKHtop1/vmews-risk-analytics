@@ -1,8 +1,35 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-08T13:45:12+00:00",
+  "updatedAt": "2026-10-09T06:19:35+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "ACBS-CTD-2026-10-09-180b4b2f",
+      "symbol": "CTD",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-10-09",
+      "title": "Khuyến nghị gần nhất CTD",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "MUA",
+      "targetPrice": 87500,
+      "summary": "ACBS có báo cáo CTD ngày 09/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "YUANTA-BSR-2026-10-08-5484d54a",
+      "symbol": "BSR",
+      "broker": "YUANTA",
+      "brokerName": "YSVN",
+      "publishedAt": "2026-10-08",
+      "title": "BSR: Khuyến nghị NẮM GIỮ - KHẢ QUAN với giá mục tiêu 32,700 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/bsr-khuyen-nghi-nam-giu-kha-quan-voi-gia-muc-tieu-32-700-dong-co-phieu-rpid6132.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "NẮM GIỮ",
+      "targetPrice": 32700,
+      "summary": "YUANTA có báo cáo BSR ngày 08/10/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 32.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "MBS-VPL-2026-10-08-96335a3c",
       "symbol": "VPL",
@@ -13,6 +40,32 @@
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/vpl-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026/",
       "summary": "MBS công bố báo cáo ngày 08/10/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "BSC-VIC-2026-10-08-1d2efe0f",
+      "symbol": "VIC",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-08",
+      "title": "VIC: Báo cáo cập nhật 08/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vic-bao-cao-cap-nhat-08-10-2026-rpid6131.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BSC có báo cáo VIC ngày 08/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BSC-DCM-2026-10-08-0c9a7bde",
+      "symbol": "DCM",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-08",
+      "title": "DCM: Khuyến nghị NẮM GIỮ với giá mục tiêu 33,800 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dcm-khuyen-nghi-nam-giu-voi-gia-muc-tieu-33-800-dong-co-phieu-rpid6130.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "NẮM GIỮ",
+      "targetPrice": 33800,
+      "summary": "BSC có báo cáo DCM ngày 08/10/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 33.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VNDIRECT-BAF-2026-10-07-3f43207c",
@@ -27,6 +80,32 @@
       "recommendation": "TRUNG LẬP",
       "targetPrice": 35600,
       "summary": "VNDIRECT có báo cáo BAF ngày 07/10/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 35.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VCBS-GVR-2026-10-07-9e7be460",
+      "symbol": "GVR",
+      "broker": "VCBS",
+      "brokerName": "VCBS",
+      "publishedAt": "2026-10-07",
+      "title": "GVR: Khuyến nghị MUA với giá mục tiêu 39,288 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gvr-khuyen-nghi-mua-voi-gia-muc-tieu-39-288-dong-co-phieu-rpid6133.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 39288,
+      "summary": "VCBS có báo cáo GVR ngày 07/10/2026 với khuyến nghị MUA, giá mục tiêu 39.288 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-VPL-2026-10-07-70eebd88",
+      "symbol": "VPL",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-07",
+      "title": "VPL: Báo cáo cập nhật 07/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpl-bao-cao-cap-nhat-07-10-2026-rpid6135.html",
+      "dataProvider": "24HMONEY",
+      "summary": "MBS có báo cáo VPL ngày 07/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-MCH-2026-10-06-4810aee8",
@@ -121,6 +200,18 @@
       "summary": "TCBS có báo cáo VCK ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "TCBS-VCI-2026-10-06-001b1c7b",
+      "symbol": "VCI",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Thanh khoản thị trường và cổ phiếu chứng khoán: Định giá đang đi trước dòng tiền — khi nào thanh khoản xác nhận điểm mua? VCK SSI VND VPX VIX VCI SHS HCM MBS BSI CTS VDS #Thanh khoản thị trường #Định giá #Ngành chứn",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo VCI ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
       "id": "TCBS-NKG-2026-10-06-001b1c7b",
       "symbol": "NKG",
       "broker": "TCBS",
@@ -131,6 +222,18 @@
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "recommendation": "MUA",
       "summary": "TCBS có báo cáo NKG ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HSG-2026-10-06-001b1c7b",
+      "symbol": "HSG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Giao dịch cổ đông nội bộ ngành Thép: Lãnh đạo mua, lãnh đạo bán — chiều nào đáng tin hơn? Thống kê 151 sự kiện tại 16 doanh nghiệp, 01/2018–10/2026 HPG HSG NKG #Giao dịch nội bộ #Ngành thép Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo HSG ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-HPG-2026-10-06-001b1c7b",
