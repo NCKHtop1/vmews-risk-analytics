@@ -2,6 +2,7 @@
 // Shared, deterministic question policy for both online and local fallback.
 const STOP=new Set(('la gi nghia la gi dinh nghia kh per ten em anh chi ban minh toi chung ta cho biet giai thich phan tich danh gia tinh hinh bao nhieu hien tai hom nay moi nhat gan day cua ve voi theo va tai sao vi sao nhu the nao may duoc ko khong o trong luc khi gia tri so lieu chi so cua doanh nghiep cong ty co phieu ma chung khoan').split(' '));
 const TERMS_STOP=new Set([...STOP,'tin','tuc','su','kien','moi','cap','nhat','thi','truong','thong','bao','thong','tin','lien','quan','ngay','nay','du','bao','nam','quy']);
+for(const term of ['doanh','tai','gia','tien','thu','von','no','quy','co'])TERMS_STOP.delete(term);
 function norm(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9+]+/g,' ').trim();}
 function has(s,word){return (' '+s+' ').includes(' '+norm(word)+' ');}
 function periodInfo(q){
@@ -23,6 +24,7 @@ function route(question,ranked=[]){
  const movement=/\bgia\b.*\b(hom nay|hien tai|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b/.test(s);
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
  const time=periodInfo(question);
+ if(/\bkhong (?:muon )?hoi ve\b|\bkhong can (?:giai thich|tra loi)\b/.test(s)&&!/(\bma\b|\bnhung\b)/.test(s))return'unknown';
  // A compound question must not silently answer only one of several named concepts.
  if(strong.length>=2&&comparison&&periodInfo(question).hasPeriod)return'multiMetric';
  if(strong.length>=2&&(definition||comparison))return'multiConcept';
