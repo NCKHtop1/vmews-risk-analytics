@@ -29,6 +29,7 @@ jobs:
       - name: Execute exact 50 real production cases
         env:
           FINQUERY_QA_URL: https://finquery.info.vn/financial-report/
+          FINQUERY_QA_RESEARCH_AI_OVERRIDE: ${{ github.event_name == 'pull_request' && 'financial-report/frontend/research-ai.js' || '' }}
         run: python financial-report/tests/finquery_qa50_live.py
       - name: Upload screenshots and status matrix
         if: always()
