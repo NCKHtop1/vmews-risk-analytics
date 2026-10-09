@@ -1,0 +1,46 @@
+name: FinQuery public price availability guard
+on:
+  workflow_dispatch:
+  schedule:
+    # Check both public delivery paths during and shortly after Vietnam sessions.
+    - cron: '5,20,35,50 2-8 * * 1-5'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: finquery-public-price-availability
+  cancel-in-progress: true
+
+jobs:
+  public-price:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify quote guard regression tests
+        run: python -m unittest discover -s financial-report/tests -p test_public_price_guard.py
+      - name: Probe source, Pages and custom-domain quote availability
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          python financial-report/scripts/guard_public_quotes.py
+          code=$?
+          set -e
+          if [ "$code" -eq 21 ]; then
+            echo "::warning::Pages quote delivery lags source. Attempting self-heal via Pages dispatch."
+            active=$(gh run list --workflow pages.yml --limit 8 --json status --jq 'any(.[]; .status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")' 2>/dev/null || echo false)
+            if [ "$active" != "true" ]; then
+              gh workflow run pages.yml --ref main
+              echo "::notice::Pages recovery triggered; this run remains FAILED until a later probe verifies data."
+            else
+              echo "::warning::Pages deployment already active; not dispatching duplicate."
+            fi
+          fi
+          exit "$code"
