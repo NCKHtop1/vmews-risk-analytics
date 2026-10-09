@@ -35,7 +35,8 @@ jobs:
         run: python financial-report/scripts/smoke_custom_domain.py
 
   browser:
-    if: github.event_name != 'workflow_run'
+    # Browser content checks must follow a successfully deployed Pages revision.
+    if: github.event_name != 'push' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     needs: domain
     runs-on: ubuntu-latest
     timeout-minutes: 15
