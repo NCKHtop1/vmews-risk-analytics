@@ -18,7 +18,7 @@ async function loadMarketDashboard(fetch = async () => { throw new Error("Unexpe
   const window = { dispatchEvent(event) { emitted.push(event); } };
   class BrowserEvent { constructor(type, options) { this.type = type; this.detail = options?.detail; } }
   const location = { pathname: "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html", hostname: "cdn.githubraw.com", search: "" };
-  vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, fetch, console }));
+  vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, fetch, console, AbortController, setTimeout, clearTimeout }));
   return { window, emitted };
 }
 
