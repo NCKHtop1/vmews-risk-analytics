@@ -428,6 +428,8 @@ function forecastHTML(question){
 function technicalHTML(question,m){
  const priceCheck=QP?.priceQuality?.(m.quote,state.symbol,question);if(priceCheck&&!priceCheck.usable)return prose([priceCheck.reason+'. Không thể dùng chỉ báo như tín hiệu kỹ thuật trong phiên hiện tại.']);
  const concept=K.find?.(question),v=concept?technicalMetric(concept,m):null,asOf=m.technical?.sourceTime||m.quote?.sourceTime||'';
+ const indicators=(K.search?.(question,12)||[]).filter(x=>x.score>=25&&['rsi','macd','bollinger','atr','adx','stochastic','supertrend','mfi','cmf','obv','sma','ema','vwap','cci','roc','willr'].includes(x.c.id));
+ if(indicators.length>1){const readings=indicators.slice(0,5).map(x=>({c:x.c,v:technicalMetric(x.c,m)})).filter(x=>x.v).map(x=>x.c.title+' = '+num(x.v.value)+' ('+(x.v.period||'khung hiện tại')+')');return readings.length?prose([...readings,'Nguồn snapshot: '+String(asOf||'không xác định')+'.']):prose(['Chưa có giá trị hợp lệ cho các chỉ báo kỹ thuật được hỏi.']);}
  if(v)return prose([concept.title+' của '+state.symbol+' ('+(v.period||'khung đang xem')+') = '+num(v.value)+'. Dữ liệu kỹ thuật gốc: '+String(asOf||'không rõ thời điểm')+'.']);
  if(m.technical?.snapshot)return prose(['Trạng thái kỹ thuật của '+state.symbol+': '+m.technical.snapshot.title+'. '+m.technical.snapshot.detail,'Nguồn snapshot: '+String(asOf||'chưa xác định')+'.']);
  return prose(['Chưa có snapshot kỹ thuật hợp lệ cho mã được hỏi.']);
