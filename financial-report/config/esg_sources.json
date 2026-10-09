@@ -894,5 +894,29 @@
       "pattern": "best practice|aligned with|Second Party Opinion|Ý kiến của Bên Thứ Hai",
       "context_pattern": "VIS Rating|VISRating"
     }
-  ]
+  ],
+  "companies": {
+    "CII": {
+      "name": "CII",
+      "aliases": [
+        "CII",
+        "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật TP.HCM"
+      ],
+      "seed_urls": [
+        "https://cii.com.vn/ket-qua-san-xuat-kinh-doanh/bao-cao-thuong-nien"
+      ]
+    },
+    "NVL": {
+      "name": "Novaland",
+      "aliases": [
+        "NVL",
+        "Novaland",
+        "No Va"
+      ],
+      "seed_urls": [
+        "https://www.novaland.com.vn/bao-cao-thuong-nien-2016",
+        "https://www.novaland.com.vn/phat-trien-ben-vung/bao-cao-phat-trien-ben-vung"
+      ]
+    }
+  }
 }
