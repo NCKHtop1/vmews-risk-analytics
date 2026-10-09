@@ -138,5 +138,5 @@ test('Dolphin must hide launcher and bound Gemini wait time',()=>{
  const js=fs.readFileSync(path.join(frontend,'research-ai.js'),'utf8');
  assert.match(css,/body\.dolphin-modal-open \.ai-fab\{display:none!important/);
  assert.match(js,/maxWaitMs=state\.mode==='deep'\?90000:45000/);
- assert.match(js,/Promise\.race\(\[callLLM\(q\),deadline\]\)/);
+ assert.match(js,/Promise\.race\(\[callLLM\(q,state\.currentController\),deadline\]\)/);
 });
