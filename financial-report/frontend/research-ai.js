@@ -462,13 +462,19 @@ function newsHTML(question,m){
  const s=norm(question),global=/\btin thi truong\b|\btoan thi truong\b|\bvi mo\b/.test(s),items=global?m.marketNews||[]:m.news||[];
  const found=QP?.selectNews?.(question,items,{symbol:state.symbol,companyOnly:!global,limit:6})||[];
  if(!found.length)return prose(['Chưa có tin '+(global?'thị trường':'được xác nhận thuộc '+state.symbol)+' phù hợp câu hỏi và bộ dữ liệu đang tải.']);
- return prose(['Các tin phù hợp nhất trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
+ const wantsRecent=/\bmoi nhat\b|\bhom nay\b|\btin moi\b|\b24 gio\b|\bgan day\b/.test(s);
+ const checkedAt=m.newsCheckedAt||null,checkedMs=Date.parse(checkedAt||''),age=Number.isFinite(checkedMs)?(Date.now()-checkedMs)/60000:Infinity;
+ const disclaimer=wantsRecent&&(!Number.isFinite(age)||age>30)?'Dữ liệu tin chưa có mốc cập nhật hợp lệ trong 30 phút gần đây. Dưới đây chỉ là những tin lưu gần nhất theo nguồn và ngày đăng, KHÔNG khẳng định là tin mới nhất.':null;
+ return prose([disclaimer,'Các tin phù hợp nhất trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
 }
 function forecastHTML(question){
+ const target=/^[A-Z]{3,4}$/.test(state.symbol)?state.symbol:null;
+ const page=new URL('../forecast-final.html',location.href);if(target)page.searchParams.set('symbol',target);
+ const link='<p><a href="'+esc(page.href)+'" target="_blank" rel="noopener noreferrer">Mở Forecast Core để kiểm tra phiên dữ liệu, chân trời và điều kiện dự báo</a></p>';
  const info=window.FinForecast?.context?.()||null;
  const summary=info?.summary||null;
- if(!summary||info?.status==='stale'||info?.eligible===false)return prose(['Không có dự báo được xác minh đúng mã, đúng ngày và đúng chân trời trong ngữ cảnh Dolphin hiện tại. Vui lòng mở Forecast Core để kiểm tra trạng thái dữ liệu. FinQuery không tự suy diễn giá mục tiêu hoặc xác suất.']);
- return prose(['Dữ liệu dự báo phải được kiểm tra trên Forecast Core theo phiên gốc và chân trời T+3/T+4/T+5. Không xuất ra con số nếu chưa đối chiếu được nguồn gốc của dự báo.']);
+ if(!summary||info?.status==='stale'||info?.eligible===false)return prose(['Không có dự báo được xác minh đúng mã, đúng ngày và đúng chân trời trong ngữ cảnh Dolphin hiện tại. FinQuery không tự suy diễn giá mục tiêu hoặc xác suất.'])+link;
+ return prose(['Dữ liệu dự báo phải được kiểm tra trên Forecast Core theo phiên gốc và chân trời T+3/T+4/T+5. Không xuất ra con số nếu chưa đối chiếu được nguồn gốc của dự báo.'])+link;
 }
 function technicalHTML(question,m){
  const priceCheck=QP?.priceQuality?.(m.quote,state.symbol,question);if(priceCheck&&!priceCheck.usable)return prose([priceCheck.reason+'. Không thể dùng chỉ báo như tín hiệu kỹ thuật trong phiên hiện tại.']);
