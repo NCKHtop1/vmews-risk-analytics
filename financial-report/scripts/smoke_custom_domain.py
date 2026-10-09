@@ -59,17 +59,6 @@ def parse_quote(body, final, headers):
 def main():
     try:
         print("DOMAIN_SMOKE_CHECK", datetime.now(timezone.utc).isoformat())
-        # Print all route results even when the first URL fails; this helps locate
-        # routing and upstream failures without relying on a single HTTP status.
-        for path in ["/", "/financial-report/", "/financial-report/index.html",
-                     "/financial-report/market/quotes.json", "/financial-report/market.js",
-                     "/forecast-final.html", "/status.txt"]:
-            try:
-                status, final, headers, body = read(DOMAIN+path+"?diagnostic=20261009")
-                print("PROBE",path,status,final,len(body),
-                      headers.get("Content-Type"),headers.get("X-Vercel-Id"))
-            except Exception as exc:
-                print("PROBE_FAIL",path,repr(exc))
         # Route should retain canonical host after one or two same-origin redirects.
         check("home",DOMAIN+"/",html_contains("FinQuery"))
         check("app",DOMAIN+"/financial-report/",html_contains("FinQuery"))
