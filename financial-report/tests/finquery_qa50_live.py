@@ -9,6 +9,10 @@ from openpyxl.styles import Font,PatternFill,Alignment
 
 BASE=os.getenv('FINQUERY_QA_URL','https://finquery.info.vn/financial-report/')
 OUT=Path('qa50_results');OUT.mkdir(exist_ok=True)
+PREVIEW_JS_PATH=os.getenv('FINQUERY_QA_RESEARCH_AI_OVERRIDE','').strip()
+PREVIEW_JS=Path(PREVIEW_JS_PATH).read_text(encoding='utf-8') if PREVIEW_JS_PATH else ''
+QA_MODE='PR_SOURCE_ON_LIVE_SHELL' if PREVIEW_JS else 'LIVE_PRODUCTION'
+if PREVIEW_JS:assert 'MAX_GEMINI_CALLS_PER_QUESTION' in PREVIEW_JS and 'window.FinQueryAI=' in PREVIEW_JS, 'Preview source missing Dolphin'
 DATA="""\
 01|FPT|local|tài sản ngắn hạn là gì?
 02|FPT|local|TOI là gì?
@@ -170,8 +174,29 @@ def special(c,page,browser):
   closer(page)
   return '3 mobile rotations, offline reload rejected and online recovery worked'
  return 'not implemented'
+def new_context(browser,**kwargs):
+ ctx=browser.new_context(**kwargs)
+ if PREVIEW_JS:
+  pattern=re.compile(r'^'+re.escape(BASE.rstrip('/'))+r'/(?:index\.html)?(?:\?.*)?$')
+  scripts=re.compile(r'(<script\b[^>]*>)(.*?)(</script>)',re.I|re.S)
+  def override_document(route):
+   response=route.fetch(timeout=45000)
+   if not response.ok:raise AssertionError('Production HTML not available: '+str(response.status))
+   document=response.text()
+   seen=[0]
+   def replace(match):
+    if 'const DOLPHIN_VERSION=' in match.group(2) and 'window.FinQueryAI=' in match.group(2):
+     seen[0]+=1
+     return match.group(1)+PREVIEW_JS+match.group(3)
+    return match.group(0)
+   patched=scripts.sub(replace,document)
+   need(seen[0]==1,'Expected one inline Dolphin script for PR preview; got '+str(seen[0]))
+   route.fulfill(response=response,body=patched)
+  ctx.route(pattern,override_document)
+ return ctx
+
 def prepare_mock(browser,sym,kind):
- ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,locale='vi-VN')
+ ctx=new_context(browser,viewport={'width':390,'height':844},is_mobile=True,has_touch=True,locale='vi-VN')
  page=ctx.new_page();events={'generate':0,'retries':0}
  def api(route):
   url=route.request.url
@@ -252,7 +277,7 @@ def main():
      else:
       sym=c['symbol'];mobile_mode=c['kind'] in ['switch','modal','mobile','responsive'];key=(sym,mobile_mode)
       if key not in pages:
-       ctx=browser.new_context(viewport={'width':390 if mobile_mode else 1440,'height':844 if mobile_mode else 950},is_mobile=mobile_mode,has_touch=mobile_mode,locale='vi-VN')
+       ctx=new_context(browser,viewport={'width':390 if mobile_mode else 1440,'height':844 if mobile_mode else 950},is_mobile=mobile_mode,has_touch=mobile_mode,locale='vi-VN')
        page=ctx.new_page();page.goto(BASE+'?symbol='+sym+'&mode=year#market',wait_until='domcontentloaded',timeout=45000);wait(page)
        page.wait_for_timeout(1200);pages[key]=(ctx,page)
       else:_,page=pages[key]
@@ -274,7 +299,7 @@ def main():
     except Exception:pass
    browser.close()
  counts={s:sum(x['status']==s for x in out) for s in ['PASS','FAIL','BLOCKED']}
- (OUT/'results.json').write_text(json.dumps({'counts':counts,'url':BASE,'cases':out},ensure_ascii=False,indent=2),encoding='utf-8')
+ (OUT/'results.json').write_text(json.dumps({'counts':counts,'url':BASE,'mode':QA_MODE,'cases':out},ensure_ascii=False,indent=2),encoding='utf-8')
  wb=Workbook();ws=wb.active;ws.title="50 test cases";ws.append(['Mã','Mã cổ phiếu','Loại','Câu hỏi / thao tác','Trạng thái','Kết quả thực tế','Thời gian (ms)','Bằng chứng'])
  for r in out:ws.append([r['id'],r['symbol'],r['kind'],r['question'],r['status'],r['actual'],r['ms'],r.get('screenshot','')])
  ws.freeze_panes='A2';ws.auto_filter.ref=f'A1:H{len(out)+1}'
