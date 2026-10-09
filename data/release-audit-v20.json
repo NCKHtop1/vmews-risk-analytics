@@ -6,17 +6,17 @@
     "symbols": 365,
     "forecasts": 1825,
     "flowRows": 321725,
-    "headlines": 23690,
+    "headlines": 23692,
     "headlineSources": {
       "community-claims": 5,
       "community-watchlist": 179,
       "dashboard-communityWatchlist": 242,
-      "dashboard-decisionNews": 8,
+      "dashboard-decisionNews": 9,
       "dashboard-decisionRecent": 4209,
       "dashboard-recent": 4209,
       "fireant": 1248,
       "research-news": 1235,
-      "research-news-v10": 12355
+      "research-news-v10": 12356
     }
   },
   "calendar": {
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "PASS",
       "sessionDate": "2026-10-09",
-      "observedAt": "2026-10-09T15:44:05+07:00",
+      "observedAt": "2026-10-09T16:02:42+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.960526,
@@ -183,7 +183,7 @@
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.02331139310491337,
+      "executableMAESkill": 0.023314018312171725,
       "magnitudeMAESkill": 0.0021407709861749336,
       "directionalAccuracy": 0.5650882731205426,
       "directionStatus": "PASS",
@@ -200,18 +200,18 @@
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0024023394155644733,
+      "meanNetRealizedReturn": 0.002402339415564473,
       "positiveChronologicalFolds": 3
     },
     "5": {
       "priceStatus": "PASS",
       "executableMAESkill": 0.023842141130841488,
-      "magnitudeMAESkill": 0.011833516432867897,
+      "magnitudeMAESkill": 0.01183351643286823,
       "directionalAccuracy": 0.5767988981960218,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0032643253386581803,
+      "meanNetRealizedReturn": 0.0032643253386581794,
       "positiveChronologicalFolds": 3
     }
   },
