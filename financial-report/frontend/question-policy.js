@@ -32,11 +32,13 @@ function route(question,ranked=[]){
  const technical=/\bky thuat\b|\brsi\b|\bmacd\b|\bbollinger\b|\batr\b|\badx\b|\bsupertrend\b|\bvwap\b|\bobv\b|\bmfi\b|\bcmf\b|\bstochastic\b|\bstoch\b|\bcci\b|\broc\b|\bwillr\b|\bchi bao\b|\bscanner\b|\bchien luoc\b|\bquet ma\b/.test(s);
  const financial=/\bbctc\b|\btai chinh\b|\bdoanh thu\b|\bloi nhuan\b|\bdong tien\b|\bvon chu\b|\btai san\b|\bno phai tra\b|\bno xau\b|\bphai thu\b|\bton kho\b|\bthanh khoan\b|\bdu no\b|\bbao cao tai chinh\b/.test(s);
  const movement=/\bgia\b.*\b(bao nhieu|hom nay|hien tai|moi nhat|bay gio|luc nay|hom qua|ngay mai|ngay kia|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b|\bgia\b.*\bngay\s*[0-9]{1,2}\b/.test(s);
+ const advice=/\bnen mua\b|\bnen ban\b|\bmua hay ban\b|\bco nen (?:mua|ban)\b|\bdiem (?:mua|ban)\b|\bkhuyen nghi (?:mua|ban)\b|\bvao hang\b|\bthoat hang\b/.test(s);
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
  const time=periodInfo(question);
  if(/\bkhong (?:muon )?hoi ve\b|\bkhong can (?:giai thich|tra loi)\b/.test(s)&&!/(\bma\b|\bnhung\b)/.test(s))return'unknown';
  // A request for in-depth research outranks an incidental risk or indicator mention.
  if(deep)return'memo';
+ if(advice)return'advice';
  // A compound question must not silently answer only one of several named concepts.
  if(strong.length>=2&&comparison&&periodInfo(question).hasPeriod)return'multiMetric';
  if(strong.length>=2&&(definition||comparison))return'multiConcept';

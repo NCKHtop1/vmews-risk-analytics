@@ -506,3 +506,6 @@ body.strategy-lab-view .strategy-page{display:block}
 .news-viewpoint-chip b{font-size:9px;color:#40516d}
 .news-viewpoint-chip em{font-style:normal;font-size:8px;color:#7d8899;line-height:1.35}
 @media(max-width:760px){.news-viewpoint-strip{grid-template-columns:1fr}.news-summary-head{align-items:flex-start}.news-brief-list a span{font-size:10px}}
+
+/* Dolphin modal: the floating launcher must never obscure Send / Stop on mobile. */
+.ai-fab[hidden],body.dolphin-modal-open .ai-fab{display:none!important;pointer-events:none!important}

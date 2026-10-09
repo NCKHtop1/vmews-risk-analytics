@@ -495,6 +495,14 @@ function marketRiskHTML(){
  const level=d.overall?.level?.label||'chưa phân loại';
  return prose(['Rủi ro thị trường trong snapshot '+String(sourceTime||'không xác định')+': '+num(score)+'/100; mức '+level+'. Đây là điểm giám sát theo mô hình, không phải xác suất thị trường giảm hay khuyến nghị giao dịch.']);
 }
+function adviceHTML(a,q,m){
+ const quality=QP?.priceQuality?.(m.quote,state.symbol,'Giá '+state.symbol+' hôm nay')||{usable:false};
+ const notes=['Dolphin không tự đưa ra lệnh MUA hoặc BÁN. Để cân nhắc '+state.symbol+', cần xác nhận khẩu vị rủi ro, thời gian nắm giữ và chiến lược quản trị vị thế.'];
+ if(quality.usable&&Number.isFinite(m.quote?.changePct))notes.push('Phiên được ghi nhận: '+state.symbol+' biến động '+pct(m.quote.changePct)+' so với tham chiếu; thời điểm giá '+String(m.quote.sourceTime||'chưa rõ')+'.');
+ else notes.push('Giá hiện tại chưa được xác minh đúng ngày/phiên; không suy ra điểm mua/bán từ snapshot cũ.');
+ notes.push('Cần đối chiếu thêm xu hướng giá/khối lượng, kết quả kinh doanh, định giá và rủi ro mất vốn trước quyết định.');
+ return prose(notes)+section('Rủi ro cần kiểm tra',riskHTML(a,q));
+}
 function classify(q){
  return QP?.route?.(q,K.search?.(q,12)||[])||'unknown';
 }
@@ -502,13 +510,17 @@ function analyze(question){
  const requested=window.FinResearchAgent?.resolveTargetSymbols?.(question)||[];
  if(requested.length>1)return{type:'multiSymbol',html:prose(['Câu hỏi yêu cầu nhiều mã ('+requested.join(', ')+'). Chế độ dữ liệu cục bộ hiện không tải BCTC độc lập cho tất cả mã cùng lúc; không thể so sánh chính xác khi thiếu dữ liệu.'])};
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
+ const explicit=String(question||'').match(/(?:mã|ma|ticker|symbol)\s+([A-Z]{3,5})\b/i);
+ const typedTicker=explicit?.[1]||'',knownTicker=window.FinResearchAgent?.resolveTargetSymbols?.(typedTicker)||[];
+ if(typedTicker&&typedTicker===typedTicker.toUpperCase()&&!knownTicker.includes(typedTicker)&&typedTicker!==state.symbol)
+  return{type,html:prose(['Không tìm thấy mã '+typedTicker+' trong danh mục đã xác nhận của FinQuery. Không sử dụng giá '+state.symbol+' thay cho mã không xác định.'])};
  const financialSymbol=String(r?.symbol||'').toUpperCase();
  if(financialSymbol&&state.symbol&&financialSymbol!==state.symbol&&['financial','metric','multiMetric','memo','risk','compare'].includes(type))return{type,html:prose(['BCTC đang tải thuộc mã '+financialSymbol+', không phải '+state.symbol+'. FinQuery tạm dừng phản hồi số liệu để tránh ghép nhầm doanh nghiệp.'])};
  if(requested.length===1&&requested[0]!==state.symbol)return{type,html:prose(['Dữ liệu '+requested[0]+' chưa được đồng bộ với mã đang hiển thị ('+state.symbol+'). FinQuery không dùng số liệu của mã khác để trả lời.'])};
  const validQuote=QP?.priceQuality?.(m.quote,state.symbol,question);
  if(type==='movement'&&validQuote&&!validQuote.usable)return{type,html:prose([validQuote.reason+'. Hệ thống không dùng giá sai mã hoặc phiên cũ để trả lời câu hỏi về phiên hiện tại.'])};
  const ctx={quote:validQuote?.usable===false?null:m.quote||null,driver:m.driver||null,technical:m.technical||null,scanner:m.scanner?.current||null,news:m.news||[],marketNews:m.marketNews||[]};
- const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='multiConcept'?multiConceptHTML(question):type==='metric'||type==='multiMetric'?(K.find?.(question)&&['rsi','macd','bollinger','atr','adx','stochastic','supertrend','mfi','cmf','obv','sma','ema','vwap','cci','roc','willr'].includes(K.find(question).id)?technicalHTML(question,m):metricHTML(question,annual,quarterly,m)):type==='news'?newsHTML(question,m):type==='forecast'?forecastHTML(question):type==='technical'?technicalHTML(question,m):type==='financial'?financialHTML(a,q):type==='risk'?(/thi truong|vnindex|vn index|rung lac thi truong/.test(norm(question))?marketRiskHTML():riskHTML(a,q)):type==='compare'?(askTargets(question).length?metricHTML(question,annual,quarterly,m):comparisonHTML(a,q)):type==='memo'?memoHTML(question,a,q,m):prose(['FinQuery chưa xác định được đủ dữ liệu đáng tin cậy để trả lời trực tiếp câu hỏi này bằng chế độ cục bộ. Kết nối Gemini để xử lý câu hỏi mở; không sử dụng số liệu hoặc thuật ngữ khác thay thế.']);
+ const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='multiConcept'?multiConceptHTML(question):type==='metric'||type==='multiMetric'?(K.find?.(question)&&['rsi','macd','bollinger','atr','adx','stochastic','supertrend','mfi','cmf','obv','sma','ema','vwap','cci','roc','willr'].includes(K.find(question).id)?technicalHTML(question,m):metricHTML(question,annual,quarterly,m)):type==='news'?newsHTML(question,m):type==='forecast'?forecastHTML(question):type==='technical'?technicalHTML(question,m):type==='financial'?financialHTML(a,q):type==='advice'?adviceHTML(a,q,m):type==='risk'?(/thi truong|vnindex|vn index|rung lac thi truong/.test(norm(question))?marketRiskHTML():riskHTML(a,q)):type==='compare'?(askTargets(question).length?metricHTML(question,annual,quarterly,m):comparisonHTML(a,q)):type==='memo'?memoHTML(question,a,q,m):prose(['FinQuery chưa xác định được đủ dữ liệu đáng tin cậy để trả lời trực tiếp câu hỏi này bằng chế độ cục bộ. Kết nối Gemini để xử lý câu hỏi mở; không sử dụng số liệu hoặc thuật ngữ khác thay thế.']);
  return{type,html:body||prose(['Chưa có dữ liệu phù hợp để trả lời chính xác; không tự suy diễn.'])};
 }
 
@@ -1041,20 +1053,22 @@ async function ask(question,preferredMode=null){
  const nextMode=preferredMode||inferredQuestionMode(q);if(nextMode)setAIMode(nextMode);
  state.lastQuestion=q;openDrawer();addUser(q);state.busy=true;state.currentController=new AbortController();
  const send=$('research-ai-send');if(send){send.disabled=false;send.textContent='Dừng';send.dataset.busy='1';}const waiting=addThinking();
+ const maxWaitMs=state.mode==='deep'?90000:45000;let deadlineId=null,deadlineExpired=false;
  try{
   if(['concept','multiConcept'].includes(classify(q))){
    const local=analyze(q);waiting?.remove();addAnalysis(local);
    state.history.push({role:'user',content:q},{role:'assistant',content:'Đã trả lời từ định nghĩa được kiểm chứng trong FinQuery.'});
    return;
   }
-  const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
+  const deadline=new Promise((_,reject)=>{deadlineId=setTimeout(()=>{deadlineExpired=true;state.currentController?.abort();const e=new Error('Dolphin đã chờ tối đa '+Math.round(maxWaitMs/1000)+' giây.');e.code='DOLPHIN_TIMEOUT';reject(e);},maxWaitMs);});
+  const payload=await Promise.race([callLLM(q),deadline]);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
-  waiting?.remove();if(error?.name==='AbortError'){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
+  waiting?.remove();if(error?.name==='AbortError'&&!deadlineExpired){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
   const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY',transient=error?.code==='GEMINI_TRANSIENT_EXHAUSTED'||transientGemini(error?.status),detail=String(error?.message||'').slice(0,320);
-  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':transient?'Gemini đang quá tải tạm thời; Dolphin đã tự retry và đổi model nhưng chưa nhận được phản hồi. FinQuery local đang tiếp tục. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · FinQuery local đang tiếp tục. ')+'</div>'+local.html;addAnalysis(local);
+  local.html='<div class="analysis-empty">'+(deadlineExpired?'Đã quá '+Math.round(maxWaitMs/1000)+' giây chờ Gemini. FinQuery chuyển sang phân tích cục bộ và đã hủy yêu cầu AI bị chậm. ':noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':transient?'Gemini đang quá tải tạm thời; Dolphin đã tự retry và đổi model nhưng chưa nhận được phản hồi. FinQuery local đang tiếp tục. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · FinQuery local đang tiếp tục. ')+'</div>'+local.html;addAnalysis(local);
   if(error?.message&&!noKey){if(!transient)state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(transient?'Gemini đang bận · khóa vẫn kết nối · câu hỏi tiếp theo sẽ tự retry/failover.':detail);}
- }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
+ }finally{if(deadlineId!==null)clearTimeout(deadlineId);state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
 window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,ensureGlobalLayer:ensureGlobalAILayer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
