@@ -36,3 +36,23 @@ test('macro research prefers canonical series and carries quality warnings',asyn
  assert.equal(gdp.context.agent.evidence.macro.datasets[0].id,'gdp_growth');
  assert.equal(gdp.context.agent.evidence.macro.datasets[0].qualityStatus,'ok');
 });
+
+test('research agent does not convert missing financial values into zero',async()=>{
+ const orig=ctx.FinancialReportContext.raw;
+ try{
+  activeSymbol='FPT';
+  ctx.FinancialReportContext.raw=()=>({symbol:'FPT',annual:{periods:['2025'],sections:[{id:'balance-sheet',rows:[
+   {label:'Tài sản ngắn hạn',values:{'2025':null}},
+   {label:'Nợ ngắn hạn',values:{'2025':''}},
+   {label:'Tổng tài sản',values:{'2025':1000}},
+   {label:'Vốn chủ sở hữu',values:{}}
+  ]}]}});
+  const run=await ctx.FinResearchAgent.run('Phân tích dữ liệu tài chính FPT năm 2025');
+  const annual=run.context.agent.evidence.financial.annual;
+  const byLabel=label=>annual.rows.find(r=>r.label===label)?.values||{};
+  assert.equal(byLabel('Tài sản ngắn hạn')['2025'],undefined);
+  assert.equal(byLabel('Nợ ngắn hạn')['2025'],undefined);
+  assert.equal(byLabel('Vốn chủ sở hữu')['2025'],undefined);
+  assert.equal(byLabel('Tổng tài sản')['2025'],1000);
+ }finally{ctx.FinancialReportContext.raw=orig;}
+});
