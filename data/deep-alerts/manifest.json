@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-08T17:02:31.523182+00:00",
+  "generatedAt": "2026-10-09T03:09:25.108237+00:00",
   "marketModelDate": "2026-10-08",
   "requested": 66,
-  "reused": 64,
-  "fetched": 2,
+  "reused": 66,
+  "fetched": 0,
   "cached": 66,
   "symbols": {
     "PNJ": {
@@ -21,6 +21,11 @@
       "rows": 1571,
       "modelAsOf": "2026-10-05",
       "source": "Vnstock"
+    },
+    "SHB": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-07",
+      "source": "Yahoo Finance"
     },
     "SHS": {
       "rows": 1800,
@@ -55,6 +60,11 @@
     "C4G": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
+      "source": "Vnstock"
+    },
+    "LHC": {
+      "rows": 1795,
+      "modelAsOf": "2026-10-08",
       "source": "Vnstock"
     },
     "FIR": {
@@ -325,16 +335,6 @@
     "DST": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
-      "source": "Vnstock"
-    },
-    "SHB": {
-      "rows": 2599,
-      "modelAsOf": "2026-10-07",
-      "source": "Yahoo Finance"
-    },
-    "LHC": {
-      "rows": 1795,
-      "modelAsOf": "2026-10-08",
       "source": "Vnstock"
     }
   },
