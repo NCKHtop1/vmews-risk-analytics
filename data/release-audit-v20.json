@@ -6,17 +6,17 @@
     "symbols": 365,
     "forecasts": 1825,
     "flowRows": 321950,
-    "headlines": 23758,
+    "headlines": 23754,
     "headlineSources": {
       "community-claims": 5,
-      "community-watchlist": 179,
+      "community-watchlist": 181,
       "dashboard-communityWatchlist": 243,
-      "dashboard-decisionNews": 53,
+      "dashboard-decisionNews": 55,
       "dashboard-decisionRecent": 4210,
       "dashboard-recent": 4210,
       "fireant": 1254,
       "research-news": 1217,
-      "research-news-v10": 12387
+      "research-news-v10": 12379
     }
   },
   "calendar": {
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "PASS",
       "sessionDate": "2026-10-09",
-      "observedAt": "2026-10-09T22:25:53+07:00",
+      "observedAt": "2026-10-09T23:11:29+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 1.0,
@@ -124,7 +124,7 @@
     "1": {
       "priceStatus": "REVIEW",
       "executableMAESkill": -0.001207721353962743,
-      "magnitudeMAESkill": 0.040855674475539505,
+      "magnitudeMAESkill": 0.04085567447554017,
       "directionalAccuracy": 0.5124751303973759,
       "directionStatus": "PASS",
       "pointDirectionStatus": "REVIEW",
@@ -135,19 +135,19 @@
     "2": {
       "priceStatus": "REVIEW",
       "executableMAESkill": 0.00236827090784264,
-      "magnitudeMAESkill": 0.028125705453876826,
+      "magnitudeMAESkill": 0.028125705453876937,
       "directionalAccuracy": 0.5350702792676161,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0003679771876717687,
+      "meanNetRealizedReturn": 0.0003679771876717689,
       "positiveChronologicalFolds": 3
     },
     "3": {
       "priceStatus": "PASS",
       "executableMAESkill": 0.023931983908763277,
       "magnitudeMAESkill": 0.010885777437577349,
-      "directionalAccuracy": 0.566531688482908,
+      "directionalAccuracy": 0.5665418932598818,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
@@ -156,9 +156,9 @@
     },
     "4": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.020772016393363013,
-      "magnitudeMAESkill": 0.004871677096242144,
-      "directionalAccuracy": 0.5759121404282694,
+      "executableMAESkill": 0.02076476472442612,
+      "magnitudeMAESkill": 0.004871677096242255,
+      "directionalAccuracy": 0.575889164598842,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
@@ -167,8 +167,8 @@
     },
     "5": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.0263293381676315,
-      "magnitudeMAESkill": 0.009696898469618409,
+      "executableMAESkill": 0.026329503849920943,
+      "magnitudeMAESkill": 0.00969689846961852,
       "directionalAccuracy": 0.5833523948945515,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
