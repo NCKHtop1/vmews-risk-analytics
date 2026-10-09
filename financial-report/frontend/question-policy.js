@@ -40,9 +40,9 @@ function route(question,ranked=[]){
  if(strong.length>=2&&amount&&technical)return'technical';
  if(strong.length>=2&&amount)return'multiMetric';
  if(strong.length>=2&&/\bva\b|\bhay\b/.test(s)&&!technical&&!movement)return'multiConcept';
- if(risk&&(amount||/\bdinh luong\b|\bchinh hien tai\b|\bnhung rui ro\b/.test(s)))return'risk';
  if(definition)return'concept';
  if(deep)return'memo';
+ if(risk&&(amount||/\bdinh luong\b|\bchinh hien tai\b|\bnhung rui ro\b/.test(s)))return'risk';
  if(forecast)return'forecast';
  if(news)return'news';
  if(risk)return'risk';
