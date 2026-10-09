@@ -46,7 +46,14 @@ def verify_ready(d):
     status = s["status"].lower()
     if not status:
         return False
-    if "đang tải" in status or "đang đồng bộ forecast core" in status or "đang tải forecast core" in status:
+    # The independent live quote arrives first. Do not mistake "price visible"
+    # for a Forecast Core whose snapshot and decision are actually loaded.
+    if ("đang tải" in status or "đang được tải" in status
+            or "đang đồng bộ forecast core" in status):
+        return False
+    if s["snapshot"].upper() in ("", "ĐANG TẢI"):
+        return False
+    if s["decision"] in ("", "—"):
         return False
     return s
 
