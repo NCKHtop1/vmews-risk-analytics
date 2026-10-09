@@ -73,12 +73,12 @@ def main():
         # Route should retain canonical host after one or two same-origin redirects.
         check("home",DOMAIN+"/",html_contains("FinQuery"))
         check("app",DOMAIN+"/financial-report/",html_contains("FinQuery"))
-        check("market.js",DOMAIN+"/financial-report/market.js",
-              lambda b,u,h:(b"FinMarketData" in b or b"getAlignedBundle" in b) or (_ for _ in ()).throw(AssertionError("market loader missing")))
+        check("market app bundle",DOMAIN+"/financial-report/index.html",
+              lambda b,u,h:(len(b)>100000 and b"FinMarketData" in b and b"FinQuery" in b) or (_ for _ in ()).throw(AssertionError("compiled FinQuery app missing")))
         _, _, _, src_content = read(PAGES+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
         src=json.loads(src_content)
-        _, _, _, dom_content = read(DOMAIN+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
-        dom=parse_quote(dom_content,DOMAIN+"/financial-report/market/quotes.json",{})
+        _, dom_final, _, dom_content = read(DOMAIN+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
+        dom=parse_quote(dom_content,dom_final,{})
         lag=(datetime.fromisoformat(src["latestSourceTime"].replace("Z","+00:00"))-datetime.fromisoformat(dom["latestSourceTime"].replace("Z","+00:00"))).total_seconds()
         assert lag<=1500, f"quote delivery lag {lag:.0f}s"
         print("PASS quotes",dom["coverage"],"/",dom["expected"],"sourceLagSec",max(0,int(lag)))
