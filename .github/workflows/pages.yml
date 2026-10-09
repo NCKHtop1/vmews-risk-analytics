@@ -133,7 +133,10 @@ jobs:
           uday=datetime.fromisoformat(str(market.get('asOf'))[:10]).date()
           assert uday>=minimum,('stale market universe',market.get('asOf'),'minimum',minimum.isoformat())
           macro_day=datetime.fromisoformat(str(macro.get('checkedAt') or macro.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date()
-          assert macro.get('status')=='ok' and macro_day>=qday,('stale macro',macro.get('checkedAt'),qday.isoformat())
+          # Macro is a separately refreshed, lower-frequency dataset. A stale
+          # macro heartbeat must never block valid live prices from reaching Pages.
+          if macro.get('status')!='ok' or macro_day<qday:
+              print('::warning::Macro refresh stale; publishing independently validated quotes. macroAt=',macro.get('checkedAt'),'quoteDate=',qday.isoformat())
           news_health=news_latest.get('sourceHealth') or {}
           assert news_latest.get('status')=='ok' and news_latest.get('selection')=='balanced_vietnam_global_sbv_impact' and 0<len(news_latest.get('items') or [])<=300,('invalid balanced news',news_latest.get('status'),news_latest.get('selection'),len(news_latest.get('items') or []))
           assert int(news_health.get('healthy') or 0)>=3,('news source health too low',news_health)
@@ -428,7 +431,9 @@ jobs:
           assert intraday.get('status')=='ok' and i_success>=i_required,(i_success,i_expected,i_required)
           assert not i_session_expected or i_session_fresh>=i_session_required,(i_session_fresh,i_session_expected,i_session_required)
           macro_day=datetime.fromisoformat(str(macro.get('checkedAt') or macro.get('generatedAt')).replace('Z','+00:00')).astimezone(timezone(timedelta(hours=7))).date().isoformat()
-          assert macro.get('status')=='ok' and macro_day>=source_day,(macro.get('checkedAt'),source_day)
+          # Verify and report the macro health without failing the quote release.
+          if macro.get('status')!='ok' or macro_day<source_day:
+              print('::warning::Macro snapshot stale on Pages; quote, scanner, strategy and risk validation remains strict. macroAt=',macro.get('checkedAt'),'quoteDate=',source_day)
           assert len(e.get('companies') or {})>=18
           cov=f.get('coverage') or {}
           assert int(cov.get('members') or 0)==100 and int(cov.get('annual') or 0)==100 and int(cov.get('quarterly') or 0)==100,cov
