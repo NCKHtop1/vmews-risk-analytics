@@ -107,6 +107,8 @@ jobs:
       - name: Verify strict current-session freshness and exchange calendar
         run: |
           python scripts/forecast_freshness_test.py
+          python scripts/forecast_publication_session_test.py
+          python scripts/forecast_freshness_audit_test.py
           node scripts/forecast_freshness_test.cjs
           python scripts/forecast_release_regression_test.py
           python scripts/run_forecast_v9_deployable_test.py
@@ -173,10 +175,22 @@ jobs:
           from datetime import datetime
           from pathlib import Path
           sys.path.insert(0,'scripts')
-          from vn_exchange_calendar import VN_TZ,latest_completed_session
-          now=datetime.now(VN_TZ); expected=latest_completed_session(now).isoformat()
+          from vn_exchange_calendar import VN_TZ
+          from forecast_publication_session import publication_session_status
+          now=datetime.now(VN_TZ)
           d=json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8'))
-          if str(d.get('asOf'))!=expected: raise SystemExit(f"STALE FORECAST: dashboard asOf={d.get('asOf')} expected completed session={expected}")
+          try:
+              verified=publication_session_status(d.get('asOf'),now)
+          except ValueError as exc:
+              raise SystemExit(str(exc))
+          expected=verified['validatedSession']
+          if verified['staleCore']:
+              print('::warning::A newer HOSE session is pending independent source verification; '
+                    'publishing strictly dated prior EOD backfill only. '
+                    f"validated={expected} expectedNow={verified['expectedSessionNow']} "
+                    'The browser must retain STALE_CORE status until the current model passes all gates.')
+          else:
+              print('Verified current completed session',expected)
           market=json.loads(Path('data/forecast-market-v13.json').read_text(encoding='utf-8'))
           sources=market.get('sources') or {}
           bridge=sources.get('postCloseBridge') or {}
