@@ -47,6 +47,8 @@ function goodFetch(url) {
   assert(src.includes("y:y(CHART_EXECUTABLE_CLOSE(item))"), "chart history points must use executable close");
   assert(src.includes("UNUSED_IMPOSSIBLE_TOKEN") === false);
   assert(src.includes("Thử tải lại"), "bounded-error UI must allow retry");
+  assert(!src.includes("await priceFetch;await renderSymbol(q)"), "live quote probe must not block verified Forecast Core rendering");
+  assert(src.includes("void priceFetch.then("), "late independently verified prices must refresh Forecast UI");
   assert(leader.includes("controller.abort()"), "session overlay must have abort timeout");
 
   const {context,state} = makeContext();
