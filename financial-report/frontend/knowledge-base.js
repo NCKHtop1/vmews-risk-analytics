@@ -18,6 +18,9 @@ const C=[
 {id:'liabilitiesAssets',title:'Nợ phải trả / Tổng tài sản',aliases:['no tren tai san','liabilities assets','no phai tra tren tong tai san'],definition:'Tỷ lệ này cho biết bao nhiêu phần trăm tài sản được tài trợ bằng nợ phải trả.',formula:'Nợ phải trả / Tổng tài sản × 100%',read:'Tỷ lệ cao làm doanh nghiệp nhạy hơn với lãi suất, dòng tiền và khả năng tái cấp vốn; mức hợp lý phụ thuộc ngành.',metric:'liabilitiesAssets'},
 {id:'liabilitiesEquity',title:'Nợ / Vốn chủ',aliases:['no tren von chu','debt equity','d e','liabilities equity'],definition:'Tỷ lệ nợ trên vốn chủ cho biết quy mô nghĩa vụ nợ so với phần vốn thuộc chủ sở hữu.',formula:'Nợ phải trả / Vốn chủ sở hữu',read:'Tỷ lệ tăng nhanh cho thấy doanh nghiệp đang dựa nhiều hơn vào nguồn vốn nợ.',metric:'liabilitiesEquity'},
 {id:'quick',title:'Thanh toán nhanh',aliases:['quick ratio','thanh toan nhanh','ty so thanh toan nhanh'],definition:'Thanh toán nhanh đo khả năng dùng tài sản ngắn hạn có tính thanh khoản cao để trả nợ ngắn hạn, không dựa nhiều vào việc bán tồn kho.',formula:'(Tiền + Đầu tư ngắn hạn + Phải thu) / Nợ ngắn hạn',read:'Tỷ lệ dưới 1 kéo dài có thể tạo áp lực vốn lưu động; mức chuẩn khác nhau theo ngành.',metric:'quick'},
+{id:'currentAssets',title:'Tài sản ngắn hạn',aliases:['tai san ngan han','current assets','short term assets'],definition:'Tài sản ngắn hạn là tài sản dự kiến thu hồi, bán hoặc sử dụng trong chu kỳ kinh doanh thông thường hoặc trong vòng 12 tháng; gồm tiền và tương đương tiền, đầu tư tài chính ngắn hạn, phải thu ngắn hạn, hàng tồn kho và các tài sản ngắn hạn khác.',formula:'Tổng các khoản mục tài sản ngắn hạn trên bảng cân đối kế toán',read:'Đánh giá theo cơ cấu tiền, phải thu, tồn kho và khả năng chuyển đổi thành tiền; tài sản ngắn hạn tăng không tự động có nghĩa thanh khoản tốt.',metric:null},
+{id:'nonCurrentAssets',title:'Tài sản dài hạn',aliases:['tai san dai han','non current assets','noncurrent assets','long term assets'],definition:'Tài sản dài hạn là tài sản không được phân loại vào nhóm ngắn hạn, thường gồm tài sản cố định, bất động sản đầu tư, xây dựng cơ bản dở dang và các khoản đầu tư dài hạn.',formula:'Tổng tài sản - Tài sản ngắn hạn',read:'Cần đối chiếu với công suất, khấu hao, hiệu quả đầu tư và dòng tiền tạo ra trong dài hạn.',metric:null},
+{id:'currentLiabilities',title:'Nợ ngắn hạn',aliases:['no ngan han','current liabilities','short term liabilities'],definition:'Nợ ngắn hạn là nghĩa vụ dự kiến thanh toán trong chu kỳ kinh doanh thông thường hoặc đến hạn trong vòng 12 tháng, theo tiêu chí phân loại kế toán áp dụng.',formula:'Tổng các khoản nợ ngắn hạn trên bảng cân đối kế toán',read:'So sánh với tiền, tài sản ngắn hạn và dòng tiền kinh doanh để đánh giá áp lực thanh toán.',metric:null},
 {id:'workingCapital',title:'Vốn lưu động',aliases:['von luu dong','working capital'],definition:'Vốn lưu động là phần tài sản ngắn hạn còn lại sau khi trừ nợ ngắn hạn.',formula:'Tài sản ngắn hạn - Nợ ngắn hạn',read:'Vốn lưu động tăng do phải thu hoặc tồn kho tăng chưa chắc tốt; cần xem dòng tiền kinh doanh đi cùng.',metric:null},
 {id:'yoy',title:'YoY',aliases:['yoy','year over year','cung ky'],definition:'YoY so một kỳ với đúng kỳ tương ứng của năm trước.',formula:'(Kỳ hiện tại / Cùng kỳ năm trước - 1) × 100%',read:'YoY phù hợp để giảm ảnh hưởng mùa vụ khi đọc doanh thu và lợi nhuận quý.',metric:null},
 {id:'qoq',title:'QoQ',aliases:['qoq','quarter over quarter','quy truoc'],definition:'QoQ so quý hiện tại với quý ngay trước đó.',formula:'(Quý hiện tại / Quý trước - 1) × 100%',read:'QoQ phản ánh tốc độ thay đổi ngắn hạn nhưng dễ bị mùa vụ tác động.',metric:null},
@@ -87,9 +90,28 @@ const C=[
 const byId=Object.fromEntries(C.map(x=>[x.id,x]));
 function tokens(s){return norm(s).split(' ').filter(x=>x.length>1);}
 function edit(a,b){a=norm(a);b=norm(b);if(a===b)return 0;if(!a)return b.length;if(!b)return a.length;const prev=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let left=i,diag=i-1;prev[0]=i;for(let j=1;j<=b.length;j++){const up=prev[j],next=Math.min(up+1,left+1,diag+(a[i-1]===b[j-1]?0:1));diag=up;prev[j]=next;left=next;}}return prev[b.length];}
-function scoreConcept(q,c){const s=norm(q),qt=tokens(s);let score=0;for(const a of [c.title,...(c.aliases||[])]){const n=norm(a),at=tokens(n);if(!n)continue;if(s===n)score=Math.max(score,30);else if(s.includes(n))score=Math.max(score,20+Math.min(6,at.length));else{const overlap=at.filter(t=>qt.includes(t)).length,coverage=overlap/Math.max(1,at.length);score=Math.max(score,coverage*12+overlap*2);if(at.length===1){const best=qt.reduce((m,t)=>Math.min(m,edit(t,at[0])),99);if(best<=1)score=Math.max(score,14);else if(best===2&&at[0].length>=5)score=Math.max(score,8);}}}return score;}
+function scoreConcept(q,c){
+ const s=norm(q),qt=tokens(s);let score=0;
+ const bounded=(phrase)=>(' '+s+' ').includes(' '+phrase+' ');
+ for(const alias of [c.title,...(c.aliases||[])]){
+  const n=norm(alias),at=tokens(n);if(!n)continue;
+  if(s===n){score=Math.max(score,40);continue;}
+  // A label is evidence only when its entire phrase appears on token boundaries.
+  // Never match a short acronym by edit distance: "tai"/"toi" must stay distinct.
+  if(bounded(n)){score=Math.max(score,30+Math.min(8,at.length*2));continue;}
+  const overlap=at.filter(t=>qt.includes(t)).length;
+  if(at.length>=2&&overlap===at.length){
+   score=Math.max(score,16+Math.min(8,at.length*2));
+   continue;
+  }
+  // Typo tolerance is restricted to whole, long, single-word queries.
+  if(at.length===1&&n.length>=5&&qt.length===1&&edit(qt[0],n)===1)
+   score=Math.max(score,15);
+ }
+ return score;
+}
 function search(question,limit=5){return C.map(c=>({c,score:scoreConcept(question,c)})).filter(x=>x.score>=3).sort((a,b)=>b.score-a.score||a.c.title.localeCompare(b.c.title,'vi')).slice(0,limit);}
-function find(question){const ranked=search(question,1);return ranked[0]?.score>=5?ranked[0].c:null;}
+function find(question){const ranked=search(question,1);return ranked[0]?.score>=15?ranked[0].c:null;}
 function explainLabel(label){const s=norm(label);
  if(/doanh thu|thu nhap ban hang/.test(s))return'Doanh thu là giá trị doanh nghiệp ghi nhận từ hàng hóa hoặc dịch vụ đã cung cấp trong kỳ, trước khi trừ các nhóm chi phí.';
  if(/gia von/.test(s))return'Giá vốn là chi phí trực tiếp gắn với hàng hóa hoặc dịch vụ đã tạo ra doanh thu trong kỳ.';
