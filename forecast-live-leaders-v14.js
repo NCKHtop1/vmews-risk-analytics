@@ -631,6 +631,12 @@
       document.addEventListener("visibilitychange", () => { if (!document.hidden) void refreshSession(); });
     } catch (error) {
       console.error("VMEWS leaderboard:", error);
+      // A failed core must not leave a misleading "ĐANG TẢI" overlay forever.
+      const snapshotBadge=$("#snapshotDate"),summary=$("#leaderSummary"),pulse=$("#marketPulse"),detail=$("#leaderDetail");
+      if(snapshotBadge)snapshotBadge.textContent="TẠM GIÁN ĐOẠN";
+      if(summary)summary.textContent="Không thể tải Forecast Core đã kiểm định. Có thể thử tải lại; chưa có dự báo mới để xếp hạng.";
+      if(pulse)pulse.textContent="Dữ liệu Forecast Core tạm thời không sẵn sàng.";
+      if(detail)detail.textContent="Chưa thể hiển thị phân tích do nguồn dữ liệu không sẵn sàng.";
       $("#signalDeck").innerHTML = `<div class="deckEmpty">${escapeHTML(error?.message || error)} <button type="button" id="forecastLeaderRetry">Thử tải lại</button></div>`;
       const retry = $("#forecastLeaderRetry");
       if (retry) retry.onclick = () => location.reload();
