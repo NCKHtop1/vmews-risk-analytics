@@ -425,10 +425,21 @@ function forecastHTML(question){
  return prose(['Dữ liệu dự báo phải được kiểm tra trên Forecast Core theo phiên gốc và chân trời T+3/T+4/T+5. Không xuất ra con số nếu chưa đối chiếu được nguồn gốc của dự báo.']);
 }
 function technicalHTML(question,m){
+ const priceCheck=QP?.priceQuality?.(m.quote,state.symbol,question);if(priceCheck&&!priceCheck.usable)return prose([priceCheck.reason+'. Không thể dùng chỉ báo như tín hiệu kỹ thuật trong phiên hiện tại.']);
  const concept=K.find?.(question),v=concept?technicalMetric(concept,m):null,asOf=m.technical?.sourceTime||m.quote?.sourceTime||'';
  if(v)return prose([concept.title+' của '+state.symbol+' ('+(v.period||'khung đang xem')+') = '+num(v.value)+'. Dữ liệu kỹ thuật gốc: '+String(asOf||'không rõ thời điểm')+'.']);
  if(m.technical?.snapshot)return prose(['Trạng thái kỹ thuật của '+state.symbol+': '+m.technical.snapshot.title+'. '+m.technical.snapshot.detail,'Nguồn snapshot: '+String(asOf||'chưa xác định')+'.']);
  return prose(['Chưa có snapshot kỹ thuật hợp lệ cho mã được hỏi.']);
+}
+function marketRiskHTML(){
+ const d=window.FinRiskMonitor?.context?.()||null;
+ const score=Number(d?.overall?.score);
+ if(d?.status!=='ok'||!Number.isFinite(score))return prose(['Chưa có snapshot giám sát rủi ro thị trường hợp lệ để kết luận.']);
+ const quoteTime=market()?.quote?.sourceTime||market()?.quoteBundleSourceTime,sourceTime=d.sourceTime||'';
+ const aligned=quoteTime&&sourceTime&&Math.abs(Date.parse(quoteTime)-Date.parse(sourceTime))<=20*60000;
+ if(quoteTime&&!aligned)return prose(['Snapshot rủi ro thị trường chưa đồng bộ với thời điểm giá; không dùng điểm rủi ro này để diễn giải trạng thái hiện tại.']);
+ const level=d.overall?.level?.label||'chưa phân loại';
+ return prose(['Rủi ro thị trường trong snapshot '+String(sourceTime||'không xác định')+': '+num(score)+'/100; mức '+level+'. Đây là điểm giám sát theo mô hình, không phải xác suất thị trường giảm hay khuyến nghị giao dịch.']);
 }
 function classify(q){
  return QP?.route?.(q,K.search?.(q,12)||[])||'unknown';
@@ -441,7 +452,7 @@ function analyze(question){
  const validQuote=QP?.priceQuality?.(m.quote,state.symbol,question);
  if(type==='movement'&&validQuote&&!validQuote.usable)return{type,html:prose([validQuote.reason+'. Hệ thống không dùng giá sai mã hoặc phiên cũ để trả lời câu hỏi về phiên hiện tại.'])};
  const ctx={quote:validQuote?.usable===false?null:m.quote||null,driver:m.driver||null,technical:m.technical||null,scanner:m.scanner?.current||null,news:m.news||[],marketNews:m.marketNews||[]};
- const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='multiConcept'?multiConceptHTML(question):type==='metric'||type==='multiMetric'?metricHTML(question,annual,quarterly,m):type==='news'?newsHTML(question,m):type==='forecast'?forecastHTML(question):type==='technical'?technicalHTML(question,m):type==='financial'?financialHTML(a,q):type==='risk'?riskHTML(a,q):type==='compare'?(askTargets(question).length?metricHTML(question,annual,quarterly,m):comparisonHTML(a,q)):type==='memo'?memoHTML(question,a,q,m):prose(['FinQuery chưa xác định được đủ dữ liệu đáng tin cậy để trả lời trực tiếp câu hỏi này bằng chế độ cục bộ. Kết nối Gemini để xử lý câu hỏi mở; không sử dụng số liệu hoặc thuật ngữ khác thay thế.']);
+ const body=type==='macro'?macroHTML(question,m):type==='movement'?movementHTML(ctx):type==='concept'?conceptHTML(question,a,q,annual,quarterly,m):type==='multiConcept'?multiConceptHTML(question):type==='metric'||type==='multiMetric'?(K.find?.(question)&&['rsi','macd','bollinger','atr','adx','stochastic','supertrend','mfi','cmf','obv','sma','ema','vwap','cci','roc','willr'].includes(K.find(question).id)?technicalHTML(question,m):metricHTML(question,annual,quarterly,m)):type==='news'?newsHTML(question,m):type==='forecast'?forecastHTML(question):type==='technical'?technicalHTML(question,m):type==='financial'?financialHTML(a,q):type==='risk'?(/thi truong|vnindex|vn index|rung lac thi truong/.test(norm(question))?marketRiskHTML():riskHTML(a,q)):type==='compare'?(askTargets(question).length?metricHTML(question,annual,quarterly,m):comparisonHTML(a,q)):type==='memo'?memoHTML(question,a,q,m):prose(['FinQuery chưa xác định được đủ dữ liệu đáng tin cậy để trả lời trực tiếp câu hỏi này bằng chế độ cục bộ. Kết nối Gemini để xử lý câu hỏi mở; không sử dụng số liệu hoặc thuật ngữ khác thay thế.']);
  return{type,html:body||prose(['Chưa có dữ liệu phù hợp để trả lời chính xác; không tự suy diễn.'])};
 }
 
@@ -968,6 +979,11 @@ async function ask(question,preferredMode=null){
  state.lastQuestion=q;openDrawer();addUser(q);state.busy=true;state.currentController=new AbortController();
  const send=$('research-ai-send');if(send){send.disabled=false;send.textContent='Dừng';send.dataset.busy='1';}const waiting=addThinking();
  try{
+  if(['concept','multiConcept'].includes(classify(q))){
+   const local=analyze(q);waiting?.remove();addAnalysis(local);
+   state.history.push({role:'user',content:q},{role:'assistant',content:'Đã trả lời từ định nghĩa được kiểm chứng trong FinQuery.'});
+   return;
+  }
   const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
