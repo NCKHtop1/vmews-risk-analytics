@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,17 @@ def _clean_rows(symbol: str, rows: Any, universe: set[str]) -> tuple[Any, list[s
         # These are current scraped/provider artifacts, not a manually curated
         # historical event table.  If the ticker or a known issuer name is not
         # explicit, abstain instead of trusting the search query assignment.
+        # A publisher's leading ticker label is authoritative even when
+        # the competing issuer is NOT in this release's forecast universe.
+        # Example: 'ANT: ... TP.HCM' must not be accepted for the HCM ticker
+        # just because HCM also appears as a geographic abbreviation.
+        primary = re.match(
+            r'^\s*(?:(?:HOSE|HSX|HNX|UPCOM)\s*[:/\-]\s*)?\$?([A-Z][A-Z0-9]{2,4})\s*[:\-–|]',
+            title, flags=re.IGNORECASE,
+        )
+        if primary and primary.group(1).upper() != symbol:
+            rejected.append(title)
+            continue
         if title and not security_match(symbol, title, universe, require_explicit=True):
             rejected.append(title)
             continue
