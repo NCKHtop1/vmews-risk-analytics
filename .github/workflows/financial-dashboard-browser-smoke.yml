@@ -322,6 +322,21 @@ jobs:
                 ('ROE là gì?','concept'),
                 ('Phân tích bối cảnh lãi suất và vĩ mô hiện tại.','macro'),
               ]
+              # Verify semantic meaning, not only a generic concept response length.
+              semantic_checks=[
+                ('Tài sản ngắn hạn là gì?', 'tài sản ngắn hạn', 'TOI là tổng'),
+                ('Tài sản dài hạn là gì?', 'tài sản dài hạn', 'TOI là tổng'),
+                ('Nợ ngắn hạn là gì?', 'nợ ngắn hạn', 'TOI là tổng'),
+                ('TOI là gì?', 'TOI là tổng', 'tài sản ngắn hạn là'),
+              ]
+              for question,required,forbidden in semantic_checks:
+                  semantic=driver.execute_script("return window.FinQueryAI.analyze(arguments[0]);",question)
+                  answer=str(semantic.get('html') or '')
+                  if semantic.get('type')!='concept' or required.casefold() not in answer.casefold() or forbidden.casefold() in answer.casefold():
+                      raise AssertionError(f'Dolphin semantic mismatch for {question!r}: {semantic}')
+              unmatched=driver.execute_script("return window.FinQueryKnowledge.find(arguments[0]);",'abcxyz là gì?')
+              if unmatched is not None:
+                  raise AssertionError(f'Unknown definition must fail closed: {unmatched}')
               results=[]
               for question,expected in checks:
                   result=driver.execute_script(
