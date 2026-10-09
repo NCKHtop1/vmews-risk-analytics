@@ -166,6 +166,7 @@ function dynamicMetricHit(question,annual,quarterly){
  for(const [scope,data] of [['Năm',annual],['Quý',quarterly]]){
   if(!data)continue;
   for(const hit of QP?.searchRows?.(question,data,{minCoverage:.8,limit:6})||[]){
+   if(!(' '+norm(question)+' ').includes(' '+norm(hit.row.label)+' '))continue;
    const p=latest(data);if(!p||!Number.isFinite(val(hit.row,p)))continue;
    hits.push({...hit,scope,data});
   }
