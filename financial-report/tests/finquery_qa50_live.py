@@ -158,13 +158,16 @@ def special(c,page,browser):
   for w,h in [(360,780),(780,360),(390,844)]:
    page.set_viewport_size({'width':w,'height':h});mobile(page)
   page.context.set_offline(True)
+  offline_reload='cached'
   try:
-   page.reload(wait_until='domcontentloaded',timeout=9000)
-   raise AssertionError('Offline reload unexpectedly succeeded')
-  except BrowserTimeout:
-   pass
-  except Exception as ex:
-   need('ERR_INTERNET_DISCONNECTED' in str(ex) or 'ERR_NETWORK_CHANGED' in str(ex),'Unexpected offline reload failure: '+str(ex))
+   blocked=page.evaluate("""async()=>{
+    const url=new URL('./__finquery_offline_probe__'+Date.now()+'.json',location.href);
+    try{const response=await fetch(url.href,{cache:'no-store'});return{blocked:false,status:response.status};}
+    catch(error){return{blocked:true,reason:String(error)};}
+   }""")
+   need(blocked['blocked'],'Offline browser still fetched an uncached resource: '+str(blocked))
+   try:page.reload(wait_until='domcontentloaded',timeout=9000)
+   except Exception:offline_reload='offline_navigation_error'
   finally:
    page.context.set_offline(False)
   page.goto(BASE+'?symbol=FPT&mode=year#market',wait_until='domcontentloaded',timeout=45000)
@@ -172,7 +175,7 @@ def special(c,page,browser):
   opener(page)
   need(page.locator('#research-ai-send').is_visible(),'Dolphin did not recover after offline reload')
   closer(page)
-  return '3 mobile rotations, offline reload rejected and online recovery worked'
+  return '3 mobile rotations, uncached offline request blocked, reload='+offline_reload+', online recovery verified'
  return 'not implemented'
 def new_context(browser,**kwargs):
  ctx=browser.new_context(**kwargs)
