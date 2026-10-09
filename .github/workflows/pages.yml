@@ -17,6 +17,8 @@ on:
       - 'forecast-*.css'
       - 'solution-ai-v17.js'
       - '.github/workflows/pages.yml'
+  # market-news-live also calls workflow_dispatch after every successful
+  # financial-market-data News publish so the public Pages bundle stays in sync.
   workflow_dispatch:
   workflow_run:
     workflows: ['Refresh FinQuery prices and company news', 'Refresh live HOSE Core + Liquid prices', 'Refresh live HOSE minute candles', 'Refresh market news stream', 'Refresh FinQuery macro snapshot', 'Refresh FinQuery market universe', 'Refresh financial reports for CDN', 'Refresh investment insights', 'Forecast V20.1 immutable-price audit and market intelligence', 'Forecast V21 guarded session overlay']
