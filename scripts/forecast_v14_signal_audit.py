@@ -136,7 +136,11 @@ def security_match(symbol: str, title: str, universe: set[str], *, require_expli
         text,
         flags=re.IGNORECASE,
     )
-    if primary and primary.group(1).upper() in universe and primary.group(1).upper() != symbol:
+    # Leading ticker tags are publisher-assigned issuer identities even when
+    # the issuer is outside today's forecast universe.  For example ANT:
+    # belongs to ANT, not to HOSE HCM merely because the headline says TP.HCM.
+    # Do not silently accept a foreign ticker based on a later city/bank mention.
+    if primary and primary.group(1).upper() != symbol:
         return False
     explicit = [
         item.upper()

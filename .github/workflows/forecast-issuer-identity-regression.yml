@@ -1,0 +1,56 @@
+name: Forecast issuer identity and release headline regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/forecast_v14_signal_audit.py'
+      - 'scripts/sanitize_intelligence_v20.py'
+      - 'scripts/sanitize_intelligence_v20_test.py'
+      - '.github/workflows/forecast-issuer-identity-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/forecast_v14_signal_audit.py'
+      - 'scripts/sanitize_intelligence_v20.py'
+      - 'scripts/sanitize_intelligence_v20_test.py'
+      - '.github/workflows/forecast-issuer-identity-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: finquery-news-issuer-identity-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+jobs:
+  issuer-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install identity parser dependencies
+        run: pip install --disable-pip-version-check -q numpy pandas
+      - name: Test explicit foreign ticker rejection and valid same-issuer articles
+        run: python scripts/sanitize_intelligence_v20_test.py
+      - name: Audit HCM archive before and after in-memory sanitation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          from forecast_v14_signal_audit import security_match
+          from sanitize_intelligence_v20 import sanitize_payload
+          universe=set(json.loads(Path('data/forecast-dashboard-v12.json').read_text(encoding='utf-8')).get('symbols') or {})
+          p=json.loads(Path('data/research-news.json').read_text(encoding='utf-8'))
+          initial=list((p.get('symbols') or {}).get('HCM') or [])
+          foreign=[row for row in initial if isinstance(row,dict) and str(row.get('title') or '').startswith('ANT:')]
+          clean,audit=sanitize_payload(p,universe)
+          kept=clean.get('symbols',{}).get('HCM',[])
+          assert all(row not in kept for row in foreign), 'Known ANT headlines remain in HCM after sanitation'
+          assert not security_match('HCM','ANT: Nghị quyết vay vốn tại Chi nhánh TP.HCM',universe,require_explicit=True)
+          assert security_match('HCM','HCM: Công ty Chứng khoán TP.HCM công bố BCTC',universe,require_explicit=True)
+          print('FORECAST_ISSUER_IDENTITY_PASS',json.dumps({'hcmArchive':len(initial),'foreignANT':len(foreign),'hcmKept':len(kept),'sanitized':audit['rejected']},ensure_ascii=False))
+          PY
