@@ -2,10 +2,11 @@ name: FinQuery custom-domain end-to-end smoke
 on:
   workflow_dispatch:
   push:
-    branches: [main, fix/finquery-domain-https-route-smoke-20261009]
+    branches: [main, fix/finquery-domain-https-route-smoke-20261009, fix/finquery-browser-stale-element-retry-20261009]
     paths:
       - 'financial-report/scripts/smoke_custom_domain.py'
       - '.github/workflows/finquery-custom-domain-smoke.yml'
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     branches: [main]

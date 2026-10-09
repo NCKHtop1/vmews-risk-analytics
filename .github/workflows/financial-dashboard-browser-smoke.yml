@@ -45,6 +45,7 @@ jobs:
           import urllib.request
           from datetime import datetime, timezone, timedelta
           from selenium import webdriver
+          from selenium.common.exceptions import StaleElementReferenceException
           from selenium.webdriver.chrome.options import Options
           from selenium.webdriver.chrome.service import Service
           from selenium.webdriver.support.ui import WebDriverWait
@@ -75,6 +76,18 @@ jobs:
           service=Service(driver_path) if driver_path else Service()
           driver=webdriver.Chrome(service=service,options=options)
           wait=WebDriverWait(driver,60)
+
+          def click_dynamic_control(element_id, attempts=4):
+              # FinQuery updates the strategy panel during live refreshes.
+              # Re-locate a newly rendered button; never suppress a failed action.
+              for attempt in range(attempts):
+                  try:
+                      driver.find_element('id', element_id).click()
+                      return
+                  except StaleElementReferenceException:
+                      if attempt + 1 >= attempts:
+                          raise
+                      time.sleep(0.3)
 
           try:
               driver.get(URL)
@@ -220,7 +233,7 @@ jobs:
                   (document.querySelector('#sai-investment-view h3')?.textContent||'').includes('HCM')
                 );
               """))
-              driver.find_element('id','sai-open-symbol').click()
+              click_dynamic_control('sai-open-symbol')
               wait.until(lambda d:d.execute_script("""
                 const m=window.FinancialMarket?.context?.();
                 return Boolean(
@@ -249,7 +262,7 @@ jobs:
                 window.FinStrategyIntelligence.selectSymbol('HCM');
               """)
               wait.until(lambda d:d.execute_script("return Boolean(document.getElementById('sai-query-ai'));"))
-              driver.find_element('id','sai-query-ai').click()
+              click_dynamic_control('sai-query-ai')
               wait.until(lambda d:d.execute_script("""
                 const drawer=document.getElementById('research-ai'),backdrop=document.getElementById('ai-backdrop');
                 return Boolean(
