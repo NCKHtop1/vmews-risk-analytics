@@ -11,7 +11,16 @@ function periodInfo(q){
  return{years,quarters:[...new Set(qs)],isQuarter:/\bquy\b|\bq[1-4]\b/.test(s),hasPeriod:years.length>0||qs.length>0};
 }
 function route(question,ranked=[]){
- const s=norm(question),strong=(ranked||[]).filter(x=>x.score>=25);
+ const s=norm(question),candidates=(ranked||[]).filter(x=>x.score>=25);
+ const primary=candidates[0]||null,joined=/\bva\b|\bvs\b|\bversus\b/.test(s);
+ // A named compound ratio (EV/EBITDA, liabilities/assets) is ONE concept,
+ // even when its component words independently occur in the glossary.
+ const strongestAliases=primary?[primary.c.title,...(primary.c.aliases||[])].map(norm).filter(Boolean):[];
+ const strong=candidates.filter((hit,index)=>{
+  if(index===0||joined||!primary)return true;
+  const aliases=[hit.c.title,...(hit.c.aliases||[])].map(norm).filter(Boolean);
+  return !strongestAliases.some(p=>p.length>=5&&has(s,p)&&aliases.some(a=>a.length>=3&&a!==p&&has(p,a)));
+ });
  const definition=/\bla gi\b|\bnghia la gi\b|\bkhai niem\b|\bdinh nghia\b|\bcong thuc\b|\bcach tinh\b|\bdo cai gi\b|\bthe hien gi\b/.test(s);
  const amount=/\bbao nhieu\b|\bgia tri\b|\bso lieu\b|\bmuc nao\b|\bmuc bao nhieu\b|\bhien tai\b|\bky nay\b/.test(s);
  const comparison=/\bso sanh\b|\bkhac gi\b|\bkhac nhau\b|\bky truoc\b|\bcung ky\b|\bqoq\b|\byoy\b|\bversus\b|\bvs\b/.test(s);
