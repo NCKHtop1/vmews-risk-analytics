@@ -49,9 +49,10 @@ test('finance and market: natural language queries route by intent, not answer t
  assert.deepEqual(failures,[],failures.join('\n'));
 });
 test('unrecognized definitions must never resolve to a bank or unrelated technical term',()=>{
- for(const q of ['abcxyz là gì','những điều khó hiểu trên sao Hỏa','cách làm bún chả','tôi không hỏi về TOI','tin tình yêu','tài sản lạ không có trong từ điển là gì','tôi đang hỏi về tài sản']){
+ for(const q of ['abcxyz là gì','những điều khó hiểu trên sao Hỏa','cách làm bún chả','tin tình yêu','tài sản lạ không có trong từ điển là gì','tôi đang hỏi về tài sản']){
   assert.equal(K.find(q),null,q);
  }
+ assert.equal(type('tôi không hỏi về TOI'),'unknown');
  for(const q of ['TOI là gì','Tổng thu nhập hoạt động là gì','NIM là gì','CAR là gì','CIR là gì','tài sản ngắn hạn là gì']){
   assert.ok(K.find(q),q);
  }
