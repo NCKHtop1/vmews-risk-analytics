@@ -22,7 +22,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: finquery-forecast-core-production-ux
+  # Production Pages jobs must not cancel a distinct pull-request E2E run.
+  group: finquery-forecast-core-production-ux-${{ github.event_name == 'pull_request' && github.head_ref || 'production' }}
   cancel-in-progress: true
 
 jobs:
