@@ -4,7 +4,7 @@ const MAX_AUDIT_ITEMS=12;
 const STOP=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
 let lastRun=null;
 function norm(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
-function finite(v){const n=Number(v);return Number.isFinite(n)?n:null;}
+function finite(v){if(v===null||v===undefined||String(v).trim()==='')return null;const n=Number(v);return Number.isFinite(n)?n:null;}
 function iso(v){const t=Date.parse(v||'');return Number.isFinite(t)?new Date(t).toISOString():null;}
 function ageMin(v){const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,(Date.now()-t)/60000):null;}
 function clone(v){try{return JSON.parse(JSON.stringify(v));}catch{return null;}}
@@ -94,7 +94,7 @@ function financialTool(base,targetSymbol=null){
  const raw=root.FinancialReportContext?.raw?.()||null;if(!raw)return null;
  const expected=String(targetSymbol||activeSymbol()||'').toUpperCase(),actual=String(raw?.symbol||'').toUpperCase();
  if(expected&&actual&&expected!==actual)return null;
- const compact=data=>{if(!data)return null;const ps=(data.periods||data.years||[]).map(String).slice(-8);const rs=(data.sections||[]).flatMap(s=>(s.rows||[]).slice(0,8).map(r=>({label:r.label,unit:r.unit||'',section:s.id||'',values:Object.fromEntries(ps.filter(p=>Number.isFinite(Number(r.values?.[p]))).map(p=>[p,Number(r.values[p])]))}))).slice(0,30);return{periods:ps,updatedAt:data.updatedAt||null,checkedAt:data.checkedAt||null,rows:rs};};
+ const compact=data=>{if(!data)return null;const ps=(data.periods||data.years||[]).map(String).slice(-8);const rs=(data.sections||[]).flatMap(s=>(s.rows||[]).slice(0,8).map(r=>({label:r.label,unit:r.unit||'',section:s.id||'',values:Object.fromEntries(ps.filter(p=>finite(r.values?.[p])!==null)).map(p=>[p,finite(r.values[p])]))}))).slice(0,30);return{periods:ps,updatedAt:data.updatedAt||null,checkedAt:data.checkedAt||null,rows:rs};};
  return{annual:compact(raw.annual||(!raw.quarterly?raw.data:null)),quarterly:compact(raw.quarterly||null)};
 }
 function scannerTool(){
