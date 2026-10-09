@@ -34,6 +34,8 @@ def snapshot(driver):
         close: value("close"),
         chartTitle: value("chartTitle"),
         chartWidth: document.getElementById("chart")?.getBoundingClientRect()?.width || 0,
+        chartMode: document.getElementById("chart")?.dataset?.quoteMode || "",
+        quoteAsOf: value("quoteAsOf"),
         loaderInstalled: typeof window.__VMEWS_LOAD_BASE__ === "function",
         renderInstalled: typeof window.__VMEWS_RENDER_SYMBOL__ === "function"
       };
@@ -96,6 +98,40 @@ def main():
         mobile=snapshot(driver)
         assert mobile["chartWidth"]>250, "mobile chart collapsed"
         assert "đang tải" not in mobile["status"].lower(), "mobile status stuck loading"
+        # Regression: both market quote endpoints deliberately stall until their
+        # own AbortController timeout. Already-verified Forecast Core must be
+        # rendered without awaiting this OPTIONAL live quote fetch.
+        hook=driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument",{"source":"""
+        (() => {
+          const original=window.fetch.bind(window);
+          window.fetch=(input,options)=> {
+            const url=String(input?.url||input||"");
+            if (url.includes("/market/quotes.json")) return new Promise((resolve,reject)=>{
+              const signal=options?.signal;
+              if (signal?.aborted) return reject(new DOMException("Aborted","AbortError"));
+              signal?.addEventListener("abort",()=>reject(new DOMException("Aborted","AbortError")),{once:true});
+            });
+            return original(input,options);
+          };
+        })();
+        """})
+        try:
+            t0=time.monotonic()
+            driver.get(URL+"&blockedLive=1")
+            blocked=WebDriverWait(driver,9,poll_frequency=.25).until(verify_ready)
+            seconds=round(time.monotonic()-t0,2)
+            assert blocked["chartWidth"]>200, f"Chart hidden while live feed blocked: {blocked}"
+            assert blocked["close"] in ("","—"), f"Unverified live price was fabricated: {blocked}"
+            assert blocked["chartMode"]=="HISTORICAL_ONLY", f"Audited historical chart missing with unavailable live quotes: {blocked}"
+            assert "lịch sử" in blocked["chartTitle"].lower(), f"Chart must label old data as historical: {blocked}"
+            assert "không có giá live" in blocked["quoteAsOf"].lower(), f"Must label unavailable live price explicitly: {blocked}"
+            assert "KHÔNG CÓ GIÁ LIVE" in blocked["decision"], f"Wrong live-market decision label while provider blocked: {blocked}"
+            assert "thử tải lại" not in blocked["status"].lower(), f"Non-essential price feed broke Forecast Core: {blocked}"
+            assert "đang tải" not in blocked["decision"].lower(), f"Forecast Core still loading after price probe failure: {blocked}"
+            errors.append({"blockedLivePrice":blocked,"elapsedSec":seconds})
+            print("FORECAST_CORE_BLOCKED_LIVE_PRICE_PASS",json.dumps({"elapsedSec":seconds,"snapshot":blocked},ensure_ascii=False))
+        finally:
+            driver.execute_cdp_cmd("Page.removeScriptToEvaluateOnNewDocument",{"identifier":hook["identifier"]})
         print("FORECAST_CORE_REAL_BROWSER_PASS",json.dumps({"url":URL,"symbols":list(DISPUTED),
               "initial":loaded,"mobile":mobile,"steps":errors},ensure_ascii=False,default=str))
         return 0
