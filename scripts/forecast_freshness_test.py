@@ -12,7 +12,7 @@ from vn_exchange_calendar import VN_TZ
 class FreshnessTest(unittest.TestCase):
     def artifacts(self):
         row={'date':'2026-09-28','close':65000,'dataFreshness':'CURRENT','horizons':{str(n):{'targetDate':day} for n,day in enumerate(['2026-09-29','2026-09-30','2026-10-01','2026-10-02','2026-10-05'],1)}}
-        dash={'asOf':'2026-09-28','generatedAt':'2026-09-29T03:30:00+07:00','symbols':{'FPT':row},'charts':{'FPT':[{'date':'2026-09-28','close':65000}]}}
+        dash={'asOf':'2026-09-28','generatedAt':'2026-09-29T03:30:00+07:00','symbols':{'FPT':row},'charts':{'FPT':[{'date':'2026-09-28','close':65000,'rawClose':65000}]}}
         return dash,copy.deepcopy(dash),copy.deepcopy(dash)
     def test_morning_requires_previous_completed_session_and_all_targets(self):
         docs=self.artifacts();now=datetime(2026,9,29,5,tzinfo=VN_TZ)

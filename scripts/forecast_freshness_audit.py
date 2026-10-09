@@ -1,11 +1,28 @@
 """Audit each published price, history endpoint and forecast target before commit."""
 import argparse
 import json
+import math
 from datetime import datetime
 from pathlib import Path
 from vn_exchange_calendar import VN_TZ, latest_completed_session, next_trading_dates
 
 DATA = Path(__file__).resolve().parents[1] / 'data'
+
+
+def executable_close(value):
+    """Only a finite observed/executable close can validate a chart endpoint.
+
+    Chart 'close' is modelClose (corporate-action adjusted) and MUST NOT be
+    compared to the integer-VND snapshot close. Keep rawClose independently
+    validated; never overwrite either price or waive a real mismatch.
+    """
+    if isinstance(value, bool):
+        return None
+    try:
+        price = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return int(round(price)) if math.isfinite(price) and price > 0 else None
 
 
 def audit(dashboard, current, market, now=None):
@@ -30,8 +47,15 @@ def audit(dashboard, current, market, now=None):
         history = (dashboard.get('charts') or {}).get(symbol) or []
         if not history or history[-1].get('date') != expected:
             issues.append('STALE_CHART')
-        elif history[-1].get('close') != row.get('close'):
-            issues.append('PRICE_CHART_MISMATCH')
+        else:
+            # The model series is adjusted for training, while the executable
+            # chart endpoint has its own rawClose field. Compare like for like.
+            observed_close = executable_close(history[-1].get('rawClose'))
+            snapshot_close = executable_close(row.get('close'))
+            if observed_close is None or snapshot_close is None:
+                issues.append('UNVERIFIED_EXECUTABLE_CHART_CLOSE')
+            elif observed_close != snapshot_close:
+                issues.append('PRICE_CHART_MISMATCH')
         if row != (current.get('symbols') or {}).get(symbol):
             issues.append('SNAPSHOT_MISMATCH')
         for horizon in range(1, 6):

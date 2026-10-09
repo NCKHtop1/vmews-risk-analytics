@@ -173,9 +173,14 @@
     try {
       const root = window.__VMEWS_DATA_ROOT__ || "./data";
       const revision = Math.floor(Date.now() / 60000);
-      const response = await fetch(`${root}/forecast-session-v21.json?refresh=${revision}`, { cache: "no-store" });
-      if (!response.ok) return null;
-      const payload = await response.json();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      let payload;
+      try {
+        const response = await fetch(`${root}/forecast-session-v21.json?refresh=${revision}`, { cache: "no-store", signal: controller.signal });
+        if (!response.ok) return null;
+        payload = await response.json();
+      } finally { clearTimeout(timer); }
       if (payload?.status !== "PASS" || payload?.coreForecastUnchanged !== true) return null;
       if (String(payload.coreAsOf || "") !== String(base?.dash?.asOf || "")) return null;
       if (!Array.isArray(payload.symbols) || !payload.symbols.length) return null;
@@ -622,7 +627,9 @@
       document.addEventListener("visibilitychange", () => { if (!document.hidden) void refreshSession(); });
     } catch (error) {
       console.error("VMEWS leaderboard:", error);
-      $("#signalDeck").innerHTML = `<div class="deckEmpty">${escapeHTML(error?.message || error)}</div>`;
+      $("#signalDeck").innerHTML = `<div class="deckEmpty">${escapeHTML(error?.message || error)} <button type="button" id="forecastLeaderRetry">Thử tải lại</button></div>`;
+      const retry = $("#forecastLeaderRetry");
+      if (retry) retry.onclick = () => location.reload();
     }
   }
 
