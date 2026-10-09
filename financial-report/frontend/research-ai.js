@@ -311,7 +311,7 @@ function macroDatasetFor(question,macro){
  const esg=/\besg\b|moi truong|xa hoi|quan tri|governance|environment|social/.test(s);
  const company=entries.find(([,ds])=>String(ds?.companySymbol||'').toUpperCase()===state.symbol);
  let id=null;
- if(esg)id=company?.[0]||requested(['esg_world_bank'],/world.bank.*esg|esg_world_bank/);
+ if(esg)id=(/doanh nghiep|cong ty|ma nay/.test(s)||/\b[A-Z]{3}\b/.test(String(question)))?(company?.[0]||null):requested(['esg_world_bank'],/world.bank.*esg|esg_world_bank/);
  else if(/\bcpi\b|lam phat|inflation/.test(s))id=requested(['cpi','inflation'],/cpi|inflation/i);
  else if(/\bpmi\b/.test(s))id=requested(['pmi'],/\bpmi\b/i);
  else if(/\bfdi\b/.test(s))id=requested(['fdi'],/\bfdi\b/i);
