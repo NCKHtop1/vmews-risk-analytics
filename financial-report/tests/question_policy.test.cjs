@@ -107,3 +107,40 @@ test('implementation contracts prevent silent keyword fallback and missing-to-ze
  assert.match(src,/v===null\|\|v===undefined\|\|String\(v\)\.trim\(\)===''/);
  assert.ok(!src.includes('concept=K.find?.(question)||ranked[0]?.c||null'));
 });
+
+
+test('natural language ambiguity: credit is macro, signals are technical, price is movement',()=>{
+ const expected=[
+  ['Tín dụng tăng bao nhiêu?','macro'],
+  ['Tăng trưởng tín dụng ngân hàng hiện tại','macro'],
+  ['LS ON hôm nay bao nhiêu?','macro'],
+  ['Tín hiệu MACD đang thế nào?','technical'],
+  ['Tín hiệu RSI thế nào?','technical'],
+  ['Giá FPT hiện tại bao nhiêu?','movement'],
+  ['Giá FPT bây giờ bao nhiêu?','movement'],
+  ['Giá FPT hôm qua bao nhiêu?','movement'],
+  ['Quy mô tổng tài sản FPT năm 2025 bao nhiêu?','metric'],
+  ['Tin cổ tức FPT mới nhất','news']
+ ];
+ assert.deepEqual(expected.filter(([q,x])=>type(q)!==x).map(([q,x])=>({q,expected:x,actual:type(q)})),[]);
+});
+test('quy mo must not be parsed as a quarterly period',()=>{
+ assert.equal(P.periodInfo('Quy mô tài sản FPT năm 2025').isQuarter,false);
+ assert.equal(P.periodInfo('Quy mô nợ 2025').isQuarter,false);
+ assert.equal(P.periodInfo('Quý gần nhất').isQuarter,true);
+ assert.equal(P.periodInfo('Quý 2 năm 2025').isQuarter,true);
+ assert.equal(P.periodInfo('Q3 2025').isQuarter,true);
+});
+test('present, historical and outdated stock prices are strictly separated',()=>{
+ const now=new Date('2026-10-09T12:00:00Z');
+ const fresh={symbol:'FPT',price:10000,reference:9900,sourceTime:'2026-10-09T07:45:00Z'};
+ const old={...fresh,sourceTime:'2026-10-07T07:45:00Z'};
+ for(const q of ['Giá FPT hiện tại bao nhiêu','Giá FPT hôm nay','Giá FPT bây giờ bao nhiêu']){
+  assert.equal(P.priceQuality(old,'FPT',q,now).usable,false,q);
+  assert.equal(P.priceQuality(fresh,'FPT',q,now).usable,true,q);
+ }
+ for(const q of ['Giá FPT hôm qua','Giá FPT phiên trước','Giá FPT ngày 07/10/2026']){
+  assert.equal(P.priceQuality(fresh,'FPT',q,now).usable,false,q);
+ }
+ assert.equal(P.priceQuality(old,'MBB','Giá MBB hôm nay',now).usable,false);
+});
