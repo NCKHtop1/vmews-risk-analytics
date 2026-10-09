@@ -3253,7 +3253,8 @@ function has(s,word){return (' '+s+' ').includes(' '+norm(word)+' ');}
 function periodInfo(q){
  const s=norm(q),years=[...new Set((s.match(/\b20\d\d\b/g)||[]))],qs=[],q1=/\b(?:q|quy)\s*([1-4])\s*(20\d\d)\b/g,q2=/\b(20\d\d)\s*(?:q|quy)\s*([1-4])\b/g;
  let m;while((m=q1.exec(s)))qs.push(m[2]+'-Q'+m[1]);while((m=q2.exec(s)))qs.push(m[1]+'-Q'+m[2]);
- return{years,quarters:[...new Set(qs)],isQuarter:/\bquy\b|\bq[1-4]\b/.test(s),hasPeriod:years.length>0||qs.length>0};
+ const namedQuarter=/\b(?:q[1-4]|quy\s*(?:[1-4]|i{1,3}|iv|nay|truoc|gan nhat|moi nhat|dau|cuoi|nam|20\d\d))\b/.test(s);
+ return{years,quarters:[...new Set(qs)],isQuarter:qs.length>0||namedQuarter,hasPeriod:years.length>0||qs.length>0};
 }
 function route(question,ranked=[]){
  const s=norm(question),candidates=(ranked||[]).filter(x=>x.score>=25);
@@ -3269,13 +3270,13 @@ function route(question,ranked=[]){
  const definition=/\bla gi\b|\bnghia la gi\b|\bkhai niem\b|\bdinh nghia\b|\bcong thuc\b|\bcach tinh\b|\bdo cai gi\b|\bthe hien gi\b/.test(s);
  const amount=/\bbao nhieu\b|\bgia tri\b|\bso lieu\b|\bmuc nao\b|\bmuc bao nhieu\b|\bhien tai\b|\bky nay\b/.test(s);
  const comparison=/\bso sanh\b|\bkhac gi\b|\bkhac nhau\b|\bky truoc\b|\bcung ky\b|\bqoq\b|\byoy\b|\bversus\b|\bvs\b/.test(s);
- const news=/\btin\b|\btin tuc\b|\btin moi\b|\btin ve\b|\btin doanh nghiep\b|\bsu kien\b|\bcong bo thong tin\b|\bbai bao\b|\bnews\b|\bbao cao ctck\b/.test(s);
+ const news=/\btin\b|\btin tuc\b|\btin moi\b|\btin ve\b|\btin doanh nghiep\b|\bsu kien\b|\bcong bo thong tin\b|\bbai bao\b|\bnews\b|\bbao cao ctck\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' '));
  const forecast=/\bdu bao\b|\bforecast\b|\bt[+]3\b|\bt[+]4\b|\bt[+]5\b|\bxac suat tang\b|\bgia muc tieu\b/.test(s);
  const risk=/\brui ro\b|\bcanh bao\b|\bbat thuong\b|\bye[u]? diem\b|\bcang thang\b/.test(s);
- const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bovernight\b|\bomo\b|\bty gia\b|\blam phat\b|\bcpi\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
+ const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bls on\b|\bon\b|\bovernight\b|\bomo\b|\btin dung\b|\bty gia\b|\blam phat\b|\bcpi\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
  const technical=/\bky thuat\b|\brsi\b|\bmacd\b|\bbollinger\b|\batr\b|\badx\b|\bsupertrend\b|\bvwap\b|\bobv\b|\bmfi\b|\bcmf\b|\bstochastic\b|\bstoch\b|\bcci\b|\broc\b|\bwillr\b|\bchi bao\b|\bscanner\b|\bchien luoc\b|\bquet ma\b/.test(s);
  const financial=/\bbctc\b|\btai chinh\b|\bdoanh thu\b|\bloi nhuan\b|\bdong tien\b|\bvon chu\b|\btai san\b|\bno phai tra\b|\bno xau\b|\bphai thu\b|\bton kho\b|\bthanh khoan\b|\bdu no\b|\bbao cao tai chinh\b/.test(s);
- const movement=/\bgia\b.*\b(hom nay|hien tai|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b/.test(s);
+ const movement=/\bgia\b.*\b(bao nhieu|hom nay|hien tai|moi nhat|bay gio|luc nay|hom qua|ngay mai|ngay kia|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b|\bgia\b.*\bngay\s*[0-9]{1,2}\b/.test(s);
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
  const time=periodInfo(question);
  if(/\bkhong (?:muon )?hoi ve\b|\bkhong can (?:giai thich|tra loi)\b/.test(s)&&!/(\bma\b|\bnhung\b)/.test(s))return'unknown';
@@ -3328,7 +3329,7 @@ function searchRows(question,data,{minCoverage=0.6,limit=8}={}){
  return ranked.slice(0,limit);
 }
 function selectNews(question,items,{symbol='',companyOnly=false,limit=8}={}){
- const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s),topic=topicTokens(question,symbol);
+ const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' ')),topic=topicTokens(question,symbol);
  // Common company names in the query are identification, not topical matching requirements.
  const out=[];
  for(const row of Array.isArray(items)?items:[]){
@@ -3353,7 +3354,11 @@ function priceQuality(quote,symbol='',question='',now=new Date()){
  const fmt=(d)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
  const today=fmt(now),snapshot=fmt(new Date(ts)),s=norm(question);
  // A quote from an earlier date may be displayed only as a historical snapshot.
- const wantsCurrent=/\bhom nay\b|\bphien nay\b|\btrong phien\b|\brealtime\b|\blive\b/.test(s);
+ const wantsCurrent=/\bhom nay\b|\bhien tai\b|\bbay gio\b|\bluc nay\b|\bmoi nhat\b|\bphien nay\b|\btrong phien\b|\brealtime\b|\blive\b/.test(s);
+ const historical=/\bhom qua\b|\bphien truoc\b|\btu ngay\b|\bngay\s*[0-9]{1,2}\s*[0-9]{1,2}\s*20[0-9]{2}\b/.test(s);
+ if(historical)return{usable:false,reason:'Câu hỏi yêu cầu giá của phiên hoặc ngày lịch sử; phải tra chuỗi giá đúng mốc, không lấy snapshot hiện tại',sourceTime:raw,historical:true};
+ const future=/\bngay mai\b|\bngay kia\b|\bphien toi\b|\btuong lai\b/.test(s);
+ if(future)return{usable:false,reason:'Không có giá thực tế cho phiên tương lai. Chỉ có thể tham khảo dự báo đã qua kiểm chứng',sourceTime:raw,future:true};
  const old=wantsCurrent&&today!==snapshot;
  const timeParts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
  const minutes=Number(timeParts.hour)*60+Number(timeParts.minute),businessDay=!['Sat','Sun'].includes(timeParts.weekday);
@@ -3520,14 +3525,21 @@ function validate(question,intent,results,baseContext){
  if(mt&&st){const gap=Math.abs(Date.parse(mt)-Date.parse(st))/60000;checks.push({id:'market_scanner_alignment',ok:scanner?.aligned!==false&&gap<=20,gapMinutes:Number.isFinite(gap)?Math.round(gap):null});if(scanner?.aligned===false||gap>20)warnings.push('Technical Scanner khong dong bo voi snapshot gia; bo qua current scanner khi tong hop.');}
  if(current&&mt){const age=ageMin(mt);checks.push({id:'market_freshness',ok:age===null||age<=35,ageMinutes:age===null?null:Math.round(age)});if(age!==null&&age>35)warnings.push('Snapshot gia co the da cu hon nguong phien hien tai.');}
  if(current&&news?.checkedAt){const age=ageMin(news.checkedAt);checks.push({id:'news_freshness',ok:age===null||age<=45,ageMinutes:age===null?null:Math.round(age)});if(age!==null&&age>45)warnings.push('Tin tuc da qua nguong freshness 45 phut.');}
- if(['financial','risk','compare','memo'].includes(intent)){const ok=Boolean(financial&&(financial.annualSummary||financial.quarterSummary||financial.annual||financial.quarterly));checks.push({id:'financial_available',ok});if(!ok)warnings.push('Chua co du du lieu BCTC cho yeu cau nay.');}
- if(['movement','technical','memo'].includes(intent)){const ok=Boolean(market?.quote&&finite(market.quote.price)!==null);checks.push({id:'market_available',ok});if(!ok)warnings.push('Chua co snapshot gia hop le.');}
+ if(['financial','risk','compare','memo'].includes(intent)){const ok=baseContext?.financialDataQuality?.aligned!==false&&Boolean(financial&&(financial.annualSummary||financial.quarterSummary||financial.annual||financial.quarterly));checks.push({id:'financial_available',ok});if(!ok)warnings.push('Chua co du du lieu BCTC cho yeu cau nay.');}
+ if(['movement','technical','memo'].includes(intent)){const ok=baseContext?.marketDataQuality?.usable!==false&&Boolean(market?.quote&&finite(market.quote.price)!==null);checks.push({id:'market_available',ok});if(!ok)warnings.push('Chua co snapshot gia hop le.');}
  const requiredMissing=checks.some(x=>x.ok===false&&['financial_available','market_available'].includes(x.id));
  return{status:requiredMissing?'partial':warnings.length?'warn':'ok',warnings,checks,checkedAt:new Date().toISOString(),baseContextPresent:Boolean(baseContext)};
 }
 function buildContext(question,planInfo,results,validation,baseContext,sources){
- const scanner=results.scanner?.result;const scannerSafe=scanner&&validation.checks.find(x=>x.id==='market_scanner_alignment'&&x.ok===false)?{...scanner,current:null,discardedCurrent:true}:scanner;
- const evidence={};for(const [name,record] of Object.entries(results)){if(record.status==='ok')evidence[name]=name==='scanner'?scannerSafe:record.result;}
+ const scanner=results.scanner?.result,staleMarket=baseContext?.marketDataQuality?.usable===false;
+ const staleScanner=staleMarket||validation.checks.some(x=>x.id==='market_scanner_alignment'&&x.ok===false);
+ const scannerSafe=scanner&&staleScanner?{...scanner,current:null,discardedCurrent:true}:scanner;
+ const evidence={};for(const [name,record] of Object.entries(results)){
+  if(record.status!=='ok')continue;
+  if(name==='market'&&staleMarket){const market=record.result||{};evidence.market={symbol:market.symbol||null,quote:null,driver:null,technical:null,market:market.market||null,discardedQuote:true,reason:baseContext.marketDataQuality?.reason};}
+  else if(name==='financial'&&baseContext?.financialDataQuality?.aligned===false)evidence.financial={unavailable:true,reason:'BCTC không thuộc mã yêu cầu'};
+  else evidence[name]=name==='scanner'?scannerSafe:record.result;
+ }
  const cleanBase={...(baseContext||{})};
  if(scannerSafe?.discardedCurrent)cleanBase.technicalScanner=null;
  return{...cleanBase,agent:{version:VERSION,intent:planInfo.intent,targetSymbol:planInfo.targetSymbol||cleanBase.symbol||null,plan:planInfo.tools,validation,evidence,sourceHints:trimArray(sources||[],12),policy:{numbers:'FINQUERY_ANCHORED_ONLY',staleScanner:'EXCLUDE_CURRENT',missing:'STATE_MISSING_DO_NOT_INVENT',recommendations:'NO_BUY_SELL_ADVICE'}}};
@@ -3875,11 +3887,33 @@ function macroDatasetFor(question,macro){
  return id&&macro.datasets[id]?{id,...macro.datasets[id]}:null;
 }
 function macroNews(question,items){return newsSearch(question,items).slice(0,5);}
+function macroPeriodQuery(question){
+ const s=norm(question),month=s.match(/\bthang\s*(0?[1-9]|1[0-2])\s*(?:nam\s*)?(20\d\d)\b/);
+ if(month)return{type:'month',key:month[2]+'-'+String(month[1]).padStart(2,'0')};
+ const quarters=QP?.periodInfo?.(question)?.quarters||[];
+ if(quarters.length)return{type:'quarter',key:quarters[0]};
+ const years=[...new Set(s.match(/\b20\d\d\b/g)||[])];
+ return years.length===1?{type:'year',key:years[0]}:null;
+}
+function macroRowForPeriod(question,rows){
+ const request=macroPeriodQuery(question);
+ if(!request)return{row:rows.at(-1)||null,index:rows.length-1,period:null};
+ const match=rows.map((row,i)=>{
+  const tag=String(row.date||row.period||row.time||row.year||row.quarter||row.month||'').trim();
+  const compact=norm(tag),iso=tag.toUpperCase();
+  if(request.type==='month')return{row,i,ok:iso.includes(request.key)||iso.includes(request.key.replace('-','/'))||compact.includes(request.key.slice(5)+' '+request.key.slice(0,4))};
+  if(request.type==='quarter')return{row,i,ok:iso.includes(request.key)||iso.includes(request.key.replace('-',''))||compact.includes('q'+request.key.slice(-1)+' '+request.key.slice(0,4))};
+  return{row,i,ok:tag===request.key||compact===request.key};
+ }).filter(x=>x.ok).at(-1);
+ return{row:match?.row||null,index:match?.i??-1,period:request.key};
+}
 function macroHTML(question,m){
  const macro=window.FinMacro?.context?.(),ds=macroDatasetFor(question,macro),matched=macroNews(question,m.marketNews||[]),paragraphs=[];
  if(ds?.qualityStatus&&ds.qualityStatus!=='ok')return prose(['Chuỗi vĩ mô phù hợp đang có cảnh báo chất lượng dữ liệu, nên FinQuery không sử dụng để nêu số liệu chắc chắn.']);
  if(!ds&&!matched.length)return prose(['Chưa có chuỗi số liệu vĩ mô được xác minh đúng chỉ tiêu đang hỏi. FinQuery không thay bằng một chuỗi khác.']);
- if(ds){const rs=ds.rows||[],last=rs.at(-1),prev=rs.at(-2),numeric=ds.numericColumns||[],tokens=norm(question).split(' '),chosen=numeric.find(k=>tokens.some(t=>t.length>2&&(norm(k).includes(t)||norm(ds.metricLabels?.[k]||'').includes(t))))||numeric[0];if(last&&chosen&&typeof last[chosen]==='number'){const label=ds.metricLabels?.[chosen]||chosen,provider=ds.source||'nguồn dữ liệu';let sentence=provider+' gần nhất ghi nhận '+label+' ở '+num(last[chosen])+'.';if(prev&&typeof prev[chosen]==='number'&&prev[chosen]!==0){const change=(last[chosen]/prev[chosen]-1)*100;sentence+=' So với mốc liền trước, '+label+' '+relationText(change)+'.';}paragraphs.push(sentence);}}
+ if(ds){const rs=ds.rows||[],selected=macroRowForPeriod(question,rs),last=selected.row,prev=selected.index>0?rs[selected.index-1]:null,numeric=ds.numericColumns||[],tokens=norm(question).split(' '),chosen=numeric.find(k=>tokens.some(t=>t.length>2&&(norm(k).includes(t)||norm(ds.metricLabels?.[k]||'').includes(t))))||numeric[0];
+  if(selected.period&&!last)return prose(['Không tìm thấy kỳ '+selected.period+' của chuỗi '+(ds.name||ds.id||'vĩ mô')+' trong dữ liệu FinQuery. Không được thay bằng kỳ gần nhất.']);
+  if(last&&chosen&&typeof last[chosen]==='number'){const label=ds.metricLabels?.[chosen]||chosen,provider=ds.source||'nguồn dữ liệu';let sentence=provider+' '+(selected.period?'kỳ '+selected.period:'gần nhất')+' ghi nhận '+label+' ở '+num(last[chosen])+'.';if(prev&&typeof prev[chosen]==='number'&&prev[chosen]!==0){const change=(last[chosen]/prev[chosen]-1)*100;sentence+=' So với mốc liền trước, '+label+' '+relationText(change)+'.';}paragraphs.push(sentence);}}
  if(matched.length){const first=matched[0],second=matched[1],qt=Date.parse(m.quote?.sourceTime||m.quote?.collectedAt||''),nt=Date.parse(first.publishedAt||''),timing=Number.isFinite(qt)&&Number.isFinite(nt)?(qt-nt)/3600000:null;let sentence='Tin gần nhất liên quan tới câu hỏi là “'+first.title+'” từ '+(first.source||'nguồn báo chí')+'.';if(Number.isFinite(timing))sentence+=timing>=0?' Tin xuất hiện trước snapshot khoảng '+num(Math.abs(timing))+' giờ, nên đã nằm trong bối cảnh thông tin thị trường ở thời điểm giá hiện tại.':' Tin xuất hiện sau snapshot khoảng '+num(Math.abs(timing))+' giờ, nên phù hợp hơn để theo dõi phản ứng ở phiên kế tiếp.';if(first.summary)sentence+=' Nội dung RSS: '+first.summary;paragraphs.push(sentence);if(second)paragraphs.push('Bối cảnh thứ hai là “'+second.title+'”. Khi đọc các sự kiện NHNN, OMO, lãi suất ON hay tín dụng, Dolphin AI sắp xếp theo thứ tự trạng thái thanh khoản trước sự kiện → hành động điều tiết → phản ứng lãi suất và thị trường sau sự kiện để xác định cơ chế đang chi phối.');}
  else paragraphs.push(ds?.companySymbol?'Với câu hỏi ESG doanh nghiệp, Dolphin AI ưu tiên KPI do ngân hàng công bố theo từng năm và giữ nguyên external assessment của từng provider; không tự quy đổi Moody’s, VNSI, WWF, S&P hay Sustainalytics thành một điểm chung.':ds?.id==='esg_world_bank'?'Với câu hỏi ESG cấp quốc gia, Dolphin AI đọc chuỗi World Bank Sovereign ESG của Việt Nam theo toàn bộ năm có dữ liệu và không nội suy các năm bị thiếu.':'Với câu hỏi vĩ mô này, Dolphin AI đọc dữ liệu VBMA đang mở trước, sau đó ghép với chuỗi tin thị trường theo thời điểm. Trọng tâm là diễn biến trước và sau sự kiện: thanh khoản, lãi suất, tín dụng và phản ứng của thị trường.');
  const external=macro?.corporateEsg?.externalAssessments||[];if(ds?.companySymbol&&external.length){paragraphs.push('Đánh giá bên ngoài gần nhất đang lưu: '+external.slice(-4).map(x=>(x.provider||'Nguồn')+' '+(x.year||'')+': '+(x.value||x.assessmentType||'đã công bố')).join(' · ')+'.');}
@@ -3991,13 +4025,19 @@ function newsHTML(question,m){
  const s=norm(question),global=/\btin thi truong\b|\btoan thi truong\b|\bvi mo\b/.test(s),items=global?m.marketNews||[]:m.news||[];
  const found=QP?.selectNews?.(question,items,{symbol:state.symbol,companyOnly:!global,limit:6})||[];
  if(!found.length)return prose(['Chưa có tin '+(global?'thị trường':'được xác nhận thuộc '+state.symbol)+' phù hợp câu hỏi và bộ dữ liệu đang tải.']);
- return prose(['Các tin phù hợp nhất trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
+ const wantsRecent=/\bmoi nhat\b|\bhom nay\b|\btin moi\b|\b24 gio\b|\bgan day\b/.test(s);
+ const checkedAt=m.newsCheckedAt||null,checkedMs=Date.parse(checkedAt||''),age=Number.isFinite(checkedMs)?(Date.now()-checkedMs)/60000:Infinity;
+ const disclaimer=wantsRecent&&(!Number.isFinite(age)||age>30)?'Dữ liệu tin chưa có mốc cập nhật hợp lệ trong 30 phút gần đây. Dưới đây chỉ là những tin lưu gần nhất theo nguồn và ngày đăng, KHÔNG khẳng định là tin mới nhất.':null;
+ return prose([disclaimer,'Các tin phù hợp nhất trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
 }
 function forecastHTML(question){
+ const target=/^[A-Z]{3,4}$/.test(state.symbol)?state.symbol:null;
+ const page=new URL('../forecast-final.html',location.href);if(target)page.searchParams.set('symbol',target);
+ const link='<p><a href="'+esc(page.href)+'" target="_blank" rel="noopener noreferrer">Mở Forecast Core để kiểm tra phiên dữ liệu, chân trời và điều kiện dự báo</a></p>';
  const info=window.FinForecast?.context?.()||null;
  const summary=info?.summary||null;
- if(!summary||info?.status==='stale'||info?.eligible===false)return prose(['Không có dự báo được xác minh đúng mã, đúng ngày và đúng chân trời trong ngữ cảnh Dolphin hiện tại. Vui lòng mở Forecast Core để kiểm tra trạng thái dữ liệu. FinQuery không tự suy diễn giá mục tiêu hoặc xác suất.']);
- return prose(['Dữ liệu dự báo phải được kiểm tra trên Forecast Core theo phiên gốc và chân trời T+3/T+4/T+5. Không xuất ra con số nếu chưa đối chiếu được nguồn gốc của dự báo.']);
+ if(!summary||info?.status==='stale'||info?.eligible===false)return prose(['Không có dự báo được xác minh đúng mã, đúng ngày và đúng chân trời trong ngữ cảnh Dolphin hiện tại. FinQuery không tự suy diễn giá mục tiêu hoặc xác suất.'])+link;
+ return prose(['Dữ liệu dự báo phải được kiểm tra trên Forecast Core theo phiên gốc và chân trời T+3/T+4/T+5. Không xuất ra con số nếu chưa đối chiếu được nguồn gốc của dự báo.'])+link;
 }
 function technicalHTML(question,m){
  const priceCheck=QP?.priceQuality?.(m.quote,state.symbol,question);if(priceCheck&&!priceCheck.usable)return prose([priceCheck.reason+'. Không thể dùng chỉ báo như tín hiệu kỹ thuật trong phiên hiện tại.']);
@@ -4221,14 +4261,20 @@ function researchKnowledge(question,annual,quarterly,deep=false){
  return{framework:bank?'bank':'corporate',concepts:[...selected.values()].slice(0,deep?20:8).map(c=>({id:c.id,title:c.title,definition:c.definition,formula:c.formula,read:c.read}))};
 }
 function buildLLMContext(question){
- const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
+ const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},expectedSymbol=String(state.symbol||m.symbol||'').toUpperCase();
+ const reportSymbol=String(r?.symbol||'').toUpperCase(),reportAligned=!reportSymbol||!expectedSymbol||reportSymbol===expectedSymbol;
+ const marketSymbol=String(m.symbol||'').toUpperCase(),marketAligned=!marketSymbol||!expectedSymbol||marketSymbol===expectedSymbol;
+ const annual=reportAligned?(r?.annual||(!r?.quarterly?r?.data:null)):null,quarterly=reportAligned?(r?.quarterly||null):null;
+ const quoteQuality=QP?.priceQuality?.(m.quote,expectedSymbol,question)||{usable:true},marketAllowed=marketAligned&&quoteQuality.usable!==false;
  const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',rowLimit=deep?140:24;
- const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep),academic=academicLenses(question,knowledge,deep);
+ const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(marketAligned?m.news||[]:[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep),academic=academicLenses(question,knowledge,deep);
  return{
   scope:'financial-report',contextVersion:DOLPHIN_VERSION,symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,researchDepth:deep?'deep':'normal',
   generatedAt:new Date().toISOString(),
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
-  marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,technicalScanner:m.scanner||null,
+  financialDataQuality:{aligned:reportAligned,expectedSymbol,reportSymbol:reportSymbol||null,reason:reportAligned?'':'BCTC đang tải thuộc mã khác; không được dùng bất kỳ giá trị nào từ dữ liệu này'},
+  marketDataQuality:{...quoteQuality,aligned:marketAligned,expectedSymbol,marketSymbol:marketSymbol||null,usable:marketAllowed,reason:marketAligned?quoteQuality.reason||'':'Snapshot thị trường thuộc mã khác'},
+  marketSnapshot:marketAllowed?m.quote||null:null,movementDrivers:marketAllowed?m.driver||null:null,marketContext:m.market||null,technical:marketAllowed?m.technical||null:null,technicalScanner:marketAllowed?m.scanner||null:null,
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,rowLimit,deep),quarterRows:compactRows(quarterly,question,rowLimit,deep)},
   knowledgeBase:knowledge,
   academicContext:{policy:'FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE',references:academic},
@@ -4273,6 +4319,7 @@ function dolphinSystemInstruction(){
   'Tuyệt đối không biến khuyến nghị MUA/KHẢ QUAN/TRUNG LẬP/BÁN của CTCK thành khuyến nghị của FinQuery hoặc Dolphin.',
   'Chỉ nêu target trung vị/thấp/cao khi brokerConsensus đã cung cấp; không tự bình quân giá mục tiêu từ dữ liệu thiếu.',
   'Nếu hỏi nguyên nhân biến động giá, tách rõ dữ kiện quan sát được khỏi nguyên nhân có bằng chứng. Không khẳng định quan hệ nhân quả chỉ từ tương quan.',
+  'Nếu context.financialDataQuality.aligned là false hoặc context.marketDataQuality.usable là false, tuyệt đối không dùng số từ nguồn bị loại. Phải nêu dữ liệu sai mã, sai thời gian hoặc thiếu đồng bộ, kể cả khi agent evidence còn chứa snapshot cũ.',
   'Nếu dữ liệu không đủ, nêu đúng dữ liệu nào đang thiếu và vẫn trả lời phần có thể kiểm chứng.',
   'Không đưa ra khuyến nghị mua/bán hoặc cam kết lợi nhuận. Có thể phân tích kịch bản, rủi ro, điều kiện xác nhận và điểm cần theo dõi.',
   'Trả lời theo cấu trúc phù hợp với câu hỏi; không ép mọi câu trả lời vào cùng một mẫu.',
