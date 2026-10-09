@@ -165,7 +165,7 @@ def main():
             failed=WebDriverWait(driver,10,poll_frequency=.25).until(
                 lambda d: d.execute_script("""
                     const status=document.getElementById('status');
-                    return status?.querySelector('button')?.textContent?.includes('Thử tải lại')
+                    return status?.querySelector('button')?.textContent?.includes('Thử tải lại') && document.getElementById('forecastLeaderRetry')
                       ? {status:status.textContent, badge:document.getElementById('modelBadge')?.textContent,
                          snapshot:document.getElementById('snapshotDate')?.textContent,
                          leader:document.getElementById('leaderSummary')?.textContent,
