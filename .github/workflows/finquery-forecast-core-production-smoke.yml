@@ -28,11 +28,9 @@ concurrency:
 
 jobs:
   forecast-ui:
-    # This check probes the live custom domain, not a PR preview. On PRs, its
-    # new source code is not deployed and a live comparison is a false failure.
-    # Source-level guard runs in forecast-ui-integrity.yml; real browser runs
-    # after a successful Pages deployment and on schedule.
-    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    # PR runs exercise the actual branch revision on a localhost preview.
+    # Post-Pages runs exercise the live Vercel domain only after successful deploy.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
