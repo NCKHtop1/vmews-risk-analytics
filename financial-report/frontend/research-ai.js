@@ -54,7 +54,7 @@ const ALIASES={
  profitGrowth:[/tang truong loi nhuan sau thue cua cd cong ty me/,/tang truong loi nhuan truoc thue/]
 };
 function find(data,key){const patterns=ALIASES[key]||[];return rows(data).find(r=>patterns.some(p=>p.test(norm(r.label))));}
-function val(row,period){const v=row?.values?.[period];const n=Number(v);return Number.isFinite(n)?n:null;}
+function val(row,period){const v=row?.values?.[period];if(v===null||v===undefined||String(v).trim()==='')return null;const n=Number(v);return Number.isFinite(n)?n:null;}
 function latest(data){return periods(data).at(-1)||null;}
 function previousPeriod(data,p){const ps=periods(data),i=ps.indexOf(String(p));return i>0?ps[i-1]:null;}
 function sameQuarterLastYear(data,p){const m=String(p||'').match(/^(\d{4})-Q([1-4])$/);if(!m)return null;const x=`${Number(m[1])-1}-Q${m[2]}`;return periods(data).includes(x)?x:null;}
@@ -157,10 +157,21 @@ function compareNarrative(a,q){
  if(q)out.push('Quý '+q.period+' cho thấy doanh thu '+relationText(q.qoq.revenue)+' so với quý trước và '+relationText(q.yoyChange.revenue)+' so với cùng kỳ; lợi nhuận '+relationText(q.qoq.profit)+' QoQ và '+relationText(q.yoyChange.profit)+' YoY.');
  return out;
 }
-const K=window.FinQueryKnowledge||{find(){return null;},explainLabel(){return'Đây là chỉ tiêu có trong dữ liệu FinQuery.';}};
+const K=window.FinQueryKnowledge||{find(){return null;},search(){return [];},explainLabel(){return'Chỉ tiêu chưa có định nghĩa được kiểm chứng.';}};
+const QP=window.FinQueryQuestionPolicy||null;
 function technicalMetric(concept,m){const t=m?.technical,i=t?.indicators||{};if(!concept||!t)return null;const map={rsi:'rsi',macd:'macd',bollinger:'middle',atr:'atr',adx:'adx',stochastic:'stoch',supertrend:'supertrend',obv:'obv',mfi:'mfi',cmf:'cmf',sma:'sma',ema:'ema'};const key=map[concept.id];return key&&Number.isFinite(i[key])?{value:i[key],period:t.timeframe,key}:null;}
 function currentConceptValue(concept,a,q,annual,m){if(!concept)return null;if(concept.metric&&a){if(Object.prototype.hasOwnProperty.call(a.ratios,concept.metric)&&Number.isFinite(a.ratios[concept.metric]))return{value:a.ratios[concept.metric],period:a.period,unit:'%'};if(Object.prototype.hasOwnProperty.call(a.values,concept.metric)&&Number.isFinite(a.values[concept.metric]))return{value:a.values[concept.metric],period:a.period,unit:'money'};}if(concept.id==='reference'&&Number.isFinite(m?.quote?.reference))return{value:m.quote.reference,period:'phiên hiện tại',unit:'VND'};return technicalMetric(concept,m);}
-function dynamicMetricHit(question,annual,quarterly){const terms=norm(question).split(' ').filter(x=>x.length>2&&!['nghia','khai','niem','cong','thuc','the','nao','bao','nhieu','tot','xau'].includes(x)),hits=[];for(const [scope,data]of[['Năm',annual],['Quý',quarterly]]){if(!data)continue;for(const row of rows(data)){const n=norm(row.label),score=terms.reduce((s,t)=>s+(n.includes(t)?1:0),0);if(score)hits.push({score,scope,row,data});}}hits.sort((a,b)=>b.score-a.score);return hits[0]||null;}
+function dynamicMetricHit(question,annual,quarterly){
+ const hits=[];
+ for(const [scope,data] of [['Năm',annual],['Quý',quarterly]]){
+  if(!data)continue;
+  for(const hit of QP?.searchRows?.(question,data,{minCoverage:.8,limit:6})||[]){
+   const p=latest(data);if(!p||!Number.isFinite(val(hit.row,p)))continue;
+   hits.push({...hit,scope,data});
+  }
+ }
+ return hits.sort((a,b)=>b.score-a.score||String(a.row.label).length-String(b.row.label).length)[0]||null;
+}
 function conceptDiagnosis(concept,a,q){
  if(!concept||!a)return[];
  const out=[];
@@ -266,14 +277,18 @@ function comparisonHTML(a,q){
  return prose(compareNarrative(a,q))+parts.join('');
 }
 function localMetricSearch(question,annual,quarterly){
- const terms=norm(question).split(' ').filter(x=>x.length>2&&!['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia'].includes(x)),datasets=[['Năm',annual],['Quý',quarterly]],hits=[];
- for(const [scope,data]of datasets){if(!data)continue;for(const row of rows(data)){const label=norm(row.label),score=terms.reduce((s,t)=>s+(label.includes(t)?2:0),0);if(!score)continue;const ps=periods(data).slice(-8),values=ps.filter(p=>Number.isFinite(val(row,p))).map(p=>({period:p,value:val(row,p)}));if(values.length)hits.push({score,scope,row,data,values});}}
- return hits.sort((a,b)=>b.score-a.score);
+ const results=[];
+ for(const [scope,data] of [['Năm',annual],['Quý',quarterly]]){
+  if(!data)continue;
+  for(const hit of QP?.searchRows?.(question,data,{minCoverage:.8,limit:8})||[]){
+   const values=periods(data).slice(-8).filter(p=>Number.isFinite(val(hit.row,p))).map(p=>({period:p,value:val(hit.row,p)}));
+   if(values.length)results.push({...hit,scope,data,values});
+  }
+ }
+ return results.sort((a,b)=>b.score-a.score);
 }
 function newsSearch(question,items){
- const stop=new Set(['tai','sao','vi','sao','giam','tang','the','nao','hien','nay','phan','tich','danh','gia','cho','toi','ve','cua','anh','huong']);
- const terms=norm(question).split(' ').filter(x=>x.length>2&&!stop.has(x));
- return(items||[]).map(n=>{const hay=norm((n.title||'')+' '+(n.summary||'')+' '+(n.topics||[]).join(' ')),relevance=terms.reduce((s,t)=>s+((' '+hay+' ').includes(' '+t+' ')?2:0),0),symbolMatch=(n.symbols||[]).includes(state.symbol),score=relevance+(symbolMatch?2:0);return{...n,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,8);
+ return QP?.selectNews?.(question,items,{symbol:state.symbol,companyOnly:false,limit:8})||[];
 }
 function searchHTML(question,annual,quarterly,m){
  const concept=K.find?.(question);if(concept)return conceptHTML(question,annualSnapshot(annual),quarterSnapshot(quarterly),annual,quarterly,m);
@@ -321,26 +336,8 @@ function memoHTML(question,a,q,m){
  return`${prose(headline)}${facts.length?section('Dữ kiện chính',table(facts)):''}${supportHTML?section('Luận điểm hỗ trợ',supportHTML):''}${counterHTML?section('Điểm làm yếu luận điểm',counterHTML):''}${newsHits.length?headlineList(newsHits):''}${watch.length?section('Mốc cần theo dõi','<div class="research-case watch-case">'+watch.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>'):''}`;
 }
 function classify(q){
- const s=norm(q),concept=K.find?.(q);
- const asksDefinition=/la gi|nghia la gi|khai niem|cong thuc|cach tinh|do cai gi|the hien gi/.test(s);
- const stockMove=/gia co phieu|co phieu|ma nay|phien hom nay|phien nay|dong luc phien|vi sao ma|vi sao co phieu/.test(s);
- const explicitRisk=/rui ro|canh bao|bat thuong|yeu diem/.test(s);
- const explicitCompare=/so sanh|ky truoc|cung ky|qoq|yoy/.test(s);
- const explicitMemo=/phan tich chuyen sau|phan tich toan dien|tong hop|ho so nghien cuu|danh gia tong the|tinh hinh/.test(s);
- const explicitFinancial=/suc khoe|tai chinh|tong quan|doanh thu|loi nhuan|dong tien|\bno\b|roe|roa|bien loi nhuan|fcf|ocf|phai thu|ton kho/.test(s);
- const explicitMacro=/nhnn|ngan hang nha nuoc|lai suat|overnight|\bon\b|omo|ty gia|lam phat|\bgdp\b|\bpmi\b|\bfdi\b|cung tien|m2|vi mo|\besg\b|moi truong|xa hoi|quan tri|governance|environment/.test(s);
- const pureRiskDefinition=/rui ro (la gi|nghia la gi)|khai niem rui ro/.test(s);
- if(explicitRisk&&!pureRiskDefinition)return'risk';
- if(concept&&asksDefinition)return'concept';
- if(explicitRisk)return'risk';
- if(explicitCompare)return'compare';
- if(explicitMemo)return'memo';
- if(explicitMacro)return'macro';
- if(stockMove||((/vi sao|nguyen nhan|tang|giam|bien dong/.test(s))&&!concept))return'movement';
- if(explicitFinancial)return'financial';
- if(concept)return'concept';
- if(asksDefinition)return'concept';
- return'search';
+ const ranked=K.search?.(q,8)||[];
+ return QP?.route?.(q,ranked)||'unknown';
 }
 function analyze(question){
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
