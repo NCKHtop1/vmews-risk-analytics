@@ -106,7 +106,12 @@ function refresh(){
  try{
   const model=build();if(!model)return;
   state.model=model;
-  if(state.selected&&!model.opportunities.some(x=>x.symbol===state.selected))state.selected=model.opportunities[0]?.symbol||null;
+  // A user-selected ticker can be outside today's ranked opportunities yet still
+  // have valid strategy snapshot data. Never silently switch it to another issuer.
+  const snapshotSymbols=model.snapshot?.symbols||{};
+  if(state.selected&&!model.opportunities.some(x=>x.symbol===state.selected)&&!Object.prototype.hasOwnProperty.call(snapshotSymbols,state.selected)){
+   state.selected=model.opportunities[0]?.symbol||null;
+  }
   renderStatus(model);renderRegime(model);renderStrategies(model);renderOpportunities(model);renderView(model);renderExecution();
  }finally{state.busy=false;}
 }
