@@ -109,7 +109,7 @@ function scoreConcept(q,c){
    score=Math.max(score,15+Math.min(6,at.length));continue;
   }
   // Whole-word typo only, never fuzzy-match 2–3 character acronyms.
-  if(at.length===1&&n.length>=5&&qt.length===1&&edit(qt[0],n)===1)
+  if(at.length===1&&at[0].length>=5&&qt.length===1&&edit(qt[0],at[0])===1)
    score=Math.max(score,15);
  }
  return score;
