@@ -670,14 +670,20 @@ function researchKnowledge(question,annual,quarterly,deep=false){
  return{framework:bank?'bank':'corporate',concepts:[...selected.values()].slice(0,deep?20:8).map(c=>({id:c.id,title:c.title,definition:c.definition,formula:c.formula,read:c.read}))};
 }
 function buildLLMContext(question){
- const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null;
+ const r=raw(),m=market(),insights=window.FinInsights?.context?.()||{},expectedSymbol=String(state.symbol||m.symbol||'').toUpperCase();
+ const reportSymbol=String(r?.symbol||'').toUpperCase(),reportAligned=!reportSymbol||!expectedSymbol||reportSymbol===expectedSymbol;
+ const marketSymbol=String(m.symbol||'').toUpperCase(),marketAligned=!marketSymbol||!expectedSymbol||marketSymbol===expectedSymbol;
+ const annual=reportAligned?(r?.annual||(!r?.quarterly?r?.data:null)):null,quarterly=reportAligned?(r?.quarterly||null):null;
+ const quoteQuality=QP?.priceQuality?.(m.quote,expectedSymbol,question)||{usable:true},marketAllowed=marketAligned&&quoteQuality.usable!==false;
  const deep=state.mode==='deep'||inferredQuestionMode(question)==='deep',rowLimit=deep?140:24;
- const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(m.news||[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep),academic=academicLenses(question,knowledge,deep);
+ const a=annualSnapshot(annual),q=quarterSnapshot(quarterly),companyNews=cleanNews(marketAligned?m.news||[]:[],deep?12:8),macro=compactMacro(question),knowledge=researchKnowledge(question,annual,quarterly,deep),academic=academicLenses(question,knowledge,deep);
  return{
   scope:'financial-report',contextVersion:DOLPHIN_VERSION,symbol:state.symbol||m.symbol||'',mode:new URLSearchParams(location.search).get('mode')||null,researchDepth:deep?'deep':'normal',
   generatedAt:new Date().toISOString(),
   dataPolicy:{financialNumbers:'FINQUERY_VERIFIED_ONLY',calculations:'LOCAL_ENGINE_ONLY',llmRole:'interpret_compare_explain',missingData:'STATE_MISSING_DO_NOT_INVENT'},
-  marketSnapshot:m.quote||null,movementDrivers:m.driver||null,marketContext:m.market||null,technical:m.technical||null,technicalScanner:m.scanner||null,
+  financialDataQuality:{aligned:reportAligned,expectedSymbol,reportSymbol:reportSymbol||null,reason:reportAligned?'':'BCTC đang tải thuộc mã khác; không được dùng bất kỳ giá trị nào từ dữ liệu này'},
+  marketDataQuality:{...quoteQuality,aligned:marketAligned,expectedSymbol,marketSymbol:marketSymbol||null,usable:marketAllowed,reason:marketAligned?quoteQuality.reason||'':'Snapshot thị trường thuộc mã khác'},
+  marketSnapshot:marketAllowed?m.quote||null:null,movementDrivers:marketAllowed?m.driver||null:null,marketContext:m.market||null,technical:marketAllowed?m.technical||null:null,technicalScanner:marketAllowed?m.scanner||null:null,
   localFinancialData:{annualSummary:a,quarterSummary:q,annualRows:compactRows(annual,question,rowLimit,deep),quarterRows:compactRows(quarterly,question,rowLimit,deep)},
   knowledgeBase:knowledge,
   academicContext:{policy:'FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE',references:academic},
@@ -722,6 +728,7 @@ function dolphinSystemInstruction(){
   'Tuyệt đối không biến khuyến nghị MUA/KHẢ QUAN/TRUNG LẬP/BÁN của CTCK thành khuyến nghị của FinQuery hoặc Dolphin.',
   'Chỉ nêu target trung vị/thấp/cao khi brokerConsensus đã cung cấp; không tự bình quân giá mục tiêu từ dữ liệu thiếu.',
   'Nếu hỏi nguyên nhân biến động giá, tách rõ dữ kiện quan sát được khỏi nguyên nhân có bằng chứng. Không khẳng định quan hệ nhân quả chỉ từ tương quan.',
+  'Nếu context.financialDataQuality.aligned là false hoặc context.marketDataQuality.usable là false, tuyệt đối không dùng số từ nguồn bị loại. Phải nêu dữ liệu sai mã, sai thời gian hoặc thiếu đồng bộ, kể cả khi agent evidence còn chứa snapshot cũ.',
   'Nếu dữ liệu không đủ, nêu đúng dữ liệu nào đang thiếu và vẫn trả lời phần có thể kiểm chứng.',
   'Không đưa ra khuyến nghị mua/bán hoặc cam kết lợi nhuận. Có thể phân tích kịch bản, rủi ro, điều kiện xác nhận và điểm cần theo dõi.',
   'Trả lời theo cấu trúc phù hợp với câu hỏi; không ép mọi câu trả lời vào cùng một mẫu.',
