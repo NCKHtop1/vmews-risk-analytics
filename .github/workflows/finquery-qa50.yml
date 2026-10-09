@@ -1,0 +1,40 @@
+name: FinQuery QA50 real browser
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'financial-report/tests/finquery_qa50_live.py'
+      - '.github/workflows/finquery-qa50.yml'
+permissions:
+  contents: read
+concurrency:
+  group: finquery-qa50
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout the branch being tested
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install QA dependencies
+        run: |
+          python -m pip install -q playwright==1.55.0 openpyxl==3.1.5
+          python -m playwright install --with-deps chromium
+      - name: Compile QA runner
+        run: python -m py_compile financial-report/tests/finquery_qa50_live.py
+      - name: Execute exact 50 real production cases
+        env:
+          FINQUERY_QA_URL: https://finquery.info.vn/financial-report/
+        run: python financial-report/tests/finquery_qa50_live.py
+      - name: Upload screenshots and status matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FinQuery-QA50-evidence
+          path: qa50_results/
+          retention-days: 14
+          if-no-files-found: warn
