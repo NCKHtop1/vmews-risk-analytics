@@ -14,7 +14,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: finquery-qa50
+  group: finquery-qa50-${{ github.sha }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -29,7 +29,11 @@ jobs:
       - name: Install QA dependencies
         run: |
           python -m pip install -q playwright==1.55.0 openpyxl==3.1.5
-          python -m playwright install --with-deps chromium
+          if command -v google-chrome >/dev/null 2>&1 || command -v google-chrome-stable >/dev/null 2>&1; then
+            echo "Using preinstalled Google Chrome for Playwright"
+          else
+            python -m playwright install --with-deps chromium
+          fi
       - name: Compile QA runner
         run: python -m py_compile financial-report/tests/finquery_qa50_live.py
       - name: Wait for tested code revision to reach GitHub Pages
