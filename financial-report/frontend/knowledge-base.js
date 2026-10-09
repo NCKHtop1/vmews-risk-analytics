@@ -95,16 +95,20 @@ function scoreConcept(q,c){
  const bounded=(phrase)=>(' '+s+' ').includes(' '+phrase+' ');
  for(const alias of [c.title,...(c.aliases||[])]){
   const n=norm(alias),at=tokens(n);if(!n)continue;
+  // Vietnamese first-person 'tôi' is not the finance acronym TOI.
+  if(n==='toi'&&!/\bTOI\b/.test(String(q)))continue;
   if(s===n){score=Math.max(score,40);continue;}
   // A label is evidence only when its entire phrase appears on token boundaries.
   // Never match a short acronym by edit distance: "tai"/"toi" must stay distinct.
   if(bounded(n)){score=Math.max(score,30+Math.min(8,at.length*2));continue;}
   const overlap=at.filter(t=>qt.includes(t)).length;
   if(at.length>=2&&overlap===at.length){
-   score=Math.max(score,16+Math.min(8,at.length*2));
-   continue;
+   score=Math.max(score,16+Math.min(8,at.length*2));continue;
   }
-  // Typo tolerance is restricted to whole, long, single-word queries.
+  if(at.length>=2&&at.every(t=>qt.some(w=>w===t||(t.length>=5&&w.length>=5&&edit(w,t)===1)))){
+   score=Math.max(score,15+Math.min(6,at.length));continue;
+  }
+  // Whole-word typo only, never fuzzy-match 2–3 character acronyms.
   if(at.length===1&&n.length>=5&&qt.length===1&&edit(qt[0],n)===1)
    score=Math.max(score,15);
  }
