@@ -184,12 +184,12 @@ function conceptDiagnosis(concept,a,q){
  return out;
 }
 function conceptHTML(question,a,q,annual,quarterly,m){
- const ranked=K.search?.(question,4)||[],concept=K.find?.(question)||ranked[0]?.c||null,dyn=!concept?dynamicMetricHit(question,annual,quarterly):null;if(!concept&&!dyn)return'';
+ const ranked=K.search?.(question,4)||[],concept=K.find?.(question)||null,dyn=!concept?dynamicMetricHit(question,annual,quarterly):null;if(!concept&&!dyn)return'';
  if(dyn){const p=latest(dyn.data),prev=previousPeriod(dyn.data,p),v=val(dyn.row,p),old=val(dyn.row,prev),g=growth(v,old),definition=K.explainLabel?.(dyn.row.label)||'Đây là chỉ tiêu có trong dữ liệu FinQuery.';return prose([dyn.row.label+': '+definition+' Với '+state.symbol+', kỳ '+p+' ghi nhận '+point(v,dyn.row.unit)+(Number.isFinite(g)?', '+relationText(g)+' so với '+prev:'')+'.'])+section('Dữ liệu đang có',table([[dyn.row.label,point(v,dyn.row.unit),prev?('so với '+prev+' '+pct(g)):'',tone(g)]]));}
  const current=currentConceptValue(concept,a,q,annual,m),paragraphs=[concept.definition,concept.formula?'Công thức: '+concept.formula+'.':'',concept.read||'',...conceptDiagnosis(concept,a,q)];
  if(current){let value=current.unit==='%'?num(current.value)+'%':current.unit==='money'?money(current.value):current.unit==='VND'?nf.format(current.value)+' đồng':num(current.value);let sentence='Với '+state.symbol+', '+concept.title+' tại '+current.period+' đang ở mức '+value+'.';if(concept.metric&&annual&&a?.previous){const old=val(find(annual,concept.metric),a.previous);if(Number.isFinite(old)){const diff=current.value-old;sentence+=' So với '+a.previous+', chỉ tiêu '+(diff>=0?'tăng ':'giảm ')+num(Math.abs(diff))+' điểm.';}}paragraphs.push(sentence);}
  if(m?.technical&&['rsi','macd','bollinger','atr','adx','stochastic','supertrend','obv','mfi','cmf','sma','ema','meanReversion','volume','cci','roc','willr','vwap'].includes(concept.id)&&m.technical.snapshot)paragraphs.push(m.technical.snapshot.title+'. '+m.technical.snapshot.detail);
- if(ranked.length>1)paragraphs.push('Các khái niệm gần câu hỏi nhất trong hệ thống: '+ranked.slice(1,4).map(x=>x.c.title).join(', ')+'.');
+ // Related concepts must never be presented as an answer to an unrelated definition query.
  return prose(paragraphs.filter(Boolean));
 }
 function headlineList(items){if(!items?.length)return'';return section('Tin liên quan gần nhất',`<div class="analysis-news">${items.slice(0,5).map(n=>{const u=/^https?:\/\//.test(n.url||'')?n.url:'#';return`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><span>${esc(n.title)}</span><small>${esc(n.source||'')} · ${esc(String(n.publishedAt||'').slice(0,10))}</small></a>`}).join('')}</div>`);}
@@ -273,7 +273,7 @@ function localMetricSearch(question,annual,quarterly){
 function newsSearch(question,items){
  const stop=new Set(['tai','sao','vi','sao','giam','tang','the','nao','hien','nay','phan','tich','danh','gia','cho','toi','ve','cua','anh','huong']);
  const terms=norm(question).split(' ').filter(x=>x.length>2&&!stop.has(x));
- return(items||[]).map(n=>{const hay=norm((n.title||'')+' '+(n.summary||'')+' '+(n.topics||[]).join(' ')),score=terms.reduce((s,t)=>s+(hay.includes(t)?2:0),0)+(n.symbols||[]).includes(state.symbol)?2:0;return{...n,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,8);
+ return(items||[]).map(n=>{const hay=norm((n.title||'')+' '+(n.summary||'')+' '+(n.topics||[]).join(' ')),relevance=terms.reduce((s,t)=>s+((' '+hay+' ').includes(' '+t+' ')?2:0),0),symbolMatch=(n.symbols||[]).includes(state.symbol),score=relevance+(symbolMatch?2:0);return{...n,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,8);
 }
 function searchHTML(question,annual,quarterly,m){
  const concept=K.find?.(question);if(concept)return conceptHTML(question,annualSnapshot(annual),quarterSnapshot(quarterly),annual,quarterly,m);
@@ -283,8 +283,8 @@ function searchHTML(question,annual,quarterly,m){
  if(newsHits.length){const n=newsHits[0];paragraphs.push('Tin phù hợp nhất với câu hỏi là “'+n.title+'” từ '+(n.source||'nguồn báo chí')+' công bố '+String(n.publishedAt||'').slice(0,16).replace('T',' ')+'.'+(n.summary?' Nội dung tóm tắt: '+n.summary:''));}
  if(m.technical?.snapshot)paragraphs.push('Trạng thái kỹ thuật hiện tại: '+m.technical.snapshot.title+'. '+m.technical.snapshot.detail);
  if(paragraphs.length){let details='';if(hits.length)details+=section('Chuỗi dữ liệu liên quan',`<div class="analysis-search-results">${hits.slice(0,8).map(h=>`<div><strong>${esc(h.row.label)}</strong><span>${esc(h.scope)}</span><p>${esc(h.values.map(x=>x.period+': '+point(x.value,h.row.unit)).join(' · '))}</p></div>`).join('')}</div>`);if(newsHits.length)details+=headlineList(newsHits);return prose(paragraphs)+details;}
- const nearest=K.search?.(question,4)||[];
- if(nearest.length){const first=nearest[0].c;return prose([first.definition,first.formula?'Công thức: '+first.formula+'.':'',first.read||'','Câu hỏi được ghép với nhóm khái niệm gần nhất trong kho FinQuery: '+nearest.map(x=>x.c.title).join(', ')+'.'].filter(Boolean));}
+ // No semantic match: fail closed rather than manufacture a plausible but unrelated definition.
+ if(/la gi|nghia la gi|khai niem|cong thuc|cach tinh|dinh nghia/.test(norm(question)))return prose(['FinQuery chưa xác định được chính xác thuật ngữ được hỏi trong kho kiến thức đã kiểm chứng. Vui lòng nêu cụm từ đầy đủ; hệ thống sẽ không thay thế bằng định nghĩa khác.']);
  const tech=m.technical?.snapshot?m.technical.snapshot.title+'. '+m.technical.snapshot.detail:'',marketText=m.quote?state.symbol+' đang '+(m.quote.changePct>=0?'tăng ':'giảm ')+num(Math.abs(m.quote.changePct))+'% so với tham chiếu '+(Number.isFinite(m.quote.reference)?nf.format(m.quote.reference)+' đồng':'hiện tại')+'.':'';
  return prose([marketText,tech,'Câu hỏi được xử lý theo dữ liệu thực của mã đang xem: giá, chỉ báo kỹ thuật, BCTC và tin liên quan đang có trong FinQuery.'].filter(Boolean));
 }
