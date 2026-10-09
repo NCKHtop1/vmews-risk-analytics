@@ -545,6 +545,20 @@ body.strategy-lab-view .strategy-page{display:block}
 
 /* Dolphin modal: the floating launcher must never obscure Send / Stop on mobile. */
 .ai-fab[hidden],body.dolphin-modal-open .ai-fab{display:none!important;pointer-events:none!important}
+
+/* QA50 landscape: reserve a reachable footer even on 360px-high phones. */
+@media (max-height:480px) and (min-width:601px){
+ .research-ai.ai-drawer.ai-modal{
+   width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important;
+   max-height:calc(100dvh - 12px)!important;border-radius:12px!important;
+ }
+ .research-ai.ai-drawer .research-ai-head{max-height:52px!important;min-height:0!important;overflow:hidden!important;padding:4px 12px!important}
+ .research-ai.ai-drawer .research-ai-head h3{font-size:14px!important;line-height:1.1!important}
+ .research-ai.ai-drawer .dolphin-connect-card{max-height:58px!important;min-height:0!important;overflow-y:auto!important;margin-top:0!important;padding:5px 8px!important}
+ .research-ai.ai-drawer .research-ai-prompts{max-height:32px!important;min-height:0!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px 10px!important}
+ .research-ai.ai-drawer .research-ai-form{min-height:0!important;padding:5px 10px!important;grid-template-columns:minmax(0,1fr) 105px!important}
+ .research-ai.ai-drawer .research-ai-form textarea,.research-ai.ai-drawer .research-ai-form button{min-height:44px!important;height:44px!important}
+}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -3334,22 +3348,33 @@ function searchRows(question,data,{minCoverage=0.6,limit=8}={}){
  return ranked.slice(0,limit);
 }
 function selectNews(question,items,{symbol='',companyOnly=false,limit=8}={}){
- const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' ')),topic=topicTokens(question,symbol);
- // Common company names in the query are identification, not topical matching requirements.
+ const s=norm(question),providerRequested=/\b24hmoney\b/.test(s)?'24hmoney':/\bcafef\b/.test(s)?'cafef':/\bvietstock\b/.test(s)?'vietstock':/\bfireant\b/.test(s)?'fireant':'';
+ const dividend=/\bco tuc\b/.test(s),recentDay=/\b24h\b|\b24 gio\b/.test(s);
+ const generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s.replace(/\btin (?:dung|hieu)\b/g,' '));
+ const topic=topicTokens(question,symbol).filter(t=>!['24hmoney','24h','qua','cafef','vietstock','fireant'].includes(t));
  const out=[];
  for(const row of Array.isArray(items)?items:[]){
   const symbols=Array.isArray(row.symbols)?row.symbols.map(x=>String(x).toUpperCase()):[];
   const companyHit=Boolean(symbol)&&(symbols.includes(String(symbol).toUpperCase())||(!symbols.length&&has(norm(row.title),symbol)));
   if(companyOnly&&!companyHit)continue;
-  const text=(row.title||'')+' '+(row.summary||'')+' '+(Array.isArray(row.topics)?row.topics.join(' '):'');
-  const matched=topic.filter(t=>(' '+norm(text)+' ').includes(' '+t+' ')).length;
-  const topical=topic.length?matched/topic.length:0;
-  if(topic.length&&topical===0)continue;
-  if(!topic.length&&!generic)continue;
-  if(!topic.length&&companyOnly&&!companyHit)continue;
-  out.push({...row,_relevance:topical*100+(companyHit?10:0)});
+  const provider=norm(row.source||row.publisher||'').replace(/\s+/g,'');
+  if(providerRequested&&!provider.includes(providerRequested))continue;
+  const issued=Date.parse(row.publishedAt||row.date||'');
+  if(recentDay&&(!Number.isFinite(issued)||issued>Date.now()+5*60000||Date.now()-issued>24*3600000))continue;
+  const title=norm(row.title||''),summary=norm(row.summary||''),tags=norm((Array.isArray(row.topics)?row.topics:[]).join(' '));
+  const headline=' '+title+' ',detail=' '+summary+' ',category=' '+tags+' ';
+  // An article mentioning generic "tin tức" is not evidence of dividend news.
+  if(dividend&&!headline.includes(' co tuc ')&&!detail.includes(' co tuc ')&&!category.includes(' co tuc '))continue;
+  const titleHits=topic.filter(t=>headline.includes(' '+t+' ')).length;
+  const summaryHits=topic.filter(t=>detail.includes(' '+t+' ')).length;
+  const tagHits=topic.filter(t=>category.includes(' '+t+' ')).length;
+  if(topic.length&&titleHits+summaryHits+tagHits===0)continue;
+  if(!topic.length&&!generic&&!providerRequested)continue;
+  // The headline should outweigh incidental words in summaries or topic tags.
+  const score=(titleHits*7+summaryHits*2+tagHits)/Math.max(1,topic.length)+(dividend&&headline.includes(' co tuc ')?12:0)+(companyHit?3:0);
+  out.push({...row,_relevance:score});
  }
- return out.sort((a,b)=>b._relevance-a._relevance||Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,limit).map(({_relevance,...row})=>row);
+ return out.sort((a,b)=>b._relevance-a._relevance||(Date.parse(b.publishedAt||0)||0)-(Date.parse(a.publishedAt||0)||0)).slice(0,limit).map(({_relevance,...row})=>row);
 }
 function priceQuality(quote,symbol='',question='',now=new Date()){
  if(!quote||!Number.isFinite(Number(quote.price))||Number(quote.price)<=0)return{usable:false,reason:'Chưa có giá hợp lệ'};
@@ -4034,7 +4059,7 @@ function newsHTML(question,m){
  const wantsRecent=/\bmoi nhat\b|\bhom nay\b|\btin moi\b|\b24 gio\b|\bgan day\b/.test(s);
  const checkedAt=m.newsCheckedAt||null,checkedMs=Date.parse(checkedAt||''),age=Number.isFinite(checkedMs)?(Date.now()-checkedMs)/60000:Infinity;
  const disclaimer=wantsRecent&&(!Number.isFinite(age)||age>30)?'Dữ liệu tin chưa có mốc cập nhật hợp lệ trong 30 phút gần đây. Dưới đây chỉ là những tin lưu gần nhất theo nguồn và ngày đăng, KHÔNG khẳng định là tin mới nhất.':null;
- return prose([disclaimer,'Các tin phù hợp nhất trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
+ return prose([disclaimer,'Các tin phù hợp nhất '+(global?'của thị trường':'về mã '+state.symbol)+' trong dữ liệu FinQuery (không đồng nghĩa đã được xác minh nguyên nhân tác động giá):'])+headlineList(found);
 }
 function forecastHTML(question){
  const target=/^[A-Z]{3,4}$/.test(state.symbol)?state.symbol:null;
@@ -4076,7 +4101,8 @@ function classify(q){
  return QP?.route?.(q,K.search?.(q,12)||[])||'unknown';
 }
 function analyze(question){
- const requested=window.FinResearchAgent?.resolveTargetSymbols?.(question)||[];
+ const issuerQuery=String(question||'').replace(/\bFPT\s+Retail\b/gi,'FRT').replace(/\bFPT\s+Securities\b/gi,'FTS');
+ const requested=window.FinResearchAgent?.resolveTargetSymbols?.(issuerQuery)||[];
  if(requested.length>1)return{type:'multiSymbol',html:prose(['Câu hỏi yêu cầu nhiều mã ('+requested.join(', ')+'). Chế độ dữ liệu cục bộ hiện không tải BCTC độc lập cho tất cả mã cùng lúc; không thể so sánh chính xác khi thiếu dữ liệu.'])};
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
  const explicit=String(question||'').match(/(?:mã|ma|ticker|symbol)\s+([A-Z]{3,5})\b/i);
