@@ -384,7 +384,10 @@ function exactMetricRow(data,key){
  const special=ROW_PATTERNS[key];if(special)return rows(data).find(r=>special.test(norm(r.label)))||null;
  if(key==='revenue')return rows(data).find(r=>/^doanh thu thuan$|^doanh thu ban hang va cung cap dich vu$/.test(norm(r.label)))||null;
  if(key==='profit')return find(data,'profit');
- return find(data,key);
+ const mapped=find(data,key);if(mapped)return mapped;
+ const entry=K.byId?.[key];if(!entry)return null;
+ const labels=new Set([entry.title,...(entry.aliases||[])].map(norm));
+ return rows(data).find(r=>labels.has(norm(r.label)))||null;
 }
 function metricHTML(question,annual,quarterly,m){
  const s=norm(question),period=QP?.periodInfo?.(question)||{years:[],quarters:[],isQuarter:false},specified=[...period.quarters,...(!period.quarters.length?period.years:[])];
