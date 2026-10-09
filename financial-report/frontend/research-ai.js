@@ -324,11 +324,33 @@ function macroDatasetFor(question,macro){
  return id&&macro.datasets[id]?{id,...macro.datasets[id]}:null;
 }
 function macroNews(question,items){return newsSearch(question,items).slice(0,5);}
+function macroPeriodQuery(question){
+ const s=norm(question),month=s.match(/\bthang\s*(0?[1-9]|1[0-2])\s*(?:nam\s*)?(20\d\d)\b/);
+ if(month)return{type:'month',key:month[2]+'-'+String(month[1]).padStart(2,'0')};
+ const quarters=QP?.periodInfo?.(question)?.quarters||[];
+ if(quarters.length)return{type:'quarter',key:quarters[0]};
+ const years=[...new Set(s.match(/\b20\d\d\b/g)||[])];
+ return years.length===1?{type:'year',key:years[0]}:null;
+}
+function macroRowForPeriod(question,rows){
+ const request=macroPeriodQuery(question);
+ if(!request)return{row:rows.at(-1)||null,index:rows.length-1,period:null};
+ const match=rows.map((row,i)=>{
+  const tag=String(row.date||row.period||row.time||row.year||row.quarter||row.month||'').trim();
+  const compact=norm(tag),iso=tag.toUpperCase();
+  if(request.type==='month')return{row,i,ok:iso.includes(request.key)||iso.includes(request.key.replace('-','/'))||compact.includes(request.key.slice(5)+' '+request.key.slice(0,4))};
+  if(request.type==='quarter')return{row,i,ok:iso.includes(request.key)||iso.includes(request.key.replace('-',''))||compact.includes('q'+request.key.slice(-1)+' '+request.key.slice(0,4))};
+  return{row,i,ok:tag===request.key||compact===request.key};
+ }).filter(x=>x.ok).at(-1);
+ return{row:match?.row||null,index:match?.i??-1,period:request.key};
+}
 function macroHTML(question,m){
  const macro=window.FinMacro?.context?.(),ds=macroDatasetFor(question,macro),matched=macroNews(question,m.marketNews||[]),paragraphs=[];
  if(ds?.qualityStatus&&ds.qualityStatus!=='ok')return prose(['Chuỗi vĩ mô phù hợp đang có cảnh báo chất lượng dữ liệu, nên FinQuery không sử dụng để nêu số liệu chắc chắn.']);
  if(!ds&&!matched.length)return prose(['Chưa có chuỗi số liệu vĩ mô được xác minh đúng chỉ tiêu đang hỏi. FinQuery không thay bằng một chuỗi khác.']);
- if(ds){const rs=ds.rows||[],last=rs.at(-1),prev=rs.at(-2),numeric=ds.numericColumns||[],tokens=norm(question).split(' '),chosen=numeric.find(k=>tokens.some(t=>t.length>2&&(norm(k).includes(t)||norm(ds.metricLabels?.[k]||'').includes(t))))||numeric[0];if(last&&chosen&&typeof last[chosen]==='number'){const label=ds.metricLabels?.[chosen]||chosen,provider=ds.source||'nguồn dữ liệu';let sentence=provider+' gần nhất ghi nhận '+label+' ở '+num(last[chosen])+'.';if(prev&&typeof prev[chosen]==='number'&&prev[chosen]!==0){const change=(last[chosen]/prev[chosen]-1)*100;sentence+=' So với mốc liền trước, '+label+' '+relationText(change)+'.';}paragraphs.push(sentence);}}
+ if(ds){const rs=ds.rows||[],selected=macroRowForPeriod(question,rs),last=selected.row,prev=selected.index>0?rs[selected.index-1]:null,numeric=ds.numericColumns||[],tokens=norm(question).split(' '),chosen=numeric.find(k=>tokens.some(t=>t.length>2&&(norm(k).includes(t)||norm(ds.metricLabels?.[k]||'').includes(t))))||numeric[0];
+  if(selected.period&&!last)return prose(['Không tìm thấy kỳ '+selected.period+' của chuỗi '+(ds.name||ds.id||'vĩ mô')+' trong dữ liệu FinQuery. Không được thay bằng kỳ gần nhất.']);
+  if(last&&chosen&&typeof last[chosen]==='number'){const label=ds.metricLabels?.[chosen]||chosen,provider=ds.source||'nguồn dữ liệu';let sentence=provider+' '+(selected.period?'kỳ '+selected.period:'gần nhất')+' ghi nhận '+label+' ở '+num(last[chosen])+'.';if(prev&&typeof prev[chosen]==='number'&&prev[chosen]!==0){const change=(last[chosen]/prev[chosen]-1)*100;sentence+=' So với mốc liền trước, '+label+' '+relationText(change)+'.';}paragraphs.push(sentence);}}
  if(matched.length){const first=matched[0],second=matched[1],qt=Date.parse(m.quote?.sourceTime||m.quote?.collectedAt||''),nt=Date.parse(first.publishedAt||''),timing=Number.isFinite(qt)&&Number.isFinite(nt)?(qt-nt)/3600000:null;let sentence='Tin gần nhất liên quan tới câu hỏi là “'+first.title+'” từ '+(first.source||'nguồn báo chí')+'.';if(Number.isFinite(timing))sentence+=timing>=0?' Tin xuất hiện trước snapshot khoảng '+num(Math.abs(timing))+' giờ, nên đã nằm trong bối cảnh thông tin thị trường ở thời điểm giá hiện tại.':' Tin xuất hiện sau snapshot khoảng '+num(Math.abs(timing))+' giờ, nên phù hợp hơn để theo dõi phản ứng ở phiên kế tiếp.';if(first.summary)sentence+=' Nội dung RSS: '+first.summary;paragraphs.push(sentence);if(second)paragraphs.push('Bối cảnh thứ hai là “'+second.title+'”. Khi đọc các sự kiện NHNN, OMO, lãi suất ON hay tín dụng, Dolphin AI sắp xếp theo thứ tự trạng thái thanh khoản trước sự kiện → hành động điều tiết → phản ứng lãi suất và thị trường sau sự kiện để xác định cơ chế đang chi phối.');}
  else paragraphs.push(ds?.companySymbol?'Với câu hỏi ESG doanh nghiệp, Dolphin AI ưu tiên KPI do ngân hàng công bố theo từng năm và giữ nguyên external assessment của từng provider; không tự quy đổi Moody’s, VNSI, WWF, S&P hay Sustainalytics thành một điểm chung.':ds?.id==='esg_world_bank'?'Với câu hỏi ESG cấp quốc gia, Dolphin AI đọc chuỗi World Bank Sovereign ESG của Việt Nam theo toàn bộ năm có dữ liệu và không nội suy các năm bị thiếu.':'Với câu hỏi vĩ mô này, Dolphin AI đọc dữ liệu VBMA đang mở trước, sau đó ghép với chuỗi tin thị trường theo thời điểm. Trọng tâm là diễn biến trước và sau sự kiện: thanh khoản, lãi suất, tín dụng và phản ứng của thị trường.');
  const external=macro?.corporateEsg?.externalAssessments||[];if(ds?.companySymbol&&external.length){paragraphs.push('Đánh giá bên ngoài gần nhất đang lưu: '+external.slice(-4).map(x=>(x.provider||'Nguồn')+' '+(x.year||'')+': '+(x.value||x.assessmentType||'đã công bố')).join(' · ')+'.');}
