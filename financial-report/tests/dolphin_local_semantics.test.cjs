@@ -31,7 +31,7 @@ let news=[
  {title:'FPT ký hợp đồng công nghệ',symbols:['FPT'],publishedAt:now,url:'https://example.com/fpt-tech'}
 ];
 const document={getElementById:()=>null,querySelector:()=>null,querySelectorAll:()=>[],addEventListener:()=>{},body:{append(){},classList:{add(){},remove(){}}}};
-const ctx={document,console,Date,URLSearchParams,location:{search:'?symbol=FPT'},localStorage:{getItem:()=>null,setItem(){}},sessionStorage:{getItem:()=>null,setItem(){}},setTimeout,clearTimeout,performance:{now:()=>1},AbortController};
+const ctx={document,console,Date,URL,URLSearchParams,location:{search:'?symbol=FPT',href:'https://finquery.info.vn/financial-report/index.html?symbol=FPT'},localStorage:{getItem:()=>null,setItem(){}},sessionStorage:{getItem:()=>null,setItem(){}},setTimeout,clearTimeout,performance:{now:()=>1},AbortController};
 ctx.window=ctx;ctx.globalThis=ctx;
 ctx.FinancialMarket={context:()=>({symbol:subject,quote,technical:{timeframe:'day',sourceTime:now,indicators:{rsi:44,macd:-0.2},snapshot:{title:'Điều chỉnh',detail:'Biến động theo dữ liệu mẫu'}},news,marketNews:[{title:'Thị trường giao dịch ổn định',symbols:[],publishedAt:now,url:'https://example.com/m'}]}),alertContext:()=>({companies:[{symbol:'FPT',name:'FPT Corporation'},{symbol:'MBB',name:'Ngân hàng MB'},{symbol:'FRT',name:'FPT Retail'}]})};
 ctx.FinancialReportContext={raw:()=>bctc,resolveSymbol:()=>subject};
