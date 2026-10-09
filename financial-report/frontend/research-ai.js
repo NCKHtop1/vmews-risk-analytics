@@ -1041,20 +1041,22 @@ async function ask(question,preferredMode=null){
  const nextMode=preferredMode||inferredQuestionMode(q);if(nextMode)setAIMode(nextMode);
  state.lastQuestion=q;openDrawer();addUser(q);state.busy=true;state.currentController=new AbortController();
  const send=$('research-ai-send');if(send){send.disabled=false;send.textContent='Dừng';send.dataset.busy='1';}const waiting=addThinking();
+ const maxWaitMs=state.mode==='deep'?90000:45000;let deadlineId=null,deadlineExpired=false;
  try{
   if(['concept','multiConcept'].includes(classify(q))){
    const local=analyze(q);waiting?.remove();addAnalysis(local);
    state.history.push({role:'user',content:q},{role:'assistant',content:'Đã trả lời từ định nghĩa được kiểm chứng trong FinQuery.'});
    return;
   }
-  const payload=await callLLM(q);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
+  const deadline=new Promise((_,reject)=>{deadlineId=setTimeout(()=>{deadlineExpired=true;state.currentController?.abort();const e=new Error('Dolphin đã chờ tối đa '+Math.round(maxWaitMs/1000)+' giây.');e.code='DOLPHIN_TIMEOUT';reject(e);},maxWaitMs);});
+  const payload=await Promise.race([callLLM(q),deadline]);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
-  waiting?.remove();if(error?.name==='AbortError'){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
+  waiting?.remove();if(error?.name==='AbortError'&&!deadlineExpired){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
   const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY',transient=error?.code==='GEMINI_TRANSIENT_EXHAUSTED'||transientGemini(error?.status),detail=String(error?.message||'').slice(0,320);
-  local.html='<div class="analysis-empty">'+(noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':transient?'Gemini đang quá tải tạm thời; Dolphin đã tự retry và đổi model nhưng chưa nhận được phản hồi. FinQuery local đang tiếp tục. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · FinQuery local đang tiếp tục. ')+'</div>'+local.html;addAnalysis(local);
+  local.html='<div class="analysis-empty">'+(deadlineExpired?'Đã quá '+Math.round(maxWaitMs/1000)+' giây chờ Gemini. FinQuery chuyển sang phân tích cục bộ và đã hủy yêu cầu AI bị chậm. ':noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':transient?'Gemini đang quá tải tạm thời; Dolphin đã tự retry và đổi model nhưng chưa nhận được phản hồi. FinQuery local đang tiếp tục. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · FinQuery local đang tiếp tục. ')+'</div>'+local.html;addAnalysis(local);
   if(error?.message&&!noKey){if(!transient)state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(transient?'Gemini đang bận · khóa vẫn kết nối · câu hỏi tiếp theo sẽ tự retry/failover.':detail);}
- }finally{state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
+ }finally{if(deadlineId!==null)clearTimeout(deadlineId);state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
 window.FinQueryAI={version:DOLPHIN_VERSION,sync,ask,analyze,open:openDrawer,close:closeDrawer,ensureGlobalLayer:ensureGlobalAILayer,connect:connectGeminiFromUI,disconnect:()=>{forgetSession();renderGeminiStatus();},setMode:setAIMode,geminiStatus:()=>({keyStored:Boolean(sessionSecret()),connected:Boolean(sessionSecret()&&state.geminiReady),mode:state.mode,model:state.model||null,error:state.lastGeminiError||null})};
