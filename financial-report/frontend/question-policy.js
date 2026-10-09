@@ -57,7 +57,7 @@ function scoreText(query,content){
 }
 function searchRows(question,data,{minCoverage=0.6,limit=8}={}){
  const terms=topicTokens(question),out=[];
- if(!terms.length||!data)return[];
+ if(terms.length<2||!data)return[];
  for(const section of data.sections||[])for(const row of section.rows||[]){
   const label=' '+norm(row.label)+' ',matched=terms.filter(t=>label.includes(' '+t+' ')).length,score=matched/terms.length;
   // Do not match "total assets" to a generic row sharing only "assets".
