@@ -1,2179 +1,2225 @@
 {
   "status": "PASS",
-  "checkedAt": "2026-10-08T07:26:38.794310+07:00",
-  "expectedSession": "2026-10-07",
-  "publishedSession": "2026-10-07",
-  "checkedSymbols": 361,
-  "listedSymbols": 362,
+  "checkedAt": "2026-10-09T15:58:18.524241+07:00",
+  "expectedSession": "2026-10-09",
+  "validatedSession": "2026-10-09",
+  "sessionGate": {
+    "status": "CURRENT_VERIFIED_SESSION",
+    "validatedSession": "2026-10-09",
+    "expectedSessionNow": "2026-10-09",
+    "staleCore": false
+  },
+  "warnings": [],
+  "publishedSession": "2026-10-09",
+  "checkedSymbols": 365,
+  "listedSymbols": 380,
   "excludedUnverified": [
-    "ANT"
+    "ABR",
+    "BTT",
+    "CLC",
+    "CVT",
+    "GTA",
+    "HAP",
+    "HNA",
+    "HTV",
+    "LAF",
+    "OPC",
+    "SC5",
+    "SFI",
+    "SPM",
+    "SVC",
+    "VNS"
   ],
   "insufficientHistory": [],
   "errors": [],
   "symbols": [
     {
       "symbol": "AAA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AAM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AAN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AAT",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "ABR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ABS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ABT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ACB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ACC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ACG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ACL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "ADG",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ADP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ADS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AFX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AGG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AGR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "ANT",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ANV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "APG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "APH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "ASG",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ASM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ASP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "AST",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BAF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BCE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BCM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BFC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "BHN",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BIC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BID",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BKG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BMC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BMI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BMP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BSI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BSR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BTP",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "BTT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BVB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BVH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "BWE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "C32",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "C47",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CCC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CCL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CDC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CHP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CIG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CII",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CKG",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "CLC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CLL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CMG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CMX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CNG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CRC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CRE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CSM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CSV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CTD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CTF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CTG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CTI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CTR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "CTS",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "CVT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "D2D",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DAH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "DAT",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DBC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DBD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DC4",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DCL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DCM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DGC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DGW",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DHA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DHC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DHG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DHM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DIG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DLG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DMC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DPG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DPM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DPR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DQC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DRC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DRH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DRL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DSC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DSE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DSN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DTA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "DTL",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DVP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DXG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "DXS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "EIB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ELC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "EVE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "EVF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "EVG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FCM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FCN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FIR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FIT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FMC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FPT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FRT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "FTS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GAS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GDT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GEE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GEG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GEL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GEX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GHC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GIL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GMD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GMH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GSP",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "GTA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "GVR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HAG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HAH",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "HAP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HAR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HAS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HAX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HCD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HCM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HDB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HDC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HDG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HHP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HHS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HHV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HID",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HII",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HMC",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "HNA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HPA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HPG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HPX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HQC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HRC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HSG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HSL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HT1",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HTG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HTI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HTL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HTN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
-      "symbol": "HTV",
-      "date": "2026-10-07",
+      "symbol": "HU1",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HUB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HVH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "HVN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ICT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "IDI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "IJC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ILB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "IMP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ITC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ITD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "JVC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KBC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KDC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KDH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KHG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KHP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KLB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KMR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KOS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "KSB",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "LAF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LBM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LCG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LDG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LGL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LHG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "LIX",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LPB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "LSS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MBB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MCH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MCM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MCP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MDG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MHC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MIG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MSB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MSH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MSN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MWG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "MZG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NAB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NAF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NAV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NBB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NCT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NHA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NHH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NHT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NKG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NLG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NNC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NO1",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NSC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NT2",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NTC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NTL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NVL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "NVT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "OCB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "OGC",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "OPC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ORS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PAC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PAN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PC1",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PDN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PDR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PDV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PET",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PGC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PGD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "PGI",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PGV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PHC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PHR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PIT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PLP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PLX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PMG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "PNC",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PNJ",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "POW",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PPC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PTB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PTC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PTL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PVD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PVP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "PVT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "QCG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "QNP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "RAL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "REE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "RYG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SAB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SAM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SAV",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SBA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SBG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SBT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
-      "symbol": "SC5",
-      "date": "2026-10-07",
+      "symbol": "SBV",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SCR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SCS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
-      "symbol": "SFI",
-      "date": "2026-10-07",
+      "symbol": "SFG",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SGN",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SGR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SGT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "SHA",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SHB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SHI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SHP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SIP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SJD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SJS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SKG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SMA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SMB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SMC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
-      "symbol": "SPM",
-      "date": "2026-10-07",
+      "symbol": "SRC",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SRF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SSB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SSI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "ST8",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "STB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "STG",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "STK",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "SVC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SVD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SVT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SZC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "SZL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TAL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TBC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCO",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCR",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TCX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TDC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TDG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TDH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TDM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TDP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TEG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "THG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TIP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TLD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TLG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TLH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "TMP",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TMT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TN1",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TNC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TNH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TNI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TNT",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TPB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "TPC",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TRA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TRC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TSA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TSC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TTA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TTF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TV2",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TVB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TVS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "TYA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "UIC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VAB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VBB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VCA",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VCB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VCF",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VCG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VCI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VCK",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VDP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VDS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "VFG",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VGC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VHC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VHM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VIB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VIC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VID",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VIP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VIX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VJC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VMD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VND",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VNG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VNL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VNM",
-      "date": "2026-10-07",
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "symbol": "VNS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VOS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPB",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPD",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPI",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPL",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VPX",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VRC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VRE",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VSC",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VSH",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "symbol": "VSI",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VTO",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VTP",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "VVS",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "YBM",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     },
     {
       "symbol": "YEG",
-      "date": "2026-10-07",
+      "date": "2026-10-09",
       "status": "PASS",
       "issues": []
     }

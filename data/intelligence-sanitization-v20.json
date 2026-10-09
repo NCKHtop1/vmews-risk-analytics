@@ -1,34 +1,104 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-10-08T00:16:18.766426+00:00",
-  "universeSymbols": 362,
+  "generatedAt": "2026-10-09T08:43:35.172809+00:00",
+  "universeSymbols": 361,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1236,
-      "kept": 1236,
-      "rejected": 0,
-      "rejectedBySymbol": {}
+      "checked": 1242,
+      "kept": 1235,
+      "rejected": 7,
+      "rejectedBySymbol": {
+        "FPT": [
+          "BSC: PNJ, FPT và MSB có nguy cơ bị loại khỏi rổ Diamond - CafeF"
+        ],
+        "PNJ": [
+          "BSC: PNJ, FPT và MSB có nguy cơ bị loại khỏi rổ Diamond - CafeF",
+          "HOSE: Yêu cầu giải trình thông tin giá cổ phiếu PNJ giảm sàn 5 phiên liên tiếp (từ ngày 28/09/2026 đến 02/10/2026) - CafeF"
+        ],
+        "SHB": [
+          "VC2: Nghị quyết Hội đồng quản trị về việc phê duyệt hạn mức tín dụng ở ngân hàng SHB - Vietstock"
+        ],
+        "PDR": [
+          "MBS: Cổ phiếu HPG, VPB, MSN, PDR có triển vọng tích cực trong tháng 4 - nguoiquansat.vn"
+        ],
+        "HCM": [
+          "ANT: Nghị quyết HĐQT thông qua nội dung vay vốn tại Ngân hàng TMCP Tiên Phong - Chi nhánh TP.HCM - CafeF",
+          "ANT: Nghị quyết HĐQT thông qua nội dung vay vốn tại Vietinbank - Chi nhánh 7 TP.HCM - CafeF"
+        ]
+      }
     },
     "research-news-v10.json": {
-      "checked": 12875,
-      "kept": 12875,
+      "checked": 12999,
+      "kept": 12999,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "fireant-intelligence-v18.json": {
-      "checked": 1233,
-      "kept": 1233,
-      "rejected": 0,
-      "rejectedBySymbol": {}
+      "checked": 1264,
+      "kept": 1248,
+      "rejected": 16,
+      "rejectedBySymbol": {
+        "BSR": [
+          "https://youtu.be/MlV1xgpbJBI. Chứng khoán hôm nay: BSR cú \"bẻ lái\" khó đỡ, cổ phiếu dầu khí về bờ?. ... - 24HMoney"
+        ],
+        "FPT": [
+          "https://youtu.be/kzHSLDHXhTM. Chứng khoán hôm nay: Cổ phiếu FPT chỉ còn 1 tháng để lên 85,8, cơ hội ... - 24HMoney"
+        ],
+        "LPB": [
+          "https://youtu.be/xAvCSnCBnmo. Chứng khoán hôm nay: \"Yêu nhầm\" VIC, STB, LPB cùng chịu sức ép, Niềm tin ... - 24HMoney",
+          "https://youtu.be/iF5pqFCdtbc. Chứng khoán hôm nay: Dầu khí hết “sóng”, VIC – LPB bị bán mạnh, Ai đang ... - 24HMoney",
+          "https://youtu.be/NnTnDdF3EL0. Chứng khoán hôm nay: Cổ phiếu ngân hàng LPB có thể thành \"cửa mới\" của ... - 24HMoney"
+        ],
+        "SHB": [
+          "SHS: Công bố thông tin Quyết định HĐQT về việc thông qua việc ký kết các hợp đồng, tài liệu giao dịch giữa SHS và SHB - 24HMoney"
+        ],
+        "SSI": [
+          "https://youtu.be/Vs8bsOSNUoI. Chứng khoán hôm nay: SSI lên Top 1, trend Long dài xuất hiện — Robot phái ... - 24HMoney",
+          "https://youtu.be/77ZntsyznRA. Chứng khoán hôm nay: SSI đón dòng tiền ngoại, thanh khoản tăng, \"người ... - 24HMoney"
+        ],
+        "STB": [
+          "https://youtu.be/xAvCSnCBnmo. Chứng khoán hôm nay: \"Yêu nhầm\" VIC, STB, LPB cùng chịu sức ép, Niềm tin ... - 24HMoney"
+        ],
+        "VCB": [
+          "https://youtu.be/N96wDFzLW08. Chứng khoán hôm nay: Chán nản cắt lỗ xong thị trường rút chân, VCB VHM ... - 24HMoney"
+        ],
+        "VHM": [
+          "https://youtu.be/BN1kQ1r63bg. Chứng khoán hôm nay: VIC VHM càng giảm càng mua, khi niềm tin được thử ... - 24HMoney",
+          "https://youtu.be/ghZq-KDbVzg. Chứng khoán hôm nay: Vinhomes lợi nhuận tăng bằng lần, cổ phiếu VHM chỉ ... - 24HMoney",
+          "https://youtu.be/8DgupxAHSGw. Chứng khoán hôm nay: Dòng tiền chờ cổ phiếu VHM về, \"án binh bất động\", ... - 24HMoney"
+        ],
+        "VIC": [
+          "https://youtu.be/xAvCSnCBnmo. Chứng khoán hôm nay: \"Yêu nhầm\" VIC, STB, LPB cùng chịu sức ép, Niềm tin ... - 24HMoney",
+          "https://youtu.be/BN1kQ1r63bg. Chứng khoán hôm nay: VIC VHM càng giảm càng mua, khi niềm tin được thử ... - 24HMoney",
+          "https://youtu.be/89R-nn5BfYU. Chứng khoán hôm nay: VIC đắt xắt ra miếng, thị trường phân hóa khủng, ... - 24HMoney"
+        ]
+      }
     },
     "community-intelligence-live-v19.json": {
-      "checked": 166,
-      "kept": 166,
-      "rejected": 0,
-      "rejectedBySymbol": {}
+      "checked": 187,
+      "kept": 181,
+      "rejected": 6,
+      "rejectedBySymbol": {
+        "LPB": [
+          "https://youtu.be/xAvCSnCBnmo. Chứng khoán hôm nay: \"Yêu nhầm\" VIC, STB, LPB cùng chịu sức ép, Niềm tin ... - 24HMoney",
+          "https://youtu.be/iF5pqFCdtbc. Chứng khoán hôm nay: Dầu khí hết “sóng”, VIC – LPB bị bán mạnh, Ai đang ... - 24HMoney"
+        ],
+        "SHB": [
+          "SHS: Công bố thông tin Quyết định HĐQT về việc thông qua việc ký kết các hợp đồng, tài liệu giao dịch giữa SHS và SHB - 24HMoney"
+        ],
+        "SSI": [
+          "https://youtu.be/Vs8bsOSNUoI. Chứng khoán hôm nay: SSI lên Top 1, trend Long dài xuất hiện — Robot phái ... - 24HMoney"
+        ],
+        "STB": [
+          "https://youtu.be/xAvCSnCBnmo. Chứng khoán hôm nay: \"Yêu nhầm\" VIC, STB, LPB cùng chịu sức ép, Niềm tin ... - 24HMoney"
+        ],
+        "VCB": [
+          "https://youtu.be/N96wDFzLW08. Chứng khoán hôm nay: Chán nản cắt lỗ xong thị trường rút chân, VCB VHM ... - 24HMoney"
+        ]
+      }
     }
   },
-  "rejected": 0,
+  "rejected": 29,
   "policy": "Leading/explicit competing issuer identity is rejected across all current artifacts; legitimate multi-issuer headlines remain eligible for each named ticker."
 }
