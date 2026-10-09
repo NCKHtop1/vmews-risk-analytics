@@ -159,6 +159,7 @@ function applySessionView(symbol,snapshot,session=window.__VMEWS_SESSION__){
     // completed-session close. It is NOT an intraday/live quote.
     // Mark it explicitly rather than calling it "current live" or suppressing
     // a valid EOD forecast when optional market endpoints are unavailable.
+    if(freshness?.stale!==false||!snapshot?.date||!finite(snapshot.close)||+snapshot.close<=0)return snapshot;
     return {...snapshot,coreClose:+snapshot.close,liveSession:null,
       quoteUnavailable:false,verifiedEod:true};
   }
