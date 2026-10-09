@@ -3279,6 +3279,8 @@ function route(question,ranked=[]){
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
  const time=periodInfo(question);
  if(/\bkhong (?:muon )?hoi ve\b|\bkhong can (?:giai thich|tra loi)\b/.test(s)&&!/(\bma\b|\bnhung\b)/.test(s))return'unknown';
+ // A request for in-depth research outranks an incidental risk or indicator mention.
+ if(deep)return'memo';
  // A compound question must not silently answer only one of several named concepts.
  if(strong.length>=2&&comparison&&periodInfo(question).hasPeriod)return'multiMetric';
  if(strong.length>=2&&(definition||comparison))return'multiConcept';
@@ -3287,7 +3289,6 @@ function route(question,ranked=[]){
  if(strong.length>=2&&/\bva\b|\bhay\b/.test(s)&&!technical&&!movement)return'multiConcept';
  if(risk&&(amount||/\bdinh luong\b|\bchinh hien tai\b|\bnhung rui ro\b/.test(s)))return'risk';
  if(definition)return'concept';
- if(deep)return'memo';
  if(forecast)return'forecast';
  if(news)return'news';
  if(risk)return'risk';
