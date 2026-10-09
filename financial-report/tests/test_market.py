@@ -2599,7 +2599,8 @@ class MarketTests(unittest.TestCase):
         for token in ('MACD cắt lên Signal','RSI thoát vùng quá bán','Supertrend đổi hướng','ADX vượt 25'):
             self.assertIn(token,chart)
         self.assertIn('setInterval(()=>{if(!document.hidden)refresh();},300000)',market)
-        self.assertIn("return'macro'",research)
+        self.assertIn('return QP?.route?.(q,K.search?.(q,12)||[])',research)
+        self.assertIn('question-policy.js', (ROOT/'frontend/index.html').read_text())
         self.assertIn('macroHTML',research)
         for forbidden in ('chưa đủ để coi đó là nguyên nhân','không tự khẳng định quan hệ nhân quả','không coi việc xuất hiện cùng ngày là bằng chứng nhân quả','Chưa có lực hỗ trợ nổi bật','Chưa xuất hiện điểm suy yếu','Chưa đủ dữ liệu'):
             self.assertNotIn(forbidden,research+market)
