@@ -18,7 +18,7 @@ def build():
     html = html.replace('<link rel="stylesheet" href="style.css">', '<style>' + (front / 'style.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="market.css">', '<style>' + (front / 'market.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="risk-monitor.css">', '<style>' + (front / 'risk-monitor.css').read_text() + '</style>')
-    for filename in ('xlsx.js','metrics.js','dashboard.js','vendor/lightweight-charts-5.0.9.js','chart-math.js','market-data.js','chart-engine.js','market.js','technical-scanner.js','strategy-engine.js','strategy-intelligence-core.js','alert-center.js','strategy-intelligence.js','risk-monitor.js','section-collapse.js','insights.js','macro.js','knowledge-base.js','research-agent.js','research-ai.js','app.js'):
+    for filename in ('xlsx.js','metrics.js','dashboard.js','vendor/lightweight-charts-5.0.9.js','chart-math.js','market-data.js','chart-engine.js','market.js','technical-scanner.js','strategy-engine.js','strategy-intelligence-core.js','alert-center.js','strategy-intelligence.js','risk-monitor.js','section-collapse.js','insights.js','macro.js','knowledge-base.js','question-policy.js','research-agent.js','research-ai.js','app.js'):
         html = html.replace('<script defer src="'+filename+'"></script>', '')
     datasets = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'data').glob('*.json') if p.stem in ('MBB','VIC','FPT','VCB')}
     boot = {'companies': json.loads((ROOT / 'data/companies.json').read_text()), 'datasets': datasets}
@@ -40,6 +40,7 @@ def build():
     scripts += '<script>' + (front / 'insights.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'macro.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'knowledge-base.js').read_text() + '</script>'
+    scripts += '<script>' + (front / 'question-policy.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'research-agent.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'research-ai.js').read_text() + '</script>'
     scripts += '<script data-base="./data/">' + (front / 'app.js').read_text() + '</script>'
