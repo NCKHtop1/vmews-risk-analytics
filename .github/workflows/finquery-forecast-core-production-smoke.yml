@@ -1,6 +1,10 @@
 name: FinQuery Forecast Core production UX smoke
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/forecast_core_real_browser_smoke.py'
+      - '.github/workflows/finquery-forecast-core-production-smoke.yml'
   push:
     branches: [main, fix/finquery-forecast-core-production-ux-20261009]
     paths:
