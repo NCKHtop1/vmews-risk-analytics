@@ -5,6 +5,7 @@ on:
       - 'scripts/forecast_freshness_audit.py'
       - 'scripts/forecast_freshness_audit_test.py'
       - 'scripts/forecast_loader_regression_test.cjs'
+      - 'scripts/forecast-navigation-test.cjs'
       - 'forecast-final-v12.js'
       - 'forecast-live-leaders-v14.js'
       - '.github/workflows/forecast-ui-integrity.yml'
@@ -14,6 +15,7 @@ on:
       - 'scripts/forecast_freshness_audit.py'
       - 'scripts/forecast_freshness_audit_test.py'
       - 'scripts/forecast_loader_regression_test.cjs'
+      - 'scripts/forecast-navigation-test.cjs'
       - 'forecast-final-v12.js'
       - 'forecast-live-leaders-v14.js'
       - '.github/workflows/forecast-ui-integrity.yml'
@@ -43,6 +45,7 @@ jobs:
         run: |
           node --check forecast-final-v12.js
           node --check forecast-live-leaders-v14.js
+          node scripts/forecast-navigation-test.cjs
       - name: Test bounded network failure, retry and recovery
         run: node scripts/forecast_loader_regression_test.cjs
       - name: Verify Forecast UI contracts without weakening source gates
