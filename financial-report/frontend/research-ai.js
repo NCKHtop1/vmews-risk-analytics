@@ -304,10 +304,30 @@ function searchHTML(question,annual,quarterly,m){
  const tech=m.technical?.snapshot?m.technical.snapshot.title+'. '+m.technical.snapshot.detail:'',marketText=m.quote?state.symbol+' đang '+(m.quote.changePct>=0?'tăng ':'giảm ')+num(Math.abs(m.quote.changePct))+'% so với tham chiếu '+(Number.isFinite(m.quote.reference)?nf.format(m.quote.reference)+' đồng':'hiện tại')+'.':'';
  return prose([marketText,tech,'Câu hỏi được xử lý theo dữ liệu thực của mã đang xem: giá, chỉ báo kỹ thuật, BCTC và tin liên quan đang có trong FinQuery.'].filter(Boolean));
 }
-function macroDatasetFor(question,macro){if(!macro?.datasets)return null;const s=norm(question),esg=/\besg\b|moi truong|xa hoi|quan tri|governance|environment|social/.test(s),corporate=Object.entries(macro.datasets).find(([id,ds])=>id.startsWith('company_esg_')||ds?.companySymbol),id=esg?(corporate?.[0]||'esg_world_bank'):/\bpmi\b/.test(s)?'pmi':/\bfdi\b/.test(s)?'fdi':/gdp/.test(s)?'gdp_growth':/cung tien|m2|money supply/.test(s)?'money_supply':/tin dung|credit/.test(s)?'credit_sector':'macro_overview';return macro.datasets[id]?{id,...macro.datasets[id]}:null;}
+function macroDatasetFor(question,macro){
+ if(!macro?.datasets)return null;
+ const s=norm(question),entries=Object.entries(macro.datasets),keys=Object.keys(macro.datasets);
+ const requested=(ids,pattern)=>ids.find(k=>macro.datasets[k])||keys.find(k=>pattern?.test(k));
+ const esg=/\besg\b|moi truong|xa hoi|quan tri|governance|environment|social/.test(s);
+ const company=entries.find(([,ds])=>String(ds?.companySymbol||'').toUpperCase()===state.symbol);
+ let id=null;
+ if(esg)id=company?.[0]||requested(['esg_world_bank'],/world.bank.*esg|esg_world_bank/);
+ else if(/\bcpi\b|lam phat|inflation/.test(s))id=requested(['cpi','inflation'],/cpi|inflation/i);
+ else if(/\bpmi\b/.test(s))id=requested(['pmi'],/\bpmi\b/i);
+ else if(/\bfdi\b/.test(s))id=requested(['fdi'],/\bfdi\b/i);
+ else if(/\bgdp\b/.test(s))id=requested(['gdp_growth'],/\bgdp\b/i);
+ else if(/cung tien|\bm2\b|money supply/.test(s))id=requested(['money_supply'],/money.supply|monetary/i);
+ else if(/tin dung|credit/.test(s))id=requested(['credit_sector'],/credit/i);
+ else if(/lai suat|overnight|\bon\b|lien ngan hang/.test(s))id=requested(['interbank_rates','interest_rates','fx_swap_curve'],/interbank|interest.rate|overnight|swap.curve/i);
+ else if(/ty gia|exchange rate|usd vnd/.test(s))id=requested(['exchange_rates','fx_rates'],/exchange.rate|fx.rate/i);
+ else if(/tong quan|boi canh vi mo|kinh te vi mo/.test(s))id='macro_overview';
+ return id&&macro.datasets[id]?{id,...macro.datasets[id]}:null;
+}
 function macroNews(question,items){return newsSearch(question,items).slice(0,5);}
 function macroHTML(question,m){
  const macro=window.FinMacro?.context?.(),ds=macroDatasetFor(question,macro),matched=macroNews(question,m.marketNews||[]),paragraphs=[];
+ if(ds?.qualityStatus&&ds.qualityStatus!=='ok')return prose(['Chuỗi vĩ mô phù hợp đang có cảnh báo chất lượng dữ liệu, nên FinQuery không sử dụng để nêu số liệu chắc chắn.']);
+ if(!ds&&!matched.length)return prose(['Chưa có chuỗi số liệu vĩ mô được xác minh đúng chỉ tiêu đang hỏi. FinQuery không thay bằng một chuỗi khác.']);
  if(ds){const rs=ds.rows||[],last=rs.at(-1),prev=rs.at(-2),numeric=ds.numericColumns||[],tokens=norm(question).split(' '),chosen=numeric.find(k=>tokens.some(t=>t.length>2&&(norm(k).includes(t)||norm(ds.metricLabels?.[k]||'').includes(t))))||numeric[0];if(last&&chosen&&typeof last[chosen]==='number'){const label=ds.metricLabels?.[chosen]||chosen,provider=ds.source||'nguồn dữ liệu';let sentence=provider+' gần nhất ghi nhận '+label+' ở '+num(last[chosen])+'.';if(prev&&typeof prev[chosen]==='number'&&prev[chosen]!==0){const change=(last[chosen]/prev[chosen]-1)*100;sentence+=' So với mốc liền trước, '+label+' '+relationText(change)+'.';}paragraphs.push(sentence);}}
  if(matched.length){const first=matched[0],second=matched[1],qt=Date.parse(m.quote?.sourceTime||m.quote?.collectedAt||''),nt=Date.parse(first.publishedAt||''),timing=Number.isFinite(qt)&&Number.isFinite(nt)?(qt-nt)/3600000:null;let sentence='Tin gần nhất liên quan tới câu hỏi là “'+first.title+'” từ '+(first.source||'nguồn báo chí')+'.';if(Number.isFinite(timing))sentence+=timing>=0?' Tin xuất hiện trước snapshot khoảng '+num(Math.abs(timing))+' giờ, nên đã nằm trong bối cảnh thông tin thị trường ở thời điểm giá hiện tại.':' Tin xuất hiện sau snapshot khoảng '+num(Math.abs(timing))+' giờ, nên phù hợp hơn để theo dõi phản ứng ở phiên kế tiếp.';if(first.summary)sentence+=' Nội dung RSS: '+first.summary;paragraphs.push(sentence);if(second)paragraphs.push('Bối cảnh thứ hai là “'+second.title+'”. Khi đọc các sự kiện NHNN, OMO, lãi suất ON hay tín dụng, Dolphin AI sắp xếp theo thứ tự trạng thái thanh khoản trước sự kiện → hành động điều tiết → phản ứng lãi suất và thị trường sau sự kiện để xác định cơ chế đang chi phối.');}
  else paragraphs.push(ds?.companySymbol?'Với câu hỏi ESG doanh nghiệp, Dolphin AI ưu tiên KPI do ngân hàng công bố theo từng năm và giữ nguyên external assessment của từng provider; không tự quy đổi Moody’s, VNSI, WWF, S&P hay Sustainalytics thành một điểm chung.':ds?.id==='esg_world_bank'?'Với câu hỏi ESG cấp quốc gia, Dolphin AI đọc chuỗi World Bank Sovereign ESG của Việt Nam theo toàn bộ năm có dữ liệu và không nội suy các năm bị thiếu.':'Với câu hỏi vĩ mô này, Dolphin AI đọc dữ liệu VBMA đang mở trước, sau đó ghép với chuỗi tin thị trường theo thời điểm. Trọng tâm là diễn biến trước và sau sự kiện: thanh khoản, lãi suất, tín dụng và phản ứng của thị trường.');
