@@ -529,6 +529,11 @@ const GOOGLE_AI_ORIGIN='https://generativelanguage.googleapis.com/v1beta';
 const GEMINI_SESSION_KEY='vmews_solution_ai_browser_session';
 const STABLE_MODEL_ORDER={normal:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'],deep:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite']};
 const TRANSIENT_GEMINI_STATUS=new Set([408,429,500,502,503,504]);
+const MAX_GEMINI_CALLS_PER_QUESTION=6;
+function abortedQuestion(){const e=new Error('Đã dừng');e.name='AbortError';return e;}
+function requireActiveQuestion(owner){
+ if(owner&&(owner.signal.aborted||state.currentController!==owner))throw abortedQuestion();
+}
 const STOP_WORDS=new Set(['bao','nhieu','hien','tai','the','nao','giai','thich','phan','tich','danh','gia','cho','toi','cua','nay','ma','co','phieu','doanh','nghiep','ky','gan','nhat']);
 function restoreAIMode(){try{state.mode=localStorage.getItem(AI_MODE_KEY)==='deep'?'deep':'normal';}catch{state.mode='normal';}}
 function modeLabel(mode=state.mode){return mode==='deep'?'Phân tích sâu':'Nhanh & tiết kiệm';}
@@ -595,7 +600,16 @@ function availableModels(payload){
  }).map(item=>String(item.name||'').replace(/^models\//,''));
 }
 async function geminiGenerate(secret,model,body,timeoutMs=30000){
- const response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},body:JSON.stringify(body),...(state.currentController?.signal?{signal:state.currentController.signal}:{})},timeoutMs);
+ const owner=state.currentController;
+ if(owner){
+  requireActiveQuestion(owner);
+  owner.dolphinGeminiCalls=(owner.dolphinGeminiCalls||0)+1;
+  if(owner.dolphinGeminiCalls>MAX_GEMINI_CALLS_PER_QUESTION){
+   const e=new Error('Dolphin đã đạt giới hạn '+MAX_GEMINI_CALLS_PER_QUESTION+' yêu cầu Gemini cho một câu hỏi.');
+   e.status=503;e.code='GEMINI_REQUEST_BUDGET_EXHAUSTED';throw e;
+  }
+ }
+ const response=await geminiFetch(GOOGLE_AI_ORIGIN+'/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','x-goog-api-key':secret},body:JSON.stringify(body),...(owner?.signal?{signal:owner.signal}:{})},timeoutMs);
  const payload=await response.json().catch(()=>({}));
  if(!response.ok){const err=new Error(providerMessage(response.status,payload?.error?.message));err.status=response.status;err.model=model;err.providerDetails=String(payload?.error?.message||'');throw err;}
  return payload;
@@ -617,7 +631,7 @@ async function geminiGenerateResilient(secret,model,body,timeoutMs=30000,attempt
   try{return await geminiGenerate(secret,model,body,timeoutMs);}
   catch(error){
    lastError=error;
-   if(error?.name==='AbortError'||!transientGemini(error?.status)||attempt>=attempts-1)throw error;
+   if(error?.name==='AbortError'||error?.code==='GEMINI_REQUEST_BUDGET_EXHAUSTED'||Number(error?.status)===429||!transientGemini(error?.status)||attempt>=attempts-1)throw error;
    renderGeminiStatus('Gemini '+model+' đang bận · tự thử lại '+(attempt+2)+'/'+attempts+'…');
    await waitGemini(retryDelay(attempt));
   }
@@ -645,7 +659,7 @@ async function probeGemini(secret){
    const result=providerAnswer(payload);
    if(result.text){state.model=model;state.geminiReady=true;state.lastGeminiError='';return model;}
    errors.push(model+' · '+emptyGeminiReason(payload));
-  }catch(error){errors.push(model+' · '+String(error?.message||error));if(error?.status===401)throw error;}
+  }catch(error){errors.push(model+' · '+String(error?.message||error));if(error?.status===401||Number(error?.status)===429||error?.code==='GEMINI_REQUEST_BUDGET_EXHAUSTED')throw error;}
  }
  const err=new Error(errors.at(-1)||'Gemini không trả lời probe generateContent.');err.status=errors.length?503:0;throw err;
 }
@@ -857,7 +871,7 @@ async function callResearchDossier(question,secret,model,agentContext){
  let payload=null,lastError=null;
  for(const tools of toolPlans){
   try{payload=await geminiGenerateResilient(secret,model,{systemInstruction:{parts:[{text:'Bạn là analyst nghiên cứu dữ liệu. Không tiết lộ chuỗi suy nghĩ; chỉ xuất hồ sơ bằng chứng có thể kiểm tra.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:generation,...(tools.length?{tools}:{})},52000,2);break;}
-  catch(error){lastError=error;if(error?.name==='AbortError'||![400,403,404,429,500,502,503,504].includes(Number(error?.status)))throw error;}
+  catch(error){lastError=error;if(error?.name==='AbortError'||Number(error?.status)===429||error?.code==='GEMINI_REQUEST_BUDGET_EXHAUSTED'||![400,403,404,429,500,502,503,504].includes(Number(error?.status)))throw error;}
  }
  if(!payload)throw lastError||new Error('Không tạo được research dossier.');
  const result=providerAnswer(payload);if(!result.text)throw new Error('Research dossier trống.');
@@ -876,7 +890,7 @@ async function callGeminiModel(question,secret,model,allowSearch=true,agentConte
  let payload=null,lastError=null;
  for(const tools of toolPlans){
   try{payload=await geminiGenerateResilient(secret,model,body(tools),deep?62000:36000,2);break;}
-  catch(error){lastError=error;if(![400,403,404,429,500,502,503,504].includes(Number(error?.status)))throw error;}
+  catch(error){lastError=error;if(error?.name==='AbortError'||Number(error?.status)===429||error?.code==='GEMINI_REQUEST_BUDGET_EXHAUSTED'||![400,403,404,429,500,502,503,504].includes(Number(error?.status)))throw error;}
  }
  if(!payload)throw lastError||new Error('Gemini chưa phản hồi.');
  const result=providerAnswer(payload);
@@ -916,22 +930,25 @@ async function repairDeepAnswer(question,answer,audit,secret,model,agentContext,
  if(!result.text)throw new Error('Vòng biên tập chất lượng không trả về nội dung.');
  return result.text;
 }
-async function callLLM(question){
+async function callLLM(question,owner){
+ requireActiveQuestion(owner);
  let prepared=null;
  if(window.FinResearchAgent?.prepare){
   const requested=window.FinResearchAgent.resolveTargetSymbol?.(question)||'';
   if(requested&&requested!==state.symbol)renderGeminiStatus('Đang nạp dữ liệu '+requested+' theo câu hỏi…');
   prepared=await window.FinResearchAgent.prepare(question);
+  requireActiveQuestion(owner);
  }
  const secret=sessionSecret();
  if(!secret){const err=new Error('Dolphin chưa kết nối Gemini.');err.code='NO_GEMINI_KEY';throw err;}
  if(!state.modelCandidates.length||!state.geminiReady)await validateGemini(secret);
+ requireActiveQuestion(owner);
  const baseContext=buildLLMContext(question),sourceHints=sourcesForLLM();
  let agentContext=baseContext,agentAudit=null;
  if(window.FinResearchAgent?.run){
   try{
    const agentRun=await window.FinResearchAgent.run(question,{baseContext,sources:sourceHints,prepared});
-   agentContext=agentRun?.context||baseContext;agentAudit=agentRun?.audit||null;
+   requireActiveQuestion(owner);agentContext=agentRun?.context||baseContext;agentAudit=agentRun?.audit||null;
   }catch(error){
    agentContext={...baseContext,agent:{version:'FINQUERY_RESEARCH_AGENT_V1',status:'error',error:String(error?.message||error).slice(0,240)}};
   }
@@ -944,23 +961,27 @@ async function callLLM(question){
   try{
    renderGeminiStatus('Đang đọc toàn bộ dữ liệu liên quan và lập research dossier…');
    dossierMeta=await callResearchDossier(question,secret,candidates[0],agentContext);
+   requireActiveQuestion(owner);
    dossier=dossierMeta.text;
    renderGeminiStatus('Research dossier xong · đang tổng hợp như senior analyst…');
   }catch(error){
-   if(error?.name==='AbortError')throw error;
+   if(error?.name==='AbortError'||Number(error?.status)===429||error?.code==='GEMINI_REQUEST_BUDGET_EXHAUSTED')throw error;
    if(agentAudit)agentAudit.researchPass={status:'fallback',error:String(error?.message||error).slice(0,220)};
   }
  }
  let lastError;const attempted=[];
  for(let i=0;i<candidates.length;i++){
+  requireActiveQuestion(owner);
   const model=candidates[i];state.model=model;attempted.push(model);
   try{
    let answer=await callGeminiModel(question,secret,model,!dossier&&(deep||i===0),agentContext,dossier);
+   requireActiveQuestion(owner);
    let qualityAudit=deep?auditDeepAnswer(answer.answer,agentContext):null,qualityRepair={status:'not_needed'};
    if(deep&&qualityAudit&&!qualityAudit.pass){
     try{
      renderGeminiStatus('Đang rà soát chất lượng lập luận và biên tập vòng cuối…');
      const repaired=await repairDeepAnswer(question,answer.answer,qualityAudit,secret,model,agentContext,dossier);
+     requireActiveQuestion(owner);
      const repairedAudit=auditDeepAnswer(repaired,agentContext);
      if(repairedAudit.score>=qualityAudit.score){answer={...answer,answer:repaired};qualityRepair={status:'applied',before:qualityAudit.score,after:repairedAudit.score};qualityAudit=repairedAudit;}
      else qualityRepair={status:'kept_original',before:qualityAudit.score,after:repairedAudit.score};
@@ -970,7 +991,7 @@ async function callLLM(question){
   }
   catch(error){
    lastError=error;state.lastGeminiError=String(error?.message||error);
-   if(error?.name==='AbortError')throw error;
+   if(error?.name==='AbortError'||Number(error?.status)===429||error?.code==='GEMINI_REQUEST_BUDGET_EXHAUSTED')throw error;
    const status=Number(error.status);
    if(status===401){state.geminiReady=false;throw error;}
    if(![403,404,429,500,502,503,504].includes(status))break;
@@ -1062,7 +1083,7 @@ async function ask(question,preferredMode=null){
    return;
   }
   const deadline=new Promise((_,reject)=>{deadlineId=setTimeout(()=>{deadlineExpired=true;state.currentController?.abort();const e=new Error('Dolphin đã chờ tối đa '+Math.round(maxWaitMs/1000)+' giây.');e.code='DOLPHIN_TIMEOUT';reject(e);},maxWaitMs);});
-  const payload=await Promise.race([callLLM(q),deadline]);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
+  const payload=await Promise.race([callLLM(q,state.currentController),deadline]);waiting?.remove();addAnalysis({html:llmHTML(payload.answer,payload)});
   state.history.push({role:'user',content:q},{role:'assistant',content:String(payload.answer).slice(0,2400)});state.history=state.history.slice(-8);renderGeminiStatus();
  }catch(error){
   waiting?.remove();if(error?.name==='AbortError'&&!deadlineExpired){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
