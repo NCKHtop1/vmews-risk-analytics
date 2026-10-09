@@ -106,7 +106,11 @@ function priceQuality(quote,symbol='',question='',now=new Date()){
  // A quote from an earlier date may be displayed only as a historical snapshot.
  const wantsCurrent=/\bhom nay\b|\bphien nay\b|\btrong phien\b|\brealtime\b|\blive\b/.test(s);
  const old=wantsCurrent&&today!==snapshot;
- return{usable:!old,reason:old?'Chưa có snapshot hợp lệ cho phiên đang hỏi':'',asOf:snapshot,sourceTime:raw,historical:today!==snapshot};
+ const timeParts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+ const minutes=Number(timeParts.hour)*60+Number(timeParts.minute),businessDay=!['Sat','Sun'].includes(timeParts.weekday);
+ const trading=businessDay&&((minutes>=540&&minutes<=690)||(minutes>=780&&minutes<=885));
+ const tooOld=wantsCurrent&&trading&&(now.getTime()-ts)>10*60000;
+ return{usable:!old&&!tooOld,reason:old?'Chưa có snapshot hợp lệ cho phiên đang hỏi':tooOld?'Giá trong phiên cũ quá 10 phút; không dùng như giá đang giao dịch':'',asOf:snapshot,sourceTime:raw,historical:today!==snapshot};
 }
 root.FinQueryQuestionPolicy={version:'QUESTION_POLICY_V1',norm,route,periodInfo,topicTokens,scoreText,searchRows,selectNews,priceQuality};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.FinQueryQuestionPolicy;
