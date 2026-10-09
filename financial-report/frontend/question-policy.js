@@ -19,7 +19,7 @@ function route(question,ranked=[]){
  const strong=candidates.filter((hit,index)=>{
   if(index===0||joined||!primary)return true;
   const aliases=[hit.c.title,...(hit.c.aliases||[])].map(norm).filter(Boolean);
-  return !strongestAliases.some(p=>p.length>=5&&has(s,p)&&aliases.some(a=>a.length>=3&&a!==p&&has(p,a)));
+  return !strongestAliases.some(p=>p.length>=5&&has(s,p)&&aliases.some(a=>a.length>=2&&a!==p&&has(p,a)));
  });
  const definition=/\bla gi\b|\bnghia la gi\b|\bkhai niem\b|\bdinh nghia\b|\bcong thuc\b|\bcach tinh\b|\bdo cai gi\b|\bthe hien gi\b/.test(s);
  const amount=/\bbao nhieu\b|\bgia tri\b|\bso lieu\b|\bmuc nao\b|\bmuc bao nhieu\b|\bhien tai\b|\bky nay\b/.test(s);
