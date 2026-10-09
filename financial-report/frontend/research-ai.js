@@ -451,6 +451,8 @@ function analyze(question){
  const requested=window.FinResearchAgent?.resolveTargetSymbols?.(question)||[];
  if(requested.length>1)return{type:'multiSymbol',html:prose(['Câu hỏi yêu cầu nhiều mã ('+requested.join(', ')+'). Chế độ dữ liệu cục bộ hiện không tải BCTC độc lập cho tất cả mã cùng lúc; không thể so sánh chính xác khi thiếu dữ liệu.'])};
  const r=raw(),m=market(),annual=r?.annual||(!r?.quarterly?r?.data:null),quarterly=r?.quarterly||null,a=annualSnapshot(annual),q=quarterSnapshot(quarterly),type=classify(question);
+ const financialSymbol=String(r?.symbol||'').toUpperCase();
+ if(financialSymbol&&state.symbol&&financialSymbol!==state.symbol&&['financial','metric','multiMetric','memo','risk','compare'].includes(type))return{type,html:prose(['BCTC đang tải thuộc mã '+financialSymbol+', không phải '+state.symbol+'. FinQuery tạm dừng phản hồi số liệu để tránh ghép nhầm doanh nghiệp.'])};
  if(requested.length===1&&requested[0]!==state.symbol)return{type,html:prose(['Dữ liệu '+requested[0]+' chưa được đồng bộ với mã đang hiển thị ('+state.symbol+'). FinQuery không dùng số liệu của mã khác để trả lời.'])};
  const validQuote=QP?.priceQuality?.(m.quote,state.symbol,question);
  if(type==='movement'&&validQuote&&!validQuote.usable)return{type,html:prose([validQuote.reason+'. Hệ thống không dùng giá sai mã hoặc phiên cũ để trả lời câu hỏi về phiên hiện tại.'])};
