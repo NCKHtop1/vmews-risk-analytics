@@ -22,6 +22,8 @@ concurrency:
 
 jobs:
   browser-smoke:
+    # Run against the actually published Pages build, not the previous release during a push race.
+    if: github.event_name != 'push' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
