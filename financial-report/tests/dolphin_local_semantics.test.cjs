@@ -114,3 +114,29 @@ test('unknown subjects and unverified forecasts do not invent evidence',()=>{
  assert.equal(forecast.type,'forecast');
  assert.match(plain(forecast),/Không có dự báo được xác minh/);
 });
+
+test('unrecognized explicit stock cannot borrow the active FPT quote',()=>{
+ const x=answer('Gia ma ZZZ hom nay bao nhieu?');
+ assert.match(plain(x),/Không tìm thấy mã ZZZ/);
+ assert.doesNotMatch(plain(x),/FPT đang (tăng|giảm)/);
+});
+test('buy-or-sell question returns a bounded risk analysis rather than generic refusal',()=>{
+ const x=answer('FPT hôm nay nên mua hay bán?');
+ assert.equal(x.type,'advice');
+ assert.match(plain(x),/MUA|BÁN/);
+ assert.match(plain(x),/rủi ro/);
+});
+test('retailer company full name is not simultaneously identified as parent FPT ticker',()=>{
+ const sandbox={FinancialMarket:{alertContext:()=>({companies:[{symbol:'FPT',name:'FPT Corporation'},{symbol:'FRT',name:'FPT Retail'},{symbol:'MBB',name:'Ngân hàng MB'}]})},FinancialReportContext:{companies:()=>[{symbol:'FPT'},{symbol:'FRT'},{symbol:'MBB'}]}};
+ sandbox.window=sandbox;sandbox.globalThis=sandbox;vm.createContext(sandbox);
+ vm.runInContext(fs.readFileSync(path.join(frontend,'research-agent.js'),'utf8'),sandbox);
+ assert.deepEqual(Array.from(sandbox.FinResearchAgent.resolveTargetSymbols('Tin về FPT Retail / FRT hôm nay?')),['FRT']);
+ assert.deepEqual(Array.from(sandbox.FinResearchAgent.resolveTargetSymbols('So sánh FPT Retail với FPT')),['FRT','FPT']);
+});
+test('Dolphin must hide launcher and bound Gemini wait time',()=>{
+ const css=fs.readFileSync(path.join(frontend,'market.css'),'utf8');
+ const js=fs.readFileSync(path.join(frontend,'research-ai.js'),'utf8');
+ assert.match(css,/body\.dolphin-modal-open \.ai-fab\{display:none!important/);
+ assert.match(js,/maxWaitMs=state\.mode==='deep'\?90000:45000/);
+ assert.match(js,/Promise\.race\(\[callLLM\(q\),deadline\]\)/);
+});
