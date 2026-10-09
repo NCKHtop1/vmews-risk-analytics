@@ -31,6 +31,7 @@ def snapshot(driver):
         status: value("status"),
         snapshot: value("snapshotDate"),
         decision: value("decision"),
+        summary: value("summary"),
         close: value("close"),
         chartTitle: value("chartTitle"),
         chartWidth: document.getElementById("chart")?.getBoundingClientRect()?.width || 0,
@@ -130,7 +131,7 @@ def main():
                 assert blocked["close"] not in ("","—","0"), f"Verified EOD close absent: {blocked}"
                 assert "eod" in blocked["chartTitle"].lower(), f"Audited EOD provenance not displayed: {blocked}"
                 assert "eod" in blocked["quoteAsOf"].lower(), f"EOD source date not labeled: {blocked}"
-                assert "eod đã kiểm định" in blocked["decision"].lower(), f"Decision incorrectly claims current live price: {blocked}"
+                assert "giá đóng cửa eod đã kiểm định" in blocked["summary"].lower(), f"Forecast interpretation incorrectly claims current live price: {blocked}"
             else:
                 assert blocked["close"] in ("","—"), f"Stale core close was misrepresented as current: {blocked}"
                 assert "lịch sử" in blocked["chartTitle"].lower(), f"Chart must label old data as historical: {blocked}"
