@@ -31,6 +31,7 @@ def snapshot(driver):
         status: value("status"),
         snapshot: value("snapshotDate"),
         decision: value("decision"),
+        summary: value("summary"),
         close: value("close"),
         chartTitle: value("chartTitle"),
         chartWidth: document.getElementById("chart")?.getBoundingClientRect()?.width || 0,
@@ -106,7 +107,7 @@ def main():
           const original=window.fetch.bind(window);
           window.fetch=(input,options)=> {
             const url=String(input?.url||input||"");
-            if (url.includes("/market/quotes.json")) return new Promise((resolve,reject)=>{
+            if (url.includes("/market/quotes.json") || url.includes("/forecast-session-v21.json")) return new Promise((resolve,reject)=>{
               const signal=options?.signal;
               if (signal?.aborted) return reject(new DOMException("Aborted","AbortError"));
               signal?.addEventListener("abort",()=>reject(new DOMException("Aborted","AbortError")),{once:true});
@@ -121,11 +122,21 @@ def main():
             blocked=WebDriverWait(driver,9,poll_frequency=.25).until(verify_ready)
             seconds=round(time.monotonic()-t0,2)
             assert blocked["chartWidth"]>200, f"Chart hidden while live feed blocked: {blocked}"
-            assert blocked["close"] in ("","—"), f"Unverified live price was fabricated: {blocked}"
-            assert blocked["chartMode"]=="HISTORICAL_ONLY", f"Audited historical chart missing with unavailable live quotes: {blocked}"
-            assert "lịch sử" in blocked["chartTitle"].lower(), f"Chart must label old data as historical: {blocked}"
-            assert "không có giá live" in blocked["quoteAsOf"].lower(), f"Must label unavailable live price explicitly: {blocked}"
-            assert "KHÔNG CÓ GIÁ LIVE" in blocked["decision"], f"Wrong live-market decision label while provider blocked: {blocked}"
+            # An audited EOD close is a real observation, not a fabricated live
+            # quote. The expected behavior depends on the completed model date.
+            # This test must reject fake live provenance in both branches.
+            assert blocked["chartMode"] in ("HISTORICAL_ONLY","VERIFIED_EOD"), (
+                f"Blocked live feeds presented an unverified live price: {blocked}")
+            if blocked["chartMode"] == "VERIFIED_EOD":
+                assert blocked["close"] not in ("","—","0"), f"Verified EOD close absent: {blocked}"
+                assert "eod" in blocked["chartTitle"].lower(), f"Audited EOD provenance not displayed: {blocked}"
+                assert "eod" in blocked["quoteAsOf"].lower(), f"EOD source date not labeled: {blocked}"
+                assert "giá đóng cửa eod đã kiểm định" in blocked["summary"].lower(), f"Forecast interpretation incorrectly claims current live price: {blocked}"
+            else:
+                assert blocked["close"] in ("","—"), f"Stale core close was misrepresented as current: {blocked}"
+                assert "lịch sử" in blocked["chartTitle"].lower(), f"Chart must label old data as historical: {blocked}"
+                assert "không có giá live" in blocked["quoteAsOf"].lower(), f"Missing live feed not labeled: {blocked}"
+                assert "KHÔNG CÓ GIÁ LIVE" in blocked["decision"], f"Expected historical-only decision: {blocked}"
             assert "thử tải lại" not in blocked["status"].lower(), f"Non-essential price feed broke Forecast Core: {blocked}"
             assert "đang tải" not in blocked["decision"].lower(), f"Forecast Core still loading after price probe failure: {blocked}"
             errors.append({"blockedLivePrice":blocked,"elapsedSec":seconds})

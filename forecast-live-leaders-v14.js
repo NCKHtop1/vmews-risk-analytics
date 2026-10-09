@@ -607,9 +607,12 @@
       const load = window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__;
       state.base = await load();
       if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");
-      state.session = await loadSessionOverlay(state.base);
-      window.__VMEWS_SESSION__ = state.session;
-      window.dispatchEvent(new CustomEvent("vmews:session-updated", { detail: { session: state.session } }));
+      // Forecast EOD is already audited. Never block the leaderboard shell
+      // or snapshot date on the optional intraday session provider.
+      // A verified session overlay upgrades the displayed prices in the
+      // background through refreshSession(), without changing core forecasts.
+      state.session = null;
+      window.__VMEWS_SESSION__ = null;
       state.candidates = finalLeaderboard(state.base, state.session, { all: true, includeNonPositive: true });
       state.universe = finalLeaderboard(state.base, state.session, { all: true });
       state.defensive = state.universe.length === 0;
@@ -622,6 +625,7 @@
       renderCards();
       bindControls();
       scheduleRotation();
+      void refreshSession().catch(error => console.warn("FinQuery optional session overlay:", error));
       window.setInterval(() => { void refreshSession(); }, 60000);
       window.addEventListener("focus", () => { void refreshSession(); });
       document.addEventListener("visibilitychange", () => { if (!document.hidden) void refreshSession(); });
