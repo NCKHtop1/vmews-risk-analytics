@@ -143,6 +143,43 @@ def main():
             print("FORECAST_CORE_BLOCKED_LIVE_PRICE_PASS",json.dumps({"elapsedSec":seconds,"snapshot":blocked},ensure_ascii=False))
         finally:
             driver.execute_cdp_cmd("Page.removeScriptToEvaluateOnNewDocument",{"identifier":hook["identifier"]})
+        # Simulate a total Forecast Core outage on BOTH same-origin and GitHub
+        # fallback. The UI must report a recoverable error, not spin indefinitely.
+        fail_hook=driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument",{"source":"""
+        (() => {
+          window.__FINQUERY_FORECAST_TIMEOUT_MS=120;
+          const original=window.fetch.bind(window);
+          window.fetch=(input,options)=>{
+            const url=String(input?.url||input||"");
+            if(url.includes("/forecast-dashboard-v12.json"))return new Promise((resolve,reject)=>{
+              const signal=options?.signal;
+              if(signal?.aborted)return reject(new DOMException("Aborted","AbortError"));
+              signal?.addEventListener("abort",()=>reject(new DOMException("Aborted","AbortError")),{once:true});
+            });
+            return original(input,options);
+          };
+        })();
+        """})
+        try:
+            driver.get(URL+"&failedCore=1")
+            failed=WebDriverWait(driver,10,poll_frequency=.25).until(
+                lambda d: d.execute_script("""
+                    const status=document.getElementById('status');
+                    return status?.querySelector('button')?.textContent?.includes('Thử tải lại') && document.getElementById('forecastLeaderRetry')
+                      ? {status:status.textContent, badge:document.getElementById('modelBadge')?.textContent,
+                         snapshot:document.getElementById('snapshotDate')?.textContent,
+                         leader:document.getElementById('leaderSummary')?.textContent,
+                         retry:document.getElementById('forecastLeaderRetry')?.textContent}
+                      : false;
+                """))
+            assert "đang tải" not in failed["badge"].lower(), f"Core error badge stuck loading: {failed}"
+            assert "đang tải" not in failed["snapshot"].lower(), f"Core snapshot badge stuck loading: {failed}"
+            assert "đang xác định" not in failed["leader"].lower(), f"Leaderboard stuck loading: {failed}"
+            assert "Thử tải lại" in failed["retry"], f"Leaderboard retry missing: {failed}"
+            errors.append({"outage":failed})
+            print("FORECAST_CORE_TOTAL_OUTAGE_NO_HANG_PASS",json.dumps(failed,ensure_ascii=False))
+        finally:
+            driver.execute_cdp_cmd("Page.removeScriptToEvaluateOnNewDocument",{"identifier":fail_hook["identifier"]})
         print("FORECAST_CORE_REAL_BROWSER_PASS",json.dumps({"url":URL,"symbols":list(DISPUTED),
               "initial":loaded,"mobile":mobile,"steps":errors},ensure_ascii=False,default=str))
         return 0
