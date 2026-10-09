@@ -5,11 +5,8 @@ on:
     paths:
       - 'scripts/forecast_core_real_browser_smoke.py'
       - '.github/workflows/finquery-forecast-core-production-smoke.yml'
-  push:
-    branches: [main, fix/finquery-forecast-core-production-ux-20261009]
-    paths:
-      - 'scripts/forecast_core_real_browser_smoke.py'
-      - '.github/workflows/finquery-forecast-core-production-smoke.yml'
+  # Production browser checks must wait for a verified Pages deployment.
+  # PR checks exercise their own localhost copy, never the old live website.
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     branches: [main]
