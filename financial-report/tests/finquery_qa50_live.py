@@ -263,7 +263,10 @@ def mocked(c,browser):
 def main():
  out=[]
  with sync_playwright() as p:
-  browser=p.chromium.launch(headless=True,args=['--no-sandbox'])
+  try:
+   browser=p.chromium.launch(headless=True,channel='chrome',args=['--no-sandbox'])
+  except Exception:
+   browser=p.chromium.launch(headless=True,args=['--no-sandbox'])
   pages={}
   try:
    for c in CASES:
