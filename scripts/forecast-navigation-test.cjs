@@ -12,6 +12,10 @@ const leaders = read('forecast-live-leaders-v14.js').replace(
 function context(url) {
   const window = { addEventListener() {}, matchMedia: () => ({ matches: false }) };
   const sandbox = { window, location: new URL(url), URL, URLSearchParams, console,
+    // Forecast's bounded session fetch uses real browser cancellation and timers.
+    // The navigation harness must provide these web APIs rather than silently
+    // treating a ReferenceError as an unavailable session snapshot.
+    AbortController, setTimeout, clearTimeout,
     document: { readyState: 'loading', addEventListener() {}, querySelector() {} } };
   vm.createContext(sandbox);
   vm.runInContext(core, sandbox);
