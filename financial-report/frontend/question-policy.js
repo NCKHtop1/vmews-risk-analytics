@@ -37,6 +37,7 @@ function route(question,ranked=[]){
  // A compound question must not silently answer only one of several named concepts.
  if(strong.length>=2&&comparison&&periodInfo(question).hasPeriod)return'multiMetric';
  if(strong.length>=2&&(definition||comparison))return'multiConcept';
+ if(strong.length>=2&&amount&&technical)return'technical';
  if(strong.length>=2&&amount)return'multiMetric';
  if(strong.length>=2&&/\bva\b|\bhay\b/.test(s)&&!technical&&!movement)return'multiConcept';
  if(risk&&amount&&!strong.length)return'risk';
