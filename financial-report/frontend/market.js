@@ -39,7 +39,7 @@ function quoteNeedsCloseCatch(q){const now=vnClock(),phase=marketPhase();if(['Sa
 function quoteStale(q){if(!q)return true;const raw=q.sourceTime||q.collectedAt,t=Date.parse(raw||'');if(!Number.isFinite(t)||futureTimestamp(raw))return true;const now=vnClock(),src=vnClock(t);if(q.status==='retained'||src.day!==now.day)return true;if(!marketSessionActive())return false;return Date.now()-t>25*60*1000;}
 function quoteTime(q){if(!q)return'Chưa có';return date(q.sourceTime||q.collectedAt);}
 function manageQuoteRetry(hasLive){
- if(hasLive||!state.symbol||!marketSessionActive()){
+ if(hasLive||!state.symbol||!marketSessionActive()||!LIVE_FALLBACK_API){
   if(state.quoteRetryTimer)clearTimeout(state.quoteRetryTimer);
   state.quoteRetryTimer=null;state.quoteRetryAttempt=0;return;
  }
