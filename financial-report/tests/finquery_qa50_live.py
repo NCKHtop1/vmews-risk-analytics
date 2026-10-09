@@ -153,7 +153,22 @@ def special(c,page,browser):
  if cid=='FQ-50':
   for w,h in [(360,780),(780,360),(390,844)]:
    page.set_viewport_size({'width':w,'height':h});mobile(page)
-  return '3 mobile rotations, footer remains clickable'
+  page.context.set_offline(True)
+  try:
+   page.reload(wait_until='domcontentloaded',timeout=9000)
+   raise AssertionError('Offline reload unexpectedly succeeded')
+  except BrowserTimeout:
+   pass
+  except Exception as ex:
+   need('ERR_INTERNET_DISCONNECTED' in str(ex) or 'ERR_NETWORK_CHANGED' in str(ex),'Unexpected offline reload failure: '+str(ex))
+  finally:
+   page.context.set_offline(False)
+  page.goto(BASE+'?symbol=FPT&mode=year#market',wait_until='domcontentloaded',timeout=45000)
+  wait(page)
+  opener(page)
+  need(page.locator('#research-ai-send').is_visible(),'Dolphin did not recover after offline reload')
+  closer(page)
+  return '3 mobile rotations, offline reload rejected and online recovery worked'
  return 'not implemented'
 def prepare_mock(browser,sym,kind):
  ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,locale='vi-VN')
@@ -212,11 +227,12 @@ def mocked(c,browser):
    # Ask second request while the UI is busy; should refuse concurrent submissions.
    page.evaluate("""()=>{window.FinQueryAI.ask('Câu hỏi trùng được gửi khi đang bận');}""")
    page.wait_for_function("document.querySelector('#research-ai-send')?.dataset.busy!=='1'",timeout=55000)
-   need(events['generate']<10,'Duplicate busy action caused excessive provider calls')
+   need(events['generate']<=6,'Duplicate busy action exceeded per-question call budget: '+str(events['generate']))
   else:
    page.wait_for_function("document.querySelector('#research-ai-send')?.dataset.busy!=='1'",timeout=90000)
    body=page.locator('#research-ai').inner_text()
    need('Gemini' in body or 'FinQuery' in body,'No usable overload/fallback message')
+   need(events['generate']<=6,'Provider overload exceeded six calls: '+str(events['generate']))
   return 'Mock provider '+kind+' requests='+str(events['generate'])
  finally:ctx.close()
 def main():
