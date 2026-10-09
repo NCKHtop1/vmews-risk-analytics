@@ -2423,8 +2423,10 @@ class MarketTests(unittest.TestCase):
             self.assertIn(concept,kb)
         self.assertIn('conceptDiagnosis',js)
         self.assertIn('K.search',js)
-        self.assertIn("return'concept'",js)
-        self.assertIn("return'memo'",js)
+        policy=(ROOT/'frontend/question-policy.js').read_text()
+        self.assertIn("return'concept'",policy)
+        self.assertIn("return'memo'",policy)
+        self.assertIn("return QP?.route?.(q,K.search?.(q,12)||[])",js)
         build=(ROOT/'scripts/build_cdn.py').read_text()
         self.assertIn("(front / 'knowledge-base.js').read_text()",build)
 
