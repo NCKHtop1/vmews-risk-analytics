@@ -122,10 +122,10 @@ def main():
             seconds=round(time.monotonic()-t0,2)
             assert blocked["chartWidth"]>200, f"Chart hidden while live feed blocked: {blocked}"
             assert blocked["close"] in ("","—"), f"Unverified live price was fabricated: {blocked}"
-                        assert blocked["chartMode"]=="HISTORICAL_ONLY", f"Audited historical chart missing with unavailable live quotes: {blocked}"
-                        assert "lịch sử" in blocked["chartTitle"].lower(), f"Chart must label old data as historical: {blocked}"
-                        assert "không có giá live" in blocked["quoteAsOf"].lower(), f"Must label unavailable live price explicitly: {blocked}"
-                        assert "KHÔNG CÓ GIÁ LIVE" in blocked["decision"], f"Wrong live-market decision label while provider blocked: {blocked}"
+            assert blocked["chartMode"]=="HISTORICAL_ONLY", f"Audited historical chart missing with unavailable live quotes: {blocked}"
+            assert "lịch sử" in blocked["chartTitle"].lower(), f"Chart must label old data as historical: {blocked}"
+            assert "không có giá live" in blocked["quoteAsOf"].lower(), f"Must label unavailable live price explicitly: {blocked}"
+            assert "KHÔNG CÓ GIÁ LIVE" in blocked["decision"], f"Wrong live-market decision label while provider blocked: {blocked}"
             assert "thử tải lại" not in blocked["status"].lower(), f"Non-essential price feed broke Forecast Core: {blocked}"
             assert "đang tải" not in blocked["decision"].lower(), f"Forecast Core still loading after price probe failure: {blocked}"
             errors.append({"blockedLivePrice":blocked,"elapsedSec":seconds})
