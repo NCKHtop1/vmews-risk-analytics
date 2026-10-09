@@ -11,8 +11,8 @@ on:
       - "scripts/forecast_publication_session.py"
       - "scripts/forecast_publication_session_test.py"
       - "scripts/forecast_freshness_audit_test.py"
-      - "forecast-final.html"
-      - "forecast-final-v12.js"
+      # Forecast UI-only HTML/JS use forecast-ui-integrity and CDN browser gates,
+      # not the 75-minute real-EOD model publisher.
       - "scripts/prepare_forecast_scan_v28.py"
       - "scripts/run_forecast_v28_guarded.py"
       - "scripts/forecast_v41_runtime_patch.py"
