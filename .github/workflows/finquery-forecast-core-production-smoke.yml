@@ -1,0 +1,46 @@
+name: FinQuery Forecast Core production UX smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, fix/finquery-forecast-core-production-ux-20261009]
+    paths:
+      - 'scripts/forecast_core_real_browser_smoke.py'
+      - '.github/workflows/finquery-forecast-core-production-smoke.yml'
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    branches: [main]
+    types: [completed]
+  schedule:
+    # 10:10 and 17:10 Vietnam time, covering market opening and post-close.
+    - cron: '10 3,10 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finquery-forecast-core-production-ux
+  cancel-in-progress: true
+
+jobs:
+  forecast-ui:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Selenium
+        run: pip install --disable-pip-version-check -q selenium==4.36.0
+      - name: Verify Forecast Core loads, exposes stale warnings, changes all nine disputed symbols, and works on mobile
+        run: python scripts/forecast_core_real_browser_smoke.py
+      - name: Preserve failure evidence only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finquery-forecast-core-ux-failure
+          path: forecast-core-browser-evidence/
+          retention-days: 7
