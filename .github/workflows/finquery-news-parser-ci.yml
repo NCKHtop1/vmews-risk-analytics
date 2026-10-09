@@ -57,6 +57,7 @@ jobs:
           node --check financial-report/frontend/market.js
           node --check financial-report/frontend/insights.js
           node --check financial-report/frontend/research-agent.js
+          node financial-report/tests/test_quote_failover.cjs
       - name: Build standalone FinQuery and verify News bundle contract
         run: |
           python financial-report/scripts/build_cdn.py
