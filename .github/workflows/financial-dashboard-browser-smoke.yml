@@ -323,6 +323,12 @@ jobs:
                 ('So sánh kỳ gần nhất với kỳ trước và cùng kỳ.','compare'),
                 ('ROE là gì?','concept'),
                 ('Phân tích bối cảnh lãi suất và vĩ mô hiện tại.','macro'),
+                ('Tài sản ngắn hạn và nợ ngắn hạn là gì?','multiConcept'),
+                ('ROE của FPT năm 2025 là bao nhiêu?','metric'),
+                ('Tin cổ tức của FPT','news'),
+                ('Dự báo T+3 cho FPT','forecast'),
+                ('FPT và MBB khác nhau như thế nào?','multiSymbol'),
+                ('Thời tiết Hà Nội ngày mai','unknown'),
               ]
               # Verify semantic meaning, not only a generic concept response length.
               semantic_checks=[
