@@ -2,7 +2,7 @@
 // Shared, deterministic question policy for both online and local fallback.
 const STOP=new Set(('la gi nghia la gi dinh nghia kh per ten em anh chi ban minh toi chung ta cho biet giai thich phan tich danh gia tinh hinh bao nhieu hien tai hom nay moi nhat gan day cua ve voi theo va tai sao vi sao nhu the nao may duoc ko khong o trong luc khi gia tri so lieu chi so cua doanh nghiep cong ty co phieu ma chung khoan').split(' '));
 const TERMS_STOP=new Set([...STOP,'tin','tuc','su','kien','moi','cap','nhat','thi','truong','thong','bao','thong','tin','lien','quan','ngay','nay','du','bao','nam','quy']);
-for(const term of ['doanh','tai','gia','tien','thu','von','no','quy','co'])TERMS_STOP.delete(term);
+for(const term of ['doanh','tai','gia','tien','thu','von','no','quy','co','tuc'])TERMS_STOP.delete(term);
 function norm(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9+]+/g,' ').trim();}
 function has(s,word){return (' '+s+' ').includes(' '+norm(word)+' ');}
 function periodInfo(q){
@@ -27,7 +27,7 @@ function route(question,ranked=[]){
  const news=/\btin\b|\btin tuc\b|\btin moi\b|\btin ve\b|\btin doanh nghiep\b|\bsu kien\b|\bcong bo thong tin\b|\bbai bao\b|\bnews\b|\bbao cao ctck\b/.test(s);
  const forecast=/\bdu bao\b|\bforecast\b|\bt[+]3\b|\bt[+]4\b|\bt[+]5\b|\bxac suat tang\b|\bgia muc tieu\b/.test(s);
  const risk=/\brui ro\b|\bcanh bao\b|\bbat thuong\b|\bye[u]? diem\b|\bcang thang\b/.test(s);
- const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bovernight\b|\bomo\b|\bty gia\b|\blam phat\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
+ const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bovernight\b|\bomo\b|\bty gia\b|\blam phat\b|\bcpi\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
  const technical=/\bky thuat\b|\brsi\b|\bmacd\b|\bbollinger\b|\batr\b|\badx\b|\bsupertrend\b|\bvwap\b|\bchi bao\b|\bscanner\b|\bchien luoc\b|\bquet ma\b/.test(s);
  const financial=/\bbctc\b|\btai chinh\b|\bdoanh thu\b|\bloi nhuan\b|\bdong tien\b|\bvon chu\b|\btai san\b|\bno phai tra\b|\bno xau\b|\bphai thu\b|\bton kho\b|\bthanh khoan\b|\bdu no\b|\bbao cao tai chinh\b/.test(s);
  const movement=/\bgia\b.*\b(hom nay|hien tai|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b/.test(s);
@@ -40,7 +40,7 @@ function route(question,ranked=[]){
  if(strong.length>=2&&amount&&technical)return'technical';
  if(strong.length>=2&&amount)return'multiMetric';
  if(strong.length>=2&&/\bva\b|\bhay\b/.test(s)&&!technical&&!movement)return'multiConcept';
- if(risk&&amount&&!strong.length)return'risk';
+ if(risk&&(amount||/\bdinh luong\b|\bchinh hien tai\b|\bnhung rui ro\b/.test(s)))return'risk';
  if(definition)return'concept';
  if(deep)return'memo';
  if(forecast)return'forecast';
@@ -76,7 +76,9 @@ function searchRows(question,data,{minCoverage=0.6,limit=8}={}){
   if(score<minCoverage||matched<Math.min(2,terms.length))continue;
   out.push({row,score,section:section.id||''});
  }
- return out.sort((a,b)=>b.score-a.score||String(a.row.label).length-String(b.row.label).length).slice(0,limit);
+ const ranked=out.sort((a,b)=>b.score-a.score||String(a.row.label).length-String(b.row.label).length);
+ if(terms.length<=2&&ranked.length>1&&ranked[0].score===ranked[1].score)return[];
+ return ranked.slice(0,limit);
 }
 function selectNews(question,items,{symbol='',companyOnly=false,limit=8}={}){
  const s=norm(question),generic=/\btin\b|\bnews\b|\bsu kien\b|\bcong bo\b/.test(s),topic=topicTokens(question,symbol);
