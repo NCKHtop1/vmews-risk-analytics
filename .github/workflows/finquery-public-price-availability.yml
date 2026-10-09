@@ -1,6 +1,14 @@
 name: FinQuery public price availability guard
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finquery-public-price-availability.yml'
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    branches: [main]
+    types: [completed]
   schedule:
     # Check both public delivery paths during and shortly after Vietnam sessions.
     - cron: '5,20,35,50 2-8 * * 1-5'
@@ -15,6 +23,7 @@ concurrency:
 
 jobs:
   public-price:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
