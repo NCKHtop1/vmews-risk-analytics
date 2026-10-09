@@ -28,7 +28,7 @@ function route(question,ranked=[]){
  const forecast=/\bdu bao\b|\bforecast\b|\bt[+]3\b|\bt[+]4\b|\bt[+]5\b|\bxac suat tang\b|\bgia muc tieu\b/.test(s);
  const risk=/\brui ro\b|\bcanh bao\b|\bbat thuong\b|\bye[u]? diem\b|\bcang thang\b/.test(s);
  const macro=/\bnhnn\b|\bngan hang nha nuoc\b|\blai suat\b|\bovernight\b|\bomo\b|\bty gia\b|\blam phat\b|\bcpi\b|\bgdp\b|\bpmi\b|\bfdi\b|\bvi mo\b|\besg\b|\bcung tien\b|\bm2\b|\bkinh te vi mo\b/.test(s);
- const technical=/\bky thuat\b|\brsi\b|\bmacd\b|\bbollinger\b|\batr\b|\badx\b|\bsupertrend\b|\bvwap\b|\bchi bao\b|\bscanner\b|\bchien luoc\b|\bquet ma\b/.test(s);
+ const technical=/\bky thuat\b|\brsi\b|\bmacd\b|\bbollinger\b|\batr\b|\badx\b|\bsupertrend\b|\bvwap\b|\bobv\b|\bmfi\b|\bcmf\b|\bstochastic\b|\bstoch\b|\bcci\b|\broc\b|\bwillr\b|\bchi bao\b|\bscanner\b|\bchien luoc\b|\bquet ma\b/.test(s);
  const financial=/\bbctc\b|\btai chinh\b|\bdoanh thu\b|\bloi nhuan\b|\bdong tien\b|\bvon chu\b|\btai san\b|\bno phai tra\b|\bno xau\b|\bphai thu\b|\bton kho\b|\bthanh khoan\b|\bdu no\b|\bbao cao tai chinh\b/.test(s);
  const movement=/\bgia\b.*\b(hom nay|hien tai|phien nay|phien truoc)\b|\b(tang|giam)\b.*\b(hom nay|phien nay|bao nhieu)\b|\bgia co phieu\b|\bgia chung khoan\b|\bphien hom nay\b|\bphien nay\b|\bdiem so\b|\bdong luc phien\b|\bbien dong gia\b|\btang gia\b|\bgiam gia\b|\bvi sao\b|\bnguyen nhan\b/.test(s);
  const deep=/\bphan tich chuyen sau\b|\bphan tich toan dien\b|\bho so nghien cuu\b|\bdanh gia tong the\b|\btong hop\b|\bdeep dive\b/.test(s);
@@ -52,6 +52,7 @@ function route(question,ranked=[]){
  if(amount&&financial)return'metric';
  if(technical)return'technical';
  if(movement)return'movement';
+ if(time.hasPeriod&&strong.length&&!/\bphan tich\b|\bdanh gia\b/.test(s))return'metric';
  if(financial)return'financial';
  if(strong.length)return'concept';
  if(time.hasPeriod&&amount)return'metric';
