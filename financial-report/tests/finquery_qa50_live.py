@@ -181,15 +181,33 @@ def prepare_mock(browser,sym,kind):
 def mocked(c,browser):
  kind=c['kind'];ctx,page,events=prepare_mock(browser,c['symbol'],kind)
  try:
+  if kind=='mockstop':
+   page.wait_for_function("window.FinQueryAI.geminiStatus().connected===true",timeout=17000)
+   page.evaluate("""()=>{
+     window.__qaPendingRequests=0;
+     const original=window.fetch.bind(window);
+     window.fetch=(url,opts={})=>{
+       if(String(url).includes(':generateContent')){
+         window.__qaPendingRequests++;
+         return new Promise((resolve,reject)=>{
+           const abort=()=>reject(new DOMException('User stop','AbortError'));
+           if(opts.signal?.aborted){abort();return;}
+           opts.signal?.addEventListener('abort',abort,{once:true});
+         });
+       }
+       return original(url,opts);
+     };
+   }""")
   opener(page)
   page.evaluate("window.FinQueryAI.setMode('deep')")
   page.evaluate("""()=>{window.FinQueryAI.ask('Phân tích sâu có căn cứ về FPT và rủi ro, không suy diễn số liệu.')}""")
   page.wait_for_function("document.querySelector('#research-ai-send')?.dataset.busy==='1'",timeout=14000)
   if kind=='mockstop':
-   page.locator('#research-ai-send').click()
-   page.wait_for_function("document.querySelector('#research-ai-send')?.dataset.busy!=='1'",timeout=25000)
+   page.wait_for_function("window.__qaPendingRequests>0",timeout=35000)
+   page.locator('#research-ai-send').click(timeout=7000)
+   page.wait_for_function("document.querySelector('#research-ai-send')?.dataset.busy!=='1'",timeout=12000)
    body=page.locator('#research-ai').inner_text()
-   need('Đã dừng' in body or 'dừng' in body.lower(),'Stop did not cancel request')
+   need('Đã dừng' in body or 'dừng' in body.lower(),'Stop did not cancel request; preview='+body[-420:])
   elif kind=='mockdouble':
    # Ask second request while the UI is busy; should refuse concurrent submissions.
    page.evaluate("""()=>{window.FinQueryAI.ask('Câu hỏi trùng được gửi khi đang bận');}""")
