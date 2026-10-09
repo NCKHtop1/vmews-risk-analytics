@@ -1,12 +1,7 @@
 name: FinQuery custom-domain end-to-end smoke
 on:
   workflow_dispatch:
-  push:
-    branches: [main, fix/finquery-domain-https-route-smoke-20261009, fix/finquery-browser-stale-element-retry-20261009]
-    paths:
-      - 'financial-report/scripts/smoke_custom_domain.py'
-      - '.github/workflows/finquery-custom-domain-smoke.yml'
-      - '.github/workflows/financial-dashboard-browser-smoke.yml'
+  # Push checks must not race the Pages deployment. Validate after the published revision lands.
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     branches: [main]
@@ -35,7 +30,7 @@ jobs:
         run: python financial-report/scripts/smoke_custom_domain.py
 
   browser:
-    if: github.event_name != 'workflow_run'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     needs: domain
     runs-on: ubuntu-latest
     timeout-minutes: 15
