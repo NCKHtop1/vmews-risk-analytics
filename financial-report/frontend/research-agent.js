@@ -17,7 +17,8 @@ function resolveTargetSymbols(question){
  const known=new Set(marketCompanies().map(x=>String(x.symbol||'').toUpperCase()).filter(Boolean));
  const financial=root.FinancialReportContext?.companies?.()||[];
  for(const company of financial)if(company.symbol)known.add(String(company.symbol).toUpperCase());
- const matches=(String(question||'').match(/\b[A-Z]{3,4}\b/g)||[]).filter(x=>known.has(x)&&!['ROE','ROA','FCF','OCF','RSI','MFI','CIR','NIM','NPL','MACD','CASA','TOI','CAR','OMO','GDP','CPI','FCP','EPS','ATR','ADX','SMA','EMA','PEG'].includes(x));
+ const tickerText=String(question||'').replace(/\bFPT\s+Retail\b/gi,'FRT').replace(/\bFPT\s+Securities\b/gi,'FTS');
+ const matches=(tickerText.match(/\b[A-Z]{3,4}\b/g)||[]).filter(x=>known.has(x)&&!['ROE','ROA','FCF','OCF','RSI','MFI','CIR','NIM','NPL','MACD','CASA','TOI','CAR','OMO','GDP','CPI','FCP','EPS','ATR','ADX','SMA','EMA','PEG'].includes(x));
  const phrase=norm(question);
  for(const c of marketCompanies()){
   const name=norm(c.name||'');
