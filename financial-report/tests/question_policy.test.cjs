@@ -41,6 +41,7 @@ test('finance and market: natural language queries route by intent, not answer t
   ['Phân tích sức khỏe tài chính doanh nghiệp này','financial'],
   ['Lập hồ sơ nghiên cứu chuyên sâu FPT','memo'],
   ['Phân tích chuyên sâu AAA theo kỹ thuật và rủi ro hiện tại.','memo'],
+  ['Phân tích chuyên sâu ROE và ROA năm 2025 của FPT','memo'],
   ['Thời tiết Hà Nội ngày mai','unknown'],
   ['Làm thơ về hoa sen','unknown'],
   ['Công thức nấu phở Hà Nội','concept'],
