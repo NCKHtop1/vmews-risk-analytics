@@ -66,6 +66,25 @@ def main():
         check("app",DOMAIN+"/financial-report/",html_contains("FinQuery", require_app=True))
         check("market app bundle",DOMAIN+"/financial-report/index.html",
               lambda b,u,h:(len(b)>100000 and b"FinMarketData" in b and b"FinQuery" in b) or (_ for _ in ()).throw(AssertionError("compiled FinQuery app missing")))
+        # Read-only diagnosis: verify the exact public page rather than trusting deploy metadata.
+        for label, url in [
+            ("domain-exact", DOMAIN+"/financial-report/index.html?symbol=MBB&mode=quarter"),
+            ("domain-cachebust", DOMAIN+"/financial-report/index.html?symbol=MBB&mode=quarter&footer_probe="+str(int(time.time()))),
+            ("pages-source", PAGES+"/financial-report/index.html?symbol=MBB&mode=quarter&footer_probe="+str(int(time.time()))),
+        ]:
+            try:
+                st, final, headers, body = read(url)
+                pos=body.find(b'<footer class="bottom-line">')
+                print("FOOTER_DIAG",json.dumps({
+                    "label":label,"status":st,"url":final,"length":len(body),
+                    "visitor":b'id="finquery-visitor-total"' in body,
+                    "feedback":b'finquery-footer-feedback' in body,
+                    "footer":body[pos:pos+680].decode("utf8","replace") if pos>=0 else None,
+                    "cache":headers.get("cache-control"),"age":headers.get("age"),
+                    "vercelCache":headers.get("x-vercel-cache")
+                },ensure_ascii=False))
+            except Exception as exc:
+                print("FOOTER_DIAG_ERROR",label,repr(exc))
         _, _, _, src_content = read(PAGES+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
         src=json.loads(src_content)
         _, dom_final, _, dom_content = read(DOMAIN+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
