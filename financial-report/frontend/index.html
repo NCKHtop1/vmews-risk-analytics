@@ -6,6 +6,16 @@
 <meta name="description" content="Nền tảng giám sát thị trường chứng khoán Việt Nam: giá, kỹ thuật, rủi ro, cảnh báo, tài chính doanh nghiệp, tin tức và vĩ mô."><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css"><link rel="stylesheet" href="risk-monitor.css">
 <script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="strategy-intelligence-core.js"></script><script defer src="alert-center.js"></script><script defer src="strategy-intelligence.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="insights.js"></script><script defer src="macro.js"></script><script defer src="knowledge-base.js"></script><script defer src="question-policy.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script>
+<style id="finquery-visitor-count-style">
+.bottom-line{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px 22px}
+.bottom-line .finquery-footer-main,.bottom-line .finquery-footer-feedback{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px}
+.bottom-line .finquery-visit-count{display:inline-block;margin-left:14px;white-space:nowrap;color:#929eb1}
+.bottom-line .finquery-visit-count strong{font-weight:600;color:#647696}
+.bottom-line .finquery-footer-feedback{color:#929eb1;white-space:nowrap}
+.bottom-line .finquery-footer-feedback a{color:#647696;text-decoration:underline;text-underline-offset:2px;font-weight:600}
+.bottom-line .finquery-footer-feedback a:hover,.bottom-line .finquery-footer-feedback a:focus-visible{color:#3d56bb}
+@media(max-width:600px){.bottom-line .finquery-footer-main,.bottom-line .finquery-footer-feedback{display:inline-flex!important}.bottom-line .finquery-visit-count{margin-left:10px}}
+</style>
 </head>
 <body class="site-locked">
 <header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>AI Strategy Agent</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Core · Liquid · Discovery</span></div></header>
@@ -281,8 +291,41 @@
 </section>
 </div>
 <div id="term-info-popover" class="term-info-popover" role="dialog" aria-modal="false" aria-labelledby="term-info-title" hidden><div class="term-info-head"><strong id="term-info-title"></strong><button id="term-info-close" type="button" aria-label="Đóng giải thích">×</button></div><div id="term-info-body" class="term-info-body"></div></div>
-<footer class="bottom-line"><span>Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong></span></footer>
+<footer class="bottom-line"><span class="finquery-footer-main">Bản quyền © <span id="copyright-year">2026</span> <strong>ngochailuong</strong><span class="finquery-visit-count">Lượt truy cập: <strong id="finquery-visitor-total" aria-live="polite">555</strong></span></span><span class="finquery-footer-feedback"><span>Gửi feedback:</span> <a href="https://www.linkedin.com/in/ngochailuong/" target="_blank" rel="noopener noreferrer" aria-label="Gửi feedback qua LinkedIn">LinkedIn</a><span aria-hidden="true">·</span><a href="https://docs.google.com/spreadsheets/d/14eJS6piwcfDIWbl7z4qgs6rEp1ptRxzNwTkDjJLHGVg/edit?usp=sharing" target="_blank" rel="noopener noreferrer" aria-label="Gửi feedback qua Google Sheet">Điền Google Sheet</a></span></footer>
 </main>
+<script id="finquery-visitor-count-script">
+(function(){
+  'use strict';
+  var target=document.getElementById('finquery-visitor-total');
+  if(!target)return;
+  var BASELINE=555;
+  var STORAGE_KEY='finquery_visitor_session_20261011_v1';
+  var COUNTER_KEY='finquery_info_vn_visitors_20261011_v1';
+  var ENDPOINT='https://countapi.mileshilliard.com/api/v1/';
+  var newSession=true;
+  try{
+    newSession=sessionStorage.getItem(STORAGE_KEY)!=='1';
+    if(newSession)sessionStorage.setItem(STORAGE_KEY,'1');
+  }catch(e){newSession=true;}
+  var action=newSession?'hit':'get';
+  fetch(ENDPOINT+action+'/'+COUNTER_KEY,{cache:'no-store'})
+    .then(function(response){if(!response.ok)throw new Error('visit counter unavailable');return response.json();})
+    .then(function(data){
+      var count=Number(data.value);
+      if(!Number.isFinite(count)||count<0)throw new Error('invalid visit count');
+      var total=Math.max(BASELINE,BASELINE+Math.floor(count)-1);
+      target.textContent=total.toLocaleString('vi-VN');
+      try{localStorage.setItem('finquery_last_visit_total',String(total));}catch(e){}
+    })
+    .catch(function(){
+      if(newSession){try{sessionStorage.removeItem(STORAGE_KEY);}catch(e){}}
+      try{
+        var previous=Number(localStorage.getItem('finquery_last_visit_total'));
+        if(Number.isFinite(previous)&&previous>=BASELINE)target.textContent=previous.toLocaleString('vi-VN');
+      }catch(e){}
+    });
+})();
+</script>
 </body></html>
 
 
