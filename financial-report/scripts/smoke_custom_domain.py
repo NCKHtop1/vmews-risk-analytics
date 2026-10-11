@@ -85,6 +85,15 @@ def main():
                 },ensure_ascii=False))
             except Exception as exc:
                 print("FOOTER_DIAG_ERROR",label,repr(exc))
+        # Regression guard: the published MBB page must include only the two additive footer features.
+        footer_url=DOMAIN+"/financial-report/index.html?symbol=MBB&mode=quarter&footer_contract="+str(int(time.time()))
+        footer_status, _, _, footer_body=read(footer_url)
+        assert footer_status==200, f"footer check HTTP {footer_status}"
+        for marker in (b'id="finquery-visitor-total"', b'finquery-footer-feedback',
+                       b'https://www.linkedin.com/in/ngochailuong/',
+                       b'14eJS6piwcfDIWbl7z4qgs6rEp1ptRxzNwTkDjJLHGVg'):
+            assert marker in footer_body, f"published FinQuery footer missing: {marker!r}"
+        print("PASS production visitor+feedback footer",len(footer_body),footer_url)
         _, _, _, src_content = read(PAGES+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
         src=json.loads(src_content)
         _, dom_final, _, dom_content = read(DOMAIN+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
