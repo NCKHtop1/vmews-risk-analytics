@@ -107,7 +107,8 @@ class ForecastFrontendContractTest(unittest.TestCase):
         self.assertNotIn("bước giá", self.html)
         self.assertNotIn("không trả lời chung chung", self.html)
         self.assertRegex(self.html, r'forecast-final-v12\.js\?release=\d+\.\d+')
-        self.assertIn("forecast-live-leaders-v14.js?release=42.0", self.html)
+        # Asset existence/version format is the contract; cache-bust versions may advance independently.
+        self.assertRegex(self.html, r"forecast-live-leaders-v14\.js\?release=\d+\.\d+")
         self.assertNotIn("release=19.3", self.html)
 
     def test_internal_statuses_and_nonexistent_backend_are_not_user_facing(self) -> None:
