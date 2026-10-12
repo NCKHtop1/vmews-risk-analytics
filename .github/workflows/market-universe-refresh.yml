@@ -1,6 +1,7 @@
 name: Refresh FinQuery market universe
 
 # Single writer for market/universe.json.
+# CI repair trigger: re-run unchanged universe rebuild from verified 2026-10-12 market history.
 on:
   workflow_dispatch:
   workflow_run:
