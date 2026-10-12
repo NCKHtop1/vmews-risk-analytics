@@ -7,57 +7,15 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css"><link rel="stylesheet" href="risk-monitor.css">
 <script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="strategy-intelligence-core.js"></script><script defer src="alert-center.js"></script><script defer src="strategy-intelligence.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="insights.js"></script><script defer src="macro.js"></script><script defer src="knowledge-base.js"></script><script defer src="question-policy.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script><script defer src="google-signin.js"></script>
 <style id="finquery-google-signin-style">
-/* User profile is an opt-in module; existing report and market layouts remain unchanged. */
-.finquery-google-account{position:relative;z-index:60;display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:0 12px 0 auto;min-width:0}
+/* Minimal Google identity: greeting + avatar only, never a dropdown. */
+.finquery-google-account{display:flex;align-items:center;justify-content:flex-end;flex:0 1 auto;min-width:0;margin:0 12px 0 auto}
 .finquery-google-signin{min-width:180px;min-height:32px}
-.finquery-google-identity{display:flex;align-items:center;gap:10px;min-width:0}
-.finquery-google-greeting{font-size:12px;font-weight:600;color:#31466d;white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}
-.finquery-user-trigger{display:flex;align-items:center;gap:9px;min-width:0;min-height:44px;background:#fff;border:1px solid #e2e8f4;border-radius:13px;padding:5px 10px 5px 5px;color:#2b3b57;box-shadow:0 2px 9px #1d3a6510;transition:border-color .16s,box-shadow .16s}
-.finquery-user-trigger:hover,.finquery-user-trigger[aria-expanded="true"]{border-color:#a5b8ec;box-shadow:0 4px 16px #2e57a91b}
-.finquery-user-avatar{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 34px;overflow:hidden;background:linear-gradient(135deg,#4a78d9,#784fcb);color:#fff;border-radius:50%;font-size:15px;font-weight:700}
-.finquery-user-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.finquery-user-trigger-name{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:1px}
-.finquery-user-trigger-name strong{font-size:12px;max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.finquery-user-trigger-name small{font-size:10px;color:#8794aa;white-space:nowrap}
-.finquery-user-chevron{flex:0 0 14px;color:#7b8ca8}
-.finquery-user-menu{position:absolute;z-index:100;top:calc(100% + 12px);right:0;width:min(370px,calc(100vw - 28px));padding:0;background:#fff;border:1px solid #e2e8f3;border-radius:16px;box-shadow:0 18px 52px #243a6238;color:#283b57;text-align:left;overflow:hidden}
-.finquery-user-menu-top{display:flex;align-items:center;justify-content:space-between;padding:15px 17px 10px}
-.finquery-user-menu-top strong{font-size:13px;letter-spacing:-.1px}
-.finquery-user-close{display:grid;place-items:center;background:#f2f5fa;border:0;border-radius:9px;color:#677995;width:26px;height:26px;padding:0;font-size:19px;line-height:1}
-.finquery-user-close:hover{background:#e9eef8}
-.finquery-user-profile{display:flex;align-items:center;gap:12px;padding:4px 17px 15px;border-bottom:1px solid #edf0f6}
-.finquery-user-avatar-large{width:46px;height:46px;flex-basis:46px;font-size:20px}
-.finquery-user-profile-info{min-width:0;display:flex;flex-direction:column;gap:3px}
-.finquery-user-profile-info strong{font-size:14px;color:#263953;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
-.finquery-user-profile-info span{font-size:11px;color:#5f708c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
-.finquery-user-profile-info small{font-size:10px;color:#438765}
-.finquery-user-settings,.finquery-user-watchlist{padding:14px 17px;border-bottom:1px solid #edf0f6}
-.finquery-user-settings label,.finquery-user-section-head strong{display:block;color:#283e61;font-size:12px;font-weight:700;margin-bottom:8px}
-.finquery-user-input-line,.finquery-favorite-form{display:flex;gap:7px}
-.finquery-user-input-line input,.finquery-favorite-form input{min-width:0;flex:1;width:100%;border:1px solid #dce4f1;border-radius:9px;padding:9px 10px;background:#fff;color:#263b57;font-size:12px}
-.finquery-user-input-line input:focus,.finquery-favorite-form input:focus{border-color:#7391e1;outline:2px solid #d9e3ff}
-.finquery-user-input-line button,.finquery-favorite-form button{flex:0 0 auto;border:0;border-radius:9px;background:#435ccc;color:#fff;font-size:12px;font-weight:600;padding:8px 12px}
-.finquery-user-input-line button:hover,.finquery-favorite-form button:hover{background:#344cae}
-.finquery-user-settings>small{display:block;margin-top:7px;color:#8290a8;font-size:10px;line-height:1.4}
-.finquery-user-section-head{display:flex;align-items:center;justify-content:space-between}
-.finquery-user-section-head strong{margin:0}
-.finquery-user-section-head span{color:#8390a4;background:#f2f5fa;border-radius:6px;padding:3px 7px;font-size:10px}
-.finquery-favorite-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
-.finquery-favorite-chip{display:inline-flex;align-items:center;gap:0;border:1px solid #dce5f5;border-radius:9px;background:#f6f8fd;overflow:hidden}
-.finquery-favorite-link{padding:7px 6px 7px 10px;color:#3c5ba0;font-size:12px;font-weight:700}
-.finquery-favorite-link:hover{color:#284cad;text-decoration:underline}
-.finquery-favorite-remove{display:grid;place-items:center;border:0;background:transparent;color:#8694aa;padding:4px 9px 4px 5px;min-height:30px;font-size:17px}
-.finquery-favorite-remove:hover{color:#c34349}
-.finquery-user-watchlist #finquery-favorite-empty{margin:9px 0 0;color:#8793a8;font-size:11px;line-height:1.5}
-.finquery-favorite-form{margin-top:11px}
-.finquery-user-menu .finquery-user-feedback{font-size:11px;color:#4361a1;min-height:16px;line-height:1.5;margin:7px 17px 0}
-.finquery-user-menu-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 17px 14px}
-.finquery-user-menu-footer span{font-size:10px;color:#8894aa;line-height:1.45;max-width:210px}
-.finquery-google-signout{flex:0 0 auto;border:1px solid #e2e7f0;background:#fff;color:#5c6c88;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:600}
-.finquery-google-signout:hover{background:#f3f5fa}
-@media(max-width:1100px){.intro{flex-wrap:wrap;gap:12px}.finquery-google-account{margin-left:auto}.finquery-google-greeting{max-width:180px}}
-@media(max-width:700px){.finquery-google-account{justify-content:flex-start;margin:0;width:100%;min-width:0}.finquery-google-identity{width:100%;justify-content:space-between}.finquery-google-greeting{max-width:calc(100% - 158px)}.finquery-user-trigger-name strong{max-width:90px}.finquery-user-menu{right:auto;left:0}.finquery-user-menu-footer{align-items:center}}
-@media(prefers-reduced-motion:reduce){.finquery-user-trigger{transition:none}}
+.finquery-google-identity{display:flex;align-items:center;justify-content:flex-end;gap:11px;min-width:0}
+.finquery-google-greeting{font-size:12px;font-weight:600;color:#31466d;line-height:1.4;white-space:nowrap;max-width:290px;overflow:hidden;text-overflow:ellipsis}
+.finquery-google-avatar{display:inline-flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;overflow:hidden;border-radius:50%;background:linear-gradient(135deg,#4a78d9,#784fcb);color:#fff;font-size:16px;font-weight:700;border:2px solid #fff;box-shadow:0 0 0 1px #d8e2f3;cursor:default}
+.finquery-google-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+@media(max-width:1100px){.intro{flex-wrap:wrap;gap:12px}.finquery-google-greeting{max-width:220px}}
+@media(max-width:700px){.finquery-google-account{margin:0;width:100%;justify-content:flex-start}.finquery-google-identity{justify-content:flex-start}.finquery-google-greeting{max-width:calc(100vw - 115px);white-space:normal;overflow:visible}}
 </style>
 <style id="finquery-visitor-count-style">
 .bottom-line{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px 22px}
@@ -77,40 +35,10 @@
   <div class="finquery-google-signin" id="finquery-google-signin"></div>
   <div class="finquery-google-identity" id="finquery-google-identity" hidden>
     <span class="finquery-google-greeting" id="finquery-google-greeting"></span>
-    <button class="finquery-user-trigger" id="finquery-user-trigger" type="button" aria-controls="finquery-user-menu" aria-haspopup="true" aria-expanded="false" aria-label="Mở tài khoản Google">
-      <span class="finquery-user-avatar" aria-hidden="true">
-        <img id="finquery-google-avatar" alt="" referrerpolicy="no-referrer" hidden>
-        <span id="finquery-google-avatar-fallback">G</span>
-      </span>
-      <span class="finquery-user-trigger-name"><strong id="finquery-google-shortname"></strong><small>Góc của tôi</small></span>
-      <svg class="finquery-user-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="m5 7 5 5 5-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"/></svg>
-    </button>
-    <section class="finquery-user-menu" id="finquery-user-menu" aria-label="Tài khoản và cá nhân hóa FinQuery" hidden>
-      <div class="finquery-user-menu-top"><strong>Góc của bạn</strong><button class="finquery-user-close" id="finquery-user-menu-close" type="button" aria-label="Đóng menu tài khoản">×</button></div>
-      <div class="finquery-user-profile">
-        <span class="finquery-user-avatar finquery-user-avatar-large" aria-hidden="true">
-          <img id="finquery-google-panel-avatar" alt="" referrerpolicy="no-referrer" hidden>
-          <span id="finquery-google-panel-fallback">G</span>
-        </span>
-        <div class="finquery-user-profile-info"><strong id="finquery-google-profile-name"></strong><span id="finquery-google-profile-email"></span><small>Kết nối bằng Google</small></div>
-      </div>
-      <div class="finquery-user-settings">
-        <label for="finquery-nickname">Tên muốn được gọi</label>
-        <div class="finquery-user-input-line"><input id="finquery-nickname" type="text" maxlength="32" autocomplete="off" placeholder="Tên từ Google"><button id="finquery-nickname-save" type="button">Lưu</button></div>
-        <small>Để trống và bấm Lưu để dùng lại tên Google.</small>
-      </div>
-      <div class="finquery-user-watchlist">
-        <div class="finquery-user-section-head"><strong>Mã quan tâm</strong><span id="finquery-favorite-count">0/8</span></div>
-        <div class="finquery-favorite-list" id="finquery-favorite-list" aria-label="Mã chứng khoán đã lưu"></div>
-        <p id="finquery-favorite-empty">Chưa có mã nào. Bạn có thể thêm MBB, FPT, VCB...</p>
-        <form class="finquery-favorite-form" id="finquery-favorite-form" autocomplete="off">
-          <input id="finquery-favorite-input" type="text" maxlength="5" inputmode="text" placeholder="VD: MBB" aria-label="Nhập mã chứng khoán">
-          <button type="submit">+ Thêm mã</button>
-        </form>
-      </div>
-      <p class="finquery-user-feedback" id="finquery-user-feedback" aria-live="polite"></p>
-      <div class="finquery-user-menu-footer"><span>Cá nhân hóa chỉ lưu trên trình duyệt này, chưa đồng bộ thiết bị.</span><button class="finquery-google-signout" id="finquery-google-signout" type="button">Đăng xuất</button></div>
-    </section>
+    <span class="finquery-google-avatar" role="img" aria-label="Ảnh đại diện Google">
+      <img id="finquery-google-avatar" alt="" referrerpolicy="no-referrer" hidden>
+      <span id="finquery-google-avatar-fallback" aria-hidden="true">G</span>
+    </span>
   </div>
   <span id="finquery-google-status" class="sr-only" role="status" aria-live="polite"></span>
 </div><form id="site-unlock-form" class="site-access-form" autocomplete="off"><label for="site-access-code">Mã truy cập</label><div class="site-access-row"><input id="site-access-code" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="Nhập mã" aria-label="Mã truy cập FinQuery"><button type="submit">Mở</button></div><p id="site-access-error" role="status" aria-live="polite"></p></form></div>
