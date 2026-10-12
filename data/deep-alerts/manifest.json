@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-09T16:40:51.748220+00:00",
+  "generatedAt": "2026-10-12T02:35:08.156634+00:00",
   "marketModelDate": "2026-10-09",
   "requested": 71,
-  "reused": 66,
-  "fetched": 5,
+  "reused": 71,
+  "fetched": 0,
   "cached": 71,
   "symbols": {
     "KOS": {
@@ -247,6 +247,11 @@
       "modelAsOf": "2026-09-24",
       "source": "Vnstock"
     },
+    "FPT": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-09",
+      "source": "Yahoo Finance"
+    },
     "AGR": {
       "rows": 1800,
       "modelAsOf": "2026-10-05",
@@ -267,9 +272,19 @@
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
     },
+    "XMC": {
+      "rows": 1678,
+      "modelAsOf": "2026-10-09",
+      "source": "Vnstock"
+    },
     "NKG": {
       "rows": 1800,
       "modelAsOf": "2026-09-11",
+      "source": "Yahoo Finance"
+    },
+    "HSL": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-09",
       "source": "Yahoo Finance"
     },
     "AGG": {
@@ -297,6 +312,11 @@
       "modelAsOf": "2026-08-13",
       "source": "Vnstock"
     },
+    "FOX": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-09",
+      "source": "Vnstock"
+    },
     "LPB": {
       "rows": 1517,
       "modelAsOf": "2026-09-14",
@@ -305,6 +325,11 @@
     "VCG": {
       "rows": 1490,
       "modelAsOf": "2026-09-14",
+      "source": "Yahoo Finance"
+    },
+    "HHV": {
+      "rows": 1232,
+      "modelAsOf": "2026-10-09",
       "source": "Yahoo Finance"
     },
     "TCH": {
@@ -336,31 +361,6 @@
       "rows": 1537,
       "modelAsOf": "2026-08-07",
       "source": "Vnstock"
-    },
-    "FPT": {
-      "rows": 2597,
-      "modelAsOf": "2026-10-09",
-      "source": "Yahoo Finance"
-    },
-    "XMC": {
-      "rows": 1678,
-      "modelAsOf": "2026-10-09",
-      "source": "Vnstock"
-    },
-    "HSL": {
-      "rows": 2184,
-      "modelAsOf": "2026-10-09",
-      "source": "Yahoo Finance"
-    },
-    "FOX": {
-      "rows": 1925,
-      "modelAsOf": "2026-10-09",
-      "source": "Vnstock"
-    },
-    "HHV": {
-      "rows": 1232,
-      "modelAsOf": "2026-10-09",
-      "source": "Yahoo Finance"
     }
   },
   "errors": [],
