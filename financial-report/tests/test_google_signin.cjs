@@ -14,6 +14,11 @@ const build = fs.readFileSync(path.join(root, 'scripts', 'build_cdn.py'), 'utf8'
 const clientId = html.match(/<meta name="finquery-google-client-id" content="([^"]+)">/)?.[1];
 
 assert.match(clientId || '', /^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/);
+// Pin the exact public identifier copied from the Google Cloud OAuth client screen.
+// A regex alone passed the former misread j/i ID, yet Google rejected it with 401.
+const verifiedClientId = '216957728290-6h80djpq7ouk2cmd5jgjr08j6233voes.apps.googleusercontent.com';
+assert.equal(clientId, verifiedClientId, 'Google Client ID differs from Google Cloud; check every character');
+assert.ok(!html.includes('5jgir08j'), 'Do not reintroduce the rejected 401 Client ID');
 assert.match(html, /id="finquery-google-account"/);
 assert.match(html, /id="finquery-google-greeting"/);
 assert.match(html, /id="finquery-google-signout"/);
