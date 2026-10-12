@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-12T06:09:37+00:00",
+  "updatedAt": "2026-10-12T15:42:13+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-HSG-2026-10-12-001b1c7b",
+      "symbol": "HSG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-12",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – HSG · CTCP Tập đoàn Hoa Sen (Hoa Sen Group) Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HSG ngày 12/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "DSC-VRE-2026-10-10-93d4cbe0",
       "symbol": "VRE",
@@ -32,6 +43,48 @@
       "summary": "DSC có báo cáo VHM ngày 10/10/2026 với khuyến nghị MUA, giá mục tiêu 114.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "VPX-ACB-2026-10-09-abf15720",
+      "symbol": "ACB",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-10-09",
+      "title": "ACB: Khuyến nghị MUA với giá mục tiêu 25,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/acb-khuyen-nghi-mua-voi-gia-muc-tieu-25-500-dong-co-phieu-rpid6155.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 25500,
+      "summary": "VPX có báo cáo ACB ngày 09/10/2026 với khuyến nghị MUA, giá mục tiêu 25.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-PLX-2026-10-09-6dc445b5",
+      "symbol": "PLX",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-10-09",
+      "title": "PLX: Khuyến nghị MUA với giá mục tiêu 43,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/plx-khuyen-nghi-mua-voi-gia-muc-tieu-43-200-dong-co-phieu-rpid6151.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 43200,
+      "summary": "VIETCAP có báo cáo PLX ngày 09/10/2026 với khuyến nghị MUA, giá mục tiêu 43.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TPS-MBB-2026-10-09-d0c6cc9e",
+      "symbol": "MBB",
+      "broker": "TPS",
+      "brokerName": "TPS",
+      "publishedAt": "2026-10-09",
+      "title": "MBB: Khuyến nghị MUA với giá mục tiêu 23,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-23-000-dong-co-phieu-rpid6150.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 23000,
+      "summary": "TPS có báo cáo MBB ngày 09/10/2026 với khuyến nghị MUA, giá mục tiêu 23.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "NHSV-FPT-2026-10-09-dbf484e1",
       "symbol": "FPT",
       "broker": "NHSV",
@@ -58,6 +111,20 @@
       "summary": "NHSV có báo cáo CTD ngày 09/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "MBS-HDG-2026-10-09-cea4bf3d",
+      "symbol": "HDG",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-09",
+      "title": "HDG: Khuyến nghị KHẢ QUAN với giá mục tiêu 22,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hdg-khuyen-nghi-kha-quan-voi-gia-muc-tieu-22-500-dong-co-phieu-rpid6152.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 22500,
+      "summary": "MBS có báo cáo HDG ngày 09/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 22.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "MBS-HDG-2026-10-09-953a7482",
       "symbol": "HDG",
       "broker": "MBS",
@@ -71,6 +138,20 @@
       "summary": "MBS công bố báo cáo ngày 09/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 22.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
+      "id": "DSC-DPM-2026-10-09-b103ba59",
+      "symbol": "DPM",
+      "broker": "DSC",
+      "brokerName": "DSC",
+      "publishedAt": "2026-10-09",
+      "title": "DPM: Khuyến nghị MUA với giá mục tiêu 26,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dpm-khuyen-nghi-mua-voi-gia-muc-tieu-26-500-dong-co-phieu-rpid6154.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 26500,
+      "summary": "DSC có báo cáo DPM ngày 09/10/2026 với khuyến nghị MUA, giá mục tiêu 26.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "ACBS-CTD-2026-10-09-180b4b2f",
       "symbol": "CTD",
       "broker": "ACBS",
@@ -82,6 +163,20 @@
       "recommendation": "MUA",
       "targetPrice": 87500,
       "summary": "ACBS có báo cáo CTD ngày 09/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "ACBS-CTD-2026-10-09-758156a4",
+      "symbol": "CTD",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-10-09",
+      "title": "CTD: Khuyến nghị MUA với giá mục tiêu 87,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ctd-khuyen-nghi-mua-voi-gia-muc-tieu-87-500-dong-co-phieu-rpid6153.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 87500,
+      "summary": "ACBS có báo cáo CTD ngày 09/10/2026 với khuyến nghị MUA, giá mục tiêu 87.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-BSR-2026-10-08-5484d54a",
@@ -107,6 +202,20 @@
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/vpl-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026/",
       "summary": "MBS công bố báo cáo ngày 08/10/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "DSC-VRE-2026-10-08-2d970bee",
+      "symbol": "VRE",
+      "broker": "DSC",
+      "brokerName": "DSC",
+      "publishedAt": "2026-10-08",
+      "title": "VRE: Khuyến nghị MUA với giá mục tiêu 36,850 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vre-khuyen-nghi-mua-voi-gia-muc-tieu-36-850-dong-co-phieu-rpid6147.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 36850,
+      "summary": "DSC có báo cáo VRE ngày 08/10/2026 với khuyến nghị MUA, giá mục tiêu 36.850 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "DSC-VHM-2026-10-08-3d24e375",
@@ -352,12 +461,35 @@
       "summary": "TCBS có báo cáo HCM ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "TCBS-CTS-2026-10-06-001b1c7b",
+      "symbol": "CTS",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Thanh khoản thị trường và cổ phiếu chứng khoán: Định giá đang đi trước dòng tiền – khi nào thanh khoản xác nhận điểm mua? VCK SSI VND VPX VIX VCI SHS HCM MBS BSI CTS VDS #Thanh khoản thị trường #Định giá #Ngành chứn",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo CTS ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
       "id": "TCBS-BWE-2026-10-06-001b1c7b",
       "symbol": "BWE",
       "broker": "TCBS",
       "brokerName": "Techcom Securities",
       "publishedAt": "2026-10-06",
       "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu — BWE · Tổng Công ty Cổ phần Nước – Môi trường Bình Dương (Biwase) BWE #Phân tích lần đầu #Ngành nước Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BWE ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BWE-2026-10-06-001b1c7b",
+      "symbol": "BWE",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Báo cáo lần đầu Báo cáo phân tích lần đầu – BWE · Tổng Công ty Cổ phần Nước – Môi trường Bình Dương (Biwase) BWE #Phân tích lần đầu #Ngành nước Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElem",
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo BWE ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
