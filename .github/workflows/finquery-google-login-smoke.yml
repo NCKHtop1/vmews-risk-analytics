@@ -7,14 +7,16 @@ on:
       - 'financial-report/frontend/google-signin.js'
       - 'financial-report/scripts/build_cdn.py'
       - 'financial-report/tests/test_google_signin.cjs'
+      - 'financial-report/tests/probe_google_client.cjs'
       - '.github/workflows/finquery-google-login-smoke.yml'
   push:
-    branches: [main, 'feat/finquery-google-greeting-20261012']
+    branches: [main, 'fix/finquery-google-oauth-invalid-client-20261013']
     paths:
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/google-signin.js'
       - 'financial-report/scripts/build_cdn.py'
       - 'financial-report/tests/test_google_signin.cjs'
+      - 'financial-report/tests/probe_google_client.cjs'
       - '.github/workflows/finquery-google-login-smoke.yml'
   workflow_dispatch:
 
@@ -34,5 +36,12 @@ jobs:
         run: node --check financial-report/frontend/google-signin.js
       - name: Google sign-in smoke and greetings
         run: node financial-report/tests/test_google_signin.cjs
+      - name: Verify Google knows this OAuth client (no user credentials required)
+        run: node financial-report/tests/probe_google_client.cjs
+      - name: Build standalone HTML and verify Client ID parity
+        shell: bash
+        run: |
+          python financial-report/scripts/build_cdn.py
+          FINQUERY_VERIFY_BUNDLE=1 node financial-report/tests/test_google_signin.cjs
       - name: Standalone builder syntax
         run: python -m py_compile financial-report/scripts/build_cdn.py
