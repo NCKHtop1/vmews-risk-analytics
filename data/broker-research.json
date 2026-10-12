@@ -1,8 +1,75 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-09T06:19:35+00:00",
+  "updatedAt": "2026-10-12T06:09:37+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "DSC-VRE-2026-10-10-93d4cbe0",
+      "symbol": "VRE",
+      "broker": "DSC",
+      "brokerName": "DSC",
+      "publishedAt": "2026-10-10",
+      "title": "VRE: Khuyến nghị MUA với giá mục tiêu 36,850 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vre-khuyen-nghi-mua-voi-gia-muc-tieu-36-850-dong-co-phieu-rpid6139.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 36850,
+      "summary": "DSC có báo cáo VRE ngày 10/10/2026 với khuyến nghị MUA, giá mục tiêu 36.850 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "DSC-VHM-2026-10-10-37388dcf",
+      "symbol": "VHM",
+      "broker": "DSC",
+      "brokerName": "DSC",
+      "publishedAt": "2026-10-10",
+      "title": "VHM: Khuyến nghị MUA với giá mục tiêu 114,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vhm-khuyen-nghi-mua-voi-gia-muc-tieu-114-400-dong-co-phieu-rpid6140.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 114400,
+      "summary": "DSC có báo cáo VHM ngày 10/10/2026 với khuyến nghị MUA, giá mục tiêu 114.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "NHSV-FPT-2026-10-09-dbf484e1",
+      "symbol": "FPT",
+      "broker": "NHSV",
+      "brokerName": "NHSV",
+      "publishedAt": "2026-10-09",
+      "title": "FPT: Khuyến nghị MUA với giá mục tiêu 77,777 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/fpt-khuyen-nghi-mua-voi-gia-muc-tieu-77-777-dong-co-phieu-rpid6142.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 77777,
+      "summary": "NHSV có báo cáo FPT ngày 09/10/2026 với khuyến nghị MUA, giá mục tiêu 77.777 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "NHSV-CTD-2026-10-09-9e59c45c",
+      "symbol": "CTD",
+      "broker": "NHSV",
+      "brokerName": "NHSV",
+      "publishedAt": "2026-10-09",
+      "title": "CTD: Báo cáo cập nhật KQKD Q2/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ctd-bao-cao-cap-nhat-kqkd-q2-2026-rpid6143.html",
+      "dataProvider": "24HMONEY",
+      "summary": "NHSV có báo cáo CTD ngày 09/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-HDG-2026-10-09-953a7482",
+      "symbol": "HDG",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-09",
+      "title": "HDG – BCPT – Vượt qua thách thức",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/25574-2/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 22500,
+      "summary": "MBS công bố báo cáo ngày 09/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 22.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "ACBS-CTD-2026-10-09-180b4b2f",
       "symbol": "CTD",
@@ -40,6 +107,20 @@
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/vpl-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026/",
       "summary": "MBS công bố báo cáo ngày 08/10/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "DSC-VHM-2026-10-08-3d24e375",
+      "symbol": "VHM",
+      "broker": "DSC",
+      "brokerName": "DSC",
+      "publishedAt": "2026-10-08",
+      "title": "VHM: Khuyến nghị MUA với giá mục tiêu 114,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vhm-khuyen-nghi-mua-voi-gia-muc-tieu-114-400-dong-co-phieu-rpid6146.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 114400,
+      "summary": "DSC có báo cáo VHM ngày 08/10/2026 với khuyến nghị MUA, giá mục tiêu 114.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "BSC-VIC-2026-10-08-1d2efe0f",
@@ -106,6 +187,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpl-bao-cao-cap-nhat-07-10-2026-rpid6135.html",
       "dataProvider": "24HMONEY",
       "summary": "MBS có báo cáo VPL ngày 07/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "FPTS-HDB-2026-10-07-718a7767",
+      "symbol": "HDB",
+      "broker": "FPTS",
+      "brokerName": "FPT Securities",
+      "publishedAt": "2026-10-07",
+      "title": "Khuyến nghị Mua cổ phiếu HDB ngày",
+      "currency": "VND",
+      "sourceUrl": "https://ezsearch.fpts.com.vn/Services/EzReport/default.aspx?tabid=169",
+      "summary": "FPTS có báo cáo HDB ngày 07/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "YUANTA-MCH-2026-10-06-4810aee8",
