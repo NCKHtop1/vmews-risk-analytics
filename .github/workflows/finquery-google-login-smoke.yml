@@ -1,0 +1,38 @@
+name: FinQuery Google login regression
+
+on:
+  pull_request:
+    paths:
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/google-signin.js'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/tests/test_google_signin.cjs'
+      - '.github/workflows/finquery-google-login-smoke.yml'
+  push:
+    branches: [main, 'feat/finquery-google-greeting-20261012']
+    paths:
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/google-signin.js'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/tests/test_google_signin.cjs'
+      - '.github/workflows/finquery-google-login-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: node --check financial-report/frontend/google-signin.js
+      - name: Google sign-in smoke and greetings
+        run: node financial-report/tests/test_google_signin.cjs
+      - name: Standalone builder syntax
+        run: python -m py_compile financial-report/scripts/build_cdn.py
