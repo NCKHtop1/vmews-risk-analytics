@@ -5,7 +5,15 @@ const allowedOrigin=new URL(base).origin;
 const browser=await chromium.launch({headless:true});
 const errors=[];const failed=[];const external=[];const cdnInjectedTelemetry=[];const approvedLiveMainData=[];
 const isKnownCdnInjectedTelemetry=(u)=>{try{const x=new URL(u);return x.hostname==='static.cloudflareinsights.com'&&x.pathname.startsWith('/beacon.min.js')}catch{return false}};
-const isApprovedLiveMainData=(u)=>{try{const x=new URL(u);return x.protocol==='https:'&&x.hostname==='raw.githubusercontent.com'&&(x.pathname.startsWith('/NCKHtop1/vmews-risk-analytics/main/data/')||x.pathname==='/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json')}catch{return false}};
+const SEALED_CORE_ASSETS=new Set(["forecast-dashboard-v12.json","forecast-current-v12.json","forecast-market-v13.json","forecast-model-v12.json","forecast-backtest-v12.json","data-audit-v12.json","phase-gates-v12.json","release-audit-v20.json"]);
+const isApprovedLiveMainData=(u)=>{try{
+  const x=new URL(u),corePrefix='/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data/';
+  return x.protocol==='https:'&&x.hostname==='raw.githubusercontent.com'&&(
+    x.pathname.startsWith('/NCKHtop1/vmews-risk-analytics/main/data/')||
+    x.pathname==='/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json'||
+    (x.pathname.startsWith(corePrefix)&&SEALED_CORE_ASSETS.has(x.pathname.slice(corePrefix.length)))
+  );
+}catch{return false}};
 const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
 page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text())});page.on('pageerror',err=>errors.push(String(err)));page.on('requestfailed',req=>failed.push(`${req.method()} ${req.url()} ${req.failure()?.errorText||''}`));page.on('request',req=>{const u=req.url();if(/^https?:/.test(u)&&new URL(u).origin!==allowedOrigin){if(isKnownCdnInjectedTelemetry(u))cdnInjectedTelemetry.push(u);else if(req.method()==='GET'&&isApprovedLiveMainData(u))approvedLiveMainData.push(u);else external.push(u)}});
 await page.goto(base,{waitUntil:'networkidle',timeout:60000});
