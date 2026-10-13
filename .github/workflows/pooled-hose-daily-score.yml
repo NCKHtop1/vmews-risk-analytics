@@ -2,6 +2,14 @@ name: VMEWS pooled HOSE daily score
 
 on:
   workflow_dispatch:
+  # Re-score the frozen pooled model after the central EOD forecast is published.
+  # This prevents a stale pooled date from keeping the append-only live monitor
+  # in WAITING_OR_REVIEW even after Forecast Core itself is current.
+  workflow_run:
+    workflows:
+      - Forecast V20.1 immutable-price audit and market intelligence
+    branches: [main]
+    types: [completed]
   schedule:
     - cron: '25 23 * * 0-4'
     - cron: '55 9 * * 1-5'
@@ -25,6 +33,7 @@ concurrency:
 
 jobs:
   score:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:

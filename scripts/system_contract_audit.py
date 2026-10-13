@@ -452,37 +452,50 @@ def audit_forecast_monitor(report: Audit, repo_root: Path, now):
 
 
 def production_prefers_solution_core(repo_root: Path):
-    """Return True only when the deployed Pages loader prefers the dedicated core branch."""
+    """The standalone Pages/CDN page reads only validated independent core assets."""
     try:
         text = (repo_root / "forecast-final-v12.js").read_text(encoding="utf-8")
     except Exception:
         return False
     required = (
         "solution-ai-core-data/data",
-        "SOLUTION_CORE_FILES.has(name)",
-        "[SOLUTION_CORE_ROOT,ROOT]",
-        "window.__SOLUTION_AI_CORE_ROOT__=SOLUTION_CORE_ROOT",
+        "const INDEPENDENT_CORE_PAGE=",
+        "PAGES_HOST||Boolean(CDN_REF)",
+        "const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;",
+        "CORE_ASSETS.has(name)",
+        "const roots=[isDedicatedCore?CORE_ROOT:ROOT]",
+        "window.__SOLUTION_AI_CORE_ROOT__=CORE_ROOT",
     )
     return all(token in text for token in required)
 
 
 def production_uses_finquery_main_core(repo_root: Path):
-    """Return True when FinQuery Forecast is independent of SoluTION data branches."""
+    """FinQuery hosts retain their original main core despite standalone routing."""
     try:
         text = (repo_root / "forecast-final-v12.js").read_text(encoding="utf-8")
     except Exception:
         return False
-    required = (
-        "const roots=[ROOT]",
+    base = (
         "financial-market-data/market/quotes.json",
         'scope:"finquery-market"',
     )
-    forbidden = (
-        "solution-ai-core-data/data",
-        "solution-ai-live-data/solution-ai/live.json",
-        "[SOLUTION_CORE_ROOT,ROOT]",
-    )
-    return all(token in text for token in required) and not any(token in text for token in forbidden)
+    if not all(token in text for token in base):
+        return False
+    if "solution-ai-live-data/solution-ai/live.json" in text:
+        return False
+    if "solution-ai-core-data/data" not in text:
+        # Historic FinQuery-only loader must not unexpectedly fetch another core.
+        return "const roots=[ROOT]" in text
+    # Shared asset must route to independent forecast only on the explicit
+    # standalone Pages/CDN host, keeping FinQuery and context snapshots on main.
+    return all(token in text for token in (
+        "const INDEPENDENT_CORE_PAGE=",
+        "PAGES_HOST||Boolean(CDN_REF)",
+        "const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;",
+        "const isDedicatedCore=INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name)",
+        "const roots=[isDedicatedCore?CORE_ROOT:ROOT]",
+        "window.__VMEWS_DATA_ROOT__=ROOT",
+    ))
 
 
 def solution_core_is_authoritative(core_dir: Path, now):
