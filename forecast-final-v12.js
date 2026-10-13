@@ -12,6 +12,13 @@ const DATA_REF=CDN_REF?(safeDataRef(DATA_QUERY.get("dataRef"))||"main"):PAGES_HO
 const ROOT=CDN_REF?`https://raw.githubusercontent.com/${encodeURIComponent(CDN_PATH[0])}/${encodeURIComponent(CDN_PATH[1])}/${encodeRef(DATA_REF)}/data`:PAGES_HOST?"https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data":"./data";
 const CDN_REVISION=Math.floor(Date.now()/60000);
 const FALLBACK_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data";
+// The standalone SoluTION.AI forecast is published on its own validated core
+// branch. Keep news, session overlays and other FinQuery snapshots on main.
+// Explicit CDN dataRef overrides remain available for reproducible audits.
+const INDEPENDENT_CORE_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data";
+const INDEPENDENT_CORE_PAGE=/\/forecast-final\.html$/.test(location.pathname)&&(PAGES_HOST||Boolean(CDN_REF))&&!DATA_QUERY.has("dataRef");
+const CORE_ASSETS=new Set(["forecast-dashboard-v12.json","forecast-current-v12.json","forecast-market-v13.json","forecast-model-v12.json","forecast-backtest-v12.json","data-audit-v12.json","phase-gates-v12.json","release-audit-v20.json"]);
+const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;
 const FETCH_TIMEOUT_MS=Math.max(30,Math.min(30000,Number(window.__FINQUERY_FORECAST_TIMEOUT_MS)||15000));
 const CHART_EXECUTABLE_CLOSE=item=>finite(item?.rawClose)?+item.rawClose:finite(item?.close)?+item.close:NaN;
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
@@ -80,11 +87,12 @@ async function fetchJsonBounded(url,timeoutMs=FETCH_TIMEOUT_MS){
 async function json(name){
   if(JSON_PROMISES.has(name))return JSON_PROMISES.get(name);
   const request=(async()=>{
-    const roots=[ROOT];
-    // The custom domain may be out of sync with GitHub Pages. Use exactly
-    // the same audited main branch as fallback, not a fabricated snapshot.
-    // Immutable/pinned CDN releases may never mix with main.
-    if(!CDN_REF && ROOT!==FALLBACK_ROOT)roots.push(FALLBACK_ROOT);
+    const isDedicatedCore=INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name);
+    const roots=[isDedicatedCore?CORE_ROOT:ROOT];
+    // Do not mix partially published forecast model files from different
+    // branches; a missing independent core must fail closed rather than
+    // silently falling back to the older main forecast.
+    if(!isDedicatedCore&&!CDN_REF&&ROOT!==FALLBACK_ROOT)roots.push(FALLBACK_ROOT);
     let lastError=null;
     for(const root of roots){
       const url=`${root}/${name}?refresh=${CDN_REVISION}`;
@@ -102,6 +110,7 @@ async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMIS
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
+window.__SOLUTION_AI_CORE_ROOT__=CORE_ROOT;
 window.__VMEWS_DATA_REF__=DATA_REF;
 window.__VMEWS_ASSET_REF__=CDN_REF||"LOCAL_DEPLOYMENT";
 function assertProduction(B){if(B.gates?.status!=="PASS")throw Error("Bộ kiểm soát dữ liệu chưa đạt; dự báo đang tạm khóa.");if(B.model?.promotion?.status!=="PASS")throw Error("Mô hình chưa vượt điều kiện phát hành; dự báo đang tạm khóa.")}
@@ -481,7 +490,7 @@ async function refreshCore(){
   if(document.hidden)return;
   if(last)rerender(last.B,last.sym,last.z);
   try{
-    const coreRoot=ROOT;
+    const coreRoot=CORE_ROOT;
     const next=await fetchJsonBounded(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,12000);
     if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
   }catch{}

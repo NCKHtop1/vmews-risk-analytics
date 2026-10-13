@@ -11,13 +11,17 @@ async function loadLeaderboard() {
   return window;
 }
 
-async function loadMarketDashboard(fetch = async () => { throw new Error("Unexpected network request"); }) {
+async function loadMarketDashboard(fetch = async () => { throw new Error("Unexpected network request"); }, site = {}) {
   const source = await readFile(new URL("../forecast-final-v12.js", import.meta.url), "utf8");
   const emitted = [];
   const document = { addEventListener() {}, querySelector() { return null; } };
   const window = { dispatchEvent(event) { emitted.push(event); } };
   class BrowserEvent { constructor(type, options) { this.type = type; this.detail = options?.detail; } }
-  const location = { pathname: "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html", hostname: "cdn.githubraw.com", search: "" };
+  const location = {
+    pathname: site.pathname ?? "/NCKHtop1/vmews-risk-analytics/hash/forecast-final.html",
+    hostname: site.hostname ?? "cdn.githubraw.com",
+    search: site.search ?? "",
+  };
   vm.runInContext(source, vm.createContext({ window, document, location, URLSearchParams, CustomEvent: BrowserEvent, fetch, console, AbortController, setTimeout, clearTimeout }));
   return { window, emitted };
 }
@@ -61,6 +65,52 @@ test("commit-pinned CDN keeps immutable assets while live data comes from main",
     window.__VMEWS_DATA_ROOT__,
     "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data",
   );
+});
+
+test("standalone SoluTION.AI routes all sealed core assets to its independent validated branch", async () => {
+  const requested = [];
+  const fetch = async url => {
+    requested.push(String(url));
+    const name = new URL(String(url)).pathname.split("/").at(-1);
+    const payload = name === "forecast-dashboard-v12.json" ? { asOf: "2026-10-12", promotion: { status: "PASS" } }
+      : name === "forecast-market-v13.json" ? { model: { promotion: { status: "PASS" } }, backtest: { status: "PASS" } }
+      : { status: "PASS" };
+    return { ok: true, json: async () => payload };
+  };
+  const { window } = await loadMarketDashboard(fetch);
+  const independent = "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data";
+  assert.equal(window.__VMEWS_DATA_REF__, "main");
+  assert.equal(window.__SOLUTION_AI_CORE_ROOT__, independent);
+  assert.equal(window.__VMEWS_DATA_ROOT__, "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data");
+  const model = await window.__VMEWS_LOAD_BASE__();
+  assert.equal(model.dash.asOf, "2026-10-12");
+  assert.equal(requested.length, 5);
+  assert(requested.every(url => url.startsWith(independent + "/")), requested.join(" | "));
+});
+
+test("standalone Pages also uses dedicated forecast while explicit CDN audit and unrelated hosts stay unchanged", async () => {
+  const pages = await loadMarketDashboard(undefined, {
+    hostname: "nckhtop1.github.io", pathname: "/vmews-risk-analytics/forecast-final.html", search: "?symbol=FPT",
+  });
+  assert(pages.window.__SOLUTION_AI_CORE_ROOT__.endsWith("/solution-ai-core-data/data"));
+  assert(pages.window.__VMEWS_DATA_ROOT__.endsWith("/main/data"));
+  const replay = await loadMarketDashboard(undefined, { search: "?dataRef=main&symbol=FPT" });
+  assert.equal(replay.window.__SOLUTION_AI_CORE_ROOT__, replay.window.__VMEWS_DATA_ROOT__);
+  const finquery = await loadMarketDashboard(undefined, {
+    hostname: "finquery.info.vn", pathname: "/forecast-final.html", search: "",
+  });
+  assert.equal(finquery.window.__SOLUTION_AI_CORE_ROOT__, "./data");
+});
+
+test("a missing dedicated forecast never silently falls back to the stale main branch", async () => {
+  const requested = [];
+  const { window } = await loadMarketDashboard(async url => {
+    requested.push(String(url));
+    return { ok: false, status: 503 };
+  });
+  await assert.rejects(() => window.__VMEWS_LOAD_LEADER_BASE__(), /forecast-dashboard-v12.json/);
+  assert(requested.length > 0);
+  assert(requested.every(url => url.includes("/solution-ai-core-data/data/")), requested.join(" | "));
 });
 
 test("leader loader fetches only the critical dashboard and gates", async () => {

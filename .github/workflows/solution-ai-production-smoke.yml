@@ -55,7 +55,7 @@ jobs:
           python-version: '3.12'
       - name: Run SoluTION.AI contracts on the PR head
         run: |
-          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/solution_ai_live_snapshot_test.py
           python scripts/solution_ai_workflow_contract_test.py
           python scripts/solution_ai_core_confirmation_test.py
@@ -92,7 +92,7 @@ jobs:
           timeout 8m npx playwright install chromium >/dev/null
       - name: Run SoluTION.AI unit and frontend contracts
         run: |
-          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs
+          node --test scripts/solution_ai_v17_test.mjs scripts/solution_ai_frontend_v17_test.mjs scripts/forecast_v18_frontend_runtime_test.mjs
           python scripts/solution_ai_live_snapshot_test.py
       - name: Wait for production Pages
         run: |

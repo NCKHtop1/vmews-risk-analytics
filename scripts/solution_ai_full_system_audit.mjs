@@ -184,6 +184,8 @@ try {
     }
 
     return {
+      coreRoot,
+      mainRoot: root,
       asOf: B.dash?.asOf,
       expectedSession,
       generatedAt: B.dash?.generatedAt || null,
@@ -219,6 +221,16 @@ try {
   });
 
   assert(structural.errors.length === 0, `SoluTION structural audit failed: ${structural.errors.slice(0, 12).join(' | ')}`);
+  // Browser smoke must prove the standalone page ACTUALLY reads its independent
+  // sealed forecast, not merely that a separate API branch happens to be fresh.
+  // A stale main-branched UI must no longer pass because the backup is healthy.
+  const dedicatedCore = "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data";
+  assert(structural.coreRoot === dedicatedCore,
+    `standalone forecast reading wrong core source: ${structural.coreRoot}`);
+  assert(structural.upstreamIssues.length === 0,
+    `standalone forecast is degraded despite independent core: ${structural.upstreamIssues.join(' | ')}`);
+  assert(structural.asOf === structural.expectedSession,
+    `standalone forecast date is stale: ${structural.asOf} vs ${structural.expectedSession}`);
   const upstreamDegraded = structural.upstreamIssues.length > 0;
   const expectedReleasedSymbols = Number(structural.releaseSymbols || 0);
   assert(expectedReleasedSymbols >= 300, `release audit universe unexpectedly small: ${expectedReleasedSymbols}`);
