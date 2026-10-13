@@ -16,7 +16,7 @@ const FALLBACK_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analy
 // branch. Keep news, session overlays and other FinQuery snapshots on main.
 // Explicit CDN dataRef overrides remain available for reproducible audits.
 const INDEPENDENT_CORE_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/solution-ai-core-data/data";
-const INDEPENDENT_CORE_PAGE=/\\/forecast-final\\.html$/.test(location.pathname)&&(PAGES_HOST||Boolean(CDN_REF))&&!DATA_QUERY.has("dataRef");
+const INDEPENDENT_CORE_PAGE=/\/forecast-final\.html$/.test(location.pathname)&&(PAGES_HOST||Boolean(CDN_REF))&&!DATA_QUERY.has("dataRef");
 const CORE_ASSETS=new Set(["forecast-dashboard-v12.json","forecast-current-v12.json","forecast-market-v13.json","forecast-model-v12.json","forecast-backtest-v12.json","data-audit-v12.json","phase-gates-v12.json","release-audit-v20.json"]);
 const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;
 const FETCH_TIMEOUT_MS=Math.max(30,Math.min(30000,Number(window.__FINQUERY_FORECAST_TIMEOUT_MS)||15000));
