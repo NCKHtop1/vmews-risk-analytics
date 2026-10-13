@@ -69,6 +69,12 @@ for(const [symbol,d] of Object.entries(discoveryTechnical)){
  };
  symbols[symbol]={symbol,tier:'DISCOVERY',cadence:'EOD',barDate:d.barDate||null,sourceTime:null,current,previous,partial:true};
 }
+// Keep Strategy Lab membership consistent with the same validated universe as Scanner.
+// This filters retired/ineligible historical rows without altering live calculations.
+if(Array.isArray(universe.scannerSymbols)&&universe.scannerSymbols.length){
+ const eligible=new Set(universe.scannerSymbols.map(s=>String(s).toUpperCase()));
+ for(const symbol of Object.keys(symbols))if(!eligible.has(symbol))delete symbols[symbol];
+}
 const rows=Object.values(symbols),payload={
  version:'FINQUERY-STRATEGY-SNAPSHOT-1.0',
  checkedAt:new Date().toISOString(),

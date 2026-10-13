@@ -43,6 +43,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Restore latest market history
         shell: bash
@@ -110,18 +113,50 @@ jobs:
           print('UNIVERSE OK',d.get('asOf'),counts,'liveHistoryChecked',len(live))
           PY
 
-      - name: Publish universe only
+      - name: Rebuild aligned Scanner and Strategy snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          MARKET=/tmp/market-universe/market
+          python financial-report/scripts/refresh_market.py --output "$MARKET" --mode scanner
+          node financial-report/scripts/build_strategy_snapshot.cjs "$MARKET"
+          MARKET="$MARKET" python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path(os.environ['MARKET'])
+          load=lambda n:json.loads((root/n).read_text())
+          universe=load('universe.json')
+          scanner=load('technical-signals.json')
+          strategy=load('strategy-indicators.json')
+          quotes=load('quotes.json')
+          expected=set(universe['scannerSymbols'])
+          for name,data in [('scanner',scanner),('strategy',strategy)]:
+              got=set(data['symbols'])
+              if got!=expected:
+                  raise SystemExit(f'{name} universe mismatch: missing={sorted(expected-got)[:15]} extra={sorted(got-expected)[:15]}')
+              if int(data['coverage'])!=len(expected):
+                  raise SystemExit(f'{name} coverage mismatch: {data["coverage"]} vs {len(expected)}')
+              if data.get('status')!='ok':
+                  raise SystemExit(f'{name} snapshot invalid: {data.get("status")}')
+              if str(data.get('sourceTime') or '')!=str(quotes.get('latestSourceTime') or ''):
+                  raise SystemExit(f'{name} is not aligned with quote sourceTime')
+          if set(universe.get('liveMarketSymbols') or [])-expected:
+              raise SystemExit('Live market symbols missing from scanner universe')
+          print('ALIGNED UNIVERSE',len(expected),'scanner',scanner['coverage'],'strategy',strategy['coverage'])
+          PY
+
+      - name: Publish universe, Scanner and Strategy atomically
         shell: bash
         run: |
           set -euo pipefail
           git -C /tmp/market-universe config user.name 'github-actions[bot]'
           git -C /tmp/market-universe config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git -C /tmp/market-universe add --sparse market/universe.json
+          git -C /tmp/market-universe add --sparse market/universe.json market/technical-signals.json market/strategy-indicators.json
           if git -C /tmp/market-universe diff --cached --quiet; then
-            echo "Universe already current"
+            echo "Universe, Scanner and Strategy already aligned"
             exit 0
           fi
-          git -C /tmp/market-universe commit -m 'Refresh FinQuery market universe [data-only]'
+          git -C /tmp/market-universe commit -m 'Refresh aligned FinQuery universe, scanner and strategy [data-only]'
           for attempt in 1 2 3; do
             git -C /tmp/market-universe fetch origin financial-market-data
             if git -C /tmp/market-universe rebase origin/financial-market-data && git -C /tmp/market-universe push origin HEAD:refs/heads/financial-market-data; then
