@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-12T15:42:13+00:00",
+  "updatedAt": "2026-10-13T06:54:06+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
     {
@@ -493,6 +493,18 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo BWE ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BSI-2026-10-06-001b1c7b",
+      "symbol": "BSI",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-06",
+      "title": "Khác Thanh khoản thị trường và cổ phiếu chứng khoán: Định giá đang đi trước dòng tiền – khi nào thanh khoản xác nhận điểm mua? VCK SSI VND VPX VIX VCI SHS HCM MBS BSI CTS VDS #Thanh khoản thị trường #Định giá #Ngành chứn",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo BSI ngày 06/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "MBS-VRE-2026-10-06-77da38ef",
