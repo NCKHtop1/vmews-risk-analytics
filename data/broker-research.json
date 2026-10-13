@@ -1,8 +1,72 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-13T06:54:06+00:00",
+  "updatedAt": "2026-10-13T16:06:54+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VDSC-DCM-2026-10-13-52249abd",
+      "symbol": "DCM",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-13",
+      "title": "DCM: Khuyến nghị MUA với giá mục tiêu 46,800 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dcm-khuyen-nghi-mua-voi-gia-muc-tieu-46-800-dong-co-phieu-rpid6157.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 46800,
+      "summary": "VDSC có báo cáo DCM ngày 13/10/2026 với khuyến nghị MUA, giá mục tiêu 46.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-MWG-2026-10-13-4e568a57",
+      "symbol": "MWG",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-13",
+      "title": "MWG – BCPT – Cơ hội tích lũy tại vùng định giá hấp dẫn",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/mwg-bcpt-co-hoi-tich-luy-tai-vung-dinh-gia-hap-dan/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 109000,
+      "summary": "MBS công bố báo cáo ngày 13/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 109.000 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "GTJAVIETNAM-VNM-2026-10-13-b2355ba4",
+      "symbol": "VNM",
+      "broker": "GTJAVIETNAM",
+      "brokerName": "GTJA (Vietnam)",
+      "publishedAt": "2026-10-13",
+      "title": "VNM: Khuyến nghị TÍCH LŨY với giá mục tiêu 59,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vnm-khuyen-nghi-tich-luy-voi-gia-muc-tieu-59-000-dong-co-phieu-rpid6156.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 59000,
+      "summary": "GTJAVIETNAM có báo cáo VNM ngày 13/10/2026 với giá mục tiêu 59.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-PNJ-2026-10-12-92a8ebc4",
+      "symbol": "PNJ",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-10-12",
+      "title": "PNJ: Báo cáo cập nhật 12/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pnj-bao-cao-cap-nhat-12-10-2026-rpid6158.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VIETCAP có báo cáo PNJ ngày 12/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-HSG-2026-10-12-927d4c4c",
+      "symbol": "HSG",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-10-12",
+      "title": "HSG: Báo cáo cập nhật 12/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hsg-bao-cao-cap-nhat-12-10-2026-rpid6159.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo HSG ngày 12/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-HSG-2026-10-12-001b1c7b",
       "symbol": "HSG",
