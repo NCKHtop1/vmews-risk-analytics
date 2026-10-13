@@ -16,6 +16,7 @@ from system_contract_audit import (
     audit_market_bar_files,
     compute_intraday_session,
     production_uses_finquery_main_core,
+    production_prefers_solution_core,
     risk_eligible_symbols,
     solution_live_freshness,
 )
@@ -132,6 +133,31 @@ class SystemContractAuditTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertTrue(production_uses_finquery_main_core(root))
+
+    def test_shared_forecast_asset_keeps_finquery_main_while_standalone_is_independent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            source = (
+                'const FINQUERY_LIVE_URL="financial-market-data/market/quotes.json";\n'
+                'const INDEPENDENT_CORE_ROOT="solution-ai-core-data/data";\n'
+                'const INDEPENDENT_CORE_PAGE=/forecast-final/.test(location.pathname)&&(PAGES_HOST||Boolean(CDN_REF));\n'
+                'const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;\n'
+                'const CORE_ASSETS=new Set([]);\n'
+                'const isDedicatedCore=INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name);\n'
+                'const roots=[isDedicatedCore?CORE_ROOT:ROOT];\n'
+                'window.__VMEWS_DATA_ROOT__=ROOT;\n'
+                'window.__SOLUTION_AI_CORE_ROOT__=CORE_ROOT;\n'
+                'window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{scope:"finquery-market"}}));\n'
+            )
+            (root / "forecast-final-v12.js").write_text(source, encoding="utf-8")
+            self.assertTrue(production_uses_finquery_main_core(root))
+            self.assertTrue(production_prefers_solution_core(root))
+            (root / "forecast-final-v12.js").write_text(
+                source.replace("const roots=[isDedicatedCore?CORE_ROOT:ROOT];",
+                               "const roots=[INDEPENDENT_CORE_ROOT];"), encoding="utf-8"
+            )
+            self.assertFalse(production_uses_finquery_main_core(root))
+            self.assertFalse(production_prefers_solution_core(root))
 
     @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_stale_main_becomes_warning_only_when_dedicated_core_is_authoritative_and_fallback_abstains(self):
