@@ -92,8 +92,8 @@ test("standalone Pages also uses dedicated forecast while explicit CDN audit and
   const pages = await loadMarketDashboard(undefined, {
     hostname: "nckhtop1.github.io", pathname: "/vmews-risk-analytics/forecast-final.html", search: "?symbol=FPT",
   });
-  assert.match(pages.window.__SOLUTION_AI_CORE_ROOT__, /solution-ai-core-data\\/data$/);
-  assert.match(pages.window.__VMEWS_DATA_ROOT__, /\\/main\\/data$/);
+  assert(pages.window.__SOLUTION_AI_CORE_ROOT__.endsWith("/solution-ai-core-data/data"));
+  assert(pages.window.__VMEWS_DATA_ROOT__.endsWith("/main/data"));
   const replay = await loadMarketDashboard(undefined, { search: "?dataRef=main&symbol=FPT" });
   assert.equal(replay.window.__SOLUTION_AI_CORE_ROOT__, replay.window.__VMEWS_DATA_ROOT__);
   const finquery = await loadMarketDashboard(undefined, {
