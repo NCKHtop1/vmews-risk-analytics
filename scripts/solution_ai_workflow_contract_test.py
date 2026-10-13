@@ -32,7 +32,7 @@ class SolutionAIWorkflowContracts(unittest.TestCase):
         self.assertIn("sourceTime", guard)
         self.assertIn("SAME_DAY_SESSION", guard)
         self.assertIn("LAST_COMPLETED_SESSION", guard)
-        self.assertIn("gh workflow run solution-ai-live-price.yml", guard)
+        self.assertIn("'gh','workflow','run','solution-ai-live-price.yml'", guard)
 
     def test_production_smoke_uses_source_time_not_only_generation_time(self):
         smoke = (ROOT / ".github/workflows/solution-ai-production-smoke.yml").read_text()
