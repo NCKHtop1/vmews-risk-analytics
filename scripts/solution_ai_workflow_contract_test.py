@@ -39,7 +39,11 @@ class SolutionAIWorkflowContracts(unittest.TestCase):
         self.assertIn("sourceTime", smoke)
         self.assertIn("source_age", smoke)
         self.assertIn("SAME_DAY_SESSION", smoke)
-        self.assertIn("push:", smoke)
+        self.assertNotIn("  push:\n", smoke)
+        self.assertIn("workflow_run:", smoke)
+        self.assertIn("Deploy VMEWS Pages", smoke)
+        self.assertIn("SoluTION.AI independent core forecast", smoke)
+        self.assertIn("github.event.pull_request.number || 'production'", smoke)
 
     def test_core_optional_flow_contract_is_stale_safe(self):
         test = (ROOT / "scripts/forecast_v13_market_model_test_v28.py").read_text()

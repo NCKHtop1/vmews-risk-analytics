@@ -2,20 +2,6 @@ name: SoluTION.AI production browser smoke
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'solution-ai-v17.js'
-      - 'scripts/solution_ai_*.mjs'
-      - 'scripts/solution_ai_live_*.py'
-      - 'scripts/solution_ai_core_*.py'
-      - 'scripts/solution_ai_workflow_contract_test.py'
-      - 'scripts/forecast_v13_market_model_test_v28.py'
-      - 'forecast-final.html'
-      - '.github/workflows/solution-ai-production-smoke.yml'
-      - '.github/workflows/solution-ai-live-price.yml'
-      - '.github/workflows/solution-ai-live-guard.yml'
-      - '.github/workflows/solution-ai-core-refresh.yml'
   pull_request:
     paths:
       - 'solution-ai-v17.js'
@@ -38,7 +24,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: solution-ai-production-browser-smoke
+  group: solution-ai-production-browser-smoke-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
   cancel-in-progress: true
 
 jobs:
