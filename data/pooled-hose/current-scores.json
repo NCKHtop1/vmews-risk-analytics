@@ -1,7 +1,7 @@
 {
   "version": "VMEWS-POOLED-HOSE-1.2.0",
   "featureVersion": "PANEL-PIT-PRICE-LIQUIDITY-1.0",
-  "generatedAt": "2026-10-13T04:43:34.510112+00:00",
+  "generatedAt": "2026-10-13T17:23:03.719318+00:00",
   "modelAsOf": "2026-10-09",
   "champion": "logistic_l2",
   "promotionPassed": true,
@@ -118,8 +118,8 @@
     "ANV": {
       "symbol": "ANV",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.39254118054373854,
-      "auditCalibratedProbability": 0.1490648106556038,
+      "rawScore": 0.39254118054373865,
+      "auditCalibratedProbability": 0.14906481065560384,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -384,7 +384,7 @@
     "CDC": {
       "symbol": "CDC",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3701803862219458,
+      "rawScore": 0.3701803862219459,
       "auditCalibratedProbability": 0.14203901488227993,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -441,8 +441,8 @@
     "CRC": {
       "symbol": "CRC",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4651451594277151,
-      "auditCalibratedProbability": 0.1729388265631544,
+      "rawScore": 0.4651451594277152,
+      "auditCalibratedProbability": 0.17293882656315443,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -517,8 +517,8 @@
     "CTD": {
       "symbol": "CTD",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3300036101594411,
-      "auditCalibratedProbability": 0.12968039025144706,
+      "rawScore": 0.33000361015944113,
+      "auditCalibratedProbability": 0.1296803902514471,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -669,7 +669,7 @@
     "DBD": {
       "symbol": "DBD",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.33447089614693515,
+      "rawScore": 0.3344708961469352,
       "auditCalibratedProbability": 0.13104094499757266,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -764,8 +764,8 @@
     "DGW": {
       "symbol": "DGW",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4506342422356815,
-      "auditCalibratedProbability": 0.1680116420369976,
+      "rawScore": 0.4506342422356816,
+      "auditCalibratedProbability": 0.16801164203699762,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -821,8 +821,8 @@
     "DHG": {
       "symbol": "DHG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.33368786645228715,
-      "auditCalibratedProbability": 0.13080225623883707,
+      "rawScore": 0.33368786645228726,
+      "auditCalibratedProbability": 0.13080225623883712,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1068,7 +1068,7 @@
     "EVF": {
       "symbol": "EVF",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4043245921107878,
+      "rawScore": 0.4043245921107879,
       "auditCalibratedProbability": 0.15282008187574964,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -1087,8 +1087,8 @@
     "EVG": {
       "symbol": "EVG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.5733508878531612,
-      "auditCalibratedProbability": 0.21322962325467287,
+      "rawScore": 0.5733508878531614,
+      "auditCalibratedProbability": 0.21322962325467293,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1125,7 +1125,7 @@
     "FIT": {
       "symbol": "FIT",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.31820177916997644,
+      "rawScore": 0.3182017791699765,
       "auditCalibratedProbability": 0.12609893396602528,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -1220,8 +1220,8 @@
     "GEE": {
       "symbol": "GEE",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.5436294602404739,
-      "auditCalibratedProbability": 0.20142207768446868,
+      "rawScore": 0.543629460240474,
+      "auditCalibratedProbability": 0.2014220776844687,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1239,8 +1239,8 @@
     "GEG": {
       "symbol": "GEG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3530449481378037,
-      "auditCalibratedProbability": 0.1367318217887888,
+      "rawScore": 0.35304494813780374,
+      "auditCalibratedProbability": 0.13673182178878882,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1277,7 +1277,7 @@
     "GIL": {
       "symbol": "GIL",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3894773499262986,
+      "rawScore": 0.3894773499262987,
       "auditCalibratedProbability": 0.1480946881756747,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -1372,8 +1372,8 @@
     "HAH": {
       "symbol": "HAH",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4979134374223478,
-      "auditCalibratedProbability": 0.18441988414516236,
+      "rawScore": 0.4979134374223479,
+      "auditCalibratedProbability": 0.18441988414516242,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1657,8 +1657,8 @@
     "HSL": {
       "symbol": "HSL",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.5747509659663336,
-      "auditCalibratedProbability": 0.21380271004691107,
+      "rawScore": 0.5747509659663337,
+      "auditCalibratedProbability": 0.21380271004691115,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1676,8 +1676,8 @@
     "HT1": {
       "symbol": "HT1",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.36934581670149186,
-      "auditCalibratedProbability": 0.14177909820227463,
+      "rawScore": 0.3693458167014919,
+      "auditCalibratedProbability": 0.14177909820227466,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1790,8 +1790,8 @@
     "KDC": {
       "symbol": "KDC",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.318024348520802,
-      "auditCalibratedProbability": 0.12604522029241047,
+      "rawScore": 0.3180243485208021,
+      "auditCalibratedProbability": 0.1260452202924105,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1847,8 +1847,8 @@
     "KSB": {
       "symbol": "KSB",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3988678517928317,
-      "auditCalibratedProbability": 0.1510761728949006,
+      "rawScore": 0.39886785179283174,
+      "auditCalibratedProbability": 0.15107617289490063,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -1885,8 +1885,8 @@
     "LDG": {
       "symbol": "LDG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.47360057784528675,
-      "auditCalibratedProbability": 0.17585217674203354,
+      "rawScore": 0.47360057784528686,
+      "auditCalibratedProbability": 0.1758521767420336,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2113,8 +2113,8 @@
     "NCT": {
       "symbol": "NCT",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.43437319696892246,
-      "auditCalibratedProbability": 0.16259089433218882,
+      "rawScore": 0.43437319696892257,
+      "auditCalibratedProbability": 0.16259089433218887,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2151,8 +2151,8 @@
     "NKG": {
       "symbol": "NKG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4722778390265693,
-      "auditCalibratedProbability": 0.17539427596325105,
+      "rawScore": 0.47227783902656933,
+      "auditCalibratedProbability": 0.1753942759632511,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2265,8 +2265,8 @@
     "NVL": {
       "symbol": "NVL",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.6334209071978739,
-      "auditCalibratedProbability": 0.23944253513071614,
+      "rawScore": 0.633420907197874,
+      "auditCalibratedProbability": 0.2394425351307162,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2341,8 +2341,8 @@
     "PAN": {
       "symbol": "PAN",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4412078519619194,
-      "auditCalibratedProbability": 0.16485695177965573,
+      "rawScore": 0.44120785196191953,
+      "auditCalibratedProbability": 0.16485695177965576,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2455,8 +2455,8 @@
     "PLX": {
       "symbol": "PLX",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.42890569091598224,
-      "auditCalibratedProbability": 0.16079040747315185,
+      "rawScore": 0.4289056909159823,
+      "auditCalibratedProbability": 0.16079040747315188,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2493,8 +2493,8 @@
     "POW": {
       "symbol": "POW",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4652406626245897,
-      "auditCalibratedProbability": 0.17297155353842408,
+      "rawScore": 0.4652406626245898,
+      "auditCalibratedProbability": 0.17297155353842414,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2512,8 +2512,8 @@
     "PPC": {
       "symbol": "PPC",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.28238086830162057,
-      "auditCalibratedProbability": 0.11531128734169424,
+      "rawScore": 0.2823808683016206,
+      "auditCalibratedProbability": 0.11531128734169428,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2588,8 +2588,8 @@
     "PVT": {
       "symbol": "PVT",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.5815504797849904,
-      "auditCalibratedProbability": 0.21660909709554516,
+      "rawScore": 0.5815504797849905,
+      "auditCalibratedProbability": 0.2166090970955452,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2645,7 +2645,7 @@
     "SAB": {
       "symbol": "SAB",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4019691427699715,
+      "rawScore": 0.40196914276997153,
       "auditCalibratedProbability": 0.1520662481539841,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -2740,7 +2740,7 @@
     "SGR": {
       "symbol": "SGR",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3190408388253034,
+      "rawScore": 0.31904083882530343,
       "auditCalibratedProbability": 0.1263529919955364,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -2778,7 +2778,7 @@
     "SHI": {
       "symbol": "SHI",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3379149967374788,
+      "rawScore": 0.3379149967374789,
       "auditCalibratedProbability": 0.13209189834054683,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -2797,8 +2797,8 @@
     "SIP": {
       "symbol": "SIP",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3039599857778127,
-      "auditCalibratedProbability": 0.12179794616491971,
+      "rawScore": 0.30395998577781275,
+      "auditCalibratedProbability": 0.12179794616491973,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2873,7 +2873,7 @@
     "SSI": {
       "symbol": "SSI",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.5593765677216775,
+      "rawScore": 0.5593765677216777,
       "auditCalibratedProbability": 0.20759523366288807,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -2930,8 +2930,8 @@
     "SZL": {
       "symbol": "SZL",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3612191405761956,
-      "auditCalibratedProbability": 0.1392560226226702,
+      "rawScore": 0.36121914057619564,
+      "auditCalibratedProbability": 0.13925602262267023,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2949,8 +2949,8 @@
     "TAL": {
       "symbol": "TAL",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.4066040722421113,
-      "auditCalibratedProbability": 0.15355116579003106,
+      "rawScore": 0.4066040722421114,
+      "auditCalibratedProbability": 0.15355116579003109,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2968,8 +2968,8 @@
     "TCB": {
       "symbol": "TCB",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.5126945509309976,
-      "auditCalibratedProbability": 0.18978019238213326,
+      "rawScore": 0.5126945509309977,
+      "auditCalibratedProbability": 0.1897801923821333,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -2987,8 +2987,8 @@
     "TCH": {
       "symbol": "TCH",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.514971068723643,
-      "auditCalibratedProbability": 0.19061676749618053,
+      "rawScore": 0.5149710687236431,
+      "auditCalibratedProbability": 0.19061676749618056,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3101,7 +3101,7 @@
     "TEG": {
       "symbol": "TEG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3051206089207284,
+      "rawScore": 0.30512060892072845,
       "auditCalibratedProbability": 0.12214773123379148,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
@@ -3120,8 +3120,8 @@
     "TLG": {
       "symbol": "TLG",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.3641229786710743,
-      "auditCalibratedProbability": 0.1401559631444601,
+      "rawScore": 0.36412297867107435,
+      "auditCalibratedProbability": 0.14015596314446013,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3215,8 +3215,8 @@
     "TTF": {
       "symbol": "TTF",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.6396606644397541,
-      "auditCalibratedProbability": 0.24238218884347687,
+      "rawScore": 0.6396606644397542,
+      "auditCalibratedProbability": 0.2423821888434769,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3348,8 +3348,8 @@
     "VGC": {
       "symbol": "VGC",
       "modelAsOf": "2026-10-09",
-      "rawScore": 0.46027422431010745,
-      "auditCalibratedProbability": 0.17127494073708835,
+      "rawScore": 0.4602742243101075,
+      "auditCalibratedProbability": 0.17127494073708838,
       "auditCalibrationUse": "OUTCOME_MONITORING_ONLY_NOT_USER_FACING",
       "crashProbability": null,
       "probabilityUsable": false,
@@ -3676,7 +3676,7 @@
     },
     {
       "symbol": "DMX",
-      "error": "DMX.VN: DMX.VN: only 48 rows"
+      "error": "DMX.VN: DMX.VN: only 47 rows"
     },
     {
       "symbol": "GEL",
@@ -3688,7 +3688,7 @@
     },
     {
       "symbol": "LPS",
-      "error": "LPS.VN: LPS.VN: only 40 rows"
+      "error": "LPS.VN: LPS.VN: only 39 rows"
     },
     {
       "symbol": "VCK",
