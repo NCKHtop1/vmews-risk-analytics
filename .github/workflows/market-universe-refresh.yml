@@ -157,6 +157,15 @@ jobs:
             exit 0
           fi
           git -C /tmp/market-universe commit -m 'Refresh aligned FinQuery universe, scanner and strategy [data-only]'
+          # Scanner generation updates watch-today.json as a side effect. It belongs
+          # exclusively to the live-price publisher, never to this universe commit.
+          # Rebase refuses a dirty worktree even when the owned files are committed.
+          git -C /tmp/market-universe restore --worktree -- .
+          if [ -n "$(git -C /tmp/market-universe status --porcelain)" ]; then
+            echo "Unexpected uncommitted market files after snapshot rebuild:" >&2
+            git -C /tmp/market-universe status --short >&2
+            exit 1
+          fi
           for attempt in 1 2 3; do
             git -C /tmp/market-universe fetch origin financial-market-data
             if git -C /tmp/market-universe rebase origin/financial-market-data && git -C /tmp/market-universe push origin HEAD:refs/heads/financial-market-data; then
