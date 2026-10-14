@@ -1,8 +1,22 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-14T05:03:09+00:00",
+  "updatedAt": "2026-10-14T12:05:04+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-PDR-2026-10-14-3ab13de1",
+      "symbol": "PDR",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-14",
+      "title": "PDR: Khuyến nghị KHẢ QUAN với giá mục tiêu 17,100 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pdr-khuyen-nghi-kha-quan-voi-gia-muc-tieu-17-100-dong-co-phieu-rpid6161.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 17100,
+      "summary": "MBS có báo cáo PDR ngày 14/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 17.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "MBS-PDR-2026-10-14-dd45b689",
       "symbol": "PDR",
@@ -17,6 +31,60 @@
       "summary": "MBS công bố báo cáo ngày 14/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 17.100 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
+      "id": "VPX-GAS-2026-10-13-e2f2cdaf",
+      "symbol": "GAS",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-10-13",
+      "title": "GAS: Khuyến nghị MUA với giá mục tiêu 97,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gas-khuyen-nghi-mua-voi-gia-muc-tieu-97-200-dong-co-phieu-rpid6164.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 97200,
+      "summary": "VPX có báo cáo GAS ngày 13/10/2026 với khuyến nghị MUA, giá mục tiêu 97.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-MSB-2026-10-13-8dcf323c",
+      "symbol": "MSB",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-10-13",
+      "title": "MSB: Báo cáo cập nhật 13/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/msb-bao-cao-cap-nhat-13-10-2026-rpid6163.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VIETCAP có báo cáo MSB ngày 13/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-KDH-2026-10-13-d81727f0",
+      "symbol": "KDH",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-13",
+      "title": "KDH: Khuyến nghị MUA với giá mục tiêu 28,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/kdh-khuyen-nghi-mua-voi-gia-muc-tieu-28-300-dong-co-phieu-rpid6167.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 28300,
+      "summary": "VDSC có báo cáo KDH ngày 13/10/2026 với khuyến nghị MUA, giá mục tiêu 28.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-DPM-2026-10-13-1dcb30a9",
+      "symbol": "DPM",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-13",
+      "title": "DPM: Khuyến nghị MUA với giá mục tiêu 26,600 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dpm-khuyen-nghi-mua-voi-gia-muc-tieu-26-600-dong-co-phieu-rpid6166.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 26600,
+      "summary": "VDSC có báo cáo DPM ngày 13/10/2026 với khuyến nghị MUA, giá mục tiêu 26.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "VDSC-DCM-2026-10-13-52249abd",
       "symbol": "DCM",
       "broker": "VDSC",
@@ -29,6 +97,34 @@
       "recommendation": "MUA",
       "targetPrice": 46800,
       "summary": "VDSC có báo cáo DCM ngày 13/10/2026 với khuyến nghị MUA, giá mục tiêu 46.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-ANV-2026-10-13-c00e8615",
+      "symbol": "ANV",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-13",
+      "title": "ANV: Khuyến nghị MUA với giá mục tiêu 24,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/anv-khuyen-nghi-mua-voi-gia-muc-tieu-24-400-dong-co-phieu-rpid6165.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 24400,
+      "summary": "VDSC có báo cáo ANV ngày 13/10/2026 với khuyến nghị MUA, giá mục tiêu 24.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-MWG-2026-10-13-e804eefe",
+      "symbol": "MWG",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-13",
+      "title": "MWG: Khuyến nghị KHẢ QUAN với giá mục tiêu 109,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mwg-khuyen-nghi-kha-quan-voi-gia-muc-tieu-109-000-dong-co-phieu-rpid6162.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 109000,
+      "summary": "MBS có báo cáo MWG ngày 13/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 109.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-MWG-2026-10-13-4e568a57",
