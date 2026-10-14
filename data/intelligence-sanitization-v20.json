@@ -1,18 +1,18 @@
 {
   "version": "VMEWS-INTELLIGENCE-SANITIZATION-20.0.0",
-  "generatedAt": "2026-10-13T17:44:24.872622+00:00",
+  "generatedAt": "2026-10-13T23:47:44.866326+00:00",
   "universeSymbols": 361,
   "status": "PASS",
   "artifacts": {
     "research-news.json": {
-      "checked": 1225,
-      "kept": 1225,
+      "checked": 1210,
+      "kept": 1210,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
     "research-news-v10.json": {
-      "checked": 13260,
-      "kept": 13260,
+      "checked": 13272,
+      "kept": 13272,
       "rejected": 0,
       "rejectedBySymbol": {}
     },
