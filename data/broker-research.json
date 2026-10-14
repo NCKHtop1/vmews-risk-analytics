@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-13T16:06:54+00:00",
+  "updatedAt": "2026-10-14T05:03:09+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-PDR-2026-10-14-dd45b689",
+      "symbol": "PDR",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-14",
+      "title": "PDR – BCPT – Thủ Thiêm mở chu kỳ mới, lợi nhuận ngắn hạn chịu áp lực lãi vay",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/pdr-bcpt-thu-thiem-mo-chu-ky-moi-loi-nhuan-ngan-han-chiu-ap-luc-lai-vay/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 17100,
+      "summary": "MBS công bố báo cáo ngày 14/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 17.100 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "VDSC-DCM-2026-10-13-52249abd",
       "symbol": "DCM",
