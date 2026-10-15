@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "checkedAt": "2026-10-15T21:26:39.945805+07:00",
+  "checkedAt": "2026-10-15T22:29:32.047386+07:00",
   "expectedSession": "2026-10-15",
   "validatedSession": "2026-10-15",
   "sessionGate": {
@@ -12,19 +12,8 @@
   "warnings": [],
   "publishedSession": "2026-10-15",
   "checkedSymbols": 365,
-  "listedSymbols": 375,
-  "excludedUnverified": [
-    "ABR",
-    "ASG",
-    "DTT",
-    "HNA",
-    "PDN",
-    "PGI",
-    "PMG",
-    "S4A",
-    "SC5",
-    "UIC"
-  ],
+  "listedSymbols": 365,
+  "excludedUnverified": [],
   "insufficientHistory": [],
   "errors": [],
   "symbols": [
