@@ -1,17 +1,12 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-14T14:48:30.837795+00:00",
+  "generatedAt": "2026-10-15T01:39:59.420478+00:00",
   "marketModelDate": "2026-10-14",
-  "requested": 54,
-  "reused": 49,
-  "fetched": 5,
-  "cached": 54,
+  "requested": 53,
+  "reused": 53,
+  "fetched": 0,
+  "cached": 53,
   "symbols": {
-    "SII": {
-      "rows": 1074,
-      "modelAsOf": "2026-10-13",
-      "source": "Vnstock"
-    },
     "KOS": {
       "rows": 1800,
       "modelAsOf": "2026-09-17",
@@ -56,6 +51,11 @@
       "rows": 1800,
       "modelAsOf": "2026-08-18",
       "source": "Vnstock"
+    },
+    "VHM": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-14",
+      "source": "Yahoo Finance"
     },
     "SVN": {
       "rows": 1645,
@@ -162,6 +162,16 @@
       "modelAsOf": "2026-09-24",
       "source": "Yahoo Finance"
     },
+    "SSB": {
+      "rows": 1451,
+      "modelAsOf": "2026-10-14",
+      "source": "Yahoo Finance"
+    },
+    "VNB": {
+      "rows": 1637,
+      "modelAsOf": "2026-10-14",
+      "source": "Vnstock"
+    },
     "BSI": {
       "rows": 1800,
       "modelAsOf": "2026-08-17",
@@ -227,6 +237,11 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
+    "STB": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-14",
+      "source": "Yahoo Finance"
+    },
     "VTP": {
       "rows": 674,
       "modelAsOf": "2026-10-09",
@@ -242,6 +257,11 @@
       "modelAsOf": "2026-10-07",
       "source": "Yahoo Finance"
     },
+    "PC1": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-14",
+      "source": "Yahoo Finance"
+    },
     "NVL": {
       "rows": 1800,
       "modelAsOf": "2026-09-14",
@@ -251,36 +271,10 @@
       "rows": 1800,
       "modelAsOf": "2026-10-09",
       "source": "Yahoo Finance"
-    },
-    "VHM": {
-      "rows": 2191,
-      "modelAsOf": "2026-10-14",
-      "source": "Yahoo Finance"
-    },
-    "SSB": {
-      "rows": 1451,
-      "modelAsOf": "2026-10-14",
-      "source": "Yahoo Finance"
-    },
-    "VNB": {
-      "rows": 1637,
-      "modelAsOf": "2026-10-14",
-      "source": "Vnstock"
-    },
-    "STB": {
-      "rows": 2587,
-      "modelAsOf": "2026-10-14",
-      "source": "Yahoo Finance"
-    },
-    "PC1": {
-      "rows": 2573,
-      "modelAsOf": "2026-10-14",
-      "source": "Yahoo Finance"
     }
   },
   "errors": [],
   "redSymbols": [
-    "SII",
     "KOS",
     "PNJ",
     "LPB",
