@@ -6,17 +6,17 @@
     "symbols": 365,
     "forecasts": 1825,
     "flowRows": 322825,
-    "headlines": 24268,
+    "headlines": 24271,
     "headlineSources": {
       "community-claims": 5,
-      "community-watchlist": 169,
-      "dashboard-communityWatchlist": 268,
+      "community-watchlist": 170,
+      "dashboard-communityWatchlist": 267,
       "dashboard-decisionNews": 48,
       "dashboard-decisionRecent": 4220,
       "dashboard-recent": 4220,
-      "fireant": 1321,
+      "fireant": 1320,
       "research-news": 1236,
-      "research-news-v10": 12781
+      "research-news-v10": 12785
     }
   },
   "calendar": {
@@ -35,7 +35,7 @@
     },
     "staleSymbols": 0,
     "chartMismatches": 0,
-    "flatPointForecasts": 46,
+    "flatPointForecasts": 52,
     "crossSource": {
       "status": "PASS",
       "method": "SAME_COMPLETED_SESSION_VNDIRECT_VS_TRADINGVIEW_CLOSE",
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "PASS",
       "sessionDate": "2026-10-15",
-      "observedAt": "2026-10-15T20:36:23+07:00",
+      "observedAt": "2026-10-15T21:11:50+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.973333,
@@ -155,57 +155,57 @@
   "horizons": {
     "1": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": -0.0021045828218644314,
-      "magnitudeMAESkill": 0.03408094163607944,
-      "directionalAccuracy": 0.5033751687584379,
+      "executableMAESkill": -0.007820036305479006,
+      "magnitudeMAESkill": 0.03628155711941583,
+      "directionalAccuracy": 0.5021939341337577,
       "directionStatus": "PASS",
       "pointDirectionStatus": "REVIEW",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.004195370130775393,
+      "meanNetRealizedReturn": 0.003701883759851439,
       "positiveChronologicalFolds": 4
     },
     "2": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.0006199908980184521,
-      "magnitudeMAESkill": 0.0290300154687696,
-      "directionalAccuracy": 0.5329138431752178,
+      "executableMAESkill": -0.002180676179797114,
+      "magnitudeMAESkill": 0.020362771328138907,
+      "directionalAccuracy": 0.5313257741957832,
       "directionStatus": "PASS",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "REVIEW",
-      "meanNetRealizedReturn": -3.0129948914690577e-05,
+      "meanNetRealizedReturn": -0.00028518751655022686,
       "positiveChronologicalFolds": 2
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.019942626791168205,
-      "magnitudeMAESkill": 0.004679491221437515,
-      "directionalAccuracy": 0.5599257972103509,
+      "executableMAESkill": 0.020438176106899908,
+      "magnitudeMAESkill": 0.007482797343350223,
+      "directionalAccuracy": 0.5610122540964364,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0013621843945671836,
+      "meanNetRealizedReturn": 0.001560024851106351,
       "positiveChronologicalFolds": 3
     },
     "4": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.015610463591092971,
-      "magnitudeMAESkill": -0.014041683970535068,
-      "directionalAccuracy": 0.5683446649726438,
+      "executableMAESkill": 0.017293274682850468,
+      "magnitudeMAESkill": -0.016750657157633908,
+      "directionalAccuracy": 0.568151942341689,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0007030363310197361,
+      "meanNetRealizedReturn": 0.0007455801700620941,
       "positiveChronologicalFolds": 3
     },
     "5": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.022476789884663506,
-      "magnitudeMAESkill": 0.013492602687789401,
-      "directionalAccuracy": 0.5741936941006415,
+      "executableMAESkill": 0.022355021116361007,
+      "magnitudeMAESkill": 0.003676590828595949,
+      "directionalAccuracy": 0.5751480359806537,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0030647109638869442,
+      "meanNetRealizedReturn": 0.002903691295757792,
       "positiveChronologicalFolds": 3
     }
   },
