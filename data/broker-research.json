@@ -1,8 +1,31 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-16T04:42:01+00:00",
+  "updatedAt": "2026-10-16T11:35:45+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-SHB-2026-10-16-001b1c7b",
+      "symbol": "SHB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-16",
+      "title": "Gặp gỡ doanh nghiệp Cập nhật Hội nghị Nhà đầu tư SHB Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo SHB ngày 16/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MBS-SHB-2026-10-16-70a82e5a",
+      "symbol": "SHB",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-16",
+      "title": "SHB – Báo cáo gặp gỡ nhà đầu tư tháng 10/2026: Cập nhật KQKD sơ bộ 9T26 & Triển vọng năm 2026",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/shb-bao-cao-gap-go-nha-dau-tu-thang-10-2026-cap-nhat-kqkd-so-bo-9t26-trien-vong-nam-2026/",
+      "recommendation": "BÁN",
+      "summary": "MBS công bố báo cáo ngày 16/10/2026 với khuyến nghị BÁN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "MBS-PDR-2026-10-14-3ab13de1",
       "symbol": "PDR",
