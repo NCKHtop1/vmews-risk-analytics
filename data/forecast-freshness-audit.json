@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "checkedAt": "2026-10-16T21:10:48.439752+07:00",
+  "checkedAt": "2026-10-16T22:14:45.141493+07:00",
   "expectedSession": "2026-10-16",
   "validatedSession": "2026-10-16",
   "sessionGate": {
@@ -12,25 +12,8 @@
   "warnings": [],
   "publishedSession": "2026-10-16",
   "checkedSymbols": 361,
-  "listedSymbols": 377,
-  "excludedUnverified": [
-    "ACG",
-    "C32",
-    "DTL",
-    "LM8",
-    "NAV",
-    "NVT",
-    "SBV",
-    "SMA",
-    "SRC",
-    "SVD",
-    "TMS",
-    "TPC",
-    "TVT",
-    "TYA",
-    "VID",
-    "VRC"
-  ],
+  "listedSymbols": 361,
+  "excludedUnverified": [],
   "insufficientHistory": [],
   "errors": [],
   "symbols": [
