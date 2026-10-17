@@ -91,6 +91,10 @@ class MarketTests(unittest.TestCase):
         self.assertFalse(any('/financial-report' in u for u in registry['FPT']['seed_urls']))
         self.assertIn('https://24hmoney.vn/stock/acb/report',registry['ACB']['seed_urls'])
         self.assertIn('acb.com.vn',' '.join(registry['ACB']['seed_urls']))
+        self.assertEqual(registry['CII']['entityType'],'company')
+        self.assertEqual(registry['NVL']['entityType'],'company')
+        self.assertIn('cii.com.vn',' '.join(registry['CII']['seed_urls']))
+        self.assertIn('novaland.com.vn',' '.join(registry['NVL']['seed_urls']))
 
     def test_corporate_esg_prunes_plain_financial_statement_noise(self):
         quarterly={

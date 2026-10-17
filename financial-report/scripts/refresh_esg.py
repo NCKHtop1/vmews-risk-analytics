@@ -69,7 +69,9 @@ def build_company_registry(config):
     if len(symbols) != 100:
         raise RuntimeError(f"Expected 100 Core companies, got {len(symbols)}")
 
-    curated = config.get("banks", {})
+    banks = config.get("banks", {})
+    companies_cfg = config.get("companies", {})
+    curated = {**companies_cfg, **banks}
     out = {}
     for item in core:
         symbol = str(item.get("symbol") or "").strip().upper()
@@ -85,7 +87,7 @@ def build_company_registry(config):
         if generic not in seeds:
             seeds.append(generic)
         cfg["seed_urls"] = seeds
-        cfg["entityType"] = "bank" if symbol in curated else "company"
+        cfg["entityType"] = "bank" if symbol in banks else "company"
         cfg["sourcePolicy"] = "curated+disclosure-index" if symbol in curated else "disclosure-index"
         out[symbol] = cfg
     return out
