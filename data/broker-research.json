@@ -1,8 +1,30 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-19T04:52:38+00:00",
+  "updatedAt": "2026-10-19T13:34:15+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VPB-2026-10-19-001b1c7b",
+      "symbol": "VPB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-19",
+      "title": "Cập nhật KQKD VPB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VPB ngày 19/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-KBC-2026-10-19-001b1c7b",
+      "symbol": "KBC",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-19",
+      "title": "Cập nhật KQKD KBC – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo KBC ngày 19/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "VPX-CTG-2026-10-16-61065ef1",
       "symbol": "CTG",
