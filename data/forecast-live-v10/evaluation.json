@@ -1,20 +1,20 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-10-16T14:57:08.911482+00:00",
+  "generatedAt": "2026-10-19T03:45:09.695031+00:00",
   "method": "Immutable completed-EOD prequential test-then-score.",
   "summary": {
     "3": {
-      "matureOrigins": 31,
-      "nPredictions": 9817,
-      "alphaIC": -0.06738026985317323,
-      "directionHitRate": 0.5115301613288274,
+      "matureOrigins": 32,
+      "nPredictions": 10106,
+      "alphaIC": -0.06694821378811627,
+      "directionHitRate": 0.5115593524845077,
       "evidenceState": "MATURE"
     },
     "5": {
-      "matureOrigins": 29,
-      "nPredictions": 9171,
-      "alphaIC": 0.012922663026172976,
-      "directionHitRate": 0.5229697346430028,
+      "matureOrigins": 30,
+      "nPredictions": 9483,
+      "alphaIC": 0.00544902199228256,
+      "directionHitRate": 0.5216083806679235,
       "evidenceState": "MATURE"
     }
   },
@@ -116,7 +116,7 @@
         "5": {
           "n": 303,
           "marketReturn": -0.024264621999631208,
-          "alphaIC": -0.08188351827783334,
+          "alphaIC": -0.0818839408272493,
           "directionHitRate": 0.5874587458745875
         }
       }
@@ -160,7 +160,7 @@
       "horizons": {
         "3": {
           "n": 302,
-          "marketReturn": -0.0036344264507972308,
+          "marketReturn": -0.003634448835395843,
           "alphaIC": -0.23239903001564452,
           "directionHitRate": 0.40728476821192056
         },
@@ -297,7 +297,7 @@
         "3": {
           "n": 301,
           "marketReturn": -0.015209418663528795,
-          "alphaIC": -0.12446133597906123,
+          "alphaIC": -0.12445494121004218,
           "directionHitRate": 0.5514950166112956
         },
         "5": {
@@ -488,10 +488,10 @@
           "directionHitRate": 0.5229357798165137
         },
         "5": {
-          "n": 326,
-          "marketReturn": -0.0033048105406116943,
-          "alphaIC": -0.010539703810626891,
-          "directionHitRate": 0.5337423312883436
+          "n": 327,
+          "marketReturn": -0.0032520353863773432,
+          "alphaIC": -0.01035773578222742,
+          "directionHitRate": 0.5351681957186545
         }
       }
     },
@@ -505,10 +505,10 @@
           "directionHitRate": 0.5242424242424243
         },
         "5": {
-          "n": 309,
+          "n": 329,
           "marketReturn": 0.0,
-          "alphaIC": -0.010576542617244947,
-          "directionHitRate": 0.56957928802589
+          "alphaIC": -0.0012553388858553424,
+          "directionHitRate": 0.5623100303951368
         }
       }
     },
@@ -522,8 +522,10 @@
           "directionHitRate": 0.47560975609756095
         },
         "5": {
-          "n": 0,
-          "state": "IMMATURE"
+          "n": 291,
+          "marketReturn": 0.0,
+          "alphaIC": -0.2207893172009126,
+          "directionHitRate": 0.4879725085910653
         }
       }
     },
@@ -531,10 +533,10 @@
       "asOf": "2026-10-13",
       "horizons": {
         "3": {
-          "n": 296,
-          "marketReturn": 0.0033035769638515592,
-          "alphaIC": -0.10474487139703977,
-          "directionHitRate": 0.43243243243243246
+          "n": 316,
+          "marketReturn": 0.001768951700940605,
+          "alphaIC": -0.11456718056703308,
+          "directionHitRate": 0.4430379746835443
         },
         "5": {
           "n": 0,
@@ -546,8 +548,10 @@
       "asOf": "2026-10-14",
       "horizons": {
         "3": {
-          "n": 0,
-          "state": "IMMATURE"
+          "n": 269,
+          "marketReturn": 0.004914014802429163,
+          "alphaIC": -0.043738561370376176,
+          "directionHitRate": 0.5018587360594795
         },
         "5": {
           "n": 0,
@@ -570,6 +574,19 @@
     },
     {
       "asOf": "2026-10-16",
+      "horizons": {
+        "3": {
+          "n": 0,
+          "state": "IMMATURE"
+        },
+        "5": {
+          "n": 0,
+          "state": "IMMATURE"
+        }
+      }
+    },
+    {
+      "asOf": "2026-10-19",
       "horizons": {
         "3": {
           "n": 0,
