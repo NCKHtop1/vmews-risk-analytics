@@ -1,8 +1,62 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-16T11:35:45+00:00",
+  "updatedAt": "2026-10-19T04:52:38+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VPX-CTG-2026-10-16-61065ef1",
+      "symbol": "CTG",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-10-16",
+      "title": "CTG: Khuyến nghị MUA với giá mục tiêu 39,600 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ctg-khuyen-nghi-mua-voi-gia-muc-tieu-39-600-dong-co-phieu-rpid6173.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 39600,
+      "summary": "VPX có báo cáo CTG ngày 16/10/2026 với khuyến nghị MUA, giá mục tiêu 39.600 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-VSC-2026-10-16-53edec43",
+      "symbol": "VSC",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-10-16",
+      "title": "VSC: Báo cáo cập nhật 16/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vsc-bao-cao-cap-nhat-16-10-2026-rpid6168.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VIETCAP có báo cáo VSC ngày 16/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-PVT-2026-10-16-0ce3fb8b",
+      "symbol": "PVT",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-10-16",
+      "title": "PVT: Khuyến nghị KHẢ QUAN với giá mục tiêu 28,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pvt-khuyen-nghi-kha-quan-voi-gia-muc-tieu-28-500-dong-co-phieu-rpid6170.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 28500,
+      "summary": "VIETCAP có báo cáo PVT ngày 16/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 28.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VDSC-PVD-2026-10-16-7b364c20",
+      "symbol": "PVD",
+      "broker": "VDSC",
+      "brokerName": "VDSC",
+      "publishedAt": "2026-10-16",
+      "title": "PVD: Khuyến nghị MUA với giá mục tiêu 21,800 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pvd-khuyen-nghi-mua-voi-gia-muc-tieu-21-800-dong-co-phieu-rpid6176.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 21800,
+      "summary": "VDSC có báo cáo PVD ngày 16/10/2026 với khuyến nghị MUA, giá mục tiêu 21.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-SHB-2026-10-16-001b1c7b",
       "symbol": "SHB",
@@ -13,6 +67,30 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo SHB ngày 16/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "SSI-KBC-2026-10-16-38d6f646",
+      "symbol": "KBC",
+      "broker": "SSI",
+      "brokerName": "SSI",
+      "publishedAt": "2026-10-16",
+      "title": "KBC: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/kbc-bao-cao-cap-nhat-kqkd-q3-2026-rpid6171.html",
+      "dataProvider": "24HMONEY",
+      "summary": "SSI có báo cáo KBC ngày 16/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-SHB-2026-10-16-685b2f6e",
+      "symbol": "SHB",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-16",
+      "title": "SHB: Báo cáo cập nhật 16/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/shb-bao-cao-cap-nhat-16-10-2026-rpid6169.html",
+      "dataProvider": "24HMONEY",
+      "summary": "MBS có báo cáo SHB ngày 16/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-SHB-2026-10-16-70a82e5a",
