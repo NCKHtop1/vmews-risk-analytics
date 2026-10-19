@@ -6,17 +6,17 @@
     "symbols": 368,
     "forecasts": 1840,
     "flowRows": 325010,
-    "headlines": 24556,
+    "headlines": 24557,
     "headlineSources": {
       "community-claims": 7,
       "community-watchlist": 150,
       "dashboard-communityWatchlist": 244,
-      "dashboard-decisionNews": 51,
+      "dashboard-decisionNews": 50,
       "dashboard-decisionRecent": 4252,
       "dashboard-recent": 4249,
       "fireant": 1345,
       "research-news": 1260,
-      "research-news-v10": 12998
+      "research-news-v10": 13000
     }
   },
   "calendar": {
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "PASS",
       "sessionDate": "2026-10-19",
-      "observedAt": "2026-10-19T22:47:04+07:00",
+      "observedAt": "2026-10-19T23:28:54+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.970976,
