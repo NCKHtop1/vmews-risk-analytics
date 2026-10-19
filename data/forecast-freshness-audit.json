@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "checkedAt": "2026-10-19T23:39:21.343370+07:00",
+  "checkedAt": "2026-10-20T00:24:29.638255+07:00",
   "expectedSession": "2026-10-19",
   "validatedSession": "2026-10-19",
   "sessionGate": {
@@ -12,20 +12,8 @@
   "warnings": [],
   "publishedSession": "2026-10-19",
   "checkedSymbols": 368,
-  "listedSymbols": 379,
-  "excludedUnverified": [
-    "ASG",
-    "DBT",
-    "DXV",
-    "GMH",
-    "HTV",
-    "HU1",
-    "ICT",
-    "PTC",
-    "S4A",
-    "SHA",
-    "VCA"
-  ],
+  "listedSymbols": 368,
+  "excludedUnverified": [],
   "insufficientHistory": [],
   "errors": [],
   "symbols": [
