@@ -1,11 +1,11 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-16T14:28:15.585157+00:00",
+  "generatedAt": "2026-10-19T01:30:23.494268+00:00",
   "marketModelDate": "2026-10-16",
-  "requested": 35,
+  "requested": 34,
   "reused": 34,
-  "fetched": 1,
-  "cached": 35,
+  "fetched": 0,
+  "cached": 34,
   "symbols": {
     "KOS": {
       "rows": 1800,
@@ -15,11 +15,6 @@
     "DVM": {
       "rows": 1050,
       "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "NNT": {
-      "rows": 710,
-      "modelAsOf": "2026-10-15",
       "source": "Vnstock"
     },
     "CRE": {
@@ -117,6 +112,11 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
+    "VXT": {
+      "rows": 1310,
+      "modelAsOf": "2026-10-16",
+      "source": "Vnstock"
+    },
     "C4G": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
@@ -176,18 +176,12 @@
       "rows": 1537,
       "modelAsOf": "2026-08-07",
       "source": "Vnstock"
-    },
-    "VXT": {
-      "rows": 1310,
-      "modelAsOf": "2026-10-16",
-      "source": "Vnstock"
     }
   },
   "errors": [],
   "redSymbols": [
     "KOS",
     "DVM",
-    "NNT",
     "CRE",
     "HBC",
     "PNJ",
