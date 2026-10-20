@@ -6,17 +6,17 @@
     "symbols": 366,
     "forecasts": 1830,
     "flowRows": 324377,
-    "headlines": 24489,
+    "headlines": 24495,
     "headlineSources": {
       "community-claims": 7,
       "community-watchlist": 136,
       "dashboard-communityWatchlist": 219,
-      "dashboard-decisionNews": 56,
+      "dashboard-decisionNews": 57,
       "dashboard-decisionRecent": 4224,
       "dashboard-recent": 4223,
       "fireant": 1354,
       "research-news": 1253,
-      "research-news-v10": 13017
+      "research-news-v10": 13022
     }
   },
   "calendar": {
@@ -57,7 +57,7 @@
     "currentSessionBridge": {
       "status": "PASS",
       "sessionDate": "2026-10-20",
-      "observedAt": "2026-10-20T20:44:04+07:00",
+      "observedAt": "2026-10-20T21:19:41+07:00",
       "minimumCoverage": 0.9,
       "minimumSecondaryCoverage": 0.9,
       "coverage": 0.958115,
@@ -177,18 +177,18 @@
     },
     "3": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.015889686039353035,
+      "executableMAESkill": 0.015903392047455056,
       "magnitudeMAESkill": 0.004621952541112195,
-      "directionalAccuracy": 0.551285063195978,
+      "directionalAccuracy": 0.5513004252519794,
       "directionStatus": "REVIEW",
       "pointDirectionStatus": "PASS",
       "afterCostStatus": "PASS",
-      "meanNetRealizedReturn": 0.0005629330355005949,
+      "meanNetRealizedReturn": 0.0005673154736991839,
       "positiveChronologicalFolds": 3
     },
     "4": {
       "priceStatus": "REVIEW",
-      "executableMAESkill": 0.010297919146546541,
+      "executableMAESkill": 0.010294901240885057,
       "magnitudeMAESkill": -0.013568905152894661,
       "directionalAccuracy": 0.5601290440671761,
       "directionStatus": "REVIEW",
@@ -199,7 +199,7 @@
     },
     "5": {
       "priceStatus": "PASS",
-      "executableMAESkill": 0.01748995817295096,
+      "executableMAESkill": 0.017488614310992023,
       "magnitudeMAESkill": 0.00016341386305485095,
       "directionalAccuracy": 0.567000519997287,
       "directionStatus": "REVIEW",
