@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-10-19T17:01:33.323805+00:00",
+  "generatedAt": "2026-10-20T03:52:04.151001+00:00",
   "trackingStarted": "2026-08-11",
   "latestArchivedEod": "2026-10-19",
   "archivedSnapshots": 27,
@@ -23,8 +23,12 @@
     "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
     "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-    "archiveStatus": "CREATED",
-    "revision": null
+    "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
+    "revision": {
+      "existingHash": "a479dfccdf3e06d1655f7e57bb8ff2312d4faf6b7d0ef987de260d1f2a25cdd3",
+      "newHash": "4976f377ccc70a175300d2194f874cd6cc50533962f068eee205f66dd1911038",
+      "modelDate": "2026-10-19"
+    }
   },
   "tDayLiveTrack": {
     "status": "BUILDING_LIVE_TRACK_RECORD",
