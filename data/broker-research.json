@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-20T05:00:51+00:00",
+  "updatedAt": "2026-10-20T11:49:40+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-BMP-2026-10-20-001b1c7b",
+      "symbol": "BMP",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-20",
+      "title": "Cập nhật KQKD Báo cáo cập nhật KQKD Quý 3/2026 – BMP Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BMP ngày 20/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "TCBS-VPB-2026-10-19-001b1c7b",
       "symbol": "VPB",
