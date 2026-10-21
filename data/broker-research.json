@@ -1,8 +1,22 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-20T11:49:40+00:00",
+  "updatedAt": "2026-10-21T05:00:06+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MIRAE-NT2-2026-10-21-42266577",
+      "symbol": "NT2",
+      "broker": "MIRAE",
+      "brokerName": "MIRAE",
+      "publishedAt": "2026-10-21",
+      "title": "NT2: Khuyến nghị MUA với giá mục tiêu 28,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/nt2-khuyen-nghi-mua-voi-gia-muc-tieu-28-400-dong-co-phieu-rpid6178.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 28400,
+      "summary": "MIRAE có báo cáo NT2 ngày 21/10/2026 với khuyến nghị MUA, giá mục tiêu 28.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-BMP-2026-10-20-001b1c7b",
       "symbol": "BMP",
@@ -15,6 +29,58 @@
       "summary": "TCBS có báo cáo BMP ngày 20/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "MIRAE-VPB-2026-10-20-02c2670b",
+      "symbol": "VPB",
+      "broker": "MIRAE",
+      "brokerName": "MIRAE",
+      "publishedAt": "2026-10-20",
+      "title": "VPB: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 27,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-tang-ty-trong-voi-gia-muc-tieu-27-200-dong-co-phieu-rpid6180.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 27200,
+      "summary": "MIRAE có báo cáo VPB ngày 20/10/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 27.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BSC-HHV-2026-10-20-2e493d89",
+      "symbol": "HHV",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-20",
+      "title": "HHV: Báo cáo cập nhật 20/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hhv-bao-cao-cap-nhat-20-10-2026-rpid6181.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BSC có báo cáo HHV ngày 20/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-VPB-2026-10-20-cf8209a8",
+      "symbol": "VPB",
+      "broker": "AGR",
+      "brokerName": "AGR",
+      "publishedAt": "2026-10-20",
+      "title": "VPB: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 28,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-tang-ty-trong-voi-gia-muc-tieu-28-000-dong-co-phieu-rpid6179.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 28000,
+      "summary": "AGR có báo cáo VPB ngày 20/10/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 28.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-VPB-2026-10-19-3f794878",
+      "symbol": "VPB",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-10-19",
+      "title": "VPB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6182.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo VPB ngày 19/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "TCBS-VPB-2026-10-19-001b1c7b",
       "symbol": "VPB",
       "broker": "TCBS",
@@ -24,6 +90,18 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VPB ngày 19/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-KBC-2026-10-19-dc0feb33",
+      "symbol": "KBC",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-10-19",
+      "title": "KBC: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/kbc-bao-cao-cap-nhat-kqkd-q3-2026-rpid6183.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo KBC ngày 19/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-KBC-2026-10-19-001b1c7b",
@@ -102,6 +180,17 @@
       "summary": "TCBS có báo cáo SHB ngày 16/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "TCBS-SHB-2026-10-16-001b1c7b",
+      "symbol": "SHB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-16",
+      "title": "Gặp gỡ doanh nghiệp Cập nhật Hội nghị Nhà đầu tư SHB SHB #SHB #Ngân hàng #Tăng vốn #Chuyển nhượng SHBFinance #Định giá hấp dẫn Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo SHB ngày 16/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
       "id": "SSI-KBC-2026-10-16-38d6f646",
       "symbol": "KBC",
       "broker": "SSI",
@@ -136,6 +225,18 @@
       "sourceUrl": "https://www.mbs.com.vn/shb-bao-cao-gap-go-nha-dau-tu-thang-10-2026-cap-nhat-kqkd-so-bo-9t26-trien-vong-nam-2026/",
       "recommendation": "BÁN",
       "summary": "MBS công bố báo cáo ngày 16/10/2026 với khuyến nghị BÁN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "TCBS-VHC-2026-10-15-001b1c7b",
+      "symbol": "VHC",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-15",
+      "title": "Khác 18 năm chu kỳ cá tra: đâu sẽ là điểm mua tiếp theo? VHC ANV IDI #Thuỷ sản #Chu kỳ cá tra #Lợi nhuận suy giảm #Định giá hấp dẫn #Thị trường Mỹ giảm Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "recommendation": "MUA",
+      "summary": "TCBS có báo cáo VHC ngày 15/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "MBS-PDR-2026-10-14-3ab13de1",
