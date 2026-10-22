@@ -1,11 +1,11 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-22T01:44:29.224592+00:00",
-  "marketModelDate": "2026-10-21",
-  "requested": 27,
-  "reused": 27,
+  "generatedAt": "2026-10-22T14:54:28.251284+00:00",
+  "marketModelDate": "2026-10-22",
+  "requested": 20,
+  "reused": 20,
   "fetched": 0,
-  "cached": 27,
+  "cached": 20,
   "symbols": {
     "PPT": {
       "rows": 1074,
@@ -17,14 +17,19 @@
       "modelAsOf": "2026-08-17",
       "source": "Vnstock"
     },
+    "CRE": {
+      "rows": 1800,
+      "modelAsOf": "2026-09-09",
+      "source": "Yahoo Finance"
+    },
     "KOS": {
       "rows": 1800,
       "modelAsOf": "2026-09-17",
       "source": "Yahoo Finance"
     },
-    "CRE": {
+    "TNI": {
       "rows": 1800,
-      "modelAsOf": "2026-09-09",
+      "modelAsOf": "2026-09-01",
       "source": "Yahoo Finance"
     },
     "PNJ": {
@@ -32,24 +37,9 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "HBC": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-12",
-      "source": "Vnstock"
-    },
     "SVN": {
       "rows": 1645,
       "modelAsOf": "2026-10-12",
-      "source": "Vnstock"
-    },
-    "F88": {
-      "rows": 251,
-      "modelAsOf": "2026-08-11",
-      "source": "Vnstock"
-    },
-    "KHD": {
-      "rows": 941,
-      "modelAsOf": "2026-10-19",
       "source": "Vnstock"
     },
     "D2D": {
@@ -57,34 +47,14 @@
       "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
-    "DST": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-13",
+    "F88": {
+      "rows": 251,
+      "modelAsOf": "2026-08-11",
       "source": "Vnstock"
     },
-    "TNI": {
+    "TTF": {
       "rows": 1800,
-      "modelAsOf": "2026-09-01",
-      "source": "Yahoo Finance"
-    },
-    "API": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-18",
-      "source": "Vnstock"
-    },
-    "LPB": {
-      "rows": 1517,
-      "modelAsOf": "2026-09-14",
-      "source": "Yahoo Finance"
-    },
-    "VHM": {
-      "rows": 1800,
-      "modelAsOf": "2026-10-14",
-      "source": "Yahoo Finance"
-    },
-    "ASM": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-09",
+      "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
     "PIT": {
@@ -92,88 +62,76 @@
       "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
-    "STB": {
+    "HBC": {
       "rows": 1800,
-      "modelAsOf": "2026-10-14",
-      "source": "Yahoo Finance"
+      "modelAsOf": "2026-08-12",
+      "source": "Vnstock"
     },
     "DSE": {
       "rows": 598,
       "modelAsOf": "2026-10-20",
       "source": "Yahoo Finance"
     },
-    "PLP": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-15",
+    "LPB": {
+      "rows": 1517,
+      "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
-    },
-    "ELC": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-11",
-      "source": "Yahoo Finance"
-    },
-    "VMS": {
-      "rows": 1055,
-      "modelAsOf": "2026-08-11",
-      "source": "Vnstock"
     },
     "THD": {
       "rows": 1571,
       "modelAsOf": "2026-10-05",
       "source": "Vnstock"
     },
-    "VIW": {
-      "rows": 706,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "VNG": {
+    "ASM": {
       "rows": 1800,
-      "modelAsOf": "2026-09-03",
-      "source": "Yahoo Finance"
-    },
-    "CIG": {
-      "rows": 1800,
-      "modelAsOf": "2026-10-21",
+      "modelAsOf": "2026-09-09",
       "source": "Yahoo Finance"
     },
     "NVL": {
       "rows": 1800,
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
+    },
+    "DST": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-13",
+      "source": "Vnstock"
+    },
+    "SEA": {
+      "rows": 1690,
+      "modelAsOf": "2026-09-24",
+      "source": "Vnstock"
+    },
+    "VIW": {
+      "rows": 706,
+      "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
     }
   },
   "errors": [],
   "redSymbols": [
     "PPT",
     "STH",
-    "KOS",
     "CRE",
-    "PNJ",
-    "HBC",
-    "SVN"
+    "KOS"
   ],
   "yellowSymbols": [
-    "F88",
-    "KHD",
-    "D2D",
-    "DST",
     "TNI",
-    "API",
-    "LPB",
-    "VHM",
-    "ASM",
+    "PNJ",
+    "SVN",
+    "D2D",
+    "F88",
+    "TTF",
     "PIT",
-    "STB",
+    "HBC",
     "DSE",
-    "PLP",
-    "ELC",
-    "VMS",
+    "LPB",
     "THD",
-    "VIW",
-    "VNG",
-    "CIG",
-    "NVL"
+    "ASM",
+    "NVL",
+    "DST",
+    "SEA",
+    "VIW"
   ],
   "missingRed": [],
   "missingAlerts": [],
