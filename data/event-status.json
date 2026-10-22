@@ -1,14 +1,14 @@
 {
-  "checkedAt": "2026-10-22T05:01:39+00:00",
+  "checkedAt": "2026-10-22T12:04:47+00:00",
   "sourcesTotal": 3,
-  "sourcesReachable": 3,
-  "eventsDiscoveredThisRun": 3835,
-  "storedEvents": 5002,
+  "sourcesReachable": 2,
+  "eventsDiscoveredThisRun": 3790,
+  "storedEvents": 5016,
   "sources": [
     {
       "code": "VSDC",
       "name": "Tổng công ty Lưu ký và Bù trừ Chứng khoán Việt Nam",
-      "checkedAt": "2026-10-22T05:01:17+00:00",
+      "checkedAt": "2026-10-22T12:04:17+00:00",
       "kind": "health",
       "status": "reachable",
       "parsed": 0,
@@ -18,21 +18,22 @@
     {
       "code": "HOSE",
       "name": "Sở GDCK TP.HCM",
-      "checkedAt": "2026-10-22T05:01:19+00:00",
+      "checkedAt": "2026-10-22T12:04:19+00:00",
       "kind": "health",
-      "status": "reachable",
+      "status": "error",
       "parsed": 0,
-      "reachable": 1,
-      "httpStatus": 200
+      "reachable": 0,
+      "error": "<urlopen error _ssl.c:993: The handshake operation timed out>"
     },
     {
       "code": "24HMONEY_EVENTS",
       "name": "24HMoney - sự kiện theo mã",
-      "checkedAt": "2026-10-22T05:01:23+00:00",
+      "checkedAt": "2026-10-22T12:04:28+00:00",
       "kind": "24hmoney_events",
       "status": "ok",
-      "parsed": 3835,
-      "reachable": 100
+      "parsed": 3790,
+      "reachable": 99,
+      "errors": 1
     }
   ]
 }

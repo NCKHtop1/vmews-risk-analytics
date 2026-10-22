@@ -1,8 +1,43 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-22T05:01:17+00:00",
+  "updatedAt": "2026-10-22T12:04:17+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VCI-2026-10-22-001b1c7b",
+      "symbol": "VCI",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-22",
+      "title": "Cập nhật KQKD VCI – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VCI ngày 22/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MBS-TCB-2026-10-22-101a94de",
+      "symbol": "TCB",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-10-22",
+      "title": "TCB – BCPT – Analyst meeting: Cập nhật KQKD Q3/2026 và 9T26",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/tcb-bcpt-analyst-meeting-cap-nhat-kqkd-q3-2026-va-9t26/",
+      "summary": "MBS công bố báo cáo ngày 22/10/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "ACBS-BMP-2026-10-22-180b4b2f",
+      "symbol": "BMP",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-10-22",
+      "title": "Khuyến nghị gần nhất BMP",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "MUA",
+      "targetPrice": 168000,
+      "summary": "ACBS có báo cáo BMP ngày 22/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "MIRAE-NT2-2026-10-21-42266577",
       "symbol": "NT2",
@@ -174,6 +209,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6182.html",
       "dataProvider": "24HMONEY",
       "summary": "TCBS có báo cáo VPB ngày 19/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-VPB-2026-10-19-001b1c7b",
+      "symbol": "VPB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-19",
+      "title": "Cập nhật KQKD VPB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VPB ngày 19/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-VPB-2026-10-19-001b1c7b",
