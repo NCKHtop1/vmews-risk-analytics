@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-21T14:50:10.660217+00:00",
+  "generatedAt": "2026-10-22T01:44:29.224592+00:00",
   "marketModelDate": "2026-10-21",
   "requested": 27,
-  "reused": 26,
-  "fetched": 1,
+  "reused": 27,
+  "fetched": 0,
   "cached": 27,
   "symbols": {
     "PPT": {
@@ -132,14 +132,14 @@
       "modelAsOf": "2026-09-03",
       "source": "Yahoo Finance"
     },
+    "CIG": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-21",
+      "source": "Yahoo Finance"
+    },
     "NVL": {
       "rows": 1800,
       "modelAsOf": "2026-09-14",
-      "source": "Yahoo Finance"
-    },
-    "CIG": {
-      "rows": 2587,
-      "modelAsOf": "2026-10-21",
       "source": "Yahoo Finance"
     }
   },
