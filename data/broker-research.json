@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-22T12:04:17+00:00",
+  "updatedAt": "2026-10-23T05:02:25+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "ACBS-HHV-2026-10-23-180b4b2f",
+      "symbol": "HHV",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-10-23",
+      "title": "Khuyến nghị gần nhất HHV",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "MUA",
+      "targetPrice": 14000,
+      "summary": "ACBS có báo cáo HHV ngày 23/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "TCBS-VCI-2026-10-22-001b1c7b",
       "symbol": "VCI",
@@ -24,6 +37,44 @@
       "currency": "VND",
       "sourceUrl": "https://www.mbs.com.vn/tcb-bcpt-analyst-meeting-cap-nhat-kqkd-q3-2026-va-9t26/",
       "summary": "MBS công bố báo cáo ngày 22/10/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "KBSV-PNJ-2026-10-22-fcf6ed36",
+      "symbol": "PNJ",
+      "broker": "KBSV",
+      "brokerName": "KBSV",
+      "publishedAt": "2026-10-22",
+      "title": "PNJ: Báo cáo cập nhật ĐHCĐ bất thường 21/10/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pnj-bao-cao-cap-nhat-dhcd-bat-thuong-21-10-2026-rpid6192.html",
+      "dataProvider": "24HMONEY",
+      "summary": "KBSV có báo cáo PNJ ngày 22/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BSC-KBC-2026-10-22-df2494b0",
+      "symbol": "KBC",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-22",
+      "title": "KBC: Khuyến nghị MUA với giá mục tiêu 34,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/kbc-khuyen-nghi-mua-voi-gia-muc-tieu-34-000-dong-co-phieu-rpid6194.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 34000,
+      "summary": "BSC có báo cáo KBC ngày 22/10/2026 với khuyến nghị MUA, giá mục tiêu 34.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BETA-VPB-2026-10-22-1642e257",
+      "symbol": "VPB",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-10-22",
+      "title": "VPB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6191.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BETA có báo cáo VPB ngày 22/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "ACBS-BMP-2026-10-22-180b4b2f",
@@ -77,6 +128,20 @@
       "recommendation": "MUA",
       "targetPrice": 27300,
       "summary": "BETA có báo cáo NT2 ngày 21/10/2026 với khuyến nghị MUA, giá mục tiêu 27.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-VPB-2026-10-21-f79f20bb",
+      "symbol": "VPB",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-10-21",
+      "title": "VPB: Khuyến nghị KHẢ QUAN với giá mục tiêu 27,900 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-27-900-dong-co-phieu-rpid6195.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 27900,
+      "summary": "ACBS có báo cáo VPB ngày 21/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 27.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-VPB-2026-10-20-dccd618f",
