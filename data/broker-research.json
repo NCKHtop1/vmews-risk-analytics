@@ -1,8 +1,36 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-23T05:02:25+00:00",
+  "updatedAt": "2026-10-23T11:49:37+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "YUANTA-HCM-2026-10-23-806341d2",
+      "symbol": "HCM",
+      "broker": "YUANTA",
+      "brokerName": "YSVN",
+      "publishedAt": "2026-10-23",
+      "title": "HCM: Khuyến nghị NẮM GIỮ với giá mục tiêu 26,775 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hcm-khuyen-nghi-nam-giu-voi-gia-muc-tieu-26-775-dong-co-phieu-rpid6198.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "NẮM GIỮ",
+      "targetPrice": 26775,
+      "summary": "YUANTA có báo cáo HCM ngày 23/10/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 26.775 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BSC-TCB-2026-10-23-02ae9413",
+      "symbol": "TCB",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-23",
+      "title": "TCB: Khuyến nghị MUA với giá mục tiêu 41,800 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-khuyen-nghi-mua-voi-gia-muc-tieu-41-800-dong-co-phieu-rpid6200.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 41800,
+      "summary": "BSC có báo cáo TCB ngày 23/10/2026 với khuyến nghị MUA, giá mục tiêu 41.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "ACBS-HHV-2026-10-23-180b4b2f",
       "symbol": "HHV",
@@ -17,6 +45,46 @@
       "summary": "ACBS có báo cáo HHV ngày 23/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "ACBS-CTD-2026-10-23-0859d4a3",
+      "symbol": "CTD",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-10-23",
+      "title": "CTD: Khuyến nghị MUA với giá mục tiêu 87,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ctd-khuyen-nghi-mua-voi-gia-muc-tieu-87-500-dong-co-phieu-rpid6199.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 87500,
+      "summary": "ACBS có báo cáo CTD ngày 23/10/2026 với khuyến nghị MUA, giá mục tiêu 87.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "YUANTA-TCB-2026-10-22-dc30f598",
+      "symbol": "TCB",
+      "broker": "YUANTA",
+      "brokerName": "YSVN",
+      "publishedAt": "2026-10-22",
+      "title": "TCB: Khuyến nghị MUA với giá mục tiêu 39,860 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-khuyen-nghi-mua-voi-gia-muc-tieu-39-860-dong-co-phieu-rpid6202.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 39860,
+      "summary": "YUANTA có báo cáo TCB ngày 22/10/2026 với khuyến nghị MUA, giá mục tiêu 39.860 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-MCH-2026-10-22-127fe015",
+      "symbol": "MCH",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-22",
+      "title": "MCH: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mch-bao-cao-cap-nhat-kqkd-q3-2026-rpid6203.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VNDIRECT có báo cáo MCH ngày 22/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "TCBS-VCI-2026-10-22-001b1c7b",
       "symbol": "VCI",
       "broker": "TCBS",
@@ -26,6 +94,18 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VCI ngày 22/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MBS-TCB-2026-10-22-7ca31f0c",
+      "symbol": "TCB",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-10-22",
+      "title": "TCB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6201.html",
+      "dataProvider": "24HMONEY",
+      "summary": "MBS có báo cáo TCB ngày 22/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "MBS-TCB-2026-10-22-101a94de",
@@ -211,6 +291,17 @@
       "recommendation": "MUA",
       "targetPrice": 28200,
       "summary": "VCBS có báo cáo NT2 ngày 20/10/2026 với khuyến nghị MUA, giá mục tiêu 28.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-BMP-2026-10-20-001b1c7b",
+      "symbol": "BMP",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-20",
+      "title": "Cập nhật KQKD Báo cáo cập nhật KQKD Quý 3/2026 – BMP Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/w",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BMP ngày 20/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-BMP-2026-10-20-001b1c7b",
