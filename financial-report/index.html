@@ -559,6 +559,72 @@ body.strategy-lab-view .strategy-page{display:block}
  .research-ai.ai-drawer .research-ai-form{min-height:0!important;padding:5px 10px!important;grid-template-columns:minmax(0,1fr) 105px!important}
  .research-ai.ai-drawer .research-ai-form textarea,.research-ai.ai-drawer .research-ai-form button{min-height:44px!important;height:44px!important}
 }
+
+
+/* FinQuery 2026-10-24: chart-first Macro & ESG workspace */
+.macro-section{overflow:hidden}
+.macro-head{align-items:center!important}
+.macro-head-note{margin:7px 0 0!important;font-size:12px!important;color:#7385a2!important;line-height:1.55}
+#macro-source-status{display:block;color:#71839d;font-size:11px;line-height:1.5;text-align:right;max-width:245px}
+.macro-workspace{min-width:0}
+.macro-dashboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:22px 0 12px;flex-wrap:wrap}
+.macro-dashboard-head h3{font-size:clamp(18px,2vw,24px);line-height:1.3;color:#1d375a;margin:5px 0 6px;font-weight:770;letter-spacing:-.5px}
+.macro-dashboard-head p{font-size:12px;line-height:1.65;color:#72849b;margin:0;max-width:680px}
+.macro-eyebrow{display:block;font-size:10px;letter-spacing:1.2px;color:#5474b1;font-weight:800}
+.macro-data-freshness{font-size:11px;font-weight:650;color:#677f9f;background:#edf4ff;border-radius:999px;padding:8px 12px}
+.macro-overview-grid,.macro-esg-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:13px 0 17px}
+.macro-viz-card{min-width:0;border:1px solid #e0e9f4;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#fcfdff 100%);padding:18px 19px 15px;box-shadow:0 7px 24px rgba(41,69,112,.045)}
+.macro-viz-head{display:flex;gap:8px;justify-content:space-between;align-items:flex-start;min-width:0}
+.macro-viz-kicker{display:block;font-size:10px;letter-spacing:.7px;color:#7189aa;font-weight:750;line-height:1.5}
+.macro-viz-head h4{color:#233c5d;font-size:clamp(15px,1.4vw,18px);line-height:1.34;margin:5px 0 2px;font-weight:780;letter-spacing:-.2px}
+.macro-viz-period{flex:0 0 auto;color:#3761ad;background:#edf3ff;padding:7px 9px;border-radius:8px;font-size:11px;font-weight:770}
+.macro-viz-value{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:14px 0 5px}
+.macro-viz-value strong{font-variant-numeric:tabular-nums;color:#1b3d67;font-size:clamp(25px,2.8vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.8px}
+.macro-viz-value span{font-size:12px;color:#7385a0;font-weight:650}
+.macro-viz-comment{font-size:12px!important;color:#58728f!important;line-height:1.55!important;min-height:18px;margin:4px 0 7px!important}
+.macro-viz-comparison{color:#476c9b;font-weight:670;font-size:12px;line-height:1.5}
+.macro-viz-plot{width:100%;min-width:0;margin:6px 0 8px}
+.macro-viz-plot .macro-trend-svg{display:block;width:100%;height:auto;max-height:235px;overflow:visible}
+.macro-viz-source{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding-top:12px;border-top:1px solid #eef1f7;color:#7c8ca1;font-size:10px;line-height:1.55;min-width:0}
+.macro-viz-source a{font-weight:770;color:#3168ae;text-decoration:underline;text-decoration-color:#bdd0e6;text-underline-offset:3px}
+.macro-viz-source span{min-width:0;overflow-wrap:anywhere}
+.macro-esg-dashboard-head{margin-top:28px}
+.macro-esg-dashboard-grid{margin-top:14px}
+.macro-esg-card .macro-viz-head{align-items:flex-start;flex-wrap:wrap;gap:9px 12px}
+.macro-esg-card select{font:inherit;font-size:11px;max-width:100%;min-width:0;flex:0 1 280px;color:#26496e;background:#f7faff;border:1px solid #dae5f2;border-radius:9px;padding:8px 28px 8px 9px;line-height:1.5}
+.macro-esg-visual{min-height:190px;color:#6e8099}
+.macro-single-year{display:grid;grid-template-columns:16px 1fr;gap:7px 10px;align-content:center;border:1px dashed #d5dff2;border-radius:11px;background:#f7faff;min-height:170px;padding:20px;margin:18px 0;color:#506887}
+.macro-single-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#7761c0;box-shadow:0 0 0 4px #e9e5f8;margin-top:3px}
+.macro-single-year strong{font-size:13px;color:#345072;font-weight:750}
+.macro-single-year small{grid-column:2;color:#788aa4;font-size:11px;line-height:1.6}
+.macro-no-chart,.macro-pending{display:flex;align-items:center;min-height:160px;border:1px dashed #d9e2ef;border-radius:11px;background:#f8faff;color:#6d829d;font-size:12px;line-height:1.65;padding:22px;margin:14px 0}
+.macro-method-note{color:#7b8ca3;font-size:11px;line-height:1.7;margin:10px 2px 22px}
+.macro-explore{border:1px solid #e1e9f4;border-radius:13px;background:#f9fbff;margin-top:15px;overflow:hidden}
+.macro-explore>summary{padding:16px 18px;cursor:pointer;font-size:12px;font-weight:750;color:#315481;list-style-position:inside}
+.macro-explore>summary span{float:right;color:#7b8fb2}
+.macro-explore[open]>summary{border-bottom:1px solid #e1e8f3;background:#f1f6ff}
+.macro-explore-inner{padding:18px;background:white}
+.macro-explore .macro-tabs button{font-size:11px;padding:9px 12px}
+.macro-explore .macro-toolbar{flex-wrap:wrap}
+.macro-explore .macro-toolbar label{font-size:12px}
+.macro-explore .macro-toolbar select{max-width:min(60vw,390px)}
+@media(max-width:950px){
+ .macro-overview-grid,.macro-esg-dashboard-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+ .macro-viz-card{padding:16px}
+}
+@media(max-width:570px){
+ .macro-head{align-items:flex-start!important;gap:10px!important}
+ #macro-source-status{font-size:10px;max-width:170px}
+ .macro-head-note{font-size:11px!important}
+ .macro-dashboard-head{margin-top:16px}
+ .macro-viz-head h4{font-size:17px}
+ .macro-viz-value strong{font-size:28px}
+ .macro-viz-plot .macro-trend-svg{max-height:205px}
+ .macro-esg-card select{flex-basis:100%;width:100%}
+ .macro-explore-inner{padding:12px}
+ .macro-explore .macro-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .macro-viz-source{font-size:10px}
+}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -1021,20 +1087,29 @@ body.strategy-lab-view .strategy-page{display:block}
 </div>
 </div>
 </section>
-<section id="macro" class="macro-section is-collapsed" aria-label="Dữ liệu vĩ mô">
+<section id="macro" class="macro-section is-expanded" aria-label="Biểu đồ vĩ mô và ESG doanh nghiệp">
 <div class="macro-head">
-<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="false" aria-controls="macro-body"><span class="research-ai-label">MACRO & ESG DATA</span><h2>Vĩ mô & ESG doanh nghiệp</h2></button>
-<div class="collapse-head-actions"><span id="macro-source-status"></span><button id="macro-chevron" class="section-chevron" type="button" aria-label="Mở Macro & ESG" aria-controls="macro-body" aria-expanded="false"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
+<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="true" aria-controls="macro-body"><span class="research-ai-label">MACRO &amp; ESG INTELLIGENCE</span><h2>Vĩ mô &amp; ESG doanh nghiệp</h2><p class="macro-head-note">Biểu đồ từ chuỗi số liệu công bố · dữ liệu rõ kỳ và nguồn</p></button>
+<div class="collapse-head-actions"><span id="macro-source-status" aria-live="polite">Đang kiểm tra dữ liệu</span><button id="macro-chevron" class="section-chevron is-open" type="button" aria-label="Thu gọn Macro &amp; ESG" aria-controls="macro-body" aria-expanded="true"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
 </div>
-<div id="macro-body" class="collapsible-section-body" hidden>
-<div id="macro-gate" class="macro-gate"><div><strong>Khu vực dữ liệu giới hạn</strong><p>Nhập mã truy cập để mở dữ liệu vĩ mô và ESG doanh nghiệp.</p></div><form id="macro-unlock-form"><input id="macro-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập dữ liệu vĩ mô"><button type="submit">Mở dữ liệu</button></form><p id="macro-gate-error" role="status"></p></div>
-<div id="macro-workspace" class="macro-workspace" hidden>
-<div class="macro-tabs" id="macro-tabs"></div>
-<div class="macro-toolbar"><label>Chỉ tiêu<select id="macro-metric"></select></label><button id="macro-refresh" type="button">Cập nhật ↻</button></div>
+<div id="macro-body" class="collapsible-section-body">
+<div id="macro-workspace" class="macro-workspace">
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">BỨC TRANH DỮ LIỆU</span><h3>Diễn biến kinh tế Việt Nam</h3><p>PMI, cung tiền, tín dụng và FDI giải ngân. Mỗi biểu đồ dùng đúng đơn vị, kỳ quan sát và nguồn; không coi số liệu tháng là realtime.</p></div><span id="macro-data-freshness" class="macro-data-freshness">Đang kiểm tra nguồn...</span></div>
+<div id="macro-overview" class="macro-overview-grid" aria-label="Biểu đồ vĩ mô Việt Nam" aria-live="polite"><p class="macro-pending">Đang tải chuỗi dữ liệu vĩ mô...</p></div>
+<div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">CHỈ TIÊU ĐƯỢC CÔNG BỐ</span><h3>ESG quốc gia &amp; doanh nghiệp</h3><p>Số liệu ESG quốc gia từ World Bank; chỉ tiêu doanh nghiệp lấy theo mã đang chọn, không tự quy đổi thành điểm ESG tổng hợp.</p></div></div>
+<div class="macro-esg-dashboard-grid">
+<article class="macro-viz-card macro-esg-card" aria-labelledby="macro-country-heading"><div class="macro-viz-head"><div><span class="macro-viz-kicker">WORLD BANK · VIỆT NAM</span><h4 id="macro-country-heading">ESG quốc gia</h4></div><select id="macro-country-metric" aria-label="Chọn chỉ tiêu ESG quốc gia"></select></div><div id="macro-country-chart" aria-live="polite" class="macro-esg-visual">Đang tải dữ liệu World Bank...</div><div id="macro-country-source" class="macro-viz-source"></div></article>
+<article class="macro-viz-card macro-esg-card" aria-labelledby="macro-company-heading"><div class="macro-viz-head"><div><span id="macro-company-symbol" class="macro-viz-kicker">DOANH NGHIỆP ĐANG XEM</span><h4 id="macro-company-heading">ESG doanh nghiệp</h4></div><select id="macro-company-metric" aria-label="Chọn chỉ tiêu ESG doanh nghiệp"></select></div><div id="macro-company-chart" aria-live="polite" class="macro-esg-visual">Đang tải chỉ tiêu doanh nghiệp...</div><div id="macro-company-source" class="macro-viz-source"></div></article>
+</div>
+<p class="macro-method-note">Đường biểu diễn thể hiện đúng các kỳ có số liệu, không nội suy dữ liệu còn thiếu. Với chỉ một năm công bố, hệ thống hiển thị giá trị và ghi rõ chưa đủ dữ liệu để kết luận xu hướng. Các nguồn cảnh báo được giữ ngoài biểu đồ tổng quan.</p>
+<details id="macro-explore" class="macro-explore"><summary>Khám phá chỉ tiêu chi tiết, lịch sử và nguồn gốc <span aria-hidden="true">↗</span></summary>
+<div class="macro-explore-inner"><div class="macro-tabs" id="macro-tabs"></div>
+<div class="macro-toolbar"><label for="macro-metric">Chỉ tiêu<select id="macro-metric"></select></label><button id="macro-refresh" type="button">Cập nhật nguồn ↻</button></div>
 <div id="macro-kpis" class="macro-kpis"></div>
 <div id="macro-esg-assessments" class="macro-esg-assessments" hidden></div>
 <div class="macro-chart-card"><div class="macro-chart-head"><div><h3 id="macro-chart-title">Dữ liệu vĩ mô</h3><span id="macro-chart-subtitle"></span></div></div><div id="macro-chart"></div></div>
 <div class="macro-table-wrap"><table class="macro-table"><thead id="macro-table-head"></thead><tbody id="macro-table-body"></tbody></table></div>
+</div></details>
 </div>
 </div>
 </section>
@@ -2902,7 +2977,7 @@ function setOpen(c,open){
 function bind(c){
  const toggle=document.getElementById(c.toggle),chevron=document.getElementById(c.chevron);
  ensureIcon(chevron);
- setOpen(c,false);
+ setOpen(c,c.section==='macro');
  toggle?.addEventListener('click',()=>setOpen(c,document.getElementById(c.body)?.hidden));
  chevron?.addEventListener('click',()=>setOpen(c,document.getElementById(c.body)?.hidden));
 }
@@ -3063,14 +3138,183 @@ $('insight-detail')?.addEventListener('click',e=>{if(e.target===$('insight-detai
 window.FinInsights={select,attachChart,context,open,reload:load};
 window.FinancialMarket?.registerInsights?.(window.FinInsights);
 void load();
-})();</script><script>(function(){'use strict';
+})();</script><script>(function(root){'use strict';
+/* FinQuery Macro & ESG: visualizes verified source rows, never synthetic observations. */
+const $=id=>document.getElementById(id);
+const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2});
+const fmt=n=>typeof n==='number'&&Number.isFinite(n)?nf.format(n):'—';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FEATURES=[
+ {id:'pmi',key:'PMI',title:'PMI sản xuất',unit:'điểm',scale:1,threshold:50,color:'#3565d5',info:'Mốc 50 phân biệt mở rộng và thu hẹp'},
+ {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'triệu tỷ đồng',scale:1000000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
+ {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'triệu tỷ đồng',scale:1000000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
+ {id:'fdi',key:'FDI giải ngân (lũy kế năm) (tỷ USD)',title:'FDI giải ngân',unit:'tỷ USD',scale:1,color:'#c88932',info:'Lũy kế năm, bắt đầu lại từ tháng 1'}
+];
+const WORLD=[
+ {id:'AG.LND.FRST.ZS',title:'Tỷ lệ diện tích rừng',unit:'% diện tích đất'},
+ {id:'EG.FEC.RNEW.ZS',title:'Tiêu thụ năng lượng tái tạo',unit:'% năng lượng cuối cùng'},
+ {id:'EG.ELC.RNEW.ZS',title:'Sản lượng điện tái tạo',unit:'% tổng sản lượng điện'},
+ {id:'ER.PTD.TOTL.ZS',title:'Diện tích đất và biển được bảo vệ',unit:'% lãnh thổ'},
+ {id:'SP.DYN.LE00.IN',title:'Tuổi thọ bình quân',unit:'năm'}
+];
+let countryId='AG.LND.FRST.ZS',corporateId='',companySymbol='';
+function rank(period){
+ const s=String(period??'').trim();
+ let m=s.match(/^T(1[0-2]|[1-9])\s+(\d{4})$/i);if(m)return +m[2]*12+ +m[1]-1;
+ m=s.match(/^Q([1-4])\s+(\d{4})$/i);if(m)return +m[2]*12+(+m[1]-1)*3+2;
+ m=s.match(/^(\d{4})$/);if(m)return +m[1]*12+11;
+ return null;
+}
+function series(ds,key,scale=1){
+ if(!ds||!Array.isArray(ds.rows)||!(scale>0))return[];
+ const first=(ds.columns||[])[0]||'Date';
+ return ds.rows.map(r=>({label:String(r?.[first]??''),date:rank(r?.[first]),raw:r?.[key]}))
+ .filter(p=>p.date!==null&&typeof p.raw==='number'&&Number.isFinite(p.raw))
+ .sort((a,b)=>a.date-b.date)
+ .map(p=>({label:p.label,rank:p.date,y:p.raw/scale}));
+}
+function httpsUrl(raw){try{const u=new URL(String(raw||''));return u.protocol==='https:'?u.href:'';}catch{return'';}}
+function sourceLink(raw,label){
+ const url=httpsUrl(raw);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>':'<span>Nguồn chưa có đường dẫn xác minh</span>';
+}
+function plot(data,opts={}){
+ const pts=data.slice(-(opts.limit||24));
+ if(pts.length<2)return'<div class="macro-no-chart">Chưa đủ hai kỳ số liệu so sánh.</div>';
+ let low=Math.min(...pts.map(p=>p.y)),high=Math.max(...pts.map(p=>p.y));
+ if(typeof opts.threshold==='number'){low=Math.min(low,opts.threshold);high=Math.max(high,opts.threshold);}
+ const range=Math.max(high-low,Math.abs(high)*.035,.1);low-=range*.1;high+=range*.14;
+ const width=680,height=230,l=65,r=17,t=17,b=36,dy=high-low;
+ const x=i=>l+(width-l-r)*i/(pts.length-1),y=v=>t+(height-t-b)*(high-v)/dy;
+ const grid=[0,1/3,2/3,1].map(p=>{
+  const val=low+dy*p,pos=y(val).toFixed(1);
+  return'<line x1="'+l+'" y1="'+pos+'" x2="'+(width-r)+'" y2="'+pos+'" stroke="#e5edf7"/><text x="'+(l-9)+'" y="'+(Number(pos)+4)+'" text-anchor="end" fill="#8190a5" font-size="11">'+esc(fmt(val))+'</text>';
+ }).join('');
+ const color=/^#[0-9a-fA-F]{6}$/.test(opts.color||'')?opts.color:'#3565d5';
+ const shape=pts.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.y).toFixed(1)).join(' ');
+ const horizontal=[0,Math.floor((pts.length-1)/2),pts.length-1].map((i,j)=>'<text x="'+x(i).toFixed(1)+'" y="'+(height-10)+'" fill="#7688a0" font-size="11" text-anchor="'+(j===0?'start':j===2?'end':'middle')+'">'+esc(pts[i].label)+'</text>').join('');
+ const threshold=typeof opts.threshold==='number'?'<line x1="'+l+'" y1="'+y(opts.threshold).toFixed(1)+'" x2="'+(width-r)+'" y2="'+y(opts.threshold).toFixed(1)+'" stroke="#bb8443" stroke-dasharray="5 5"/><text x="'+(width-r-4)+'" y="'+(y(opts.threshold)-6).toFixed(1)+'" text-anchor="end" font-size="11" fill="#aa763c">'+esc(opts.threshold)+'</text>':'';
+ const tips=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="9" fill="transparent"><title>'+esc(p.label+': '+fmt(p.y)+' '+(opts.unit||''))+'</title></circle>').join('');
+ const last=pts.at(-1);
+ return'<svg class="macro-trend-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+esc((opts.title||'Biểu đồ')+' · '+pts.length+' kỳ dữ liệu')+'">'+grid+threshold+'<path d="'+shape+'" fill="none" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(last.y).toFixed(1)+'" r="5" fill="'+color+'" stroke="white" stroke-width="2"/>'+tips+horizontal+'</svg>';
+}
+function renderMacro(data){
+ const host=$('macro-overview');if(!host)return;
+ const sources=data?.sources||[];
+ host.innerHTML=FEATURES.map(c=>{
+  const ds=data?.datasets?.[c.id],src=sources.find(s=>s.id===c.id);
+  const allowed=ds?.status==='ok'&&ds.qualityStatus!=='warning'&&src?.status==='ok'&&src?.qualityStatus!=='warning';
+  const pts=allowed?series(ds,c.key,c.scale):[];
+  const last=pts.at(-1),earlier=pts.at(-2);
+  // FDI is cumulative within each calendar year. Connecting December to
+  // January would misrepresent the accounting reset as a sudden downturn.
+  const drawn=c.id==='fdi'&&last?pts.filter(p=>p.label.endsWith(last.label.slice(-4))):pts;
+  const head='<div class="macro-viz-head"><div><span class="macro-viz-kicker">KINH TẾ VIỆT NAM</span><h4>'+esc(c.title)+'</h4></div>'+(last?'<span class="macro-viz-period">'+esc(last.label)+'</span>':'')+'</div>';
+  const link=sourceLink(src?.url,'VBMA');
+  if(pts.length<2)return'<article class="macro-viz-card">'+head+'<div class="macro-no-chart">Chưa có chuỗi được xác minh để vẽ biểu đồ.</div><div class="macro-viz-source">'+link+'<span>Trạng thái: '+esc(src?.qualityStatus||src?.status||'không rõ')+'</span></div></article>';
+  let context='';
+  if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
+  else if(c.id==='fdi')context='Lũy kế trong năm · không diễn giải thành tăng trưởng tháng';
+  else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
+  return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'<span>'+esc(c.info)+' · kỳ '+esc(last.label)+'</span></div></article>';
+ }).join('');
+ const checkDate=new Date(data?.checkedAt);
+ const freshness=$('macro-data-freshness');
+ if(freshness)freshness.textContent=Number.isNaN(checkDate.getTime())?'Chưa rõ thời điểm nguồn':'Bản kiểm tra '+checkDate.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'})+' · không phải giá trực tiếp';
+}
+
+function renderCountry(data){
+ const ds=data?.datasets?.esg_world_bank,body=$('macro-country-chart'),foot=$('macro-country-source'),select=$('macro-country-metric');
+ if(!body||!select||!foot)return;
+ const choices=WORLD.filter(m=>series(ds,m.id).length>=2);
+ if(!choices.length||!['ok','cached','retained'].includes(ds?.status)||ds?.qualityStatus==='warning'){
+  select.innerHTML='<option>Chưa có chuỗi đủ điều kiện</option>';select.disabled=true;
+  body.innerHTML='<div class="macro-no-chart">Không có chuỗi ESG quốc gia đã kiểm tra để vẽ.</div>';
+  foot.textContent='Nguồn World Bank ESG hiện chưa sẵn sàng.';return;
+ }
+ select.disabled=false;
+ const selected=select.value;
+ if(choices.some(x=>x.id===selected))countryId=selected;
+ if(!choices.some(x=>x.id===countryId))countryId=choices[0].id;
+ select.innerHTML=choices.map(m=>'<option value="'+esc(m.id)+'"'+(m.id===countryId?' selected':'')+'>'+esc(m.title)+'</option>').join('');
+ select.value=countryId;
+ const metric=choices.find(m=>m.id===countryId);
+ const pts=series(ds,metric.id),latest=pts.at(-1);
+ body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Kỳ công bố gần nhất: '+esc(latest.label)+' · các kỳ không có số liệu được để trống</p><div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
+ const source=(data.sources||[]).find(s=>s.id==='esg_world_bank');
+ foot.innerHTML=sourceLink(source?.url,'World Bank ESG')+'<span>Kỳ quan sát '+esc(latest.label)+' · không đồng nghĩa cập nhật năm hiện tại</span>';
+}
+function corporateRows(esg,symbol){
+ const company=esg?.companies?.[symbol];
+ const approved=Array.isArray(company?.canonicalMetrics)?company.canonicalMetrics:[];
+ return approved.filter(m=>m&&m.metricId&&typeof m.value==='number'&&Number.isFinite(m.value)&&Number.isInteger(Number(m.year))&&m.year>=2000&&m.year<=2100&&httpsUrl(m.sourceUrl));
+}
+function renderCorporate(esg,symbol){
+ const body=$('macro-company-chart'),foot=$('macro-company-source'),select=$('macro-company-metric'),title=$('macro-company-symbol');
+ if(!body||!foot||!select)return;
+ const key=String(symbol||'').toUpperCase(),company=esg?.companies?.[key];
+ if(title)title.textContent='DOANH NGHIỆP · '+(key||'CHƯA CHỌN');
+ const rows=corporateRows(esg,key),groups=new Map();
+ for(const m of rows){
+  if(!groups.has(m.metricId))groups.set(m.metricId,[]);
+  const list=groups.get(m.metricId);
+  if(!list.some(x=>String(x.year)===String(m.year)&&x.unit===m.unit))list.push(m);
+ }
+ const ids=[...groups.keys()];
+ if(key!==companySymbol){companySymbol=key;corporateId='';}
+ if(!ids.length){
+  select.disabled=true;select.innerHTML='<option value="">Chưa có KPI đủ điều kiện</option>';
+  body.innerHTML='<div class="macro-no-chart"><b>'+esc(key)+'</b> chưa có KPI ESG định lượng đã chuẩn hóa. Không tự tạo điểm tổng hợp hoặc suy đoán xu hướng.</div>';
+  const doc=(company?.documents||[]).find(d=>httpsUrl(d.url));
+  foot.innerHTML=doc?sourceLink(doc.url,'Công bố doanh nghiệp'):'<span>Chưa có công bố KPI đủ chuẩn liên kết.</span>';
+  return;
+ }
+ select.disabled=false;
+ const selected=select.value;
+ if(groups.has(selected))corporateId=selected;
+ if(!groups.has(corporateId)){
+  corporateId=groups.has('green_credit')?'green_credit':ids.sort((a,b)=>groups.get(b).length-groups.get(a).length)[0];
+ }
+ select.innerHTML=[...groups.keys()].map(id=>{
+  const m=groups.get(id)[0];
+  return'<option value="'+esc(id)+'"'+(id===corporateId?' selected':'')+'>'+esc(m.label||id)+'</option>';
+ }).join('');
+ select.value=corporateId;
+ const records=groups.get(corporateId).slice().sort((a,b)=>Number(b.year)-Number(a.year));
+ const latestRaw=records[0],unitRaw=latestRaw.unit||'';
+ const sameUnit=records.filter(m=>(m.unit||'')===unitRaw).sort((a,b)=>Number(a.year)-Number(b.year));
+ const points=sameUnit.map(m=>({label:String(m.year),rank:Number(m.year)*12+11,y:m.value}));
+ const last=points.at(-1),prev=points.at(-2),unit={
+  'billion VND':'tỷ đồng','million VND':'triệu đồng',hours:'giờ',kWh:'kWh',m3:'m³'
+ }[unitRaw]||unitRaw||'đơn vị gốc';
+ const latestValue='<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(unit)+'</span></div>';
+ const info='<p class="macro-viz-comment">'+esc(latestRaw.label||latestRaw.metricId)+' · kỳ công bố '+esc(last.label)+'</p>';
+ let visual=latestValue+info;
+ if(points.length>=2){
+  const delta=last.y-prev.y;
+  visual+='<p class="macro-viz-comparison">So với '+esc(prev.label)+': '+(delta>0?'+':'')+esc(fmt(delta))+' '+esc(unitRaw==='%'?'điểm phần trăm':unit)+'</p>';
+  visual+='<div class="macro-viz-plot">'+plot(points,{title:latestRaw.label||corporateId,unit,color:'#7561c0',limit:16})+'</div>';
+ }else{
+  visual+='<div class="macro-single-year"><span class="macro-single-dot" aria-hidden="true"></span><strong>Mới có dữ liệu năm '+esc(last.label)+'</strong><small>Chưa đủ hai năm cùng chỉ tiêu, cùng đơn vị để kết luận xu hướng.</small></div>';
+ }
+ body.innerHTML=visual;
+ foot.innerHTML=sourceLink(latestRaw.sourceUrl,'Công bố gốc '+key)+'<span>'+esc(points.length)+' năm so sánh được · không có điểm ESG tổng hợp tự tính</span>';
+}
+function renderEsg(data,esg,symbol){
+ renderCountry(data);
+ renderCorporate(esg,symbol);
+}
+function render(data,esg,symbol){
+ renderMacro(data);
+ renderEsg(data,esg,symbol);
+}
+root.FinMacroDashboard={render,renderEsg,series,plot,corporateRows,rank,features:FEATURES.map(x=>x.id)};
+})(window);
+</script><script>(function(){'use strict';
 const $=id=>document.getElementById(id);
 const BASE=document.documentElement.dataset.hosting==='pages'?new URL('market/',location.href).href:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
-const ACCESS_HASH='0a0667865bc17f9d624bcf11088057bbab46336e7dae65f3d5366f4f7a18333e';
-const state={data:null,esg:null,symbol:'',active:'',metric:'',unlocked:false};
+const state={data:null,rawMacro:null,esg:null,symbol:'',active:'pmi',metric:'',countryMetric:'AG.LND.FRST.ZS',companyMetric:'',unlocked:true};
 const fmt=v=>typeof v==='number'&&Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(v):String(v??'—');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function digest(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function fetchMacro(){const r=await fetch(BASE+'macro.json?v='+Math.floor(Date.now()/60000),{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data?.datasets||typeof data.datasets!=='object')throw Error('Dữ liệu Macro & ESG không hợp lệ');return data;}
 async function fetchCompanyEsg(){const r=await fetch(BASE+'company-esg.json?v='+Math.floor(Date.now()/60000),{cache:'no-cache',signal:AbortSignal.timeout(20000)});if(!r.ok)return null;const data=await r.json();return data?.companies?data:null;}
 function periodLabel(value){return periodRank(value)!==null;}
@@ -3100,9 +3344,9 @@ function normalizeDataset(ds){
 function currentSymbol(){return String(new URL(location.href).searchParams.get('symbol')||$('ticker')?.value||'').trim().toUpperCase();}
 function corporateDataset(esg,symbol){
  const company=esg?.companies?.[symbol];if(!company)return null;
- const years={},labels={},units={},pillars={},metricRows=(company.canonicalMetrics?.length?company.canonicalMetrics:company.metrics)||[];
+ const years={},labels={},units={},pillars={},metricRows=(Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[])||[];
  for(const row of metricRows){
-  const year=Number(row.year),value=Number(row.value);if(!Number.isFinite(year)||!Number.isFinite(value)||!row.metricId)continue;
+  const year=Number(row.year),value=row.value;if(!Number.isFinite(year)||typeof value!=='number'||!Number.isFinite(value)||!row.metricId||!row.sourceUrl)continue;
   years[year]??={Year:year};years[year][row.metricId]=value;labels[row.metricId]=row.label||row.metricId;if(row.unit)units[row.metricId]=row.unit;if(row.pillar)pillars[row.metricId]=row.pillar;
  }
  const rows=Object.values(years).sort((a,b)=>a.Year-b.Year),metrics=[...new Set(rows.flatMap(r=>Object.keys(r).filter(k=>k!=='Year'&&Number.isFinite(r[k]))))];
@@ -3111,7 +3355,7 @@ function corporateDataset(esg,symbol){
 function normalizePayload(data,esg,symbol){const datasets={};for(const[id,ds]of Object.entries(data.datasets||{}))datasets[id]=normalizeDataset(ds);const corporate=corporateDataset(esg,symbol);if(corporate)datasets[corporate.id]=normalizeDataset(corporate);return{...data,datasets};}
 function firstColumn(ds){return(ds.columns||[])[0]||'Date';}
 function latestRow(ds){const rows=ds.rows||[];for(let i=rows.length-1;i>=0;i--){if(Object.values(rows[i]||{}).some(v=>v!==null&&v!==''))return rows[i];}return null;}
-function latestMetricPoint(ds,key){const rows=(ds?.rows||[]).slice().reverse();for(const row of rows){const value=Number(row?.[key]);if(Number.isFinite(value))return{year:row[firstColumn(ds)],value};}return null;}
+function latestMetricPoint(ds,key){const rows=(ds?.rows||[]).slice().reverse();for(const row of rows){const value=row?.[key];if(typeof value==='number'&&Number.isFinite(value))return{year:row[firstColumn(ds)],value};}return null;}
 function renderTabs(){const box=$('macro-tabs'),sets=state.data?.datasets||{};box.innerHTML=Object.entries(sets).map(([id,ds])=>'<button type="button" data-macro-tab="'+esc(id)+'" class="'+(id===state.active?'active':'')+'">'+esc(ds.title||id)+'</button>').join('');}
 function metricLabel(ds,key){return ds?.metricLabels?.[key]||key;}
 function metricUnit(ds,key){return ds?.metricUnits?.[key]||ds?.units?.[key]||'';}
@@ -3126,7 +3370,7 @@ function renderKpis(){
  const row=latestRow(ds);if(!row){box.innerHTML='';return;}
  box.innerHTML=cols.map(k=>'<div class="macro-kpi"><span>'+esc(metricLabel(ds,k))+'</span><strong>'+esc(fmt(row[k]))+'</strong>'+(metricUnit(ds,k)?'<small>'+esc(metricUnit(ds,k))+'</small>':'')+'</div>').join('');
 }
-function chartPoints(ds,metric){const label=firstColumn(ds),points=(ds.rows||[]).map((r,i)=>({x:i,label:r[label]??String(i+1),y:typeof r[metric]==='number'?r[metric]:Number(r[metric])})).filter(x=>Number.isFinite(x.y));return ds.allYears?points:points.slice(-48);}
+function chartPoints(ds,metric){const label=firstColumn(ds),points=(ds.rows||[]).map((r,i)=>({x:i,label:r[label]??String(i+1),y:r[metric]})).filter(x=>typeof x.y==='number'&&Number.isFinite(x.y));return ds.allYears?points:points.slice(-48);}
 function renderChart(){
  const ds=state.data?.datasets?.[state.active],box=$('macro-chart'),card=box?.closest('.macro-chart-card');
  if(!ds||!state.metric){if(card)card.hidden=!!ds?.companySymbol;box.innerHTML=ds?.companySymbol?'':'<div class="analysis-empty">Chưa có chuỗi số phù hợp để vẽ.</div>';return;}
@@ -3177,30 +3421,46 @@ function renderAssessments(){
  const docsBlock=docs.length?'<div class="macro-esg-docs"><strong>Nguồn chính</strong>'+docs.map(d=>'<a href="'+esc(d.url)+'" target="_blank" rel="noopener">'+esc(conciseSourceTitle(d))+'</a>').join('')+'</div>':'';
  box.hidden=false;box.innerHTML='<div class="macro-esg-head"><div><strong>ESG doanh nghiệp · '+esc(ds.companySymbol)+'</strong></div>'+pillars+'</div>'+coverage+noData+selected+ratingBlock+docsBlock;
 }
-function render(){if(!state.data)return;const sets=state.data.datasets||{};if(!sets[state.active])state.active=Object.keys(sets)[0]||'';renderTabs();metricOptions();renderKpis();renderAssessments();renderChart();renderTable();$('macro-source-status').textContent='Cập nhật '+new Date(state.data.checkedAt).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});}
-async function load(){try{$('macro-source-status').textContent='Đang tải vĩ mô + ESG doanh nghiệp…';state.symbol=currentSymbol();const[macro,esg]=await Promise.all([fetchMacro(),fetchCompanyEsg().catch(()=>null)]);state.esg=esg;state.data=normalizePayload(macro,esg,state.symbol);render();}catch(e){$('macro-source-status').textContent='Chưa tải được dữ liệu Macro & ESG';$('macro-chart').innerHTML='<div class="analysis-empty">Nguồn vĩ mô/ESG tạm thời chưa phản hồi.</div>';}}
-function showWorkspace(){
- const gate=$('macro-gate'),workspace=$('macro-workspace'),input=$('macro-access-code');
- if(gate){gate.hidden=true;gate.style.display='none';}
- if(workspace){workspace.hidden=false;workspace.style.display='block';}
- if(input)input.value='';
- if(window.FinSectionCollapse?.isOpen?.('macro'))requestAnimationFrame(()=>workspace?.scrollIntoView({behavior:'smooth',block:'start'}));
+function renderDashboard(){window.FinMacroDashboard?.render(state.data,state.esg,state.symbol);}
+function renderEsgPanels(){window.FinMacroDashboard?.renderEsg(state.data,state.esg,state.symbol);}
+function render(){if(!state.data)return;const sets=state.data.datasets||{};if(!sets[state.active])state.active=sets.pmi?'pmi':Object.keys(sets)[0]||'';renderDashboard();renderExplore();const stamp=new Date(state.data.checkedAt);$('macro-source-status').textContent='VBMA · World Bank · '+(Number.isNaN(stamp.getTime())?'chưa rõ ngày':stamp.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}));}
+async function load(){
+ if(state.loading)return;
+ state.loading=true;
+ const status=$('macro-source-status');
+ if(status)status.textContent='Đang kiểm tra nguồn dữ liệu…';
+ try{
+  const [macro,esg]=await Promise.all([fetchMacro(),fetchCompanyEsg().catch(()=>null)]);
+  state.rawMacro=macro;state.esg=esg;state.symbol=currentSymbol();
+  state.data=normalizePayload(macro,esg,state.symbol);
+  render();
+ }catch(error){
+  if(status)status.textContent='Nguồn vĩ mô đang gián đoạn';
+  $('macro-overview').innerHTML='<p class="macro-pending" role="status">Không tải được chuỗi số liệu. Vui lòng thử lại khi nguồn phục hồi; không sử dụng dữ liệu thay thế.</p>';
+  $('macro-country-chart').textContent='Chưa có dữ liệu World Bank đã kiểm tra.';
+  $('macro-company-chart').textContent='Chưa có dữ liệu ESG doanh nghiệp đã kiểm tra.';
+ }finally{state.loading=false;}
 }
-async function unlock(code){
- const button=$('macro-unlock-form')?.querySelector('button[type=submit]');
- if(await digest(String(code||'').trim())!==ACCESS_HASH){$('macro-gate-error').textContent='Mã truy cập không đúng.';return false;}
- state.unlocked=true;sessionStorage.setItem('finquery-macro-access','1');$('macro-gate-error').textContent='';if(button){button.disabled=true;button.textContent='Đang mở…';}
- showWorkspace();
- await load();
- if(button){button.disabled=false;button.textContent='Mở dữ liệu';}
- return true;
+function renderExplore(){
+ const details=$('macro-explore');if(!details?.open)return;
+ renderTabs();metricOptions();renderKpis();renderAssessments();renderChart();renderTable();
 }
-$('macro-unlock-form')?.addEventListener('submit',e=>{e.preventDefault();unlock($('macro-access-code').value);});
-$('macro-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-macro-tab]');if(!b)return;state.active=b.dataset.macroTab;state.metric='';render();});
+$('macro-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-macro-tab]');if(!b)return;state.active=b.dataset.macroTab;state.metric='';renderExplore();});
 $('macro-metric')?.addEventListener('change',e=>{state.metric=e.target.value;renderKpis();renderAssessments();renderChart();renderTable();});
-$('macro-refresh')?.addEventListener('click',load);window.addEventListener('finquery:symbol-change',e=>{state.symbol=String(e.detail?.symbol||'').toUpperCase();if(state.unlocked)load();});
-if(sessionStorage.getItem('finquery-macro-access')==='1'){state.unlocked=true;showWorkspace();load();}
-window.FinMacro={context(){if(!state.unlocked||!state.data)return null;const compact={};for(const [id,ds]of Object.entries(state.data.datasets||{}))compact[id]={title:ds.title,source:ds.source||null,companySymbol:ds.companySymbol||null,columns:ds.columns,numericColumns:ds.numericColumns,metricLabels:ds.metricLabels||null,metricUnits:ds.metricUnits||null,rows:(ds.rows||[]).slice(-12),status:ds.status};const company=state.esg?.companies?.[state.symbol];return{checkedAt:state.data.checkedAt,active:state.active,datasets:compact,corporateEsg:company?{symbol:state.symbol,externalAssessments:(company.externalAssessments||[]).slice(-12),coverage:company.coverage||null}:null};},refresh:load};
+$('macro-explore')?.addEventListener('toggle',renderExplore);
+$('macro-refresh')?.addEventListener('click',load);
+$('macro-country-metric')?.addEventListener('change',e=>{state.countryMetric=e.target.value;renderEsgPanels();});
+$('macro-company-metric')?.addEventListener('change',e=>{state.companyMetric=e.target.value;renderEsgPanels();});
+window.addEventListener('finquery:symbol-change',e=>{
+ const symbol=String(e.detail?.symbol||'').toUpperCase();
+ if(!symbol||symbol===state.symbol)return;
+ state.symbol=symbol;state.companyMetric='';
+ if(state.rawMacro){state.data=normalizePayload(state.rawMacro,state.esg,symbol);render();}
+ else load();
+});
+load();
+
+window.FinMacro={context(){if(!state.data)return null;const compact={};for(const [id,ds]of Object.entries(state.data.datasets||{}))compact[id]={title:ds.title,source:ds.source||null,companySymbol:ds.companySymbol||null,columns:ds.columns,numericColumns:ds.numericColumns,metricLabels:ds.metricLabels||null,metricUnits:ds.metricUnits||null,rows:(ds.rows||[]).slice(-12),status:ds.status};const company=state.esg?.companies?.[state.symbol];return{checkedAt:state.data.checkedAt,active:state.active,datasets:compact,corporateEsg:company?{symbol:state.symbol,externalAssessments:(company.externalAssessments||[]).slice(-12),coverage:company.coverage||null}:null};},refresh:load};
 })();</script><script>(function(){'use strict';
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9%]+/g,' ').trim();
 const C=[
