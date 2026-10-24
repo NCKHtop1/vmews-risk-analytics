@@ -29,13 +29,13 @@ def build_fixture(directory: Path):
         '<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css">'
         '<title>Macro ESG mobile QA</title></head><body><main style="max-width:1170px;margin:auto">'
         '<section id="macro"' + segment + "</main>"
-        '<script src="section-collapse.js"></script>'
+        '<script src="section-collapse.js"></script><script src="workspace-tabs.js"></script>'
         '<script src="macro-dashboard.js"></script>'
         '<script src="macro.js"></script>'
         '<script src="liquidity-derivatives.js"></script></body></html>'
     )
     preview.write_text(html, encoding="utf-8")
-    for file in ("style.css", "market.css", "section-collapse.js", "macro-dashboard.js", "macro.js", "liquidity-derivatives.js"):
+    for file in ("style.css", "market.css", "section-collapse.js", "workspace-tabs.js", "macro-dashboard.js", "macro.js", "liquidity-derivatives.js"):
         shutil.copy2(FRONT / file, directory / file)
     data_dir = directory / "market"
     data_dir.mkdir()
@@ -143,7 +143,7 @@ def run():
                       onRateChart:document.querySelectorAll('#money-on svg').length,
                       futuresCards:document.querySelectorAll('#money-futures .money-future-contract').length,
                       onValue:document.getElementById('money-on')?.textContent.includes('4,31'),
-                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa lấy được dữ liệu FX Swap'),
+                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có chuỗi FX Swap hợp lệ'),
                       moneyWithin:[...document.querySelectorAll('.money-dashboard-grid .macro-viz-card, .money-future-contract')].every(el=>{
                         const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=viewport+2;}),
 
@@ -159,12 +159,19 @@ def run():
                 driver.execute_script("document.getElementById('macro-chevron').click()")
                 assert report["worldCharts"] == 1 and report["singleYear"]
                 assert report["cardsInside"] and report["wide"] <= report["viewport"] + 3
-                assert report["onRateChart"]==1 and report["futuresCards"]==2 and report["onValue"] and report["swapNoFake"]
+                assert report["onRateChart"]==1 and report["onValue"] and report["swapNoFake"]
+                driver.execute_script("window.FinWorkspaceTabs.openMacro('on')")
+                WebDriverWait(driver,5).until(lambda d:d.execute_script("return !document.getElementById('macro-panel-on').hidden"))
+                overlap=driver.execute_script("""
+                   const labels=[...document.querySelectorAll('#money-on svg [data-on-tick]')].map(el=>el.getBoundingClientRect());
+                   return labels.slice(1).every((r,i)=>r.left>=labels[i].right+2);
+                """)
+                assert overlap, "ON chart x-axis labels overlap"
                 assert report["moneyWithin"]
                 assert report["noExtraPIN"]
                 driver.save_screenshot(str(directory / f"macro_esg_{width}.png"))
                 # The details panel should still display the legacy full-data tools on demand.
-                driver.execute_script("document.getElementById('macro-explore').open=true")
+                driver.execute_script("window.FinWorkspaceTabs.openMacro('esg'); document.getElementById('macro-explore').open=true")
                 WebDriverWait(driver, 8).until(
                     lambda d: d.execute_script("return document.getElementById('macro-tabs').children.length > 0")
                 )
