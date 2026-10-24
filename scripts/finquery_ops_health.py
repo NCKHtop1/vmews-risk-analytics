@@ -52,13 +52,20 @@ def day_of(value):
 
 def clock(now):
     now = now.astimezone(VN_TZ)
-    business_day = is_trading_day(now.date(), require_certified=True)
     hm = now.time().replace(tzinfo=None)
+    try:
+        business_day = is_trading_day(now.date(), require_certified=True)
+        completed = latest_completed_session(now)
+    except RuntimeError:
+        return {"live": False, "expectedQuoteDate": None,
+                "completedSession": None, "vnTime": now.isoformat(),
+                "tradingDay": False, "calendarCertified": False}
     live = business_day and (time(9, 30) <= hm <= time(11, 40) or time(13, 25) <= hm <= time(15, 0))
-    expected = now.date() if business_day and hm >= time(9, 25) else latest_completed_session(now)
+    expected = now.date() if business_day and hm >= time(9, 25) else completed
     return {"live": live, "expectedQuoteDate": expected.isoformat(),
-            "completedSession": latest_completed_session(now).isoformat(),
-            "vnTime": now.isoformat(), "tradingDay": business_day}
+            "completedSession": completed.isoformat(),
+            "vnTime": now.isoformat(), "tradingDay": business_day,
+            "calendarCertified": True}
 
 
 def evaluate(data, now=None, production=None):
@@ -72,6 +79,10 @@ def evaluate(data, now=None, production=None):
             raise ValueError(severity)
         checks.append({"code": code, "severity": severity, "title": title,
                        "evidence": evidence if evidence is not None else {}})
+
+    if not ctx["calendarCertified"]:
+        add("CALENDAR_CERTIFICATION", "CRITICAL",
+            "Lịch giao dịch chưa được chứng nhận cho năm hiện tại — không suy đoán ngày khớp")
 
     def payload(name):
         value = data.get(name)
@@ -137,8 +148,8 @@ def evaluate(data, now=None, production=None):
             {"scannerSource": strategy.get("sourceTime"), "quoteSource": quote.get("latestSourceTime")})
         symbols = strategy.get("symbols") or {}
         discovery = [x for x in symbols.values() if isinstance(x, dict) and x.get("tier") == "DISCOVERY"]
-        stale = sum(trading_session_age(x.get("barDate"), ctx["completedSession"]) >= 2 for x in discovery)
-        very_stale = sum(trading_session_age(x.get("barDate"), ctx["completedSession"]) >= 10 for x in discovery)
+        stale = sum(trading_session_age(x.get("barDate"), ctx["completedSession"]) >= 2 for x in discovery) if ctx["completedSession"] else len(discovery)
+        very_stale = sum(trading_session_age(x.get("barDate"), ctx["completedSession"]) >= 10 for x in discovery) if ctx["completedSession"] else len(discovery)
         sev = "WARNING" if stale else "OK"
         add("DISCOVERY_HISTORY", sev, "Độ mới dữ liệu scanner Discovery",
             {"eligible": len(discovery), "staleAtLeast2Sessions": stale,
@@ -148,7 +159,7 @@ def evaluate(data, now=None, production=None):
     if overlay:
         forecast_day = day_of(overlay.get("coreAsOf"))
         completed = day_of(ctx["completedSession"])
-        lag = trading_session_age(forecast_day, completed) if forecast_day else 99
+        lag = trading_session_age(forecast_day, completed) if forecast_day and completed else 99
         # The model already abstains while stale. Alert operators, never resume ranking.
         status = (overlay.get("forecastAlignment") or {}).get("status")
         sev = "CRITICAL" if lag >= 2 else "WARNING" if lag or status == "STALE_CORE" else "OK"
