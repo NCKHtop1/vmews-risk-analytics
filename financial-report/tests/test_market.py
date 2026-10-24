@@ -1953,7 +1953,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("Pages deployment mismatch",flow)
         self.assertIn("selenium==4.36.0",flow)
         self.assertIn("finquery-technical-access",flow)
-        self.assertIn("finquery-macro-access",flow)
+        self.assertNotIn("finquery-macro-access",flow)  # Macro uses the existing authenticated FinQuery session
         self.assertNotIn("13579",flow)
         self.assertIn("window.FinQueryAI.analyze(arguments[0])",flow)
         self.assertIn("Vì sao mã này tăng hoặc giảm trong phiên hôm nay?",flow)
