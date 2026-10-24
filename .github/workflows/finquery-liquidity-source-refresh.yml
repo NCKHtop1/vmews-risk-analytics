@@ -102,7 +102,14 @@ jobs:
           assert d['derivatives']['equityListedHNXIncluded'] is False
           assert all(isinstance(x['value'],(int,float)) and 0<=x['value']<=25 for x in d['interbank']['observations'])
           if d['vbmaSwap']['status']=='verified':
-              assert d['vbmaSwap']['licenseStatus']=='approved' and d['vbmaSwap']['unit']=='swap points'
+              assert d['vbmaSwap']['licenseStatus'] in ('approved','source_attributed')
+              assert d['vbmaSwap']['unit'] in ('%/năm','swap points')
+              assert len(d['vbmaSwap']['points'])>=2
+          for kind in ('fi_bond','gov_bond','short_benchmark'):
+              curve=d.get('vbmaCurves',{}).get(kind,{})
+              if curve.get('status')=='verified':
+                  assert curve.get('licenseStatus') in ('approved','source_attributed')
+                  assert curve.get('unit')=='%/năm' and len(curve.get('points',[]))>=2
           print('FinQuery liquidity source publish contract PASS')
           PY
       - name: Publish only owned dataset

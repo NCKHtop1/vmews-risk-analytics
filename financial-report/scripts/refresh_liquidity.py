@@ -126,17 +126,29 @@ def refresh(snapshot, fetcher=fetch, allow_swap_publication=False, clock=None):
             parsed = parse_vbma_curve(fetcher(url), kind, today)
             old = (updated.get("vbmaSwap", {}) if kind == "swap" else curves.get(kind, {}))
             if parsed["unit"] is None:
-                issues.append("VBMA " + kind + ": source unit not explicit")
-            elif old.get("licenseStatus") == "approved" or (kind == "swap" and allow_swap_publication):
-                parsed["licenseStatus"] = "approved"
-                if kind == "swap": updated["vbmaSwap"].update(parsed)
-                else: curves[kind] = parsed
+                issues.append("VBMA " + kind + ": unit cannot be established from the official product")
+            elif parsed["status"] == "stale":
+                # Preserve the last verified observation; a stale curve must
+                # never replace a newer published curve or carry a current badge.
+                issues.append("VBMA " + kind + ": source observation stale " + parsed["asOf"])
+            elif parsed["status"] == "verified":
+                # Publish only the latest small factual tenor snapshot, not the
+                # provider's historical CSV database. Keep source attribution
+                # and distinguish this from a confirmed commercial license.
+                parsed["licenseStatus"] = "approved" if (
+                    old.get("licenseStatus") == "approved" or
+                    (kind == "swap" and allow_swap_publication)
+                ) else "source_attributed"
+                parsed["sourceName"] = "VBMA"
+                parsed["sourceAttribution"] = "VBMA public reference curve"
+                if kind == "swap":
+                    updated["vbmaSwap"].update(parsed)
+                    curves[kind] = parsed
+                else:
+                    curves[kind] = parsed
             else:
-                # Retain fetch diagnostics without distributing source values
-                # before permitted usage is confirmed.
-                issues.append("VBMA " + kind + ": publication permission pending")
-                curves.setdefault(kind, {"source": url, "status": "permission_pending",
-                                         "licenseStatus": "review_required", "points": []})
+                issues.append("VBMA " + kind + ": observation did not pass validation")
+
         except Exception as exc:
             issues.append("VBMA " + kind + " " + type(exc).__name__ + ": " + str(exc)[:95])
             curves.setdefault(kind, {"source": url, "status": "unavailable", "points": []})

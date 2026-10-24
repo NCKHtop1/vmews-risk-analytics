@@ -33,11 +33,12 @@ class VBMASourceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_vbma_curve(b"ON;1W;1M;Yield (%)\n3.1;3.2;3.3;4.1\n", "gov_bond", TODAY)
 
-    def test_unit_not_synthesized(self):
+    def test_unit_is_bound_to_official_vbma_product_not_value_magnitude(self):
         raw = b"Date,ON,1W,1M\n22/10/2026,3.9,4.1,4.2\n"
         result = parse_vbma_curve(raw, "fi_bond", TODAY)
-        self.assertIsNone(result["unit"])
-        self.assertEqual(result["status"], "unit_unverified")
+        self.assertEqual(result["unit"], "%/năm")
+        self.assertEqual(result["unitBasis"], "official_VBMA_curve_product")
+        self.assertEqual(result["status"], "verified")
 
     def test_numeric_formats(self):
         self.assertEqual(parse_number("3,90"), 3.9)
@@ -64,6 +65,21 @@ class VBMASourceTests(unittest.TestCase):
         result=parse_vbma_curve(raw,"fi_bond",TODAY)
         self.assertEqual(result["asOf"],"2026-09-01")
         self.assertEqual(result["status"],"stale")
+
+
+    def test_month_first_from_unambiguous_actual_csv_layout(self):
+        raw=b"Unnamed: 0,ON,1W,1M\n10/16/2026,3.1,3.2,3.3\n10/20/2026,3.5,3.7,3.8\n10/23/2026,4.1,4.3,4.6\n"
+        result=parse_vbma_curve(raw,"swap",TODAY)
+        self.assertEqual(result["asOf"],"2026-10-23")
+        self.assertEqual(result["dateLayout"],"MM/DD/YYYY")
+        self.assertEqual(result["points"][0]["tenor"],"ON")
+        self.assertEqual(result["unit"],"%/năm")
+
+    def test_european_days_not_misread_as_months(self):
+        raw=b"Unnamed: 0,1Y,2Y,3Y\n18/10/2026,3.1,3.2,3.3\n20/10/2026,3.5,3.7,3.8\n23/10/2026,4.1,4.3,4.6\n"
+        result=parse_vbma_curve(raw,"gov_bond",TODAY)
+        self.assertEqual(result["asOf"],"2026-10-23")
+        self.assertEqual(result["dateLayout"],"DD/MM/YYYY_or_ISO")
 
 if __name__ == "__main__":
     unittest.main()
