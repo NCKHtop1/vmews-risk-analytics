@@ -6,8 +6,8 @@ const fmt=n=>typeof n==='number'&&Number.isFinite(n)?nf.format(n):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const FEATURES=[
  {id:'pmi',key:'PMI',title:'PMI sản xuất',unit:'điểm',scale:1,threshold:50,color:'#3565d5',info:'Mốc 50 phân biệt mở rộng và thu hẹp'},
- {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'triệu tỷ đồng',scale:1000000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
- {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'triệu tỷ đồng',scale:1000000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
+ {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'nghìn tỷ đồng',scale:1000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
+ {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'nghìn tỷ đồng',scale:1000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
  {id:'fdi',key:'FDI giải ngân (lũy kế năm) (tỷ USD)',title:'FDI giải ngân',unit:'tỷ USD',scale:1,color:'#c88932',info:'Lũy kế năm, bắt đầu lại từ tháng 1'}
 ];
 const WORLD=[
@@ -44,13 +44,18 @@ function plot(data,opts={}){
  if(typeof opts.threshold==='number'){low=Math.min(low,opts.threshold);high=Math.max(high,opts.threshold);}
  const range=Math.max(high-low,Math.abs(high)*.035,.1);low-=range*.1;high+=range*.14;
  const width=680,height=230,l=65,r=17,t=17,b=36,dy=high-low;
- const x=i=>l+(width-l-r)*i/(pts.length-1),y=v=>t+(height-t-b)*(high-v)/dy;
+ // Respect observation timestamps: unequal gaps in the source are not
+ // silently compressed into equally spaced/fabricated monthly observations.
+ const minRank=Math.min(...pts.map(p=>p.rank)),maxRank=Math.max(...pts.map(p=>p.rank));
+ const rx=Math.max(1,maxRank-minRank);
+ const x=i=>l+(width-l-r)*(pts[i].rank-minRank)/rx,y=v=>t+(height-t-b)*(high-v)/dy;
  const grid=[0,1/3,2/3,1].map(p=>{
   const val=low+dy*p,pos=y(val).toFixed(1);
   return'<line x1="'+l+'" y1="'+pos+'" x2="'+(width-r)+'" y2="'+pos+'" stroke="#e5edf7"/><text x="'+(l-9)+'" y="'+(Number(pos)+4)+'" text-anchor="end" fill="#8190a5" font-size="11">'+esc(fmt(val))+'</text>';
  }).join('');
  const color=/^#[0-9a-fA-F]{6}$/.test(opts.color||'')?opts.color:'#3565d5';
- const shape=pts.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.y).toFixed(1)).join(' ');
+ const expectedGap=pts.some(p=>/^T(?:1[0-2]|[1-9])\\s+/.test(p.label))?1:pts.some(p=>/^Q[1-4]\\s+/.test(p.label))?3:12;
+ const shape=pts.map((p,i)=>(i&&p.rank-pts[i-1].rank<=expectedGap?'L':'M')+x(i).toFixed(1)+','+y(p.y).toFixed(1)).join(' ');
  const horizontal=[0,Math.floor((pts.length-1)/2),pts.length-1].map((i,j)=>'<text x="'+x(i).toFixed(1)+'" y="'+(height-10)+'" fill="#7688a0" font-size="11" text-anchor="'+(j===0?'start':j===2?'end':'middle')+'">'+esc(pts[i].label)+'</text>').join('');
  const threshold=typeof opts.threshold==='number'?'<line x1="'+l+'" y1="'+y(opts.threshold).toFixed(1)+'" x2="'+(width-r)+'" y2="'+y(opts.threshold).toFixed(1)+'" stroke="#bb8443" stroke-dasharray="5 5"/><text x="'+(width-r-4)+'" y="'+(y(opts.threshold)-6).toFixed(1)+'" text-anchor="end" font-size="11" fill="#aa763c">'+esc(opts.threshold)+'</text>':'';
  const tips=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="9" fill="transparent"><title>'+esc(p.label+': '+fmt(p.y)+' '+(opts.unit||''))+'</title></circle>').join('');
@@ -73,7 +78,14 @@ function renderMacro(data){
   if(pts.length<2)return'<article class="macro-viz-card">'+head+'<div class="macro-no-chart">Chưa có chuỗi được xác minh để vẽ biểu đồ.</div><div class="macro-viz-source">'+link+'<span>Trạng thái: '+esc(src?.qualityStatus||src?.status||'không rõ')+'</span></div></article>';
   let context='';
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
-  else if(c.id==='fdi')context='Lũy kế trong năm · không diễn giải thành tăng trưởng tháng';
+  else if(c.id==='fdi'){
+   const prevYear=pts.find(p=>p.label===last.label.replace(/(20\\d{2})$/,y=>String(Number(y)-1)));
+   context='Lũy kế trong năm · không diễn giải thành tăng trưởng tháng';
+   if(prevYear&&prevYear.y>0){
+    const diff=last.y-prevYear.y,yoy=diff/prevYear.y*100;
+    context+=' · so với cùng kỳ '+esc(prevYear.label)+': '+(diff>=0?'+':'')+esc(fmt(diff))+' tỷ USD ('+(yoy>=0?'+':'')+esc(fmt(yoy))+'%)';
+   }
+  }
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
   return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'<span>'+esc(c.info)+' · kỳ '+esc(last.label)+'</span></div></article>';
  }).join('');
@@ -106,7 +118,7 @@ function renderCountry(data){
 function corporateRows(esg,symbol){
  const company=esg?.companies?.[symbol];
  const approved=Array.isArray(company?.canonicalMetrics)?company.canonicalMetrics:[];
- return approved.filter(m=>m&&m.metricId&&typeof m.value==='number'&&Number.isFinite(m.value)&&Number.isInteger(Number(m.year))&&m.year>=2000&&m.year<=2100&&httpsUrl(m.sourceUrl));
+ return approved.filter(m=>m&&m.metricId&&typeof m.value==='number'&&Number.isFinite(m.value)&&Number.isInteger(Number(m.year))&&m.year>=2000&&Number(m.year)<=new Date().getUTCFullYear()&&httpsUrl(m.sourceUrl));
 }
 function renderCorporate(esg,symbol){
  const body=$('macro-company-chart'),foot=$('macro-company-source'),select=$('macro-company-metric'),title=$('macro-company-symbol');
