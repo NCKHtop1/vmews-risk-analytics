@@ -130,3 +130,13 @@ test('unsafe company sources or text do not become executable links or markup',(
  assert.match(html,/&lt;b&gt;chỉ tiêu&lt;\/b&gt;/);
  assert.doesNotMatch(html,/javascript:|<img/);
 });
+
+test('FDI cumulative curve stays within a year instead of showing January collapse',()=>{
+ const data=fixture(),{api,$}=harness();
+ data.datasets.fdi.rows.unshift(makeRow('T12 2025','FDI giải ngân (lũy kế năm) (tỷ USD)',27.6));
+ api.render(data,mbb(),'MBB');
+ const plotted=$('macro-overview').innerHTML;
+ assert.match(plotted,/FDI giải ngân/);
+ assert.doesNotMatch(plotted,/T12 2025/);
+ assert.match(plotted,/Lũy kế trong năm/);
+});
