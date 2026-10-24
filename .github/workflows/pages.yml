@@ -66,6 +66,7 @@ jobs:
           node --check financial-report/frontend/derivatives-market.js
           node --check financial-report/frontend/ownership-intelligence.js
           node --check financial-report/frontend/alpha-radar.js
+          for file in financial-report/frontend/*.js; do node --check "$file"; done
       - name: Verify Strategy Intelligence core and frontend syntax
         run: |
           node --check financial-report/frontend/strategy-intelligence-core.js
