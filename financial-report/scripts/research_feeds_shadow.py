@@ -97,7 +97,7 @@ def _clean(value):
 
 
 def _norm(value):
-    value = unicodedata.normalize("NFD", _clean(value).casefold())
+    value = unicodedata.normalize("NFD", _clean(value).casefold().replace("đ", "d"))
     return "".join(ch for ch in value if unicodedata.category(ch) != "Mn")
 
 
