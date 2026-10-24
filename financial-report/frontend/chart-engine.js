@@ -27,7 +27,7 @@ function moneyFlowText(current,previous){
  return detail+'; các chỉ báo dòng tiền chưa đồng thuận, chưa nên kết luận dòng tiền vào hoặc ra rõ'+tail;
 }
 class ChartController{
- constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;
+ constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;
  this.chart=L.createChart($('price-chart'),{autoSize:true,height:540,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
  this.chart.subscribeCrosshairMove(e=>{const b=e.seriesData.get(this.series.price);if(b)this.readout({...b,volume:e.seriesData.get(this.series.volume)?.value});else this.readout(this.bars.at(-1));});
  this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(()=>raf(()=>this.renderInsights()));
@@ -50,6 +50,7 @@ class ChartController{
  const dialog=$('chart-indicators');$('indicator-open')?.addEventListener('click',()=>{this.syncIndicatorSettings();dialog.showModal();$('indicator-search')?.focus();});$('indicator-close')?.addEventListener('click',()=>dialog.close());dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});$('indicator-search')?.addEventListener('input',e=>{const q=String(e.target.value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();(document.querySelectorAll?.('.indicator-list-item')||[]).forEach(row=>row.hidden=q&&!String(row.dataset.indicatorName||'').includes(q));});
  dialog.addEventListener('change',e=>{if(e.target.type==='number'){const key=e.target.dataset.param,n=Number(e.target.value),min=Number(e.target.min||0),max=Number(e.target.max||1e9),step=Number(e.target.step||1);const integer=step>=1;if(!Number.isFinite(n)||n<min||n>max||(integer&&!Number.isInteger(n))){e.target.value=this.params[key];return;}const next={...this.params,[key]:n};if(next.fast>=next.slow){e.target.value=this.params[key];$('chart-indicator-error').textContent='MACD: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.';return;}this.params=next;}$('chart-indicator-error').textContent='';this.syncIndicatorSettings();this.values=M.indicators(this.bars,this.params);this.rebuild(true);});
  this.syncIndicatorSettings();
+ $('chart-oscillator-focus')?.addEventListener('change',e=>{this.focusOscillator=e.target.value;this.rebuild(true);});
  }
  select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
  async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF,previousBars=this.baseBars.map(b=>({...b})),previousValues=this.values.map(v=>({...v}));
@@ -66,27 +67,50 @@ class ChartController{
  }
  }
  enabled(name){return !!$('ind-'+name)?.checked;}
- rebuild(keep){const range=keep?this.chart.timeScale().getVisibleLogicalRange():null;for(const s of Object.values(this.series))this.chart.removeSeries(s);this.series={};
+ visibleOscillators(){
+  const all=['rsi','macd','atr','adx','stoch','cci','roc','willr','obv','mfi','cmf'].filter(k=>this.enabled(k));
+  const nav=$('chart-oscillator-nav'),select=$('chart-oscillator-focus');
+  if(!all.includes(this.focusOscillator))this.focusOscillator=all[0]||null;
+  if(select){
+   if(select.options.length!==all.length||[...select.options].some((o,i)=>o.value!==all[i])){
+    select.replaceChildren(...all.map(k=>new Option(k==='willr'?'Williams %R':k.toUpperCase(),k)));
+   }
+   if(this.focusOscillator)select.value=this.focusOscillator;
+  }
+  if(nav)nav.hidden=all.length<=2;
+  const hint=$('chart-oscillator-hint');
+  if(hint)hint.textContent=all.length>2?'Đã chọn '+all.length+' chỉ báo phụ · hiển thị tối đa 2 pane để giữ biểu đồ giá.':'';
+  if(all.length<=2)return all;
+  const from=all.indexOf(this.focusOscillator);
+  return [all[from],all[(from+1)%all.length]];
+ }
+ rebuild(keep){const range=keep?this.chart.timeScale().getVisibleLogicalRange():null;
+  const osc=this.visibleOscillators();
+  for(const s of Object.values(this.series))this.chart.removeSeries(s);this.series={};
  const kind=this.type==='line'?L.LineSeries:this.type==='area'?L.AreaSeries:L.CandlestickSeries;
  this.series.price=this.chart.addSeries(kind,{upColor:'#089981',downColor:'#f23645',wickUpColor:'#089981',wickDownColor:'#f23645',borderVisible:false,color:'#4564cc',lineColor:'#4564cc',topColor:'#4564cc50',bottomColor:'#4564cc05',priceFormat:{type:'price',precision:0,minMove:1}},0);
  let pane=0;const line=(key,color,index=0)=>this.series[key]=this.chart.addSeries(L.LineSeries,{color,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false},index);const guides=(series,levels)=>levels.forEach(price=>series.createPriceLine({price,color:'#abb3c3',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''}));
  if(this.enabled('volume')||this.enabled('vma')){pane++;this.series.volume=this.chart.addSeries(L.HistogramSeries,{priceFormat:{type:'volume'},priceLineVisible:false,lastValueVisible:false,visible:this.enabled('volume')},pane);if(this.enabled('vma'))line('vma','#d59637',pane);}
  if(this.enabled('sma'))line('sma','#da962b');if(this.enabled('ema'))line('ema','#725cce');if(this.enabled('wma'))line('wma','#227c9d');if(this.enabled('vwma'))line('vwma','#00897b');if(this.enabled('supertrend'))line('supertrend','#d04b64');
  if(this.enabled('bb')){line('upper','#7597ba');line('middle','#adb5c5');line('lower','#7597ba');}
- if(this.enabled('rsi')){pane++;line('rsi','#9764c7',pane);guides(this.series.rsi,[30,70]);}
- if(this.enabled('macd')){pane++;line('macd','#3777bc',pane);line('signal','#e69239',pane);this.series.hist=this.chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},pane);guides(this.series.macd,[0]);}
- if(this.enabled('atr')){pane++;line('atr','#8b6f47',pane);}
- if(this.enabled('adx')){pane++;line('adx','#6d5aa7',pane);guides(this.series.adx,[20,25]);}
- if(this.enabled('stoch')){pane++;line('stoch','#3478b8',pane);line('stochSignal','#e08a35',pane);guides(this.series.stoch,[20,80]);}
- if(this.enabled('cci')){pane++;line('cci','#7a5f9e',pane);guides(this.series.cci,[-100,100]);}
- if(this.enabled('roc')){pane++;line('roc','#2b8a7e',pane);guides(this.series.roc,[0]);}
- if(this.enabled('willr')){pane++;line('willr','#a56b35',pane);guides(this.series.willr,[-80,-20]);}
- if(this.enabled('obv')){pane++;line('obv','#4e6bb3',pane);}
- if(this.enabled('mfi')){pane++;line('mfi','#7b5cab',pane);guides(this.series.mfi,[20,80]);}
- if(this.enabled('cmf')){pane++;line('cmf','#318b6c',pane);guides(this.series.cmf,[0]);}
+ if(osc.includes('rsi')){pane++;line('rsi','#9764c7',pane);guides(this.series.rsi,[30,70]);}
+ if(osc.includes('macd')){pane++;line('macd','#3777bc',pane);line('signal','#e69239',pane);this.series.hist=this.chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},pane);guides(this.series.macd,[0]);}
+ if(osc.includes('atr')){pane++;line('atr','#8b6f47',pane);}
+ if(osc.includes('adx')){pane++;line('adx','#6d5aa7',pane);guides(this.series.adx,[20,25]);}
+ if(osc.includes('stoch')){pane++;line('stoch','#3478b8',pane);line('stochSignal','#e08a35',pane);guides(this.series.stoch,[20,80]);}
+ if(osc.includes('cci')){pane++;line('cci','#7a5f9e',pane);guides(this.series.cci,[-100,100]);}
+ if(osc.includes('roc')){pane++;line('roc','#2b8a7e',pane);guides(this.series.roc,[0]);}
+ if(osc.includes('willr')){pane++;line('willr','#a56b35',pane);guides(this.series.willr,[-80,-20]);}
+ if(osc.includes('obv')){pane++;line('obv','#4e6bb3',pane);}
+ if(osc.includes('mfi')){pane++;line('mfi','#7b5cab',pane);guides(this.series.mfi,[20,80]);}
+ if(osc.includes('cmf')){pane++;line('cmf','#318b6c',pane);guides(this.series.cmf,[0]);}
  this.series.price.setData(this.bars.map(b=>this.priceData(b)));if(this.series.volume)this.series.volume.setData(this.bars.map(b=>this.volumeData(b)));
  for(const [key,s]of Object.entries(this.series)){if(['price','volume'].includes(key))continue;s.setData(this.values.filter(v=>Number.isFinite(v[key])).map(v=>({time:v.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})})));}
- this.chart.panes().forEach((p,i)=>p.setHeight(i?95:350));this.chart.applyOptions({timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
+ const panes=this.chart.panes(),total=panes.length;
+ const required=Math.max(540,340+105*(total-1)+35);
+ const chartNode=$('price-chart');if(chartNode)chartNode.style.height=required+'px';
+ this.chart.applyOptions({height:required,timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
+ panes.forEach((p,i)=>p.setHeight(i?Math.max(90,Math.floor((required-335)/(total-1))):335));
  if(range)this.chart.timeScale().setVisibleLogicalRange(range);this.readout(this.bars.at(-1));this.renderInsights();
  }
  priceData(b){return this.type==='candles'?{time:b.time,open:b.open,high:b.high,low:b.low,close:b.close}:{time:b.time,value:b.close};}
