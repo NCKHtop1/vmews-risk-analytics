@@ -118,6 +118,7 @@ test('PandaStudy contract: one verified Google sub -> one persistent FinQuery ac
   assert.match(content.body,/finquery-nav-admin/);
   assert.match(content.body,/Quản trị hệ thống/);
   assert.match(content.body,/api\/auth\/session/);
+  assert.match(content.body,/user-workspace\.js/,'dashboard should load account workspace only after authentication');
 });
 test('Verified owner is linked once; admin stays server-authorized',async()=>{
   const owner={id:crypto.randomUUID(),email:'ngochailuong7274@gmail.com',google_sub:null,role:'owner',status:'active',full_name:'Owner',avatar_url:''};
