@@ -72,8 +72,13 @@
       report('Không thể kết nối máy chủ xác thực. Vui lòng thử lại.');
     }
   }
-  function ready() {
+  async function ready() {
     try {
+      const health = await fetch('/healthz', { cache: 'no-store', credentials: 'same-origin' });
+      if (!health.ok) {
+        report('Hệ thống đăng nhập đang được cấu hình. Vui lòng quay lại sau.');
+        return;
+      }
       if (!window.google?.accounts?.id) throw new Error('GOOGLE_UNAVAILABLE');
       google.accounts.id.initialize({ client_id: CLIENT_ID, callback: credential, auto_select: false });
       google.accounts.id.renderButton(document.getElementById('signin'), {
@@ -81,7 +86,7 @@
         shape: 'pill', text: 'signin_with', locale: 'vi', width: 280
       });
       existingSession();
-    } catch (_) { report('Không tải được Google Sign-In. Vui lòng làm mới trang.'); }
+    } catch (_) { report('Không kết nối được hệ thống đăng nhập. Vui lòng làm mới trang.'); }
   }
   const script = document.createElement('script');
   script.src = 'https://accounts.google.com/gsi/client?hl=vi';
