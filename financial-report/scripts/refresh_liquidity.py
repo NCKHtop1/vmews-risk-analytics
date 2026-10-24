@@ -18,11 +18,11 @@ from urllib.error import HTTPError
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from research_feeds_shadow import parse_vbma_csv
+from vbma_curve_reader import VBMA_URLS, parse_vbma_curve
 
 ON_URL = "https://stockbiz.vn/vi-mo/du-lieu/lai-suat-lien-ngan-hang"
 ON_CROSS = "https://dulieukinhte.com/du-lieu-dong/lai-suat-thi-truong-lien-ngan-hang-qua-dem-34248"
-SWAP_URL = "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv"
+SWAP_URL = VBMA_URLS["swap"]
 VN = timezone(timedelta(hours=7))
 UA = "FinQueryDataQuality/1.0 (+https://finquery.info.vn/)"
 TENORS = ["ON", "1W", "2W", "1M", "2M", "3M", "6M", "9M", "1Y"]
@@ -43,7 +43,7 @@ class ExtractText(HTMLParser):
         return " ".join(self.data)
 
 def fetch(url, timeout=12):
-    allowed = {ON_URL, ON_CROSS, SWAP_URL}
+    allowed = {ON_URL, ON_CROSS, *VBMA_URLS.values()}
     if url not in allowed:
         raise ValueError("Not an approved feed")
     with urlopen(Request(url, headers={"User-Agent": UA, "Accept": "text/html,text/csv"}), timeout=timeout) as resp:
@@ -91,45 +91,13 @@ def verify_crosscheck(html, point):
     return rate in near or f"{point['value']:.2f}".replace(".",",") in near
 
 def parse_swap_verified(raw, asof):
-    """Only a strict, dated, unit-labelled swap-points table may become public."""
-    parsed=parse_vbma_csv(raw)
-    cols=parsed.get("columns",[])
-    # The VBMA published dataset may be a rate curve instead of swap points.
-    # A unit must be explicit: do not convert FX rate/forward price into points.
-    header=" ".join(cols).casefold()
-    if not re.search(r"\b(?:swap\s*points?|pips?|điểm\s*(?:hoán\s*đổi|swap))\b",header,re.I):
+    """Compatibility entrypoint: accept actual dated VBMA tenor layouts."""
+    try:
+        value = parse_vbma_curve(raw, "swap", asof)
+    except ValueError:
         return None
-    tenors={c.upper():c for c in cols if c.upper() in TENORS}
-    if len(tenors)<3:
-        return None
-    date_columns=[c for c in cols if re.search(r"(date|ngày|asof)",c,re.I)]
-    if not date_columns:
-        return None
-    candidates=[]
-    for row in parsed.get("rows",[]):
-        stamp=str(row.get(date_columns[0]) or "").strip()
-        formats=("%d/%m/%Y","%Y-%m-%d","%d-%m-%Y")
-        observation=None
-        for f in formats:
-            try: observation=datetime.strptime(stamp,f).date();break
-            except ValueError: continue
-        if not observation or observation>asof or (asof-observation).days>7:
-            continue
-        points=[]
-        for tenor in TENORS:
-            key=tenors.get(tenor)
-            if not key: continue
-            value=str(row.get(key) or "").strip()
-            if not re.fullmatch(r"[+-]?\d+(?:\.\d+)?",value):continue
-            number=float(value)
-            if abs(number)>100000:continue
-            points.append({"tenor":tenor,"value":number})
-        if len(points)>=3:
-            candidates.append((observation,points))
-    if not candidates: return None
-    observation,points=max(candidates,key=lambda x:x[0])
-    return {"status":"verified","unit":"swap points","measurement":"FX Swap MID points",
-            "asOf":observation.isoformat(),"points":points}
+    return value if value["unit"] == "swap points" else None
+
 
 def refresh(snapshot, fetcher=fetch, allow_swap_publication=False, clock=None):
     today=clock or datetime.now(VN).date()
@@ -150,20 +118,29 @@ def refresh(snapshot, fetcher=fetch, allow_swap_publication=False, clock=None):
         updated["asOf"]=max(updated.get("asOf",""),last["date"])
     except Exception as exc:
         issues.append("ON "+type(exc).__name__+": "+str(exc)[:110])
-    # Swap ingestion is license-gated and strictly accepts dated SWAP POINTS (not interest rates).
-    try:
-        raw=fetcher(SWAP_URL)
-        parsed=parse_swap_verified(raw,today)
-        if parsed and allow_swap_publication:
-            updated["vbmaSwap"].update(parsed)
-            updated["vbmaSwap"]["licenseStatus"]="approved"
-        elif parsed:
-            issues.append("VBMA licensing approval required for source publication")
-        else:
-            issues.append("VBMA source unit/date schema not verified")
-    except Exception as exc:
-        issues.append("VBMA "+type(exc).__name__+": "+str(exc)[:110])
-    updated["sourceIssues"]=issues[:6]
+    # All four source curves are probed independently. A failure must never
+    # erase the previous verified snapshot, and no source is relabelled.
+    curves = updated.setdefault("vbmaCurves", {})
+    for kind, url in VBMA_URLS.items():
+        try:
+            parsed = parse_vbma_curve(fetcher(url), kind, today)
+            old = (updated.get("vbmaSwap", {}) if kind == "swap" else curves.get(kind, {}))
+            if parsed["unit"] is None:
+                issues.append("VBMA " + kind + ": source unit not explicit")
+            elif old.get("licenseStatus") == "approved" or (kind == "swap" and allow_swap_publication):
+                parsed["licenseStatus"] = "approved"
+                if kind == "swap": updated["vbmaSwap"].update(parsed)
+                else: curves[kind] = parsed
+            else:
+                # Retain fetch diagnostics without distributing source values
+                # before permitted usage is confirmed.
+                issues.append("VBMA " + kind + ": publication permission pending")
+                curves.setdefault(kind, {"source": url, "status": "permission_pending",
+                                         "licenseStatus": "review_required", "points": []})
+        except Exception as exc:
+            issues.append("VBMA " + kind + " " + type(exc).__name__ + ": " + str(exc)[:95])
+            curves.setdefault(kind, {"source": url, "status": "unavailable", "points": []})
+    updated["sourceIssues"]=issues[:10]
     return updated
 
 def main():
