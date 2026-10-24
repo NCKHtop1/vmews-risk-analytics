@@ -118,16 +118,30 @@ async function load(){
  state.loading=true;
  const status=$('macro-source-status');
  if(status)status.textContent='Đang kiểm tra nguồn dữ liệu…';
+ // Macro (~200 KB) must render as soon as ready; do not block all four charts
+ // waiting for the larger (~740 KB) corporate ESG disclosure registry.
+ const esgPending=state.esg?Promise.resolve(state.esg):fetchCompanyEsg().catch(()=>null);
  try{
-  const [macro,esg]=await Promise.all([fetchMacro(),fetchCompanyEsg().catch(()=>null)]);
-  state.rawMacro=macro;state.esg=esg;state.symbol=currentSymbol();
-  state.data=normalizePayload(macro,esg,state.symbol);
+  const macro=await fetchMacro();
+  state.rawMacro=macro;
+  if(!state.symbol)state.symbol=currentSymbol();
+  state.data=normalizePayload(macro,state.esg,state.symbol);
   render();
+  try{
+   const esg=await esgPending;
+   if(esg)state.esg=esg;
+   // The selected ticker may have changed while ESG was downloading.
+   state.data=normalizePayload(macro,state.esg,state.symbol);
+   renderEsgPanels();
+   renderExplore();
+  }catch(error){
+   if($('macro-company-chart'))$('macro-company-chart').textContent='Nguồn ESG doanh nghiệp tạm thời chưa phản hồi.';
+  }
  }catch(error){
   if(status)status.textContent='Nguồn vĩ mô đang gián đoạn';
-  $('macro-overview').innerHTML='<p class="macro-pending" role="status">Không tải được chuỗi số liệu. Vui lòng thử lại khi nguồn phục hồi; không sử dụng dữ liệu thay thế.</p>';
-  $('macro-country-chart').textContent='Chưa có dữ liệu World Bank đã kiểm tra.';
-  $('macro-company-chart').textContent='Chưa có dữ liệu ESG doanh nghiệp đã kiểm tra.';
+  if($('macro-overview'))$('macro-overview').innerHTML='<p class="macro-pending" role="status">Không tải được chuỗi số liệu. Vui lòng thử lại khi nguồn phục hồi; không sử dụng dữ liệu thay thế.</p>';
+  if($('macro-country-chart'))$('macro-country-chart').textContent='Chưa có dữ liệu World Bank đã kiểm tra.';
+  if($('macro-company-chart'))$('macro-company-chart').textContent='Chưa có dữ liệu ESG doanh nghiệp đã kiểm tra.';
  }finally{state.loading=false;}
 }
 function renderExplore(){
