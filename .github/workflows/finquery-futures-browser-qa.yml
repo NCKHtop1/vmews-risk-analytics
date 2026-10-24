@@ -47,7 +47,23 @@ jobs:
               driver.get(url)
               driver.execute_script("sessionStorage.setItem('finquery-site-access','1');sessionStorage.setItem('finquery-technical-access','1');")
               driver.refresh()
-              WebDriverWait(driver,25).until(lambda d:d.execute_script("return Boolean(window.FinDerivativeQuotes && document.getElementById('money-futures-live'))"))
+              try:
+                  WebDriverWait(driver,10).until(lambda d:d.execute_script("return Boolean(window.FinDerivativeQuotes && document.getElementById('money-futures-live'))"))
+              except TimeoutException:
+                  debug=driver.execute_script("""
+                    return {url:location.href,title:document.title,
+                      pageBytes:document.documentElement.outerHTML.length,
+                      hasFuturesNode:!!document.getElementById('money-futures-live'),
+                      hasFuturesSource:document.documentElement.outerHTML.includes('derivatives-market.js'),
+                      hasFuturesBundle:document.documentElement.outerHTML.includes('FinDerivativeQuotes'),
+                      hasMacroNode:!!document.getElementById('macro-body'),
+                      hasLegacyFutures:!!document.getElementById('money-futures'),
+                      authBody:document.body?.innerText?.slice(0,650)};
+                  """)
+                  print('FUTURES_BOOTSTRAP_DEBUG',json.dumps(debug,ensure_ascii=False),flush=True)
+                  try: print('FUTURES_BOOTSTRAP_CONSOLE',json.dumps(driver.get_log('browser')[-18:],ensure_ascii=False),flush=True)
+                  except Exception: pass
+                  raise
               wait=WebDriverWait(driver,15)
               try:
                   wait.until(lambda d:d.execute_script("""
