@@ -24,7 +24,7 @@ function matchesFilter(row){
 }
 function biasLabel(v){return v==='bullish'?'Nghiêng tăng':v==='bearish'?'Nghiêng giảm':v==='mixed'?'Hỗn hợp':'Theo dõi';}
 function evidenceFor(row){const source=state.evidence?.signals||{},ids=(row.signals||[]).map(x=>x.id),candidates=ids.map(id=>source[id]).filter(Boolean);if(!candidates.length)return null;return candidates.sort((a,b)=>{const ad=Number.isFinite(Number(a?.horizons?.['3']?.directionalHitRate))?1:0,bd=Number.isFinite(Number(b?.horizons?.['3']?.directionalHitRate))?1:0;return bd-ad||(b.sample||0)-(a.sample||0);})[0];}
-function evidenceHTML(row){const e=evidenceFor(row),h=e?.horizons?.['3']||e?.horizons?.[3];if(!e||!h)return '<span class="tech-priority-help">Điểm rule heuristic · không phải xác suất</span>';const hit=Number(h.directionalHitRate),lift=Number(h.liftVsBaseline),n=Number(h.n||e.sample||0);return '<span class="tech-priority-help">Điểm rule heuristic · không phải xác suất</span><span class="tech-evidence"><strong>EOD proxy T+3</strong> · n='+fmt(n,0)+(Number.isFinite(hit)?' · hit '+fmt(hit*100,1)+'%':'')+(Number.isFinite(lift)?' · lift '+(lift>=0?'+':'')+fmt(lift*100,1)+'đ%':'')+'</span>';}
+function evidenceHTML(row){const e=evidenceFor(row),h=e?.horizons?.['3']||e?.horizons?.[3];if(!e||!h)return '<span class="tech-priority-help">Điểm ưu tiên</span>';const hit=Number(h.directionalHitRate),lift=Number(h.liftVsBaseline),n=Number(h.n||e.sample||0);return '<span class="tech-priority-help">Điểm ưu tiên</span><span class="tech-evidence"><strong>Kiểm định T+3</strong> · n='+fmt(n,0)+(Number.isFinite(hit)?' · tỷ lệ đúng '+fmt(hit*100,1)+'%':'')+(Number.isFinite(lift)?' · chênh lệch '+(lift>=0?'+':'')+fmt(lift*100,1)+'đ%':'')+'</span>';}
 function signalHTML(row){return(row.signals||[]).map(s=>'<span class="tech-tag tech-'+esc(s.direction)+'">'+esc(s.label)+'</span>').join('');}
 function symbolHTML(row){return row.tier==='DISCOVERY'?'<span class="tech-symbol tech-symbol-static">'+esc(row.symbol)+'</span>':'<button type="button" class="tech-symbol" data-tech-open="'+esc(row.symbol)+'">'+esc(row.symbol)+'</button>';}
 function rows(){
@@ -35,33 +35,33 @@ function renderSummary(){
  const data=state.data;if(!data)return;
  const all=(data.matches||[]).filter(matchesUniverse),count=id=>all.filter(r=>signalIds(r).has(id)).length;
  $('technical-scanner-summary').innerHTML=[
-  ['Mã khớp rule',all.length],['MACD cắt ↑',count('macd_cross_up')],['MACD cắt ↓',count('macd_cross_down')],
+  ['Mã phù hợp',all.length],['MACD cắt ↑',count('macd_cross_up')],['MACD cắt ↓',count('macd_cross_down')],
   ['Sắp cắt ↑',count('macd_near_up')],['Sắp cắt ↓',count('macd_near_down')],
-  ['RSI ≤ 30',count('rsi_oversold')],['RSI ≥ 70',count('rsi_overbought')],['Volume ≥ 1,5x',count('volume_spike')]
+  ['RSI ≤ 30',count('rsi_oversold')],['RSI ≥ 70',count('rsi_overbought')],['Khối lượng ≥ 1,5x',count('volume_spike')]
  ].map(x=>'<div><span>'+esc(x[0])+'</span><strong>'+fmt(x[1],0)+'</strong></div>').join('');
 }
 function render(){
  if(!state.data)return;
  renderSummary();
  const list=rows();
- const aligned=!state.marketSourceTime||String(state.marketSourceTime)===String(state.data.sourceTime),live=Number(state.data.liveCoverage||0),liveUniverse=Number(state.data.liveUniverse||0),discovery=Number(state.data.discoveryCoverage||0);$('technical-scanner-status').textContent='Cập nhật '+time(state.data.checkedAt)+' · Trong phiên '+fmt(live,0)+'/'+fmt(liveUniverse,0)+' · Discovery EOD '+fmt(discovery,0)+' · tổng '+fmt(state.data.coverage,0)+'/'+fmt(state.data.universe,0)+' mã đủ dữ liệu · '+list.length+' mã theo bộ lọc.'+(aligned?'':' · ⚠ Scanner live chưa đồng bộ với giá mới nhất; tín hiệu live chỉ dùng để tham khảo.');
+ const aligned=!state.marketSourceTime||String(state.marketSourceTime)===String(state.data.sourceTime),live=Number(state.data.liveCoverage||0),liveUniverse=Number(state.data.liveUniverse||0),discovery=Number(state.data.discoveryCoverage||0);$('technical-scanner-status').textContent='Cập nhật '+time(state.data.checkedAt)+' · Trong phiên '+fmt(live,0)+'/'+fmt(liveUniverse,0)+' · Nhóm mở rộng '+fmt(discovery,0)+' · tổng '+fmt(state.data.coverage,0)+'/'+fmt(state.data.universe,0)+' mã đủ dữ liệu · '+list.length+' mã theo bộ lọc.'+(aligned?'':' · Dữ liệu chưa đồng bộ.');
  const body=$('technical-scanner-rows');
- body.innerHTML=list.map(row=>'<tr data-tech-symbol="'+esc(row.symbol)+'"><td>'+symbolHTML(row)+'<small class="universe-tier universe-tier-'+esc(String(row.tier||'CORE').toLowerCase())+'">'+esc(row.tier||'CORE')+' · '+esc(row.cadence==='EOD'?'EOD':'TRONG PHIÊN')+'</small></td><td><span class="tech-bias '+esc(row.bias)+'">'+biasLabel(row.bias)+'</span><small>Rule priority '+fmt(row.priority,0)+'/100</small>'+evidenceHTML(row)+'</td><td>'+fmt(row.price,0)+'<small>'+(Number(row.changePct)>=0?'+':'')+fmt(row.changePct)+'%</small></td><td>'+fmt(row.macd,2)+'<small>Signal '+fmt(row.macdSignal,2)+'</small></td><td>'+fmt(row.macdHistogram,2)+'<small>'+fmt(row.macdSpreadPct,3)+'% giá</small></td><td>'+fmt(row.rsi14,1)+'</td><td>'+fmt(row.volumeRatio20,2)+'x<small>'+fmt(row.volume,0)+' cp</small></td><td><div class="tech-tags">'+signalHTML(row)+'</div></td><td>'+sourceLabel(row)+'</td></tr>').join('')||'<tr><td colspan="9"><div class="tech-empty">Không có mã nào khớp bộ lọc ở snapshot hiện tại.</div></td></tr>';
+ body.innerHTML=list.map(row=>'<tr data-tech-symbol="'+esc(row.symbol)+'"><td>'+symbolHTML(row)+'<small class="universe-tier universe-tier-'+esc(String(row.tier||'CORE').toLowerCase())+'">'+esc(({CORE:'Nhóm chính',LIQUID:'Thanh khoản',DISCOVERY:'Mở rộng'})[row.tier]||'Nhóm chính')+' · '+esc(row.cadence==='EOD'?'CUỐI NGÀY':'TRONG PHIÊN')+'</small></td><td><span class="tech-bias '+esc(row.bias)+'">'+biasLabel(row.bias)+'</span><small>Rule priority '+fmt(row.priority,0)+'/100</small>'+evidenceHTML(row)+'</td><td>'+fmt(row.price,0)+'<small>'+(Number(row.changePct)>=0?'+':'')+fmt(row.changePct)+'%</small></td><td>'+fmt(row.macd,2)+'<small>Tín hiệu '+fmt(row.macdSignal,2)+'</small></td><td>'+fmt(row.macdHistogram,2)+'<small>'+fmt(row.macdSpreadPct,3)+'% giá</small></td><td>'+fmt(row.rsi14,1)+'</td><td>'+fmt(row.volumeRatio20,2)+'x<small>'+fmt(row.volume,0)+' cp</small></td><td><div class="tech-tags">'+signalHTML(row)+'</div></td><td>'+sourceLabel(row)+'</td></tr>').join('')||'<tr><td colspan="9"><div class="tech-empty">Chưa có mã phù hợp.</div></td></tr>';
 }
 async function load(){
  if(!state.unlocked||state.loading)return;state.loading=true;
  try{
-  $('technical-scanner-status').textContent='Đang tải scanner HOSE…';
+  $('technical-scanner-status').textContent='Đang tải dữ liệu…';
   const data=await fetchData(),expected=state.marketSourceTime;
   if(expected&&String(data.sourceTime||'')!==String(expected)){
    if(state.data)render();
-   $('technical-scanner-status').textContent=(state.data?'Đang giữ snapshot Scanner gần nhất · ':'')+'Đang đồng bộ với snapshot giá mới nhất…';
+   $('technical-scanner-status').textContent=(state.data?'Dữ liệu cũ · ':')+'Đang cập nhật giá…';
    clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(data.sourceTime||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();load();},1200);
    return;
   }
   state.data=data;render();
  }
- catch(e){$('technical-scanner-status').textContent='Chưa tải được technical scanner. Dữ liệu chart/giá vẫn hoạt động độc lập.';}
+ catch(e){$('technical-scanner-status').textContent='Chưa tải được dữ liệu.';}
  finally{state.loading=false;}
 }
 async function unlock(code){
