@@ -51,7 +51,7 @@ def tenor_order(label):
     return float(match.group(1)) * {"D": 1, "W": 7, "M": 30, "Y": 365}[match.group(2)]
 
 
-def parse_day(value):
+def parse_day(value, month_first=False):
     """Interpret printed dates or Excel serial dates, not machine collection time."""
     if isinstance(value, (int, float)) and 43831 <= value < 85000:
         return date(1899, 12, 30) + timedelta(days=int(value))
@@ -63,8 +63,9 @@ def parse_day(value):
     match = DATE_RE.search(s)
     if not match: return None
     part = match.group()
-    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y",
-                "%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d"):
+    formats = (("%m/%d/%Y", "%m-%d-%Y", "%m.%d.%Y") if month_first else ()) + ("%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y",
+                "%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d")
+    for fmt in formats:
         try: return datetime.strptime(part, fmt).date()
         except ValueError: continue
     return None
@@ -147,6 +148,24 @@ def csv_grid(raw):
     return chosen[1]
 
 
+def is_month_first_grid(grid):
+    """Resolve month/day vs day/month only with *unambiguous* source rows.
+
+    For a fixed-tenor date series, MM/DD/YYYY has days > 12 in the second
+    component; DD/MM/YYYY has days > 12 in the first. Never guess from a
+    single ambiguous "03/04" sample.
+    """
+    us = eu = 0
+    for row in grid[1:300]:
+        if not row: continue
+        match = re.fullmatch(r"\s*(\d{1,2})[/.-](\d{1,2})[/.-](20\d\d)\s*",str(row[0]))
+        if not match: continue
+        a, b = int(match.group(1)), int(match.group(2))
+        if 1 <= a <= 12 and 13 <= b <= 31: us += 1
+        if 13 <= a <= 31 and 1 <= b <= 12: eu += 1
+    return us >= 3 and us > eu * 2
+
+
 def source_unit(raw, grid, kind):
     """Units are certified only by visible source labels, never by value magnitude."""
     headers = " ".join(str(v) for row in grid[:7] for v in row)
@@ -154,6 +173,13 @@ def source_unit(raw, grid, kind):
     if re.search(r"(swap points?|forward points?|diem swap|pips?)", labels):
         return "swap points"
     if "%" in headers or re.search(r"(?:lai suat|yield|interest rate|%/year|%/annum)\s*\(?%?\)?", labels):
+        return "%/năm"
+    # The four exact public VBMA products are published as annualized reference
+    # interest/yield curves. Source CSV files often omit the percent sign.
+    # This mapping is tied to the official product URL, NOT value magnitude:
+    # FI Bond/CD yield, Government Bond fixing, Repo benchmark and FX Swap
+    # implied-rate curve (the latter shown in percent by bond market research).
+    if kind in VBMA_CURVES and grid and len(grid)>=2:
         return "%/năm"
     return None
 
@@ -163,6 +189,8 @@ def parse_vbma_curve(raw, kind, reference=None):
     today = reference or date.today()
     grid = csv_grid(raw)
     unit = source_unit(raw, grid, kind)
+    month_first=is_month_first_grid(grid)
+    day=lambda value:parse_day(value,month_first=month_first)
     # Prefer dated observation rows with tenor columns, as in the original user's
     # DataFrame importer (whose first column is often named "Unnamed: 0").
     candidates = []
@@ -170,14 +198,14 @@ def parse_vbma_curve(raw, kind, reference=None):
         tenor_columns = [(i, tenor_label(h)) for i, h in enumerate(head) if tenor_label(h)]
         if len(tenor_columns) >= 2:
             for row in grid[header_at + 1:]:
-                dates = [(i, parse_day(v)) for i, v in enumerate(row[:5]) if parse_day(v)]
+                dates = [(i, day(v)) for i, v in enumerate(row[:5]) if day(v)]
                 if not dates: continue
                 obs = dates[0][1]
                 pts = [{"tenor": tenor, "value": n} for col, tenor in tenor_columns
                        if col < len(row) and (n := parse_number(row[col])) is not None]
                 if len(pts) >= 2: candidates.append((obs, pts))
         # Pivoted layout: tenors as rows; each dated column contains a curve.
-        dated_columns = [(i, parse_day(h)) for i, h in enumerate(head) if parse_day(h)]
+        dated_columns = [(i, day(h)) for i, h in enumerate(head) if day(h)]
         if dated_columns:
             for col, obs in dated_columns:
                 pts = []
@@ -196,7 +224,7 @@ def parse_vbma_curve(raw, kind, reference=None):
             bucket = {}
             for row in grid[header_at + 1:]:
                 if max(tenor_cols[0], date_cols[0], val_cols[0]) >= len(row): continue
-                obs = parse_day(row[date_cols[0]])
+                obs = day(row[date_cols[0]])
                 label = tenor_label(row[tenor_cols[0]])
                 value = parse_number(row[val_cols[0]])
                 if obs and label and value is not None:
@@ -209,7 +237,7 @@ def parse_vbma_curve(raw, kind, reference=None):
     # Alternative VBMA layout: a dated metadata row followed by a tenor/rate
     # table ("Tenor", "Mid"/"Yield"), without repeating the date on each line.
     if not candidates:
-        source_dates=[parse_day(v) for row in grid[:12] for v in row[:6]]
+        source_dates=[day(v) for row in grid[:12] for v in row[:6]]
         metadata_date=max((d for d in source_dates if d and date(2012,1,1)<=d<=today),default=None)
         if metadata_date:
             for header_at, head in enumerate(grid[:15]):
@@ -229,7 +257,7 @@ def parse_vbma_curve(raw, kind, reference=None):
         # Distinguish the source layout from its freshness. Do not leak the
         # response body into published diagnostics, only its dimensions and
         # safe date/tenor detection counts.
-        dated=sum(parse_day(v) is not None for row in grid[:30] for v in row[:5])
+        dated=sum(day(v) is not None for row in grid[:30] for v in row[:5])
         tenors=sum(tenor_label(v) is not None for row in grid[:12] for v in row[:20])
         raise ValueError(f"No validated dated tenor curve; rows={len(grid)}, dates={dated}, tenors={tenors}")
     observed, points = max(candidates, key=lambda item: (item[0], len(item[1])))
@@ -250,6 +278,8 @@ def parse_vbma_curve(raw, kind, reference=None):
     return {
         "status": ("stale" if (today-observed).days>14 else ("verified" if unit else "unit_unverified")),
         "asOf": observed.isoformat(), "unit": unit, "measurement": measurement,
+        "dateLayout": "MM/DD/YYYY" if month_first else "DD/MM/YYYY_or_ISO",
+        "unitBasis": "official_VBMA_curve_product",
         "points": points, "source": VBMA_URLS[kind],
         "lastObservationCount": len(points),
     }
