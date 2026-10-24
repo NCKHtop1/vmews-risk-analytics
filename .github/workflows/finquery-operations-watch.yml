@@ -87,9 +87,9 @@ jobs:
               --title "FinQuery production: model/data/auth health incident" \
               --label finquery-ops-incident --body-file finquery-ops-health.md
           else
-            echo "Incident #$existing already open; avoid creating duplicates."
-            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" \
-              --body "Issue persists: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Incident #$existing already open; update only the issue body, no comment flood."
+            gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" \
+              --body-file finquery-ops-health.md
           fi
       - name: Resolve an open incident once everything is healthy
         if: steps.assess.outputs.level == 'OK'
