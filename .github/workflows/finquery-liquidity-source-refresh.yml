@@ -13,6 +13,8 @@ on:
     paths:
       - 'financial-report/scripts/refresh_liquidity.py'
       - 'financial-report/scripts/test_refresh_liquidity.py'
+      - 'financial-report/scripts/test_vbma_curve_reader.py'
+      - 'financial-report/scripts/vbma_curve_reader.py'
       - '.github/workflows/finquery-liquidity-source-refresh.yml'
   schedule:
     - cron: '25 10 * * 1-5'
@@ -37,6 +39,38 @@ jobs:
           python -m py_compile financial-report/scripts/refresh_liquidity.py financial-report/scripts/test_refresh_liquidity.py
           python -m unittest discover -s financial-report/scripts -p test_refresh_liquidity.py -v
           python -m unittest discover -s financial-report/scripts -p test_vbma_curve_reader.py -v
+      - name: Inspect current VBMA export layout (schema only, no market prices)
+        continue-on-error: true
+        shell: bash
+        run: |
+          timeout 60s python - <<'PY'
+          import sys
+          import re
+          sys.path.insert(0, "financial-report/scripts")
+          from refresh_liquidity import fetch
+          from vbma_curve_reader import VBMA_URLS, csv_grid, parse_day, tenor_label, source_unit
+          for kind,url in VBMA_URLS.items():
+              try:
+                  data=fetch(url,timeout=7)
+                  grid=csv_grid(data)
+                  header=grid[:6]
+                  dat=sum(bool(parse_day(v)) for row in grid[:40] for v in row[:6])
+                  ten=sum(bool(tenor_label(v)) for row in grid[:15] for v in row[:30])
+                  def label(v):
+                      v=str(v).strip()
+                      if not v: return "_"
+                      if parse_day(v): return "[DATE]"
+                      if tenor_label(v): return "[TENOR:"+str(tenor_label(v))+"]"
+                      if re.match(r"^[+-]?\d+[.,\d]*$",v): return "[NUMBER]"
+                      return re.sub(r"\d", "#",v[:35])
+                  print("VBMA_EXPORT_SCHEMA",kind,"bytes",len(data),"rows",len(grid),
+                        "firstColumns",list(map(len,grid[:5])),"dates",dat,"tenors",ten,
+                        "unit",source_unit(data,grid,kind),
+                        "sampleHeaders",[[label(v) for v in row[:9]] for row in header[:3]],flush=True)
+              except Exception as e:
+                  print("VBMA_EXPORT_ERROR",kind,type(e).__name__,str(e)[:120],flush=True)
+          PY
+
   publisher:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: contracts
