@@ -3,11 +3,14 @@ on:
   pull_request:
     paths:
       - 'financial-report/frontend/macro-dashboard.js'
+      - 'financial-report/frontend/liquidity-derivatives.js'
       - 'financial-report/frontend/macro.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
+      - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/data-hub.html'
       - 'financial-report/tests/macro_dashboard_browser.py'
       - 'financial-report/scripts/build_cdn.py'
       - '.github/workflows/finquery-macro-esg-visualization-qa.yml'
@@ -15,11 +18,14 @@ on:
     branches: [main]
     paths:
       - 'financial-report/frontend/macro-dashboard.js'
+      - 'financial-report/frontend/liquidity-derivatives.js'
       - 'financial-report/frontend/macro.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
+      - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/data-hub.html'
       - 'financial-report/tests/macro_dashboard_browser.py'
       - 'financial-report/scripts/build_cdn.py'
       - '.github/workflows/finquery-macro-esg-visualization-qa.yml'
@@ -43,10 +49,12 @@ jobs:
         run: |
           node --check financial-report/frontend/macro.js
           node --check financial-report/frontend/macro-dashboard.js
+          node --check financial-report/frontend/liquidity-derivatives.js
           node --check financial-report/frontend/section-collapse.js
       - name: Evidence-linked macro and ESG chart regression
         run: |
           node --test financial-report/tests/macro_dashboard.test.cjs
+          node --test financial-report/tests/liquidity_derivatives.test.cjs
           node --test financial-report/tests/data_hub.test.cjs
       - name: Build and validate same-origin single HTML bundle
         run: |
@@ -55,6 +63,9 @@ jobs:
           from pathlib import Path
           html=Path('financial-report/index.html').read_text(encoding='utf-8')
           assert html.count("root.FinMacroDashboard={render,renderEsg,series,plot") == 1
+          assert html.count("window.FinLiquidityDerivatives={refresh:load") == 1
+          assert '<script defer src="liquidity-derivatives.js">' not in html
+          assert 'id="money-on"' in html and 'id="money-futures"' in html
           assert '<script defer src="macro-dashboard.js">' not in html
           assert 'id="macro-overview"' in html and 'id="macro-company-chart"' in html
           assert 'id="macro-country-chart"' in html and 'id="macro-explore"' in html
