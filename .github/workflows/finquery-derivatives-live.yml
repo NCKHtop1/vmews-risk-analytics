@@ -1,0 +1,90 @@
+name: FinQuery HNX futures quotes QA and bootstrap
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'financial-report/scripts/refresh_derivative_quotes.py'
+      - 'financial-report/scripts/test_refresh_derivative_quotes.py'
+      - '.github/workflows/finquery-derivatives-live.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/refresh_derivative_quotes.py'
+      - 'financial-report/scripts/test_refresh_derivative_quotes.py'
+      - '.github/workflows/finquery-derivatives-live.yml'
+permissions:
+  contents: write
+concurrency:
+  group: finquery-futures-bootstrap
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Schema, expiry rollover, source timestamps and value tests
+        run: |
+          python -m py_compile financial-report/scripts/refresh_derivative_quotes.py
+          python -m unittest discover -s financial-report/scripts -p test_refresh_derivative_quotes.py -v
+      - name: Best-effort provider connectivity probe
+        shell: bash
+        run: |
+          if timeout 50s python financial-report/scripts/refresh_derivative_quotes.py --output /tmp/finquery-derivatives-probe.json; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/finquery-derivatives-probe.json').read_text())
+          assert d['status']=='ok' and d['exchange']=='HNX' and len(d['contracts'])>0
+          assert all(row['sourceTime'] and row['unit']=='points' and row['underlying'] in ('VN30','VN100') for row in d['contracts'])
+          print('KBS_HNX_FUTURES_SOURCE_PROBE_PASS',len(d['contracts']),d['latestSourceTime'])
+          PY
+          else
+            echo "::warning::KBS HNX futures source not verifiable right now. Release retains previous verified close; no synthetic quotes."
+          fi
+  bootstrap:
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Bootstrap last observed futures source independently of equities
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin financial-market-data
+          git worktree add /tmp/finquery-futures-bootstrap origin/financial-market-data
+          git -C /tmp/finquery-futures-bootstrap sparse-checkout set market
+          OUT=/tmp/finquery-futures-bootstrap/market/derivatives-live.json
+          if ! timeout 50s python financial-report/scripts/refresh_derivative_quotes.py --output "$OUT"; then
+            echo "::warning::No contract-level verified quotes to bootstrap. Never publish generated prices."
+            exit 0
+          fi
+          git -C /tmp/finquery-futures-bootstrap config user.name 'github-actions[bot]'
+          git -C /tmp/finquery-futures-bootstrap config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C /tmp/finquery-futures-bootstrap add --sparse market/derivatives-live.json
+          if git -C /tmp/finquery-futures-bootstrap diff --cached --quiet; then
+            echo 'Futures snapshot unchanged'
+            exit 0
+          fi
+          git -C /tmp/finquery-futures-bootstrap commit -m 'Bootstrap verified HNX futures quote snapshot [data-only]'
+          for attempt in 1 2 3; do
+            git -C /tmp/finquery-futures-bootstrap fetch origin financial-market-data
+            if git -C /tmp/finquery-futures-bootstrap rebase origin/financial-market-data && git -C /tmp/finquery-futures-bootstrap push origin HEAD:refs/heads/financial-market-data; then
+              exit 0
+            fi
+            git -C /tmp/finquery-futures-bootstrap rebase --abort || true
+            sleep 3
+          done
+          exit 1
