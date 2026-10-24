@@ -62,7 +62,8 @@ test('full macro dashboard shows four real trends with period, units and source 
  assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,4);
  for(const label of ['PMI sản xuất','Cung tiền M2','Dư nợ tín dụng','FDI giải ngân','T9 2026','nghìn tỷ đồng','tỷ USD'])assert.ok(grid.includes(label),label);
  assert.match(grid,/51,9/);
- assert.match(grid,/50 phân biệt/);
+ assert.match(grid,/PMI sản xuất/);
+ assert.doesNotMatch(grid,/Lũy kế trong năm · không diễn giải/);
  assert.match(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
  assert.match($('macro-data-freshness').textContent,/23\/10\/2026/);
 });
@@ -142,5 +143,5 @@ test('FDI cumulative curve stays within a year instead of showing January collap
  const plotted=$('macro-overview').innerHTML;
  assert.match(plotted,/FDI giải ngân/);
  assert.doesNotMatch(plotted,/T12 2025/);
- assert.match(plotted,/Lũy kế trong năm/);
+ assert.match(plotted,/FDI giải ngân/);
 });
