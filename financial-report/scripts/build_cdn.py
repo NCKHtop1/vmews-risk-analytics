@@ -41,6 +41,7 @@ def build():
     scripts += '<script>' + (front / 'macro-dashboard.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'macro.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'liquidity-derivatives.js').read_text() + '</script>'
+    scripts += '<script>' + (front / 'derivatives-market.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'knowledge-base.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'question-policy.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'research-agent.js').read_text() + '</script>'
