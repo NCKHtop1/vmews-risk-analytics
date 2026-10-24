@@ -84,6 +84,7 @@ function renderSwap(p){
  const enabled=s.status==='verified'&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
  const link=vbmaSourceIcon(source,'Tải tệp dữ liệu USD/VND FX Swap từ VBMA');
  if(!enabled){
+    const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA swap '));
     host.innerHTML=cardHeader('USD/VND FX Swap','—','VBMA','Đường cong kỳ hạn')+
       '<p class="money-empty">Chưa có chuỗi FX Swap hợp lệ để vẽ.</p>'+(reason?'<p class="money-source-pending">'+esc(String(reason).replace(/^VBMA swap\s+/,''))+'</p>':'')+
       '<div class="macro-viz-source">'+link+'</div>';return;
