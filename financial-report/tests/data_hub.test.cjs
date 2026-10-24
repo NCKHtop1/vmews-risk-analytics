@@ -102,3 +102,13 @@ test('fetch failure fails closed with explicit empty data',async()=>{
  assert.equal(get('refresh').disabled,false);
  assert.equal(get('quality-rows').children.length,1);
 });
+
+test('stock catalog is HOSE-only while derivative reports remain sourced from HNX',()=>{
+ const companies=JSON.parse(fs.readFileSync(path.join(root,'data','companies.json'),'utf8'));
+ assert.equal(companies.length,100);
+ assert.ok(companies.every(x=>x.exchange==='HOSE'));
+ assert.match(html,/không bổ sung cổ phiếu niêm yết HNX/);
+ assert.match(html,/HNX chỉ là nguồn công bố chính thức của dữ liệu phái sinh/);
+ assert.match(html,/VN30/);
+ assert.match(html,/VN100/);
+});
