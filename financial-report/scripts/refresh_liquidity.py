@@ -46,7 +46,11 @@ def fetch(url, timeout=12):
     allowed = {ON_URL, ON_CROSS, *VBMA_URLS.values()}
     if url not in allowed:
         raise ValueError("Not an approved feed")
-    with urlopen(Request(url, headers={"User-Agent": UA, "Accept": "text/html,text/csv"}), timeout=timeout) as resp:
+    # VBMA export URLs in the original source script include a cache-busting
+    # query. Without it, two public CSVs can remain pinned at older 600-row
+    # snapshots. Only the exact allowlisted VBMA paths get this parameter.
+    request_url=(url+"?t="+str(int(datetime.now(timezone.utc).timestamp()))) if url in VBMA_URLS.values() else url
+    with urlopen(Request(request_url, headers={"User-Agent": UA, "Accept": "text/html,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), timeout=timeout) as resp:
         if resp.geturl().split("?")[0] not in allowed:
             raise ValueError("Source redirected")
         raw = resp.read(1_000_001)

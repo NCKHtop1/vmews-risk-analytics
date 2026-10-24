@@ -764,3 +764,10 @@ body.strategy-lab-view .strategy-page{display:block}
 .alpha-signal-row small{font-size:10px;color:#8294a9}
 .alpha-empty{font-size:12px;color:#8594a6;margin:6px 0 12px}
 @media(max-width:580px){.alpha-radar-panel{padding:12px}.alpha-radar-list{grid-template-columns:1fr}}
+
+/* Signed yield and FX Swap curves, replacing misleading absolute-height bars */
+.money-curve{min-width:0;max-width:100%;overflow:hidden;margin:12px 0 4px}
+.money-tenor-curve{width:100%;height:auto;max-height:255px;display:block;overflow:visible}
+#macro-panel-vbma .money-vbma-grid{align-items:stretch}
+#macro-panel-vbma .money-curve{width:100%;min-height:170px}
+@media(max-width:640px){.money-tenor-curve{max-height:215px}.money-curve{margin:8px 0}}
