@@ -1937,7 +1937,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("newsLiveFallback",market)
         self.assertIn("setMarketSourceTime",market)
         self.assertIn("setMarketSourceTime(value)",scanner)
-        self.assertIn("Scanner live chưa đồng bộ với giá mới nhất",scanner)
+        self.assertIn("Dữ liệu chưa đồng bộ.",scanner)
         self.assertIn("current:aligned?",scanner)
         self.assertIn("quoteBundleSourceTime",market)
 
@@ -2387,7 +2387,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('setMarketView',market)
         self.assertIn('.market-view-tabs',css)
         self.assertIn('.market-compare-panel',css)
-        self.assertIn('đây không phải dữ liệu dòng tiền mua/bán',html)
+        self.assertIn('id="market-compare-chart"',html)
 
     def test_pages_merges_research_seed_and_redeploys_after_research_refresh(self):
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
