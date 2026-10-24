@@ -21,10 +21,15 @@ function healthy(d){
  if(!validStamp(d.collectedAt)||!validStamp(d.latestSourceTime))return false;
  return true;
 }
+function todayVN(now=Date.now()){
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(now)).map(x=>[x.type,x.value]));
+ return parts.year+'-'+parts.month+'-'+parts.day;
+}
 function contracts(d){
  if(!healthy(d))return[];
  return d.contracts.filter(c=>{
   if(!c||!/^VN(30|100)F2\d(0[1-9]|1[0-2])$/.test(c.symbol||''))return false;
+  if(!/^20\d\d-\d\d-\d\d$/.test(c.expiry||'')||c.expiry<todayVN())return false;
   if(!/^41I[12][0-9A-HJ-NP-TV-W][1-9ABC]000$/.test(c.providerSymbol||''))return false;
   if((c.underlying!=='VN30'&&c.underlying!=='VN100')||c.market!=='HNX_FUTURES'||c.unit!=='points')return false;
   if(!validStamp(c.sourceTime)||typeof c.price!=='number'||!Number.isFinite(c.price)||c.price<=0||c.price>50000)return false;
