@@ -15,7 +15,7 @@ function showGate(){
 }
 function signalIds(row){return new Set((row.signals||[]).map(x=>x.id));}
 function matchesUniverse(row){return state.universeFilter==='all'||String(row.tier||'CORE').toUpperCase()===state.universeFilter;}
-function sourceLabel(row){return row.cadence==='EOD'?'EOD '+esc(row.barDate||'—'):time(row.sourceTime);}
+function sourceLabel(row){return row.cadence==='EOD'?'Cuối ngày '+esc(row.barDate||'—'):time(row.sourceTime);}
 function matchesFilter(row){
  if(state.filter==='all')return true;
  const ids=signalIds(row);
@@ -55,7 +55,7 @@ async function load(){
   const data=await fetchData(),expected=state.marketSourceTime;
   if(expected&&String(data.sourceTime||'')!==String(expected)){
    if(state.data)render();
-   $('technical-scanner-status').textContent=(state.data?'Dữ liệu cũ · ':')+'Đang cập nhật giá…';
+   $('technical-scanner-status').textContent=(state.data?'Dữ liệu cũ · ':'')+'Đang cập nhật giá…';
    clearTimeout(state.retryTimer);state.retryTimer=setTimeout(()=>{if(Date.parse(data.sourceTime||0)>Date.parse(expected||0))window.FinancialMarket?.refresh?.();load();},1200);
    return;
   }
