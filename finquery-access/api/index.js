@@ -274,6 +274,97 @@ async function adminUpdate(req, res, actor) {
   await audit(actor.email, action, target.email, { role: data.role || null });
   return json(res, 200, { ok:true, user: change && change[0] ? change[0] : {email:target.email} });
 }
+
+function workspaceView(row) {
+  return row ? {
+    watchlist: row.watchlist || [], strategies: row.strategies || [],
+    settings: row.settings || {}, revision: Number(row.revision || 0),
+    updatedAt: row.updated_at || null
+  } : { watchlist: [], strategies: [], settings: {}, revision: 0, updatedAt: null };
+}
+function sanitizedWorkspace(body) {
+  if (!body || typeof body !== 'object') return null;
+  const jsonSize = Buffer.byteLength(JSON.stringify(body), 'utf8');
+  if (jsonSize > 24000 || jsonSize < 4) return null;
+  const revision = Number(body.revision);
+  if (!Number.isSafeInteger(revision) || revision < 0) return null;
+  if (!Array.isArray(body.watchlist) || body.watchlist.length > 100 ||
+      !Array.isArray(body.strategies) || body.strategies.length > 30) return null;
+  const tickers = [...new Set(body.watchlist.map(s => String(s || '').trim().toUpperCase()))];
+  if (tickers.some(s => !/^[A-Z]{3,5}$/.test(s))) return null;
+  const strategies = [];
+  for (const raw of body.strategies) {
+    if (!raw || typeof raw !== 'object' ||
+        typeof raw.name !== 'string' || raw.name.length > 100 ||
+        !Array.isArray(raw.conditions) || raw.conditions.length > 24) return null;
+    const conditions = [];
+    for (const cond of raw.conditions) {
+      if (!cond || typeof cond !== 'object') return null;
+      const left = String(cond.left || ''), rightIndicator = String(cond.rightIndicator || '');
+      const op = String(cond.op || ''), rightType = cond.rightType === 'indicator' ? 'indicator' : 'value';
+      if (!/^[a-zA-Z0-9_]{1,35}$/.test(left) ||
+          (rightType === 'indicator' && !/^[a-zA-Z0-9_]{1,35}$/.test(rightIndicator)) ||
+          !['gt','gte','lt','lte','cross_up','cross_down','rising','falling'].includes(op)) return null;
+      const right = Number(cond.rightValue);
+      if (rightType === 'value' && !['rising','falling'].includes(op) && !Number.isFinite(right)) return null;
+      conditions.push({id:String(cond.id || '').slice(0,50),left,op,rightType,
+        rightIndicator: rightType === 'indicator' ? rightIndicator : '',
+        rightValue: rightType === 'value' ? right : 0});
+    }
+    const matches = Array.isArray(raw.lastMatches) ? raw.lastMatches.slice(0,100)
+      .map(s=>String(s||'').toUpperCase()).filter(s=>/^[A-Z]{3,5}$/.test(s)) : [];
+    strategies.push({
+      id: String(raw.id || '').slice(0,64),
+      name: raw.name.trim(), join: raw.join === 'OR' ? 'OR':'AND',
+      scope: ['ALL','LIVE','CORE','LIQUID','DISCOVERY'].includes(raw.scope) ? raw.scope:'ALL',
+      conditions, alert: raw.alert === true, lastMatches: matches,
+      lastCheckedSourceTime: String(raw.lastCheckedSourceTime || '').slice(0,48),
+      createdAt: String(raw.createdAt || '').slice(0,48)
+    });
+  }
+  const settings = {};
+  if (body.settings && typeof body.settings === 'object') {
+    if (['company','watchlist','new','vietnam','sbv','global'].includes(body.settings.newsMode)) {
+      settings.newsMode = body.settings.newsMode;
+    }
+  }
+  return {watchlist: tickers, strategies, settings, revision};
+}
+async function userWorkspace(req, res, user) {
+  if (!user || user.status !== 'active') {
+    return json(res,401,{error:'Vui lòng đăng nhập để sử dụng hồ sơ cá nhân.',code:'LOGIN_REQUIRED'});
+  }
+  if (req.method === 'GET') {
+    const rows = await db().query(
+      'SELECT watchlist,strategies,settings,revision,updated_at ' +
+      'FROM public.finquery_user_workspaces WHERE user_id=$1 LIMIT 1', [user.id]);
+    return json(res,200,{ok:true,workspace:workspaceView(rows[0])});
+  }
+  if (req.method !== 'PUT') return json(res,405,{error:'Method not allowed'});
+  if (!originAllowed(req)) return json(res,403,{error:'Yêu cầu không hợp lệ.'});
+  let body;
+  try { body = sanitizedWorkspace(parseBody(req)); } catch(_) {}
+  if (!body) return json(res,400,{error:'Dữ liệu hồ sơ không hợp lệ.',code:'INVALID_WORKSPACE'});
+  const rows = await db().query(
+    'INSERT INTO public.finquery_user_workspaces(user_id,watchlist,strategies,settings,revision) ' +
+    'VALUES($1,$2::jsonb,$3::jsonb,$4::jsonb,1) ' +
+    'ON CONFLICT(user_id) DO UPDATE SET watchlist=EXCLUDED.watchlist,' +
+    'strategies=EXCLUDED.strategies,settings=EXCLUDED.settings,' +
+    'revision=public.finquery_user_workspaces.revision+1,updated_at=now() ' +
+    'WHERE public.finquery_user_workspaces.revision=$5 ' +
+    'RETURNING watchlist,strategies,settings,revision,updated_at',
+    [user.id,JSON.stringify(body.watchlist),JSON.stringify(body.strategies),
+      JSON.stringify(body.settings),body.revision]);
+  if (!rows.length) {
+    const current = await db().query(
+      'SELECT watchlist,strategies,settings,revision,updated_at ' +
+      'FROM public.finquery_user_workspaces WHERE user_id=$1 LIMIT 1', [user.id]);
+    return json(res,409,{error:'Hồ sơ đã được cập nhật trên thiết bị khác.',
+      code:'REVISION_CONFLICT',workspace:workspaceView(current[0])});
+  }
+  return json(res,200,{ok:true,workspace:workspaceView(rows[0])});
+}
+
 function htmlToolbar() {
   return "<style id=\"finquery-auth-site-style\">#site-unlock-form,.finquery-google-account{display:none!important}\n.finquery-login-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-left:auto;font:600 12px/1.4 system-ui,sans-serif;color:#274167;flex-wrap:wrap}\n.finquery-account-details{display:flex;flex-direction:column;gap:3px;max-width:240px}\n.finquery-account-label{font-size:10px;color:#8996ad;font-weight:600}\n.finquery-account-email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}\n.finquery-account-avatar{height:37px;width:37px;border-radius:50%;object-fit:cover;border:1px solid #cbd7e8}\n.finquery-login-toolbar a.finquery-admin-link{background:#315ed3;color:white!important;font-weight:700;text-decoration:none;padding:10px 12px;border-radius:9px;white-space:nowrap}\n.finquery-login-toolbar .finquery-logout{background:#fff;border:1px solid #cbd8ea;color:#3a577d;border-radius:9px;padding:9px 12px;cursor:pointer;font:inherit}\n.header nav a.finquery-nav-admin{color:#264fc8;font-weight:700}\n@media(max-width:750px){.finquery-login-toolbar{width:100%;justify-content:flex-start;margin-top:10px}.finquery-account-details{max-width:100%}}\n</style>" +
     "<script>try{sessionStorage.setItem(\"finquery-site-access\",\"1\")}catch(_){}</script>";
@@ -320,7 +411,7 @@ async function gateway(req, res, route, user) {
   if (type.includes('text/html')) {
     let html = await upstreamResponse.text();
     html = html.replace(/(<meta name="finquery-google-client-id" content=")[^"]*/i, '$1');
-    html = html.replace(/<\/head>/i,htmlToolbar()+'</head>');
+    html = html.replace(/<\/head>/i,htmlToolbar()+'<script defer src="/user-workspace.js"></script></head>');
     html = html.replace(/<\/body>/i,toolbarCode()+'</body>');
     res.writeHead(200,Object.assign(headers,{'Content-Type':'text/html; charset=utf-8'}));
     return res.end(html);
@@ -370,6 +461,7 @@ module.exports = async function handler(req,res) {
     if (route === 'api/admin/users') return adminUsers(req,res,user);
     if (route === 'api/admin/audit') return adminAudit(req,res,user);
     if (route === 'api/admin/user') return adminUpdate(req,res,user);
+    if (route === 'api/user/workspace') return userWorkspace(req,res,user);
     if (route.startsWith('api/')) return json(res,404,{error:'Not found'});
     return gateway(req,res,route,user);
   } catch (err) {

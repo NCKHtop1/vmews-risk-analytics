@@ -28,6 +28,8 @@ jobs:
         run: |
           node --check finquery-access/api/index.js
           node --check finquery-access/login.js
+          node --check finquery-access/user-workspace.js
+          node --check finquery-access/tests/workspace.test.cjs
           node --check finquery-access/tests/auth-gate.test.cjs
       - name: Google identity and authorization tests
         run: npm test --prefix finquery-access
