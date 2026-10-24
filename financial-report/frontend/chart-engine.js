@@ -71,7 +71,7 @@ class ChartController{
   const all=['rsi','macd','atr','adx','stoch','cci','roc','willr','obv','mfi','cmf'].filter(k=>this.enabled(k));
   const nav=$('chart-oscillator-nav'),select=$('chart-oscillator-focus');
   if(!all.includes(this.focusOscillator))this.focusOscillator=all[0]||null;
-  if(select){
+  if(select?.options&&typeof select.replaceChildren==='function'){
    if(select.options.length!==all.length||[...select.options].some((o,i)=>o.value!==all[i])){
     select.replaceChildren(...all.map(k=>new Option(k==='willr'?'Williams %R':k.toUpperCase(),k)));
    }
@@ -108,7 +108,7 @@ class ChartController{
  for(const [key,s]of Object.entries(this.series)){if(['price','volume'].includes(key))continue;s.setData(this.values.filter(v=>Number.isFinite(v[key])).map(v=>({time:v.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})})));}
  const panes=this.chart.panes(),total=panes.length;
  const required=Math.max(540,340+105*(total-1)+35);
- const chartNode=$('price-chart');if(chartNode)chartNode.style.height=required+'px';
+ const chartNode=$('price-chart');if(chartNode?.style)chartNode.style.height=required+'px';
  this.chart.applyOptions({height:required,timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
  panes.forEach((p,i)=>p.setHeight(i?Math.max(90,Math.floor((required-335)/(total-1))):335));
  if(range)this.chart.timeScale().setVisibleLogicalRange(range);this.readout(this.bars.at(-1));this.renderInsights();
