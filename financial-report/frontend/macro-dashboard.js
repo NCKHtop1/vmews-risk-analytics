@@ -6,8 +6,8 @@ const fmt=n=>typeof n==='number'&&Number.isFinite(n)?nf.format(n):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const FEATURES=[
  {id:'pmi',key:'PMI',title:'PMI sản xuất',unit:'điểm',scale:1,threshold:50,color:'#3565d5',info:'Mốc 50 phân biệt mở rộng và thu hẹp'},
- {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'triệu tỷ đồng',scale:1000000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
- {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'triệu tỷ đồng',scale:1000000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
+ {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'nghìn tỷ đồng',scale:1000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
+ {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'nghìn tỷ đồng',scale:1000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
  {id:'fdi',key:'FDI giải ngân (lũy kế năm) (tỷ USD)',title:'FDI giải ngân',unit:'tỷ USD',scale:1,color:'#c88932',info:'Lũy kế năm, bắt đầu lại từ tháng 1'}
 ];
 const WORLD=[
@@ -79,7 +79,7 @@ function renderMacro(data){
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
- if(freshness)freshness.textContent=Number.isNaN(checkDate.getTime())?'Chưa rõ thời điểm nguồn':'Bản kiểm tra '+checkDate.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'})+' · không phải giá trực tiếp';
+ if(freshness)freshness.textContent=Number.isNaN(checkDate.getTime())?'—':checkDate.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});
 }
 
 function renderCountry(data){
