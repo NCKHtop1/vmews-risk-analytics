@@ -31,10 +31,11 @@ def build_fixture(directory: Path):
         '<section id="macro"' + segment + "</main>"
         '<script src="section-collapse.js"></script>'
         '<script src="macro-dashboard.js"></script>'
-        '<script src="macro.js"></script></body></html>'
+        '<script src="macro.js"></script>'
+        '<script src="liquidity-derivatives.js"></script></body></html>'
     )
     preview.write_text(html, encoding="utf-8")
-    for file in ("style.css", "market.css", "section-collapse.js", "macro-dashboard.js", "macro.js"):
+    for file in ("style.css", "market.css", "section-collapse.js", "macro-dashboard.js", "macro.js", "liquidity-derivatives.js"):
         shutil.copy2(FRONT / file, directory / file)
     data_dir = directory / "market"
     data_dir.mkdir()
@@ -110,6 +111,22 @@ def run():
                         " && document.querySelectorAll('#macro-country-chart .macro-trend-svg').length === 1"
                     )
                 )
+                driver.execute_script("""
+                    window.FinLiquidityDerivatives.setData(arguments[0]);
+                """, {
+                    "schemaVersion":1,"asOf":"2026-10-22",
+                    "interbank":{"status":"secondary_source_crosschecked",
+                        "source":"https://stockbiz.vn/vi-mo/du-lieu/lai-suat-lien-ngan-hang",
+                        "observations":[{"date":"2026-10-21","value":3.39},{"date":"2026-10-22","value":4.31}]},
+                    "derivatives":{"source":"https://www.gov.hnx.vn/vi-vn/chi-tiet-tin-60023563-0.html",
+                        "months":[{"month":"2026-08","vn30":{"openInterest":27984,"avgVolume":228905},
+                                   "vn100":{"openInterest":77,"avgVolume":66}},
+                                  {"month":"2026-09","vn30":{"openInterest":39543,"avgVolume":219121},
+                                   "vn100":{"openInterest":203,"avgVolume":259}}]},
+                    "vbmaSwap":{"status":"awaiting_verified_source",
+                               "source":"https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
+                               "points":[]}
+                })
                 report = driver.execute_script("""
                     const ids=['macro','macro-overview','macro-country-chart','macro-company-chart'];
                     const cards=[...document.querySelectorAll('.macro-viz-card')];
@@ -123,6 +140,13 @@ def run():
                       singleYear:document.getElementById('macro-company-chart')?.textContent.includes('Chưa đủ hai năm'),
                       cardsInside:rects.every(r=>r.left>=-2&&r.right<=viewport+2),
                       noExtraPIN:document.getElementById('macro-access-code')===null,
+                      onRateChart:document.querySelectorAll('#money-on svg').length,
+                      futuresCards:document.querySelectorAll('#money-futures .money-future-contract').length,
+                      onValue:document.getElementById('money-on')?.textContent.includes('4,31'),
+                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa lấy được dữ liệu FX Swap'),
+                      moneyWithin:[...document.querySelectorAll('.money-dashboard-grid .macro-viz-card, .money-future-contract')].every(el=>{
+                        const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=viewport+2;}),
+
                       titles:cards.map(x=>x.querySelector('h4')?.textContent)
                     };
                 """)
@@ -130,6 +154,8 @@ def run():
                 assert report["macroOpen"] and report["fourCharts"] == 4
                 assert report["worldCharts"] == 1 and report["singleYear"]
                 assert report["cardsInside"] and report["wide"] <= report["viewport"] + 3
+                assert report["onRateChart"]==1 and report["futuresCards"]==2 and report["onValue"] and report["swapNoFake"]
+                assert report["moneyWithin"]
                 assert report["noExtraPIN"]
                 driver.save_screenshot(str(directory / f"macro_esg_{width}.png"))
                 # The details panel should still display the legacy full-data tools on demand.
