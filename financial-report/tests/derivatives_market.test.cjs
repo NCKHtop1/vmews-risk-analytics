@@ -62,7 +62,7 @@ test('drops unverified, impossible, expired or unauthorized contract values',()=
  assert.doesNotMatch(html,/<img/);
  assert.doesNotMatch(html,/1\.842,5/);
  assert.doesNotMatch(html,/1\.878,7/);
- assert.match(html,/Không tìm thấy hợp đồng còn hiệu lực/);
+ assert.match(html,/Chưa có dữ liệu/);
 });
 test('timestamp freshness and weekend close labels are not falsely live',()=>{
  const {api}=harness();
@@ -90,7 +90,7 @@ test('futures are rendered as a compact terminal with valid rolling aliases',()=
  assert.match(page,/id="market-futures-workspace"/);
  assert.ok(page.indexOf('id="money-futures-live"')<page.indexOf('id="macro-liquidity-overview"'),'futures in Market rather than Macro');
  assert.match(html,/derivative-board-table/);
- assert.match(html,/Hợp đồng đang phân tích/);
+ assert.match(html,/Chọn hợp đồng/);
  assert.match(html,/VN30F1M/);
  assert.match(html,/VN100F1M/);
  assert.equal(api._test.withAliases(api._test.contracts(f))[0].alias,'VN30F1M');
