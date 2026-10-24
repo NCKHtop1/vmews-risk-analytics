@@ -57,7 +57,7 @@ test('full macro dashboard shows four real trends with period, units and source 
  const grid=$('macro-overview').innerHTML;
  assert.equal((grid.match(/class="macro-viz-card"/g)||[]).length,4);
  assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,4);
- for(const label of ['PMI sản xuất','Cung tiền M2','Dư nợ tín dụng','FDI giải ngân','T9 2026','triệu tỷ đồng','tỷ USD'])assert.ok(grid.includes(label),label);
+ for(const label of ['PMI sản xuất','Cung tiền M2','Dư nợ tín dụng','FDI giải ngân','T9 2026','nghìn tỷ đồng','tỷ USD'])assert.ok(grid.includes(label),label);
  assert.match(grid,/51,9/);
  assert.match(grid,/50 phân biệt/);
  assert.match(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
@@ -139,4 +139,40 @@ test('FDI cumulative curve stays within a year instead of showing January collap
  assert.match(plotted,/FDI giải ngân/);
  assert.doesNotMatch(plotted,/T12 2025/);
  assert.match(plotted,/Lũy kế trong năm/);
+});
+
+test('M2 and credit are displayed in nghìn tỷ, not mistaken for tỷ or million tỷ',()=>{
+ const {api,$}=harness();api.render(fixture(),mbb(),'MBB');
+ const output=$('macro-overview').innerHTML;
+ assert.match(output,/20\.455,64/);
+ assert.match(output,/nghìn tỷ đồng/);
+ assert.doesNotMatch(output,/triệu tỷ đồng/);
+});
+test('FDI same-period comparison uses a prior September observation without January cliff',()=>{
+ const data=fixture(),{api,$}=harness();
+ data.datasets.fdi.rows.push(makeRow('T9 2025','FDI giải ngân (lũy kế năm) (tỷ USD)',18.7));
+ data.datasets.fdi.rows.push(makeRow('T12 2025','FDI giải ngân (lũy kế năm) (tỷ USD)',28.3));
+ api.render(data,mbb(),'MBB');
+ const output=$('macro-overview').innerHTML;
+ assert.match(output,/so với cùng kỳ T9 2025/);
+ assert.match(output,/\+2,37 tỷ USD/);
+ assert.doesNotMatch(output,/T12 2025/); // no misleading Dec to Jan segment
+});
+test('observations missing a month do not connect across a fabricated period',()=>{
+ const {api}=harness();
+ const output=api.plot([
+ {label:'T1 2026',rank:2026*12,y:50},
+ {label:'T3 2026',rank:2026*12+2,y:51},
+ {label:'T4 2026',rank:2026*12+3,y:52}
+ ],{title:'Gapped series',unit:'điểm'});
+ const curve=output.match(/<path d="([^"]+)"/)?.[1]||'';
+ assert.ok(curve.startsWith('M'),curve);
+ assert.equal((curve.match(/M/g)||[]).length,2);
+ assert.equal((curve.match(/L/g)||[]).length,1);
+});
+test('front-end loads Macro first without serially waiting for corporate ESG',()=>{
+ assert.match(macroSource,/const esgPending=state\.esg\?Promise\.resolve\(state\.esg\):fetchCompanyEsg/);
+ assert.match(macroSource,/const macro=await fetchMacro\(\)/);
+ assert.ok(macroSource.indexOf('render();',macroSource.indexOf('async function load()')) <
+   macroSource.indexOf('const esg=await esgPending',macroSource.indexOf('async function load()')));
 });
