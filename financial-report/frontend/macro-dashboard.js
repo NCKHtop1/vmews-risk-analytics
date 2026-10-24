@@ -99,7 +99,7 @@ function renderCountry(data){
  select.value=countryId;
  const metric=choices.find(m=>m.id===countryId);
  const pts=series(ds,metric.id),latest=pts.at(-1);
- body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Năm '+esc(latest.label)</p><div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
+ body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Năm '+esc(latest.label)+'</p><div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
  const source=(data.sources||[]).find(s=>s.id==='esg_world_bank');
  foot.innerHTML=sourceLink(source?.url,'Ngân hàng Thế giới');
 }
