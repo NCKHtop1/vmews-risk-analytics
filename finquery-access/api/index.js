@@ -336,8 +336,13 @@ module.exports = async function handler(req,res) {
     if (route === 'healthz') {
       const configured = Boolean(process.env.DATABASE_URL && process.env.FINQUERY_SESSION_PEPPER &&
         process.env.FINQUERY_GOOGLE_CLIENT_ID);
-      return json(res,configured?200:503,{
-        ok:configured,service:'finquery-auth',authConfigured:configured
+      if (!configured) return json(res,503,{
+        ok:false,service:'finquery-auth',authConfigured:false,databaseReachable:false
+      });
+      const rows = await db()('SELECT 1 AS healthy');
+      const databaseReachable = Number(rows[0]?.healthy) === 1;
+      return json(res,databaseReachable?200:503,{
+        ok:databaseReachable,service:'finquery-auth',authConfigured:true,databaseReachable
       });
     }
     if (route === 'login' || route === 'login.html') return redirect(res,'/login.html',307);
