@@ -333,7 +333,13 @@ module.exports = async function handler(req,res) {
   const requestUrl = new URL(req.url,'https://'+String(req.headers.host || 'finquery.info.vn'));
   const route = String((req.query && req.query.route) || requestUrl.searchParams.get('route') || requestUrl.pathname.replace(/^\/+/,''));
   try {
-    if (route === 'healthz') return json(res,200,{ok:true,service:'finquery-auth'});
+    if (route === 'healthz') {
+      const configured = Boolean(process.env.DATABASE_URL && process.env.FINQUERY_SESSION_PEPPER &&
+        process.env.FINQUERY_GOOGLE_CLIENT_ID);
+      return json(res,configured?200:503,{
+        ok:configured,service:'finquery-auth',authConfigured:configured
+      });
+    }
     if (route === 'login' || route === 'login.html') return redirect(res,'/login.html',307);
     if (route === 'api/auth/google') return googleSignIn(req,res);
     if (route === 'api/auth/session') return authSession(req,res);
