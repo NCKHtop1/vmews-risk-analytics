@@ -5,6 +5,11 @@ on:
       - 'financial-report/frontend/macro-dashboard.js'
       - 'financial-report/frontend/liquidity-derivatives.js'
       - 'financial-report/frontend/derivatives-market.js'
+      - 'financial-report/frontend/workspace-tabs.js'
+      - 'financial-report/frontend/ownership-intelligence.js'
+      - 'financial-report/frontend/chart-engine.js'
+      - 'financial-report/tests/workspace_tabs.test.cjs'
+      - 'financial-report/tests/ownership_intelligence.test.cjs'
       - 'financial-report/frontend/macro.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
@@ -24,6 +29,11 @@ on:
       - 'financial-report/frontend/macro-dashboard.js'
       - 'financial-report/frontend/liquidity-derivatives.js'
       - 'financial-report/frontend/derivatives-market.js'
+      - 'financial-report/frontend/workspace-tabs.js'
+      - 'financial-report/frontend/ownership-intelligence.js'
+      - 'financial-report/frontend/chart-engine.js'
+      - 'financial-report/tests/workspace_tabs.test.cjs'
+      - 'financial-report/tests/ownership_intelligence.test.cjs'
       - 'financial-report/frontend/macro.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
@@ -59,12 +69,17 @@ jobs:
           node --check financial-report/frontend/macro-dashboard.js
           node --check financial-report/frontend/liquidity-derivatives.js
           node --check financial-report/frontend/derivatives-market.js
+          node --check financial-report/frontend/workspace-tabs.js
+          node --check financial-report/frontend/ownership-intelligence.js
+          node --check financial-report/frontend/chart-engine.js
           node --check financial-report/frontend/section-collapse.js
       - name: Evidence-linked macro and ESG chart regression
         run: |
           node --test financial-report/tests/macro_dashboard.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
           node --test financial-report/tests/derivatives_market.test.cjs
+          node --test financial-report/tests/workspace_tabs.test.cjs
+          node --test financial-report/tests/ownership_intelligence.test.cjs
           python -m unittest discover -s financial-report/scripts -p test_refresh_derivative_quotes.py -v
           node --test financial-report/tests/data_hub.test.cjs
       - name: Build and validate same-origin single HTML bundle
@@ -81,6 +96,9 @@ jobs:
           assert 'id="macro-overview"' in html and 'id="macro-company-chart"' in html
           assert 'id="macro-country-chart"' in html and 'id="macro-explore"' in html
           assert 'id="macro-unlock-form"' not in html
+          assert 'window.FinWorkspaceTabs=' in html and 'window.FinOwnership=' in html
+          assert 'id="market-futures-workspace"' in html and 'id="macro-primary-tabs"' in html
+          assert 'id="chart-oscillator-focus"' in html
           assert 'if(!state.data)return null' in html
           assert 'href="#macro"' in html
           print('FinQuery integrated Macro & ESG charts CDN contract PASS')
