@@ -12,7 +12,7 @@ import math
 import re
 import unicodedata
 import zipfile
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from xml.etree import ElementTree as ET
 
 VBMA_CURVES = {
@@ -25,7 +25,7 @@ BASE_URL = "https://vbma.org.vn/csv/markets/charts/vi/"
 VBMA_URLS = {key: BASE_URL + filename + ".csv" for key, (filename, _) in VBMA_CURVES.items()}
 MAX_SOURCE_BYTES = 1_500_000
 TENOR_RE = re.compile(r"^(?:ON|O/N|TN|T/N|SN|S/N|SPOT|[1-9]\d*(?:[.,]\d+)?\s*(?:D|W|M|Y|DAY|WEEK|MONTH|YEAR|NGAY|TUAN|THANG|NAM)S?)$", re.I)
-DATE_RE = re.compile(r"(?:20\d\d[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]20\d\d)")
+DATE_RE = re.compile(r"(?:20\d\d[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]20\d\d)")
 NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
       "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"}
 
@@ -52,11 +52,19 @@ def tenor_order(label):
 
 
 def parse_day(value):
+    """Interpret printed dates or Excel serial dates, not machine collection time."""
+    if isinstance(value, (int, float)) and 43831 <= value < 85000:
+        return date(1899, 12, 30) + timedelta(days=int(value))
     s = str(value or "").strip()
+    if re.fullmatch(r"\d{5}(?:\.0)?", s):
+        serial = float(s)
+        if 43831 <= serial < 85000:
+            return date(1899, 12, 30) + timedelta(days=int(serial))
     match = DATE_RE.search(s)
     if not match: return None
     part = match.group()
-    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y/%m/%d"):
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y",
+                "%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d"):
         try: return datetime.strptime(part, fmt).date()
         except ValueError: continue
     return None
@@ -194,8 +202,36 @@ def parse_vbma_curve(raw, kind, reference=None):
                 if obs and label and value is not None:
                     bucket.setdefault(obs, []).append({"tenor": label, "value": value})
             candidates.extend((d, pts) for d, pts in bucket.items() if len(pts) >= 2)
-    candidates = [(dt, pts) for dt, pts in candidates if dt and date(2012, 1, 1) <= dt <= today and (today - dt).days <= 14]
-    if not candidates: raise ValueError("No recent dated VBMA tenor curve found")
+    # Do not silently discard the historical source simply because the
+    # provider has not updated in two weeks. Return its true observation
+    # date and mark stale so clients will not mistake it for current data.
+    candidates = [(dt, pts) for dt, pts in candidates if dt and date(2012, 1, 1) <= dt <= today]
+    # Alternative VBMA layout: a dated metadata row followed by a tenor/rate
+    # table ("Tenor", "Mid"/"Yield"), without repeating the date on each line.
+    if not candidates:
+        source_dates=[parse_day(v) for row in grid[:12] for v in row[:6]]
+        metadata_date=max((d for d in source_dates if d and date(2012,1,1)<=d<=today),default=None)
+        if metadata_date:
+            for header_at, head in enumerate(grid[:15]):
+                fields=[norm(h) for h in head]
+                tc=next((i for i,x in enumerate(fields) if x in ("tenor","term","maturity","ky han")),None)
+                vc=next((i for i,x in enumerate(fields) if "mid" in x or "yield" in x or "rate" in x or "value" in x or x=="gia tri"),None)
+                if tc is None or vc is None: continue
+                pts=[]
+                for row in grid[header_at+1:]:
+                    if max(tc,vc)>=len(row): continue
+                    tenor=tenor_label(row[tc]); value=parse_number(row[vc])
+                    if tenor and value is not None: pts.append({"tenor":tenor,"value":value})
+                if len(pts)>=2:
+                    candidates.append((metadata_date,pts))
+                    break
+    if not candidates:
+        # Distinguish the source layout from its freshness. Do not leak the
+        # response body into published diagnostics, only its dimensions and
+        # safe date/tenor detection counts.
+        dated=sum(parse_day(v) is not None for row in grid[:30] for v in row[:5])
+        tenors=sum(tenor_label(v) is not None for row in grid[:12] for v in row[:20])
+        raise ValueError(f"No validated dated tenor curve; rows={len(grid)}, dates={dated}, tenors={tenors}")
     observed, points = max(candidates, key=lambda item: (item[0], len(item[1])))
     unique = {}
     for pt in points:
@@ -212,7 +248,7 @@ def parse_vbma_curve(raw, kind, reference=None):
     else:
         measurement = VBMA_CURVES[kind][1]
     return {
-        "status": "verified" if unit else "unit_unverified",
+        "status": ("stale" if (today-observed).days>14 else ("verified" if unit else "unit_unverified")),
         "asOf": observed.isoformat(), "unit": unit, "measurement": measurement,
         "points": points, "source": VBMA_URLS[kind],
         "lastObservationCount": len(points),
