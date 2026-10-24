@@ -276,12 +276,12 @@
 </div>
 </div>
 </section>
-<section id="macro" class="macro-section is-expanded" aria-label="Biểu đồ vĩ mô và ESG doanh nghiệp">
+<section id="macro" class="macro-section is-collapsed" aria-label="Biểu đồ vĩ mô và ESG doanh nghiệp">
 <div class="macro-head">
-<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="true" aria-controls="macro-body"><span class="research-ai-label">MACRO &amp; ESG INTELLIGENCE</span><h2>Vĩ mô &amp; ESG doanh nghiệp</h2></button>
-<div class="collapse-head-actions"><span id="macro-source-status" aria-live="polite"></span><button id="macro-chevron" class="section-chevron is-open" type="button" aria-label="Thu gọn Macro &amp; ESG" aria-controls="macro-body" aria-expanded="true"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
+<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="false" aria-controls="macro-body"><span class="research-ai-label">MACRO &amp; ESG INTELLIGENCE</span><h2>Vĩ mô &amp; ESG doanh nghiệp</h2></button>
+<div class="collapse-head-actions"><span id="macro-source-status" aria-live="polite"></span><button id="macro-chevron" class="section-chevron" type="button" aria-label="Mở Macro &amp; ESG" aria-controls="macro-body" aria-expanded="false"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
 </div>
-<div id="macro-body" class="collapsible-section-body">
+<div id="macro-body" class="collapsible-section-body" hidden>
 <div id="macro-workspace" class="macro-workspace">
 <div class="macro-dashboard-head"><div><span class="macro-eyebrow">MACRO DATA</span><h3>Diễn biến kinh tế Việt Nam</h3></div><span id="macro-data-freshness" class="macro-data-freshness">Đang tải...</span></div>
 <div id="macro-overview" class="macro-overview-grid" aria-label="Biểu đồ vĩ mô Việt Nam" aria-live="polite"><p class="macro-pending">Đang tải chuỗi dữ liệu vĩ mô...</p></div>
@@ -290,7 +290,7 @@
 <div class="money-dashboard-grid">
 <article class="macro-viz-card" id="money-on">Đang tải lãi suất ON...</article>
 <article class="macro-viz-card" id="money-swap">Đang tải VBMA FX Swap...</article>
-</div><article class="macro-viz-card money-derivative-section" id="money-futures">Đang tải VN30/VN100 Futures...</article>
+</div><div id="money-vbma-curves" class="money-vbma-grid" aria-label="Đường cong lợi suất trái phiếu và repo VBMA"></div><article class="macro-viz-card money-derivative-section" id="money-futures">Đang tải VN30/VN100 Futures...</article>
 </div>
 <div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">ESG DATA</span><h3>ESG quốc gia &amp; doanh nghiệp</h3></div></div>
 <div class="macro-esg-dashboard-grid">
