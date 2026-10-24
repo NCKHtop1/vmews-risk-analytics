@@ -98,7 +98,6 @@ jobs:
               driver.execute_script("""
                 sessionStorage.setItem('finquery-site-access','1');
                 sessionStorage.setItem('finquery-technical-access','1');
-                sessionStorage.setItem('finquery-macro-access','1');
               """)
               driver.refresh()
 
@@ -121,11 +120,11 @@ jobs:
                   strategySectionHidden:document.getElementById('strategy-builder')?.hidden===true,
                   strategyBodyVisible:document.getElementById('strategy-body')?.hidden===false,
                   ideas:document.getElementById('investment-ideas-body')?.hidden===true,
-                  macro:document.getElementById('macro-body')?.hidden===true,
+                  macroVisible:document.getElementById('macro-body')?.hidden===false,
                   chevrons:document.querySelectorAll('.section-chevron-icon svg').length
                 };
               """)
-              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('ideas'),initial_views.get('macro')]) or int(initial_views.get('chevrons') or 0)!=2:
+              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('ideas'),initial_views.get('macroVisible')]) or int(initial_views.get('chevrons') or 0)!=2:
                   raise AssertionError(f'Platform view defaults are incorrect: {initial_views}')
 
               driver.execute_script("document.querySelector('[data-platform-view=\"strategy\"]')?.click();")
@@ -137,7 +136,7 @@ jobs:
                   document.querySelector('[data-platform-view="strategy"]')?.classList.contains('active')
                 );
               """))
-              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('investment-ideas-toggle')?.click(); document.getElementById('macro-toggle')?.click();")
+              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('investment-ideas-toggle')?.click();")
               wait.until(lambda d:d.execute_script("""
                 return (
                   document.getElementById('strategy-builder')?.hidden===true &&
