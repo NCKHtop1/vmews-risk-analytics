@@ -231,6 +231,8 @@ jobs:
           done
           python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
           python financial-report/scripts/build_cdn.py
+          grep -q 'window.FinDerivativeQuotes=' financial-report/index.html
+          grep -q 'id="money-futures-live"' financial-report/index.html
           grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' financial-report/index.html
           grep -q '>AI Strategy Agent<' financial-report/index.html
           grep -q 'sai-top-strategies' financial-report/index.html
