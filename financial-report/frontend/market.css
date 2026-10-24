@@ -629,3 +629,46 @@ body.strategy-lab-view .strategy-page{display:block}
 #macro-liquidity-overview .macro-viz-source{margin-top:10px}
 @media(max-width:950px){.money-dashboard-grid,.money-derivative-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:570px){.money-future-contract{padding:11px}.money-main-num strong{font-size:24px}.money-bar-item{grid-template-columns:80px minmax(0,1fr) 48px;font-size:11px}.money-section-actions{align-items:start}.money-refresh{padding:8px 10px}#money-source-stamp{font-size:10px}}
+
+/* Compact, accessible VBMA curve status cards */
+.money-vbma-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.money-vbma-grid .macro-viz-card{min-width:0}
+.money-bond-chart{display:flex;gap:8px;overflow-x:auto;padding:14px 0}
+.money-bond-point{display:grid;gap:6px;min-width:54px;text-align:center;border:1px solid #e6ebf3;padding:8px 4px;border-radius:8px}
+.money-bond-point small{font-size:10px;color:#74839c}.money-bond-point b{font-size:12px;color:#315c91}
+.money-source-pending{padding:16px 0;color:#8a94a5;font-size:12px;line-height:1.5}
+@media(max-width:950px){.money-vbma-grid{grid-template-columns:1fr}}
+.collapse-head-toggle{cursor:default}
+
+/* Derivatives quote terminal: same financial-market cadence, separate market venue. */
+.money-derivative-live{margin-top:16px}
+.derivative-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.derivative-head h4{font-size:clamp(17px,2vw,22px);font-weight:800;color:#233e62;margin:4px 0}
+.derivative-head p{font-size:11px;color:#70849c;margin:4px 0 0;line-height:1.5}
+.derivative-filter{display:flex;gap:7px;margin:16px 0 14px;flex-wrap:wrap}
+.derivative-filter button{border:1px solid #dce5f0;background:#f8fafd;border-radius:9px;padding:8px 13px;min-height:36px;font-size:12px;font-weight:700;color:#536883;cursor:pointer}
+.derivative-filter button.active{color:#fff;background:#2b5ebc;border-color:#2b5ebc}
+.derivative-filter button:focus-visible,.derivative-head button:focus-visible,.money-derivative-history summary:focus-visible{outline:2px solid #7fa6ee;outline-offset:3px}
+.derivative-live-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:13px}
+.derivative-live-contract{border:1px solid #dfe8f3;background:#fff;border-radius:14px;padding:14px;min-width:0}
+.derivative-contract-title{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.derivative-contract-title>div{display:grid;gap:4px}
+.derivative-contract-title strong{font-size:16px;color:#20476f;font-weight:830}
+.derivative-contract-title small,.derivative-time{color:#8495a9;font-size:10px;font-variant-numeric:tabular-nums}
+.derivative-last{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;margin-top:14px}
+.derivative-last>strong{font-size:clamp(24px,2.7vw,32px);color:#1c466f;line-height:1.1;font-variant-numeric:tabular-nums}
+.derivative-last>small{font-size:11px;color:#788ba2}
+.derivative-move{font-size:11px;font-weight:760;font-variant-numeric:tabular-nums;margin-left:auto}
+.derivative-move.up{color:#00917f}.derivative-move.down{color:#cc4452}.derivative-move.flat{color:#6a7c95}
+.derivative-spark-wrap{min-height:38px;margin:9px 0}.derivative-spark{display:block;width:100%;height:46px;max-width:300px}
+.derivative-spark-empty{color:#8b98ab;font-size:11px}
+.derivative-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px 8px;padding-top:11px;border-top:1px solid #e6ecf3}
+.derivative-metric{min-width:0;display:grid;gap:5px}
+.derivative-metric small{color:#8a97a9;font-size:10px}
+.derivative-metric strong{color:#31506f;font-size:11px;font-weight:750;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
+.derivative-contract-status{color:#8393a8;font-size:10px;margin:12px 0 0}
+.money-derivative-history{margin-top:12px;border:1px solid #e3e9f3;border-radius:12px;background:#fff;padding:0 14px}
+.money-derivative-history summary{cursor:pointer;font-weight:740;color:#486487;font-size:12px;padding:13px 0;list-style-position:inside}
+.money-derivative-history:not([open]){padding-bottom:0}
+.money-derivative-history .money-derivative-section{margin-top:0;margin-bottom:13px}
+@media(max-width:620px){.derivative-live-grid{grid-template-columns:minmax(0,1fr)}.derivative-live-contract{padding:12px}.derivative-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 5px}.derivative-metric strong{font-size:10px}.derivative-head{align-items:center}}

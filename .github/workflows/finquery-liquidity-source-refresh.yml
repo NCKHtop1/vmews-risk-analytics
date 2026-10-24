@@ -4,6 +4,8 @@ on:
     paths:
       - 'financial-report/scripts/refresh_liquidity.py'
       - 'financial-report/scripts/test_refresh_liquidity.py'
+      - 'financial-report/scripts/test_vbma_curve_reader.py'
+      - 'financial-report/scripts/vbma_curve_reader.py'
       - '.github/workflows/finquery-liquidity-source-refresh.yml'
   workflow_dispatch:
   push:
@@ -34,6 +36,7 @@ jobs:
         run: |
           python -m py_compile financial-report/scripts/refresh_liquidity.py financial-report/scripts/test_refresh_liquidity.py
           python -m unittest discover -s financial-report/scripts -p test_refresh_liquidity.py -v
+          python -m unittest discover -s financial-report/scripts -p test_vbma_curve_reader.py -v
   publisher:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: contracts

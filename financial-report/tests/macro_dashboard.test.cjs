@@ -48,7 +48,10 @@ test('main page embeds real charts in Macro & ESG; no second PIN gate',()=>{
  assert.match(html,/id="macro-explore"/);
  assert.doesNotMatch(html,/id="macro-unlock-form"/);
  assert.doesNotMatch(macroSource,/ACCESS_HASH|macro-unlock-form|finquery-macro-access/);
- assert.match(collapseSource,/setOpen\(c,c.section==='macro'\)/);
+ assert.match(collapseSource,/setOpen\(c,false\)/);
+ assert.doesNotMatch(collapseSource,/toggle\?\.addEventListener\('click'/);
+ assert.match(collapseSource,/chevron\?\.addEventListener\('click'/);
+ assert.match(html,/id="macro-body" class="collapsible-section-body" hidden/);
  assert.ok(html.indexOf('src="macro-dashboard.js"')<html.indexOf('src="macro.js"'));
 });
 test('full macro dashboard shows four real trends with period, units and source links',()=>{

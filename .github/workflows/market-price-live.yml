@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/market-price-live.yml'
       - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/refresh_derivative_quotes.py'
       - 'financial-report/scripts/build_technical_evidence.py'
       - 'financial-report/scripts/build_strategy_snapshot.cjs'
       - 'financial-report/scripts/build_risk_monitor.cjs'
