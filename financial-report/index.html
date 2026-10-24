@@ -708,6 +708,98 @@ body.strategy-lab-view .strategy-page{display:block}
 .money-derivative-history:not([open]){padding-bottom:0}
 .money-derivative-history .money-derivative-section{margin-top:0;margin-bottom:13px}
 @media(max-width:620px){.derivative-live-grid{grid-template-columns:minmax(0,1fr)}.derivative-live-contract{padding:12px}.derivative-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 5px}.derivative-metric strong{font-size:10px}.derivative-head{align-items:center}}
+
+
+/* FinQuery 2026-10-24: compact task-based workspaces */
+.finquery-workspace-tabs{display:flex;gap:7px;align-items:stretch;overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;white-space:nowrap;padding:3px 1px 12px;margin:14px 0 16px;scrollbar-width:thin;scrollbar-color:#ccd7e6 transparent}
+.finquery-workspace-tabs button{flex:0 0 auto;min-height:42px;padding:10px 15px;background:#f4f7fb;color:#546a84;border:1px solid #dde6f0;border-radius:10px;font-size:12px;font-weight:720;cursor:pointer}
+.finquery-workspace-tabs button.active{background:#245cb1;border-color:#245cb1;color:#fff;box-shadow:0 3px 10px #245cb122}
+.finquery-workspace-tabs button:focus-visible{outline:2px solid #487cca;outline-offset:2px}
+#market [hidden],#macro [hidden],#macro [data-macro-panel][hidden]{display:none!important}
+#market[data-market-space="futures"] .market-grid,#market[data-market-space="ownership"] .market-grid{display:none!important}
+#market[data-market-space="futures"] .market-board,#market[data-market-space="ownership"] .market-board,#market[data-market-space="news"] .market-board{display:none!important}
+#market[data-market-space="news"] #market-stock-view{grid-template-columns:minmax(0,1fr)!important}
+#market[data-market-space="news"] #market-stock-view .market-price{display:none!important}
+#market[data-market-space="news"] #market-stock-view .market-news{max-width:100%;min-width:0}
+.market-asset-workspace{min-width:0;padding:6px 0 10px}
+.market-asset-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:12px}
+.market-asset-head h3{font-size:clamp(18px,2.2vw,24px);margin:5px 0;color:#233e62}
+.market-asset-head p{font-size:12px;color:#6c8099;margin:3px 0;line-height:1.6}
+#macro-liquidity-overview{min-width:0}
+#macro-liquidity-overview .money-dashboard-grid-single{grid-template-columns:minmax(0,1fr)}
+#macro-panel-vbma .money-vbma-grid{margin-top:10px}
+.money-on-trend text[data-on-tick]{pointer-events:none}
+.money-vbma-download{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:#285ca4;border:1px solid #dae5f1;border-radius:9px;background:#f7fbff;text-decoration:none!important;flex:0 0 auto}
+.money-vbma-download:hover{background:#e8f1ff;color:#1b4d93}
+.money-vbma-download:focus-visible{outline:2px solid #4e7dcb;outline-offset:2px}
+.chart-oscillator-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;margin:9px 0;border:1px solid #dbe5f1;border-radius:10px;background:#f8fafd}
+.chart-oscillator-nav[hidden]{display:none!important}
+.chart-oscillator-nav label{font-size:12px;color:#345472;font-weight:700}
+.chart-oscillator-nav select{min-height:35px;padding:5px 9px;min-width:120px;border-radius:8px;border:1px solid #ccd9ea;background:#fff;color:#27476e}
+#chart-oscillator-hint{font-size:11px;color:#75879d}
+@media(max-width:600px){.finquery-workspace-tabs{margin:10px 0 12px;gap:6px}.finquery-workspace-tabs button{min-height:39px;padding:8px 12px;font-size:11px}.market-asset-workspace{padding:2px 0 8px}.market-asset-head h3{font-size:18px}.chart-oscillator-nav{padding:8px;gap:7px}}
+
+
+/* Market futures terminal: one selected instrument + scroll-contained quote grid. */
+#market-futures-workspace .money-derivative-live{padding:16px;min-width:0}
+#market-futures-workspace .derivative-focus-select{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.derivative-focus-select label{font-size:12px;font-weight:750;color:#4e6985}
+.derivative-focus-select select{min-width:190px;max-width:100%;padding:8px 12px;min-height:38px;font-size:12px;border:1px solid #d7e0ed;border-radius:9px;background:#fff;color:#315272}
+.derivative-focus{padding:15px;background:#f8fbff;border:1px solid #e0e8f3;border-radius:13px;margin-bottom:15px;min-width:0}
+.derivative-focus-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.derivative-focus-head>div:first-child{display:grid;gap:5px}
+.derivative-focus-head strong{font-size:20px;color:#1b466e}
+.derivative-focus-head strong span{font-size:12px;color:#8798ac;font-weight:550}
+.derivative-focus-head small{font-size:11px;color:#6e8099}
+.derivative-focus-price{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.derivative-focus-price>strong{font-size:clamp(26px,3vw,36px);font-weight:800;color:#194b76;line-height:1.1}
+.derivative-focus-price>small{font-size:12px;color:#77899d}
+.derivative-focus-metrics{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.derivative-focus-metrics>span{padding:6px 9px;border:1px solid #e4eaf3;border-radius:9px;background:white;font-size:11px;color:#72849a}
+.derivative-focus-metrics b{font-variant-numeric:tabular-nums;color:#315777;margin-left:4px}
+.derivative-chart-wrap{padding:8px 0;min-height:60px}
+.derivative-spark-wide{width:100%;max-width:100%;height:auto;max-height:140px;display:block}
+.derivative-spark-empty{font-size:12px;color:#8797aa;padding:20px 8px}
+.derivative-series-note{font-size:11px;color:#7689a2;line-height:1.6;margin:6px 0 0}
+.derivative-board-scroll{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;border:1px solid #e2e9f2;border-radius:12px}
+.derivative-board-table{width:100%;min-width:780px;border-collapse:collapse;font-variant-numeric:tabular-nums;table-layout:auto}
+.derivative-board-table thead{background:#f5f8fd}
+.derivative-board-table th{padding:12px 10px;text-align:right;font-size:10px;color:#667d96;font-weight:780;white-space:nowrap;border-bottom:1px solid #e2eaf3}
+.derivative-board-table th:first-child,.derivative-board-table td:first-child{text-align:left}
+.derivative-board-table td{padding:11px 10px;text-align:right;font-size:12px;color:#34536f;border-bottom:1px solid #e9edf4;background:#fff;white-space:nowrap}
+.derivative-board-table tbody tr:last-child td{border-bottom:0}
+.derivative-board-table tbody tr.active td{background:#eef5ff}
+.derivative-board-table .derivative-live-contract{display:table-row;grid-template-columns:none;padding:0;border:0;border-radius:0;background:transparent;min-width:0}
+.derivative-board-table .derivative-contract-title{display:table-cell}
+.derivative-board-table .derivative-contract-title button{display:grid;gap:4px;border:0;background:transparent;padding:0;color:inherit;cursor:pointer;text-align:left}
+.derivative-board-table .derivative-contract-title strong{font-size:12px;color:#275ca2}
+.derivative-board-table .derivative-contract-title small{font-size:10px;color:#8b99a9}
+.derivative-board-table .derivative-last{display:table-cell;margin:0}
+.derivative-board-table .derivative-last>strong{font-size:12px;color:#234e77}
+.derivative-board-table td small{font-size:10px;color:#8999aa}
+.derivative-board-table .derivative-move{margin:0;font-size:11px;white-space:nowrap}
+.derivative-board-table .derivative-time{font-size:11px;white-space:nowrap}
+@media(max-width:600px){#market-futures-workspace .money-derivative-live{padding:12px}.derivative-focus{padding:11px}.derivative-focus-head strong{font-size:18px}.derivative-focus-price>strong{font-size:26px}.derivative-focus-metrics>span{font-size:10px}}
+
+/* Alpha Radar does not publish private rule descriptions. */
+.alpha-radar-panel{padding:15px;border:1px solid #dce5f0;border-radius:15px;background:#fbfcff;margin:0 0 18px}
+.alpha-radar-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.alpha-radar-head h3{font-size:clamp(17px,2vw,21px);color:#233f60;margin:5px 0}
+.alpha-radar-head p,.alpha-radar-note{font-size:11px;color:#8393a8;line-height:1.55;margin:4px 0}
+.alpha-radar-tools{display:flex;gap:7px;flex-wrap:wrap}
+.alpha-radar-tools button{padding:8px 11px;border:1px solid #d1dfed;border-radius:8px;background:white;color:#365e89;font-weight:700;font-size:11px;cursor:pointer}
+#alpha-radar-status{font-size:11px;color:#667f9c;margin:10px 0}
+.alpha-radar-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.alpha-signal-row{border:1px solid #e4ebf3;border-radius:10px;background:#fff;padding:10px;display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:7px}
+.alpha-signal-row>div{display:grid;gap:5px}
+.alpha-signal-row strong{color:#275388;font-size:13px}
+.alpha-signal-row span{font-weight:700;color:#3d5b75;font-size:12px}
+.alpha-signal-row b{font-size:11px;color:#697d91}
+.alpha-signal-row b.confirmed{color:#008a78}
+.alpha-signal-row b.preparing{color:#b27814}
+.alpha-signal-row small{font-size:10px;color:#8294a9}
+.alpha-empty{font-size:12px;color:#8594a6;margin:6px 0 12px}
+@media(max-width:580px){.alpha-radar-panel{padding:12px}.alpha-radar-list{grid-template-columns:1fr}}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -976,6 +1068,13 @@ body.strategy-lab-view .strategy-page{display:block}
 </div>
 </div>
 <div id="strategy-body" class="strategy-builder-body">
+<section id="alpha-radar-panel" class="alpha-radar-panel" aria-label="Radar tín hiệu Alpha">
+<div class="alpha-radar-head"><div><span class="research-ai-label">ALPHA INTELLIGENCE</span><h3>Radar tín hiệu chiến lược</h3><p>Tài khoản thông thường chỉ xem mã Alpha, trạng thái và thời điểm; công thức chỉ lưu ở backend bảo vệ.</p></div>
+<div class="alpha-radar-tools"><button type="button" id="alpha-radar-refresh">Làm mới</button><button type="button" id="alpha-radar-notifications">Bật thông báo</button></div></div>
+<p id="alpha-radar-status" role="status" aria-live="polite">Đang kiểm tra nguồn Alpha...</p>
+<div id="alpha-radar-list" class="alpha-radar-list"></div>
+<p class="alpha-radar-note">Tiệm cận điều kiện không đồng nghĩa khớp lệnh. Thông báo trình duyệt chỉ hoạt động khi trang đang mở; quét tự động cần cấu hình backend riêng tư.</p>
+</section>
 <section class="sai-dashboard" aria-label="Strategy Intelligence">
 <div class="sai-overview-grid">
 <article id="sai-regime" class="sai-panel sai-regime"><div class="sai-empty">Đang xác định trạng thái thị trường…</div></article>
@@ -1029,10 +1128,28 @@ body.strategy-lab-view .strategy-page{display:block}
 <section class="preview" aria-label="Xem trước báo cáo">
 <div class="preview-heading"><div class="company-identity"><div class="company-logo-wrap"><img id="company-logo" class="company-logo-img" alt="" decoding="async"><span id="company-logo-fallback" class="company-logo-fallback">MBB</span></div><div><div class="eyebrow">DOANH NGHIỆP</div><h2 id="preview-title">MBB <span>/ Báo cáo tài chính</span></h2><p id="company-name" class="muted">Ngân hàng TMCP Quân đội</p><p id="company-meta" class="company-meta">HOSE · Dữ liệu tài chính & thị trường</p></div></div><div class="preview-actions"><span id="data-state" class="status-badge">Đang tải</span><button id="refresh-data" type="button">Làm mới ↻</button></div></div>
 <div id="error" role="alert" hidden></div>
-<section id="market" class="market-section" aria-label="Giá chứng khoán và tin tức">
+<section id="market" class="market-section" data-market-space="stocks" aria-label="Giá chứng khoán và tin tức">
 <div class="market-top market-top-compact"><h2>Thị trường & doanh nghiệp</h2></div>
+<nav id="market-primary-tabs" class="finquery-workspace-tabs" role="tablist" aria-label="Lựa chọn nhóm tài sản và thông tin doanh nghiệp">
+<button type="button" data-market-space="stocks" role="tab" aria-selected="true" class="active" aria-controls="market-stock-view">Cổ phiếu</button>
+<button type="button" data-market-space="futures" role="tab" aria-selected="false" aria-controls="market-futures-workspace">Phái sinh</button>
+<button type="button" data-market-space="ownership" role="tab" aria-selected="false" aria-controls="market-ownership-workspace">Sở hữu &amp; lãnh đạo</button>
+<button type="button" data-market-space="news" role="tab" aria-selected="false" aria-controls="market-news-workspace">Tin &amp; báo cáo</button>
+</nav>
+<section id="market-futures-workspace" class="market-asset-workspace" role="tabpanel" aria-label="Bảng giá hợp đồng tương lai" hidden>
+<div class="market-asset-head"><div><span class="macro-eyebrow">HNX FUTURES</span><h3>Thị trường chứng khoán phái sinh</h3><p>Giá theo hợp đồng đang giao dịch · dữ liệu theo phiên, có độ trễ nguồn.</p></div></div>
+<section class="macro-viz-card money-derivative-live" id="money-futures-live" aria-label="Bảng giá hợp đồng tương lai VN30 VN100">Đang tải bảng giá phái sinh...</section>
+<details class="money-derivative-history"><summary>Thống kê OI &amp; khối lượng theo tháng</summary>
+<article class="macro-viz-card" id="money-futures">Đang tải thống kê HNX...</article>
+</details>
+</section>
+<section id="market-ownership-workspace" class="market-asset-workspace" role="tabpanel" aria-label="Sở hữu và giao dịch của người nội bộ" hidden>
+<div class="market-asset-head"><div><span class="macro-eyebrow">OWNERSHIP INTELLIGENCE</span><h3>Sở hữu &amp; giao dịch người nội bộ</h3><p>Phân biệt giao dịch dự kiến, đã thực hiện và giá trị sở hữu hiện tại.</p></div></div>
+<div id="market-ownership-content" aria-live="polite">Đang kiểm tra nguồn công bố sở hữu...</div>
+</section>
+
 <div id="breaking-news-ticker" class="breaking-news-ticker" aria-live="polite" hidden><span class="breaking-news-label">TIN NỔI BẬT</span><div class="breaking-news-viewport"><div id="breaking-news-track" class="breaking-news-track"></div></div><span id="breaking-news-updated" class="breaking-news-updated"></span></div>
-<div class="market-grid"><div class="market-price"><div class="price-head"><div><h3 id="market-symbol">MBB</h3><span id="quote-price">Đang tải giá…</span><span id="quote-change"></span><span id="quote-freshness" class="market-freshness" hidden></span></div><button id="watch-toggle" type="button" aria-pressed="false">☆ Theo dõi</button></div><p id="quote-time" class="market-subtitle"></p><div class="native-chart-heading"><span id="native-chart-title">Biểu đồ FinQuery · MBB</span><span>Dữ liệu thị trường của FinQuery</span></div>
+<div class="market-grid" id="market-stock-view" role="tabpanel" aria-label="Cổ phiếu và tin tức thị trường"><div class="market-price"><div class="price-head"><div><h3 id="market-symbol">MBB</h3><span id="quote-price">Đang tải giá…</span><span id="quote-change"></span><span id="quote-freshness" class="market-freshness" hidden></span></div><button id="watch-toggle" type="button" aria-pressed="false">☆ Theo dõi</button></div><p id="quote-time" class="market-subtitle"></p><div class="native-chart-heading"><span id="native-chart-title">Biểu đồ FinQuery · MBB</span><span>Dữ liệu thị trường của FinQuery</span></div>
 <div class="market-view-tabs" role="tablist" aria-label="Chế độ biểu đồ">
 <button type="button" class="active" data-market-view="price" role="tab" aria-selected="true">Giá & kỹ thuật</button>
 <button type="button" data-market-view="peers" role="tab" aria-selected="false">So sánh cổ phiếu ngành</button>
@@ -1092,6 +1209,7 @@ body.strategy-lab-view .strategy-page{display:block}
 <div class="indicator-settings-card" data-settings-for="cmf"><strong>CMF</strong><label>Chu kỳ<input type="number" data-param="cmf" min="2" max="100" value="20"></label></div>
 <p id="chart-indicator-error" role="status"></p></aside>
 </div></div></dialog>
+<div id="chart-oscillator-nav" class="chart-oscillator-nav" hidden><label for="chart-oscillator-focus">Pane chỉ báo đang xem</label><select id="chart-oscillator-focus" aria-label="Chuyển nhóm chỉ báo phụ"></select><span id="chart-oscillator-hint"></span></div>
 <p id="chart-stream-status" class="chart-stream-status" role="status" hidden></p><div id="price-readout" aria-live="off"></div><div class="chart-canvas-wrap"><div id="price-chart" aria-label="Biểu đồ giá và khối lượng"></div><div id="chart-insight-markers" class="chart-insight-markers" aria-label="Mốc sự kiện và báo cáo phân tích"></div></div><p id="chart-range-label" hidden></p><p id="chart-status" class="market-subtitle" hidden></p></section>
 <section id="technical-scanner-panel" class="technical-scanner-panel" hidden aria-label="Technical Scanner HOSE">
 <div id="technical-scanner-gate" class="technical-scanner-gate"><div><span class="research-ai-label">TECHNICAL SCANNER · HOSE</span><strong>Khu vực tín hiệu kỹ thuật giới hạn</strong><p>Scanner cập nhật theo dữ liệu trong phiên. Nhập mã truy cập để xem các mã đang khớp MACD, RSI và khối lượng.</p></div><form id="technical-scanner-unlock-form"><input id="technical-scanner-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập Technical Scanner"><button type="submit">Mở scanner</button></form><p id="technical-scanner-error" role="status"></p></div>
@@ -1117,7 +1235,7 @@ body.strategy-lab-view .strategy-page{display:block}
 <p class="market-compare-note">Hiệu suất được chuẩn hóa về 0% tại điểm đầu của khoảng so sánh từ lịch sử giá FinQuery. Chỉ số ngành là bình quân equal-weight của các mã có dữ liệu; đây không phải dữ liệu dòng tiền mua/bán.</p>
 </section>
 <div class="forecast-card"><div><span class="forecast-label">SoluTION.AI · FORECAST</span><h4>Khám phá góc nhìn dự báo</h4><p>Xem kịch bản giá T+1–T+5, các yếu tố tác động và kết quả kiểm định cho <strong id="forecast-symbol">MBB</strong>.</p></div><div class="forecast-action"><a id="forecast-link" href="../forecast-final.html?symbol=MBB" target="_blank" rel="noopener noreferrer">Xem dự báo MBB ↗</a><small>Mở trang Forecast trong tab mới</small></div></div></div>
-<aside class="market-news"><div class="market-news-head"><div><span class="research-ai-label">NEWS RADAR</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false">Bật cảnh báo Watchlist</button></div></div>
+<aside class="market-news" id="market-news-workspace"><div class="market-news-head"><div><span class="research-ai-label">NEWS RADAR</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false">Bật cảnh báo Watchlist</button></div></div>
 <div id="news-primary-tabs" class="news-primary-tabs" role="tablist" aria-label="Nhóm tin tức">
 <button type="button" data-news-tab="all" role="tab" aria-selected="false">Mới nhất</button>
 <button type="button" data-news-tab="impact" role="tab" aria-selected="false">Đang tác động</button>
@@ -1177,15 +1295,32 @@ body.strategy-lab-view .strategy-page{display:block}
 </div>
 <div id="macro-body" class="collapsible-section-body" hidden>
 <div id="macro-workspace" class="macro-workspace">
+<nav id="macro-primary-tabs" class="finquery-workspace-tabs" role="tablist" aria-label="Nhóm phân tích vĩ mô">
+<button type="button" data-macro-space="overview" role="tab" class="active" aria-selected="true" aria-controls="macro-panel-overview">Tổng quan</button>
+<button type="button" data-macro-space="on" role="tab" aria-selected="false" aria-controls="macro-panel-on">Liên ngân hàng</button>
+<button type="button" data-macro-space="vbma" role="tab" aria-selected="false" aria-controls="macro-panel-vbma">VBMA</button>
+<button type="button" data-macro-space="swap" role="tab" aria-selected="false" aria-controls="macro-panel-swap">FX Swap</button>
+<button type="button" data-macro-space="esg" role="tab" aria-selected="false" aria-controls="macro-panel-esg">ESG</button>
+</nav>
+<section id="macro-panel-overview" data-macro-panel="overview" role="tabpanel">
 <div class="macro-dashboard-head"><div><span class="macro-eyebrow">MACRO DATA</span><h3>Diễn biến kinh tế Việt Nam</h3></div><span id="macro-data-freshness" class="macro-data-freshness">Đang tải...</span></div>
 <div id="macro-overview" class="macro-overview-grid" aria-label="Biểu đồ vĩ mô Việt Nam" aria-live="polite"><p class="macro-pending">Đang tải chuỗi dữ liệu vĩ mô...</p></div>
-<div class="macro-dashboard-head money-section-head"><div><span class="macro-eyebrow">MONEY MARKET · DERIVATIVES</span><h3>Tiền tệ &amp; phái sinh</h3></div><div class="money-section-actions"><span id="money-source-stamp" class="macro-data-freshness">Đang tải</span><button type="button" id="money-refresh" class="money-refresh">Làm mới</button></div></div>
-<div id="macro-liquidity-overview" aria-label="Lãi suất liên ngân hàng, phái sinh và FX Swap">
-<div class="money-dashboard-grid">
-<article class="macro-viz-card" id="money-on">Đang tải lãi suất ON...</article>
-<article class="macro-viz-card" id="money-swap">Đang tải VBMA FX Swap...</article>
-</div><div id="money-vbma-curves" class="money-vbma-grid" aria-label="Đường cong lợi suất trái phiếu và repo VBMA"></div><section class="macro-viz-card money-derivative-live money-derivative-section" id="money-futures-live" aria-label="Bảng giá phái sinh theo phiên">Đang tải giá hợp đồng tương lai...</section><details class="money-derivative-history"><summary>Thống kê OI và khối lượng theo tháng</summary><article class="macro-viz-card money-derivative-section" id="money-futures">Đang tải VN30/VN100 Futures...</article></details>
+</section>
+<div id="macro-liquidity-overview" aria-label="Lãi suất liên ngân hàng và các đường cong VBMA">
+<section id="macro-panel-on" data-macro-panel="on" role="tabpanel" hidden>
+<div class="macro-dashboard-head money-section-head"><div><span class="macro-eyebrow">INTERBANK MONEY MARKET</span><h3>Lãi suất liên ngân hàng</h3></div><div class="money-section-actions"><span id="money-source-stamp" class="macro-data-freshness">Đang tải</span><button type="button" id="money-refresh" class="money-refresh">Làm mới</button></div></div>
+<div class="money-dashboard-grid money-dashboard-grid-single"><article class="macro-viz-card" id="money-on">Đang tải lãi suất ON...</article></div>
+</section>
+<section id="macro-panel-vbma" data-macro-panel="vbma" role="tabpanel" hidden>
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">FIXED INCOME</span><h3>Đường cong lợi suất VBMA</h3></div></div>
+<div id="money-vbma-curves" class="money-vbma-grid" aria-label="FI Bond, trái phiếu chính phủ và Repo"></div>
+</section>
+<section id="macro-panel-swap" data-macro-panel="swap" role="tabpanel" hidden>
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">FX SWAP</span><h3>USD/VND FX Swap</h3></div></div>
+<div class="money-dashboard-grid money-dashboard-grid-single"><article class="macro-viz-card" id="money-swap">Đang tải VBMA FX Swap...</article></div>
+</section>
 </div>
+<section id="macro-panel-esg" data-macro-panel="esg" role="tabpanel" hidden>
 <div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">ESG DATA</span><h3>ESG quốc gia &amp; doanh nghiệp</h3></div></div>
 <div class="macro-esg-dashboard-grid">
 <article class="macro-viz-card macro-esg-card" aria-labelledby="macro-country-heading"><div class="macro-viz-head"><div><span class="macro-viz-kicker">WORLD BANK · VIỆT NAM</span><h4 id="macro-country-heading">ESG quốc gia</h4></div><select id="macro-country-metric" aria-label="Chọn chỉ tiêu ESG quốc gia"></select></div><div id="macro-country-chart" aria-live="polite" class="macro-esg-visual">Đang tải dữ liệu World Bank...</div><div id="macro-country-source" class="macro-viz-source"></div></article>
@@ -1200,6 +1335,7 @@ body.strategy-lab-view .strategy-page{display:block}
 <div class="macro-chart-card"><div class="macro-chart-head"><div><h3 id="macro-chart-title">Dữ liệu vĩ mô</h3><span id="macro-chart-subtitle"></span></div></div><div id="macro-chart"></div></div>
 <div class="macro-table-wrap"><table class="macro-table"><thead id="macro-table-head"></thead><tbody id="macro-table-body"></tbody></table></div>
 </div></details>
+</section>
 </div>
 </div>
 </section>
@@ -1579,7 +1715,7 @@ function moneyFlowText(current,previous){
  return detail+'; các chỉ báo dòng tiền chưa đồng thuận, chưa nên kết luận dòng tiền vào hoặc ra rõ'+tail;
 }
 class ChartController{
- constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;
+ constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;
  this.chart=L.createChart($('price-chart'),{autoSize:true,height:540,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
  this.chart.subscribeCrosshairMove(e=>{const b=e.seriesData.get(this.series.price);if(b)this.readout({...b,volume:e.seriesData.get(this.series.volume)?.value});else this.readout(this.bars.at(-1));});
  this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(()=>raf(()=>this.renderInsights()));
@@ -1602,6 +1738,7 @@ class ChartController{
  const dialog=$('chart-indicators');$('indicator-open')?.addEventListener('click',()=>{this.syncIndicatorSettings();dialog.showModal();$('indicator-search')?.focus();});$('indicator-close')?.addEventListener('click',()=>dialog.close());dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});$('indicator-search')?.addEventListener('input',e=>{const q=String(e.target.value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();(document.querySelectorAll?.('.indicator-list-item')||[]).forEach(row=>row.hidden=q&&!String(row.dataset.indicatorName||'').includes(q));});
  dialog.addEventListener('change',e=>{if(e.target.type==='number'){const key=e.target.dataset.param,n=Number(e.target.value),min=Number(e.target.min||0),max=Number(e.target.max||1e9),step=Number(e.target.step||1);const integer=step>=1;if(!Number.isFinite(n)||n<min||n>max||(integer&&!Number.isInteger(n))){e.target.value=this.params[key];return;}const next={...this.params,[key]:n};if(next.fast>=next.slow){e.target.value=this.params[key];$('chart-indicator-error').textContent='MACD: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.';return;}this.params=next;}$('chart-indicator-error').textContent='';this.syncIndicatorSettings();this.values=M.indicators(this.bars,this.params);this.rebuild(true);});
  this.syncIndicatorSettings();
+ $('chart-oscillator-focus')?.addEventListener('change',e=>{this.focusOscillator=e.target.value;this.rebuild(true);});
  }
  select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
  async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF,previousBars=this.baseBars.map(b=>({...b})),previousValues=this.values.map(v=>({...v}));
@@ -1618,27 +1755,50 @@ class ChartController{
  }
  }
  enabled(name){return !!$('ind-'+name)?.checked;}
- rebuild(keep){const range=keep?this.chart.timeScale().getVisibleLogicalRange():null;for(const s of Object.values(this.series))this.chart.removeSeries(s);this.series={};
+ visibleOscillators(){
+  const all=['rsi','macd','atr','adx','stoch','cci','roc','willr','obv','mfi','cmf'].filter(k=>this.enabled(k));
+  const nav=$('chart-oscillator-nav'),select=$('chart-oscillator-focus');
+  if(!all.includes(this.focusOscillator))this.focusOscillator=all[0]||null;
+  if(select?.options&&typeof select.replaceChildren==='function'){
+   if(select.options.length!==all.length||[...select.options].some((o,i)=>o.value!==all[i])){
+    select.replaceChildren(...all.map(k=>new Option(k==='willr'?'Williams %R':k.toUpperCase(),k)));
+   }
+   if(this.focusOscillator)select.value=this.focusOscillator;
+  }
+  if(nav)nav.hidden=all.length<=2;
+  const hint=$('chart-oscillator-hint');
+  if(hint)hint.textContent=all.length>2?'Đã chọn '+all.length+' chỉ báo phụ · hiển thị tối đa 2 pane để giữ biểu đồ giá.':'';
+  if(all.length<=2)return all;
+  const from=all.indexOf(this.focusOscillator);
+  return [all[from],all[(from+1)%all.length]];
+ }
+ rebuild(keep){const range=keep?this.chart.timeScale().getVisibleLogicalRange():null;
+  const osc=this.visibleOscillators();
+  for(const s of Object.values(this.series))this.chart.removeSeries(s);this.series={};
  const kind=this.type==='line'?L.LineSeries:this.type==='area'?L.AreaSeries:L.CandlestickSeries;
  this.series.price=this.chart.addSeries(kind,{upColor:'#089981',downColor:'#f23645',wickUpColor:'#089981',wickDownColor:'#f23645',borderVisible:false,color:'#4564cc',lineColor:'#4564cc',topColor:'#4564cc50',bottomColor:'#4564cc05',priceFormat:{type:'price',precision:0,minMove:1}},0);
  let pane=0;const line=(key,color,index=0)=>this.series[key]=this.chart.addSeries(L.LineSeries,{color,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false},index);const guides=(series,levels)=>levels.forEach(price=>series.createPriceLine({price,color:'#abb3c3',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''}));
  if(this.enabled('volume')||this.enabled('vma')){pane++;this.series.volume=this.chart.addSeries(L.HistogramSeries,{priceFormat:{type:'volume'},priceLineVisible:false,lastValueVisible:false,visible:this.enabled('volume')},pane);if(this.enabled('vma'))line('vma','#d59637',pane);}
  if(this.enabled('sma'))line('sma','#da962b');if(this.enabled('ema'))line('ema','#725cce');if(this.enabled('wma'))line('wma','#227c9d');if(this.enabled('vwma'))line('vwma','#00897b');if(this.enabled('supertrend'))line('supertrend','#d04b64');
  if(this.enabled('bb')){line('upper','#7597ba');line('middle','#adb5c5');line('lower','#7597ba');}
- if(this.enabled('rsi')){pane++;line('rsi','#9764c7',pane);guides(this.series.rsi,[30,70]);}
- if(this.enabled('macd')){pane++;line('macd','#3777bc',pane);line('signal','#e69239',pane);this.series.hist=this.chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},pane);guides(this.series.macd,[0]);}
- if(this.enabled('atr')){pane++;line('atr','#8b6f47',pane);}
- if(this.enabled('adx')){pane++;line('adx','#6d5aa7',pane);guides(this.series.adx,[20,25]);}
- if(this.enabled('stoch')){pane++;line('stoch','#3478b8',pane);line('stochSignal','#e08a35',pane);guides(this.series.stoch,[20,80]);}
- if(this.enabled('cci')){pane++;line('cci','#7a5f9e',pane);guides(this.series.cci,[-100,100]);}
- if(this.enabled('roc')){pane++;line('roc','#2b8a7e',pane);guides(this.series.roc,[0]);}
- if(this.enabled('willr')){pane++;line('willr','#a56b35',pane);guides(this.series.willr,[-80,-20]);}
- if(this.enabled('obv')){pane++;line('obv','#4e6bb3',pane);}
- if(this.enabled('mfi')){pane++;line('mfi','#7b5cab',pane);guides(this.series.mfi,[20,80]);}
- if(this.enabled('cmf')){pane++;line('cmf','#318b6c',pane);guides(this.series.cmf,[0]);}
+ if(osc.includes('rsi')){pane++;line('rsi','#9764c7',pane);guides(this.series.rsi,[30,70]);}
+ if(osc.includes('macd')){pane++;line('macd','#3777bc',pane);line('signal','#e69239',pane);this.series.hist=this.chart.addSeries(L.HistogramSeries,{priceLineVisible:false,lastValueVisible:false},pane);guides(this.series.macd,[0]);}
+ if(osc.includes('atr')){pane++;line('atr','#8b6f47',pane);}
+ if(osc.includes('adx')){pane++;line('adx','#6d5aa7',pane);guides(this.series.adx,[20,25]);}
+ if(osc.includes('stoch')){pane++;line('stoch','#3478b8',pane);line('stochSignal','#e08a35',pane);guides(this.series.stoch,[20,80]);}
+ if(osc.includes('cci')){pane++;line('cci','#7a5f9e',pane);guides(this.series.cci,[-100,100]);}
+ if(osc.includes('roc')){pane++;line('roc','#2b8a7e',pane);guides(this.series.roc,[0]);}
+ if(osc.includes('willr')){pane++;line('willr','#a56b35',pane);guides(this.series.willr,[-80,-20]);}
+ if(osc.includes('obv')){pane++;line('obv','#4e6bb3',pane);}
+ if(osc.includes('mfi')){pane++;line('mfi','#7b5cab',pane);guides(this.series.mfi,[20,80]);}
+ if(osc.includes('cmf')){pane++;line('cmf','#318b6c',pane);guides(this.series.cmf,[0]);}
  this.series.price.setData(this.bars.map(b=>this.priceData(b)));if(this.series.volume)this.series.volume.setData(this.bars.map(b=>this.volumeData(b)));
  for(const [key,s]of Object.entries(this.series)){if(['price','volume'].includes(key))continue;s.setData(this.values.filter(v=>Number.isFinite(v[key])).map(v=>({time:v.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})})));}
- this.chart.panes().forEach((p,i)=>p.setHeight(i?95:350));this.chart.applyOptions({timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
+ const panes=this.chart.panes(),total=panes.length;
+ const required=Math.max(540,340+105*(total-1)+35);
+ const chartNode=$('price-chart');if(chartNode?.style)chartNode.style.height=required+'px';
+ this.chart.applyOptions({height:required,timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
+ panes.forEach((p,i)=>p.setHeight(i?Math.max(90,Math.floor((required-335)/(total-1))):335));
  if(range)this.chart.timeScale().setVisibleLogicalRange(range);this.readout(this.bars.at(-1));this.renderInsights();
  }
  priceData(b){return this.type==='candles'?{time:b.time,open:b.open,high:b.high,low:b.low,close:b.close}:{time:b.time,value:b.close};}
@@ -2744,6 +2904,63 @@ function bind(){
 bind();setTimeout(refresh,1500);setInterval(()=>{if(!document.hidden&&location.hash==='#strategy-builder')refresh();},300000);
 window.FinStrategyIntelligence={refresh,selectSymbol,context:()=>({selected:state.selected,model:state.model,execution:C.executionProfile()})};
 })();</script><script>(function(){'use strict';
+/* Alpha Radar is a consumer of masked, backend-generated events ONLY. */
+const root=document.getElementById('alpha-radar-panel');if(!root)return;
+const SOURCE='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/alpha-radar.json';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate=s=>Number.isFinite(Date.parse(s||''))?new Date(s).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
+const fresh=s=>{const t=Date.parse(s||'');return Number.isFinite(t)&&t<=Date.now()+300000&&t>0;};
+const state={data:null,loading:false,failed:false,notify:false,seen:new Set()};
+function valid(d){
+ return !!(d&&d.schemaVersion===1&&d.status==='verified'&&d.privateRulesIncluded===false&&
+  Array.isArray(d.alerts)&&fresh(d.sourceTime)&&['HOSE_CORE_LIQUID'].includes(d.scope));
+}
+function render(){
+ const status=$('alpha-radar-status'),board=$('alpha-radar-list');if(!status||!board)return;
+ if(!state.data){
+  status.textContent=state.failed?'Nguồn Alpha riêng tư chưa được cấu hình hoặc chưa có dữ liệu phiên hợp lệ.':'Đang kiểm tra phiên quét Alpha...';
+  board.innerHTML='<p class="alpha-empty">Khi backend có dữ liệu được xác minh, hệ thống sẽ hiển thị các mã đang tiệm cận hoặc đã khớp Alpha mà không lộ công thức.</p>';return;
+ }
+ const d=state.data,age=(Date.now()-Date.parse(d.sourceTime))/60000;
+ const stale=age>25&&new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).replace(':','')>='0900';
+ status.textContent='Quan sát thị trường '+fmtDate(d.sourceTime)+(stale?' · Dữ liệu không còn mới trong phiên':'')+' · '+d.alerts.length+' sự kiện mới';
+ const alerts=d.alerts.filter(x=>x&&/^ALPHA[_-]\d{2,3}$/.test(x.alphaId)&&/^[A-Z]{3}$/.test(x.symbol)&&['confirmed','preparing'].includes(x.stage)&&fresh(x.sourceTime)&&typeof x.id==='string').slice(0,100);
+ board.innerHTML=alerts.map(x=>'<article class="alpha-signal-row"><div><strong>'+esc(x.alphaId)+'</strong><span>'+esc(x.symbol)+'</span></div><div><b class="'+(x.stage==='confirmed'?'confirmed':'preparing')+'">'+(x.stage==='confirmed'?'Đã xác nhận':'Tiệm cận điều kiện')+'</b><small>'+esc(fmtDate(x.sourceTime))+'</small></div></article>').join('')||
+ '<p class="alpha-empty">Không có tín hiệu Alpha mới tại thời điểm nguồn hiện tại.</p>';
+}
+function notify(data){
+ if(!state.notify||!('Notification'in window)||Notification.permission!=='granted')return;
+ for(const x of data.alerts||[]){
+  if(x.stage!=='confirmed'||state.seen.has(x.id))continue;
+  try{new Notification('FinQuery · '+x.alphaId,{body:x.symbol+' vừa được backend xác nhận lúc '+fmtDate(x.sourceTime)});}catch{}
+  state.seen.add(x.id);
+ }
+ try{localStorage.setItem('finquery-alpha-seen-v1',JSON.stringify([...state.seen].slice(-100)));}catch{}
+}
+async function load(){
+ if(state.loading)return;state.loading=true;
+ try{
+  const r=await fetch(SOURCE+'?v='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!r.ok)throw Error('Alpha feed not yet configured');
+  const d=await r.json();if(!valid(d))throw Error('Invalid masked Alpha feed');
+  const old=Date.parse(state.data?.sourceTime||'')||0,next=Date.parse(d.sourceTime)||0;
+  if(!state.data||next>old){state.data=d;state.failed=false;notify(d);}
+ }catch{state.failed=true;}finally{state.loading=false;render();}
+}
+try{const prior=JSON.parse(localStorage.getItem('finquery-alpha-seen-v1')||'[]');if(Array.isArray(prior))state.seen=new Set(prior.slice(-100).filter(s=>typeof s==='string'));}catch{}
+$('alpha-radar-refresh')?.addEventListener('click',load);
+$('alpha-radar-notifications')?.addEventListener('click',async()=>{
+ if(!('Notification'in window)){$('alpha-radar-status').textContent='Trình duyệt chưa hỗ trợ thông báo.';return;}
+ const p=await Notification.requestPermission();
+ state.notify=p==='granted';
+ $('alpha-radar-notifications').textContent=state.notify?'Thông báo khi đang mở: bật':'Bật thông báo';
+});
+window.FinAlphaRadar={refresh:load,setData:data=>{state.data=data;state.failed=false;render();},_test:{valid}};
+render();load();
+setInterval(()=>{if(!document.hidden)load();},300000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+})();</script><script>(function(){'use strict';
 const $=id=>document.getElementById(id);
 const state={data:null,loading:false,error:'',selectedFundSymbol:null,selectedSectorId:null,selectedBreadthGroup:null};
 function updateNavBadge(){
@@ -3078,6 +3295,67 @@ window.FinSectionCollapse={
  toggle(id){const c=configs.find(x=>x.section===id);if(c)setOpen(c,document.getElementById(c.body)?.hidden);},
  isOpen(id){const c=configs.find(x=>x.section===id);return c?!document.getElementById(c.body)?.hidden:false;}
 };
+})();</script><script>(function(){'use strict';
+/* One task per workspace. Tabs hide other panels without destroying state. */
+const $=id=>document.getElementById(id);
+const allowed={
+ market:['stocks','futures','ownership','news'],
+ macro:['overview','on','vbma','swap','esg']
+};
+const state={market:'stocks',macro:'overview'};
+function activate(kind,value,focus=false){
+ if(!allowed[kind]?.includes(value))return false;
+ const root=$(kind==='market'?'market-primary-tabs':'macro-primary-tabs');
+ if(!root)return false;
+ state[kind]=value;
+ const buttons=[...root.querySelectorAll('[role="tab"]')];
+ for(const b of buttons){
+  const active=b.dataset[kind==='market'?'marketSpace':'macroSpace']===value;
+  b.classList.toggle('active',active);
+  b.setAttribute('aria-selected',String(active));
+  b.tabIndex=active?0:-1;
+  if(active&&focus)b.focus({preventScroll:true});
+ }
+ if(kind==='market'){
+  const market=$('market');if(market)market.dataset.marketSpace=value;
+  const grid=$('market-stock-view');
+  if(grid)grid.hidden=value==='futures'||value==='ownership';
+  const futures=$('market-futures-workspace'),owners=$('market-ownership-workspace');
+  if(futures)futures.hidden=value!=='futures';
+  if(owners)owners.hidden=value!=='ownership';
+  // Underlying stock-chart and quotes stay mounted; no loss of state.
+  if(value==='stocks')requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+  if(value==='futures')window.FinDerivativeQuotes?.refresh?.();
+  if(value==='ownership')window.FinOwnership?.refresh?.();
+ }else{
+  for(const id of allowed.macro){
+   const panel=$('macro-panel-'+id);
+   if(panel)panel.hidden=id!==value;
+  }
+  if(value==='on'||value==='vbma'||value==='swap')window.FinLiquidityDerivatives?.refresh?.();
+  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+ }
+ return true;
+}
+function bind(kind){
+ const root=$(kind==='market'?'market-primary-tabs':'macro-primary-tabs');
+ if(!root)return;
+ const key=kind==='market'?'marketSpace':'macroSpace';
+ root.addEventListener('click',e=>{
+  const b=e.target.closest?.('[role="tab"]');
+  if(!b||!root.contains(b))return;
+  activate(kind,b.dataset[key]);
+ });
+ root.addEventListener('keydown',e=>{
+  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
+  const current=allowed[kind].indexOf(state[kind]);
+  let next=e.key==='Home'?0:e.key==='End'?allowed[kind].length-1:
+    (current+(e.key==='ArrowRight'?1:-1)+allowed[kind].length)%allowed[kind].length;
+  e.preventDefault();activate(kind,allowed[kind][next],true);
+ });
+}
+bind('market');bind('macro');activate('market','stocks');activate('macro','overview');
+window.FinWorkspaceTabs={openMarket:key=>activate('market',key),openMacro:key=>activate('macro',key),current:()=>({...state})};
 })();</script><script>(function(){'use strict';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DATA_BASE=new URL('data/',location.href).href;
@@ -3563,18 +3841,29 @@ const safeURL=(url,hostname)=>{try{let u=new URL(url);return u.protocol==='https
 const state={payload:null,derivativeMode:'openInterest',loading:false};
 const target=$('macro-liquidity-overview');
 if(!target)return;
-function miniLine(points,{unit='',title='',color='#2e74bb'}={}){
+function miniLine(points,{unit='',title='',color='#2e74bb',width=640}={}){
  if(points.length<2)return'<div class="macro-no-chart">Chưa đủ dữ liệu để hiển thị.</div>';
  const values=points.map(p=>p.value),min=Math.min(...values),max=Math.max(...values),pad=Math.max((max-min)*.16,Math.abs(max)*.07,.03);
- const low=min-pad,high=max+pad,W=640,H=232,L=49,R=17,T=18,B=37;
+ const low=min-pad,high=max+pad,W=Math.max(250,Math.min(950,Math.floor(Number(width)||640))),compact=W<480;
+ const H=232,L=49,R=22,T=18,B=39;
  const x=i=>L+(W-L-R)*i/(points.length-1),y=v=>T+(H-T-B)*(high-v)/(high-low);
- const grid=Array.from({length:4},(_,i)=>{const v=low+(high-low)*i/3,py=y(v);return'<line x1="'+L+'" y1="'+py+'" x2="'+(W-R)+'" y2="'+py+'" stroke="#e8edf4"/><text x="'+(L-7)+'" y="'+(py+4)+'" font-size="12" text-anchor="end" fill="#8491a4">'+fmt(v,1)+'</text>';}).join('');
+ const grid=Array.from({length:4},(_,i)=>{const v=low+(high-low)*i/3,py=y(v);return'<line x1="'+L+'" y1="'+py+'" x2="'+(W-R)+'" y2="'+py+'" stroke="#e8edf4"/><text x="'+(L-7)+'" y="'+(py+4)+'" font-size="11" text-anchor="end" fill="#8491a4">'+fmt(v,1)+'</text>';}).join('');
  const line=points.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.value).toFixed(1)).join(' ');
- const step=Math.max(1,Math.floor((points.length-1)/3));
- const ticks=points.map((p,i)=>({p,i})).filter(({i})=>i===0||i===points.length-1||i%step===0).slice(0,5);
- const labels=ticks.map(({p,i})=>'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="12" fill="#74869f">'+esc(dateVN(p.date))+'</text>').join('');
+ // Budget horizontal space for the actual rendered label text rather than
+ // drawing five full dd/mm/yyyy labels inside a 300px chart.
+ const labelWidth=compact?57:83,gap=compact?12:18;
+ const limit=Math.max(2,Math.min(5,Math.floor((W-L-R+gap)/(labelWidth+gap))));
+ const ticks=[...new Set(Array.from({length:limit},(_,i)=>Math.round(i*(points.length-1)/(limit-1))))];
+ const labels=ticks.map(i=>{const p=points[i],full=dateVN(p.date),display=compact?full.slice(0,5):full;
+  return'<text data-on-tick="'+i+'" x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="'+(compact?10:11)+'" fill="#74869f">'+esc(display)+'<title>'+esc(full)+'</title></text>';
+ }).join('');
  const circles=points.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===points.length-1?4.8:3)+'" fill="'+color+'"><title>'+esc(dateVN(p.date)+' · '+fmt(p.value)+' '+unit)+'</title></circle>').join('');
- return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
+ return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg money-on-trend" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
+}
+function vbmaSourceIcon(url,label){
+ if(!url)return'';
+ const svg='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg>';
+ return'<a class="money-vbma-download" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(label)+'" aria-label="'+esc(label)+'">'+svg+'</a>';
 }
 function monthBar(a,b,{unit='',color='#416eca',labelA='Tháng trước',labelB='Tháng này'}={}){
  const values=[a,b];if(values.some(x=>typeof x!=='number'||!Number.isFinite(x)||x<0))return'<div class="macro-no-chart">Không đủ số liệu đối chiếu.</div>';
@@ -3596,7 +3885,7 @@ function renderON(p){
  const difference=prev?last.value-prev.value:null;
  host.innerHTML=cardHeader('Liên ngân hàng ON',fmt(last.value),'%/năm',dateVN(last.date))+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
- '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe'})+'</div>'+
+ '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
  '<div class="macro-viz-source"><span>Nguồn NHNN, đối chiếu qua bản tổng hợp</span>'+
  (origin?'<a href="'+esc(origin)+'" target="_blank" rel="noopener noreferrer">Lịch sử ON ↗</a>':'')+
  (cross?'<a href="'+esc(cross)+'" target="_blank" rel="noopener noreferrer">Đối chiếu ↗</a>':'')+'</div>';
@@ -3624,10 +3913,11 @@ function renderSwap(p){
  const host=$('money-swap');if(!host)return;const s=p.vbmaSwap||{},source=safeURL(s.source,'vbma.org.vn');
  const points=(Array.isArray(s.points)?s.points:[]).filter(x=>x.tenor&&typeof x.value==='number'&&Number.isFinite(x.value)&&Math.abs(x.value)<100000).slice(0,30);
  const enabled=s.status==='verified'&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
- const link=source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">VBMA FX Swap ↗</a>':'';
+ const link=vbmaSourceIcon(source,'Tải tệp dữ liệu USD/VND FX Swap từ VBMA');
  if(!enabled){
+    const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA swap '));
     host.innerHTML=cardHeader('USD/VND FX Swap','—','VBMA','Đường cong kỳ hạn')+
-      '<p class="money-empty">Chưa lấy được dữ liệu FX Swap từ VBMA.</p>'+
+      '<p class="money-empty">Chưa có chuỗi FX Swap hợp lệ để vẽ.</p>'+(reason?'<p class="money-source-pending">'+esc(String(reason).replace(/^VBMA swap\s+/,''))+'</p>':'')+
       '<div class="macro-viz-source">'+link+'</div>';return;
  }
  const maxAbs=Math.max(...points.map(x=>Math.abs(x.value)),.01);
@@ -3641,9 +3931,10 @@ function renderBondCurves(p){
  host.innerHTML=sources.map(([key,title])=>{
   const s=data[key]||{},points=Array.isArray(s.points)?s.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
   const url=safeURL(s.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
-  const link=url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">VBMA ↗</a>':'';
+  const link=vbmaSourceIcon(url,'Tải tệp dữ liệu '+title+' từ VBMA');
   const verified=s.status==='verified'&&s.licenseStatus==='approved'&&s.unit&&s.asOf&&points.length>=2;
-  const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>':'<p class="money-source-pending">Đang chờ dữ liệu VBMA được xác minh.</p>';
+  const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA '+key+' '));
+  const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>' :'<p class="money-source-pending">'+esc(reason?String(reason).replace(new RegExp('^VBMA '+key+'\\s+'),''):'Chưa có chuỗi kỳ hạn đã xác minh')+'</p>';
   return '<article class="macro-viz-card">'+cardHeader(title,verified?dateVN(s.asOf):'—',verified?s.unit:'VBMA','Đường cong kỳ hạn')+visual+'<div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
 }
@@ -3662,129 +3953,192 @@ async function load(){
   if(d.schemaVersion!==1||!d.interbank||!d.derivatives||!d.vbmaSwap)throw Error('Invalid schema');
   state.payload=d;render();
  }catch(error){
-  if(!state.payload)target.innerHTML='<p class="macro-no-chart">Không tải được bảng tiền tệ và phái sinh.</p>';
+  if(!state.payload){for(const id of ['money-on','money-swap','money-vbma-curves']){const node=$(id);if(node)node.innerHTML='<p class="macro-no-chart">Nguồn tiền tệ đang gián đoạn; chưa nhận dữ liệu đã xác minh.</p>';}}
   if($('money-source-stamp'))$('money-source-stamp').textContent='Dữ liệu tạm gián đoạn';
  }finally{state.loading=false;if(btn)btn.disabled=false;}
 }
-document.getElementById('macro-liquidity-overview')?.addEventListener('click',event=>{
+[document.getElementById('macro-liquidity-overview'),document.getElementById('market-futures-workspace')].forEach(root=>root?.addEventListener('click',event=>{
  const button=event.target.closest?.('[data-derivative-mode]');
  if(!button)return;
  if(['openInterest','avgVolume'].includes(button.dataset.derivativeMode)){state.derivativeMode=button.dataset.derivativeMode;renderFutures(state.payload);}
-});
+}));
 $('money-refresh')?.addEventListener('click',load);
+const onHost=$('money-on');
+if(onHost&&typeof ResizeObserver==='function'){
+ let prior=0;
+ new ResizeObserver(entries=>{const width=Math.round(entries[0]?.contentRect?.width||0);if(width&&Math.abs(width-prior)>12){prior=width;if(state.payload)renderON(state.payload);}}).observe(onHost);
+}
 window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,monthBar,dateVN,monthVN,safeURL},setData:payload=>{state.payload=payload;render();}};
 load();
 })();</script><script>(function(){'use strict';
-/* Live-session futures quote board. Delayed polling, never pretend to stream ticks. */
-const $=id=>document.getElementById(id);
-const host=$('money-futures-live');
+/* Public HNX futures terminal: point-priced contracts, never synthetic candles. */
+const $=id=>document.getElementById(id),host=$('money-futures-live');
 if(!host)return;
 const SOURCE='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/derivatives-live.json';
-const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2});
-const fmt=(n,d=2)=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(n):'—';
 const esc=t=>String(t??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const validStamp=s=>{const t=Date.parse(s||'');return Number.isFinite(t)&&t>0&&t<=Date.now()+300000?t:null;};
+const fmt=(n,d=2)=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(n):'—';
+const validStamp=s=>{const v=Date.parse(s||'');return Number.isFinite(v)&&v>0&&v<=Date.now()+300000?v:null;};
 const datetimeVN=s=>validStamp(s)?new Date(s).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
-const state={data:null,filter:'all',loading:false,failed:false,seenAt:null};
-function marketOpen(now=Date.now()){
- const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(now)).map(x=>[x.type,x.value]));
- if(['Sat','Sun'].includes(parts.weekday))return false;
- const min=Number(parts.hour)*60+Number(parts.minute);
- return (min>=525&&min<=690)||(min>=780&&min<=885);
-}
-function healthy(d){
- if(!d||d.schemaVersion!==1||d.status!=='ok'||d.exchange!=='HNX'||d.type!=='FUTURES_ONLY'||!Array.isArray(d.contracts))return false;
- if(!validStamp(d.collectedAt)||!validStamp(d.latestSourceTime))return false;
- return true;
-}
 function todayVN(now=Date.now()){
- const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(now)).map(x=>[x.type,x.value]));
- return parts.year+'-'+parts.month+'-'+parts.day;
+ const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(now)).map(x=>[x.type,x.value]));
+ return p.year+'-'+p.month+'-'+p.day;
+}
+function marketOpen(now=Date.now()){
+ const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(now)).map(x=>[x.type,x.value]));
+ if(['Sat','Sun'].includes(p.weekday))return false;
+ const minute=Number(p.hour)*60+Number(p.minute);
+ return (minute>=525&&minute<=690)||(minute>=780&&minute<=885);
+}
+const state={data:null,filter:'all',selected:null,loading:false,failed:false,lastAttempt:0};
+function healthy(d){
+ return!!(d&&d.schemaVersion===1&&d.status==='ok'&&d.exchange==='HNX'&&d.type==='FUTURES_ONLY'&&
+  Array.isArray(d.contracts)&&validStamp(d.collectedAt)&&validStamp(d.latestSourceTime));
 }
 function contracts(d){
  if(!healthy(d))return[];
- return d.contracts.filter(c=>{
-  if(!c||!/^VN(30|100)F2\d(0[1-9]|1[0-2])$/.test(c.symbol||''))return false;
-  if(!/^20\d\d-\d\d-\d\d$/.test(c.expiry||'')||c.expiry<todayVN())return false;
-  if(!/^41I[12][0-9A-HJ-NP-TV-W][1-9ABC]000$/.test(c.providerSymbol||''))return false;
-  if((c.underlying!=='VN30'&&c.underlying!=='VN100')||c.market!=='HNX_FUTURES'||c.unit!=='points')return false;
-  if(!validStamp(c.sourceTime)||typeof c.price!=='number'||!Number.isFinite(c.price)||c.price<=0||c.price>50000)return false;
-  if(typeof c.reference!=='number'||!Number.isFinite(c.reference)||c.reference<=0)return false;
-  if(typeof c.volume!=='number'||c.volume<0)return false;
-  return true;
- }).sort((a,b)=>(a.underlying==='VN30'?0:1)-(b.underlying==='VN30'?0:1)||a.expiry.localeCompare(b.expiry)).slice(0,24);
+ return d.contracts.filter(c=>
+  c&&/^VN(30|100)F2\d(0[1-9]|1[0-2])$/.test(c.symbol||'')&&
+  /^41I[12][0-9A-HJ-NP-TV-W][1-9ABC]000$/.test(c.providerSymbol||'')&&
+  ['VN30','VN100'].includes(c.underlying)&&c.market==='HNX_FUTURES'&&c.unit==='points'&&
+  /^\d{4}-\d\d-\d\d$/.test(c.expiry||'')&&c.expiry>=todayVN()&&
+  validStamp(c.sourceTime)&&Number.isFinite(c.price)&&c.price>0&&c.price<=50000&&
+  Number.isFinite(c.reference)&&c.reference>0&&Number.isFinite(c.volume)&&c.volume>=0
+ ).sort((a,b)=>(a.underlying==='VN30'?0:1)-(b.underlying==='VN30'?0:1)||a.expiry.localeCompare(b.expiry)).slice(0,24);
+}
+function withAliases(list){
+ const counts={VN30:0,VN100:0};
+ return list.map(c=>{let ix=counts[c.underlying]++;return {...c,alias:c.underlying+'F'+(['1M','2M','1Q','2Q'][ix]||('T'+(ix+1))) };});
 }
 function statusFor(c,now=Date.now()){
- const age=(now-validStamp(c.sourceTime))/60000;
- if(marketOpen(now))return age<=10?'Giá trong phiên · có thể trễ':age<=45?'Chưa có khớp mới':'Dữ liệu chậm cập nhật';
+ const source=validStamp(c.sourceTime);const age=source?(now-source)/60000:Infinity;
+ if(marketOpen(now))return age<=10?'Trong phiên · giá có độ trễ':age<=45?'Chưa có khớp mới':'Dữ liệu chậm cập nhật';
  return 'Giá ghi nhận phiên gần nhất';
 }
-function change(c){
- const diff=typeof c.change==='number'&&Number.isFinite(c.change)?c.change:c.price-c.reference;
- const pct=(c.price/c.reference-1)*100;
- const tone=diff>0?'up':diff<0?'down':'flat';
- return '<span class="derivative-move '+tone+'">'+(diff>0?'+':'')+fmt(diff)+' · '+(pct>0?'+':'')+fmt(pct)+'%</span>';
-}
 function miniHistory(rows){
- const points=Array.isArray(rows)?rows.filter(p=>validStamp(p?.time)&&Number.isFinite(p?.price)&&p.price>0).slice(-40):[];
- if(points.length<2)return'<span class="derivative-spark-empty">Chưa đủ điểm giá</span>';
- const vals=points.map(p=>p.price),lo=Math.min(...vals),hi=Math.max(...vals),pad=Math.max((hi-lo)*.12,hi*.0005),min=lo-pad,max=hi+pad;
- const xy=(p,i)=>[(i/(points.length-1)*180).toFixed(1),(40-(p.price-min)/(max-min)*36-2).toFixed(1)];
- const path=points.map((p,i)=>(i?'L':'M')+xy(p,i).join(' ')).join(' ');
- return'<svg class="derivative-spark" viewBox="0 0 180 46" role="img" aria-label="Diễn biến giá theo các lần cập nhật từ nguồn"><path d="'+path+'" fill="none" stroke="#396fb6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ const data=Array.isArray(rows)?rows.filter(p=>validStamp(p?.time)&&Number.isFinite(p?.price)&&p.price>0).sort((a,b)=>Date.parse(a.time)-Date.parse(b.time)).slice(-100):[];
+ if(data.length<2)return'<div class="derivative-spark-empty">Chưa đủ quan sát giá có thời điểm nguồn để vẽ diễn biến.</div>';
+ const vals=data.map(x=>x.price),lo=Math.min(...vals),hi=Math.max(...vals),pad=Math.max((hi-lo)*.15,hi*.0005);
+ const y=v=>64-(v-(lo-pad))/(hi-lo+2*pad)*55;
+ const x=i=>8+i/(data.length-1)*624;
+ const path=data.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.price).toFixed(1)).join(' ');
+ const dots=data.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.price).toFixed(1)+'" r="2.5" fill="#2966bb"><title>'+esc(datetimeVN(p.time)+' · '+fmt(p.price))+'</title></circle>').join('');
+ return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" role="img" aria-label="Diễn biến giá từ các quan sát thực, không phải nến OHLC"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+}
+function diff(c){return Number.isFinite(c.change)?c.change:c.price-c.reference;}
+function move(c){const change=diff(c),pct=(c.price/c.reference-1)*100;
+ return '<span class="derivative-move '+(change>0?'up':change<0?'down':'flat')+'">'+(change>0?'+':'')+fmt(change)+' · '+(pct>0?'+':'')+fmt(pct)+'%</span>';
 }
 function render(){
- if(!state.data){host.innerHTML='<div class="derivative-head"><h4>Bảng giá hợp đồng tương lai</h4></div><p class="money-source-pending">'+(state.failed?'Chưa kết nối được nguồn giá phái sinh.':'Đang tải giá hợp đồng tương lai...')+'</p>';return;}
- const list=contracts(state.data),visible=list.filter(c=>state.filter==='all'||c.underlying===state.filter);
- const newest=list.map(x=>validStamp(x.sourceTime)).filter(Boolean).reduce((a,b)=>Math.max(a,b),0);
- const age=newest?(Date.now()-newest)/60000:Infinity;
- const badge=!list.length?'Chưa có hợp đồng':marketOpen()?(age<=10?'Theo dõi trong phiên':age<=45?'Giá chưa đổi':'Giá đang trễ'):'Ngoài giờ giao dịch';
- const actions=[['all','Tất cả'],['VN30','VN30F'],['VN100','VN100F']].map(([key,label])=>'<button type="button" data-futures-underlying="'+key+'" class="'+(state.filter===key?'active':'')+'" aria-pressed="'+(state.filter===key)+'">'+label+'</button>').join('');
- const cards=visible.map(c=>{
-  const qty=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0?fmt(n,0):'—';
-  const cell=(label,value)=>'<div class="derivative-metric"><small>'+label+'</small><strong>'+value+'</strong></div>';
-  return'<article class="derivative-live-contract">'+
-   '<div class="derivative-contract-title"><div><strong>'+esc(c.symbol)+'</strong><small>Đáo hạn '+esc(c.expiry?.slice(8,10)+'/'+c.expiry?.slice(5,7)+'/'+c.expiry?.slice(0,4))+'</small></div><span class="derivative-time">'+esc(datetimeVN(c.sourceTime))+'</span></div>'+
-   '<div class="derivative-last"><strong>'+fmt(c.price,2)+'</strong><small>điểm</small>'+change(c)+'</div>'+
-   '<div class="derivative-spark-wrap">'+miniHistory(c.series)+'</div>'+
-   '<div class="derivative-metrics">'+
-   cell('Tham chiếu',fmt(c.reference))+
-   cell('KLGD',qty(c.volume))+
-   cell('OI',qty(c.openInterest))+
-   cell('Cao / Thấp',fmt(c.high)+' / '+fmt(c.low))+
-   cell('Dư mua 1',fmt(c.bid1)+' · '+qty(c.bidVol1))+
-   cell('Dư bán 1',fmt(c.ask1)+' · '+qty(c.askVol1))+
-   '</div><p class="derivative-contract-status">'+esc(statusFor(c))+'</p></article>';
+ if(!state.data){host.innerHTML='<div class="derivative-head"><h4>Bảng giá VN30F / VN100F</h4></div><p class="money-source-pending">'+(state.failed?'Nguồn giá phái sinh đang gián đoạn.':'Đang tải dữ liệu hợp đồng...')+'</p>';return;}
+ const all=withAliases(contracts(state.data)),subset=all.filter(c=>state.filter==='all'||c.underlying===state.filter);
+ if(!all.some(c=>c.symbol===state.selected))state.selected=all[0]?.symbol||null;
+ const c=all.find(x=>x.symbol===state.selected);
+ const sourceAge=validStamp(state.data.latestSourceTime);
+ const fresh=sourceAge?Math.round((Date.now()-sourceAge)/60000):null;
+ const stale=marketOpen()&&fresh!==null&&fresh>15;
+ const badge=marketOpen()?(stale?'Giá chậm cập nhật':'Đang trong giờ giao dịch'):'Ngoài giờ giao dịch';
+ const choice=[['all','Tất cả'],['VN30','VN30F'],['VN100','VN100F']].map(([id,label])=>'<button type="button" data-futures-underlying="'+id+'" class="'+(state.filter===id?'active':'')+'" aria-pressed="'+(state.filter===id)+'">'+label+'</button>').join('');
+ const selector=all.map(x=>'<option value="'+esc(x.symbol)+'" '+(x.symbol===state.selected?'selected':'')+'>'+esc(x.alias)+' · '+esc(x.symbol)+' · '+esc(x.expiry)+'</option>').join('');
+ const pricePanel=c?'<div class="derivative-focus-head"><div><strong>'+esc(c.alias)+' <span>'+esc(c.symbol)+'</span></strong><small>Đáo hạn '+esc(c.expiry)+' · '+esc(statusFor(c))+'</small></div><div class="derivative-focus-price"><strong>'+fmt(c.price)+'</strong><small>điểm</small>'+move(c)+'</div></div>'+
+ '<div class="derivative-focus-metrics"><span>Tham chiếu <b>'+fmt(c.reference)+'</b></span><span>KLGD <b>'+fmt(c.volume,0)+'</b></span><span>OI <b>'+fmt(c.openInterest,0)+'</b></span><span>Cao / Thấp <b>'+fmt(c.high)+' / '+fmt(c.low)+'</b></span></div>'+
+ '<div class="derivative-chart-wrap">'+miniHistory(c.series)+'</div>'+
+ '<p class="derivative-series-note">Đường giá biểu diễn các quan sát có thời điểm nguồn đã xác minh. Chưa có lịch sử OHLCV đầy đủ nên chưa dựng nến 1 phút hoặc tín hiệu chỉ báo phái sinh.</p>'
+ :'<p class="money-source-pending">Không tìm thấy hợp đồng còn hiệu lực với giá và thời điểm nguồn hợp lệ.</p>';
+ const headers=['Mã / Kỳ hạn','Giá','Thay đổi','KLGD','OI','Dư mua 1','Dư bán 1','Nguồn'];
+ const rows=subset.map(x=>{
+  const selected=x.symbol===state.selected;
+  const cls='derivative-live-contract'+(selected?' active':'');
+  return '<tr class="'+cls+'" data-futures-symbol="'+esc(x.symbol)+'" aria-selected="'+selected+'">'+
+  '<td class="derivative-contract-title"><button type="button" data-futures-select="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><small>'+esc(x.alias)+' · '+esc(x.expiry)+'</small></button></td>'+
+  '<td class="derivative-last"><strong>'+fmt(x.price)+'</strong></td><td>'+move(x)+'</td><td>'+fmt(x.volume,0)+'</td><td>'+fmt(x.openInterest,0)+'</td>'+
+  '<td>'+fmt(x.bid1)+' <small>('+fmt(x.bidVol1,0)+')</small></td><td>'+fmt(x.ask1)+' <small>('+fmt(x.askVol1,0)+')</small></td>'+
+  '<td class="derivative-time">'+esc(datetimeVN(x.sourceTime))+'</td></tr>';
  }).join('');
- host.innerHTML='<div class="derivative-head"><div><span class="macro-viz-kicker">HNX FUTURES · KBS</span><h4>Bảng giá hợp đồng tương lai</h4><p>'+esc(badge)+' · Giá gần nhất '+esc(newest?datetimeVN(new Date(newest).toISOString()):'—')+'</p></div><button type="button" class="money-refresh" data-futures-refresh>Làm mới giá</button></div>'+
- '<div class="derivative-filter" role="group" aria-label="Lọc hợp đồng tương lai">'+actions+'</div>'+
- (cards?'<div class="derivative-live-grid">'+cards+'</div>':'<p class="money-source-pending">Chưa có báo giá hợp đồng hợp lệ. Không thay bằng số OI tháng.</p>')+
- '<div class="macro-viz-source"><span>Nguồn KBS · cập nhật theo pipeline giá khoảng 5 phút khi thị trường giao dịch; không phải luồng tick thời gian thực.</span><a href="https://kbbuddywts.kbsec.com.vn/" target="_blank" rel="noopener noreferrer">Nguồn giá ↗</a></div>';
+ host.innerHTML='<div class="derivative-head"><div><span class="macro-viz-kicker">HNX · KBS</span><h4>Bảng giá hợp đồng tương lai</h4><p>'+esc(badge)+' · Giao dịch ghi nhận '+esc(datetimeVN(state.data.latestSourceTime))+'</p></div><button type="button" class="money-refresh" data-futures-refresh>Làm mới</button></div>'+
+ '<div class="derivative-filter" role="group" aria-label="Lọc chỉ số hợp đồng">'+choice+'</div>'+
+ '<div class="derivative-focus-select"><label for="futures-contract-select">Hợp đồng đang phân tích</label><select id="futures-contract-select" aria-label="Chọn hợp đồng tương lai">'+selector+'</select></div>'+
+ '<section class="derivative-focus" aria-label="Chi tiết giá và biểu đồ hợp đồng">'+pricePanel+'</section>'+
+ '<div class="derivative-board-scroll"><table class="derivative-board-table"><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+
+ (rows||'<tr><td colspan="8">Không có hợp đồng phù hợp bộ lọc.</td></tr>')+'</tbody></table></div>'+
+ '<div class="macro-viz-source"><span>Nguồn KBS, pipeline đặt lịch khoảng 5 phút; không phải luồng tick thời gian thực. Dữ liệu không có khớp mới được ghi đúng thời điểm.</span><a href="https://kbbuddywts.kbsec.com.vn/" target="_blank" rel="noopener noreferrer">Nguồn giá ↗</a></div>';
 }
 async function load(){
- if(state.loading)return;state.loading=true;
+ if(state.loading)return;state.loading=true;state.lastAttempt=Date.now();
  try{
-  const resp=await fetch(SOURCE+'?v='+Math.floor(Date.now()/60000),{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  const resp=await fetch(SOURCE+'?v='+Math.floor(Date.now()/60000),{cache:'no-store',signal:AbortSignal.timeout(12000)});
   if(!resp.ok)throw Error('HTTP '+resp.status);
-  const d=await resp.json();
-  if(!healthy(d))throw Error('Invalid futures source payload');
-  const newer=validStamp(d.latestSourceTime)||0,old=validStamp(state.data?.latestSourceTime)||0;
-  if(!state.data||newer>=old){state.data=d;state.failed=false;state.seenAt=Date.now();}
+  const data=await resp.json();if(!healthy(data))throw Error('Invalid futures snapshot');
+  const current=validStamp(state.data?.latestSourceTime)||0,next=validStamp(data.latestSourceTime)||0;
+  if(!state.data||next>=current){state.data=data;state.failed=false;}
  }catch{state.failed=true;}finally{state.loading=false;render();}
 }
-host.addEventListener('click',event=>{
- const button=event.target.closest?.('button');
- if(!button)return;
- const key=button.dataset.futuresUnderlying;
- if(['all','VN30','VN100'].includes(key)){state.filter=key;render();return;}
- if(button.hasAttribute('data-futures-refresh'))load();
+host.addEventListener('click',e=>{
+ const b=e.target.closest?.('button');if(!b)return;
+ const group=b.dataset.futuresUnderlying;
+ if(['all','VN30','VN100'].includes(group)){state.filter=group;render();return;}
+ const sym=b.dataset.futuresSelect;if(sym){state.selected=sym;render();return;}
+ if(b.hasAttribute('data-futures-refresh'))load();
 });
-window.FinDerivativeQuotes={refresh:load,setData:data=>{state.data=data;state.failed=false;render();},_test:{healthy,contracts,statusFor,marketOpen,fmt,miniHistory}};
+host.addEventListener('change',e=>{if(e.target.id==='futures-contract-select'){state.selected=e.target.value;render();}});
+window.FinDerivativeQuotes={refresh:load,setData:data=>{state.data=data;state.failed=false;render();},_test:{healthy,contracts,statusFor,marketOpen,fmt,miniHistory,withAliases}};
 render();load();
 setInterval(()=>{if(!document.hidden)load();},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
-})();
-</script><script>(function(){'use strict';
+})();</script><script>(function(){'use strict';
+/* Ownership: sourced disclosures only, no inferred cost basis or insider alpha. */
+const host=document.getElementById('market-ownership-content');
+if(!host)return;
+const SOURCE='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/ownership-disclosures.json';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(v,d=0)=>Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(v):'—';
+const stamp=s=>{const d=Date.parse(s||'');return Number.isFinite(d)&&d<=Date.now()+300000&&d>0?d:null;};
+function safeSource(u){try{const x=new URL(u);return x.protocol==='https:'&&/(^|\.)(hnx\.vn|hsx\.vn|ssc\.gov\.vn|vsd\.vn|vsd\.com\.vn)$/.test(x.hostname)?x.href:'';}catch{return'';}}
+const TYPES={registered_buy:'Đăng ký mua',registered_sell:'Đăng ký bán',executed_buy:'Đã mua',executed_sell:'Đã bán',ownership_change:'Thay đổi sở hữu'};
+const state={data:null,error:null,checked:false,symbol:''};
+function verified(row){
+ if(!row||!Object.hasOwn(TYPES,row.type)||!stamp(row.disclosedAt)||!safeSource(row.sourceUrl))return false;
+ if(!/^[A-Z]{3}$/.test(row.symbol||''))return false;
+ if(typeof row.person!=='string'||!row.person.trim()||typeof row.role!=='string')return false;
+ if(!Number.isFinite(row.quantity)||row.quantity<0)return false;
+ if(row.holdingsAfter!=null&&(!Number.isFinite(row.holdingsAfter)||row.holdingsAfter<0))return false;
+ if(row.executedAt!=null&&!stamp(row.executedAt))return false;
+ return true;
+}
+function selected(){return String(document.getElementById('ticker')?.value||'MBB').trim().toUpperCase();}
+function render(){
+ const symbol=selected();state.symbol=symbol;
+ if(!state.data){
+  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Sở hữu người nội bộ</strong><p>'+
+   (state.error?'Nguồn hồ sơ giao dịch người nội bộ chưa sẵn sàng.':'Đang kiểm tra hồ sơ công bố chính thức.')+
+   '</p><p>Chưa có dữ liệu được xác minh thì FinQuery không tự suy ra tỷ lệ nắm giữ, giá vốn hoặc tín hiệu mua bán.</p></section>';
+  return;
+ }
+ const rows=state.data.events.filter(r=>verified(r)&&r.symbol===symbol).sort((a,b)=>stamp(b.disclosedAt)-stamp(a.disclosedAt)).slice(0,60);
+ if(!rows.length){
+  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Giao dịch nội bộ</strong><p>Chưa có bản ghi đã xác minh từ công bố của sở giao dịch/doanh nghiệp.</p><p>Tỷ lệ nắm giữ, giao dịch dự kiến và giao dịch đã thực hiện sẽ hiển thị riêng khi có chứng từ nguồn.</p></section>';return;
+ }
+ const header='<div class="ownership-heading"><strong>'+esc(symbol)+' · '+rows.length+' công bố</strong><small>Ưu tiên mốc ngày công bố, không thay bằng ngày thực hiện</small></div>';
+ const trs=rows.map(r=>'<tr><td>'+esc(new Date(r.disclosedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}))+'</td><td><strong>'+esc(r.person)+'</strong><small>'+esc(r.role)+'</small></td>'+
+ '<td>'+esc(TYPES[r.type])+(r.executedAt?'<small>Ngày giao dịch '+esc(new Date(r.executedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}))+'</small>':'')+'</td>'+
+ '<td>'+fmt(r.quantity)+'</td><td>'+fmt(r.holdingsAfter)+'</td>'+
+ '<td><a href="'+esc(safeSource(r.sourceUrl))+'" rel="noopener noreferrer" target="_blank" aria-label="Mở công bố nguồn '+esc(r.person)+'">Nguồn ↗</a></td></tr>').join('');
+ host.innerHTML=header+'<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr><th>Công bố</th><th>Người nội bộ</th><th>Loại giao dịch</th><th>Số lượng</th><th>Nắm giữ sau</th><th>Chứng từ</th></tr></thead><tbody>'+trs+'</tbody></table></div>'+
+ '<p class="ownership-disclaimer">Giá trị sở hữu hiện tại ≠ lãi/lỗ đầu tư; thiếu giá vốn thì không tính lợi nhuận. Không phát tín hiệu Alpha từ sự kiện chưa kiểm định.</p>';
+}
+async function load(){
+ try{
+  const r=await fetch(SOURCE+'?v='+Math.floor(Date.now()/3600000),{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!r.ok)throw Error('No verified ownership disclosures');
+  const d=await r.json();
+  if(d.schemaVersion!==1||d.status!=='verified'||!Array.isArray(d.events))throw Error('Invalid ownership data');
+  state.data=d;state.error=null;
+ }catch(e){state.error=e?.message||'unavailable';}finally{state.checked=true;render();}
+}
+document.addEventListener('finquery:symbol-change',render);
+document.getElementById('ticker')?.addEventListener('change',render);
+window.FinOwnership={refresh:()=>{if(!state.checked)return load();render();},setData:data=>{state.data=data;state.error=null;state.checked=true;render();},_test:{verified,safeSource}};
+render();load();
+})();</script><script>(function(){'use strict';
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9%]+/g,' ').trim();
 const C=[
 {id:'revenueCore',title:'Doanh thu',aliases:['doanh thu','revenue','doanh thu thuan'],definition:'Doanh thu là giá trị hàng hóa, dịch vụ doanh nghiệp ghi nhận khi đáp ứng điều kiện kế toán; doanh thu thuần là doanh thu sau các khoản giảm trừ.',formula:'Doanh thu thuần = Doanh thu bán hàng và cung cấp dịch vụ - Các khoản giảm trừ doanh thu',read:'Phân tích theo từng kỳ, biên lợi nhuận, khả năng thu tiền và chất lượng doanh thu; không đồng nhất doanh thu với tiền đã thu.',metric:null},
