@@ -50,6 +50,24 @@ class LiquidityIngestionTests(unittest.TestCase):
         self.assertEqual(data["vbmaSwap"]["points"],[])
         self.assertTrue(data["sourceIssues"])
 
+    def test_vbma_fetch_uses_allowlisted_cachebuster_as_in_original_export_code(self):
+        from unittest.mock import patch
+        requested=[]
+        class Reply:
+            def __init__(self,url): self.url=url
+            def __enter__(self): return self
+            def __exit__(self,*_): return False
+            def geturl(self): return self.url
+            def read(self,limit): return b"sample source body"
+        def opener(req,timeout=12):
+            requested.append(req.full_url)
+            return Reply(req.full_url)
+        with patch.object(ingest,"urlopen",side_effect=opener):
+            ingest.fetch(ingest.SWAP_URL)
+            ingest.fetch(ingest.ON_URL)
+        self.assertRegex(requested[0],r"/fx_swap_curve\.csv\?t=\d+$")
+        self.assertEqual(requested[1],ingest.ON_URL)
+
     def test_no_feeds_keeps_existing_snapshot(self):
         def offline(url): raise ConnectionError("offline")
         data=ingest.refresh(copy.deepcopy(BASE),fetcher=offline,clock=date(2026,10,24))
