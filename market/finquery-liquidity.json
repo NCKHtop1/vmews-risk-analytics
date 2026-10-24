@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-10-22",
+  "publishedAt": "2026-10-23T18:18:00+07:00",
+  "lastCheckedAt": null,
+  "mode": "SOURCE_REFERENCE",
+  "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
+  "disclaimer": "Public observation archive, no investment signals, no invented observations.",
+  "interbank": {
+    "code": "VND_ON",
+    "unit": "%/year",
+    "label": "Liên ngân hàng VND qua đêm",
+    "status": "secondary_source_crosschecked",
+    "originAgency": "NHNN",
+    "frequency": "business_daily",
+    "asOf": "2026-10-22",
+    "source": "https://stockbiz.vn/vi-mo/du-lieu/lai-suat-lien-ngan-hang",
+    "crossCheck": "https://dulieukinhte.com/du-lieu-dong/lai-suat-thi-truong-lien-ngan-hang-qua-dem-34248",
+    "observations": [
+      {
+        "date": "2026-10-07",
+        "value": 0.72
+      },
+      {
+        "date": "2026-10-08",
+        "value": 0.99
+      },
+      {
+        "date": "2026-10-09",
+        "value": 4.52
+      },
+      {
+        "date": "2026-10-12",
+        "value": 4.75
+      },
+      {
+        "date": "2026-10-13",
+        "value": 4.8
+      },
+      {
+        "date": "2026-10-14",
+        "value": 3.58
+      },
+      {
+        "date": "2026-10-15",
+        "value": 3.14
+      },
+      {
+        "date": "2026-10-16",
+        "value": 4.45
+      },
+      {
+        "date": "2026-10-19",
+        "value": 4.42
+      },
+      {
+        "date": "2026-10-20",
+        "value": 3.71
+      },
+      {
+        "date": "2026-10-21",
+        "value": 3.39
+      },
+      {
+        "date": "2026-10-22",
+        "value": 4.31
+      }
+    ]
+  },
+  "derivatives": {
+    "source": "https://www.gov.hnx.vn/vi-vn/chi-tiet-tin-60023563-0.html",
+    "sourceAgency": "HNX",
+    "frequency": "monthly",
+    "lastMonth": "2026-09",
+    "status": "published_official_monthly",
+    "note": "Monthly averages and end-month open interest. These are not session-level values.",
+    "months": [
+      {
+        "month": "2026-08",
+        "vn30": {
+          "openInterest": 27984,
+          "avgVolume": 228905,
+          "avgNotionalBillionVND": 43925
+        },
+        "vn100": {
+          "openInterest": 77,
+          "avgVolume": 66,
+          "avgNotionalBillionVND": 12.18
+        }
+      },
+      {
+        "month": "2026-09",
+        "vn30": {
+          "openInterest": 39543,
+          "avgVolume": 219121,
+          "avgNotionalBillionVND": 42828
+        },
+        "vn100": {
+          "openInterest": 203,
+          "avgVolume": 259,
+          "avgNotionalBillionVND": 47.8
+        }
+      }
+    ],
+    "allowedInstruments": [
+      "VN30_FUTURES",
+      "VN100_FUTURES"
+    ],
+    "equityListedHNXIncluded": false
+  },
+  "vbmaSwap": {
+    "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
+    "agency": "VBMA",
+    "instrument": "USD/VND FX Swap",
+    "measurement": null,
+    "unit": null,
+    "asOf": null,
+    "status": "awaiting_verified_source",
+    "points": [],
+    "licenseStatus": "review_required",
+    "note": "Raw VBMA FX Swap CSV may be unavailable. Do not confuse swap points with percent rate."
+  }
+}
