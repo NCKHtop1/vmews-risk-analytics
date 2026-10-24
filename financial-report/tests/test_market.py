@@ -2366,7 +2366,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('mergeUniverseCompanies',market)
         self.assertIn("tier!=='CORE'",market)
         self.assertIn("universeFilter:'all'",scanner)
-        self.assertIn("Discovery EOD",scanner)
+        self.assertIn("Nhóm mở rộng",scanner)
         self.assertIn("cadence==='EOD'",scanner)
 
     def test_market_has_real_price_peer_and_sector_comparison_tabs(self):
