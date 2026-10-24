@@ -103,7 +103,7 @@ async function session(req) {
   return rows[0] || null;
 }
 function exposed(user) {
-  return { email: user.email, name: user.full_name || user.email, avatar: user.avatar_url || '', role: user.role, status: user.status };
+  return { id: user.id, email: user.email, name: user.full_name || user.email, avatar: user.avatar_url || '', role: user.role, status: user.status };
 }
 function adminAllowed(user) {
   return user && user.status === 'active' && ['owner', 'admin'].includes(user.role);
@@ -121,34 +121,99 @@ async function audit(actor, action, target, meta) {
     actor, action, target || null, JSON.stringify(meta || {})
   ]);
 }
+async function findOrCreateGoogleAccount(identity) {
+  // A verified Google subject is the permanent identity, not an editable email address.
+  // Existing owner accounts may be pre-seeded by email and are claimed exactly once.
+  const sql = db();
+  const args = [identity.email, identity.sub, identity.name, identity.avatar];
+  const existingSubject = await sql(
+    'SELECT id,email,google_sub FROM public.finquery_users WHERE google_sub=$1 LIMIT 1',
+    [identity.sub]
+  );
+  if (existingSubject.length) {
+    // Keep user ID and role intact when a verified Google account changes its email.
+    const updated = await sql(
+      'UPDATE public.finquery_users SET email=$1,full_name=$3,avatar_url=$4,' +
+      'last_login_at=now(),updated_at=now() WHERE google_sub=$2 ' +
+      'RETURNING id,email,full_name,avatar_url,role,status',
+      args
+    );
+    return updated[0] || null;
+  }
+
+  const emailOwner = await sql(
+    'SELECT id,google_sub FROM public.finquery_users WHERE email=$1 LIMIT 1',
+    [identity.email]
+  );
+  if (emailOwner.length) {
+    if (emailOwner[0].google_sub && emailOwner[0].google_sub !== identity.sub) {
+      const e = new Error('This verified email belongs to another Google identity');
+      e.code = 'ACCOUNT_IDENTITY_CONFLICT';
+      throw e;
+    }
+    const updated = await sql(
+      'UPDATE public.finquery_users SET google_sub=$2,full_name=$3,avatar_url=$4,' +
+      'last_login_at=now(),updated_at=now() WHERE email=$1 AND google_sub IS NULL ' +
+      'RETURNING id,email,full_name,avatar_url,role,status',
+      args
+    );
+    if (updated.length) return updated[0];
+    // Another concurrent login may have already associated this subject.
+    const raced = await sql(
+      'SELECT id,email,full_name,avatar_url,role,status ' +
+      'FROM public.finquery_users WHERE google_sub=$1 LIMIT 1', [identity.sub]
+    );
+    if (raced.length) return raced[0];
+  }
+
+  // Exactly one persistent row per Google subject. First-time users can sign in
+  // immediately, just as in PandaStudy; admins may block them later.
+  const created = await sql(
+    'INSERT INTO public.finquery_users(email,google_sub,full_name,avatar_url,role,status,last_login_at) ' +
+    "VALUES($1,$2,$3,$4,'user','active',now()) " +
+    'ON CONFLICT (google_sub) DO UPDATE SET email=EXCLUDED.email,' +
+    'full_name=EXCLUDED.full_name,avatar_url=EXCLUDED.avatar_url,' +
+    'last_login_at=now(),updated_at=now() ' +
+    'RETURNING id,email,full_name,avatar_url,role,status',
+    args
+  );
+  return created[0] || null;
+}
 async function googleSignIn(req, res) {
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
   if (!originAllowed(req)) return json(res, 403, { error: 'Invalid request origin' });
   let claims;
   try { claims = await googleClaims(parseBody(req).credential); }
-  catch (err) { return json(res, 401, { error: 'Không xác minh được đăng nhập Google.', code: 'GOOGLE_INVALID' }); }
-  const rows = await db()(
-    'INSERT INTO public.finquery_users(email,google_sub,full_name,avatar_url,last_login_at) ' +
-    'VALUES ($1,$2,$3,$4,now()) ON CONFLICT(email) DO UPDATE SET ' +
-    'google_sub=COALESCE(finquery_users.google_sub,EXCLUDED.google_sub), ' +
-    'full_name=EXCLUDED.full_name,avatar_url=EXCLUDED.avatar_url,last_login_at=now(),updated_at=now() ' +
-    'WHERE finquery_users.google_sub IS NULL OR finquery_users.google_sub=EXCLUDED.google_sub ' +
-    'RETURNING id,email,full_name,avatar_url,role,status',
-    [claims.email, claims.sub, claims.name, claims.avatar]
-  );
-  const user = rows[0];
-  if (!user) return json(res, 403, { error: 'Tài khoản Google không khớp với tài khoản đã đăng ký.' });
+  catch (_) { return json(res, 401, { error: 'Không xác minh được đăng nhập Google.', code: 'GOOGLE_INVALID' }); }
+  let user;
+  try { user = await findOrCreateGoogleAccount(claims); }
+  catch (error) {
+    if (error.code === '23505' || error.code === 'ACCOUNT_IDENTITY_CONFLICT') {
+      return json(res, 409, { error: 'Email đã được liên kết với tài khoản Google khác. Liên hệ quản trị viên.', code: 'IDENTITY_CONFLICT' });
+    }
+    throw error;
+  }
+  if (!user) return json(res, 403, { error: 'Không thể liên kết danh tính tài khoản.' });
   if (user.status === 'blocked') {
     await audit(user.email, 'blocked_login', user.email);
-    return json(res, 403, { error: 'Tài khoản đã bị khóa. Liên hệ quản trị viên.', code: 'BLOCKED' }, { 'Set-Cookie': expireCookie() });
+    return json(res, 403, {
+      error: 'Tài khoản đã bị khóa. Liên hệ quản trị viên.', code: 'BLOCKED'
+    }, { 'Set-Cookie': expireCookie() });
   }
   const oldToken = cookieValue(req);
-  if (oldToken) await db()('UPDATE public.finquery_sessions SET revoked_at=now() WHERE token_hash=$1 AND revoked_at IS NULL', [tokenHash(oldToken)]);
+  if (oldToken) await db()(
+    'UPDATE public.finquery_sessions SET revoked_at=now() WHERE token_hash=$1 AND revoked_at IS NULL',
+    [tokenHash(oldToken)]
+  );
   const newToken = crypto.randomBytes(32).toString('base64url');
-  await db()('INSERT INTO public.finquery_sessions(user_id,token_hash,expires_at) VALUES($1,$2,now()+interval \'7 days\')', [user.id,tokenHash(newToken)]);
+  await db()(
+    "INSERT INTO public.finquery_sessions(user_id,token_hash,expires_at) VALUES($1,$2,now()+interval '7 days')",
+    [user.id,tokenHash(newToken)]
+  );
   await audit(user.email,'google_login',user.email,{status:user.status});
   return json(res, 200, { authenticated: true, user: exposed(user) }, { 'Set-Cookie': cookieHeader(newToken) });
 }
+
 async function authSession(req, res) {
   if (req.method !== 'GET') return json(res, 405, { error: 'Method not allowed' });
   const user = await session(req);
