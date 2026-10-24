@@ -744,3 +744,23 @@ body.strategy-lab-view .strategy-page{display:block}
 .derivative-board-table .derivative-move{margin:0;font-size:11px;white-space:nowrap}
 .derivative-board-table .derivative-time{font-size:11px;white-space:nowrap}
 @media(max-width:600px){#market-futures-workspace .money-derivative-live{padding:12px}.derivative-focus{padding:11px}.derivative-focus-head strong{font-size:18px}.derivative-focus-price>strong{font-size:26px}.derivative-focus-metrics>span{font-size:10px}}
+
+/* Alpha Radar does not publish private rule descriptions. */
+.alpha-radar-panel{padding:15px;border:1px solid #dce5f0;border-radius:15px;background:#fbfcff;margin:0 0 18px}
+.alpha-radar-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.alpha-radar-head h3{font-size:clamp(17px,2vw,21px);color:#233f60;margin:5px 0}
+.alpha-radar-head p,.alpha-radar-note{font-size:11px;color:#8393a8;line-height:1.55;margin:4px 0}
+.alpha-radar-tools{display:flex;gap:7px;flex-wrap:wrap}
+.alpha-radar-tools button{padding:8px 11px;border:1px solid #d1dfed;border-radius:8px;background:white;color:#365e89;font-weight:700;font-size:11px;cursor:pointer}
+#alpha-radar-status{font-size:11px;color:#667f9c;margin:10px 0}
+.alpha-radar-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.alpha-signal-row{border:1px solid #e4ebf3;border-radius:10px;background:#fff;padding:10px;display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:7px}
+.alpha-signal-row>div{display:grid;gap:5px}
+.alpha-signal-row strong{color:#275388;font-size:13px}
+.alpha-signal-row span{font-weight:700;color:#3d5b75;font-size:12px}
+.alpha-signal-row b{font-size:11px;color:#697d91}
+.alpha-signal-row b.confirmed{color:#008a78}
+.alpha-signal-row b.preparing{color:#b27814}
+.alpha-signal-row small{font-size:10px;color:#8294a9}
+.alpha-empty{font-size:12px;color:#8594a6;margin:6px 0 12px}
+@media(max-width:580px){.alpha-radar-panel{padding:12px}.alpha-radar-list{grid-template-columns:1fr}}
