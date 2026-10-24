@@ -18,6 +18,7 @@ const saveUser = (u, email, sub, name, avatar) => {
 };
 function query(sql,args=[]) {
   const s=sql.replace(/\s+/g,' ').trim().toUpperCase();
+  if(s==='SELECT 1 AS HEALTHY') return [{healthy:1}];
   if(s.startsWith('SELECT ID,EMAIL,GOOGLE_SUB FROM PUBLIC.FINQUERY_USERS WHERE GOOGLE_SUB=')) return select([...users.values()].find(u=>u.google_sub===args[0]));
   if(s.startsWith('SELECT ID,GOOGLE_SUB FROM PUBLIC.FINQUERY_USERS WHERE EMAIL=')) return select([...users.values()].find(u=>u.email===args[0]));
   if(s.startsWith('SELECT ID,EMAIL,FULL_NAME,AVATAR_URL,ROLE,STATUS FROM PUBLIC.FINQUERY_USERS WHERE GOOGLE_SUB=')) return select([...users.values()].find(u=>u.google_sub===args[0]));
