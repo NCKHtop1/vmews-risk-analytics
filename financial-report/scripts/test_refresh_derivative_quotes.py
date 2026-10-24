@@ -51,6 +51,11 @@ class DerivativeFeedTests(unittest.TestCase):
         self.assertEqual(stamp, "2026-10-23T03:15:07+00:00")
         self.assertIsNone(parse_trade_time({"TD": "23/10/2026", "FT": "14:45:00"}, STAMP))
         self.assertIsNone(parse_trade_time({}, STAMP))
+        # Provider may emit a Saturday EOD-looking 14:45 timestamp; no actual
+        # exchange session took place, so reject it even when close to now.
+        sat = datetime(2026, 10, 24, 8, 0, tzinfo=timezone.utc)
+        self.assertIsNone(parse_trade_time({"TD": "24/10/2026", "FT": "14:45:00"}, sat))
+        self.assertIsNone(parse_trade_time({"TD": "23/10/2026", "FT": "18:00:00"}, sat))
 
     def test_vn30_vn100_prices_volume_and_oi_from_actual_board(self):
         snapshot = collect(provider, STAMP)
