@@ -15,7 +15,6 @@ import re
 import unicodedata
 from datetime import datetime, timezone
 from html.parser import HTMLParser
-from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, urlopen
@@ -50,7 +49,6 @@ VBMA = {
     },
 }
 HNX_LISTING = "https://www.hnx.vn/vi-vn/phai-sinh.html"
-HNX_LISTING = "https://www.hnx.vn/vi-vn/phai-sinh.html"
 EVENTS_URL = (
     "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/"
     "financial-insights-data/data/corporate-events.json"
@@ -60,7 +58,6 @@ _DATE = re.compile(
     r"(?<!\d)(20\d{2}[-/]\d{1,2}[-/]\d{1,2}|"
     r"\d{1,2}[-/]\d{1,2}[-/]20\d{2})(?!\d)"
 )
-_MONTHLY = re.compile(r"phai sinh thang\s*(\d{1,2})\s*/\s*(20\d{2})", re.I)
 _MONTHLY = re.compile(r"phai sinh thang\s*(\d{1,2})\s*/\s*(20\d{2})", re.I)
 
 
@@ -75,8 +72,6 @@ def approved_url(url, provider=None):
     host = parts.hostname.lower()
     if provider == "vbma":
         return host in ("vbma.org.vn", "www.vbma.org.vn")
-    if provider == "hnx":
-        return host == "hnx.vn" or host.endswith(".hnx.vn")
     if provider == "hnx":
         return host == "hnx.vn" or host.endswith(".hnx.vn")
     if provider == "events":
@@ -280,97 +275,6 @@ def parse_hnx_monthly(raw, url, expected_month=None):
     }
 
 
-class PageParser(HTMLParser):
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.parts = []
-        self.links = []
-        self._href = None
-        self._title = []
-        self._blocked = 0
-
-    def handle_starttag(self, tag, attrs):
-        tag = tag.lower()
-        if tag in ("style", "script"):
-            self._blocked += 1
-        if tag == "a":
-            self._href = dict(attrs).get("href", "")
-            self._title = []
-
-    def handle_data(self, data):
-        if self._blocked or not data.strip():
-            return
-        self.parts.append(data.strip())
-        if self._href is not None:
-            self._title.append(data.strip())
-
-    def handle_endtag(self, tag):
-        tag = tag.lower()
-        if tag in ("script", "style") and self._blocked:
-            self._blocked -= 1
-        if tag == "a" and self._href is not None:
-            self.links.append((self._href, _clean(" ".join(self._title))))
-            self._href = None
-            self._title = []
-
-
-def monthly_hnx_link(html_blob, base=HNX_LISTING):
-    if not approved_url(base, "hnx"):
-        raise ValueError("Non-HNX listing")
-    parser = PageParser()
-    parser.feed(html_blob.decode("utf-8-sig", "replace"))
-    links = []
-    for href, label in parser.links:
-        match = _MONTHLY.search(_norm(label))
-        url = urljoin(base, href)
-        if match and approved_url(url, "hnx"):
-            month, year = int(match.group(1)), int(match.group(2))
-            if 1 <= month <= 12:
-                links.append((year * 12 + month, url, f"{year}-{month:02d}"))
-    return max(links, default=None)
-
-
-def _int_vi(number):
-    value = str(number).strip()
-    if not re.fullmatch(r"\d{1,3}(?:\.\d{3})+|\d+", value):
-        raise ValueError("Not a formatted integer count")
-    return int(value.replace(".", ""))
-
-
-def parse_hnx_monthly(raw, url, expected_month=None):
-    if not approved_url(url, "hnx"):
-        raise ValueError("Untrusted HNX report origin")
-    parser = PageParser()
-    parser.feed(raw.decode("utf-8-sig", "replace"))
-    text = _clean(" ".join(parser.parts))
-    norm = _norm(text)
-    m = _MONTHLY.search(norm)
-    if not m:
-        raise ValueError("Not an identifiable HNX monthly report")
-    month, year = int(m.group(1)), int(m.group(2))
-    period = f"{year}-{month:02d}"
-    if not (1 <= month <= 12) or (expected_month and period != expected_month):
-        raise ValueError("HNX publication/period mismatch")
-    # Only month-end aggregate open interest; NEVER daily or per-contract OI.
-    vn100 = norm.find("ve giao dich hop dong tuong lai chi so vn100")
-    if vn100 < 0:
-        raise ValueError("VN100 section absent; contract mix cannot be certified")
-    first, second = norm[:vn100], norm[vn100:]
-    vn30_match = re.search(r"kh[oô]i luong hop dong mo.{0,110}?dat\s+([\d.]+)\s+hop dong", first, re.S)
-    vn100_match = re.search(r"\boi\b.{0,130}?(?:la|dat)\s+([\d.]+)\s+hop dong", second, re.S)
-    if not vn30_match or not vn100_match:
-        raise ValueError("Monthly OI figures not explicitly separable")
-    vn30, vn100_oi = _int_vi(vn30_match.group(1)), _int_vi(vn100_match.group(1))
-    if vn30 > 20_000_000 or vn100_oi > 20_000_000:
-        raise ValueError("Implausible aggregate OI")
-    return {
-        "provider": "HNX", "url": url, "sourceMonth": period,
-        "frequency": "MONTHLY", "aggregation": "MONTH_END_OPEN_INTEREST",
-        "contracts": {"VN30_FUTURES": {"oi": vn30}, "VN100_FUTURES": {"oi": vn100_oi}},
-        "dailyContractDataAvailable": False, "modelEligible": False, "publicationEligible": False,
-    }
-
-
 def _aware_timestamp(value):
     try:
         parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
@@ -444,25 +348,6 @@ def probe(fetch=fetch_bytes):
                 "reason": (type(exc).__name__ + ": " + str(exc))[:220],
                 "modelEligible": False, "publicationEligible": False,
             }
-    try:
-        listing = fetch(HNX_LISTING, "hnx")
-        found = monthly_hnx_link(listing)
-        if not found:
-            raise ValueError("No HNX monthly derivative report in official listing")
-        _, url, period = found
-        raw = fetch(url, "hnx")
-        hnx = parse_hnx_monthly(raw, url, period)
-        results["hnx_derivatives_monthly"] = {
-            "status": "needs_review", "checkedAt": stamp,
-            "sha256": hashlib.sha256(raw).hexdigest(), "observation": hnx,
-            "licenseStatus": "review_required",
-        }
-    except Exception as exc:
-        results["hnx_derivatives_monthly"] = {
-            "status": "unavailable", "checkedAt": stamp,
-            "sourceUrl": HNX_LISTING, "reason": (type(exc).__name__ + ": " + str(exc))[:220],
-            "modelEligible": False, "publicationEligible": False,
-        }
     try:
         listing = fetch(HNX_LISTING, "hnx")
         found = monthly_hnx_link(listing)
