@@ -50,6 +50,7 @@ jobs:
           node --check financial-report/frontend/derivatives-market.js
           node --check financial-report/frontend/ownership-intelligence.js
           node --check financial-report/frontend/alpha-radar.js
+          for file in financial-report/frontend/*.js; do node --check "$file"; done
           python -m py_compile financial-report/scripts/vbma_curve_reader.py
           python -m py_compile financial-report/scripts/scan_private_alpha.py
       - name: Quant contracts, ownership and UI regression
