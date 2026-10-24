@@ -2361,7 +2361,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("market/universe.json",pages)
         self.assertIn('id="market-universe-filter"',html)
         self.assertIn('id="technical-scanner-universe"',html)
-        self.assertIn('Core · Liquid · Discovery',html)
+        self.assertIn('Nhóm chính · Thanh khoản · Mở rộng',html)
         self.assertIn("get('universe.json')",market)
         self.assertIn('mergeUniverseCompanies',market)
         self.assertIn("tier!=='CORE'",market)
