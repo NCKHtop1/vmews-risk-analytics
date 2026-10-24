@@ -1,0 +1,43 @@
+name: FinQuery release diagnostics
+on:
+  push:
+    branches:
+      - feat/finquery-secure-auth-20261024
+    paths:
+      - '.github/workflows/finquery-release-diagnostics.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/finquery-release-diagnostics.yml'
+permissions:
+  contents: read
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check live rollback and isolated release diagnostics
+        run: |
+          node --input-type=module <<'NODE'
+          const targets=[
+            {name:'live-domain',base:'https://finquery.info.vn'},
+            {name:'new-deployment',base:'https://finquery-l640mh8o8-ngochailuong.vercel.app'}
+          ];
+          for(const target of targets) {
+            for(const path of ['/healthz','/financial-report/index.html?symbol=MBB&mode=quarter']){
+              try{
+                const r=await fetch(target.base+path,{redirect:'manual',signal:AbortSignal.timeout(15000)});
+                const type=r.headers.get('content-type')||'';
+                const body=await r.text();
+                let info={};
+                if(path==='/healthz' && type.includes('json')) {
+                  try{
+                    const data=JSON.parse(body);
+                    info={ok:data.ok,authConfigured:data.authConfigured,databaseReachable:data.databaseReachable,
+                      errorCode:data.code,hasError:Boolean(data.error)};
+                  }catch{}
+                }
+                console.log(JSON.stringify({target:target.name,path:path.split('?')[0],status:r.status,contentType:type,bytes:body.length,location:(r.headers.get('location')||'').slice(0,100),health:info}));
+              }catch(e){console.log(JSON.stringify({target:target.name,path,error:e.name}));}
+            }
+          }
+          NODE
