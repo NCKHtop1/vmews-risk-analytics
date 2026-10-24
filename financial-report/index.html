@@ -625,6 +625,46 @@ body.strategy-lab-view .strategy-page{display:block}
  .macro-explore .macro-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
  .macro-viz-source{font-size:10px}
 }
+
+
+/* FinQuery money market and derivatives */
+.money-section-head{margin-top:27px}
+.money-section-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.money-refresh{border:1px solid #d7e2f1;border-radius:9px;background:#fff;color:#2a548c;font-size:11px;font-weight:750;padding:9px 12px;cursor:pointer}
+.money-refresh:disabled{opacity:.55}
+.money-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.money-dashboard-grid .macro-viz-card{min-width:0}
+.money-main-num{min-width:0;display:grid;gap:1px;justify-items:end;text-align:right}
+.money-main-num strong{font-size:clamp(22px,2.3vw,28px);font-weight:800;color:#1a416e;line-height:1.1;font-variant-numeric:tabular-nums}
+.money-main-num small{font-size:10px;color:#8191a7;font-weight:700}
+.money-card-caption{margin:9px 0 12px;font-size:12px;font-weight:700;color:#557ba5;min-height:18px}
+.money-chart{margin:9px 0 13px;min-height:210px;min-width:0}
+.money-chart svg{width:100%;height:auto;display:block}
+.money-empty{display:flex;align-items:center;justify-content:center;min-height:194px;color:#8493a9;background:#fafcff;border:1px dashed #d6e0ee;border-radius:10px;font-size:12px;line-height:1.5;padding:16px;text-align:center}
+.money-derivative-section{margin-top:16px}
+.money-chart-menu{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.money-chart-menu button{background:#f6f9fe;color:#516782;border:1px solid #e0e7f1;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:750;cursor:pointer}
+.money-chart-menu button.active{background:#315db9;color:#fff;border-color:#315db9}
+.money-derivative-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.money-future-contract{border:1px solid #e5edf5;border-radius:11px;padding:15px;min-width:0}
+.money-future-contract h4{margin:0;color:#294461;font-size:16px}
+.money-delta{font-size:12px;font-weight:720;color:#376e9d;margin:6px 0 12px}
+.money-bar-compare{display:grid;gap:9px;margin-top:16px}
+.money-bar-item{display:grid;grid-template-columns:100px minmax(0,1fr) 52px;gap:8px;align-items:center;font-size:12px}
+.money-bar-item b{font-variant-numeric:tabular-nums;color:#274365}
+.money-bar-item small{color:#8191a7;text-align:right}
+.money-bar-track{background:#ecf1f8;border-radius:999px;height:11px;overflow:hidden}
+.money-bar-track span{display:block;height:100%;border-radius:999px}
+.money-bar-unit{display:block;font-size:10px;color:#8695a9;margin:10px 0 14px}
+.money-swap-chart{display:flex;align-items:flex-end;gap:9px;height:210px;overflow:auto;padding:22px 6px 6px}
+.money-swap-point{display:grid;grid-template-rows:14px minmax(100px,1fr) 16px;gap:6px;justify-items:center;min-width:38px}
+.money-swap-point small{font-size:10px;color:#667e9e}
+.money-swap-point b{font-size:10px;color:#2f4e7b;font-variant-numeric:tabular-nums}
+.money-swap-track{height:138px;display:flex;align-items:flex-end}
+.money-swap-track>div{width:14px;background:#5276c7;border-radius:4px 4px 0 0}
+#macro-liquidity-overview .macro-viz-source{margin-top:10px}
+@media(max-width:950px){.money-dashboard-grid,.money-derivative-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:570px){.money-future-contract{padding:11px}.money-main-num strong{font-size:24px}.money-bar-item{grid-template-columns:80px minmax(0,1fr) 48px;font-size:11px}.money-section-actions{align-items:start}.money-refresh{padding:8px 10px}#money-source-stamp{font-size:10px}}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -840,7 +880,7 @@ body.strategy-lab-view .strategy-page{display:block}
 </style>
 </head>
 <body class="site-locked">
-<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>AI Strategy Agent</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô</a><a href="https://finquery.info.vn/financial-report/data-hub.html">Kho dữ liệu</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Core · Liquid · Discovery</span></div></header>
+<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Financial Intelligence"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Financial Intelligence</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>AI Strategy Agent</a><a href="#investment-ideas">Investment Ideas</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô &amp; ESG</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Core · Liquid · Discovery</span></div></header>
 <main>
 <div class="intro"><div><h1>Giám sát thị trường chứng khoán Việt Nam</h1></div><div class="finquery-google-account" id="finquery-google-account" hidden>
   <div class="finquery-google-signin" id="finquery-google-signin"></div>
@@ -1089,19 +1129,26 @@ body.strategy-lab-view .strategy-page{display:block}
 </section>
 <section id="macro" class="macro-section is-expanded" aria-label="Biểu đồ vĩ mô và ESG doanh nghiệp">
 <div class="macro-head">
-<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="true" aria-controls="macro-body"><span class="research-ai-label">MACRO &amp; ESG INTELLIGENCE</span><h2>Vĩ mô &amp; ESG doanh nghiệp</h2><p class="macro-head-note">Biểu đồ từ chuỗi số liệu công bố · dữ liệu rõ kỳ và nguồn</p></button>
-<div class="collapse-head-actions"><span id="macro-source-status" aria-live="polite">Đang kiểm tra dữ liệu</span><button id="macro-chevron" class="section-chevron is-open" type="button" aria-label="Thu gọn Macro &amp; ESG" aria-controls="macro-body" aria-expanded="true"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
+<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="true" aria-controls="macro-body"><span class="research-ai-label">MACRO &amp; ESG INTELLIGENCE</span><h2>Vĩ mô &amp; ESG doanh nghiệp</h2></button>
+<div class="collapse-head-actions"><span id="macro-source-status" aria-live="polite"></span><button id="macro-chevron" class="section-chevron is-open" type="button" aria-label="Thu gọn Macro &amp; ESG" aria-controls="macro-body" aria-expanded="true"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
 </div>
 <div id="macro-body" class="collapsible-section-body">
 <div id="macro-workspace" class="macro-workspace">
-<div class="macro-dashboard-head"><div><span class="macro-eyebrow">BỨC TRANH DỮ LIỆU</span><h3>Diễn biến kinh tế Việt Nam</h3><p>PMI, cung tiền, tín dụng và FDI giải ngân. Mỗi biểu đồ dùng đúng đơn vị, kỳ quan sát và nguồn; không coi số liệu tháng là realtime.</p></div><span id="macro-data-freshness" class="macro-data-freshness">Đang kiểm tra nguồn...</span></div>
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">MACRO DATA</span><h3>Diễn biến kinh tế Việt Nam</h3></div><span id="macro-data-freshness" class="macro-data-freshness">Đang tải...</span></div>
 <div id="macro-overview" class="macro-overview-grid" aria-label="Biểu đồ vĩ mô Việt Nam" aria-live="polite"><p class="macro-pending">Đang tải chuỗi dữ liệu vĩ mô...</p></div>
-<div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">CHỈ TIÊU ĐƯỢC CÔNG BỐ</span><h3>ESG quốc gia &amp; doanh nghiệp</h3><p>Số liệu ESG quốc gia từ World Bank; chỉ tiêu doanh nghiệp lấy theo mã đang chọn, không tự quy đổi thành điểm ESG tổng hợp.</p></div></div>
+<div class="macro-dashboard-head money-section-head"><div><span class="macro-eyebrow">MONEY MARKET · DERIVATIVES</span><h3>Tiền tệ &amp; phái sinh</h3></div><div class="money-section-actions"><span id="money-source-stamp" class="macro-data-freshness">Đang tải</span><button type="button" id="money-refresh" class="money-refresh">Làm mới</button></div></div>
+<div id="macro-liquidity-overview" aria-label="Lãi suất liên ngân hàng, phái sinh và FX Swap">
+<div class="money-dashboard-grid">
+<article class="macro-viz-card" id="money-on">Đang tải lãi suất ON...</article>
+<article class="macro-viz-card" id="money-swap">Đang tải VBMA FX Swap...</article>
+</div><article class="macro-viz-card money-derivative-section" id="money-futures">Đang tải VN30/VN100 Futures...</article>
+</div>
+<div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">ESG DATA</span><h3>ESG quốc gia &amp; doanh nghiệp</h3></div></div>
 <div class="macro-esg-dashboard-grid">
 <article class="macro-viz-card macro-esg-card" aria-labelledby="macro-country-heading"><div class="macro-viz-head"><div><span class="macro-viz-kicker">WORLD BANK · VIỆT NAM</span><h4 id="macro-country-heading">ESG quốc gia</h4></div><select id="macro-country-metric" aria-label="Chọn chỉ tiêu ESG quốc gia"></select></div><div id="macro-country-chart" aria-live="polite" class="macro-esg-visual">Đang tải dữ liệu World Bank...</div><div id="macro-country-source" class="macro-viz-source"></div></article>
 <article class="macro-viz-card macro-esg-card" aria-labelledby="macro-company-heading"><div class="macro-viz-head"><div><span id="macro-company-symbol" class="macro-viz-kicker">DOANH NGHIỆP ĐANG XEM</span><h4 id="macro-company-heading">ESG doanh nghiệp</h4></div><select id="macro-company-metric" aria-label="Chọn chỉ tiêu ESG doanh nghiệp"></select></div><div id="macro-company-chart" aria-live="polite" class="macro-esg-visual">Đang tải chỉ tiêu doanh nghiệp...</div><div id="macro-company-source" class="macro-viz-source"></div></article>
 </div>
-<p class="macro-method-note">Đường biểu diễn thể hiện đúng các kỳ có số liệu, không nội suy dữ liệu còn thiếu. Với chỉ một năm công bố, hệ thống hiển thị giá trị và ghi rõ chưa đủ dữ liệu để kết luận xu hướng. Các nguồn cảnh báo được giữ ngoài biểu đồ tổng quan.</p>
+
 <details id="macro-explore" class="macro-explore"><summary>Khám phá chỉ tiêu chi tiết, lịch sử và nguồn gốc <span aria-hidden="true">↗</span></summary>
 <div class="macro-explore-inner"><div class="macro-tabs" id="macro-tabs"></div>
 <div class="macro-toolbar"><label for="macro-metric">Chỉ tiêu<select id="macro-metric"></select></label><button id="macro-refresh" type="button">Cập nhật nguồn ↻</button></div>
@@ -3146,8 +3193,8 @@ const fmt=n=>typeof n==='number'&&Number.isFinite(n)?nf.format(n):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const FEATURES=[
  {id:'pmi',key:'PMI',title:'PMI sản xuất',unit:'điểm',scale:1,threshold:50,color:'#3565d5',info:'Mốc 50 phân biệt mở rộng và thu hẹp'},
- {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'triệu tỷ đồng',scale:1000000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
- {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'triệu tỷ đồng',scale:1000000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
+ {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'nghìn tỷ đồng',scale:1000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
+ {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'nghìn tỷ đồng',scale:1000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
  {id:'fdi',key:'FDI giải ngân (lũy kế năm) (tỷ USD)',title:'FDI giải ngân',unit:'tỷ USD',scale:1,color:'#c88932',info:'Lũy kế năm, bắt đầu lại từ tháng 1'}
 ];
 const WORLD=[
@@ -3219,7 +3266,7 @@ function renderMacro(data){
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
- if(freshness)freshness.textContent=Number.isNaN(checkDate.getTime())?'Chưa rõ thời điểm nguồn':'Bản kiểm tra '+checkDate.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'})+' · không phải giá trực tiếp';
+ if(freshness)freshness.textContent=Number.isNaN(checkDate.getTime())?'—':checkDate.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});
 }
 
 function renderCountry(data){
@@ -3461,6 +3508,116 @@ window.addEventListener('finquery:symbol-change',e=>{
 load();
 
 window.FinMacro={context(){if(!state.data)return null;const compact={};for(const [id,ds]of Object.entries(state.data.datasets||{}))compact[id]={title:ds.title,source:ds.source||null,companySymbol:ds.companySymbol||null,columns:ds.columns,numericColumns:ds.numericColumns,metricLabels:ds.metricLabels||null,metricUnits:ds.metricUnits||null,rows:(ds.rows||[]).slice(-12),status:ds.status};const company=state.esg?.companies?.[state.symbol];return{checkedAt:state.data.checkedAt,active:state.active,datasets:compact,corporateEsg:company?{symbol:state.symbol,externalAssessments:(company.externalAssessments||[]).slice(-12),coverage:company.coverage||null}:null};},refresh:load};
+})();</script><script>(function(){'use strict';
+const $=id=>document.getElementById(id);
+const SOURCE='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/finquery-liquidity.json';
+const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2});
+const fmt=(n,d=2)=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(n):'—';
+const esc=t=>String(t??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const dateVN=iso=>/^\d{4}-\d\d-\d\d$/.test(String(iso||''))?iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):'—';
+const monthVN=iso=>/^\d{4}-(0[1-9]|1[0-2])$/.test(String(iso||''))?iso.slice(5,7)+'/'+iso.slice(0,4):'—';
+const safeURL=(url,hostname)=>{try{let u=new URL(url);return u.protocol==='https:'&&u.hostname===hostname?u.href:'';}catch{return'';}};
+const state={payload:null,derivativeMode:'openInterest',loading:false};
+const target=$('macro-liquidity-overview');
+if(!target)return;
+function miniLine(points,{unit='',title='',color='#2e74bb'}={}){
+ if(points.length<2)return'<div class="macro-no-chart">Chưa đủ dữ liệu để hiển thị.</div>';
+ const values=points.map(p=>p.value),min=Math.min(...values),max=Math.max(...values),pad=Math.max((max-min)*.16,Math.abs(max)*.07,.03);
+ const low=min-pad,high=max+pad,W=640,H=232,L=49,R=17,T=18,B=37;
+ const x=i=>L+(W-L-R)*i/(points.length-1),y=v=>T+(H-T-B)*(high-v)/(high-low);
+ const grid=Array.from({length:4},(_,i)=>{const v=low+(high-low)*i/3,py=y(v);return'<line x1="'+L+'" y1="'+py+'" x2="'+(W-R)+'" y2="'+py+'" stroke="#e8edf4"/><text x="'+(L-7)+'" y="'+(py+4)+'" font-size="12" text-anchor="end" fill="#8491a4">'+fmt(v,1)+'</text>';}).join('');
+ const line=points.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.value).toFixed(1)).join(' ');
+ const step=Math.max(1,Math.floor((points.length-1)/3));
+ const ticks=points.map((p,i)=>({p,i})).filter(({i})=>i===0||i===points.length-1||i%step===0).slice(0,5);
+ const labels=ticks.map(({p,i})=>'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="12" fill="#74869f">'+esc(dateVN(p.date))+'</text>').join('');
+ const circles=points.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===points.length-1?4.8:3)+'" fill="'+color+'"><title>'+esc(dateVN(p.date)+' · '+fmt(p.value)+' '+unit)+'</title></circle>').join('');
+ return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
+}
+function monthBar(a,b,{unit='',color='#416eca',labelA='Tháng trước',labelB='Tháng này'}={}){
+ const values=[a,b];if(values.some(x=>typeof x!=='number'||!Number.isFinite(x)||x<0))return'<div class="macro-no-chart">Không đủ số liệu đối chiếu.</div>';
+ const max=Math.max(...values,1);
+ const make=(val,label,opacity)=>'<div class="money-bar-item"><b>'+fmt(val,0)+'</b><div class="money-bar-track"><span style="width:'+Math.max(0,100*val/max)+'%;background:'+color+';opacity:'+opacity+'"></span></div><small>'+esc(label)+'</small></div>';
+ return'<div class="money-bar-compare" aria-label="Đối chiếu theo tháng">'+make(a,labelA,'.43')+make(b,labelB,'1')+'</div><span class="money-bar-unit">'+esc(unit)+'</span>';
+}
+function cardHeader(label,value,unit,period){
+ return'<div class="macro-viz-head"><div><span class="macro-viz-kicker">'+esc(period)+'</span><h4>'+esc(label)+'</h4></div><div class="money-main-num"><strong>'+esc(value)+'</strong><small>'+esc(unit)+'</small></div></div>';
+}
+function renderON(p){
+ const host=$('money-on');if(!host)return;
+ const on=p.interbank||{},points=(Array.isArray(on.observations)?on.observations:[]).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&typeof x.value==='number'&&Number.isFinite(x.value)&&x.value>=0&&x.value<50).sort((a,b)=>a.date.localeCompare(b.date));
+ const last=points.at(-1),prev=points.at(-2);
+ const origin=safeURL(on.source,'stockbiz.vn');
+ const cross=safeURL(on.crossCheck,'dulieukinhte.com');
+ const verified=['secondary_source_crosschecked','official_source'].includes(on.status);
+ if(!last||!verified){host.innerHTML=cardHeader('Liên ngân hàng ON','—','%/năm','VND')+'<p class="money-empty">Chưa lấy được dữ liệu ON.</p>';return;}
+ const difference=prev?last.value-prev.value:null;
+ host.innerHTML=cardHeader('Liên ngân hàng ON',fmt(last.value),'%/năm',dateVN(last.date))+
+ '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
+ '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe'})+'</div>'+
+ '<div class="macro-viz-source"><span>Nguồn NHNN, đối chiếu qua bản tổng hợp</span>'+
+ (origin?'<a href="'+esc(origin)+'" target="_blank" rel="noopener noreferrer">Lịch sử ON ↗</a>':'')+
+ (cross?'<a href="'+esc(cross)+'" target="_blank" rel="noopener noreferrer">Đối chiếu ↗</a>':'')+'</div>';
+}
+function renderFutures(p){
+ const root=$('money-futures');if(!root)return;
+ const d=p.derivatives||{},months=Array.isArray(d.months)?d.months.slice().filter(m=>/^\d{4}-(0[1-9]|1[0-2])$/.test(m.month)).sort((a,b)=>a.month.localeCompare(b.month)):[];
+ const source=safeURL(d.source,'www.gov.hnx.vn');
+ const prev=months.at(-2),current=months.at(-1);
+ if(!prev||!current){root.innerHTML='<p class="money-empty">Chưa có đủ hai tháng dữ liệu phái sinh.</p>';return;}
+ const field=state.derivativeMode,choice=(symbol)=>({a:prev[symbol]?.[field],b:current[symbol]?.[field]});
+ let cards=['vn30','vn100'].map((symbol,i)=>{
+   const v=choice(symbol),label=symbol.toUpperCase();
+   const delta=typeof v.a==='number'&&v.a>0&&typeof v.b==='number'?(v.b-v.a)/v.a*100:null;
+   return'<article class="money-future-contract">'+cardHeader('HĐTL '+label,fmt(v.b,0),'hợp đồng',monthVN(current.month))+
+    '<div class="money-delta">'+(delta===null?'Không có kỳ trước':((delta>=0?'+':'')+fmt(delta)+'% so với '+monthVN(prev.month)))+'</div>'+
+    monthBar(v.a,v.b,{unit:field==='openInterest'?'OI cuối tháng':'KLGD bình quân/phiên',color:i===0?'#3b68c7':'#0b8877',labelA:monthVN(prev.month),labelB:monthVN(current.month)})+'</article>';
+ }).join('');
+ const buttons=[['openInterest','OI cuối tháng'],['avgVolume','KLGD bình quân/phiên']].map(([key,label])=>'<button type="button" data-derivative-mode="'+key+'" class="'+(key===field?'active':'')+'" aria-pressed="'+(key===field)+'">'+label+'</button>').join('');
+ root.innerHTML='<div class="money-chart-menu" role="group" aria-label="Chọn chỉ tiêu chứng khoán phái sinh">'+buttons+'</div><div class="money-derivative-grid">'+cards+'</div>'+
+ '<div class="macro-viz-source"><span>HNX · dữ liệu tổng hợp tháng '+esc(monthVN(current.month))+'</span>'+
+ (source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">Báo cáo HNX ↗</a>':'')+'</div>';
+}
+function renderSwap(p){
+ const host=$('money-swap');if(!host)return;const s=p.vbmaSwap||{},source=safeURL(s.source,'vbma.org.vn');
+ const points=(Array.isArray(s.points)?s.points:[]).filter(x=>x.tenor&&typeof x.value==='number'&&Number.isFinite(x.value)&&Math.abs(x.value)<100000).slice(0,30);
+ const enabled=s.status==='verified'&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
+ const link=source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">VBMA FX Swap ↗</a>':'';
+ if(!enabled){
+    host.innerHTML=cardHeader('USD/VND FX Swap','—','VBMA','Đường cong kỳ hạn')+
+      '<p class="money-empty">Chưa lấy được dữ liệu FX Swap từ VBMA.</p>'+
+      '<div class="macro-viz-source">'+link+'</div>';return;
+ }
+ const maxAbs=Math.max(...points.map(x=>Math.abs(x.value)),.01);
+ const bars=points.map(x=>'<div class="money-swap-point"><small>'+esc(x.tenor)+'</small><div class="money-swap-track"><div style="height:'+Math.max(2,Math.abs(x.value)/maxAbs*100)+'%"></div></div><b>'+fmt(x.value,2)+'</b></div>').join('');
+ host.innerHTML=cardHeader('USD/VND FX Swap',dateVN(s.asOf),s.unit,'VBMA')+'<div class="money-swap-chart" role="img" aria-label="USD VND FX Swap theo kỳ hạn">'+bars+'</div><div class="macro-viz-source"><span>'+esc(s.measurement||'Đường cong kỳ hạn')+'</span>'+link+'</div>';
+}
+function render(){
+ const p=state.payload;if(!p)return;
+ if($('money-source-stamp'))$('money-source-stamp').textContent='Cập nhật dữ liệu: '+dateVN(p.asOf);
+ renderON(p);renderFutures(p);renderSwap(p);
+}
+async function load(){
+ if(state.loading)return;state.loading=true;
+ const btn=$('money-refresh');if(btn)btn.disabled=true;
+ try{
+  const resp=await fetch(SOURCE+'?v='+Math.floor(Date.now()/60000),{cache:'no-store',signal:AbortSignal.timeout(14000)});
+  if(!resp.ok)throw Error('HTTP '+resp.status);
+  const d=await resp.json();
+  if(d.schemaVersion!==1||!d.interbank||!d.derivatives||!d.vbmaSwap)throw Error('Invalid schema');
+  state.payload=d;render();
+ }catch(error){
+  if(!state.payload)target.innerHTML='<p class="macro-no-chart">Không tải được bảng tiền tệ và phái sinh.</p>';
+  if($('money-source-stamp'))$('money-source-stamp').textContent='Dữ liệu tạm gián đoạn';
+ }finally{state.loading=false;if(btn)btn.disabled=false;}
+}
+document.getElementById('macro-liquidity-overview')?.addEventListener('click',event=>{
+ const button=event.target.closest?.('[data-derivative-mode]');
+ if(!button)return;
+ if(['openInterest','avgVolume'].includes(button.dataset.derivativeMode)){state.derivativeMode=button.dataset.derivativeMode;renderFutures(state.payload);}
+});
+$('money-refresh')?.addEventListener('click',load);
+window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,monthBar,dateVN,monthVN,safeURL},setData:payload=>{state.payload=payload;render();}};
+load();
 })();</script><script>(function(){'use strict';
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9%]+/g,' ').trim();
 const C=[
