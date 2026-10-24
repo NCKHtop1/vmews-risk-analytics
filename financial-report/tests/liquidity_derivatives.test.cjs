@@ -73,8 +73,8 @@ test('HNX VN30 and VN100 derivatives keep OI and volume with monthly labels',()=
 test('unverified swap is empty, never fabricated; verified points show a curve',()=>{
  const {api,get}=makeEnv();
  api.setData(fixture);
- assert.match(get('money-swap').innerHTML,/Chưa lấy được dữ liệu FX Swap/);
- assert.doesNotMatch(get('money-swap').innerHTML,/<svg|money-swap-point/);
+ assert.match(get('money-swap').innerHTML,/Chưa có chuỗi FX Swap hợp lệ/);
+ assert.doesNotMatch(get('money-swap').innerHTML,/money-swap-chart|money-swap-point/);
  const other=JSON.parse(JSON.stringify(fixture));
  other.vbmaSwap.status='verified';
  other.vbmaSwap.unit='swap points';
@@ -101,4 +101,21 @@ test('URL sanitation and SVG injection gates',()=>{
  const image=api._test.miniLine([{date:'2026-10-21',value:3.39},{date:'2026-10-22',value:4.31}],{title:'<b>x</b>'});
  assert.match(image,/&lt;b&gt;/);
  assert.doesNotMatch(image,/<b>x<\/b>/);
+});
+
+test('ON timeline adapts date labels and VBMA references use compact export icons',()=>{
+ const {api,get}=makeEnv();
+ const points=Array.from({length:22},(_,i)=>({date:'2026-10-'+String(i+1).padStart(2,'0'),value:3+i*.06}));
+ const compact=api._test.miniLine(points,{title:'Liên ngân hàng ON',width:304});
+ const wide=api._test.miniLine(points,{title:'Liên ngân hàng ON',width:920});
+ assert.ok((compact.match(/data-on-tick=/g)||[]).length<=3,'mobile tick budget');
+ assert.ok((wide.match(/data-on-tick=/g)||[]).length>=4,'desktop tick labels');
+ assert.match(compact,/01\/10/);
+ assert.doesNotMatch(compact,/<text[^>]*data-on-tick[^>]*>01\/10\/2026/);
+ const swap={...fixture,vbmaSwap:{source:'https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv',status:'verified',unit:'swap points',asOf:'2026-10-22',points:[{tenor:'1W',value:-5},{tenor:'1M',value:-22}]}};
+ api.setData(swap);
+ const html=get('money-swap').innerHTML;
+ assert.match(html,/money-vbma-download/);
+ assert.match(html,/aria-label="Tải tệp dữ liệu/);
+ assert.doesNotMatch(html,/>VBMA FX Swap ↗</);
 });

@@ -672,3 +672,95 @@ body.strategy-lab-view .strategy-page{display:block}
 .money-derivative-history:not([open]){padding-bottom:0}
 .money-derivative-history .money-derivative-section{margin-top:0;margin-bottom:13px}
 @media(max-width:620px){.derivative-live-grid{grid-template-columns:minmax(0,1fr)}.derivative-live-contract{padding:12px}.derivative-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 5px}.derivative-metric strong{font-size:10px}.derivative-head{align-items:center}}
+
+
+/* FinQuery 2026-10-24: compact task-based workspaces */
+.finquery-workspace-tabs{display:flex;gap:7px;align-items:stretch;overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;white-space:nowrap;padding:3px 1px 12px;margin:14px 0 16px;scrollbar-width:thin;scrollbar-color:#ccd7e6 transparent}
+.finquery-workspace-tabs button{flex:0 0 auto;min-height:42px;padding:10px 15px;background:#f4f7fb;color:#546a84;border:1px solid #dde6f0;border-radius:10px;font-size:12px;font-weight:720;cursor:pointer}
+.finquery-workspace-tabs button.active{background:#245cb1;border-color:#245cb1;color:#fff;box-shadow:0 3px 10px #245cb122}
+.finquery-workspace-tabs button:focus-visible{outline:2px solid #487cca;outline-offset:2px}
+#market [hidden],#macro [hidden],#macro [data-macro-panel][hidden]{display:none!important}
+#market[data-market-space="futures"] .market-grid,#market[data-market-space="ownership"] .market-grid{display:none!important}
+#market[data-market-space="futures"] .market-board,#market[data-market-space="ownership"] .market-board,#market[data-market-space="news"] .market-board{display:none!important}
+#market[data-market-space="news"] #market-stock-view{grid-template-columns:minmax(0,1fr)!important}
+#market[data-market-space="news"] #market-stock-view .market-price{display:none!important}
+#market[data-market-space="news"] #market-stock-view .market-news{max-width:100%;min-width:0}
+.market-asset-workspace{min-width:0;padding:6px 0 10px}
+.market-asset-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:12px}
+.market-asset-head h3{font-size:clamp(18px,2.2vw,24px);margin:5px 0;color:#233e62}
+.market-asset-head p{font-size:12px;color:#6c8099;margin:3px 0;line-height:1.6}
+#macro-liquidity-overview{min-width:0}
+#macro-liquidity-overview .money-dashboard-grid-single{grid-template-columns:minmax(0,1fr)}
+#macro-panel-vbma .money-vbma-grid{margin-top:10px}
+.money-on-trend text[data-on-tick]{pointer-events:none}
+.money-vbma-download{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:#285ca4;border:1px solid #dae5f1;border-radius:9px;background:#f7fbff;text-decoration:none!important;flex:0 0 auto}
+.money-vbma-download:hover{background:#e8f1ff;color:#1b4d93}
+.money-vbma-download:focus-visible{outline:2px solid #4e7dcb;outline-offset:2px}
+.chart-oscillator-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;margin:9px 0;border:1px solid #dbe5f1;border-radius:10px;background:#f8fafd}
+.chart-oscillator-nav[hidden]{display:none!important}
+.chart-oscillator-nav label{font-size:12px;color:#345472;font-weight:700}
+.chart-oscillator-nav select{min-height:35px;padding:5px 9px;min-width:120px;border-radius:8px;border:1px solid #ccd9ea;background:#fff;color:#27476e}
+#chart-oscillator-hint{font-size:11px;color:#75879d}
+@media(max-width:600px){.finquery-workspace-tabs{margin:10px 0 12px;gap:6px}.finquery-workspace-tabs button{min-height:39px;padding:8px 12px;font-size:11px}.market-asset-workspace{padding:2px 0 8px}.market-asset-head h3{font-size:18px}.chart-oscillator-nav{padding:8px;gap:7px}}
+
+
+/* Market futures terminal: one selected instrument + scroll-contained quote grid. */
+#market-futures-workspace .money-derivative-live{padding:16px;min-width:0}
+#market-futures-workspace .derivative-focus-select{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.derivative-focus-select label{font-size:12px;font-weight:750;color:#4e6985}
+.derivative-focus-select select{min-width:190px;max-width:100%;padding:8px 12px;min-height:38px;font-size:12px;border:1px solid #d7e0ed;border-radius:9px;background:#fff;color:#315272}
+.derivative-focus{padding:15px;background:#f8fbff;border:1px solid #e0e8f3;border-radius:13px;margin-bottom:15px;min-width:0}
+.derivative-focus-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.derivative-focus-head>div:first-child{display:grid;gap:5px}
+.derivative-focus-head strong{font-size:20px;color:#1b466e}
+.derivative-focus-head strong span{font-size:12px;color:#8798ac;font-weight:550}
+.derivative-focus-head small{font-size:11px;color:#6e8099}
+.derivative-focus-price{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.derivative-focus-price>strong{font-size:clamp(26px,3vw,36px);font-weight:800;color:#194b76;line-height:1.1}
+.derivative-focus-price>small{font-size:12px;color:#77899d}
+.derivative-focus-metrics{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.derivative-focus-metrics>span{padding:6px 9px;border:1px solid #e4eaf3;border-radius:9px;background:white;font-size:11px;color:#72849a}
+.derivative-focus-metrics b{font-variant-numeric:tabular-nums;color:#315777;margin-left:4px}
+.derivative-chart-wrap{padding:8px 0;min-height:60px}
+.derivative-spark-wide{width:100%;max-width:100%;height:auto;max-height:140px;display:block}
+.derivative-spark-empty{font-size:12px;color:#8797aa;padding:20px 8px}
+.derivative-series-note{font-size:11px;color:#7689a2;line-height:1.6;margin:6px 0 0}
+.derivative-board-scroll{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;border:1px solid #e2e9f2;border-radius:12px}
+.derivative-board-table{width:100%;min-width:780px;border-collapse:collapse;font-variant-numeric:tabular-nums;table-layout:auto}
+.derivative-board-table thead{background:#f5f8fd}
+.derivative-board-table th{padding:12px 10px;text-align:right;font-size:10px;color:#667d96;font-weight:780;white-space:nowrap;border-bottom:1px solid #e2eaf3}
+.derivative-board-table th:first-child,.derivative-board-table td:first-child{text-align:left}
+.derivative-board-table td{padding:11px 10px;text-align:right;font-size:12px;color:#34536f;border-bottom:1px solid #e9edf4;background:#fff;white-space:nowrap}
+.derivative-board-table tbody tr:last-child td{border-bottom:0}
+.derivative-board-table tbody tr.active td{background:#eef5ff}
+.derivative-board-table .derivative-live-contract{display:table-row;grid-template-columns:none;padding:0;border:0;border-radius:0;background:transparent;min-width:0}
+.derivative-board-table .derivative-contract-title{display:table-cell}
+.derivative-board-table .derivative-contract-title button{display:grid;gap:4px;border:0;background:transparent;padding:0;color:inherit;cursor:pointer;text-align:left}
+.derivative-board-table .derivative-contract-title strong{font-size:12px;color:#275ca2}
+.derivative-board-table .derivative-contract-title small{font-size:10px;color:#8b99a9}
+.derivative-board-table .derivative-last{display:table-cell;margin:0}
+.derivative-board-table .derivative-last>strong{font-size:12px;color:#234e77}
+.derivative-board-table td small{font-size:10px;color:#8999aa}
+.derivative-board-table .derivative-move{margin:0;font-size:11px;white-space:nowrap}
+.derivative-board-table .derivative-time{font-size:11px;white-space:nowrap}
+@media(max-width:600px){#market-futures-workspace .money-derivative-live{padding:12px}.derivative-focus{padding:11px}.derivative-focus-head strong{font-size:18px}.derivative-focus-price>strong{font-size:26px}.derivative-focus-metrics>span{font-size:10px}}
+
+/* Alpha Radar does not publish private rule descriptions. */
+.alpha-radar-panel{padding:15px;border:1px solid #dce5f0;border-radius:15px;background:#fbfcff;margin:0 0 18px}
+.alpha-radar-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.alpha-radar-head h3{font-size:clamp(17px,2vw,21px);color:#233f60;margin:5px 0}
+.alpha-radar-head p,.alpha-radar-note{font-size:11px;color:#8393a8;line-height:1.55;margin:4px 0}
+.alpha-radar-tools{display:flex;gap:7px;flex-wrap:wrap}
+.alpha-radar-tools button{padding:8px 11px;border:1px solid #d1dfed;border-radius:8px;background:white;color:#365e89;font-weight:700;font-size:11px;cursor:pointer}
+#alpha-radar-status{font-size:11px;color:#667f9c;margin:10px 0}
+.alpha-radar-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.alpha-signal-row{border:1px solid #e4ebf3;border-radius:10px;background:#fff;padding:10px;display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:7px}
+.alpha-signal-row>div{display:grid;gap:5px}
+.alpha-signal-row strong{color:#275388;font-size:13px}
+.alpha-signal-row span{font-weight:700;color:#3d5b75;font-size:12px}
+.alpha-signal-row b{font-size:11px;color:#697d91}
+.alpha-signal-row b.confirmed{color:#008a78}
+.alpha-signal-row b.preparing{color:#b27814}
+.alpha-signal-row small{font-size:10px;color:#8294a9}
+.alpha-empty{font-size:12px;color:#8594a6;margin:6px 0 12px}
+@media(max-width:580px){.alpha-radar-panel{padding:12px}.alpha-radar-list{grid-template-columns:1fr}}

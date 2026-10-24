@@ -10,18 +10,29 @@ const safeURL=(url,hostname)=>{try{let u=new URL(url);return u.protocol==='https
 const state={payload:null,derivativeMode:'openInterest',loading:false};
 const target=$('macro-liquidity-overview');
 if(!target)return;
-function miniLine(points,{unit='',title='',color='#2e74bb'}={}){
+function miniLine(points,{unit='',title='',color='#2e74bb',width=640}={}){
  if(points.length<2)return'<div class="macro-no-chart">Chưa đủ dữ liệu để hiển thị.</div>';
  const values=points.map(p=>p.value),min=Math.min(...values),max=Math.max(...values),pad=Math.max((max-min)*.16,Math.abs(max)*.07,.03);
- const low=min-pad,high=max+pad,W=640,H=232,L=49,R=17,T=18,B=37;
+ const low=min-pad,high=max+pad,W=Math.max(250,Math.min(950,Math.floor(Number(width)||640))),compact=W<480;
+ const H=232,L=49,R=22,T=18,B=39;
  const x=i=>L+(W-L-R)*i/(points.length-1),y=v=>T+(H-T-B)*(high-v)/(high-low);
- const grid=Array.from({length:4},(_,i)=>{const v=low+(high-low)*i/3,py=y(v);return'<line x1="'+L+'" y1="'+py+'" x2="'+(W-R)+'" y2="'+py+'" stroke="#e8edf4"/><text x="'+(L-7)+'" y="'+(py+4)+'" font-size="12" text-anchor="end" fill="#8491a4">'+fmt(v,1)+'</text>';}).join('');
+ const grid=Array.from({length:4},(_,i)=>{const v=low+(high-low)*i/3,py=y(v);return'<line x1="'+L+'" y1="'+py+'" x2="'+(W-R)+'" y2="'+py+'" stroke="#e8edf4"/><text x="'+(L-7)+'" y="'+(py+4)+'" font-size="11" text-anchor="end" fill="#8491a4">'+fmt(v,1)+'</text>';}).join('');
  const line=points.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.value).toFixed(1)).join(' ');
- const step=Math.max(1,Math.floor((points.length-1)/3));
- const ticks=points.map((p,i)=>({p,i})).filter(({i})=>i===0||i===points.length-1||i%step===0).slice(0,5);
- const labels=ticks.map(({p,i})=>'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="12" fill="#74869f">'+esc(dateVN(p.date))+'</text>').join('');
+ // Budget horizontal space for the actual rendered label text rather than
+ // drawing five full dd/mm/yyyy labels inside a 300px chart.
+ const labelWidth=compact?57:83,gap=compact?12:18;
+ const limit=Math.max(2,Math.min(5,Math.floor((W-L-R+gap)/(labelWidth+gap))));
+ const ticks=[...new Set(Array.from({length:limit},(_,i)=>Math.round(i*(points.length-1)/(limit-1))))];
+ const labels=ticks.map(i=>{const p=points[i],full=dateVN(p.date),display=compact?full.slice(0,5):full;
+  return'<text data-on-tick="'+i+'" x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="'+(compact?10:11)+'" fill="#74869f">'+esc(display)+'<title>'+esc(full)+'</title></text>';
+ }).join('');
  const circles=points.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===points.length-1?4.8:3)+'" fill="'+color+'"><title>'+esc(dateVN(p.date)+' · '+fmt(p.value)+' '+unit)+'</title></circle>').join('');
- return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
+ return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg money-on-trend" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
+}
+function vbmaSourceIcon(url,label){
+ if(!url)return'';
+ const svg='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg>';
+ return'<a class="money-vbma-download" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(label)+'" aria-label="'+esc(label)+'">'+svg+'</a>';
 }
 function monthBar(a,b,{unit='',color='#416eca',labelA='Tháng trước',labelB='Tháng này'}={}){
  const values=[a,b];if(values.some(x=>typeof x!=='number'||!Number.isFinite(x)||x<0))return'<div class="macro-no-chart">Không đủ số liệu đối chiếu.</div>';
@@ -43,7 +54,7 @@ function renderON(p){
  const difference=prev?last.value-prev.value:null;
  host.innerHTML=cardHeader('Liên ngân hàng ON',fmt(last.value),'%/năm',dateVN(last.date))+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
- '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe'})+'</div>'+
+ '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
  '<div class="macro-viz-source"><span>Nguồn NHNN, đối chiếu qua bản tổng hợp</span>'+
  (origin?'<a href="'+esc(origin)+'" target="_blank" rel="noopener noreferrer">Lịch sử ON ↗</a>':'')+
  (cross?'<a href="'+esc(cross)+'" target="_blank" rel="noopener noreferrer">Đối chiếu ↗</a>':'')+'</div>';
@@ -71,10 +82,11 @@ function renderSwap(p){
  const host=$('money-swap');if(!host)return;const s=p.vbmaSwap||{},source=safeURL(s.source,'vbma.org.vn');
  const points=(Array.isArray(s.points)?s.points:[]).filter(x=>x.tenor&&typeof x.value==='number'&&Number.isFinite(x.value)&&Math.abs(x.value)<100000).slice(0,30);
  const enabled=s.status==='verified'&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
- const link=source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">VBMA FX Swap ↗</a>':'';
+ const link=vbmaSourceIcon(source,'Tải tệp dữ liệu USD/VND FX Swap từ VBMA');
  if(!enabled){
+    const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA swap '));
     host.innerHTML=cardHeader('USD/VND FX Swap','—','VBMA','Đường cong kỳ hạn')+
-      '<p class="money-empty">Chưa lấy được dữ liệu FX Swap từ VBMA.</p>'+
+      '<p class="money-empty">Chưa có chuỗi FX Swap hợp lệ để vẽ.</p>'+(reason?'<p class="money-source-pending">'+esc(String(reason).replace(/^VBMA swap\s+/,''))+'</p>':'')+
       '<div class="macro-viz-source">'+link+'</div>';return;
  }
  const maxAbs=Math.max(...points.map(x=>Math.abs(x.value)),.01);
@@ -88,9 +100,10 @@ function renderBondCurves(p){
  host.innerHTML=sources.map(([key,title])=>{
   const s=data[key]||{},points=Array.isArray(s.points)?s.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
   const url=safeURL(s.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
-  const link=url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">VBMA ↗</a>':'';
+  const link=vbmaSourceIcon(url,'Tải tệp dữ liệu '+title+' từ VBMA');
   const verified=s.status==='verified'&&s.licenseStatus==='approved'&&s.unit&&s.asOf&&points.length>=2;
-  const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>':'<p class="money-source-pending">Đang chờ dữ liệu VBMA được xác minh.</p>';
+  const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA '+key+' '));
+  const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>' :'<p class="money-source-pending">'+esc(reason?String(reason).replace(new RegExp('^VBMA '+key+'\\s+'),''):'Chưa có chuỗi kỳ hạn đã xác minh')+'</p>';
   return '<article class="macro-viz-card">'+cardHeader(title,verified?dateVN(s.asOf):'—',verified?s.unit:'VBMA','Đường cong kỳ hạn')+visual+'<div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
 }
@@ -109,16 +122,21 @@ async function load(){
   if(d.schemaVersion!==1||!d.interbank||!d.derivatives||!d.vbmaSwap)throw Error('Invalid schema');
   state.payload=d;render();
  }catch(error){
-  if(!state.payload)target.innerHTML='<p class="macro-no-chart">Không tải được bảng tiền tệ và phái sinh.</p>';
+  if(!state.payload){for(const id of ['money-on','money-swap','money-vbma-curves']){const node=$(id);if(node)node.innerHTML='<p class="macro-no-chart">Nguồn tiền tệ đang gián đoạn; chưa nhận dữ liệu đã xác minh.</p>';}}
   if($('money-source-stamp'))$('money-source-stamp').textContent='Dữ liệu tạm gián đoạn';
  }finally{state.loading=false;if(btn)btn.disabled=false;}
 }
-document.getElementById('macro-liquidity-overview')?.addEventListener('click',event=>{
+[document.getElementById('macro-liquidity-overview'),document.getElementById('market-futures-workspace')].forEach(root=>root?.addEventListener('click',event=>{
  const button=event.target.closest?.('[data-derivative-mode]');
  if(!button)return;
  if(['openInterest','avgVolume'].includes(button.dataset.derivativeMode)){state.derivativeMode=button.dataset.derivativeMode;renderFutures(state.payload);}
-});
+}));
 $('money-refresh')?.addEventListener('click',load);
+const onHost=$('money-on');
+if(onHost&&typeof ResizeObserver==='function'){
+ let prior=0;
+ new ResizeObserver(entries=>{const width=Math.round(entries[0]?.contentRect?.width||0);if(width&&Math.abs(width-prior)>12){prior=width;if(state.payload)renderON(state.payload);}}).observe(onHost);
+}
 window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,monthBar,dateVN,monthVN,safeURL},setData:payload=>{state.payload=payload;render();}};
 load();
 })();

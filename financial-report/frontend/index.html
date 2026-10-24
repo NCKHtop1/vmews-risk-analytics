@@ -5,7 +5,7 @@
 <title>FinQuery · Giám sát Thị trường Chứng khoán Việt Nam</title>
 <meta name="description" content="Nền tảng giám sát thị trường chứng khoán Việt Nam: giá, kỹ thuật, rủi ro, cảnh báo, tài chính doanh nghiệp, tin tức và vĩ mô."><meta name="finquery-google-client-id" content="216957728290-6h80djpq7ouk2cmd5jgjr08j6233voes.apps.googleusercontent.com"><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css"><link rel="stylesheet" href="risk-monitor.css">
-<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="strategy-intelligence-core.js"></script><script defer src="alert-center.js"></script><script defer src="strategy-intelligence.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="insights.js"></script><script defer src="macro-dashboard.js"></script><script defer src="macro.js"></script><script defer src="liquidity-derivatives.js"></script><script defer src="derivatives-market.js"></script><script defer src="knowledge-base.js"></script><script defer src="question-policy.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script><script defer src="google-signin.js"></script>
+<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="strategy-intelligence-core.js"></script><script defer src="alert-center.js"></script><script defer src="strategy-intelligence.js"></script><script defer src="alpha-radar.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="workspace-tabs.js"></script><script defer src="insights.js"></script><script defer src="macro-dashboard.js"></script><script defer src="macro.js"></script><script defer src="liquidity-derivatives.js"></script><script defer src="derivatives-market.js"></script><script defer src="ownership-intelligence.js"></script><script defer src="knowledge-base.js"></script><script defer src="question-policy.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script><script defer src="google-signin.js"></script>
 <style id="finquery-google-signin-style">
 /* Minimal Google identity: greeting + avatar only, never a dropdown. */
 .finquery-google-account{display:flex;align-items:center;justify-content:flex-end;flex:0 1 auto;min-width:0;margin:0 12px 0 auto}
@@ -82,6 +82,13 @@
 </div>
 </div>
 <div id="strategy-body" class="strategy-builder-body">
+<section id="alpha-radar-panel" class="alpha-radar-panel" aria-label="Radar tín hiệu Alpha">
+<div class="alpha-radar-head"><div><span class="research-ai-label">ALPHA INTELLIGENCE</span><h3>Radar tín hiệu chiến lược</h3><p>Tài khoản thông thường chỉ xem mã Alpha, trạng thái và thời điểm; công thức chỉ lưu ở backend bảo vệ.</p></div>
+<div class="alpha-radar-tools"><button type="button" id="alpha-radar-refresh">Làm mới</button><button type="button" id="alpha-radar-notifications">Bật thông báo</button></div></div>
+<p id="alpha-radar-status" role="status" aria-live="polite">Đang kiểm tra nguồn Alpha...</p>
+<div id="alpha-radar-list" class="alpha-radar-list"></div>
+<p class="alpha-radar-note">Tiệm cận điều kiện không đồng nghĩa khớp lệnh. Thông báo trình duyệt chỉ hoạt động khi trang đang mở; quét tự động cần cấu hình backend riêng tư.</p>
+</section>
 <section class="sai-dashboard" aria-label="Strategy Intelligence">
 <div class="sai-overview-grid">
 <article id="sai-regime" class="sai-panel sai-regime"><div class="sai-empty">Đang xác định trạng thái thị trường…</div></article>
@@ -135,10 +142,28 @@
 <section class="preview" aria-label="Xem trước báo cáo">
 <div class="preview-heading"><div class="company-identity"><div class="company-logo-wrap"><img id="company-logo" class="company-logo-img" alt="" decoding="async"><span id="company-logo-fallback" class="company-logo-fallback">MBB</span></div><div><div class="eyebrow">DOANH NGHIỆP</div><h2 id="preview-title">MBB <span>/ Báo cáo tài chính</span></h2><p id="company-name" class="muted">Ngân hàng TMCP Quân đội</p><p id="company-meta" class="company-meta">HOSE · Dữ liệu tài chính & thị trường</p></div></div><div class="preview-actions"><span id="data-state" class="status-badge">Đang tải</span><button id="refresh-data" type="button">Làm mới ↻</button></div></div>
 <div id="error" role="alert" hidden></div>
-<section id="market" class="market-section" aria-label="Giá chứng khoán và tin tức">
+<section id="market" class="market-section" data-market-space="stocks" aria-label="Giá chứng khoán và tin tức">
 <div class="market-top market-top-compact"><h2>Thị trường & doanh nghiệp</h2></div>
+<nav id="market-primary-tabs" class="finquery-workspace-tabs" role="tablist" aria-label="Lựa chọn nhóm tài sản và thông tin doanh nghiệp">
+<button type="button" data-market-space="stocks" role="tab" aria-selected="true" class="active" aria-controls="market-stock-view">Cổ phiếu</button>
+<button type="button" data-market-space="futures" role="tab" aria-selected="false" aria-controls="market-futures-workspace">Phái sinh</button>
+<button type="button" data-market-space="ownership" role="tab" aria-selected="false" aria-controls="market-ownership-workspace">Sở hữu &amp; lãnh đạo</button>
+<button type="button" data-market-space="news" role="tab" aria-selected="false" aria-controls="market-news-workspace">Tin &amp; báo cáo</button>
+</nav>
+<section id="market-futures-workspace" class="market-asset-workspace" role="tabpanel" aria-label="Bảng giá hợp đồng tương lai" hidden>
+<div class="market-asset-head"><div><span class="macro-eyebrow">HNX FUTURES</span><h3>Thị trường chứng khoán phái sinh</h3><p>Giá theo hợp đồng đang giao dịch · dữ liệu theo phiên, có độ trễ nguồn.</p></div></div>
+<section class="macro-viz-card money-derivative-live" id="money-futures-live" aria-label="Bảng giá hợp đồng tương lai VN30 VN100">Đang tải bảng giá phái sinh...</section>
+<details class="money-derivative-history"><summary>Thống kê OI &amp; khối lượng theo tháng</summary>
+<article class="macro-viz-card" id="money-futures">Đang tải thống kê HNX...</article>
+</details>
+</section>
+<section id="market-ownership-workspace" class="market-asset-workspace" role="tabpanel" aria-label="Sở hữu và giao dịch của người nội bộ" hidden>
+<div class="market-asset-head"><div><span class="macro-eyebrow">OWNERSHIP INTELLIGENCE</span><h3>Sở hữu &amp; giao dịch người nội bộ</h3><p>Phân biệt giao dịch dự kiến, đã thực hiện và giá trị sở hữu hiện tại.</p></div></div>
+<div id="market-ownership-content" aria-live="polite">Đang kiểm tra nguồn công bố sở hữu...</div>
+</section>
+
 <div id="breaking-news-ticker" class="breaking-news-ticker" aria-live="polite" hidden><span class="breaking-news-label">TIN NỔI BẬT</span><div class="breaking-news-viewport"><div id="breaking-news-track" class="breaking-news-track"></div></div><span id="breaking-news-updated" class="breaking-news-updated"></span></div>
-<div class="market-grid"><div class="market-price"><div class="price-head"><div><h3 id="market-symbol">MBB</h3><span id="quote-price">Đang tải giá…</span><span id="quote-change"></span><span id="quote-freshness" class="market-freshness" hidden></span></div><button id="watch-toggle" type="button" aria-pressed="false">☆ Theo dõi</button></div><p id="quote-time" class="market-subtitle"></p><div class="native-chart-heading"><span id="native-chart-title">Biểu đồ FinQuery · MBB</span><span>Dữ liệu thị trường của FinQuery</span></div>
+<div class="market-grid" id="market-stock-view" role="tabpanel" aria-label="Cổ phiếu và tin tức thị trường"><div class="market-price"><div class="price-head"><div><h3 id="market-symbol">MBB</h3><span id="quote-price">Đang tải giá…</span><span id="quote-change"></span><span id="quote-freshness" class="market-freshness" hidden></span></div><button id="watch-toggle" type="button" aria-pressed="false">☆ Theo dõi</button></div><p id="quote-time" class="market-subtitle"></p><div class="native-chart-heading"><span id="native-chart-title">Biểu đồ FinQuery · MBB</span><span>Dữ liệu thị trường của FinQuery</span></div>
 <div class="market-view-tabs" role="tablist" aria-label="Chế độ biểu đồ">
 <button type="button" class="active" data-market-view="price" role="tab" aria-selected="true">Giá & kỹ thuật</button>
 <button type="button" data-market-view="peers" role="tab" aria-selected="false">So sánh cổ phiếu ngành</button>
@@ -198,6 +223,7 @@
 <div class="indicator-settings-card" data-settings-for="cmf"><strong>CMF</strong><label>Chu kỳ<input type="number" data-param="cmf" min="2" max="100" value="20"></label></div>
 <p id="chart-indicator-error" role="status"></p></aside>
 </div></div></dialog>
+<div id="chart-oscillator-nav" class="chart-oscillator-nav" hidden><label for="chart-oscillator-focus">Pane chỉ báo đang xem</label><select id="chart-oscillator-focus" aria-label="Chuyển nhóm chỉ báo phụ"></select><span id="chart-oscillator-hint"></span></div>
 <p id="chart-stream-status" class="chart-stream-status" role="status" hidden></p><div id="price-readout" aria-live="off"></div><div class="chart-canvas-wrap"><div id="price-chart" aria-label="Biểu đồ giá và khối lượng"></div><div id="chart-insight-markers" class="chart-insight-markers" aria-label="Mốc sự kiện và báo cáo phân tích"></div></div><p id="chart-range-label" hidden></p><p id="chart-status" class="market-subtitle" hidden></p></section>
 <section id="technical-scanner-panel" class="technical-scanner-panel" hidden aria-label="Technical Scanner HOSE">
 <div id="technical-scanner-gate" class="technical-scanner-gate"><div><span class="research-ai-label">TECHNICAL SCANNER · HOSE</span><strong>Khu vực tín hiệu kỹ thuật giới hạn</strong><p>Scanner cập nhật theo dữ liệu trong phiên. Nhập mã truy cập để xem các mã đang khớp MACD, RSI và khối lượng.</p></div><form id="technical-scanner-unlock-form"><input id="technical-scanner-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập Technical Scanner"><button type="submit">Mở scanner</button></form><p id="technical-scanner-error" role="status"></p></div>
@@ -223,7 +249,7 @@
 <p class="market-compare-note">Hiệu suất được chuẩn hóa về 0% tại điểm đầu của khoảng so sánh từ lịch sử giá FinQuery. Chỉ số ngành là bình quân equal-weight của các mã có dữ liệu; đây không phải dữ liệu dòng tiền mua/bán.</p>
 </section>
 <div class="forecast-card"><div><span class="forecast-label">SoluTION.AI · FORECAST</span><h4>Khám phá góc nhìn dự báo</h4><p>Xem kịch bản giá T+1–T+5, các yếu tố tác động và kết quả kiểm định cho <strong id="forecast-symbol">MBB</strong>.</p></div><div class="forecast-action"><a id="forecast-link" href="../forecast-final.html?symbol=MBB" target="_blank" rel="noopener noreferrer">Xem dự báo MBB ↗</a><small>Mở trang Forecast trong tab mới</small></div></div></div>
-<aside class="market-news"><div class="market-news-head"><div><span class="research-ai-label">NEWS RADAR</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false">Bật cảnh báo Watchlist</button></div></div>
+<aside class="market-news" id="market-news-workspace"><div class="market-news-head"><div><span class="research-ai-label">NEWS RADAR</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false">Bật cảnh báo Watchlist</button></div></div>
 <div id="news-primary-tabs" class="news-primary-tabs" role="tablist" aria-label="Nhóm tin tức">
 <button type="button" data-news-tab="all" role="tab" aria-selected="false">Mới nhất</button>
 <button type="button" data-news-tab="impact" role="tab" aria-selected="false">Đang tác động</button>
@@ -283,15 +309,32 @@
 </div>
 <div id="macro-body" class="collapsible-section-body" hidden>
 <div id="macro-workspace" class="macro-workspace">
+<nav id="macro-primary-tabs" class="finquery-workspace-tabs" role="tablist" aria-label="Nhóm phân tích vĩ mô">
+<button type="button" data-macro-space="overview" role="tab" class="active" aria-selected="true" aria-controls="macro-panel-overview">Tổng quan</button>
+<button type="button" data-macro-space="on" role="tab" aria-selected="false" aria-controls="macro-panel-on">Liên ngân hàng</button>
+<button type="button" data-macro-space="vbma" role="tab" aria-selected="false" aria-controls="macro-panel-vbma">VBMA</button>
+<button type="button" data-macro-space="swap" role="tab" aria-selected="false" aria-controls="macro-panel-swap">FX Swap</button>
+<button type="button" data-macro-space="esg" role="tab" aria-selected="false" aria-controls="macro-panel-esg">ESG</button>
+</nav>
+<section id="macro-panel-overview" data-macro-panel="overview" role="tabpanel">
 <div class="macro-dashboard-head"><div><span class="macro-eyebrow">MACRO DATA</span><h3>Diễn biến kinh tế Việt Nam</h3></div><span id="macro-data-freshness" class="macro-data-freshness">Đang tải...</span></div>
 <div id="macro-overview" class="macro-overview-grid" aria-label="Biểu đồ vĩ mô Việt Nam" aria-live="polite"><p class="macro-pending">Đang tải chuỗi dữ liệu vĩ mô...</p></div>
-<div class="macro-dashboard-head money-section-head"><div><span class="macro-eyebrow">MONEY MARKET · DERIVATIVES</span><h3>Tiền tệ &amp; phái sinh</h3></div><div class="money-section-actions"><span id="money-source-stamp" class="macro-data-freshness">Đang tải</span><button type="button" id="money-refresh" class="money-refresh">Làm mới</button></div></div>
-<div id="macro-liquidity-overview" aria-label="Lãi suất liên ngân hàng, phái sinh và FX Swap">
-<div class="money-dashboard-grid">
-<article class="macro-viz-card" id="money-on">Đang tải lãi suất ON...</article>
-<article class="macro-viz-card" id="money-swap">Đang tải VBMA FX Swap...</article>
-</div><div id="money-vbma-curves" class="money-vbma-grid" aria-label="Đường cong lợi suất trái phiếu và repo VBMA"></div><section class="macro-viz-card money-derivative-live money-derivative-section" id="money-futures-live" aria-label="Bảng giá phái sinh theo phiên">Đang tải giá hợp đồng tương lai...</section><details class="money-derivative-history"><summary>Thống kê OI và khối lượng theo tháng</summary><article class="macro-viz-card money-derivative-section" id="money-futures">Đang tải VN30/VN100 Futures...</article></details>
+</section>
+<div id="macro-liquidity-overview" aria-label="Lãi suất liên ngân hàng và các đường cong VBMA">
+<section id="macro-panel-on" data-macro-panel="on" role="tabpanel" hidden>
+<div class="macro-dashboard-head money-section-head"><div><span class="macro-eyebrow">INTERBANK MONEY MARKET</span><h3>Lãi suất liên ngân hàng</h3></div><div class="money-section-actions"><span id="money-source-stamp" class="macro-data-freshness">Đang tải</span><button type="button" id="money-refresh" class="money-refresh">Làm mới</button></div></div>
+<div class="money-dashboard-grid money-dashboard-grid-single"><article class="macro-viz-card" id="money-on">Đang tải lãi suất ON...</article></div>
+</section>
+<section id="macro-panel-vbma" data-macro-panel="vbma" role="tabpanel" hidden>
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">FIXED INCOME</span><h3>Đường cong lợi suất VBMA</h3></div></div>
+<div id="money-vbma-curves" class="money-vbma-grid" aria-label="FI Bond, trái phiếu chính phủ và Repo"></div>
+</section>
+<section id="macro-panel-swap" data-macro-panel="swap" role="tabpanel" hidden>
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">FX SWAP</span><h3>USD/VND FX Swap</h3></div></div>
+<div class="money-dashboard-grid money-dashboard-grid-single"><article class="macro-viz-card" id="money-swap">Đang tải VBMA FX Swap...</article></div>
+</section>
 </div>
+<section id="macro-panel-esg" data-macro-panel="esg" role="tabpanel" hidden>
 <div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">ESG DATA</span><h3>ESG quốc gia &amp; doanh nghiệp</h3></div></div>
 <div class="macro-esg-dashboard-grid">
 <article class="macro-viz-card macro-esg-card" aria-labelledby="macro-country-heading"><div class="macro-viz-head"><div><span class="macro-viz-kicker">WORLD BANK · VIỆT NAM</span><h4 id="macro-country-heading">ESG quốc gia</h4></div><select id="macro-country-metric" aria-label="Chọn chỉ tiêu ESG quốc gia"></select></div><div id="macro-country-chart" aria-live="polite" class="macro-esg-visual">Đang tải dữ liệu World Bank...</div><div id="macro-country-source" class="macro-viz-source"></div></article>
@@ -306,6 +349,7 @@
 <div class="macro-chart-card"><div class="macro-chart-head"><div><h3 id="macro-chart-title">Dữ liệu vĩ mô</h3><span id="macro-chart-subtitle"></span></div></div><div id="macro-chart"></div></div>
 <div class="macro-table-wrap"><table class="macro-table"><thead id="macro-table-head"></thead><tbody id="macro-table-body"></tbody></table></div>
 </div></details>
+</section>
 </div>
 </div>
 </section>

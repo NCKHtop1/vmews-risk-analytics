@@ -53,6 +53,18 @@ jobs:
         run: |
           node scripts/forecast-navigation-test.cjs
           node financial-report/tests/test_quote_failover.cjs
+      - name: Pre-deploy FinQuery Market UX and Quant component QA
+        run: |
+          node --test financial-report/tests/workspace_tabs.test.cjs
+          node --test financial-report/tests/derivatives_market.test.cjs
+          node --test financial-report/tests/liquidity_derivatives.test.cjs
+          node --test financial-report/tests/ownership_intelligence.test.cjs
+          node --test financial-report/tests/alpha_radar.test.cjs
+          node --check financial-report/frontend/chart-engine.js
+          node --check financial-report/frontend/workspace-tabs.js
+          node --check financial-report/frontend/derivatives-market.js
+          node --check financial-report/frontend/ownership-intelligence.js
+          node --check financial-report/frontend/alpha-radar.js
       - name: Verify Strategy Intelligence core and frontend syntax
         run: |
           node --check financial-report/frontend/strategy-intelligence-core.js
@@ -232,6 +244,12 @@ jobs:
           python financial-report/scripts/merge_insight_data.py --seed-dir /tmp/main-insight-seed --target-dir financial-report/data
           python financial-report/scripts/build_cdn.py
           grep -q 'window.FinDerivativeQuotes=' financial-report/index.html
+          grep -q 'window.FinWorkspaceTabs=' financial-report/index.html
+          grep -q 'window.FinOwnership=' financial-report/index.html
+          grep -q 'window.FinAlphaRadar=' financial-report/index.html
+          grep -q 'id="market-futures-workspace"' financial-report/index.html
+          grep -q 'id="macro-primary-tabs"' financial-report/index.html
+          grep -q 'id="chart-oscillator-focus"' financial-report/index.html
           grep -q 'id="money-futures-live"' financial-report/index.html
           grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' financial-report/index.html
           grep -q '>AI Strategy Agent<' financial-report/index.html
@@ -315,6 +333,11 @@ jobs:
           grep -q '>AI Strategy Agent<' /tmp/page.html
           grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' /tmp/page.html
           grep -q 'sai-top-strategies' /tmp/page.html
+          grep -q 'window.FinWorkspaceTabs=' /tmp/page.html
+          grep -q 'window.FinDerivativeQuotes=' /tmp/page.html
+          grep -q 'window.FinAlphaRadar=' /tmp/page.html
+          grep -q 'id="market-futures-workspace"' /tmp/page.html
+          grep -q 'id="macro-primary-tabs"' /tmp/page.html
           grep -q 'Strategy Builder & Screener' /tmp/page.html
           grep -q 'openChart:openMarketChart' /tmp/page.html
           grep -q 'ensureGlobalAILayer' /tmp/page.html

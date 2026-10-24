@@ -43,5 +43,27 @@ class VBMASourceTests(unittest.TestCase):
         self.assertEqual(parse_number("3,90"), 3.9)
         self.assertEqual(parse_number("-123,50"), -123.5)
         self.assertIsNone(parse_number("<html>"))
+
+    def test_excel_serial_date_in_dated_curve(self):
+        # 2026-10-22 Excel date serial relative to 1899-12-30.
+        from datetime import timedelta
+        serial=(date(2026,10,22)-date(1899,12,30)).days
+        raw=f"Date,1W,1M,Yield (%)\n{serial},3.0,3.1,3.2\n".encode()
+        result=parse_vbma_curve(raw,"gov_bond",TODAY)
+        self.assertEqual(result["asOf"],"2026-10-22")
+        self.assertEqual(result["status"],"verified")
+
+    def test_vbma_metadata_date_tenor_yield_table(self):
+        raw=b"Observation date,22/10/2026,comment\nTenor,Yield (%),comment\n1W,3.10,x\n1M,3.30,x\n3M,3.50,x\n"
+        result=parse_vbma_curve(raw,"fi_bond",TODAY)
+        self.assertEqual(len(result["points"]),3)
+        self.assertEqual(result["points"][0]["tenor"],"1W")
+
+    def test_stale_curve_is_labeled_stale_not_repackaged_as_current(self):
+        raw=b"Date,1W,1M,Yield (%)\n01/09/2026,3.2,3.4,3.5\n"
+        result=parse_vbma_curve(raw,"fi_bond",TODAY)
+        self.assertEqual(result["asOf"],"2026-09-01")
+        self.assertEqual(result["status"],"stale")
+
 if __name__ == "__main__":
     unittest.main()
