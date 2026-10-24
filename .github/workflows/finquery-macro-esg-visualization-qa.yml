@@ -1,0 +1,63 @@
+name: FinQuery Macro ESG chart QA
+on:
+  pull_request:
+    paths:
+      - 'financial-report/frontend/macro-dashboard.js'
+      - 'financial-report/frontend/macro.js'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/market.css'
+      - 'financial-report/frontend/section-collapse.js'
+      - 'financial-report/tests/macro_dashboard.test.cjs'
+      - 'financial-report/scripts/build_cdn.py'
+      - '.github/workflows/finquery-macro-esg-visualization-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/frontend/macro-dashboard.js'
+      - 'financial-report/frontend/macro.js'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/market.css'
+      - 'financial-report/frontend/section-collapse.js'
+      - 'financial-report/tests/macro_dashboard.test.cjs'
+      - 'financial-report/scripts/build_cdn.py'
+      - '.github/workflows/finquery-macro-esg-visualization-qa.yml'
+permissions:
+  contents: read
+jobs:
+  source-linked-charts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Browser-side JS syntax
+        run: |
+          node --check financial-report/frontend/macro.js
+          node --check financial-report/frontend/macro-dashboard.js
+          node --check financial-report/frontend/section-collapse.js
+      - name: Evidence-linked macro and ESG chart regression
+        run: |
+          node --test financial-report/tests/macro_dashboard.test.cjs
+          node --test financial-report/tests/data_hub.test.cjs
+      - name: Build and validate same-origin single HTML bundle
+        run: |
+          python financial-report/scripts/build_cdn.py
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('financial-report/index.html').read_text(encoding='utf-8')
+          assert html.count("root.FinMacroDashboard={render,renderEsg,series,plot") == 1
+          assert '<script defer src="macro-dashboard.js">' not in html
+          assert 'id="macro-overview"' in html and 'id="macro-company-chart"' in html
+          assert 'id="macro-country-chart"' in html and 'id="macro-explore"' in html
+          assert 'id="macro-unlock-form"' not in html
+          assert 'if(!state.data)return null' in html
+          assert 'https://finquery.info.vn/financial-report/data-hub.html' in html
+          print('FinQuery integrated Macro & ESG charts CDN contract PASS')
+          PY
