@@ -38,6 +38,7 @@ def build():
     scripts += '<script>' + (front / 'risk-monitor.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'section-collapse.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'insights.js').read_text() + '</script>'
+    scripts += '<script>' + (front / 'macro-dashboard.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'macro.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'knowledge-base.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'question-policy.js').read_text() + '</script>'
