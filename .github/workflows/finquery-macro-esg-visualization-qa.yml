@@ -71,7 +71,7 @@ jobs:
           assert 'id="macro-country-chart"' in html and 'id="macro-explore"' in html
           assert 'id="macro-unlock-form"' not in html
           assert 'if(!state.data)return null' in html
-          assert 'https://finquery.info.vn/financial-report/data-hub.html' in html
+          assert 'href="#macro"' in html
           print('FinQuery integrated Macro & ESG charts CDN contract PASS')
           PY
   mobile-desktop-smoke:
