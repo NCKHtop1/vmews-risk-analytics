@@ -182,6 +182,23 @@ function renderFundDetail(symbol){
  const detail=(x.details||[]).map(y=>'<div class="risk-fund-detail-item"><div><strong>'+esc(y.fundCode||y.fundName)+'</strong><small>'+esc(y.fundName||'')+'</small></div><span class="risk-fund-state risk-fund-'+tone(y.tone)+'">'+esc(y.label)+'</span><b>'+(y.currentWeightPct==null?'—':fmt(y.currentWeightPct,2)+'%')+'</b><small>Trước: '+(y.previousWeightPct==null?'—':fmt(y.previousWeightPct,2)+'%')+(Number.isFinite(Number(y.deltaPP))?' · '+(Number(y.deltaPP)>0?'+':'')+fmt(y.deltaPP,2)+' điểm %':'')+(y.reportDate?' · công bố '+esc(y.reportDate):'')+(Number.isFinite(Number(y.navMomentum20Pct))?' · NAV 20P '+(Number(y.navMomentum20Pct)>0?'+':'')+fmt(y.navMomentum20Pct,2)+'%':'')+'</small></div>').join('');
  host.innerHTML='<div class="risk-detail-head"><div><span>CHI TIẾT QUỸ</span><h3>'+esc(symbol)+'</h3></div><button type="button" id="risk-fund-detail-close">Đóng</button></div><div class="risk-fund-detail-summary"><div><span>Số quỹ hiện tại</span><strong>'+fmt(x.currentFundCount,0)+'</strong></div><div><span>Quỹ lớn nhất</span><strong>'+(x.largestWeightPct==null?'—':fmt(x.largestWeightPct,2)+'%')+'</strong></div><div><span>Thay đổi lớn nhất</span><strong>'+(Number.isFinite(Number(x.largestChangePP))?((Number(x.largestChangePP)>0?'+':'')+fmt(x.largestChangePP,2)+' điểm %'):'—')+'</strong></div><div><span>Trạng thái</span><strong class="risk-fund-'+tone(x.tone)+'">'+esc(x.label)+'</strong></div></div><div class="risk-fund-detail-list">'+detail+'</div>';
 }
+function fundChangeLabel(x){
+ // Disclosure of a new top holding is not evidence of an actual purchase.
+ // When percentage deltas are zero/unknown, preserve the source event type
+ // rather than misleadingly displaying every material change as "Không đổi".
+ const raw=x?.largestChangePP;
+ if(raw!==null&&raw!==undefined&&Number.isFinite(Number(raw))&&Math.abs(Number(raw))>=0.005)
+  return(Number(raw)>0?'+':'')+fmt(raw,2)+' điểm %';
+ const changed=(x?.details||[]).filter(y=>y.material===true);
+ const arrivals=changed.filter(y=>y.status==='new').length;
+ const departures=changed.filter(y=>y.status==='removed').length;
+ const labels=[];
+ if(arrivals)labels.push(arrivals+' quỹ mới xuất hiện trong top công bố');
+ if(departures)labels.push(departures+' quỹ rời top công bố');
+ if(labels.length)return labels.join(' · ');
+ if(Number(x?.materialChanges)>0)return'Có thay đổi trong top công bố';
+ return'Không đổi';
+}
 function renderFunds(){
  const d=state.data,box=$('risk-fund-summary'),chart=$('risk-fund-chart'),asof=$('risk-fund-asof'),detail=$('risk-fund-detail');
  if(!box||!chart)return;
@@ -196,7 +213,7 @@ function renderFunds(){
  const max=Math.max(1,...rows.map(x=>Number(x.currentFundCount)||0));
  chart.innerHTML='<div class="risk-fund-chart-head"><span>Mã</span><span>Số quỹ đang nắm giữ</span><span>Thay đổi gần nhất</span></div><div class="risk-fund-chart-body">'+rows.map(x=>{
   const width=Math.max(4,(Number(x.currentFundCount)||0)/max*100);
-  const raw=Number(x.largestChangePP);const delta=Number.isFinite(raw)&&Math.abs(raw)>=0.005?((raw>0?'+':'')+fmt(raw,2)+' điểm %'):(x.status==='new'||x.status==='removed'?x.label:'Không đổi');
+  const delta=fundChangeLabel(x);
   return '<button type="button" class="risk-fund-bar risk-fund-'+tone(x.tone)+'" data-fund-symbol="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><span class="risk-fund-bar-track"><i style="width:'+width+'%"></i><b>'+fmt(x.currentFundCount,0)+' quỹ</b></span><small>'+esc(delta)+'</small></button>';
  }).join('')+'</div>';
  if(state.selectedFundSymbol&&rows.some(x=>x.symbol===state.selectedFundSymbol))renderFundDetail(state.selectedFundSymbol);else if(detail)detail.hidden=true;
