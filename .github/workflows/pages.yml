@@ -360,7 +360,7 @@ jobs:
           missing=[x for x in required if x not in page]
           assert not missing,('deployed News bundle missing contract markers',missing)
           PY
-          grep -q '>Investment Ideas<' /tmp/page.html
+          grep -q '>Ý tưởng đầu tư<' /tmp/page.html
           grep -q '>Phân tích<' /tmp/page.html
           grep -q '>Vĩ mô<' /tmp/page.html
           grep -q '>Tổng quan<' /tmp/page.html
