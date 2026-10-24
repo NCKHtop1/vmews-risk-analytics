@@ -57,7 +57,7 @@ test('full macro dashboard shows four real trends with period, units and source 
  const grid=$('macro-overview').innerHTML;
  assert.equal((grid.match(/class="macro-viz-card"/g)||[]).length,4);
  assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,4);
- for(const label of ['PMI sản xuất','Cung tiền M2','Dư nợ tín dụng','FDI giải ngân','T9 2026','triệu tỷ đồng','tỷ USD'])assert.ok(grid.includes(label),label);
+ for(const label of ['PMI sản xuất','Cung tiền M2','Dư nợ tín dụng','FDI giải ngân','T9 2026','nghìn tỷ đồng','tỷ USD'])assert.ok(grid.includes(label),label);
  assert.match(grid,/51,9/);
  assert.match(grid,/50 phân biệt/);
  assert.match(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
