@@ -73,6 +73,7 @@ def fixture(folder):
 def run():
     with tempfile.TemporaryDirectory(prefix="finquery-indicators-") as tmp:
         fixture(Path(tmp))
+        shutil.copy2(FRONT / "favicon.svg", Path(tmp) / "favicon.ico")
         class Handler(SimpleHTTPRequestHandler):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, directory=tmp, **kwargs)
