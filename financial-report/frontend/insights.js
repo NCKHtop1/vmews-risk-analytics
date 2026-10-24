@@ -100,7 +100,7 @@ function renderTargetZone(c,price){
 function renderDashboard(){
  const title=$('idea-title');if(!title)return;
  const reports=symbolReports(),events=symbolEvents(),plans=symbolPlans(),c=consensus(),quote=window.FinancialMarket?.context?.().quote||{},price=Number(quote.price),change=Number(quote.changePct);
- title.textContent='Investment Ideas · '+(state.symbol||'—');if($('idea-symbol-title'))$('idea-symbol-title').textContent=(state.symbol||'—')+' · Báo cáo phân tích';
+ title.textContent='Báo cáo phân tích · '+(state.symbol||'—');if($('idea-symbol-title'))$('idea-symbol-title').textContent=(state.symbol||'—')+' · Báo cáo phân tích';
  const badge=$('idea-consensus-badge');const dominant=Object.entries(c.ratings).sort((a,b)=>b[1]-a[1])[0]?.[0];
  if(badge){badge.textContent=c.brokers?('Đồng thuận: '+ratingLabel(dominant)):'Chưa có đồng thuận';badge.dataset.rating=dominant||'none';}
  const healthParts=[];if(state.health?.sourcesTotal)healthParts.push((state.health.sourcesReachable||0)+'/'+state.health.sourcesTotal+' nguồn research');if(state.eventHealth?.sourcesTotal)healthParts.push((state.eventHealth.sourcesReachable||0)+'/'+state.eventHealth.sourcesTotal+' nguồn event');if(state.health?.symbolsTotal)healthParts.push((state.health.symbolsCovered||0)+'/'+state.health.symbolsTotal+' mã có research');if(state.planHealth?.symbolsWithPlan)healthParts.push(state.planHealth.symbolsWithPlan+'/'+state.planHealth.symbolsTotal+' mã có kế hoạch');
