@@ -328,11 +328,12 @@ jobs:
           test "$ready" = 1
           grep -q 'DOLPHIN_V6' /tmp/page.html
           grep -q 'technical-scanner-access-code' /tmp/page.html
-          grep -q 'investment-ideas' /tmp/page.html
+          ! grep -q 'id="investment-ideas"' /tmp/page.html
+          ! grep -q 'href="#investment-ideas"' /tmp/page.html
           grep -q 'Giám sát rủi ro' /tmp/page.html
           grep -q 'Giám sát thị trường' /tmp/page.html
           grep -q 'data-platform-view="strategy"' /tmp/page.html
-          grep -q '>AI Strategy Agent<' /tmp/page.html
+          grep -q '>Trợ lý chiến lược<' /tmp/page.html
           grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' /tmp/page.html
           grep -q 'sai-top-strategies' /tmp/page.html
           grep -q 'window.FinWorkspaceTabs=' /tmp/page.html
@@ -350,9 +351,17 @@ jobs:
           grep -q 'news-daily-brief.json' /tmp/page.html
           grep -q 'news-viewpoint-sentiment.json' /tmp/page.html
           grep -q 'function newsTimeLabel(r)' /tmp/page.html
-          ! grep -q 'id="news-intelligence-summary"' /tmp/page.html
-          ! grep -q 'class="news-brief-card"' /tmp/page.html
-          ! grep -q 'class="news-viewpoint-card"' /tmp/page.html
+          grep -q 'id="news-intelligence-summary"' /tmp/page.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          page=Path('/tmp/page.html').read_text(encoding='utf-8')
+          visible=re.sub(r'<script\b[^>]*>[\s\S]*?</script>', '', page, flags=re.I)
+          for marker in ('id="investment-ideas"', 'href="#investment-ideas"',
+                         'class="news-brief-card"', 'class="news-viewpoint-card"'):
+              assert marker not in visible, ('Obsolete visible UI', marker)
+          assert 'id="news-intelligence-summary"' in visible
+          PY
           python - <<'PY'
           from pathlib import Path
           page=Path('/tmp/page.html').read_text(encoding='utf-8')
@@ -360,7 +369,7 @@ jobs:
           missing=[x for x in required if x not in page]
           assert not missing,('deployed News bundle missing contract markers',missing)
           PY
-          grep -q '>Ý tưởng đầu tư<' /tmp/page.html
+          ! grep -q '>Ý tưởng đầu tư<' /tmp/page.html
           grep -q '>Phân tích<' /tmp/page.html
           grep -q '>Vĩ mô<' /tmp/page.html
           grep -q '>Tổng quan<' /tmp/page.html
