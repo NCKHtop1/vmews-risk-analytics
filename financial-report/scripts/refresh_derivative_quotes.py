@@ -214,7 +214,7 @@ def collect(client=_request, now=None):
                 continue
     contracts = normalize_board({"data": active}, catalog, stamps, now)
     if not contracts: raise ValueError("No futures quotes with per-contract verified trade timestamps")
-    ordered = sorted(contracts.values(), key=lambda row: (row["underlying"], row["expiry"]))
+    ordered = sorted(contracts.values(), key=lambda row: (0 if row["underlying"] == "VN30" else 1, row["expiry"]))
     return {"schemaVersion": 1, "status": "ok",
             "source": SOURCE, "sourceName": "KBS delayed market quotes",
             "collectedAt": now.isoformat(), "latestSourceTime": max(x["sourceTime"] for x in ordered),
