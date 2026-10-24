@@ -55,6 +55,7 @@ jobs:
         run: |
           node --test financial-report/tests/macro_dashboard.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
+          python -m unittest discover -s financial-report/scripts -p test_refresh_derivative_quotes.py -v
           node --test financial-report/tests/data_hub.test.cjs
       - name: Build and validate same-origin single HTML bundle
         run: |
