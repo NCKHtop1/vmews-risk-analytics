@@ -94,7 +94,7 @@ async function googleClaims(credential) {
 async function session(req) {
   const token = cookieValue(req);
   if (!token) return null;
-  const rows = await db()(
+  const rows = await db().query(
     'SELECT u.id,u.email,u.full_name,u.avatar_url,u.role,u.status,s.id AS session_id ' +
     'FROM public.finquery_sessions s INNER JOIN public.finquery_users u ON s.user_id=u.id ' +
     'WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() LIMIT 1',
@@ -117,7 +117,7 @@ function safeNext(value) {
   return v.startsWith('/') && !v.startsWith('//') && !v.includes('\\') && !/[\r\n]/.test(v) ? v : '/financial-report/index.html';
 }
 async function audit(actor, action, target, meta) {
-  await db()('INSERT INTO public.finquery_audit(actor_email,action,target_email,meta) VALUES ($1,$2,$3,$4::jsonb)', [
+  await db().query('INSERT INTO public.finquery_audit(actor_email,action,target_email,meta) VALUES ($1,$2,$3,$4::jsonb)', [
     actor, action, target || null, JSON.stringify(meta || {})
   ]);
 }
@@ -126,13 +126,13 @@ async function findOrCreateGoogleAccount(identity) {
   // Existing owner accounts may be pre-seeded by email and are claimed exactly once.
   const sql = db();
   const args = [identity.email, identity.sub, identity.name, identity.avatar];
-  const existingSubject = await sql(
+  const existingSubject = await sql.query(
     'SELECT id,email,google_sub FROM public.finquery_users WHERE google_sub=$1 LIMIT 1',
     [identity.sub]
   );
   if (existingSubject.length) {
     // Keep user ID and role intact when a verified Google account changes its email.
-    const updated = await sql(
+    const updated = await sql.query(
       'UPDATE public.finquery_users SET email=$1,full_name=$3,avatar_url=$4,' +
       'last_login_at=now(),updated_at=now() WHERE google_sub=$2 ' +
       'RETURNING id,email,full_name,avatar_url,role,status',
@@ -141,7 +141,7 @@ async function findOrCreateGoogleAccount(identity) {
     return updated[0] || null;
   }
 
-  const emailOwner = await sql(
+  const emailOwner = await sql.query(
     'SELECT id,google_sub FROM public.finquery_users WHERE email=$1 LIMIT 1',
     [identity.email]
   );
@@ -151,7 +151,7 @@ async function findOrCreateGoogleAccount(identity) {
       e.code = 'ACCOUNT_IDENTITY_CONFLICT';
       throw e;
     }
-    const updated = await sql(
+    const updated = await sql.query(
       'UPDATE public.finquery_users SET google_sub=$2,full_name=$3,avatar_url=$4,' +
       'last_login_at=now(),updated_at=now() WHERE email=$1 AND google_sub IS NULL ' +
       'RETURNING id,email,full_name,avatar_url,role,status',
@@ -159,7 +159,7 @@ async function findOrCreateGoogleAccount(identity) {
     );
     if (updated.length) return updated[0];
     // Another concurrent login may have already associated this subject.
-    const raced = await sql(
+    const raced = await sql.query(
       'SELECT id,email,full_name,avatar_url,role,status ' +
       'FROM public.finquery_users WHERE google_sub=$1 LIMIT 1', [identity.sub]
     );
@@ -168,7 +168,7 @@ async function findOrCreateGoogleAccount(identity) {
 
   // Exactly one persistent row per Google subject. First-time users can sign in
   // immediately, just as in PandaStudy; admins may block them later.
-  const created = await sql(
+  const created = await sql.query(
     'INSERT INTO public.finquery_users(email,google_sub,full_name,avatar_url,role,status,last_login_at) ' +
     "VALUES($1,$2,$3,$4,'user','active',now()) " +
     'ON CONFLICT (google_sub) DO UPDATE SET email=EXCLUDED.email,' +
@@ -201,12 +201,12 @@ async function googleSignIn(req, res) {
     }, { 'Set-Cookie': expireCookie() });
   }
   const oldToken = cookieValue(req);
-  if (oldToken) await db()(
+  if (oldToken) await db().query(
     'UPDATE public.finquery_sessions SET revoked_at=now() WHERE token_hash=$1 AND revoked_at IS NULL',
     [tokenHash(oldToken)]
   );
   const newToken = crypto.randomBytes(32).toString('base64url');
-  await db()(
+  await db().query(
     "INSERT INTO public.finquery_sessions(user_id,token_hash,expires_at) VALUES($1,$2,now()+interval '7 days')",
     [user.id,tokenHash(newToken)]
   );
@@ -223,12 +223,12 @@ async function logout(req, res) {
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
   if (!originAllowed(req)) return json(res, 403, { error: 'Invalid request origin' });
   const token = cookieValue(req);
-  if (token) await db()('UPDATE public.finquery_sessions SET revoked_at=now() WHERE token_hash=$1 AND revoked_at IS NULL', [tokenHash(token)]);
+  if (token) await db().query('UPDATE public.finquery_sessions SET revoked_at=now() WHERE token_hash=$1 AND revoked_at IS NULL', [tokenHash(token)]);
   return json(res, 200, { ok: true }, { 'Set-Cookie': expireCookie() });
 }
 async function adminUsers(req, res, user) {
   if (!adminAllowed(user)) return json(res, 403, { error: 'Chỉ quản trị viên mới có quyền truy cập.' });
-  const rows = await db()(
+  const rows = await db().query(
     'SELECT id,email,full_name,role,status,created_at,last_login_at,approved_at,approved_by FROM public.finquery_users ' +
     'ORDER BY CASE status WHEN \'pending\' THEN 0 WHEN \'active\' THEN 1 ELSE 2 END, created_at DESC LIMIT 300'
   );
@@ -236,7 +236,7 @@ async function adminUsers(req, res, user) {
 }
 async function adminAudit(req, res, user) {
   if (!adminAllowed(user)) return json(res, 403, { error: 'Chỉ quản trị viên mới có quyền truy cập.' });
-  const rows = await db()('SELECT id,actor_email,action,target_email,created_at FROM public.finquery_audit ORDER BY id DESC LIMIT 100');
+  const rows = await db().query('SELECT id,actor_email,action,target_email,created_at FROM public.finquery_audit ORDER BY id DESC LIMIT 100');
   return json(res, 200, { events: rows });
 }
 async function adminUpdate(req, res, actor) {
@@ -250,7 +250,7 @@ async function adminUpdate(req, res, actor) {
   if (!/^[0-9a-f-]{36}$/i.test(id) || !['approve','block','unblock','set_role','revoke_sessions'].includes(action)) {
     return json(res, 400, { error: 'Yêu cầu không hợp lệ.' });
   }
-  const rows = await db()('SELECT id,email,role,status FROM public.finquery_users WHERE id=$1 LIMIT 1', [id]);
+  const rows = await db().query('SELECT id,email,role,status FROM public.finquery_users WHERE id=$1 LIMIT 1', [id]);
   const target = rows[0];
   if (!target) return json(res, 404, { error: 'Không tìm thấy tài khoản.' });
   if (target.role === 'owner' || target.email.toLowerCase() === OWNER || target.id === actor.id) {
@@ -259,17 +259,17 @@ async function adminUpdate(req, res, actor) {
   if (actor.role !== 'owner' && target.role === 'admin') return json(res, 403, { error: 'Chỉ chủ sở hữu mới được quản lý tài khoản Admin.' });
   let change = null;
   if (action === 'approve' || action === 'unblock') {
-    change = await db()('UPDATE public.finquery_users SET status=\'active\',approved_at=now(),approved_by=$2,updated_at=now() WHERE id=$1 RETURNING email,role,status', [id,actor.email]);
+    change = await db().query('UPDATE public.finquery_users SET status=\'active\',approved_at=now(),approved_by=$2,updated_at=now() WHERE id=$1 RETURNING email,role,status', [id,actor.email]);
   } else if (action === 'block') {
-    change = await db()('UPDATE public.finquery_users SET status=\'blocked\',updated_at=now() WHERE id=$1 RETURNING email,role,status', [id]);
-    await db()('UPDATE public.finquery_sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id]);
+    change = await db().query('UPDATE public.finquery_users SET status=\'blocked\',updated_at=now() WHERE id=$1 RETURNING email,role,status', [id]);
+    await db().query('UPDATE public.finquery_sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id]);
   } else if (action === 'set_role') {
     const role = String(data.role || '');
     if (actor.role !== 'owner' || !['admin','user'].includes(role)) return json(res,403,{ error:'Chỉ chủ sở hữu được phân quyền Admin.' });
-    change = await db()('UPDATE public.finquery_users SET role=$2,updated_at=now() WHERE id=$1 RETURNING email,role,status', [id,role]);
-    await db()('UPDATE public.finquery_sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id]);
+    change = await db().query('UPDATE public.finquery_users SET role=$2,updated_at=now() WHERE id=$1 RETURNING email,role,status', [id,role]);
+    await db().query('UPDATE public.finquery_sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id]);
   } else if (action === 'revoke_sessions') {
-    await db()('UPDATE public.finquery_sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id]);
+    await db().query('UPDATE public.finquery_sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id]);
   }
   await audit(actor.email, action, target.email, { role: data.role || null });
   return json(res, 200, { ok:true, user: change && change[0] ? change[0] : {email:target.email} });
@@ -352,7 +352,7 @@ module.exports = async function handler(req,res) {
       if (!configured) return json(res,503,{
         ok:false,service:'finquery-auth',authConfigured:false,databaseReachable:false
       });
-      const rows = await db()('SELECT 1 AS healthy');
+      const rows = await db().query('SELECT 1 AS healthy');
       const databaseReachable = Number(rows[0]?.healthy) === 1;
       return json(res,databaseReachable?200:503,{
         ok:databaseReachable,service:'finquery-auth',authConfigured:true,databaseReachable
