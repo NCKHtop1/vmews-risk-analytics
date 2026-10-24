@@ -1,10 +1,13 @@
 import pathlib
 import sys
 import unittest
+import io
+import json
+from urllib.error import HTTPError
 from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
-from guard_public_quotes import PricePublicationError, compare, validate
+from guard_public_quotes import PricePublicationError, compare, validate, probe_domain_anonymous
 
 
 def sample(minutes_ago=2, missing=0):
@@ -40,6 +43,29 @@ class PricePublicationTests(unittest.TestCase):
         p["expected"] = 114
         with self.assertRaisesRegex(PricePublicationError, "universe mismatch"):
             compare(sample(), p, "pages")
+
+    def test_anonymous_401_login_required_is_expected(self):
+        def blocked(request, timeout):
+            raise HTTPError(request.full_url, 401, "Unauthorized", {},
+                            io.BytesIO(json.dumps({"code":"LOGIN_REQUIRED"}).encode()))
+        result = probe_domain_anonymous(request_fn=blocked)
+        self.assertEqual(result["anonymousStatus"], 401)
+        self.assertTrue(result["protected"])
+
+    def test_anonymous_200_is_security_failure(self):
+        class PublicResult:
+            status=200
+            def __enter__(self): return self
+            def __exit__(self, exc_type, exc, tb): return False
+        with self.assertRaisesRegex(PricePublicationError, "without login"):
+            probe_domain_anonymous(request_fn=lambda req,timeout: PublicResult())
+
+    def test_unexpected_401_payload_is_not_accepted(self):
+        def blocked(request, timeout):
+            raise HTTPError(request.full_url, 401, "Unauthorized", {},
+                            io.BytesIO(json.dumps({"error":"other"}).encode()))
+        with self.assertRaisesRegex(PricePublicationError, "login gate"):
+            probe_domain_anonymous(request_fn=blocked)
 
     def test_future_stamp_is_rejected(self):
         p = sample(-20)
