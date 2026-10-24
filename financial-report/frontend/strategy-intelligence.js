@@ -15,7 +15,7 @@ function ctx(){
 }
 function sourceLabel(model){
  const t=model?.sourceTime||model?.snapshot?.sourceTime||model?.snapshot?.checkedAt;
- if(!t||!Number.isFinite(Date.parse(t)))return'Chưa đồng bộ';
+ if(!t||!Number.isFinite(Date.parse(t)))return'Đang tải';
  return new Date(t).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
 }
 function metric(label,value,sub=''){
@@ -27,7 +27,7 @@ function strategyCard(x,rank){
   '<div class="sai-rank">#'+rank+'</div><div class="sai-strategy-main"><div class="sai-strategy-line"><strong>'+esc(x.label)+'</strong><span class="sai-pill '+(x.score>=82?'good':x.score>=68?'watch':'muted')+'">'+esc(x.status)+'</span></div>'+
   '<small>'+esc(x.family)+' · '+esc(x.horizon)+' · Rủi ro '+esc(x.risk)+'</small>'+
   '<div class="sai-score-row"><span>Phù hợp hiện tại <b>'+fmt(x.score)+'/100</b></span><i><u style="width:'+Math.max(0,Math.min(100,x.score))+'%"></u></i></div>'+
-  '<div class="sai-card-meta"><span>Regime '+fmt(x.regimeFit)+'</span><span>Xác nhận '+fmt(x.confirmation)+'</span><span>'+fmt(x.matchesCount)+' mã khớp</span></div>'+
+  '<div class="sai-card-meta"><span>Thị trường '+fmt(x.regimeFit)+'</span><span>Xác nhận '+fmt(x.confirmation)+'</span><span>'+fmt(x.matchesCount)+' mã khớp</span></div>'+
   (symbols.length?'<div class="sai-symbol-chips">'+symbols.map(s=>'<em>'+esc(s)+'</em>').join('')+'</div>':'')+
   '</div></button>';
 }
@@ -39,12 +39,12 @@ function renderRegime(model){
  metric('Xu hướng tăng',pct(m.trendUp,0),'Tỷ lệ mã xác nhận')+
  metric('Động lượng',pct(m.momentum,0),'RSI/MACD đồng thuận')+
  metric('Độ rộng',pct(m.breadth,0),'Tỷ lệ mã tăng')+
- metric('Rủi ro',m.risk==null?'—':fmt(m.risk,1)+'/100','Risk Monitor')+
+ metric('Rủi ro',m.risk==null?'—':fmt(m.risk,1)+'/100','Rủi ro thị trường')+
  '</div>';
 }
 function renderStrategies(model){
  const host=$('sai-top-strategies');if(!host)return;
- host.innerHTML=(model.ranking||[]).map((x,i)=>strategyCard(x,i+1)).join('')||'<div class="sai-empty">Chưa đủ dữ liệu để xếp hạng chiến lược.</div>';
+ host.innerHTML=(model.ranking||[]).map((x,i)=>strategyCard(x,i+1)).join('')||'<div class="sai-empty">Chưa có dữ liệu.</div>';
 }
 function oppRow(x,i){
  const p=x.primary||{};
@@ -60,7 +60,7 @@ function renderOpportunities(model){
  const rows=(model.opportunities||[]).slice(0,25);
  if(!state.selected&&rows.length)state.selected=rows[0].symbol;
  host.innerHTML='<div class="sai-opp-head"><span>#</span><span>Mã</span><span>Chiến lược chính</span><span>Điểm</span><span>KL/TB20</span><span>Rủi ro</span><span>Đánh giá</span></div>'+
- (rows.length?rows.map(oppRow).join(''):'<div class="sai-empty">Snapshot hiện tại chưa có mã khớp nhóm chiến lược được xếp hạng.</div>');
+ (rows.length?rows.map(oppRow).join(''):'<div class="sai-empty">Chưa có mã phù hợp.</div>');
 }
 function renderView(model){
  const host=$('sai-investment-view');if(!host)return;
@@ -80,14 +80,14 @@ function renderView(model){
 function renderExecution(){
  const host=$('sai-vn-execution');if(!host)return;
  const x=C.executionProfile();
- host.innerHTML='<div class="sai-section-title"><div><span>GIẢ ĐỊNH GIAO DỊCH VIỆT NAM</span><h3>Execution profile · HOSE</h3></div></div>'+
+ host.innerHTML='<div class="sai-section-title"><div><span>GIẢ ĐỊNH GIAO DỊCH VIỆT NAM</span><h3>Thông số giao dịch HOSE</h3></div></div>'+
  '<div class="sai-execution-grid">'+
  metric('Lô chẵn',fmt(x.boardLot)+' cp','Khối lượng làm tròn theo lô')+
  metric('Biên độ',pct(x.priceBandPct,0),'HOSE mặc định')+
- metric('Phí mô phỏng',pct(x.brokerFeePct,2),'Có thể cấu hình khi backtest')+
+ metric('Phí mô phỏng',pct(x.brokerFeePct,2),'Có thể cấu hình khi kiểm định')+
  metric('Thuế bán',pct(x.sellTaxPct,2),'Áp dụng phía bán')+
- metric('Slippage',pct(x.slippagePct,2),'Giả định mặc định')+
- metric('Thanh khoản',pct(x.maxAdvPct,0)+' ADV','Giới hạn quy mô lệnh')+
+ metric('Trượt giá',pct(x.slippagePct,2),'Mô phỏng')+
+ metric('Thanh khoản',pct(x.maxAdvPct,0)+' khối lượng bình quân','Giới hạn quy mô lệnh')+
  '</div>';
 }
 function renderStatus(model){
