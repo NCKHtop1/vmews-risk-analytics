@@ -1,38 +1,38 @@
 (function(root){'use strict';
 const CATALOG=[
- {id:'price',label:'Giá',group:'Price',unit:'đ',decimals:0},
- {id:'changePct',label:'Thay đổi phiên',group:'Price',unit:'%',decimals:2},
- {id:'sma20',label:'SMA 20',group:'Trend',unit:'đ',decimals:0},
- {id:'sma50',label:'SMA 50',group:'Trend',unit:'đ',decimals:0},
- {id:'sma200',label:'SMA 200',group:'Trend',unit:'đ',decimals:0},
- {id:'ema9',label:'EMA 9',group:'Trend',unit:'đ',decimals:0},
- {id:'ema20',label:'EMA 20',group:'Trend',unit:'đ',decimals:0},
- {id:'ema50',label:'EMA 50',group:'Trend',unit:'đ',decimals:0},
- {id:'vwma20',label:'VWMA 20',group:'Trend',unit:'đ',decimals:0},
- {id:'supertrend',label:'Supertrend',group:'Trend',unit:'đ',decimals:0},
- {id:'supertrendDir',label:'Supertrend Direction',group:'Trend',unit:'',decimals:0},
- {id:'adx14',label:'ADX 14',group:'Trend',unit:'',decimals:1},
- {id:'rsi14',label:'RSI 14',group:'Momentum',unit:'',decimals:1},
- {id:'macd',label:'MACD',group:'Momentum',unit:'',decimals:2},
- {id:'macdSignal',label:'MACD Signal',group:'Momentum',unit:'',decimals:2},
- {id:'macdHistogram',label:'MACD Histogram',group:'Momentum',unit:'',decimals:2},
- {id:'stochK',label:'Stochastic %K',group:'Momentum',unit:'',decimals:1},
- {id:'stochD',label:'Stochastic %D',group:'Momentum',unit:'',decimals:1},
- {id:'cci20',label:'CCI 20',group:'Momentum',unit:'',decimals:1},
- {id:'roc10',label:'ROC 10',group:'Momentum',unit:'%',decimals:2},
- {id:'willr14',label:'Williams %R',group:'Momentum',unit:'',decimals:1},
- {id:'mfi14',label:'MFI 14',group:'Momentum',unit:'',decimals:1},
- {id:'bbUpper',label:'Bollinger Upper',group:'Volatility',unit:'đ',decimals:0},
- {id:'bbMiddle',label:'Bollinger Middle',group:'Volatility',unit:'đ',decimals:0},
- {id:'bbLower',label:'Bollinger Lower',group:'Volatility',unit:'đ',decimals:0},
- {id:'bbPctB',label:'Bollinger %B',group:'Volatility',unit:'',decimals:2},
- {id:'atr14',label:'ATR 14',group:'Volatility',unit:'đ',decimals:0},
- {id:'volume',label:'Khối lượng',group:'Volume',unit:'cp',decimals:0},
- {id:'volumeSma20',label:'Volume SMA 20',group:'Volume',unit:'cp',decimals:0},
- {id:'volumeRatio20',label:'Volume / SMA20',group:'Volume',unit:'x',decimals:2},
- {id:'obv',label:'OBV',group:'Volume',unit:'',decimals:0},
- {id:'obvSlope5',label:'OBV Δ5',group:'Volume',unit:'',decimals:0},
- {id:'cmf20',label:'CMF 20',group:'Volume',unit:'',decimals:3}
+ {id:'price',label:'Giá',group:'Giá',unit:'đ',decimals:0},
+ {id:'changePct',label:'Thay đổi phiên',group:'Giá',unit:'%',decimals:2},
+ {id:'sma20',label:'SMA 20',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'sma50',label:'SMA 50',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'sma200',label:'SMA 200',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'ema9',label:'EMA 9',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'ema20',label:'EMA 20',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'ema50',label:'EMA 50',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'vwma20',label:'VWMA 20',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'supertrend',label:'Supertrend',group:'Xu hướng',unit:'đ',decimals:0},
+ {id:'supertrendDir',label:'Hướng Supertrend',group:'Xu hướng',unit:'',decimals:0},
+ {id:'adx14',label:'ADX 14',group:'Xu hướng',unit:'',decimals:1},
+ {id:'rsi14',label:'RSI 14',group:'Động lượng',unit:'',decimals:1},
+ {id:'macd',label:'MACD',group:'Động lượng',unit:'',decimals:2},
+ {id:'macdSignal',label:'Đường tín hiệu MACD',group:'Động lượng',unit:'',decimals:2},
+ {id:'macdHistogram',label:'Chênh lệch MACD',group:'Động lượng',unit:'',decimals:2},
+ {id:'stochK',label:'Stochastic %K',group:'Động lượng',unit:'',decimals:1},
+ {id:'stochD',label:'Stochastic %D',group:'Động lượng',unit:'',decimals:1},
+ {id:'cci20',label:'CCI 20',group:'Động lượng',unit:'',decimals:1},
+ {id:'roc10',label:'ROC 10',group:'Động lượng',unit:'%',decimals:2},
+ {id:'willr14',label:'Williams %R',group:'Động lượng',unit:'',decimals:1},
+ {id:'mfi14',label:'MFI 14',group:'Động lượng',unit:'',decimals:1},
+ {id:'bbUpper',label:'Bollinger trên',group:'Biến động',unit:'đ',decimals:0},
+ {id:'bbMiddle',label:'Bollinger giữa',group:'Biến động',unit:'đ',decimals:0},
+ {id:'bbLower',label:'Bollinger dưới',group:'Biến động',unit:'đ',decimals:0},
+ {id:'bbPctB',label:'Bollinger %B',group:'Biến động',unit:'',decimals:2},
+ {id:'atr14',label:'ATR 14',group:'Biến động',unit:'đ',decimals:0},
+ {id:'volume',label:'Khối lượng',group:'Khối lượng',unit:'cp',decimals:0},
+ {id:'volumeSma20',label:'Trung bình khối lượng 20',group:'Khối lượng',unit:'cp',decimals:0},
+ {id:'volumeRatio20',label:'Khối lượng / TB20',group:'Khối lượng',unit:'x',decimals:2},
+ {id:'obv',label:'OBV',group:'Khối lượng',unit:'',decimals:0},
+ {id:'obvSlope5',label:'OBV Δ5',group:'Khối lượng',unit:'',decimals:0},
+ {id:'cmf20',label:'CMF 20',group:'Khối lượng',unit:'',decimals:3}
 ];
 const MAP=Object.fromEntries(CATALOG.map(x=>[x.id,x]));
 const OPS=[
@@ -65,21 +65,21 @@ const PRESETS={
   {left:'macd',op:'cross_up',rightType:'indicator',rightIndicator:'macdSignal'},
   {left:'rsi14',op:'gte',rightType:'value',rightValue:50}
  ]},
- ema_adx:{name:'EMA Trend + ADX',join:'AND',scope:'LIVE',conditions:[
+ ema_adx:{name:'Xu hướng EMA và ADX',join:'AND',scope:'LIVE',conditions:[
   {left:'ema9',op:'gt',rightType:'indicator',rightIndicator:'ema20'},
   {left:'ema20',op:'gt',rightType:'indicator',rightIndicator:'ema50'},
   {left:'adx14',op:'gte',rightType:'value',rightValue:25}
  ]},
- bollinger_rebound:{name:'Bollinger Rebound',join:'AND',scope:'ALL',conditions:[
+ bollinger_rebound:{name:'Hồi phục Bollinger',join:'AND',scope:'ALL',conditions:[
   {left:'bbPctB',op:'lte',rightType:'value',rightValue:0.05},
   {left:'rsi14',op:'lte',rightType:'value',rightValue:35}
  ]},
- breakout_volume:{name:'Breakout + Volume',join:'AND',scope:'LIVE',conditions:[
+ breakout_volume:{name:'Phá vỡ kèm khối lượng',join:'AND',scope:'LIVE',conditions:[
   {left:'price',op:'gt',rightType:'indicator',rightIndicator:'sma20'},
   {left:'volumeRatio20',op:'gte',rightType:'value',rightValue:1.5},
   {left:'roc10',op:'gt',rightType:'value',rightValue:0}
  ]},
- momentum_recovery:{name:'Momentum hồi phục',join:'AND',scope:'LIVE',conditions:[
+ momentum_recovery:{name:'Động lượng hồi phục',join:'AND',scope:'LIVE',conditions:[
   {left:'rsi14',op:'cross_up',rightType:'value',rightValue:30},
   {left:'macdHistogram',op:'cross_up',rightType:'value',rightValue:0}
  ]}
