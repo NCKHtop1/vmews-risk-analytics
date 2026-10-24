@@ -2294,7 +2294,7 @@ class MarketTests(unittest.TestCase):
         guard=(root/'.github/workflows/market-realtime-guard.yml').read_text() if (root/'.github/workflows/market-realtime-guard.yml').exists() else pathlib.Path('.github/workflows/market-realtime-guard.yml').read_text()
         self.assertIn('data-market-view="scanner"',html)
         self.assertIn('id="technical-scanner-access-code"',html)
-        self.assertIn('MACD · RSI · Volume',html)
+        self.assertIn('MACD · RSI · Khối lượng',html)
         self.assertIn("'scanner'",market)
         self.assertIn('FinTechnicalScanner',market)
         self.assertIn("technical-signals.json",scanner)
