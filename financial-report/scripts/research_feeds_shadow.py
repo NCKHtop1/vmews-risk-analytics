@@ -48,7 +48,7 @@ VBMA = {
         "unit": "SOURCE_UNIT_NOT_VERIFIED",
     },
 }
-HNX_LISTING = "https://www.hnx.vn/vi-vn/phai-sinh.html"
+HNX_LISTING = "https://cbtd.hnx.vn/vi-vn/phai-sinh/thong-tin-cong-bo.html"
 EVENTS_URL = (
     "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/"
     "financial-insights-data/data/corporate-events.json"
@@ -97,7 +97,7 @@ def _clean(value):
 
 
 def _norm(value):
-    value = unicodedata.normalize("NFD", _clean(value).casefold())
+    value = unicodedata.normalize("NFD", _clean(value).casefold().replace("đ", "d"))
     return "".join(ch for ch in value if unicodedata.category(ch) != "Mn")
 
 
@@ -270,6 +270,7 @@ def parse_hnx_monthly(raw, url, expected_month=None):
         "provider": "HNX", "url": url, "sourceMonth": period,
         "frequency": "MONTHLY", "aggregation": "MONTH_END_OPEN_INTEREST",
         "contracts": {"VN30_FUTURES": {"oi": vn30}, "VN100_FUTURES": {"oi": vn100_oi}},
+        "assetClass": "EQUITY_INDEX_FUTURES", "equityShareFeed": False,
         "dailyContractDataAvailable": False, "modelEligible": False, "publicationEligible": False,
     }
 
@@ -296,9 +297,16 @@ def review_pit_events(payload):
         url = str(source.get("url") or "")
         disclosed = (row.get("details") or {}).get("publishedAt") or row.get("publishedAt")
         timestamp = _aware_timestamp(disclosed)
-        official = any(key in publisher for key in ("hose", "hnx", "vsdc"))
+        # Only HOSE-listed equities are eligible for research. HNX is permitted
+        # exclusively as the official derivatives-market source above.
+        exchange = str(row.get("exchange") or source.get("exchange") or "").strip().upper()
+        if exchange in ("HNX", "UPCOM"):
+            equity_in_scope = False
+        else:
+            equity_in_scope = exchange == "HOSE" or ("hose" in publisher and exchange == "")
+        official = any(key in publisher for key in ("hose", "vsdc"))
         valid = bool(
-            timestamp and official and url.startswith("https://")
+            equity_in_scope and timestamp and official and url.startswith("https://")
             and timestamp <= datetime.now(UTC)
             and re.fullmatch(r"20\d{2}-\d{2}-\d{2}", str(row.get("date")))
         )
@@ -309,6 +317,8 @@ def review_pit_events(payload):
             "firstPublishedAt": timestamp.isoformat() if timestamp else None,
             "sourceUrl": url[:500],
             "eventType": str(row.get("type") or "other")[:48],
+            "equityExchange": exchange or "UNVERIFIED",
+            "equityScope": "HOSE_ONLY",
             "pitVerified": valid,
             "modelEligible": False,
         }
@@ -375,17 +385,50 @@ def probe(fetch=fetch_bytes):
         }
     # The official NHNN ON fixing is distinct from VBMA government-bond repo.
     # No synthetic or aggregator replacement is permitted as an official series.
-    results["nhnn_unsecured_interbank_on"] = {
-        "status": "pending_official_machine_readable_source",
-        "market": "UNSECURED_INTERBANK", "instrument": "VND_ON",
-        "sourceAgency": "State Bank of Vietnam",
-        "sourceUrl": "https://www.sbv.gov.vn/",
-        "checkedAt": stamp, "rate": None,
-        "modelEligible": False, "publicationEligible": False,
-    }
+    for key, tenor in [
+        ("nhnn_unsecured_interbank_on", "ON"),
+        ("nhnn_unsecured_interbank_1w", "1W"),
+        ("nhnn_unsecured_interbank_2w", "2W"),
+        ("nhnn_unsecured_interbank_1m", "1M"),
+        ("nhnn_unsecured_interbank_3m", "3M"),
+        ("nhnn_unsecured_interbank_6m", "6M"),
+    ]:
+        results[key] = {
+            "status": "pending_official_machine_readable_source",
+            "market": "UNSECURED_INTERBANK",
+            "instrument": "VND_" + tenor,
+            "sourceAgency": "State Bank of Vietnam",
+            "sourceUrl": "https://www.sbv.gov.vn/",
+            "checkedAt": stamp,
+            "rate": None,
+            "unit": "%_PER_ANNUM",
+            "modelEligible": False,
+            "publicationEligible": False,
+        }
+    for key, instrument in [
+        ("nhnn_omo", "OPEN_MARKET_OPERATIONS"),
+        ("nhnn_tin_phieu", "SBV_BILLS"),
+    ]:
+        results[key] = {
+            "status": "pending_official_machine_readable_source",
+            "market": "SBV_POLICY_OPERATIONS",
+            "instrument": instrument,
+            "sourceAgency": "State Bank of Vietnam",
+            "sourceUrl": "https://www.sbv.gov.vn/",
+            "checkedAt": stamp,
+            "value": None,
+            "unit": "SOURCE_UNIT_NOT_VERIFIED",
+            "modelEligible": False,
+            "publicationEligible": False,
+        }
     return {
         "schemaVersion": 1, "checkedAt": stamp, "mode": "SHADOW_ONLY",
         "pipeline": "finquery_research_feeds",
+        "scope": {
+            "equities": {"allowedExchanges": ["HOSE"], "excludedExchanges": ["HNX", "UPCOM"]},
+            "derivatives": ["VN30_FUTURES", "VN100_FUTURES"],
+            "derivativesOfficialVenue": "HNX",
+        },
         "publicServingEnabled": False, "strategyInputsChanged": False,
         "forecastInputsChanged": False, "licenseApproved": False,
         "quality": "needs_review" if any(v["status"] == "needs_review" for v in results.values()) else "unavailable",
