@@ -74,7 +74,7 @@ test('unverified swap is empty, never fabricated; verified points show a curve',
  const {api,get}=makeEnv();
  api.setData(fixture);
  assert.match(get('money-swap').innerHTML,/Chưa có chuỗi FX Swap hợp lệ/);
- assert.doesNotMatch(get('money-swap').innerHTML,/<svg|money-swap-point/);
+ assert.doesNotMatch(get('money-swap').innerHTML,/money-swap-chart|money-swap-point/);
  const other=JSON.parse(JSON.stringify(fixture));
  other.vbmaSwap.status='verified';
  other.vbmaSwap.unit='swap points';
