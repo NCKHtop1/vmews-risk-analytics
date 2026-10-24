@@ -13,8 +13,8 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler, urlopen
 from urllib.error import HTTPError
 from urllib.parse import unquote, urlsplit
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from finquery_ops_health import probe_production
+# Import the shared production health module only during the live run:
+# financial-report standalone CI uses a sparse checkout without root scripts.
 from guard_public_quotes import (
     SOURCE as PRICE_SOURCE, PAGES as PAGE_PRICES, read as read_prices,
     compare as compare_prices, probe_domain_anonymous
@@ -73,6 +73,8 @@ def verify_hub_page(content):
 
 def main():
     try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+        from finquery_ops_health import probe_production
         production = probe_production(DOMAIN)
         required_flags = ("ok", "sessionAnonymous", "adminProtected", "dashboardProtected")
         missing = [key for key in required_flags if production.get(key) is not True]
