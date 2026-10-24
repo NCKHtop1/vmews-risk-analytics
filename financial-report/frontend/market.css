@@ -523,3 +523,69 @@ body.strategy-lab-view .strategy-page{display:block}
  .research-ai.ai-drawer .research-ai-form{min-height:0!important;padding:5px 10px!important;grid-template-columns:minmax(0,1fr) 105px!important}
  .research-ai.ai-drawer .research-ai-form textarea,.research-ai.ai-drawer .research-ai-form button{min-height:44px!important;height:44px!important}
 }
+
+
+/* FinQuery 2026-10-24: chart-first Macro & ESG workspace */
+.macro-section{overflow:hidden}
+.macro-head{align-items:center!important}
+.macro-head-note{margin:7px 0 0!important;font-size:12px!important;color:#7385a2!important;line-height:1.55}
+#macro-source-status{display:block;color:#71839d;font-size:11px;line-height:1.5;text-align:right;max-width:245px}
+.macro-workspace{min-width:0}
+.macro-dashboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:22px 0 12px;flex-wrap:wrap}
+.macro-dashboard-head h3{font-size:clamp(18px,2vw,24px);line-height:1.3;color:#1d375a;margin:5px 0 6px;font-weight:770;letter-spacing:-.5px}
+.macro-dashboard-head p{font-size:12px;line-height:1.65;color:#72849b;margin:0;max-width:680px}
+.macro-eyebrow{display:block;font-size:10px;letter-spacing:1.2px;color:#5474b1;font-weight:800}
+.macro-data-freshness{font-size:11px;font-weight:650;color:#677f9f;background:#edf4ff;border-radius:999px;padding:8px 12px}
+.macro-overview-grid,.macro-esg-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:13px 0 17px}
+.macro-viz-card{min-width:0;border:1px solid #e0e9f4;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#fcfdff 100%);padding:18px 19px 15px;box-shadow:0 7px 24px rgba(41,69,112,.045)}
+.macro-viz-head{display:flex;gap:8px;justify-content:space-between;align-items:flex-start;min-width:0}
+.macro-viz-kicker{display:block;font-size:10px;letter-spacing:.7px;color:#7189aa;font-weight:750;line-height:1.5}
+.macro-viz-head h4{color:#233c5d;font-size:clamp(15px,1.4vw,18px);line-height:1.34;margin:5px 0 2px;font-weight:780;letter-spacing:-.2px}
+.macro-viz-period{flex:0 0 auto;color:#3761ad;background:#edf3ff;padding:7px 9px;border-radius:8px;font-size:11px;font-weight:770}
+.macro-viz-value{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:14px 0 5px}
+.macro-viz-value strong{font-variant-numeric:tabular-nums;color:#1b3d67;font-size:clamp(25px,2.8vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.8px}
+.macro-viz-value span{font-size:12px;color:#7385a0;font-weight:650}
+.macro-viz-comment{font-size:12px!important;color:#58728f!important;line-height:1.55!important;min-height:18px;margin:4px 0 7px!important}
+.macro-viz-comparison{color:#476c9b;font-weight:670;font-size:12px;line-height:1.5}
+.macro-viz-plot{width:100%;min-width:0;margin:6px 0 8px}
+.macro-viz-plot .macro-trend-svg{display:block;width:100%;height:auto;max-height:235px;overflow:visible}
+.macro-viz-source{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding-top:12px;border-top:1px solid #eef1f7;color:#7c8ca1;font-size:10px;line-height:1.55;min-width:0}
+.macro-viz-source a{font-weight:770;color:#3168ae;text-decoration:underline;text-decoration-color:#bdd0e6;text-underline-offset:3px}
+.macro-viz-source span{min-width:0;overflow-wrap:anywhere}
+.macro-esg-dashboard-head{margin-top:28px}
+.macro-esg-dashboard-grid{margin-top:14px}
+.macro-esg-card .macro-viz-head{align-items:flex-start;flex-wrap:wrap;gap:9px 12px}
+.macro-esg-card select{font:inherit;font-size:11px;max-width:100%;min-width:0;flex:0 1 280px;color:#26496e;background:#f7faff;border:1px solid #dae5f2;border-radius:9px;padding:8px 28px 8px 9px;line-height:1.5}
+.macro-esg-visual{min-height:190px;color:#6e8099}
+.macro-single-year{display:grid;grid-template-columns:16px 1fr;gap:7px 10px;align-content:center;border:1px dashed #d5dff2;border-radius:11px;background:#f7faff;min-height:170px;padding:20px;margin:18px 0;color:#506887}
+.macro-single-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#7761c0;box-shadow:0 0 0 4px #e9e5f8;margin-top:3px}
+.macro-single-year strong{font-size:13px;color:#345072;font-weight:750}
+.macro-single-year small{grid-column:2;color:#788aa4;font-size:11px;line-height:1.6}
+.macro-no-chart,.macro-pending{display:flex;align-items:center;min-height:160px;border:1px dashed #d9e2ef;border-radius:11px;background:#f8faff;color:#6d829d;font-size:12px;line-height:1.65;padding:22px;margin:14px 0}
+.macro-method-note{color:#7b8ca3;font-size:11px;line-height:1.7;margin:10px 2px 22px}
+.macro-explore{border:1px solid #e1e9f4;border-radius:13px;background:#f9fbff;margin-top:15px;overflow:hidden}
+.macro-explore>summary{padding:16px 18px;cursor:pointer;font-size:12px;font-weight:750;color:#315481;list-style-position:inside}
+.macro-explore>summary span{float:right;color:#7b8fb2}
+.macro-explore[open]>summary{border-bottom:1px solid #e1e8f3;background:#f1f6ff}
+.macro-explore-inner{padding:18px;background:white}
+.macro-explore .macro-tabs button{font-size:11px;padding:9px 12px}
+.macro-explore .macro-toolbar{flex-wrap:wrap}
+.macro-explore .macro-toolbar label{font-size:12px}
+.macro-explore .macro-toolbar select{max-width:min(60vw,390px)}
+@media(max-width:950px){
+ .macro-overview-grid,.macro-esg-dashboard-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+ .macro-viz-card{padding:16px}
+}
+@media(max-width:570px){
+ .macro-head{align-items:flex-start!important;gap:10px!important}
+ #macro-source-status{font-size:10px;max-width:170px}
+ .macro-head-note{font-size:11px!important}
+ .macro-dashboard-head{margin-top:16px}
+ .macro-viz-head h4{font-size:17px}
+ .macro-viz-value strong{font-size:28px}
+ .macro-viz-plot .macro-trend-svg{max-height:205px}
+ .macro-esg-card select{flex-basis:100%;width:100%}
+ .macro-explore-inner{padding:12px}
+ .macro-explore .macro-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .macro-viz-source{font-size:10px}
+}

@@ -22,7 +22,7 @@ function setOpen(c,open){
 function bind(c){
  const toggle=document.getElementById(c.toggle),chevron=document.getElementById(c.chevron);
  ensureIcon(chevron);
- setOpen(c,false);
+ setOpen(c,c.section==='macro');
  toggle?.addEventListener('click',()=>setOpen(c,document.getElementById(c.body)?.hidden));
  chevron?.addEventListener('click',()=>setOpen(c,document.getElementById(c.body)?.hidden));
 }
