@@ -1,0 +1,27 @@
+name: FinQuery production HTTP baseline
+on:
+  push:
+    branches:
+      - feat/finquery-secure-auth-20261024
+    paths:
+      - '.github/workflows/finquery-live-http-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  http-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe current live FinQuery publicly, no credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const base='https://finquery.info.vn';
+          const request=await fetch(base+'/financial-report/index.html?symbol=MBB&mode=quarter',{redirect:'follow',signal:AbortSignal.timeout(20000)});
+          const body=await request.text();
+          const ok=request.status===200&&body.length>400&&/FinQuery/i.test(body);
+          console.log(JSON.stringify({status:request.status,contentType:request.headers.get('content-type'),bytes:body.length,containsFinquery:/FinQuery/i.test(body),statusOk:ok,finalUrlHost:new URL(request.url).host}));
+          if(!ok)process.exitCode=1;
+          NODE
