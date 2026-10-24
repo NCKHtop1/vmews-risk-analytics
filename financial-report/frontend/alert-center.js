@@ -53,9 +53,26 @@ function renderHits(){
  const host=$('strategy-hits');if(!host)return;
  host.innerHTML=state.hits.length?state.hits.slice(0,30).map(h=>'<button type="button" class="strategy-hit" data-strategy-open="'+esc(h.symbol)+'"><span><strong>'+esc(h.symbol)+'</strong> · '+esc(h.strategyName)+'</span><small>'+new Date(h.at).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</small></button>').join(''):'<div class="strategy-no-result">Chưa có tín hiệu mới.</div>';
 }
+function sourceTradingDay(snapshot){
+ const raw=String(snapshot?.sourceTime||'');
+ const ms=Date.parse(raw);
+ if(!Number.isFinite(ms))return null;
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{
+  timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'
+ }).formatToParts(new Date(ms)).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+ return parts.year+'-'+parts.month+'-'+parts.day;
+}
+// A stale Discovery EOD scan is available for historical research, but it
+// must not create a new live strategy alert until its bar reaches the
+// published quote session. The live/Core tier is governed by the same rule.
+function actionableMatches(snapshot,strategy){
+ const expected=sourceTradingDay(snapshot);
+ if(!expected||!E?.scan)return[];
+ return E.scan(snapshot,strategy).filter(x=>x?.barDate===expected);
+}
 function saveStrategy(){
  const s=currentStrategy();if(!s.conditions.length)return;
- const id='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),matches=state.snapshot?E.scan(state.snapshot,s).map(x=>x.symbol):[];
+ const id='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),matches=state.snapshot?actionableMatches(state.snapshot,s).map(x=>x.symbol):[];
  state.strategies.unshift({...s,id,alert:true,lastMatches:matches,lastCheckedSourceTime:state.snapshot?.sourceTime||state.snapshot?.checkedAt||null,createdAt:new Date().toISOString()});
  saveLocal();renderSaved();
 }
@@ -70,7 +87,7 @@ function evaluateAlerts(){
  if(!state.snapshot)return;
  let changed=false,newHits=[];
  for(const s of state.strategies){
-  const rows=E.scan(state.snapshot,s),current=rows.map(x=>x.symbol),previous=new Set(s.lastMatches||[]);
+  const rows=actionableMatches(state.snapshot,s),current=rows.map(x=>x.symbol),previous=new Set(s.lastMatches||[]);
   if(s.alert&&s.lastCheckedSourceTime){const fresh=rows.filter(x=>!previous.has(x.symbol));for(const r of fresh)newHits.push({key:s.id+'|'+r.symbol+'|'+(state.snapshot.sourceTime||state.snapshot.checkedAt),symbol:r.symbol,strategyId:s.id,strategyName:s.name,at:Date.now()});notify(s,fresh);}
   s.lastMatches=current;s.lastCheckedSourceTime=state.snapshot.sourceTime||state.snapshot.checkedAt||new Date().toISOString();changed=true;
  }
@@ -108,10 +125,10 @@ function bind(){
  $('strategy-clear')?.addEventListener('click',()=>{state.conditions=[];state.matches=[];renderCanvas();renderPreview();renderResults();});
  $('strategy-results')?.addEventListener('click',e=>{const b=e.target.closest('[data-strategy-open]');if(b)openSymbol(b.dataset.strategyOpen);});
  $('strategy-saved')?.addEventListener('click',e=>{const load=e.target.closest('[data-strategy-load]'),del=e.target.closest('[data-strategy-delete]');if(load)loadStrategy(load.dataset.strategyLoad);if(del){state.strategies=state.strategies.filter(x=>x.id!==del.dataset.strategyDelete);saveLocal();renderSaved();}});
- $('strategy-saved')?.addEventListener('change',e=>{const id=e.target.dataset.strategyAlert,s=state.strategies.find(x=>x.id===id);if(s){s.alert=e.target.checked;s.lastMatches=state.snapshot?E.scan(state.snapshot,s).map(x=>x.symbol):[];s.lastCheckedSourceTime=state.snapshot?.sourceTime||state.snapshot?.checkedAt||null;saveLocal();renderSaved();}});
+ $('strategy-saved')?.addEventListener('change',e=>{const id=e.target.dataset.strategyAlert,s=state.strategies.find(x=>x.id===id);if(s){s.alert=e.target.checked;s.lastMatches=state.snapshot?actionableMatches(state.snapshot,s).map(x=>x.symbol):[];s.lastCheckedSourceTime=state.snapshot?.sourceTime||state.snapshot?.checkedAt||null;saveLocal();renderSaved();}});
  $('strategy-hits')?.addEventListener('click',e=>{const b=e.target.closest('[data-strategy-open]');if(b)openSymbol(b.dataset.strategyOpen);});
  $('strategy-notifications')?.addEventListener('click',async()=>{if(!('Notification'in window))return;const p=await Notification.requestPermission();$('strategy-notifications').textContent=p==='granted'?'Thông báo đã bật':'Thông báo bị chặn';});
 }
 loadLocal();renderLibrary();renderCanvas();renderPreview();renderResults();renderSaved();renderHits();bind();refreshSnapshot();setInterval(()=>{if(!document.hidden)refreshSnapshot();},300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSnapshot();});
-window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed)refreshSnapshot();},context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot,marketSourceTime:state.marketSourceTime,aligned:!state.marketSourceTime||String(state.snapshot?.sourceTime||'')===String(state.marketSourceTime)})};
+window.FinStrategyBuilder={refresh:refreshSnapshot,scan:scanNow,actionableMatches,setMarketSourceTime(value){const next=value||null,changed=String(next||'')!==String(state.marketSourceTime||'');state.marketSourceTime=next;if(changed)refreshSnapshot();},context:()=>({strategy:currentStrategy(),matches:state.matches,saved:state.strategies,hits:state.hits,snapshot:state.snapshot,marketSourceTime:state.marketSourceTime,aligned:!state.marketSourceTime||String(state.snapshot?.sourceTime||'')===String(state.marketSourceTime)})};
 })();
