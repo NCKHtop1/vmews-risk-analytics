@@ -589,3 +589,43 @@ body.strategy-lab-view .strategy-page{display:block}
  .macro-explore .macro-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
  .macro-viz-source{font-size:10px}
 }
+
+
+/* FinQuery money market and derivatives */
+.money-section-head{margin-top:27px}
+.money-section-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.money-refresh{border:1px solid #d7e2f1;border-radius:9px;background:#fff;color:#2a548c;font-size:11px;font-weight:750;padding:9px 12px;cursor:pointer}
+.money-refresh:disabled{opacity:.55}
+.money-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.money-dashboard-grid .macro-viz-card{min-width:0}
+.money-main-num{min-width:0;display:grid;gap:1px;justify-items:end;text-align:right}
+.money-main-num strong{font-size:clamp(22px,2.3vw,28px);font-weight:800;color:#1a416e;line-height:1.1;font-variant-numeric:tabular-nums}
+.money-main-num small{font-size:10px;color:#8191a7;font-weight:700}
+.money-card-caption{margin:9px 0 12px;font-size:12px;font-weight:700;color:#557ba5;min-height:18px}
+.money-chart{margin:9px 0 13px;min-height:210px;min-width:0}
+.money-chart svg{width:100%;height:auto;display:block}
+.money-empty{display:flex;align-items:center;justify-content:center;min-height:194px;color:#8493a9;background:#fafcff;border:1px dashed #d6e0ee;border-radius:10px;font-size:12px;line-height:1.5;padding:16px;text-align:center}
+.money-derivative-section{margin-top:16px}
+.money-chart-menu{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.money-chart-menu button{background:#f6f9fe;color:#516782;border:1px solid #e0e7f1;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:750;cursor:pointer}
+.money-chart-menu button.active{background:#315db9;color:#fff;border-color:#315db9}
+.money-derivative-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.money-future-contract{border:1px solid #e5edf5;border-radius:11px;padding:15px;min-width:0}
+.money-future-contract h4{margin:0;color:#294461;font-size:16px}
+.money-delta{font-size:12px;font-weight:720;color:#376e9d;margin:6px 0 12px}
+.money-bar-compare{display:grid;gap:9px;margin-top:16px}
+.money-bar-item{display:grid;grid-template-columns:100px minmax(0,1fr) 52px;gap:8px;align-items:center;font-size:12px}
+.money-bar-item b{font-variant-numeric:tabular-nums;color:#274365}
+.money-bar-item small{color:#8191a7;text-align:right}
+.money-bar-track{background:#ecf1f8;border-radius:999px;height:11px;overflow:hidden}
+.money-bar-track span{display:block;height:100%;border-radius:999px}
+.money-bar-unit{display:block;font-size:10px;color:#8695a9;margin:10px 0 14px}
+.money-swap-chart{display:flex;align-items:flex-end;gap:9px;height:210px;overflow:auto;padding:22px 6px 6px}
+.money-swap-point{display:grid;grid-template-rows:14px minmax(100px,1fr) 16px;gap:6px;justify-items:center;min-width:38px}
+.money-swap-point small{font-size:10px;color:#667e9e}
+.money-swap-point b{font-size:10px;color:#2f4e7b;font-variant-numeric:tabular-nums}
+.money-swap-track{height:138px;display:flex;align-items:flex-end}
+.money-swap-track>div{width:14px;background:#5276c7;border-radius:4px 4px 0 0}
+#macro-liquidity-overview .macro-viz-source{margin-top:10px}
+@media(max-width:950px){.money-dashboard-grid,.money-derivative-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:570px){.money-future-contract{padding:11px}.money-main-num strong{font-size:24px}.money-bar-item{grid-template-columns:80px minmax(0,1fr) 48px;font-size:11px}.money-section-actions{align-items:start}.money-refresh{padding:8px 10px}#money-source-stamp{font-size:10px}}
