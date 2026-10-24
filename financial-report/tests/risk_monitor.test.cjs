@@ -395,7 +395,7 @@ test('risk method copy is plain-language and versioned to refresh cached snapsho
 test('fund disclosure chart preserves new top holdings without inventing a weight delta',()=>{
  const src=fs.readFileSync(path.join(__dirname,'../frontend/risk-monitor.js'),'utf8');
  const begin=src.indexOf('function fundChangeLabel(x){');
- const end=src.indexOf('\\nfunction renderFunds(){',begin);
+ const end=src.indexOf('function renderFunds(){',begin);
  assert.ok(begin>0&&end>begin,'pure fund label helper must exist in the live chart source');
  const body=src.slice(begin,end);
  const label=vm.runInNewContext('('+body+')',{
