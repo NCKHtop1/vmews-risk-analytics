@@ -32,7 +32,7 @@ jobs:
           python-version: '3.12'
       - name: Install browser smoke dependency
         run: pip install --disable-pip-version-check -q selenium==4.36.0
-      - name: Exercise production chart, ideas, macro, scanner and Dolphin local analysis
+      - name: Exercise production chart, macro, research sources, scanner and Dolphin analysis
         if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'cancelled'
         env:
           EXPECTED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
@@ -125,18 +125,18 @@ jobs:
                 return {
                   strategySectionHidden:document.getElementById('strategy-builder')?.hidden===true,
                   strategyBodyVisible:document.getElementById('strategy-body')?.hidden===false,
-                  ideas:document.getElementById('investment-ideas-body')?.hidden===true,
+                  removedIdeas:document.getElementById('investment-ideas')===null && document.querySelector('a[href="#investment-ideas"]')===null,
                   macroVisible:document.getElementById('macro-body')?.hidden===false,
                   chevrons:document.querySelectorAll('.section-chevron-icon svg').length
                 };
               """)
-              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('ideas')]) or initial_views.get('macroVisible') is not False or int(initial_views.get('chevrons') or 0)!=2:
+              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('removedIdeas')]) or initial_views.get('macroVisible') is not False or int(initial_views.get('chevrons') or 0)!=1:
                   raise AssertionError(f'Platform view defaults are incorrect: {initial_views}')
 
-              # Clicking the title must NOT expand either section. Only chevrons can.
-              driver.execute_script("document.getElementById('macro-toggle')?.click(); document.getElementById('investment-ideas-toggle')?.click();")
-              if not driver.execute_script("return document.getElementById('macro-body')?.hidden===true && document.getElementById('investment-ideas-body')?.hidden===true"):
-                  raise AssertionError('Title click must not expand Macro or Investment Ideas')
+              # Macro title must not expand its body; only its chevron can.
+              driver.execute_script("document.getElementById('macro-toggle')?.click();")
+              if not driver.execute_script("return document.getElementById('macro-body')?.hidden===true"):
+                  raise AssertionError('Macro title click must not expand the body')
 
               driver.execute_script("document.querySelector('[data-platform-view=\"strategy\"]')?.click();")
               wait.until(lambda d:d.execute_script("""
@@ -147,14 +147,14 @@ jobs:
                   document.querySelector('[data-platform-view="strategy"]')?.classList.contains('active')
                 );
               """))
-              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('investment-ideas-chevron')?.click(); document.getElementById('macro-chevron')?.click();")
+              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('macro-chevron')?.click();")
               wait.until(lambda d:d.execute_script("""
                 return (
                   document.getElementById('strategy-builder')?.hidden===true &&
                   document.querySelector('.workspace')?.hidden===false &&
-                  document.getElementById('investment-ideas-body')?.hidden===false &&
+                  document.getElementById('investment-ideas-body')===null &&
                   document.getElementById('macro-body')?.hidden===false &&
-                  document.querySelectorAll('.section-chevron.is-open').length===2
+                  document.querySelectorAll('.section-chevron.is-open').length===1
                 );
               """))
 
@@ -234,8 +234,11 @@ jobs:
                 return Boolean(c && c.current && c.current.symbol==='FPT');
               """))
               wait.until(lambda d:d.execute_script("""
-                const el=document.getElementById('idea-report-list');
-                return Boolean(el && el.textContent.trim().length>20);
+                const context=window.FinInsights?.context?.();
+                return Boolean(context && context.symbol==='FPT' &&
+                  Array.isArray(context.brokerResearch) &&
+                  Array.isArray(context.corporateEvents) &&
+                  document.getElementById('idea-report-list')===null);
               """))
               wait.until(lambda d:d.execute_script("""
                 const c=window.FinStrategyBuilder?.context?.();
@@ -448,7 +451,7 @@ jobs:
                   newsCount:(m.news||[]).length+(m.marketNews||[]).length,
                   companyNews:(m.news||[]).map(x=>({title:x.title||'',symbols:x.symbols||[],source:x.source||''})),
                   financial:Boolean(window.FinancialReportContext.raw()),
-                  ideaText:(document.getElementById('idea-report-list')?.textContent||'').trim().slice(0,180),
+                  brokerResearchCount:window.FinInsights?.context?.()?.brokerResearch?.length||0,
                   strategyCoverage:window.FinStrategyBuilder?.context?.()?.snapshot?.coverage||0,
                   strategySourceTime:window.FinStrategyBuilder?.context?.()?.snapshot?.sourceTime||null,
                   strategyConditions:window.FinStrategyBuilder?.context?.()?.strategy?.conditions?.length||0,
