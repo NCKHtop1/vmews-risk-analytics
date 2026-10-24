@@ -3932,7 +3932,7 @@ function renderBondCurves(p){
   const s=data[key]||{},points=Array.isArray(s.points)?s.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
   const url=safeURL(s.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
   const link=vbmaSourceIcon(url,'Tải tệp dữ liệu '+title+' từ VBMA');
-  const verified=s.status==='verified'&&s.licenseStatus==='approved'&&s.unit&&s.asOf&&points.length>=2;
+  const verified=s.status==='verified'&&['approved','source_attributed'].includes(s.licenseStatus)&&s.unit&&s.asOf&&points.length>=2;
   const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA '+key+' '));
   const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>' :'<p class="money-source-pending">'+esc(reason?String(reason).replace(new RegExp('^VBMA '+key+'\\s+'),''):'Chưa có chuỗi kỳ hạn đã xác minh')+'</p>';
   return '<article class="macro-viz-card">'+cardHeader(title,verified?dateVN(s.asOf):'—',verified?s.unit:'VBMA','Đường cong kỳ hạn')+visual+'<div class="macro-viz-source">'+link+'</div></article>';
