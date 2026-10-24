@@ -30,25 +30,25 @@
       if (!response.ok) throw new Error('SESSION_UNAVAILABLE');
       const result = await response.json();
       if (result.authenticated && result.user?.status === 'active') {
-        report('Đã nhận diện tài khoản ' + result.user.email + '. Đang mở FinQuery…');
+        report('Đã đăng nhập bằng ' + result.user.email + '. Đang mở FinQuery…');
         visit();
         return;
       }
       if (result.authenticated && result.user?.status === 'pending') {
-        report('Tài khoản ' + result.user.email + ' đang chờ được cấp quyền.');
+        report('Tài khoản ' + result.user.email + ' đang chờ phê duyệt.');
         switchAccount.style.display = 'inline-block';
       } else if (result.authenticated && result.user?.status === 'blocked') {
         report('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
         switchAccount.style.display = 'inline-block';
       } else {
-        report('Vui lòng chọn tài khoản Google để đăng nhập.');
+        report('Chọn tài khoản Google để tiếp tục.');
       }
     } catch (_) {
-      report('Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại.');
+      report('Không kiểm tra được trạng thái đăng nhập. Vui lòng thử lại.');
     }
   }
   async function credential(response) {
-    report('Đang xác minh tài khoản Google…');
+    report('Đang xác minh đăng nhập Google…');
     try {
       const r = await fetch('/api/auth/google', {
         method: 'POST',
@@ -58,25 +58,25 @@
       });
       const result = await r.json();
       if (!r.ok) {
-        report(result.error || 'Không thể xác minh Google. Vui lòng thử lại.');
+        report(result.error || 'Không thể xác thực tài khoản Google. Vui lòng thử lại.');
         return;
       }
       if (result.user?.status === 'active') {
         report('Xin chào, ' + result.user.name + '. Đang mở FinQuery…');
         visit();
       } else {
-        report('Đã ghi nhận tài khoản. Vui lòng liên hệ quản trị viên.');
+        report('Tài khoản đang chờ phê duyệt. Vui lòng liên hệ quản trị viên.');
         switchAccount.style.display = 'inline-block';
       }
     } catch (_) {
-      report('Không thể kết nối máy chủ xác thực. Vui lòng thử lại.');
+      report('Không thể kết nối tới hệ thống đăng nhập. Vui lòng thử lại.');
     }
   }
   async function ready() {
     try {
       const health = await fetch('/healthz', { cache: 'no-store', credentials: 'same-origin' });
       if (!health.ok) {
-        report('Hệ thống đăng nhập đang được cấu hình. Vui lòng quay lại sau.');
+        report('Hệ thống đăng nhập tạm thời chưa sẵn sàng. Vui lòng thử lại sau.');
         return;
       }
       if (!window.google?.accounts?.id) throw new Error('GOOGLE_UNAVAILABLE');
@@ -86,12 +86,12 @@
         shape: 'pill', text: 'signin_with', locale: 'vi', width: 280
       });
       existingSession();
-    } catch (_) { report('Không kết nối được hệ thống đăng nhập. Vui lòng làm mới trang.'); }
+    } catch (_) { report('Không kết nối được hệ thống đăng nhập. Vui lòng tải lại trang.'); }
   }
   const script = document.createElement('script');
   script.src = 'https://accounts.google.com/gsi/client?hl=vi';
   script.async = true;
   script.onload = ready;
-  script.onerror = function () { report('Google Sign-In tạm thời không sẵn sàng.'); };
+  script.onerror = function () { report('Không tải được đăng nhập Google. Vui lòng tải lại trang.'); };
   document.head.appendChild(script);
 })();
