@@ -23,7 +23,7 @@ concurrency:
 jobs:
   browser-smoke:
     # Run against the actually published Pages build, not the previous release during a push race.
-    if: github.event_name != 'push' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -47,7 +47,7 @@ jobs:
           import urllib.request
           from datetime import datetime, timezone, timedelta
           from selenium import webdriver
-          from selenium.common.exceptions import StaleElementReferenceException
+          from selenium.common.exceptions import StaleElementReferenceException, ElementClickInterceptedException
           from selenium.webdriver.chrome.options import Options
           from selenium.webdriver.chrome.service import Service
           from selenium.webdriver.support.ui import WebDriverWait
@@ -84,9 +84,15 @@ jobs:
               # Re-locate a newly rendered button; never suppress a failed action.
               for attempt in range(attempts):
                   try:
-                      driver.find_element('id', element_id).click()
+                      control=driver.find_element('id', element_id)
+                      # Selenium's automatic scroll may place the button behind
+                      # FinQuery's fixed footer/orb. Bring it into the viewport
+                      # center, then perform a real WebElement click.
+                      driver.execute_script("arguments[0].scrollIntoView({block:'center',inline:'nearest'});",control)
+                      time.sleep(0.12)
+                      control.click()
                       return
-                  except StaleElementReferenceException:
+                  except (StaleElementReferenceException, ElementClickInterceptedException):
                       if attempt + 1 >= attempts:
                           raise
                       time.sleep(0.3)
