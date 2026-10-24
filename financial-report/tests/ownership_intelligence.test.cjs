@@ -8,7 +8,7 @@ const src=fs.readFileSync(path.join(root,'frontend/ownership-intelligence.js'),'
 const build=fs.readFileSync(path.join(root,'scripts/build_cdn.py'),'utf8');
 const now=new Date().toISOString();
 function harness(){
- const host={innerHTML:''};const ticker={value:'MBB'};
+ const host={innerHTML:''};const ticker={value:'MBB',addEventListener(){}};
  const document={getElementById:id=>id==='market-ownership-content'?host:id==='ticker'?ticker:null,addEventListener(){}};
  const context={window:{},document,fetch:async()=>({ok:false}),AbortSignal,Date,Intl,URL,Math,Object,console};
  vm.createContext(context);vm.runInContext(src,context,{timeout:3000});
