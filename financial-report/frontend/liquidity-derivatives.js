@@ -81,10 +81,23 @@ function renderSwap(p){
  const bars=points.map(x=>'<div class="money-swap-point"><small>'+esc(x.tenor)+'</small><div class="money-swap-track"><div style="height:'+Math.max(2,Math.abs(x.value)/maxAbs*100)+'%"></div></div><b>'+fmt(x.value,2)+'</b></div>').join('');
  host.innerHTML=cardHeader('USD/VND FX Swap',dateVN(s.asOf),s.unit,'VBMA')+'<div class="money-swap-chart" role="img" aria-label="USD VND FX Swap theo kỳ hạn">'+bars+'</div><div class="macro-viz-source"><span>'+esc(s.measurement||'Đường cong kỳ hạn')+'</span>'+link+'</div>';
 }
+function renderBondCurves(p){
+ const host=$('money-vbma-curves');if(!host)return;
+ const sources=[['fi_bond','FI Bond & CD'],['gov_bond','Lợi suất trái phiếu Chính phủ'],['short_benchmark','Repo ngắn hạn']];
+ const data=p.vbmaCurves||{};
+ host.innerHTML=sources.map(([key,title])=>{
+  const s=data[key]||{},points=Array.isArray(s.points)?s.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
+  const url=safeURL(s.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
+  const link=url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">VBMA ↗</a>':'';
+  const verified=s.status==='verified'&&s.licenseStatus==='approved'&&s.unit&&s.asOf&&points.length>=2;
+  const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>':'<p class="money-source-pending">Đang chờ dữ liệu VBMA được xác minh.</p>';
+  return '<article class="macro-viz-card">'+cardHeader(title,verified?dateVN(s.asOf):'—',verified?s.unit:'VBMA','Đường cong kỳ hạn')+visual+'<div class="macro-viz-source">'+link+'</div></article>';
+ }).join('');
+}
 function render(){
  const p=state.payload;if(!p)return;
  if($('money-source-stamp'))$('money-source-stamp').textContent='Cập nhật dữ liệu: '+dateVN(p.asOf);
- renderON(p);renderFutures(p);renderSwap(p);
+ renderON(p);renderFutures(p);renderSwap(p);renderBondCurves(p);
 }
 async function load(){
  if(state.loading)return;state.loading=true;
