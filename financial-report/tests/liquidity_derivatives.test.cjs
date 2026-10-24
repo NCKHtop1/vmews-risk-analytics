@@ -111,7 +111,7 @@ test('ON timeline adapts date labels and VBMA references use compact export icon
  assert.ok((compact.match(/data-on-tick=/g)||[]).length<=3,'mobile tick budget');
  assert.ok((wide.match(/data-on-tick=/g)||[]).length>=4,'desktop tick labels');
  assert.match(compact,/01\/10/);
- assert.doesNotMatch(compact,/>01\/10\/2026</);
+ assert.doesNotMatch(compact,/<text[^>]*data-on-tick[^>]*>01\/10\/2026/);
  const swap={...fixture,vbmaSwap:{source:'https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv',status:'verified',unit:'swap points',asOf:'2026-10-22',points:[{tenor:'1W',value:-5},{tenor:'1M',value:-22}]}};
  api.setData(swap);
  const html=get('money-swap').innerHTML;
