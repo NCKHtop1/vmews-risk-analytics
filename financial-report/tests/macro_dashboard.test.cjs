@@ -72,7 +72,7 @@ test('source quality warnings suppress only the affected plot, not all charts',(
  data.datasets.pmi.qualityStatus='warning';
  api.render(data,mbb(),'MBB');
  const grid=$('macro-overview').innerHTML;
- assert.match(grid,/Chưa có chuỗi được xác minh/);
+ assert.match(grid,/Chưa có dữ liệu/);
  assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,3);
 });
 test('sparse or invalid data never turn missing observation into zero',()=>{
@@ -95,7 +95,7 @@ test('World Bank chart states actual last observation year instead of crawl year
  api.render(fixture(),mbb(),'MBB');
  assert.match($('macro-country-chart').innerHTML,/2023/);
  assert.match($('macro-country-chart').innerHTML,/class="macro-trend-svg"/);
- assert.match($('macro-country-source').innerHTML,/World Bank ESG/);
+ assert.match($('macro-country-source').innerHTML,/Ngân hàng Thế giới/);
  assert.doesNotMatch($('macro-country-chart').innerHTML,/2026/);
 });
 test('MBB with one green-credit year shows value but cannot fake a trend',()=>{
@@ -104,7 +104,8 @@ test('MBB with one green-credit year shows value but cannot fake a trend',()=>{
  const data=$('macro-company-chart').innerHTML;
  assert.match(data,/68\.501/);
  assert.match(data,/Dư nợ tín dụng xanh/);
- assert.match(data,/Chưa đủ hai năm cùng chỉ tiêu/);
+ assert.match(data,/Năm 2025/);
+ assert.doesNotMatch(data,/Chưa đủ hai năm|không đồng nghĩa|được để trống/);
  assert.doesNotMatch(data,/<svg/);
  assert.match($('macro-company-source').innerHTML,/https:\/\/example.com\/mbb.pdf/);
 });
@@ -118,7 +119,7 @@ test('two genuine comparable annual disclosures draw one ESG company chart',()=>
 test('unverified ESG company has no fabricated score or bar',()=>{
  const {api,$}=harness();
  api.render(fixture(),{companies:{FPT:{canonicalMetrics:[],documents:[]}}},'FPT');
- assert.match($('macro-company-chart').innerHTML,/chưa có KPI ESG định lượng/);
+ assert.match($('macro-company-chart').innerHTML,/Chưa có dữ liệu ESG/);
  assert.doesNotMatch($('macro-company-chart').innerHTML,/<svg/);
  assert.equal($('macro-company-metric').disabled,true);
 });
