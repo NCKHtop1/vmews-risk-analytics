@@ -1,5 +1,10 @@
 name: Refresh FinQuery ON and VBMA FX Swap sources
 on:
+  pull_request:
+    paths:
+      - 'financial-report/scripts/refresh_liquidity.py'
+      - 'financial-report/scripts/test_refresh_liquidity.py'
+      - '.github/workflows/finquery-liquidity-source-refresh.yml'
   workflow_dispatch:
   push:
     branches: [main]
