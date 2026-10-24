@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "asOf": "2026-10-22",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-10-24T08:55:46+00:00",
+  "lastCheckedAt": "2026-10-24T15:46:38+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -121,10 +121,10 @@
     "note": "Raw VBMA FX Swap CSV may be unavailable. Do not confuse swap points with percent rate."
   },
   "sourceIssues": [
-    "VBMA swap ValueError: No recent dated VBMA tenor curve found",
-    "VBMA fi_bond ValueError: No recent dated VBMA tenor curve found",
-    "VBMA gov_bond ValueError: No recent dated VBMA tenor curve found",
-    "VBMA short_benchmark ValueError: No recent dated VBMA tenor curve found"
+    "VBMA swap: source unit not explicit",
+    "VBMA fi_bond: source unit not explicit",
+    "VBMA gov_bond: source unit not explicit",
+    "VBMA short_benchmark: source unit not explicit"
   ],
   "vbmaCurves": {
     "swap": {
