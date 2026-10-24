@@ -1,9 +1,10 @@
-"""Fail loudly when public FinQuery quote snapshots lag the published market source."""
+"""Audit source/Pages freshness and authenticated-domain quote protection."""
 import json
 import math
 import sys
 from datetime import datetime, timedelta, timezone
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 SOURCE = "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json"
 PAGES = "https://nckhtop1.github.io/vmews-risk-analytics/financial-report/market/quotes.json"
@@ -70,6 +71,32 @@ def read(url):
         return json.load(response)
 
 
+def probe_domain_anonymous(request_fn=None):
+    """Production is login-protected: unauthenticated quote bytes MUST be denied.
+
+    Validate publication freshness on the public Pages mirror; check that the
+    Vercel custom domain never leaks market JSON outside an approved session.
+    """
+    request_fn = request_fn or urlopen
+    req = Request(DOMAIN + "?availability_probe=" + str(int(datetime.now(timezone.utc).timestamp())),
+                  headers={"User-Agent": "FinQuery-Price-Availability-Guard/2.0",
+                           "Cache-Control": "no-cache", "Accept": "application/json"})
+    try:
+        with request_fn(req, timeout=14) as response:
+            raise PricePublicationError("domain quote API unexpectedly readable without login: HTTP " + str(response.status))
+    except HTTPError as exc:
+        if exc.code != 401:
+            raise PricePublicationError(f"domain auth status {exc.code}; expected anonymous 401") from exc
+        try:
+            payload = json.loads(exc.read(2048))
+        except (ValueError, TypeError) as err:
+            raise PricePublicationError("domain 401 response must contain JSON") from err
+        if payload.get("code") != "LOGIN_REQUIRED":
+            raise PricePublicationError("domain 401 response is not the expected login gate")
+        return {"site": "domain", "protected": True, "anonymousStatus": 401,
+                "authenticatedPriceBytesTested": False}
+
+
 def main():
     try:
         source = read(SOURCE)
@@ -77,13 +104,17 @@ def main():
     except Exception as exc:
         print(f"::error::SOURCE_PRICE_UNAVAILABLE {type(exc).__name__}: {exc}")
         return 22
-    for label, url, code in (("pages", PAGES, 21), ("domain", DOMAIN, 23)):
-        try:
-            report = compare(source, read(url), label)
-            print(json.dumps(report, ensure_ascii=False))
-        except Exception as exc:
-            print(f"::error::{label.upper()}_PRICE_PUBLICATION_FAILURE {type(exc).__name__}: {exc}")
-            return code
+    try:
+        report = compare(source, read(PAGES), "pages")
+        print(json.dumps(report, ensure_ascii=False))
+    except Exception as exc:
+        print(f"::error::PAGES_PRICE_PUBLICATION_FAILURE {type(exc).__name__}: {exc}")
+        return 21
+    try:
+        print(json.dumps(probe_domain_anonymous(), ensure_ascii=False))
+    except Exception as exc:
+        print(f"::error::DOMAIN_AUTH_PROTECTION_FAILURE {type(exc).__name__}: {exc}")
+        return 23
     print("FINQUERY PUBLIC PRICE AVAILABILITY: PASS")
     return 0
 

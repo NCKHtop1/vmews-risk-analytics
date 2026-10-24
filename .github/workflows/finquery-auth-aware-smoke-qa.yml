@@ -1,0 +1,48 @@
+name: FinQuery authenticated delivery smoke QA
+on:
+  pull_request:
+    paths:
+      - 'financial-report/scripts/smoke_custom_domain.py'
+      - 'financial-report/scripts/guard_public_quotes.py'
+      - 'financial-report/tests/test_auth_aware_domain_smoke.py'
+      - 'financial-report/tests/test_public_price_guard.py'
+      - 'scripts/finquery_custom_domain_browser_run.py'
+      - '.github/workflows/finquery-auth-aware-smoke-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/smoke_custom_domain.py'
+      - 'financial-report/scripts/guard_public_quotes.py'
+      - 'financial-report/tests/test_auth_aware_domain_smoke.py'
+      - 'financial-report/tests/test_public_price_guard.py'
+      - 'scripts/finquery_custom_domain_browser_run.py'
+      - '.github/workflows/finquery-auth-aware-smoke-qa.yml'
+permissions:
+  contents: read
+jobs:
+  offline-auth-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Syntax and offline authorization regression
+        run: |
+          python -m py_compile financial-report/scripts/smoke_custom_domain.py financial-report/scripts/guard_public_quotes.py scripts/finquery_custom_domain_browser_run.py
+          python -m unittest discover -s financial-report/tests -p test_auth_aware_domain_smoke.py -v
+          python -m unittest discover -s financial-report/tests -p test_public_price_guard.py -v
+      - name: Assert model and publisher isolation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          price=Path('financial-report/scripts/guard_public_quotes.py').read_text()
+          smoke=Path('financial-report/scripts/smoke_custom_domain.py').read_text()
+          assert 'probe_domain_anonymous' in price and 'probe_domain_anonymous' in smoke
+          assert 'protected_page' in smoke and 'verify_hub_page' in smoke
+          assert 'forecast' not in price.lower()
+          print('Auth-aware protected-domain plus Pages-source contract PASS')
+          PY

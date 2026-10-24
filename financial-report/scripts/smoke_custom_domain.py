@@ -1,126 +1,115 @@
 #!/usr/bin/env python3
-"""Check HTTPS, routing, market data and canonical links on FinQuery's real domain."""
+"""FinQuery auth-aware production smoke: HTTPS, private dashboard, Pages data.
+
+The Vercel custom domain REQUIRES login. Anonymous stock quote access returning
+401 is a security success, not a publication failure. The public Pages mirror
+is the validated read-only source used to check upstream snapshot freshness.
+"""
 import json
-import os
 import sys
-import ssl
 import time
-from datetime import datetime, timezone, timedelta
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from pathlib import Path
+from urllib.request import Request, build_opener, HTTPRedirectHandler, urlopen
+from urllib.error import HTTPError
+from urllib.parse import unquote, urlsplit
+
+# Import the shared production health module only during the live run:
+# financial-report standalone CI uses a sparse checkout without root scripts.
+from guard_public_quotes import (
+    SOURCE as PRICE_SOURCE, PAGES as PAGE_PRICES, read as read_prices,
+    compare as compare_prices, probe_domain_anonymous
+)
 
 DOMAIN = "https://finquery.info.vn"
 PAGES = "https://nckhtop1.github.io/vmews-risk-analytics"
-HEADERS = {"User-Agent": "FinQuery-Real-Domain-Smoke/1.0", "Cache-Control": "no-cache", "Accept": "*/*"}
+HUB_PATH = "/financial-report/data-hub.html"
+USER_AGENT = "FinQuery-AuthAware-LiveSmoke/2.0"
 
-def read(url):
-    req = Request(url, headers=HEADERS)
+
+class NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def request_no_redirect(url, opener=None):
+    client = opener or build_opener(NoRedirect)
+    request = Request(url, headers={
+        "User-Agent": USER_AGENT, "Accept": "text/html,application/json",
+        "Cache-Control": "no-cache",
+    })
     try:
-        with urlopen(req, timeout=20, context=ssl.create_default_context()) as r:
-            body = r.read(2_000_000)
-            return r.status, r.url, r.headers, body
-    except HTTPError as e:
-        body = e.read(500)
-        print("ERROR_RESPONSE", json.dumps({"url":url,"status":e.code,"headers":dict(e.headers),"body":body[:260].decode("utf-8","replace")}, ensure_ascii=False))
-        raise
+        response = client.open(request, timeout=16)
+    except HTTPError as error:
+        response = error
+    with response:
+        return response.status, response.headers.get("Location") or "", response.read(300_000)
 
-def check(label, url, validator):
-    try:
-        status, final, headers, body = read(url)
-        assert status == 200, f"HTTP {status}"
-        validator(body, final, headers)
-        print("PASS", label, status, len(body), final, headers.get("content-type"))
-        return body
-    except Exception as e:
-        print("FAIL", label, repr(e))
-        raise
 
-def html_contains(needle, require_app=False):
-    def check_html(body, final, headers):
-        assert urlparse(final).hostname == "finquery.info.vn", f"escaped domain: {final}"
-        if require_app:
-            assert urlparse(final).path == "/financial-report/index.html", f"wrong landing page: {final}"
-        assert needle.lower().encode("utf8") in body.lower(), f"missing HTML marker {needle}"
-        assert "text/html" in str(headers.get("content-type","")).lower(), "not HTML"
-    return check_html
+def protected_page(status, location, intended_path):
+    if status not in (302, 303, 307, 308):
+        return False
+    destination = unquote(str(location or ""))
+    parts = urlsplit(destination)
+    if parts.scheme and parts.hostname not in ("finquery.info.vn", "www.finquery.info.vn"):
+        return False
+    return parts.path.startswith("/login") and intended_path in destination
 
-def parse_quote(body, final, headers):
-    assert urlparse(final).hostname == "finquery.info.vn", f"quote redirected off custom domain {final}"
-    d = json.loads(body)
-    assert d.get("status")=="ok", f"status {d.get('status')}"
-    count=len(d.get("quotes") or {})
-    expected=int(d.get("expected") or 0)
-    covered=int(d.get("coverage") or 0)
-    assert expected>=100 and count>=0.95*expected and covered>=0.95*expected, f"coverage {count}/{expected}, {covered}"
-    valid=sum(1 for row in d["quotes"].values() if isinstance(row,dict) and isinstance(row.get("price"),(int,float)) and row["price"]>0)
-    assert valid >= 0.95*expected, f"positive prices {valid}/{expected}"
-    assert d.get("latestSourceTime"), "quote source timestamp missing"
-    return d
+
+def verify_hub_page(content):
+    text = content.decode("utf-8", "replace")
+    required = [
+        "FinQuery", "Kho dữ liệu", "Hợp đồng tương lai VN30",
+        "Hợp đồng tương lai VN100", "39.543", "203 hợp đồng",
+        "không bổ sung cổ phiếu niêm yết HNX",
+        "HNX chỉ là nguồn công bố chính thức của dữ liệu phái sinh",
+    ]
+    # Real text has HTML nodes separating words: use a semantic rather than
+    # an exact adjacent phrase match on company names and displayed numbers.
+    for literal in required:
+        if literal not in text:
+            raise AssertionError("Deployed Data Hub lacks " + literal)
+    return len(content)
+
 
 def main():
     try:
-        print("DOMAIN_SMOKE_CHECK", datetime.now(timezone.utc).isoformat())
-        # Route should retain canonical host after one or two same-origin redirects.
-        check("home",DOMAIN+"/",html_contains("FinQuery", require_app=True))
-        check("app",DOMAIN+"/financial-report/",html_contains("FinQuery", require_app=True))
-        check("market app bundle",DOMAIN+"/financial-report/index.html",
-              lambda b,u,h:(len(b)>100000 and b"FinMarketData" in b and b"FinQuery" in b) or (_ for _ in ()).throw(AssertionError("compiled FinQuery app missing")))
-        # Read-only diagnosis: verify the exact public page rather than trusting deploy metadata.
-        for label, url in [
-            ("domain-exact", DOMAIN+"/financial-report/index.html?symbol=MBB&mode=quarter"),
-            ("domain-cachebust", DOMAIN+"/financial-report/index.html?symbol=MBB&mode=quarter&footer_probe="+str(int(time.time()))),
-            ("pages-source", PAGES+"/financial-report/index.html?symbol=MBB&mode=quarter&footer_probe="+str(int(time.time()))),
-        ]:
-            try:
-                st, final, headers, body = read(url)
-                pos=body.find(b'<footer class="bottom-line">')
-                print("FOOTER_DIAG",json.dumps({
-                    "label":label,"status":st,"url":final,"length":len(body),
-                    "visitor":b'id="finquery-visitor-total"' in body,
-                    "feedback":b'finquery-footer-feedback' in body,
-                    "footer":body[pos:pos+680].decode("utf8","replace") if pos>=0 else None,
-                    "cache":headers.get("cache-control"),"age":headers.get("age"),
-                    "vercelCache":headers.get("x-vercel-cache")
-                },ensure_ascii=False))
-            except Exception as exc:
-                print("FOOTER_DIAG_ERROR",label,repr(exc))
-        # Regression guard: the published MBB page must include only the two additive footer features.
-        footer_url=DOMAIN+"/financial-report/index.html?symbol=MBB&mode=quarter&footer_contract="+str(int(time.time()))
-        footer_status, _, _, footer_body=read(footer_url)
-        assert footer_status==200, f"footer check HTTP {footer_status}"
-        for marker in (b'id="finquery-visitor-total"', b'finquery-footer-feedback',
-                       b'https://www.linkedin.com/in/ngochailuong/',
-                       b'14eJS6piwcfDIWbl7z4qgs6rEp1ptRxzNwTkDjJLHGVg'):
-            assert marker in footer_body, f"published FinQuery footer missing: {marker!r}"
-        print("PASS production visitor+feedback footer",len(footer_body),footer_url)
-        _, _, _, src_content = read(PAGES+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
-        src=json.loads(src_content)
-        _, dom_final, _, dom_content = read(DOMAIN+"/financial-report/market/quotes.json?smoke="+str(int(time.time())))
-        dom=parse_quote(dom_content,dom_final,{})
-        lag=(datetime.fromisoformat(src["latestSourceTime"].replace("Z","+00:00"))-datetime.fromisoformat(dom["latestSourceTime"].replace("Z","+00:00"))).total_seconds()
-        assert lag<=1500, f"quote delivery lag {lag:.0f}s"
-        # Fail closed when a purportedly live quote feed itself goes stale
-        # during Vietnamese trading hours. Off-hours keep the completed session.
-        market_now=datetime.now(timezone(timedelta(hours=7)))
-        minutes=market_now.hour*60+market_now.minute
-        active=(market_now.weekday()<5 and
-                (9*60+15<=minutes<=11*60+40 or 13*60<=minutes<=14*60+35))
-        stamp=datetime.fromisoformat(dom["latestSourceTime"].replace("Z","+00:00"))
-        source_age=(datetime.now(timezone.utc)-stamp).total_seconds()
-        assert source_age >= -300, f"quote timestamp in future {source_age:.0f}s"
-        if active:
-            assert source_age <= 20*60, f"live quote feed stale {source_age:.0f}s"
-        print("PASS quotes",dom["coverage"],"/",dom["expected"],"sourceLagSec",max(0,int(lag)),"feedAgeSec",int(source_age),"liveSession",active)
-        check("news",DOMAIN+"/financial-report/market/news-latest.json",
-              lambda b,u,h: json.loads(b).get("status")=="ok" or (_ for _ in ()).throw(AssertionError("news not ok")))
-        check("forecast",DOMAIN+"/forecast-final.html",html_contains("forecast"))
-        check("www", "https://www.finquery.info.vn/",html_contains("FinQuery", require_app=True))
-        print("FINQUERY_CANONICAL_DOMAIN_SMOKE_PASS")
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+        from finquery_ops_health import probe_production
+        production = probe_production(DOMAIN)
+        required_flags = ("ok", "sessionAnonymous", "adminProtected", "dashboardProtected")
+        missing = [key for key in required_flags if production.get(key) is not True]
+        if missing:
+            raise AssertionError("FinQuery health or authentication regression: " + str(missing))
+        print("AUTH_PRODUCTION_PASS", json.dumps(production, ensure_ascii=False))
+
+        src = read_prices(PRICE_SOURCE)
+        pages = read_prices(PAGE_PRICES)
+        print("PAGES_PRICE_PASS", json.dumps(compare_prices(src, pages, "pages")))
+        print("DOMAIN_PRICE_AUTH_PASS", json.dumps(probe_domain_anonymous()))
+
+        status, location, _ = request_no_redirect(DOMAIN + HUB_PATH)
+        if not protected_page(status, location, HUB_PATH):
+            raise AssertionError("Data Hub route must require login; status=" + str(status) + " target=" + location[:160])
+        print("HUB_AUTH_GUARD_PASS", status, location[:160])
+
+        hub = Request(PAGES + HUB_PATH + "?smoke=" + str(int(time.time())), headers={"User-Agent": USER_AGENT})
+        with urlopen(hub, timeout=20) as response:
+            if response.status != 200:
+                raise AssertionError("Pages Data Hub unavailable HTTP " + str(response.status))
+            content = response.read(800_000)
+        print("HUB_PAGES_PASS", verify_hub_page(content), PAGES + HUB_PATH)
+
+        login_status, _, login_bytes = request_no_redirect(DOMAIN + "/login.html")
+        if login_status != 200 or b"FinQuery" not in login_bytes:
+            raise AssertionError("Login page unavailable via custom domain")
+        print("LOGIN_PAGE_PASS", login_status)
+
+        print("FINQUERY_AUTH_AWARE_PRODUCTION_SMOKE_PASS")
         return 0
-    except Exception as e:
-        print("::error::FinQuery canonical production route unavailable:",repr(e))
+    except Exception as exc:
+        print("::error::FINQUERY_AUTH_AWARE_PRODUCTION_SMOKE_FAIL", type(exc).__name__, str(exc)[:400])
         return 1
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     sys.exit(main())

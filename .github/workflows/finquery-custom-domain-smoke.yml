@@ -5,6 +5,8 @@ on:
     branches: [main, fix/finquery-domain-https-route-smoke-20261009, fix/finquery-browser-stale-element-retry-20261009]
     paths:
       - 'financial-report/scripts/smoke_custom_domain.py'
+      - 'scripts/finquery_custom_domain_browser_run.py'
+      - 'financial-report/tests/test_auth_aware_domain_smoke.py'
       - '.github/workflows/finquery-custom-domain-smoke.yml'
       - '.github/workflows/financial-dashboard-browser-smoke.yml'
   workflow_run:
@@ -31,7 +33,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check real FinQuery HTTPS, landing page, quotes, news, forecast and www redirect
+      - name: Check production session, source publication, protected Data Hub and login
         run: python financial-report/scripts/smoke_custom_domain.py
 
   browser:
