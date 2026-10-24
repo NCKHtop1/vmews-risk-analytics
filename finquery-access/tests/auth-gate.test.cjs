@@ -65,7 +65,7 @@ function query(sql,args=[]) {
   throw new Error('Unmocked SQL: '+s.slice(0,150));
 }
 const oldLoad=Module._load;
-Module._load=function(request){if(request==='@neondatabase/serverless')return {neon:()=>query};return oldLoad.apply(this,arguments);};
+Module._load=function(request){if(request==='@neondatabase/serverless')return {neon:()=>Object.assign(query,{query})};return oldLoad.apply(this,arguments);};
 const handler=require('../api/index.js');
 Module._load=oldLoad;
 
