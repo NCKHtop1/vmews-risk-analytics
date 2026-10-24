@@ -1,0 +1,58 @@
+name: FinQuery workspace production smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finquery-workspace-production-smoke.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '25 1,7,13 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: finquery-workspace-smoke
+  cancel-in-progress: true
+jobs:
+  public-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify live login, account workspace security, static client and Neon readiness
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://finquery.info.vn',errors=[];
+          async function run(name,path,status,verify,options={}) {
+            try {
+              const res=await fetch(base+path,{
+                signal:AbortSignal.timeout(18000),redirect:'manual',cache:'no-store',...options});
+              const body=await res.text();
+              const success=res.status===status && (!verify || verify(res,body));
+              console.log(JSON.stringify({name,status:res.status,pass:success,
+                bytes:body.length}));
+              if(!success)errors.push(name);
+            } catch(err){console.error(name,err.name);errors.push(name)}
+          }
+          await run('healthz-neon','/healthz',200,(_,s)=>{
+            try{const v=JSON.parse(s);return v.ok===true&&v.databaseReachable===true&&v.authConfigured===true}catch{return false}
+          });
+          await run('login-page','/login.html',200,(_,s)=>s.includes('FinQuery'));
+          await run('user-workspace-client','/user-workspace.js',200,(_,s)=>
+            s.includes('/api/user/workspace')&&s.includes('finquery-watchlist'));
+          await run('anonymous-workspace-denied','/api/user/workspace',401,(_,s)=>s.includes('LOGIN_REQUIRED'));
+          await run('anonymous-workspace-write-denied','/api/user/workspace',401,(_,s)=>s.includes('LOGIN_REQUIRED'),{
+            method:'PUT',headers:{'Content-Type':'application/json','Origin':base},
+            body:JSON.stringify({revision:0,watchlist:['MBB'],strategies:[]})
+          });
+          await run('anonymous-session','/api/auth/session',200,(_,s)=>{
+            try{return JSON.parse(s).authenticated===false}catch{return false}
+          });
+          await run('admin-rbac','/api/admin/users',403);
+          await run('financial-dashboard-lock','/financial-report/index.html?symbol=MBB&mode=quarter',307,
+            (r)=>String(r.headers.get('location')||'').includes('/login'));
+          await run('market-data-lock','/data/flow-v12.json',401);
+          if(errors.length){
+            console.error('FinQuery production workspace smoke FAIL: '+errors.join(', '));
+            process.exitCode=1;
+          } else console.log('FinQuery production workspace smoke PASS: 9/9');
+          NODE
