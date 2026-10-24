@@ -672,3 +672,33 @@ body.strategy-lab-view .strategy-page{display:block}
 .money-derivative-history:not([open]){padding-bottom:0}
 .money-derivative-history .money-derivative-section{margin-top:0;margin-bottom:13px}
 @media(max-width:620px){.derivative-live-grid{grid-template-columns:minmax(0,1fr)}.derivative-live-contract{padding:12px}.derivative-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 5px}.derivative-metric strong{font-size:10px}.derivative-head{align-items:center}}
+
+
+/* FinQuery 2026-10-24: compact task-based workspaces */
+.finquery-workspace-tabs{display:flex;gap:7px;align-items:stretch;overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;white-space:nowrap;padding:3px 1px 12px;margin:14px 0 16px;scrollbar-width:thin;scrollbar-color:#ccd7e6 transparent}
+.finquery-workspace-tabs button{flex:0 0 auto;min-height:42px;padding:10px 15px;background:#f4f7fb;color:#546a84;border:1px solid #dde6f0;border-radius:10px;font-size:12px;font-weight:720;cursor:pointer}
+.finquery-workspace-tabs button.active{background:#245cb1;border-color:#245cb1;color:#fff;box-shadow:0 3px 10px #245cb122}
+.finquery-workspace-tabs button:focus-visible{outline:2px solid #487cca;outline-offset:2px}
+#market [hidden],#macro [hidden],#macro [data-macro-panel][hidden]{display:none!important}
+#market[data-market-space="futures"] .market-grid,#market[data-market-space="ownership"] .market-grid{display:none!important}
+#market[data-market-space="futures"] .market-board,#market[data-market-space="ownership"] .market-board,#market[data-market-space="news"] .market-board{display:none!important}
+#market[data-market-space="news"] #market-stock-view{grid-template-columns:minmax(0,1fr)!important}
+#market[data-market-space="news"] #market-stock-view .market-price{display:none!important}
+#market[data-market-space="news"] #market-stock-view .market-news{max-width:100%;min-width:0}
+.market-asset-workspace{min-width:0;padding:6px 0 10px}
+.market-asset-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:12px}
+.market-asset-head h3{font-size:clamp(18px,2.2vw,24px);margin:5px 0;color:#233e62}
+.market-asset-head p{font-size:12px;color:#6c8099;margin:3px 0;line-height:1.6}
+#macro-liquidity-overview{min-width:0}
+#macro-liquidity-overview .money-dashboard-grid-single{grid-template-columns:minmax(0,1fr)}
+#macro-panel-vbma .money-vbma-grid{margin-top:10px}
+.money-on-trend text[data-on-tick]{pointer-events:none}
+.money-vbma-download{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:#285ca4;border:1px solid #dae5f1;border-radius:9px;background:#f7fbff;text-decoration:none!important;flex:0 0 auto}
+.money-vbma-download:hover{background:#e8f1ff;color:#1b4d93}
+.money-vbma-download:focus-visible{outline:2px solid #4e7dcb;outline-offset:2px}
+.chart-oscillator-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;margin:9px 0;border:1px solid #dbe5f1;border-radius:10px;background:#f8fafd}
+.chart-oscillator-nav[hidden]{display:none!important}
+.chart-oscillator-nav label{font-size:12px;color:#345472;font-weight:700}
+.chart-oscillator-nav select{min-height:35px;padding:5px 9px;min-width:120px;border-radius:8px;border:1px solid #ccd9ea;background:#fff;color:#27476e}
+#chart-oscillator-hint{font-size:11px;color:#75879d}
+@media(max-width:600px){.finquery-workspace-tabs{margin:10px 0 12px;gap:6px}.finquery-workspace-tabs button{min-height:39px;padding:8px 12px;font-size:11px}.market-asset-workspace{padding:2px 0 8px}.market-asset-head h3{font-size:18px}.chart-oscillator-nav{padding:8px;gap:7px}}
