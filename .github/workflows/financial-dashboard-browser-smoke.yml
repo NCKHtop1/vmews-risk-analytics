@@ -124,8 +124,13 @@ jobs:
                   chevrons:document.querySelectorAll('.section-chevron-icon svg').length
                 };
               """)
-              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('ideas'),initial_views.get('macroVisible')]) or int(initial_views.get('chevrons') or 0)!=2:
+              if not all([initial_views.get('strategySectionHidden'),initial_views.get('strategyBodyVisible'),initial_views.get('ideas')]) or initial_views.get('macroVisible') is not False or int(initial_views.get('chevrons') or 0)!=2:
                   raise AssertionError(f'Platform view defaults are incorrect: {initial_views}')
+
+              # Clicking the title must NOT expand either section. Only chevrons can.
+              driver.execute_script("document.getElementById('macro-toggle')?.click(); document.getElementById('investment-ideas-toggle')?.click();")
+              if not driver.execute_script("return document.getElementById('macro-body')?.hidden===true && document.getElementById('investment-ideas-body')?.hidden===true"):
+                  raise AssertionError('Title click must not expand Macro or Investment Ideas')
 
               driver.execute_script("document.querySelector('[data-platform-view=\"strategy\"]')?.click();")
               wait.until(lambda d:d.execute_script("""
@@ -136,7 +141,7 @@ jobs:
                   document.querySelector('[data-platform-view="strategy"]')?.classList.contains('active')
                 );
               """))
-              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('investment-ideas-toggle')?.click();")
+              driver.execute_script("window.FinPlatformViews.openAnalysis(); document.getElementById('investment-ideas-chevron')?.click(); document.getElementById('macro-chevron')?.click();")
               wait.until(lambda d:d.execute_script("""
                 return (
                   document.getElementById('strategy-builder')?.hidden===true &&
