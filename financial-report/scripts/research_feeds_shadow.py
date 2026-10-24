@@ -48,7 +48,7 @@ VBMA = {
         "unit": "SOURCE_UNIT_NOT_VERIFIED",
     },
 }
-HNX_LISTING = "https://www.hnx.vn/vi-vn/phai-sinh.html"
+HNX_LISTING = "https://cbtd.hnx.vn/vi-vn/phai-sinh/thong-tin-cong-bo.html"
 EVENTS_URL = (
     "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/"
     "financial-insights-data/data/corporate-events.json"
