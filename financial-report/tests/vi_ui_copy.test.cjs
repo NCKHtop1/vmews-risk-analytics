@@ -24,6 +24,8 @@ test('user-facing HTML is Vietnamese-first; no named provider or developer comme
  assert.match(body,/Hoán đổi ngoại tệ/);
  assert.match(body,/Tín hiệu Alpha/);
  assert.match(body,/Trợ lý chiến lược/);
+ assert.match(body,/Nhóm chính · Thanh khoản · Mở rộng/);
+ assert.doesNotMatch(body,/Investment Ideas|Core · Liquid · Discovery/);
  assert.doesNotMatch(body,/Bollinger Rebound|Momentum hồi phục|Top Strategy|World Bank/);
 });
 test('fixed-income charts read verified values from the published curves schema',()=>{
