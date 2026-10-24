@@ -82,7 +82,7 @@ test('unverified swap is empty, never fabricated; verified points show a curve',
  other.vbmaSwap.measurement='MID swap points';
  other.vbmaSwap.points=[{tenor:'1W',value:-5},{tenor:'1M',value:-22},{tenor:'3M',value:-90}];
  api.setData(other);
- assert.equal((get('money-swap').innerHTML.match(/money-swap-point/g)||[]).length,3);
+ assert.equal((get('money-swap').innerHTML.match(/data-tenor-point=/g)||[]).length,3);
  assert.match(get('money-swap').innerHTML,/22\/10\/2026/);
 });
 test('unverified ON or missing observations cannot masquerade as valid chart',()=>{
@@ -118,4 +118,20 @@ test('ON timeline adapts date labels and VBMA references use compact export icon
  assert.match(html,/money-vbma-download/);
  assert.match(html,/aria-label="Tải tệp dữ liệu/);
  assert.doesNotMatch(html,/>VBMA FX Swap ↗</);
+});
+
+test('VBMA yield tenors display signed and accessible chart, not absolute magnitude bars',()=>{
+ const {api,get}=makeEnv();
+ const signed=[{tenor:'1W',value:-2.5},{tenor:'1M',value:1.2},{tenor:'3M',value:3.1}];
+ const svg=api._test.tenorCurve(signed,{title:'FX Swap',unit:'%/năm',width:304});
+ assert.match(svg,/money-tenor-curve/);
+ assert.match(svg,/stroke-dasharray="4 3"/);
+ assert.equal((svg.match(/data-tenor-point=/g)||[]).length,3);
+ assert.ok((svg.match(/data-tenor-label=/g)||[]).length<=4);
+ const next={...fixture,vbmaCurves:{gov_bond:{source:'https://vbma.org.vn/csv/markets/charts/vi/government_bond_yield.csv',
+  status:'verified',unit:'%/năm',licenseStatus:'source_attributed',asOf:'2026-10-23',
+  points:[{tenor:'1Y',value:3.1},{tenor:'2Y',value:3.2},{tenor:'5Y',value:3.7}]}}};
+ api.setData(next);
+ assert.match(get('money-vbma-curves').innerHTML,/data-tenor-point="1Y"/);
+ assert.match(get('money-vbma-curves').innerHTML,/money-vbma-download/);
 });
