@@ -36,7 +36,7 @@ function contracts(d){
   if(typeof c.reference!=='number'||!Number.isFinite(c.reference)||c.reference<=0)return false;
   if(typeof c.volume!=='number'||c.volume<0)return false;
   return true;
- }).sort((a,b)=>a.underlying.localeCompare(b.underlying)||a.expiry.localeCompare(b.expiry)).slice(0,24);
+ }).sort((a,b)=>(a.underlying==='VN30'?0:1)-(b.underlying==='VN30'?0:1)||a.expiry.localeCompare(b.expiry)).slice(0,24);
 }
 function statusFor(c,now=Date.now()){
  const age=(now-validStamp(c.sourceTime))/60000;
