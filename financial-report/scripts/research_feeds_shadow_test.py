@@ -55,8 +55,48 @@ class ResearchFeedsTests(unittest.TestCase):
         self.assertEqual(d["mode"],"SHADOW_ONLY")
         self.assertFalse(d["publicServingEnabled"])
         self.assertFalse(d["forecastInputsChanged"])
+        self.assertEqual(d["scope"]["equities"]["allowedExchanges"], ["HOSE"])
+        self.assertNotIn("HNX", d["scope"]["equities"]["allowedExchanges"])
+        self.assertEqual(d["scope"]["derivatives"], ["VN30_FUTURES", "VN100_FUTURES"])
+        self.assertIn("hnx_derivatives_monthly", d["sources"])
+        self.assertIn("nhnn_omo", d["sources"])
+        self.assertIn("nhnn_tin_phieu", d["sources"])
+        self.assertIn("nhnn_unsecured_interbank_6m", d["sources"])
         self.assertFalse(d["sources"]["nhnn_unsecured_interbank_on"]["modelEligible"])
         self.assertIsNone(d["sources"]["nhnn_unsecured_interbank_on"]["rate"])
+
+    def test_derivatives_hnx_is_allowed_but_equities_are_not(self):
+        listing = (
+            '<a href="/vi-vn/chi-tiet-thong-ke">Phái sinh tháng 9/2026</a>'
+        ).encode()
+        found = rf.monthly_hnx_link(listing)
+        self.assertEqual(found[2], "2026-09")
+        html = (
+            '<h1>Phái sinh tháng 9/2026</h1>'
+            '<p>Khối lượng hợp đồng mở đạt 25.000 hợp đồng</p>'
+            '<h2>Về giao dịch hợp đồng tương lai chỉ số VN100</h2>'
+            '<p>OI là 1.234 hợp đồng</p>'
+        ).encode()
+        result = rf.parse_hnx_monthly(html, found[1], "2026-09")
+        self.assertEqual(result["assetClass"], "EQUITY_INDEX_FUTURES")
+        self.assertEqual(result["contracts"]["VN30_FUTURES"]["oi"], 25000)
+        self.assertEqual(result["contracts"]["VN100_FUTURES"]["oi"], 1234)
+        self.assertFalse(result["equityShareFeed"])
+        self.assertFalse(result["publicationEligible"])
+
+    def test_hnx_equity_is_withheld_even_if_official(self):
+        def event(publisher, exchange):
+            return {"id":"TEST-"+exchange, "symbol":"ABC","type":"cash_dividend",
+                "date":"2026-10-23","exchange":exchange,
+                "details":{"publishedAt":"2026-10-20T08:00:00+07:00"},
+                "source":{"publisher":publisher,"url":"https://example.com/source"}}
+        d=rf.review_pit_events({"events":[
+            event("HNX","HNX"), event("HOSE","HOSE"),
+            event("VSDC","UPCOM")]})
+        self.assertEqual(d["checked"],3)
+        self.assertEqual(len(d["verifiedCandidates"]),1)
+        self.assertEqual(d["verifiedCandidates"][0]["equityExchange"],"HOSE")
+        self.assertEqual(len(d["withheld"]),2)
 
     def test_no_oi_without_official_validation(self):
         with self.assertRaises(ValueError):
