@@ -1,4 +1,5 @@
 const {test}=require('node:test');
+const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {buildRiskSnapshot,riskInputSignature,buildHistoricalBaseline,buildFundMonitor}=require('../scripts/build_risk_monitor.cjs');
@@ -388,4 +389,26 @@ test('risk method copy is plain-language and versioned to refresh cached snapsho
  assert.equal(out.methodVersion,'FINQUERY-RISK-RULES-2.0');
  assert.doesNotMatch(out.methodology.alertRule,/hysteresis|ngoài mẫu|OOS/i);
  assert.match(out.methodology.alertRule,/chỉ tắt sau khi hạ xuống mức an toàn hơn/);
+});
+
+
+test('fund disclosure chart preserves new top holdings without inventing a weight delta',()=>{
+ const src=fs.readFileSync(path.join(__dirname,'../frontend/risk-monitor.js'),'utf8');
+ const begin=src.indexOf('function fundChangeLabel(x){');
+ const end=src.indexOf('\\nfunction renderFunds(){',begin);
+ assert.ok(begin>0&&end>begin,'pure fund label helper must exist in the live chart source');
+ const body=src.slice(begin,end);
+ const label=vm.runInNewContext('('+body+')',{
+  fmt:(v,places)=>Number(v).toFixed(places).replace('.',',')
+ });
+ const newTop={largestChangePP:0,materialChanges:1,details:[
+  {fundCode:'DISCLOSED-FUND',status:'new',material:true,
+   currentWeightPct:3.31,previousWeightPct:null,deltaPP:null}]};
+ const appearing=label(newTop);
+ assert.match(appearing,/1 quỹ mới xuất hiện trong top công bố/);
+ assert.doesNotMatch(appearing,/Mua mới|tăng tỷ trọng|Không đổi/i);
+ assert.equal(label({largestChangePP:1.25,materialChanges:1,details:[]}),'+1,25 điểm %');
+ assert.match(label({largestChangePP:null,materialChanges:1,details:[{status:'removed',material:true}]}),/rời top công bố/);
+ assert.equal(label({largestChangePP:0,materialChanges:0,details:[]}), 'Không đổi');
+ assert.match(label({largestChangePP:0,materialChanges:1,details:[]}),/Có thay đổi/);
 });
