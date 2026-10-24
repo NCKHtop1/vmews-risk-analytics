@@ -15,7 +15,7 @@ function render(){
  const status=$('alpha-radar-status'),board=$('alpha-radar-list');if(!status||!board)return;
  if(!state.data){
   status.textContent=state.failed?'Chưa có tín hiệu.':'Đang tải tín hiệu…';
-  board.replaceChildren();return;
+  board.innerHTML='';return;
  }
  const d=state.data,age=(Date.now()-Date.parse(d.sourceTime))/60000;
  const stale=age>25&&new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).replace(':','')>='0900';
