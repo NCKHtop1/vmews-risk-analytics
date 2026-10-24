@@ -1,5 +1,11 @@
 name: FinQuery research feeds shadow QA
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/scripts/research_feeds_shadow.py'
+      - 'financial-report/scripts/research_feeds_shadow_test.py'
+      - '.github/workflows/finquery-research-feeds-shadow.yml'
   pull_request:
     paths:
       - 'financial-report/scripts/research_feeds_shadow.py'
