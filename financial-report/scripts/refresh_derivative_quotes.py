@@ -222,12 +222,37 @@ def collect(client=_request, now=None):
             "contracts": ordered, "notIntradayTickStream": True}
 
 
+def retain_series(payload, old):
+    """Append actual per-contract trade observations; no synthetic minute bars."""
+    lookup = {row.get("symbol"): row for row in (old.get("contracts") or [])
+              if isinstance(row, dict) and isinstance(row.get("symbol"), str)}
+    for row in payload["contracts"]:
+        previous = lookup.get(row["symbol"], {})
+        seen = {}
+        for tick in (previous.get("series") or [])[-240:]:
+            if not isinstance(tick, dict) or not isinstance(tick.get("time"), str): continue
+            try: when = datetime.fromisoformat(tick["time"].replace("Z", "+00:00"))
+            except ValueError: continue
+            price = _num(tick.get("price"))
+            if when.tzinfo and price and price > 0 and when <= NOW():
+                seen[tick["time"]] = {"time": tick["time"], "price": price}
+        seen[row["sourceTime"]] = {"time": row["sourceTime"], "price": row["price"]}
+        row["series"] = [seen[stamp] for stamp in sorted(seen)][-180:]
+    return payload
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", required=True)
     args = ap.parse_args()
     payload = collect()
     path = Path(args.output)
+    try:
+        old = json.loads(path.read_text(encoding='utf-8'))
+        if old.get('schemaVersion') != 1: old = {}
+    except (ValueError, OSError, AttributeError):
+        old = {}
+    payload = retain_series(payload, old)
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(".tmp")
     temp.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False), encoding="utf-8")
