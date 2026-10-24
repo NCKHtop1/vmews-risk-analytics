@@ -178,6 +178,9 @@ publish_snapshot() {
   git -C "$OUT" restore --worktree market/universe.json 2>/dev/null || true
   git -C "$OUT" add --sparse     market/quotes.json market/prices-status.json market/drivers.json     market/technical-signals.json market/technical-evidence.json     market/strategy-indicators.json market/sector-risk-calibration.json market/market-risk-calibration.json market/risk-monitor.json market/watch-today.json     market/history-status.json market/history
 
+  if [ -f "$OUT/market/derivatives-live.json" ]; then
+    git -C "$OUT" add --sparse market/derivatives-live.json
+  fi
   if git -C "$OUT" diff --cached --quiet; then
     echo "No live market changes to publish"
     return 0
@@ -248,7 +251,7 @@ collect_validate_publish() {
   for attempt in 1 2; do
     echo "=== Intraday refresh attempt $attempt at $(TZ=Asia/Ho_Chi_Minh date '+%H:%M:%S %d/%m/%Y') · maxAge=${current_max_age}m ==="
     sync_market_worktree
-    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_sector_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_market_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_risk_monitor.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && publish_snapshot; then
+    if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_sector_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_market_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_risk_monitor.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && { python -u "$ROOT/financial-report/scripts/refresh_derivative_quotes.py" --output "$OUT/market/derivatives-live.json" || echo "::warning::Futures feed unavailable; preserving last verified derivatives snapshot"; }       && publish_snapshot; then
       ok=0
       break
     fi
