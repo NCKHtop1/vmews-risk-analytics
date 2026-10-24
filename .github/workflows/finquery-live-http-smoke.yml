@@ -5,6 +5,9 @@ on:
       - feat/finquery-secure-auth-20261024
     paths:
       - '.github/workflows/finquery-live-http-smoke.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/finquery-live-http-smoke.yml'
   workflow_dispatch:
 permissions:
   contents: read
