@@ -121,7 +121,7 @@ async function load(){
   if(d.schemaVersion!==1||!d.interbank||!d.derivatives||!d.vbmaSwap)throw Error('Invalid schema');
   state.payload=d;render();
  }catch(error){
-  if(!state.payload)target.innerHTML='<p class="macro-no-chart">Không tải được bảng tiền tệ và phái sinh.</p>';
+  if(!state.payload){for(const id of ['money-on','money-swap','money-vbma-curves']){const node=$(id);if(node)node.innerHTML='<p class="macro-no-chart">Nguồn tiền tệ đang gián đoạn; chưa nhận dữ liệu đã xác minh.</p>';}}
   if($('money-source-stamp'))$('money-source-stamp').textContent='Dữ liệu tạm gián đoạn';
  }finally{state.loading=false;if(btn)btn.disabled=false;}
 }
