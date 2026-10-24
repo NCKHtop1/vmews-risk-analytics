@@ -138,7 +138,14 @@ def parse_trade_time(trade, now):
                         "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
             try:
                 stamp = datetime.strptime(value, pattern).replace(tzinfo=VN).astimezone(timezone.utc)
-                if now - timedelta(days=15) <= stamp <= now + timedelta(minutes=5):
+                local = stamp.astimezone(VN)
+                minute = local.hour * 60 + local.minute
+                # The public provider sometimes stamps its latest quote at
+                # Saturday 14:45 even though HNX does not trade Saturdays.
+                # Do not promote collection/quote timestamps to real matches.
+                valid_session = (local.weekday() < 5 and
+                                 ((525 <= minute <= 690) or (780 <= minute <= 885)))
+                if valid_session and now - timedelta(days=15) <= stamp <= now + timedelta(minutes=5):
                     return stamp.isoformat()
             except ValueError:
                 pass
