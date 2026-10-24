@@ -150,6 +150,10 @@ test('Static sign-in and admin UI reference backend-controlled roles',()=>{
   const admin=fs.readFileSync(path.join(root,'admin.html'),'utf8');
   const config=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
   assert.match(login,/<script src="\/login.js"/);
+  assert.doesNotMatch(login,/Mỗi tài khoản Google tương ứng một hồ sơ người dùng riêng/);
+  assert.match(login,/Đăng nhập bằng Google để tiếp tục sử dụng FinQuery/);
+  assert.match(admin,/Chủ sở hữu/);
+  assert.match(admin,/Đang hoạt động/);
   assert.match(loginJs,/\/api\/auth\/google/);
   assert.match(loginJs,/\/api\/auth\/session/);
   assert.match(admin,/\/api\/admin\/users/);
