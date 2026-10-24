@@ -306,7 +306,7 @@ function sanitizedWorkspace(body) {
           (rightType === 'indicator' && !/^[a-zA-Z0-9_]{1,35}$/.test(rightIndicator)) ||
           !['gt','gte','lt','lte','cross_up','cross_down','rising','falling'].includes(op)) return null;
       const right = Number(cond.rightValue);
-      if (rightType === 'value' && !Number.isFinite(right)) return null;
+      if (rightType === 'value' && !['rising','falling'].includes(op) && !Number.isFinite(right)) return null;
       conditions.push({id:String(cond.id || '').slice(0,50),left,op,rightType,
         rightIndicator: rightType === 'indicator' ? rightIndicator : '',
         rightValue: rightType === 'value' ? right : 0});
