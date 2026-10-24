@@ -155,3 +155,16 @@ test('Static sign-in and admin UI reference backend-controlled roles',()=>{
   assert.match(admin,/\/api\/admin\/user/);
   assert.ok(config.rewrites.some(r=>r.source==='/api/admin/:path'));
 });
+
+test('Health endpoint fails closed if credentials are not yet configured',async()=>{
+  assert.equal((await send('healthz')).statusCode,200);
+  const previous=process.env.FINQUERY_SESSION_PEPPER;
+  delete process.env.FINQUERY_SESSION_PEPPER;
+  try {
+    const health=await send('healthz');
+    assert.equal(health.statusCode,503);
+    assert.equal(health.json().authConfigured,false);
+  } finally {
+    process.env.FINQUERY_SESSION_PEPPER=previous;
+  }
+});
