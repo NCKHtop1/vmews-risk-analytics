@@ -1,0 +1,61 @@
+name: FinQuery production auth smoke
+on:
+  push:
+    branches:
+      - feat/finquery-secure-auth-20261024
+    paths:
+      - '.github/workflows/finquery-production-auth-smoke.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/finquery-production-auth-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-auth-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify live readiness, sign-in and anonymous RBAC on production
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const base = 'https://finquery.info.vn';
+          let failures = 0;
+          async function check(label,path,expected,verify,options={}) {
+            try {
+              const response = await fetch(base + path,{redirect:'manual',signal:AbortSignal.timeout(25000),...options});
+              const text = await response.text();
+              const ok = response.status === expected && (!verify || verify({response,text}));
+              console.log(label+': '+response.status+' '+(ok?'PASS':'FAIL'));
+              if(!ok)failures++;
+            } catch(e) {
+              console.log(label+': ERROR '+e.name);
+              failures++;
+            }
+          }
+          await check('health','/healthz',200,({text})=>{
+            let j;try{j=JSON.parse(text)}catch{return false}
+            return j.ok===true && j.authConfigured===true && j.databaseReachable===true;
+          });
+          await check('unauth-session','/api/auth/session',200,({text})=>{
+            let j;try{j=JSON.parse(text)}catch{return false}
+            return j.authenticated===false;
+          });
+          await check('login-html','/login.html',200,({text})=>/FinQuery/.test(text)&&/login.js/.test(text));
+          await check('login-js','/login.js',200,({text})=>/api\/auth\/google/.test(text)&&/accounts\.id/.test(text));
+          await check('dashboard-locked','/financial-report/index.html?symbol=MBB&mode=quarter',307,({response})=>
+            (response.headers.get('location')||'').startsWith('/login?next='));
+          await check('data-locked','/data/flow-v12.json',401,({text})=>text.includes('LOGIN_REQUIRED'));
+          await check('admin-api-locked','/api/admin/users',403,({text})=>text.includes('quản trị viên'));
+          await check('admin-page-locked','/admin',307,({response})=>(response.headers.get('location')||'').includes('/login'));
+          await check('bad-google-credential','/api/auth/google',401,({text})=>text.includes('GOOGLE_INVALID'),{
+            method:'POST',headers:{'Origin':base,'Content-Type':'application/json'},
+            body:JSON.stringify({credential:'not-a-google-token'})
+          });
+          if(failures) {
+            console.error('Production auth gate FAIL: '+failures+' checks');
+            process.exitCode=1;
+          } else console.log('Production auth gate PASS: 9/9 checks');
+          NODE

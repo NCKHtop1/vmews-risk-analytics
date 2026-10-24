@@ -1,0 +1,33 @@
+name: FinQuery secure access QA
+on:
+  push:
+    branches:
+      - feat/finquery-secure-auth-20261024
+    paths:
+      - 'finquery-access/**'
+      - '.github/workflows/finquery-access-qa.yml'
+  pull_request:
+    paths:
+      - 'finquery-access/**'
+      - '.github/workflows/finquery-access-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  auth-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install runtime dependency
+        run: npm install --prefix finquery-access --ignore-scripts --no-audit --no-fund
+      - name: Syntax checks
+        run: |
+          node --check finquery-access/api/index.js
+          node --check finquery-access/login.js
+          node --check finquery-access/tests/auth-gate.test.cjs
+      - name: Google identity and authorization tests
+        run: npm test --prefix finquery-access

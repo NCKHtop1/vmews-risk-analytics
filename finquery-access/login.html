@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Đăng nhập | FinQuery</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 8%,#e7efff 0,transparent 40%),#f5f7fc;color:#172d52;font:15px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+main{width:min(430px,100%);padding:40px 34px 35px;border:1px solid #dfe8f4;border-radius:24px;background:#fff;box-shadow:0 24px 80px #23477917;text-align:center}
+.mark{display:grid;place-items:center;margin:0 auto 19px;width:60px;height:60px;border-radius:17px;background:linear-gradient(135deg,#468ff2,#6745c5);color:#fff;font-size:33px;font-weight:800;letter-spacing:-3px}
+h1{font-size:30px;letter-spacing:-.8px;margin:0 0 4px}
+.subtitle{font-size:13px;color:#7284a0;font-weight:600}
+p{margin:22px 0 16px;color:#586d8e}
+#signin{display:flex;justify-content:center;margin:22px 0;min-height:45px}
+#status{min-height:40px;margin:15px auto 0;border-radius:10px;padding:9px 13px;background:#f1f5fb;color:#4b6484;font-size:13px}
+#switch-account{display:none;margin:16px auto 0;padding:7px 14px;border:1px solid #ced9ec;border-radius:9px;background:#fff;color:#3556a3;font-weight:600;cursor:pointer}
+.foot{margin-top:23px;font-size:12px;color:#8a98ab}
+@media(max-width:420px){main{padding:30px 22px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="mark" aria-hidden="true">F</div>
+  <h1>FinQuery</h1>
+  <div class="subtitle">Financial Intelligence</div>
+  <p>Đăng nhập bằng tài khoản Google để truy cập nền tảng phân tích tài chính và giám sát thị trường.</p>
+  <div id="signin" aria-label="Đăng nhập Google"></div>
+  <div id="status" role="status" aria-live="polite">Đang kết nối Google…</div>
+  <button id="switch-account" type="button">Đổi tài khoản Google</button>
+  <div class="foot">Mỗi tài khoản Google tương ứng một hồ sơ người dùng riêng.</div>
+</main>
+<script src="/login.js" defer></script>
+</body>
+</html>

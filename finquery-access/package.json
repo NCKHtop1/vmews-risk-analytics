@@ -1,0 +1,14 @@
+{
+  "name": "finquery-secure-access",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  }
+}
