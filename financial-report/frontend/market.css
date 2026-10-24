@@ -702,3 +702,45 @@ body.strategy-lab-view .strategy-page{display:block}
 .chart-oscillator-nav select{min-height:35px;padding:5px 9px;min-width:120px;border-radius:8px;border:1px solid #ccd9ea;background:#fff;color:#27476e}
 #chart-oscillator-hint{font-size:11px;color:#75879d}
 @media(max-width:600px){.finquery-workspace-tabs{margin:10px 0 12px;gap:6px}.finquery-workspace-tabs button{min-height:39px;padding:8px 12px;font-size:11px}.market-asset-workspace{padding:2px 0 8px}.market-asset-head h3{font-size:18px}.chart-oscillator-nav{padding:8px;gap:7px}}
+
+
+/* Market futures terminal: one selected instrument + scroll-contained quote grid. */
+#market-futures-workspace .money-derivative-live{padding:16px;min-width:0}
+#market-futures-workspace .derivative-focus-select{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.derivative-focus-select label{font-size:12px;font-weight:750;color:#4e6985}
+.derivative-focus-select select{min-width:190px;max-width:100%;padding:8px 12px;min-height:38px;font-size:12px;border:1px solid #d7e0ed;border-radius:9px;background:#fff;color:#315272}
+.derivative-focus{padding:15px;background:#f8fbff;border:1px solid #e0e8f3;border-radius:13px;margin-bottom:15px;min-width:0}
+.derivative-focus-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.derivative-focus-head>div:first-child{display:grid;gap:5px}
+.derivative-focus-head strong{font-size:20px;color:#1b466e}
+.derivative-focus-head strong span{font-size:12px;color:#8798ac;font-weight:550}
+.derivative-focus-head small{font-size:11px;color:#6e8099}
+.derivative-focus-price{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.derivative-focus-price>strong{font-size:clamp(26px,3vw,36px);font-weight:800;color:#194b76;line-height:1.1}
+.derivative-focus-price>small{font-size:12px;color:#77899d}
+.derivative-focus-metrics{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.derivative-focus-metrics>span{padding:6px 9px;border:1px solid #e4eaf3;border-radius:9px;background:white;font-size:11px;color:#72849a}
+.derivative-focus-metrics b{font-variant-numeric:tabular-nums;color:#315777;margin-left:4px}
+.derivative-chart-wrap{padding:8px 0;min-height:60px}
+.derivative-spark-wide{width:100%;max-width:100%;height:auto;max-height:140px;display:block}
+.derivative-spark-empty{font-size:12px;color:#8797aa;padding:20px 8px}
+.derivative-series-note{font-size:11px;color:#7689a2;line-height:1.6;margin:6px 0 0}
+.derivative-board-scroll{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;border:1px solid #e2e9f2;border-radius:12px}
+.derivative-board-table{width:100%;min-width:780px;border-collapse:collapse;font-variant-numeric:tabular-nums;table-layout:auto}
+.derivative-board-table thead{background:#f5f8fd}
+.derivative-board-table th{padding:12px 10px;text-align:right;font-size:10px;color:#667d96;font-weight:780;white-space:nowrap;border-bottom:1px solid #e2eaf3}
+.derivative-board-table th:first-child,.derivative-board-table td:first-child{text-align:left}
+.derivative-board-table td{padding:11px 10px;text-align:right;font-size:12px;color:#34536f;border-bottom:1px solid #e9edf4;background:#fff;white-space:nowrap}
+.derivative-board-table tbody tr:last-child td{border-bottom:0}
+.derivative-board-table tbody tr.active td{background:#eef5ff}
+.derivative-board-table .derivative-live-contract{display:table-row;grid-template-columns:none;padding:0;border:0;border-radius:0;background:transparent;min-width:0}
+.derivative-board-table .derivative-contract-title{display:table-cell}
+.derivative-board-table .derivative-contract-title button{display:grid;gap:4px;border:0;background:transparent;padding:0;color:inherit;cursor:pointer;text-align:left}
+.derivative-board-table .derivative-contract-title strong{font-size:12px;color:#275ca2}
+.derivative-board-table .derivative-contract-title small{font-size:10px;color:#8b99a9}
+.derivative-board-table .derivative-last{display:table-cell;margin:0}
+.derivative-board-table .derivative-last>strong{font-size:12px;color:#234e77}
+.derivative-board-table td small{font-size:10px;color:#8999aa}
+.derivative-board-table .derivative-move{margin:0;font-size:11px;white-space:nowrap}
+.derivative-board-table .derivative-time{font-size:11px;white-space:nowrap}
+@media(max-width:600px){#market-futures-workspace .money-derivative-live{padding:12px}.derivative-focus{padding:11px}.derivative-focus-head strong{font-size:18px}.derivative-focus-price>strong{font-size:26px}.derivative-focus-metrics>span{font-size:10px}}
