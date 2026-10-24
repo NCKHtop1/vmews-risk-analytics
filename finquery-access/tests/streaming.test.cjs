@@ -8,14 +8,14 @@ process.env.FINQUERY_SESSION_PEPPER='qa-only-streaming-secret-with-more-than-32-
 process.env.FINQUERY_GOOGLE_CLIENT_ID='qa-public-client-id';
 const previous=Module._load;
 Module._load=function(name) {
- if(name==='@neondatabase/serverless')return {neon:()=>async sql=>{
+ if(name==='@neondatabase/serverless')return {neon:()=>({query:async sql=>{
   if(String(sql).includes('SELECT u.id,u.email,u.full_name'))return [{
    id:'11111111-1111-4111-8111-111111111111',
    email:'ordinary@example.com',full_name:'Example',avatar_url:'',
    role:'user',status:'active',session_id:'22222222-2222-4222-8222-222222222222'
   }];
   throw Error('Unexpected SQL');
- }};
+ }})};
  return previous.apply(this,arguments);
 };
 const handler=require('../api/index');
