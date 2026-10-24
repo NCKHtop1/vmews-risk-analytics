@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "asOf": "2026-10-22",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-10-24T15:46:38+00:00",
+  "lastCheckedAt": "2026-10-24T15:51:58+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -112,25 +112,127 @@
     "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
     "agency": "VBMA",
     "instrument": "USD/VND FX Swap",
-    "measurement": null,
-    "unit": null,
-    "asOf": null,
-    "status": "awaiting_verified_source",
-    "points": [],
-    "licenseStatus": "review_required",
-    "note": "Raw VBMA FX Swap CSV may be unavailable. Do not confuse swap points with percent rate."
+    "measurement": "FX Swap implied yield curve",
+    "unit": "%/năm",
+    "asOf": "2026-10-23",
+    "status": "verified",
+    "points": [
+      {
+        "tenor": "SPOT",
+        "value": 0.238
+      },
+      {
+        "tenor": "ON",
+        "value": 0.163
+      },
+      {
+        "tenor": "1W",
+        "value": 0.125
+      },
+      {
+        "tenor": "2W",
+        "value": 1.033
+      },
+      {
+        "tenor": "3W",
+        "value": 1.05
+      },
+      {
+        "tenor": "1M",
+        "value": 1.113
+      },
+      {
+        "tenor": "2M",
+        "value": 1.486
+      },
+      {
+        "tenor": "3M",
+        "value": 2.258
+      },
+      {
+        "tenor": "6M",
+        "value": 2.571
+      },
+      {
+        "tenor": "9M",
+        "value": 2.646
+      },
+      {
+        "tenor": "1Y",
+        "value": 2.646
+      }
+    ],
+    "licenseStatus": "source_attributed",
+    "note": "Raw VBMA FX Swap CSV may be unavailable. Do not confuse swap points with percent rate.",
+    "dateLayout": "MM/DD/YYYY",
+    "unitBasis": "official_VBMA_curve_product",
+    "lastObservationCount": 11,
+    "sourceName": "VBMA",
+    "sourceAttribution": "VBMA public reference curve"
   },
   "sourceIssues": [
-    "VBMA swap: source unit not explicit",
-    "VBMA fi_bond: source unit not explicit",
-    "VBMA gov_bond: source unit not explicit",
-    "VBMA short_benchmark: source unit not explicit"
+    "VBMA fi_bond: source observation stale 2026-02-06",
+    "VBMA short_benchmark: source observation stale 2022-10-18"
   ],
   "vbmaCurves": {
     "swap": {
+      "status": "verified",
+      "asOf": "2026-10-23",
+      "unit": "%/năm",
+      "measurement": "FX Swap implied yield curve",
+      "dateLayout": "MM/DD/YYYY",
+      "unitBasis": "official_VBMA_curve_product",
+      "points": [
+        {
+          "tenor": "SPOT",
+          "value": 0.238
+        },
+        {
+          "tenor": "ON",
+          "value": 0.163
+        },
+        {
+          "tenor": "1W",
+          "value": 0.125
+        },
+        {
+          "tenor": "2W",
+          "value": 1.033
+        },
+        {
+          "tenor": "3W",
+          "value": 1.05
+        },
+        {
+          "tenor": "1M",
+          "value": 1.113
+        },
+        {
+          "tenor": "2M",
+          "value": 1.486
+        },
+        {
+          "tenor": "3M",
+          "value": 2.258
+        },
+        {
+          "tenor": "6M",
+          "value": 2.571
+        },
+        {
+          "tenor": "9M",
+          "value": 2.646
+        },
+        {
+          "tenor": "1Y",
+          "value": 2.646
+        }
+      ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
-      "status": "unavailable",
-      "points": []
+      "lastObservationCount": 11,
+      "licenseStatus": "source_attributed",
+      "sourceName": "VBMA",
+      "sourceAttribution": "VBMA public reference curve"
     },
     "fi_bond": {
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fi_bond_yield_curve.csv",
@@ -138,9 +240,59 @@
       "points": []
     },
     "gov_bond": {
+      "status": "verified",
+      "asOf": "2026-10-23",
+      "unit": "%/năm",
+      "measurement": "Government Bond Yield",
+      "dateLayout": "MM/DD/YYYY",
+      "unitBasis": "official_VBMA_curve_product",
+      "points": [
+        {
+          "tenor": "1Y",
+          "value": 3.538
+        },
+        {
+          "tenor": "2Y",
+          "value": 3.642
+        },
+        {
+          "tenor": "3Y",
+          "value": 3.717
+        },
+        {
+          "tenor": "4Y",
+          "value": 3.999
+        },
+        {
+          "tenor": "5Y",
+          "value": 4.282
+        },
+        {
+          "tenor": "7Y",
+          "value": 4.337
+        },
+        {
+          "tenor": "10Y",
+          "value": 4.466
+        },
+        {
+          "tenor": "15Y",
+          "value": 4.574
+        },
+        {
+          "tenor": "20Y",
+          "value": 4.666
+        },
+        {
+          "tenor": "30Y",
+          "value": 4.733
+        }
+      ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/government_bond_yield.csv",
-      "status": "unavailable",
-      "points": []
+      "lastObservationCount": 10,
+      "licenseStatus": "source_attributed",
+      "sourceName": "VBMA",
+      "sourceAttribution": "VBMA public reference curve"
     },
     "short_benchmark": {
       "source": "https://vbma.org.vn/csv/markets/charts/vi/short_term_benchmark_rate.csv",
