@@ -29,6 +29,30 @@ function miniLine(points,{unit='',title='',color='#2e74bb',width=640}={}){
  const circles=points.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===points.length-1?4.8:3)+'" fill="'+color+'"><title>'+esc(dateVN(p.date)+' · '+fmt(p.value)+' '+unit)+'</title></circle>').join('');
  return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg money-on-trend" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
 }
+function tenorCurve(points,{title='',unit='',color='#2e74bb',width=600}={}){
+ const pts=(Array.isArray(points)?points:[]).filter(p=>p&&p.tenor&&Number.isFinite(p.value));
+ if(pts.length<2)return'<div class="macro-no-chart">Chưa đủ kỳ hạn hợp lệ để vẽ đường cong.</div>';
+ const W=Math.max(270,Math.min(900,Math.round(width||600))),H=226,L=52,R=22,T=20,B=38;
+ const vals=pts.map(p=>p.value),min=Math.min(...vals),max=Math.max(...vals);
+ const pad=Math.max((max-min)*.15,Math.abs(max)*.07,.05),lo=min-pad,hi=max+pad;
+ const x=i=>L+(W-L-R)*i/(pts.length-1),y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
+ const grid=Array.from({length:4},(_,i)=>{
+   const v=lo+(hi-lo)*i/3,py=y(v);
+   return'<line x1="'+L+'" x2="'+(W-R)+'" y1="'+py.toFixed(1)+'" y2="'+py.toFixed(1)+'" stroke="'+(Math.abs(v)<.0001?'#b8cde5':'#e7edf5')+'"/>'+
+    '<text x="'+(L-7)+'" y="'+(py+4).toFixed(1)+'" text-anchor="end" font-size="10" fill="#8191a4">'+esc(fmt(v,2))+'</text>';
+ }).join('');
+ const path=pts.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.value).toFixed(1)).join(' ');
+ const budget=W<420?4:W<690?6:10,step=Math.max(1,Math.ceil((pts.length-1)/(budget-1)));
+ const tickIndices=[...new Set([...pts.map((p,i)=>i).filter(i=>i%step===0),pts.length-1])];
+ const labels=tickIndices.map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" data-tenor-label="'+esc(pts[i].tenor)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'" font-size="10" fill="#71859c">'+esc(pts[i].tenor)+'</text>').join('');
+ const circles=pts.map((p,i)=>'<circle data-tenor-point="'+esc(p.tenor)+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===pts.length-1?4.6:3.4)+'" fill="'+color+'" stroke="white" stroke-width="1"><title>'+esc(p.tenor+' · '+fmt(p.value,3)+' '+unit)+'</title></circle>').join('');
+ let zero='';
+ if(lo<0&&hi>0){
+  const py=y(0);zero='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+py.toFixed(1)+'" y2="'+py.toFixed(1)+'" stroke="#9eb0c9" stroke-dasharray="4 3" stroke-width="1.2"/>';
+ }
+ return'<svg class="money-tenor-curve" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(title+' · '+pts.length+' kỳ hạn · '+unit)+'">'+grid+zero+
+  '<path d="'+path+'" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'+circles+labels+'</svg>';
+}
 function vbmaSourceIcon(url,label){
  if(!url)return'';
  const svg='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg>';
@@ -89,9 +113,7 @@ function renderSwap(p){
       '<p class="money-empty">Chưa có chuỗi FX Swap hợp lệ để vẽ.</p>'+(reason?'<p class="money-source-pending">'+esc(String(reason).replace(/^VBMA swap\s+/,''))+'</p>':'')+
       '<div class="macro-viz-source">'+link+'</div>';return;
  }
- const maxAbs=Math.max(...points.map(x=>Math.abs(x.value)),.01);
- const bars=points.map(x=>'<div class="money-swap-point"><small>'+esc(x.tenor)+'</small><div class="money-swap-track"><div style="height:'+Math.max(2,Math.abs(x.value)/maxAbs*100)+'%"></div></div><b>'+fmt(x.value,2)+'</b></div>').join('');
- host.innerHTML=cardHeader('USD/VND FX Swap',dateVN(s.asOf),s.unit,'VBMA')+'<div class="money-swap-chart" role="img" aria-label="USD VND FX Swap theo kỳ hạn">'+bars+'</div><div class="macro-viz-source"><span>'+esc(s.measurement||'Đường cong kỳ hạn')+'</span>'+link+'</div>';
+ host.innerHTML=cardHeader('USD/VND FX Swap',dateVN(s.asOf),s.unit,'VBMA')+'<div class="money-curve" role="group" aria-label="Đường cong USD/VND FX Swap theo kỳ hạn">'+tenorCurve(points,{title:'USD/VND FX Swap',unit:s.unit,color:'#276bb7',width:Math.max(270,host.clientWidth-38)})+'</div><div class="macro-viz-source"><span>'+esc(s.measurement||'Đường cong kỳ hạn')+'</span>'+link+'</div>';
 }
 function renderBondCurves(p){
  const host=$('money-vbma-curves');if(!host)return;
@@ -103,7 +125,7 @@ function renderBondCurves(p){
   const link=vbmaSourceIcon(url,'Tải tệp dữ liệu '+title+' từ VBMA');
   const verified=s.status==='verified'&&['approved','source_attributed'].includes(s.licenseStatus)&&s.unit&&s.asOf&&points.length>=2;
   const reason=(p.sourceIssues||[]).find(x=>String(x).startsWith('VBMA '+key+' '));
-  const visual=verified?'<div class="money-bond-chart">'+points.map(x=>'<div class="money-bond-point"><small>'+esc(x.tenor)+'</small><b>'+fmt(x.value,3)+'</b></div>').join('')+'</div>' :'<p class="money-source-pending">'+esc(reason?String(reason).replace(new RegExp('^VBMA '+key+'\\s+'),''):'Chưa có chuỗi kỳ hạn đã xác minh')+'</p>';
+  const visual=verified?'<div class="money-curve">'+tenorCurve(points,{title,unit:s.unit,color:'#28837a',width:Math.max(270,(host.clientWidth||960)/(window.innerWidth<950?1:3)-40)})+'</div>' :'<p class="money-source-pending">'+esc(reason?String(reason).replace(new RegExp('^VBMA '+key+'\\s+'),''):'Chưa có chuỗi kỳ hạn đã xác minh')+'</p>';
   return '<article class="macro-viz-card">'+cardHeader(title,verified?dateVN(s.asOf):'—',verified?s.unit:'VBMA','Đường cong kỳ hạn')+visual+'<div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
 }
@@ -137,6 +159,6 @@ if(onHost&&typeof ResizeObserver==='function'){
  let prior=0;
  new ResizeObserver(entries=>{const width=Math.round(entries[0]?.contentRect?.width||0);if(width&&Math.abs(width-prior)>12){prior=width;if(state.payload)renderON(state.payload);}}).observe(onHost);
 }
-window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,monthBar,dateVN,monthVN,safeURL},setData:payload=>{state.payload=payload;render();}};
+window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,tenorCurve,monthBar,dateVN,monthVN,safeURL},setData:payload=>{state.payload=payload;render();}};
 load();
 })();
