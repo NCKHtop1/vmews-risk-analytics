@@ -35,7 +35,7 @@ function series(ds,key,scale=1){
 }
 function httpsUrl(raw){try{const u=new URL(String(raw||''));return u.protocol==='https:'?u.href:'';}catch{return'';}}
 function sourceLink(raw,label){
- const url=httpsUrl(raw);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>':'<span</span>';
+ const url=httpsUrl(raw);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>' :'';
 }
 function plot(data,opts={}){
  const pts=data.slice(-(opts.limit||24));
@@ -75,7 +75,7 @@ function renderMacro(data){
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
   else if(c.id==='fdi')context='';
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
-  return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'<span>'+esc(c.info)+' · kỳ '+esc(last.label)+'</span></div></article>';
+  return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
