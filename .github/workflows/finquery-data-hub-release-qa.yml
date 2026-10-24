@@ -46,8 +46,8 @@ jobs:
           from pathlib import Path
           html=Path('financial-report/index.html').read_text(encoding='utf-8')
           hub=Path('financial-report/data-hub.html').read_text(encoding='utf-8')
-          assert 'https://finquery.info.vn/financial-report/data-hub.html' in html
-          assert 'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/' in hub
+          assert 'href="#macro"' in html
+          assert 'http-equiv="refresh"' in hub
           assert '07/10/2026' in hub and 'Không lấy được manifest' in hub
           assert 'FINQUERY_SESSION_PEPPER' not in hub
           print('FinQuery Data Hub production bundle contract PASS')

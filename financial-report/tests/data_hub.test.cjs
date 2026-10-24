@@ -53,7 +53,8 @@ const fixture={
  }
 };
 test('entrypoint and page are linked, accessible and responsive',()=>{
- assert.match(home,/finquery\.info\.vn\/financial-report\/data-hub\.html/);
+ assert.match(home,/href="#macro"/);
+ assert.match(html,/http-equiv="refresh"/);
  assert.match(html,/<html lang="vi">/);
  assert.match(html,/name="viewport"/);
  assert.match(html,/aria-live="polite"/);
