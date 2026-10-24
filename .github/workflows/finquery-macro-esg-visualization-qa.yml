@@ -4,12 +4,16 @@ on:
     paths:
       - 'financial-report/frontend/macro-dashboard.js'
       - 'financial-report/frontend/liquidity-derivatives.js'
+      - 'financial-report/frontend/derivatives-market.js'
       - 'financial-report/frontend/macro.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
       - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/tests/derivatives_market.test.cjs'
+      - 'financial-report/scripts/refresh_derivative_quotes.py'
+      - 'financial-report/scripts/test_refresh_derivative_quotes.py'
       - 'financial-report/data-hub.html'
       - 'financial-report/tests/macro_dashboard_browser.py'
       - 'financial-report/scripts/build_cdn.py'
@@ -19,12 +23,16 @@ on:
     paths:
       - 'financial-report/frontend/macro-dashboard.js'
       - 'financial-report/frontend/liquidity-derivatives.js'
+      - 'financial-report/frontend/derivatives-market.js'
       - 'financial-report/frontend/macro.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
       - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/tests/derivatives_market.test.cjs'
+      - 'financial-report/scripts/refresh_derivative_quotes.py'
+      - 'financial-report/scripts/test_refresh_derivative_quotes.py'
       - 'financial-report/data-hub.html'
       - 'financial-report/tests/macro_dashboard_browser.py'
       - 'financial-report/scripts/build_cdn.py'
@@ -50,11 +58,13 @@ jobs:
           node --check financial-report/frontend/macro.js
           node --check financial-report/frontend/macro-dashboard.js
           node --check financial-report/frontend/liquidity-derivatives.js
+          node --check financial-report/frontend/derivatives-market.js
           node --check financial-report/frontend/section-collapse.js
       - name: Evidence-linked macro and ESG chart regression
         run: |
           node --test financial-report/tests/macro_dashboard.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
+          node --test financial-report/tests/derivatives_market.test.cjs
           python -m unittest discover -s financial-report/scripts -p test_refresh_derivative_quotes.py -v
           node --test financial-report/tests/data_hub.test.cjs
       - name: Build and validate same-origin single HTML bundle
