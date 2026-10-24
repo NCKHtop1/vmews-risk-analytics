@@ -303,7 +303,7 @@ async function gateway(req, res, route, user) {
   const upstreamResponse = await fetch(upstream.href, {
     method: req.method,
     redirect:'follow',
-    signal:AbortSignal.timeout(25000),
+    signal:AbortSignal.timeout(90000),
     headers: { Accept: String(req.headers.accept || '*/*') }
   });
   if (!upstreamResponse.url.startsWith(UPSTREAM)) return json(res,502,{error:'Unexpected upstream redirect'});
@@ -325,9 +325,22 @@ async function gateway(req, res, route, user) {
     res.writeHead(200,Object.assign(headers,{'Content-Type':'text/html; charset=utf-8'}));
     return res.end(html);
   }
-  const buf = Buffer.from(await upstreamResponse.arrayBuffer());
+  // Stream large analytical datasets. Buffering 10–40 MB JSON responses would
+  // exceed Vercel's 4.5 MB non-streaming function payload limit.
+  if (!upstreamResponse.body) {
+    res.writeHead(200,headers);
+    return res.end();
+  }
+  const { Readable } = require('node:stream');
   res.writeHead(200,headers);
-  res.end(buf);
+  await new Promise((resolve,reject)=>{
+    const stream = Readable.fromWeb(upstreamResponse.body);
+    stream.once('error', reject);
+    res.once('error', reject);
+    res.once('finish', resolve);
+    res.once('close', resolve);
+    stream.pipe(res);
+  });
 }
 module.exports = async function handler(req,res) {
   const requestUrl = new URL(req.url,'https://'+String(req.headers.host || 'finquery.info.vn'));
@@ -361,6 +374,9 @@ module.exports = async function handler(req,res) {
     return gateway(req,res,route,user);
   } catch (err) {
     console.error('[finquery-auth]',err && err.message ? err.message : 'unexpected error');
+    // Headers are already committed for a streaming response; never write JSON
+    // over a partially sent binary/data stream.
+    if (res.headersSent) { if (typeof res.destroy === 'function') res.destroy(); return; }
     return json(res,503,{error:'Hệ thống xác thực tạm thời chưa sẵn sàng. Vui lòng thử lại.'});
   }
 };
