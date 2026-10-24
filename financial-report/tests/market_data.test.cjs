@@ -268,11 +268,11 @@ test('full contextual-help audit covers site-specific terms without oversized in
  const index=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
  const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
- for(const key of ['risk-score','technical-signals','scanner-guide','scanner-bias','volume-ratio','strategy-builder','universe-tiers','market-driver','broker-consensus'])assert.match(index,new RegExp('data-info-key="'+key+'"'));
+ for(const key of ['risk-score','technical-signals','scanner-guide','scanner-bias','volume-ratio','strategy-builder','universe-tiers','market-driver'])assert.match(index,new RegExp('data-info-key="'+key+'"'));
  assert.match(app,/Cách dùng bộ lọc kỹ thuật/);
  assert.match(app,/Nhóm cổ phiếu/);
  assert.match(app,/Động lực \/ hệ số/);
- assert.match(app,/Lấy giá mục tiêu gần nhất của từng CTCK/);
+ assert.doesNotMatch(index,/data-info-key="broker-consensus"/);
  assert.match(style,/button\.term-info-button\{[^}]*width:16px!important/);
 });
 

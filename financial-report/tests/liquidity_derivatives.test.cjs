@@ -143,7 +143,7 @@ test('government bond 10Y minus 2Y spread uses only validated dated yield observ
   points:[{tenor:'2Y',value:3.5},{tenor:'10Y',value:4.1}]}}};
  api.setData(base);
  assert.match(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
- assert.match(get('money-vbma-curves').innerHTML,/60 điểm/);
+ assert.match(get('money-vbma-curves').innerHTML,/<strong>\+60<\/strong><span>điểm cơ bản<\/span>/);
  const future=JSON.parse(JSON.stringify(base));future.vbmaCurves.gov_bond.asOf='2099-10-23';
  api.setData(future);
  assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);

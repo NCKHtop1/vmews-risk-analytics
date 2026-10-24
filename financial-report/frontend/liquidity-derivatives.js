@@ -69,8 +69,8 @@ function cardHeader(label,value,unit,period){
 }
 function verifiedBondSpread(curve){
  if(!curve||curve.status!=='verified'||!['approved','source_attributed'].includes(curve.licenseStatus)||curve.unit!=='%/năm'||!/^(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(curve.asOf||''))return null;
- const end=new Date(curve.asOf+'T23:59:59+07:00').getTime();
- if(!Number.isFinite(end)||end>Date.now()+86400000)return null;
+ const dayStart=new Date(curve.asOf+'T00:00:00+07:00').getTime();
+ if(!Number.isFinite(dayStart)||dayStart>Date.now())return null;
  const rates=new Map((curve.points||[]).filter(p=>p&&typeof p.value==='number'&&Number.isFinite(p.value)&&p.value>=0&&p.value<=25).map(p=>[String(p.tenor).toUpperCase(),p.value]));
  const a=rates.get('2Y'),b=rates.get('10Y');
  if(!Number.isFinite(a)||!Number.isFinite(b))return null;
