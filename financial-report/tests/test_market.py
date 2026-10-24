@@ -2018,7 +2018,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('plan.slice(0,6)',js)
         self.assertIn("GEMINI_TRANSIENT_EXHAUSTED",js)
         self.assertIn("thinkingLevel:deep?'medium':'low'",js)
-        self.assertIn("khóa vẫn kết nối",js)
+        self.assertIn("Kết nối đang bận.",js)
         self.assertIn('data-ai-mode="normal" data-ai-prompt="Vì sao mã này tăng hoặc giảm trong phiên hôm nay?"',html)
 
     def test_company_news_is_strict_and_sector_news_cannot_pose_as_company_news(self):
