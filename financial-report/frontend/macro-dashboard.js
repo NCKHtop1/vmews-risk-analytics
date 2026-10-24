@@ -54,7 +54,7 @@ function plot(data,opts={}){
   return'<line x1="'+l+'" y1="'+pos+'" x2="'+(width-r)+'" y2="'+pos+'" stroke="#e5edf7"/><text x="'+(l-9)+'" y="'+(Number(pos)+4)+'" text-anchor="end" fill="#8190a5" font-size="11">'+esc(fmt(val))+'</text>';
  }).join('');
  const color=/^#[0-9a-fA-F]{6}$/.test(opts.color||'')?opts.color:'#3565d5';
- const expectedGap=pts.some(p=>/^T(?:1[0-2]|[1-9])\\s+/.test(p.label))?1:pts.some(p=>/^Q[1-4]\\s+/.test(p.label))?3:12;
+ const expectedGap=pts.some(p=>/^T(?:1[0-2]|[1-9])\s+/.test(p.label))?1:pts.some(p=>/^Q[1-4]\s+/.test(p.label))?3:12;
  const shape=pts.map((p,i)=>(i&&p.rank-pts[i-1].rank<=expectedGap?'L':'M')+x(i).toFixed(1)+','+y(p.y).toFixed(1)).join(' ');
  const horizontal=[0,Math.floor((pts.length-1)/2),pts.length-1].map((i,j)=>'<text x="'+x(i).toFixed(1)+'" y="'+(height-10)+'" fill="#7688a0" font-size="11" text-anchor="'+(j===0?'start':j===2?'end':'middle')+'">'+esc(pts[i].label)+'</text>').join('');
  const threshold=typeof opts.threshold==='number'?'<line x1="'+l+'" y1="'+y(opts.threshold).toFixed(1)+'" x2="'+(width-r)+'" y2="'+y(opts.threshold).toFixed(1)+'" stroke="#bb8443" stroke-dasharray="5 5"/><text x="'+(width-r-4)+'" y="'+(y(opts.threshold)-6).toFixed(1)+'" text-anchor="end" font-size="11" fill="#aa763c">'+esc(opts.threshold)+'</text>':'';
@@ -79,7 +79,7 @@ function renderMacro(data){
   let context='';
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
   else if(c.id==='fdi'){
-   const prevYear=pts.find(p=>p.label===last.label.replace(/(20\\d{2})$/,y=>String(Number(y)-1)));
+   const prevYear=pts.find(p=>p.label===last.label.replace(/(20\d{2})$/,y=>String(Number(y)-1)));
    context='Lũy kế trong năm · không diễn giải thành tăng trưởng tháng';
    if(prevYear&&prevYear.y>0){
     const diff=last.y-prevYear.y,yoy=diff/prevYear.y*100;
